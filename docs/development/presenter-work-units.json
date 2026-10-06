@@ -1,0 +1,2230 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Analysis only; no guest, compiler, scheduler, workload or demo changes. Passive markers are checked against emitted Action! instructions and complete linked Calypsi sections. CPU charge excludes native interrupts and other Tasks, includes bus stalls and kernel/C tails. Nested inclusive costs must not be added. Endpoints at RTL exclude that instruction; C call-site spans include JSL through its return continuation.",
+  "repository_head": "c1ab2f0",
+  "guest_source_revision": "f17934d",
+  "program": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/il3/panel-loaded/program",
+  "xex_sha256": "19b4b75a711c5454b3156536f1fded5dfa76330595fbcb3c30878898fe2537cb",
+  "image_sha256": "742515904808d0437fba0448b07bc6641bcc502e183435549068ef2c1fdc21aa",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_override": false,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "runs": {
+    "panel-loaded": {
+      "status": "pass",
+      "trace": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/emulator.log",
+      "trace_sha256": "ee088f967907831195a4d03fbcc84f2daaf41ee53028798aaf8722fc29004570",
+      "results": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/results.json",
+      "results_sha256": "74830752d939c2ac583220cd098482056323a0abb8be8a38ed721cfa32d1ecdd",
+      "analysis": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/work-unit-analysis.json",
+      "analysis_sha256": "5218481cac03991bd105edd1d9cee837a508cddb8f4760519540f4d8327c4294",
+      "definition": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/presenter-definition.json",
+      "definition_sha256": "8a7722972550544ed44f877496930c1723492e7ad3f33941abf1dbe4bc405fdd",
+      "passive_replay_matches_original": {
+        "latency": true,
+        "samples": true,
+        "input_breakdown": true,
+        "feedback": true,
+        "progress": true,
+        "aes_progress": true
+      },
+      "ownership": "restored"
+    },
+    "calls-scroll": {
+      "status": "pass",
+      "trace": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/calls-scroll/emulator.log",
+      "trace_sha256": "7b588d2fe86b5bd6367639342ffc7eb2a420babb07609eea44bcb3d12e2959a2",
+      "results": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/calls-scroll/results.json",
+      "results_sha256": "d7aff9d4e1f3ef610a0059aa04f1fcc772597fd46f95c38e7818987c5d27e9bf",
+      "analysis": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/calls-scroll/work-unit-analysis.json",
+      "analysis_sha256": "ede9daec320c32ac4e9872cddf5b6def68dee12d423d9b075113cd753625a3de",
+      "definition": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/calls-scroll/presenter-definition.json",
+      "definition_sha256": "af0eb3be8ed45ad51e356385f35b06ff5e101b4fe472ff712c4bfb26a7d3d30e",
+      "passive_replay_matches_original": {
+        "latency": true,
+        "samples": true,
+        "progress": true,
+        "aes_progress": true
+      },
+      "ownership": "restored"
+    }
+  },
+  "windows": {
+    "idle": {
+      "begin": 4316355248,
+      "end": 4330511601,
+      "maximum_cpu_units": {
+        "pump": {
+          "start": 4326979954.125,
+          "end": 4327110273.75,
+          "charged_cpu_ms": 51.59540950606094,
+          "elapsed_ms": 73.48377947472366,
+          "off_cpu_ms": 11.26365454855585,
+          "interrupt_ms": 10.624715420106881
+        },
+        "paint": {
+          "start": 4326992100.375,
+          "end": 4327110222.875,
+          "charged_cpu_ms": 46.726784976719074,
+          "elapsed_ms": 66.60614424729235,
+          "off_cpu_ms": 10.319236966417105,
+          "interrupt_ms": 9.56012230415617
+        },
+        "deskhost_controls": {
+          "start": 4321918767.75,
+          "end": 4321988515.5,
+          "charged_cpu_ms": 25.19217512782307,
+          "elapsed_ms": 39.32890598678562,
+          "off_cpu_ms": 8.91145635830776,
+          "interrupt_ms": 5.225274500654798
+        },
+        "commit": {
+          "start": 4328607577.375,
+          "end": 4328633678.5,
+          "charged_cpu_ms": 8.068676969574797,
+          "elapsed_ms": 14.717731988119187,
+          "off_cpu_ms": 4.878492315109413,
+          "interrupt_ms": 1.7705627034349762
+        },
+        "deskinput_service": {
+          "start": 4325022571.875,
+          "end": 4325040971.625,
+          "charged_cpu_ms": 7.6218072426728165,
+          "elapsed_ms": 10.37513092437188,
+          "off_cpu_ms": 0.9445585505068518,
+          "interrupt_ms": 1.8087651311922117
+        },
+        "deskinput_advance": {
+          "start": 4328606485.0,
+          "end": 4328633892.875,
+          "charged_cpu_ms": 8.724391333828601,
+          "elapsed_ms": 15.454573648219077,
+          "off_cpu_ms": 4.878492315109413,
+          "interrupt_ms": 1.8516899992810611
+        },
+        "deskhost_cache": {
+          "start": 4329144837.125,
+          "end": 4329196435.125,
+          "charged_cpu_ms": 8.192729133509731,
+          "elapsed_ms": 29.094743430521625,
+          "off_cpu_ms": 19.029179042514652,
+          "interrupt_ms": 1.8728352544972433
+        },
+        "consolebitmap_run": {
+          "start": 4326839430.25,
+          "end": 4326886560.5,
+          "charged_cpu_ms": 6.048388802036712,
+          "elapsed_ms": 26.575497724065695,
+          "off_cpu_ms": 19.135328223699887,
+          "interrupt_ms": 1.3917806983291021
+        }
+      },
+      "actual_worker_turn": {
+        "start": 4319880422.0,
+        "end": 4320073424.125,
+        "charged_cpu_ms": 67.86224289131762,
+        "elapsed_ms": 108.82877841041248,
+        "off_cpu_ms": 27.051759355718172,
+        "interrupt_ms": 13.9147761633767
+      },
+      "input_service_gap": {
+        "start": 4326971198.0,
+        "end": 4327110306.0,
+        "charged_cpu_ms": 55.76313930917041,
+        "elapsed_ms": 78.43931100300404,
+        "off_cpu_ms": 11.26365454855585,
+        "interrupt_ms": 11.412517145277771
+      },
+      "primitive_entries": {
+        "GemWidgetFill": 505,
+        "GemWidgetText": 67,
+        "start": 347,
+        "VbxeOwnerSubmit": 347,
+        "vram_win": 0
+      },
+      "slowest_input_samples": [
+        {
+          "capture": 4328521701.125,
+          "observed": 4328597744,
+          "load": "idle",
+          "edge": "release",
+          "presenter_state_at_capture": "ready",
+          "ready": 4328521701.125,
+          "selected": 4328529362.25,
+          "consumed": 4328597511.0,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 4.319905156481937,
+          "selected_to_consume_ms": 38.42727230436763,
+          "runnable_off_cpu_ms": 23.401453947748664,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 42.74717746084956,
+          "charged_cpu_ms": 15.983064060255517,
+          "off_cpu_ms": 23.401453947748664,
+          "interrupt_ms": 3.3626594528453757,
+          "start": 4328521701.125,
+          "end": 4328597511.0,
+          "submissions": [
+            {
+              "start": 4328535225.75,
+              "end": 4328538051.0,
+              "charged_cpu_ms": 1.348221472583767,
+              "before_first_fence_cpu_ms": 0.9922058589273153,
+              "from_first_fence_cpu_ms": 0.3560156136564516
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "other_worker": 7.186567406139736,
+            "deskhost_cache": 2.016552505783227,
+            "pump": 1.271816617069296,
+            "consolebitmap_run": 1.242424712318803,
+            "VbxeOwnerSubmit": 1.225508508145857,
+            "deskinput_service": 0.8479952183529538,
+            "DisplayCheck": 0.6805952812248459,
+            "consoledriver_collect": 0.5958028078079559,
+            "deskinput_present": 0.26170777539227974,
+            "deskhost_controls": 0.2323158706417867,
+            "deskinput_advance": 0.1867126035588874,
+            "VbxeOwnerFence": 0.12271296443790979,
+            "consolebitmap_cursor": 0.04151518440777074,
+            "deskhost_events": 0.03728613336453433,
+            "consoledriver_arrival": 0.024951401155094807,
+            "consoledisplay_poll": 0.0048634086997218695,
+            "deskhost_afterpaint": 0.0037356617548588273
+          },
+          "inclusive_routines": {
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 3.5744644259274665,
+              "max_cpu_ms": 3.4120688658671883
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 3.3127566505351864,
+              "max_cpu_ms": 3.3127566505351864
+            },
+            "consolebitmap_run": {
+              "calls": 1,
+              "charged_cpu_ms": 3.2712414661274156,
+              "max_cpu_ms": 3.2712414661274156
+            },
+            "deskhost_cache": {
+              "calls": 1,
+              "charged_cpu_ms": 2.016552505783227,
+              "max_cpu_ms": 2.016552505783227
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "charged_cpu_ms": 1.348221472583767,
+              "max_cpu_ms": 1.348221472583767
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.271816617069296,
+              "max_cpu_ms": 1.271816617069296
+            },
+            "DisplayCheck": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6805952812248459,
+              "max_cpu_ms": 0.6805952812248459
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5958028078079559,
+              "max_cpu_ms": 0.5958028078079559
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 0.1867126035588874,
+              "max_cpu_ms": 0.1867126035588874
+            },
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "charged_cpu_ms": 0.12271296443790979,
+              "max_cpu_ms": 0.10614918118523385
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 0.07633437133041718,
+              "max_cpu_ms": 0.07633437133041718
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.03728613336453433,
+              "max_cpu_ms": 0.03728613336453433
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.024951401155094807,
+              "max_cpu_ms": 0.024951401155094807
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0048634086997218695,
+              "max_cpu_ms": 0.0048634086997218695
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0037356617548588273,
+              "max_cpu_ms": 0.0037356617548588273
+            }
+          }
+        },
+        {
+          "capture": 4325676011.25,
+          "observed": 4325751152,
+          "load": "idle",
+          "edge": "release",
+          "presenter_state_at_capture": "ready",
+          "ready": 4325676011.25,
+          "selected": 4325683980.75,
+          "consumed": 4325750858.875,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 4.493789638543007,
+          "selected_to_consume_ms": 37.71080057345932,
+          "runnable_off_cpu_ms": 23.501400520737153,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 42.20459021200232,
+          "charged_cpu_ms": 15.427437237358308,
+          "off_cpu_ms": 23.501400520737153,
+          "interrupt_ms": 3.275752453906868,
+          "start": 4325676011.25,
+          "end": 4325750858.875,
+          "submissions": [
+            {
+              "start": 4325688707.375,
+              "end": 4325691532.5,
+              "charged_cpu_ms": 1.348150988399713,
+              "before_first_fence_cpu_ms": 0.9927697323997469,
+              "from_first_fence_cpu_ms": 0.3553812559999662
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "other_worker": 8.127742715811998,
+            "pump": 1.2714641961490263,
+            "consolebitmap_run": 1.2425656806869105,
+            "VbxeOwnerSubmit": 1.2254380239618032,
+            "deskhost_cache": 0.8439071356778253,
+            "deskinput_service": 0.7713789102863209,
+            "DisplayCheck": 0.6860930475810533,
+            "consoledriver_collect": 0.5951684501514706,
+            "deskinput_present": 0.2621306804966034,
+            "deskinput_advance": 0.17261576674809942,
+            "VbxeOwnerFence": 0.12271296443790977,
+            "consolebitmap_cursor": 0.04130373185560893,
+            "deskhost_events": 0.03164739864021912,
+            "consoledriver_arrival": 0.02452849605077117,
+            "consoledisplay_poll": 0.00500437706782975,
+            "deskhost_afterpaint": 0.0037356617548588273
+          },
+          "inclusive_routines": {
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 3.580244129019889,
+              "max_cpu_ms": 3.411716444946918
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 3.318113448523286,
+              "max_cpu_ms": 3.318113448523286
+            },
+            "consolebitmap_run": {
+              "calls": 1,
+              "charged_cpu_ms": 3.276809716667677,
+              "max_cpu_ms": 3.276809716667677
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "charged_cpu_ms": 1.348150988399713,
+              "max_cpu_ms": 1.348150988399713
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.2714641961490263,
+              "max_cpu_ms": 1.2714641961490263
+            },
+            "deskhost_cache": {
+              "calls": 1,
+              "charged_cpu_ms": 0.8439071356778253,
+              "max_cpu_ms": 0.8439071356778253
+            },
+            "DisplayCheck": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6860930475810533,
+              "max_cpu_ms": 0.6860930475810533
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5951684501514706,
+              "max_cpu_ms": 0.5951684501514706
+            },
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "charged_cpu_ms": 0.12271296443790977,
+              "max_cpu_ms": 0.10664257047361142
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.03164739864021912,
+              "max_cpu_ms": 0.03164739864021912
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.02452849605077117,
+              "max_cpu_ms": 0.02452849605077117
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.00500437706782975,
+              "max_cpu_ms": 0.00500437706782975
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0037356617548588273,
+              "max_cpu_ms": 0.0037356617548588273
+            }
+          }
+        }
+      ]
+    },
+    "scroll": {
+      "begin": 4330760240,
+      "end": 4347889968,
+      "maximum_cpu_units": {
+        "consoledisplay_present": {
+          "start": 4334662406.625,
+          "end": 4334895554.375,
+          "charged_cpu_ms": 88.53264615952826,
+          "elapsed_ms": 131.46583138209616,
+          "off_cpu_ms": 24.688565632757665,
+          "interrupt_ms": 18.24461958981024
+        },
+        "consoledisplay_cells": {
+          "start": 4334662632.375,
+          "end": 4334895538.25,
+          "charged_cpu_ms": 88.39625926338388,
+          "elapsed_ms": 131.3294444859518,
+          "off_cpu_ms": 24.688565632757665,
+          "interrupt_ms": 18.24461958981024
+        },
+        "consolebitmap_text": {
+          "start": 4342986295.375,
+          "end": 4343110681.25,
+          "charged_cpu_ms": 37.211279161069044,
+          "elapsed_ms": 70.13789525768313,
+          "off_cpu_ms": 24.937515770836182,
+          "interrupt_ms": 7.9891003257778985
+        },
+        "consolebitmap_clippedtext": {
+          "start": 4332741227.5,
+          "end": 4332862041.125,
+          "charged_cpu_ms": 35.54108593572688,
+          "elapsed_ms": 68.12359824578964,
+          "off_cpu_ms": 24.812758765060707,
+          "interrupt_ms": 7.769753545002037
+        },
+        "pump": {
+          "start": 4343751045.25,
+          "end": 4343901341.5,
+          "charged_cpu_ms": 49.820053878110286,
+          "elapsed_ms": 84.748068380936,
+          "off_cpu_ms": 24.72134077834275,
+          "interrupt_ms": 10.206673724482963
+        },
+        "paint": {
+          "start": 4343758892.375,
+          "end": 4343901290.625,
+          "charged_cpu_ms": 46.07501772677229,
+          "elapsed_ms": 80.29459569567184,
+          "off_cpu_ms": 24.72134077834275,
+          "interrupt_ms": 9.49823719055681
+        },
+        "deskhost_controls": {
+          "start": 4344575587.0,
+          "end": 4344676009.75,
+          "charged_cpu_ms": 25.324262488740153,
+          "elapsed_ms": 56.625724753622535,
+          "off_cpu_ms": 26.06540368406733,
+          "interrupt_ms": 5.236058580815051
+        },
+        "commit": {
+          "start": 4336610089.75,
+          "end": 4336633295.5,
+          "charged_cpu_ms": 7.51185191554867,
+          "elapsed_ms": 13.085106832877772,
+          "off_cpu_ms": 3.9815810730230248,
+          "interrupt_ms": 1.591673844306076
+        },
+        "deskinput_service": {
+          "start": 4332400132.375,
+          "end": 4332410181.625,
+          "charged_cpu_ms": 4.630176534687382,
+          "elapsed_ms": 5.666505492832464,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.0363289581450819
+        },
+        "deskinput_advance": {
+          "start": 4345689704.75,
+          "end": 4345714298.875,
+          "charged_cpu_ms": 8.176447286993271,
+          "elapsed_ms": 13.867974665164883,
+          "off_cpu_ms": 3.9304095553998635,
+          "interrupt_ms": 1.7611178227717483
+        },
+        "consoledriver_writequantum": {
+          "start": 4344718910.5,
+          "end": 4344733342.125,
+          "charged_cpu_ms": 6.705724302523756,
+          "elapsed_ms": 8.13761050157955,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4318861990557938
+        },
+        "consolebitmap_run": {
+          "start": 4332741435.0,
+          "end": 4332862037.125,
+          "charged_cpu_ms": 35.46446962766025,
+          "elapsed_ms": 68.00433900637036,
+          "off_cpu_ms": 24.812758765060707,
+          "interrupt_ms": 7.727110613649404
+        }
+      },
+      "actual_worker_turn": {
+        "start": 4340662583.25,
+        "end": 4341048200.25,
+        "charged_cpu_ms": 137.78375170395515,
+        "elapsed_ms": 217.43919681862587,
+        "off_cpu_ms": 50.89810947321531,
+        "interrupt_ms": 28.757335641455416
+      },
+      "input_service_gap": {
+        "start": 4343222852.875,
+        "end": 4343488132.375,
+        "charged_cpu_ms": 103.12273129032576,
+        "elapsed_ms": 149.58407282989768,
+        "off_cpu_ms": 24.897198817557328,
+        "interrupt_ms": 21.564142722014605
+      },
+      "primitive_entries": {
+        "GemWidgetFill": 507,
+        "GemWidgetText": 68,
+        "start": 395,
+        "VbxeOwnerSubmit": 322,
+        "vram_win": 0
+      },
+      "slowest_input_samples": [
+        {
+          "capture": 4338445350.125,
+          "observed": 4338666545,
+          "load": "scroll",
+          "edge": "release",
+          "presenter_state_at_capture": "selected",
+          "ready": 4338445350.125,
+          "selected": 4338445350.125,
+          "consumed": 4338665926.0,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 0.0,
+          "selected_to_consume_ms": 124.37688457087114,
+          "runnable_off_cpu_ms": 24.74699702133838,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 124.37688457087116,
+          "charged_cpu_ms": 82.76013245387867,
+          "off_cpu_ms": 24.746997021338384,
+          "interrupt_ms": 16.869755095654085,
+          "start": 4338445350.125,
+          "end": 4338665926.0,
+          "submissions": [
+            {
+              "start": 4338482351.375,
+              "end": 4338521089.5,
+              "charged_cpu_ms": 18.12500792947071,
+              "before_first_fence_cpu_ms": 15.320160309228212,
+              "from_first_fence_cpu_ms": 2.804847620242494
+            },
+            {
+              "start": 4338557464.125,
+              "end": 4338596021.5,
+              "charged_cpu_ms": 18.059880543404866,
+              "before_first_fence_cpu_ms": 15.31832772044281,
+              "from_first_fence_cpu_ms": 2.741552822962056
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 34.9340056584703,
+            "GemBitmapTextClip": 14.807881259524166,
+            "blit_glyph": 12.24176357067238,
+            "consolebitmap_desktopdraw": 4.8244309459400405,
+            "other_worker": 3.6567899529024683,
+            "consolebitmap_run": 2.9038074146542256,
+            "DisplayCheck": 2.731403100458288,
+            "VbxeOwnerText": 1.494123733575423,
+            "consoledisplay_cells": 1.3416664434667505,
+            "VbxeOwnerFence": 1.3065653198078884,
+            "deskinput_service": 0.7713084261022669,
+            "consoledriver_collect": 0.5949569975993088,
+            "consolebitmap_clippedtext": 0.21906484403964596,
+            "consolebitmap_text": 0.1947478005410366,
+            "VbxeBlitExtent": 0.15414891052596708,
+            "GemDrawingTextClip": 0.11911827105115882,
+            "GemBitmapText": 0.11615793532089334,
+            "deskinput_present": 0.09881882604362408,
+            "consoledisplay_presentbatch": 0.09726817399443739,
+            "consoledisplay_present": 0.04539181453073744,
+            "consolebitmap_cursor": 0.04116276348750104,
+            "deskhost_events": 0.031858851192380945,
+            "consoledriver_writequantum": 0.028687062909953636,
+            "consoledisplay_poll": 0.00500437706782975
+          },
+          "inclusive_routines": {
+            "consoledisplay_present": {
+              "calls": 1,
+              "charged_cpu_ms": 76.11185276135888,
+              "max_cpu_ms": 76.11185276135888
+            },
+            "consoledisplay_presentbatch": {
+              "calls": 1,
+              "charged_cpu_ms": 76.06646094682814,
+              "max_cpu_ms": 76.06646094682814
+            },
+            "consoledisplay_cells": {
+              "calls": 1,
+              "charged_cpu_ms": 75.96919277283371,
+              "max_cpu_ms": 75.96919277283371
+            },
+            "consolebitmap_text": {
+              "calls": 3,
+              "charged_cpu_ms": 74.62752632936696,
+              "max_cpu_ms": 34.89770630368252
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 3,
+              "charged_cpu_ms": 74.4327785288259,
+              "max_cpu_ms": 34.82898422422993
+            },
+            "consolebitmap_run": {
+              "calls": 4,
+              "charged_cpu_ms": 70.80897517406069,
+              "max_cpu_ms": 33.15343420089966
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 3,
+              "charged_cpu_ms": 69.60834758288588,
+              "max_cpu_ms": 33.224623226794144
+            },
+            "GemDrawingTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 67.2233742470527,
+              "max_cpu_ms": 32.4306188934265
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 2,
+              "charged_cpu_ms": 36.18488847287557,
+              "max_cpu_ms": 18.12500792947071
+            },
+            "GemBitmapTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 28.814075409618837,
+              "max_cpu_ms": 13.567077683438614
+            },
+            "blit_glyph": {
+              "calls": 98,
+              "charged_cpu_ms": 12.24176357067238,
+              "max_cpu_ms": 0.12792879405790136
+            },
+            "DisplayCheck": {
+              "calls": 4,
+              "charged_cpu_ms": 2.731403100458288,
+              "max_cpu_ms": 0.6870093419737545
+            },
+            "GemBitmapText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.6102816688963164,
+              "max_cpu_ms": 1.6102816688963164
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 1.5596740247455874,
+              "max_cpu_ms": 1.5596740247455874
+            },
+            "VbxeOwnerText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.494123733575423,
+              "max_cpu_ms": 1.494123733575423
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4608551987019633,
+              "max_cpu_ms": 1.4608551987019633
+            },
+            "VbxeOwnerFence": {
+              "calls": 7,
+              "charged_cpu_ms": 1.3065653198078884,
+              "max_cpu_ms": 0.6391505810011292
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5949569975993088,
+              "max_cpu_ms": 0.5949569975993088
+            },
+            "VbxeBlitExtent": {
+              "calls": 4,
+              "charged_cpu_ms": 0.15414891052596708,
+              "max_cpu_ms": 0.03883678541372102
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.031858851192380945,
+              "max_cpu_ms": 0.031858851192380945
+            },
+            "consoledriver_writequantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.028687062909953636,
+              "max_cpu_ms": 0.028687062909953636
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.00500437706782975,
+              "max_cpu_ms": 0.00500437706782975
+            }
+          }
+        },
+        {
+          "capture": 4341966183.875,
+          "observed": 4342177073,
+          "load": "scroll",
+          "edge": "release",
+          "presenter_state_at_capture": "selected",
+          "ready": 4341966183.875,
+          "selected": 4341966183.875,
+          "consumed": 4342176448.875,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 0.0,
+          "selected_to_consume_ms": 118.56285568081378,
+          "runnable_off_cpu_ms": 24.695120661874682,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 118.56285568081378,
+          "charged_cpu_ms": 77.90786025523732,
+          "off_cpu_ms": 24.695120661874682,
+          "interrupt_ms": 15.959874763701775,
+          "start": 4341966183.875,
+          "end": 4342176448.875,
+          "submissions": [
+            {
+              "start": 4341990518.25,
+              "end": 4342078175.125,
+              "charged_cpu_ms": 20.405664672904045,
+              "before_first_fence_cpu_ms": 17.66841138516928,
+              "from_first_fence_cpu_ms": 2.7372532877347653
+            },
+            {
+              "start": 4342114609.625,
+              "end": 4342153128.5,
+              "charged_cpu_ms": 18.044867412201377,
+              "before_first_fence_cpu_ms": 15.30761412446661,
+              "from_first_fence_cpu_ms": 2.7372532877347653
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 37.2623097103241,
+            "GemBitmapTextClip": 13.23812799645887,
+            "blit_glyph": 11.794329970297968,
+            "consolebitmap_desktopdraw": 3.5050375046343354,
+            "other_worker": 2.336339248835954,
+            "consolebitmap_run": 2.2201108293310066,
+            "DisplayCheck": 2.0445347268526417,
+            "VbxeOwnerText": 1.4913043662132655,
+            "VbxeOwnerFence": 1.242424712318803,
+            "deskinput_service": 0.7715198786544287,
+            "consoledisplay_cells": 0.6457056101181456,
+            "consoledriver_collect": 0.5955913552557941,
+            "consolebitmap_clippedtext": 0.1503427645870543,
+            "consolebitmap_text": 0.12849266753033287,
+            "GemBitmapText": 0.11658084042521699,
+            "GemDrawingTextClip": 0.1017086775898356,
+            "deskinput_present": 0.09945318370010954,
+            "VbxeBlitExtent": 0.07746211827528021,
+            "consolebitmap_cursor": 0.04102179511939316,
+            "deskhost_events": 0.03136546190400336,
+            "consoledisplay_presentbatch": 0.006907450037286133,
+            "consoledisplay_poll": 0.00500437706782975,
+            "consoledisplay_present": 0.0021850097056721443
+          },
+          "inclusive_routines": {
+            "consolebitmap_text": {
+              "calls": 2,
+              "charged_cpu_ms": 39.737079896641994,
+              "max_cpu_ms": 34.84801495392449
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 2,
+              "charged_cpu_ms": 39.61105417555355,
+              "max_cpu_ms": 34.785002093380264
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 2,
+              "charged_cpu_ms": 38.45053208510542,
+              "max_cpu_ms": 20.405664672904045
+            },
+            "consolebitmap_run": {
+              "calls": 3,
+              "charged_cpu_ms": 37.668580547211015,
+              "max_cpu_ms": 33.10331994603731
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 2,
+              "charged_cpu_ms": 36.39676393014171,
+              "max_cpu_ms": 33.17443848774773
+            },
+            "GemDrawingTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 34.79853505671862,
+              "max_cpu_ms": 32.374654451287675
+            },
+            "GemBitmapTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 15.275261883985852,
+              "max_cpu_ms": 13.590760369280737
+            },
+            "blit_glyph": {
+              "calls": 94,
+              "charged_cpu_ms": 11.72581934339754,
+              "max_cpu_ms": 0.12792879405790136
+            },
+            "DisplayCheck": {
+              "calls": 3,
+              "charged_cpu_ms": 2.0445347268526417,
+              "max_cpu_ms": 0.6816525439856551
+            },
+            "GemBitmapText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.6078852066384826,
+              "max_cpu_ms": 1.6078852066384826
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 1.5603083824020727,
+              "max_cpu_ms": 1.5603083824020727
+            },
+            "VbxeOwnerText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4913043662132655,
+              "max_cpu_ms": 1.4913043662132655
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4608551987019633,
+              "max_cpu_ms": 1.4608551987019633
+            },
+            "VbxeOwnerFence": {
+              "calls": 7,
+              "charged_cpu_ms": 1.242424712318803,
+              "max_cpu_ms": 0.5781817617944709
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5955913552557941,
+              "max_cpu_ms": 0.5955913552557941
+            },
+            "VbxeBlitExtent": {
+              "calls": 2,
+              "charged_cpu_ms": 0.07746211827528021,
+              "max_cpu_ms": 0.03883678541372102
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.03136546190400336,
+              "max_cpu_ms": 0.03136546190400336
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.00500437706782975,
+              "max_cpu_ms": 0.00500437706782975
+            }
+          }
+        }
+      ]
+    },
+    "disk": {
+      "begin": 4357009457,
+      "end": 4373417737,
+      "maximum_cpu_units": {
+        "consoledisplay_present": {
+          "start": 4358310052.5,
+          "end": 4358597406.25,
+          "charged_cpu_ms": 94.69204755144993,
+          "elapsed_ms": 162.03115682871922,
+          "off_cpu_ms": 39.90469128632226,
+          "interrupt_ms": 27.43441799094701
+        },
+        "consoledisplay_cells": {
+          "start": 4358310278.25,
+          "end": 4358597390.125,
+          "charged_cpu_ms": 94.55566065530556,
+          "elapsed_ms": 161.8947699325748,
+          "off_cpu_ms": 39.90469128632226,
+          "interrupt_ms": 27.43441799094701
+        },
+        "consolebitmap_text": {
+          "start": 4358478550.0,
+          "end": 4358597206.125,
+          "charged_cpu_ms": 39.51005033980425,
+          "elapsed_ms": 66.90704122901862,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.433257821277483
+        },
+        "consolebitmap_clippedtext": {
+          "start": 4358481482.875,
+          "end": 4358596524.875,
+          "charged_cpu_ms": 37.83583951597101,
+          "elapsed_ms": 64.86913201546706,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.069559431559151
+        },
+        "pump": {
+          "start": 4361765929.875,
+          "end": 4361976173.0,
+          "charged_cpu_ms": 51.31304986474085,
+          "elapsed_ms": 118.55052094860434,
+          "off_cpu_ms": 49.62149993163034,
+          "interrupt_ms": 17.61597115223315
+        },
+        "paint": {
+          "start": 4361774299.625,
+          "end": 4361976122.125,
+          "charged_cpu_ms": 47.44960028419223,
+          "elapsed_ms": 113.80235388981066,
+          "off_cpu_ms": 49.62149993163034,
+          "interrupt_ms": 16.731253673988093
+        },
+        "deskhost_controls": {
+          "start": 4358922417.5,
+          "end": 4359030647.75,
+          "charged_cpu_ms": 25.77951983354455,
+          "elapsed_ms": 61.028166889631635,
+          "off_cpu_ms": 24.52271634767874,
+          "interrupt_ms": 10.72593070840834
+        },
+        "commit": {
+          "start": 4363684244.875,
+          "end": 4363707024.375,
+          "charged_cpu_ms": 7.067237682536416,
+          "elapsed_ms": 12.844755765253835,
+          "off_cpu_ms": 4.078637794465299,
+          "interrupt_ms": 1.698880288252119
+        },
+        "deskinput_service": {
+          "start": 4361263500.125,
+          "end": 4361286934.75,
+          "charged_cpu_ms": 7.87625514710754,
+          "elapsed_ms": 13.214163373880535,
+          "off_cpu_ms": 2.058208658559106,
+          "interrupt_ms": 3.2796995682138883
+        },
+        "deskinput_advance": {
+          "start": 4363683133.0,
+          "end": 4363707332.5,
+          "charged_cpu_ms": 7.727885939673997,
+          "elapsed_ms": 13.645456096106596,
+          "off_cpu_ms": 4.078637794465299,
+          "interrupt_ms": 1.8389323619672981
+        },
+        "consoledriver_writequantum": {
+          "start": 4359405715.875,
+          "end": 4359405859.125,
+          "charged_cpu_ms": 0.0346077343704846,
+          "elapsed_ms": 0.08077487492581541,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04616714055533079
+        },
+        "deskhost_cache": {
+          "start": 4365857782.875,
+          "end": 4365917139.0,
+          "charged_cpu_ms": 8.312481762217375,
+          "elapsed_ms": 33.46934431382942,
+          "off_cpu_ms": 23.055306119859765,
+          "interrupt_ms": 2.101556431752279
+        },
+        "consolebitmap_run": {
+          "start": 4358481720.0,
+          "end": 4358596520.875,
+          "charged_cpu_ms": 37.75901175535221,
+          "elapsed_ms": 64.733168024427,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.010423201137897
+        }
+      },
+      "actual_worker_turn": {
+        "start": 4358920508.875,
+        "end": 4359361258.625,
+        "charged_cpu_ms": 131.4647036351513,
+        "elapsed_ms": 248.5270920058248,
+        "off_cpu_ms": 80.04113456981388,
+        "interrupt_ms": 37.021253800859625
+      },
+      "input_service_gap": {
+        "start": 4357478548.375,
+        "end": 4357765939.125,
+        "charged_cpu_ms": 105.58960724802961,
+        "elapsed_ms": 162.05202014719916,
+        "off_cpu_ms": 31.503963325669357,
+        "interrupt_ms": 24.958449573500204
+      },
+      "primitive_entries": {
+        "GemWidgetFill": 507,
+        "GemWidgetText": 68,
+        "start": 332,
+        "VbxeOwnerSubmit": 329,
+        "vram_win": 0
+      },
+      "slowest_input_samples": [
+        {
+          "capture": 4358363362.25,
+          "observed": 4358675205,
+          "load": "disk",
+          "edge": "release",
+          "presenter_state_at_capture": "ready",
+          "ready": 4358363362.25,
+          "selected": 4358378701.625,
+          "consumed": 4358674882.5,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 8.649466646179263,
+          "selected_to_consume_ms": 167.0085384540563,
+          "runnable_off_cpu_ms": 59.14912902693764,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 175.65800510023556,
+          "charged_cpu_ms": 90.07371235968361,
+          "off_cpu_ms": 59.14912902693765,
+          "interrupt_ms": 26.4351637136143,
+          "start": 4358363362.25,
+          "end": 4358674882.5,
+          "submissions": [
+            {
+              "start": 4358435125.875,
+              "end": 4358477169.5,
+              "charged_cpu_ms": 18.565745532359994,
+              "before_first_fence_cpu_ms": 15.854923813645456,
+              "from_first_fence_cpu_ms": 2.7108217187145374
+            },
+            {
+              "start": 4358522808.875,
+              "end": 4358596408.5,
+              "charged_cpu_ms": 21.82676679179959,
+              "before_first_fence_cpu_ms": 19.085989294862124,
+              "from_first_fence_cpu_ms": 2.7407774969374623
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 45.9955820513435,
+            "GemBitmapTextClip": 16.02479069721545,
+            "blit_glyph": 12.409233991984532,
+            "other_worker": 3.6535476804359863,
+            "consolebitmap_desktopdraw": 3.518640952156746,
+            "consolebitmap_run": 2.209890622643185,
+            "DisplayCheck": 2.0561646172215418,
+            "VbxeOwnerFence": 1.3441333899086385,
+            "deskinput_service": 0.8979685048471974,
+            "consoledisplay_cells": 0.6521196708670541,
+            "consoledriver_collect": 0.5949569975993088,
+            "VbxeBlitExtent": 0.15407842634191313,
+            "consolebitmap_clippedtext": 0.15020179621894644,
+            "consolebitmap_text": 0.12828121497817105,
+            "GemDrawingTextClip": 0.10424610821577746,
+            "deskinput_present": 0.09332105968741675,
+            "consolebitmap_cursor": 0.04130373185560892,
+            "deskhost_events": 0.031294977719949414,
+            "consoledisplay_presentbatch": 0.006907450037286133,
+            "consoledisplay_poll": 0.0048634086997218695,
+            "consoledisplay_present": 0.0021850097056721443
+          },
+          "inclusive_routines": {
+            "consolebitmap_text": {
+              "calls": 2,
+              "charged_cpu_ms": 75.41434127596109,
+              "max_cpu_ms": 39.51005033980425
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 2,
+              "charged_cpu_ms": 75.2885270074248,
+              "max_cpu_ms": 39.44717844762813
+            },
+            "consolebitmap_run": {
+              "calls": 3,
+              "charged_cpu_ms": 73.33801818210011,
+              "max_cpu_ms": 37.75901175535221
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 2,
+              "charged_cpu_ms": 72.06683592268732,
+              "max_cpu_ms": 37.83583951597101
+            },
+            "GemDrawingTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 70.47699466716664,
+              "max_cpu_ms": 37.03802903666446
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 2,
+              "charged_cpu_ms": 40.39251232415958,
+              "max_cpu_ms": 21.82676679179959
+            },
+            "GemBitmapTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 28.588103115541905,
+              "max_cpu_ms": 14.460746653058521
+            },
+            "blit_glyph": {
+              "calls": 98,
+              "charged_cpu_ms": 12.409233991984532,
+              "max_cpu_ms": 0.13955868442680147
+            },
+            "DisplayCheck": {
+              "calls": 3,
+              "charged_cpu_ms": 2.0561646172215418,
+              "max_cpu_ms": 0.6872207945259163
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 1.5536828691010023,
+              "max_cpu_ms": 1.5536828691010023
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4603618094135857,
+              "max_cpu_ms": 1.4603618094135857
+            },
+            "VbxeOwnerFence": {
+              "calls": 9,
+              "charged_cpu_ms": 1.3441333899086385,
+              "max_cpu_ms": 0.5795914454755497
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5949569975993088,
+              "max_cpu_ms": 0.5949569975993088
+            },
+            "VbxeBlitExtent": {
+              "calls": 4,
+              "charged_cpu_ms": 0.15407842634191313,
+              "max_cpu_ms": 0.03883678541372102
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.031294977719949414,
+              "max_cpu_ms": 0.031294977719949414
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0048634086997218695,
+              "max_cpu_ms": 0.0048634086997218695
+            }
+          }
+        },
+        {
+          "capture": 4357829796.125,
+          "observed": 4358012892,
+          "load": "disk",
+          "edge": "press",
+          "presenter_state_at_capture": "selected",
+          "ready": 4357829796.125,
+          "selected": 4357829796.125,
+          "consumed": 4358012395.125,
+          "capture_to_ready_ms": 0.0,
+          "ready_to_selected_ms": 0.0,
+          "selected_to_consume_ms": 102.96273219252332,
+          "runnable_off_cpu_ms": 18.045572254041915,
+          "blocked_off_cpu_ms": 0.0,
+          "elapsed_ms": 102.96273219252332,
+          "charged_cpu_ms": 68.76585013088913,
+          "off_cpu_ms": 18.045572254041915,
+          "interrupt_ms": 16.151309807592273,
+          "start": 4357829796.125,
+          "end": 4358012395.125,
+          "submissions": [
+            {
+              "start": 4357832639.0,
+              "end": 4357874662.5,
+              "charged_cpu_ms": 18.56962216248296,
+              "before_first_fence_cpu_ms": 15.867822419327327,
+              "from_first_fence_cpu_ms": 2.7017997431556333
+            },
+            {
+              "start": 4357914556.5,
+              "end": 4357958042.25,
+              "charged_cpu_ms": 19.252331969229424,
+              "before_first_fence_cpu_ms": 16.546726080134878,
+              "from_first_fence_cpu_ms": 2.7056058890945462
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 36.69336137664069,
+            "GemBitmapTextClip": 8.654893928351417,
+            "blit_glyph": 6.75069321195017,
+            "consolebitmap_desktopdraw": 4.622775695361717,
+            "other_worker": 2.3718632775991395,
+            "consolebitmap_run": 2.2189830823861434,
+            "DisplayCheck": 2.054120575883977,
+            "VbxeOwnerText": 1.4562032425544034,
+            "VbxeOwnerFence": 1.1783545890137714,
+            "deskinput_service": 0.7660925964822753,
+            "consoledisplay_cells": 0.6478201356397637,
+            "consoledriver_collect": 0.5893887470590474,
+            "consolebitmap_clippedtext": 0.1444925773105773,
+            "consolebitmap_text": 0.1285631517143868,
+            "GemBitmapText": 0.11608745113683941,
+            "GemDrawingTextClip": 0.10213158269415924,
+            "deskinput_present": 0.09952366788416347,
+            "VbxeBlitExtent": 0.07753260245933416,
+            "consolebitmap_cursor": 0.04137421603966286,
+            "deskhost_events": 0.031858851192380945,
+            "consoledisplay_poll": 0.010643111792144961,
+            "consoledisplay_presentbatch": 0.006907450037286133,
+            "consoledisplay_present": 0.0021850097056721443
+          },
+          "inclusive_routines": {
+            "consolebitmap_text": {
+              "calls": 2,
+              "charged_cpu_ms": 42.55835033176906,
+              "max_cpu_ms": 36.596657076118696
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 2,
+              "charged_cpu_ms": 42.43225412649655,
+              "max_cpu_ms": 36.53364421557446
+            },
+            "consolebitmap_run": {
+              "calls": 3,
+              "charged_cpu_ms": 39.380852830433376,
+              "max_cpu_ms": 34.84660527024341
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 2,
+              "charged_cpu_ms": 38.10544151997733,
+              "max_cpu_ms": 34.917723811953834
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 2,
+              "charged_cpu_ms": 37.82195413171239,
+              "max_cpu_ms": 19.252331969229424
+            },
+            "GemDrawingTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 36.50714216237019,
+              "max_cpu_ms": 34.124142383690526
+            },
+            "GemBitmapTextClip": {
+              "calls": 2,
+              "charged_cpu_ms": 15.775488138216666,
+              "max_cpu_ms": 14.127497430851491
+            },
+            "blit_glyph": {
+              "calls": 54,
+              "charged_cpu_ms": 6.75069321195017,
+              "max_cpu_ms": 0.12785830987384741
+            },
+            "DisplayCheck": {
+              "calls": 3,
+              "charged_cpu_ms": 2.054120575883977,
+              "max_cpu_ms": 0.6869388577897007
+            },
+            "GemBitmapText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.5722906936912426,
+              "max_cpu_ms": 1.5722906936912426
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 1.5585462778007244,
+              "max_cpu_ms": 1.5585462778007244
+            },
+            "consolebitmap_cursor": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4590226099165609,
+              "max_cpu_ms": 1.4590226099165609
+            },
+            "VbxeOwnerText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.4562032425544034,
+              "max_cpu_ms": 1.4562032425544034
+            },
+            "VbxeOwnerFence": {
+              "calls": 7,
+              "charged_cpu_ms": 1.1783545890137714,
+              "max_cpu_ms": 0.5484374361237082
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5893887470590474,
+              "max_cpu_ms": 0.5893887470590474
+            },
+            "VbxeBlitExtent": {
+              "calls": 2,
+              "charged_cpu_ms": 0.07753260245933416,
+              "max_cpu_ms": 0.03883678541372102
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.031858851192380945,
+              "max_cpu_ms": 0.031858851192380945
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.010643111792144961,
+              "max_cpu_ms": 0.010643111792144961
+            }
+          }
+        }
+      ]
+    },
+    "whole_presenter_run": {
+      "begin": 4304104961.5,
+      "end": 4381898591.75,
+      "maximum_cpu_units": {
+        "consoledisplay_present": {
+          "start": 4358310052.5,
+          "end": 4358597406.25,
+          "charged_cpu_ms": 94.69204755144993,
+          "elapsed_ms": 162.03115682871922,
+          "off_cpu_ms": 39.90469128632226,
+          "interrupt_ms": 27.43441799094701
+        },
+        "consoledisplay_cells": {
+          "start": 4358310278.25,
+          "end": 4358597390.125,
+          "charged_cpu_ms": 94.55566065530556,
+          "elapsed_ms": 161.8947699325748,
+          "off_cpu_ms": 39.90469128632226,
+          "interrupt_ms": 27.43441799094701
+        },
+        "consolebitmap_text": {
+          "start": 4358478550.0,
+          "end": 4358597206.125,
+          "charged_cpu_ms": 39.51005033980425,
+          "elapsed_ms": 66.90704122901862,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.433257821277483
+        },
+        "consolebitmap_clippedtext": {
+          "start": 4358481482.875,
+          "end": 4358596524.875,
+          "charged_cpu_ms": 37.83583951597101,
+          "elapsed_ms": 64.86913201546706,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.069559431559151
+        },
+        "pump": {
+          "start": 4307017902.75,
+          "end": 4307213505.25,
+          "charged_cpu_ms": 72.88635553068247,
+          "elapsed_ms": 110.2950608912866,
+          "off_cpu_ms": 22.3860587922676,
+          "interrupt_ms": 15.022646568336532
+        },
+        "paint": {
+          "start": 4379846314.625,
+          "end": 4380041592.125,
+          "charged_cpu_ms": 66.91493545763267,
+          "elapsed_ms": 110.11180201274635,
+          "off_cpu_ms": 29.330160605261785,
+          "interrupt_ms": 13.866705949851912
+        },
+        "deskhost_controls": {
+          "start": 4305819073.625,
+          "end": 4306015504.25,
+          "charged_cpu_ms": 84.2551724818468,
+          "elapsed_ms": 110.76201861064395,
+          "off_cpu_ms": 9.198538439959457,
+          "interrupt_ms": 17.3083076888377
+        },
+        "commit": {
+          "start": 4328607577.375,
+          "end": 4328633678.5,
+          "charged_cpu_ms": 8.068676969574797,
+          "elapsed_ms": 14.717731988119187,
+          "off_cpu_ms": 4.878492315109413,
+          "interrupt_ms": 1.7705627034349762
+        },
+        "deskinput_service": {
+          "start": 4310158351.5,
+          "end": 4310227288.625,
+          "charged_cpu_ms": 10.082762528916136,
+          "elapsed_ms": 38.87181605319583,
+          "off_cpu_ms": 26.377507651058178,
+          "interrupt_ms": 2.411545873221508
+        },
+        "deskinput_advance": {
+          "start": 4312033237.125,
+          "end": 4312065599.5,
+          "charged_cpu_ms": 11.236941042799407,
+          "elapsed_ms": 18.248284767381048,
+          "off_cpu_ms": 4.696643120250247,
+          "interrupt_ms": 2.314700604331394
+        },
+        "consoledriver_writequantum": {
+          "start": 4344718910.5,
+          "end": 4344733342.125,
+          "charged_cpu_ms": 6.705724302523756,
+          "elapsed_ms": 8.13761050157955,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4318861990557938
+        },
+        "deskhost_cache": {
+          "start": 4365857782.875,
+          "end": 4365917139.0,
+          "charged_cpu_ms": 8.312481762217375,
+          "elapsed_ms": 33.46934431382942,
+          "off_cpu_ms": 23.055306119859765,
+          "interrupt_ms": 2.101556431752279
+        },
+        "consolebitmap_run": {
+          "start": 4358481720.0,
+          "end": 4358596520.875,
+          "charged_cpu_ms": 37.75901175535221,
+          "elapsed_ms": 64.733168024427,
+          "off_cpu_ms": 12.963733067936886,
+          "interrupt_ms": 14.010423201137897
+        }
+      },
+      "actual_worker_turn": {
+        "start": 4340662583.25,
+        "end": 4341048200.25,
+        "charged_cpu_ms": 137.78375170395515,
+        "elapsed_ms": 217.43919681862587,
+        "off_cpu_ms": 50.89810947321531,
+        "interrupt_ms": 28.757335641455416
+      },
+      "input_service_gap": {
+        "start": 4357478548.375,
+        "end": 4357765939.125,
+        "charged_cpu_ms": 105.58960724802961,
+        "elapsed_ms": 162.05202014719916,
+        "off_cpu_ms": 31.503963325669357,
+        "interrupt_ms": 24.958449573500204
+      }
+    },
+    "before_worker_loop": {
+      "begin": 4302120345.75,
+      "end": 4304104961.5,
+      "maximum_cpu_units": {
+        "consolebitmap_run": {
+          "start": 4302181118.375,
+          "end": 4304015305.25,
+          "charged_cpu_ms": 1028.7743928139964,
+          "elapsed_ms": 1034.2493222945704,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 5.474929480573854
+        }
+      }
+    }
+  },
+  "examples": {
+    "scroll_console": {
+      "kind": "consoledisplay_cells",
+      "start": 4334662632.375,
+      "end": 4334895538.25,
+      "return_a": 0,
+      "return_x": 20028,
+      "elapsed_ms": 131.3294444859518,
+      "charged_cpu_ms": 88.39625926338388,
+      "off_cpu_ms": 24.688565632757665,
+      "interrupt_ms": 18.24461958981024,
+      "submissions": [
+        {
+          "start": 4334681798.75,
+          "end": 4334695395.5,
+          "charged_cpu_ms": 6.420333841289353,
+          "before_first_fence_cpu_ms": 5.361168007510795,
+          "from_first_fence_cpu_ms": 1.0591658337785586
+        },
+        {
+          "start": 4334731968.125,
+          "end": 4334770488.5,
+          "charged_cpu_ms": 18.04796871629975,
+          "before_first_fence_cpu_ms": 15.306979766810127,
+          "from_first_fence_cpu_ms": 2.740988949489624
+        },
+        {
+          "start": 4334856074.0,
+          "end": 4334894562.5,
+          "charged_cpu_ms": 18.029642828445724,
+          "before_first_fence_cpu_ms": 15.320230793412266,
+          "from_first_fence_cpu_ms": 2.7094120350334587
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "VbxeOwnerSubmit": 41.11892232501949,
+        "GemBitmapTextClip": 17.74220832587375,
+        "blit_glyph": 14.34332000242466,
+        "consolebitmap_desktopdraw": 5.379423411180765,
+        "consoledisplay_cells": 2.818592036133012,
+        "consolebitmap_run": 2.738451518863682,
+        "DisplayCheck": 2.044675695220749,
+        "VbxeOwnerFence": 1.4285734424052587,
+        "VbxeBlitExtent": 0.23732024770961646,
+        "consolebitmap_clippedtext": 0.22484454713206903,
+        "consolebitmap_text": 0.19545264238157598,
+        "GemDrawingTextClip": 0.12447506903925828
+      },
+      "inclusive_routines": {
+        "consoledisplay_cells": {
+          "calls": 1,
+          "charged_cpu_ms": 88.39625926338388,
+          "max_cpu_ms": 88.39625926338388
+        },
+        "consolebitmap_text": {
+          "calls": 3,
+          "charged_cpu_ms": 85.57766722725087,
+          "max_cpu_ms": 35.57907691093195
+        },
+        "consolebitmap_desktopdraw": {
+          "calls": 3,
+          "charged_cpu_ms": 85.38221458486929,
+          "max_cpu_ms": 35.515993566203676
+        },
+        "consolebitmap_clippedtext": {
+          "calls": 3,
+          "charged_cpu_ms": 80.00279117368854,
+          "max_cpu_ms": 33.91219644224033
+        },
+        "consolebitmap_run": {
+          "calls": 3,
+          "charged_cpu_ms": 79.77794662655646,
+          "max_cpu_ms": 33.83501626070126
+        },
+        "GemDrawingTextClip": {
+          "calls": 3,
+          "charged_cpu_ms": 77.03949510769279,
+          "max_cpu_ms": 33.112553374148376
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 3,
+          "charged_cpu_ms": 42.49794538603483,
+          "max_cpu_ms": 18.04796871629975
+        },
+        "GemBitmapTextClip": {
+          "calls": 3,
+          "charged_cpu_ms": 32.32284857600803,
+          "max_cpu_ms": 14.343601939160871
+        },
+        "blit_glyph": {
+          "calls": 115,
+          "charged_cpu_ms": 14.34332000242466,
+          "max_cpu_ms": 0.12792879405790136
+        },
+        "DisplayCheck": {
+          "calls": 3,
+          "charged_cpu_ms": 2.044675695220749,
+          "max_cpu_ms": 0.6821459332740326
+        },
+        "VbxeOwnerFence": {
+          "calls": 9,
+          "charged_cpu_ms": 1.4285734424052587,
+          "max_cpu_ms": 0.5760672362728527
+        },
+        "VbxeBlitExtent": {
+          "calls": 6,
+          "charged_cpu_ms": 0.23732024770961646,
+          "max_cpu_ms": 0.04482794105830593
+        }
+      }
+    },
+    "disk_console": {
+      "kind": "consoledisplay_cells",
+      "start": 4358310278.25,
+      "end": 4358597390.125,
+      "return_a": 0,
+      "return_x": 20028,
+      "elapsed_ms": 161.8947699325748,
+      "charged_cpu_ms": 94.55566065530556,
+      "off_cpu_ms": 39.90469128632226,
+      "interrupt_ms": 27.43441799094701,
+      "submissions": [
+        {
+          "start": 4358352207.875,
+          "end": 4358395208.625,
+          "charged_cpu_ms": 8.596392055586648,
+          "before_first_fence_cpu_ms": 7.62758694576524,
+          "from_first_fence_cpu_ms": 0.9688051098214072
+        },
+        {
+          "start": 4358435125.875,
+          "end": 4358477169.5,
+          "charged_cpu_ms": 18.565745532359994,
+          "before_first_fence_cpu_ms": 15.854923813645456,
+          "from_first_fence_cpu_ms": 2.7108217187145374
+        },
+        {
+          "start": 4358522808.875,
+          "end": 4358596408.5,
+          "charged_cpu_ms": 21.82676679179959,
+          "before_first_fence_cpu_ms": 19.085989294862124,
+          "from_first_fence_cpu_ms": 2.7407774969374623
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "VbxeOwnerSubmit": 47.69502621306804,
+        "GemBitmapTextClip": 18.795876393296112,
+        "blit_glyph": 14.53186519476894,
+        "consolebitmap_desktopdraw": 4.839514561327584,
+        "DisplayCheck": 3.1545901415181445,
+        "consolebitmap_run": 2.168586890787576,
+        "VbxeOwnerFence": 1.3441333899086385,
+        "consoledisplay_cells": 1.2510237827733834,
+        "VbxeBlitExtent": 0.23689734260529277,
+        "consolebitmap_clippedtext": 0.2191353282236999,
+        "consolebitmap_text": 0.1888271290805056,
+        "GemDrawingTextClip": 0.1301842879476274
+      },
+      "inclusive_routines": {
+        "consoledisplay_cells": {
+          "calls": 1,
+          "charged_cpu_ms": 94.55566065530556,
+          "max_cpu_ms": 94.55566065530556
+        },
+        "consolebitmap_text": {
+          "calls": 3,
+          "charged_cpu_ms": 93.30463687253217,
+          "max_cpu_ms": 39.51005033980425
+        },
+        "consolebitmap_desktopdraw": {
+          "calls": 3,
+          "charged_cpu_ms": 93.11580974345166,
+          "max_cpu_ms": 39.44717844762813
+        },
+        "consolebitmap_clippedtext": {
+          "calls": 3,
+          "charged_cpu_ms": 88.27629518212409,
+          "max_cpu_ms": 37.83583951597101
+        },
+        "consolebitmap_run": {
+          "calls": 3,
+          "charged_cpu_ms": 88.05715985390037,
+          "max_cpu_ms": 37.75901175535221
+        },
+        "GemDrawingTextClip": {
+          "calls": 3,
+          "charged_cpu_ms": 85.88857296311281,
+          "max_cpu_ms": 37.03802903666446
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 3,
+          "charged_cpu_ms": 48.98890437974623,
+          "max_cpu_ms": 21.82676679179959
+        },
+        "GemBitmapTextClip": {
+          "calls": 3,
+          "charged_cpu_ms": 33.56463893067035,
+          "max_cpu_ms": 14.460746653058521
+        },
+        "blit_glyph": {
+          "calls": 115,
+          "charged_cpu_ms": 14.53186519476894,
+          "max_cpu_ms": 0.13955868442680147
+        },
+        "DisplayCheck": {
+          "calls": 3,
+          "charged_cpu_ms": 3.1545901415181445,
+          "max_cpu_ms": 1.7807124259387435
+        },
+        "VbxeOwnerFence": {
+          "calls": 9,
+          "charged_cpu_ms": 1.3441333899086385,
+          "max_cpu_ms": 0.5795914454755497
+        },
+        "VbxeBlitExtent": {
+          "calls": 6,
+          "charged_cpu_ms": 0.23689734260529277,
+          "max_cpu_ms": 0.04398213084965864
+        }
+      }
+    },
+    "disk_widget": {
+      "kind": "paint",
+      "start": 4361774299.625,
+      "end": 4361976122.125,
+      "return_a": 1,
+      "return_x": 19986,
+      "elapsed_ms": 113.80235388981066,
+      "charged_cpu_ms": 47.44960028419223,
+      "off_cpu_ms": 49.62149993163034,
+      "interrupt_ms": 16.731253673988093,
+      "submissions": [
+        {
+          "start": 4361863186.25,
+          "end": 4361964786.875,
+          "charged_cpu_ms": 15.258275195628853,
+          "before_first_fence_cpu_ms": 13.10639305646206,
+          "from_first_fence_cpu_ms": 2.1518821391667924
+        },
+        {
+          "start": 4361965166.75,
+          "end": 4361966369.5,
+          "charged_cpu_ms": 0.5856530853041886,
+          "before_first_fence_cpu_ms": 0.37131068159615666,
+          "from_first_fence_cpu_ms": 0.21434240370803195
+        },
+        {
+          "start": 4361971452.125,
+          "end": 4361975938.5,
+          "charged_cpu_ms": 2.0489047462639856,
+          "before_first_fence_cpu_ms": 1.5757444187098857,
+          "from_first_fence_cpu_ms": 0.47316032755410015
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "VbxeOwnerSubmit": 17.2662286309575,
+        "GemWidgetFill": 15.868174840247608,
+        "VbxeBlitExtent": 3.1261145311603524,
+        "GemDrawingWidgetBatch": 2.7655174455403957,
+        "just_draw": 2.5834567981290686,
+        "GemWidgetText": 2.1272831589319674,
+        "blit_mask": 1.0705842715952967,
+        "DisplayCheck": 0.6808067337770077,
+        "VbxeOwnerFence": 0.6433796320443655,
+        "blit_glyph": 0.640560264682208,
+        "WidgetDrawObject": 0.28567239797061933,
+        "model_call": 0.27383105504955746,
+        "paint": 0.11799052410629579
+      },
+      "inclusive_routines": {
+        "paint": {
+          "calls": 1,
+          "charged_cpu_ms": 47.44960028419223,
+          "max_cpu_ms": 47.44960028419223
+        },
+        "model_call": {
+          "calls": 1,
+          "charged_cpu_ms": 47.33160976008593,
+          "max_cpu_ms": 47.33160976008593
+        },
+        "GemDrawingWidgetBatch": {
+          "calls": 1,
+          "charged_cpu_ms": 47.05777870503638,
+          "max_cpu_ms": 47.05777870503638
+        },
+        "WidgetDrawObject": {
+          "calls": 2,
+          "charged_cpu_ms": 24.194119081619277,
+          "max_cpu_ms": 21.092392078141586
+        },
+        "just_draw": {
+          "calls": 2,
+          "charged_cpu_ms": 23.908446683648656,
+          "max_cpu_ms": 20.915829197086467
+        },
+        "GemWidgetFill": {
+          "calls": 15,
+          "charged_cpu_ms": 18.557146461905408,
+          "max_cpu_ms": 2.402594381846657
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 3,
+          "charged_cpu_ms": 17.892833027197028,
+          "max_cpu_ms": 15.258275195628853
+        },
+        "VbxeBlitExtent": {
+          "calls": 80,
+          "charged_cpu_ms": 3.1261145311603524,
+          "max_cpu_ms": 0.05229926456802358
+        },
+        "GemWidgetText": {
+          "calls": 1,
+          "charged_cpu_ms": 2.7678434236141753,
+          "max_cpu_ms": 2.7678434236141753
+        },
+        "blit_mask": {
+          "calls": 3,
+          "charged_cpu_ms": 1.331728173515145,
+          "max_cpu_ms": 0.45807671216655693
+        },
+        "DisplayCheck": {
+          "calls": 1,
+          "charged_cpu_ms": 0.6808067337770077,
+          "max_cpu_ms": 0.6808067337770077
+        },
+        "VbxeOwnerFence": {
+          "calls": 7,
+          "charged_cpu_ms": 0.6433796320443655,
+          "max_cpu_ms": 0.3902004429226126
+        },
+        "blit_glyph": {
+          "calls": 5,
+          "charged_cpu_ms": 0.640560264682208,
+          "max_cpu_ms": 0.13053670886789714
+        }
+      }
+    },
+    "disk_controls": {
+      "kind": "deskhost_controls",
+      "start": 4358922417.5,
+      "end": 4359030647.75,
+      "return_a": 20142,
+      "return_x": 20080,
+      "elapsed_ms": 61.028166889631635,
+      "charged_cpu_ms": 25.77951983354455,
+      "off_cpu_ms": 24.52271634767874,
+      "interrupt_ms": 10.72593070840834,
+      "submissions": [],
+      "exclusive_cpu_ms": {
+        "model_call": 16.93777233326614,
+        "deskhost_controls": 8.79966844239821,
+        "deskhost_events": 0.031858851192380945,
+        "deskmove_pump": 0.005850187276477031,
+        "deskcache_pump": 0.004370019411344289
+      },
+      "inclusive_routines": {
+        "deskhost_controls": {
+          "calls": 1,
+          "charged_cpu_ms": 25.77951983354455,
+          "max_cpu_ms": 25.77951983354455
+        },
+        "model_call": {
+          "calls": 2,
+          "charged_cpu_ms": 16.93777233326614,
+          "max_cpu_ms": 16.763817367021016
+        },
+        "deskhost_events": {
+          "calls": 1,
+          "charged_cpu_ms": 0.031858851192380945,
+          "max_cpu_ms": 0.031858851192380945
+        },
+        "deskmove_pump": {
+          "calls": 1,
+          "charged_cpu_ms": 0.005850187276477031,
+          "max_cpu_ms": 0.005850187276477031
+        },
+        "deskcache_pump": {
+          "calls": 1,
+          "charged_cpu_ms": 0.004370019411344289,
+          "max_cpu_ms": 0.004370019411344289
+        }
+      }
+    },
+    "startup": {
+      "kind": "consolebitmap_run",
+      "start": 4302181118.375,
+      "end": 4304015305.25,
+      "return_a": 1,
+      "return_x": 20032,
+      "elapsed_ms": 1034.2493222945704,
+      "charged_cpu_ms": 1028.7743928139964,
+      "off_cpu_ms": 0.0,
+      "interrupt_ms": 5.474929480573854,
+      "submissions": [
+        {
+          "start": 4303945067.625,
+          "end": 4303946555.25,
+          "charged_cpu_ms": 0.8388322744259415,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45300185091467327
+        },
+        {
+          "start": 4303947062.875,
+          "end": 4303948547.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303949055.75,
+          "end": 4303950545.25,
+          "charged_cpu_ms": 0.8398895371867506,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45405911367548235
+        },
+        {
+          "start": 4303951052.875,
+          "end": 4303952537.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303953045.75,
+          "end": 4303954535.25,
+          "charged_cpu_ms": 0.8398895371867506,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45405911367548235
+        },
+        {
+          "start": 4303955042.875,
+          "end": 4303956527.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303957035.75,
+          "end": 4303958525.25,
+          "charged_cpu_ms": 0.8398895371867506,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45405911367548235
+        },
+        {
+          "start": 4303959032.875,
+          "end": 4303960517.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303961025.75,
+          "end": 4303962515.25,
+          "charged_cpu_ms": 0.8398895371867506,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45405911367548235
+        },
+        {
+          "start": 4303963022.875,
+          "end": 4303964507.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303965015.75,
+          "end": 4303966505.25,
+          "charged_cpu_ms": 0.8398895371867506,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.45405911367548235
+        },
+        {
+          "start": 4303967012.875,
+          "end": 4303968497.5,
+          "charged_cpu_ms": 0.837140654008647,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513102304973787
+        },
+        {
+          "start": 4303969005.75,
+          "end": 4303971533.0,
+          "charged_cpu_ms": 1.319886830594083,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.9340564070828147
+        },
+        {
+          "start": 4303972040.5,
+          "end": 4303973525.5,
+          "charged_cpu_ms": 0.8373521065608088,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4515216830495405
+        },
+        {
+          "start": 4303974034.125,
+          "end": 4303975519.125,
+          "charged_cpu_ms": 0.8373521065608088,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4515216830495405
+        },
+        {
+          "start": 4303976026.625,
+          "end": 4303977514.5,
+          "charged_cpu_ms": 0.8389732427940494,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4531428192827811
+        },
+        {
+          "start": 4303978023.125,
+          "end": 4303979509.125,
+          "charged_cpu_ms": 0.8379159800332404,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.452085556521972
+        },
+        {
+          "start": 4303980016.625,
+          "end": 4303981504.5,
+          "charged_cpu_ms": 0.8389732427940494,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4531428192827811
+        },
+        {
+          "start": 4303982013.125,
+          "end": 4303983499.125,
+          "charged_cpu_ms": 0.8379159800332404,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.452085556521972
+        },
+        {
+          "start": 4303983801.75,
+          "end": 4303985286.5,
+          "charged_cpu_ms": 0.8372111381927009,
+          "before_first_fence_cpu_ms": 0.3858304235112683,
+          "from_first_fence_cpu_ms": 0.4513807146814326
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "consolebitmap_run": 487.75858885024775,
+        "VbxeOwnerRead": 284.9952564144131,
+        "VbxeOwnerWrite": 237.6042989713538,
+        "VbxeOwnerSubmit": 11.145523056081451,
+        "VbxeOwnerFence": 6.312070134582501,
+        "DisplayCheck": 0.66170551989839,
+        "vram_win": 0.18643066682267165,
+        "VbxeBlitExtent": 0.11051920059657813
+      },
+      "inclusive_routines": {
+        "consolebitmap_run": {
+          "calls": 1,
+          "charged_cpu_ms": 1028.7743928139964,
+          "max_cpu_ms": 1028.7743928139964
+        },
+        "vram_win": {
+          "calls": 5,
+          "charged_cpu_ms": 474.91763923093293,
+          "max_cpu_ms": 104.83006968066435
+        },
+        "VbxeOwnerRead": {
+          "calls": 5,
+          "charged_cpu_ms": 285.0770885520998,
+          "max_cpu_ms": 57.01585471236109
+        },
+        "VbxeOwnerWrite": {
+          "calls": 6,
+          "charged_cpu_ms": 237.70093278769178,
+          "max_cpu_ms": 47.77685835075467
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 20,
+          "charged_cpu_ms": 17.24670451197456,
+          "max_cpu_ms": 1.319886830594083
+        },
+        "VbxeOwnerFence": {
+          "calls": 53,
+          "charged_cpu_ms": 6.312070134582501,
+          "max_cpu_ms": 0.2900424173819636
+        },
+        "DisplayCheck": {
+          "calls": 1,
+          "charged_cpu_ms": 0.66170551989839,
+          "max_cpu_ms": 0.66170551989839
+        },
+        "VbxeBlitExtent": {
+          "calls": 2,
+          "charged_cpu_ms": 0.11051920059657813,
+          "max_cpu_ms": 0.055259600298289066
+        }
+      }
+    }
+  },
+  "limitations": [
+    "This diagnoses the current implementation; it is not an A/B attribution of the previous HY4 regression.",
+    "The raw-pointer cohort was not rerun; its separately measured off-CPU delay is not resolved here.",
+    "No latency gate or transient-pixel artifact has been fixed.",
+    "Input-service gaps are gaps between service entries, not complete capture-to-commit or capture-to-scanout latency bounds.",
+    "Startup/setup and full-redraw comparison maxima are kept separate from the three measured gesture windows."
+  ],
+  "calls_scroll_longest_actual_turn": {
+    "start": 4314758253.25,
+    "end": 4315003382.125,
+    "elapsed_ms": 138.2216699394823,
+    "charged_cpu_ms": 96.1314755581995,
+    "off_cpu_ms": 22.405582911250544,
+    "interrupt_ms": 19.68461147003224,
+    "exclusive_cpu_ms": {
+      "consolebitmap_run": 83.42536218297977,
+      "consolebitmap_desktopdraw": 4.811673308626277,
+      "other_worker": 2.3614316183591564,
+      "pump": 1.272873879830105,
+      "consoledisplay_cells": 1.2463013424417695,
+      "deskhost_controls": 1.1524164092819214,
+      "consoledriver_collect": 0.5896706837952632,
+      "deskinput_present": 0.261425838656064,
+      "consolebitmap_clippedtext": 0.21927629659180778,
+      "consolebitmap_text": 0.1946068321729287,
+      "deskinput_advance": 0.1857963091661862,
+      "consoledisplay_presentbatch": 0.09691575307416768,
+      "deskinput_service": 0.08211407442284026,
+      "deskhost_events": 0.06308334472827642,
+      "consoledisplay_present": 0.04574423545100715,
+      "consolebitmap_cursor": 0.04158566859182468,
+      "consoledriver_writequantum": 0.028193673621576053,
+      "consoledriver_arrival": 0.02473994860293299,
+      "consoledriver_readquantum": 0.009233428111066156,
+      "deskmove_pump": 0.005920671460530972,
+      "consoledisplay_poll": 0.00500437706782975,
+      "deskcache_pump": 0.004370019411344289,
+      "deskhost_afterpaint": 0.0037356617548588273
+    },
+    "inclusive_routines": {
+      "consoledisplay_present": {
+        "calls": 1,
+        "charged_cpu_ms": 88.06420827230578,
+        "max_cpu_ms": 88.06420827230578
+      },
+      "consoledisplay_presentbatch": {
+        "calls": 1,
+        "charged_cpu_ms": 88.01846403685478,
+        "max_cpu_ms": 88.01846403685478
+      },
+      "consoledisplay_cells": {
+        "calls": 1,
+        "charged_cpu_ms": 87.9215482837806,
+        "max_cpu_ms": 87.9215482837806
+      },
+      "consolebitmap_text": {
+        "calls": 3,
+        "charged_cpu_ms": 86.67524694133883,
+        "max_cpu_ms": 34.83793571560478
+      },
+      "consolebitmap_desktopdraw": {
+        "calls": 3,
+        "charged_cpu_ms": 86.4806401091659,
+        "max_cpu_ms": 34.77252639280272
+      },
+      "consolebitmap_run": {
+        "calls": 4,
+        "charged_cpu_ms": 83.42536218297977,
+        "max_cpu_ms": 33.09754024294489
+      },
+      "consolebitmap_clippedtext": {
+        "calls": 3,
+        "charged_cpu_ms": 81.66896680053964,
+        "max_cpu_ms": 33.16858830047126
+      },
+      "deskinput_present": {
+        "calls": 3,
+        "charged_cpu_ms": 2.2786831862798307,
+        "max_cpu_ms": 2.110296470574968
+      },
+      "consolebitmap_cursor": {
+        "calls": 1,
+        "charged_cpu_ms": 2.017257347623767,
+        "max_cpu_ms": 2.017257347623767
+      },
+      "pump": {
+        "calls": 1,
+        "charged_cpu_ms": 1.272873879830105,
+        "max_cpu_ms": 1.272873879830105
+      },
+      "deskhost_controls": {
+        "calls": 1,
+        "charged_cpu_ms": 1.1945659513461775,
+        "max_cpu_ms": 1.1945659513461775
+      },
+      "consoledriver_collect": {
+        "calls": 1,
+        "charged_cpu_ms": 0.5896706837952632,
+        "max_cpu_ms": 0.5896706837952632
+      },
+      "deskinput_advance": {
+        "calls": 1,
+        "charged_cpu_ms": 0.1857963091661862,
+        "max_cpu_ms": 0.1857963091661862
+      },
+      "deskinput_service": {
+        "calls": 1,
+        "charged_cpu_ms": 0.08211407442284026,
+        "max_cpu_ms": 0.08211407442284026
+      },
+      "deskhost_events": {
+        "calls": 2,
+        "charged_cpu_ms": 0.06308334472827642,
+        "max_cpu_ms": 0.031858851192380945
+      },
+      "consoledriver_writequantum": {
+        "calls": 1,
+        "charged_cpu_ms": 0.028193673621576053,
+        "max_cpu_ms": 0.028193673621576053
+      },
+      "consoledriver_arrival": {
+        "calls": 1,
+        "charged_cpu_ms": 0.02473994860293299,
+        "max_cpu_ms": 0.02473994860293299
+      },
+      "consoledriver_readquantum": {
+        "calls": 1,
+        "charged_cpu_ms": 0.009233428111066156,
+        "max_cpu_ms": 0.009233428111066156
+      },
+      "deskmove_pump": {
+        "calls": 1,
+        "charged_cpu_ms": 0.005920671460530972,
+        "max_cpu_ms": 0.005920671460530972
+      },
+      "consoledisplay_poll": {
+        "calls": 1,
+        "charged_cpu_ms": 0.00500437706782975,
+        "max_cpu_ms": 0.00500437706782975
+      },
+      "deskcache_pump": {
+        "calls": 1,
+        "charged_cpu_ms": 0.004370019411344289,
+        "max_cpu_ms": 0.004370019411344289
+      },
+      "deskhost_afterpaint": {
+        "calls": 1,
+        "charged_cpu_ms": 0.0037356617548588273,
+        "max_cpu_ms": 0.0037356617548588273
+      }
+    }
+  },
+  "scripts": {
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/scripts/exec816_presenter_analyze.py": "eace7dfa69b4cac2014be899ab77e8d66d5f2d12d02abdad7029ba3257d6dba3",
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/scripts/exec816_presenter_csites.py": "ff87173ea3a7eaf5344217d34a3f98393766420d3efa359e2193bf2255510635",
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/scripts/exec816_presenter_probe.py": "3fcfd4019a2eaa273e5bcccda8088c8d9f1a3702a802c7f9f79f51500cc46b53"
+  },
+  "source_inputs": {
+    "tools/test_widget_panel.py": "d2a73d20d50ad42a835451c2e9ce83020f7aba42f74ec46b0c5616d35aa6372c",
+    "tools/measure_aes_calls.py": "15ce606fe14c78d2cf3a3cf19169114ff2759abc287d8e5f443b39a7ec933373",
+    "tools/console_turn_profile.py": "a2544801d517d66badfadb82539a5221fc3e98c95992a1ee612c48b04d30b01f",
+    "tools/bitmap_console_performance.py": "de9591ab760ccb0d2e3a31128dd6d7534d935befa047ef52446720eaab7b4ae2",
+    "lib/console/consoledriver.act": "c0ad18eeaafc4fff86c84ed7ed38933c19a6f4544072269945c4819e3e12d177",
+    "lib/console/consoledisplay.act": "66fb61fbc3ac1d2a8f5276d29fe2c9b91100578d5c63320428cbbd93e1327985",
+    "lib/console/console-desktop-drawing.inc": "5ac5d611f46760d798dcaf85b9542ea769aa13fe2354edc8c0b6003e2b2056c6",
+    "lib/desktop/deskpaint.act": "a4dbbecc6a733517e5dfd3fb1084ee72341657f6804c947a746b32b135e32ebc",
+    "lib/desktop/deskwidgetinput.act": "eeada7b6bd196839473189abede8e2544c18bc990aa298d81eb4b61f98db0543",
+    "ports/gem4xe/aes/widgets-render.c": "18b89a36af87b306cf6e7f598eaf6644cc423e3b90f5f40bd88d43d003b0baa0",
+    "ports/gem4xe/aes/widgets-state.c": "ad75c4f139fdbe43379abf8d935507cdd11edb426a6dea11ed1b009d052e63d3",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "21a20fd92a1020749946c9ba2afb99df9f9204dfd6de6e991fd276fa0eea1ba6",
+    "ports/gem4xe/adapter/gem-vbxe.c": "c02d701def9a6abb026e39e8056f948626c126610500dbc1afee2571e746161a",
+    "platform/altirraos/vbxe.c": "c590f4b2c382e036fb2ae1820b3e7311713201784c40ef6ab1c3d2cf9733a4ee"
+  }
+}

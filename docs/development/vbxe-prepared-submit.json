@@ -1,0 +1,3213 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "checks": {
+    "display": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/display/results.json",
+      "sha256": "ce902bed73138fcb8623d05dd5348cc51eb9516d838c034af2853b4954ff6f9d",
+      "status": "pass",
+      "mode": "opt",
+      "checks": null,
+      "case_count": 4,
+      "case_names": [
+        "pattern",
+        "map-nmi",
+        "busy-timeout",
+        "unquiesced"
+      ],
+      "observations": [],
+      "stack_usage": null,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      },
+      "cases": [
+        {
+          "name": "pattern",
+          "status": "pass",
+          "checks": 1723,
+          "failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 356,
+              "remaining_above_floor": 924
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 232,
+              "remaining_above_floor": 536
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 232,
+              "remaining_above_floor": 536
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 230,
+              "remaining_above_floor": 2074
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 275,
+              "remaining_above_floor": 1005
+            }
+          }
+        },
+        {
+          "name": "map-nmi",
+          "status": "pass",
+          "checks": 1723,
+          "failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 356,
+              "remaining_above_floor": 924
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 232,
+              "remaining_above_floor": 536
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 125,
+              "remaining_above_floor": 643
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 232,
+              "remaining_above_floor": 536
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 216,
+              "remaining_above_floor": 2088
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 273,
+              "remaining_above_floor": 1007
+            }
+          }
+        },
+        {
+          "name": "busy-timeout",
+          "status": "pass",
+          "checks": 27,
+          "failures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 356,
+              "remaining_above_floor": 924
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1024,
+              "peak": 232,
+              "remaining_above_floor": 536
+            },
+            "2": {
+              "base": 13424,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "3": {
+              "base": 14480,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "4": {
+              "base": 15536,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "5": {
+              "base": 16592,
+              "bytes": 1024,
+              "peak": 18,
+              "remaining_above_floor": 750
+            },
+            "6": {
+              "base": 17648,
+              "bytes": 2560,
+              "peak": 130,
+              "remaining_above_floor": 2174
+            },
+            "7": {
+              "base": 20240,
+              "bytes": 2560,
+              "peak": 176,
+              "remaining_above_floor": 2128
+            },
+            "8": {
+              "base": 22832,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 260,
+              "remaining_above_floor": 1020
+            }
+          }
+        },
+        {
+          "name": "unquiesced",
+          "status": "pass",
+          "checks": 19,
+          "failures": 0,
+          "stack_usage": null
+        }
+      ]
+    },
+    "render": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/render/results.json",
+      "sha256": "d94efcf3bcd5ace79fe4aff940dcb2dad9a4f1b4f02d3e652c65ad9d0bb6578c",
+      "status": "pass",
+      "mode": "opt",
+      "checks": 7,
+      "case_count": 87,
+      "case_names": [
+        "open",
+        "attribute-17",
+        "attribute-22",
+        "attribute-23",
+        "attribute-25",
+        "attribute-32",
+        "clear",
+        "pen-0",
+        "swatch-0",
+        "pen-1",
+        "swatch-1",
+        "pen-2",
+        "swatch-2",
+        "pen-3",
+        "swatch-3",
+        "pen-4",
+        "swatch-4",
+        "pen-5",
+        "swatch-5",
+        "pen-6",
+        "swatch-6",
+        "pen-7",
+        "swatch-7",
+        "pen-8",
+        "swatch-8",
+        "pen-9",
+        "swatch-9",
+        "pen-10",
+        "swatch-10",
+        "pen-11",
+        "swatch-11",
+        "pen-12",
+        "swatch-12",
+        "pen-13",
+        "swatch-13",
+        "pen-14",
+        "swatch-14",
+        "pen-15",
+        "swatch-15",
+        "red-fill",
+        "reversed-corners",
+        "clip-reversed",
+        "clipped-bar",
+        "clip-off",
+        "line-blue",
+        "horizontal",
+        "vertical",
+        "diagonals",
+        "extreme-diagonal",
+        "extreme-reverse",
+        "green-text",
+        "glyphs-0",
+        "glyphs-1",
+        "glyphs-2",
+        "glyphs-3",
+        "text-left",
+        "text-right",
+        "text-top",
+        "text-bottom",
+        "empty-text",
+        "text-max-coordinates",
+        "text-min-coordinates",
+        "tiny-clip",
+        "cut-glyph",
+        "empty-intersection",
+        "invisible-bar",
+        "invisible-text",
+        "clip-off-again",
+        "window-crossing-bar",
+        "title-black",
+        "title",
+        "update",
+        "end-of-bank-packet",
+        "cross-bank-packet",
+        "boundary-readback",
+        "bad-mode",
+        "bad-pen",
+        "bad-glyph",
+        "virtual-workstation",
+        "invalid-batch",
+        "after-rejections",
+        "fault",
+        "invalidated",
+        "reopen",
+        "reset-line-attribute",
+        "reset-text-attribute",
+        "close"
+      ],
+      "observations": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 167,
+          "remaining_above_floor": 1113
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 368,
+          "remaining_above_floor": 1936
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      }
+    },
+    "cursor": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/cursor/results.json",
+      "sha256": "46b8bf1870ef1fe9ef35d46a4cb0116d6a7eeb8b9b71680c19915e96af68bf53",
+      "status": "pass",
+      "mode": "opt",
+      "checks": 39,
+      "case_count": 62,
+      "case_names": [
+        "open",
+        "blue",
+        "background",
+        "green-text",
+        "title",
+        "red-line",
+        "line",
+        "clip",
+        "magenta",
+        "panel",
+        "move-0",
+        "move-1",
+        "move-2",
+        "move-3",
+        "move-4",
+        "move-5",
+        "move-6",
+        "move-7",
+        "move-8",
+        "move-9",
+        "unchanged-visible",
+        "hide",
+        "unchanged-hidden",
+        "stationary",
+        "under-color",
+        "under-bar",
+        "under-text",
+        "under-line",
+        "restored-new-background",
+        "before-invalid",
+        "edge-color",
+        "saved-edge-nibble",
+        "disjoint-text",
+        "edge-restored",
+        "edge-visible",
+        "invalid-1",
+        "invalid-2",
+        "invalid-3",
+        "invalid-4",
+        "invalid-5",
+        "invalid-6",
+        "invalid-7",
+        "invalid-8",
+        "invalid-9",
+        "invalid-10",
+        "invalid-11",
+        "invalid-12",
+        "invalid-13",
+        "close",
+        "reopen-hidden",
+        "old-attributes-reset",
+        "new-session-cursor",
+        "fault-1",
+        "reopen-1",
+        "show-1",
+        "hide-before-show-fault",
+        "fault-3",
+        "reopen-3",
+        "show-3",
+        "fault-4",
+        "reopen-4",
+        "show-4"
+      ],
+      "observations": [],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 161,
+          "remaining_above_floor": 1119
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 344,
+          "remaining_above_floor": 1960
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      }
+    },
+    "widget-pixels": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/widget-pixels/pixel-results.json",
+      "sha256": "a1c243d6488fc6b0c0531b4bf385c5bb0a9e18ac7953d086aaefca2d2ebf485a",
+      "status": "pass",
+      "mode": "opt",
+      "checks": null,
+      "case_count": 0,
+      "case_names": [],
+      "observations": [
+        {
+          "stage": 1,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 2,
+          "pixels": "c32511a84a16c714bf6f8cf19e7271275548898fa75d61e9be94f1a304907ee8"
+        },
+        {
+          "stage": 3,
+          "pixels": "dc5e5fcddd0587fbca7f5beef6cd21366dc6469d6e0e161375fc8ebd96b8d40e"
+        },
+        {
+          "stage": 4,
+          "pixels": "c8e28b5c746c1a0bd3630644068e1434d337d7297a6ba694002d3f8b103c1de2"
+        },
+        {
+          "stage": 5,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        },
+        {
+          "stage": 6,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        },
+        {
+          "stage": 7,
+          "pixels": "797f68a75fc07ea9f9acacfdca7e82296eca76ffbfb6c0796fce4ed60463af27"
+        },
+        {
+          "stage": 8,
+          "pixels": "d450cb65b7def3ddf619a76547921bbee312bcb9a61ee07f171f1738a696c028"
+        },
+        {
+          "stage": 9,
+          "pixels": "cc820bd472fa565ee2e3f243ecb4fc37376464cadb80c78babb1347b9342c224"
+        },
+        {
+          "stage": 10,
+          "pixels": "09d5cce2e0486bc3d792f7d0862a55469fc39a57078f01d1477c14cb70725be5"
+        },
+        {
+          "stage": 11,
+          "pixels": "1f67a747a5eb6e7c6dad3a5af780bfb946b8a609cc886c16ba39248d53fdc9cc"
+        },
+        {
+          "stage": 12,
+          "pixels": "c2a1cb4742f5c5c16e6eba2264ad9d8b8f886c3a5b57ea2e277d9be65a2ede4c"
+        },
+        {
+          "stage": 13,
+          "pixels": "83c101dc42e9c1699cf009f11b40333c7794809550d1244b30bf7da2d6f88de0"
+        },
+        {
+          "stage": 14,
+          "pixels": "92af34ec2d8ba067d5da7931e3b5e4d6d7fedd1727b9fe90041d6c18615dc9bf"
+        },
+        {
+          "stage": 15,
+          "pixels": "1f67a747a5eb6e7c6dad3a5af780bfb946b8a609cc886c16ba39248d53fdc9cc"
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 127,
+          "remaining_above_floor": 1153
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 652,
+          "remaining_above_floor": 1652
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "bank_zero_delta": {
+        "baseline": "desktop-dt0",
+        "baseline_sha256": "0becffb3c0e29eae5d9e6c07e04ac1448440c7baed8287519ab18b21ee644ef1",
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "runtime": 0,
+        "loading": 0
+      }
+    }
+  },
+  "host": {
+    "tests": 389,
+    "skipped": 4,
+    "status": "pass",
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/host-tests.log",
+    "sha256": "57928a7ed549a2b3b7d75c5be2e0b0f95548d1505d05885d8e04f07151d1d905"
+  },
+  "status": "pass",
+  "scope": "Prepared internal VBXE lists skip repeated record decoding. Public raw-list validation, producer geometry/count/work admission, upload, fences, timeout recovery and ownership entry remain. Optimized development checks, no release qualification or HY4 gate closure claim.",
+  "repository_head": "c1ab2f0",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_override": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "public_abi_changed": false,
+  "benchmarks": {
+    "before": {
+      "results": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/results.json",
+        "sha256": "74830752d939c2ac583220cd098482056323a0abb8be8a38ed721cfa32d1ecdd"
+      },
+      "trace": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/emulator.log",
+        "sha256": "ee088f967907831195a4d03fbcc84f2daaf41ee53028798aaf8722fc29004570"
+      },
+      "analysis": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/work-unit-analysis.json",
+        "sha256": "5218481cac03991bd105edd1d9cee837a508cddb8f4760519540f4d8327c4294"
+      },
+      "definition": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/io-latency/presenter-analysis/panel-loaded/presenter-definition.json",
+        "sha256": "8a7722972550544ed44f877496930c1723492e7ad3f33941abf1dbe4bc405fdd"
+      },
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "xex_sha256": "19b4b75a711c5454b3156536f1fded5dfa76330595fbcb3c30878898fe2537cb",
+      "image_sha256": "742515904808d0437fba0448b07bc6641bcc502e183435549068ef2c1fdc21aa",
+      "count_per_load": 10,
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 2,
+          "invalid_frames": 10,
+          "max_invalid_pixels": 4
+        },
+        "scroll": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "disk": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 1,
+          "invalid_frames": 1,
+          "max_invalid_pixels": 1
+        }
+      },
+      "progress": {
+        "idle": {
+          "writes": 0,
+          "reads": 0
+        },
+        "scroll": {
+          "writes": 2,
+          "reads": 0
+        },
+        "disk": {
+          "writes": 0,
+          "reads": 29
+        }
+      },
+      "aes_progress": {
+        "idle": {
+          "AESMessages": 98,
+          "AESTimers": 49
+        },
+        "scroll": {
+          "AESMessages": 134,
+          "AESTimers": 68
+        },
+        "disk": {
+          "AESMessages": 120,
+          "AESTimers": 60
+        }
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 386,
+          "remaining_above_floor": 894
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 180,
+          "remaining_above_floor": 588
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 504,
+          "remaining_above_floor": 264
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 514,
+          "remaining_above_floor": 254
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 250,
+          "remaining_above_floor": 518
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 174,
+          "remaining_above_floor": 594
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 759,
+          "remaining_above_floor": 1545
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 127,
+          "remaining_above_floor": 129
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "ownership": "restored"
+    },
+    "after": {
+      "results": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/panel-loaded-run/results.json",
+        "sha256": "3b290762f077690ffe940b8be183a8d61d5902545d4fbaef666248d600a2045a"
+      },
+      "trace": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/panel-loaded-run/emulator.log",
+        "sha256": "6ddc3a3bd54f1744c36287777f367b3d1a7922fa10734d73cb4aedee5ffc4105"
+      },
+      "analysis": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/panel-loaded-run/work-unit-analysis.json",
+        "sha256": "d27bb3338031e4f87563383c61eb3bd1c71c64227a6c5423c4e074d3c237d012"
+      },
+      "definition": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/panel-loaded-run/presenter-definition.json",
+        "sha256": "51cb191f75d4b44863d6350c48b7e6d98d6770a39253996473d3315b9c5e04f8"
+      },
+      "status": "pass",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "xex_sha256": "09724d155c970373de694ca4d56fb58728069b8c477742c1c5065d3a1f9e0178",
+      "image_sha256": "94ebc131626a50923df3e51ac6ab2294c31c6af4a45f7938e8e45fd7f74a341e",
+      "count_per_load": 10,
+      "feedback": {
+        "idle": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "scroll": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "disk": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        }
+      },
+      "progress": {
+        "idle": {
+          "writes": 0,
+          "reads": 0
+        },
+        "scroll": {
+          "writes": 2,
+          "reads": 0
+        },
+        "disk": {
+          "writes": 0,
+          "reads": 27
+        }
+      },
+      "aes_progress": {
+        "idle": {
+          "AESMessages": 90,
+          "AESTimers": 45
+        },
+        "scroll": {
+          "AESMessages": 108,
+          "AESTimers": 55
+        },
+        "disk": {
+          "AESMessages": 105,
+          "AESTimers": 53
+        }
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 388,
+          "remaining_above_floor": 892
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 185,
+          "remaining_above_floor": 583
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 503,
+          "remaining_above_floor": 265
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 514,
+          "remaining_above_floor": 254
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 263,
+          "remaining_above_floor": 505
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 189,
+          "remaining_above_floor": 579
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 776,
+          "remaining_above_floor": 1528
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 127,
+          "remaining_above_floor": 129
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "ownership": "restored"
+    }
+  },
+  "performance": {
+    "idle": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 11.806594218323351,
+            "p95_ms": 42.36987562360882,
+            "max_ms": 42.8785599799261
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 10.543165219156473,
+            "p95_ms": 38.077036393803596,
+            "max_ms": 39.84717619213424
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 29.107571552019444,
+            "p95_ms": 51.86881765600617,
+            "max_ms": 52.66331537866218
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 25.053321285236805,
+            "p95_ms": 47.1136021788071,
+            "max_ms": 47.48688641755677
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 159.08075936840532,
+            "p95_ms": 219.20355691386408,
+            "max_ms": 239.41200683978522
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 119.16831482183713,
+            "p95_ms": 159.08153469442993,
+            "max_ms": 179.29075994637563
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 239.1598144292402,
+            "p95_ms": 379.8639373311023,
+            "max_ms": 379.8670386352007
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 199.24736988267202,
+            "p95_ms": 299.53438148013964,
+            "max_ms": 299.53621406892506
+          }
+        }
+      },
+      "maximum_cpu_units": {
+        "paint": {
+          "before": {
+            "charged_cpu_ms": 46.726784976719074,
+            "elapsed_ms": 66.60614424729235,
+            "off_cpu_ms": 10.319236966417105,
+            "interrupt_ms": 9.56012230415617
+          },
+          "after": {
+            "charged_cpu_ms": 33.31857864413804,
+            "elapsed_ms": 66.42577522029832,
+            "off_cpu_ms": 26.191781826076046,
+            "interrupt_ms": 6.915414750084228
+          }
+        },
+        "deskhost_controls": {
+          "before": {
+            "charged_cpu_ms": 25.19217512782307,
+            "elapsed_ms": 39.32890598678562,
+            "off_cpu_ms": 8.91145635830776,
+            "interrupt_ms": 5.225274500654798
+          },
+          "after": {
+            "charged_cpu_ms": 25.404121069273266,
+            "elapsed_ms": 57.172259116776786,
+            "off_cpu_ms": 26.487603946550433,
+            "interrupt_ms": 5.280534100953087
+          }
+        },
+        "commit": {
+          "before": {
+            "charged_cpu_ms": 8.068676969574797,
+            "elapsed_ms": 14.717731988119187,
+            "off_cpu_ms": 4.878492315109413,
+            "interrupt_ms": 1.7705627034349762
+          },
+          "after": {
+            "charged_cpu_ms": 8.516251538317317,
+            "elapsed_ms": 22.813615852738806,
+            "off_cpu_ms": 12.539065859011897,
+            "interrupt_ms": 1.7582984554095906
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "start": 4326971198.0,
+          "end": 4327110306.0,
+          "elapsed_ms": 78.43931100300404,
+          "charged_cpu_ms": 55.76313930917041,
+          "off_cpu_ms": 11.26365454855585,
+          "interrupt_ms": 11.412517145277771,
+          "submissions": [
+            {
+              "start": 4327046696.75,
+              "end": 4327081413.5,
+              "charged_cpu_ms": 15.499965462749813,
+              "before_first_fence_cpu_ms": 13.350832206761126,
+              "from_first_fence_cpu_ms": 2.149133255988689
+            },
+            {
+              "start": 4327081696.625,
+              "end": 4327082965.25,
+              "charged_cpu_ms": 0.5928424720776905,
+              "before_first_fence_cpu_ms": 0.37800667908128094,
+              "from_first_fence_cpu_ms": 0.21483579299640954
+            },
+            {
+              "start": 4327087832.5,
+              "end": 4327110039.375,
+              "charged_cpu_ms": 3.23804341543801,
+              "before_first_fence_cpu_ms": 2.70335039520482,
+              "from_first_fence_cpu_ms": 0.5346930202331899
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 18.637146010806635,
+            "GemWidgetFill": 15.457111078845028,
+            "pump": 3.5757331412404367,
+            "VbxeBlitExtent": 2.9933928125867846,
+            "GemDrawingWidgetBatch": 2.697288755376181,
+            "just_draw": 2.48386264606085,
+            "commit": 1.639109700174378,
+            "model_call": 1.6209952648725152,
+            "deskpaint_paintstrip": 1.292891388101424,
+            "blit_mask": 1.070372819043135,
+            "VbxeOwnerFence": 0.7101281543434469,
+            "deskinput_advance": 0.6880666047345636,
+            "GemWidgetText": 0.6824983541943024,
+            "DisplayCheck": 0.6808067337770077,
+            "blit_glyph": 0.6418994641792328,
+            "deskinput_service": 0.3617248325648208,
+            "WidgetDrawObject": 0.27996317906225016,
+            "paint": 0.11813149247440366,
+            "deskinput_present": 0.08105681166203116,
+            "other_worker": 0.05096006507099872
+          },
+          "inclusive_routines": {
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 51.59540950606094,
+              "max_cpu_ms": 51.59540950606094
+            },
+            "deskpaint_paintstrip": {
+              "calls": 1,
+              "charged_cpu_ms": 48.0196763648205,
+              "max_cpu_ms": 48.0196763648205
+            },
+            "model_call": {
+              "calls": 2,
+              "charged_cpu_ms": 47.95546527314736,
+              "max_cpu_ms": 46.60865348424467
+            },
+            "paint": {
+              "calls": 1,
+              "charged_cpu_ms": 46.726784976719074,
+              "max_cpu_ms": 46.726784976719074
+            },
+            "GemDrawingWidgetBatch": {
+              "calls": 1,
+              "charged_cpu_ms": 46.33447000827484,
+              "max_cpu_ms": 46.33447000827484
+            },
+            "WidgetDrawObject": {
+              "calls": 2,
+              "charged_cpu_ms": 22.11124095864129,
+              "max_cpu_ms": 19.009584439347655
+            },
+            "just_draw": {
+              "calls": 2,
+              "charged_cpu_ms": 21.83127777957904,
+              "max_cpu_ms": 18.844299027741165
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 3,
+              "charged_cpu_ms": 19.330851350265515,
+              "max_cpu_ms": 15.499965462749813
+            },
+            "GemWidgetFill": {
+              "calls": 15,
+              "charged_cpu_ms": 18.02301731514466,
+              "max_cpu_ms": 2.4087265058593506
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 3.6739880938116296,
+              "max_cpu_ms": 3.6739880938116296
+            },
+            "VbxeBlitExtent": {
+              "calls": 80,
+              "charged_cpu_ms": 2.9933928125867846,
+              "max_cpu_ms": 0.049268444653704155
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 2.9859214890770662,
+              "max_cpu_ms": 2.9859214890770662
+            },
+            "blit_mask": {
+              "calls": 3,
+              "charged_cpu_ms": 1.327146701551639,
+              "max_cpu_ms": 0.4588520381911503
+            },
+            "GemWidgetText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.3243978183735352,
+              "max_cpu_ms": 1.3243978183735352
+            },
+            "VbxeOwnerFence": {
+              "calls": 7,
+              "charged_cpu_ms": 0.7101281543434469,
+              "max_cpu_ms": 0.39083480057909803
+            },
+            "DisplayCheck": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6808067337770077,
+              "max_cpu_ms": 0.6808067337770077
+            },
+            "blit_glyph": {
+              "calls": 5,
+              "charged_cpu_ms": 0.6418994641792328,
+              "max_cpu_ms": 0.1311710665243826
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 0.3617248325648208,
+              "max_cpu_ms": 0.3617248325648208
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 0.08105681166203116,
+              "max_cpu_ms": 0.08105681166203116
+            }
+          }
+        },
+        "after": {
+          "start": 4325944242.125,
+          "end": 4326089669.5,
+          "elapsed_ms": 82.00263892785098,
+          "charged_cpu_ms": 43.0055724795913,
+          "off_cpu_ms": 30.0871607420011,
+          "interrupt_ms": 8.909905706258574,
+          "submissions": [
+            {
+              "start": 4326053952.0,
+              "end": 4326082665.75,
+              "charged_cpu_ms": 2.927067195392026,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 2.9164945677839347
+            },
+            {
+              "start": 4326083035.125,
+              "end": 4326083504.875,
+              "charged_cpu_ms": 0.22223663232207325,
+              "before_first_fence_cpu_ms": 0.0107135959761989,
+              "from_first_fence_cpu_ms": 0.21152303634587433
+            },
+            {
+              "start": 4326088373.375,
+              "end": 4326089317.875,
+              "charged_cpu_ms": 0.4465877901657647,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 0.4360151625576737
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "GemWidgetFill": 14.88647112474433,
+            "GemDrawingWidgetBatch": 4.482864590014647,
+            "commit": 4.117827000799291,
+            "VbxeBlitExtent": 2.991983128905704,
+            "pump": 2.45362493110171,
+            "just_draw": 2.451933310684416,
+            "VbxeOwnerSubmit": 2.1821903383099865,
+            "model_call": 2.122983623704677,
+            "VbxeOwnerFence": 1.4299831260863374,
+            "deskpaint_paintstrip": 1.2976138284330379,
+            "blit_mask": 1.0653684419753053,
+            "DisplayCheck": 0.6813001230653853,
+            "GemWidgetText": 0.6752384832367465,
+            "deskinput_advance": 0.6555029117016433,
+            "blit_glyph": 0.6411946223386934,
+            "deskinput_service": 0.36820937749778326,
+            "WidgetDrawObject": 0.24627173908446684,
+            "paint": 0.11770858737008003,
+            "deskinput_present": 0.08676603057040032,
+            "other_worker": 0.050537159966675085
+          },
+          "inclusive_routines": {
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 35.87842324060904,
+              "max_cpu_ms": 35.87842324060904
+            },
+            "model_call": {
+              "calls": 2,
+              "charged_cpu_ms": 33.85778265215068,
+              "max_cpu_ms": 32.00947589370421
+            },
+            "deskpaint_paintstrip": {
+              "calls": 1,
+              "charged_cpu_ms": 33.42479830950733,
+              "max_cpu_ms": 33.42479830950733
+            },
+            "paint": {
+              "calls": 1,
+              "charged_cpu_ms": 32.127184481074295,
+              "max_cpu_ms": 32.127184481074295
+            },
+            "GemDrawingWidgetBatch": {
+              "calls": 1,
+              "charged_cpu_ms": 31.734799028446005,
+              "max_cpu_ms": 31.734799028446005
+            },
+            "WidgetDrawObject": {
+              "calls": 2,
+              "charged_cpu_ms": 21.45453981581073,
+              "max_cpu_ms": 18.35316523325331
+            },
+            "just_draw": {
+              "calls": 2,
+              "charged_cpu_ms": 21.208268076726263,
+              "max_cpu_ms": 18.221782714176765
+            },
+            "GemWidgetFill": {
+              "calls": 14,
+              "charged_cpu_ms": 17.439901660466408,
+              "max_cpu_ms": 2.4085150533071884
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 6.621636670947407,
+              "max_cpu_ms": 6.621636670947407
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 5.966133759245762,
+              "max_cpu_ms": 5.966133759245762
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 3,
+              "charged_cpu_ms": 3.5958916178798646,
+              "max_cpu_ms": 2.927067195392026
+            },
+            "VbxeBlitExtent": {
+              "calls": 78,
+              "charged_cpu_ms": 2.991983128905704,
+              "max_cpu_ms": 0.04905699210154234
+            },
+            "VbxeOwnerFence": {
+              "calls": 7,
+              "charged_cpu_ms": 1.4299831260863374,
+              "max_cpu_ms": 1.2066892310034552
+            },
+            "blit_mask": {
+              "calls": 3,
+              "charged_cpu_ms": 1.3338426990367631,
+              "max_cpu_ms": 0.46561851986032854
+            },
+            "GemWidgetText": {
+              "calls": 1,
+              "charged_cpu_ms": 1.31643310557544,
+              "max_cpu_ms": 1.31643310557544
+            },
+            "DisplayCheck": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6813001230653853,
+              "max_cpu_ms": 0.6813001230653853
+            },
+            "blit_glyph": {
+              "calls": 5,
+              "charged_cpu_ms": 0.6411946223386934,
+              "max_cpu_ms": 0.13074816142005896
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 0.36820937749778326,
+              "max_cpu_ms": 0.36820937749778326
+            },
+            "deskinput_present": {
+              "calls": 1,
+              "charged_cpu_ms": 0.08676603057040032,
+              "max_cpu_ms": 0.08676603057040032
+            }
+          }
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1846.8253218660266,
+          "max_quantum_cpu_ms": 46.726784976719074,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 347,
+            "VbxeOwnerSubmit": 347,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 67,
+          "paint_cpu_ms": 1310.1129297596913,
+          "max_quantum_cpu_ms": 33.31857864413804,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 360,
+            "VbxeOwnerSubmit": 360,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      }
+    },
+    "scroll": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 93.65452036217593,
+            "p95_ms": 118.91478321179511,
+            "max_ms": 124.72592225030625
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 58.28682551922174,
+            "p95_ms": 79.5072168756053,
+            "max_ms": 80.51817152749095
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 103.37506466923888,
+            "p95_ms": 129.36328817176715,
+            "max_ms": 132.2998002478224
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 67.27835191061477,
+            "p95_ms": 87.80137274996864,
+            "max_ms": 89.9895542439232
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 179.29075994637563,
+            "p95_ms": 299.2828234272512,
+            "max_ms": 299.53621406892506
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 159.08160517861398,
+            "p95_ms": 199.24588971480688,
+            "max_ms": 199.2468060091996
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 279.5790402591563,
+            "p95_ms": 420.03230994997034,
+            "max_ms": 439.9888494020827
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 219.45659513461774,
+            "p95_ms": 319.4923306159331,
+            "max_ms": 319.50353760119765
+          }
+        }
+      },
+      "maximum_cpu_units": {
+        "consoledisplay_cells": {
+          "before": {
+            "charged_cpu_ms": 88.39625926338388,
+            "elapsed_ms": 131.3294444859518,
+            "off_cpu_ms": 24.688565632757665,
+            "interrupt_ms": 18.24461958981024
+          },
+          "after": {
+            "charged_cpu_ms": 52.13552980846628,
+            "elapsed_ms": 88.32062973389401,
+            "off_cpu_ms": 24.94026465401429,
+            "interrupt_ms": 11.244835271413447
+          }
+        },
+        "paint": {
+          "before": {
+            "charged_cpu_ms": 46.07501772677229,
+            "elapsed_ms": 80.29459569567184,
+            "off_cpu_ms": 24.72134077834275,
+            "interrupt_ms": 9.49823719055681
+          },
+          "after": {
+            "charged_cpu_ms": 31.316545880269928,
+            "elapsed_ms": 62.50544490321816,
+            "off_cpu_ms": 24.666363114780676,
+            "interrupt_ms": 6.5225359081675665
+          }
+        },
+        "consolebitmap_text": {
+          "before": {
+            "charged_cpu_ms": 37.211279161069044,
+            "elapsed_ms": 70.13789525768313,
+            "off_cpu_ms": 24.937515770836182,
+            "interrupt_ms": 7.9891003257778985
+          },
+          "after": {
+            "charged_cpu_ms": 21.915224442787284,
+            "elapsed_ms": 48.9722701123095,
+            "off_cpu_ms": 22.437159825706708,
+            "interrupt_ms": 4.619885843815506
+          }
+        },
+        "deskhost_controls": {
+          "before": {
+            "charged_cpu_ms": 25.324262488740153,
+            "elapsed_ms": 56.625724753622535,
+            "off_cpu_ms": 26.06540368406733,
+            "interrupt_ms": 5.236058580815051
+          },
+          "after": {
+            "charged_cpu_ms": 25.415680475458114,
+            "elapsed_ms": 59.152723720324396,
+            "off_cpu_ms": 28.28678322871131,
+            "interrupt_ms": 5.450260016154975
+          }
+        },
+        "commit": {
+          "before": {
+            "charged_cpu_ms": 7.51185191554867,
+            "elapsed_ms": 13.085106832877772,
+            "off_cpu_ms": 3.9815810730230248,
+            "interrupt_ms": 1.591673844306076
+          },
+          "after": {
+            "charged_cpu_ms": 8.516815411789748,
+            "elapsed_ms": 38.75558763369088,
+            "off_cpu_ms": 28.478641177706134,
+            "interrupt_ms": 1.7601310441949929
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "start": 4343222852.875,
+          "end": 4343488132.375,
+          "elapsed_ms": 149.58407282989768,
+          "charged_cpu_ms": 103.12273129032576,
+          "off_cpu_ms": 24.897198817557328,
+          "interrupt_ms": 21.564142722014605,
+          "submissions": [
+            {
+              "start": 4343236854.125,
+              "end": 4343241834.5,
+              "charged_cpu_ms": 2.2553529213579764,
+              "before_first_fence_cpu_ms": 1.8564124396126753,
+              "from_first_fence_cpu_ms": 0.39894048174530117
+            },
+            {
+              "start": 4343263911.0,
+              "end": 4343294672.125,
+              "charged_cpu_ms": 8.01151429630705,
+              "before_first_fence_cpu_ms": 6.952700883448763,
+              "from_first_fence_cpu_ms": 1.058813412858289
+            },
+            {
+              "start": 4343363764.625,
+              "end": 4343402459.625,
+              "charged_cpu_ms": 18.097378129321562,
+              "before_first_fence_cpu_ms": 15.318609657179024,
+              "from_first_fence_cpu_ms": 2.778768472142536
+            },
+            {
+              "start": 4343438832.875,
+              "end": 4343477285.75,
+              "charged_cpu_ms": 18.045713222410022,
+              "before_first_fence_cpu_ms": 15.306838798442017,
+              "from_first_fence_cpu_ms": 2.7388744239680056
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 44.843870483902116,
+            "GemBitmapTextClip": 16.942353805229637,
+            "blit_glyph": 15.699788124542744,
+            "consolebitmap_desktopdraw": 4.8262635347254434,
+            "consolebitmap_run": 4.295940533903598,
+            "DisplayCheck": 3.423487303683926,
+            "other_worker": 2.1357412610184396,
+            "deskinput_service": 1.8653639309875258,
+            "VbxeOwnerFence": 1.6148631408598224,
+            "consume": 1.3649967083886048,
+            "pump": 1.2784421303703664,
+            "consoledisplay_cells": 1.2463718266258235,
+            "consoledriver_collect": 1.158619017478668,
+            "deskinput_advance": 0.6596614785608257,
+            "commit": 0.2607914809995785,
+            "deskinput_present": 0.2607209968155246,
+            "VbxeBlitExtent": 0.23154054461719337,
+            "consolebitmap_clippedtext": 0.21342610931533074,
+            "consolebitmap_text": 0.19467731635698268,
+            "model_call": 0.15999909780244412,
+            "GemDrawingTextClip": 0.12503894251168982,
+            "consoledisplay_presentbatch": 0.09663381633795193,
+            "consolebitmap_cursor": 0.08239601115905601,
+            "consoledisplay_present": 0.0396825956223683,
+            "deskhost_events": 0.031294977719949414,
+            "consoledriver_writequantum": 0.028052705253468174,
+            "consoledriver_arrival": 0.02452849605077117,
+            "consoledriver_readquantum": 0.009444880663227979,
+            "consoledisplay_poll": 0.0048634086997218695,
+            "deskhost_afterpaint": 0.003876630122966708
+          },
+          "inclusive_routines": {
+            "consoledisplay_present": {
+              "calls": 1,
+              "charged_cpu_ms": 88.04440221658662,
+              "max_cpu_ms": 88.04440221658662
+            },
+            "consoledisplay_presentbatch": {
+              "calls": 1,
+              "charged_cpu_ms": 88.00471962096425,
+              "max_cpu_ms": 88.00471962096425
+            },
+            "consoledisplay_cells": {
+              "calls": 1,
+              "charged_cpu_ms": 87.9080858046263,
+              "max_cpu_ms": 87.9080858046263
+            },
+            "consolebitmap_run": {
+              "calls": 5,
+              "charged_cpu_ms": 87.17688287925073,
+              "max_cpu_ms": 33.90409076107412
+            },
+            "consolebitmap_text": {
+              "calls": 3,
+              "charged_cpu_ms": 86.66171397800048,
+              "max_cpu_ms": 35.64906770569752
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 3,
+              "charged_cpu_ms": 86.4670366616435,
+              "max_cpu_ms": 35.58605484515329
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 3,
+              "charged_cpu_ms": 81.64077312691805,
+              "max_cpu_ms": 33.97513881860049
+            },
+            "GemDrawingTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 79.25699802221379,
+              "max_cpu_ms": 33.18247368472988
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 4,
+              "charged_cpu_ms": 46.40995856939661,
+              "max_cpu_ms": 18.097378129321562
+            },
+            "GemBitmapTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 32.87368247438957,
+              "max_cpu_ms": 14.340500635062499
+            },
+            "blit_glyph": {
+              "calls": 115,
+              "charged_cpu_ms": 15.699788124542744,
+              "max_cpu_ms": 0.899589641080438
+            },
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 6.092652869622585,
+              "max_cpu_ms": 4.457842704675498
+            },
+            "consolebitmap_cursor": {
+              "calls": 2,
+              "charged_cpu_ms": 5.831931872807061,
+              "max_cpu_ms": 4.371711031761583
+            },
+            "DisplayCheck": {
+              "calls": 5,
+              "charged_cpu_ms": 3.423487303683926,
+              "max_cpu_ms": 0.6881370889186176
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 3.2303606393761304,
+              "max_cpu_ms": 3.2303606393761304
+            },
+            "VbxeOwnerFence": {
+              "calls": 11,
+              "charged_cpu_ms": 1.6148631408598224,
+              "max_cpu_ms": 0.6070097930725324
+            },
+            "consume": {
+              "calls": 2,
+              "charged_cpu_ms": 1.3649967083886048,
+              "max_cpu_ms": 0.6830622276667339
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.2784421303703664,
+              "max_cpu_ms": 1.2784421303703664
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 1.158619017478668,
+              "max_cpu_ms": 1.158619017478668
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 1.0804520573628484,
+              "max_cpu_ms": 1.0804520573628484
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 0.42079057880202264,
+              "max_cpu_ms": 0.42079057880202264
+            },
+            "VbxeBlitExtent": {
+              "calls": 6,
+              "charged_cpu_ms": 0.23154054461719337,
+              "max_cpu_ms": 0.03883678541372102
+            },
+            "model_call": {
+              "calls": 1,
+              "charged_cpu_ms": 0.15999909780244412,
+              "max_cpu_ms": 0.15999909780244412
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.031294977719949414,
+              "max_cpu_ms": 0.031294977719949414
+            },
+            "consoledriver_writequantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.028052705253468174,
+              "max_cpu_ms": 0.028052705253468174
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.02452849605077117,
+              "max_cpu_ms": 0.02452849605077117
+            },
+            "consoledriver_readquantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.009444880663227979,
+              "max_cpu_ms": 0.009444880663227979
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0048634086997218695,
+              "max_cpu_ms": 0.0048634086997218695
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.003876630122966708,
+              "max_cpu_ms": 0.003876630122966708
+            }
+          }
+        },
+        "after": {
+          "start": 4334973480.0,
+          "end": 4335144716.375,
+          "elapsed_ms": 96.5556493778361,
+          "charged_cpu_ms": 63.03978550253109,
+          "off_cpu_ms": 20.399462064707297,
+          "interrupt_ms": 13.11640181059772,
+          "submissions": [
+            {
+              "start": 4334984222.25,
+              "end": 4334985094.25,
+              "charged_cpu_ms": 0.4105703721142013,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 0.39999774450611025
+            },
+            {
+              "start": 4335015335.875,
+              "end": 4335017604.25,
+              "charged_cpu_ms": 1.0758705853993422,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 1.0652979577912511
+            },
+            {
+              "start": 4335086395.625,
+              "end": 4335093394.25,
+              "charged_cpu_ms": 3.1808807421702645,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 3.1703081145621734
+            },
+            {
+              "start": 4335129846.75,
+              "end": 4335135274.75,
+              "charged_cpu_ms": 2.5640736475142343,
+              "before_first_fence_cpu_ms": 0.0107135959761989,
+              "from_first_fence_cpu_ms": 2.5533600515380352
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "GemBitmapTextClip": 16.37700016493299,
+            "blit_glyph": 14.917131744807788,
+            "consolebitmap_desktopdraw": 5.594752593465552,
+            "consolebitmap_run": 5.571915717832077,
+            "VbxeOwnerSubmit": 5.446453870216063,
+            "DisplayCheck": 3.9798894526057293,
+            "other_worker": 2.122842655336569,
+            "VbxeOwnerFence": 1.8341394374516302,
+            "pump": 1.271746132885242,
+            "deskinput_service": 1.113791076420362,
+            "consoledisplay_cells": 1.0609279383799068,
+            "consume": 0.6821459332740326,
+            "deskinput_advance": 0.6611416464259585,
+            "consoledriver_collect": 0.5962961970963335,
+            "deskinput_present": 0.26664166827605557,
+            "commit": 0.2607914809995785,
+            "VbxeBlitExtent": 0.23682685842123885,
+            "consolebitmap_clippedtext": 0.21864193893532233,
+            "consolebitmap_text": 0.20073895618562151,
+            "model_call": 0.16021055035460594,
+            "GemDrawingTextClip": 0.13088912978816683,
+            "consoledisplay_presentbatch": 0.10332981382307624,
+            "consolebitmap_cursor": 0.0832418213677033,
+            "consoledisplay_present": 0.039259690518044656,
+            "deskhost_events": 0.031858851192380945,
+            "consoledriver_writequantum": 0.028475610357791815,
+            "consoledriver_arrival": 0.02452849605077117,
+            "consoledriver_readquantum": 0.015436036307812888,
+            "consoledisplay_poll": 0.004933892883775809,
+            "deskhost_afterpaint": 0.0038061459389127673
+          },
+          "inclusive_routines": {
+            "consoledisplay_present": {
+              "calls": 1,
+              "charged_cpu_ms": 50.55308939227127,
+              "max_cpu_ms": 50.55308939227127
+            },
+            "consoledisplay_presentbatch": {
+              "calls": 1,
+              "charged_cpu_ms": 50.513829701753224,
+              "max_cpu_ms": 50.513829701753224
+            },
+            "consoledisplay_cells": {
+              "calls": 1,
+              "charged_cpu_ms": 50.41049988793015,
+              "max_cpu_ms": 50.41049988793015
+            },
+            "consolebitmap_text": {
+              "calls": 3,
+              "charged_cpu_ms": 49.34957194955024,
+              "max_cpu_ms": 20.74934555435106
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 3,
+              "charged_cpu_ms": 49.14883299336462,
+              "max_cpu_ms": 20.680623474898468
+            },
+            "consolebitmap_run": {
+              "calls": 5,
+              "charged_cpu_ms": 48.49424637605568,
+              "max_cpu_ms": 18.22763290145324
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 3,
+              "charged_cpu_ms": 43.554080399899064,
+              "max_cpu_ms": 18.298680958979617
+            },
+            "GemDrawingTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 41.15021730273944,
+              "max_cpu_ms": 17.49946079599199
+            },
+            "GemBitmapTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 31.530958768162016,
+              "max_cpu_ms": 13.562989600763485
+            },
+            "blit_glyph": {
+              "calls": 115,
+              "charged_cpu_ms": 14.917131744807788,
+              "max_cpu_ms": 0.6858815950288915
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 4,
+              "charged_cpu_ms": 7.231395347198042,
+              "max_cpu_ms": 3.1808807421702645
+            },
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 5.508691404735691,
+              "max_cpu_ms": 3.8732468821321184
+            },
+            "consolebitmap_cursor": {
+              "calls": 2,
+              "charged_cpu_ms": 5.242049736459635,
+              "max_cpu_ms": 3.7810535693895644
+            },
+            "DisplayCheck": {
+              "calls": 5,
+              "charged_cpu_ms": 3.9798894526057293,
+              "max_cpu_ms": 1.2489092572517653
+            },
+            "VbxeOwnerFence": {
+              "calls": 11,
+              "charged_cpu_ms": 1.8341394374516302,
+              "max_cpu_ms": 1.0123643355667422
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 1.7959370096943947,
+              "max_cpu_ms": 1.7959370096943947
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.271746132885242,
+              "max_cpu_ms": 1.271746132885242
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 1.0821436777801428,
+              "max_cpu_ms": 1.0821436777801428
+            },
+            "consume": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6821459332740326,
+              "max_cpu_ms": 0.6821459332740326
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5962961970963335,
+              "max_cpu_ms": 0.5962961970963335
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 0.42100203135418446,
+              "max_cpu_ms": 0.42100203135418446
+            },
+            "VbxeBlitExtent": {
+              "calls": 6,
+              "charged_cpu_ms": 0.23682685842123885,
+              "max_cpu_ms": 0.04454600432209017
+            },
+            "model_call": {
+              "calls": 1,
+              "charged_cpu_ms": 0.16021055035460594,
+              "max_cpu_ms": 0.16021055035460594
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.031858851192380945,
+              "max_cpu_ms": 0.031858851192380945
+            },
+            "consoledriver_writequantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.028475610357791815,
+              "max_cpu_ms": 0.028475610357791815
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.02452849605077117,
+              "max_cpu_ms": 0.02452849605077117
+            },
+            "consoledriver_readquantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.015436036307812888,
+              "max_cpu_ms": 0.015436036307812888
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.004933892883775809,
+              "max_cpu_ms": 0.004933892883775809
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0038061459389127673,
+              "max_cpu_ms": 0.0038061459389127673
+            }
+          }
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1813.511395178036,
+          "max_quantum_cpu_ms": 46.07501772677229,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 395,
+            "VbxeOwnerSubmit": 322,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1281.5301834421375,
+          "max_quantum_cpu_ms": 31.316545880269928,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 444,
+            "VbxeOwnerSubmit": 355,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      }
+    },
+    "disk": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 16.597333724285605,
+            "p95_ms": 103.24290682413772,
+            "max_ms": 175.8398542950947
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 6.239682877559105,
+            "p95_ms": 71.66641527307688,
+            "max_ms": 77.22486851175464
+          }
+        },
+        "capture_to_commit_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 30.046138946881708,
+            "p95_ms": 112.41050270729751,
+            "max_ms": 185.1389031815151
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 17.727336163038373,
+            "p95_ms": 83.17077331017693,
+            "max_ms": 86.37357463358796
+          }
+        },
+        "capture_to_button_pixels_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 188.975286835387,
+            "p95_ms": 259.53672155505024,
+            "max_ms": 259.5495496765481
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 159.00879501648623,
+            "p95_ms": 179.37534096724036,
+            "max_ms": 199.4114570631496
+          }
+        },
+        "capture_to_visible_ms": {
+          "before": {
+            "count": 20,
+            "median_ms": 259.3591718954184,
+            "p95_ms": 420.02293555349115,
+            "max_ms": 459.8679972201038
+          },
+          "after": {
+            "count": 20,
+            "median_ms": 259.234485373827,
+            "p95_ms": 359.4601757311677,
+            "max_ms": 379.7162024813252
+          }
+        }
+      },
+      "maximum_cpu_units": {
+        "consoledisplay_cells": {
+          "before": {
+            "charged_cpu_ms": 94.55566065530556,
+            "elapsed_ms": 161.8947699325748,
+            "off_cpu_ms": 39.90469128632226,
+            "interrupt_ms": 27.43441799094701
+          },
+          "after": {
+            "charged_cpu_ms": 53.86295619126024,
+            "elapsed_ms": 94.00327610487483,
+            "off_cpu_ms": 27.063107309350855,
+            "interrupt_ms": 13.077212604263728
+          }
+        },
+        "paint": {
+          "before": {
+            "charged_cpu_ms": 47.44960028419223,
+            "elapsed_ms": 113.80235388981066,
+            "off_cpu_ms": 49.62149993163034,
+            "interrupt_ms": 16.731253673988093
+          },
+          "after": {
+            "charged_cpu_ms": 33.18430627351528,
+            "elapsed_ms": 78.53488755658118,
+            "off_cpu_ms": 32.03738763058957,
+            "interrupt_ms": 13.31319365247632
+          }
+        },
+        "consolebitmap_text": {
+          "before": {
+            "charged_cpu_ms": 39.51005033980425,
+            "elapsed_ms": 66.90704122901862,
+            "off_cpu_ms": 12.963733067936886,
+            "interrupt_ms": 14.433257821277483
+          },
+          "after": {
+            "charged_cpu_ms": 23.440502185714546,
+            "elapsed_ms": 76.67163815111527,
+            "off_cpu_ms": 46.23910490724986,
+            "interrupt_ms": 6.992031058150862
+          }
+        },
+        "deskhost_controls": {
+          "before": {
+            "charged_cpu_ms": 25.77951983354455,
+            "elapsed_ms": 61.028166889631635,
+            "off_cpu_ms": 24.52271634767874,
+            "interrupt_ms": 10.72593070840834
+          },
+          "after": {
+            "charged_cpu_ms": 24.607367852727524,
+            "elapsed_ms": 55.23845504307288,
+            "off_cpu_ms": 24.813604575269355,
+            "interrupt_ms": 5.817482615076003
+          }
+        },
+        "commit": {
+          "before": {
+            "charged_cpu_ms": 7.067237682536416,
+            "elapsed_ms": 12.844755765253835,
+            "off_cpu_ms": 4.078637794465299,
+            "interrupt_ms": 1.698880288252119
+          },
+          "after": {
+            "charged_cpu_ms": 8.750399997744505,
+            "elapsed_ms": 43.582696978624966,
+            "off_cpu_ms": 31.681794922037447,
+            "interrupt_ms": 3.150502058843016
+          }
+        }
+      },
+      "input_service_gap": {
+        "before": {
+          "start": 4357478548.375,
+          "end": 4357765939.125,
+          "elapsed_ms": 162.05202014719916,
+          "charged_cpu_ms": 105.58960724802961,
+          "off_cpu_ms": 31.503963325669357,
+          "interrupt_ms": 24.958449573500204,
+          "submissions": [
+            {
+              "start": 4357489535.25,
+              "end": 4357493315.625,
+              "charged_cpu_ms": 1.701417718878061,
+              "before_first_fence_cpu_ms": 1.3016314269241125,
+              "from_first_fence_cpu_ms": 0.39978629195394844
+            },
+            {
+              "start": 4357519490.0,
+              "end": 4357533513.25,
+              "charged_cpu_ms": 6.429426301032311,
+              "before_first_fence_cpu_ms": 5.365749479474301,
+              "from_first_fence_cpu_ms": 1.0636768215580106
+            },
+            {
+              "start": 4357577293.0,
+              "end": 4357619340.125,
+              "charged_cpu_ms": 18.581111084483755,
+              "before_first_fence_cpu_ms": 15.873743090787858,
+              "from_first_fence_cpu_ms": 2.7073679936958945
+            },
+            {
+              "start": 4357660728.75,
+              "end": 4357755441.625,
+              "charged_cpu_ms": 20.713116683747334,
+              "before_first_fence_cpu_ms": 15.864157241756521,
+              "from_first_fence_cpu_ms": 4.848959441990812
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "VbxeOwnerSubmit": 46.07748467321418,
+            "blit_glyph": 17.255021645692928,
+            "GemBitmapTextClip": 16.40392512324159,
+            "consolebitmap_desktopdraw": 7.052999877357519,
+            "consolebitmap_run": 4.30348234159737,
+            "DisplayCheck": 3.4092494985050306,
+            "other_worker": 2.4740653444773524,
+            "VbxeOwnerFence": 1.402212357569085,
+            "pump": 1.2725919430938892,
+            "deskinput_service": 1.1128042978436068,
+            "consoledisplay_cells": 1.0838352981974375,
+            "consume": 0.6818639965378169,
+            "deskinput_advance": 0.6669918337024355,
+            "consoledriver_collect": 0.5960847445441717,
+            "commit": 0.2610029335517403,
+            "deskinput_present": 0.2609324493676864,
+            "VbxeBlitExtent": 0.23076521859260002,
+            "consolebitmap_clippedtext": 0.21377853023560042,
+            "consolebitmap_text": 0.194254411252659,
+            "model_call": 0.160140066170552,
+            "GemDrawingTextClip": 0.13117106652438257,
+            "consoledisplay_presentbatch": 0.10283642453469866,
+            "consolebitmap_cursor": 0.08267794789527178,
+            "consoledisplay_present": 0.03918920633399072,
+            "deskhost_events": 0.037004196628318574,
+            "consoledriver_writequantum": 0.028475610357791815,
+            "consoledriver_arrival": 0.024598980234825107,
+            "consoledriver_readquantum": 0.015436036307812888,
+            "deskhost_afterpaint": 0.009867785767551618,
+            "consoledisplay_poll": 0.0048634086997218695
+          },
+          "inclusive_routines": {
+            "consoledisplay_present": {
+              "calls": 1,
+              "charged_cpu_ms": 92.70460501368098,
+              "max_cpu_ms": 92.70460501368098
+            },
+            "consoledisplay_presentbatch": {
+              "calls": 1,
+              "charged_cpu_ms": 92.66541580734699,
+              "max_cpu_ms": 92.66541580734699
+            },
+            "consoledisplay_cells": {
+              "calls": 1,
+              "charged_cpu_ms": 92.56257938281229,
+              "max_cpu_ms": 92.56257938281229
+            },
+            "consolebitmap_text": {
+              "calls": 3,
+              "charged_cpu_ms": 91.47874408461485,
+              "max_cpu_ms": 38.72168474116093
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 3,
+              "charged_cpu_ms": 91.2844896733622,
+              "max_cpu_ms": 38.658812848984816
+            },
+            "consolebitmap_run": {
+              "calls": 5,
+              "charged_cpu_ms": 89.21331192493717,
+              "max_cpu_ms": 36.97741263837808
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 3,
+              "charged_cpu_ms": 84.23148979600467,
+              "max_cpu_ms": 37.0486721484566
+            },
+            "GemDrawingTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 81.84658694435555,
+              "max_cpu_ms": 36.25502023600924
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 4,
+              "charged_cpu_ms": 47.425071788141466,
+              "max_cpu_ms": 20.713116683747334
+            },
+            "GemBitmapTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 33.88971198752712,
+              "max_cpu_ms": 14.797238147732031
+            },
+            "blit_glyph": {
+              "calls": 115,
+              "charged_cpu_ms": 17.255021645692928,
+              "max_cpu_ms": 1.9118130082790723
+            },
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 5.539211056431047,
+              "max_cpu_ms": 3.9037665338274743
+            },
+            "consolebitmap_cursor": {
+              "calls": 2,
+              "charged_cpu_ms": 5.278278607063361,
+              "max_cpu_ms": 3.8177053450976133
+            },
+            "DisplayCheck": {
+              "calls": 5,
+              "charged_cpu_ms": 3.4092494985050306,
+              "max_cpu_ms": 0.6864454685013229
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 1.7946682943814236,
+              "max_cpu_ms": 1.7946682943814236
+            },
+            "VbxeOwnerFence": {
+              "calls": 11,
+              "charged_cpu_ms": 1.402212357569085,
+              "max_cpu_ms": 0.5492832463323555
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.2725919430938892,
+              "max_cpu_ms": 1.2725919430938892
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 1.0881348334247278,
+              "max_cpu_ms": 1.0881348334247278
+            },
+            "consume": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6818639965378169,
+              "max_cpu_ms": 0.6818639965378169
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.5960847445441717,
+              "max_cpu_ms": 0.5960847445441717
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 0.4211429997222923,
+              "max_cpu_ms": 0.4211429997222923
+            },
+            "VbxeBlitExtent": {
+              "calls": 6,
+              "charged_cpu_ms": 0.23076521859260002,
+              "max_cpu_ms": 0.03876630122966707
+            },
+            "model_call": {
+              "calls": 1,
+              "charged_cpu_ms": 0.160140066170552,
+              "max_cpu_ms": 0.160140066170552
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.037004196628318574,
+              "max_cpu_ms": 0.037004196628318574
+            },
+            "consoledriver_writequantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.028475610357791815,
+              "max_cpu_ms": 0.028475610357791815
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.024598980234825107,
+              "max_cpu_ms": 0.024598980234825107
+            },
+            "consoledriver_readquantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.015436036307812888,
+              "max_cpu_ms": 0.015436036307812888
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.009867785767551618,
+              "max_cpu_ms": 0.009867785767551618
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0048634086997218695,
+              "max_cpu_ms": 0.0048634086997218695
+            }
+          }
+        },
+        "after": {
+          "start": 4348296144.75,
+          "end": 4348488620.25,
+          "elapsed_ms": 108.53182854299324,
+          "charged_cpu_ms": 65.57686370755266,
+          "off_cpu_ms": 27.063107309350855,
+          "interrupt_ms": 15.89185752608972,
+          "submissions": [
+            {
+              "start": 4348307240.75,
+              "end": 4348308077.875,
+              "charged_cpu_ms": 0.3793458785783058,
+              "before_first_fence_cpu_ms": 0.010925048528360721,
+              "from_first_fence_cpu_ms": 0.36842083004994514
+            },
+            {
+              "start": 4348354391.875,
+              "end": 4348356721.25,
+              "charged_cpu_ms": 1.0682582935215166,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 1.0576856659134255
+            },
+            {
+              "start": 4348422119.5,
+              "end": 4348428193.0,
+              "charged_cpu_ms": 2.7518435138339306,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 2.74127088622584
+            },
+            {
+              "start": 4348472127.0,
+              "end": 4348478036.25,
+              "charged_cpu_ms": 2.720971441218305,
+              "before_first_fence_cpu_ms": 0.010572627608091021,
+              "from_first_fence_cpu_ms": 2.710398813610214
+            }
+          ],
+          "exclusive_cpu_ms": {
+            "GemBitmapTextClip": 19.70462897830355,
+            "blit_glyph": 14.381451945997833,
+            "consolebitmap_desktopdraw": 7.086268412230979,
+            "VbxeOwnerSubmit": 5.441660945700394,
+            "consolebitmap_run": 4.307358971720337,
+            "DisplayCheck": 3.409813371977462,
+            "other_worker": 2.4914749379386754,
+            "VbxeOwnerFence": 1.5273217842648288,
+            "pump": 1.2731558165663206,
+            "deskinput_service": 1.1227425677952123,
+            "consoledisplay_cells": 1.0722054078285372,
+            "consume": 0.6763662301816096,
+            "deskinput_advance": 0.6604368045854191,
+            "consoledriver_collect": 0.589952620531479,
+            "deskinput_present": 0.2782010744609017,
+            "commit": 0.26734651011659494,
+            "VbxeBlitExtent": 0.24930255899878628,
+            "consolebitmap_clippedtext": 0.22540842060450053,
+            "consolebitmap_text": 0.2061662383577749,
+            "model_call": 0.1537964896056974,
+            "GemDrawingTextClip": 0.12412264811898857,
+            "consoledisplay_presentbatch": 0.09670430052200588,
+            "consolebitmap_cursor": 0.08288940044743359,
+            "consoledisplay_present": 0.03982356399047618,
+            "consoledriver_writequantum": 0.03383240834589126,
+            "deskhost_events": 0.03150643027211124,
+            "consoledriver_arrival": 0.02509236952320269,
+            "consoledriver_readquantum": 0.009233428111066156,
+            "consoledisplay_poll": 0.0048634086997218695,
+            "deskhost_afterpaint": 0.0037356617548588273
+          },
+          "inclusive_routines": {
+            "consoledisplay_present": {
+              "calls": 1,
+              "charged_cpu_ms": 53.999484055772726,
+              "max_cpu_ms": 53.999484055772726
+            },
+            "consoledisplay_presentbatch": {
+              "calls": 1,
+              "charged_cpu_ms": 53.959660491782245,
+              "max_cpu_ms": 53.959660491782245
+            },
+            "consoledisplay_cells": {
+              "calls": 1,
+              "charged_cpu_ms": 53.86295619126024,
+              "max_cpu_ms": 53.86295619126024
+            },
+            "consolebitmap_text": {
+              "calls": 3,
+              "charged_cpu_ms": 52.790750783431704,
+              "max_cpu_ms": 21.25958056271753
+            },
+            "consolebitmap_desktopdraw": {
+              "calls": 3,
+              "charged_cpu_ms": 52.58458454507393,
+              "max_cpu_ms": 21.185078780172518
+            },
+            "consolebitmap_run": {
+              "calls": 5,
+              "charged_cpu_ms": 49.14566120508219,
+              "max_cpu_ms": 18.340478080123603
+            },
+            "consolebitmap_clippedtext": {
+              "calls": 3,
+              "charged_cpu_ms": 45.498316132842945,
+              "max_cpu_ms": 18.417517293294555
+            },
+            "GemDrawingTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 43.096990466309265,
+              "max_cpu_ms": 17.619424877251795
+            },
+            "GemBitmapTextClip": {
+              "calls": 3,
+              "charged_cpu_ms": 34.33538348330018,
+              "max_cpu_ms": 14.141523783478224
+            },
+            "blit_glyph": {
+              "calls": 115,
+              "charged_cpu_ms": 14.381451945997833,
+              "max_cpu_ms": 0.12785830987384741
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 4,
+              "charged_cpu_ms": 6.9204191271520585,
+              "max_cpu_ms": 2.7518435138339306
+            },
+            "deskinput_present": {
+              "calls": 3,
+              "charged_cpu_ms": 4.233843967752076,
+              "max_cpu_ms": 2.58726294406798
+            },
+            "consolebitmap_cursor": {
+              "calls": 2,
+              "charged_cpu_ms": 3.955642893291174,
+              "max_cpu_ms": 2.4949286629573186
+            },
+            "DisplayCheck": {
+              "calls": 5,
+              "charged_cpu_ms": 3.409813371977462,
+              "max_cpu_ms": 0.6864454685013229
+            },
+            "deskinput_service": {
+              "calls": 1,
+              "charged_cpu_ms": 1.7991087979768219,
+              "max_cpu_ms": 1.7991087979768219
+            },
+            "VbxeOwnerFence": {
+              "calls": 11,
+              "charged_cpu_ms": 1.5273217842648288,
+              "max_cpu_ms": 0.578111277610417
+            },
+            "pump": {
+              "calls": 1,
+              "charged_cpu_ms": 1.2731558165663206,
+              "max_cpu_ms": 1.2731558165663206
+            },
+            "deskinput_advance": {
+              "calls": 1,
+              "charged_cpu_ms": 1.0815798043077114,
+              "max_cpu_ms": 1.0815798043077114
+            },
+            "consume": {
+              "calls": 1,
+              "charged_cpu_ms": 0.6763662301816096,
+              "max_cpu_ms": 0.6763662301816096
+            },
+            "consoledriver_collect": {
+              "calls": 1,
+              "charged_cpu_ms": 0.589952620531479,
+              "max_cpu_ms": 0.589952620531479
+            },
+            "commit": {
+              "calls": 1,
+              "charged_cpu_ms": 0.4211429997222923,
+              "max_cpu_ms": 0.4211429997222923
+            },
+            "VbxeBlitExtent": {
+              "calls": 6,
+              "charged_cpu_ms": 0.24930255899878628,
+              "max_cpu_ms": 0.044757456874251984
+            },
+            "model_call": {
+              "calls": 1,
+              "charged_cpu_ms": 0.1537964896056974,
+              "max_cpu_ms": 0.1537964896056974
+            },
+            "consoledriver_writequantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.03383240834589126,
+              "max_cpu_ms": 0.03383240834589126
+            },
+            "deskhost_events": {
+              "calls": 1,
+              "charged_cpu_ms": 0.03150643027211124,
+              "max_cpu_ms": 0.03150643027211124
+            },
+            "consoledriver_arrival": {
+              "calls": 1,
+              "charged_cpu_ms": 0.02509236952320269,
+              "max_cpu_ms": 0.02509236952320269
+            },
+            "consoledriver_readquantum": {
+              "calls": 1,
+              "charged_cpu_ms": 0.009233428111066156,
+              "max_cpu_ms": 0.009233428111066156
+            },
+            "consoledisplay_poll": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0048634086997218695,
+              "max_cpu_ms": 0.0048634086997218695
+            },
+            "deskhost_afterpaint": {
+              "calls": 1,
+              "charged_cpu_ms": 0.0037356617548588273,
+              "max_cpu_ms": 0.0037356617548588273
+            }
+          }
+        }
+      },
+      "paint_work": {
+        "before": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1837.605779139219,
+          "max_quantum_cpu_ms": 47.44960028419223,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 332,
+            "VbxeOwnerSubmit": 329,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "after": {
+          "paint_quanta": 68,
+          "paint_cpu_ms": 1295.1475163488064,
+          "max_quantum_cpu_ms": 33.18430627351528,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 342,
+            "VbxeOwnerSubmit": 339,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Continuous AES workload; completion counts and scheduling phases change, not equal offered throughput.",
+    "The raw-pointer cohort and the full frozen/matched-native HY4 matrix were not rerun.",
+    "No claim that all transient scanout artifacts are fixed."
+  ],
+  "examples": {
+    "before": {
+      "disk_console": {
+        "kind": "consoledisplay_cells",
+        "start": 4358310278.25,
+        "end": 4358597390.125,
+        "return_a": 0,
+        "return_x": 20028,
+        "elapsed_ms": 161.8947699325748,
+        "charged_cpu_ms": 94.55566065530556,
+        "off_cpu_ms": 39.90469128632226,
+        "interrupt_ms": 27.43441799094701,
+        "submissions": [
+          {
+            "start": 4358352207.875,
+            "end": 4358395208.625,
+            "charged_cpu_ms": 8.596392055586648,
+            "before_first_fence_cpu_ms": 7.62758694576524,
+            "from_first_fence_cpu_ms": 0.9688051098214072
+          },
+          {
+            "start": 4358435125.875,
+            "end": 4358477169.5,
+            "charged_cpu_ms": 18.565745532359994,
+            "before_first_fence_cpu_ms": 15.854923813645456,
+            "from_first_fence_cpu_ms": 2.7108217187145374
+          },
+          {
+            "start": 4358522808.875,
+            "end": 4358596408.5,
+            "charged_cpu_ms": 21.82676679179959,
+            "before_first_fence_cpu_ms": 19.085989294862124,
+            "from_first_fence_cpu_ms": 2.7407774969374623
+          }
+        ],
+        "exclusive_cpu_ms": {
+          "VbxeOwnerSubmit": 47.69502621306804,
+          "GemBitmapTextClip": 18.795876393296112,
+          "blit_glyph": 14.53186519476894,
+          "consolebitmap_desktopdraw": 4.839514561327584,
+          "DisplayCheck": 3.1545901415181445,
+          "consolebitmap_run": 2.168586890787576,
+          "VbxeOwnerFence": 1.3441333899086385,
+          "consoledisplay_cells": 1.2510237827733834,
+          "VbxeBlitExtent": 0.23689734260529277,
+          "consolebitmap_clippedtext": 0.2191353282236999,
+          "consolebitmap_text": 0.1888271290805056,
+          "GemDrawingTextClip": 0.1301842879476274
+        },
+        "inclusive_routines": {
+          "consoledisplay_cells": {
+            "calls": 1,
+            "charged_cpu_ms": 94.55566065530556,
+            "max_cpu_ms": 94.55566065530556
+          },
+          "consolebitmap_text": {
+            "calls": 3,
+            "charged_cpu_ms": 93.30463687253217,
+            "max_cpu_ms": 39.51005033980425
+          },
+          "consolebitmap_desktopdraw": {
+            "calls": 3,
+            "charged_cpu_ms": 93.11580974345166,
+            "max_cpu_ms": 39.44717844762813
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 3,
+            "charged_cpu_ms": 88.27629518212409,
+            "max_cpu_ms": 37.83583951597101
+          },
+          "consolebitmap_run": {
+            "calls": 3,
+            "charged_cpu_ms": 88.05715985390037,
+            "max_cpu_ms": 37.75901175535221
+          },
+          "GemDrawingTextClip": {
+            "calls": 3,
+            "charged_cpu_ms": 85.88857296311281,
+            "max_cpu_ms": 37.03802903666446
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 3,
+            "charged_cpu_ms": 48.98890437974623,
+            "max_cpu_ms": 21.82676679179959
+          },
+          "GemBitmapTextClip": {
+            "calls": 3,
+            "charged_cpu_ms": 33.56463893067035,
+            "max_cpu_ms": 14.460746653058521
+          },
+          "blit_glyph": {
+            "calls": 115,
+            "charged_cpu_ms": 14.53186519476894,
+            "max_cpu_ms": 0.13955868442680147
+          },
+          "DisplayCheck": {
+            "calls": 3,
+            "charged_cpu_ms": 3.1545901415181445,
+            "max_cpu_ms": 1.7807124259387435
+          },
+          "VbxeOwnerFence": {
+            "calls": 9,
+            "charged_cpu_ms": 1.3441333899086385,
+            "max_cpu_ms": 0.5795914454755497
+          },
+          "VbxeBlitExtent": {
+            "calls": 6,
+            "charged_cpu_ms": 0.23689734260529277,
+            "max_cpu_ms": 0.04398213084965864
+          }
+        }
+      },
+      "disk_widget": {
+        "kind": "paint",
+        "start": 4361774299.625,
+        "end": 4361976122.125,
+        "return_a": 1,
+        "return_x": 19986,
+        "elapsed_ms": 113.80235388981066,
+        "charged_cpu_ms": 47.44960028419223,
+        "off_cpu_ms": 49.62149993163034,
+        "interrupt_ms": 16.731253673988093,
+        "submissions": [
+          {
+            "start": 4361863186.25,
+            "end": 4361964786.875,
+            "charged_cpu_ms": 15.258275195628853,
+            "before_first_fence_cpu_ms": 13.10639305646206,
+            "from_first_fence_cpu_ms": 2.1518821391667924
+          },
+          {
+            "start": 4361965166.75,
+            "end": 4361966369.5,
+            "charged_cpu_ms": 0.5856530853041886,
+            "before_first_fence_cpu_ms": 0.37131068159615666,
+            "from_first_fence_cpu_ms": 0.21434240370803195
+          },
+          {
+            "start": 4361971452.125,
+            "end": 4361975938.5,
+            "charged_cpu_ms": 2.0489047462639856,
+            "before_first_fence_cpu_ms": 1.5757444187098857,
+            "from_first_fence_cpu_ms": 0.47316032755410015
+          }
+        ],
+        "exclusive_cpu_ms": {
+          "VbxeOwnerSubmit": 17.2662286309575,
+          "GemWidgetFill": 15.868174840247608,
+          "VbxeBlitExtent": 3.1261145311603524,
+          "GemDrawingWidgetBatch": 2.7655174455403957,
+          "just_draw": 2.5834567981290686,
+          "GemWidgetText": 2.1272831589319674,
+          "blit_mask": 1.0705842715952967,
+          "DisplayCheck": 0.6808067337770077,
+          "VbxeOwnerFence": 0.6433796320443655,
+          "blit_glyph": 0.640560264682208,
+          "WidgetDrawObject": 0.28567239797061933,
+          "model_call": 0.27383105504955746,
+          "paint": 0.11799052410629579
+        },
+        "inclusive_routines": {
+          "paint": {
+            "calls": 1,
+            "charged_cpu_ms": 47.44960028419223,
+            "max_cpu_ms": 47.44960028419223
+          },
+          "model_call": {
+            "calls": 1,
+            "charged_cpu_ms": 47.33160976008593,
+            "max_cpu_ms": 47.33160976008593
+          },
+          "GemDrawingWidgetBatch": {
+            "calls": 1,
+            "charged_cpu_ms": 47.05777870503638,
+            "max_cpu_ms": 47.05777870503638
+          },
+          "WidgetDrawObject": {
+            "calls": 2,
+            "charged_cpu_ms": 24.194119081619277,
+            "max_cpu_ms": 21.092392078141586
+          },
+          "just_draw": {
+            "calls": 2,
+            "charged_cpu_ms": 23.908446683648656,
+            "max_cpu_ms": 20.915829197086467
+          },
+          "GemWidgetFill": {
+            "calls": 15,
+            "charged_cpu_ms": 18.557146461905408,
+            "max_cpu_ms": 2.402594381846657
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 3,
+            "charged_cpu_ms": 17.892833027197028,
+            "max_cpu_ms": 15.258275195628853
+          },
+          "VbxeBlitExtent": {
+            "calls": 80,
+            "charged_cpu_ms": 3.1261145311603524,
+            "max_cpu_ms": 0.05229926456802358
+          },
+          "GemWidgetText": {
+            "calls": 1,
+            "charged_cpu_ms": 2.7678434236141753,
+            "max_cpu_ms": 2.7678434236141753
+          },
+          "blit_mask": {
+            "calls": 3,
+            "charged_cpu_ms": 1.331728173515145,
+            "max_cpu_ms": 0.45807671216655693
+          },
+          "DisplayCheck": {
+            "calls": 1,
+            "charged_cpu_ms": 0.6808067337770077,
+            "max_cpu_ms": 0.6808067337770077
+          },
+          "VbxeOwnerFence": {
+            "calls": 7,
+            "charged_cpu_ms": 0.6433796320443655,
+            "max_cpu_ms": 0.3902004429226126
+          },
+          "blit_glyph": {
+            "calls": 5,
+            "charged_cpu_ms": 0.640560264682208,
+            "max_cpu_ms": 0.13053670886789714
+          }
+        }
+      }
+    },
+    "after": {
+      "disk_console": {
+        "kind": "consoledisplay_cells",
+        "start": 4348312347.25,
+        "end": 4348479057.125,
+        "return_a": 0,
+        "return_x": 20028,
+        "elapsed_ms": 94.00327610487483,
+        "charged_cpu_ms": 53.86295619126024,
+        "off_cpu_ms": 27.063107309350855,
+        "interrupt_ms": 13.077212604263728,
+        "submissions": [
+          {
+            "start": 4348354391.875,
+            "end": 4348356721.25,
+            "charged_cpu_ms": 1.0682582935215166,
+            "before_first_fence_cpu_ms": 0.010572627608091021,
+            "from_first_fence_cpu_ms": 1.0576856659134255
+          },
+          {
+            "start": 4348422119.5,
+            "end": 4348428193.0,
+            "charged_cpu_ms": 2.7518435138339306,
+            "before_first_fence_cpu_ms": 0.010572627608091021,
+            "from_first_fence_cpu_ms": 2.74127088622584
+          },
+          {
+            "start": 4348472127.0,
+            "end": 4348478036.25,
+            "charged_cpu_ms": 2.720971441218305,
+            "before_first_fence_cpu_ms": 0.010572627608091021,
+            "from_first_fence_cpu_ms": 2.710398813610214
+          }
+        ],
+        "exclusive_cpu_ms": {
+          "GemBitmapTextClip": 19.70462897830355,
+          "blit_glyph": 14.381451945997833,
+          "consolebitmap_desktopdraw": 7.086268412230979,
+          "VbxeOwnerSubmit": 5.1619092191903055,
+          "consolebitmap_run": 2.175917245929186,
+          "DisplayCheck": 2.0478474835031766,
+          "VbxeOwnerFence": 1.4277276321966115,
+          "consoledisplay_cells": 1.0722054078285372,
+          "VbxeBlitExtent": 0.24930255899878628,
+          "consolebitmap_clippedtext": 0.22540842060450053,
+          "consolebitmap_text": 0.2061662383577749,
+          "GemDrawingTextClip": 0.12412264811898857
+        },
+        "inclusive_routines": {
+          "consoledisplay_cells": {
+            "calls": 1,
+            "charged_cpu_ms": 53.86295619126024,
+            "max_cpu_ms": 53.86295619126024
+          },
+          "consolebitmap_text": {
+            "calls": 3,
+            "charged_cpu_ms": 52.790750783431704,
+            "max_cpu_ms": 21.25958056271753
+          },
+          "consolebitmap_desktopdraw": {
+            "calls": 3,
+            "charged_cpu_ms": 52.58458454507393,
+            "max_cpu_ms": 21.185078780172518
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 3,
+            "charged_cpu_ms": 45.498316132842945,
+            "max_cpu_ms": 18.417517293294555
+          },
+          "consolebitmap_run": {
+            "calls": 3,
+            "charged_cpu_ms": 45.27290771223845,
+            "max_cpu_ms": 18.340478080123603
+          },
+          "GemDrawingTextClip": {
+            "calls": 3,
+            "charged_cpu_ms": 43.096990466309265,
+            "max_cpu_ms": 17.619424877251795
+          },
+          "GemBitmapTextClip": {
+            "calls": 3,
+            "charged_cpu_ms": 34.33538348330018,
+            "max_cpu_ms": 14.141523783478224
+          },
+          "blit_glyph": {
+            "calls": 115,
+            "charged_cpu_ms": 14.381451945997833,
+            "max_cpu_ms": 0.12785830987384741
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 3,
+            "charged_cpu_ms": 6.541073248573753,
+            "max_cpu_ms": 2.7518435138339306
+          },
+          "DisplayCheck": {
+            "calls": 3,
+            "charged_cpu_ms": 2.0478474835031766,
+            "max_cpu_ms": 0.6864454685013229
+          },
+          "VbxeOwnerFence": {
+            "calls": 9,
+            "charged_cpu_ms": 1.4277276321966115,
+            "max_cpu_ms": 0.578111277610417
+          },
+          "VbxeBlitExtent": {
+            "calls": 6,
+            "charged_cpu_ms": 0.24930255899878628,
+            "max_cpu_ms": 0.044757456874251984
+          }
+        }
+      },
+      "disk_widget": {
+        "kind": "paint",
+        "start": 4358969302.5,
+        "end": 4359108580.0,
+        "return_a": 1,
+        "return_x": 19986,
+        "elapsed_ms": 78.53488755658118,
+        "charged_cpu_ms": 33.18430627351528,
+        "off_cpu_ms": 32.03738763058957,
+        "interrupt_ms": 13.31319365247632,
+        "submissions": [
+          {
+            "start": 4359058165.375,
+            "end": 4359062854.75,
+            "charged_cpu_ms": 2.186489873537277,
+            "before_first_fence_cpu_ms": 0.010572627608091021,
+            "from_first_fence_cpu_ms": 2.1759172459291856
+          },
+          {
+            "start": 4359063137.75,
+            "end": 4359063608.25,
+            "charged_cpu_ms": 0.22336437926693628,
+            "before_first_fence_cpu_ms": 0.010925048528360721,
+            "from_first_fence_cpu_ms": 0.21243933073857557
+          },
+          {
+            "start": 4359107365.5,
+            "end": 4359108312.25,
+            "charged_cpu_ms": 0.4489842524235987,
+            "before_first_fence_cpu_ms": 0.010854564344306782,
+            "from_first_fence_cpu_ms": 0.43812968807929187
+          }
+        ],
+        "exclusive_cpu_ms": {
+          "GemWidgetFill": 17.282721930026135,
+          "VbxeBlitExtent": 3.101797487661744,
+          "GemDrawingWidgetBatch": 2.7691826231112,
+          "just_draw": 2.678117057313509,
+          "VbxeOwnerSubmit": 2.235828802375035,
+          "blit_mask": 1.7904392433381873,
+          "DisplayCheck": 0.6874322470780782,
+          "GemWidgetText": 0.6808772179610616,
+          "blit_glyph": 0.6407012330503158,
+          "VbxeOwnerFence": 0.639362033553291,
+          "WidgetDrawObject": 0.2855314296025115,
+          "model_call": 0.2746768652582047,
+          "paint": 0.11763810318602609
+        },
+        "inclusive_routines": {
+          "paint": {
+            "calls": 1,
+            "charged_cpu_ms": 33.18430627351528,
+            "max_cpu_ms": 33.18430627351528
+          },
+          "model_call": {
+            "calls": 1,
+            "charged_cpu_ms": 33.06666817032926,
+            "max_cpu_ms": 33.06666817032926
+          },
+          "GemDrawingWidgetBatch": {
+            "calls": 1,
+            "charged_cpu_ms": 32.79199130507106,
+            "max_cpu_ms": 32.79199130507106
+          },
+          "WidgetDrawObject": {
+            "calls": 2,
+            "charged_cpu_ms": 24.23640959205164,
+            "max_cpu_ms": 21.005767015939295
+          },
+          "just_draw": {
+            "calls": 2,
+            "charged_cpu_ms": 23.950878162449126,
+            "max_cpu_ms": 20.829204134884172
+          },
+          "GemWidgetFill": {
+            "calls": 15,
+            "charged_cpu_ms": 19.951182654124242,
+            "max_cpu_ms": 3.2878757335641455
+          },
+          "VbxeBlitExtent": {
+            "calls": 80,
+            "charged_cpu_ms": 3.101797487661744,
+            "max_cpu_ms": 0.052722169672347226
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 3,
+            "charged_cpu_ms": 2.858838505227812,
+            "max_cpu_ms": 2.186489873537277
+          },
+          "blit_mask": {
+            "calls": 3,
+            "charged_cpu_ms": 2.053133797307222,
+            "max_cpu_ms": 1.1605925746321781
+          },
+          "GemWidgetText": {
+            "calls": 1,
+            "charged_cpu_ms": 1.3215784510113775,
+            "max_cpu_ms": 1.3215784510113775
+          },
+          "DisplayCheck": {
+            "calls": 1,
+            "charged_cpu_ms": 0.6874322470780782,
+            "max_cpu_ms": 0.6874322470780782
+          },
+          "blit_glyph": {
+            "calls": 5,
+            "charged_cpu_ms": 0.6407012330503158,
+            "max_cpu_ms": 0.1306071930519511
+          },
+          "VbxeOwnerFence": {
+            "calls": 7,
+            "charged_cpu_ms": 0.639362033553291,
+            "max_cpu_ms": 0.42015622114553713
+          }
+        }
+      }
+    }
+  },
+  "linked_c_executable_bytes": {
+    "before": 73751,
+    "after": 72741,
+    "delta": -1010
+  },
+  "source_inputs": {
+    "platform/altirraos/vbxe.c": "e62501d01ed07cbb584052c277619225437b9d503dd695484c7f5e9981c3238a",
+    "platform/altirraos/vbxe-internal.h": "5165a4bf760d62c56122c240d803700f1f39342ffed4615c537b9feb8deb8c77",
+    "ports/gem4xe/adapter/gem-vbxe.c": "12b16ee8a4e2a65194864e7975d50e7bb7bd99cafd80db644b1fd7b2403cbabc",
+    "tests/programs/widgets_pixels.c": "83b3ca69c3b985f880bc9be0e2790efed498bbec46c0fde888c939369b483946",
+    "tools/test_widget_pixels.py": "e680885197a19d468f4c248647b8df8241dda2235a7e8aa1c4ed74d1adcbbb58",
+    "tools/test_widget_panel.py": "d2a73d20d50ad42a835451c2e9ce83020f7aba42f74ec46b0c5616d35aa6372c",
+    "tools/console_turn_profile.py": "a2544801d517d66badfadb82539a5221fc3e98c95992a1ee612c48b04d30b01f"
+  },
+  "diagnostic_scripts": {
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/scripts/exec816_presenter_analyze.py": "22104b84d0c54319f78edf19043c4b539acf7fd9949da708a32aecd8e00b677d",
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/scripts/exec816_presenter_csites.py": "ff87173ea3a7eaf5344217d34a3f98393766420d3efa359e2193bf2255510635",
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/scripts/exec816_presenter_probe.py": "633111f7bf3fa0fae36c5028bed648971bb3d777465e15245e6b732ace74684c",
+    "/Users/michalkurcewicz/action/exec816-public/build/aes-hybrid/prepared-submit/scripts/record.py": "a4bbdfbd956ef5eb288ef5f7d11d982a0ee83c80e2a57272df5aeaa3957cb53a"
+  }
+}

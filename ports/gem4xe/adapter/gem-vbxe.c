@@ -42,6 +42,8 @@ static UWORD outlineLeft,outlineTop,outlineRight,outlineBottom,outlineVisible,ou
 
 
 static void latch(UWORD status) { if (status && !fault) fault=status; }
+/* Construction establishes record validity and enforces count/work bounds.
+ * The admitted owner submits this private list without decoding it again. */
 static void drain(void)
 {
     if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));
@@ -107,8 +109,8 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
 }
 
 /* Called only after the device's complete-cell visibility check. The atlas
- * supplies four/five bytes by eight rows. Submission still validates every
- * address and record; this private producer avoids general rectangle setup. */
+ * supplies four/five bytes by eight rows. Immutable atlas/screen geometry and
+ * the strip redirection establish extents; this producer bounds each list. */
 void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uint8_t ink)
 {
     UBYTE *r;
@@ -318,8 +320,9 @@ static UWORD cursorMasksReady;
 #include "gem-cursor-masks.h"
 
 
-/* Only the admitted cursor operation calls this producer. Submit validates
- * the entire list before DMA; no record flushes a partially prepared move. */
+/* Only the admitted cursor operation calls this producer. Fixed private VRAM
+ * slots and clipped screen coordinates establish every extent; no record
+ * flushes a partially prepared move. cursor_render bounds count and work. */
 static void cursor_record(UWORD index,ULONG source,UWORD sourceStride,
     ULONG destination,UWORD destinationStride,UWORD bytes,UWORD rows,UBYTE mode)
 {
@@ -538,6 +541,8 @@ static void outline_toggle(void)
     UWORD rows=outlineBottom-outlineTop;
     flush();
     if (fault) return;
+    /* Admitted even screen bounds give four legal records and at most 3348
+     * work units: two 320-byte rows plus two 238-row single-byte edges. */
     outline_record(0,address,bytes,1,255);
     outline_record(1,address+(ULONG)(rows-1)*320,bytes,1,255);
     outline_record(2,address+320,1,rows-2,240);

@@ -29,7 +29,9 @@ reports retained work; `blit_start` and `blit_run` both complete the bounded lis
 synchronously. Long rectangles are split into at most sixteen-row chunks,
 further reduced by the work budget. Synchronous lists leave VBXE IRQs disabled;
 the asynchronous scroll path below owns completion IRQs. No second aperture is enabled.
-The driver validates each full list and inserts chaining itself. A failed
+The producer establishes geometry and bounds each list while constructing it;
+the admitted driver submits these prepared records and inserts chaining itself.
+Public raw lists still receive full validation through `VbxeSubmit`. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.
 
@@ -46,7 +48,10 @@ calling it from Action! requires the separately tested language bridge in B6.
 
 Copy, Fill, Text and Fence each check the display owner once at public entry.
 Their internal drain, transfer and fence helpers reuse admission within that
-invocation, retaining full driver argument/list validation. Every independent
+invocation, retaining dependency fences and recovery. Prepared lists use the
+private producer contract in [`vbxe-internal.h`](../../../platform/altirraos/vbxe-internal.h)
+without repeated record decoding; descriptor-based operations retain their
+argument checks. Every independent
 service command, cursor, fence and close callback also admits its owner before
 mutating shared renderer state. Open initializes cursor state only after acquiring
 the display. Admission never survives a return or becomes a session-wide cache.
@@ -78,8 +83,9 @@ ink retains the inverse-mask AND path. Clipped replace/transparent glyphs use
 the same font atlas through bounded mask commands, with partial-nibble masks
 preserving pixels outside the clip. XOR/erase retain the staged pixel path.
 Empty glyphs skip ink after the opaque background fill. Private
-preinitialized records avoid repeated generic rectangle setup, while submission
-still validates the whole list. The maintained fourth extraction patch supplies
+preinitialized records avoid repeated generic rectangle setup. Their producer
+establishes extents and enforces the list budgets; submission retains upload,
+dependency fences and recovery. The maintained fourth extraction patch supplies
 these changes. The 256-byte ink cache and 21-byte template fit inside the
 existing C bank reservations; B2 adds no bank-zero or VRAM reservation. The sixth
 extraction patch adds clipped glyphs without new storage or reservations.

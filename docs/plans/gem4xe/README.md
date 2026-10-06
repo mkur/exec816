@@ -46,6 +46,13 @@ are implemented; HY4's integrated functional proof and demo refresh are recorded
 in the [hybrid history](../../history/aes-hybrid.md). Its native GUI latency
 acceptance remains open.
 
+The proposed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)
+builds on prepared-list submission: remove repeated internal geometry checks,
+use generated upper-memory tables for chunk limits/work and advance sequential
+record pointers, then reserve widget glyph runs once. BR1–BR4 retain list limits
+and measure Control Panel response against existing prepared-submit evidence.
+The proposed table payload is about 35 KiB; HY4 acceptance remains separate.
+
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The

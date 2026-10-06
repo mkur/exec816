@@ -1,0 +1,215 @@
+{
+  "scope": "Prepared VbxeOwnerSubmit lists only, original ten-gesture idle/scroll/disk windows. Existing trace; no new guest execution. Counts are A16 at callee entry, verified against its listing. Caller JSL and native paint/console spans identify producers. Direct native text upload and asynchronous scroll launches are outside this sample.",
+  "sources": {
+    "build/aes-hybrid/prepared-submit/panel-loaded-run/emulator.log": "6ddc3a3bd54f1744c36287777f367b3d1a7922fa10734d73cb4aedee5ffc4105",
+    "build/aes-hybrid/prepared-submit/panel-loaded-run/presenter-definition.json": "51cb191f75d4b44863d6350c48b7e6d98d6770a39253996473d3315b9c5e04f8",
+    "build/aes-hybrid/prepared-submit/panel-loaded-run/work-unit-analysis.json": "d27bb3338031e4f87563383c61eb3bd1c71c64227a6c5423c4e074d3c237d012",
+    "build/aes-hybrid/prepared-submit/panel-loaded/drawing/2-vbxe.lst": "ae26c40c903ae8f22bbb3725b8228909c8e43066cde1f39ed784e9b432e10ac4"
+  },
+  "loads": {
+    "idle": {
+      "cursor": {
+        "lists": 253,
+        "mean": 3.0513833992094863,
+        "median": 4,
+        "p95": 4,
+        "maximum": 4,
+        "histogram": {
+          "1": 60,
+          "3": 60,
+          "4": 133
+        }
+      },
+      "widget_drawing": {
+        "lists": 107,
+        "mean": 15.97196261682243,
+        "median": 15,
+        "p95": 38,
+        "maximum": 40,
+        "histogram": {
+          "1": 8,
+          "5": 32,
+          "10": 4,
+          "12": 2,
+          "13": 1,
+          "14": 3,
+          "15": 4,
+          "16": 2,
+          "17": 10,
+          "18": 5,
+          "21": 6,
+          "22": 2,
+          "29": 10,
+          "30": 8,
+          "31": 2,
+          "37": 2,
+          "38": 2,
+          "39": 2,
+          "40": 2
+        }
+      }
+    },
+    "scroll": {
+      "console_drawing": {
+        "lists": 103,
+        "mean": 41.24271844660194,
+        "median": 50,
+        "p95": 50,
+        "maximum": 50,
+        "histogram": {
+          "1": 6,
+          "18": 19,
+          "50": 78
+        }
+      },
+      "cursor": {
+        "lists": 144,
+        "mean": 2.888888888888889,
+        "median": 3.0,
+        "p95": 4,
+        "maximum": 4,
+        "histogram": {
+          "1": 40,
+          "3": 40,
+          "4": 64
+        }
+      },
+      "widget_drawing": {
+        "lists": 108,
+        "mean": 15.962962962962964,
+        "median": 15.0,
+        "p95": 38,
+        "maximum": 40,
+        "histogram": {
+          "1": 8,
+          "5": 32,
+          "10": 4,
+          "12": 2,
+          "13": 1,
+          "14": 3,
+          "15": 5,
+          "16": 2,
+          "17": 10,
+          "18": 5,
+          "21": 6,
+          "22": 2,
+          "29": 10,
+          "30": 8,
+          "31": 2,
+          "37": 2,
+          "38": 2,
+          "39": 2,
+          "40": 2
+        }
+      }
+    },
+    "disk": {
+      "cursor": {
+        "lists": 216,
+        "mean": 2.925925925925926,
+        "median": 3.0,
+        "p95": 4,
+        "maximum": 4,
+        "histogram": {
+          "1": 58,
+          "3": 58,
+          "4": 100
+        }
+      },
+      "console_drawing": {
+        "lists": 15,
+        "mean": 40.333333333333336,
+        "median": 50,
+        "p95": 50,
+        "maximum": 50,
+        "histogram": {
+          "1": 1,
+          "18": 3,
+          "50": 11
+        }
+      },
+      "widget_drawing": {
+        "lists": 108,
+        "mean": 15.962962962962964,
+        "median": 15.0,
+        "p95": 38,
+        "maximum": 40,
+        "histogram": {
+          "1": 8,
+          "5": 32,
+          "10": 4,
+          "12": 2,
+          "13": 1,
+          "14": 3,
+          "15": 5,
+          "16": 2,
+          "17": 10,
+          "18": 5,
+          "21": 6,
+          "22": 2,
+          "29": 10,
+          "30": 8,
+          "31": 2,
+          "37": 2,
+          "38": 2,
+          "39": 2,
+          "40": 2
+        }
+      }
+    }
+  },
+  "combined": {
+    "console_drawing": {
+      "lists": 118,
+      "mean": 41.1271186440678,
+      "median": 50.0,
+      "p95": 50,
+      "maximum": 50,
+      "histogram": {
+        "1": 7,
+        "18": 22,
+        "50": 89
+      }
+    },
+    "cursor": {
+      "lists": 613,
+      "mean": 2.9690048939641107,
+      "median": 3,
+      "p95": 4,
+      "maximum": 4,
+      "histogram": {
+        "1": 158,
+        "3": 158,
+        "4": 297
+      }
+    },
+    "widget_drawing": {
+      "lists": 323,
+      "mean": 15.965944272445821,
+      "median": 15,
+      "p95": 38,
+      "maximum": 40,
+      "histogram": {
+        "1": 24,
+        "5": 96,
+        "10": 12,
+        "12": 6,
+        "13": 3,
+        "14": 9,
+        "15": 14,
+        "16": 6,
+        "17": 30,
+        "18": 15,
+        "21": 18,
+        "22": 6,
+        "29": 30,
+        "30": 24,
+        "31": 6,
+        "37": 6,
+        "38": 6,
+        "39": 6,
+        "40": 6
+      }
+    }
+  }
+}

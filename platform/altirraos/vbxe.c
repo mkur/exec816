@@ -210,9 +210,9 @@ static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
         !(low<(LONG)(VBXE_BCB+VBXE_BCB_BYTES) && high>=(LONG)VBXE_BCB);
 }
 
-/* Only fully validated records reach this synchronous driver-owned launch.
- * CopyRect validates its entire geometry once, then constructs bounded records
- * on its retained owner's stack. Public lists validate every supplied record. */
+/* Records reach this synchronous driver-owned launch after raw-list validation
+ * or construction by an admitted internal producer with established geometry
+ * and list/work bounds. Both paths keep the same fences and recovery. */
 static void start(struct VbxeDisplay *d)
 {
     REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
@@ -400,11 +400,12 @@ UWORD VbxeOwnerScrollStart(struct VbxeDisplay *d,const struct VbxeCopy *c,
 /* Validate every record before mapping or starting DMA. Upload directly into
  * the private arena so no second 4 KiB CPU buffer or mutable client chain is
  * needed. Only the owner may enter; the caller retains the CPU records. */
-UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
+UWORD VbxeSubmit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 {
     const UBYTE *p;
     ULONG work=0;
-    UWORD i,n,bytes,rows;
+    UWORD i,n,bytes,rows,status=check(d);
+    if (status!=DISPLAY_OK) return status;
     if (!count) return DISPLAY_OK;
     if (count>VBXE_LIST_RECORDS || !extent(0,records,count*21))
         return DISPLAY_BAD_ARGUMENT;
@@ -675,11 +676,12 @@ UWORD VbxeRead(struct VbxeDisplay *display, ULONG address, void *destination, UW
     return VbxeOwnerRead(display,address,destination,bytes);
 }
 
-UWORD VbxeSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count)
+/* Internal producers own record validity and enforce capacity/work bounds
+ * while constructing the list. Do not decode and validate it a second time. */
+UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count)
 {
-    UWORD status=check(display);
-    if (status!=DISPLAY_OK) return status;
-    return VbxeOwnerSubmit(display,records,count);
+    if (!count) return DISPLAY_OK;
+    return submit(display,records,count);
 }
 
 UWORD VbxeFill(struct VbxeDisplay *display, ULONG address, UWORD stride, UWORD bytes, UWORD rows, UBYTE value)

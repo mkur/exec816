@@ -40,8 +40,9 @@ void WidgetPixelProbe(void)
     tree.objects[5].kind=G_STRING;tree.objects[5].flags=0;tree.objects[5].spec=4;
     tree.objects[6].kind=G_IBOX;tree.objects[6].flags=LASTOB;tree.objects[6].spec=0x21170UL;
     check(WidgetValidate(&context,&tree,sizeof(tree),320,160)==WIDGET_OK);
-    for (stage=1;stage<=12;stage++) {
-        if (stage!=3 && stage!=6 && stage!=12) check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
+    for (stage=1;stage<=15;stage++) {
+        if (stage!=3 && stage!=6 && stage!=12 && stage!=14 && stage!=15)
+            check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
         if (stage==3) check(GemDrawingPointer(276,50,1)==DISPLAY_OK);
         if (stage==5) {
             tree.count=9;tree.objects[0].width=608;tree.objects[0].tail=8;
@@ -60,7 +61,16 @@ void WidgetPixelProbe(void)
             tree.objects[0].flags=stage==10 ? HIDETREE : 0;
             check(WidgetValidate(&context,&tree,sizeof(tree),608,160)==WIDGET_OK);
         }
-        if (stage==7) {
+        /* Prepared outline lists reach both maximum work and minimum geometry.
+         * Moving/hiding must restore the old XOR border without touching the
+         * interior or accepting an invalid replacement. */
+        if (stage==13) check(GemDrawingOutline(0,0,640,240,1)==DISPLAY_OK);
+        else if (stage==14) {
+            check(GemDrawingOutline(1,0,640,240,1)==DISPLAY_BAD_ARGUMENT);
+            check(GemDrawingOutline(608,208,640,240,1)==DISPLAY_OK);
+        }
+        else if (stage==15) check(GemDrawingOutline(0,0,0,0,0)==DISPLAY_OK);
+        else if (stage==7) {
             for (i=0;i<240;i+=16) {
                 GlyphClipTop=i;
                 check(GemDrawingBatch(0,i,640,i+16,ClippedGlyphsProbe)==DISPLAY_OK);

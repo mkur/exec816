@@ -541,3 +541,172 @@ physical-hardware qualification. Reserved bank-zero delta is **0 bytes**,
 fixed, per public Task and idle, including guards, alignment and unused
 capacity; upper reservations also match across all six fixtures. The existing
 OF816 demo package is unchanged.
+
+## Longest presenter work units after IL3
+
+The [presenter work-unit record](../development/presenter-work-units.json)
+replays the existing optimized IL3 active-client image with additional passive
+Action! and checked C call-site markers. The 100-frame scrolling call probe
+and the original panel's ten gestures per idle/scroll/disk load pass. Both
+reproduce their original latency distributions, samples and workload progress
+exactly; the panel also reproduces its input decomposition and feedback results.
+The image, compiler, machine configuration and workloads are unchanged.
+
+The longest measured gesture-window units, ranked by charged presenter CPU,
+are below. Wall time belongs to the same invocation, including interrupts and
+other Tasks. These are maxima, not percentiles. Nested rows overlap and must
+not be added. “Disk” identifies the concurrent workload; the timed console
+presentation is repaint work, not filesystem execution.
+
+| Unit | CPU | Wall time | Load |
+| --- | ---: | ---: | --- |
+| Console dirty-cell presentation, `CONSOLEDISPLAY.Cells` | 94.556 ms | 161.895 ms | disk |
+| Widget strip/chunk, `DESKWIDGETS.Paint` | 47.450 ms | 113.802 ms | disk |
+| One console text call, `CONSOLEBITMAP.Text` | 39.510 ms | 66.907 ms | disk |
+| Desktop/AES control admission, `DESKHOST.Controls` | 25.780 ms | 61.028 ms | disk |
+| Widget input/model commit, `DESKWIDGETS.Input` | 8.069 ms | 14.718 ms | idle |
+
+Console presentation is the largest interactive unit. `Cells` permits 160
+cells across up to four rows before returning. The longest scrolling example
+uses 88.396 ms CPU for three text calls, including 115 `blit_glyph` calls and
+three list submissions. Its disk counterpart uses 94.556 ms. The separate
+100-frame scrolling probe confirms that an apparently slow paint-pump interval
+actually spends 87.922 of its 96.129 ms CPU inside `Cells`; the paint pump itself
+uses only 1.273 ms.
+
+Clipping loses the console's fast text-run path. In
+[`GemBitmapTextClip`](../../ports/gem4xe/hosted/hosted-dispatch.inc), the fast
+`GemBitmapText` call applies only when the entire original run fits the clip.
+An obscured row takes the per-glyph path even for its wholly visible cells.
+The measured examples contain no `VbxeOwnerText` calls inside those three text
+draws. This makes preserving the fast path for complete visible cells, with
+separate handling of cut edge glyphs, a concrete optimization candidate.
+
+List admission is expensive independently of raster size. In the 94.556 ms
+console example, three `VbxeOwnerSubmit` calls consume 48.989 ms CPU. Of this,
+42.569 ms occurs before the first fence in each submission. Source flow places
+argument/record decoding, extent checks and work accounting in that prefix;
+the remaining 6.420 ms includes upload, launch and fences. This is a boundary
+measurement including call overhead, not an instruction-only validation count.
+All nine fence calls together consume only 1.344 ms, including their overhead,
+so blitter waiting is not the dominant charge in this example. The producer
+also performs geometry checks while building commands. The trusted internal
+producer/owner path is therefore a stronger candidate for avoiding repeated
+checks than further timer-wrapper optimization.
+
+Widget work has the same submission cost plus substantial fill construction.
+The 47.450 ms paint invocation draws **two objects**, emits 15 `GemWidgetFill`
+calls and makes three list submissions. Exclusive fill work is 15.868 ms;
+inclusive list submissions cost 17.893 ms, with 15.053 ms before their first
+fences. All seven fence calls together cost 0.643 ms. The existing four-object
+budget does not bound CPU tightly: this case never reaches four objects.
+Reducing that count alone cannot guarantee a short button-feedback interval.
+Control admission is also material: the slowest measured call uses 25.780 ms,
+including 16.938 ms in retained-model calls. Label patching currently stages
+the admitted context and rebuilds/deduplicates its label storage; it deserves
+a separate finer breakdown after the larger rendering costs.
+
+There are **zero `vram_win` entries** in all three measured load windows.
+Whole-page staging transfers therefore do not explain these interaction tails.
+Startup is different: the initial `CONSOLEBITMAP.Run` takes 1028.774 ms CPU
+before the first worker loop, including 284.995 ms in owner reads and 237.604 ms
+in owner writes. Startup, setup and the full-redraw comparison are excluded
+from the table. Across the complete presenter run, widget paint reaches
+66.915 ms and control admission reaches 84.255 ms.
+
+The timing unit also matters. The older panel observer's “turn” runs from
+one paint-pump entry to the next. Observing the actual worker-loop boundary
+instead gives a maximum measured turn of 137.784 ms CPU, while the longest
+gap between input-service entries is 105.590 ms CPU / 162.052 ms wall time.
+Input can be serviced between portions of one worker turn, so the turn maximum
+is not itself an input-latency bound. Conversely, preemption or Yield lets
+other Tasks run but does not make this presenter process input while it is
+still inside a long synchronous draw.
+
+Input consumption and model commitment have separate boundaries.
+`DESKWIDGETINPUT.Advance` defers while `scene.busy` is set; the paint token can
+survive several strips. Shorter drawing continuations must therefore preserve
+the existing ordering/coherent strip publication while providing a safe model
+commit boundary. Merely adding more input polling cannot resolve that wait.
+
+The next candidates are: retain batched console text under clipping; remove
+repeated admission work for internally constructed VBXE lists; then introduce
+shorter measured rendering continuations/input boundaries and inspect widget
+fill construction and label patching. These are recommendations, not changes
+or claimed speedups. The raw-pointer cohort's off-CPU tail remains separate;
+this investigation does not attribute the previous HY4 regression to IL1/IL2.
+HY4 and the transient-pixel issue remain open.
+
+This is optimized development evidence, not release or hardware qualification.
+Guards and ownership checks pass in the replay. Only this analysis and its
+record are added; the guest and demo are unchanged. Reserved bank-zero delta
+is **0 bytes**, fixed, per public Task and idle, including guards, alignment
+and unused capacity.
+
+## Prepared VBXE lists
+
+The first recommendation from the presenter work-unit analysis is implemented.
+Private `VbxeOwnerSubmit` now submits records constructed by an admitted
+internal producer without decoding and checking them again. Public
+`VbxeSubmit` owns the existing complete raw-list validation. Both paths retain
+the same uploader, chaining, dependency fences, deadlines and fault recovery.
+Producer geometry checks and the 64-record / 8,192-work limits are unchanged.
+The [driver notes](../../platform/altirraos/vbxe.md) and private header describe
+the general, cursor and outline producers' obligations. There is no new kernel
+operation or public ABI change.
+
+The [development record](../development/vbxe-prepared-submit.json) compares the
+original IL3 active-client panel image with a rebuilt optimized image using
+the same passive observers and ten gestures per load. Maximum widget-paint
+CPU drops from **47.450 to 33.319 ms** across the measured windows; maximum
+console dirty-cell presentation drops from **94.556 to 53.863 ms**. The clipped
+text path, object/cell budgets, worker scheduling and retained-model protocol
+are unchanged.
+
+| Panel p95 | Before | After |
+| --- | ---: | ---: |
+| Button consumption, idle | 42.370 ms | 38.077 ms |
+| Button consumption, scrolling | 118.915 ms | 79.507 ms |
+| Button consumption, disk | 103.243 ms | 71.666 ms |
+| Button pixels, idle | 219.204 ms | 159.082 ms |
+| Button pixels, scrolling | 299.283 ms | 199.246 ms |
+| Button pixels, disk | 259.537 ms | 179.375 ms |
+
+All functional, final-pixel, guard and ownership checks pass. The feedback
+observer records no invalid-color pixels in any of the sixty measured edges;
+its post-model observation window and pointer exclusion are unchanged, so this
+does not establish whole-gesture flicker freedom. The continuous AES workload
+completes fewer exchanges in the shorter gesture cohorts: messages change
+from 98/134/120 to 90/108/105 and timer waits from 49/68/60 to 45/55/53 for
+idle/scroll/disk. These are the original completion-paced workloads, not an
+equal-offer comparison. Individual component maxima can still rise: widget
+input/model commitment reaches 8.750 ms instead of 8.069 ms, and control
+processing remains roughly 25 ms.
+
+**HY4 remains open.** Idle panel consumption still exceeds its 28.374 ms
+frozen limit. The raw-pointer cohort and complete frozen/matched-native
+comparator were not rerun for this focused change. The timing evidence does
+not qualify the entire GUI or close the earlier transient-pixel issue.
+
+Optimized development checks pass:
+
+- Four G3 cases: pattern/public raw-list rejection, NMI at mapping boundaries,
+  busy timeout recovery and failure to quiesce. Public wrong-owner/empty calls,
+  invalid later-record rejection without drawing a prefix, maximum and
+  bank-crossing lists remain covered.
+- All 87 G4 rendering cases, including clipping, pixels, invalid batches,
+  fault/reopen and OS restoration.
+- All 62 cursor cases, including edge nibbles, list contents and recovery.
+- Fifteen widget pixel stages. Three new stages check maximum-screen and
+  minimum-size prepared XOR outlines, invalid replacement and exact restoration
+  after move/hide. Existing stages cover clipped glyphs, offscreen widget
+  continuation and rejected continuation geometry.
+- The matched active-client panel run described above, plus 389 host tests
+  with four historical-source skips and documentation/link checks.
+
+Linked panel C executable code shrinks by **1,010 bytes** (73,751 to 72,741);
+the unused public raw-list decoder is no longer linked into this image.
+Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
+including guards, alignment and unused capacity. Upper-RAM/VRAM reservations
+and the existing demo package are unchanged. These are development checks,
+not release or physical-hardware qualification.

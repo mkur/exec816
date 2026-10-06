@@ -19,6 +19,14 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage>=13:
+        if stage!=15:
+            left,top,right,bottom=(0,0,640,240) if stage==13 else (608,208,640,240)
+            for x in range(left,right):
+                device.dev.plot_xor(x,top);device.dev.plot_xor(x,bottom-1)
+            for y in range(top+1,bottom-1):
+                device.dev.plot_xor(left,y);device.dev.plot_xor(right-1,y)
+        return bytes(device.dev.s.mem[:76800])
     if stage==11:
         # More than four objects intersect this strip. Its first chunk must
         # remain offscreen, including across a rejected continuation.
@@ -77,7 +85,7 @@ def run(out,mode,replay=False):
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,13):
+                for stage in range(1,16):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)
