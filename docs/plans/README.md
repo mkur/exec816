@@ -48,6 +48,12 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [COPY buffers and filesystem write performance](write-performance-implementation-plan.md):
+  WP0–WP5 implemented at the development tier; a 16 KiB COPY buffer,
+  initialized payload writes, sequential cursors and four-sector metadata groups
+  selected after accurate BREAK measurements. See the
+  [execution record](../history/write-performance.md), including the remaining
+  accurate 256-byte MyDOS transport limit.
 - [MyDOS and SpartaDOS write support](filesystem-write-implementation-plan.md):
   W0–W9 implemented with lightweight mounts, write-through file/namespace
   operations, inherited writers and shell cleanup. Both sector geometries pass

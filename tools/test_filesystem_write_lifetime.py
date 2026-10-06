@@ -25,7 +25,7 @@ CASES = {'before': 1, 'wire': 2, 'final': 3, 'create': 4, 'close-break': 5,
 
 def instrument(output):
     for name in ('filesystem_write_lifetime.act', 'fswriteprobe.act'):
-        shutil.copyfile(ROOT/'tests/programs'/name, output/name)
+        (output/name).write_text(read_source(ROOT/'tests/programs'/name))
     edits = {
         'fswriteio.act': [
             ('  IF BLOCKIO.BeginStore(', '  FSWRITEPROBE.Before(service)\n'
@@ -76,16 +76,18 @@ def outcome(media, filesystem, baseline, fault, expected):
                 sha256=sha256(media))
 
 
-def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=None):
+def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=None,
+        amount=300, accurate=False, prime_tail=False, confirmed_bytes=0):
+    require(1<=amount<=8192,'Amount must be 1..8192')
     observers = instrument(output)
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
     getattr(baseline, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
-                   access='readwrite')]
+                   access='readwrite',profile=4 if accurate else 1)]
     program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), output/'filesystem_write_lifetime.act', output,
                     optimize=mode == 'opt', tasks=True, task_capacity=8, console=True,
-                    dos_mounts=mounts)
+                    dos_mounts=mounts, image_data=[(0xaffd0,bytes([0xa5])*(8192+64))])
     if from_build:
         record = program['build']
         require(sha256(output/'filesystem_write_lifetime.act') == record['source_sha256'], 'Changed test source')
@@ -97,7 +99,9 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
             require(sha256(from_build/input_name) == digest, 'Changed observer: ' + input_name)
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest', 'accuratedisk': False}
+        configuration = {**PIN['configuration'],
+                         'diskemu': 'generic56k' if accurate else 'fastest',
+                         'accuratedisk': accurate}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
@@ -121,10 +125,16 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
                     symbol=next(d for d in program['image']['data'] if '_FSWRITELIFETIME_PATH_' in d['name'])
                     require(len(encoded)<=symbol['size'], 'Injected path too long')
                     bridge.memload(symbol['address'],encoded)
-                for key, value in (('scenario', CASES[name]), ('nth', ordinal)):
+                for key, value in (('scenario', CASES[name]), ('nth', ordinal), ('amount',amount)):
                     address = next(d['address'] for d in program['image']['data']
                                    if '_FSWRITELIFETIME_' + key.upper() + '_' in d['name'])
                     bridge.memload(address, value.to_bytes(2, 'little'))
+                address=next(d['address'] for d in program['image']['data']
+                             if '_FSWRITELIFETIME_PRIMETAIL_' in d['name'])
+                bridge.poke(address,int(prime_tail))
+                address=next(d['address'] for d in program['image']['data']
+                             if '_FSWRITELIFETIME_CONFIRMEDBYTES_' in d['name'])
+                bridge.memload(address,confirmed_bytes.to_bytes(2,'little'))
 
             try:
                 runtime, _ = execute(bridge, {**program, 'output': case_out}, before_run=before,
@@ -139,27 +149,40 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
             probe_image = {**program['image'], 'data': [d for d in program['image']['data']
                                                      if '_FSWRITEPROBE_' in d['name']]}
             probe = {key: data(bridge, probe_image, key) for key in ('fired', 'count', 'wirePhase')}
+            if name=='wire':
+                start=int.from_bytes(bytes(data(bridge,probe_image,'deliveredFrame')),'little')
+                view={**program['image'],'data':[d for d in program['image']['data'] if '_FSWRITELIFETIME_' in d['name']]}
+                end=int.from_bytes(bytes(data(bridge,view,'collectedFrame')),'little')
+                probe['break_pal_frames']=(end-start)&65535
             if name == 'wire':
                 require(1 <= probe['wirePhase'][0] < 13, 'Missing actual wire injection')
             time.sleep(3)
             bridge.regs()
             bridge._cmd_ok('EJECT drive=0')
-            payload = bytes((i & 255) ^ 0x69 for i in range(300))
-            expected = {'before': b'', 'wire': payload[:size - (3 if filesystem == 'mydos' else 0)],
+            view={**program['image'],'data':[d for d in program['image']['data'] if '_FSWRITELIFETIME_' in d['name']]}
+            group_limit=int.from_bytes(bytes(data(bridge,view,'groupLimit')),'little')
+            payload = bytes((i & 255) ^ 0x69 for i in range(amount))
+            expected = {'before': b'', 'wire': payload[:size-3 if filesystem=='mydos' else size*group_limit],
                         'final': payload[:17], 'create': b'', 'close-break': b'',
                         'stop': payload, 'detached': payload[:17],
                         'parent-first': payload[:17]*2, 'child-first': payload[:17]*2,
                         'delete-break':{}, 'rename-break':{'TARGET':payload},
                         'truncate-break':b'', 'mkdir-break':{}}.get(name)
+            if name=='before':
+                expected=payload[:confirmed_bytes]
+            if name=='wire' and filesystem=='mydos' and prime_tail:
+                expected=payload[:size-3]+payload[:(size-3)*group_limit]
             report = outcome(media, filesystem, baseline, expected is None, expected)
             if name=='mkdir-break':
                 require(report['allocation']['directories']==baseline.directories+1,
                         'Committed directory was not published')
             cases.append(dict(name=name, ordinal=ordinal, runtime=runtime, probe=probe,
+                              group_limit=group_limit,
                               media=report, status='pass'))
             (output/'progress.json').write_text(json.dumps(cases, indent=2) + '\n')
     return dict(status='pass', build=program['build'], cases=cases, observers=observers,
                 configuration=configuration, machine=machine, path_override=path,
+                confirmed_bytes=confirmed_bytes,
                 scope='Development only: task-side injection at physical write boundaries; '
                       'lost completion is injected after the real transport reply, not a device fault.',
                 bank_zero_delta=dict(fixed=0, per_task=0))
@@ -174,6 +197,11 @@ if __name__ == '__main__':
     parser.add_argument('--ordinal', type=int, default=1)
     parser.add_argument('--ordinals', help='Comma-separated physical write boundaries for one fault operation')
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--amount',type=int,default=300)
+    parser.add_argument('--confirmed-bytes',type=int,default=0,
+                        help='Expected earlier complete prefix on a later-group failure')
+    parser.add_argument('--accurate-media',action='store_true')
+    parser.add_argument('--prime-tail',action='store_true',help='Start wire cancellation on newly allocated MyDOS sectors')
     parser.add_argument('--path', help='Existing short fixture path for split-record fault checks')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
@@ -183,7 +211,9 @@ if __name__ == '__main__':
     try:
         result = run(output, args.case, args.filesystem, args.size, args.suite.split(','),
                      [int(n) for n in args.ordinals.split(',')] if args.ordinals else args.ordinal,
-                     args.from_build.resolve() if args.from_build else None, args.path)
+                     args.from_build.resolve() if args.from_build else None,
+                     args.path, args.amount, args.accurate_media, args.prime_tail,
+                     args.confirmed_bytes)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

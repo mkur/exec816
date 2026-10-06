@@ -13,12 +13,23 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
   development records do not replace it.
 - Confirm the supported machine and disk profiles, document remaining limits,
   and verify the packaged OF816 boot XEX, system disk, ROM and notices together.
+- Investigate the verified-write deadline exposed by 16 KiB COPY on accurately
+  timed 256-byte MyDOS media before qualifying that case. The
+  [write-performance record](history/write-performance.md) preserves the
+  reproducible timeout and the passing bundled 128-byte WORK scope.
 
 ## Commands and CLI
 
 Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
+
+The [COPY and filesystem write-performance slice](history/write-performance.md)
+implements a 16 KiB loadable COPY buffer, fewer physical writes during file
+extension, retained sequential cursors and bounded four-sector metadata groups.
+Matched buffer/filesystem measurements, confirmed-prefix errors, ownership,
+BREAK checkpoints and the bitmap/cartridge preview have development evidence.
+The accurate 256-byte MyDOS transport limit is recorded above.
 
 1. Add shell `>>` append redirection, reusing the existing writable Open and
    seek-to-EOF behavior. Cover partial writes, final Close errors, BREAK and
@@ -41,7 +52,7 @@ stores external commands in SYS:C, assigns C: there at startup and defaults
 PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
-ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
+ExNext after a mutation. The next utility batch is `>>` and minimal EXECUTE.
 
 ## Follow-on capabilities
 

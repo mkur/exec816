@@ -6,9 +6,16 @@ USE FSTYPES
 USE DOSBREAKTYPES
 USE CONSOLEFOREGROUND
 INCLUDE "sio-storage-action.inc"
+INCLUDE "../../lib/exec/exec-abi.inc"
 PUBLIC BYTE mode,fired,wirePhase
 PUBLIC CARD action,ordinal,count
+PUBLIC CARD deliveredFrame
 PUBLIC DOSBREAKTYPES.Scope POINTER target
+VOLATILE CARD clock=E816_VBI_COUNT
+
+PUBLIC CARD FUNC Now()
+
+RETURN(clock)
 
 BYTE FUNC Selected(FSTYPES.Service POINTER service)
 
@@ -19,6 +26,7 @@ PROC Deliver()
   BYTE ignored
 
   fired=1
+  deliveredFrame=clock
   ignored=CONSOLEFOREGROUND.Deliver(target.generation)
 
 RETURN

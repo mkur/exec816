@@ -62,8 +62,11 @@ native incomplete entry does not grant permission to resume writing it.
 
 Write returns the confirmed byte count, or -1 when no bytes completed. Short
 positive results retain their causal IoErr. Position advances only by this
-prefix. A unit consists of one payload sector and its required allocation,
-link/map and length updates. BREAK before its first write changes nothing;
+prefix. Sequential extension commits at most four new payload sectors and
+their required allocation, link/map and length updates. Groups stop at a
+bitmap/VTOC page and, for SDFS, the current map's remaining slots. Partial
+existing sectors, overwrites and SDFS map transitions use one payload sector.
+BREAK before a unit's first write changes nothing;
 after submission, completion is collected and the unit finishes before BREAK
 is honored. A final completed unit returns success even if BREAK has arrived.
 
@@ -94,6 +97,14 @@ not cross-linked or that a falsely free sector has no owner. Neither format is
 journaled. Power loss, torn sectors and uncertain multi-sector completion can
 leave incomplete entries, lost allocation or inconsistent counts. Verified SIO
 WRITE completion does not establish power-loss durability.
+
+The [write-performance development record](../history/write-performance.md)
+includes a repeatable Generic 57600 timeout when a 16 KiB COPY writes to
+accurately timed 256-byte MyDOS media. The verified write transmits its payload
+but exceeds the existing one-second transport deadline, leaving the bus offline
+and requiring reset. This occurs with the frozen filesystem too. Fast-media
+binary checks and the bundled 128-byte WORK disk pass; they do not qualify that
+accurate 256-byte timing case. This slice leaves transport deadlines unchanged.
 
 ## Format limits
 

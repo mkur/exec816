@@ -103,6 +103,10 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [COPY and filesystem write performance](write-performance.md): 16 KiB COPY,
+  four-sector extension groups, retained cursors, matched physical-I/O costs and
+  BREAK timing, unchanged bank-zero reservations and a recorded MyDOS transport
+  timing limit.
 - [Larger demo system disk](system-disk-capacity.md): 720 KiB default, 360 KiB
   option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):

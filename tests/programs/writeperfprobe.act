@@ -1,0 +1,87 @@
+; Test-only counters at real submitted I/O and logical commit boundaries.
+MODULE WRITEPERFPROBE
+USE EXEC
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+PUBLIC BYTE armed,active,finished
+PUBLIC BYTE failAllocation,allocationFailed
+PUBLIC BYTE protected
+PUBLIC CARD startFrame,endFrame,maxGroupWrites,groupWrites
+PUBLIC CARD groupRequests,maxGroupRequests,groupStart,maxGroupFrames
+PUBLIC LONGCARD reads,writes,readBytes,writeBytes,logicalReads,payloadVisits
+PUBLIC LONGCARD cacheHits,cacheMisses,cacheEvictions
+PUBLIC BYTE POINTER target
+VOLATILE CARD clock=E816_VBI_COUNT
+
+PUBLIC PROC Begin()
+
+  active=1
+  armed=0
+  startFrame=clock
+
+RETURN
+
+PUBLIC PROC End()
+
+  endFrame=clock
+  active=0
+  finished=1
+
+RETURN
+
+PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
+
+  IF active<>0 THEN
+    IF request.sio_Command=$52 THEN
+      reads==+1
+      readBytes==+request.io_Length
+    ELSEIF request.sio_Command=$57 THEN
+      IF protected=0 THEN
+        groupStart=clock
+        protected=1
+      FI
+
+      writes==+1
+      writeBytes==+request.io_Length
+      groupWrites==+1
+    FI
+
+    IF protected<>0 THEN
+      groupRequests==+1
+    FI
+  FI
+
+RETURN
+
+PUBLIC PROC GroupBegin()
+
+  groupWrites=0
+  groupRequests=0
+  protected=0
+
+RETURN
+
+PUBLIC PROC GroupEnd()
+
+  IF groupWrites>maxGroupWrites THEN
+    maxGroupWrites=groupWrites
+  FI
+
+  IF groupRequests>maxGroupRequests THEN
+    maxGroupRequests=groupRequests
+  FI
+
+  IF protected<>0 THEN
+    BEGIN
+      LET frames=clock-groupStart
+      IF frames>maxGroupFrames THEN
+        maxGroupFrames=frames
+      FI
+    END
+  FI
+
+  protected=0
+
+RETURN
+
+ENDMODULE

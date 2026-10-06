@@ -8,6 +8,9 @@ USE FSBTYPES
 USE FSWTYPES
 USE FSINFO
 USE DOSCORE
+USE DOSOBJECTS
+USE FSREGISTRY
+USE SDFS
 CARD checks,phase
 CARD hint
 CARD ARRAY layouts(8)
@@ -53,6 +56,21 @@ PROC FileWrites()
   phase=2
   lastResult=DOS.Write(file,buffer,amount)
   Require(lastResult=amount)
+  BEGIN
+    LET registry=DOSCORE.GetRegistry()
+    LET service=FSTYPES.Service POINTER(registry.runtime)
+    IF service.mounts(0).item.spec.format=2 THEN
+      BEGIN
+        LET object=FSTYPES.FileObject POINTER(FSREGISTRY.FindObject(
+            DOSCORE.Current(),BYTE POINTER(file),DOSOBJECTS.KIND_FILE))
+        Require(object<>NULL)
+        LET sectorBytes=LONGCARD(service.mounts(0).item.spec.dataBytes)
+        LET map=SDFS.Map(@object.backing.cursor)
+        Require(map.hops=(LONGCARD(amount)-1)/sectorBytes/((sectorBytes-4) RSH 1))
+      END
+    FI
+  END
+
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Examine(lock,@info)<>0)
   DO

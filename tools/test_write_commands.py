@@ -59,6 +59,13 @@ def vectors(command):
         else:result.extend([c('mirror-error',b'abc',failTarget=3,failAt=1,writeError=310,error=310,output=b''),
                             c('mirror-prefix-error',b'abc',failTarget=3,writeChunk=1,writePrefixError=310,error=310,output=b'a'),
                             c('prefix-before-mirror-error',b'abc',prefixError=226,failTarget=3,failAt=1,writeError=310,error=226,output=b'')])
+        if command=='copy':
+            pattern=bytes(range(256))
+            for length in (1,511,512,513,16383,16384,16385,49159):
+                expected=(pattern*((length+255)//256))[:length]
+                result.append(c(f'capacity-{length}',pattern,length=length,
+                                readChunk=16384,writeChunk=16384,file=expected,
+                                reads=(length+16383)//16384+1))
     else:
         result=[c('success'),c('mutation-error',mutationError=214,error=214,opens=0)]
         if command=='makedir':result.append(c('unlock-error',unlockError=202,error=202))
@@ -109,6 +116,14 @@ ENDMODULE
     for name in includes:
         (out/name).write_text(read_source(ROOT/'examples/commands'/name,includes).replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR'))
     source=read_source(ROOT/f'examples/commands/{command}.act',includes).replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','')
+    if command=='copy':
+        # The resident probe has a 2 KiB data budget. Use a guarded diagnostic
+        # extent crossing a bank; the loadable command's ordinary BSS is
+        # checked separately through its object profile and shell loading.
+        source=source.replace('BYTE ARRAY transferBuffer(TRANSFER_BYTES)',
+                              'BYTE POINTER transferBuffer')
+        source=source.replace('  LET parsed=',
+                              '  transferBuffer=BYTE POINTER($afff0)\n  LET parsed=',1)
     source=source.replace('MODULE '+command.upper(),'MODULE '+command.upper()+'\nUSE EXECPOLICY\nUSE WRITECOMMANDSTATE AS T')
     source+='''
 TYPE Observation=[LONGINT primary T.CaptureState capture]
@@ -153,12 +168,16 @@ ENDMODULE
     return path,bytes(blob)
 
 
-def run(out,mode,names):
+def run(out,mode,names,selected=None):
     toolchain=compiler(ROOT/'build/actionc');records=[]
     for name in names:
-        cases=vectors(name);folder=out/name;path,blob=fixture(folder,name,cases)
+        cases=[c for c in vectors(name) if selected is None or c['name'] in selected]
+        require(cases,'No selected command cases')
+        folder=out/name;path,blob=fixture(folder,name,cases)
         p=build(toolchain,path,folder,optimize=mode=='opt',banked=True,console=False,
-                image_data=[(0xc0000,bytes(STATE_BYTES)),(0x300000,blob),(0x200000,bytes(ROW_BYTES*len(cases)))])
+                image_data=[(0xc0000,bytes(STATE_BYTES)),(0x300000,blob),
+                            (0x200000,bytes(ROW_BYTES*len(cases))),
+                            (0xaffd0,bytes([0xa5])*(16384+64))])
         with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',folder,pin=PIN) as b:
             for key,value in PIN['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
             machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
@@ -181,8 +200,13 @@ def run(out,mode,names):
                     require(row[at:at+min(1024,len(expected))]==expected[:1024],f'{name}/{c["name"]}: {key} prefix')
                 require(row[2136:2136+state['consoleUsed']]==c.get('console',b''),name+' help console')
                 if c.get('noReads'):require(state['reads']==0,name+' help read Input')
+                if 'reads' in c:require(state['reads']==c['reads'],name+' chunk count')
                 require(state['seeks']==c.get('seeks',0),name+' unexpected seek')
                 if 'mode' in c:require(state['mode']==c['mode'],name+' wrong open mode')
+            if name=='copy':
+                for at in (0xaffd0,0xafff0+16384):
+                    require(all(b.eval_expr(f'db(${at+i:x})')==0xa5 for i in range(32)),
+                            'COPY diagnostic buffer guard changed')
         records.append(dict(command=name,cases=[c['name'] for c in cases],build=p['build'],runtime=runtime,machine=machine))
         print(name,mode,len(cases),'passed',flush=True)
     return dict(status='pass',tier='development',mode=mode,commands=records,bank_zero_delta=dict(fixed=0,per_task=0),
@@ -195,10 +219,12 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',choices=('raw','opt'),required=True)
     parser.add_argument('--command',choices=TEMPLATES,action='append')
+    parser.add_argument('--suite',help='Comma-separated focused case names')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')
-    try:result=run(out,args.case,args.command or list(TEMPLATES))
+    try:result=run(out,args.case,args.command or list(TEMPLATES),
+                   args.suite.split(',') if args.suite else None)
     except Exception as error:
         result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

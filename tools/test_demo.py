@@ -20,10 +20,12 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
+    require(not copy_break or (boot_smoke and measurement_commands is not None),
+            'COPY BREAK requires the focused command scope')
     require(not disk_boot or bootstrap is None,'Disk Boot requires the XEX bootstrap')
     require(not disk_boot or system_drive!=1,'Disk Boot reserves D1; select SYS on D2-D7')
     distribution_root=Path(distribution_root) if distribution_root is not None else None
@@ -364,7 +366,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
             require(ledger()==saved['ledger'],'Ownership retained after BREAK')
         def before(bridge):
-            if measurement_commands is not None:b.profile_start('basicblock')
+            if measurement_commands is not None and profile_commands:b.profile_start('basicblock')
             if aperture_pattern is not None:
                 require(b.memdump(0x8000,4096)==aperture_pattern,'Boot changed the reserved VBXE aperture')
             if cache_override is not None:
@@ -493,6 +495,21 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         after_cache=dict(hits=number(cache+16),misses=number(cache+20))
                         saved['measurements'].append(dict(command=text,cache_before=before_cache,cache_after=after_cache,
                             settled_clock=saved['settled_clock']))
+                    if copy_break:
+                        previous=begin('COPY SYS:LONG.TXT WORK:BREAK.TXT')
+                        # Current private Service layout: packet at 39,
+                        # committing at 453. Stop only after a Write mutation
+                        # began, then deliver the real Ctrl-C key.
+                        packet=f'dw(${service+39:x})+db(${service+41:x})*65536'
+                        rendezvous(f'(db(${service+453:x})=1)&(dw({packet}+22)=87)')
+                        started=b.eval_expr('@frame')
+                        press('\x03')
+                        ready(previous)
+                        result(304)
+                        cells('copy-break')
+                        saved['copy_break_frames']=b.eval_expr('@frame')-started
+                        commands.append('COPY SYS:LONG.TXT WORK:BREAK.TXT [Ctrl-C]')
+                        command('HELLO',b'Hello from disk!')
                     save_screen(out/'boot-smoke.png')
                     for character in 'EXIT':press(character)
                     b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
@@ -719,7 +736,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         reset_required=disk_failure in ('missing','missing-work')
         runtime,_=execute(b,p,preloaded=bootstrap is not None,before_run=before,timeout=240,frame_limit=12000,
                           expected_status=0xff93 if reset_required else 0)
-        if measurement_commands is not None:b.profile_stop()
+        if measurement_commands is not None and profile_commands:b.profile_stop()
         b._cmd_ok('KEY ALL up')
         require(number(at('exitStatus'))==0,'Demo EXIT failed')
         require(b.memdump(saved['screen'],960)==saved['screenBytes'] and b.peek(752)==saved['cursor'],'Demo OS display restoration failed')
@@ -747,6 +764,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok(f'EJECT drive={item["drive"]-1}')
                 audit=Audit(target.read_bytes())
                 allocation=getattr(audit,item['filesystem'])()
+                if copy_break:
+                    source_files=Audit(media_path.read_bytes())
+                    getattr(source_files,manifest['filesystem'])()
+                    prefix=audit.files['BREAK.TXT']
+                    require(0<len(prefix)<len(source_files.files['LONG.TXT']) and
+                            source_files.files['LONG.TXT'].startswith(prefix),
+                            'COPY BREAK did not persist an exact confirmed prefix')
                 if shell_only and boot_smoke and measurement_commands is None:
                     require(audit.directories==1 and not any(
                         name.startswith('SMOKEDIR/') for name in audit.files),
@@ -770,7 +794,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_boot=disk_boot,
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
-        measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
+        measurements=saved.get('measurements'),copy_break_frames=saved.get('copy_break_frames'),
+        desktop_interaction=saved.get('desktop_interaction'),
         desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),

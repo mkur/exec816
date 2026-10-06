@@ -45,7 +45,9 @@ required writes; it is not a power-loss durability or sector-atomicity claim.
 Validate names, protection, sharing, representable lengths and required memory
 before mutation. Preflight allocation for one data commit unit, including new
 maps and directory growth; reserve metadata sectors before exposing references.
-Clear newly allocated sectors, preserve unrelated bytes on partial updates,
+Initialize new file payloads once with caller bytes and a zeroed unused tail;
+clear new map and directory storage before publishing it. Preserve unrelated
+bytes on partial updates,
 and invalidate cache entries before writing. Retain staged bytes until terminal
 collection. A failed write invalidates the mount and preserves its causal error.
 
@@ -70,9 +72,10 @@ treated as atomic records.
 | Open existing for update | Validate the target, preallocate handle/backing and acquire its lease; set its native incomplete flag before publishing the writable handle. Reject sparse SDFS files before mutation. |
 | Overwrite existing payload | Read the affected sector; replace only requested payload bytes; verified write; update any required entry metadata; advance cursor/completed count. The remaining suffix is preserved. |
 | Extend MyDOS within the last sector | Update payload and used-byte trailer; write the sector; preserve the chain count; advance the confirmed cursor and length. |
-| Extend MyDOS with another sector | Reserve new allocation; write initialized payload/EOF trailer; connect the previous trailer (or first-sector entry for a zero-start input); update directory sector count; advance cursor/length. Preserve ten-bit ordinal encoding and its address limit. |
+| Extend MyDOS with new sectors | Preflight up to four sectors on one VTOC page; write their allocation bits/free count together (one write when both occupy the same VTOC sector); initialize payloads with final successors and an EOF trailer; connect the old tail; publish the new directory sector count once; advance cursor/length. Preserve ten-bit ordinal encoding and its address limit. |
 | Extend SDFS within a data sector | Write changed payload; update directory byte length if EOF grows; advance the confirmed cursor/length. |
-| Extend SDFS with new data/map | Reserve data and any map; initialize data and new map with its back-link; connect map chain/data pointer; update directory length; advance cursor/length. A zero pointer within existing logical data is unsupported for writers. |
+| Extend SDFS within the current map | Preflight up to four payloads within the map and one bitmap page; write their allocation bits/free count together; initialize actual payloads once; publish all data pointers in one map write; publish directory length once; advance cursor/length. A zero pointer within existing logical data is unsupported for writers. |
+| Extend SDFS with a new map | Reserve one map and payload; initialize the map with its back-link; connect the map chain; initialize the actual payload once; publish its pointer; update directory length; advance cursor/length. |
 | Truncate MyDOS | Validate old chain; retain its detached head in operation state; mark incomplete and publish the canonical empty extent (reusing the first sector when present); free detached tail allocation and counts; publish writable handle. |
 | Truncate SDFS | Validate old maps; retain old allocation for reclamation; mark incomplete and detach data/additional maps while retaining a zeroed first map; set length zero; release detached allocation/counts; publish writable handle. |
 | Flush | Ensure each accepted data unit's required writes have completed. Keep the native incomplete flag and writer lease; preserve position. There is no dirty write-back queue. |
@@ -90,7 +93,8 @@ there is a following record slot.
 ## Cancellation and storage
 
 Before the first mutation, ordinary cancellation leaves disk unchanged. A data
-write's protected unit is one payload sector plus dependent metadata writes;
+write's protected unit is up to four new payload sectors plus dependent
+metadata writes. Existing sectors and map transitions use a single payload;
 honor BREAK between units and report only the confirmed prefix. Namespace
 operations and truncation defer cancellation through required reclamation and
 finalization once mutation begins, bounded by volume geometry. Once an Open

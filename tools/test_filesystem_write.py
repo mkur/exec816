@@ -31,7 +31,7 @@ def reuse(path):
 
 
 def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
-        from_build=None, hint=0):
+        from_build=None, hint=0, fixture=None, cache_blocks=None):
     require(140 <= amount <= 33000, 'Amount must be 140..33000')
     paths = bytearray(7 * 64)
     for index, name in enumerate(['WRITE.BIN', 'WRENAMED.BIN', 'WRITEDIR',
@@ -39,7 +39,7 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
         value = ('D1:' + name).encode() + b'\0'
         paths[index * 64:index * 64 + len(value)] = value
     media = output/'volume.atr'
-    shutil.copyfile(ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr', media)
+    shutil.copyfile(fixture or ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr', media)
     before = Audit(media.read_bytes())
     getattr(before, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
@@ -63,6 +63,10 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
 
         def before_run(bridge):
             bridge.mount(0, str(media))
+            if cache_blocks is not None:
+                boot=program['build']['memory']['boot_config']
+                bridge.memload(boot['address']+boot['abi']['fields']['cache_blocks'],
+                               cache_blocks.to_bytes(2,'little'))
             bridge.memload(program['build']['task_storage']['BASE'] + 0x900, encode(mounts))
             address = next(d['address'] for d in program['image']['data'] if '_AMOUNT_' in d['name'])
             for offset, value in enumerate(amount.to_bytes(4, 'little')):
@@ -98,6 +102,7 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
                 allocation=report, media_sha256=sha256(media), layouts=layouts,
                 configuration=configuration,
                 runtime_mounts=mounts, allocation_hint=hint,
+                fixture=str(fixture) if fixture else None, cache_blocks_override=cache_blocks,
                 bank_zero_delta=dict(fixed=0, per_task=0))
 
 
@@ -111,6 +116,8 @@ if __name__ == '__main__':
                         help='Disable rotational delays for functional tests; serial I/O remains physical')
     parser.add_argument('--from-build', type=Path, help='Reuse unchanged emitted code with explicit runtime geometry')
     parser.add_argument('--hint', type=int, default=0)
+    parser.add_argument('--fixture', type=Path, help='Independent audited input media')
+    parser.add_argument('--cache-blocks', type=int, help='Boot cache override; zero disables it')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -119,7 +126,7 @@ if __name__ == '__main__':
     try:
         result = run(compiler(ROOT/'build/actionc'), output, args.case,
                      args.filesystem, args.size, args.amount, args.fast_media,
-                     args.from_build, args.hint)
+                     args.from_build, args.hint, args.fixture, args.cache_blocks)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

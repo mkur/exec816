@@ -99,8 +99,9 @@ DELETE WORK:NOTES/TWO.TXT WORK:LOG.TXT
 DELETE WORK:NOTES
 ```
 
-COPY and TEE preserve exact bytes, including NUL and ATASCII, with a 512-byte
-transfer buffer per running command. COPY opens its source before its output;
+COPY and TEE preserve exact bytes, including NUL and ATASCII. COPY uses a
+16 KiB transfer buffer in the loaded command's upper-RAM BSS; TEE uses 512 bytes.
+COPY opens its source before its output;
 a missing source or a destination alias of the same open file cannot truncate
 that file. Directory targets are errors: supply the complete destination name.
 APPEND is an update open followed by an EOF seek; it also creates a missing file.
