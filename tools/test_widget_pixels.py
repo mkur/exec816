@@ -19,6 +19,19 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage==16:
+        for case in range(16):
+            x=9 if case in (1,3,5,6,8,10,12) else 8;y=8+case*16
+            if case==13:x=-3
+            if case==14:y=-3
+            if case==15:y=237
+            count=63 if case==0 else 64 if case==1 else 65
+            device.wrt_mode=1;device.text_color=0 if case==8 else 2
+            device.clip=1;device.xmn=12 if case==6 else 0;device.xmx=518 if case==6 else 639
+            device.ymn=y+2 if case==7 else 0 if case==14 else y;device.ymx=y+5 if case==7 else 239 if case==15 else y+7
+            for i in range(count):
+                device._glyph(ord(' ' if case==4 or (case==5 and i%3==0) else 'A'),x+i*8,y)
+        return bytes(device.dev.s.mem[:76800])
     if stage>=13:
         if stage!=15:
             left,top,right,bottom=(0,0,640,240) if stage==13 else (608,208,640,240)
@@ -85,7 +98,7 @@ def run(out,mode,replay=False):
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,16):
+                for stage in range(1,17):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

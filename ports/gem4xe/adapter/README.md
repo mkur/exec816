@@ -46,9 +46,19 @@ row addresses. Queued records advance a write pointer by 21 bytes. Work uses
 16 bits: both the admitted 8,192-unit list and its largest 24,576-unit candidate
 fit when added. VRAM addresses remain wide. Open, drain and close reset both
 count and pointer; fixed cursor/outline lists do not advance the queue pointer.
-The tables use 35,082 bytes and reserve one 64 KiB upper bank, with no new
+The tables use 37,132 bytes and reserve one 64 KiB upper bank, with no new
 bank-zero or VRAM reservation. The extraction records generator/input/output
 hashes; no table is calculated or validated at startup.
+Complete visible widget text with nonzero stencil ink reserves a fitting run
+prefix against both the current record and work availability. Two byte tables
+map remaining work (in units of eight) to capacity for 96/120-unit glyphs.
+The encoder advances records without per-glyph capacity/extent checks and
+publishes actual count/work once per prefix; blank cells consume neither.
+Mixed fill/text lists retain order and existing capacity, without a launch
+at the primitive boundary. Partial edges, vertical clipping and hardware-zero
+ink retain the general glyph path. Staging dependencies flush before a
+reservation; a submission fault stops the next chunk. No reservation survives
+a public return, callback to arbitrary code, Yield or Wait.
 Public raw lists still receive full validation through `VbxeSubmit`. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.

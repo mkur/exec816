@@ -24,6 +24,9 @@ def tables():
                                         for width in range(1, 513)])
     for stride in (320, 640, 1024, 1280):
         result[f'GemStep{stride}'] = (2, [n*stride for n in range(rows+1)])
+    for cost in (96, 120):
+        result[f'GemGlyphCapacity{cost}'] = (1, [min(count, units*8//cost)
+                                                for units in range(work//8+1)])
     result['GemScreenRows'] = (4, [y*320 for y in range(256)])
     return result
 

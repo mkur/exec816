@@ -17,6 +17,9 @@ def run(out,mode):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     report=dict(tier='development',mode=mode,status='running')
     try:
+        require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
+        require(sha256(ROM)==PIN['rom']['sha256'],'Unpinned ROM')
+        report['pin']=PIN
         report['tables']=generate(out/'gem-vbxe-tables.h')
         f=emit(out,[ROOT/'c/calypsi/exec.c',ROOT/'tests/programs/vbxe_tables.c'],
             [ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],[],optimize=mode=='opt')

@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Drawing adapter](../../../ports/gem4xe/adapter/README.md)
 
-Status: BR1–BR2 implemented; BR3–BR4 pending. Refactor the trusted GEM command builders to remove repeated
+Status: BR1–BR3 implemented; BR4 documentation pending. Refactor the trusted GEM command builders to remove repeated
 geometry validation and reduce construction cost in Control Panel redraws.
 Use generated upper-memory lookup tables for chunk limits and work costs,
 and advance a write pointer through sequential records. Keep clipping and
@@ -84,7 +84,8 @@ at build time. Correct internal geometry remains a producer obligation.
 | Chunk work | Two tables of 16 × 512 unsigned words: `rows * width * factor`, rows 1–16 | 32,768 |
 | Screen row offsets | 256 unsigned long values: `y * 320`; valid screen coordinates remain unchanged | 1,024 |
 | Common stride increments | Four tables of 17 unsigned words: `rows * stride` for strides 320, 640, 1024 and 1280, rows 0–16 | 136 |
-| Total before alignment | Shared renderer data | **35,082** |
+| Glyph capacity (BR3) | Two 1,025-byte tables: `min(64, floor(8 * units / cost))`, costs 96/120, units 0–1,024 | 2,050 |
+| Total before alignment | Shared renderer data | **37,132** |
 
 Select the factor's row-limit/work table once per operation. The work table's
 byte index is `((rows - 1) << 10) | ((width - 1) << 1)`; each table is 16 KiB.
@@ -174,6 +175,8 @@ such helpers. Retain the focused widget timing and affected fault checks.
 
 ## BR3 Reserve full glyph runs once
 
+Implemented with [development evidence](../../development/vbxe-builder-br3.json).
+
 Add a private run encoder for the eligible full cells in `GemWidgetText`.
 Admission requires all eight rows visible and the existing nonzero-ink stencil
 mode. Split horizontal clipping into complete-cell runs and partial edge
@@ -193,6 +196,10 @@ a prefix fits. Blank glyphs must not produce uninitialized records or leave
 unused reservations charged. Perform staging/dependency flushes before the
 reservation; the encoder must not call another producer while filling it.
 Re-evaluate availability only at the next chunk boundary.
+
+BR3 uses the two glyph-capacity tables above. Index with remaining work shifted
+right by three: both glyph costs are multiples of eight, so discarding a
+remainder of up to seven preserves the exact fitting count.
 
 Use the BR2 write cursor inside the reserved run. Fixed glyph work is 96 or
 120 per emitted record; account once per chunk with constant shifts/additions

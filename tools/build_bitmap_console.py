@@ -44,10 +44,10 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
             original=ad/'gem-vbxe.c'
             instrumented=out/'gem-vbxe.c'
             text=original.read_text().replace('static void drain(void)',
-                'static void BuilderListProbe(const UBYTE *,UWORD);\nstatic void drain(void)')
+                'static UWORD BuilderSubmit(const UBYTE *,UWORD);\nstatic void drain(void)')
             needle='if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
             require(text.count(needle)==1,'Private list publication changed')
-            text=text.replace(needle,'if (commandCount && !fault) { BuilderListProbe(commands,commandCount); latch(VbxeOwnerSubmit(&display,commands,commandCount)); }')
+            text=text.replace(needle,'if (commandCount && !fault) latch(BuilderSubmit(commands,commandCount));')
             probe_source=ROOT/'tests/programs/vbxe-builder-probe.h'
             text+='\n'+probe_source.read_text()
             instrumented.write_text(text)

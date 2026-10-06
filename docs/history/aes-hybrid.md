@@ -760,3 +760,42 @@ falls from 727 to 715 bytes in this sample. Reserved bank-zero delta is **0 byte
 fixed, per public Task and idle, including guards/alignment/capacity; VRAM is
 unchanged. Cursor cases used the initial bank-D build; final bank-F loads and
 renderer/widget pixels were checked separately. No demo was refreshed.
+
+
+## Reserved widget glyph runs
+
+BR3 admits complete nonzero-ink widget label cells once, reserves a fitting
+prefix, then encodes records without per-glyph capacity or extent checks.
+Actual records/work are published once per prefix; blank cells remain free.
+The extraction patch preserves the atlas and general clipped/zero-ink path.
+Mixed batches retain their existing order and capacity.
+
+[Development evidence](../development/vbxe-builder-br3.json) passes all 16
+widget stages, including sixteen run cases, negative screen edges, 63/64/65
+cells, blank/mixed runs, count/work boundaries, staging, cursor restoration and
+a failed second submission before the next chunk. Reopen resets the queue.
+Also passing: 393 host tests (four skips), 87 renderer cases, 62 cursor cases,
+four selected display recovery/NMI cases and raw/optimized table loads.
+The original idle/scroll/disk panel protocol passes all thirty gestures.
+
+Across the same 67 idle `GemWidgetText` calls, charged label CPU falls from
+61.853 to 37.003 ms (40.2%); maximum label CPU falls from 3.020 to 2.529 ms.
+Widget lists retain the same count and size distribution. Full idle paint CPU
+falls from 859.818 to 830.669 ms. The largest paint is fill-dominated and stays
+near 19.8 ms. Inclusive routine costs are nested and must not be added together.
+
+Idle consumption p95 rises from BR2's 11.050 to 19.132 ms; button-pixel p95
+stays at 139.125 ms. The longest idle input-service gap falls from 66.940 to
+45.944 ms elapsed, with essentially unchanged maximum charged CPU (32.701 to
+32.708 ms). Neither of the two slowest input intervals contains widget paint:
+the worst has 23.538 ms runnable off CPU; the next includes cache/presenter
+work. Retain this unfavourable sample. Lower label cost does not guarantee
+lower per-run input p95 under completion-paced scheduling. HY4 remains open.
+
+Two capacity tables add 2,050 bytes in the same reserved bank `$0F` (37,132
+payload bytes, 28,404 unused, no table padding). Linked panel C code grows by
+1,426 bytes; ordinary C data/BSS remain 3,559/12,359 bytes. Panel worker stack
+peak is 743 bytes versus BR2's 715, leaving 1,561 above its interrupt floor.
+Reserved bank-zero delta is **0 bytes** fixed, per public Task and idle,
+including guards/alignment/capacity. Added upper-bank/VRAM reservations are
+zero for this slice. No demo was refreshed.

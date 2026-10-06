@@ -27,6 +27,11 @@ class VbxeTables(unittest.TestCase):
             offsets = data[f'GemStep{stride}'][1]
             self.assertEqual(offsets[0], 0)
             self.assertEqual([b-a for a, b in zip(offsets, offsets[1:])], [stride]*16)
+        for cost in (96, 120):
+            for remaining in range(8193):
+                count=data[f'GemGlyphCapacity{cost}'][1][remaining>>3]
+                self.assertLessEqual(count*cost, remaining)
+                self.assertTrue(count==64 or (count+1)*cost>remaining)
         self.assertEqual(data['GemScreenRows'][1][240], 76800)
 
     def test_reproducible_upper_memory_payload(self):
@@ -34,7 +39,7 @@ class VbxeTables(unittest.TestCase):
             p = Path(folder)/'tables.h'
             first = generate(p)
             self.assertEqual(generate(p), first)
-            self.assertEqual(first['payload_bytes'], 35082)
+            self.assertEqual(first['payload_bytes'], 37132)
             self.assertIn('static const ULONG GemScreenRows[256]', p.read_text())
 
 
