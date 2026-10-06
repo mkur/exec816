@@ -271,15 +271,34 @@ BYTE FUNC Queue(EXEC.IORequest POINTER request TIMER.TimerClockRequest POINTER
 
 RETURN(0)
 
-; Read/prepare inside the edit gate, then release through the generic handoff.
+; Clock reads touch only the caller's record and the versioned clock snapshot.
+; They need no queue edit gate: raw VBI may update the clock during Snapshot,
+; whose retry protocol already covers that entry. IOCORE retains Task exclusion.
+; Queue operations still exclude the deferred expiry continuation.
 PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
   TIMER.TimerClockRequest clock
   TIMER.TimerClockRequest POINTER absolute
   BYTE error,deferred
   CARD required
 
-  TIMERNATIVE.Enter()
   required=SIZEOF(TIMER.TimerClockRequest)
+  IF request.io_Command=TIMER.TD_READCLOCK THEN
+    error=BYTE(EXEC.IOERR_BADLENGTH)
+    IF request.io_Message.mn_Length>=required THEN
+      error=TIMERNATIVE.Snapshot(BYTE POINTER(@clock.ticks_hi))
+      IF error=0 THEN
+        absolute=TIMER.TimerClockRequest POINTER(request)
+        absolute.ticks_hi=clock.ticks_hi
+        absolute.ticks_lo=clock.ticks_lo
+        absolute.ticks_per_second=clock.ticks_per_second
+      FI
+    FI
+
+    Complete(request,error)
+    RETURN
+  FI
+
+  TIMERNATIVE.Enter()
   IF request.io_Command=TIMER.TR_ADDREQUEST THEN
     required=SIZEOF(TIMER.TimerRequest)
   FI
@@ -293,12 +312,7 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
   ELSE
     error=TIMERNATIVE.Snapshot(BYTE POINTER(@clock.ticks_hi))
     IF error=0 THEN
-      IF request.io_Command=TIMER.TD_READCLOCK THEN
-        absolute=TIMER.TimerClockRequest POINTER(request)
-        absolute.ticks_hi=clock.ticks_hi
-        absolute.ticks_lo=clock.ticks_lo
-        absolute.ticks_per_second=clock.ticks_per_second
-      ELSEIF request.io_Command=TIMER.TR_ADDREQUEST THEN
+      IF request.io_Command=TIMER.TR_ADDREQUEST THEN
         error=Relative(TIMER.TimerRequest POINTER(request),@clock)
         deferred=1
       ELSE

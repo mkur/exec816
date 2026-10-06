@@ -12,10 +12,21 @@ PUBLIC BYTE FUNC Deadline(TimerClockRequest POINTER clock LONGCARD milliseconds)
     RETURN(0)
   FI
 
-  whole=milliseconds/1000
-  fraction=milliseconds MOD 1000
-  delta=whole*clock.ticks_per_second
-      +(fraction*clock.ticks_per_second+999)/1000+1
+  ; Reduce the rational rate before converting. Derive the remainder from
+  ; the quotient so the 65816 does not repeat a software division. Splitting
+  ; NTSC into whole seconds keeps every intermediate within 32 bits.
+  IF clock.ticks_per_second=50 THEN
+    whole=milliseconds/20
+    fraction=milliseconds-whole*20
+    delta=whole+1
+    IF fraction<>0 THEN
+      delta==+1
+    FI
+  ELSE
+    whole=milliseconds/1000
+    fraction=milliseconds-whole*1000
+    delta=whole*60+(fraction*3+49)/50+1
+  FI
   low=clock.ticks_lo+delta
   high=clock.ticks_hi
   IF low<clock.ticks_lo THEN

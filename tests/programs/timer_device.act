@@ -9,7 +9,7 @@ EXEC.MsgPort POINTER port
 TIMER.TimerClockRequest POINTER query
 TIMER.TimerRequest POINTER delay
 EXEC.IORequest POINTER request
-CARD checks
+CARD checks,concurrentReads
 LONGCARD before,after
 CARD openError,waitError
 
@@ -64,6 +64,27 @@ PROC Main()
   ReadClock()
   after=query.ticks_lo
   Require(after>=before+3)
+  ; Quick clock reads use an independent record while expiry can complete the
+  ; alarm from a native interrupt. Forbid must not turn those reads into an
+  ; edit gate that prevents completion, nor enqueue the quick query's reply.
+  delay.microseconds=100000
+  EXEC.SendIO(@delay.tr_Request)
+  EXEC.Forbid()
+  index=0
+  WHILE EXEC.CheckIO(@delay.tr_Request)=NULL AND index<128 DO
+    ReadClock()
+    Require(query.ticks_lo>=after)
+    after=query.ticks_lo
+    index==+1
+  OD
+
+  concurrentReads=CARD(index)
+  Require(index<>0 AND index<128)
+  Require(EXEC.CheckIO(@delay.tr_Request)=@delay.tr_Request)
+  EXEC.Permit()
+  Require(EXEC.WaitIO(@delay.tr_Request)=0)
+  Require(EXEC.GetMsg(port)=NULL)
+  delay.microseconds=0
   delay.seconds=3600
   EXEC.SendIO(@delay.tr_Request)
   Require(EXEC.CheckIO(@delay.tr_Request)=NULL)

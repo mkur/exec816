@@ -172,7 +172,12 @@ def main():
                 raise
             report['checks']=(int.from_bytes(bridge.memdump(program['c_checks'],2),'little') if args.suite=='c'
                               else data(bridge,program['image'],'checks',True)[0])
-            require(report['checks']==program.get('checks_expected',dict(basic=27,queue=70,c=17).get(args.suite)),
+            expected_checks=program.get('checks_expected',dict(basic=27,queue=70,c=17).get(args.suite))
+            if args.suite=='basic':
+                report['concurrent_clock_reads']=data(bridge,program['image'],'concurrentReads',True)[0]
+                require(0<report['concurrent_clock_reads']<128,'Missing bounded read/expiry overlap')
+                expected_checks+=4+3*report['concurrent_clock_reads']
+            require(report['checks']==expected_checks,
                     'Incomplete timer fixture: '+str(report['checks']))
             if args.suite=='clock':
                 raw=bytes(data(bridge,program['image'],'results'))
