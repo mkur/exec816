@@ -46,20 +46,9 @@ def context(bridge,t,output,optimize,variant,from_build=None):
     return dict(build=program['build'],runtime=runtime,checks=checks,variant=variant,native_probe_sha256=sha256(output/'context.bin'))
 
 
-def wait_fault(bridge,t,output,optimize,variant):
-    program=build(t,ROOT/'tests/programs/io_wait_fault.act',output,optimize=optimize,tasks=True,io_test_device=True)
-    image=program['image'];address=next(d['address'] for d in image['data'] if '_VARIANT_' in d['name'])
-    runtime,_=execute(bridge,program,expected_status=4,before_run=lambda b:b.poke(address,variant),timeout=240,frame_limit=12000)
-    require(data(bridge,image,'reached')==[0],'Invalid WaitIO/DoIO returned')
-    require(data(bridge,image,'item')==data(bridge,image,'snapshot'),'Rejected wait changed request')
-    clean_ownership(bridge,program,output)
-    return dict(build=program['build'],runtime=runtime,variant=variant,unchanged_request=True)
-
-
 def run_case(bridge,t,output,optimize,name,from_build=None):
     if ':' in name:return context(bridge,t,output,optimize,name,from_build)
     require(from_build is None,'Retained builds are supported only for native context overlays')
-    if name.startswith('wait-fault-'):return wait_fault(bridge,t,output,optimize,int(name.rsplit('-',1)[1]))
     fixture='queues' if name.startswith('queues-publication-') else name
     probe=int(name.rsplit('-',1)[1]) if name.startswith('queues-publication-') else 0
     source=ROOT/'tests/programs'/('io_'+fixture+'.act')
@@ -109,7 +98,7 @@ def main():
     paths=('abi/io.json','abi/tasks.json','lib/io/task-io.inc','lib/io/iocore.act','lib/io/io-call-types.inc',
            'lib/exec/taskpolicy.act','platform/altirraos/io.s','platform/altirraos/tasks.s',
            'tools/generate_io.py','tools/generate_tasks.py','tools/native_program.py','tools/test_io_services.py',
-           'tests/programs/io_context.s','tests/programs/io-names.inc','tests/programs/ioprobe.act','tests/programs/iogap.act',*[f'tests/programs/io_{("queues" if name.startswith("queues-publication-") else "wait_fault" if name.startswith("wait-fault-") else name) if ":" not in name else "context"}.act' for name in a.suite.split(',')])
+           'tests/programs/io_context.s','tests/programs/io-names.inc','tests/programs/ioprobe.act','tests/programs/iogap.act',*[f'tests/programs/io_{("queues" if name.startswith("queues-publication-") else name) if ":" not in name else "context"}.act' for name in a.suite.split(',')])
     report=dict(status='running',suite=a.suite,inputs={p:sha256(ROOT/p) for p in paths},
                 bank_zero=current(),reservation_delta=dict(fixed_bank_zero=0,per_task_bank_zero=0,upper_resident_bytes=64),cases=[])
     try:

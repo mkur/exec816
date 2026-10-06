@@ -74,7 +74,7 @@ python3 tools/measure_aes_calls.py \
 
 `io_breakdown` splits each complete C device call into C wrapper work, assembly
 marshalling, native operation dispatch, generic I/O, kernel I/O gateways,
-Forbid/Permit, timer binding checks, timer queue work, other driver work and
+Forbid/Permit, timer binding lookup, timer queue work, other driver work and
 task-side ReplyMsg. Native interrupt completion is outside that task-side reply
 category. The gateway categories include policy, validation and return costs;
 they do not measure the COP instruction alone.
@@ -88,8 +88,11 @@ sum them or component percentiles. Calls crossing the measured window or a
 public AES-call boundary are omitted from the complete-call distribution.
 
 The [I/O optimization record](../development/aes-io-costs.json) preserves the
-matched workload, source hashes and before/after costs. These call costs do not
-establish visible GUI latency or close HY4 acceptance.
+initial lookup optimization. The subsequent
+[trusted-request record](../development/trusted-device-io.json) records removing
+repeated request and binding validation, including idle comparisons and loaded
+functional checks. Both preserve source hashes and measured costs. These call
+costs do not establish visible GUI latency or close HY4 acceptance.
 
 ## Equal offered load
 

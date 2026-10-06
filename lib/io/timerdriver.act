@@ -31,52 +31,20 @@ Pending POINTER FUNC PendingAt(BYTE slot)
 
 RETURN(Pending POINTER(ADDRESS(TIMERMETA.PENDING+CARD(slot)*TIMERMETA.PENDING_STRIDE)))
 
-; Unit handles identify admitted open records, never execution slots.
+; The caller retains a binding returned by Open. Derive its small slot index
+; for pending ownership; do not revalidate the handle on each submission.
 BYTE FUNC UnitIndex(EXEC.IORequest POINTER request)
-  LONGCARD offset
   CARD remaining
   BYTE slot
 
-  IF request.io_Device<>BYTE POINTER(ADDRESS(TIMERMETA.OPENS)) THEN
-    RETURN($ff)
-  FI
-
-  IF LONGCARD(ADDRESS(request.io_Unit))<LONGCARD(TIMERMETA.OPEN) THEN
-    RETURN($ff)
-  FI
-
-  offset=LONGCARD(ADDRESS(request.io_Unit))-LONGCARD(TIMERMETA.OPEN)
-  IF offset>=TIMERMETA.OPEN_CAPACITY*TIMERMETA.OPEN_STRIDE THEN
-    RETURN($ff)
-  FI
-
-  ; The checked eight-slot extent fits CARD. At most seven subtractions
-  ; identify a handle without two general 32-bit divide/remainder calls.
-  remaining=CARD(offset)
+  remaining=CARD(ADDRESS(request.io_Unit)-ADDRESS(TIMERMETA.OPEN))
   slot=0
   WHILE remaining>=TIMERMETA.OPEN_STRIDE DO
     remaining==-TIMERMETA.OPEN_STRIDE
     slot==+1
   OD
 
-  IF remaining<>0 THEN
-    RETURN($ff)
-  FI
-
 RETURN(slot)
-
-PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
-  BYTE slot
-  OpenRecord POINTER opened
-
-  slot=UnitIndex(request)
-  IF slot=$ff THEN
-    RETURN(0)
-  FI
-
-  opened=OpenAt(slot)
-
-RETURN(opened.active<>0 AND opened.port=request.io_Message.mn_ReplyPort)
 
 ; Acquire the endpoint lease before publishing the first source activation.
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER

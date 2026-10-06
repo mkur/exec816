@@ -25,30 +25,6 @@ TYPE DriverUnit=[
   BYTE unit
 ]
 
-; Require a live bus and unit binding before interpreting a device request.
-PUBLIC BYTE FUNC Bound(EXEC.IORequest POINTER request)
-  DriverBus POINTER bus
-  DriverUnit POINTER unit
-  LONGCARD unitAddress
-
-  IF request.io_Device<>BYTE POINTER(ADDRESS(IS_BASE+64)) THEN
-    RETURN(0)
-  FI
-
-  bus=DriverBus POINTER(ADDRESS(IS_BASE+64))
-  unitAddress=LONGCARD(ADDRESS(request.io_Unit))
-  IF unitAddress<LONGCARD(IS_BASE+130) OR unitAddress>LONGCARD(IS_BASE+158) THEN
-    RETURN(0)
-  FI
-
-  IF ((unitAddress-LONGCARD(IS_BASE+130)) & 3)<>0 THEN
-    RETURN(0)
-  FI
-
-  unit=DriverUnit POINTER(ADDRESS(request.io_Unit)-SIZE(2))
-
-RETURN(bus.opens<>0 AND unit.opens<>0 AND (bus.state=2 OR bus.state=5))
-
 ; Retain a supported physical unit only while the SIO worker accepts opens.
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
     POINTER request LONGCARD flags)
@@ -160,10 +136,6 @@ PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
   BYTE accepted
 
   EXEC.Forbid()
-  IF Bound(request)=0 THEN
-    HEAPCORE.Abort(4)
-  FI
-
   bus=DriverBus POINTER(ADDRESS(IS_BASE+64))
   started=BYTE POINTER(SD_STARTED)
   phase=BYTE POINTER(SD_PHASE)

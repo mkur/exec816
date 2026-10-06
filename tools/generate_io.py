@@ -172,7 +172,6 @@ def registration_include(output,memory,test_device=False):
         meta+=f'PUBLIC CONST {name}={resident["id"]}\n'
     write(Path(output)/'ioresidentmeta.act',HEADER+meta+'ENDMODULE\n',False)
     entries={
-        'Bound':('BYTE FUNC','EXEC.IORequest POINTER request','request'),
         'Open':('INT FUNC','BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER request LONGCARD flags','name,unit,request,flags'),
         'Close':('PROC','EXEC.IORequest POINTER request','request'),
         'BeginIO':('PROC','EXEC.IORequest POINTER request','request'),

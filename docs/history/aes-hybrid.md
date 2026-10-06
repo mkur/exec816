@@ -281,3 +281,59 @@ change requires a raw-mode probe in this slice.
 Reserved bank-zero delta is **0 bytes**, fixed and per Task, including guards,
 alignment and unused capacity. Upper-RAM reservations are unchanged and emitted
 executable code shrinks by 42 bytes. The existing demo package is unchanged.
+
+## HY4 Trusted device requests
+
+The [device I/O contract](../reference/device-io.md) now treats valid request
+storage, live bindings and correct reply ownership as caller preconditions.
+Exec816 is a single-user system without application memory protection. Repeated
+validation is not a protection boundary. The contributor instructions record
+this policy; creation/open admission and normal operational errors remain.
+
+The generic I/O path no longer repeats request-extent or wait-owner checks, and
+resident dispatch no longer invokes `Bound`. Timer queue ownership derives the
+slot from an already-established unit handle. Forbid, the native timer edit
+gate, exact-request collection, cancellation state transitions and interrupt
+completion remain unchanged. Stack/domain guards remain enabled. The earlier
+invalid-handle and wrong-owner rejection fixtures are retired; valid use still
+has executable coverage across all eight timer bindings.
+
+The [trusted-request record](../development/trusted-device-io.json) compares the
+previous optimized idle window with the new image for 100 PAL frames. Compiler,
+machine, linked C segments and launcher match; the native I/O sources and build
+identifier differ:
+
+| Charged CPU median | Before | After |
+| --- | ---: | ---: |
+| `DoIO` | 1.374 ms | 1.045 ms |
+| `SendIO` | 1.975 ms | 1.699 ms |
+| `CheckIO` | 0.836 ms | 0.782 ms |
+| `AbortIO` | 2.021 ms | 3.305 ms |
+
+DoIO and SendIO medians fall by about 24% and 14%. Their p95 values fall from
+2.844/2.069 to 1.047/1.802 ms in these windows. AbortIO goes the other way:
+its gateway and Permit contain more scheduling work, while its inclusive timer
+driver median stays near 0.90 ms. The current disk/scroll runs measure AbortIO
+medians near 1.82 ms, but have no matched baseline. Continuous traffic changes
+execution phase and completion/cancellation mix, so these results do not prove
+a uniform latency gain. Before/after idle windows contain 72/76 complete AES
+calls and 24/30 native expiries.
+
+Kernel I/O gateways still cost about 0.65 ms per DoIO/SendIO in the idle run.
+Timer submission still performs the existing native edit-gate exit/poll path;
+this slice does not change that synchronization or remove gateway crossings.
+Those remain candidates for a separate measured change. Pointer, button and
+scanout acceptance was not rerun; **HY4 and AS4/TD4 remain open**.
+
+Optimized development checks pass: 57 valid-binding assertions, 214 concurrent
+timer lifecycle assertions, 17 C API assertions and 82 generic I/O assertions,
+including 32 NMI publication checkpoints and exact-reply/lost-wakeup cases.
+Idle, disk and scrolling desktop windows restore ownership with intact guards;
+the loaded windows also make disk/console progress. The host suite runs 388
+tests with four historical-source skips. No compiler ABI or context change
+requires raw-mode testing in this slice; these checks do not qualify a release.
+
+Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
+including guards, alignment and unused capacity. Upper-RAM reservations are
+unchanged. Emitted executable code shrinks by 3,299 bytes. The existing demo
+package is unchanged.

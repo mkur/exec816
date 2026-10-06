@@ -1,7 +1,6 @@
 MODULE TIMERBINDINGPROBE
 USE EXEC
 USE TIMER
-USE TIMERDRIVER
 USE HEAPCORE
 
 EXEC.IORequest POINTER ARRAY opens(8)
@@ -18,14 +17,11 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; Exercise each admitted handle through public I/O, then check malformed
-; borrowed handles directly: public submission deliberately faults on these.
+; Exercise every admitted slot with a distinct reply port. Borrowed requests
+; keep each binding alive through clock reads, cancellation and collection.
 PROC Main()
-  BYTE slot,offset
-  EXEC.IORequest borrowed
+  BYTE slot
 
-  LET other=EXEC.CreateMsgPort()
-  Require(other<>NULL)
   FOR slot=0 TO 7 DO
     ports(slot)=EXEC.CreateMsgPort()
     Require(ports(slot)<>NULL)
@@ -54,55 +50,15 @@ PROC Main()
     Require(EXEC.GetMsg(ports(slot))=NULL)
   OD
 
-  borrowed.io_Device=opens(0).io_Device
-  EXEC.Forbid()
-  FOR slot=0 TO 7 DO
-    borrowed.io_Message.mn_ReplyPort=ports(slot)
-    FOR offset=0 TO 23 DO
-      borrowed.io_Unit=BYTE POINTER(ADDRESS(opens(slot).io_Unit)+SIZE(offset))
-      Require(TIMERDRIVER.Bound(@borrowed)=BYTE(offset=0))
-    OD
-  OD
-
-  borrowed.io_Message.mn_ReplyPort=ports(0)
-  borrowed.io_Unit=BYTE POINTER(ADDRESS(opens(0).io_Unit)-SIZE(1))
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Message.mn_ReplyPort=ports(7)
-  borrowed.io_Unit=BYTE POINTER(ADDRESS(opens(7).io_Unit)+SIZE(24))
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Message.mn_ReplyPort=ports(0)
-  borrowed.io_Unit=BYTE POINTER(ADDRESS(opens(0).io_Unit)-SIZE($10000))
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Unit=BYTE POINTER(ADDRESS(opens(0).io_Unit)+SIZE($10000))
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Unit=NULL
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Unit=BYTE POINTER(ADDRESS($ffffff))
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Unit=opens(7).io_Unit
-  borrowed.io_Message.mn_ReplyPort=other
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Message.mn_ReplyPort=ports(7)
-  borrowed.io_Device=NULL
-  Require(TIMERDRIVER.Bound(@borrowed)=0)
-  borrowed.io_Device=opens(0).io_Device
-  EXEC.Permit()
-
   query.tc_Request.io_Device=NULL
   query.tc_Request.io_Unit=NULL
   EXEC.DeleteIORequest(@query.tc_Request)
   FOR slot=0 TO 7 DO
-    borrowed.io_Message.mn_ReplyPort=ports(slot)
-    borrowed.io_Unit=opens(slot).io_Unit
     EXEC.CloseDevice(opens(slot))
-    EXEC.Forbid()
-    Require(TIMERDRIVER.Bound(@borrowed)=0)
-    EXEC.Permit()
     EXEC.DeleteIORequest(opens(slot))
     EXEC.DeleteMsgPort(ports(slot))
   OD
 
-  EXEC.DeleteMsgPort(other)
 
 RETURN
 ENDMODULE

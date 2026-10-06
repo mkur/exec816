@@ -48,10 +48,6 @@ PUBLIC PROC CloseDevice(EXEC.IORequest POINTER request)
   EXEC.Forbid()
   route=CloseGateway(request)
   IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
     IORESIDENT.Close(CARD(route),request)
   FI
 
@@ -59,7 +55,7 @@ PUBLIC PROC CloseDevice(EXEC.IORequest POINTER request)
 
 RETURN
 
-; Route a validated request to its resident device implementation.
+; Route a caller-owned, already-bound request to its resident implementation.
 PUBLIC LONGCARD FUNC Submit(EXEC.IORequest POINTER request BYTE mode)
   LONGCARD route,result
   CARD error
@@ -75,10 +71,6 @@ PUBLIC LONGCARD FUNC Submit(EXEC.IORequest POINTER request BYTE mode)
 
   result=route
   IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
     IF mode=1 THEN
       request.io_Flags=0
     ELSEIF mode=2 THEN
@@ -130,10 +122,6 @@ PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
   EXEC.Forbid()
   route=AbortGateway(request)
   IF (route & LONGCARD(IORESIDENTMETA.TAG))<>0 THEN
-    IF IORESIDENT.Bound(CARD(route),request)=0 THEN
-      HEAPCORE.Abort(4)
-    FI
-
     IORESIDENT.AbortIO(CARD(route),request)
   FI
 

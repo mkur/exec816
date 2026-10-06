@@ -16,7 +16,7 @@ completion protocols.
 
 The built-in dispatch description assigns each resident an immutable route ID,
 device identity, name and typed caller-context entry points. It is generated
-from the I/O ABI input. A checked gateway returns either a completed result or
+from the I/O ABI input. A Task-context gateway returns either a completed result or
 an internal route tag; it never calls a driver with SWITCHING held. The tag is
 an implementation detail of the existing public operation, not a driver-only
 kernel service. Initial routing is static; arbitrary runtime vectors and dynamic
@@ -25,13 +25,12 @@ driver registration are unsupported. A non-SIO test resident uses the same route
 | Entry | Signature | Responsibility |
 | --- | --- | --- |
 | Open | `INT (name, LONGCARD unit, IORequest pointer request, LONGCARD flags)` | Validate driver options, acquire one unit reference, bind handles, return a signed error. |
-| Bound | `BYTE (IORequest pointer request)` | Validate the driver's opaque device/unit handles and live open reference, without mutation. |
 | Close | `PROC (IORequest pointer request)` | Release the settled open reference and clear its handles. |
 | BeginIO | `PROC (IORequest pointer request)` | Accept or reject submission, preserve caller-prepared flags, queue or complete exactly once. |
 | AbortIO | `PROC (IORequest pointer request)` | Cancel queued/preparing/active work according to the device contract; terminal work is unchanged. |
 
 Entry points run on the original Task's stack and DP with IRQs enabled. The
-generic caller wrapper holds Forbid across validation, request preparation and
+generic caller wrapper holds Forbid across routing, request preparation and
 the bounded callback. Open's worker-start rendezvous occurs before this region and uses a signal wait
 that preserves any Forbid nesting inherited from the application.
 Callbacks may nest public nonblocking calls, including Forbid/Permit and
@@ -40,9 +39,11 @@ state is partial. The wrapper releases exclusion after callback return and
 never rereads an asynchronously published request. No saved kernel activation
 or shared compiler workspace survives across a callback.
 
-The gateway checks context, packet bounds, request extent and generic port/wait
-requirements. Bound runs outside the gateway before common flags/type/error
-preparation. SendIO clears all flags, BeginIO preserves them and DoIO sets
+The gateway checks context and native packet bounds. Creation/open perform
+initial admission; subsequent calls trust the caller's request, device/unit
+binding and reply ownership. There is no per-call Bound callback or repeated
+request/port validation. Driver callbacks check command-specific requirements
+and operational state. SendIO clears all flags, BeginIO preserves them and DoIO sets
 IOF_QUICK. Completed quick calls return a copied signed error; queued DoIO enters
 the existing exact-request collection loop after releasing exclusion. Console uses this resident route too; the queued diagnostic device retains its
 general dispatch implementation. Console lifecycle uses public Task admission, leases and signal rendezvous too;
@@ -57,7 +58,7 @@ No second pending queue, active pointer or descriptor is introduced.
 
 | State | Readers/writers |
 | --- | --- |
-| Open counts and unit handles | Caller-context Open/Bound/Close; driver stop reads under the same exclusion. |
+| Open counts and unit handles | Caller-context Open/Close; driver stop reads under the same exclusion. |
 | Pending port/list | BeginIO, worker claim and queued abort, under Forbid. IRQ/NMI never inspect it. |
 | Active pointer, preparing/active phase, cancelled flag | Worker claim/start/finish and caller abort under Forbid; lifecycle reads to reject busy shutdown. |
 | Worker identity, ready/stop/offline state | Driver startup/worker/stop code under Forbid; offline observation follows the native descriptor contract. Boot initialization is before publication. |

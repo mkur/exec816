@@ -91,7 +91,10 @@ device-I/O CPU, presenter scheduling delay and equal offered load;
 [measurements](development/aes-hybrid-diagnostics.json) retain the failed gate.
 The [timer I/O follow-up](history/aes-hybrid.md#hy4-timer-device-call-costs)
 reduces handle-validation arithmetic and records bridge, driver and gateway
-costs. Scheduling tails remain variable; GUI acceptance is still open.
+costs. The [trusted-request slice](history/aes-hybrid.md#hy4-trusted-device-requests)
+then removes layered request and binding validation, retaining operational
+errors and synchronization. DoIO/SendIO medians fall; scheduling tails remain
+variable and GUI acceptance is still open.
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

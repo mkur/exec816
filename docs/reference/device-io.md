@@ -35,6 +35,19 @@ submission can use another Task's agreed port or PA_IGNORE, with an explicit
 collection protocol. OpenDevice validates the full request extent, unit and
 flags; mere Message-sized allocation does not make a device request valid.
 
+Established requests are trusted caller-owned objects. The caller supplies
+valid storage, retains its open binding and reply port, and observes the
+submission/collection rules. Ordinary I/O does not repeat request-extent,
+reply-port-owner or live-handle checks through the kernel and resident layers.
+Invalid, stale or wrongly owned requests are API misuse with unspecified
+behavior; a clean rejection is not promised. The system provides no memory
+protection between applications.
+
+Creation/open admission and normal device errors remain: allocation failure,
+unsupported commands or options, command-specific lengths, queue exhaustion
+and hardware failure. Native Task/context and stack guards remain, as do the
+port transactions and driver synchronization that implement completion.
+
 ## Completion and lifetime
 
 A quick completion is allowed only when IOF_QUICK was supplied. It completes

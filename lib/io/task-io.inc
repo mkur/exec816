@@ -98,25 +98,6 @@ BYTE FUNC IOName(BYTE POINTER name BYTE POINTER expected)
 
 RETURN(SameName(name,expected))
 
-; Identify which admitted resident owns the request binding.
-BYTE FUNC IOBound(IORequest POINTER request)
-  IOResident POINTER device
-
-  IF IS_TEST_DEVICE=0 THEN
-    RETURN(0)
-  FI
-
-  IF request.io_Device<>BYTE POINTER(ADDRESS(IS_BASE+4)) THEN
-    RETURN(0)
-  FI
-
-  device=IOResident POINTER(request.io_Device)
-  IF request.io_Unit<>@device.unit THEN
-    RETURN(0)
-  FI
-
-RETURN(device.opens<>0)
-
 ; Validate caller storage before admitting an ordinary resident-device open.
 CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
   IORequest POINTER request
@@ -198,24 +179,8 @@ CARD FUNC IOComplete(TaskControl POINTER caller CARD saved IORequest
 RETURN(SendMessage(caller,saved,request.io_Message.mn_ReplyPort,
     @request.io_Message,P_NT_REPLYMSG))
 
-; Require the caller to own the reply path before allowing it to wait.
-BYTE FUNC IOWaitOwner(TaskControl POINTER caller IORequest POINTER request)
-  MsgPort POINTER port
-
-  port=request.io_Message.mn_ReplyPort
-  IF ValidPort(port)=0 THEN
-    RETURN(0)
-  FI
-
-RETURN(port.mp_Flags=P_PA_SIGNAL AND port.mp_SigTask=caller.item
-    AND port.mp_SigBit<32)
-
 ; Return ownership of a settled request to its waiting caller.
 CARD FUNC IOCollect(TaskControl POINTER caller CARD saved IORequest POINTER request)
-
-  IF IOWaitOwner(caller,request)=0 THEN
-    RETURN(T_FAULT)
-  FI
 
   LET kind=PortCollect(@request.io_Message)
   IF kind=P_NT_MESSAGE THEN
@@ -262,23 +227,15 @@ CARD FUNC IOEnqueue(TaskControl POINTER caller CARD saved IORequest POINTER requ
 
 RETURN(saved)
 
-; Dispatch a new request after checking binding and current ownership.
+; Dispatch a caller-owned diagnostic request through its existing binding.
 CARD FUNC IOBegin(TaskControl POINTER caller CARD saved IORequest
     POINTER request BYTE service)
-
-  IF IOBound(request)=0 OR ValidPort(request.io_Message.mn_ReplyPort)=0 THEN
-    RETURN(T_FAULT)
-  FI
 
   IF service=IO_SERVICE_SEND_IO THEN
     request.io_Flags=0
   FI
 
   IF service=IO_SERVICE_DO_IO THEN
-    IF IOWaitOwner(caller,request)=0 THEN
-      RETURN(T_FAULT)
-    FI
-
     request.io_Flags=IO_IOF_QUICK
     MaskResult(saved,LONGCARD($10000))
   FI
@@ -315,10 +272,6 @@ RETURN(IOComplete(caller,saved,request))
 ; Cancel a request through its owning resident's supported path.
 CARD FUNC IOAbort(TaskControl POINTER caller CARD saved IORequest POINTER request)
   IOQueue POINTER queue
-
-  IF IOBound(request)=0 THEN
-    RETURN(T_FAULT)
-  FI
 
   IF request.io_Message.mn_Node.ln_Type<>P_NT_MESSAGE THEN
     RETURN(saved)
@@ -498,25 +451,19 @@ CARD FUNC IOCall(TaskControl POINTER caller CARD saved BYTE service)
 
   request=args.request
   IF service=IO_SERVICE_DELETE_CHECK THEN
-    IF IOExtent(request,P_MESSAGE_BYTES)=0 THEN
-      RETURN(T_FAULT)
-    FI
-
     Result(saved,request.io_Message.mn_Length)
     RETURN(saved)
   FI
 
 RETURN(IORequestCall(caller,saved,service,request))
 
-; Decode request-oriented gateway arguments before touching the request.
+; Route an admitted request without repeating storage or binding validation.
 CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
     IORequest POINTER request)
   LONGCARD route
 
-  IF IOExtent(request,IO_IOREQUEST_BYTES)=0 THEN
-    RETURN(T_FAULT)
-  FI
-
+  ; Request storage, binding and reply ownership are caller preconditions.
+  ; Open performs initial admission; repeated I/O trusts the resulting handle.
   ; Void legacy services must return a defined completed tag, not the incoming
   ; packet address in X. The caller wrapper interprets this as a LONGCARD.
   MaskResult(saved,0)
@@ -534,14 +481,6 @@ CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
   IF route<>0 THEN
     IF service=IO_SERVICE_BEGIN_IO OR service=IO_SERVICE_SEND_IO
         OR service=IO_SERVICE_DO_IO THEN
-      IF ValidPort(request.io_Message.mn_ReplyPort)=0 THEN
-        RETURN(T_FAULT)
-      FI
-
-      IF service=IO_SERVICE_DO_IO AND IOWaitOwner(caller,request)=0 THEN
-        RETURN(T_FAULT)
-      FI
-
       MaskResult(saved,route)
       RETURN(saved)
     FI
@@ -559,7 +498,7 @@ CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
 
 RETURN(IOSettledCall(caller,saved,service,request))
 
-; Handle operations that require a settled request and valid caller ownership.
+; Collection and cancellation state determine behavior; callers own the records.
 CARD FUNC IOSettledCall(TaskControl POINTER caller CARD saved BYTE service
     IORequest POINTER request)
   IOResident POINTER device
@@ -567,10 +506,6 @@ CARD FUNC IOSettledCall(TaskControl POINTER caller CARD saved BYTE service
   IF service=IO_SERVICE_CLOSE_DEVICE THEN
     IF request.io_Device=BYTE POINTER(0) THEN
       RETURN(saved)
-    FI
-
-    IF IOBound(request)=0 THEN
-      RETURN(T_FAULT)
     FI
 
     device=IOResident POINTER(request.io_Device)
