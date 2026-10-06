@@ -300,12 +300,16 @@ PROC ShellDevices(DOS.FileHandle POINTER output)
   FI
 
   FOR index=0 TO count-1 DO
-    IF rows(index).kind=DEVICEINSPECT.CONSOLE THEN
+    CASE rows(index).kind OF
+    WHEN DEVICEINSPECT.CONSOLE THEN
       ShellText(output,c"console.device  ")
 
-    ELSE
+    WHEN DEVICEINSPECT.SIO THEN
       ShellText(output,c"sio.device      ")
-    FI
+
+    WHEN DEVICEINSPECT.TIMER THEN
+      ShellText(output,c"timer.device    ")
+    ESAC
 
     CASE rows(index).state OF
     WHEN DEVICEINSPECT.INACTIVE THEN

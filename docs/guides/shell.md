@@ -22,7 +22,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | `TASKS` | Snapshot live public Tasks, including workers; omit unused slots and private idle. |
 | `VER` | Print abbreviated Exec816 and compiler-pin revisions. |
 | `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
-| `DEVICES` | List resident drivers and runtime state. |
+| `DEVICES` | List resident drivers and runtime state, including `timer.device`. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
 | `UNALIAS name` | Remove a command alias. |
@@ -32,6 +32,9 @@ Command names ignore case. MOUNT only lists; it does not mount/unmount media or
 probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
 not automatic format discovery. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+The resident `timer.device` appears as `ready` even with no open requests.
+It has no worker Task, so it does not appear under `TASKS`.
 
 TYPE maps ATASCII end-of-line to LF, drops CR, preserves printable ASCII/tab/LF
 and displays other bytes as dots. CAT is the external command for unchanged byte

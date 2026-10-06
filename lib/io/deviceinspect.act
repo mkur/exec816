@@ -4,7 +4,7 @@ USE EXEC
 USE SIODRIVER
 USE CONSOLETYPES
 ; Generated console address goes here.
-PUBLIC CONST CAPACITY=2, CONSOLE=1, SIO=2
+PUBLIC CONST CAPACITY=3, CONSOLE=1, SIO=2, TIMER=3
 PUBLIC CONST INACTIVE=0, STARTING=1, READY=2, STOPPING=3, STOPPED=4, OFFLINE=5
 
 PUBLIC TYPE Info=[BYTE kind,state]
@@ -14,7 +14,7 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
   CONSOLETYPES.Service POINTER service
   CARD count
 
-  IF rows=Info POINTER(0) OR limit<CAPACITY THEN
+  IF rows=NULL OR limit<CAPACITY THEN
     RETURN(0)
   FI
 
@@ -37,6 +37,11 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
     rows(count).state=OFFLINE
   FI
 
+  count==+1
+
+  ; The resident VBI clock remains available without open requests or a worker.
+  rows(count).kind=TIMER
+  rows(count).state=READY
   count==+1
   EXEC.Permit()
 
