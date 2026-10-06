@@ -75,7 +75,7 @@ def compiler(directory, allow_override=False, pin=None):
 
 def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=False,
              dispatch=APP_BASE, probe_flags=0x100, forward_signature=0, preemptive=False,
-             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, display_kind=0, pump_divisor=0):
+             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, io_check=0, display_kind=0, pump_divisor=0):
     command(["ca65", "-I", output, "-I", toolchain["directory"] / "docs/abi",
              "-I", toolchain["directory"] / "runtime/65816",
              "-I", ROOT / "platform/altirraos", "-D", f"PROGRAM_ENTRY={entry}", "-D", f"DISPLAY_KIND={display_kind}",
@@ -86,7 +86,7 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-D", f"PORTS_CREATE={ports_create}", "-D", f"PORTS_DELETE={ports_delete}",
              "-D", f"IO_CREATE={io_create}", "-D", f"IO_DELETE={io_delete}",
              "-D", f"IO_OPEN={io_open}", "-D", f"IO_WAIT={io_wait}", "-D", f"IO_DO={io_do}",
-             "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
+             "-D", f"IO_CHECK={io_check}", "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
              "-D", f"SIGNAL_PROBE={policy_probe}", "-D", f"SIGNAL_IRQ_PROBE={irq_probe}", "-D", f"SIGNAL_AUTO={int(not manual_wake)}", "-D", f"PUMP_COUNT={pump_count}", "-D", f"PUMP_DIVISOR={pump_divisor}",
              "-D", f"INPUT_NATIVE={int(tasks and irq_probe != 10)}", "-D", f"CONSOLE_NATIVE={int(console_test)}", "-D", f"CONSOLE_STARTUP={int(console_enabled)}", "-D", f"CONSOLE_START={console_start}",
              "-D", f"COOPERATIVE={int(cooperative)}", "-D", f"DISPATCH_ENTRY={dispatch}",
@@ -830,7 +830,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     heap_shutdown = 0
     heap_allocate = heap_deallocate = 0
     ports_create = ports_delete = io_create = io_delete = io_wait = io_do = io_open = 0
-    io_close = io_begin = io_send = io_abort = 0
+    io_close = io_begin = io_send = io_abort = io_check = 0
     if tasks:
         candidates = [r for r in image['routines'] if re.fullmatch(r'M_TASKPOLICY_INIT_[0-9A-F]+', r['name'])]
         require(len(candidates) == 1 and candidates[0]['arguments'] == []
@@ -853,7 +853,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             port_targets[operation]=target[0]['address']
         ports_create,ports_delete=port_targets['CreateMsgPort'],port_targets['DeleteMsgPort']
         io_targets={}
-        for operation in ('CreateIORequest','DeleteIORequest','WaitIO','DoIO','OpenDevice','CloseDevice','BeginIO','SendIO','AbortIO'):
+        for operation in ('CreateIORequest','DeleteIORequest','WaitIO','DoIO','OpenDevice','CloseDevice','BeginIO','SendIO','AbortIO','CheckIO'):
             target=[r for r in image['routines'] if re.fullmatch(r'M_IOCORE_'+operation.upper()+r'_[0-9A-F]+',r['name'])]
             require(len(target)==1,'Missing caller-context I/O helper')
             generate_io.check_routine(target[0],operation)
@@ -861,6 +861,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         io_create,io_delete=io_targets['CreateIORequest'],io_targets['DeleteIORequest']
         io_wait,io_do=io_targets['WaitIO'],io_targets['DoIO']
         io_open=io_targets['OpenDevice']
+        io_check=io_targets['CheckIO']
         io_close,io_begin,io_send,io_abort=(io_targets[name] for name in ('CloseDevice','BeginIO','SendIO','AbortIO'))
         task_init = candidates[0]['address']
         require_executable(image, task_init)
@@ -884,7 +885,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         display_kind = display_fields[0]['address']
     final_labels = assemble(toolchain, output, image["entry"], probe_nmi, initial_i, cooperative,
                             dispatch, probe_flags, forward_signature, preemptive, memory, kernel_init, tasks, task_init, policy_probe, irq_probe, manual_wake, pump_count, heap_shutdown, heap_allocate, heap_deallocate, heap_probe, ports_create, ports_delete, io_create, io_delete, io_wait, io_do, io_open,console_native,console_enabled,console_start,stack_checks_enabled,
-                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,display_kind=display_kind,pump_divisor=pump_divisor)
+                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,io_check=io_check,display_kind=display_kind,pump_divisor=pump_divisor)
     require(labels == final_labels, "Platform addresses changed during final assembly")
     if tasks:
         # Heap private-call thunks depend on final compiled routine addresses.

@@ -32,7 +32,6 @@ name:
 .ident(.concat(.string(name), "_end")):
 .endmacro
 io_packet io_open_dispatch, IO_SERVICE_OPEN_DEVICE
-io_packet io_check_io, IO_SERVICE_CHECK_IO
 io_packet io_create_check, IO_SERVICE_CREATE_CHECK
 io_packet io_delete_check, IO_SERVICE_DELETE_CHECK
 io_packet io_collect, IO_SERVICE_WAIT_REQUEST
@@ -47,6 +46,7 @@ name:
     jml target
 .ident(.concat(.string(name), "_end")):
 .endmacro
+io_caller io_check_io, IO_CHECK
 io_caller io_close_device, IO_CLOSE
 io_caller io_begin_io, IO_BEGIN
 io_caller io_send_io, IO_SEND

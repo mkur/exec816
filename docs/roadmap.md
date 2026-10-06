@@ -99,6 +99,9 @@ The [caller dispatch slice](history/aes-hybrid.md#hy4-caller-device-dispatch)
 removes the established-device routing gateway; DoIO/SendIO medians fall to
 0.394/1.115 ms with unchanged memory reservations and public API. Development
 checks pass, while scheduling tails and the GUI acceptance gate remain open.
+The [I/O latency plan](plans/io-latency-implementation-plan.md) follows with
+caller-local CheckIO (IL1 complete: 0.111 ms median), timer exit measurements
+and the original visible GUI acceptance rerun (IL2/IL3 pending).
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

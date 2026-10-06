@@ -259,7 +259,7 @@ def io_markers(program, foreign):
     for name, category in categories.items():
         spans[name]['category'] = category
     groups = dict(
-        io_gateway=('io_open_dispatch', 'io_check_io', 'io_collect',
+        io_gateway=('io_open_dispatch', 'io_collect',
                     'io_create_check', 'io_delete_check',
                     'io_test_close', 'io_test_begin', 'io_test_abort'),
         task_exclusion=('tasks_forbid', 'tasks_permit'),

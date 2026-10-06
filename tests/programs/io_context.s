@@ -41,6 +41,20 @@
         lda #1
         sta f:E816_SWITCHING
     .endif
+    .if CHECK_PENDING
+        sep #$20
+        lda #5
+        sta f:ITEM+6
+        rep #$20
+        jsl CALL
+        sta f:CHECKS+16
+        txa
+        sta f:CHECKS+18
+        sep #$20
+        lda #6
+        sta f:ITEM+6
+        rep #$20
+    .endif
     jsl CALL
     sta f:CHECKS
     txa

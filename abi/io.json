@@ -44,7 +44,6 @@
     "OPEN_DEVICE": 40,
     "TEST_CLOSE": 41,
     "TEST_BEGIN": 42,
-    "CHECK_IO": 43,
     "WAIT_REQUEST": 44,
     "TEST_ABORT": 45,
     "CREATE_CHECK": 47,

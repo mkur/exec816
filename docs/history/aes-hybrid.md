@@ -406,3 +406,31 @@ Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
 including guards, alignment and unused capacity. Upper-RAM reservations are
 unchanged; emitted executable code shrinks by 1,500 bytes. The existing demo
 package is unchanged.
+
+## HY4 Caller completion observation
+
+IL1 of the [I/O latency plan](../plans/io-latency-implementation-plan.md) moves
+CheckIO to a checked caller-side helper. It observes the published completion
+byte once, returning NULL while pending or the original full pointer otherwise.
+It neither collects the reply nor changes signals. The obsolete kernel selector
+and dispatch branch are removed; public signatures and layouts stay fixed.
+
+The [IL1 development record](../development/io-latency-il1.json) compares the
+previous caller-dispatch image with the same continuous, 100-frame PAL workload.
+CheckIO median charged CPU falls from **0.703 to 0.111 ms** (84%); p95 is also
+0.112 ms. DoIO remains about 0.394 ms and SendIO about 1.117 ms. These windows
+complete 82/87 public AES calls and 28/29 native expiries, so scheduling tails
+and cancellation costs are not equal-load comparisons. Linked C code, compiler
+and machine configuration match. GUI acceptance remains pending IL3.
+
+Development checks pass: 323 assertions across raw/optimized dispatch and
+optimized timer binding/lifecycle fixtures, plus six native context cases.
+These cover pending/terminal full-pointer results, repeated checks without
+dequeue, stack and DP restoration, and rejection of masked, wrong-DP, IRQ and
+switching contexts. Y remains call-clobbered under the compiler ABI. The host
+suite runs 388 tests with four historical-source skips. This is not release
+qualification.
+
+Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
+including guards, alignment and unused capacity. Upper-RAM reservations stay
+fixed; emitted executable code shrinks by 119 bytes. The demo is unchanged.

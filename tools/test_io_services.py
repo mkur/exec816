@@ -27,23 +27,25 @@ def context(bridge,t,output,optimize,variant,from_build=None):
     mode,operation=variant.split(':');mode=int(mode)
     image=program['image'];base=0xe0000;item=0x70000
     labels=dict(ITEM=item,CHECKS=item+64,
-                CALL=program['labels']['io_'+IMPLEMENTED[operation]],VARIANT=mode)
+                CALL=program['labels']['io_'+IMPLEMENTED[operation]],VARIANT=mode,
+                CHECK_PENDING=int(mode==0 and operation=='CheckIO'))
     (output/'context.cfg').write_text(f'MEMORY {{ RAM: start=${base:x},size=$1000,file=%O; }} SEGMENTS {{ PROBE: load=RAM,type=ro; }}\n')
     command(['ca65','-I',output,'-I',ROOT/'platform/altirraos',
              *[v for k,a in labels.items() for v in ('-D',f'{k}={a}')],
              '-o',output/'context.o',ROOT/'tests/programs/io_context.s'])
     command(['ld65','-C',output/'context.cfg','-o',output/'context.bin',output/'context.o'])
     image['segments'] += [dict(address=base,bytes=list((output/'context.bin').read_bytes()),writable=False,executable=True),
-                          dict(address=item,bytes=[0]*80,writable=True,executable=False)]
+                          dict(address=item,bytes=[0]*96,writable=True,executable=False)]
     segment=next(s for s in image['segments'] if s['address']==image['entry'])
     require(len(segment['bytes'])>=4,'Context overlay needs a four-byte entry')
     segment['bytes'][:4]=[0x5c,*base.to_bytes(3,'little')];changed_image(program)
     runtime,_=execute(bridge,program,expected_status=4 if mode else 0,timeout=240,frame_limit=12000)
     from banked_test_memory import read
-    snapshot=read(bridge,labels['CHECKS'],16,output)
-    checks=[int.from_bytes(snapshot[i:i+2],'little') for i in range(0,16,2)]
+    snapshot=read(bridge,labels['CHECKS'],20,output)
+    checks=[int.from_bytes(snapshot[i:i+2],'little') for i in range(0,20,2)]
     if mode:require(checks[7]==0,'Invalid context returned')
-    else:require(checks[:4]==[0,7,tasks['constants']['PROFILE_TAG'],adapter.TASK0_DP] and checks[4]==checks[6] and
+    # A/X carry the pointer; Y is call-clobbered by the native compiler ABI.
+    else:require(checks[:2]==[0,7] and checks[3]==adapter.TASK0_DP and checks[8:]==[0,0] and checks[4]==checks[6] and
                  checks[5]&255==0x12 and checks[5]&0x3c00==0 and checks[7]==1,'I/O context: '+str(checks))
     clean_ownership(bridge,program,output)
     return dict(build=program['build'],runtime=runtime,checks=checks,variant=variant,native_probe_sha256=sha256(output/'context.bin'))
@@ -72,7 +74,7 @@ def run_case(bridge,t,output,optimize,name,from_build=None):
         require(data(bridge,program['image'],'reached')==[0],'Short OpenDevice returned')
         expected=bytearray([0xa5]*64);expected[30:32]=bytes([16,0])
         require(read(bridge,0x4ffe0,64,output)==expected,'Short request tail/guards touched')
-    else:require(checks==[{'dispatch':23,'lifetime':44,'handoff':4,'absent':2,'queues':32,'gap':1,'queued_handoff':5}[fixture]],'I/O assertions: '+str(checks))
+    else:require(checks==[{'dispatch':26,'lifetime':44,'handoff':4,'absent':2,'queues':32,'gap':1,'queued_handoff':5}[fixture]],'I/O assertions: '+str(checks))
     if name in ('handoff','queued_handoff'):
         end=program['labels']['io_send_io_end']-program['build']['task_storage']['BASE']-0x1000
         target=next(r['address'] for r in program['image']['routines'] if r['name'].startswith('M_IOCORE_SENDIO_'))

@@ -439,22 +439,13 @@ CARD FUNC IOCall(TaskControl POINTER caller CARD saved BYTE service)
 
 RETURN(IORequestCall(caller,saved,service,request))
 
-; Observe or collect a request; established resident dispatch is caller-side.
+; Collect a request; resident dispatch and observation are caller-side.
 CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
     IORequest POINTER request)
   IOResident POINTER device
 
   IF service=IO_SERVICE_WAIT_REQUEST THEN
     RETURN(IOCollect(caller,saved,request))
-  FI
-
-  IF service=IO_SERVICE_CHECK_IO THEN
-    IF request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE THEN
-      request=NULL
-    FI
-
-    PointerResult(saved,Task POINTER(request))
-    RETURN(saved)
   FI
 
   ; Only the queued fixture retains a kernel-owned device protocol.

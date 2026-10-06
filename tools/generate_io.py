@@ -48,7 +48,7 @@ def constants(abi=ABI,sio=SIO):
     require(sio['profiles']=={'FASTEST125':1,'STOCK810':2,'HAPPY1050':3,'GENERIC57600':4},'Unsupported SIO profiles')
     message=json.loads((ROOT/'abi/ports.json').read_text())['records']['Message']
     require((message['size'],message['alignment'])==WIDTHS['Message'],'Message prefix ABI changed')
-    require(set(abi['services'])=={'OPEN_DEVICE','TEST_CLOSE','TEST_BEGIN','CHECK_IO','WAIT_REQUEST','TEST_ABORT','CREATE_CHECK','DELETE_CHECK','TEST_STEP'},
+    require(set(abi['services'])=={'OPEN_DEVICE','TEST_CLOSE','TEST_BEGIN','WAIT_REQUEST','TEST_ABORT','CREATE_CHECK','DELETE_CHECK','TEST_STEP'},
             'Invalid guarded I/O operations')
     require(set(abi['errors'])=={'MISUSE'},'Invalid I/O faults')
     console=json.loads((ROOT/'abi/console.json').read_text())['constants']

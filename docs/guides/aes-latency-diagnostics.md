@@ -81,7 +81,8 @@ they do not measure the COP instruction alone.
 
 Build the image with current sources before probing. Established resident calls
 now dispatch locally; removed routing gateway markers are absent from the
-current observer. Admission, observation and collection gateways remain.
+current observer. CheckIO also runs locally; admission and collection gateways
+remain.
 
 Checked native entry/return boundaries nest inside the existing C call-site
 intervals. Each helper enters and returns with the caller's DP; kernel work

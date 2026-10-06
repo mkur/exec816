@@ -49,7 +49,8 @@ request/port validation. Driver callbacks check command-specific requirements
 and operational state. SendIO clears all flags, BeginIO preserves them and DoIO sets
 IOF_QUICK. Completed quick calls return a copied signed error; queued DoIO enters
 the existing exact-request collection loop after releasing exclusion. CheckIO
-and exact collection retain kernel operations without resident selection.
+observes the byte-wide completion type in the caller without exclusion or
+dequeue; exact collection retains its kernel transaction.
 
 The queued diagnostic device retains its kernel queue protocol behind TEST_BEGIN,
 TEST_ABORT and TEST_CLOSE. Those selectors are rejected in production, and their

@@ -48,6 +48,8 @@ assuming work is pending. Current behavior belongs in the
 
 ## Device I/O and SIO
 
+- [Device I/O and GUI latency](io-latency-implementation-plan.md): caller-local
+  CheckIO, timer exit/poll reduction and the original HY4 GUI comparisons.
 - [Caller device dispatch](caller-device-dispatch-implementation-plan.md):
   implemented established resident dispatch in the caller, preserving public
   I/O semantics. [Measurements](../history/aes-hybrid.md#hy4-caller-device-dispatch)

@@ -142,6 +142,15 @@ PUBLIC PROC DeleteIORequest(EXEC.IORequest POINTER request)
 
 RETURN
 
+; Observe one published completion byte without collecting or changing signals.
+PUBLIC EXEC.IORequest POINTER FUNC CheckIO(EXEC.IORequest POINTER request)
+
+  IF request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE THEN
+    RETURN(NULL)
+  FI
+
+RETURN(request)
+
 PUBLIC EXTERNAL LONGCARD FUNC Collect(EXEC.IORequest POINTER request)
 
 PUBLIC LONGCARD FUNC Start(EXEC.IORequest POINTER request)

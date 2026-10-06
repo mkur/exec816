@@ -50,8 +50,10 @@ port transactions and driver synchronization that implement completion.
 
 Established BeginIO, SendIO, DoIO, AbortIO and CloseDevice calls select resident
 callbacks on the caller's stack through `io_Device`; selection itself does not
-enter the kernel. Open admission, CheckIO and exact reply collection retain
-kernel operations. The [resident boundary](resident-drivers.md) describes the
+enter the kernel. CheckIO also runs in the caller: it reads the completion byte
+once, returning NULL or the original pointer without collecting or clearing a
+signal. Open admission and exact reply collection retain kernel operations.
+The [resident boundary](resident-drivers.md) describes the
 shared preparation, exclusion and callback rules.
 
 ## Completion and lifetime
@@ -69,7 +71,9 @@ completion twice. CheckIO is observational, not a dequeue.
 
 Exact reply collection and queue access share the IRQ-protected native port
 transactions. CheckIO observes the byte-wide completion type; terminal fields
-are written before publication. Drivers may complete through the admitted
+are written before publication. A concurrent completion may be observed as
+pending or terminal; observing terminal state does not collect the reply or
+change request ownership. Drivers may complete through the admitted
 [native ReplyMsg binding](ports.md#native-interrupt-reply), while public
 Action!/C device calls remain Task-only.
 
