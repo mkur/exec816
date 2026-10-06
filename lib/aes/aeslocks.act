@@ -118,8 +118,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       IF @service.clients(index)=client THEN
         service.lockOrder(service.lockCount)=index
         service.lockCount==+1
-        client.waiting=request
-        client.eventMask=0
+        client.pending=request
         RETURN(AESTYPES.PENDING)
       FI
     OD
@@ -160,12 +159,12 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   WHILE position<service.lockCount DO
     BEGIN
       LET client=@service.clients(service.lockOrder(position))
-      LET request=client.waiting
+      LET request=client.pending
       code=CARD(request.intin(0)) & $ff
       IF Eligible(service,client,code)<>0 THEN
         status=Acquire(service,client,code)
         Remove(service,position)
-        client.waiting=NULL
+        client.pending=NULL
         IF status=AESTYPES.OK THEN
           request.intout(0)=1
         FI

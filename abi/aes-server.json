@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 2,
+  "version": 3,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -35,7 +35,9 @@
     "ENDPOINT_UNPUBLISHED": 0,
     "ENDPOINT_ACCEPTING": 1,
     "ENDPOINT_CLOSING": 2,
-    "ENDPOINT_RETIRED": 3
+    "ENDPOINT_RETIRED": 3,
+    "RPC_INTIN_WORDS": 1,
+    "RPC_INTOUT_WORDS": 1
   },
   "records": {
     "Delivery": [
@@ -166,17 +168,12 @@
       [
         "intin",
         "INT",
-        "INTIN_WORDS"
+        "RPC_INTIN_WORDS"
       ],
       [
         "intout",
         "INT",
-        "INTOUT_WORDS"
-      ],
-      [
-        "words",
-        "INT",
-        "MESSAGE_WORDS"
+        "RPC_INTOUT_WORDS"
       ],
       [
         "global",
@@ -208,5 +205,10 @@
         "BYTE"
       ]
     ]
-  }
+  },
+  "rpc_operations": [
+    "OP_INIT",
+    "OP_EXIT",
+    "OP_UPDATE"
+  ]
 }

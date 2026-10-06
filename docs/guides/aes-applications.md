@@ -39,7 +39,10 @@ A sender uses `appl_write(destination, 16, words)`. It may reuse the words after
 return. The destination queue holds sixteen copied messages; zero means the
 send was not accepted. Startup currently supplies peer IDs: `appl_find` and
 application discovery are outside this profile. A pointer in a GEM message
-has no special ownership or lifetime support.
+has no special ownership or lifetime support. Messaging and event/timer waits
+run in the application Task using its receive port and lazy timer binding; they
+do not wait for the presenter to dispatch a request. Registration, exit and
+`wind_update` retain presenter arbitration. Existing GEM call sites need no change.
 
 For a native failure, inspect `ExecAESDiagnostic()` from `<exec816/aes.h>`.
 A failed timer does not consume a queued message. Unsupported event bits fail

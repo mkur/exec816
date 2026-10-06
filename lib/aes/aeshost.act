@@ -6,7 +6,6 @@ USE AESSTATE
 USE AESTYPES
 USE AESCORE
 USE HEAPCORE
-USE AESTIMER
 USE AESLOCKS
 USE DESKSTATE
 USE DESKDRAG
@@ -31,10 +30,6 @@ PUBLIC PROC Start()
     EXEC.FreeSignal(bit)
     service.error=AESTYPES.RESOURCE
   ELSE
-    BEGIN
-      LET opened=AESTIMER.Start(service)
-    END
-
     service.live=1
   FI
 
@@ -47,7 +42,7 @@ PUBLIC LONGCARD FUNC Mask()
     RETURN(0)
   FI
 
-RETURN(service.mask OR service.timer.mask)
+RETURN(service.mask)
 
 PUBLIC BYTE FUNC Pump(BYTE budget)
 
@@ -66,7 +61,7 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-RETURN(AESCORE.Runnable(service) OR AESTIMER.Runnable(service))
+RETURN(AESCORE.Runnable(service))
 
 PUBLIC BYTE FUNC Wake()
   BYTE changed
@@ -76,8 +71,7 @@ PUBLIC BYTE FUNC Wake()
     RETURN(0)
   FI
 
-  changed=service.eventDirty<>0 OR AESTIMER.Runnable(service)<>0
-      OR service.directory.changed<>0
+  changed=service.directory.changed<>0
   IF changed=0 THEN
     RETURN(0)
   FI
@@ -93,7 +87,7 @@ PUBLIC BYTE FUNC Idle()
     RETURN(1)
   FI
 
-RETURN(AESCORE.Idle(service) AND AESTIMER.Idle(service))
+RETURN(AESCORE.Idle(service))
 
 ; After this turn's native continuation/cursor work, prepare and grant pending
 ; locks before deciding to sleep. No additional message admissions occur here.
@@ -122,7 +116,7 @@ PUBLIC PROC Stop()
     RETURN
   FI
 
-  IF Idle()=0 OR AESTIMER.Close(service)=0 OR AESCORE.Stop(service)=0 THEN
+  IF Idle()=0 OR AESCORE.Stop(service)=0 THEN
     HEAPCORE.Abort($fca0)
   FI
 

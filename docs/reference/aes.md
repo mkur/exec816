@@ -3,8 +3,9 @@
 [Reference](README.md) · [C application guide](../guides/aes-applications.md) ·
 [Development record](../history/aes-server.md)
 
-The optional AES endpoint runs in the existing desktop presenter. It uses
-ordinary Exec messages; it adds no Task or kernel gateway. The native desktop
+The optional AES endpoint runs in the existing desktop presenter. Registration,
+exit and GUI locks use ordinary Exec RPC; copied messaging and event/timer waits
+run in their callers. This adds no Task or kernel gateway. The native desktop
 and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
@@ -36,19 +37,22 @@ across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
 admission, waits for existing publishers without blocking the presenter, drains
 the port and acknowledges retirement before the caller frees its storage.
-HY1 prepares these endpoints; public messaging still uses the service FIFO until
-the atomic HY3 migration in the [hybrid plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
+Direct calls validate their registration and one-call occupancy without advancing
+the RPC sequence. Both named wrappers and parameter blocks use the same helpers.
 
-`appl_write(id, 16, words)` copies eight words into the destination's FIFO.
-Each registration has sixteen entries. Success means accepted; a full queue
+`appl_write(id, 16, words)` reserves a destination-owned record, copies eight
+words and publishes it with Exec `PutMsg`. It releases its independent endpoint
+hold without touching the published record. FIFO order is publication order;
+each registration has sixteen entries. Success means published; a full queue
 returns zero with `AES_RESOURCE`, without replacing an older message or waiting
 for space. Other lengths and invalid pointers fail with `AES_MALFORMED`;
 unknown/retired IDs fail with `AES_IDENTITY`. The sender may reuse its buffer
 after return. Borrowed pointer payloads and long messages are unsupported.
 
 `evnt_mesag(words)` returns one after copying the oldest queued message, or
-blocks the application through its private reply port until a message arrives.
-Other applications and the presenter continue. Exit discards any queued messages.
+blocks the application on its private receiving-port signal until a message
+arrives. It recycles the detached record after copying. Other applications and
+the presenter continue. Exit discards any queued messages.
 
 `evnt_timer(lo, hi)` reconstructs an unsigned 32-bit millisecond duration and
 returns one when its absolute VBI-clock deadline expires. Conversion uses the
@@ -65,6 +69,13 @@ Zero-duration `MU_TIMER` is immediately ready and submits no alarm; use it with
 empty mask fail as a whole with `AES_UNSUPPORTED`. This profile returns zero
 in the six mouse/keyboard output words; input-event reporting is future work.
 Rectangle/button inputs have no effect when their event bits are absent.
+
+Matching runs in the caller. It computes one absolute deadline, checks selected
+sources before sleeping and rechecks after alarm submission. Signals are hints;
+spurious wakes never restart the interval. Unselected messages remain queued.
+The caller freezes one readiness result, retires any outstanding alarm and then
+consumes at most one message. A queued message can avoid a future alarm. These
+paths make progress independently of the presenter pump.
 
 A clock/device failure returns zero with `AES_TIMER_ERROR` for affected timed
 waits, preserving queued messages. A failed timer binding does not automatically reopen or retry. The caller
@@ -107,34 +118,23 @@ remain caller-owned storage, lent until the single reply is collected. This is
 a cooperative shared-memory ownership contract, not memory protection against
 malicious applications. Normal service shutdown refuses live registrations.
 
-Each client lazily opens `timer.device` for standalone timer waits, with a
+Each client lazily opens `timer.device` for timed waits, with a
 private reply port and two 38-byte records: a clock query and borrowed alarm.
 It publishes outstanding ownership before `SendIO`, collects exactly its reply,
 and closes the original open before freeing those records on exit. Up to four
-client opens and the temporary presenter open fit within the device's eight-open
-limit; competing users can still exhaust capacity. Setup failure releases every
+client opens fit within the device's eight-open limit; competing users can still
+exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-During HY2, the presenter still owns combined waits. It opens `timer.device` on
-`UNIT_VBLANK` once, with a private signal
-port and two 38-byte records: the original clock query and a borrowed absolute
-alarm. The transport collects or cancels/collects the alarm before reuse or
-shutdown, then closes the original open. A setup failure releases its acquired
-resources and leaves message service available. Per-client absolute deadlines
-share that single alarm. Queued completion and cancellation replies retain their
-wake path until collected; future timer I/O never blocks the presenter.
-Readiness is reconsidered after admissions or terminal alarm replies. Unchanged
-future waits do not reread the clock on unrelated GUI turns. Pointer capture and
-cursor service run between AES admissions and after active event processing;
-widget commits remain after native control admission. Existing GUI lock gates
-still apply. These boundaries add no idle wake or periodic input poll.
+The presenter now handles registration, retirement and GUI locks only. Pending
+publishers retain an exit wake path; lock settlement and native input/drawing
+gates remain active. There is no presenter message FIFO, event scan or timer
+alarm, and no periodic AES wake.
 Native and AES requests share at most four admissions per turn, alternating the
 first endpoint on ordinary turns. When painting or a widget gesture can advance,
 at most three native requests precede the existing paint quantum, then one AES
 request is admitted after it. Both phases share the four-request limit; AES is
-not deferred across an entire repaint. Timer completion and event matching run
-outside that intake budget, including a boundary after console work so an
-expiry during drawing need not wait for another presenter turn.
+not deferred across an entire repaint. Caller-owned messages and timer completions do not use that intake budget.
 The presenter services captured input before controls when signalled and after
 actual paint work. Widget model changes stay after native control admission.
 Each turn gives GUI painting its existing bounded quantum before new console
@@ -145,6 +145,8 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile. Rebuild bindings and service together. Current implementation and
+profile: version 3 has an 86-byte request and permits only init, exit and update
+on the RPC endpoint. Public GEM arrays remain private to each caller. Rebuild
+bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).

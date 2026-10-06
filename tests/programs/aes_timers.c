@@ -3,7 +3,7 @@
 #include <clib/alib_protos.h>
 #include "aes_timer_vectors.h"
 
-ULONG AESService, AESClock;
+ULONG AESService, AESClock, AESPark;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone, AESFirstFailure;
 volatile ULONG AESBurns;
 UWORD AESFault;
@@ -32,6 +32,9 @@ void AESBeforeSend(struct ExecAESContext *c)
         c->timer.alarm->ticks_hi = c->timer.alarm->ticks_lo = 0;
     } else if (AESFault == 2) c->timer.alarm->tc_Request.io_Command = 0;
 }
+
+void AESAfterRead(struct ExecAESContext *c) {}
+void AESBeforeWait(struct ExecAESContext *c, ULONG mask) {}
 
 static void client(UWORD who)
 {
@@ -109,10 +112,10 @@ UWORD AESRun(void)
     AESFault = 0;
     CHECK(appl_exit() == 1);
 
-    /* The presenter owns one open; seven competing originals fill the rest. */
+    /* Eight competing originals fill all opens; the presenter owns none. */
     port = CreateMsgPort();
     CHECK(port != NULL);
-    for (i = 0; i < 7; ++i) {
+    for (i = 0; i < 8; ++i) {
         requests[i] = (struct TimerClockRequest *)CreateIORequest(port, sizeof(*requests[i]));
         CHECK(requests[i] != NULL);
         CHECK(OpenDevice("timer.device", UNIT_VBLANK, &requests[i]->tc_Request, 0) == 0);
@@ -123,7 +126,7 @@ UWORD AESRun(void)
     CHECK(appl_write(id, 16, words) == 1);
     words[0] = 0;
     CHECK(evnt_mesag(words) == 1 && words[0] == 123);
-    for (i = 0; i < 7; ++i) {
+    for (i = 0; i < 8; ++i) {
         CloseDevice(&requests[i]->tc_Request);
         DeleteIORequest(&requests[i]->tc_Request);
     }

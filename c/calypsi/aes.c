@@ -225,29 +225,29 @@ WORD appl_exit(void)
 WORD appl_write(WORD id, WORD length, const WORD *message)
 {
     struct ExecAESContext *c = ExecAESContext();
+    struct AESEndpoint *destination;
+    struct AESDelivery *record;
     UWORD i;
-    if (c == NULL) return 0;
-    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (c == NULL || !ExecAESEnter(c)) return 0;
     if (length != 16 || !ExecAESPointer(message, 16)) {
-        c->diagnostic = AES_MALFORMED; return 0;
+        c->diagnostic = AES_MALFORMED;
+        c->busy = 0;
+        return 0;
     }
-    c->request.intin[0] = id;
-    c->request.intin[1] = length;
-    for (i = 0; i < AES_MESSAGE_WORDS; ++i) c->request.words[i] = message[i];
-    return submit(c, AES_OP_WRITE);
+    record = ExecAESReserve(c, id, &destination);
+    if (record != NULL) {
+        for (i = 0; i < AES_MESSAGE_WORDS; ++i) record->words[i] = message[i];
+        ExecAESPublish(c, destination, record);
+    }
+    c->busy = 0;
+    return record != NULL;
 }
 
 WORD evnt_mesag(WORD *message)
 {
     struct ExecAESContext *c = ExecAESContext();
-    UWORD i;
-    WORD result;
     if (c == NULL) return 0;
-    if (!ExecAESPointer(message, 16)) { c->diagnostic = AES_MALFORMED; return 0; }
-    result = submit(c, AES_OP_MESAG);
-    if (result)
-        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = c->request.words[i];
-    return result;
+    return ExecAESEvents(c, MU_MESAG, 0, message) != 0;
 }
 
 WORD evnt_timer(UWORD lo, UWORD hi)
@@ -268,18 +268,8 @@ WORD wind_update(WORD code)
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
 {
-    UWORD i, flags = (UWORD)c->request.intin[0];
-    WORD result;
-    if (flags == 0 || (flags & ~(MU_MESAG | MU_TIMER))) {
-        c->diagnostic = AES_UNSUPPORTED; return 0;
-    }
-    if ((flags & MU_MESAG) && !ExecAESPointer(message, 16)) {
-        c->diagnostic = AES_MALFORMED; return 0;
-    }
-    result = submit(c, AES_OP_MULTI);
-    if (result & MU_MESAG)
-        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = c->request.words[i];
-    return result;
+    return ExecAESEvents(c, (UWORD)c->intin[0],
+        (ULONG)(UWORD)c->intin[14] | ((ULONG)(UWORD)c->intin[15] << 16), message);
 }
 
 WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
@@ -297,7 +287,7 @@ WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
         !ExecAESPointer(kr, 2) || !ExecAESPointer(br, 2)) {
         c->diagnostic = AES_MALFORMED; return 0;
     }
-    in = c->request.intin;
+    in = c->intin;
     in[0] = flags; in[1] = bclk; in[2] = bmsk; in[3] = bst;
     in[4] = m1flags; in[5] = m1x; in[6] = m1y; in[7] = m1w; in[8] = m1h;
     in[9] = m2flags; in[10] = m2x; in[11] = m2y; in[12] = m2w; in[13] = m2h;
@@ -324,6 +314,7 @@ void EXEC_CALL aes_call(AESPB *pb)
     WORD result = 0;
     UWORD i, op, inputs = 0, addresses = 0, outputs = 1;
     if (c == NULL) return;
+    if (c->busy) { c->diagnostic = AES_BUSY; return; }
     c->diagnostic = AES_MALFORMED;
     if (!ExecAESPointer(pb, sizeof(*pb)) ||
         !ExecAESPointer(pb->control, 10) ||
@@ -359,7 +350,7 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
     case AES_OP_MULTI:
         if (c->busy) { c->diagnostic = AES_BUSY; break; }
-        for (i = 0; i < 16; ++i) c->request.intin[i] = pb->int_in[i];
+        for (i = 0; i < 16; ++i) c->intin[i] = pb->int_in[i];
         result = multi(c, (WORD *)(ULONG)pb->addr_in[0]);
         for (i = 1; i < 7; ++i) pb->int_out[i] = 0;
         break;

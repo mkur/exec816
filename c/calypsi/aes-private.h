@@ -16,6 +16,8 @@ BOOL ExecAESTimerCollect(struct ExecAESContext *c, BOOL cancel);
 BOOL ExecAESTimerClose(struct ExecAESContext *c);
 void ExecAESTimerSend(struct ExecAESContext *c, ULONG high, ULONG low);
 WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds);
+WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
+                   WORD *message);
 #define AES_ALARM_IDLE 0
 #define AES_ALARM_OUTSTANDING 1
 #define AES_ALARM_RETIRING 2

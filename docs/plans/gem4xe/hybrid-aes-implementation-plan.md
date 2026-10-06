@@ -6,8 +6,9 @@
 Status: in progress, 2026-10-06. Started from Exec816
 `38d5964f563710c6b66b2438b71c60528d03d9af` and the hybrid design note.
 [HY1](../../development/aes-hybrid-hy1.json) and
-[HY2](../../development/aes-hybrid-hy2.json) pass development checks; HY3–HY4
-remain pending. Keep the compiler, donor and platform pins recorded in
+[HY2](../../development/aes-hybrid-hy2.json) and
+[HY3](../../development/aes-hybrid-hy3.json) pass development checks; HY4
+remains pending. Keep the compiler, donor and platform pins recorded in
 the repository; record any local overrides with the resulting evidence.
 
 Refactor the existing AES call profile onto caller-owned message and timer
@@ -70,7 +71,7 @@ Update reference documentation only when its executable behavior lands.
 | Shared layouts | Extend [aes-server.json](../../../abi/aes-server.json) and [generate_aes_server.py](../../../tools/generate_aes_server.py) for the endpoint directory, message records and registration exchange. Keep GEM opcode/count metadata separate from the remaining RPC allowlist. Generate Action!/C declarations and layout probes. |
 | Caller binding | Refactor [aes.c](../../../c/calypsi/aes.c) and [aes.h](../../../c/include/exec816/aes.h). Proposed private `c/calypsi/aes-messages.c` and `aes-events.c` hold copied delivery and wait logic; their names are not public ABI. |
 | Registration and shutdown | Change [aescore.act](../../../lib/aes/aescore.act), [aesstate.act](../../../lib/aes/aesstate.act), [aeshost.act](../../../lib/aes/aeshost.act) and [aesboot.act](../../../lib/aes/aesboot.act). Keep service-owned IDs, Task leases and controller lifetime. |
-| Obsolete event transport | Retire [aesmessages.act](../../../lib/aes/aesmessages.act), [aesevents.act](../../../lib/aes/aesevents.act) and [aestimer.act](../../../lib/aes/aestimer.act) from current builds when HY3 replaces their last users. |
+| Obsolete event transport | Retire `aesmessages.act`, `aesevents.act` and `aestimer.act` (removed in HY3) from current builds when HY3 replaces their last users. |
 | GUI integration | Preserve [aeslocks.act](../../../lib/aes/aeslocks.act), native paint/input gates and `AESHOST.Settle`. Update presenter event/mask/idle hooks to account for the remaining RPC and retirement work. |
 | Build and tests | Update `build_bitmap_console.py`, `build_aes_desktop.py`, `test_aes_server.py`, `test_aes_desktop.py`, their emitted fixtures and the host contract checks. Normalize host text before parsing listings. |
 | Measurements | Extend [aes_latency_trace.py](../../../tools/aes_latency_trace.py), `measure_aes_calls.py` and `compare_aes_latency.py`; do not fabricate RPC milestones for direct calls. |

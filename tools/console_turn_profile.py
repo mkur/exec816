@@ -93,7 +93,7 @@ class Timeline:
                     charged_cpu_ms=delta[0], off_cpu_ms=delta[1], interrupt_ms=delta[2])
 
 
-def analyze_events(events, definition, window=None):
+def analyze_events(events, definition, window=None, allow_empty_window=False):
     points, definitions = definition['points'], definition['spans']
     turns = [t for t, e in events if e[0] == 'cpu' and int(e[4], 16) == points['turn']]
     workers = {int(e[9], 16) for t, e in events
@@ -156,8 +156,8 @@ def analyze_events(events, definition, window=None):
     # turn). Routine spans still include shutdown, with their own names.
     if window is not None:
         rows = [r for r in rows if window[0] <= r['start'] < r['end'] <= window[1]]
-        require(rows, 'No complete worker turns in workload window')
-    start, end = rows[0]['start'], rows[-1]['end']
+        require(rows or allow_empty_window, 'No complete worker turns in workload window')
+    start, end = (rows[0]['start'], rows[-1]['end']) if rows else window
     totals = {}
     for kind in definitions:
         selected = [s for s in spans if s['kind'] == kind and start <= s['start'] < s['end'] <= end]
@@ -169,13 +169,15 @@ def analyze_events(events, definition, window=None):
     for row in slow:
         row['routines'] = [s for s in spans if row['start'] <= s['start'] <= s['end'] <= row['end']]
     return dict(scope=__doc__, worker_dp=worker, complete_turns=len(rows), window=window,
+                observed_turn_entries=sum(start <= t <= end for t in turns),
+                window_cpu=timeline.measure(start, end),
                 repeated_breakpoint_entries=repeated_entries,
                 turns=rows, routines=totals, routine_spans=spans, slowest_turns=slow,
                 global_interrupt_ms=sum(max(0, min(b, end)-max(a, start))
                     for a, b, _, irq in segments if irq)/BASE_HZ*1000,
-                max_charged_cpu_ms=max(r['charged_cpu_ms'] for r in rows),
-                max_elapsed_ms=max(r['elapsed_ms'] for r in rows),
-                max_off_cpu_ms=max(r['off_cpu_ms'] for r in rows))
+                max_charged_cpu_ms=max((r['charged_cpu_ms'] for r in rows), default=0),
+                max_elapsed_ms=max((r['elapsed_ms'] for r in rows), default=0),
+                max_off_cpu_ms=max((r['off_cpu_ms'] for r in rows), default=0))
 
 
 def analyze(path, definition, marks):

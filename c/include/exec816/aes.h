@@ -21,6 +21,7 @@ struct ExecAESContext {
     struct AESDirectory *directory;
     struct AESEndpoint *endpoint;
     WORD control[5];
+    WORD intin[AES_INTIN_WORDS], intout[AES_INTOUT_WORDS], words[AES_MESSAGE_WORDS];
     LONG addrin[3], addrout[1];
     UWORD diagnostic;
     UBYTE busy;

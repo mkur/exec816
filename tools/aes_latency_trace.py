@@ -29,13 +29,15 @@ def c_listing(program, name, stem):
 
 def caller_markers(program, foreign):
     sy=foreign['symbols'];out={}
-    text=c_listing(program,'evnt_timer','aes')
-    require('evnt_timer' in sy, 'Missing public timer entry')
-    out['direct_timer_begin']=sy['evnt_timer']
-    epilogue=text.rsplit('}',1)[1]
-    end=re.search(r'\\ ([0-9a-f]{6}) [0-9a-f.]+\s+',epilogue)
-    require(end is not None, 'Missing public timer epilogue')
-    out['direct_timer_end']=sy['evnt_timer']+int(end[1],16)
+    for name,label in (('appl_write','write'),('evnt_mesag','message'),
+                       ('evnt_timer','timer'),('evnt_multi','multi')):
+        text=c_listing(program,name,'aes')
+        require(name in sy, 'Missing public AES entry '+name)
+        out['direct_'+label+'_begin']=sy[name]
+        epilogue=text.rsplit('}',1)[1]
+        end=re.search(r'\\ ([0-9a-f]{6}) [0-9a-f.]+\s+',epilogue)
+        require(end is not None, 'Missing public AES epilogue '+name)
+        out['direct_'+label+'_end']=sy[name]+int(end[1],16)
     text=c_listing(program,'ExecAESTimerSend','aes-events')
     require('ExecAESTimerSend' in sy,'Missing caller alarm submission')
     # Read values at their actual 64-bit request-field stores, independent of
@@ -102,13 +104,6 @@ def markers(program, foreign):
             require(raw.count(call)==1,'Ambiguous AES reply boundary')
             out['reply']=base+raw.index(call)
     out.update(caller_markers(program,foreign))
-    base,raw=routine(program,'AESTIMER_TARGET')
-    for field,offset_value in (('deadline_high',26),('deadline_low',30)):
-        needle=b'\xa0'+offset_value.to_bytes(2,'little')+b'\x97\x80\xa3'
-        require(raw.count(needle)==1,'Unknown alarm deadline stores')
-        at=raw.index(needle)
-        require(raw[at+7:at+11]==bytes.fromhex('c8c89780'),'Unknown wide alarm store')
-        out[field+'_lo']=base+at+3;out[field+'_hi']=base+at+9
     listing=(program['output']/'hosted.lst').read_text()
     local=lambda name:int(re.search(r'(?m)^([0-9A-F]{6})r \d+\s+'+name+r':',listing)[1],16)
     native_base=program['labels']['native_timer_work']-local('native_timer_work')
@@ -122,8 +117,8 @@ def markers(program, foreign):
 
 def analyze(events, marks, final_clock, window=None):
     names={pc:name for name,pc in marks.items()}
-    active={};by_pointer={};parts={};ticks={};clock=0;alarm_high=alarm_low=0
-    due=None;reply_pointer=None;device=None;rows=[];alarms=[]
+    active={};by_pointer={};parts={};ticks={};clock=0
+    due=None;reply_pointer=None;rows=[];alarms=[]
     direct={};direct_parts=defaultdict(dict);io={};caller_alarms={}
     for time,event in events:
         if event[0]!='cpu':continue
@@ -132,12 +127,22 @@ def analyze(events, marks, final_clock, window=None):
         a=int(event[5],16);dp=int(event[9],16)
         if name=='clock_tick':
             clock+=1;ticks[clock]=time
-        elif name=='direct_timer_begin':
-            require(dp not in direct and dp not in active,'Overlapping public timer call')
-            direct[dp]=dict(start=time,operation=24,dp=dp,transport='direct')
-        elif name=='direct_timer_end':
-            require(dp in direct,'Public timer returned without entry')
+        elif name.startswith('direct_') and name.endswith('_begin'):
+            require(dp not in direct and dp not in active,'Overlapping public AES call')
+            operation={'write':12,'message':23,'timer':24,'multi':25}[name.split('_')[1]]
+            direct[dp]=dict(start=time,operation=operation,dp=dp,transport='direct')
+        elif name.startswith('direct_') and name.endswith('_end'):
+            # Calypsi tail-merges epilogues across wrappers and unrelated
+            # routines. A shared tail is a result boundary only for the
+            # matching observed public entry. Missing returns still leave
+            # an active call and fail the complete-trace check below.
+            operation={'write':12,'message':23,'timer':24,'multi':25}[name.split('_')[1]]
+            if dp not in direct or direct[dp]['operation'] != operation:continue
             row=direct.pop(dp);row['client']=time;rows.append(row)
+            if 'alarm' in row:
+                pending=caller_alarms.pop(row['alarm'],None)
+                if pending: require(pending['row'] is row,'Alarm identity changed before collection')
+                row['alarm_outcome']='native_expiry' if 'device_reply' in row else 'collected_without_native_expiry'
         elif name.startswith('direct_deadline_'):
             direct_parts[dp][name.removeprefix('direct_deadline_')]=a
         elif name=='io_begin':
@@ -173,18 +178,10 @@ def analyze(events, marks, final_clock, window=None):
             row=by_pointer[reply_pointer]
             require('reply' not in row,'Double AES reply')
             row['reply']=time
-            if device is not None and row['operation'] in (24,25):
-                row['previous_device_reply']=device
         elif name=='client':
             row=active.pop(dp)
             require('reply' in row,'AES client returned without observed reply')
             row['client']=time;rows.append(row);del by_pointer[row['pointer']]
-        elif name.startswith('deadline_'):
-            parts[name]=a
-            if name.endswith('_hi'):
-                value=parts[name[:-2]+'lo'] | (a<<16)
-                if name.startswith('deadline_high'):alarm_high=value
-                else:alarm_low=value
         elif name=='device_due':
             require(due is None,'Overlapping native expiry decisions')
             due=dict(due=time)
@@ -192,15 +189,16 @@ def analyze(events, marks, final_clock, window=None):
             require(due is not None,'Timer reply without expiry decision')
             pointer=a | (int(event[6],16)<<16)
             caller=caller_alarms.pop(pointer,None)
-            deadline=caller['deadline'] if caller else (alarm_high<<32)|alarm_low
+            require(caller is not None,'Native expiry without an observed caller request')
+            deadline=caller['deadline']
             require(deadline in ticks,'Alarm expired before its observed VBI deadline')
             due.update(pointer=pointer,deadline=deadline,deadline_clock=ticks[deadline],reply=time)
             if caller:
                 require('device_reply' not in caller['row'],'Duplicate caller alarm expiry')
                 caller['row']['device_reply']=time
                 due['client_dp']=caller['row']['dp']
-            alarms.append(due);due=None;device=time
-    require(not active and not by_pointer and not direct,'Uncollected AES calls in complete trace')
+            alarms.append(due);due=None
+    require(not active and not by_pointer and not direct and not caller_alarms,'Uncollected AES calls in complete trace')
     require(clock==final_clock,'VBI trace does not match the device clock')
     if window is not None:
         rows=[r for r in rows if window[0]<=r['start']<=r['client']<=window[1]]
@@ -218,15 +216,10 @@ def analyze(events, marks, final_clock, window=None):
         return {label:distribution([ms(row[end]-row[start]) for row in items])
                 for label,start,end in (('binding_setup','start','send'),('submit_to_service','send','service'),
                     ('service_to_reply','service','reply'),('reply_to_client','reply','client'),('total','start','client'))}
-    # Associate only timer calls whose service admission predates this alarm's
-    # terminal reply. Immediate/queued-message completions are excluded.
-    device_to_aes=[ms(row['reply']-row['previous_device_reply']) for row in rows
-        if row['transport']=='rpc' and row['operation']==24 and 'previous_device_reply' in row
-        and row['service']<row['previous_device_reply']<=row['reply']]
     return dict(calls=len(rows),window=window,operations={key:metrics(value) for key,value in groups.items()},
         expiry_count=len(alarms),clock_ticks=clock,
         deadline_to_device_reply=distribution([ms(a['reply']-a['deadline_clock']) for a in alarms]),
         expiry_decision_to_device_reply=distribution([ms(a['reply']-a['due']) for a in alarms]),
-        device_reply_to_aes_reply=distribution(device_to_aes),
-        scope='RPC uses the historical submit-to-checked-epilogue interval. Direct timers use public wrapper entry to result epilogue, including context lookup; compare these as distinct metrics. Caller deadlines and native expiry replies are matched by exact request pointer and client DP. VBI rounding is excluded from deadline latency.',
+        scope='RPC uses the historical submit-to-checked-epilogue interval. Direct named calls use public wrapper entry to result epilogue, including context lookup; compare these as distinct metrics. Caller deadlines and native expiry replies are matched by exact request pointer and client DP. VBI rounding is excluded from deadline latency.',
+        observed_public_wrappers=['appl_write','evnt_mesag','evnt_timer','evnt_multi'],
         records=rows,alarms=alarms)

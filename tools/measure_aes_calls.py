@@ -24,8 +24,7 @@ def run(out,program,frames=100,load='idle'):
     marks=markers(p,foreign)
     _,_,costs=observers(p)
     costs['spans'].update(native_markers(p,[(name,name.lower()) for name in (
-        'DESKHOST_CONTROLS','AESCORE_DISPATCH','AESEVENTS_WAIT','AESEVENTS_POLL',
-        'AESTIMER_READ','AESTIMER_TARGET','TIMER_DEADLINE','CONSOLEDRIVER_WRITEQUANTUM')]))
+        'DESKHOST_CONTROLS','AESCORE_DISPATCH','CONSOLEDRIVER_WRITEQUANTUM')]))
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
         f'{pc:x}' for pc in set([*marks.values(),*flat_markers(costs).values()])))
     for key in ('EXEC816_MASK_TRACE','EXEC816_MOUSE_TRACE'):os.environ.pop(key,None)
@@ -73,7 +72,7 @@ def run(out,program,frames=100,load='idle'):
         events=read_events(out/'emulator.log',kinds={'cpu'})
         window=[t+round((events[0][0]-t)/(1<<32))*(1<<32) for t in report['window']]
         report['latency']=analyze(events,marks,report['final_clock'],window)
-        report['costs']=analyze_events(events,costs,window)
+        report['costs']=analyze_events(events,costs,window,allow_empty_window=True)
         if load=='scroll':require(report['costs']['routines'].get('consoledriver_writequantum',{}).get('calls',0)>0,'Console load made no progress')
         report['status']='pass'
     except Exception as error:

@@ -142,3 +142,86 @@ WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds)
     c->busy = 0;
     return status == AES_OK;
 }
+
+/* Only this Task removes messages from its receive port. A nonempty hint
+ * remains true until GetMsg below; concurrent publishers can only add work.
+ * Empty is not a reason to clear a signal before Wait. */
+static BOOL message_ready(struct ExecAESContext *c)
+{
+    return (struct Node *)c->receiving->mp_MsgList.lh_Head !=
+           (struct Node *)&c->receiving->mp_MsgList.lh_Tail;
+}
+
+WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
+                   WORD *message)
+{
+    ULONG high = 0, low = 0, mask = 0;
+    UWORD ready = 0, status = AES_OK, i;
+    BOOL initial = TRUE, submitted = FALSE;
+    struct AESDelivery *record;
+    if (!ExecAESEnter(c)) return 0;
+    if (flags == 0 || (flags & ~(AES_MU_MESAG | AES_MU_TIMER))) {
+        status = AES_UNSUPPORTED;
+        goto done;
+    }
+    if (flags & AES_MU_MESAG) {
+        if (!ExecAESPointer(message, 16)) { status = AES_MALFORMED; goto done; }
+        mask = 1UL << c->receiving->mp_SigBit;
+    }
+    if (flags & AES_MU_TIMER) {
+        if (!ExecAESTimerRead(c)) { status = AES_TIMER_ERROR; goto done; }
+        if (milliseconds && !ExecAESTimerDeadline(c->timer.query, milliseconds)) {
+            status = AES_OVERFLOW;
+            goto done;
+        }
+        high = c->timer.query->ticks_hi;
+        low = c->timer.query->ticks_lo;
+        mask |= 1UL << c->timer.port->mp_SigBit;
+    }
+    for (;;) {
+        ready = 0;
+        if (flags & AES_MU_TIMER) {
+            if (!initial) {
+                if (c->timer.state != AES_ALARM_IDLE &&
+                    CheckIO(&c->timer.alarm->tc_Request) != NULL) {
+                    if (!ExecAESTimerCollect(c, FALSE) || c->timer.error) {
+                        status = AES_TIMER_ERROR;
+                        goto done;
+                    }
+                }
+                if (!ExecAESTimerRead(c)) { status = AES_TIMER_ERROR; goto done; }
+            }
+            if ((initial && milliseconds == 0) || (!initial &&
+                (c->timer.query->ticks_hi > high ||
+                 (c->timer.query->ticks_hi == high && c->timer.query->ticks_lo >= low))))
+                ready = AES_MU_TIMER;
+        }
+        if ((flags & AES_MU_MESAG) && message_ready(c)) ready |= AES_MU_MESAG;
+        if (ready) break;
+        initial = FALSE;
+        if ((flags & AES_MU_TIMER) && !submitted) {
+            ExecAESTimerSend(c, high, low);
+            submitted = TRUE;
+            continue; /* Recheck immediate reply/arrival before sleeping. */
+        }
+        Wait(mask);
+    }
+    /* Freeze readiness, then retire the alarm before removing any payload.
+     * A clock/device error leaves the oldest message in the original FIFO. */
+    if (submitted && (!ExecAESTimerCollect(c, TRUE) || c->timer.error)) {
+        status = AES_TIMER_ERROR;
+        goto done;
+    }
+    if (ready & AES_MU_MESAG) {
+        record = (struct AESDelivery *)GetMsg(c->receiving);
+        if (record == NULL) { status = AES_MALFORMED; goto done; }
+        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = record->words[i];
+        ExecAESRecycle(c->endpoint, record);
+    }
+done:
+    if (submitted && c->timer.state != AES_ALARM_IDLE &&
+        !ExecAESTimerCollect(c, TRUE)) status = AES_TIMER_ERROR;
+    c->diagnostic = status;
+    c->busy = 0;
+    return status == AES_OK ? (WORD)ready : 0;
+}

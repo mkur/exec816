@@ -26,13 +26,22 @@ class DesktopContractTests(unittest.TestCase):
     def test_library_calls_are_not_task_entries(self):
         for module in ('DESKTOP', 'DESKCORE', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
-        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESMESSAGES', 'AESTIMER', 'AESLOCKS'):
+        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_aes_protocol_is_generated(self):
         import generate_aes_server
         for path, expected in generate_aes_server.files().items():
             self.assertEqual(path.read_text(), expected)
+
+    def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
+        import generate_aes_server as aes
+        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE'])
+        self.assertEqual(aes.layout()['Request']['size'], 86)
+        self.assertNotIn('words', aes.layout()['Request']['fields'])
+        self.assertEqual(aes.layout()['Delivery']['size'], 32)
+        self.assertEqual(aes.ABI['constants']['RPC_INTIN_WORDS'], 1)
+        self.assertEqual(aes.ABI['constants']['INTIN_WORDS'], 16)
 
     def test_demo_registers_only_its_worker_entry(self):
         self.assertTrue(application_entry({'name': 'M_DESKAPP_RUN_123ABC'}))

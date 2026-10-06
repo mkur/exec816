@@ -76,7 +76,7 @@ PROC Main()
   packet.sequence=$87654321
   packet.owner=EXEC.FindTask(NULL)
   packet.binding=BYTE POINTER(packet)
-  FOR index=0 TO AESTYPES.INTIN_WORDS-1 DO
+  FOR index=0 TO AESTYPES.RPC_INTIN_WORDS-1 DO
     packet.intin(index)=-100-INT(index)
   OD
 
@@ -88,7 +88,7 @@ PROC Main()
   entry^=${sy['AESWireProbe']:x}
   result=cProbe()
   Require(result=0)
-  FOR index=0 TO AESTYPES.INTIN_WORDS-1 DO
+  FOR index=0 TO AESTYPES.RPC_INTIN_WORDS-1 DO
     Require(packet.intin(index)=INT(300+index))
   OD
 
@@ -96,9 +96,7 @@ PROC Main()
     Require(packet.global(index)=-500-INT(index))
   OD
 
-  FOR index=0 TO AESTYPES.MESSAGE_WORDS-1 DO
-    Require(packet.words(index)=-200-INT(index))
-  OD
+  Require(packet.intout(0)=-200)
 
   EXEC.FreeMem(memory,LONGCARD(131072))
   entry^=${sy['AESContextProbe']:x}
@@ -170,42 +168,27 @@ def check_bridge(words, entry):
     require((words[3] ^ words[23]) & 1, 'Missing opposite bridge stack parities')
 
 
-def event_probes(out):
-    (out/'aeseventprobe.act').write_text(read_source(ROOT/'tests/programs/aeseventprobe.act'))
-    timer = read_source(ROOT/'lib/aes/aestimer.act').replace('USE HEAPCORE',
-        'USE HEAPCORE\nUSE AESEVENTPROBE')
-    timer = timer.replace('  state.rate=state.query.ticks_per_second\n\nRETURN(1)',
-        '  state.rate=state.query.ticks_per_second\n  AESEVENTPROBE.Clock(service)\n\nRETURN(state.error=0)')
-    timer = timer.replace('  EXEC.SendIO(@state.alarm.tc_Request)',
-        '  AESEVENTPROBE.sends==+1\n  EXEC.SendIO(@state.alarm.tc_Request)')
-    (out/'aestimer.act').write_text(timer)
-    events = read_source(ROOT/'lib/aes/aesevents.act').replace('USE AESTIMER',
-        'USE AESTIMER\nUSE AESEVENTPROBE')
-    events = events.replace('    milliseconds=LONGCARD(CARD(request.intin(14)))',
-        '    AESEVENTPROBE.Accept(service)\n    milliseconds=LONGCARD(CARD(request.intin(14)))')
-    events = events.replace('    client.deadlineLow=stamp.ticks_lo',
-        '    client.deadlineLow=stamp.ticks_lo\n    AESEVENTPROBE.Converted(client,request)')
-    events = events.replace('  timed=0',
-        '  IF AESEVENTPROBE.Pending(service)=0 THEN\n    RETURN\n  FI\n  timed=0')
-    (out/'aesevents.act').write_text(events)
-    driver = read_source(ROOT/'lib/io/timerdriver.act').replace('USE HEAPCORE',
-        'USE HEAPCORE\nUSE AESEVENTPROBE')
-    driver = driver.replace('  IF state.count=TIMERMETA.PENDING_CAPACITY THEN',
-        '  IF state.count=TIMERMETA.PENDING_CAPACITY OR AESEVENTPROBE.mode=5 THEN')
-    (out/'timerdriver.act').write_text(driver)
-
-
-def timer_probes(out):
+def caller_probes(out, timer=False):
+    (out/'aeshybridprobe.act').write_text('MODULE AESHYBRIDPROBE\nPUBLIC BYTE park\nENDMODULE\n')
+    core = read_source(ROOT/'lib/aes/aescore.act').replace('USE HEAPCORE', 'USE HEAPCORE\nUSE AESHYBRIDPROBE')
+    needle='  IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN'
+    require(core.count(needle)==1,'Missing AES dispatch boundary')
+    core=core.replace(needle, '  IF request.operation=AESTYPES.OP_WRITE OR request.operation=AESTYPES.OP_MESAG\n      OR request.operation=AESTYPES.OP_TIMER OR request.operation=AESTYPES.OP_MULTI THEN\n    HEAPCORE.Abort($fcbe)\n  FI\n\n'+needle)
+    core=core.replace('  count=0', '  IF AESHYBRIDPROBE.park<>0 THEN\n    RETURN(0)\n  FI\n\n  count=0')
+    (out/'aescore.act').write_text(core)
+    if not timer:
+        return
     binding = (ROOT/'c/calypsi/aes-events.c').read_text().replace(
-        '#include "aes-private.h"', '#include "'+str(ROOT/'c/calypsi/aes-private.h')+'"\nextern UWORD AESFault;\nvoid AESBeforeSend(struct ExecAESContext *c);')
+        '#include "aes-private.h"', '#include "'+str(ROOT/'c/calypsi/aes-private.h')+'"\nextern UWORD AESFault;\nvoid AESBeforeSend(struct ExecAESContext *c);\nvoid AESAfterRead(struct ExecAESContext *c);\nvoid AESBeforeWait(struct ExecAESContext *c, ULONG mask);')
     binding = binding.replace('t->query->tc_Request.io_Command = TD_READCLOCK;',
         't->query->tc_Request.io_Command = AESFault == 4 ? 0 : TD_READCLOCK;')
+    needle='    return TRUE;\nfailure:'
+    require(binding.count(needle)==1,'Missing caller clock boundary')
+    binding=binding.replace(needle, '    AESAfterRead(c);\n'+needle)
     binding = binding.replace('    SendIO(&t->alarm->tc_Request);',
         '    AESBeforeSend(c);\n    SendIO(&t->alarm->tc_Request);')
+    binding=binding.replace('        Wait(mask);', '        AESBeforeWait(c, mask);\n        Wait(mask);')
     (out/'aes-events.c').write_text(binding)
-    core = read_source(ROOT/'lib/aes/aescore.act').replace('  service.eventDirty=1',
-        '  IF request.operation=AESTYPES.OP_TIMER THEN\n    HEAPCORE.Abort($fcbe)\n  FI\n\n  service.eventDirty=1')
-    (out/'aescore.act').write_text(core)
 
 
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
@@ -224,10 +207,8 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
             policy = policy.replace('PUBLIC BYTE FUNC NativeReady()\n', 'PUBLIC BYTE FUNC NativeReady()\n\n  IF AESLOCKPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
             (out/'aeslocks.act').write_text(policy)
-        if events:
-            event_probes(out)
-        if timers:
-            timer_probes(out)
+        if events or timers or suite == 'messages':
+            caller_probes(out, timer=events or timers)
         entries = ['AESClient'+n for n in
                    (('One', 'Two', 'Three', 'Four', 'Five') if registration else
                     ('One', 'Two', 'Three', 'Four') if events or timers else
@@ -235,9 +216,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if events or timers:
             entries.append('AESBurn')
         foreign = drawing(out, True, widgets=True,
-            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if timers else ROOT/'c/calypsi/aes-events.c'), ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
+            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers else ROOT/'c/calypsi/aes-events.c'), ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
             client_entries=entries,
-            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else []),
+            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
             client_optimization={n: mode == 'opt' for n in ('aes.c', f'aes_{suite}.c')})
         sy = foreign['symbols']
@@ -250,15 +231,10 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
   Require(run()=0)
 ''' if registration else ''
         setup = '  LET service=AESSTATE.Get()\n'
-        if timers:
+        if timers or events:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESClock"]:x})\n    item^=TIMERMETA.BASE+4\n  END\n'
-        if events:
-            for name, value in (('AESMode', 'ADDRESS(@AESEVENTPROBE.mode)'),
-                    ('AESError', 'ADDRESS(@service.timer.error)'),
-                    ('AESClock', 'TIMERMETA.BASE+4'),
-                    ('AESAlarms', 'ADDRESS(@AESEVENTPROBE.sends)'),
-                    ('AESFour', 'ADDRESS(@AESEVENTPROBE.four)')):
-                setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD({value})\n  END\n'
+        if events or timers or suite == 'messages':
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESPark"]:x})\n    item^=LONGCARD(ADDRESS(@AESHYBRIDPROBE.park))\n  END\n'
         if locks:
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
                     ('AESLockCount', 'lockCount')):
@@ -271,7 +247,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE AESEVENTPROBE'+chr(10)+'USE TIMERMETA' if events else 'USE AESLOCKPROBE' if locks else 'USE TIMERMETA' if timers else ''}
+{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -312,7 +288,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='AS0c' if registration else 'AS2b' if events else 'AS3a' if locks else 'AS1', c_mode=mode,
+        slice='HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     try:
@@ -329,15 +305,7 @@ ENDMODULE
             ownership(bridge, program, program['output'])
             require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 1000),
                     'Incomplete application checks')
-            if events:
-                values = bytes(data(bridge, program['image'], 'deadlines'))
-                report['deadlines'] = [int.from_bytes(values[i:i+4], 'little') for i in range(0, len(values), 4)]
-                rate = 50 if video == 'PAL' else 60
-                long_deadline = (0x12345678 << 32)+0xfffffff0+(0xffffffff*rate+999)//1000+1
-                require(report['deadlines'][:4] == [long_deadline >> 32, long_deadline & 0xffffffff, 8, 0],
-                        'GEM duration conversion mismatch')
-                equal = [report['deadlines'][i:i+2] for i in range(4, 12, 2)]
-                require(all(pair == equal[0] for pair in equal), 'Missing equal-deadline cohort')
+            if events or timers:
                 report['cpu_peer_iterations'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESBurns'], 4), 'little')
             report['status'] = 'pass'
     except Exception as error:
@@ -346,77 +314,6 @@ ENDMODULE
     finally:
         (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')
     print('AES', suite, 'checks passed', flush=True)
-    return report
-
-
-def alarm(out, replay=False):
-    out.mkdir(parents=True, exist_ok=True)
-    if replay:
-        program = read_build(out/'program')
-    else:
-        for name in ('aes_alarm', 'aesalarmprobe', 'aesalarmrace'):
-            (out/(name+'.act')).write_text(read_source(ROOT/f'tests/programs/{name}.act'))
-        host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESTIMER',
-            'USE AESTIMER\nUSE AESALARMPROBE')
-        require(host.count('AESCORE.Wake(service)') == 1, 'AES event boundary changed')
-        host = host.replace('AESCORE.Wake(service)', 'AESALARMPROBE.Tick(service)')
-        # This transport fixture uses a controller signal, without admitting an
-        # AES event wait. Its explicit stage is work even before an alarm exists.
-        needle = '  changed=service.eventDirty<>0 OR AESTIMER.Runnable(service)<>0'
-        require(host.count(needle) == 1, 'AES runnable boundary changed')
-        host = host.replace(needle, needle+' OR AESALARMPROBE.stage<>AESALARMPROBE.done')
-        (out/'aeshost.act').write_text(host)
-        timer = read_source(ROOT/'lib/aes/aestimer.act').replace('USE HEAPCORE',
-            'USE HEAPCORE\nUSE AESALARMRACE')
-        for number, target, call in (
-            (1, 'state.port', 'EXEC.CreateMsgPort()'),
-            (2, 'state.query', 'TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(\n        state.port,SIZEOF(TIMER.TimerClockRequest)))'),
-            (3, 'state.alarm', 'TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(\n          state.port,SIZEOF(TIMER.TimerClockRequest)))')):
-            needle = target+'='+call
-            require(timer.count(needle) == 1, 'Timer allocation boundary changed')
-            timer = timer.replace(needle, f'IF AESALARMRACE.fault={number} THEN\n    {target}=NULL\n  ELSE\n    {needle}\n  FI')
-        timer = timer.replace('TIMER.UNIT_VBLANK,', 'LONGCARD(IF AESALARMRACE.fault=4 THEN 0 ELSE TIMER.UNIT_VBLANK FI),')
-        timer = timer.replace('state.query.tc_Request.io_Command=TIMER.TD_READCLOCK',
-            'state.query.tc_Request.io_Command=IF AESALARMRACE.fault=5 THEN 0 ELSE TIMER.TD_READCLOCK FI')
-        timer = timer.replace('  EXEC.SendIO(@state.alarm.tc_Request)',
-            '  AESALARMRACE.sends==+1\n  EXEC.SendIO(@state.alarm.tc_Request)')
-        timer = timer.replace('      EXEC.AbortIO(@state.alarm.tc_Request)',
-            '      AESALARMRACE.BeforeAbort(service)\n      AESALARMRACE.aborts==+1\n      EXEC.AbortIO(@state.alarm.tc_Request)')
-        timer = timer.replace('  LET error=state.alarm.tc_Request.io_Error',
-            '  AESALARMRACE.collections==+1\n  LET error=state.alarm.tc_Request.io_Error')
-        (out/'aestimer.act').write_text(timer)
-        driver = read_source(ROOT/'lib/io/timerdriver.act').replace('USE HEAPCORE',
-            'USE HEAPCORE\nUSE AESALARMRACE')
-        driver = driver.replace('  IF state.count=TIMERMETA.PENDING_CAPACITY THEN',
-            '  IF state.count=TIMERMETA.PENDING_CAPACITY OR AESALARMRACE.fault=6 THEN')
-        (out/'timerdriver.act').write_text(driver)
-        program = build_bitmap(out/'aes_alarm.act', out, desktop=True, aes=True)
-    report = dict(status='running', tier='development', qualification=False,
-        slice='AS2a', build=program['build'],
-        reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
-    try:
-        with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
-            report['machine'] = verify_machine(bridge, ROM, PIN)
-            try:
-                report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
-            finally:
-                report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-                for name in ('sends', 'aborts', 'collections', 'races'):
-                    report[name] = data(bridge, program['image'], name, True)[0]
-            ownership(bridge, program, program['output'])
-            require(report['checks'] >= 70 and report['races'] == 1, 'Incomplete alarm checks')
-            require(report['sends'] == report['collections'], 'Alarm ownership leaked')
-            base = program['build']['memory']['timer_device_storage']['BASE']
-            state = bridge.memdump(base, 24)
-            require(state[16:18] == bytes(2) and state[20:24] == bytes([0, 0, 255, 0]),
-                    'Timer remained active after AES shutdown')
-            report['status'] = 'pass'
-    except Exception as error:
-        report.update(status='fail', error=str(error))
-        raise
-    finally:
-        (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')
-    print('AES alarm lifecycle checks passed', flush=True)
     return report
 
 
@@ -545,7 +442,7 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
@@ -553,8 +450,6 @@ if __name__ == '__main__':
     elif args.suite in ('registration', 'messages', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
-    elif args.suite == 'alarm':
-        alarm(args.output.resolve(), args.replay)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
     else:

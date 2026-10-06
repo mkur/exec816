@@ -32,7 +32,7 @@ def expected_layout():
     for name, record in layout().items():
         result += [(name+' size', record['size'])]
         result += [(name+' '+f, o) for f, o in record['fields'].items()]
-    result += [('C context size', 223), ('C context request', 0)]
+    result += [('C context size', 227), ('C context request', 0)]
     return result
 
 
@@ -71,6 +71,9 @@ def files():
         values.update({f'{name.upper()}_OFFSET_{f.upper()}': v for f, v in record['fields'].items()})
         action += [f'PUBLIC CONST {k}={v}' for k, v in values.items()]
         header += [f'#define AES_{k} {v}' for k, v in values.items()]
+    action += ['PUBLIC BYTE FUNC Rpc(CARD operation)', '',
+               'RETURN('+ ' OR '.join('operation='+op for op in ABI['rpc_operations'])+')', '']
+    header += ['#define AES_RPC_OPERATION(op) ('+' || '.join('(op)==AES_'+op for op in ABI['rpc_operations'])+')']
     return {
         ROOT/'lib/aes/aestypes.act': '\n'.join(action+['ENDMODULE', '']),
         ROOT/'c/include/exec816/aes-wire.h': '\n'.join(header+['#endif', '']),

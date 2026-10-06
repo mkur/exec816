@@ -37,13 +37,13 @@ static void client(UWORD who)
         CHECK(context->timer.error == 0 && context->timer.state == AES_ALARM_IDLE);
         for (i = 0; i < 32; ++i) {
             for (j = 0; j < AES_INTIN_WORDS; ++j)
-                context->request.intin[j] = (WORD)(0x8100+who*256+i+j);
+                context->intin[j] = (WORD)(0x8100+who*256+i+j);
             for (j = 0; j < AES_GLOBAL_WORDS; ++j)
                 context->request.global[j] = (WORD)(0x4200+who*256+i+j);
             ExecYield();
             CHECK(ExecAESContext() == context);
             for (j = 0; j < AES_INTIN_WORDS; ++j)
-                CHECK(context->request.intin[j] == (WORD)(0x8100+who*256+i+j));
+                CHECK(context->intin[j] == (WORD)(0x8100+who*256+i+j));
             for (j = 0; j < AES_GLOBAL_WORDS; ++j)
                 CHECK(context->request.global[j] == (WORD)(0x4200+who*256+i+j));
         }
@@ -52,7 +52,7 @@ static void client(UWORD who)
         CHECK(ExecAESContext() == NULL);
         CHECK(ExecAESDetach());
         CHECK(ExecAESAttach(service));
-        CHECK(ExecAESContext()->request.intin[0] == 0);
+        CHECK(ExecAESContext()->intin[0] == 0);
         CHECK(ExecAESDetach());
     }
     Forbid();
@@ -99,7 +99,7 @@ UWORD AESWireProbe(void)
     if (r->version != AES_VERSION || r->bytes != sizeof(*r) ||
         r->owner != FindTask(NULL) || r->binding != (UBYTE *)r ||
         r->sequence != 0x87654321UL) return 2;
-    for (i = 0; i < AES_INTIN_WORDS; ++i) {
+    for (i = 0; i < AES_RPC_INTIN_WORDS; ++i) {
         if (r->intin[i] != -100-(WORD)i) return 3;
         r->intin[i] = 300+i;
     }
@@ -107,6 +107,6 @@ UWORD AESWireProbe(void)
         if (r->global[i] != 600+i) return 4;
         r->global[i] = -500-(WORD)i;
     }
-    for (i = 0; i < AES_MESSAGE_WORDS; ++i) r->words[i] = -200-(WORD)i;
+    r->intout[0] = -200;
     return 0;
 }

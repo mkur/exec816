@@ -64,3 +64,42 @@ class AESLatencyTraceTests(unittest.TestCase):
                   if int(event[4], 16) != marks['direct_deadline_high_hi']]
         with self.assertRaisesRegex(RuntimeError, 'Missing caller alarm deadline'):
             analyze(events, marks, 6)
+
+    def test_cancelled_combined_wait_has_no_fabricated_expiry(self):
+        events, marks = concurrent_trace()
+        marks['direct_multi_begin'] = 0x100100
+        marks['direct_multi_end'] = 0x100101
+        for time, event in events:
+            pc = int(event[4], 16)
+            if int(event[9], 16) == 0xb00:
+                if pc == marks['direct_timer_begin']:
+                    event[4] = hex(marks['direct_multi_begin'])
+                elif pc == marks['direct_timer_end']:
+                    event[4] = hex(marks['direct_multi_end'])
+        # Drop only this client's expiry pair: its return represents a
+        # collected cancellation after a message became ready.
+        remove = set()
+        for i, (_, event) in enumerate(events):
+            if int(event[4], 16) == marks['device_reply'] and int(event[5], 16) == 0x20:
+                remove.update((i-1, i))
+        report = analyze([e for i, e in enumerate(events) if i not in remove], marks, 6)
+        self.assertEqual(report['calls'], 6)
+        self.assertEqual(report['expiry_count'], 3)
+        multi = report['operations']['25']
+        self.assertEqual(multi['public_call']['count'], 3)
+        self.assertEqual(multi['device_reply_to_client']['count'], 0)
+        self.assertTrue(all(r['alarm_outcome'] == 'collected_without_native_expiry'
+                            for r in report['records'] if r['operation'] == 25))
+
+    def test_shared_epilogue_is_not_an_unobserved_public_call(self):
+        events, marks = concurrent_trace()
+        marks['direct_message_end'] = 0x100102
+        stray = ['cpu', '', '', '', hex(marks['direct_message_end']),
+                 '0', '0', '0', '0', '0xb00']
+        # An unrelated wrapper uses this tail both outside and during an
+        # observed timer call. Neither execution ends the timer observation.
+        events.insert(0, (-1, stray))
+        events.insert(3, (150, stray))
+        report = analyze(events, marks, 6)
+        self.assertEqual(report['calls'], 6)
+        self.assertEqual(report['expiry_count'], 6)

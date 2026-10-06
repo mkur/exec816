@@ -2,21 +2,9 @@
 MODULE AESSTATE
 USE EXEC
 USE AESTYPES
-USE TIMER
 USE INPUT
 
 PUBLIC CONST POINTER_EVENTS=16
-
-PUBLIC CONST ALARM_IDLE=0
-PUBLIC CONST ALARM_OUTSTANDING=1
-PUBLIC CONST ALARM_RETIRING=2
-
-PUBLIC TYPE TimerState=[
-  EXEC.MsgPort POINTER port
-  TIMER.TimerClockRequest POINTER query,alarm
-  BYTE state,opened,error
-  LONGCARD mask,targetHigh,targetLow,nowHigh,nowLow,rate
-]
 
 PUBLIC TYPE Client=[
   LONGCARD id
@@ -26,11 +14,7 @@ PUBLIC TYPE Client=[
   AESTYPES.Request POINTER binding
   EXEC.MsgPort POINTER replies
   AESTYPES.Endpoint POINTER endpoint
-  AESTYPES.Request POINTER waiting
-  CARD eventMask
-  LONGCARD deadlineHigh,deadlineLow
-  INT ARRAY words(AESTYPES.QUEUE_DEPTH*AESTYPES.MESSAGE_WORDS)
-  BYTE head,queued
+  AESTYPES.Request POINTER pending
 ]
 
 PUBLIC TYPE Service=[
@@ -45,8 +29,7 @@ PUBLIC TYPE Service=[
   CARD nextGem
   AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
-  BYTE count,eventDirty
-  TimerState timer
+  BYTE count
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds
   BYTE ARRAY lockOrder(AESTYPES.CLIENTS)

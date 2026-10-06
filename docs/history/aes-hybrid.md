@@ -62,3 +62,38 @@ lazy timer resources. Four clients add 512 heap bytes over HY1. The presenter's
 112-byte timer allocation remains during this intermediate slice. The PAL timer
 fixture observes 369 bytes touched in a 1,024-byte C Task stack; the native
 presenter remains at 606 bytes in its existing 2,560-byte stack.
+
+
+## HY3 Caller-owned messages and combined waits
+
+[Development evidence](../development/aes-hybrid-hy3.json) records the atomic
+migration of every message producer and consumer. Calls publish copied records
+with `PutMsg`, consume with `GetMsg`, and wait on their own receive/timer signals.
+One absolute deadline survives spurious wakes. Matching freezes readiness,
+retires any alarm and only then consumes a message, preserving payloads on timer
+failure. The presenter retains registration, endpoint retirement and GUI locks;
+its FIFO, event scanner and shared alarm modules are removed. The version-3
+private request is 86 bytes, with an explicit init/exit/update RPC allowlist.
+
+The message fixture passes 1,483 checks; PAL and NTSC event fixtures each pass
+364, and timer fixtures each pass 249. Registration passes 233 and GUI locks 138.
+Raw and optimized layout/context probes each pass 1,045 checks in each Task.
+Direct calls progress while the presenter is parked. Boundary injections cover
+queue-check versus arrival, spurious wakes, cancellation versus expiry and clock
+failure without message loss. The host suite passes 376 tests with four skips.
+
+Reserved bank-zero delta is **0 bytes**, fixed and per Task, including guards,
+alignment and unused capacity. The service is 698 bytes (704 allocated), each
+fully initialized client uses 920 heap bytes, and the presenter timer allocation
+is gone. Four clients plus the service use 4,384 heap bytes, 1,184 fewer than HY2.
+Focused fixtures observe at most 529 bytes touched in a 1,024-byte C Task stack
+and 649 bytes in the presenter's 2,560-byte stack. Guards remain intact.
+HY4 retains the native GUI and loaded latency acceptance gates.
+
+The passive 100-frame idle observation accounts for 71 calls and 23 native timer
+expiries, with zero presenter turn entries or charged CPU during the measured
+window. The observer now matches shared Calypsi epilogues to active public calls
+and accepts an explicitly idle window only after validating the complete trace.
+Direct write public-call p95 is 19.340 ms in this cohort; full wrapper timing
+remains distinct from historical RPC submission timing. Loaded comparisons
+remain HY4 work.

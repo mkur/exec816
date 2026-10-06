@@ -40,7 +40,6 @@ const UWORD AESLayout[] = {
     offsetof(struct AESRequest, bindingPad),
     offsetof(struct AESRequest, intin),
     offsetof(struct AESRequest, intout),
-    offsetof(struct AESRequest, words),
     offsetof(struct AESRequest, global),
     offsetof(struct AESRequest, directory),
     offsetof(struct AESRequest, directoryPad),
