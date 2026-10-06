@@ -10,6 +10,9 @@ USE AESINTAKEPROBE
 USE DESKSTATE
 USE DESKTYPES
 USE DESKPAINT
+USE DESKCORE
+USE LAYERS
+USE LAYERTYPES
 USE HEAPCORE
 
 CONST REQUESTS=12
@@ -145,6 +148,51 @@ PROC Main()
       Require(AESINTAKEPROBE.ports(index)
           =(AESINTAKEPROBE.ports(index-4) XOR 1))
     FI
+  OD
+
+  Require(EXEC.GetMsg(replies)=NULL AND AESHOST.Idle()<>0)
+  ; Repeat with actual visible drawing. Native and deferred AES admissions
+  ; still share four slots, and both queues must drain without another edge.
+  FOR index=0 TO REQUESTS-1 DO
+    Prepare(index)
+  OD
+
+  WHILE desktop.scene.busy<>0 OR DESKPAINT.Runnable()<>0 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  BEGIN
+    LET window=DESKCORE.Find(desktop,desktop.consoleWindow)
+    LET layer=DESKCORE.Layer(desktop,window)
+    Require(LAYERS.Invalidate(@desktop.scene,layer.id,@layer.bounds)=LAYERTYPES.OK)
+  END
+  AESINTAKEPROBE.enabled=1
+  FOR index=0 TO REQUESTS-1 DO
+    EXEC.PutMsg(@desktop.port,@native(index).message)
+    EXEC.PutMsg(@service.port,@aes(index).message)
+  OD
+
+  EXEC.Permit()
+  received=0
+  WHILE received<REQUESTS*2 DO
+    BEGIN
+      LET message=Collect()
+      Require(message<>NULL)
+      received==+1
+    END
+  OD
+
+  WHILE AESINTAKEPROBE.count<REQUESTS*4
+      OR AESINTAKEPROBE.completed<AESINTAKEPROBE.turns(REQUESTS*4-1) DO
+    EXEC.Yield()
+  OD
+
+  AESINTAKEPROBE.enabled=0
+  Require(AESINTAKEPROBE.maximum=4 AND AESINTAKEPROBE.lateCount<>0)
+  FOR index=0 TO REQUESTS-1 DO
+    Require(aes(index).status=AESTYPES.UNSUPPORTED)
+    Require(native(index).status=DESKTYPES.BAD_ARGUMENT)
   OD
 
   Require(EXEC.GetMsg(replies)=NULL AND AESHOST.Idle()<>0)

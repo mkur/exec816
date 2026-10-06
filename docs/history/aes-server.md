@@ -79,7 +79,7 @@ The observer samples completed scanouts, so visibility has up to one frame of
 observation quantization. Label observations follow the button check and can
 substantially overestimate first label visibility.
 
-The final panel p95 observations, in milliseconds, are:
+The original AS4 panel p95 observations, in milliseconds, were:
 
 | Native workload | AES state | Button consumption | Button pixels | Complete button/label feedback |
 | --- | --- | ---: | ---: | ---: |
@@ -135,6 +135,84 @@ The long observed proof enables instruction history for GUI lock/idle checks,
 then uses state/progress checks for the CPU, exchange and restart phases. The
 bounded call probes supply separate latency/CPU distributions; `--trace-calls`
 retains whole-run instruction observation when explicitly requested.
+
+## Latency follow-up
+
+The [follow-up record](../development/aes-server-latency.json) keeps the original
+AS0 limits and AS4 failures intact. It separates native widget cost from the
+additional active AES workload:
+
+- The panel uses the epoch, revision and state copied into its action event for
+  an ordinary status patch. It reads a snapshot only to recover from loss or a
+  rejected stale patch. The emitted fixture forces that recovery path.
+- Small widget updates copy the live object/text prefix into staging and commit
+  only that prefix. Validation remains transactional; capacities, allocation and
+  immutable geometry are unchanged. Focus changes damage the title and focus
+  underline instead of repainting the entire client.
+- Clock reads no longer enter the timer queue-edit gate. They still use a checked
+  snapshot under the public I/O protocol. PAL/NTSC deadline conversion uses
+  equivalent smaller arithmetic, with the full 32-bit duration and 64-bit
+  overflow cases retained.
+- Event matching uses one client scan and acquires a fresh clock only when a
+  timed wait needs it. The presenter handles expiries that arrive during painting
+  or console work before yielding. Drawing gets its existing quantum before a
+  reserved AES admission; both intake phases still share four slots.
+- A pending native control gets a bounded opportunity after painting releases
+  the scene, before another console write takes it. This does not add an idle
+  wake, frame delay, service Task or kernel scheduling operation.
+
+The final matched panel complete-feedback p95 is:
+
+| Native workload | AES disabled | AES enabled, idle | Two active clients |
+| --- | ---: | ---: | ---: |
+| Idle | 279.58 ms | 299.54 ms | 379.87 ms |
+| Scroll | 339.70 ms | 339.70 ms | 419.78 ms |
+| Disk | 379.62 ms | 359.77 ms | 419.87 ms |
+
+The disabled configuration now passes every frozen panel and pointer comparison.
+Against the original AS4 run, native scroll feedback improves by about 201 ms
+and active-client scroll feedback by 181 ms. All three panel cohorts pass their
+functional/stale-retry checks and report zero sampled invalid button pixels.
+Active pointer visible-motion p95 falls from 106.53 to 46.66 ms; consumption p95
+is 17.43 ms, still above both frozen and matched relative allowances.
+
+**The AES latency gate remains open.** Active clients add about 100/80/40 ms to
+complete feedback against the new disabled idle/scroll/disk cohorts. The idle
+AES scroll/disk consumption comparisons also miss their limits. The record
+retains every failed row, including the active idle button-pixel increase of
+20.21 ms against the unchanged 20.1 ms allowance. Renderer maximum CPU growth
+passes throughout. Do not accept AS4 or timer TD4 on these functional results.
+
+The final observed integrated proof and its identical-image unobserved replay
+each pass 1,292 checks with restored ownership; blocked painting and settled idle
+still record zero presenter turns. The intake test passes 166 checks, observes
+12 deferred admissions and a maximum of four admissions per entire turn.
+Focused timer checks cover 46 quick clock reads while an alarm is outstanding,
+both conversion rates/overflow, and six actual NMI snapshot boundaries. Host
+checks pass 368 tests with four skips. These are development checks.
+
+The final 100-frame active-client idle/scroll/disk probes complete 46/32/45 calls,
+with device-to-AES-reply maxima of 12.30/46.88/34.60 ms. Native deadline-to-device
+reply maxima are 1.27/0.68/1.22 ms. Idle Controls uses about 566 ms charged CPU;
+the client loops complete more calls than the original 43-call run, so these
+fixed-window totals must not be mistaken for a per-call cost comparison.
+
+An experiment that yielded immediately after a semantic widget action delivered
+its application patch sooner but worsened button visibility. It was removed.
+Additional callbacks inside event matching also failed to improve the measured
+input tail and were removed. These diagnostic builds are not acceptance evidence.
+
+The event fault fixture now explicitly admits its four timed clients before
+injecting the shared clock error. The alarm transport fixture treats its
+controller stage as work even with no application event waiting. These changes
+remove dependence on the old pump timing; error, message-preservation, cancellation
+and single-collection assertions remain. Intake accounting now includes the
+post-paint admission and exercises both queues during a real repaint.
+
+All three implementation slices reserve **zero additional bank-zero bytes**,
+fixed or per Task, including alignment, guards and spare capacity. The new
+presenter flag and automatic locals fit the existing upper arena and stack
+reservations. Widget storage capacities and AES service allocations are unchanged.
 
 Existing widget-feedback targets and the 125 kbit/s SIO timing gate remain open.
 No periodic presenter polling or deliberate frame wait is introduced. The

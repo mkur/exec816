@@ -62,7 +62,9 @@ AS0–AS3b have development evidence for generated wire layouts, private C
 registration, messages, shared timer alarms and native GUI ownership gates.
 The AS4 proof runs two C clients beside the native desktop within the
 existing eight-Task budget. Functional checks pass; resolve the recorded relative
-latency regressions before accepting AS4/TD4. See the [execution record](history/aes-server.md)
+latency regressions before accepting AS4/TD4. The
+[latency follow-up](development/aes-server-latency.json) records widget copying,
+focus damage, clock and presenter changes against the frozen limits. See the [execution record](history/aes-server.md)
 and [resident application guide](guides/aes-applications.md). GEM windows,
 `WM_REDRAW`, visible rectangles and independent VDI workstations follow.
 

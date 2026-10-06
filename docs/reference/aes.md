@@ -109,14 +109,20 @@ cursor service run between AES admissions and after active event processing;
 widget commits remain after native control admission. Existing GUI lock gates
 still apply. These boundaries add no idle wake or periodic input poll.
 Native and AES requests share at most four admissions per turn, alternating the
-first endpoint. When eligible painting is pending, AES intake is limited to one
-request; native requests may use the remaining capacity. Timer completion and
-event matching still run outside that intake budget.
+first endpoint on ordinary turns. When painting or a widget gesture can advance,
+at most three native requests precede the existing paint quantum, then one AES
+request is admitted after it. Both phases share the four-request limit; AES is
+not deferred across an entire repaint. Timer completion and event matching run
+outside that intake budget, including a boundary after console work so an
+expiry during drawing need not wait for another presenter turn.
 The presenter services captured input before controls when signalled and after
 actual paint work. Widget model changes stay after native control admission.
 Each turn gives GUI painting its existing bounded quantum before new console
 output. Ready paint may continue without a voluntary Yield; VBI preemption
 provides Task fairness, and blocked work retains the ordinary signal wait path.
+When painting releases the scene with a native control already pending, one new
+console-output quantum may be deferred to admit that control. An eligible output
+quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile. Rebuild bindings and service together. Current implementation and

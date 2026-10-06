@@ -459,6 +459,7 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
+  BYTE handoff,deferOutput
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -537,6 +538,7 @@ PUBLIC PROC Worker()
   bits=0
   stopping=0
   inputPending=1
+  handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0
       OR batch.phase<>CONSOLETYPES.BATCH_IDLE DO
@@ -576,11 +578,19 @@ PUBLIC PROC Worker()
     ; Commit visible GUI feedback before starting another console-output
     ; quantum. An existing scene/DMA owner still gates both paths; painting
     ; retains its one-quantum budget for this turn.
+    deferOutput=0
     IF DESKPAINT.Pump()<>0 THEN
       DESKINPUT.Service(DESKINPUT.Mask())
+      IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
+        ; One handoff at most before the next eligible output quantum. This
+        ; lets queued status patches run without starving console writers.
+        handoff=1
+        deferOutput=1
+      FI
     FI
     DESKINPUT.Present()
 
+    DESKHOST.AfterPaint()
     Arrival(service)
     entry=CONSOLEWINDOWS.Take()
     again=0
@@ -591,8 +601,10 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF CONSOLEBITMAP.Pending()=0 AND DESKHOST.PaintReady()<>0 AND
+        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0
+            AND DESKHOST.PaintReady()<>0 AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
+          handoff=0
           completeWrite=0
           IF view.scrollState<>0
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
@@ -635,6 +647,7 @@ PUBLIC PROC Worker()
     FI
 
     DESKINPUT.Present()
+    DESKHOST.Events()
     AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN

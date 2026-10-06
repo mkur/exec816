@@ -19,7 +19,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
-- [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership and the two-client proof.
+- [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.
 
 - [Native interrupt replies and timer.device](interrupt-reply.md): shared port
   transactions, exact return handoff, bounded native completion and Action!/C timers.

@@ -181,7 +181,8 @@ def event_probes(out):
         '    AESEVENTPROBE.Accept(service)\n    IF request.operation=AESTYPES.OP_TIMER THEN')
     events = events.replace('    client.deadlineLow=stamp.ticks_lo',
         '    client.deadlineLow=stamp.ticks_lo\n    AESEVENTPROBE.Converted(client,request)')
-    events = events.replace('  timed=0', '  AESEVENTPROBE.Pending(service)\n  timed=0')
+    events = events.replace('  timed=0',
+        '  IF AESEVENTPROBE.Pending(service)=0 THEN\n    RETURN\n  FI\n  timed=0')
     (out/'aesevents.act').write_text(events)
     driver = read_source(ROOT/'lib/io/timerdriver.act').replace('USE HEAPCORE',
         'USE HEAPCORE\nUSE AESEVENTPROBE')
@@ -337,6 +338,11 @@ def alarm(out, replay=False):
             'USE AESTIMER\nUSE AESALARMPROBE')
         require(host.count('AESCORE.Wake(service)') == 1, 'AES event boundary changed')
         host = host.replace('AESCORE.Wake(service)', 'AESALARMPROBE.Tick(service)')
+        # This transport fixture uses a controller signal, without admitting an
+        # AES event wait. Its explicit stage is work even before an alarm exists.
+        needle = '  changed=service.eventDirty<>0 OR AESTIMER.Runnable(service)<>0'
+        require(host.count(needle) == 1, 'AES runnable boundary changed')
+        host = host.replace(needle, needle+' OR AESALARMPROBE.stage<>AESALARMPROBE.done')
         (out/'aeshost.act').write_text(host)
         timer = read_source(ROOT/'lib/aes/aestimer.act').replace('USE HEAPCORE',
             'USE HEAPCORE\nUSE AESALARMRACE')
@@ -407,8 +413,13 @@ def intake(out, failure=0, replay=False):
         for port, call in enumerate(('DESKCORE.Pump(service,1)', 'AESHOST.Pump(1)')):
             host = host.replace('admitted='+call, 'admitted='+call+
                 f'\n        AESINTAKEPROBE.Admission({port},admitted)')
-        host = host.replace('    DESKCORE.Wake(service)',
-            '    AESINTAKEPROBE.FinishTurn(count)\n    DESKCORE.Wake(service)')
+        # Finish after the deferred admission too: the budget covers the entire
+        # presenter turn, not just the Controls prefix.
+        host = host.replace('    lateAES=0\n    remaining=1',
+            '    AESINTAKEPROBE.lateCount==+AESINTAKEPROBE.enabled\n    lateAES=0\n    remaining=1')
+        needle = '    Events()\n  FI\n\nRETURN\n\nPUBLIC BYTE FUNC Runnable()'
+        require(host.count(needle) == 1, 'Deferred admission boundary changed')
+        host = host.replace(needle, '    Events()\n  FI\n  AESINTAKEPROBE.FinishTurn()\n\nRETURN\n\nPUBLIC BYTE FUNC Runnable()')
         (out/'deskhost.act').write_text(host)
         if failure == 1:
             boot = read_source(ROOT/'lib/aes/aesboot.act').replace(
@@ -458,6 +469,9 @@ def intake(out, failure=0, replay=False):
                 report['admission_ports'] = probe('ports', 24)
                 report['admission_turns'] = probe('turns', 24)
                 report['maximum_per_turn'] = probe('maximum', 1)[0]
+                report['deferred_admissions'] = probe('lateCount', 1)[0]
+                require(report['maximum_per_turn'] <= 4 and report['deferred_admissions'] > 0,
+                        'Missing bounded paint-before-AES admissions')
                 require(report['checks'] >= 90, 'Incomplete intake fixture')
             else:
                 require(report['checks'] == 6, 'Incomplete failure fixture')

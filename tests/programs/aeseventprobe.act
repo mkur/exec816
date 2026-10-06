@@ -66,7 +66,9 @@ PUBLIC PROC Converted(AESSTATE.Client POINTER client
 
 RETURN
 
-PUBLIC PROC Pending(AESSTATE.Service POINTER service)
+; The clock-fault cohort must reach four admitted waits before its diagnostic
+; failure is published. Do not depend on Task timing filling one intake turn.
+PUBLIC BYTE FUNC Pending(AESSTATE.Service POINTER service)
   BYTE index,count
 
   count=0
@@ -81,5 +83,5 @@ PUBLIC PROC Pending(AESSTATE.Service POINTER service)
     four=1
   FI
 
-RETURN
+RETURN(mode<>7 OR accepted=4)
 ENDMODULE

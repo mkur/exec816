@@ -87,19 +87,6 @@ PUBLIC PROC Poll(AESSTATE.Service POINTER service)
   service.eventDirty=0
   AESTIMER.Collect(service)
   timed=0
-  FOR index=0 TO AESTYPES.CLIENTS-1 DO
-    IF service.clients(index).waiting<>NULL
-        AND (service.clients(index).eventMask & AESTYPES.MU_TIMER)<>0 THEN
-      timed=1
-    FI
-  OD
-
-  IF timed<>0 THEN
-    BEGIN
-      LET valid=AESTIMER.Read(service)
-    END
-  FI
-
   wanted=0
   high=0
   low=0
@@ -107,6 +94,16 @@ PUBLIC PROC Poll(AESSTATE.Service POINTER service)
     BEGIN
       LET client=@service.clients(index)
       IF client.waiting<>NULL AND client.eventMask<>0 THEN
+        ; One fresh clock for this decision, acquired only if a timed wait
+        ; needs it. Message-only waits need neither a clock nor a prescan.
+        IF timed=0 AND (client.eventMask & AESTYPES.MU_TIMER)<>0 THEN
+          BEGIN
+            LET valid=AESTIMER.Read(service)
+          END
+
+          timed=1
+        FI
+
         IF (client.eventMask & AESTYPES.MU_TIMER)<>0
             AND service.timer.error<>0 THEN
           Complete(client,AESTYPES.TIMER_ERROR,0)

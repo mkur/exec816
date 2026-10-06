@@ -6,7 +6,9 @@
 Status: in progress, 2026-10-06. AS0a–AS3b have passed development checks. AS4's
 implementation and functional proof are present, but its relative latency gate
 fails; **AS4 is not accepted**. See the [execution record](../../history/aes-server.md)
-and [measured comparisons](../../development/aes-server-as4.json).
+and [original measured comparisons](../../development/aes-server-as4.json).
+The [latency follow-up](../../development/aes-server-latency.json) records the
+native widget, timer and presenter optimizations against the same limits.
 Implementation starts from Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`, using the
 GEM4XE source revision and provenance recorded in the design and

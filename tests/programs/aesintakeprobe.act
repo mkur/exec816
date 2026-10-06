@@ -4,33 +4,37 @@ USE EXEC
 
 PUBLIC EXEC.Task POINTER parent
 PUBLIC LONGCARD mask
-PUBLIC BYTE arm,enabled,count,turn,completed,maximum
+PUBLIC BYTE arm,enabled,count,turn,completed,maximum,perTurn,lateCount
 PUBLIC BYTE ARRAY ports(64),turns(64)
 
 PUBLIC PROC StartTurn()
 
   IF enabled<>0 THEN
     turn==+1
+    perTurn=0
   FI
 
 RETURN
 
 PUBLIC PROC Admission(BYTE port BYTE admitted)
 
-  IF enabled<>0 AND admitted<>0 AND count<64 THEN
-    ports(count)=port
-    turns(count)=turn
-    count==+1
+  IF enabled<>0 AND admitted<>0 THEN
+    perTurn==+admitted
+    IF count<64 THEN
+      ports(count)=port
+      turns(count)=turn
+      count==+1
+    FI
   FI
 
 RETURN
 
-PUBLIC PROC FinishTurn(BYTE admitted)
+PUBLIC PROC FinishTurn()
 
   IF enabled<>0 THEN
     completed=turn
-    IF admitted>maximum THEN
-      maximum=admitted
+    IF perTurn>maximum THEN
+      maximum=perTurn
     FI
   FI
 

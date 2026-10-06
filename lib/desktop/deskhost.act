@@ -17,8 +17,9 @@ USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
 USE AESHOST
 USE AESLOCKS
+USE DESKWIDGETINPUT
 
-BYTE firstPort
+BYTE firstPort,lateAES
 
 PUBLIC BYTE FUNC Start()
   BYTE bit,stopped
@@ -74,6 +75,15 @@ PUBLIC BYTE FUNC PaintReady()
 
 RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.PaintBlocked()=0)
 
+; Eligible controls that waited for the paint snapshot must get an admission
+; opportunity before a fresh console write acquires that same scene again.
+PUBLIC BYTE FUNC ControlPending()
+
+  LET service=DESKSTATE.Get()
+
+RETURN(service<>NULL AND service.live<>0 AND service.scene.busy=0
+    AND AESLOCKS.MouseBlocked()=0 AND DESKCORE.Runnable(service)<>0)
+
 PUBLIC BYTE FUNC Idle()
   BYTE index
 
@@ -121,26 +131,42 @@ BYTE FUNC AESAdmission(BYTE POINTER remaining)
 
 RETURN(admitted)
 
+; Match already admitted waits at bounded service boundaries. An alarm can
+; complete during a paint/output quantum, after Controls took its clock sample.
+; Collect it before yielding, without admitting another request or polling time.
+PUBLIC PROC Events()
+
+  IF AESHOST.Wake()<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN
+
 PUBLIC PROC Controls()
-  BYTE count,admitted,selected,aesRemaining
+  BYTE count,admitted,selected,aesRemaining,limit
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
+    lateAES=0
+    limit=4
     aesRemaining=4
-    IF AESHOST.Runnable()<>0 AND DESKPAINT.PaintPending()<>0 THEN
-      ; Keep one AES admission per drawing turn, with timer matching outside
-      ; intake. Native requests may use the remaining shared capacity. This
-      ; bounds service work ahead of visible feedback without starving AES.
-      aesRemaining=1
+    IF AESHOST.Runnable()<>0 AND (DESKPAINT.Ready()<>0
+        OR DESKWIDGETINPUT.Runnable()<>0) THEN
+      ; Reserve one of the shared admissions after this paint quantum. Input
+      ; and visible feedback get the first opportunity; AES still advances in
+      ; every drawing turn, including a long full-window repaint.
+      lateAES=1
+      aesRemaining=0
+      limit=3
     FI
     ; Four admissions total. Alternate the first endpoint between turns and
     ; alternate within a turn; an empty endpoint yields its unused capacity.
     selected=firstPort
     firstPort=firstPort XOR 1
     count=0
-    WHILE count<4 DO
+    WHILE count<limit DO
       IF selected=0 THEN
         admitted=DESKCORE.Pump(service,1)
         IF admitted=0 THEN
@@ -162,10 +188,22 @@ PUBLIC PROC Controls()
     OD
 
     DESKCORE.Wake(service)
-    IF AESHOST.Wake()<>0 THEN
-      InputBoundary()
+    IF lateAES=0 THEN
+      Events()
     FI
     DESKPAINT.Sync()
+  FI
+
+RETURN
+
+PUBLIC PROC AfterPaint()
+  BYTE remaining,admitted
+
+  IF lateAES<>0 THEN
+    lateAES=0
+    remaining=1
+    admitted=AESAdmission(@remaining)
+    Events()
   FI
 
 RETURN
