@@ -3,6 +3,7 @@ MODULE CONSOLE
 USE EXEC
 USE DESKSTATE
 USE EXECLISTS
+USE HEAPCORE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
@@ -26,7 +27,7 @@ PROC FreeInstance(CONSOLETYPES.Window POINTER entry)
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   IF instance<>CONSOLETYPES.Instance POINTER(0) THEN
     IF instance.cells<>BYTE POINTER(0) THEN
-      EXEC.FreeMem(instance.cells,LONGCARD(instance.count))
+      EXEC.FreeMem(instance.cells,LONGCARD(instance.capacity))
     FI
 
     IF instance.fifo<>BYTE POINTER(0) THEN
@@ -98,6 +99,7 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
     OD
 
     instance.count=count
+    instance.capacity=count
     instance.cells=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_UPPER)
     instance.fifo=EXEC.AllocMem(CONSOLETYPES.INPUT_BYTES,EXEC.MEMF_UPPER)
     IF instance.cells<>BYTE POINTER(0) AND instance.fifo<>BYTE POINTER(0) THEN
@@ -152,6 +154,11 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
     RETURN(0)
   FI
 
+  LET registry=CONSOLEWINDOWS.Registry()
+  IF registry.pane=unit THEN
+    RETURN(0)
+  FI
+
   owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0)))
   IF CONSOLETILING.Lock()=0 THEN
     RETURN(0)
@@ -201,6 +208,43 @@ PUBLIC BYTE FUNC Destroy(LONGCARD unit)
   EXEC.Permit()
 
 RETURN(1)
+
+; Ordinary tiles can change height within their original backing allocation.
+PUBLIC BYTE FUNC ResizeHeight(LONGCARD unit CARD height)
+
+  IF DESKSTATE.Enabled()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(CONSOLETILING.ResizeHeight(unit,height))
+
+; The owning DOS wrapper closed its exclusive binding under this presentation
+; lock. Restore the host before releasing the last created-instance lease.
+PUBLIC PROC RetirePane(LONGCARD unit)
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  LET parent=CONSOLEWINDOWS.Find(0)
+  IF windows.presenting=0 OR windows.pane<>unit OR entry=NULL
+      OR entry.owner<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  CONSOLETILING.HideLocked(entry)
+  CONSOLETILING.ResizeLocked(parent,CONSOLEDRIVER.ScreenHeight())
+  EXEC.Forbid()
+  windows.liveCount==-1
+  entry.state=CONSOLETYPES.WIN_RETIRING
+  CONSOLEFOREGROUND.Unregister(entry)
+  EXEC.Permit()
+  CONSOLETILING.Unlock()
+  FreeInstance(entry)
+  EXEC.Forbid()
+  CONSOLEWINDOWS.Retired(entry)
+  windows.pane=0
+  EXEC.Permit()
+
+RETURN
 
 PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
 

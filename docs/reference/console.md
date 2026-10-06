@@ -207,7 +207,7 @@ acquisition. Unquiesced DMA retains ownership and requests in reset-required
 park. An unrelated fatal kernel exit while bitmap ownership remains active also
 parks; emergency exit never copies bitmap pointers as text screen addresses.
 
-There is no overlapping-window compositor, resizing, scrollback or terminal
+There is no overlapping-window compositor, width reflow, scrollback or terminal
 escape-sequence emulator. The [instance contract](console-windows.md) owns those
 limits and creation/presentation semantics. The
 [historical console design](../history/console-io-design.md) retains the initial

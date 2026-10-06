@@ -90,6 +90,12 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 
 ## Checked providers
 
+`COMMAND.OpenPane(rows)` returns an owned, output-only lower console handle,
+or NULL with IoErr. It preserves the default console's input route and focus.
+`COMMAND.Close` and Process cleanup restore the parent's full height and retire
+the pane. Only one full-width pane is supported; desktop mode and inheritance
+of the pane handle are unsupported. See [console instances](console-windows.md).
+
 `COMMAND.WriteAt(handle,column,row,buffer,length)` writes a printable horizontal
 span to an owned console handle. Coordinates are zero-based CARD values; length
 and result are LONGINT. It returns the accepted byte count, or -1 with IoErr.

@@ -10,6 +10,9 @@ USE CONSOLECAPTURE
 USE CONSOLECORE
 USE DISPLAYADAPTER
 
+; One presentation lock serializes use of this upper-RAM row buffer.
+BYTE ARRAY resizeRow(CONSOLETYPES.MAX_WIDTH)
+
 ; Pause new worker borrows and wait for existing ones before changing
 ; presentation.
 PUBLIC BYTE FUNC Lock()
@@ -97,6 +100,149 @@ PUBLIC BYTE FUNC Owned(CONSOLETYPES.Window POINTER entry)
   FI
 
 RETURN(entry.unit=0 OR entry.owner=BYTE POINTER(EXEC.FindTask(BYTE POINTER(0))))
+
+; Preflight geometry and active addressed output before erasing a visible view.
+PUBLIC BYTE FUNC CanResize(CONSOLETYPES.Window POINTER entry CARD height)
+
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  LET screenHeight=CONSOLEDRIVER.ScreenHeight()
+  IF CONSOLECORE.CanResize(instance,height)=0
+      OR view.top>=screenHeight OR height>screenHeight-view.top THEN
+    RETURN(0)
+  FI
+
+  IF instance.write<>NULL THEN
+    BEGIN
+      LET request=EXEC.IOStdReq POINTER(instance.write)
+      IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+        RETURN(0)
+      FI
+    END
+  FI
+
+RETURN(1)
+
+; Caller holds the presentation lock and has preflighted the geometry.
+PUBLIC PROC ResizeLocked(CONSOLETYPES.Window POINTER entry CARD height)
+
+  LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,view)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  IF CONSOLECORE.Resize(instance,height,resizeRow)=0 THEN
+    HEAPCORE.Abort(4)
+  FI
+
+  view.height=height
+  view.scrollState=0
+  view.index=$ffff
+  view.previousCursor=$ffff
+  view.generation==+1
+  view.presentedGeneration=0
+
+RETURN
+
+; Resize an owned tile without changing its identity, input route or width.
+PUBLIC BYTE FUNC ResizeHeight(LONGCARD unit CARD height)
+  BYTE index
+
+  IF Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET entry=CONSOLEWINDOWS.Find(unit)
+  IF Owned(entry)=0 OR windows.pane<>0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  IF CanResize(entry,height)=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  FOR index=0 TO CONSOLETYPES.WINDOW_SLOTS-1 DO
+    BEGIN
+      LET other=@windows.items(index)
+      IF other<>entry AND CONSOLEWINDOWS.Live(other)<>0 THEN
+        BEGIN
+          LET otherView=CONSOLETYPES.Presentation POINTER(other.view)
+          IF view.visible<>0 AND otherView.visible<>0
+              AND view.left<otherView.left+otherView.width
+              AND view.left+view.width>otherView.left
+              AND view.top<otherView.top+otherView.height
+              AND view.top+height>otherView.top THEN
+            Unlock()
+            RETURN(0)
+          FI
+        END
+      FI
+    END
+  OD
+
+  IF view.height<>height THEN
+    ResizeLocked(entry,height)
+  FI
+
+  Unlock()
+
+RETURN(1)
+
+; Dock one fully prepared, hidden instance under the permanent default console.
+PUBLIC BYTE FUNC Dock(LONGCARD unit)
+
+  IF Lock()=0 THEN
+    RETURN(0)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET child=CONSOLEWINDOWS.Find(unit)
+  LET parent=CONSOLEWINDOWS.Find(0)
+  IF unit=0 OR Owned(child)=0 OR parent=NULL OR windows.pane<>0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  LET pane=CONSOLETYPES.Instance POINTER(child.instance)
+  LET instance=CONSOLETYPES.Instance POINTER(parent.instance)
+  LET view=CONSOLETYPES.Presentation POINTER(parent.view)
+  LET childView=CONSOLETYPES.Presentation POINTER(child.view)
+  IF view.visible=0 OR view.left<>0 OR view.top<>0
+      OR instance.width<>CONSOLEDRIVER.ScreenWidth()
+      OR instance.height<>CONSOLEDRIVER.ScreenHeight()
+      OR childView.visible<>0 OR pane.width<>instance.width
+      OR pane.height>=instance.height OR windows.focusSlot<>0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  LET height=instance.height-pane.height
+  IF CanResize(parent,height)=0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
+  ResizeLocked(parent,height)
+  childView.left=0
+  childView.top=height
+  childView.screen=view.screen
+  childView.claimed=1
+  childView.visible=1
+  childView.focused=0
+  childView.index=$ffff
+  childView.previousCursor=$ffff
+  childView.generation==+1
+  childView.presentedGeneration=0
+  CONSOLECORE.Dirty(pane,0,pane.count)
+  windows.pane=unit
+  Unlock()
+
+RETURN(1)
 
 ; Caller owns the presentation transaction and has drained worker borrows.
 PUBLIC PROC Select(CONSOLETYPES.Window POINTER entry)
@@ -190,6 +336,11 @@ PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
   FI
 
   windows=CONSOLEWINDOWS.Registry()
+  IF windows.pane<>0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
   view=CONSOLETYPES.Presentation POINTER(entry.view)
   instance=CONSOLETYPES.Instance POINTER(entry.instance)
   LET width=CONSOLEDRIVER.ScreenWidth()
@@ -253,6 +404,12 @@ PUBLIC BYTE FUNC Hide(LONGCARD unit)
     RETURN(0)
   FI
 
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF windows.pane<>0 THEN
+    Unlock()
+    RETURN(0)
+  FI
+
   entry=CONSOLEWINDOWS.Find(unit)
   IF Owned(entry)=0 THEN
     Unlock()
@@ -271,6 +428,12 @@ PUBLIC BYTE FUNC Focus(LONGCARD unit)
 
   IF Lock()=0 THEN
     RETURN(0)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF windows.pane<>0 THEN
+    Unlock()
+    RETURN(unit=0 AND windows.focusSlot=0)
   FI
 
   entry=CONSOLEWINDOWS.Find(unit)

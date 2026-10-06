@@ -82,3 +82,23 @@ The provider adds 33 payload bytes, making the complete published manifest
 No new object, worker or permanent buffer is allocated. Fixed, root/kernel,
 idle, loading and per-Task bank-zero reservation deltas are **0 bytes**.
 Development checks do not qualify the release or physical hardware.
+
+## F2 Height changes and owned panes
+
+Fixed-width resize preserves the original backing capacity, endpoint, cursor
+column, input route and cooked draft. One shared 80-byte upper row normalizes
+circular cells; growing restores blank rows. The pane is an ordinary owned DOS
+output handle whose Close/finalizer restores the parent before child retirement.
+Prepared allocation failure unwinds without changing the layout.
+
+The [F2 record](../development/background-pane-primes-f2.json) records optimized
+text and bitmap checks, a raw retained-layout probe, allocation rollback, second
+pane rejection and child error cleanup during an active edited Read. The draft
+`ab` survives restoration, then completes as `abc`. Exact reply, domain, stack
+and ownership checks pass. All 391 host checks passed.
+
+The instance's capacity field consumes former alignment padding; the layout
+association moves bitmap metadata four bytes within the existing 880-byte
+reservation. Dynamic instances still round to 208 bytes. Providers use 1,490
+bytes for 44 entries. Fixed, root/kernel, idle, loading and per-Task bank-zero
+reservation deltas are **0 bytes**. These are development results.

@@ -8,6 +8,7 @@ USE DOSARGS
 USE DOSUTILITY
 USE DOSFAULT
 USE DOSCOMMAND
+USE DOSPANE
 
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
@@ -36,6 +37,10 @@ PUBLIC LONGINT FUNC WriteAt(BYTE POINTER handle CARD column,row
     BYTE POINTER buffer LONGINT length)
 
 RETURN(DOSCALLS.WriteAt(handle,column,row,buffer,length))
+
+PUBLIC BYTE POINTER FUNC OpenPane(CARD rows)
+
+RETURN(DOSPANE.Open(rows))
 
 PUBLIC LONGINT FUNC Seek(BYTE POINTER handle LONGINT offset,mode)
 

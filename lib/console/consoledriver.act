@@ -413,6 +413,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   instance.count=width*height
+  instance.capacity=instance.count
   cells=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_PUBLIC)
   fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
   instance.cells=cells
@@ -488,7 +489,7 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   IF instance.cells<>BYTE POINTER(0) THEN
-    EXEC.FreeMem(instance.cells,LONGCARD(instance.count))
+    EXEC.FreeMem(instance.cells,LONGCARD(instance.capacity))
     instance.cells=BYTE POINTER(0)
   FI
 
