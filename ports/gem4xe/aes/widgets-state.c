@@ -1,5 +1,6 @@
 /* Transactional retained state. One presenter serializes this staging context. */
 #include "widgets.h"
+#include <stddef.h>
 static struct WidgetContext staging;
 static uint32_t nextEpoch=1;
 
@@ -91,7 +92,14 @@ uint16_t WidgetUpdate(struct WidgetContext *c,const struct WidgetUpdate *u,struc
     if (!c || !c->epoch || !u || p->bytes!=sizeof(*u) ||
         u->count>WIDGET_PATCHES || u->textBytes>WIDGET_TEXT_BYTES) return WIDGET_BAD_ARGUMENT;
     if (u->epoch!=c->epoch || u->revision!=c->revision) return WIDGET_STALE;
-    memcpy(&staging,c,sizeof(staging));
+    /* Only admitted objects/text are live. Copy their immutable geometry for
+       validation and damage, without moving the unused capacity on each click.
+       Staging remains private until every check below has succeeded. */
+    memcpy(&staging,c,offsetof(struct WidgetContext,objects)+c->count*sizeof(OBJECT));
+    memcpy(staging.text,c->text,c->textBytes);
+    memcpy(staging.parent,c->parent,c->count*sizeof(c->parent[0]));
+    memcpy(staging.order,c->order,c->count*sizeof(c->order[0]));
+    memcpy(staging.bounds,c->bounds,c->count*sizeof(c->bounds[0]));
     for (i=0;i<u->count;i++) {
         v=&u->changes[i];
         if (v->object>=c->count || !v->mask || (v->mask&~7)) return WIDGET_BAD_ARGUMENT;
@@ -161,7 +169,10 @@ uint16_t WidgetUpdate(struct WidgetContext *c,const struct WidgetUpdate *u,struc
         WidgetFocusDamage(p,&staging,staging.focus);WidgetFocusDamage(p,c,c->focus);
     }
     staging.revision++;
-    memcpy(c,&staging,sizeof(*c));
+    /* A patch cannot change geometry, ordering or object count. Publish only
+       the header, live objects and admitted text; inactive bytes stay unused. */
+    memcpy(c,&staging,offsetof(struct WidgetContext,objects)+c->count*sizeof(OBJECT));
+    memcpy(c->text,staging.text,staging.textBytes);
     p->epoch=c->epoch;p->revision=c->revision;
     return WIDGET_OK;
 }

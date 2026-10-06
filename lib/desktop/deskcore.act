@@ -130,14 +130,14 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
-            IF service.windows(index).kind=DESKTYPES.CONTENT_COMMANDS THEN
+            IF service.windows(index).kind<>DESKTYPES.CONTENT_CONSOLE THEN
               REGIONS.Copy(@layer.bounds,@frame)
               frame.bottom=frame.top+16
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
-            ELSE
               IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
-                DESKCACHE.Changed(service,@service.windows(index))
+                DESKWIDGETS.FocusDamage(service,@service.windows(index))
               FI
+            ELSE
               status=LAYERS.Invalidate(@service.scene,layer.id,@layer.bounds)
             FI
           FI

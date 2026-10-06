@@ -44,11 +44,24 @@ def fixture(out):
   previousMode=0''')
     # A test-only matched full-redraw control. There is one production client;
     # this switch deliberately replaces its otherwise identical label patch.
-    app = (ROOT/'lib/desktop/deskapp.act').read_text().replace('CARD updates\n', 'CARD updates\nBYTE benchmarkFull\n')
+    app = (ROOT/'lib/desktop/deskapp.act').read_text().replace('CARD updates\n',
+        'CARD updates,staleRetries\nBYTE benchmarkFull,staleOnce\n')
+    app=app.replace('  LET result=Call(DESKTYPES.UPDATE_WIDGETS)', '''  IF staleOnce<>0 THEN
+    patch.revision==-1
+    staleOnce=0
+  FI
+
+  LET result=Call(DESKTYPES.UPDATE_WIDGETS)''')
+    app=app.replace('  ELSEIF result=DESKTYPES.STALE THEN',
+        '  ELSEIF result=DESKTYPES.STALE THEN\n    staleRetries==+1')
     needle='  DESKTOP.Prepare(@control,DESKTYPES.UPDATE_WIDGETS)'
     app=app.replace(needle, '''  IF benchmarkFull<>0 THEN
     BEGIN
       CARD index
+
+      IF ReadState()<>DESKTYPES.OK THEN
+        HEAPCORE.Abort($faf8)
+      FI
 
       A816MEMORY.Clear(BYTE POINTER(tree),WIDGETTYPES.TREE_SIZE)
       BuildTree()

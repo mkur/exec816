@@ -87,6 +87,25 @@ PUBLIC PROC Damage(DESKTYPES.Service POINTER service
 
 RETURN
 
+; Active-window changes affect only the client's focus underline. Its frame
+; has separate damage; the retained tree and button states remain unchanged.
+PUBLIC PROC FocusDamage(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+
+  IF window.widgets=NULL THEN
+    RETURN
+  FI
+
+  packet.context=LONGCARD(ADDRESS(window.widgets))
+  Run(WIDGETTYPES.OP_FOCUS)
+  IF packet.status<>WIDGETTYPES.OK THEN
+    HEAPCORE.Abort($fab0)
+  FI
+
+  Damage(service,window)
+
+RETURN
+
 ; Remove this window's queued input before retirement or a new model boundary.
 PUBLIC PROC Cancel(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)

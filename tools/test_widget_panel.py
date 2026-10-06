@@ -41,7 +41,8 @@ def observers(p):
         task_dps=[x['dp'] for x in p['build']['memory']['task_pools']])
     marks=flat_markers(definition)
     marks.update(capture=p['labels']['pointer_notify'],application=spans['application']['entry'])
-    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win'):
+    for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win',
+                 'WidgetUpdate'):
         if name in sy:marks[name]=sy[name]
     return spans,marks,definition
 
@@ -234,7 +235,14 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
                 load(0)
                 # End every action with identical state and focus. The only
                 # experimental difference is the application's patch/SetTree.
+                recovery=any('_DESKAPP_STALEONCE_' in d['name'] for d in p['image']['data'])
+                if recovery:
+                    retries=read('DESKAPP','staleRetries')
+                    b.poke(at('DESKAPP','staleOnce'),1)
                 click(2)
+                if recovery:
+                    require(read('DESKAPP','staleRetries')==retries+1,'Missing stale patch retry')
+                    report['functional'].append(dict(name='stale action patch retries from fresh snapshot'))
                 if state['toggle']:click(2)
                 for full in (0,1):
                     b.poke(at('DESKAPP','benchmarkFull'),full)
@@ -284,6 +292,15 @@ def analyze(report, out, p, spans, marks, definition):
             sample['capture_to_button_pixels_ms']=(align(sample['button_feedback']['clock'])-captured)/BASE_HZ*1000
         if 'application' in sample:
             sample['capture_to_application_ms']=(align(sample['application'])-captured)/BASE_HZ*1000
+            # The actual retained-model patch is distinct from the client
+            # merely receiving its semantic action. Keep both IPC/scene wait
+            # and patch-to-scanout latency visible without changing the oracle.
+            if sample.get('load') is not None:
+                patches=times(marks['WidgetUpdate'])
+                patch=patches[bisect_left(patches,commit)]
+                require(patch<=align(sample['visible']),'Missing status patch before feedback')
+                sample['commit_to_patch_ms']=(patch-commit)/BASE_HZ*1000
+                sample['patch_to_visible_ms']=(align(sample['visible'])-patch)/BASE_HZ*1000
     profile=analyze_events(events,definition)
     report['render_cost']=dict(routines=profile['routines'],max_charged_cpu_ms=profile['max_charged_cpu_ms'],
         scope=profile['scope'],maximum_quantum_scope='Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded.')
@@ -296,7 +313,7 @@ def analyze(report, out, p, spans, marks, definition):
     report['latency']={}
     for load in report['windows']:
         selected=[s for s in report['samples'] if s['load']==load]
-        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms','capture_to_button_pixels_ms')}
+        report['latency'][load]={key:distribution([s[key] for s in selected if key in s]) for key in ('capture_to_commit_ms','capture_to_application_ms','capture_to_button_consumed_ms','capture_to_visible_ms','capture_to_button_pixels_ms','commit_to_patch_ms','patch_to_visible_ms')}
         report['latency'][load]['press_feedback']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='press'])
         report['latency'][load]['application_label']=distribution([s['capture_to_visible_ms'] for s in selected if s['edge']=='release'])
         if report.get('feedback_observer'):

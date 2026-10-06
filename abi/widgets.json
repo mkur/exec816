@@ -20,6 +20,7 @@
     "OP_POINTER": 5,
     "OP_KEY": 6,
     "OP_CANCEL": 7,
+    "OP_FOCUS": 8,
     "PATCH_STATE": 1,
     "PATCH_LABEL": 2,
     "PATCH_HIDDEN": 4,

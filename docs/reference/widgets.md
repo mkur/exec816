@@ -130,6 +130,12 @@ default momentary action; Cancel and Escape/BREAK report cancellation without
 closing the window. The close gadget and shell EXIT retain cooperative Task
 retirement. These controls demonstrate application state, not system settings.
 
+The panel uses the action's copied epoch, revision and state for its first
+status-label patch. A stale revision triggers a fresh state read and retry;
+LOSS also reads the current state, and an action from a replaced tree is
+discarded. Focusing a widget window damages its title bar and focus underline;
+it does not require repainting unchanged client contents.
+
 Input capture, widget state commit, application consumption and visible status
 are distinct stages. A scene token can delay widget dispatch or state requests,
 and a successful patch reply precedes its pixels. Functional completion does
