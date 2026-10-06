@@ -337,3 +337,72 @@ Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
 including guards, alignment and unused capacity. Upper-RAM reservations are
 unchanged. Emitted executable code shrinks by 3,299 bytes. The existing demo
 package is unchanged.
+
+## HY4 Caller device dispatch
+
+The [caller dispatch plan](../plans/caller-device-dispatch-implementation-plan.md)
+is implemented. Generated Close, BeginIO and AbortIO dispatch selects the
+resident through `io_Device` on the caller's stack. SendIO and DoIO share that
+BeginIO path and prepare the request once. The established-device routing COP,
+its import bindings and Task-policy resident selection are removed. CheckIO and
+exact collection retain kernel operations without looking up a device first.
+OpenDevice retains its admission gateway.
+
+Forbid/Permit, native context checks, checked compiler frames, timer edit gates
+and driver completion/cancellation policy are unchanged. Only DoIO reads its
+request after submission, while it still owns the reply path; nonblocking calls
+do not touch a published request again. The queued fixture retains its kernel
+protocol through explicit test-only Begin, Abort and Close entries, rejected in
+production. The public API and record layouts are unchanged; internal selectors
+and bindings are updated together. See the current
+[resident contract](../reference/resident-drivers.md).
+
+The [development record](../development/caller-device-dispatch.json) uses the
+previous trusted-request idle run as its baseline. Both images use the same
+compiler, machine configuration, launcher and linked C segments. Each continuous
+window covers 100 PAL frames:
+
+| Charged CPU median | Before | After |
+| --- | ---: | ---: |
+| `DoIO` | 1.045 ms | 0.394 ms |
+| `SendIO` | 1.699 ms | 1.115 ms |
+| `CheckIO` | 0.782 ms | 0.703 ms |
+| `AbortIO` | 3.305 ms | 1.157 ms |
+
+DoIO and SendIO medians fall by about 62% and 34%. The new traces contain no
+I/O gateway interval inside either call, or inside AbortIO. SendIO p95 falls
+from 1.802 to 1.159 ms. DoIO p95 rises from 1.047 to 1.495 ms: its longest samples
+charge about 1.154 ms to native dispatch/return, while median native dispatch
+remains about 0.052 ms. The earlier AbortIO window also contained substantial
+scheduling charges. These continuous windows have different execution phases,
+with 76/82 complete AES calls and 30/28 native expiries, so cancellation and
+tail improvements cannot be attributed solely to the removed routing work.
+
+The current disk and scroll windows pass with 16 reads and one complete console
+write respectively, restored ownership, intact guards and zero AES failures.
+Their DoIO medians are about 0.394 ms and SendIO medians 1.141/1.067 ms. They
+provide current load evidence without matched before/after load measurements.
+Pointer, button and scanout acceptance was not rerun; **HY4 and AS4/TD4 remain
+open**.
+
+The remaining SendIO cost is concentrated in timer-driver work: about 0.647 ms
+exclusive of queue and binding helpers in the idle run. The existing native
+exit/poll behavior remains unchanged. CheckIO still spends about 0.603 ms in its
+kernel observation, and AbortIO about 0.808 ms in task-side ReplyMsg. These are
+measured candidates for later work, not additional changes in this slice.
+
+Development checks pass: the 23-assertion direct/diagnostic dispatch probe runs
+raw and optimized; five optimized generic I/O cases cover lifetime, immediate
+and queued reply handoff, 32 NMI publication checkpoints and the collect/Wait
+gap. Timer binding, concurrent lifecycle and C API checks pass. Together these
+execute 420 assertions. Five native context cases cover a valid register/stack
+round trip and rejection of masked, wrong-DP, IRQ and switching contexts. The
+context harness needed its platform include path restored and a four-byte entry
+for its jump overlay; failed harness attempts and successful replacements are
+retained in the evidence. The host suite runs 388 tests with four historical
+source skips. This is development evidence, not release qualification.
+
+Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
+including guards, alignment and unused capacity. Upper-RAM reservations are
+unchanged; emitted executable code shrinks by 1,500 bytes. The existing demo
+package is unchanged.

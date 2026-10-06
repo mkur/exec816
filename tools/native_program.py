@@ -609,11 +609,16 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             arguments,outgoing=shape['arguments'],shape['outgoing_bytes']
             result='Some(NativeResult(A16X16))'
             label,peak='io_open_dispatch',3
-        elif tasks and name in ('IOCORE.Collect','IOCORE.StartGateway','IOCORE.CloseGateway','IOCORE.BeginGateway','IOCORE.SendGateway','IOCORE.AbortGateway'):
+        elif tasks and name=='IOCORE.Collect':
             arguments,outgoing=[{'alignment':1,'offset':0,'size':3}],3
             result='Some(NativeResult(A16X16))'
-            label={'Collect':'io_collect','StartGateway':'io_start','CloseGateway':'io_close_dispatch',
-                   'BeginGateway':'io_begin_dispatch','SendGateway':'io_send_dispatch','AbortGateway':'io_abort_dispatch'}[name.split('.')[1]]
+            label,peak='io_collect',3
+        elif tasks and name in ('IORESIDENT.TestClose','IORESIDENT.TestBeginIO','IORESIDENT.TestAbortIO'):
+            require(io_test_device,'Diagnostic device dispatch is unavailable in production')
+            arguments,outgoing=[{'alignment':1,'offset':0,'size':3}],3
+            result='None'
+            label={'TestClose':'io_test_close','TestBeginIO':'io_test_begin',
+                   'TestAbortIO':'io_test_abort'}[name.split('.')[1]]
             peak=3
         elif tasks and name=='IOPROBE.Advance':
             require(io_test_device,'Test I/O control is unavailable in production')

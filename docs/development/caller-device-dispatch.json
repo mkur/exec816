@@ -1,0 +1,1958 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-06",
+  "baseline_commit": "6e01958",
+  "scope": "Select established resident callbacks in the caller; retain admission, exact collection and synchronization, with explicit test-only queued-device entries.",
+  "source_hashes": {
+    "abi/io.json": "1371fe788709e094cded421798c4962c14c2a043abf779de3c032ff692ec6bf6",
+    "lib/console/task-console.inc": "bb2302cc8021d42e791140612f4d613258639164c9cabeec8d2394f0c06536c2",
+    "lib/io/iocore.act": "99c3b98b12bc756d3efccd25e9c1546ba443e34b4c9a3255367e787934993914",
+    "lib/io/task-io.inc": "1fc703ad4f11f39fde1d946e92fb830f8ac1356470b902b1f03f798340c0b951",
+    "platform/altirraos/io.s": "ac25344d3b0d3a4ea0b4dde6ce24a3c877ef9cfcbb85c7462c62f6a94f6301ff",
+    "tests/programs/io_context.act": "d831dff27f9b3198a95265a0de3ff35587ea660ac8c12b80dc767a2f99fe0914",
+    "tests/programs/io_dispatch.act": "792525d7d9ec5ca153530ed1eb857505dc3f9de718580f121dbc23fa4ae611fb",
+    "tests/test_io_package.py": "01f208a1379f32dfc3ae2d2c1c9b6451d3cdedd438a7b5dfcc1af78455329660",
+    "tools/aes_timing_breakdown.py": "dfb5fadd7ae2e6f9c2a1f7b2c46a1243764812d0b22cac72f6e918ae52fd2f71",
+    "tools/generate_io.py": "e7fe73091e462eae4250bfb6a42303bdb2694779e55b19e8b6eb4832e2dda02f",
+    "tools/generate_tasks.py": "29e9baacb7705895d6d3347c2fbfc80c8a46288e8b412b9cb7e9e1ea474dd598",
+    "tools/native_program.py": "90e269db3aa966f211b60cd4bbdd3567f22e6027686a70f1bbd6314e08493972",
+    "tools/test_io_services.py": "f55d27de2c518a1e8c3a3db3eb21fb49ea671917777bff29428a889a18f31d0f"
+  },
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "timing_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "pins": {
+    "toolchain/actionc.json": "ee7fedac8e5667b09bbc8e9b356f2238555149e5961866fee85525899c091154",
+    "toolchain/altirra-signals-4m.json": "279d2f3679787e1f3bda003c944d6e732598858c7997df8fdb3f2239e340f778"
+  },
+  "workload": {
+    "frames": 100,
+    "aes_command": 5,
+    "matched_launcher_sha256": "253c2367ecc0b43827f6e21b42d7c1114407184d25cde9ad8f4404adb1e943ec",
+    "identical_linked_c_segments": true,
+    "recorded_native_input_changes": {
+      "task_inputs": [
+        "lib/io/iocore.act",
+        "lib/io/task-io.inc",
+        "platform/altirraos/io.s",
+        "abi/io.json",
+        "tools/generate_io.py",
+        "tools/generate_tasks.py"
+      ],
+      "console_inputs": [
+        "lib/console/task-console.inc"
+      ],
+      "banked_inputs": [
+        "tools/native_program.py"
+      ]
+    },
+    "build_identifier_changes": [
+      "749a151-dirty",
+      "6e01958-dirty"
+    ],
+    "comparison": "Retained trusted-request idle baseline; disk and scroll are current functional load checks.",
+    "observer_change": "Only io_markers changes: use remaining current gateway labels. Timing attribution algorithms and C call sites are unchanged."
+  },
+  "cohorts": {
+    "before_idle": {
+      "result": {
+        "path": "build/aes-hybrid/trusted-io/idle/results.json",
+        "sha256": "800ce568e7be818e7d5d9a2f38f80fdb64fbb1ba8a5900bc71ba74c760a3c490"
+      },
+      "build": {
+        "path": "build/aes-hybrid/trusted-io/image/program/build.json",
+        "sha256": "66c86ac27277a5a6a93d1ecd2d05e4bdae9fd2a0914fb1218f252d7730d6cfa5"
+      },
+      "exec_build": "749a151-dirty",
+      "xex_sha256": "2aed0d9327ad26d0bd4f716fc5032a2fa1283d03c971da7aecc46fa2ac94de1f",
+      "trace_sha256": "200ade3d49e13af12640303000f2eee95e61e254aecb56fd5026a99bbeab9d80",
+      "status": "pass",
+      "load": "idle",
+      "complete_public_calls": 76,
+      "native_expiries": 30,
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "aes_progress": {
+        "AESMessages": 28,
+        "AESTimers": 15
+      },
+      "c_checks": 277,
+      "guards": "intact",
+      "ownership": "restored",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 380,
+          "untouched_above_floor": 900
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 168,
+          "untouched_above_floor": 600
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 490,
+          "untouched_above_floor": 278
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 693,
+          "untouched_above_floor": 1611
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 127,
+          "untouched_above_floor": 129
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "device_calls": {
+        "AbortIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 3.3054262953935765,
+            "p95_ms": 3.3214966893578746,
+            "max_ms": 3.3214966893578746
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.018960245510509895,
+              "p95_ms": 0.019101213878617775,
+              "max_ms": 0.019101213878617775
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.02953287311860092,
+              "p95_ms": 0.029955778222924556,
+              "max_ms": 0.029955778222924556
+            },
+            "generic_io": {
+              "count": 14,
+              "median_ms": 0.04102179511939316,
+              "p95_ms": 0.04137421603966287,
+              "max_ms": 0.04137421603966287
+            },
+            "io_gateway": {
+              "count": 14,
+              "median_ms": 1.5480441343766873,
+              "p95_ms": 1.563621139052608,
+              "max_ms": 1.563621139052608
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.05984107226179518,
+              "p95_ms": 0.06019349318206487,
+              "max_ms": 0.06019349318206487
+            },
+            "reply": {
+              "count": 14,
+              "median_ms": 0.8088060120189631,
+              "p95_ms": 0.8088060120189631,
+              "max_ms": 0.8088060120189631
+            },
+            "task_exclusion": {
+              "count": 14,
+              "median_ms": 0.7106920278158784,
+              "p95_ms": 0.711114932920202,
+              "max_ms": 0.711114932920202
+            },
+            "timer_driver": {
+              "count": 14,
+              "median_ms": 0.075347592753662,
+              "p95_ms": 0.0867660305704003,
+              "max_ms": 0.0867660305704003
+            },
+            "timer_queue": {
+              "count": 14,
+              "median_ms": 0.013744415890518327,
+              "p95_ms": 0.019171698062671716,
+              "max_ms": 0.019171698062671716
+            }
+          }
+        },
+        "CheckIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 0.7815991169741422,
+            "p95_ms": 0.7823744429987355,
+            "max_ms": 0.7823744429987355
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.018678308774294137,
+              "p95_ms": 0.01881927714240202,
+              "max_ms": 0.01881927714240202
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.03150643027211124,
+              "p95_ms": 0.0372156491804804,
+              "max_ms": 0.0372156491804804
+            },
+            "io_gateway": {
+              "count": 14,
+              "median_ms": 0.6815115756175472,
+              "p95_ms": 0.6877846679983478,
+              "max_ms": 0.6877846679983478
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.0446164885061441,
+              "p95_ms": 0.04496890942641381,
+              "max_ms": 0.04496890942641381
+            }
+          }
+        },
+        "DoIO": {
+          "calls": 62,
+          "charged_cpu_ms": {
+            "count": 62,
+            "median_ms": 1.0451394811518244,
+            "p95_ms": 1.0473244908574963,
+            "max_ms": 1.0475359434096583
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 62,
+              "median_ms": 0.018466856222132316,
+              "p95_ms": 0.02424655931455541,
+              "max_ms": 0.02424655931455541
+            },
+            "c_wrapper": {
+              "count": 62,
+              "median_ms": 0.031435946088057304,
+              "p95_ms": 0.03714516499642645,
+              "max_ms": 0.03721564918048039
+            },
+            "generic_io": {
+              "count": 62,
+              "median_ms": 0.09740914236254528,
+              "p95_ms": 0.10903903273144541,
+              "max_ms": 0.10932096946766116
+            },
+            "io_gateway": {
+              "count": 62,
+              "median_ms": 0.6501461137135438,
+              "p95_ms": 0.6516967657627305,
+              "max_ms": 0.655855332621913
+            },
+            "native_dispatch": {
+              "count": 62,
+              "median_ms": 0.05229926456802358,
+              "p95_ms": 0.05772654674017698,
+              "max_ms": 0.05786751510828485
+            },
+            "task_exclusion": {
+              "count": 62,
+              "median_ms": 0.11073065314873995,
+              "p95_ms": 0.1225719960698019,
+              "max_ms": 0.1225719960698019
+            },
+            "timer_driver": {
+              "count": 62,
+              "median_ms": 0.07393790907258321,
+              "p95_ms": 0.07978809634906024,
+              "max_ms": 0.07999954890122205
+            }
+          }
+        },
+        "SendIO": {
+          "calls": 41,
+          "charged_cpu_ms": {
+            "count": 41,
+            "median_ms": 1.6992327091723887,
+            "p95_ms": 1.8022805862592493,
+            "max_ms": 1.8022805862592493
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 41,
+              "median_ms": 0.018607824590240196,
+              "p95_ms": 0.0189602455105099,
+              "max_ms": 0.0189602455105099
+            },
+            "c_wrapper": {
+              "count": 41,
+              "median_ms": 0.029603357302654856,
+              "p95_ms": 0.035453544579131885,
+              "max_ms": 0.035453544579131885
+            },
+            "generic_io": {
+              "count": 41,
+              "median_ms": 0.06738287995556677,
+              "p95_ms": 0.07400839325663715,
+              "max_ms": 0.07400839325663715
+            },
+            "io_gateway": {
+              "count": 41,
+              "median_ms": 0.6498641769773281,
+              "p95_ms": 0.6562077535421826,
+              "max_ms": 0.6562077535421826
+            },
+            "native_dispatch": {
+              "count": 41,
+              "median_ms": 0.04313632064101136,
+              "p95_ms": 0.04891602373343446,
+              "max_ms": 0.04891602373343446
+            },
+            "task_exclusion": {
+              "count": 41,
+              "median_ms": 0.1108011373327939,
+              "p95_ms": 0.1218671542292625,
+              "max_ms": 0.1218671542292625
+            },
+            "timer_binding": {
+              "count": 41,
+              "median_ms": 0.02156816032050568,
+              "p95_ms": 0.023682685842123886,
+              "max_ms": 0.023682685842123886
+            },
+            "timer_driver": {
+              "count": 41,
+              "median_ms": 0.6528949968916475,
+              "p95_ms": 0.6776349454945805,
+              "max_ms": 0.6776349454945805
+            },
+            "timer_queue": {
+              "count": 41,
+              "median_ms": 0.09790253165092283,
+              "p95_ms": 0.20031605108129788,
+              "max_ms": 0.20031605108129788
+            }
+          }
+        }
+      },
+      "largest_doio_cpu_ms": {
+        "c_wrapper": 0.031435946088057304,
+        "assembly_bridge": 0.018466856222132316,
+        "native_dispatch": 0.05229926456802358,
+        "generic_io": 0.10932096946766116,
+        "task_exclusion": 0.11051920059657813,
+        "io_gateway": 0.6516967657627305,
+        "timer_driver": 0.07379694070447533
+      },
+      "combined_wait": {
+        "calls": 34,
+        "charged_cpu_ms": {
+          "count": 34,
+          "median_ms": 6.360281316475396,
+          "p95_ms": 11.550666146023493,
+          "max_ms": 11.550666146023493
+        },
+        "device_io_cpu_ms": {
+          "count": 34,
+          "median_ms": 2.847067646490804,
+          "p95_ms": 7.876043694555379,
+          "max_ms": 7.876043694555379
+        }
+      }
+    },
+    "idle": {
+      "result": {
+        "path": "build/aes-hybrid/caller-dispatch/idle/results.json",
+        "sha256": "02e6d86a0d2d1720e63abad0d7f75bef198c16be6b47356cb9bf23f83bc363d9"
+      },
+      "build": {
+        "path": "build/aes-hybrid/caller-dispatch/image/program/build.json",
+        "sha256": "b747f813697a55bd40ce7dd54f5662ff2e5e1581d9938ffc27f86c66308a5706"
+      },
+      "exec_build": "6e01958-dirty",
+      "xex_sha256": "b2f2e870e2677700c572515ddc74848fc6407ecd24ee4fb26fd222c794d135c9",
+      "trace_sha256": "596161abcaf60fbed78027fac6ec3d3ed8eb2268868b1c3d407b61c127897870",
+      "status": "pass",
+      "load": "idle",
+      "complete_public_calls": 82,
+      "native_expiries": 28,
+      "progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "aes_progress": {
+        "AESMessages": 28,
+        "AESTimers": 14
+      },
+      "c_checks": 301,
+      "guards": "intact",
+      "ownership": "restored",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 388,
+          "untouched_above_floor": 892
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 168,
+          "untouched_above_floor": 600
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 499,
+          "untouched_above_floor": 269
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 723,
+          "untouched_above_floor": 1581
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 127,
+          "untouched_above_floor": 129
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "device_calls": {
+        "AbortIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 1.1567864286932654,
+            "p95_ms": 1.1626366159697425,
+            "max_ms": 1.1626366159697425
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.018960245510509895,
+              "p95_ms": 0.018960245510509895,
+              "max_ms": 0.018960245510509895
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.03009674659103244,
+              "p95_ms": 0.035101123658862185,
+              "max_ms": 0.035101123658862185
+            },
+            "generic_io": {
+              "count": 14,
+              "median_ms": 0.041585668591824686,
+              "p95_ms": 0.047435855868301714,
+              "max_ms": 0.047435855868301714
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.05349749569694057,
+              "p95_ms": 0.05399088498531815,
+              "max_ms": 0.05399088498531815
+            },
+            "reply": {
+              "count": 14,
+              "median_ms": 0.8074668125219383,
+              "p95_ms": 0.8078897176262618,
+              "max_ms": 0.8078897176262618
+            },
+            "task_exclusion": {
+              "count": 14,
+              "median_ms": 0.11693326134548668,
+              "p95_ms": 0.11707422971359456,
+              "max_ms": 0.11707422971359456
+            },
+            "timer_driver": {
+              "count": 14,
+              "median_ms": 0.07562952948987776,
+              "p95_ms": 0.08112729584608509,
+              "max_ms": 0.08112729584608509
+            },
+            "timer_queue": {
+              "count": 14,
+              "median_ms": 0.013321510786194686,
+              "p95_ms": 0.013603447522410446,
+              "max_ms": 0.013603447522410446
+            }
+          }
+        },
+        "CheckIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 0.7034321568583226,
+            "p95_ms": 0.704066514514808,
+            "max_ms": 0.704066514514808
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.01881927714240202,
+              "p95_ms": 0.018889761326455957,
+              "max_ms": 0.018889761326455957
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.03693371244426463,
+              "p95_ms": 0.03763855428480403,
+              "max_ms": 0.03763855428480403
+            },
+            "io_gateway": {
+              "count": 14,
+              "median_ms": 0.6032036471336196,
+              "p95_ms": 0.6036970364219973,
+              "max_ms": 0.6036970364219973
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.044405035953982284,
+              "p95_ms": 0.05131248599126842,
+              "max_ms": 0.05131248599126842
+            }
+          }
+        },
+        "DoIO": {
+          "calls": 68,
+          "charged_cpu_ms": {
+            "count": 68,
+            "median_ms": 0.39386562049341745,
+            "p95_ms": 1.4948285754159625,
+            "max_ms": 1.4948285754159625
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 68,
+              "median_ms": 0.018678308774294133,
+              "p95_ms": 0.0189602455105099,
+              "max_ms": 0.02495140115509481
+            },
+            "c_wrapper": {
+              "count": 68,
+              "median_ms": 0.031435946088057304,
+              "p95_ms": 0.037074680812372515,
+              "max_ms": 0.0372156491804804
+            },
+            "generic_io": {
+              "count": 68,
+              "median_ms": 0.095365101024981,
+              "p95_ms": 0.10163819340578167,
+              "max_ms": 0.10177916177388954
+            },
+            "native_dispatch": {
+              "count": 68,
+              "median_ms": 0.05229926456802358,
+              "p95_ms": 1.1540375455151617,
+              "max_ms": 1.1540375455151617
+            },
+            "task_exclusion": {
+              "count": 68,
+              "median_ms": 0.11087162151684783,
+              "p95_ms": 0.12341780627844919,
+              "max_ms": 0.12341780627844919
+            },
+            "timer_driver": {
+              "count": 68,
+              "median_ms": 0.07379694070447532,
+              "p95_ms": 0.07992906471716812,
+              "max_ms": 0.07999954890122206
+            }
+          }
+        },
+        "SendIO": {
+          "calls": 40,
+          "charged_cpu_ms": {
+            "count": 40,
+            "median_ms": 1.114848339181171,
+            "p95_ms": 1.1589009542148838,
+            "max_ms": 1.1589009542148838
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 40,
+              "median_ms": 0.01881927714240202,
+              "p95_ms": 0.024669464418879045,
+              "max_ms": 0.024669464418879045
+            },
+            "c_wrapper": {
+              "count": 40,
+              "median_ms": 0.029180452198331215,
+              "p95_ms": 0.040739858383177396,
+              "max_ms": 0.040739858383177396
+            },
+            "generic_io": {
+              "count": 40,
+              "median_ms": 0.07055466823799407,
+              "p95_ms": 0.07196435191907288,
+              "max_ms": 0.07196435191907288
+            },
+            "native_dispatch": {
+              "count": 40,
+              "median_ms": 0.043418257377227126,
+              "p95_ms": 0.049338928837758096,
+              "max_ms": 0.049338928837758096
+            },
+            "task_exclusion": {
+              "count": 40,
+              "median_ms": 0.11601696695278546,
+              "p95_ms": 0.12221957514953219,
+              "max_ms": 0.12221957514953219
+            },
+            "timer_binding": {
+              "count": 40,
+              "median_ms": 0.023118812369692363,
+              "p95_ms": 0.029109968014277277,
+              "max_ms": 0.029109968014277277
+            },
+            "timer_driver": {
+              "count": 40,
+              "median_ms": 0.6469038412470626,
+              "p95_ms": 0.6758023567091781,
+              "max_ms": 0.6758023567091781
+            },
+            "timer_queue": {
+              "count": 40,
+              "median_ms": 0.1717699565394521,
+              "p95_ms": 0.19996363016102817,
+              "max_ms": 0.19996363016102817
+            }
+          }
+        }
+      },
+      "largest_doio_cpu_ms": {
+        "c_wrapper": 0.03693371244426463,
+        "assembly_bridge": 0.018678308774294133,
+        "native_dispatch": 1.1540375455151617,
+        "generic_io": 0.09494219592065736,
+        "task_exclusion": 0.11087162151684783,
+        "timer_driver": 0.0793651912447366
+      },
+      "combined_wait": {
+        "calls": 41,
+        "charged_cpu_ms": {
+          "count": 41,
+          "median_ms": 4.621225043312531,
+          "p95_ms": 6.707909312229429,
+          "max_ms": 6.707909312229429
+        },
+        "device_io_cpu_ms": {
+          "count": 41,
+          "median_ms": 1.4651547339292534,
+          "p95_ms": 3.763714460112295,
+          "max_ms": 3.763714460112295
+        }
+      }
+    },
+    "disk": {
+      "result": {
+        "path": "build/aes-hybrid/caller-dispatch/disk/results.json",
+        "sha256": "283329cdd97ad7ffaf181afdffae3e9ab8ed0ad2376139731407d0655d5adf77"
+      },
+      "build": {
+        "path": "build/aes-hybrid/caller-dispatch/image/program/build.json",
+        "sha256": "b747f813697a55bd40ce7dd54f5662ff2e5e1581d9938ffc27f86c66308a5706"
+      },
+      "exec_build": "6e01958-dirty",
+      "xex_sha256": "b2f2e870e2677700c572515ddc74848fc6407ecd24ee4fb26fd222c794d135c9",
+      "trace_sha256": "fdd194a07bbccea72ca6dd1b76c4cc7ed161142c77f8b84968d40117f83dbf6d",
+      "status": "pass",
+      "load": "disk",
+      "complete_public_calls": 80,
+      "native_expiries": 27,
+      "progress": {
+        "reads": 16,
+        "writes": 0
+      },
+      "aes_progress": {
+        "AESMessages": 28,
+        "AESTimers": 14
+      },
+      "c_checks": 399,
+      "guards": "intact",
+      "ownership": "restored",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 388,
+          "untouched_above_floor": 892
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 168,
+          "untouched_above_floor": 600
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 499,
+          "untouched_above_floor": 269
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 315,
+          "untouched_above_floor": 453
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 177,
+          "untouched_above_floor": 591
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 723,
+          "untouched_above_floor": 1581
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 131,
+          "untouched_above_floor": 125
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "device_calls": {
+        "AbortIO": {
+          "calls": 17,
+          "charged_cpu_ms": {
+            "count": 17,
+            "median_ms": 1.1632004894421741,
+            "p95_ms": 2.248022566216367,
+            "max_ms": 2.248022566216367
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 17,
+              "median_ms": 0.018678308774294133,
+              "p95_ms": 0.03030819914319426,
+              "max_ms": 0.03030819914319426
+            },
+            "c_wrapper": {
+              "count": 17,
+              "median_ms": 0.029814809854816677,
+              "p95_ms": 0.03587644968345553,
+              "max_ms": 0.03587644968345553
+            },
+            "generic_io": {
+              "count": 17,
+              "median_ms": 0.04165615277587862,
+              "p95_ms": 0.05349749569694056,
+              "max_ms": 0.05349749569694056
+            },
+            "native_dispatch": {
+              "count": 17,
+              "median_ms": 0.05399088498531815,
+              "p95_ms": 0.05991155644584912,
+              "max_ms": 0.05991155644584912
+            },
+            "reply": {
+              "count": 17,
+              "median_ms": 0.8079602018103158,
+              "p95_ms": 1.2938076824941251,
+              "max_ms": 1.2938076824941251
+            },
+            "task_exclusion": {
+              "count": 17,
+              "median_ms": 0.11087162151684783,
+              "p95_ms": 0.7157668890677621,
+              "max_ms": 0.7157668890677621
+            },
+            "timer_driver": {
+              "count": 17,
+              "median_ms": 0.07577049785798565,
+              "p95_ms": 0.6351329825100546,
+              "max_ms": 0.6351329825100546
+            },
+            "timer_queue": {
+              "count": 17,
+              "median_ms": 0.013321510786194686,
+              "p95_ms": 0.0403874374629077,
+              "max_ms": 0.0403874374629077
+            }
+          }
+        },
+        "CheckIO": {
+          "calls": 17,
+          "charged_cpu_ms": {
+            "count": 17,
+            "median_ms": 0.6977229379499534,
+            "p95_ms": 1.4252606857547234,
+            "max_ms": 1.4252606857547234
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 17,
+              "median_ms": 0.018537340406186258,
+              "p95_ms": 0.02488091697104087,
+              "max_ms": 0.02488091697104087
+            },
+            "c_wrapper": {
+              "count": 17,
+              "median_ms": 0.03150643027211124,
+              "p95_ms": 0.03770903846885797,
+              "max_ms": 0.03770903846885797
+            },
+            "io_gateway": {
+              "count": 17,
+              "median_ms": 0.6025692894771343,
+              "p95_ms": 1.3245387867416432,
+              "max_ms": 1.3245387867416432
+            },
+            "native_dispatch": {
+              "count": 17,
+              "median_ms": 0.044827941058305926,
+              "p95_ms": 0.050396191598567196,
+              "max_ms": 0.050396191598567196
+            }
+          }
+        },
+        "DoIO": {
+          "calls": 69,
+          "charged_cpu_ms": {
+            "count": 69,
+            "median_ms": 0.3935836837572017,
+            "p95_ms": 0.4160681384704086,
+            "max_ms": 0.42191832574688565
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 69,
+              "median_ms": 0.018678308774294137,
+              "p95_ms": 0.02473994860293299,
+              "max_ms": 0.02488091697104087
+            },
+            "c_wrapper": {
+              "count": 69,
+              "median_ms": 0.031365461904003356,
+              "p95_ms": 0.03770903846885797,
+              "max_ms": 0.04835215026100293
+            },
+            "generic_io": {
+              "count": 69,
+              "median_ms": 0.09571752194525071,
+              "p95_ms": 0.10826370670685206,
+              "max_ms": 0.11897730268305096
+            },
+            "native_dispatch": {
+              "count": 69,
+              "median_ms": 0.05229926456802358,
+              "p95_ms": 0.05878380950098608,
+              "max_ms": 0.06470448096151704
+            },
+            "task_exclusion": {
+              "count": 69,
+              "median_ms": 0.11087162151684783,
+              "p95_ms": 0.12271296443790979,
+              "max_ms": 0.12856315171438681
+            },
+            "timer_driver": {
+              "count": 69,
+              "median_ms": 0.07915373869257478,
+              "p95_ms": 0.07992906471716811,
+              "max_ms": 0.08592022036175304
+            }
+          }
+        },
+        "SendIO": {
+          "calls": 42,
+          "charged_cpu_ms": {
+            "count": 42,
+            "median_ms": 1.140857003097075,
+            "p95_ms": 2.106490324636055,
+            "max_ms": 2.7994908222543944
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 42,
+              "median_ms": 0.018537340406186258,
+              "p95_ms": 0.024387527682663286,
+              "max_ms": 0.02473994860293299
+            },
+            "c_wrapper": {
+              "count": 42,
+              "median_ms": 0.029321420566439098,
+              "p95_ms": 0.035383060395077943,
+              "max_ms": 0.03573548131534765
+            },
+            "generic_io": {
+              "count": 42,
+              "median_ms": 0.0656912595382722,
+              "p95_ms": 0.07675727643474081,
+              "max_ms": 0.08873958772391063
+            },
+            "native_dispatch": {
+              "count": 42,
+              "median_ms": 0.043418257377227126,
+              "p95_ms": 0.04962086557397386,
+              "max_ms": 0.05448427427369573
+            },
+            "task_exclusion": {
+              "count": 42,
+              "median_ms": 0.11636938787305517,
+              "p95_ms": 0.7164717309083015,
+              "max_ms": 1.8679013616134674
+            },
+            "timer_binding": {
+              "count": 42,
+              "median_ms": 0.023118812369692363,
+              "p95_ms": 0.028898515462115457,
+              "max_ms": 0.029532873118600915
+            },
+            "timer_driver": {
+              "count": 42,
+              "median_ms": 0.6540932280205646,
+              "p95_ms": 1.098566492664711,
+              "max_ms": 1.128028881599258
+            },
+            "timer_queue": {
+              "count": 42,
+              "median_ms": 0.17141753561918244,
+              "p95_ms": 0.21117061542560464,
+              "max_ms": 0.21723225525424353
+            }
+          }
+        }
+      },
+      "largest_doio_cpu_ms": {
+        "c_wrapper": 0.04835215026100293,
+        "assembly_bridge": 0.018607824590240196,
+        "native_dispatch": 0.05793799929233879,
+        "generic_io": 0.11263372611819633,
+        "task_exclusion": 0.1108011373327939,
+        "timer_driver": 0.0735854881523135
+      },
+      "combined_wait": {
+        "calls": 39,
+        "charged_cpu_ms": {
+          "count": 39,
+          "median_ms": 5.671791806636509,
+          "p95_ms": 8.540921002736196,
+          "max_ms": 8.749554187535859
+        },
+        "device_io_cpu_ms": {
+          "count": 39,
+          "median_ms": 2.5002149767613644,
+          "p95_ms": 4.861858047672683,
+          "max_ms": 5.207582970457259
+        }
+      }
+    },
+    "scroll": {
+      "result": {
+        "path": "build/aes-hybrid/caller-dispatch/scroll/results.json",
+        "sha256": "7675cdcc37ffee62bfe3e719b00ff2e35fab0793e79a643aa88d1082e444e734"
+      },
+      "build": {
+        "path": "build/aes-hybrid/caller-dispatch/image/program/build.json",
+        "sha256": "b747f813697a55bd40ce7dd54f5662ff2e5e1581d9938ffc27f86c66308a5706"
+      },
+      "exec_build": "6e01958-dirty",
+      "xex_sha256": "b2f2e870e2677700c572515ddc74848fc6407ecd24ee4fb26fd222c794d135c9",
+      "trace_sha256": "84eedb56ef87453a101f61dacba350864ba33f86ebcfd32653429288a3e1ca2b",
+      "status": "pass",
+      "load": "scroll",
+      "complete_public_calls": 81,
+      "native_expiries": 28,
+      "progress": {
+        "reads": 0,
+        "writes": 1
+      },
+      "aes_progress": {
+        "AESMessages": 28,
+        "AESTimers": 14
+      },
+      "c_checks": 369,
+      "guards": "intact",
+      "ownership": "restored",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 388,
+          "untouched_above_floor": 892
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 168,
+          "untouched_above_floor": 600
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 499,
+          "untouched_above_floor": 269
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 504,
+          "untouched_above_floor": 264
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 747,
+          "untouched_above_floor": 1557
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 127,
+          "untouched_above_floor": 129
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "device_calls": {
+        "AbortIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 1.1581961123743443,
+            "p95_ms": 1.1644692047551448,
+            "max_ms": 1.1644692047551448
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.018537340406186258,
+              "p95_ms": 0.018960245510509895,
+              "max_ms": 0.018960245510509895
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.02953287311860092,
+              "p95_ms": 0.036017418051563416,
+              "max_ms": 0.036017418051563416
+            },
+            "generic_io": {
+              "count": 14,
+              "median_ms": 0.041515184407770744,
+              "p95_ms": 0.04799972934073323,
+              "max_ms": 0.04799972934073323
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.05392040080126421,
+              "p95_ms": 0.06033446155017276,
+              "max_ms": 0.06033446155017276
+            },
+            "reply": {
+              "count": 14,
+              "median_ms": 0.8090174645711249,
+              "p95_ms": 0.8092289171232867,
+              "max_ms": 0.8092289171232867
+            },
+            "task_exclusion": {
+              "count": 14,
+              "median_ms": 0.11087162151684783,
+              "p95_ms": 0.11728568226575638,
+              "max_ms": 0.11728568226575638
+            },
+            "timer_driver": {
+              "count": 14,
+              "median_ms": 0.07577049785798565,
+              "p95_ms": 0.08155020095040874,
+              "max_ms": 0.08155020095040874
+            },
+            "timer_queue": {
+              "count": 14,
+              "median_ms": 0.013532963338356506,
+              "p95_ms": 0.019594603166995357,
+              "max_ms": 0.019594603166995357
+            }
+          }
+        },
+        "CheckIO": {
+          "calls": 14,
+          "charged_cpu_ms": {
+            "count": 14,
+            "median_ms": 0.7023044099134595,
+            "p95_ms": 0.7041369986988619,
+            "max_ms": 0.7041369986988619
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 14,
+              "median_ms": 0.018537340406186258,
+              "p95_ms": 0.02488091697104087,
+              "max_ms": 0.02488091697104087
+            },
+            "c_wrapper": {
+              "count": 14,
+              "median_ms": 0.03136546190400336,
+              "p95_ms": 0.03735661754858827,
+              "max_ms": 0.03735661754858827
+            },
+            "io_gateway": {
+              "count": 14,
+              "median_ms": 0.6016529950844329,
+              "p95_ms": 0.6037675206060512,
+              "max_ms": 0.6037675206060512
+            },
+            "native_dispatch": {
+              "count": 14,
+              "median_ms": 0.05025522323045931,
+              "p95_ms": 0.05589395795477453,
+              "max_ms": 0.05589395795477453
+            }
+          }
+        },
+        "DoIO": {
+          "calls": 67,
+          "charged_cpu_ms": {
+            "count": 67,
+            "median_ms": 0.3933722312050399,
+            "p95_ms": 0.39428852559774114,
+            "max_ms": 0.3945704623339569
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 67,
+              "median_ms": 0.018607824590240196,
+              "p95_ms": 0.024387527682663286,
+              "max_ms": 0.024810432786986927
+            },
+            "c_wrapper": {
+              "count": 67,
+              "median_ms": 0.031435946088057304,
+              "p95_ms": 0.03714516499642645,
+              "max_ms": 0.03714516499642645
+            },
+            "generic_io": {
+              "count": 67,
+              "median_ms": 0.09543558520903493,
+              "p95_ms": 0.1014972250376738,
+              "max_ms": 0.10170867758983562
+            },
+            "native_dispatch": {
+              "count": 67,
+              "median_ms": 0.05229926456802358,
+              "p95_ms": 0.05836090439666243,
+              "max_ms": 0.058572356948824254
+            },
+            "task_exclusion": {
+              "count": 67,
+              "median_ms": 0.11073065314873995,
+              "p95_ms": 0.12278344862196372,
+              "max_ms": 0.123629258830611
+            },
+            "timer_driver": {
+              "count": 67,
+              "median_ms": 0.07393790907258321,
+              "p95_ms": 0.07992906471716812,
+              "max_ms": 0.07999954890122206
+            }
+          }
+        },
+        "SendIO": {
+          "calls": 40,
+          "charged_cpu_ms": {
+            "count": 40,
+            "median_ms": 1.066848609840438,
+            "p95_ms": 1.1584075649265062,
+            "max_ms": 1.1639053312827135
+          },
+          "exclusive_cpu_ms": {
+            "assembly_bridge": {
+              "count": 40,
+              "median_ms": 0.018678308774294133,
+              "p95_ms": 0.024317043498609348,
+              "max_ms": 0.02488091697104087
+            },
+            "c_wrapper": {
+              "count": 40,
+              "median_ms": 0.029462388934546974,
+              "p95_ms": 0.035524028763185826,
+              "max_ms": 0.03566499713129371
+            },
+            "generic_io": {
+              "count": 40,
+              "median_ms": 0.06562077535421826,
+              "p95_ms": 0.07224628865528863,
+              "max_ms": 0.07689824480284868
+            },
+            "native_dispatch": {
+              "count": 40,
+              "median_ms": 0.043347773193173185,
+              "p95_ms": 0.04912747628559627,
+              "max_ms": 0.04940941302181204
+            },
+            "task_exclusion": {
+              "count": 40,
+              "median_ms": 0.11573503021656971,
+              "p95_ms": 0.1171447138976485,
+              "max_ms": 0.12264248025385585
+            },
+            "timer_binding": {
+              "count": 40,
+              "median_ms": 0.023118812369692363,
+              "p95_ms": 0.029532873118600915,
+              "max_ms": 0.029532873118600915
+            },
+            "timer_driver": {
+              "count": 40,
+              "median_ms": 0.6466923886949009,
+              "p95_ms": 0.6801018919364683,
+              "max_ms": 0.6801018919364683
+            },
+            "timer_queue": {
+              "count": 40,
+              "median_ms": 0.09924173114794771,
+              "p95_ms": 0.19989314597697425,
+              "max_ms": 0.19989314597697425
+            }
+          }
+        }
+      },
+      "largest_doio_cpu_ms": {
+        "c_wrapper": 0.03171788282427306,
+        "assembly_bridge": 0.018537340406186258,
+        "native_dispatch": 0.0525107171201854,
+        "generic_io": 0.10170867758983561,
+        "task_exclusion": 0.11651035624116304,
+        "timer_driver": 0.0735854881523135
+      },
+      "combined_wait": {
+        "calls": 40,
+        "charged_cpu_ms": {
+          "count": 40,
+          "median_ms": 4.629894597951166,
+          "p95_ms": 6.754287905336922,
+          "max_ms": 7.31527152622223
+        },
+        "device_io_cpu_ms": {
+          "count": 40,
+          "median_ms": 1.4484499823084698,
+          "p95_ms": 3.7095121225748153,
+          "max_ms": 3.769141742284449
+        }
+      }
+    }
+  },
+  "validation": {
+    "host_tests": 388,
+    "host_skips": 4,
+    "native_cases": {
+      "bindings": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/bindings/results.json",
+          "sha256": "1ce1e239cdf3993374ac52cc040c955fec60845238f9e3f11d8bb134c7a72bec"
+        },
+        "status": "pass",
+        "checks": 57,
+        "mode": "optimized",
+        "guards": "intact",
+        "native_nmi_count": 8,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 196,
+            "remaining_above_floor": 1084
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "2": {
+            "base": 13936,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "3": {
+            "base": 15504,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "4": {
+            "base": 17072,
+            "bytes": 1536,
+            "peak": 24,
+            "remaining_above_floor": 1256
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 277,
+            "remaining_above_floor": 1003
+          }
+        }
+      },
+      "lifecycle": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/lifecycle/results.json",
+          "sha256": "1407f43dfe0821297cee5d0ba0f348ebd8dee4d4fd4d65829de8267cf77880f6"
+        },
+        "status": "pass",
+        "checks": 214,
+        "mode": "optimized",
+        "guards": "intact",
+        "native_nmi_count": 123,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 224,
+            "remaining_above_floor": 1056
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1024,
+            "peak": 202,
+            "remaining_above_floor": 566
+          },
+          "2": {
+            "base": 13424,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "3": {
+            "base": 14480,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "4": {
+            "base": 15536,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "5": {
+            "base": 16592,
+            "bytes": 1024,
+            "peak": 18,
+            "remaining_above_floor": 750
+          },
+          "6": {
+            "base": 17648,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 20240,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 22832,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      },
+      "c-api": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/c-api/results.json",
+          "sha256": "62511ff34ed5d73cd4debfa47c09816a73a0b8301b08f038543a50706ffc9b53"
+        },
+        "status": "pass",
+        "checks": 17,
+        "mode": "optimized",
+        "guards": "intact",
+        "native_nmi_count": 2,
+        "stack_usage": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 320,
+            "remaining_above_floor": 960
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "2": {
+            "base": 13936,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "3": {
+            "base": 15504,
+            "bytes": 1536,
+            "peak": 18,
+            "remaining_above_floor": 1262
+          },
+          "4": {
+            "base": 17072,
+            "bytes": 1536,
+            "peak": 117,
+            "remaining_above_floor": 1163
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      },
+      "dispatch-final": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/dispatch-final/results.json",
+          "sha256": "a038bde5ddff29e4958f479e0af50f42c776d339df53ad7027bc0fed3966773a"
+        },
+        "status": "pass",
+        "cases": [
+          {
+            "name": "dispatch-raw",
+            "checks": [
+              23
+            ],
+            "guards": "intact",
+            "mode": "raw",
+            "native_nmi_count": 1,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "dispatch-opt",
+            "checks": [
+              23
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 1,
+            "publication_checkpoints": 0
+          }
+        ],
+        "recorded_runner_sha256": "91c2834c81679fa7b0953316648af1c7ce10a8ab9c0a81483f88faf747b180f0"
+      },
+      "io": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/io/results.json",
+          "sha256": "2ab4d8c2d75c42d3d800f1817847662aa12ed6457fa23326c14f259048895ac8"
+        },
+        "status": "pass",
+        "cases": [
+          {
+            "name": "lifetime-opt",
+            "checks": [
+              44
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 19,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "handoff-opt",
+            "checks": [
+              4
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 1,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "queues-publication-2-opt",
+            "checks": [
+              32
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 33,
+            "publication_checkpoints": 32
+          },
+          {
+            "name": "queued_handoff-opt",
+            "checks": [
+              5
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 1,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "gap-opt",
+            "checks": [
+              1
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 1,
+            "publication_checkpoints": 0
+          }
+        ],
+        "recorded_runner_sha256": "c392de97e42e80ef471f1de60f4831457dfedfc61a5c08ef9e9a48854569de2b"
+      },
+      "context-base": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/context-base/results.json",
+          "sha256": "1b62c79c8a5dce45f0564ec4833a5193b8463720ed67678a534b329cf46d140b"
+        },
+        "status": "pass",
+        "cases": [
+          {
+            "name": "0:CheckIO-opt",
+            "checks": [
+              0,
+              7,
+              1792,
+              2816,
+              10743,
+              18,
+              10743,
+              1
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 0,
+            "publication_checkpoints": 0
+          }
+        ],
+        "recorded_runner_sha256": "f55d27de2c518a1e8c3a3db3eb21fb49ea671917777bff29428a889a18f31d0f"
+      },
+      "context-rejections": {
+        "result": {
+          "path": "build/aes-hybrid/caller-dispatch/context-rejections/results.json",
+          "sha256": "ed328b6cc4d4c7b7e2da77b5ca3e92ffb53187cc0cc384d42efc6d590d3ec21d"
+        },
+        "status": "pass",
+        "cases": [
+          {
+            "name": "1:BeginIO-opt",
+            "checks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10743,
+              0
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 0,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "2:SendIO-opt",
+            "checks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10743,
+              0
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 0,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "3:DoIO-opt",
+            "checks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10743,
+              0
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 0,
+            "publication_checkpoints": 0
+          },
+          {
+            "name": "4:AbortIO-opt",
+            "checks": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              10743,
+              0
+            ],
+            "guards": "intact",
+            "mode": "optimized",
+            "native_nmi_count": 0,
+            "publication_checkpoints": 0
+          }
+        ],
+        "recorded_runner_sha256": "f55d27de2c518a1e8c3a3db3eb21fb49ea671917777bff29428a889a18f31d0f"
+      }
+    },
+    "focused_assertions": 420,
+    "context_cases": 5,
+    "raw_scope": "23-assertion dispatch probe covers direct callbacks and test-only gateway signatures in raw and optimized modes. Integration cases run optimized.",
+    "harness_repairs": [
+      "Context assembler needed the platform include path.",
+      "Optimized empty Main was one byte; retain a writable sentinel and require four bytes before installing the native jump overlay."
+    ],
+    "retained_harness_failures": [
+      {
+        "path": "build/aes-hybrid/caller-dispatch/context/results.json",
+        "sha256": "90e44260b273ac6c32a95a50c5a1fe532fbb3e70150d06cb52d7601838795147"
+      },
+      {
+        "path": "build/aes-hybrid/caller-dispatch/context-final/results.json",
+        "sha256": "66b2a155dffc36bd4b7ee240f3778fc427796715f6a57f1c443d1527d2fcc95a"
+      }
+    ],
+    "runner_provenance": "Early dispatch/io reports retain their actual runner hashes. Subsequent runner edits only add context-overlay include/size guards and change the dispatch assertion count; the selected passing production paths and fixture sources are current."
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "reservations_equal_including_guards_alignment_unused": true,
+    "upper_reservations_equal": true,
+    "emitted_executable_bytes_before": 738153,
+    "emitted_executable_bytes_after": 736653,
+    "emitted_executable_bytes_delta": -1500
+  },
+  "limitations": [
+    "Continuous workload, not equal offered load; complete-call counts, completion/cancellation mix and scheduling phases differ.",
+    "Charged CPU includes kernel and scheduling return tails and bus stalls; interrupts and peers are separated conservatively.",
+    "Idle DoIO p95 rises from 1.047 to 1.495 ms; the additional charge is in native dispatch/return spans, despite removal of the routing gateway.",
+    "Exclusive categories reconcile within a sample; component percentiles must not be added.",
+    "No pointer, button, scanout or full HY4 acceptance rerun. HY4 and AS4/TD4 successor gates remain open.",
+    "The existing demo package is unchanged."
+  ]
+}

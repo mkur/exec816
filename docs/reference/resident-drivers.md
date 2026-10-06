@@ -16,11 +16,13 @@ completion protocols.
 
 The built-in dispatch description assigns each resident an immutable route ID,
 device identity, name and typed caller-context entry points. It is generated
-from the I/O ABI input. A Task-context gateway returns either a completed result or
-an internal route tag; it never calls a driver with SWITCHING held. The tag is
-an implementation detail of the existing public operation, not a driver-only
-kernel service. Initial routing is static; arbitrary runtime vectors and dynamic
-driver registration are unsupported. A non-SIO test resident uses the same route.
+from the I/O ABI input. OpenDevice's admission gateway returns either an error
+or an internal route tag. Established Close, BeginIO and AbortIO calls select
+the callback directly from `io_Device` in the caller-side library, without a
+routing COP. SendIO and DoIO use that same BeginIO dispatch. No driver callback
+runs with SWITCHING held. Routing is static; arbitrary runtime vectors and
+dynamic driver registration are unsupported. The immediate test resident uses
+the same caller-side dispatch.
 
 | Entry | Signature | Responsibility |
 | --- | --- | --- |
@@ -39,14 +41,24 @@ state is partial. The wrapper releases exclusion after callback return and
 never rereads an asynchronously published request. No saved kernel activation
 or shared compiler workspace survives across a callback.
 
-The gateway checks context and native packet bounds. Creation/open perform
-initial admission; subsequent calls trust the caller's request, device/unit
+Public native entry stubs check Task context; compiled helpers retain checked
+stack frames. Operations that still enter the kernel check native packet bounds.
+Creation/open perform initial admission; subsequent calls trust the caller's request, device/unit
 binding and reply ownership. There is no per-call Bound callback or repeated
 request/port validation. Driver callbacks check command-specific requirements
 and operational state. SendIO clears all flags, BeginIO preserves them and DoIO sets
 IOF_QUICK. Completed quick calls return a copied signed error; queued DoIO enters
-the existing exact-request collection loop after releasing exclusion. Console uses this resident route too; the queued diagnostic device retains its
-general dispatch implementation. Console lifecycle uses public Task admission, leases and signal rendezvous too;
+the existing exact-request collection loop after releasing exclusion. CheckIO
+and exact collection retain kernel operations without resident selection.
+
+The queued diagnostic device retains its kernel queue protocol behind TEST_BEGIN,
+TEST_ABORT and TEST_CLOSE. Those selectors are rejected in production, and their
+caller imports are generated only for the test profile. Request preparation is
+shared with ordinary resident submission. The obsolete routing entry points and
+separate diagnostic SendIO/DoIO selectors are removed; rebuild affected images.
+Public API signatures and request layouts are unchanged.
+
+Console lifecycle uses public Task admission, leases and signal rendezvous too;
 see the [console refactor](../plans/console-refactor-plan.md).
 
 ## SIO state and synchronization

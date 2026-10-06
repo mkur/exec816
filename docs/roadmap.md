@@ -95,6 +95,10 @@ costs. The [trusted-request slice](history/aes-hybrid.md#hy4-trusted-device-requ
 then removes layered request and binding validation, retaining operational
 errors and synchronization. DoIO/SendIO medians fall; scheduling tails remain
 variable and GUI acceptance is still open.
+The [caller dispatch slice](history/aes-hybrid.md#hy4-caller-device-dispatch)
+removes the established-device routing gateway; DoIO/SendIO medians fall to
+0.394/1.115 ms with unchanged memory reservations and public API. Development
+checks pass, while scheduling tails and the GUI acceptance gate remain open.
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

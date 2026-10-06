@@ -48,7 +48,7 @@ def constants(abi=ABI,sio=SIO):
     require(sio['profiles']=={'FASTEST125':1,'STOCK810':2,'HAPPY1050':3,'GENERIC57600':4},'Unsupported SIO profiles')
     message=json.loads((ROOT/'abi/ports.json').read_text())['records']['Message']
     require((message['size'],message['alignment'])==WIDTHS['Message'],'Message prefix ABI changed')
-    require(set(abi['services'])=={'OPEN_DEVICE','CLOSE_DEVICE','BEGIN_IO','CHECK_IO','WAIT_REQUEST','ABORT_IO','SEND_IO','CREATE_CHECK','DELETE_CHECK','DO_IO','TEST_STEP'},
+    require(set(abi['services'])=={'OPEN_DEVICE','TEST_CLOSE','TEST_BEGIN','CHECK_IO','WAIT_REQUEST','TEST_ABORT','CREATE_CHECK','DELETE_CHECK','TEST_STEP'},
             'Invalid guarded I/O operations')
     require(set(abi['errors'])=={'MISUSE'},'Invalid I/O faults')
     console=json.loads((ROOT/'abi/console.json').read_text())['constants']
@@ -179,12 +179,21 @@ def registration_include(output,memory,test_device=False):
     residents=[r for r in ABI['resident_dispatch']['residents'].values()
                if (test_device or not r['test_only']) and r.get('storage','io_storage') in memory]
     text=HEADER+'MODULE IORESIDENT\nUSE EXEC\nUSE HEAPCORE\n'+''.join('USE '+r['module']+'\n' for r in residents)
+    if test_device:
+        text+=''.join(f'PUBLIC EXTERNAL PROC Test{name}(EXEC.IORequest POINTER request)\n'
+                      for name in ('Close','BeginIO','AbortIO'))
     for name,(kind,args,values) in entries.items():
-        text+=f'PUBLIC {kind} {name}(CARD route {args})\n'
+        text+=f'PUBLIC {kind} {name}({"CARD route " if name=="Open" else ""}{args})\n'
         for resident in residents:
             call=f'{resident["module"]}.{name}({values})'
-            text+=f'  IF route={resident["id"]} THEN '+(call+' RETURN' if kind=='PROC' else f'RETURN({call})')+' FI\n'
-        text+='  HEAPCORE.Abort(4)\n'+('RETURN\n' if kind=='PROC' else 'RETURN(0)\n')
+            address=memory[resident.get('storage','io_storage')]['BASE']+resident['device_offset']
+            condition=(f'route={resident["id"]}' if name=='Open' else
+                       f'request.io_Device=BYTE POINTER(ADDRESS(${address:x}))')
+            text+=f'  IF {condition} THEN '+(call+' RETURN' if kind=='PROC' else f'RETURN({call})')+' FI\n'
+        if test_device and name!='Open':
+            text+=f'  Test{name}(request)\nRETURN\n'
+        else:
+            text+='  HEAPCORE.Abort(4)\n'+('RETURN\n' if kind=='PROC' else 'RETURN(0)\n')
     write(Path(output)/'ioresident.act',text+'ENDMODULE\n',False)
 
 

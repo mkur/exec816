@@ -104,8 +104,13 @@ class IOPackageTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as directory:
                 registration_include(directory,memory)
                 self.assertIn('IS_TEST_DEVICE=0',Path(directory,'io-storage-action.inc').read_text())
+                caller=Path(directory,'ioresident.act').read_text()
+                self.assertIn(f'io_Device=BYTE POINTER(ADDRESS(${slot["address"]+64:x}))',caller)
+                self.assertIn('PROC BeginIO(EXEC.IORequest POINTER request)',caller)
+                self.assertNotIn('TestBeginIO',caller)
                 registration_include(directory,memory,True)
                 self.assertIn('IS_TEST_DEVICE=1',Path(directory,'io-storage-action.inc').read_text())
+                self.assertIn('PUBLIC EXTERNAL PROC TestBeginIO',Path(directory,'ioresident.act').read_text())
 
     def test_published_queue_evidence_covers_the_slice(self):
         import json

@@ -68,8 +68,8 @@ expand the device-I/O category. It implies the ordinary caller breakdown:
 
 ```sh
 python3 tools/measure_aes_calls.py \
-  --program build/aes-hybrid/io-cost/optimized-image/program \
-  --output build/aes-hybrid/io-cost/after --frames 100 --io-breakdown
+  --program build/aes-hybrid/caller-dispatch/image/program \
+  --output build/aes-hybrid/caller-dispatch/idle --frames 100 --io-breakdown
 ```
 
 `io_breakdown` splits each complete C device call into C wrapper work, assembly
@@ -78,6 +78,10 @@ Forbid/Permit, timer binding lookup, timer queue work, other driver work and
 task-side ReplyMsg. Native interrupt completion is outside that task-side reply
 category. The gateway categories include policy, validation and return costs;
 they do not measure the COP instruction alone.
+
+Build the image with current sources before probing. Established resident calls
+now dispatch locally; removed routing gateway markers are absent from the
+current observer. Admission, observation and collection gateways remain.
 
 Checked native entry/return boundaries nest inside the existing C call-site
 intervals. Each helper enters and returns with the caller's DP; kernel work
@@ -93,6 +97,11 @@ initial lookup optimization. The subsequent
 repeated request and binding validation, including idle comparisons and loaded
 functional checks. Both preserve source hashes and measured costs. These call
 costs do not establish visible GUI latency or close HY4 acceptance.
+
+The current [caller-dispatch record](../development/caller-device-dispatch.json)
+compares the next slice with the trusted-request baseline. The marker inventory
+changes with removed gateway entries; timing attribution algorithms and C call
+sites remain the same.
 
 ## Equal offered load
 

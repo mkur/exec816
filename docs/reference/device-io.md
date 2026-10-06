@@ -48,6 +48,12 @@ unsupported commands or options, command-specific lengths, queue exhaustion
 and hardware failure. Native Task/context and stack guards remain, as do the
 port transactions and driver synchronization that implement completion.
 
+Established BeginIO, SendIO, DoIO, AbortIO and CloseDevice calls select resident
+callbacks on the caller's stack through `io_Device`; selection itself does not
+enter the kernel. Open admission, CheckIO and exact reply collection retain
+kernel operations. The [resident boundary](resident-drivers.md) describes the
+shared preparation, exclusion and callback rules.
+
 ## Completion and lifetime
 
 A quick completion is allowed only when IOF_QUICK was supplied. It completes

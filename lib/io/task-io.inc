@@ -1,6 +1,6 @@
-; Policy runs under SWITCHING with IRQs enabled. Delegated operations return a
-; route, never call driver code here. Request ownership and settled Close/Delete are caller
-; preconditions; there is no allocation ledger or queue-membership search.
+; Policy runs under SWITCHING with IRQs enabled. Open admission returns a
+; route; established resident dispatch runs in the caller. Request ownership
+; and settled Close/Delete are caller preconditions.
 BYTE FUNC IOService(BYTE service)
 
 RETURN(service>=IO_SERVICE_OPEN_DEVICE AND service<=IO_SERVICE_TEST_STEP)
@@ -227,24 +227,6 @@ CARD FUNC IOEnqueue(TaskControl POINTER caller CARD saved IORequest POINTER requ
 
 RETURN(saved)
 
-; Dispatch a caller-owned diagnostic request through its existing binding.
-CARD FUNC IOBegin(TaskControl POINTER caller CARD saved IORequest
-    POINTER request BYTE service)
-
-  IF service=IO_SERVICE_SEND_IO THEN
-    request.io_Flags=0
-  FI
-
-  IF service=IO_SERVICE_DO_IO THEN
-    request.io_Flags=IO_IOF_QUICK
-    MaskResult(saved,LONGCARD($10000))
-  FI
-
-  request.io_Error=0
-  request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE
-
-RETURN(IOTestBegin(caller,saved,request))
-
 ; Start a deterministic diagnostic operation through the normal request
 ; protocol.
 CARD FUNC IOTestBegin(TaskControl POINTER caller CARD saved IORequest
@@ -457,79 +439,43 @@ CARD FUNC IOCall(TaskControl POINTER caller CARD saved BYTE service)
 
 RETURN(IORequestCall(caller,saved,service,request))
 
-; Route an admitted request without repeating storage or binding validation.
+; Observe or collect a request; established resident dispatch is caller-side.
 CARD FUNC IORequestCall(TaskControl POINTER caller CARD saved BYTE service
     IORequest POINTER request)
-  LONGCARD route
-
-  ; Request storage, binding and reply ownership are caller preconditions.
-  ; Open performs initial admission; repeated I/O trusts the resulting handle.
-  ; Void legacy services must return a defined completed tag, not the incoming
-  ; packet address in X. The caller wrapper interprets this as a LONGCARD.
-  MaskResult(saved,0)
-  route=0
-  IF ConsoleDevice(request)<>0 THEN
-    route=LONGCARD(IO_ROUTE_CONSOLE)
-  ELSEIF request.io_Device=BYTE POINTER(ADDRESS(TIMERMETA.OPENS)) THEN
-    route=LONGCARD(IO_ROUTE_TIMER)
-  ELSEIF request.io_Device=BYTE POINTER(ADDRESS(IS_BASE+64)) THEN
-    route=LONGCARD(IO_ROUTE_SIO)
-  ELSEIF IS_TEST_DEVICE<>0 AND request.io_Device=BYTE POINTER(ADDRESS(IS_BASE)) THEN
-    route=LONGCARD(IO_ROUTE_IMMEDIATE)
-  FI
-
-  IF route<>0 THEN
-    IF service=IO_SERVICE_BEGIN_IO OR service=IO_SERVICE_SEND_IO
-        OR service=IO_SERVICE_DO_IO THEN
-      MaskResult(saved,route)
-      RETURN(saved)
-    FI
-
-    IF service=IO_SERVICE_CLOSE_DEVICE OR service=IO_SERVICE_ABORT_IO THEN
-      MaskResult(saved,route)
-      RETURN(saved)
-    FI
-  FI
-
-  IF service=IO_SERVICE_BEGIN_IO OR service=IO_SERVICE_SEND_IO
-      OR service=IO_SERVICE_DO_IO THEN
-    RETURN(IOBegin(caller,saved,request,service))
-  FI
-
-RETURN(IOSettledCall(caller,saved,service,request))
-
-; Collection and cancellation state determine behavior; callers own the records.
-CARD FUNC IOSettledCall(TaskControl POINTER caller CARD saved BYTE service
-    IORequest POINTER request)
   IOResident POINTER device
-
-  IF service=IO_SERVICE_CLOSE_DEVICE THEN
-    IF request.io_Device=BYTE POINTER(0) THEN
-      RETURN(saved)
-    FI
-
-    device=IOResident POINTER(request.io_Device)
-    device.opens==-1
-    request.io_Device=BYTE POINTER(0)
-    request.io_Unit=BYTE POINTER(0)
-    RETURN(saved)
-  FI
 
   IF service=IO_SERVICE_WAIT_REQUEST THEN
     RETURN(IOCollect(caller,saved,request))
   FI
 
-  IF service=IO_SERVICE_ABORT_IO THEN
-    RETURN(IOAbort(caller,saved,request))
-  FI
-
   IF service=IO_SERVICE_CHECK_IO THEN
     IF request.io_Message.mn_Node.ln_Type=P_NT_MESSAGE THEN
-      request=IORequest POINTER(0)
+      request=NULL
     FI
 
     PointerResult(saved,Task POINTER(request))
     RETURN(saved)
   FI
+
+  ; Only the queued fixture retains a kernel-owned device protocol.
+  IF IS_TEST_DEVICE=0 THEN
+    RETURN(T_FAULT)
+  FI
+
+  MaskResult(saved,0)
+  CASE service OF
+  WHEN IO_SERVICE_TEST_BEGIN THEN
+    RETURN(IOTestBegin(caller,saved,request))
+
+  WHEN IO_SERVICE_TEST_ABORT THEN
+    RETURN(IOAbort(caller,saved,request))
+
+  WHEN IO_SERVICE_TEST_CLOSE THEN
+    device=IOResident POINTER(request.io_Device)
+    device.opens==-1
+    request.io_Device=NULL
+    request.io_Unit=NULL
+    RETURN(saved)
+  ESAC
 
 RETURN(T_FAULT)

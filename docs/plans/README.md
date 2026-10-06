@@ -48,6 +48,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Device I/O and SIO
 
+- [Caller device dispatch](caller-device-dispatch-implementation-plan.md):
+  implemented established resident dispatch in the caller, preserving public
+  I/O semantics. [Measurements](../history/aes-hybrid.md#hy4-caller-device-dispatch)
+  record 0.394/1.115 ms DoIO/SendIO medians with variable scheduling tails.
 - [timer.device design](timer-device-design.md): implemented asynchronous VBI delays,
   monotonic deadlines, cancellation and normal Exec I/O replies. Reuses ordinary
   Wait without a worker. TD4/AES integration follows the

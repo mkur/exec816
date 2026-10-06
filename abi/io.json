@@ -42,15 +42,13 @@
   },
   "services": {
     "OPEN_DEVICE": 40,
-    "CLOSE_DEVICE": 41,
-    "BEGIN_IO": 42,
+    "TEST_CLOSE": 41,
+    "TEST_BEGIN": 42,
     "CHECK_IO": 43,
     "WAIT_REQUEST": 44,
-    "ABORT_IO": 45,
-    "SEND_IO": 46,
+    "TEST_ABORT": 45,
     "CREATE_CHECK": 47,
     "DELETE_CHECK": 48,
-    "DO_IO": 49,
     "TEST_STEP": 50
   },
   "errors": {
