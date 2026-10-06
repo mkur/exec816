@@ -32,7 +32,7 @@ def expected_layout():
     for name, record in layout().items():
         result += [(name+' size', record['size'])]
         result += [(name+' '+f, o) for f, o in record['fields'].items()]
-    result += [('C context size', 179), ('C context request', 0)]
+    result += [('C context size', 207), ('C context request', 0)]
     return result
 
 
@@ -48,7 +48,11 @@ def files():
     c_types = {'BYTE': 'UBYTE', 'CARD': 'UWORD', 'INT': 'WORD',
                'LONGCARD': 'ULONG', 'EXEC.Message': 'struct Message',
                'EXEC.Task POINTER': 'struct Task EXEC_PTR *',
-               'BYTE POINTER': 'UBYTE EXEC_PTR *'}
+               'BYTE POINTER': 'UBYTE EXEC_PTR *',
+               'EXEC.MsgPort POINTER': 'struct MsgPort EXEC_PTR *'}
+    for name in ABI['records']:
+        c_types[name] = 'struct AES'+name
+        c_types[name+' POINTER'] = 'struct AES'+name+' EXEC_PTR *'
     expressions = ['sizeof(WORD)', 'sizeof(void *)', 'sizeof(void EXEC_PTR *)']
     for name, fields in ABI['records'].items():
         action += [f'PUBLIC TYPE {name}=[']

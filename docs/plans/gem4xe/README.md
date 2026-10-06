@@ -32,6 +32,17 @@ proof and current profile. The implemented
 [native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.
+
+The proposed [hybrid AES and VDI model](hybrid-aes-vdi-design.md) is the next
+execution direction: caller-context operations, direct application-message
+delivery and event waits, with one GUI authority for windows and input. Direct
+drawing requires a separate ownership and stack proof. Priorities remain
+inactive while this model is measured; current contracts remain unchanged.
+The [hybrid AES implementation plan](hybrid-aes-implementation-plan.md) refactors
+the existing profile through HY1–HY4: endpoint lifetime, caller timers, an atomic
+message/event migration and the integrated latency proof. Direct drawing and
+additional GEM calls retain their separate ownership and coverage gates.
+
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The

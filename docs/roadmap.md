@@ -68,6 +68,18 @@ focus damage, clock and presenter changes against the frozen limits. See the [ex
 and [resident application guide](guides/aes-applications.md). GEM windows,
 `WM_REDRAW`, visible rectangles and independent VDI workstations follow.
 
+The proposed [hybrid AES and VDI model](plans/gem4xe/hybrid-aes-vdi-design.md)
+moves suitable operations, application messages and event waits into callers,
+retaining one GUI authority for window policy and input. Direct rendering needs
+explicit scene/display ownership and measured application stack capacity.
+Keep priority scheduling deferred until this execution model is measured.
+The [HY1–HY4 implementation plan](plans/gem4xe/hybrid-aes-implementation-plan.md)
+first refactors the existing AES profile: endpoint lifetime, caller-owned timers,
+atomic message/event migration and the integrated native GUI latency proof.
+[HY1](development/aes-hybrid-hy1.json) implements shared endpoint lifetime and
+passes development checks. HY2–HY4 remain pending. Additional local GEM calls
+and direct VDI drawing follow their own coverage gates.
+
 The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,
 ST mouse pointer and one framed, movable shell window, followed by a second

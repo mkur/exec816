@@ -44,6 +44,12 @@ targets remain open; an unchanged heavy-scroll pointer observation also timed
 out, while the dedicated widget scroll/disk cohorts passed. These observations
 are retained as comparison limits, not new qualification claims.
 
+The proposed [hybrid AES plan](hybrid-aes-implementation-plan.md) defines the
+next refactor from this implemented baseline. It preserves the existing profile
+while moving message/event execution into callers. AS0–AS4 evidence and its
+failed latency comparison remain intact; HY4 must demonstrate the replacement
+against the frozen limits before the performance gate can be accepted.
+
 ## Deliverable and dependency boundary
 
 Deliver a GEM-compatible C binding backed by an AES service inside the existing

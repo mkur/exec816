@@ -22,17 +22,21 @@ def context_program(out, optimize):
     # whole-desktop C image exceeds its existing code bank; the code under
     # test and native bridge are independently exercised raw and optimized.
     foreign = drawing(out, True, probe=True, widgets=True,
-        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'tests/programs/aes_context.c'],
+        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'tests/programs/aes_context.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
         client_roots=['AESContextProbe', 'AESWireProbe', 'AESProbePacket',
                       'AESChecks', 'AESFailures'],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
         client_optimization={n: optimize for n in ('aes.c', 'aes_context.c')})
     sy = foreign['symbols']
-    checks = ['  Require(SIZEOF(AESTYPES.Request)=AESTYPES.REQUEST_SIZE)']
-    for field, kind, *counts in ABI['records']['Request']:
-        access = field+'(0)' if counts else field
-        checks += [f'  Require(ADDRESS(@packet.{access})-ADDRESS(packet)={layout()["Request"]["fields"][field]})']
+    checks = []
+    for name, fields in ABI['records'].items():
+        variable = 'record'+name
+        checks += [f'  LET {variable}=AESTYPES.{name} POINTER(packet)',
+                   f'  Require(SIZEOF(AESTYPES.{name})=AESTYPES.{name.upper()}_SIZE)']
+        for field, kind, *counts in fields:
+            access = field+'(0)' if counts else field
+            checks += [f'  Require(ADDRESS(@{variable}.{access})-ADDRESS(packet)={layout()[name]["fields"][field]})']
     source = out/'context.act'
     source.write_text('''MODULE AESPROBE
 USE EXEC
@@ -215,7 +219,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if events:
             entries.append('AESBurn')
         foreign = drawing(out, True, widgets=True,
-            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/f'tests/programs/aes_{suite}.c'],
+            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
             client_entries=entries,
             client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else []),
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],

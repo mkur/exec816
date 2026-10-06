@@ -77,6 +77,7 @@ PUBLIC BYTE FUNC Wake()
   FI
 
   changed=service.eventDirty<>0 OR AESTIMER.Runnable(service)<>0
+      OR service.directory.changed<>0
   IF changed=0 THEN
     RETURN(0)
   FI

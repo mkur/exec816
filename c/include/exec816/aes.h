@@ -8,6 +8,10 @@ struct ExecAESContext {
     struct AESRequest request; /* Original binding address is also its packet. */
     struct MsgPort *service;
     struct MsgPort *replies;
+    struct MsgPort *receiving;
+    struct AESDelivery *records;
+    struct AESDirectory *directory;
+    struct AESEndpoint *endpoint;
     WORD control[5];
     LONG addrin[3], addrout[1];
     UWORD diagnostic;

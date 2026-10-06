@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 1
+#define AES_VERSION 2
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -33,6 +33,55 @@
 #define AES_END_MCTRL 2
 #define AES_BEG_MCTRL 3
 #define AES_TRY 256
+#define AES_ENDPOINT_UNPUBLISHED 0
+#define AES_ENDPOINT_ACCEPTING 1
+#define AES_ENDPOINT_CLOSING 2
+#define AES_ENDPOINT_RETIRED 3
+struct AESDelivery {
+    struct Message message;
+    WORD words[AES_MESSAGE_WORDS];
+};
+#define AES_DELIVERY_SIZE 32
+#define AES_DELIVERY_OFFSET_MESSAGE 0
+#define AES_DELIVERY_OFFSET_WORDS 16
+struct AESEndpoint {
+    ULONG id;
+    WORD gemId;
+    UWORD state;
+    struct Task EXEC_PTR * owner;
+    UBYTE ownerPad;
+    struct MsgPort EXEC_PTR * port;
+    UBYTE portPad;
+    struct AESDelivery EXEC_PTR * records;
+    UBYTE recordsPad;
+    UWORD holds;
+    UWORD freeRecords;
+};
+#define AES_ENDPOINT_SIZE 24
+#define AES_ENDPOINT_OFFSET_ID 0
+#define AES_ENDPOINT_OFFSET_GEMID 4
+#define AES_ENDPOINT_OFFSET_STATE 6
+#define AES_ENDPOINT_OFFSET_OWNER 8
+#define AES_ENDPOINT_OFFSET_OWNERPAD 11
+#define AES_ENDPOINT_OFFSET_PORT 12
+#define AES_ENDPOINT_OFFSET_PORTPAD 15
+#define AES_ENDPOINT_OFFSET_RECORDS 16
+#define AES_ENDPOINT_OFFSET_RECORDSPAD 19
+#define AES_ENDPOINT_OFFSET_HOLDS 20
+#define AES_ENDPOINT_OFFSET_FREERECORDS 22
+struct AESDirectory {
+    struct Task EXEC_PTR * owner;
+    UBYTE ownerPad;
+    ULONG mask;
+    UWORD changed;
+    struct AESEndpoint endpoints[AES_CLIENTS];
+};
+#define AES_DIRECTORY_SIZE 106
+#define AES_DIRECTORY_OFFSET_OWNER 0
+#define AES_DIRECTORY_OFFSET_OWNERPAD 3
+#define AES_DIRECTORY_OFFSET_MASK 4
+#define AES_DIRECTORY_OFFSET_CHANGED 8
+#define AES_DIRECTORY_OFFSET_ENDPOINTS 10
 struct AESRequest {
     struct Message message;
     UWORD version;
@@ -49,8 +98,14 @@ struct AESRequest {
     WORD intout[AES_INTOUT_WORDS];
     WORD words[AES_MESSAGE_WORDS];
     WORD global[AES_GLOBAL_WORDS];
+    struct AESDirectory EXEC_PTR * directory;
+    UBYTE directoryPad;
+    struct MsgPort EXEC_PTR * receiving;
+    UBYTE receivingPad;
+    struct AESDelivery EXEC_PTR * records;
+    UBYTE recordsPad;
 };
-#define AES_REQUEST_SIZE 132
+#define AES_REQUEST_SIZE 144
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -66,4 +121,10 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_INTOUT 72
 #define AES_REQUEST_OFFSET_WORDS 86
 #define AES_REQUEST_OFFSET_GLOBAL 102
+#define AES_REQUEST_OFFSET_DIRECTORY 132
+#define AES_REQUEST_OFFSET_DIRECTORYPAD 135
+#define AES_REQUEST_OFFSET_RECEIVING 136
+#define AES_REQUEST_OFFSET_RECEIVINGPAD 139
+#define AES_REQUEST_OFFSET_RECORDS 140
+#define AES_REQUEST_OFFSET_RECORDSPAD 143
 #endif

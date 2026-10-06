@@ -1,7 +1,13 @@
 #include <gem.h>
+#include "../../c/calypsi/aes-private.h"
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
+
+BOOL Peer_ExecAESAttach(struct MsgPort *service);
+BOOL Peer_ExecAESDetach(void);
+struct ExecAESContext *Peer_ExecAESContext(void);
+WORD Peer_appl_init(void);
 
 ULONG AESService;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone;
@@ -29,12 +35,17 @@ static void worker(UWORD who)
     BYTE bit = AllocSignal(-1);
     CHECK(bit >= 0);
     commands[who] = 1UL << bit;
-    CHECK(ExecAESAttach((struct MsgPort *)AESService));
-    ids[who] = appl_init();
+    CHECK(who == 1 ? Peer_ExecAESAttach((struct MsgPort *)AESService) :
+                     ExecAESAttach((struct MsgPort *)AESService));
+    ids[who] = who == 1 ? Peer_appl_init() : appl_init();
     if (who < 4) {
         CHECK(ids[who] > 0);
-        CHECK(appl_init() == ids[who]);
-        CHECK(ExecAESContext()->request.global[2] == ids[who]);
+        struct ExecAESContext *context = who == 1 ? Peer_ExecAESContext() : ExecAESContext();
+        CHECK((who == 1 ? Peer_appl_init() : appl_init()) == ids[who]);
+        CHECK(context->request.global[2] == ids[who]);
+        CHECK(context->endpoint->id == context->identity);
+        CHECK(context->endpoint->port == context->receiving);
+        if (who == 1) CHECK(ExecAESContext() == NULL);
     } else {
         CHECK(ids[who] == -1);
         CHECK(ExecAESDiagnostic() == AES_RESOURCE);
@@ -48,8 +59,8 @@ static void worker(UWORD who)
         for (i = 0; i < 4; ++i) CHECK(ids[who] > ids[i]);
     }
     /* Runtime wrapper retires a still-registered app before Task removal. */
-    CHECK(ExecAESDetach());
-    CHECK(ExecAESContext() == NULL);
+    CHECK(who == 1 ? Peer_ExecAESDetach() : ExecAESDetach());
+    CHECK((who == 1 ? Peer_ExecAESContext() : ExecAESContext()) == NULL);
     FreeSignal(bit);
     Forbid(); ++AESDone; Signal(controller, wake); RemTask(NULL);
 }
@@ -100,6 +111,16 @@ UWORD AESRun(void)
     c->sequence = 2;
     CHECK(appl_exit() == 1);
     CHECK(appl_exit() == 0 && ExecAESDiagnostic() == AES_IDENTITY);
+    {
+        BYTE signals[32], signal;
+        UWORD count = 0;
+        ULONG before = AvailMem(0);
+        while ((signal = AllocSignal(-1)) >= 0) signals[count++] = signal;
+        CHECK(appl_init() == -1 && ExecAESDiagnostic() == AES_RESOURCE);
+        CHECK(AvailMem(0) == before);
+        CHECK(c->records == NULL && c->receiving == NULL && c->identity == 0);
+        while (count) FreeSignal(signals[--count]);
+    }
     CHECK(appl_init() > first);
     {
         WORD control[5] = {10, 0, 1, 0, 0}, global[15], result;
@@ -109,6 +130,33 @@ UWORD AESRun(void)
         control[0] = 999;
         aes_call(&pb);
         CHECK(result == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
+    }
+    /* Hold a destination across its exit. The presenter must keep serving
+     * RPC while exit is pending, and the caller must not free the pool. */
+    AESReady = AESDone = 0;
+    workers[1] = CreateTask("AES retiring", 0, (APTR)AESClientTwo, 1024UL);
+    CHECK(workers[1] != NULL);
+    while (AESReady < 1) Wait(wake);
+    {
+        struct AESEndpoint *destination = NULL;
+        struct AESDelivery *record = ExecAESReserve(c, ids[1], &destination);
+        UWORD attempts;
+        CHECK(record != NULL && destination != NULL);
+        CHECK(destination->holds == 1);
+        Signal(workers[1], commands[1]);
+        for (attempts = 0; attempts < 128 &&
+             destination->state != AES_ENDPOINT_CLOSING; ++attempts) ExecYield();
+        CHECK(destination->state == AES_ENDPOINT_CLOSING);
+        CHECK(AESDone == 0 && destination->records != NULL);
+        CHECK(wind_update(BEG_UPDATE | AES_TRY) == 1);
+        CHECK(wind_update(END_UPDATE) == 1);
+        CHECK(ExecAESReserve(c, ids[1], &destination) == NULL);
+        CHECK(ExecAESDiagnostic() == AES_IDENTITY);
+        for (i = 0; i < AES_MESSAGE_WORDS; ++i) record->words[i] = 400+i;
+        ExecAESPublish(c, destination, record);
+        while (AESDone < 1) Wait(wake);
+        CHECK(destination->state == AES_ENDPOINT_RETIRED);
+        CHECK(destination->port == NULL && destination->records == NULL);
     }
     CHECK(ExecAESDetach());
     for (round = 0; round < 3; ++round) {

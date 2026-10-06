@@ -25,6 +25,7 @@ PUBLIC TYPE Client=[
   EXEC.TaskLease lease
   AESTYPES.Request POINTER binding
   EXEC.MsgPort POINTER replies
+  AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER waiting
   CARD eventMask
   LONGCARD deadlineHigh,deadlineLow
@@ -42,6 +43,7 @@ PUBLIC TYPE Service=[
   BYTE started
   LONGCARD nextClient
   CARD nextGem
+  AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count,eventDirty
   TimerState timer

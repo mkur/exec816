@@ -36,27 +36,16 @@ BOOL ExecAESAttach(struct MsgPort *service)
     UWORD i;
     if (!ExecAESPointer(service, sizeof(*service)))
         return FALSE;
-    Forbid();
     context = ExecAESContext();
-    if (context != NULL) {
-        BOOL same = context->service == service;
-        Permit();
-        return same;
-    }
-    for (i = 0; i < AES_CONTEXTS && contexts[i] != NULL; ++i) {}
-    if (i == AES_CONTEXTS) {
-        Permit();
-        return FALSE;
-    }
+    if (context != NULL)
+        return context->service == service;
+    /* Allocation can switch Tasks. Publish only a fully initialized context. */
     context = AllocMem(sizeof(*context), MEMF_PUBLIC | MEMF_CLEAR);
-    if (context == NULL) {
-        Permit();
+    if (context == NULL)
         return FALSE;
-    }
     context->replies = CreateMsgPort();
     if (context->replies == NULL) {
         FreeMem(context, sizeof(*context));
-        Permit();
         return FALSE;
     }
     context->service = service;
@@ -66,6 +55,14 @@ BOOL ExecAESAttach(struct MsgPort *service)
     context->request.message.mn_Length = sizeof(context->request);
     context->request.version = AES_VERSION;
     context->request.bytes = sizeof(context->request);
+    Forbid();
+    for (i = 0; i < AES_CONTEXTS && contexts[i] != NULL; ++i) {}
+    if (i == AES_CONTEXTS) {
+        Permit();
+        DeleteMsgPort(context->replies);
+        FreeMem(context, sizeof(*context));
+        return FALSE;
+    }
     contexts[i] = context;
     Permit();
     return TRUE;
@@ -87,9 +84,9 @@ BOOL ExecAESDetach(void)
     for (i = 0; i < AES_CONTEXTS; ++i)
         if (contexts[i] == context)
             contexts[i] = NULL;
+    Permit();
     DeleteMsgPort(context->replies);
     FreeMem(context, sizeof(*context));
-    Permit();
     return TRUE;
 }
 
@@ -106,6 +103,7 @@ static WORD submit(struct ExecAESContext *c, UWORD operation)
     struct AESRequest *r = &c->request;
     struct Message *reply;
     ULONG sequence;
+    UWORD i;
     WORD failure = operation == AES_OP_INIT ? -1 : 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return failure; }
     if (c->identity == 0 && operation != AES_OP_INIT) {
@@ -146,6 +144,12 @@ static WORD submit(struct ExecAESContext *c, UWORD operation)
                 c->identity = r->client;
                 c->gemId = r->intout[0];
                 c->sequence = sequence;
+                c->directory = r->directory;
+                Forbid();
+                for (i = 0; i < AES_CLIENTS; ++i)
+                    if (c->directory->endpoints[i].id == c->identity)
+                        c->endpoint = &c->directory->endpoints[i];
+                Permit();
             }
         } else if (operation == AES_OP_EXIT) {
             if (r->client != 0) c->diagnostic = AES_MALFORMED;
@@ -162,13 +166,47 @@ WORD appl_init(void)
     if (c == NULL) return -1;
     if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
     if (c->identity != 0) { c->diagnostic = AES_OK; return c->gemId; }
-    return submit(c, AES_OP_INIT);
+    c->busy = 1;
+    c->receiving = CreateMsgPort();
+    c->records = AllocMem(AES_QUEUE_DEPTH * sizeof(*c->records), MEMF_PUBLIC | MEMF_CLEAR);
+    c->busy = 0;
+    if (c->receiving == NULL || c->records == NULL) {
+        c->diagnostic = AES_RESOURCE;
+    } else {
+        c->request.receiving = c->receiving;
+        c->request.records = c->records;
+        if (submit(c, AES_OP_INIT) > 0)
+            return c->gemId;
+    }
+    if (c->records != NULL) FreeMem(c->records, AES_QUEUE_DEPTH * sizeof(*c->records));
+    if (c->receiving != NULL) DeleteMsgPort(c->receiving);
+    c->records = NULL;
+    c->receiving = NULL;
+    c->request.records = NULL;
+    c->request.receiving = NULL;
+    return -1;
 }
 
 WORD appl_exit(void)
 {
     struct ExecAESContext *c = ExecAESContext();
-    return c != NULL ? submit(c, AES_OP_EXIT) : 0;
+    WORD result;
+    if (c == NULL) return 0;
+    result = submit(c, AES_OP_EXIT);
+    if (result) {
+        c->busy = 1;
+        DeleteMsgPort(c->receiving);
+        FreeMem(c->records, AES_QUEUE_DEPTH * sizeof(*c->records));
+        c->receiving = NULL;
+        c->records = NULL;
+        c->directory = NULL;
+        c->endpoint = NULL;
+        c->request.receiving = NULL;
+        c->request.records = NULL;
+        c->request.directory = NULL;
+        c->busy = 0;
+    }
+    return result;
 }
 
 WORD appl_write(WORD id, WORD length, const WORD *message)

@@ -30,6 +30,15 @@ minus one. GEM IDs are never reused within a service lifetime. Native identities
 and request sequences are separately checked 32-bit values; exhaustion fails
 before reuse, reserving the last sequence for exit.
 
+Registration also publishes a caller-owned receive port and sixteen 32-byte
+message records in the service's shared endpoint directory. This directory works
+across separate C binding instances. Its lookup, publication holds and recycling
+use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
+admission, waits for existing publishers without blocking the presenter, drains
+the port and acknowledges retirement before the caller frees its storage.
+HY1 prepares these endpoints; public messaging still uses the service FIFO until
+the atomic HY3 migration in the [hybrid plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
+
 `appl_write(id, 16, words)` copies eight words into the destination's FIFO.
 Each registration has sixteen entries. Success means accepted; a full queue
 returns zero with `AES_RESOURCE`, without replacing an older message or waiting
@@ -127,4 +136,4 @@ quantum must run before another such deferral, preserving writer progress.
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile. Rebuild bindings and service together. Current implementation and
 development evidence are tracked in the
-[implementation plan](../plans/gem4xe/aes-server-implementation-plan.md).
+[hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).

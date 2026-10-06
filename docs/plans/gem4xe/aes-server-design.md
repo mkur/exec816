@@ -14,6 +14,12 @@ GEM4XE `e413c39d2f8e1bec8fe16596f610b923de4a0ae9`. The
 [XaAES study](xaaes-study.md) records the pinned comparative sources and their
 limitations. Keep donor analysis and adaptations in Exec816, outside GEM4XE.
 
+The proposed [hybrid AES and VDI model](hybrid-aes-vdi-design.md) defines the next
+execution direction. It replaces mandatory presenter round trips for suitable
+operations as they migrate, while retaining GUI coordination. This page records
+the existing server design; current interfaces remain authoritative until each
+migration slice is implemented.
+
 The [current timer.device contract](../../reference/timer.md), ordinary
 Action!/C device I/O and the
 [native interrupt ReplyMsg binding](../../reference/ports.md#native-interrupt-reply)

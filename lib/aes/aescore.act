@@ -24,6 +24,8 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.port.mp_SigBit=bit
   service.port.mp_SigTask=service.owner
   EXECLISTS.NewList(@service.port.mp_MsgList)
+  service.directory.owner=service.owner
+  service.directory.mask=service.mask
   service.error=AESTYPES.OK
   service.nextClient=1
   service.nextGem=1
@@ -76,7 +78,10 @@ CARD FUNC Register(AESSTATE.Service POINTER service
       OR request.client<>0 OR request.sequence<>1
       OR Storage(BYTE POINTER(request),AESTYPES.REQUEST_SIZE)=0
       OR Storage(BYTE POINTER(request.message.mn_ReplyPort),
-          EXEC.MSGPORT_SIZE)=0 THEN
+          EXEC.MSGPORT_SIZE)=0
+      OR Storage(BYTE POINTER(request.receiving),EXEC.MSGPORT_SIZE)=0
+      OR Storage(BYTE POINTER(request.records),
+          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH)=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -131,6 +136,23 @@ CARD FUNC Register(AESSTATE.Service POINTER service
     RETURN(AESTYPES.MALFORMED)
   FI
 
+  LET receiving=request.receiving
+  IF receiving=port OR receiving.mp_Node.ln_Type<>EXEC.NT_MSGPORT
+      OR receiving.mp_Flags<>EXEC.PA_SIGNAL
+      OR receiving.mp_SigTask<>request.owner OR receiving.mp_SigBit>=32
+      OR (request.owner.tc_SigAlloc
+          & (LONGCARD(1) LSH receiving.mp_SigBit))=0
+      OR EXECLISTS.IsListEmpty(@receiving.mp_MsgList)=0 THEN
+    BEGIN
+      LET released=EXEC.ReleaseTask(@client.lease)
+      IF released=0 THEN
+        HEAPCORE.Abort($fca2)
+      FI
+    END
+
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
   client.id=service.nextClient
   client.gemId=INT(service.nextGem)
   client.sequence=1
@@ -143,6 +165,21 @@ CARD FUNC Register(AESSTATE.Service POINTER service
     service.nextGem==+1
   FI
 
+  ; Every reader uses this short Task-side publication guard. IRQ/NMI code
+  ; never reads the directory; public Exec primitives protect port internals.
+  EXEC.Forbid()
+  client.endpoint=@service.directory.endpoints(slot)
+  LET endpoint=client.endpoint
+  endpoint.id=client.id
+  endpoint.gemId=client.gemId
+  endpoint.owner=request.owner
+  endpoint.port=receiving
+  endpoint.records=request.records
+  endpoint.holds=0
+  endpoint.freeRecords=$ffff
+  endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  request.directory=@service.directory
+  EXEC.Permit()
   service.count==+1
   request.client=client.id
   request.intout(0)=client.gemId
@@ -155,6 +192,26 @@ RETURN(AESTYPES.OK)
 PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
 
+  LET endpoint=client.endpoint
+  EXEC.Forbid()
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  IF endpoint.holds<>0 THEN
+    client.waiting=request
+    EXEC.Permit()
+    RETURN
+  FI
+
+  EXEC.Permit()
+  ; Admission is closed and every publisher has finished using the pool.
+  WHILE EXEC.GetMsg(endpoint.port)<>NULL DO
+  OD
+
+  EXEC.Forbid()
+  endpoint.state=AESTYPES.ENDPOINT_RETIRED
+  endpoint.port=NULL
+  endpoint.records=NULL
+  endpoint.owner=NULL
+  EXEC.Permit()
   AESLOCKS.Retire(service,client)
   client.binding=NULL
   client.replies=NULL
@@ -274,6 +331,21 @@ RETURN
 
 ; Pending scans do not admit new calls or keep an empty wait runnable.
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
+  BYTE index
+
+  EXEC.Forbid()
+  service.directory.changed=0
+  EXEC.Permit()
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      LET endpoint=client.endpoint
+      IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
+          AND endpoint.holds=0 THEN
+        Retire(service,client,client.waiting)
+      FI
+    END
+  OD
 
   AESEVENTS.Poll(service)
 
@@ -299,7 +371,8 @@ RETURN(count)
 
 PUBLIC BYTE FUNC Runnable(AESSTATE.Service POINTER service)
 
-RETURN(EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0)
+RETURN(service.directory.changed<>0
+    OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0)
 
 PUBLIC BYTE FUNC Idle(AESSTATE.Service POINTER service)
 

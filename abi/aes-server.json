@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 1,
+  "version": 2,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -31,9 +31,93 @@
     "BEG_UPDATE": 1,
     "END_MCTRL": 2,
     "BEG_MCTRL": 3,
-    "TRY": 256
+    "TRY": 256,
+    "ENDPOINT_UNPUBLISHED": 0,
+    "ENDPOINT_ACCEPTING": 1,
+    "ENDPOINT_CLOSING": 2,
+    "ENDPOINT_RETIRED": 3
   },
   "records": {
+    "Delivery": [
+      [
+        "message",
+        "EXEC.Message"
+      ],
+      [
+        "words",
+        "INT",
+        "MESSAGE_WORDS"
+      ]
+    ],
+    "Endpoint": [
+      [
+        "id",
+        "LONGCARD"
+      ],
+      [
+        "gemId",
+        "INT"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "owner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "ownerPad",
+        "BYTE"
+      ],
+      [
+        "port",
+        "EXEC.MsgPort POINTER"
+      ],
+      [
+        "portPad",
+        "BYTE"
+      ],
+      [
+        "records",
+        "Delivery POINTER"
+      ],
+      [
+        "recordsPad",
+        "BYTE"
+      ],
+      [
+        "holds",
+        "CARD"
+      ],
+      [
+        "freeRecords",
+        "CARD"
+      ]
+    ],
+    "Directory": [
+      [
+        "owner",
+        "EXEC.Task POINTER"
+      ],
+      [
+        "ownerPad",
+        "BYTE"
+      ],
+      [
+        "mask",
+        "LONGCARD"
+      ],
+      [
+        "changed",
+        "CARD"
+      ],
+      [
+        "endpoints",
+        "Endpoint",
+        "CLIENTS"
+      ]
+    ],
     "Request": [
       [
         "message",
@@ -98,6 +182,30 @@
         "global",
         "INT",
         "GLOBAL_WORDS"
+      ],
+      [
+        "directory",
+        "Directory POINTER"
+      ],
+      [
+        "directoryPad",
+        "BYTE"
+      ],
+      [
+        "receiving",
+        "EXEC.MsgPort POINTER"
+      ],
+      [
+        "receivingPad",
+        "BYTE"
+      ],
+      [
+        "records",
+        "Delivery POINTER"
+      ],
+      [
+        "recordsPad",
+        "BYTE"
       ]
     ]
   }

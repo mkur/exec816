@@ -195,6 +195,13 @@ assuming work is pending. Current behavior belongs in the
 - [AES server implementation plan](gem4xe/aes-server-implementation-plan.md):
   executable AS0–AS4 slices for C bindings, presenter admission, messages,
   shared timer alarms, GUI locks and the two-client latency/lifecycle proof.
+- [Hybrid AES and VDI design](gem4xe/hybrid-aes-vdi-design.md): proposed caller-context
+  operations and event waits, Exec message delivery, retained GUI coordination
+  and a separate ownership/stack gate for direct drawing. Priorities stay inactive.
+- [Hybrid AES implementation plan](gem4xe/hybrid-aes-implementation-plan.md):
+  proposed HY1–HY4 commits for shared endpoint lifetime, caller-owned timers,
+  atomic message/event migration and native GUI/latency validation. Keeps
+  registration and GUI locks in the presenter.
 - [Command arguments implementation](command-arguments-implementation-plan.md)
 - [Command Main return-value implementation plan](command-main-implementation-plan.md)
 - [CSTRING module implementation plan](cstring-implementation-plan.md)

@@ -15,7 +15,7 @@ def build_proof(out, load=False, pointer=False):
     out.mkdir(parents=True, exist_ok=True)
     source=input_fixture(out, True) if pointer else fixture(out)
     foreign=drawing(out, True, widgets=True,
-        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'tests/programs/aes_desktop.c'],
+        client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'tests/programs/aes_desktop.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
         client_roots=['AESStart', 'AESPump', 'AESStop', 'AESService'],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())])

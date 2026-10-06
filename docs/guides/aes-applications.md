@@ -52,10 +52,13 @@ desktop presenter and retains its allocation until every application detaches.
 After readiness, `AESBOOT.Port()` supplies its native endpoint. Each C Task's
 wrapper calls `ExecAESAttach(endpoint)` before `gem_main()` and
 `ExecAESDetach()` afterward. Attach allocates a private context and reply port;
-`appl_init()` then registers the application with the service.
+`appl_init()` allocates a receiving port and message pool, then registers the
+application with the service. A failed registration releases those resources;
+retry is permitted. The shared directory is internal to the binding.
 
 Detach calls `appl_exit()` when the application has not already done so, waits
-for the final reply, and deletes the private context and port. A failed detach
+for endpoint retirement and the final reply, then deletes its ports, message
+pool and private context. A failed detach
 must prevent Task/image retirement. Do not remove a registered Task or free its
 image while the service retains its lease. Do not share one registration across
 Tasks or invoke a second AES call from a callback while the first is pending.

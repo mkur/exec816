@@ -19,6 +19,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Hybrid AES refactor](aes-hybrid.md): shared endpoint lifetime, caller transport migration and per-slice evidence.
 - [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.
 
 - [Native interrupt replies and timer.device](interrupt-reply.md): shared port
