@@ -1,19 +1,33 @@
 # OF816 boot monitor
 
 `Exec-of816.xex` in the distribution ZIP starts a real OF816 Forth interpreter under the
-pinned AltirraOS 65816 ROM. After a five-second countdown it launches the
-standard eight-Task shell/prime image through Exec's existing hosted startup.
+pinned AltirraOS 65816 ROM. It runs before the main Exec payload loads. After a
+five-second countdown it resumes loading the selected image and enters Exec's
+existing hosted startup.
 Press a key during the countdown to stay in Forth; type `EXEC816` to boot later.
 
 ```text
-AltirraOS → combined XEX → five-second countdown → Exec816 shell
-                                  ↓ key
-                              OF816 prompt → EXEC816 ↗
+AltirraOS → small bootstrap → OF816 countdown → load Exec816 → shell
+                                  ↓ key            ↑
+                              OF816 prompt → EXEC816
 ```
 
 The bundle contains the monitor and kernel in one XEX. It does not read a
 separate kernel file from disk. OF816 is used as a boot monitor; its upstream
 full Open Firmware layer is not included.
+
+The bootstrap initializes the default settings and loads OF816. An INITAD
+callback enters the monitor while the XEX or cartridge reader is paused.
+`EXEC816` and countdown expiry restore that reader's context and return with
+RTS. The reader loads the remaining native payload; the final RUNAD enters the
+validated Exec image. OF816's keyboard and vectors are released before loading
+resumes, and its retired interpreter is not restarted after Exec exits.
+
+`Exec816 boot`, `Loading OF816` and `Loading Exec816` show progress on the ROM
+text console. Each dot represents 16 KiB of completed copy/zero-fill work;
+the final partial block also prints a dot. The monitor appends its banner and
+countdown without clearing earlier text. The bitmap console starts later when
+the selected Exec application opens it. Remote image loading is not provided.
 
 The sector cache defaults to 64 KiB of upper-RAM data storage. At the Forth
 prompt, select a different capacity for this boot:
@@ -33,6 +47,9 @@ Forth cells, throw error -24 and leave the request unchanged. The getter reports
 the request, not an allocation: Exec allocates after handoff and keeps the
 one-sector buffer if allocation fails. The shell reports that fallback once.
 Settings apply only to this boot. Autoboot uses the default without input.
+Defaults are initialized once before Forth. Resumed loading preserves the
+complete boot record, and kernel startup validates and captures the request
+before admitting Tasks; it does not reset valid Forth settings.
 
 The [boot record](../reference/platform.md#boot-service-settings) is shared with
 the direct XEX loader. Packaging checks its version and location against image
@@ -110,7 +127,8 @@ parks with OS interrupts running. Reset/reload to start another session.
 
 OF816 is a boot monitor, not a resident Exec service. It borrows two free upper
 banks selected from the native image's map, plus guarded bootstrap storage. At
-handoff it retires the interpreter; Exec can then reuse those banks. Returning
+return to the reader it retires the interpreter; Exec can later reuse those
+banks. Returning
 from Exec does not resume Forth. The packager checks the combined image's memory
 requirements before producing the XEX.
 
@@ -136,8 +154,12 @@ contains the boot XEX, matching system/work disks and pinned AltirraOS ROM, toge
 with upstream license notices. The builder verifies the ROM size and hash
 before packaging it. Custom `--output` paths use the same directory layout.
 
-To repackage an existing native image without rebuilding it, use
-`python3 tools/build_of816.py`; its default output is also `build/demo/of816`.
+To refresh a matching demo's monitor and ZIP without recompiling its native
+payload, use `python3 tools/build_demo.py --refresh-monitor`. The native build
+must already contain the current loader callbacks. Its default output is
+`build/demo`.
+For monitor-only packaging, use `python3 tools/build_of816.py`; its default
+output is `build/demo/of816`.
 Then run `python3 tools/package_demo.py` to refresh the distribution ZIP.
 Full demo builds produce `build/demo/exec816-demo.zip` automatically. Share
 that archive; it contains the boot files, a short guide, license notices and

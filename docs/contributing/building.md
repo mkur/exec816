@@ -64,6 +64,19 @@ and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distributi
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
 
+To refresh OF816 assembly, boot guides and the ZIP around an existing matching
+native build, use:
+
+```sh
+python3 tools/build_demo.py --refresh-monitor --output build/demo-bitmap-shell
+```
+
+This verifies the existing native artifacts and records their reuse without
+recompiling them. The native build must already contain the current loader's
+progress callbacks; rebuild it first when the loader or kernel changes. OF816
+runs from INITAD before the main payload, then returns to the reader with RTS.
+The XEX and cartridge routes retain their guarded final kernel entry.
+
 To add Atarimax 8 Mbit cartridge images to an existing demo, preserving its
 exact XEX, disk and firmware, use a separate output directory:
 

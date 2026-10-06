@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise real Forth input, ROM coexistence and the one-way Exec handoff."""
+"""Exercise real Forth input, ROM coexistence and resumed image loading."""
 import argparse
 import json
 from pathlib import Path
@@ -15,6 +15,39 @@ from test_shell_core import KEYS
 KEYS = {**KEYS, '@':('8',True), '!':('1',True)}
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
+
+
+def boot_environment(record):
+    """Use the selected demo's actual machine and emulator rather than old pins."""
+    manifest=Path(record['exec_build'])/'demo-manifest.json'
+    demo=json.loads(manifest.read_text()) if manifest.exists() else {}
+    pin=demo.get('pin',PIN)
+    bitmap=demo.get('bitmap',False)
+    bridge_dir=ROOT/('build/mouse-bridge' if bitmap else 'build/shell-paced-bridge')
+    digest=pin['mouse_input']['tooling']['sha256'] if bitmap else pin['emulator']['sha256']
+    rom=ROOT/'build/firmware/altirraos-816.rom'
+    require(sha256(bridge_dir/'AltirraBridgeServer')==digest and
+            sha256(rom)==pin['rom']['sha256'],'Wrong boot emulator/ROM')
+    return pin,bridge_dir,rom
+
+
+def check_loading_paused(bridge,record,program):
+    c=program['build']['memory']['constants']
+    require(bridge.peek(program['labels']['loader_initialized'])==b'\1' and
+            bridge.peek16(c['CALLS'])==1 and bridge.peek16(c['NEXT'])==0 and
+            bridge.peek16(c['OFFSET'])==0 and bridge.peek(c['ENTERED'])==b'\0',
+            'Native payload was loaded before the monitor returned')
+    return bridge.memdump(record['boot_config']['address'],8)
+
+
+def check_loading_complete(bridge,record,program,settings):
+    c=program['build']['memory']['constants']
+    require(bridge.peek16(c['CALLS'])==record['loading']['native_payload_records']+1 and
+            bridge.peek16(c['OFFSET'])==0 and
+            bridge.peek(program['labels']['loader_error'])==b'\0',
+            'Resumed native loading did not complete')
+    require(bridge.memdump(record['boot_config']['address'],8)==settings,
+            'Resumed loading overwrote Forth boot settings')
 
 
 def screen_text(raw):
@@ -85,13 +118,14 @@ def check_autoboot(output, record, program, wrap=False):
     """No input must reach the ordinary loader after five PAL seconds."""
     labels = record['labels']
     case = 'autoboot-clock-wrap' if wrap else 'autoboot'
-    with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom',
-                  output/case,pin=PIN) as bridge:
+    pin,bridge_dir,rom=boot_environment(record)
+    with emulator(bridge_dir,rom,output/case,pin=pin) as bridge:
         bridge.boot(str(output/'Exec-of816.xex'))
         bridge.bp_set(labels['of_start'])
         run_to(bridge,labels['of_start'],3000,90)
         bridge.bp_clear_all()
         saved = dict(vectors=bridge.memdump(0x256,9),iocb=bridge.memdump(0x340,32))
+        settings=check_loading_paused(bridge,record,program)
         bridge._cmd_ok('KEY ALL up')
         if wrap:
             bridge.poke(0x14,240)
@@ -112,6 +146,10 @@ def check_autoboot(output, record, program, wrap=False):
             require(bridge.peek(0x14) < clock, 'Clock wrap case did not wrap')
         check_boot_guards(bridge,record['layout'])
         bridge.bp_clear_all()
+        bridge.bp_set(program['labels']['loader_start'])
+        run_to(bridge,program['labels']['loader_start'],3000,60)
+        check_loading_complete(bridge,record,program,settings)
+        bridge.bp_clear_all()
         bridge.bp_set(program['labels']['start'])
         run_to(bridge,program['labels']['start'],3000,60)
         require(bridge.memdump(0x256,9) == saved['vectors'] and
@@ -125,8 +163,8 @@ def check_exit(output, record, busy=False):
     """BYE and an occupied IOCB leave the OS usable without entering Exec."""
     labels = record['labels']
     case = 'occupied-iocb' if busy else 'bye'
-    with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom',
-                  output/case,pin=PIN) as bridge:
+    pin,bridge_dir,rom=boot_environment(record)
+    with emulator(bridge_dir,rom,output/case,pin=pin) as bridge:
         bridge.boot(str(output/'Exec-of816.xex'))
         bridge.bp_set(labels['of_start'])
         run_to(bridge,labels['of_start'],3000,90)
@@ -168,25 +206,23 @@ def run(output):
     program = read_build(Path(record['exec_build']))
     require(program['build']['xex_sha256'] == record['exec_xex_sha256'], 'Embedded Exec image changed')
     labels = record['labels']
-    bridge_dir = ROOT/'build/shell-paced-bridge'
-    rom = ROOT/'build/firmware/altirraos-816.rom'
-    require(sha256(bridge_dir/'AltirraBridgeServer') == PIN['emulator']['sha256'], 'Wrong emulator')
-    require(sha256(rom) == PIN['rom']['sha256'], 'Wrong ROM')
+    pin,bridge_dir,rom=boot_environment(record)
     if record.get('media'):
         from test_of816_shell import run as run_shell
         return run_shell(output,record,program)
     require(program['build'].get('foreign_image',{}).get('format') == 'calypsi65816-standalone-v1',
             'This smoke runner expects the standard shell or Calypsi message example')
-    report = dict(status='running',tier='development',boot=record,pin=PIN,
+    report = dict(status='running',tier='development',boot=record,pin=pin,
                   observer_sha256=sha256(Path(__file__)))
     try:
-        with emulator(bridge_dir,rom,output,pin=PIN) as b:
-            report['machine'] = verify_machine(b,rom,PIN)
+        with emulator(bridge_dir,rom,output,pin=pin) as b:
+            report['machine'] = verify_machine(b,rom,pin)
             b.boot(str(xex))
             b.bp_set(labels['of_start'])
             run_to(b,labels['of_start'],3000,90)
             b.bp_clear_all()
             saved = dict(vectors=b.memdump(0x256,9), iocb=b.memdump(0x340,32))
+            check_loading_paused(b,record,program)
             screen = b.peek16(88)
             report['cancel'] = enter_forth(b,labels,hold=60)
             require(b.peek16(labels['of_phase']) == 1, 'Forth did not initialize')
@@ -212,8 +248,13 @@ def run(output):
             for character in 'exec816':
                 press(b,labels,character)
             press(b,labels,'\n',labels['of_handoff'])
+            settings=check_loading_paused(b,record,program)
             check_boot_guards(b,record['layout'])
             report['forth']['guards'] = 'intact'
+            b.bp_clear_all()
+            b.bp_set(program['labels']['loader_start'])
+            run_to(b,program['labels']['loader_start'],3000,60)
+            check_loading_complete(b,record,program,settings)
             b.bp_clear_all()
             b.bp_set(program['labels']['start'])
             run_to(b,program['labels']['start'],3000,60)

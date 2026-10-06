@@ -53,9 +53,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 'OF816 image does not match the demo bundle')
 
         def bootstrap(bridge,native):
+            from test_of816 import check_loading_paused, check_loading_complete
             bridge.boot(str(boot_image))
             bridge.bp_set(boot['labels']['of_start'])
             run_to(bridge,boot['labels']['of_start'],3000,90)
+            check_loading_paused(bridge,boot,native)
             if system_drive!=boot['boot_config']['system_drive']:
                 config=boot['boot_config']
                 bridge.memload(config['address']+config['abi']['fields']['system_drive'],bytes([system_drive]))
@@ -71,6 +73,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             require(249<=saved['autoboot_frames']<=251,'Autoboot did not wait five PAL seconds')
             from test_of816 import check_boot_guards
             check_boot_guards(bridge,boot['layout'])
+            settings=check_loading_paused(bridge,boot,native)
+            bridge.bp_clear_all()
+            bridge.bp_set(native['labels']['loader_start'])
+            run_to(bridge,native['labels']['loader_start'],3000,90)
+            check_loading_complete(bridge,boot,native,settings)
             bridge.bp_clear_all()
             bridge.bp_set(native['labels']['start'])
             run_to(bridge,native['labels']['start'],3000,90)
@@ -557,13 +564,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 command('HEAD SYS:STORY.TXT LINES 3',b'Exec816')
                 command('HEAD MISSING',b'Object not found (205)',error=205)
                 command('HEAD ?',b'Arguments: FILE,LINES/K/N')
-                # Two ordinary DOS names must share the same warmed cache.
+                # Two DOS names use the same cache. A smaller requested cache
+                # can evict file sectors while reloading the TYPE command.
                 command(f'TYPE D{system_drive}:STORY.TXT',b'system should also know how to stop.')
-                first=dict(hits=number(cache+16),misses=number(cache+20))
+                first=dict(hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24))
                 command('TYPE SYS:STORY.TXT',b'system should also know how to stop.')
-                second=dict(hits=number(cache+16),misses=number(cache+20))
-                require(first['misses']==second['misses'] and second['hits']>first['hits'],
-                        'Physical and SYS reads did not share the cache')
+                second=dict(hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24))
+                require(second['hits']>first['hits'] and
+                        (first['misses']==second['misses'] or
+                         (expected_cache<512 and second['evictions']>first['evictions'])),
+                        f'Physical and SYS reads did not share the cache: {first} -> {second}')
                 saved['sys_cache']=dict(physical=first,system=second)
                 if desktop:
                     previous=begin('CAT SYS:STORY.TXT | WC')

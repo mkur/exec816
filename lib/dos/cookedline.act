@@ -7,6 +7,11 @@ USE ASCII
 INCLUDE "dos-types.inc"
 INCLUDE "dos-cooked-types.inc"
 
+; Ordinary redraws use at most 111 bytes. Keep a bounded row prefix in the
+; remaining echo space so clearing the screen can also restore the prompt.
+PUBLIC CONST PROMPT_OFFSET=3*(TAIL_COLUMNS+1)
+PUBLIC CONST PROMPT_BYTES=ECHO_BYTES-PROMPT_OFFSET-1
+
 CONST KEY_HOME=1, KEY_LEFT=2, KEY_BREAK=3, KEY_EOF=4, KEY_END=5
 CONST KEY_RIGHT=6, KEY_BACKSPACE=8, KEY_TAB=9, KEY_KILL=11
 CONST KEY_NEXT=14, KEY_PREVIOUS=16, KEY_CLEAR=21, KEY_WORD=23
@@ -27,6 +32,7 @@ PUBLIC PROC Init(Session POINTER state)
   state.discard=0
   state.drawn=0
   state.key=0
+  state.echo(PROMPT_OFFSET)=0
   state.appendEcho=0
   state.cursor=0
   state.viewStart=0
@@ -236,6 +242,13 @@ PUBLIC BYTE FUNC Feed(Session POINTER state BYTE value)
     RETURN(Recall(state,BYTE(value=KEY_PREVIOUS)))
   FI
 
+  IF value=ASCII.FF THEN
+    ; Reuse the collected input byte as a one-shot repaint request.
+    state.key=ASCII.FF
+    state.appendEcho=0
+    RETURN(1)
+  FI
+
   target=state.cursor
   IF value=KEY_HOME THEN
     target=0
@@ -375,8 +388,8 @@ PUBLIC LONGINT FUNC Drain(Session POINTER state BYTE POINTER target CARD limit)
 
 RETURN(0)
 
-; The cursor follows a bounded viewport. Render uses only Backspace and text,
-; preserving the prompt and leaving the last physical column unused.
+; The cursor follows a bounded viewport. Ctrl-L restores the saved row prefix;
+; ordinary redraws preserve the prompt and leave the last column unused.
 PUBLIC CARD FUNC Render(Session POINTER state)
   CARD count,index,used,paint,target,maximum
   BYTE POINTER output
@@ -384,6 +397,22 @@ PUBLIC CARD FUNC Render(Session POINTER state)
   output=state.echo
   count=state.length
   used=0
+  IF state.key=ASCII.FF THEN
+    output(used)=ASCII.FF
+    used==+1
+    IF state.echo(PROMPT_OFFSET)<>0 AND
+        state.echo(PROMPT_OFFSET)<=PROMPT_BYTES THEN
+      FOR index=0 TO CARD(state.echo(PROMPT_OFFSET))-1 DO
+        output(used)=state.echo(PROMPT_OFFSET+1+index)
+        used==+1
+      OD
+    FI
+
+    state.key=0
+    state.drawn=0
+    state.screenCursor=0
+  FI
+
   IF state.appendEcho<>0 AND state.drawn<>0 AND state.viewStart=0
       AND state.cursor=count AND state.screenCursor=state.drawn
       AND count<=CARD(state.width) AND count>=CARD(state.drawn) THEN

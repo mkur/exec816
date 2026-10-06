@@ -128,6 +128,31 @@ def package(loader, manifest_bytes, spans, memory, labels, resident):
     return result
 
 
+def split_setup(segments, memory, labels):
+    """Identify the generated setup callback before any native payload work."""
+    c = memory['constants']
+    require(len(segments) >= 9, 'Missing native setup/payload records')
+    prefix, payload = segments[:6], segments[6:]
+    run = (0x02e0, struct.pack('<H', labels['loader_start']))
+    init = (0x02e2, struct.pack('<H', labels['loader_init']))
+    require(prefix[0][0] == c['LOADER'] and 0 < len(prefix[0][1]) <= c['LOADER_BYTES']
+            and prefix[1] == run and prefix[2][0] == memory['regions']['resident'][0]
+            and prefix[3][0] == c['MANIFEST'] and prefix[3][1][:4] == b'EBM1'
+            and prefix[4] == (c['STAGE'], bytes(8)) and prefix[5] == init,
+            'Invalid native setup boundary')
+    require(payload[-1] == run and len(payload) % 2 == 1,
+            'Invalid native payload/final RUNAD')
+    for index in range(0, len(payload)-1, 2):
+        address, record = payload[index]
+        require(address == c['STAGE'] and len(record) >= 8 and payload[index+1] == init,
+                'Unexpected native payload destination/callback')
+        _, _, count, kind, reserved = struct.unpack('<HHHBB', record[:8])
+        require(0 < count <= c['CHUNK'] and kind in (0, 1, 2) and reserved == 0
+                and len(record) == (8 if kind == 1 else 8+count),
+                'Invalid native payload record')
+    return prefix, payload
+
+
 def emit(output, image, memory, labels, probe=False):
     """Assemble a bootstrap bound to the fully validated fixed image."""
     from native_program import command, ROOT

@@ -18,6 +18,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
     from os_boundary import run_to
     import test_demo
     from test_of816 import check_boot_guards, enter_forth, press, screen_text
+    from test_of816 import check_loading_paused, check_loading_complete
 
     cart = json.loads((cartridge_build/'cartridge.json').read_text())
     boot = json.loads((demo_build/'of816/of816.json').read_text())
@@ -45,9 +46,11 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         b.bp_set(cart['labels']['cart_failed'])
         run_to(b, labels['of_start'], 4000, 90)
         b.bp_clear_all()
-        require(b.peek16(cart['labels']['cart_segments']) == cart['segments'], 'Lost XEX segment')
-        require(b.peek16(cart['labels']['cart_calls']) == cart['init_callbacks'], 'Lost INITAD call')
-        require(b.memdump(cart['labels']['cart_remaining'],3) == bytes(3), 'Unread XEX bytes')
+        require(b.peek16(cart['labels']['cart_segments']) == boot['loading']['monitor_init_segment']+1,
+                'Cartridge did not pause at the monitor callback')
+        require(b.memdump(cart['labels']['cart_remaining'],3) != bytes(3),
+                'Cartridge payload was consumed before the monitor')
+        check_loading_paused(b,boot,program)
         require(b.peek(0x3fa) == b.peek(0xd013), 'Cartridge interlock differs from TRIG3')
         # Writes at the former ROM window must now reach RAM.
         saved_window = b.memdump(0xa000,16)
@@ -66,6 +69,8 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
             for ch in 'decimal 6 7 * .\n':
                 press(b,labels,ch)
             require('42 ' in screen_text(b.memdump(screen,960)), 'Forth arithmetic failed')
+            for ch in '128 CACHE-BLOCKS!\n':press(b,labels,ch)
+            case['cache_request']=128
             case['forth_result'] = 42
             b.screenshot(str(output/'forth.png'))
             for ch in 'exec816':
@@ -81,10 +86,19 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
             case['autoboot_frames'] = b.eval_expr('@frame')-begin
             require(249 <= case['autoboot_frames'] <= 251, 'Five-second autoboot changed')
         check_boot_guards(b,boot['layout'])
+        settings=check_loading_paused(b,boot,program)
         case['of816_guards'] = 'intact'
+        b.bp_clear_all()
+        b.bp_set(program['labels']['loader_start'])
+        run_to(b,program['labels']['loader_start'],3000,60)
+        check_loading_complete(b,boot,program,settings)
         b.bp_clear_all()
         b.bp_set(program['labels']['start'])
         run_to(b,program['labels']['start'],1000,30)
+        require(b.peek16(cart['labels']['cart_segments']) == cart['segments'], 'Lost XEX segment')
+        require(b.peek16(cart['labels']['cart_calls']) == cart['init_callbacks'], 'Lost INITAD call')
+        require(b.memdump(cart['labels']['cart_remaining'],3) == bytes(3), 'Unread XEX bytes')
+        require(b.peek(0x3fa)==b.peek(0xd013),'Resumed cartridge interlock differs from TRIG3')
         b.bp_clear_all()
         require(b.memdump(0x256,9) == saved['vectors'] and
                 b.memdump(0x340,32) == saved['iocb'], 'OF816 handoff changed OS context')
@@ -94,6 +108,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
     try:
         case['shell'] = test_demo.run(case_build, showcase=not shell_only,
                                      boot_smoke=shell_only, bootstrap=bootstrap,
+                                     expected_cache=128 if manual else None,
                                      media_path=demo_build/'of816'/boot['media']['name'],
                                      rom_override=rom_override)
         case['status'] = 'pass'

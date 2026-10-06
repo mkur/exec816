@@ -87,6 +87,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [OF816 before kernel loading](of816-first-boot.md): returning INITAD monitor,
+  preserved settings/text, small progress output and the bitmap/cartridge preview.
 - [XLOS boot diagnostics](../development/xlos-boot.json): cartridge interlock
   correction, the XEX Disk Boot route through D2 and bounded firmware checks.
 - [Bank manager](bank-manager.md)

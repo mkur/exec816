@@ -11,9 +11,11 @@ from build_of816 import build as build_monitor
 from make_data_disk import make
 from package_demo import package,GEM_NOTICES
 from library_paths import read_source
-from native_program import ROOT, build, compiler, require, sha256
+from native_program import ROOT, build, compiler, read_build, require, sha256
 
 DEMO_IMAGE_DATA_BYTES = 4096
+WORK_SECTORS = 2880
+WORK_SECTOR_BYTES = 256
 
 
 def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720):
@@ -67,8 +69,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     workspace.mkdir(exist_ok=True)
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
-    make(output/'work.atr',workspace,filesystem=filesystem,sector_bytes=128)
-    mounts.append(dict(alias='WORK',unit=56,sectors=720,sector_bytes=128,
+    make(output/'work.atr',workspace,filesystem=filesystem,
+         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS)
+    mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
@@ -97,13 +100,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
     default_geometry=('The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB\n'
         'nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The\n'
-        'disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).')
+        'disposable WORK: disk also has 2,880 sectors of 256 bytes (720 KiB nominal capacity).')
     require(default_geometry in guide,'Demo guide default geometry changed')
     track_geometry=', equivalent to 80 tracks, two sides and 18 sectors per track' if system_kib==720 and sector_bytes==256 else ''
     guide=guide.replace(default_geometry,
         f'The supplied {system_name} system disk has {system_sectors:,} sectors of {sector_bytes} bytes '
-        f'({system_kib} KiB nominal capacity){track_geometry}. The disposable WORK: disk remains '
-        '720 sectors of 128 bytes (90 KiB).')
+        f'({system_kib} KiB nominal capacity){track_geometry}. The disposable WORK: disk has '
+        f'{WORK_SECTORS:,} sectors of {WORK_SECTOR_BYTES} bytes (720 KiB nominal capacity).')
     guide=guide.replace('720 KiB read-only SDFS data disk',
                         f'{system_kib} KiB read-only {system_name} data disk')
     if bitmap_shell_only:
@@ -120,7 +123,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         system_kib=system_kib,system_sectors=system_sectors,
         additional_media=[dict(name='work.atr',sha256=sha256(output/'work.atr'),
                                drive=8,alias='WORK',access='readwrite',
-                               filesystem=filesystem,sector_bytes=128)],
+                               filesystem=filesystem,sectors=WORK_SECTORS,
+                               sector_bytes=WORK_SECTOR_BYTES)],
         boot_image='of816/Exec-of816.xex',boot_manifest='of816/of816.json',
         distribution='exec816-demo.zip',
         artifacts={name:sha256(output/name) for name in ('program.xex',disk_name,'work.atr','README.md',*([proof_name] if filesystem=='sdfs' else []))},
@@ -168,6 +172,39 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     return record
 
 
+def refresh_monitor(output):
+    """Refresh boot assembly/guides around the verified existing native payload."""
+    output=output.resolve()
+    program=read_build(output)
+    required=('loader_of_begin','loader_progress_add','loader_progress_finish')
+    require(all(name in program['labels'] for name in required),
+            'Rebuild the native demo first: current loader callbacks are required')
+    path=output/'demo-manifest.json'
+    record=json.loads(path.read_text())
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
+    if record.get('shell_only'):
+        guide=ROOT/('docs/desktop-distribution.txt' if record.get('desktop') else
+                    'docs/bitmap-shell-distribution.txt')
+        drive=program['build']['memory']['boot_config']['system_drive']
+        (output/'README.md').write_text(guide.read_text().replace('@SYSTEM_DISK@',record['media'])
+                                       .replace('@SYSTEM_DRIVE@',str(drive)))
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        guides.append(guide)
+    record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
+        native_build_sha256=sha256(output/'build.json'),
+        source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in
+                       [Path(__file__),ROOT/'tools/build_of816.py',ROOT/'tools/banked_image.py',*guides]})
+    path.write_text(json.dumps(record,indent=2)+'\n')
+    build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    package(output/'of816',output/record['distribution'],
+            output/'gem-vdi' if record.get('graphics') else None,
+            output/'bitmap-console' if record.get('bitmap_console') else None,
+            bitmap_shell=output if record.get('shell_only') else None)
+    return record
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
@@ -175,15 +212,20 @@ if __name__=='__main__':
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=256)
     parser.add_argument('--system-kib',type=int,choices=(360,720),default=720,
-                        help='Nominal system disk capacity; WORK remains 720 sectors')
+                        help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
+    parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
     args=parser.parse_args()
-    if args.cartridge_from:
+    if args.refresh_monitor:
+        if args.cartridge_from or args.cartridge_source_sha256:
+            parser.error('--refresh-monitor cannot be combined with --cartridge-from')
+        refresh_monitor(args.output)
+    elif args.cartridge_from:
         if not args.cartridge_source_sha256:
             parser.error('--cartridge-from requires --cartridge-source-sha256')
         from build_cartridge import augment_demo

@@ -1170,6 +1170,7 @@ PROC ShellDispatch()
     ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
+    ShellText(DOS.Output(),c"Ctrl-L clear screen\n")
     ShellText(DOS.Output(),c"History: Ctrl-P/N or Atari up/down\n")
     ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
 

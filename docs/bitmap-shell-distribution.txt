@@ -26,14 +26,17 @@ Extract this ZIP into one folder. In System > Configure System, select:
    Mount a disposable copy of work.atr in D8: with writes enabled.
 2. Use File > Boot Image to start Exec-of816.xex.
 3. Leave the keyboard alone for the five-second OF816 countdown.
-   The bitmap shell opens automatically; wait for SYS: ready and the > prompt.
+   Exec816 then loads with progress dots and the bitmap shell opens
+   automatically; wait for SYS: ready and the > prompt.
 
 Boot the XEX; the ATR supplies its system files. Keep this matching disk
 and work.atr mounted for the whole session. A disk from another build can contain
 incompatible commands.
 
 Press a key during the countdown to enter OF816 instead. Type EXEC816
-to continue into the bitmap shell.
+to resume loading and continue into the bitmap shell. OF816 appends its banner
+without clearing earlier boot messages. CACHE-BLOCKS! and SYSTEM-DRIVE! settings
+entered in Forth are preserved while loading resumes and the kernel starts.
 
 Try it
 ------
@@ -50,6 +53,7 @@ Try it
 The pipelines print 1 3 17 and 108 518 3171 respectively (lines, words, bytes).
 TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
+Ctrl-L clears the screen and redraws the prompt and your current input.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
 External commands live in SYS:C. Startup assigns C: there; the default PATH
@@ -73,7 +77,8 @@ Create a directory with MKDIR WORK:NOTES. CD .. or CD / moves to the parent
 and CD : to the volume root. CD .. is a shell shortcut; other paths do not
 support . or .. components. CLS clears the screen and returns the prompt home.
 
-SYS: is read-only; WORK: is writable. Try ECHO saved >WORK:OUT.TXT and
+SYS: is read-only; WORK: is writable (720 KiB, 256-byte sectors).
+Try ECHO saved >WORK:OUT.TXT and
 CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
 even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
 

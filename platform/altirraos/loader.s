@@ -10,6 +10,8 @@
 .i8
 .export loader_start, loader_init, loader_done, loader_error, loader_copy
 .export loader_initialized, expected_manifest
+.export loader_of_begin, loader_progress_add, loader_progress_finish
+.export loader_progress_bytes, loader_progress_stage
 
 .macro increment operand
     .local done
@@ -24,7 +26,7 @@ done:
 ; First XEX segment address is also the safe default RUNAD address.
 loader_start:
     lda loader_error
-    bne loader_done
+    bne load_failed
     lda loader_initialized
     cmp #1
     bne incomplete
@@ -39,13 +41,16 @@ loader_start:
     bne incomplete
     lda #1
     sta M_ENTERED
+    jsr loader_progress_finish
     jmp HOST_START
 incomplete:
     lda #M_BOOT_ERROR_INCOMPLETE
     sta loader_error
     ldx loader_initialized
-    beq loader_done
+    beq load_failed
     sta M_ERROR
+load_failed:
+    jsr progress_failed
 loader_done:
     jmp loader_done                 ; retain the OS's working E=1 environment
 
@@ -76,8 +81,13 @@ consume:
     lda M_STAGE+M_RECORD_COUNT
     ora M_STAGE+M_RECORD_COUNT+1
     beq return_host
+    jsr progress_exec_begin
     jsr copy_record
 return_host:
+    lda loader_error
+    beq :+
+    jsr progress_failed
+:
     plb
     ply
     plx
@@ -173,6 +183,9 @@ copy_identity:
     lda #1
     sta M_READY
     sta loader_initialized
+    ldx #<boot_banner
+    ldy #>boot_banner
+    jsr progress_text
     rts
 bounds_error:
     lda #M_BOOT_ERROR_BOUNDS
@@ -329,6 +342,9 @@ destination:
     stz M_OFFSET+1
     inc M_NEXT
 consumed:
+    lda M_STAGE+M_RECORD_COUNT
+    ldx M_STAGE+M_RECORD_COUNT+1
+    jsr loader_progress_add
     stz M_STAGE+M_RECORD_COUNT
     stz M_STAGE+M_RECORD_COUNT+1
     rts
@@ -338,6 +354,174 @@ descriptor:
 descriptor_read:
     lda f:$000000,x
     rts
+
+; Boot-only E: output. Each public callback preserves the host context; the
+; character helper also preserves hidden B, D and the whole borrowed IOCB0.
+.macro progress_save
+    php
+    pha
+    phx
+    phy
+    phb
+    cld
+    phk
+    plb
+.endmacro
+.macro progress_return
+    plb
+    ply
+    plx
+    pla
+    plp
+    rts
+.endmacro
+
+loader_of_begin:
+    progress_save
+    lda loader_error
+    bne @done
+    lda #1
+    sta loader_progress_stage
+    ldx #<of_message
+    ldy #>of_message
+    jsr progress_text
+@done:
+    progress_return
+
+progress_exec_begin:
+    lda loader_progress_stage
+    bne @done
+    lda #2
+    sta loader_progress_stage
+    ldx #<exec_message
+    ldy #>exec_message
+    jsr progress_text
+@done:
+    rts
+
+; A/X contain the low/high byte count, at most one staging record or OF page.
+loader_progress_add:
+    progress_save
+    clc
+    adc loader_progress_bytes
+    sta loader_progress_bytes
+    txa
+    adc loader_progress_bytes+1
+    sta loader_progress_bytes+1
+    cmp #$40
+    bcc @done
+    sbc #$40
+    sta loader_progress_bytes+1
+    lda #'.'
+    jsr progress_putchar
+@done:
+    progress_return
+
+loader_progress_finish:
+    progress_save
+    lda loader_progress_stage
+    beq @done
+    lda loader_progress_bytes
+    ora loader_progress_bytes+1
+    beq @newline
+    lda #'.'
+    jsr progress_putchar
+@newline:
+    lda #$9b
+    jsr progress_putchar
+    stz loader_progress_stage
+    stz loader_progress_bytes
+    stz loader_progress_bytes+1
+@done:
+    progress_return
+
+progress_failed:
+    lda progress_error_printed
+    bne @done
+    inc progress_error_printed
+    lda #$9b
+    jsr progress_putchar
+    ldx #<failure_message
+    ldy #>failure_message
+    jsr progress_text
+@done:
+    rts
+
+progress_text:
+    stx @read+1
+    sty @read+2
+@read:
+    lda a:$ffff
+    beq @done
+    jsr progress_putchar
+    inc @read+1
+    bne @read
+    inc @read+2
+    bra @read
+@done:
+    rts
+
+progress_putchar:
+    sta f:progress_character
+    php
+    pha
+    xba
+    pha
+    phx
+    phy
+    phb
+    phd
+    cld
+    phk
+    plb
+    lda #0
+    xba
+    lda #0
+    tcd
+    ldx #0
+@save:
+    lda $0340,x
+    pha
+    inx
+    cpx #16
+    bne @save
+    lda #11
+    sta $0342
+    lda #<progress_character
+    sta $0344
+    lda #>progress_character
+    sta $0345
+    lda #1
+    sta $0348
+    lda #0
+    sta $0349
+    ldx #0
+    jsr $e456
+    ; Output status has no effect on image validation or the boot record.
+    ldx #15
+@restore:
+    pla
+    sta $0340,x
+    dex
+    bpl @restore
+    pld
+    plb
+    ply
+    plx
+    pla
+    xba
+    pla
+    plp
+    rts
+
+boot_banner: .byte "Exec816 boot",$9b,0
+of_message: .byte "Loading OF816 ",0
+exec_message: .byte "Loading Exec816 ",0
+failure_message: .byte "Exec816 load failed",$9b,0
+loader_progress_bytes: .word 0
+loader_progress_stage: .byte 0
+progress_character: .byte 0
+progress_error_printed: .byte 0
 
 expected_manifest:
     .incbin "manifest.bin"

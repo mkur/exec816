@@ -54,6 +54,15 @@ Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The next utility batch is `>>` and minimal EXECUTE.
 
+The [OF816-first boot slice](history/of816-first-boot.md) is implemented through
+B4 at the development tier. The monitor runs before the main kernel payload.
+`EXEC816` restores the
+paused XEX/cartridge reader and returns with RTS; loading then resumes with
+progress dots. Defaults are initialized before Forth, its settings survive
+kernel startup, and the existing screen text is preserved. The bitmap/no-primes
+preview includes both Atarimax forms. Remote image loading remains a later
+extension.
+
 ## Follow-on capabilities
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,

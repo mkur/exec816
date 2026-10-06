@@ -222,6 +222,7 @@ the cursor, with `<` when text to the left is hidden.
 | --- | --- |
 | Ctrl-A / Ctrl-E | Beginning / end of line. |
 | Ctrl-B / Ctrl-F | One character left / right. |
+| Ctrl-L | Clear the screen and redraw the prompt and current input, retaining its cursor. |
 | Ctrl-U | Clear the whole line. |
 | Ctrl-K | Delete from the cursor to the end. |
 | Ctrl-W | Delete spaces and the preceding word. |

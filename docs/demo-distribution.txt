@@ -49,11 +49,14 @@ Close the settings window, then:
 2. In the same Disk drives window, set Emulation level to
    "Generic + 57600 baud". This setting applies to all drives.
 3. Choose File > Boot Image... and select Exec-of816.xex. Leave the keyboard
-   alone; Exec816 starts after the five-second countdown.
+   alone; after the five-second countdown, Exec816 loads with progress dots
+   and starts the demo.
 
 The ATR contains the system files. Boot the XEX, not the ATR.
 To enter the OF816 Forth monitor, press a key during the countdown.
-Type EXEC816 to continue into the demo.
+Type EXEC816 to resume loading and continue into the demo. OF816 preserves
+earlier screen text and any CACHE-BLOCKS! or SYSTEM-DRIVE! settings entered
+before continuing.
 
 Try it
 ------
@@ -83,6 +86,7 @@ Edit at the prompt: Ctrl-A/E beginning/end, Ctrl-B/F left/right, Ctrl-U clear,
 Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
 10 commands; going past the newest restores your unfinished draft.
 Atari cursor chords: Ctrl-+ left, Ctrl-* right, Ctrl-- up, Ctrl-= down.
+Ctrl-L clears the screen and redraws the prompt and your current input.
 Up/down browse history. History lasts for this shell session only.
 
 The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
@@ -113,7 +117,7 @@ Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. SYS: is read-only; WORK: is writable. Keep both
 disks mounted until shutdown. Pipes support two external commands.
 
-Try saving output to the disposable WORK: disk:
+Try saving output to the disposable 720 KiB WORK: disk (256-byte sectors):
 
     ECHO saved >WORK:OUT.TXT
     CAT WORK:OUT.TXT

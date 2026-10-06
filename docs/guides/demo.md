@@ -37,7 +37,7 @@ after a timeout; correct the settings and cold-boot again.
 
 The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
 nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The
-disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).
+disposable WORK: disk also has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
 SYS: is read-only; WORK: is explicitly writable. Try:
 
 ```text
@@ -235,7 +235,7 @@ Development artifacts remain in `build/demo`:
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
-- `work.atr`: disposable writable disk, with the same format and 128-byte sectors.
+- `work.atr`: disposable writable 720 KiB disk, with the same format and 256-byte sectors.
 - `system.atr`: 720 KiB read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
@@ -249,8 +249,9 @@ To retain MyDOS, pass `--format mydos --output build/demo-mydos`. Large MyDOS
 images use an extended VTOC and 16-bit file links. The mount descriptor always
 matches the chosen disk geometry.
 Both filesystem options use the filename `system.atr`; the format and geometry
-are recorded in the build manifests. WORK: uses the same format but stays at
-720 sectors of 128 bytes. Keep SYS: on D1–D7; D8 is reserved for WORK:.
+are recorded in the build manifests. WORK: uses the same format and always has
+2,880 sectors of 256 bytes (720 KiB), regardless of the SYS: geometry.
+Keep SYS: on D1–D7; D8 is reserved for WORK:.
 
 Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
 The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching

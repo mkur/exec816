@@ -10,6 +10,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [OF816 before kernel loading](of816-first-boot-implementation-plan.md): implemented through B4;
+  an INITAD monitor returns to the paused XEX/cartridge reader, preserves Forth
+  boot settings and earlier screen text, and adds small loading messages.
+  [Development record](../history/of816-first-boot.md).
 - [Two larger Task stacks](../history/larger-task-stacks.md): implemented; two
   2,560-byte worker stacks within the eight-Task layout, costing 3,072 bank-zero
   bytes and leaving 9,408 bytes free after startup. Raw/optimized Action! and C,

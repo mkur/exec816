@@ -6,6 +6,7 @@ its five-second countdown before starting the selected Exec816 demo described
 in ../README.txt. Keep the matching system.atr mounted in D1 and a disposable
 copy of work.atr in D8 with writes enabled. Both disks are required during
 startup; the cartridge does not contain them.
+WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
 is too small for this uncompressed boot image.
@@ -29,8 +30,12 @@ Use the OS ROM, CPU, memory and disk settings described in ../README.txt.
 In AltirraSDL, boot the appropriate CAR instead of Exec-of816.xex. Keep the
 system disk mounted and BASIC disabled. A cold boot is required.
 
-The loader switches the cartridge off before every XEX initialization call
-and before entering OF816. Exec runs from RAM. This is a new boot medium for
+The loader switches the cartridge off before every XEX initialization call.
+OF816 runs inside one of those calls, before the main kernel payload loads.
+EXEC816 or countdown expiry returns to the reader; it resumes copying from
+the cartridge with progress dots, preserving settings entered in Forth.
+OF816 appends its banner without clearing earlier boot messages.
+Exec runs from RAM. This is a new boot medium for
 the existing native-65C816 AltirraOS build, not a stock 6502 XL/XE build.
 Physical Atarimax/accelerator hardware has not been qualified. Warm reset
 does not reload the cartridge; power cycle or perform an emulator cold reset.
@@ -63,7 +68,8 @@ Use this checked alternative in AltirraSDL:
 
 Startup should report SYS: -> D2: ready, read-only. Keep both disks mounted.
 Use D2 for this route; attaching SYS on D1 after XEX loading failed disk startup
-in the development checks. The XEX payload itself is unchanged.
+in the earlier development checks. Those original results predate the
+OF816-first loading sequence.
 
 References
 ----------

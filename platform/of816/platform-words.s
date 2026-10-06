@@ -76,7 +76,7 @@ invalid:
     jmp _throway
 eword
 
-; The preloaded image owns the machine after this one-way handoff.
+; Retire the monitor and resume the paused XEX/cartridge reader with RTS.
 dword EXEC816_BOOT,"EXEC816"
     jml of_handoff
 eword
