@@ -178,6 +178,7 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
   BYTE index
   CARD status
 
+  service.eventDirty=1
   IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN
     EXEC.ReplyMsg(@request.message)
     RETURN

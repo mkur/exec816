@@ -43,7 +43,7 @@ PUBLIC TYPE Service=[
   LONGCARD nextClient
   CARD nextGem
   Client ARRAY clients(AESTYPES.CLIENTS)
-  BYTE count
+  BYTE count,eventDirty
   TimerState timer
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds

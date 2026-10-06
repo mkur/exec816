@@ -279,6 +279,16 @@ PUBLIC PROC Service(LONGCARD bits)
     count==+1
   OD
 
+RETURN
+
+; Commit retained gestures after native control admission, preserving the
+; established ordering between application patches and widget state changes.
+PUBLIC PROC Advance()
+
+  IF acquired=0 THEN
+    RETURN
+  FI
+
   DESKWIDGETINPUT.Advance()
   DESKDRAG.Advance()
   LET service=DESKSTATE.Get()

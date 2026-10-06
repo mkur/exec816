@@ -308,7 +308,8 @@ BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
 
 RETURN(0)
 
-PUBLIC BYTE FUNC Runnable()
+; Painting work only, independent of pending control messages.
+PUBLIC BYTE FUNC PaintPending()
   BYTE slot
 
   LET service=DESKSTATE.Get()
@@ -316,11 +317,7 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-  IF CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN(DESKCORE.Runnable(service))
-  FI
-
-  IF paintToken<>0 OR DESKCORE.Runnable(service)<>0 THEN
+  IF paintToken<>0 THEN
     RETURN(1)
   FI
 
@@ -339,19 +336,45 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(0)
 
+PUBLIC BYTE FUNC Runnable()
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF DESKCORE.Runnable(service)<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN(CONSOLEBITMAP.Pending()=0 AND PaintPending()<>0)
+
+; True only when the next paint quantum can run without waiting for another
+; scene owner or hardware completion. A retained dirty rectangle alone is not
+; sufficient reason to continue executing the presenter.
+PUBLIC BYTE FUNC Ready()
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(CONSOLEBITMAP.Pending()=0
+    AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
+
 ; One stripe/command chunk. The update token and model gate survive worker turns.
-PUBLIC PROC Pump()
+PUBLIC BYTE FUNC Pump()
   BYTE count,slot,status,done
   DESKTYPES.Window POINTER window
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN
+    RETURN(0)
   FI
 
   IF paintToken=0 THEN
     IF CONSOLEBITMAP.Failed()<>0 OR AESLOCKS.PaintBlocked()<>0 THEN
-      RETURN
+      RETURN(0)
     FI
 
     FOR count=0 TO LAYERTYPES.SLOT_COUNT-1 DO
@@ -374,7 +397,7 @@ PUBLIC PROC Pump()
   FI
 
   IF paintToken=0 THEN
-    RETURN
+    RETURN(0)
   FI
 
   LET region=LAYERS.PaintRegion(@service.scene,paintToken)
@@ -388,7 +411,7 @@ PUBLIC PROC Pump()
 
   done=PaintStrip(window,layer)
   IF done=2 THEN
-    RETURN
+    RETURN(1)
   FI
 
   IF done<>0 THEN
@@ -402,7 +425,7 @@ PUBLIC PROC Pump()
     FI
 
     IF regionIndex<region.count THEN
-      RETURN
+      RETURN(1)
     FI
   FI
 
@@ -411,7 +434,7 @@ PUBLIC PROC Pump()
     IF status=LAYERTYPES.OK THEN
       regionIndex=0
       nextY=region.rects(0).top
-      RETURN
+      RETURN(1)
     FI
 
     done=(status=LAYERTYPES.EMPTY)
@@ -431,6 +454,6 @@ PUBLIC PROC Pump()
     END
   FI
 
-RETURN
+RETURN(1)
 
 ENDMODULE

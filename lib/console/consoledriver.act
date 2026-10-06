@@ -556,16 +556,30 @@ PUBLIC PROC Worker()
       FI
     FI
 
+    IF (bits & DESKINPUT.Mask())<>0 THEN
+      DESKINPUT.Service(bits)
+      DESKINPUT.Present()
+    FI
+
     DESKHOST.Controls()
     IF DESKHOST.Ready()<>0 THEN
       CONSOLECONTROL.Process()
     FI
     DESKINPUT.Service(bits)
+    DESKINPUT.Advance()
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
     ; Present newly consumed motion before spending another quantum on output.
     ; Intersecting draws erase it safely and the final pass restores it.
     DESKINPUT.Present()
     bits=0
+
+    ; Commit visible GUI feedback before starting another console-output
+    ; quantum. An existing scene/DMA owner still gates both paths; painting
+    ; retains its one-quantum budget for this turn.
+    IF DESKPAINT.Pump()<>0 THEN
+      DESKINPUT.Service(DESKINPUT.Mask())
+    FI
+    DESKINPUT.Present()
 
     Arrival(service)
     entry=CONSOLEWINDOWS.Take()
@@ -620,7 +634,6 @@ PUBLIC PROC Worker()
       entry.busy=0
     FI
 
-    DESKPAINT.Pump()
     DESKINPUT.Present()
     AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0
@@ -634,7 +647,10 @@ PUBLIC PROC Worker()
       ELSE
         bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
       FI
-    ELSEIF again=0 THEN
+    ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
+      ; Ready paint continues within the existing preemptive Task quantum.
+      ; Do not add a voluntary round-robin pass between its bounded stripes.
+      ; Blocked paint still follows the normal signal wait below.
       IF writing<>0 THEN
         EXEC.Yield()
       ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN

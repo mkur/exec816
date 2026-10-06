@@ -6,8 +6,9 @@
 The [implementation plan](aes-server-implementation-plan.md) assigns AS0–AS4
 code changes, executable acceptance gates and the two-client Task budget.
 
-Status: proposed AES service, updated 2026-10-06 against the implemented timer
-foundation. No AES service is implemented by this note. Baseline: Exec816
+Status: implementation/design record, updated 2026-10-06. AS0–AS3b implement
+the [current AES profile](../../reference/aes.md); AS4 integration measurements
+are recorded in the [execution history](../../history/aes-server.md). Baseline: Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`,
 GEM4XE `e413c39d2f8e1bec8fe16596f610b923de4a0ae9`. The
 [XaAES study](xaaes-study.md) records the pinned comparative sources and their
@@ -20,8 +21,7 @@ are implemented. Timer TD0–TD3 have development evidence; AES AS2 now integrat
 that device into GEM event waits. The
 [execution record](../../history/interrupt-reply.md) documents the tested nominal
 57.6 kbit/s loaded envelope and the open 125 kbit/s transport timing gate,
-including misses without timer load. AES integration and timer TD4 GUI latency
-measurements remain unimplemented. Start AS0/AS1 on that pinned development
+including misses without timer load. AES integration uses that pinned development
 envelope; high-speed acceptance and release qualification remain separate gates.
 
 ## Decision and scope
@@ -198,8 +198,9 @@ Before publishing the AS2-capable AES service, the presenter creates a dedicated
 `timer.device`, `UNIT_VBLANK`, flags zero on the clock-query record. That record
 remains the original open owner until shutdown. The alarm record borrows only
 its device/unit fields and uses the same reply port; it does not acquire a
-second open. Failure unwinds these resources before AES admission, while the
-native desktop continues without the AES service.
+second open. Timer setup failure unwinds its resources, leaves message-only AES
+and the native desktop available, and reports a timer diagnostic for timed calls.
+Failure to establish the AES endpoint itself leaves native desktop service available.
 
 | Resource | Use and ownership |
 | --- | --- |
@@ -259,8 +260,9 @@ timer `DoIO`, an unguarded `WaitIO` or a busy-wait in the presenter. The current
 driver normally makes cancellation terminal synchronously; collection and record
 reuse are still separate steps.
 
-Between rendering quanta, collect timer replies and evaluate pending AES events
-using a fresh coherent clock sample for timed waits and the messages already
+Between rendering quanta, admissions or terminal alarm replies trigger pending
+event evaluation. Unchanged future waits do not poll the clock on other GUI turns.
+Use a fresh coherent clock sample for timed waits and the messages already
 accepted into each FIFO. The selected ready bits at that decision determine the
 single reply; at most one message is consumed. An old alarm reply may arrive after
 a message already satisfied its client: collect it and reevaluate live state,
@@ -332,6 +334,11 @@ lock grants each turn; a blocked client must not block independent requests.
 Preserve the current bounded rendering continuations and hardware completion
 path. When a budget is exhausted with runnable work remaining, continue through
 the worker's normal fairness path rather than sleeping for a fresh notification.
+The integrated implementation caps AES intake at one admission when eligible
+paint is pending; native requests may use the rest of the shared four-request
+budget. It still evaluates timer/event readiness outside intake and services
+captured pointer input between active AES calls. This limits work ahead of
+visible feedback without adding an idle wake.
 
 Service completions, input and due timers between rendering quanta. Do not run
 filesystem calls, application callbacks or synchronous client waits on the
@@ -498,12 +505,11 @@ configuration in results. Broader qualification remains separate. Any demo
 refresh uses `tools/build_demo.py`, retains OF816 and its five-second standard
 autoboot, and smoke-tests the exact package.
 
-All AES slices remain pending. The next executable work is AS0: fix the wire ABI,
-admit and retire a real C client through the presenter, then add the AS1 two-client
-message exchange. AS2 supplies the missing AES timer behavior on the existing
-device; AS4 supplies its TD4 GUI measurements. No new timed-wait kernel operation
-or interrupt entry is a prerequisite.
+The implementation uses the existing timer device and ordinary Exec primitives.
+See the [slice records](../../history/aes-server.md) for actual execution scope,
+remaining timing gates and source/build pins. GEM windows, redraw messages and
+independent VDI workstations follow the event/ownership foundation.
 
-For this documentation-only change: bank-zero reservation delta is **0 bytes
-fixed and 0 bytes per Task**; no executable compatibility or performance result
-is claimed.
+Reserved bank-zero delta is **0 bytes fixed and 0 bytes per Task**, including
+alignment, guards and unused reserved capacity. Upper-RAM and stack observations
+are recorded separately; development checks do not qualify the hosted system.

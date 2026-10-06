@@ -7,23 +7,34 @@
 
 ULONG AESService;
 volatile UWORD AESCommand, AESPhase, AESPeerPhase, AESChecks, AESFailures;
-volatile UWORD AESReady, AESDone, AESFirstFailure, AESMessages, AESTimers;
+volatile UWORD AESReady, AESDone, AESFirstFailure, AESMessages, AESTimers, AESRestarts;
+volatile ULONG AESBurns;
 static struct Task *controller, *workers[2];
 static ULONG wake, starts[2];
 static WORD ids[2];
-static UWORD issued, stopping;
+static volatile UWORD issued, stopping;
+static UWORD reverse;
+static WORD previousIds[2];
 static BYTE controllerBit;
+static volatile UWORD checks[3];
 
-static void check(BOOL okay)
+static void check(UWORD who, BOOL okay)
 {
-    Forbid(); ++AESChecks;
-    if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure=AESChecks; }
-    Permit();
+    /* Each Task writes its own counter. Successful assertions must not add
+     * scheduling gates to the workload whose latency we are measuring. */
+    ++checks[who];
+    if (!okay) {
+        Forbid();
+        ++AESFailures;
+        if (!AESFirstFailure) AESFirstFailure=checks[0]+checks[1]+checks[2];
+        Permit();
+    }
 }
-#define CHECK(t) check((t) != 0)
+#define CHECK(t) check(who, (t) != 0)
 
 static void holder(UWORD command)
 {
+    UWORD who=0;
     WORD words[8], x, y, buttons, keys, key, clicks, event;
     WORD code=command == 1 ? BEG_UPDATE : BEG_MCTRL;
     CHECK(wind_update(code) == 1);
@@ -40,6 +51,7 @@ static void holder(UWORD command)
 
 static void peer(void)
 {
+    UWORD who=1;
     WORD words[8] = {765, 0, 2, 3, 4, 5, 6, 7};
     UWORD i;
     for (i=0; i<100 && AESPhase != 1; ++i) CHECK(evnt_timer(20, 0) == 1);
@@ -57,6 +69,62 @@ static void peer(void)
     }
 }
 
+static WORD events(WORD *words, UWORD milliseconds)
+{
+    WORD x,y,b,k,key,clicks;
+    return evnt_multi(MU_MESAG | MU_TIMER,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                      words,milliseconds,0,&x,&y,&b,&k,&key,&clicks);
+}
+
+static void cpu(UWORD who)
+{
+    UWORD i;
+    if (who == 0) {
+        AESPhase=1;
+        AESBurns=0;
+        /* Deliberately no ExecYield, Wait or GEM call in this CPU-only phase. */
+        while (AESPeerPhase < 2) ++AESBurns;
+        CHECK(AESBurns > 0);
+    } else {
+        for (i=0; i<25; ++i) { CHECK(evnt_timer(20,0) == 1); ++AESTimers; }
+        AESPeerPhase=2;
+    }
+}
+
+static void exchange(UWORD who, BOOL continuous)
+{
+    WORD words[8] = {0,0,2,3,4,5,6,7}, event;
+    UWORD sequence=0;
+    if (who == 0) AESPhase=1;
+    while (!stopping && (continuous || sequence < 64)) {
+        if (who == 0) {
+            words[0]=sequence;words[1]=ids[0];
+            event=appl_write(ids[1],16,words);
+            CHECK(event == 1 || stopping);
+            if (!event) break;
+            event=events(words,continuous ? 250 : 5000);
+            if (!stopping) CHECK((event & MU_MESAG) && words[0] == sequence && words[1] == ids[1]);
+            ++AESMessages;
+            if (continuous || (sequence & 3) == 0) {
+                CHECK(evnt_timer(continuous ? 100 : 0,0) == 1);
+                ++AESTimers;
+            }
+            ++sequence;
+        } else {
+            event=events(words,continuous ? 100 : 5000);
+            if (stopping) break;
+            CHECK(event != 0);
+            if (event & MU_MESAG) {
+                CHECK(words[0] == sequence && words[1] == ids[0]);
+                words[1]=ids[1];
+                event=appl_write(ids[0],16,words);
+                CHECK(event == 1 || stopping);
+                ++AESMessages;++sequence;
+            } else CHECK(continuous);
+        }
+    }
+}
+
 static void task(UWORD who)
 {
     BYTE bit=AllocSignal(-1);
@@ -64,12 +132,15 @@ static void task(UWORD who)
     starts[who]=1UL << bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     ids[who]=appl_init();
-    CHECK(ids[who] > 0);
+    CHECK(ids[who] > previousIds[who]);
+    previousIds[who]=ids[who];
     Forbid(); ++AESReady; Signal(controller, wake); Permit();
     for (;;) {
         Wait(starts[who]);
         if (stopping) break;
-        if (who == 0) holder(issued); else peer();
+        if (issued == 3) cpu(who);
+        else if (issued == 4 || issued == 5) exchange(who,issued == 5);
+        else if (who == 0) holder(issued); else peer();
         if (who == 0) AESPhase=3; else AESPeerPhase=3;
     }
     CHECK(ExecAESDetach());
@@ -82,6 +153,7 @@ void AESClientTwo(void) { task(1); }
 
 UWORD AESStart(void)
 {
+    UWORD who=2;
     controller=FindTask(NULL);
     controllerBit=AllocSignal(-1);
     CHECK(controllerBit >= 0);
@@ -94,8 +166,18 @@ UWORD AESStart(void)
     return AESFailures;
 }
 
+UWORD AESStop(void);
+
 UWORD AESPump(void)
 {
+    UWORD who=2;
+    if (AESCommand == 6) {
+        CHECK(AESStop() == 0);
+        reverse^=1;
+        CHECK(AESStart() == 0);
+        ++AESRestarts;
+        return AESFailures;
+    }
     if (AESCommand != issued) {
         CHECK(issued == 0 || (AESPhase == 3 && AESPeerPhase == 3));
         issued=AESCommand;
@@ -108,14 +190,17 @@ UWORD AESPump(void)
 
 UWORD AESStop(void)
 {
+    UWORD who=2;
     ULONG available=AvailMem(0);
-    CHECK(issued == 0 || (AESPhase == 3 && AESPeerPhase == 3));
+    CHECK(issued == 0 || issued == 5 || (AESPhase == 3 && AESPeerPhase == 3));
     stopping=1;
-    Signal(workers[0], starts[0]);
-    Signal(workers[1], starts[1]);
+    Signal(workers[reverse], starts[reverse]);
+    while (AESDone != 1) Wait(wake);
+    Signal(workers[1-reverse], starts[1-reverse]);
     while (AESDone != 2) Wait(wake);
     FreeSignal(controllerBit);
     /* Compare only retirement: the DOS Process may have opened files since startup. */
     CHECK(AvailMem(0) == available + 432UL);
+    AESChecks=checks[0]+checks[1]+checks[2];
     return AESFailures;
 }

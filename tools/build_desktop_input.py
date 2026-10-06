@@ -6,7 +6,7 @@ from build_bitmap_console import build_bitmap
 from native_program import ROOT
 
 
-def build(out, mode='opt', second_app=False, profile=4, aes=False):
+def fixture(out, second_app=False):
     out.mkdir(parents=True, exist_ok=True)
     source = ROOT/'tests/programs/desktop_input.act'
     if second_app:
@@ -15,6 +15,11 @@ def build(out, mode='opt', second_app=False, profile=4, aes=False):
         text = text.replace('  Send(DESKTYPES.CLOSE,panel)', '  DESKAPP.Stop()\n  Send(DESKTYPES.CLOSE,panel)')
         source = out/'two-client-input.act'
         source.write_text(text)
+    return source
+
+
+def build(out, mode='opt', second_app=False, profile=4, aes=False):
+    source = fixture(out, second_app)
     return build_bitmap(source, out, mode == 'opt', desktop=True, aes=aes, stack_checks=True,
         dos_mounts=[dict(alias='D1', unit=49, sectors=720, sector_bytes=128, profile=profile, format=2)])
 

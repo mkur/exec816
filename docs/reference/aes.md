@@ -1,6 +1,7 @@
 # AES application service
 
-[Reference](README.md)
+[Reference](README.md) · [C application guide](../guides/aes-applications.md) ·
+[Development record](../history/aes-server.md)
 
 The optional AES endpoint runs in the existing desktop presenter. It uses
 ordinary Exec messages; it adds no Task or kernel gateway. The native desktop
@@ -102,6 +103,20 @@ shutdown, then closes the original open. A setup failure releases its acquired
 resources and leaves message service available. Per-client absolute deadlines
 share that single alarm. Queued completion and cancellation replies retain their
 wake path until collected; future timer I/O never blocks the presenter.
+Readiness is reconsidered after admissions or terminal alarm replies. Unchanged
+future waits do not reread the clock on unrelated GUI turns. Pointer capture and
+cursor service run between AES admissions and after active event processing;
+widget commits remain after native control admission. Existing GUI lock gates
+still apply. These boundaries add no idle wake or periodic input poll.
+Native and AES requests share at most four admissions per turn, alternating the
+first endpoint. When eligible painting is pending, AES intake is limited to one
+request; native requests may use the remaining capacity. Timer completion and
+event matching still run outside that intake budget.
+The presenter services captured input before controls when signalled and after
+actual paint work. Widget model changes stay after native control admission.
+Each turn gives GUI painting its existing bounded quantum before new console
+output. Ready paint may continue without a voluntary Yield; VBI preemption
+provides Task fairness, and blocked work retains the ordinary signal wait path.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile. Rebuild bindings and service together. Current implementation and

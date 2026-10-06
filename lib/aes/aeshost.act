@@ -1,6 +1,7 @@
 ; Presenter-owned hooks. Failed optional AES setup leaves native GUI available.
 MODULE AESHOST
 USE EXEC
+USE EXECLISTS
 USE AESSTATE
 USE AESTYPES
 USE AESCORE
@@ -51,7 +52,8 @@ RETURN(service.mask OR service.timer.mask)
 PUBLIC BYTE FUNC Pump(BYTE budget)
 
   LET service=AESSTATE.Get()
-  IF service=NULL OR service.live=0 THEN
+  IF service=NULL OR service.live=0
+      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)<>0 THEN
     RETURN(0)
   FI
 
@@ -66,14 +68,18 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(AESCORE.Runnable(service) OR AESTIMER.Runnable(service))
 
-PUBLIC PROC Wake()
+PUBLIC BYTE FUNC Wake()
+  BYTE changed
 
   LET service=AESSTATE.Get()
-  IF service<>NULL AND service.live<>0 THEN
-    AESCORE.Wake(service)
+  IF service=NULL OR service.live=0 THEN
+    RETURN(0)
   FI
 
-RETURN
+  changed=service.eventDirty<>0 OR AESTIMER.Runnable(service)<>0
+  AESCORE.Wake(service)
+
+RETURN(changed)
 
 PUBLIC BYTE FUNC Idle()
 

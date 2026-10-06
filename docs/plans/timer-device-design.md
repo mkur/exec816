@@ -9,7 +9,9 @@ Foundation sequencing and its timer adoption gate are specified in the
 Status: implementation/design record, 2026-10-05. TD0–TD3 are implemented without a worker Task. The
 [current timer contract](../reference/timer.md) and
 [execution record](../history/interrupt-reply.md) describe development evidence
-and the 57.6k loaded envelope; TD4/AES and 125k timer-load timing remain open.
+and the 57.6k loaded envelope. The implemented [AES profile](../reference/aes.md)
+uses the shared alarm; [AS4](../history/aes-server.md) records its TD4 concurrency
+and GUI timing checks. TD4 acceptance and 125k timer-load timing remain open.
 
 ## Decision
 

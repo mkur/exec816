@@ -107,7 +107,9 @@ RETURN(0)
 PUBLIC PROC Collect(AESSTATE.Service POINTER service)
 
   LET state=@service.timer
-  IF state.port=NULL THEN
+  ; Empty is only a hint. A later interrupt reply keeps its signal pending
+  ; across the presenter's final queue check and Wait. GetMsg still owns removal.
+  IF state.port=NULL OR EXECLISTS.IsListEmpty(@state.port.mp_MsgList)<>0 THEN
     RETURN
   FI
 

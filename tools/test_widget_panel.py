@@ -202,6 +202,10 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
                 load(4);move(88,96)
                 for down in (1,0):
                     b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));reach('dw($%x)=%d'%(at('DESKINPUT','buttons'),down));frames(4)
+                # Loaded peers can defer model consumption beyond four frames;
+                # wait for the semantic result, then measure latency separately.
+                reach('(dw($%x)=1)&(dw($%x)=65535)&(dw($%x)=0)'%
+                    (second+24+24+10,second+20,second+22))
                 require(get(second+24+24+10)==1,'Second form did not toggle')
                 load(0)
                 report['functional'].append(dict(name='second context toggled',contexts=[context,second]))

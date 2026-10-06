@@ -78,6 +78,13 @@ PUBLIC PROC Poll(AESSTATE.Service POINTER service)
   CARD ready
   LONGCARD high,low
 
+  ; Only admissions and terminal alarm replies can change readiness. Native
+  ; GUI turns must not repeatedly read the clock for an unchanged future wait.
+  IF service.eventDirty=0 AND AESTIMER.Runnable(service)=0 THEN
+    RETURN
+  FI
+
+  service.eventDirty=0
   AESTIMER.Collect(service)
   timed=0
   FOR index=0 TO AESTYPES.CLIENTS-1 DO

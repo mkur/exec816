@@ -4,15 +4,16 @@ import argparse
 import json
 from pathlib import Path
 from build_widget_panel import fixture
+from build_desktop_input import fixture as input_fixture
 from build_bitmap_console import drawing, prepare
 from generate_aes_server import expected_layout
 from generate_memory import PROFILE
 from native_program import ROOT, build, compiler
 
 
-def build_proof(out):
+def build_proof(out, load=False, pointer=False):
     out.mkdir(parents=True, exist_ok=True)
-    source=fixture(out)
+    source=input_fixture(out, True) if pointer else fixture(out)
     foreign=drawing(out, True, widgets=True,
         client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'tests/programs/aes_desktop.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
@@ -42,6 +43,8 @@ def build_proof(out):
     Require(aesCall()=0)
   END
   DESKAPP.Stop()''',1)
+    if load:
+        text=text.replace('  ready=1', f"  BEGIN\n    LET command=CARD POINTER(${sy['AESCommand']:x})\n    command^=5\n    LET entry=ADDRESS POINTER(@aesCall)\n    entry^=${sy['AESPump']:x}\n    Require(aesCall()=0)\n  END\n  ready=1",1)
     source.write_text(text)
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
@@ -59,4 +62,6 @@ def build_proof(out):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True)
-    build_proof(p.parse_args().output.resolve())
+    p.add_argument('--load',action='store_true',help='Start continuous GEM exchange for matched native feedback observations')
+    p.add_argument('--pointer',action='store_true',help='Use the AS0 raw-event window for matched pointer observation')
+    args=p.parse_args();build_proof(args.output.resolve(),args.load,args.pointer)

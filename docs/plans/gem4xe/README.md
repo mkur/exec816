@@ -9,12 +9,12 @@ a multitasking GEM-compatible GUI over Exec816, with minimal changes to rebuilt
 GEM applications. It recommends adapting GEM4XE with XaAES's client, event and
 ownership semantics as references; direct XaAES or G4A binary compatibility
 is separate work. This source study does not change the current native contracts.
-The proposed [AES server design](aes-server-design.md) specifies the next layer:
+The [AES server design](aes-server-design.md) specifies the application layer:
 GEM bindings, client messages and waits, GUI locks and retirement in the existing
 presenter, with the implemented [timer.device](../../reference/timer.md), a
 concrete shared-alarm lifecycle and AS0–AS4 two-client proof slices. AES timer
-event semantics have passed AS2b development checks; integrated GUI latency
-measurements remain pending. Ordinary Exec Wait
+event semantics have passed AS2b development checks. AS4's integrated functional
+proof passes, while its measured relative latency gate remains open. Ordinary Exec Wait
 remains unchanged. The [implementation plan](aes-server-implementation-plan.md)
 breaks AS0–AS4 into executable commits, with code ownership, a shared intake
 budget, the two-client Task map and measured latency gates. AS0a now supplies the
@@ -24,8 +24,11 @@ presenter admission with a shared intake budget. AS0c implements task-local
 AS1 adds copied FIFO messages and independent C message waits. AS2a implements
 the shared timer transport and its cancellation/collection lifecycle; AS2b adds
 GEM timer and combined-event waits with PAL/NTSC and raw/optimized C evidence.
-AS3a implements recursive lock arbitration and queued acquisitions; native
-painting/input gates remain AS3b. The implemented
+AS3a implements recursive lock arbitration and queued acquisitions; AS3b gates
+native painting and interaction while retaining deferred input. The
+[execution history](../../history/aes-server.md) and
+[C application guide](../../guides/aes-applications.md) track the integrated
+proof and current profile. The implemented
 [native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.

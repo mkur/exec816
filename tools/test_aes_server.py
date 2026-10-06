@@ -471,6 +471,37 @@ def intake(out, failure=0, replay=False):
     return report
 
 
+def plain_console(out):
+    """Presenter hooks remain harmless when neither desktop nor AES is bound."""
+    out.mkdir(parents=True,exist_ok=True)
+    source=read_source(ROOT/'tests/programs/native_console_startup.act')
+    source=source.replace('USE HEAPCORE','USE HEAPCORE\nUSE DESKINPUT\nUSE DESKSTATE\nUSE AESSTATE\nUSE AESHOST')
+    source=source.replace('  port=EXEC.CreateMsgPort()', '''  IF DESKSTATE.Get()<>NULL OR AESSTATE.Get()<>NULL OR AESHOST.Mask()<>0 THEN
+    HEAPCORE.Abort($f8e3)
+  FI
+
+  DESKINPUT.Advance()
+  port=EXEC.CreateMsgPort()''')
+    fixture=out/'plain.act';fixture.write_text(source)
+    report=dict(status='running',tier='development',qualification=False)
+    try:
+        program=build(compiler(ROOT/'build/actionc'),fixture,out/'program',tasks=True,
+            task_capacity=8,console=True,stack_checks=True)
+        report['build']=program['build']
+        with emulator(BRIDGE,ROM,out,pin=PIN) as bridge:
+            report['machine']=verify_machine(bridge,ROM,PIN)
+            def before(b):
+                b.poke(next(d['address'] for d in program['image']['data'] if '_ENABLED_' in d['name']),1)
+            report['runtime'],_=execute(bridge,program,before_run=before,timeout=120,frame_limit=8000)
+            require(data(bridge,program['image'],'checkpoint')==[1],'Plain console client did not finish')
+            ownership(bridge,program,program['output'])
+        report.update(status='pass',ownership='restored')
+    except Exception as error:
+        report.update(status='fail',error=str(error));raise
+    finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    print('Plain console with unbound GUI/AES hooks passed',flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -478,7 +509,7 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'locks'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
@@ -488,6 +519,8 @@ if __name__ == '__main__':
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'alarm':
         alarm(args.output.resolve(), args.replay)
+    elif args.suite == 'console':
+        plain_console(args.output.resolve())
     else:
         require(args.mode == 'opt', 'Routine intake checks use optimized builds')
         intake(args.output.resolve(), args.failure, args.replay)

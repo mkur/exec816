@@ -3,8 +3,11 @@
 [GEM plans](README.md) · [Design note](aes-server-design.md) ·
 [Desktop contract](../../reference/desktop.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-06. AS0a–AS3b have passed development checks; AS4
-remains pending. Implementation starts from Exec816
+Status: in progress, 2026-10-06. AS0a–AS3b have passed development checks. AS4's
+implementation and functional proof are present, but its relative latency gate
+fails; **AS4 is not accepted**. See the [execution record](../../history/aes-server.md)
+and [measured comparisons](../../development/aes-server-as4.json).
+Implementation starts from Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`, using the
 GEM4XE source revision and provenance recorded in the design and
 [port inputs](../../../ports/gem4xe/inputs.json).
@@ -29,6 +32,11 @@ PAL/NTSC expiry, shared deadlines, failure checks and a preempted CPU peer.
 FIFO eligible waits and exit release.
 [AS3b](../../development/aes-server-as3b.json) adds native painting/interaction
 gates, bounded deferred input and real GUI/SIO checks with no blocked-paint spin.
+AS4 adds the resident application loops, repeated restart/CPU/SIO proof,
+identical-image replay and matched disabled/idle/active measurements. Its
+bounded presenter changes improve several measurements, but do not close the
+original comparison limits. Preserve the recorded failures for the remaining
+performance work; do not advance the acceptance status on functional checks alone.
 Fixed and per-Task bank-zero reservation deltas are zero. Baseline widget latency
 targets remain open; an unchanged heavy-scroll pointer observation also timed
 out, while the dedicated widget scroll/disk cohorts passed. These observations
@@ -337,6 +345,10 @@ signal, lease, queue and driver ownership against the initial baseline.
 
 ## AS4 — Integrated proof and latency gate
 
+Execution status: implemented and measured; functional checks pass, latency
+acceptance remains open. The [record](../../development/aes-server-as4.json)
+includes every frozen and matched exceedance. No comparison tolerance was relaxed.
+
 Build two bounded resident C applications whose bodies use the ordinary GEM
 calls and event loops from the supported profile. Startup supplies service/peer
 handles and owns termination wrappers. Run them beside the native desktop and
@@ -440,7 +452,7 @@ remaining gates. Keep large images/traces in ignored development directories;
 retain compact evidence in the repository. Do not overwrite older qualification
 records or mark an intermediate fixture as full GUI compatibility.
 
-After AS4, add a current `docs/reference/aes-server.md` call/ownership contract,
+After AS4, maintain the current `docs/reference/aes.md` call/ownership contract,
 a C usage guide and a history page with evidence; update their indexes, this
 plan, the design status and roadmap. Publish only behavior actually tested.
 Any demo refresh uses [build_demo.py](../../../tools/build_demo.py), includes

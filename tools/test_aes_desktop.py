@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import adapter_state as adapter
 from bitmap_console_performance import native_markers
@@ -19,20 +20,25 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 
 
-def run(out, program, unobserved=False):
+def run(out, program, unobserved=False, integrated=False, trace_calls=False):
+    require(not trace_calls or (integrated and not unobserved),'Call tracing requires the observed integrated proof')
     out.mkdir(parents=True,exist_ok=True)
     p=read_build(program)
     sy=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
     marks=native_markers(p,[('DESKHOST_CONTROLS','turn')])
+    aes_marks={}
+    if trace_calls:
+        from aes_latency_trace import markers as aes_markers
+        aes_marks=aes_markers(p,json.loads((p['output'].parent/'c-image.json').read_text()))
     for name in ('EXEC816_MOUSE_TRACE','EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS','EXEC816_MASK_TRACE'):
         os.environ.pop(name,None)
     if not unobserved:
-        os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=f"{marks['turn']['entry']:x}")
+        os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in [marks['turn']['entry'],*aes_marks.values()]))
     media=out/'media/TOOLS/SUB';media.mkdir(parents=True,exist_ok=True)
     (media/'DATA.BIN').write_bytes(bytes(i & 255 for i in range(32768)))
     disk=out/'disk.atr';make(disk,out/'media',binary_names={'TOOLS/SUB/DATA.BIN'},filesystem='sdfs')
-    report=dict(slice='AS3b',status='running',tier='development',qualification=False,
+    report=dict(slice='AS4' if integrated else 'AS3b',status='running',tier='development',qualification=False,
         observer=not unobserved,build=p['build'],cases=[],idle_windows=[],
         reserved_bank_zero_delta=dict(fixed=0,per_public_task=[0]*8))
     try:
@@ -53,7 +59,7 @@ def run(out, program, unobserved=False):
                         require(b.peek16(adapter.STATE)==65535,'Guest stopped: '+hex(b.peek16(adapter.STATE)))
                     return r
                 b.regs=registers
-                try:run_to(b,marker,condition=condition,frame_limit=12000,timeout=180)
+                try:run_to(b,marker,condition=condition,frame_limit=12000,timeout=600)
                 finally:b.regs=original
             def frames(n=1):reach('@frame>=%d'%(b.eval_expr('@frame')+n))
             position=[320,120]
@@ -72,6 +78,10 @@ def run(out, program, unobserved=False):
                 if not unobserved:b.profile_start()
                 reach('dw($%x)=1'%at('DESKTEST','ready'));frames(160)
                 print('AES desktop ready',flush=True)
+                if integrated:
+                    b.poke16(sy['AESCommand'],6)
+                    reach('dw($%x)=1'%sy['AESRestarts'])
+                    require(c('AESReady')==2 and c('AESFailures')==0,'Loaded client restart failed')
                 service=read('DESKSTATE','service',3)
                 sf=layout()['Service']['fields'];wf=layout()['Window']['fields'];ws=layout()['Window']['size']
                 scene=service+sf['scene'];lf=layer_layout()
@@ -138,6 +148,38 @@ def run(out, program, unobserved=False):
                         disk_reads=read('DESKTEST','reads')-reads,messages=c('AESMessages'),timers=c('AESTimers'),
                         old_bounds=list(old_bounds),new_bounds=list(b.memdump(bounds,8)),
                         deferred_clicks=1,token_at_grant=0))
+                if integrated:
+                    # The blocked-paint assertion above needs instruction
+                    # history. Later phases check progress and ownership, with
+                    # bounded call/deadline tracing in measure_aes_calls. Avoid
+                    # profiling every instruction in three long exchanges unless
+                    # the caller explicitly requests the full call trace.
+                    if not unobserved and not trace_calls:
+                        b.profile_stop()
+                    report['observation_scope']=(
+                        'No CPU instruction observation; state, progress and pixel checks.' if unobserved else
+                        'Whole-run presenter and AES call markers, plus state/progress/pixel checks.' if trace_calls else
+                        'Presenter markers during GUI lock phases; progress/state checks during CPU, message and restart phases.')
+                    for command in (3,4,6,4,6,4):
+                        load=3 if command==3 else 2 if command==4 else 0
+                        b.poke16(at('DESKTEST','mode'),load)
+                        reach('dw($%x)=%d'%(at('DESKTEST','runningMode'),load))
+                        reads=read('DESKTEST','reads');writes=read('DESKTEST','writes')
+                        restarts=c('AESRestarts')
+                        b.poke16(sy['AESCommand'],command)
+                        if command==6:
+                            reach('dw($%x)>%d'%(sy['AESRestarts'],restarts))
+                        else:
+                            reach('dw($%x)=%d'%(sy['issued'],command))
+                            reach('(dw($%x)=3)&(dw($%x)=3)'%(sy['AESPhase'],sy['AESPeerPhase']))
+                        require(c('AESFailures')==0,'Integrated GEM failure '+str(c('AESFirstFailure')))
+                        item=dict(command=command,reads=read('DESKTEST','reads')-reads,
+                            writes=read('DESKTEST','writes')-writes,restarts=c('AESRestarts'))
+                        if command==3:
+                            item['cpu_iterations']=get(sy['AESBurns'],4)
+                            require(item['cpu_iterations']>1000 and item['reads']>0,'CPU peer prevented timer/disk progress')
+                        report['cases'].append(item)
+                        print('Integrated phase',command,'passed',flush=True)
                 report['stack_usage']=stack_usage(b,p['build']['memory'])
                 b.poke16(at('DESKTEST','mode'),9)
                 reach('dw($%x)=2'%at('DESKTEST','ready'));b.bp_clear_all()
@@ -150,13 +192,20 @@ def run(out, program, unobserved=False):
             report['checks']=c('AESChecks');report['failures']=c('AESFailures')
             require(report['failures']==0,'AES retirement failed')
             ownership(b,p,p['output']);report['ownership']='restored'
-            if not unobserved:b.profile_stop()
+            if integrated:
+                meta=(p['output']/'timermeta.act').read_text()
+                timer_base=int(re.search(r'PUBLIC CONST BASE=\$([0-9a-f]+)',meta,re.I)[1],16)
+                report['final_timer_clock']=get(timer_base+4,4)
+            if not unobserved and (not integrated or trace_calls):b.profile_stop()
         if not unobserved:
             events=read_events(out/'emulator.log',kinds={'cpu'})
             align=lambda t:t+round((events[0][0]-t)/(1<<32))*(1<<32)
             counts=[sum(align(lo)<=t<=align(hi) and int(e[4],16)==marks['turn']['entry'] for t,e in events)
                     for lo,hi in report['idle_windows']]
             report['blocked_paint_turns']=counts
+            if trace_calls:
+                from aes_latency_trace import analyze
+                report['aes_latency']=analyze(events,aes_marks,report['final_timer_clock'])
             require(counts==[0],'Presenter spins over blocked paint: '+str(counts))
         report['status']='pass'
     except Exception as error:
@@ -173,4 +222,6 @@ if __name__=='__main__':
     parser.add_argument('--program',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--unobserved',action='store_true')
-    args=parser.parse_args();run(args.output.resolve(),args.program.resolve(),args.unobserved)
+    parser.add_argument('--integrated',action='store_true')
+    parser.add_argument('--trace-calls',action='store_true',help='Record every AES call throughout the long proof; bounded load distributions normally use measure_aes_calls')
+    args=parser.parse_args();run(args.output.resolve(),args.program.resolve(),args.unobserved,args.integrated,args.trace_calls)

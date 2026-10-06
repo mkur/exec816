@@ -122,7 +122,8 @@ static WORD submit(struct ExecAESContext *c, UWORD operation)
     r->sequence = sequence;
     c->busy = 1;
     PutMsg(c->service, &r->message);
-    while ((reply = GetMsg(c->replies)) == NULL) WaitPort(c->replies);
+    while ((reply = GetMsg(c->replies)) == NULL)
+        Wait(1UL << c->replies->mp_SigBit);
     /* This is a private port and binding. No borrowed pointers survive reply. */
     if (reply != &r->message || r->version != AES_VERSION ||
         r->bytes != sizeof(*r) || r->sequence != sequence ||

@@ -98,13 +98,43 @@ PUBLIC BYTE FUNC Idle()
 
 RETURN(1)
 
+; A bounded active-service boundary, never an idle poll or periodic wake.
+; Capture/cursor may advance now; widget commits stay after native controls.
+PROC InputBoundary()
+
+  DESKINPUT.Service(DESKINPUT.Mask())
+  DESKINPUT.Present()
+
+RETURN
+
+BYTE FUNC AESAdmission(BYTE POINTER remaining)
+
+  IF remaining^=0 THEN
+    RETURN(0)
+  FI
+
+  LET admitted=AESHOST.Pump(1)
+  remaining^==-admitted
+  IF admitted<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN(admitted)
+
 PUBLIC PROC Controls()
-  BYTE count,admitted,selected
+  BYTE count,admitted,selected,aesRemaining
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
+    aesRemaining=4
+    IF AESHOST.Runnable()<>0 AND DESKPAINT.PaintPending()<>0 THEN
+      ; Keep one AES admission per drawing turn, with timer matching outside
+      ; intake. Native requests may use the remaining shared capacity. This
+      ; bounds service work ahead of visible feedback without starving AES.
+      aesRemaining=1
+    FI
     ; Four admissions total. Alternate the first endpoint between turns and
     ; alternate within a turn; an empty endpoint yields its unused capacity.
     selected=firstPort
@@ -114,10 +144,10 @@ PUBLIC PROC Controls()
       IF selected=0 THEN
         admitted=DESKCORE.Pump(service,1)
         IF admitted=0 THEN
-          admitted=AESHOST.Pump(1)
+          admitted=AESAdmission(@aesRemaining)
         FI
       ELSE
-        admitted=AESHOST.Pump(1)
+        admitted=AESAdmission(@aesRemaining)
         IF admitted=0 THEN
           admitted=DESKCORE.Pump(service,1)
         FI
@@ -132,7 +162,9 @@ PUBLIC PROC Controls()
     OD
 
     DESKCORE.Wake(service)
-    AESHOST.Wake()
+    IF AESHOST.Wake()<>0 THEN
+      InputBoundary()
+    FI
     DESKPAINT.Sync()
   FI
 
