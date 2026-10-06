@@ -1,0 +1,184 @@
+{
+  "slice": "F0",
+  "tier": "development",
+  "baseline_source": "381f06998656160be64fd91fe1ec0cb05c0d7ee7",
+  "baseline_local_changes": {
+    "docs/guides/shell.md": "c952942da34512ac2cc1ff8de35b17413f6c2197449c529507cd309c1dddaa9e",
+    "examples/shell/shell-commands.inc": "57dd32ab69449d965d193e141c105c53af3bde4b60128c96aabc8583e3a8b6c6",
+    "lib/io/deviceinspect.act": "48bc37b88e97c0d280d87ae2d8f7d6f7dc68a1475991b7ed7044d35b8d37009a",
+    "tests/programs/system_inspect.act": "f1ba8f3aa61387014be0646c5afa4d6c3fd4e94581fbf007a08a8fdb79a87ddd",
+    "tools/test_shell_entry.py": "e098c32a5381007d268aa12086815fc9c93d8616a4d9321e2a89ea92024a8aac"
+  },
+  "baseline_build": "build/demo-bitmap-shell-timer",
+  "baseline_artifacts": {
+    "program.xex": "6a7e2df6a9f06b7c0cc8976a1570b54700fbaed376f746c996982942c492f146",
+    "memory.json": "ab1038ff994e2b95a6680a0411040696d142245f724aec610bb5a7c557510c28",
+    "providers.json": "eb9cf46b75c8d5b204f409175db8a64f981901e440deb65128aae8c894cbf1b8",
+    "exec816-demo.zip": "a5987bcd2ee7c514a6cc7213704ceeba8258df52be19b8e7be80cae1ae5cdb18"
+  },
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_binary_sha256": "cb43ec00312fe8ffe2dcbd04088a7a83c176981f5b12135588edba773a460263",
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "platform": "macOS arm64",
+    "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+    "source_patch": "toolchain/patches/altirra-console-probe.patch",
+    "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+    "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+    "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+    "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+    "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+    "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 63,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true,
+    "addons": "custom"
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 21872,
+    "loading_including_os": 52592,
+    "public": [
+      1824,
+      1312,
+      1312,
+      1312,
+      1312,
+      1312,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 25408,
+    "runtime_including_os": 56128
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "loading": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "task_capacity": 8,
+  "baseline_expected_peak_tasks": 6,
+  "process_storage": {
+    "BASE": 68476,
+    "BYTES": 1028,
+    "CAPACITY": 8,
+    "RECORD_BYTES": 128,
+    "TABLE_BYTES": 1024
+  },
+  "console_storage": {
+    "BASE": 69504,
+    "BITMAP": 70372,
+    "BYTES": 880,
+    "CAPTURE": 4131840,
+    "GLYPHS": 4132400,
+    "INSTANCE": 69664,
+    "KEYMAP": 4132528,
+    "PRESENTATION": 69866,
+    "ROUTES": 69920,
+    "WINDOWS": 70192
+  },
+  "upper_reservations": [
+    {
+      "address": 65536,
+      "name": "bank-table",
+      "size": 256
+    },
+    {
+      "address": 65792,
+      "name": "heap-metadata",
+      "size": 2112
+    },
+    {
+      "address": 67904,
+      "name": "port-registry",
+      "size": 16
+    },
+    {
+      "address": 67920,
+      "name": "device-residents",
+      "size": 256
+    },
+    {
+      "address": 68176,
+      "name": "dos-contexts",
+      "size": 128
+    },
+    {
+      "address": 68304,
+      "name": "dos-service",
+      "size": 108
+    },
+    {
+      "address": 68412,
+      "name": "dos-streams",
+      "size": 64
+    },
+    {
+      "address": 68476,
+      "name": "process-table",
+      "size": 1028
+    },
+    {
+      "address": 69504,
+      "name": "console-resident",
+      "size": 880
+    },
+    {
+      "address": 70384,
+      "name": "boot-settings",
+      "size": 4
+    },
+    {
+      "address": 70388,
+      "name": "image-data-alignment",
+      "size": 12
+    }
+  ],
+  "image_data": {
+    "address": 70400,
+    "size": 4096
+  },
+  "provider_count": 42,
+  "provider_payload_bytes": 1423,
+  "provider_reserved_bytes": 1664,
+  "new_provider_payload_bytes": 98,
+  "validation": {
+    "baseline": "Existing matching bitmap build; no new executable compatibility claim",
+    "F0": "Interface and resource definition; no runtime implementation"
+  }
+}
