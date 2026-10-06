@@ -12,6 +12,9 @@ Status: in progress, 2026-10-06. Started from Exec816
 demo refresh; its latency acceptance remains open. The subsequent
 [diagnostic slice](../../development/aes-hybrid-diagnostics.json) adds timing
 breakdown and fixed-offer comparisons without changing acceptance workloads.
+The [IL1–IL3 follow-up](../io-latency-implementation-plan.md) reduces device-call
+costs and reruns those original workloads; [GUI acceptance](../../development/io-latency-il3.json)
+still fails, with all frozen and matched comparisons retained.
 Keep the compiler, donor and platform pins recorded in
 the repository; record any local overrides with the resulting evidence.
 

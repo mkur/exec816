@@ -101,8 +101,11 @@ removes the established-device routing gateway; DoIO/SendIO medians fall to
 checks pass, while scheduling tails and the GUI acceptance gate remain open.
 The [I/O latency plan](plans/io-latency-implementation-plan.md) follows with
 caller-local CheckIO (IL1: 0.111 ms median) and removal of redundant timer
-exit polling (IL2: SendIO 0.644 ms median). The original visible GUI acceptance
-rerun remains pending in IL3.
+exit polling (IL2: SendIO 0.644 ms median). The
+[IL3 rerun](development/io-latency-il3.json) passes functional checks but retains
+18 failed rows across frozen and matched GUI comparisons. Loaded scroll/disk
+button consumption improves over the previous HY4 record; idle-load panel and
+pointer-button tails worsen. HY4 remains open.
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

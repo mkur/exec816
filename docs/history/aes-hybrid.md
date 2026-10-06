@@ -474,3 +474,70 @@ Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
 including guards, alignment and unused capacity. Upper-RAM reservations stay
 fixed; executable code shrinks by another 11 bytes. The demo is unchanged.
 Visible GUI acceptance remains pending IL3.
+
+## HY4 GUI rerun after I/O reductions
+
+IL3 completes the [I/O latency plan](../plans/io-latency-implementation-plan.md).
+The [development record](../development/io-latency-il3.json) rebuilds native,
+registered-idle AES and continuously active AES fixtures from `f17934d`, for
+both the panel and the AS0 raw-event pointer window. It retains the original
+10 panel gestures per idle/scroll/disk load, 30 pointer motions and 30 button
+edges per cohort, quiet pointer application, physical keyboard/BREAK checks
+and unchanged continuous GEM exchange with a 100 ms sender timer.
+
+All six functional runs pass, with intact guards and restored ownership.
+Panel scrolling and disk reads continue. Active panel cohorts complete
+98/134/120 messages and 49/68/60 timer waits for idle/scroll/disk respectively;
+the pointer cohort completes 42 messages and 21 timer waits. Registered-idle
+clients complete no background exchanges. Three additional 100-frame call-cost
+windows pass with zero AES failures, 16 disk reads and one complete console
+write in the respective loaded windows. CheckIO medians are 0.106–0.111 ms,
+SendIO 0.574–0.644 ms and DoIO 0.393–0.394 ms.
+
+**HY4 and the AS4/TD4 successor latency gate remain open.** The unchanged
+comparator fails 18 of 70 rows across frozen-AS0 and matched-native comparisons;
+these include repeated comparisons of the same measurement against different
+controls. No allowance or workload was relaxed. Active-client input p95 is:
+
+| Capture to button consumption | Previous HY4 | IL3 | Frozen limit |
+| --- | ---: | ---: | ---: |
+| Panel, idle native load | 33.279 ms | 42.370 ms | 28.374 ms |
+| Panel, scrolling | 133.819 ms | 118.915 ms | 104.158 ms |
+| Panel, disk work | 126.738 ms | 103.243 ms | 90.245 ms |
+| Raw pointer window | 29.326 ms | 35.102 ms | 14.089 ms |
+
+API savings do not produce a uniform improvement in GUI tails. These are
+continuous workloads with different completion counts and scheduling phases,
+not equal-throughput comparisons. Active pointer visibility passes, but panel
+button pixels and combined visibility also fail several comparisons. Two small
+registered-idle misses remain: disk button consumption is 91.372 ms against
+90.245 ms, and pointer-button consumption is 9.107 ms against 9.089 ms. The
+record retains these and the 0.014 ms active disk-pixel miss without rounding
+them into passes. All render-quantum growth comparisons pass.
+
+The actual active-pointer p95 sample divides into 22.202 ms runnable off CPU,
+10.680 ms charged presenter CPU and 2.221 ms interrupt time. The presenter was
+already runnable at capture. In the scrolling and disk panel passive-p95
+samples it was already selected, then spent 77.908/68.766 ms charged CPU before
+consuming input, plus 24.695/18.046 ms runnable off CPU and 15.960/16.151 ms
+in interrupts.
+These are single-sample decompositions, not sums of independent percentiles.
+They point the next investigation toward input service within presenter turns
+and time lost between its turns. Further timer entry optimization alone does
+not address those observed delays.
+
+Final pixel/model checks pass. Intermediate feedback crops retain small
+invalid-color observations under active GEM traffic: two idle-load edges
+(10 observed frames, at most four pixels) and one disk-load edge (one frame,
+one pixel). Native and registered-idle cohorts have none. The observer starts
+after model/application observation and excludes the pointer footprint; it is
+not a continuous scanout or whole-gesture flicker proof. No flicker-free claim
+is made.
+
+This slice changes documentation/evidence only. It uses the IL2 host result
+(389 tests, four historical-source skips), plus content/link checks. These
+optimized emulator measurements are development evidence, not release or
+physical-hardware qualification. Reserved bank-zero delta is **0 bytes**,
+fixed, per public Task and idle, including guards, alignment and unused
+capacity; upper reservations also match across all six fixtures. The existing
+OF816 demo package is unchanged.

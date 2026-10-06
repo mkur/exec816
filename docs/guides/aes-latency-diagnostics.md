@@ -102,10 +102,13 @@ repeated request and binding validation, including idle comparisons and loaded
 functional checks. Both preserve source hashes and measured costs. These call
 costs do not establish visible GUI latency or close HY4 acceptance.
 
-The current [caller-dispatch record](../development/caller-device-dispatch.json)
+The [caller-dispatch record](../development/caller-device-dispatch.json)
 compares the next slice with the trusted-request baseline. The marker inventory
 changes with removed gateway entries; timing attribution algorithms and C call
-sites remain the same.
+sites remain the same. The [I/O latency plan](../plans/io-latency-implementation-plan.md)
+then moves CheckIO observation into the caller and removes the timer exit's
+redundant Poll. Its IL1/IL2 records preserve the before/after API measurements;
+IL3 applies the original GUI gates to the resulting system.
 
 ## Equal offered load
 
