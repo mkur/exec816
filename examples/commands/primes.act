@@ -1,0 +1,275 @@
+MODULE PRIMES
+USE COMMAND
+USE CSTRING AS STR
+USE ASCII
+USE SYS
+
+CONST LIMIT=10000,COMPOSITE_BYTES=1251,PANE_ROWS=6
+CONST BATCH_SIZE=100,REFRESH_BATCHES=10,NUMBER_COLUMN=10
+
+BYTE ARRAY composite(COMPOSITE_BYTES),separator(80),digits(11),field(10),arguments(32)
+CARD ARRAY dimensions(2)
+ADDRESS ARRAY values(1)
+BYTE POINTER pane
+CARD candidate,count,latest,savedCount,savedLatest
+LONGCARD pass,passes,savedPass
+
+; Cooperative checkpoints also cover the longer marking and clearing loops.
+BYTE FUNC Stopped()
+
+  IF COMMAND.BreakPending()<>0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+    RETURN(1)
+  FI
+
+RETURN(0)
+
+BYTE FUNC ClearSieve()
+  CARD index
+
+  FOR index=0 TO COMPOSITE_BYTES-1 DO
+    IF (index & 63)=0 THEN
+      IF Stopped()<>0 THEN
+        RETURN(0)
+      FI
+    FI
+
+    composite(index)=0
+  OD
+
+  candidate=2
+  count=0
+  latest=0
+
+RETURN(1)
+
+; One bit per candidate. Marking starts at the prime's square.
+INT FUNC Prime(CARD value)
+  CARD multiple
+  BYTE checkpoint,mask
+
+  mask=BYTE(CARD(1) LSH (value & 7))
+  IF (composite(value RSH 3) & mask)<>0 THEN
+    RETURN(0)
+  FI
+
+  IF value<=100 THEN
+    multiple=value*value
+    checkpoint=0
+    WHILE multiple<=LIMIT DO
+      checkpoint==+1
+      IF checkpoint=64 THEN
+        checkpoint=0
+        IF Stopped()<>0 THEN
+          RETURN(-1)
+        FI
+      FI
+
+      mask=BYTE(CARD(1) LSH (multiple & 7))
+      composite(multiple RSH 3)=composite(multiple RSH 3) OR mask
+      multiple==+value
+    OD
+  FI
+
+RETURN(1)
+
+; A batch returns success even at pass end; candidate identifies that boundary.
+BYTE FUNC CalculateBatch()
+  CARD index
+  INT primality
+
+  FOR index=1 TO BATCH_SIZE DO
+    IF Stopped()<>0 THEN
+      RETURN(0)
+    FI
+
+    primality=Prime(candidate)
+    IF primality<0 THEN
+      RETURN(0)
+    FI
+
+    IF primality<>0 THEN
+      count==+1
+      latest=candidate
+    FI
+
+    IF candidate=LIMIT THEN
+      RETURN(1)
+    FI
+
+    candidate==+1
+  OD
+
+RETURN(1)
+
+; Pad every field so shorter values erase stale digits. The buffer is retained
+; until the synchronous positioned write has collected its terminal reply.
+BYTE FUNC Number(LONGCARD value CARD width,row)
+  CARD index
+
+  LET length=CARD(STR.u32toa(value,digits,SIZEOF(digits)))
+  FOR index=0 TO width-1 DO
+    field(index)=ASCII.SPACE
+  OD
+
+  FOR index=0 TO length-1 DO
+    field(width-length+index)=digits(index)
+  OD
+
+  LET written=COMMAND.WriteAt(pane,NUMBER_COLUMN,row,field,LONGINT(width))
+
+RETURN(written=LONGINT(width) AND COMMAND.IoErr()=0)
+
+; Only changed numeric rows are damaged. Save values only after complete writes.
+BYTE FUNC Paint()
+
+  IF count<>savedCount THEN
+    IF Number(LONGCARD(count),5,2)=0 THEN
+      RETURN(0)
+    FI
+
+    savedCount=count
+  FI
+
+  IF latest<>savedLatest THEN
+    IF Number(LONGCARD(latest),5,3)=0 THEN
+      RETURN(0)
+    FI
+
+    savedLatest=latest
+  FI
+
+  IF pass<>savedPass THEN
+    IF Number(pass,10,4)=0 THEN
+      RETURN(0)
+    FI
+
+    savedPass=pass
+  FI
+
+RETURN(1)
+
+; The empty instance already supplies spaces and the unused sixth row.
+BYTE FUNC Labels()
+  CARD index
+
+  FOR index=0 TO dimensions(0)-1 DO
+    separator(index)='-
+  OD
+
+  IF COMMAND.WriteAt(pane,0,0,separator,LONGINT(dimensions(0)))<>LONGINT(dimensions(0))
+      OR COMMAND.IoErr()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF COMMAND.WriteAt(pane,0,1,BYTE POINTER(c"PRIME SEARCH"),12)<>12
+      OR COMMAND.IoErr()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF COMMAND.WriteAt(pane,0,2,BYTE POINTER(c"Primes"),6)<>6
+      OR COMMAND.IoErr()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF COMMAND.WriteAt(pane,0,3,BYTE POINTER(c"Latest"),6)<>6
+      OR COMMAND.IoErr()<>0 THEN
+    RETURN(0)
+  FI
+
+  IF COMMAND.WriteAt(pane,0,4,BYTE POINTER(c"Pass"),4)<>4
+      OR COMMAND.IoErr()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+LONGINT FUNC Calculate()
+  BYTE batches
+
+  pass=1
+  savedCount=$ffff
+  savedLatest=$ffff
+  savedPass=SYS.MAXLONGCARD
+  IF ClearSieve()=0 OR Labels()=0 OR Paint()=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  batches=0
+  DO
+    IF CalculateBatch()=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    batches==+1
+    IF batches=REFRESH_BATCHES OR candidate=LIMIT THEN
+      batches=0
+      IF Paint()=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    FI
+
+    IF candidate=LIMIT THEN
+      IF passes<>0 AND pass=passes THEN
+        RETURN(COMMAND.RETURN_OK)
+      FI
+
+      IF ClearSieve()=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      pass=IF pass=SYS.MAXLONGCARD THEN LONGCARD(1) ELSE pass+1 FI
+      IF Paint()=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    FI
+
+    IF COMMAND.Delay(1)=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  LONGINT status,cause
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"PASSES/K/N",values,1,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  passes=0
+  IF values(0)<>0 THEN
+    BEGIN
+      LET number=LONGCARD POINTER(values(0))
+      passes=number^
+    END
+  FI
+
+  pane=COMMAND.OpenPane(PANE_ROWS)
+  IF pane=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  status=COMMAND.RETURN_ERROR
+  IF COMMAND.ConsoleInfo(pane,BYTE POINTER(dimensions))<>0 THEN
+    status=Calculate()
+  FI
+
+  cause=COMMAND.IoErr()
+  IF COMMAND.Close(pane)=0 THEN
+    IF cause=0 THEN
+      cause=COMMAND.IoErr()
+      status=COMMAND.RETURN_ERROR
+    FI
+  ELSE
+    pane=NULL
+  FI
+
+  COMMAND.SetIoErr(cause)
+
+RETURN(status)
+
+ENDMODULE

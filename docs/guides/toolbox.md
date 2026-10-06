@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies sixteen loadable commands, including CAT, WC and HELLO. Command
+The demo supplies seventeen loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -22,6 +22,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
 | MAKEDIR | `NAME` | Create one directory under an existing parent. |
 | ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
+| PRIMES | `[PASSES n]` | Search through 10,000 in a six-row lower pane. Zero or omitted PASSES runs until cancelled. |
 
 Commands with an optional FILE borrow Input when it is absent; CAT also accepts
 up to eight exact files and concatenates them in order. LIST defaults to the
@@ -31,6 +32,12 @@ without case: `*` matches zero or more bytes and `?` one byte. Its parent path
 must be exact. An unmatched pattern reports Object not found; an exact empty
 directory succeeds. The shell does not expand patterns, and CAT and DELETE use
 exact names. There is no regex, recursive traversal or directory sorting.
+
+`PRIMES PASSES 1` finishes after one pass: 1,229 primes, ending at 9,973.
+`PRIMES` runs in the foreground and physical BREAK stops it. `RUN PRIMES`
+returns the prompt while calculation continues below it. Use JOBS to find its
+identity, then `BREAK identity` to stop it. Closing the pane restores the full
+shell display, including an edited line. See [background jobs](shell.md#one-background-job).
 
 Examples, using the current two-stage pipeline:
 

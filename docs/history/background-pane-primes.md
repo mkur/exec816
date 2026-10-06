@@ -149,3 +149,23 @@ The shell reuses padding in its 128-byte state and adds a 14-byte upper job row
 within the existing 4 KiB globals arena. The provider manifest remains 1,521
 bytes for 45 entries. Fixed, root/kernel, idle, loading and per-Task bank-zero
 reservation deltas are **0 bytes**. These are development checks.
+
+## P1 Loadable primes and numeric fields
+
+PRIMES uses a private bit sieve through 10,000, bounded calculation batches,
+interruptible delay and one six-row output pane. Labels are written once.
+Count/latest/pass use separate padded fields and are sent only when changed;
+the saved values advance only after a complete, successful positioned write.
+PASSES counts finite passes; omitted or zero runs continuously.
+
+The [P1 record](../development/background-pane-primes-p1.json) covers the shared
+calculation against the real resident providers, known results (1,229/9,973),
+digit growth/shrink, unchanged fields, cancelled paint without advancing the
+cache, foreground completion and background stop. Heap, ownership and guards
+return to baseline. The production source also compiles as an o65 command;
+packaged loading and bitmap drawing follow in P2.
+
+The optimized command has 5,405 text bytes and 1,416 private BSS bytes, including
+the 1,251-byte sieve. Its disk file is 6,554 bytes. The existing loader alignment
+slack is recorded separately. Fixed, root/kernel, idle, loading and per-Task
+bank-zero reservation deltas are **0 bytes**. These are development results.
