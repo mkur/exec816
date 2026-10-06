@@ -18,11 +18,14 @@ WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,text_shell_only=False):
     if desktop:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
             'The shell-only bitmap demo is a standalone boot selection')
+    require(not (text_shell_only and (bitmap_shell_only or gem_vdi or bitmap_console)),
+            'The shell-only text demo is a standalone boot selection')
+    shell_only=bitmap_shell_only or text_shell_only
     require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
     system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
@@ -45,9 +48,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         target=media/source.relative_to(ROOT/'examples/demo-disk')
         target.parent.mkdir(parents=True,exist_ok=True)
         target.write_text(source.read_text(encoding='ascii'),encoding='ascii')
-    if bitmap_shell_only:
-        (media/'README.TXT').write_text('Exec816 bitmap shell\n\n'
-            'The full 80 by 30 screen is your shell.\nNo prime task is started.\n\n'
+    if shell_only:
+        title='bitmap' if bitmap_shell_only else 'text'
+        dimensions='80 by 30' if bitmap_shell_only else '40 by 24'
+        (media/'README.TXT').write_text(f'Exec816 {title} shell\n\n'
+            f'The full {dimensions} screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
             'RUN PRIMES opens a lower pane. JOBS shows its identity;\n'
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
@@ -77,7 +82,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
     # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
@@ -113,6 +118,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         f'{system_kib} KiB read-only {system_name} data disk')
     if bitmap_shell_only:
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
+    if text_shell_only:
+        guide=(ROOT/'docs/text-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     if desktop:
         guide=(ROOT/'docs/desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     (output/'README.md').write_text(guide)
@@ -145,6 +152,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                         *sorted((ROOT/'lib/dos').glob('*.act'))]},
         bank_zero_delta=bank_zero_delta(program['build']['memory']),task_capacity=8,expected_peak_tasks=7,
         qualification='Focused development checks only; full release and general compiler qualification remain separate.')
+    if text_shell_only:
+        record.update(shell_only=True,expected_peak_tasks=6)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            entry,ROOT/'docs/text-shell-distribution.txt')})
     if bitmap_shell_only:
         record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=7 if desktop else 6,
             font_source='bitmap-console/selected/src/vdi/font8x8.c')
@@ -170,7 +181,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
-            bitmap_shell=output if bitmap_shell_only else None)
+            bitmap_shell=output if bitmap_shell_only else None,
+            text_shell=output if text_shell_only else None)
     return record
 
 
@@ -188,7 +200,8 @@ def refresh_monitor(output):
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
         guide=ROOT/('docs/desktop-distribution.txt' if record.get('desktop') else
-                    'docs/bitmap-shell-distribution.txt')
+                    'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
+                    'docs/text-shell-distribution.txt')
         drive=program['build']['memory']['boot_config']['system_drive']
         (output/'README.md').write_text(guide.read_text().replace('@SYSTEM_DISK@',record['media'])
                                        .replace('@SYSTEM_DRIVE@',str(drive)))
@@ -203,7 +216,8 @@ def refresh_monitor(output):
     package(output/'of816',output/record['distribution'],
             output/'gem-vdi' if record.get('graphics') else None,
             output/'bitmap-console' if record.get('bitmap_console') else None,
-            bitmap_shell=output if record.get('shell_only') else None)
+            bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
+            text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
     return record
 
 
@@ -219,6 +233,7 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
+    parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
@@ -235,5 +250,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,text_shell_only=args.text_shell_only)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

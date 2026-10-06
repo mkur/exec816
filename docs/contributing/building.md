@@ -52,6 +52,17 @@ See the [demo guide](../guides/demo.md) for machine setup, media alternatives an
 the walkthrough, and the [boot monitor guide](../guides/boot-monitor.md) for
 repackaging an existing image.
 
+For a full-screen standard text shell without starting the prime task, use:
+
+```sh
+CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 python3 tools/build_demo.py --text-shell-only --output build/demo-text-shell
+```
+
+This starts the same standalone shell as the bitmap selection, using the
+40 by 24 Atari text display. PRIMES remains available as a command; `RUN PRIMES`
+opens its lower pane on demand. Fixed and per-Task bank-zero reservations are
+unchanged. See the [text shell package guide](../text-shell-distribution.txt).
+
 For a full-screen bitmap shell without the prime task, use a fresh output
 directory and the shell-only boot selection:
 
