@@ -32,6 +32,24 @@ def fixture():
 
 
 class AESTimingBreakdownTests(unittest.TestCase):
+    def test_timer_exit_continuation_covers_tail_poll_and_direct_return(self):
+        definitions = dict(
+            dispatch=dict(entry=20, returns=[21], category='native_dispatch'),
+            leave=dict(entry=30, returns=[31], category='timer_exit'),
+            poll=dict(entry=40, returns=[41], category='timer_poll'))
+        sites = {10: dict(end=14, category='device_io', callee='SendIO')}
+        calls = [dict(dp=0xb00, start=0, client=9)]
+        segments = [(0, 9, 0xb00, False)]
+        common = [event(0, 10), event(1, 20), event(2, 30)]
+        tail = [event(3, 40), event(6, 41)]
+        end = [event(7, 31), event(8, 21), event(9, 14)]
+        for middle, expected_exit in [(tail, 2), ([], 5)]:
+            row = io_breakdown(common+middle+end, definitions, sites, segments, calls)['records'][0]
+            self.assertAlmostEqual(row['exclusive_cpu_ms']['timer_exit']*BASE_HZ/1000, expected_exit)
+            self.assertAlmostEqual(sum(row['exclusive_cpu_ms'].values())*BASE_HZ/1000, 9)
+            leave = next(h for h in row['helpers'] if h['name'] == 'leave')
+            self.assertAlmostEqual(leave['charged_cpu_ms']*BASE_HZ/1000, 5)
+
     def test_io_categories_keep_gateway_cpu_but_exclude_interrupts_and_peers(self):
         definitions = dict(
             dispatch=dict(entry=20, returns=[21], category='native_dispatch'),

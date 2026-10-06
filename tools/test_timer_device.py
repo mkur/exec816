@@ -11,6 +11,46 @@ from test_heap_api import clean_ownership
 PIN=json.loads((ROOT/'toolchain/altirra-signals-4m.json').read_text())
 
 
+def exit_program(toolchain, output, optimize):
+    from native_program import command
+    from test_banked import changed_image
+    program=build(toolchain,ROOT/'tests/programs/timer_exit.act',output,
+                  optimize=optimize,tasks=True,heap_probe=True)
+    (output/'probe.cfg').write_text('MEMORY { RAM: start=$0e0000,size=$1000,file=%O; } SEGMENTS { PROBE: load=RAM,type=ro; }\n')
+    constants=dict(CONTROL=0xf0000,HEAP_PROBE=1,FAULT=program['labels']['heap_fault'],
+                   SNAPSHOT=program['labels']['timer_device_snapshot'],LEAVE=program['labels']['timer_device_leave'])
+    command(['ca65','-I',output,'-I',ROOT/'platform/altirraos',
+             *[v for k,a in constants.items() for v in ('-D',f'{k}={a}')],
+             '-o',output/'probe.o',ROOT/'tests/programs/timer_exit.s'])
+    command(['ld65','-C',output/'probe.cfg','-o',output/'probe.bin','-Ln',output/'probe.lbl',output/'probe.o'])
+    labels={line.split()[2].lstrip('.'):int(line.split()[1],16) for line in (output/'probe.lbl').read_text().splitlines()}
+    image=program['image']
+    image['segments'] += [dict(address=0xe0000,bytes=list((output/'probe.bin').read_bytes()),writable=False,executable=True),
+                          dict(address=0xf0000,bytes=[0]*16,writable=True,executable=False)]
+    def replace(start, size, original, replacement, count):
+        segment=next(s for s in image['segments'] if s['address']<=start and start+size<=s['address']+len(s['bytes']))
+        offset=start-segment['address'];raw=bytes(segment['bytes'][offset:offset+size])
+        require(raw.count(original)==count,'Timer boundary instruction shape changed')
+        segment['bytes'][offset:offset+size]=list(raw.replace(original,replacement))
+    def jump(op, name):return bytes([op,*labels[name].to_bytes(3,'little')])
+    at=program['labels']['heap_probe_fill']
+    segment=next(s for s in image['segments'] if s['address']<=at<s['address']+len(s['bytes']))
+    offset=at-segment['address'];segment['bytes'][offset:offset+4]=list(jump(0x5c,'arm'))
+    begin=next(r for r in image['routines'] if r['name'].startswith('M_TIMERDRIVER_BEGINIO_'))
+    for target,hook in [('timer_device_snapshot','snapshot_hook'),('timer_device_leave','leave_hook')]:
+        replace(begin['address'],begin['size'],bytes([0x22,*program['labels'][target].to_bytes(3,'little')]),jump(0x22,hook),2)
+    start=constants['LEAVE'];size=program['labels']['timer_device_leave_end']-start
+    memory=program['build']['memory']
+    timer=json.loads((ROOT/'abi/timer-device.json').read_text())
+    native=json.loads((ROOT/'abi/native-interrupts.json').read_text())
+    for address,hook in [(memory['timer_device_storage']['BASE']+timer['fields']['EDIT'],'edit_hook'),
+                         (memory['native_interrupt_storage']['BASE']+native['fields']['BLOCKED']+native['sources']['TIMER'],'unblock_hook')]:
+        replace(start,size,bytes([0x8f,*address.to_bytes(3,'little')]),jump(0x22,hook),1)
+    changed_image(program)
+    program['checks_expected']=50
+    return program
+
+
 def lifecycle_program(toolchain,output,optimize,large=False):
     from native_program import command
     from test_banked import changed_image
@@ -144,14 +184,15 @@ def main():
     p.add_argument('--output',type=Path,default=ROOT/'build/interrupt-reply/ir5/timer')
     p.add_argument('--mode',choices=('raw','opt'),default='opt')
     p.add_argument('--from-build',type=Path)
-    p.add_argument('--suite',choices=('basic','queue','binding','c','clock','snapshot','lifecycle'),default='basic')
+    p.add_argument('--suite',choices=('basic','queue','binding','c','clock','snapshot','lifecycle','exit'),default='basic')
     p.add_argument('--large-stack',action='store_true')
     p.add_argument('--video',choices=('PAL','NTSC'),default='PAL')
     args=p.parse_args()
     output=args.output.resolve()
     output.mkdir(parents=True,exist_ok=True)
     pin=json.loads(json.dumps(PIN));pin['machine']['video']=args.video
-    program=read_build(args.from_build) if args.from_build else lifecycle_program(
+    program=read_build(args.from_build) if args.from_build else exit_program(
+        compiler(args.compiler_dir),output/'exit',args.mode=='opt') if args.suite=='exit' else lifecycle_program(
         compiler(args.compiler_dir),output/'lifecycle',args.mode=='opt',args.large_stack) if args.suite=='lifecycle' else snapshot_program(
         compiler(args.compiler_dir),output/'snapshot',args.mode=='opt') if args.suite=='snapshot' else clock_program(
         compiler(args.compiler_dir),output/'clock',args.mode=='opt',50 if args.video=='PAL' else 60) if args.suite=='clock' else c_program(
@@ -193,6 +234,11 @@ def main():
             if args.suite=='lifecycle':
                 report['clients']={name:data(bridge,program['image'],name,True)[0]
                                    for name in ('completed','aborted','expired')}
+            if args.suite=='exit':
+                observed=bridge.memdump(0xf0000,8)
+                require(observed==bytes([0,0,63,0,2,0,12,0]),'Missing timer exit VBI boundaries: '+str(list(observed)))
+                report['exit_boundaries']=dict(boundaries=6,outer_forbid=[False,True],
+                    single_vbi_cases=12,first_enqueue_without_raw_hint=2,completed_before_next_kernel_call=True)
             clean_ownership(bridge,program,program['output'])
             from stack_budget import stack_usage
             report['stack_usage']=stack_usage(bridge,program['build']['memory'])

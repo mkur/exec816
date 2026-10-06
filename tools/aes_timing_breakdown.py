@@ -263,7 +263,10 @@ def io_markers(program, foreign):
                     'io_create_check', 'io_delete_check',
                     'io_test_close', 'io_test_begin', 'io_test_abort'),
         task_exclusion=('tasks_forbid', 'tasks_permit'),
-        reply=('ports_reply_msg',))
+        reply=('ports_reply_msg',),
+        timer_edit=('timer_device_enter',),
+        timer_snapshot=('timer_device_snapshot',),
+        timer_poll=('exec_poll',))
     hosted = (program['output']/'hosted.bin').read_bytes()
     for category, names in groups.items():
         for name in names:
@@ -272,6 +275,24 @@ def io_markers(program, foreign):
                     image_bytes(program, end-1, 1))
             require(last == b'\x6b', 'Unknown I/O gateway return '+name)
             spans[name] = dict(entry=entry, returns=[end-1], category=category)
+    # Leave used to tail-call Poll. Its caller continuations observe both that
+    # path and direct RTL without assigning unrelated Poll returns to Leave.
+    from native_program import ROOT
+    decoder = {'__name__': 'timer_exit_decoder'}
+    path = ROOT/'build/actionc/tools/disassemble65816.py'
+    exec(compile(path.read_text(), str(path), 'exec'), decoder)
+    returns = []
+    entry = program['labels']['timer_device_leave']
+    for r in program['image']['routines']:
+        if not r['name'].startswith('M_TIMERDRIVER_'):
+            continue
+        segment = dict(address=r['address'], executable=True,
+                       bytes=list(image_bytes(program, r['address'], r['size'])))
+        listing = decoder['disassemble']({**program['image'], 'version': 3, 'segments': [segment]})
+        returns.extend(int(line[:6], 16)+4 for line in listing.splitlines()
+                       if line.endswith(f' JSL ${entry:06X}'))
+    require(len(returns) == 5, 'Unknown timer Leave callers')
+    spans['timer_device_leave'] = dict(entry=entry, returns=returns, category='timer_exit')
     entry, dispatch = (foreign['symbols'][n] for n in ('_IOCall', 'io_dispatch'))
     require(image_bytes(program, dispatch-1, 1) == b'\x6b', 'Unknown C I/O assembly return')
     spans['_IOCall'] = dict(entry=entry, returns=[dispatch-1], category='assembly_bridge')

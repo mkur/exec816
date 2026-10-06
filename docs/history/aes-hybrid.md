@@ -434,3 +434,43 @@ qualification.
 Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
 including guards, alignment and unused capacity. Upper-RAM reservations stay
 fixed; emitted executable code shrinks by 119 bytes. The demo is unchanged.
+
+## HY4 Timer edit exit
+
+IL2 of the [I/O latency plan](../plans/io-latency-implementation-plan.md) removes
+the timer edit exit's redundant Poll. Leave first retains an armed-queue hint,
+then clears its edit and source-block gates. Every callback returns through the
+existing IOCORE Permit; both its fast and general native return paths admit
+completion under an outer Forbid. No driver-specific kernel operation is added.
+The forced hint remains necessary when the first request becomes due between
+its clock snapshot and queue publication. Budgets, ordering and cancellation
+policy stay fixed.
+
+The [IL2 development record](../development/io-latency-il2.json) uses identical
+passive observers before and after the change. On the unchanged IL1 image, the
+expanded observer reproduces all previous per-operation CPU distributions.
+SendIO median charged CPU falls from **1.117 to 0.644 ms** (42%); p95 falls from
+1.141 to 0.669 ms. DoIO remains 0.393 ms and CheckIO 0.111 ms. The timer exit's
+inclusive median falls from 0.534 to 0.003 ms, while Permit rises from 0.056 to
+0.115 ms as it takes over native source service. The measured saving therefore
+includes that transferred work. The old Poll alone cost 0.530 ms.
+
+These are continuous 100-frame PAL windows, with 87/82 complete public AES calls
+and 29/28 native expiries. Component percentiles are not additive and scheduling
+phases differ. Linked C code, compiler and machine configuration match.
+
+Development checks pass with 371 assertions. A new emitted probe injects one
+real VBI at each of six boundaries, with and without an outer Forbid: after the
+snapshot, before Leave, before/after clearing the edit flag, after unblocking,
+and after Leave returns. It then disables further VBIs and inspects the reply
+before another kernel call. All twelve cases complete exactly once with the
+original exclusion depth; the first-enqueue cases confirm raw VBI produced no
+hint before publication. Queue capacity/FIFO, concurrent expiry/cancellation,
+six interrupted snapshot words and the C API also pass. Host checks run 389
+tests with four historical-source skips. These are optimized development
+checks, not release qualification.
+
+Reserved bank-zero delta is **0 bytes**, fixed, per public Task and idle,
+including guards, alignment and unused capacity. Upper-RAM reservations stay
+fixed; executable code shrinks by another 11 bytes. The demo is unchanged.
+Visible GUI acceptance remains pending IL3.

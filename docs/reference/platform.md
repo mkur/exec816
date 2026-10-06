@@ -264,8 +264,11 @@ reply links or calls compiled code. After ROM retirement, a fully saved native
 Task frame can admit bounded assembly work if its original I bit is clear,
 stack/DP ownership is valid, and no OS, IRQ, queue transaction or native service
 activation is live. Forbid prevents Task scheduling but permits this service.
-Driver edit gates mark only their own source blocked; release uses ordinary Poll
-when work remains. Acknowledgement precedes the callback, preserving a new hint
+Driver edit gates mark only their own source blocked. Timer release publishes
+a hint for an armed queue before unblocking it; the enclosing I/O wrapper's
+Permit provides the native service opportunity, even under an outer Forbid.
+No second VBI is required for a deadline reached during first insertion.
+Acknowledgement precedes the callback, preserving a new hint
 arriving while the callback runs. IRQ opportunities between replies/callbacks
 retain activation ownership against recursive NMI dispatch.
 

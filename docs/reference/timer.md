@@ -49,6 +49,11 @@ delays scheduling, but permits native completion. Arbitrary I=1 Task frames,
 live OS activations and driver edit gates defer completion. These constraints
 preclude a hard real-time deadline guarantee.
 
+Queue edits publish a pending hint before releasing their native edit gate.
+The enclosing I/O wrapper then calls Permit, whose native return services the
+hint even under an outer Forbid. This covers a first request that becomes due
+before raw VBI can see the armed queue, without an additional Poll or VBI.
+
 AbortIO detaches a still-pending request and replies exactly once with
 `IOERR_ABORTED`. If expiry already committed, AbortIO is harmless and preserves
 that result. Always collect with WaitIO or the reply port before reuse. A

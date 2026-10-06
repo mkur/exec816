@@ -74,15 +74,18 @@ python3 tools/measure_aes_calls.py \
 
 `io_breakdown` splits each complete C device call into C wrapper work, assembly
 marshalling, native operation dispatch, generic I/O, kernel I/O gateways,
-Forbid/Permit, timer binding lookup, timer queue work, other driver work and
-task-side ReplyMsg. Native interrupt completion is outside that task-side reply
+Forbid/Permit, timer binding lookup, timer queue work, native timer entry,
+snapshot, exit and Poll, other driver work and task-side ReplyMsg. Native interrupt completion is outside that task-side reply
 category. The gateway categories include policy, validation and return costs;
 they do not measure the COP instruction alone.
 
 Build the image with current sources before probing. Established resident calls
 now dispatch locally; removed routing gateway markers are absent from the
 current observer. CheckIO also runs locally; admission and collection gateways
-remain.
+remain. Native timer Leave returns are observed at checked caller continuations,
+covering the former tail-Poll path and the current direct return. Compare its
+inclusive cost with Permit: native completion work can move between these
+boundaries without disappearing.
 
 Checked native entry/return boundaries nest inside the existing C call-site
 intervals. Each helper enters and returns with the caller's DP; kernel work

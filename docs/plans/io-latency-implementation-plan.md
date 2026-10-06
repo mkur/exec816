@@ -68,4 +68,6 @@ AES execution history. Update current contracts as behavior changes.
 ## Status
 
 IL1 is complete; [development evidence](../development/io-latency-il1.json)
-records caller-local observation and selected checks. IL2 and IL3 are pending.
+records caller-local observation and selected checks. IL2 is complete; its
+[development evidence](../development/io-latency-il2.json) records the native
+boundary tests and before/after timer measurements. IL3 is pending.

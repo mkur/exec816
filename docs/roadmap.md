@@ -100,8 +100,9 @@ removes the established-device routing gateway; DoIO/SendIO medians fall to
 0.394/1.115 ms with unchanged memory reservations and public API. Development
 checks pass, while scheduling tails and the GUI acceptance gate remain open.
 The [I/O latency plan](plans/io-latency-implementation-plan.md) follows with
-caller-local CheckIO (IL1 complete: 0.111 ms median), timer exit measurements
-and the original visible GUI acceptance rerun (IL2/IL3 pending).
+caller-local CheckIO (IL1: 0.111 ms median) and removal of redundant timer
+exit polling (IL2: SendIO 0.644 ms median). The original visible GUI acceptance
+rerun remains pending in IL3.
 Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 

@@ -54,19 +54,18 @@ timer_device_leave:
     php
     sei
     sep #$20
-    lda #0
-    sta f:TI_EDIT
-    sta f:NI_BLOCKED+NI_SOURCE_TIMER
+    ; The first enqueue can become due before ARMED lets raw VBI hint it.
+    ; Publish that hint before releasing the source; never erase a VBI hint.
     lda f:TI_ARMED
     beq :+
     lda #1
     sta f:NI_PENDING+NI_SOURCE_TIMER
 :
-    lda f:NI_PENDING+NI_SOURCE_TIMER
-    beq timer_leave_idle
-    plp
-    jml exec_poll                ; ordinary Poll, preserving its caller's RTL
-timer_leave_idle:
+    lda #0
+    sta f:TI_EDIT
+    sta f:NI_BLOCKED+NI_SOURCE_TIMER
+    ; Every resident callback returns to IOCORE's Permit. Its native return
+    ; services pending work even when an outer Forbid still excludes switching.
     plp
     rtl
 timer_device_leave_end:
