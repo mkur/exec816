@@ -82,7 +82,8 @@ def read_image(path, task_entries=()):
         else:
             require((address in (0xc0000, 0xe0000) and reserved == 65536 and
                      (permissions == 5 or (permissions == 4 and not payload))) or
-                    (0xd0000 <= address <= address+reserved <= 0xe0000 and permissions in (4, 6)),
+                    (0xd0000 <= address <= address+reserved <= 0xe0000 and permissions in (4, 6)) or
+                    (address == 0xf0000 and reserved == 65536 and permissions == 4),
                     'C sections must fit the standalone upper-bank layout')
             if payload:
                 segments.append(dict(address=address, bytes=list(payload), writable=bool(permissions & 2), executable=bool(permissions & 1)))
@@ -109,4 +110,5 @@ def read_image(path, task_entries=()):
                 task_entries=[symbols[name] for name in task_entries], symbols=symbols,
                 provenance=dict(format='calypsi65816-standalone-v1', elf_sha256=sha256(path),
                     entry=entry, task_entries=list(task_entries), dp_workspace_bytes=workspace,
+                    readonly_table_banks=[15] if any(s['address']==0xf0000 for s in segments) else [],
                     stack_checks=False, bank_zero_delta=dict(fixed=0, per_task=0)))

@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Drawing adapter](../../../ports/gem4xe/adapter/README.md)
 
-Status: BR1 implemented; BR2–BR4 pending. Refactor the trusted GEM command builders to remove repeated
+Status: BR1–BR2 implemented; BR3–BR4 pending. Refactor the trusted GEM command builders to remove repeated
 geometry validation and reduce construction cost in Control Panel redraws.
 Use generated upper-memory lookup tables for chunk limits and work costs,
 and advance a write pointer through sequential records. Keep clipping and
@@ -141,6 +141,8 @@ extent-validation calls in the emitted hot builder.
 
 ## BR2 Use lookup tables and sequential record addressing
 
+Implemented with [development evidence](../../development/vbxe-builder-br2.json).
+
 Narrow internal work accounting to 16 bits: admitted list work is at most
 8,192, and even a candidate chunk of 512 bytes by sixteen rows at factor three
 costs only 24,576. Their sum also fits in an unsigned word. Keep VRAM address
@@ -247,22 +249,20 @@ and staging arenas and VRAM layout; report code, data and measured stack changes
 for each slice. Reservation state stays local to a run; any shared queue cursor
 belongs in the renderer's existing upper-RAM state.
 
-The initial table placement is the C data bank at `$0D0000–$0DFFFF`, using
-immutable initialized data. The retained panel image occupies 15,917 bytes
-through the end of BSS, including its existing alignment. Adding all proposed
-tables gives 50,999 bytes before new alignment and queue-state changes, leaving
-14,537 bytes of headroom. Verify the complete link layout for each affected
-image; constants must not silently consume executable space or bank zero.
+BR2 attempted placement in the existing C data bank `$0D`. The active panel
+fits, but the instrumented renderer requires 28,505 BSS bytes and exceeds that
+bank by 1,506 bytes. Preserve this failed link in the development record.
+Tables therefore occupy a dedicated read-only `gemtables` section in bank
+`$0F0000–$0FFFFF`. The linker and foreign-image validator admit exactly this
+read-only bank; native code starts at `$100000` when it is populated. Image
+ownership reserves its complete 65,536-byte extent, including unused capacity.
+Raw and optimized table-load probes exercise this bridge, far addressing and
+ownership. No runtime section, BSS bank or executable-range permission expands.
 
-Allow up to one additional 64 KiB upper-memory bank if an affected build cannot
-accommodate the tables in existing storage. If needed, declare
-that bank in the linker, foreign-image validator and loader/ownership metadata,
-place native code beyond its complete reserved extent, and validate image
-loading. Charge the entire bank, including unused capacity, in the report.
-Do not hard-code an overlapping address or silently broaden accepted sections.
-Within the existing data bank the additional bank reservation is zero; table
-payload and image size still increase. Tables need no new allocation or
-per-Task memory, and no additional VRAM.
+BR2 table payload is 35,082 bytes with no table padding; the queue pointer adds
+four upper-RAM bytes and narrowing work removes two. No per-Task allocation,
+bank-zero reservation or additional VRAM is needed. BR3 may add small bounded
+glyph-capacity tables within the same reserved bank.
 
 Validation uses the development tier. Reuse existing tests, adding meaningful
 boundary cases for the changed batching. Run raw and optimized probes if an

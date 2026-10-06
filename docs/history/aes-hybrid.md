@@ -731,3 +731,32 @@ Linked panel C code shrinks by 72 bytes. Reserved bank-zero delta is **0 bytes**
 fixed, per public Task and idle, including guards/alignment/capacity. Upper-RAM
 and VRAM reservations are unchanged. This is development evidence, not hosted
 system qualification; no demo was refreshed.
+
+
+## Table-based command construction
+
+BR2 uses generated upper-memory tables for row limits, work, common strides,
+indexed command offsets and screen rows. Queued records advance a pointer by
+21 bytes. Work accounting is now 16-bit; VRAM addresses remain wide. Emitted
+private construction no longer calls general multiply/divide helpers for these
+operations. Strip-row calculation drops its wide shift loop; its inline code
+shrinks from 53 to 35 bytes. Public text-fill area admission still multiplies.
+
+[Development checks](../development/vbxe-builder-br2.json) pass: 393 host tests
+(four skips), 87 renderer cases, 15 expanded widget stages, 62 cursor cases and
+raw/optimized table-load probes. The original ten idle panel gestures pass
+pixels, feedback, ownership and guards. Maximum idle widget-paint CPU falls
+from BR1's 29.308 to 19.820 ms. Consumption p95 falls from 17.870 to 11.050 ms;
+button-pixel p95 stays at 139.125 ms, while combined-visible p95 falls from
+279.579 to 259.369 ms. These are completion-paced development samples, not HY4
+qualification or a whole-gesture flicker proof.
+
+Tables could not fit alongside the instrumented renderer's BSS in bank `$0D`;
+the failed link is retained. They occupy 35,082 bytes of read-only bank `$0F`,
+reserving the full 65,536 bytes including 30,454 unused bytes. Native code now
+starts at `$100000` for images with tables. Queue state grows by two upper-RAM
+bytes. Linked panel C code grows by five bytes versus BR1. Worker stack peak
+falls from 727 to 715 bytes in this sample. Reserved bank-zero delta is **0 bytes**
+fixed, per public Task and idle, including guards/alignment/capacity; VRAM is
+unchanged. Cursor cases used the initial bank-D build; final bank-F loads and
+renderer/widget pixels were checked separately. No demo was refreshed.

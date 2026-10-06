@@ -41,6 +41,17 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
                 'p->status=GemDrawingOpen(workout);\n        if (!p->status) WidgetPixelProbe();')
             instrumented.write_text(text)
             sources[sources.index(original)]=instrumented
+            original=ad/'gem-vbxe.c'
+            instrumented=out/'gem-vbxe.c'
+            text=original.read_text().replace('static void drain(void)',
+                'static void BuilderListProbe(const UBYTE *,UWORD);\nstatic void drain(void)')
+            needle='if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
+            require(text.count(needle)==1,'Private list publication changed')
+            text=text.replace(needle,'if (commandCount && !fault) { BuilderListProbe(commands,commandCount); latch(VbxeOwnerSubmit(&display,commands,commandCount)); }')
+            probe_source=ROOT/'tests/programs/vbxe-builder-probe.h'
+            text+='\n'+probe_source.read_text()
+            instrumented.write_text(text)
+            sources[sources.index(original)]=instrumented
     if fault:
         hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
         hardware=hardware.replace('#define BUSY ', 'extern UBYTE ConsoleFaultBusy(void);\nextern void ConsoleFaultStop(void);\nextern void ConsoleFaultCopy(void);\nextern void ConsoleFaultText(UWORD count,UWORD fillRows);\n#define BUSY ')
@@ -73,6 +84,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
     if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
+    if widget_probe:foreign['provenance']['builder_probe_sha256']=sha256(probe_source)
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign
 

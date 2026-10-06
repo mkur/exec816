@@ -1,0 +1,209 @@
+{
+  "slice": "BR2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "b5a244e",
+  "checks": {
+    "host": {
+      "tests": 393,
+      "skips": 4
+    },
+    "render_cases": 87,
+    "widget_stages": 15,
+    "cursor_cases": 62,
+    "cursor_note": "Cursor checks used the initial bank-D table build; final bank-F loads are checked raw/optimized and renderer/widget cases were rerun.",
+    "table_load_modes": [
+      "raw",
+      "opt"
+    ],
+    "panel_idle_gestures": 10
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "upper_memory": {
+    "added_reserved_bytes": 65536,
+    "table_bank": 15,
+    "table_payload_bytes": 35082,
+    "table_padding_bytes": 0,
+    "table_unused_bytes": 30454,
+    "queue_state_delta": 2,
+    "native_code_origin": 1048576
+  },
+  "code_bytes": {
+    "before": 72669,
+    "after": 72674
+  },
+  "stack_usage": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 386,
+      "remaining_above_floor": 894
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 181,
+      "remaining_above_floor": 587
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 499,
+      "remaining_above_floor": 269
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 513,
+      "remaining_above_floor": 255
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 18,
+      "remaining_above_floor": 750
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 18,
+      "remaining_above_floor": 750
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 715,
+      "remaining_above_floor": 1589
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 127,
+      "remaining_above_floor": 129
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 273,
+      "remaining_above_floor": 1007
+    }
+  },
+  "latency": {
+    "idle": {
+      "capture_to_commit_ms": {
+        "count": 20,
+        "median_ms": 11.961025065585533,
+        "p95_ms": 26.451093139210492,
+        "max_ms": 29.226407886334385
+      },
+      "capture_to_application_ms": {
+        "count": 10,
+        "median_ms": 27.720936199126278,
+        "p95_ms": 37.57377931965846,
+        "max_ms": 37.57377931965846
+      },
+      "capture_to_button_consumed_ms": {
+        "count": 20,
+        "median_ms": 2.965199138965208,
+        "p95_ms": 11.049523597399979,
+        "max_ms": 17.869714214827336
+      },
+      "capture_to_visible_ms": {
+        "count": 20,
+        "median_ms": 179.0372283363336,
+        "p95_ms": 259.36875774444974,
+        "max_ms": 259.36974452302644
+      },
+      "capture_to_button_pixels_ms": {
+        "count": 20,
+        "median_ms": 118.91626337966024,
+        "p95_ms": 139.12548863160595,
+        "max_ms": 139.12548863160595
+      },
+      "commit_to_patch_ms": {
+        "count": 10,
+        "median_ms": 110.63394884821795,
+        "p95_ms": 176.18268936633308,
+        "max_ms": 176.18268936633308
+      },
+      "patch_to_visible_ms": {
+        "count": 10,
+        "median_ms": 68.34576439392764,
+        "p95_ms": 85.74619491132384,
+        "max_ms": 85.74619491132384
+      },
+      "press_feedback": {
+        "count": 10,
+        "median_ms": 118.91626337966024,
+        "p95_ms": 139.12548863160595,
+        "max_ms": 139.12548863160595
+      },
+      "application_label": {
+        "count": 10,
+        "median_ms": 199.25300861739635,
+        "p95_ms": 259.36974452302644,
+        "max_ms": 259.36974452302644
+      }
+    }
+  },
+  "feedback": {
+    "idle": {
+      "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+      "edges": 20,
+      "edges_with_invalid_pixels": 0,
+      "invalid_frames": 0,
+      "max_invalid_pixels": 0
+    }
+  },
+  "widget_paint_max_cpu_ms": 19.819941103415804,
+  "emitted_audit": {
+    "removed_from_builder": [
+      "_Mul16",
+      "_Mul32",
+      "_UDivMod16"
+    ],
+    "retained_adapter_multiply": "Public GemDrawingTextFill area admission; not private command construction",
+    "screen_row": "Strip offset expression shrinks from 53 to 35 inline bytes, removes a wide shift loop and one outlined call; integrated idle timing improves."
+  },
+  "failed_attempt": {
+    "path": "build/vbxe-builder/br2/render.log",
+    "reason": "Initial bank-D tables plus 28,505 BSS bytes exceed the bank by 1,506 bytes; moved tables to the explicitly permitted extra bank."
+  },
+  "sources": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "9240d0897504b669529cbc066c0a3a92fc79c27e9a0f7432d0a058f6e195fafc",
+    "tools/generate_vbxe_tables.py": "eeec214193956adb9ac86dfde3ea4c2cf4df5eb58155bceb6e2b4c8e4787a2b8",
+    "tools/calypsi_image.py": "69116f54ec1061e9ec1eefa286355d80610edbc1ac98512af395789d98810cf4",
+    "c/calypsi/layout.scm": "1c4949e9f9906f0716ec4a415080299ecf6ab050a2a491c9d25aa0ae2a6059a7",
+    "build/vbxe-builder/br2/panel-f/program/build.json": "9de1c761147a5ac457691b0746bec969803eebd436d04d969027720c6c852eba",
+    "build/vbxe-builder/br2/panel-f/selected/extraction.json": "bc2942505e4b94f7952c59f2f75483676646e6009329b0f26a879f1451f2ed85",
+    "build/vbxe-builder/br2/panel-run/results.json": "a98733b01fc8baa735f1af8ac9309fbdd2f80c3c8abbe28ef892a598552a12b2",
+    "build/vbxe-builder/br2/panel-run/work-unit-analysis.json": "2f3a93002ced0941d250dd59632618b6dcdbbfdf1397a69dee156d59bfca5eb0",
+    "build/vbxe-builder/br2/render-f/results.json": "a7fd77ea0edf09e4014d1b03cdbb3148271760a689b14a9e9dec55505a79abed",
+    "build/vbxe-builder/br2/pixels-f/pixel-results.json": "fb1d30fbbfc68c4e4d245ea107057c57bcdd52062a719218acd7bfb4b92da591",
+    "build/vbxe-builder/br2/cursor/results.json": "cd4c418c42244acc7181e6216c924fdc0340b3ebfd30db80adfc0c5fb5df0f36",
+    "build/vbxe-builder/br2/tables-raw/results.json": "a8ce5cb19b74d2aa4b422e38f0bcf60a3d3ac4b4c512313d8b194c4574486fec",
+    "build/vbxe-builder/br2/tables-opt/results.json": "1c422d7f5bd3951bbbc685329520d882c948ca5b7e730592a285a3eba4fb4426",
+    "build/vbxe-builder/br2/host.log": "10c69e088fe12688835385615d387d4290f291ad6d475279e72945c14a9f8789",
+    "build/vbxe-builder/br2/render.log": "8caf7054d0f8cf1c7c8077927a92590ccf8328dd2948b6d70f2e701a7dd5e67b"
+  }
+}

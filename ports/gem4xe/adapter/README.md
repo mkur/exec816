@@ -40,6 +40,15 @@ copies the admitted scratch strip. These producers supply nonempty dimensions,
 known modes, screen strides 320/640, atlas strides 1024/1280 or raster strides
 0–320, and no raster may overlap command storage. Queue count/work limits and
 staging/scratch dependencies still apply to every operation.
+Build-generated immutable tables in CPU bank `$0F` select row limits and work
+costs and supply common-stride increments, indexed record offsets and screen
+row addresses. Queued records advance a write pointer by 21 bytes. Work uses
+16 bits: both the admitted 8,192-unit list and its largest 24,576-unit candidate
+fit when added. VRAM addresses remain wide. Open, drain and close reset both
+count and pointer; fixed cursor/outline lists do not advance the queue pointer.
+The tables use 35,082 bytes and reserve one 64 KiB upper bank, with no new
+bank-zero or VRAM reservation. The extraction records generator/input/output
+hashes; no table is calculated or validated at startup.
 Public raw lists still receive full validation through `VbxeSubmit`. A failed
 submission latches the command fault; a partially flushed VDI command is not
 reported complete.

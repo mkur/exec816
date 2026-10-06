@@ -9,6 +9,7 @@
 #include "gem-vbxe.h"
 #endif
 #include "vbxe-internal.h"
+#include "gem-vbxe-tables.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -27,8 +28,9 @@ static UBYTE page[4096];
 static ULONG pageAddress;
 static UWORD dirty, fault;
 static UBYTE commands[VBXE_BCB_BYTES];
+static UBYTE *commandNext;
 static UWORD commandCount;
-static ULONG commandWork;
+static UWORD commandWork;
 /* The 5120 bytes immediately after the screen hold one 640 x 16 strip.
  * Only widget callbacks redirect drawing, never other owner operations. */
 #define WIDGET_STRIP_BASE 76800UL
@@ -49,6 +51,7 @@ static void drain(void)
     if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));
     commandCount=0;
     commandWork=0;
+    commandNext=commands;
 }
 static void flush(void)
 {
@@ -73,25 +76,38 @@ volatile uint8_t *vram_win(uint32_t address)
 void blit_start(void) { flush(); }
 void blit_run(void) { flush(); }
 uint8_t blit_pending(void) { return (uint8_t)(commandCount!=0 || dirty); }
+/* Producer strides are fixed screen/atlas pitches or a 0–320-byte raster
+ * band. The work table also provides products for variable raster pitches. */
+static UWORD row_step(UWORD stride,UWORD rows)
+{
+    switch (stride) {
+    case 0: return 0;
+    case 320: return GemStep320[rows];
+    case 640: return GemStep640[rows];
+    case 1024: return GemStep1024[rows];
+    case 1280: return GemStep1280[rows];
+    default: return GemWork2[((rows-1)<<9)|(stride-1)]>>1;
+    }
+}
 void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
                uint16_t bytes, uint16_t rows, uint8_t am, uint8_t xm, uint8_t mode)
 {
-    UWORD n,limit;
-    ULONG work;
+    UWORD n,limit,work,column=bytes-1;
+    const UWORD *costs;
     UBYTE *record;
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     /* Private renderer geometry is already clipped to screen/strip/atlas.
      * The producer supplies nonempty dimensions and a known hardware mode. */
     if (dirty) flush();
-    limit=(UWORD)VBXE_LIST_WORK/(bytes*(mode ? 3 : 2));
-    if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
+    if (mode) { limit=GemRowLimit3[column]; costs=GemWork3; }
+    else { limit=GemRowLimit2[column]; costs=GemWork2; }
     while (rows && !fault) {
         n=rows<limit ? rows : limit;
-        work=(ULONG)bytes*n*(mode ? 3 : 2);
-        if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+        work=costs[((n-1)<<9)|column];
+        if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
         if (fault) return;
-        record=commands+commandCount*21;
+        record=commandNext;
 
         record[0]=(UBYTE)source; record[1]=(UBYTE)(source>>8); record[2]=(UBYTE)(source>>16);
         record[3]=(UBYTE)ss; record[4]=(UBYTE)(ss>>8); record[5]=1;
@@ -100,8 +116,10 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
         record[12]=(UBYTE)(bytes-1); record[13]=(UBYTE)((bytes-1)>>8);
         record[14]=(UBYTE)(n-1); record[15]=am; record[16]=xm; record[20]=mode;
         commandCount++;
+        commandNext=record+21;
         commandWork+=work;
-        source+=(ULONG)n*ss; dest+=(ULONG)n*ds; rows-=n;
+        rows-=n;
+        if (rows) { source+=row_step(ss,n); dest+=row_step(ds,n); }
     }
 }
 
@@ -115,15 +133,15 @@ void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uin
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     if (dirty) flush();
-    if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+    if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
     if (fault) return;
-    r=commands+commandCount*21;
+    r=commandNext;
     r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
     r[3]=0; r[4]=(UBYTE)(stride>>8);
     r[6]=(UBYTE)dest; r[7]=(UBYTE)(dest>>8); r[8]=(UBYTE)(dest>>16);
     r[9]=64; r[10]=1; r[12]=(UBYTE)(bytes-1); r[13]=0;
     r[14]=7; r[15]=ink; r[16]=0; r[20]=6;
-    commandCount++; commandWork+=work;
+    commandCount++; commandNext=r+21; commandWork+=work;
 }
 void blit_fill(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,0); }
@@ -150,9 +168,10 @@ UWORD GemDrawingOpen(WORD *out)
         return DISPLAY_BAD_ARGUMENT;
     status=VbxeOpen(&display);
     if (status!=DISPLAY_OK) return status;
-    for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+i*21,template,21);
+    for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+GemRecordOffsets[i],template,21);
     dirty=fault=commandCount=0;
     commandWork=0;
+    commandNext=commands;
     pointer_reset();
     status=GemVdiOpen(out);
     flush();
@@ -169,6 +188,7 @@ static UWORD close_owner(void)
     }
     GemVdiReset();
     dirty=commandCount=0; commandWork=0;
+    commandNext=commands;
     stripActive=stripRedirect=0;
     return fault ? DISPLAY_DEVICE_FAULT : status;
 }
@@ -323,7 +343,7 @@ static UWORD cursorMasksReady;
 static void cursor_record(UWORD index,ULONG source,UWORD sourceStride,
     ULONG destination,UWORD destinationStride,UWORD bytes,UWORD rows,UBYTE mode)
 {
-    UBYTE *r=commands+index*21;
+    UBYTE *r=commands+GemRecordOffsets[index];
     r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
     r[3]=(UBYTE)sourceStride; r[4]=(UBYTE)(sourceStride>>8); r[5]=1;
     r[6]=(UBYTE)destination; r[7]=(UBYTE)(destination>>8); r[8]=(UBYTE)(destination>>16);
@@ -357,7 +377,7 @@ static void cursor_render(UWORD x,UWORD y,UWORD draw)
         rows=240-y;
         if (rows>16) rows=16;
         bytes=((x&1)+width+1)/2;
-        address=(ULONG)y*320+x/2;
+        address=GemScreenRows[y]+x/2;
         if (!cursorMasksReady) {
             memcpy(page,cursorMasks,1024);
             latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
@@ -523,7 +543,7 @@ void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom)
  * DMA lists; background writes remove it before modifying the saved pixels. */
 static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYTE mask)
 {
-    UBYTE *r=commands+index*21;
+    UBYTE *r=commands+GemRecordOffsets[index];
     memset(r,0,21);
     r[5]=1;
     r[6]=(UBYTE)address; r[7]=(UBYTE)(address>>8); r[8]=(UBYTE)(address>>16);
@@ -533,7 +553,7 @@ static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYT
 }
 static void outline_toggle(void)
 {
-    ULONG address=(ULONG)outlineTop*320+outlineLeft/2;
+    ULONG address=GemScreenRows[outlineTop]+outlineLeft/2;
     UWORD bytes=(outlineRight-outlineLeft)/2;
     UWORD rows=outlineBottom-outlineTop;
     flush();
@@ -606,7 +626,7 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
     if (display.operationPending) return DISPLAY_BUSY;
     if (first) {
         stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
-        stripOffset=WIDGET_STRIP_BASE-(ULONG)top*320;
+        stripOffset=WIDGET_STRIP_BASE-GemScreenRows[top];
     }
     stripRedirect=1;
     complete=draw();
@@ -617,7 +637,7 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
         /* Preserve the neighbouring nibble at either odd clip edge. Pointer
          * save/restore sees screen coordinates only at this publish boundary. */
         GemDrawingPrepare(left,top,right,bottom);
-        screen=(ULONG)top*320;scratch=WIDGET_STRIP_BASE;
+        screen=GemScreenRows[top];scratch=WIDGET_STRIP_BASE;
         lo=left/2;hi=right/2;rows=bottom-top;
         if (left&1) {
             blit_and(screen+lo,320,1,rows,0xf0);
