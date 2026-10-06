@@ -93,7 +93,8 @@ class Timeline:
                     charged_cpu_ms=delta[0], off_cpu_ms=delta[1], interrupt_ms=delta[2])
 
 
-def analyze_events(events, definition, window=None, allow_empty_window=False, intervals=()):
+def analyze_events(events, definition, window=None, allow_empty_window=False, intervals=(),
+                   include_segments=False):
     points, definitions = definition['points'], definition['spans']
     turns = [t for t, e in events if e[0] == 'cpu' and int(e[4], 16) == points['turn']]
     workers = {int(e[9], 16) for t, e in events
@@ -177,7 +178,7 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
     slow = sorted(rows, key=lambda row: row['elapsed_ms'], reverse=True)[:10]
     for row in slow:
         row['routines'] = [s for s in spans if row['start'] <= s['start'] <= s['end'] <= row['end']]
-    return dict(scope=__doc__, worker_dp=worker, complete_turns=len(rows), window=window,
+    result = dict(scope=__doc__, worker_dp=worker, complete_turns=len(rows), window=window,
                 measured_intervals=measured_intervals,
                 observed_turn_entries=sum(start <= t <= end for t in turns),
                 window_cpu=timeline.measure(start, end),
@@ -188,6 +189,9 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
                 max_charged_cpu_ms=max((r['charged_cpu_ms'] for r in rows), default=0),
                 max_elapsed_ms=max((r['elapsed_ms'] for r in rows), default=0),
                 max_off_cpu_ms=max((r['off_cpu_ms'] for r in rows), default=0))
+    if include_segments:
+        result['segments'] = segments
+    return result
 
 
 def analyze(path, definition, marks):

@@ -9,7 +9,10 @@ Status: in progress, 2026-10-06. Started from Exec816
 [HY2](../../development/aes-hybrid-hy2.json) and
 [HY3](../../development/aes-hybrid-hy3.json) pass development checks.
 [HY4](../../development/aes-hybrid-hy4.json) implements the integrated proof and
-demo refresh; its latency acceptance remains open. Keep the compiler, donor and platform pins recorded in
+demo refresh; its latency acceptance remains open. The subsequent
+[diagnostic slice](../../development/aes-hybrid-diagnostics.json) adds timing
+breakdown and fixed-offer comparisons without changing acceptance workloads.
+Keep the compiler, donor and platform pins recorded in
 the repository; record any local overrides with the resulting evidence.
 
 Refactor the existing AES call profile onto caller-owned message and timer

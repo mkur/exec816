@@ -85,7 +85,11 @@ callers and removes the presenter event engine.
 [HY4](development/aes-hybrid-hy4.json) records the integrated proof, reduced clock
 query work and refreshed OF816 desktop bundle. Functional checks pass; active
 clients still exceed the unchanged native GUI latency limits. HY4 and the
-AS4/TD4 successor performance gate remain open. Additional local GEM calls and
+AS4/TD4 successor performance gate remain open. The
+[latency diagnostics](guides/aes-latency-diagnostics.md) now separate caller
+device-I/O CPU, presenter scheduling delay and equal offered load;
+[measurements](development/aes-hybrid-diagnostics.json) retain the failed gate.
+Additional local GEM calls and
 direct VDI drawing follow their own coverage gates.
 
 The **first desktop on Exec816** has development evidence. The

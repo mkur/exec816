@@ -9,6 +9,10 @@ ULONG AESService;
 volatile UWORD AESCommand, AESPhase, AESPeerPhase, AESChecks, AESFailures;
 volatile UWORD AESReady, AESDone, AESFirstFailure, AESMessages, AESTimers, AESRestarts;
 volatile ULONG AESBurns;
+/* Diagnostic command 7 has an external, frame-anchored offer source. These
+ * counters never throttle that source: lag remains visible as a backlog. */
+volatile UWORD AESOffered, AESStarted, AESCompleted;
+static UWORD notified;
 static struct ExecAESContext *clientContexts[2];
 static volatile UWORD quiescent;
 static volatile UBYTE retireAllowed[2];
@@ -105,13 +109,18 @@ static void cpu(UWORD who)
     }
 }
 
-static void exchange(UWORD who, BOOL continuous)
+static void exchange(UWORD who, BOOL continuous, BOOL paced)
 {
     WORD words[8] = {0,0,2,3,4,5,6,7}, event;
     UWORD sequence=0;
     if (who == 0) AESPhase=1;
     while (!stopping && (continuous || sequence < 64)) {
         if (who == 0) {
+            if (paced) {
+                while (!stopping && sequence == AESOffered) Wait(starts[0]);
+                if (stopping) break;
+                AESStarted=sequence+1;
+            }
             words[0]=sequence;words[1]=ids[0];
             event=appl_write(ids[1],16,words);
             CHECK(event == 1 || stopping);
@@ -124,8 +133,9 @@ static void exchange(UWORD who, BOOL continuous)
                 ++AESTimers;
             }
             ++sequence;
+            if (paced) AESCompleted=sequence;
         } else {
-            event=events(words,continuous ? 100 : 5000);
+            event=events(words,paced ? 5000 : continuous ? 100 : 5000);
             if (stopping) break;
             CHECK(event != 0);
             if (event & MU_MESAG) {
@@ -154,9 +164,12 @@ static void task(UWORD who)
         Wait(starts[who]);
         if (stopping) break;
         if (issued == 3) cpu(who);
-        else if (issued == 4 || issued == 5) exchange(who,issued == 5);
+        else if (issued == 4 || issued == 5 || issued == 7)
+            exchange(who,issued != 4,issued == 7);
         else if (who == 0) holder(issued); else peer();
         if (who == 0) AESPhase=3; else AESPeerPhase=3;
+        /* The paced sender may consume the stop hint in its offer wait. */
+        if (stopping) break;
     }
     /* Finish the current GEM call before the controller snapshots resources.
      * Signals are hints; a stale start bit cannot grant retirement. */
@@ -179,6 +192,7 @@ UWORD AESStart(void)
     wake=1UL << controllerBit;
     AESReady=AESDone=AESPhase=AESPeerPhase=AESCommand=issued=stopping=quiescent=0;
     retireAllowed[0]=retireAllowed[1]=0;
+    AESOffered=AESStarted=AESCompleted=notified=0;
     workers[0]=CreateTask("GEM update client", 1, (APTR)AESClientOne, 1024UL);
     workers[1]=CreateTask("GEM event client", 1, (APTR)AESClientTwo, 1024UL);
     CHECK(workers[0] && workers[1]);
@@ -205,6 +219,10 @@ UWORD AESPump(void)
         Signal(workers[0], starts[0]);
         Signal(workers[1], starts[1]);
     }
+    if (issued == 7 && notified != AESOffered) {
+        notified=AESOffered;
+        Signal(workers[0], starts[0]);
+    }
     return AESFailures;
 }
 
@@ -212,7 +230,7 @@ UWORD AESStop(void)
 {
     UWORD who=2;
     ULONG available, released;
-    CHECK(issued == 0 || issued == 5 || (AESPhase == 3 && AESPeerPhase == 3));
+    CHECK(issued == 0 || issued == 5 || issued == 7 || (AESPhase == 3 && AESPeerPhase == 3));
     stopping=1;
     Signal(workers[0], starts[0]);
     Signal(workers[1], starts[1]);

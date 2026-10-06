@@ -29,7 +29,7 @@ from sio_transaction_trace import read_events, BASE_HZ
 POSITIONS = {2:(480,128),3:(568,128),4:(480,160),5:(568,160),6:(480,192),7:(568,192)}
 
 
-def observers(p):
+def observers(p, breakdown=False):
     sy=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     spans=native_markers(p,[('DESKWIDGETS_INPUT','commit'),('DESKWIDGETS_PAINT','paint'),
         ('DESKPAINT_PUMP','pump'),('DESKWIDGETS_RUN','model_call'),('DESKAPP_REFRESHSTATUS','application'),('DESKINPUT_CONSUME','consume')])
@@ -40,6 +40,12 @@ def observers(p):
     definition=dict(points=points,spans={k:v for k,v in spans.items() if k!='application'},
         task_dps=[x['dp'] for x in p['build']['memory']['task_pools']])
     marks=flat_markers(definition)
+    if breakdown:
+        from aes_timing_breakdown import scheduler_markers
+        scheduler=scheduler_markers(p)
+        scheduler['selected']=points['selected']
+        definition['scheduler']=scheduler
+        marks.update(scheduler['points'])
     marks.update(capture=p['labels']['pointer_notify'],application=spans['application']['entry'])
     for name in ('GemWidgetFill','GemWidgetText','start','VbxeOwnerSubmit','vram_win',
                  'WidgetUpdate'):
@@ -48,12 +54,13 @@ def observers(p):
 
 
 def run(out, program, count=100, unobserved=False, comparison_only=False,
-        idle_only=False, feedback=False):
+        idle_only=False, feedback=False, breakdown=False):
+    require(not (breakdown and unobserved), 'Timing breakdown requires observation')
     out.mkdir(parents=True, exist_ok=True)
     p=read_build(program)
     foreign=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
-    spans,marks,definition=observers(p)
+    spans,marks,definition=observers(p,breakdown)
     for name in ('EXEC816_MOUSE_TRACE','EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS','EXEC816_MASK_TRACE'):
         os.environ.pop(name,None)
     if not unobserved:
@@ -66,7 +73,7 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
     colors={hw:bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen,hw in enumerate(PENS)}
     report=dict(slice='AW5',status='running',tier='development',qualification=False,observer=not unobserved,
         count_per_load=0 if comparison_only else count,idle_only=idle_only,
-        feedback_observer=feedback,samples=[],windows={},functional=[],comparison=[],build=p['build'],
+        feedback_observer=feedback,timing_breakdown=breakdown,samples=[],windows={},functional=[],comparison=[],build=p['build'],
         reserved_bank_zero_delta=delta(p['build']['memory']),marks=marks,
         timing_scope='Capture to commit/application: passive boundaries or IRQ observation upper bounds. Visible feedback: first matching completed scanout, <=1 frame observation quantization.',
         targets=dict(idle=dict(p95_ms=40,max_ms=60,button_max_ms=40),loaded=dict(p95_ms=60,max_ms=100,button_max_ms=100)))
@@ -307,7 +314,17 @@ def analyze(report, out, p, spans, marks, definition):
                 require(patch<=align(sample['visible']),'Missing status patch before feedback')
                 sample['commit_to_patch_ms']=(patch-commit)/BASE_HZ*1000
                 sample['patch_to_visible_ms']=(align(sample['visible'])-patch)/BASE_HZ*1000
-    profile=analyze_events(events,definition)
+    profile=analyze_events(events,definition,include_segments=report.get('timing_breakdown',False))
+    if report.get('timing_breakdown'):
+        from aes_timing_breakdown import input_breakdown
+        samples=[dict(capture=s['capture'],observed=align(s['consumed']),load=s['load'],edge=s['edge'])
+                 for s in report['samples']]
+        report['input_breakdown']=input_breakdown(events,definition['scheduler'],profile,samples,spans['consume']['entry'])
+        report['input_breakdown']['summary']={load:{key:distribution(
+            [r[key] for r in report['input_breakdown']['records'] if r['load']==load])
+            for key in ('capture_to_ready_ms','ready_to_selected_ms','selected_to_consume_ms',
+                        'runnable_off_cpu_ms','blocked_off_cpu_ms','charged_cpu_ms','elapsed_ms')}
+            for load in report['windows']}
     report['render_cost']=dict(routines=profile['routines'],max_charged_cpu_ms=profile['max_charged_cpu_ms'],
         scope=profile['scope'],maximum_quantum_scope='Paint call charged CPU is a conservative upper bound on uninterrupted rendering; IRQ and other-Task time excluded.')
     for comparison in report['comparison']:
@@ -365,13 +382,14 @@ if __name__=='__main__':
     a.add_argument('--comparison-only',action='store_true',help='Functional checks and matched patch/full-redraw control without the load cohorts')
     a.add_argument('--idle-only',action='store_true',help='Run only the focused idle button cohort')
     a.add_argument('--feedback',action='store_true',help='Observe intermediate button pixels for erase/redraw flicker')
+    a.add_argument('--breakdown',action='store_true',help='Passively split input wake, scheduling and execution delay')
     a.add_argument('--analyze-only',action='store_true',help='Recompute passive metrics from the completed guest run')
     args=a.parse_args()
     if args.analyze_only:
         out=args.output.resolve();report=json.loads((out/'results.json').read_text())
         require(report.get('ownership')=='restored','Guest run did not complete cleanly')
-        p=read_build(args.program.resolve());spans,marks,definition=observers(p)
+        p=read_build(args.program.resolve());spans,marks,definition=observers(p,report.get('timing_breakdown',False))
         analyze(report,out,p,spans,marks,definition)
         report['status']='pass';report.pop('error',None)
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
-    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only,args.idle_only,args.feedback)
+    else:run(args.output.resolve(),args.program.resolve(),args.count,args.unobserved,args.comparison_only,args.idle_only,args.feedback,args.breakdown)

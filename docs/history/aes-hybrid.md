@@ -165,3 +165,68 @@ including a 249-frame PAL autoboot countdown. This native preview is separate
 from the optional two-GEM-client proof; the changed AES C helper is not linked
 into that preview. Standard shell/prime build defaults remain unchanged. These
 are development checks, not release or physical-hardware qualification.
+
+## HY4 Timing breakdown and equal offered load
+
+The [diagnostic evidence](../development/aes-hybrid-diagnostics.json) separates
+caller CPU categories and capture → ready → selected → consumed boundaries.
+The [diagnostic guide](../guides/aes-latency-diagnostics.md) describes commands,
+observer boundaries and comparison restrictions. Production behavior and the
+original acceptance limits are unchanged. Repeating the original 85-call idle
+window, 30-motion/30-button pointer cohort and all three ten-gesture panel
+cohorts reproduces their previous latency distributions exactly.
+
+The original continuous workloads show distinct bottlenecks:
+
+| Measurement | Result |
+| --- | ---: |
+| Combined-wait device I/O charged CPU, p95 | 9.124 ms |
+| Combined-wait context lookup/admission charged CPU, p95 | 1.015 ms |
+| Pointer button capture to consumption, p95 | 29.326 ms |
+| Pointer button cumulative runnable off-CPU time, p95 | 25.591 ms |
+| Scrolling panel capture to consumption, p95 | 133.505 ms |
+| Scrolling panel first ready to selection, p95 | 11.248 ms |
+| Scrolling panel presenter charged CPU before consumption, p95 | 78.676 ms |
+
+These percentiles describe different samples and must not be added. Across all
+pointer button samples, runnable waiting accounts for 65.7% of total observed
+delay. Across the scrolling panel samples, presenter CPU accounts for 60.1%.
+This supports separate investigation of scheduling delay for the pointer,
+presenter work before input consumption, and caller device-I/O costs. It does
+not establish that priorities alone would resolve the GUI regression. In the
+warmed call window, individual `DoIO`, `SendIO`, `CheckIO` and `AbortIO` charged
+CPU p95 values are 1.669, 4.031, 0.837 and 2.317 ms respectively.
+
+The additional diagnostic offers one exchange every 20 PAL frames for 400
+frames, with 16 fixed-rate physical button edges. Each exchange retains the
+sender's 100 ms timer; the receiver uses a 5 s safety timeout between offers.
+The comparator verifies equal external schedules and machine settings:
+
+| Native load | Offered | Started and completed within window | Pending at window end | Completed after drain | Complete public calls in window |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Idle | 20 | 20 | 0 | 20 | 99 |
+| Scrolling | 20 | 17 | 3 | 20 | 84 |
+| Disk | 20 | 20 | 0 | 20 | 99 |
+
+Scrolling completes two native writes; disk completes 42 reads inside the
+window. All 16 input edges are consumed in each cohort. The root pump delivers
+offer notifications, so its console/DOS blocking can postpone sender admission;
+the scrolling backlog is not evidence of AES service capacity alone. First use
+also includes a lazy sender timer opening. No equal-rate comparison with a
+pre-hybrid image is claimed. A continuous control on the same diagnostic image
+passes 649 C checks and records 277 complete calls under the same fixed button
+cadence.
+
+Each fixed-offer run passes 133 C checks, drains every offer and restores
+ownership with intact guards. The host suite passes 386 tests with four
+historical-source skips, including nine focused observer/accounting regressions.
+The original latency comparison still fails: **HY4 and the AS4/TD4 successor
+gate remain open**. The diagnostic's fixed-rate input and offer distributions
+do not replace the original acceptance workloads or scanout checks.
+
+Reserved bank-zero delta is **0 bytes**, fixed and per Task, including guards,
+alignment and unused capacity. Only the optional fixture changes guest code:
+eight extra upper-RAM counter bytes and 182 extra C code bytes within the same
+reserved banks. Production APIs, priorities, scheduler, AES, renderer and demo
+package are unchanged. This is optimized development evidence, not release or
+hardware qualification.
