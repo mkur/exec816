@@ -72,7 +72,10 @@ Rectangle/button inputs have no effect when their event bits are absent.
 
 Matching runs in the caller. It computes one absolute deadline, checks selected
 sources before sleeping and rechecks after alarm submission. Signals are hints;
-spurious wakes never restart the interval. Unselected messages remain queued.
+spurious wakes never restart the interval or trigger redundant clock queries.
+A successful alarm completion proves expiry. A message arriving before the
+alarm reply triggers a fresh clock check for simultaneous readiness. Unselected
+messages remain queued.
 The caller freezes one readiness result, retires any outstanding alarm and then
 consumes at most one message. A queued message can avoid a future alarm. These
 paths make progress independently of the presenter pump.

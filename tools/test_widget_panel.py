@@ -51,6 +51,7 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
         idle_only=False, feedback=False):
     out.mkdir(parents=True, exist_ok=True)
     p=read_build(program)
+    foreign=json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     at=lambda mod,n:next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
     spans,marks,definition=observers(p)
     for name in ('EXEC816_MOUSE_TRACE','EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS','EXEC816_MASK_TRACE'):
@@ -225,11 +226,16 @@ def run(out, program, count=100, unobserved=False, comparison_only=False,
                 report['functional'].append(dict(name='Tab, Shift-Tab, Space, Return, Escape and BREAK'))
                 for name,value in (() if comparison_only else (('idle',0),) if idle_only else (('idle',0),('scroll',2),('disk',3))):
                     load(value);begin=clock();writes=read('DESKTEST','writes');reads=read('DESKTEST','reads')
+                    aes_before={name:get(foreign[name]) for name in ('AESMessages','AESTimers') if name in foreign}
                     for index in range(count):
                         click((2,5,6,4,7)[index%5],name)
                         if (index+1)%10==0:print(name,index+1,flush=True)
                     report['windows'][name]=[begin,clock()]
                     report.setdefault('progress',{})[name]=dict(writes=read('DESKTEST','writes')-writes,reads=read('DESKTEST','reads')-reads)
+                    if aes_before:
+                        report.setdefault('aes_progress',{})[name]={
+                            key:(get(foreign[key])-old)&65535 for key,old in aes_before.items()}
+                        report['aes_workload']='Unchanged continuous request/reply loop with a 100 ms caller timer after each exchange; completed counts are measured over each gesture cohort, not fixed offered throughput.'
                     if value==2:require(read('DESKTEST','writes')>writes,'Console stopped under widget load')
                     if value==3:require(read('DESKTEST','reads')>reads,'Physical SDFS stopped under widget load')
                 load(0)

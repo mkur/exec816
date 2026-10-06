@@ -97,3 +97,71 @@ and accepts an explicitly idle window only after validating the complete trace.
 Direct write public-call p95 is 19.340 ms in this cohort; full wrapper timing
 remains distinct from historical RPC submission timing. Loaded comparisons
 remain HY4 work.
+
+## HY4 Integrated proof; latency acceptance remains open
+
+[Development evidence](../development/aes-hybrid-hy4.json) records the final
+optimized image and the original comparison limits. Both instrumented and
+uninstrumented integration runs pass 1,363 C checks. They cover update/mouse
+ownership, frozen native pixels, deferred click/drag delivery, independent
+messages/timers, a CPU-only peer, disk and scroll progress, repeated client
+restart and orderly shutdown. Blocked painting produces zero presenter turns.
+The settled idle registration control also produces zero turns in 50 frames.
+PAL and NTSC event fixtures each pass 371 checks; the host suite passes 377 tests
+with four historical-source skips. Guards and OS restoration pass.
+
+The first HY4 measurements exposed redundant clock queries in combined waits.
+The final helper uses a successful terminal alarm as expiry evidence and queries
+the clock again only when a message precedes that reply. It retains simultaneous
+readiness and error-before-consume semantics. The spurious-wake fixture confirms
+one initial query and one unchanged deadline. A clock failure after alarm
+publication retires the alarm, closes its timer resources and preserves the
+arriving message. In the idle cohort, combined-wait
+charged CPU p95 falls from 19.756 to 12.101 ms. The same two-second window grows
+from 71 to 85 completed calls; this is changed completed load, not an equal-rate
+throughput comparison.
+
+The final idle, scroll and disk call windows account for 85, 70 and 73 calls,
+respectively, with **zero AES presenter dispatches** in each. The disk window
+completes 16 reads and the scroll window makes native output progress. Native
+timer deadline-to-reply p95 is 1.267, 0.767 and 1.409 ms, respectively. Full public
+call timing, caller CPU/off-CPU intervals and registration/exit RPC intervals
+remain separate metrics. Standalone timer reply-to-caller p95 is 2.722, 1.988
+and 10.855 ms. GUI-lock RPC latency is not sampled by these bounded call windows.
+
+Native GUI latency still fails acceptance:
+
+| Active-client cohort | Before clock-query optimization, p95 | Final p95 | Original AS0 plus allowance |
+| --- | ---: | ---: | ---: |
+| Pointer button consumption | 32.186 ms | 29.326 ms | 14.089 ms |
+| Panel button consumption, scrolling | 192.679 ms | 133.819 ms | 104.158 ms |
+| Panel button consumption, disk | 167.656 ms | 126.738 ms | 90.245 ms |
+
+Pointer visibility passes. Several panel visibility/consumption limits fail,
+and active GUI results also regress against parts of the existing pre-hybrid
+latency follow-up. Idle registered clients pass the original AS0 comparisons;
+the additional frozen-disabled scroll comparison misses its consumption and
+button-pixel allowances by 0.61 and 0.11 ms. All failures are retained. The
+original continuous application loops and 100 ms delay are unchanged, and
+completed messages/timers are recorded for each gesture cohort. No lower-rate
+workload replaces the acceptance workload. **HY4 and the AS4/TD4 successor
+performance gate remain open.** Further caller CPU, scheduling and presenter
+latency work needs its own scope; priorities and drawing ownership are unchanged.
+
+Reserved bank-zero delta is **0 bytes**, fixed and per Task, including guards,
+alignment and unused capacity. This slice adds no heap or arena reservations.
+Four fully initialized clients plus the service use 4,384 allocated upper-RAM
+bytes: 1,184 fewer than HY2's transition state, and 1,712 more than the original
+shared-timer implementation. The integrated image defines 4,874 bytes in its
+8,192-byte global arena. The same C and native code banks remain reserved;
+the evidence includes their live contents, padding and unused capacity. The
+final integrated C Tasks touch at most 545 bytes of their 1,024-byte stacks;
+the presenter touches 750 bytes of its 2,560-byte stack.
+
+`build/aes-hybrid/hy4/demo/exec816-demo.zip` contains the native desktop preview,
+OF816, matching SYS/WORK disks, pinned ROM, guide, licenses and checksums. The
+extracted package passes the physical boot/command/scroll/exit smoke test,
+including a 249-frame PAL autoboot countdown. This native preview is separate
+from the optional two-GEM-client proof; the changed AES C helper is not linked
+into that preview. Standard shell/prime build defaults remain unchanged. These
+are development checks, not release or physical-hardware qualification.

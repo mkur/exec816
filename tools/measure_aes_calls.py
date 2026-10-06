@@ -72,7 +72,9 @@ def run(out,program,frames=100,load='idle'):
         events=read_events(out/'emulator.log',kinds={'cpu'})
         window=[t+round((events[0][0]-t)/(1<<32))*(1<<32) for t in report['window']]
         report['latency']=analyze(events,marks,report['final_clock'],window)
-        report['costs']=analyze_events(events,costs,window,allow_empty_window=True)
+        report['costs']=analyze_events(events,costs,window,allow_empty_window=True,
+            intervals=[dict(dp=r['dp'],operation=r['operation'],transport=r['transport'],
+                            start=r['start'],end=r['client']) for r in report['latency']['records']])
         if load=='scroll':require(report['costs']['routines'].get('consoledriver_writequantum',{}).get('calls',0)>0,'Console load made no progress')
         report['status']='pass'
     except Exception as error:

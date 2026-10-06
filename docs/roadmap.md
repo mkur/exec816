@@ -47,8 +47,9 @@ using VBXE and preserving application source interfaces. The
 [XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw
 contracts followed by a two-client compatibility proof. Existing native desktop
 and widget milestones below are foundations, not full AES compatibility.
-The [AES server layer](reference/aes.md) reuses the presenter for client
-registration, copied messages, event waits, update/mouse locks and orderly exit.
+The [AES layer](reference/aes.md) reuses the presenter for client registration,
+update/mouse locks and orderly exit. Copied messaging and event/timer waits run
+in the callers through public Exec services.
 Its [implementation slices](plans/gem4xe/aes-server-implementation-plan.md) use the implemented
 [timer.device](reference/timer.md) with ordinary Exec Wait and include
 a measured two-client foundation before GEM window redraw. Native
@@ -80,8 +81,12 @@ atomic message/event migration and the integrated native GUI latency proof.
 passes development checks. [HY2](development/aes-hybrid-hy2.json) moves standalone
 timer waits into callers and passes PAL/NTSC development checks.
 [HY3](development/aes-hybrid-hy3.json) moves messaging and combined waits into
-callers and removes the presenter event engine. HY4 remains pending. Additional local GEM calls
-and direct VDI drawing follow their own coverage gates.
+callers and removes the presenter event engine.
+[HY4](development/aes-hybrid-hy4.json) records the integrated proof, reduced clock
+query work and refreshed OF816 desktop bundle. Functional checks pass; active
+clients still exceed the unchanged native GUI latency limits. HY4 and the
+AS4/TD4 successor performance gate remain open. Additional local GEM calls and
+direct VDI drawing follow their own coverage gates.
 
 The **first desktop on Exec816** has development evidence. The
 [design note](plans/gem4xe/desktop-design.md) proposes a desktop background,

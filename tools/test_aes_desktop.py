@@ -38,7 +38,7 @@ def run(out, program, unobserved=False, integrated=False, trace_calls=False):
     media=out/'media/TOOLS/SUB';media.mkdir(parents=True,exist_ok=True)
     (media/'DATA.BIN').write_bytes(bytes(i & 255 for i in range(32768)))
     disk=out/'disk.atr';make(disk,out/'media',binary_names={'TOOLS/SUB/DATA.BIN'},filesystem='sdfs')
-    report=dict(slice='AS4' if integrated else 'AS3b',status='running',tier='development',qualification=False,
+    report=dict(slice='HY4' if integrated else 'HY4-locks',status='running',tier='development',qualification=False,
         observer=not unobserved,build=p['build'],cases=[],idle_windows=[],
         reserved_bank_zero_delta=dict(fixed=0,per_public_task=[0]*8))
     try:

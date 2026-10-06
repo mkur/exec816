@@ -146,10 +146,10 @@ WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds)
 /* Only this Task removes messages from its receive port. A nonempty hint
  * remains true until GetMsg below; concurrent publishers can only add work.
  * Empty is not a reason to clear a signal before Wait. */
-static BOOL message_ready(struct ExecAESContext *c)
+static BOOL port_ready(struct MsgPort *port)
 {
-    return (struct Node *)c->receiving->mp_MsgList.lh_Head !=
-           (struct Node *)&c->receiving->mp_MsgList.lh_Tail;
+    return (struct Node *)port->mp_MsgList.lh_Head !=
+           (struct Node *)&port->mp_MsgList.lh_Tail;
 }
 
 WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
@@ -179,24 +179,27 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         mask |= 1UL << c->timer.port->mp_SigBit;
     }
     for (;;) {
-        ready = 0;
+        ready = ((flags & AES_MU_MESAG) && port_ready(c->receiving)) ? AES_MU_MESAG : 0;
         if (flags & AES_MU_TIMER) {
-            if (!initial) {
-                if (c->timer.state != AES_ALARM_IDLE &&
-                    CheckIO(&c->timer.alarm->tc_Request) != NULL) {
-                    if (!ExecAESTimerCollect(c, FALSE) || c->timer.error) {
-                        status = AES_TIMER_ERROR;
-                        goto done;
-                    }
+            if (initial) {
+                if (milliseconds == 0) ready |= AES_MU_TIMER;
+            } else if (port_ready(c->timer.port)) {
+                /* A successful absolute alarm is itself proof of expiry.
+                 * Collect before any payload so terminal errors preserve it. */
+                if (!ExecAESTimerCollect(c, FALSE) || c->timer.error) {
+                    status = AES_TIMER_ERROR;
+                    goto done;
                 }
+                ready |= AES_MU_TIMER;
+            } else if (ready & AES_MU_MESAG) {
+                /* The message can race a due but not yet published alarm.
+                 * Only this decision needs another clock query. */
                 if (!ExecAESTimerRead(c)) { status = AES_TIMER_ERROR; goto done; }
+                if (c->timer.query->ticks_hi > high ||
+                    (c->timer.query->ticks_hi == high && c->timer.query->ticks_lo >= low))
+                    ready |= AES_MU_TIMER;
             }
-            if ((initial && milliseconds == 0) || (!initial &&
-                (c->timer.query->ticks_hi > high ||
-                 (c->timer.query->ticks_hi == high && c->timer.query->ticks_lo >= low))))
-                ready = AES_MU_TIMER;
         }
-        if ((flags & AES_MU_MESAG) && message_ready(c)) ready |= AES_MU_MESAG;
         if (ready) break;
         initial = FALSE;
         if ((flags & AES_MU_TIMER) && !submitted) {

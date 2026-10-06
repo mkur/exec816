@@ -93,7 +93,7 @@ class Timeline:
                     charged_cpu_ms=delta[0], off_cpu_ms=delta[1], interrupt_ms=delta[2])
 
 
-def analyze_events(events, definition, window=None, allow_empty_window=False):
+def analyze_events(events, definition, window=None, allow_empty_window=False, intervals=()):
     points, definitions = definition['points'], definition['spans']
     turns = [t for t, e in events if e[0] == 'cpu' and int(e[4], 16) == points['turn']]
     workers = {int(e[9], 16) for t, e in events
@@ -165,10 +165,20 @@ def analyze_events(events, definition, window=None, allow_empty_window=False):
             totals[kind] = dict(calls=len(selected), **{
                 label: dict(total=sum(s[label] for s in selected), max=max(s[label] for s in selected))
                 for label in ('elapsed_ms', 'charged_cpu_ms', 'off_cpu_ms', 'interrupt_ms')})
+    interval_timelines = {worker: timeline}
+    measured_intervals = []
+    for interval in intervals:
+        dp = interval['dp']
+        require(dp in definition['task_dps'], 'Unknown interval Task direct page')
+        if dp not in interval_timelines:
+            interval_timelines[dp] = Timeline(segments, dp)
+        measured_intervals.append(dict(interval, **interval_timelines[dp].measure(
+            interval['start'], interval['end'])))
     slow = sorted(rows, key=lambda row: row['elapsed_ms'], reverse=True)[:10]
     for row in slow:
         row['routines'] = [s for s in spans if row['start'] <= s['start'] <= s['end'] <= row['end']]
     return dict(scope=__doc__, worker_dp=worker, complete_turns=len(rows), window=window,
+                measured_intervals=measured_intervals,
                 observed_turn_entries=sum(start <= t <= end for t in turns),
                 window_cpu=timeline.measure(start, end),
                 repeated_breakpoint_entries=repeated_entries,

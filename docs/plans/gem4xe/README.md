@@ -33,15 +33,18 @@ proof and current profile. The implemented
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.
 
-The proposed [hybrid AES and VDI model](hybrid-aes-vdi-design.md) is the next
-execution direction: caller-context operations, direct application-message
-delivery and event waits, with one GUI authority for windows and input. Direct
+The [hybrid AES and VDI model](hybrid-aes-vdi-design.md) uses caller-context
+operations, direct application-message delivery and event waits, with one GUI
+authority for windows and input. Messaging and waits now run in their callers. Direct
 drawing requires a separate ownership and stack proof. Priorities remain
-inactive while this model is measured; current contracts remain unchanged.
+inactive while this model is measured; the public GEM call profile is unchanged.
 The [hybrid AES implementation plan](hybrid-aes-implementation-plan.md) refactors
 the existing profile through HY1–HY4: endpoint lifetime, caller timers, an atomic
 message/event migration and the integrated latency proof. Direct drawing and
-additional GEM calls retain their separate ownership and coverage gates.
+additional GEM calls retain their separate ownership and coverage gates. HY1–HY3
+are implemented; HY4's integrated functional proof and demo refresh are recorded
+in the [hybrid history](../../history/aes-hybrid.md). Its native GUI latency
+acceptance remains open.
 
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)

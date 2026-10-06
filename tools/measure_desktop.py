@@ -145,6 +145,7 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
 def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'disk'), costs=False, quiet_app=False):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
+    foreign = json.loads((p['output'].parent/'c-image.json').read_text())['symbols']
     pin = json.loads(json.dumps(PIN))
     fastest = p['build']['dos_mounts'][0]['profile'] == 1
     if fastest:
@@ -267,6 +268,8 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     mode = {'idle': 0, 'scroll': 2, 'disk': 3, 'two_clients': 0}[load]
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
                     begin = clock()
+                    aes_before = {name:int.from_bytes(b.memdump(foreign[name],2),'little')
+                                  for name in ('AESMessages','AESTimers') if name in foreign}
                     for i in range(count):
                         if second_app and not quiet_app and i % 10 == 0:
                             b._cmd_ok('KEY SPACE down')
@@ -309,6 +312,10 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                         if i % 20 == 0:
                             print(load, i, flush=True)
                     report['windows'][load] = [begin, clock()]
+                    if aes_before:
+                        report.setdefault('aes_progress', {})[load] = {
+                            name:(int.from_bytes(b.memdump(foreign[name],2),'little')-old)&65535
+                            for name,old in aes_before.items()}
                     report.setdefault('progress', {})[load] = dict(writes=read('DESKTEST', 'writes'), reads=read('DESKTEST', 'reads'))
                 if second_app:
                     report['independent_app_updates'] = read('DESKAPP', 'updates')

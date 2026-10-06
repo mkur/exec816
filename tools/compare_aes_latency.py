@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply the frozen AS0 comparison limits to matched AS4 panel observations."""
+"""Apply the frozen AS0 comparison limits to matched AES panel observations."""
 import argparse
 import json
 from pathlib import Path
@@ -71,7 +71,7 @@ def run(out,disabled,idle,loaded,pointers=None):
     for name,comparison in comparisons.items():
         for row in comparison['rows']:
             if not row['pass_limit']:print(name,row.get('load','pointer'),row['metric'],round(row['delta'],3),'>',row['allowance'])
-    require(result['status']=='pass','AS4 latency comparison limits exceeded; see '+str(out))
+    require(result['status']=='pass','AES latency comparison limits exceeded; see '+str(out))
 
 
 if __name__=='__main__':

@@ -9,7 +9,7 @@ volatile ULONG AESBurns;
 UWORD AESFault;
 static struct Task *controller;
 static ULONG wake, targetHigh, targetLow;
-static UWORD sends, waits, spurious, phase, cohort;
+static UWORD sends, waits, reads, spurious, phase, cohort;
 static volatile UBYTE stopBurn, burnDone;
 #define PARK (*(volatile UBYTE *)AESPark)
 #define TICKS (*(volatile ULONG *)AESClock)
@@ -36,6 +36,7 @@ static void publish(struct ExecAESContext *c)
 
 void AESAfterRead(struct ExecAESContext *c)
 {
+    ++reads;
     if (phase == 3) {
         c->timer.query->ticks_hi = 0xffffffffUL;
         c->timer.query->ticks_lo = 0xfffffffeUL;
@@ -55,6 +56,7 @@ void AESBeforeWait(struct ExecAESContext *c, ULONG mask)
 {
     ++waits;
     if (phase == 5) { phase = 0; publish(c); }
+    if (phase == 10) { phase = 0; publish(c); AESFault = 4; }
     if (phase == 6 && spurious) { --spurious; Signal(FindTask(NULL), mask); }
     if (phase == 9) {
         phase = 0;
@@ -151,9 +153,10 @@ UWORD AESRun(void)
     CHECK(evnt_mesag(words) == 1 && words[0] == 777);
     phase=5; waits=0;
     CHECK(evnt_mesag(words) == 1 && words[0] == 777 && waits == 1);
-    phase=6; spurious=3; before=sends;
+    phase=6; spurious=3; before=sends; reads=0;
     CHECK(event(MU_TIMER,500,NULL) == MU_TIMER);
     CHECK(spurious == 0 && sends == before+1);
+    CHECK(reads == 1);
     CHECK(c->timer.alarm->ticks_hi == targetHigh && c->timer.alarm->ticks_lo == targetLow);
     phase=8; before=sends;
     CHECK(event(MU_MESAG | MU_TIMER,1000,words) == MU_MESAG);
@@ -175,6 +178,14 @@ UWORD AESRun(void)
     CHECK(evnt_mesag(words) == 1 && words[0] == 777);
     CHECK(c->sequence == sequence);
     PARK=0;
+    CHECK(appl_exit() == 1 && appl_init() > id);
+    /* Clock failure after alarm publication must retire it and preserve
+     * the arriving message before closing the private timer resources. */
+    phase=10;
+    CHECK(event(MU_MESAG | MU_TIMER,1000,words) == 0 && ExecAESDiagnostic() == AES_TIMER_ERROR);
+    AESFault=0;
+    CHECK(evnt_mesag(words) == 1 && words[0] == 777);
+    CHECK(c->timer.state == AES_ALARM_IDLE && c->timer.port == NULL);
     CHECK(appl_exit() == 1 && appl_init() > id);
     AESFault=2;
     CHECK(event(MU_TIMER,100,NULL) == 0 && ExecAESDiagnostic() == AES_TIMER_ERROR);

@@ -98,6 +98,8 @@ The proof is separate from the five-second shell/prime autoboot. Its checks do
 not establish a complete GEM desktop, hardware qualification or support for the
 open 125 kbit/s SIO configuration. Existing widget feedback targets also remain
 open; see the [execution record](../history/aes-server.md).
-The integrated proof passes functional checks, but AS4's relative latency gate
-also remains open. The profile is available for development; these results do
-not establish that active GEM traffic preserves native GUI response times.
+The hybrid implementation passes the integrated functional checks, including
+independent messages/timers during native GUI exclusion and repeated retirement.
+Active GEM traffic still exceeds the native GUI response limits in the HY4
+comparison. The profile remains available for development with that performance
+gate open; see the [hybrid record](../history/aes-hybrid.md).
