@@ -159,7 +159,8 @@ The kernel uses its own D page and preserves the caller's D and lower workspace
 across COP calls and interrupts. The Action! bootstrap's zero-argument call to
 C `main` uses the common JSL/RTL and 16-bit result boundary.
 
-The linker places C code in bank `$0C` and data in bank `$0D`. Only actual code,
+The linker places C code in bank `$0C`, with optional spill into `$0E`, and data
+in bank `$0D`. Native code starts above the populated C banks. Only actual code,
 initialized data and BSS are packaged; unused link capacity is not copied or
 cleared. The existing bank allocator reserves the occupied banks. The virtual
 DP range and 16-byte host packaging metadata are never loaded as bank-zero
@@ -179,6 +180,15 @@ general Action!/C callbacks.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
 arithmetic helpers can be linked; a general-purpose C library port is separate.
 User-defined tiny/near storage is not part of this target's linker layout.
+
+Calypsi 5.18 omitted implicit zero filling for the local partial array
+initializer `WORD in[16] = {MU_TIMER}` in both raw and optimized AES probes.
+The emitted code stored the first word while the remaining words retained
+stack contents. The AES fixture now fills its parameter block explicitly;
+this compiler limitation remains open and is separate from AES semantics.
+The [AS2b record](../development/aes-server-as2b.json) retains the failing image
+hashes and the successful corrected-fixture evidence. Do not infer general C
+source compatibility from the selected binding tests.
 
 C functions do **not** have Action!'s compiler-inserted stack-overflow checks.
 The platform still checks native domains/guards and the development runner

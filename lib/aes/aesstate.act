@@ -24,6 +24,7 @@ PUBLIC TYPE Client=[
   EXEC.MsgPort POINTER replies
   AESTYPES.Request POINTER waiting
   CARD eventMask
+  LONGCARD deadlineHigh,deadlineLow
   INT ARRAY words(AESTYPES.QUEUE_DEPTH*AESTYPES.MESSAGE_WORDS)
   BYTE head,queued
 ]

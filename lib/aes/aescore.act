@@ -8,6 +8,7 @@ USE TASKMEMORY
 USE A816MEMORY
 USE HEAPCORE
 USE AESMESSAGES
+USE AESEVENTS
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -250,9 +251,13 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
   ELSEIF request.operation=AESTYPES.OP_WRITE THEN
     status=AESMESSAGES.Write(service,request)
     AESSTATE.Reply(request,status)
-  ELSEIF request.operation=AESTYPES.OP_MESAG THEN
-    client.eventMask=AESTYPES.MU_MESAG
-    client.waiting=request
+  ELSEIF request.operation=AESTYPES.OP_MESAG
+      OR request.operation=AESTYPES.OP_TIMER
+      OR request.operation=AESTYPES.OP_MULTI THEN
+    status=AESEVENTS.Wait(service,client,request)
+    IF status<>AESTYPES.PENDING THEN
+      AESSTATE.Reply(request,status)
+    FI
   ELSE
     AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
   FI
@@ -261,24 +266,8 @@ RETURN
 
 ; Pending scans do not admit new calls or keep an empty wait runnable.
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
-  BYTE index
 
-  FOR index=0 TO AESTYPES.CLIENTS-1 DO
-    BEGIN
-      LET client=@service.clients(index)
-      IF client.waiting<>NULL AND client.queued<>0
-          AND (client.eventMask & AESTYPES.MU_MESAG)<>0 THEN
-        BEGIN
-          LET request=client.waiting
-          AESMESSAGES.Take(client,request)
-          client.waiting=NULL
-          client.eventMask=0
-          request.intout(0)=1
-          AESSTATE.Reply(request,AESTYPES.OK)
-        END
-      FI
-    END
-  OD
+  AESEVENTS.Poll(service)
 
 RETURN
 

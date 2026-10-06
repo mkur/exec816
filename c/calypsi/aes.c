@@ -198,11 +198,73 @@ WORD evnt_mesag(WORD *message)
     return result;
 }
 
+WORD evnt_timer(UWORD lo, UWORD hi)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0] = (WORD)lo;
+    c->request.intin[1] = (WORD)hi;
+    return submit(c, AES_OP_TIMER);
+}
+
+static WORD multi(struct ExecAESContext *c, WORD *message)
+{
+    UWORD i, flags = (UWORD)c->request.intin[0];
+    WORD result;
+    if (flags == 0 || (flags & ~(MU_MESAG | MU_TIMER))) {
+        c->diagnostic = AES_UNSUPPORTED; return 0;
+    }
+    if ((flags & MU_MESAG) && !ExecAESPointer(message, 16)) {
+        c->diagnostic = AES_MALFORMED; return 0;
+    }
+    result = submit(c, AES_OP_MULTI);
+    if (result & MU_MESAG)
+        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = c->request.words[i];
+    return result;
+}
+
+WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
+    WORD m1flags, WORD m1x, WORD m1y, WORD m1w, WORD m1h,
+    WORD m2flags, WORD m2x, WORD m2y, WORD m2w, WORD m2h,
+    WORD *msg, WORD tlo, WORD thi,
+    WORD *mx, WORD *my, WORD *mb, WORD *ks, WORD *kr, WORD *br)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    WORD *in, result;
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!ExecAESPointer(mx, 2) || !ExecAESPointer(my, 2) ||
+        !ExecAESPointer(mb, 2) || !ExecAESPointer(ks, 2) ||
+        !ExecAESPointer(kr, 2) || !ExecAESPointer(br, 2)) {
+        c->diagnostic = AES_MALFORMED; return 0;
+    }
+    in = c->request.intin;
+    in[0] = flags; in[1] = bclk; in[2] = bmsk; in[3] = bst;
+    in[4] = m1flags; in[5] = m1x; in[6] = m1y; in[7] = m1w; in[8] = m1h;
+    in[9] = m2flags; in[10] = m2x; in[11] = m2y; in[12] = m2w; in[13] = m2h;
+    in[14] = tlo; in[15] = thi;
+    result = multi(c, msg);
+    *mx = *my = *mb = *ks = *kr = *br = 0;
+    return result;
+}
+
+WORD evnt_multi_moblk(UWORD flags, WORD bclk, UWORD bmsk, UWORD bst,
+    const MOBLK *m1, const MOBLK *m2, WORD *msg, UWORD tlo, UWORD thi,
+    WORD *mx, WORD *my, WORD *mb, WORD *ks, WORD *kr, WORD *br)
+{
+    /* Rectangle values are ignored only when their event bits are absent.
+     * Unsupported rectangle events are rejected as a whole by evnt_multi. */
+    return evnt_multi((WORD)flags, bclk, (WORD)bmsk, (WORD)bst,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, msg, (WORD)tlo, (WORD)thi,
+        mx, my, mb, ks, kr, br);
+}
+
 void EXEC_CALL aes_call(AESPB *pb)
 {
     struct ExecAESContext *c = ExecAESContext();
     WORD result = 0;
-    UWORD i, op, inputs = 0, addresses = 0;
+    UWORD i, op, inputs = 0, addresses = 0, outputs = 1;
     if (c == NULL) return;
     c->diagnostic = AES_MALFORMED;
     if (!ExecAESPointer(pb, sizeof(*pb)) ||
@@ -212,9 +274,16 @@ void EXEC_CALL aes_call(AESPB *pb)
     op = pb->control[0];
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
+    if (op == AES_OP_TIMER) inputs = 2;
+    if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
     if (op == AES_OP_INIT) result = -1;
-    if (pb->control[1] != inputs || pb->control[2] != 1 ||
+    if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
+        op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI) {
+        c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
+    }
+    if (pb->control[1] != inputs || pb->control[2] != outputs ||
         pb->control[3] != addresses || pb->control[4] != 0 ||
+        !ExecAESPointer(pb->int_out, outputs*2) ||
         (inputs && !ExecAESPointer(pb->int_in, inputs*2)) ||
         (addresses && !ExecAESPointer(pb->addr_in, addresses*4))) {
         pb->int_out[0] = result; return;
@@ -225,6 +294,14 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_WRITE:
         result = appl_write(pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
     case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
+    case AES_OP_TIMER:
+        result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
+    case AES_OP_MULTI:
+        if (c->busy) { c->diagnostic = AES_BUSY; break; }
+        for (i = 0; i < 16; ++i) c->request.intin[i] = pb->int_in[i];
+        result = multi(c, (WORD *)(ULONG)pb->addr_in[0]);
+        for (i = 1; i < 7; ++i) pb->int_out[i] = 0;
+        break;
     default:
         c->diagnostic = AES_UNSUPPORTED;
     }
