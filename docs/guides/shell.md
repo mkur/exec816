@@ -4,8 +4,9 @@
 
 The shell executes built-ins in its own Task and loads external commands into
 child Processes. It supports per-command stream redirection and one foreground
-pipeline of two external commands, plus one separately owned background job. The [demo](demo.md) adds an independent prime
-Process in a second console tile; the shell itself also works as a resident entry.
+pipeline of two external commands, plus one separately owned background job.
+`RUN PRIMES` opens a lower console pane; the optional [demo](demo.md) starts
+that same disk command automatically. The shell also works as a resident entry.
 Source lives in [examples/shell](../../examples/shell/).
 
 ## Built-in commands

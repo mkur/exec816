@@ -20,7 +20,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -119,6 +119,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
         def pointer(address):return number(address,3)
+        def prime_state():
+            if shell_only:
+                return dict(progress=0,count=0)
+            from prime_observer import state
+            identity=number(at('job'))
+            return state(far,p,out,identity) if identity else dict(progress=0,count=0)
         def rendezvous(condition):
             b.bp_clear_all();marker=p['labels']['native_irq' if desktop else 'native_nmi']
             # Qualify bank zero: the bridge's PC fields and breakpoints use
@@ -139,7 +145,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         capture=p['build']['memory']['console_storage']['CAPTURE']
         def press(character):
             arrows={'→':'ASTERISK','↑':'MINUS','↓':'EQUALS'}
-            ctrl=character in '\x01\x02\x04\x05\x06\x0b\x0e\x10\x15\x17' or character in arrows
+            ctrl=character in '\x01\x02\x04\x05\x06\x0b\x0c\x0e\x10\x15\x17' or character in arrows
             name,shift=(arrows.get(character,chr(ord(character)+64) if ord(character)<32 else character),False) if ctrl else ('BREAK',False) if character=='\x03' else KEYS[character]
             if ctrl:b._cmd_ok('KEY CTRL down')
             if shift:b._cmd_ok('KEY SHIFT down')
@@ -158,13 +164,18 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 condition+=f'&(dw(${saved["scope"]+14:x})>{previous&65535})'
             rendezvous(condition)
         def cells(label):
-            instances=[saved['top'],saved['bottom']];views=[saved['topView'],saved['bottomView']]
-            if shell_only:instances=instances[:1];views=views[:1]
-            # A console write can span multiple source quanta. A synchronized
-            # screen halfway through the prime frame's clear/title write is
-            # still an intermediate frame, so wait for both writes to finish.
+            windows=p['build']['memory']['console_storage']['WINDOWS']
+            rendezvous(f'db(${windows+console["WINDOWS_PRESENTING"]:x})=0')
+            instances=[saved['top']]
+            views=[saved['topView']]
+            unit=number(windows+console['WINDOWS_PANE'])
+            if unit:
+                row=windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(unit&3)
+                instances.append(pointer(row+console['WINDOW_INSTANCE']))
+                views.append(pointer(row+console['WINDOW_VIEW']))
+            # Positioned writes settle before independent pixel comparison.
             write=console['INSTANCE_WRITE']
-            condition='&'.join(f'(dw(${i+write:x})=0)&(db(${i+write+2:x})=0)&'
+            condition=f'(db(${windows+console["WINDOWS_PRESENTING"]:x})=0)&'+ '&'.join(f'(dw(${i+write:x})=0)&(db(${i+write+2:x})=0)&'
                 f'(db(${i+console["INSTANCE_DIRTYROWS"]:x})=0)&(db(${i+console["INSTANCE_OPERATION"]:x})=0)&'
                 f'(db(${v+console["PRESENTATION_SCROLLSTATE"]:x})=0)&'
                 f'(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))'
@@ -194,7 +205,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 folder=out/f'pixels-{len(observations)}';folder.mkdir(exist_ok=True)
                 # Let scanout catch up after the last CPU-side fence.
                 frames(2)
-                if generations!=[number(i+console['INSTANCE_GENERATION']) for i in instances]:
+                if number(windows+console['WINDOWS_PRESENTING'],1) or unit!=number(windows+console['WINDOWS_PANE']) or generations!=[number(i+console['INSTANCE_GENERATION']) for i in instances]:
                     return cells(label)
                 if desktop:
                     # Retained command installation precedes its final paint.
@@ -224,8 +235,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 require(len(text)==width*height,'Shell model dimensions differ from the selected console')
                 observations.append(dict(stage=label,guest_frame=b.eval_expr('@frame')))
             else:
-                require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')
-                observations.append(dict(stage=label,prime_frames=number(at('demoFrames')),prime_count=number(at('demoCount'),2),guest_frame=b.eval_expr('@frame')))
+                if unit:require(b'PRIME SEARCH' in text[shell_cells:],'Missing prime tile')
+                observations.append(dict(stage=label,prime_progress=prime_state()['progress'],prime_count=prime_state()['count'],guest_frame=b.eval_expr('@frame')))
             return text
         def desktop_interaction():
             def symbol(module,name):
@@ -302,7 +313,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             commands.append(text)
             if saved.get('measuring'):
                 cache=saved['cache_address']
-                saved['cache_commands'].append(dict(command=text,prime_frames=number(at('demoFrames')),
+                saved['cache_commands'].append(dict(command=text,prime_progress=prime_state()['progress'],
                     hits=number(cache+16),misses=number(cache+20),evictions=number(cache+24)))
             return screen
         def writable_commands():
@@ -367,8 +378,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 children=[pointer(scope+offset) for offset in (48,51)]
                 rendezvous('|'.join(f'({active(child)})' for child in children))
                 require(number(p['build']['task_storage']['LIVE'],1)==7,'Pipeline Task peak differs')
-                before=number(at('demoFrames'));frames(60)
-                require(number(at('demoFrames'))>before,'Prime display did not advance during file I/O')
+                before=prime_state()['progress'];frames(60)
+                require(prime_state()['progress']>before,'Prime display did not advance during file I/O')
                 require(number(scope+54,1)==1,'Long pipeline finished before physical BREAK')
             press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
             require(ledger()==saved['ledger'],'Ownership retained after BREAK')
@@ -392,22 +403,35 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b.memload(boot['MANIFEST'],bytes([0xd3])*boot['MANIFEST_CAPACITY'])
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16))
             saved['screenBytes']=b.memdump(saved['screen'],960);b._cmd_ok('KEY ALL up')
-            if shell_only:
-                rendezvous(f'(dw(${at("shell"):x})!=0)|(db(${at("shell")+2:x})!=0)')
-            else:
-                rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
+            rendezvous(f'(dw(${at("shell"):x})!=0)|(db(${at("shell")+2:x})!=0)')
+            if not shell_only:
+                rendezvous(f'db(${at("started"):x})=1')
             saved['shell']=pointer(at('shell'))
             windows=p['build']['memory']['console_storage']['WINDOWS']
-            for name,unitName in [('top','demoShellUnit'),('bottom','demoPrimeUnit')]:
-                row=windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(0 if shell_only else number(at(unitName))&3)
-                saved[name]=pointer(row+console['WINDOW_INSTANCE'])
-                saved[name+'View']=pointer(row+console['WINDOW_VIEW'])
-            if shell_only:
-                # ShellOpen publishes its allocation before it creates the DOS
-                # scope. Observe the first pending read after boot has finished.
-                rendezvous(f'db(${saved["top"]+51:x})=2')
+            row=windows+console['WINDOWS_ITEMS']
+            saved['top']=pointer(row+console['WINDOW_INSTANCE'])
+            saved['topView']=pointer(row+console['WINDOW_VIEW'])
+            rendezvous(f'db(${saved["top"]+51:x})=2')
+            if not shell_only and not disk_failure:
+                rendezvous(f'dw(${windows+console["WINDOWS_PANE"]:x})!=0')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
             ready();cells('startup')
+            if integration is not None:
+                from types import SimpleNamespace
+                try:
+                    integration.exercise(SimpleNamespace(b=b,p=p,saved=saved,far=far,number=number,
+                        at=at,manifest=manifest,console=console,command=command,begin=begin,
+                        result=result,ready=ready,rendezvous=rendezvous,frames=frames,press=press,
+                        cells=cells,ledger=ledger,save_screen=save_screen))
+                except Exception:
+                    diagnostic = dict(pc=b.eval_expr('@xpc'),frame=b.eval_expr('@frame'),
+                        read_state=number(saved['top']+51,1),scope=saved['scope'],
+                        current_scope=pointer(pointer(dos)+83),scope_bytes=far(saved['scope'],56).hex(),
+                        shell=far(saved['shell'],40).hex(),live_tasks=number(p['build']['task_storage']['LIVE'],1),
+                        cells=read_cells(far,saved['top']).decode('ascii'))
+                    (out/'integration-failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
+                    raise
+                return
             if desktop:desktop_interaction()
             if disk_failure:
                 require(b'Filesystem startup failed; check configured disks' in cells('failed-mount')[:shell_cells],
@@ -432,9 +456,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 for character in 'EXIT':press(character)
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if showcase:
-                command('TASKS',b'primes')
+                command('TASKS',b'process')
                 screenshot('boot-tasks.png',[b'Exec816 (',b'exec: 8 task slots',
-                    b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'primes'])
+                    b'SYS: -> D1: ready, read-only',b'SLOT STATE',b'dos.filesystem',b'process'])
                 command('MOUNT',b'SDFS' if manifest.get('filesystem')=='sdfs' else b'MyDOS')
                 command('CD SYS:')
                 command('DIR',b'STORY')
@@ -455,7 +479,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     saved['filesystem_writes']=True
                     screenshot('writable-files.png',[b'WORK:COPY.TXT',b'WORK:PIPE.TXT',b'1 3 17'])
                     writable_commands()
-                require(observations[-1]['prime_frames']>observations[0]['prime_frames'],
+                require(observations[-1]['prime_progress']>observations[0]['prime_progress'],
                         'Prime display did not advance during the walkthrough')
                 for character in 'EXIT':press(character)
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
@@ -715,7 +739,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             command('DIR',b'STORY')
             command('HELLO',b'Hello from disk!')
             command('TYPE README.TXT',b'Errors are explained on the console.')
-            command('TASKS',b'primes')
+            command('TASKS',b'process')
             command('HELLO | WC',b'1 3 17')
             command('CAT STORY.TXT | WC',story_wc)
             if work_media:
@@ -801,7 +825,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         rom=dict(path=str(rom),sha256=sha256(rom),pinned_sha256=pin['rom']['sha256'],override=rom_override is not None),
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),distribution_root=str(distribution_root) if distribution_root else None,
-        disk_boot=disk_boot,
+        disk_boot=disk_boot,integration=saved.get('integration'),
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),copy_break_frames=saved.get('copy_break_frames'),

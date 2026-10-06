@@ -20,7 +20,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 ## Exec and project history
 
 - [Background console panes and primes](background-pane-primes.md): foundation
-  slices, frozen interfaces and resource costs before the loadable command.
+  slices, loadable command, numeric drawing, resource costs and packaged preview.
 
 - [Hybrid AES refactor](aes-hybrid.md): shared endpoint lifetime, caller transport migration and per-slice evidence.
 - [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.

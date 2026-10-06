@@ -84,7 +84,8 @@ The second screenshot is taken after the last command above:
 Type `HELP` to list the shell's built-in commands:
 
 ```text
-HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
+HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS
+RUN JOBS BREAK EXIT
 ```
 
 The prompt supports insertion, Backspace and Ctrl-A/E for beginning/end.
@@ -115,11 +116,19 @@ CAT STORY.TXT | WC >NIL:
 
 Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
 command memory. `TASKS` at the prompt shows the shell, console, filesystem,
-SIO and prime Tasks. A pipeline adds two temporary Tasks, using seven of the
+SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
+the bitmap shell starts full-screen until you enter RUN PRIMES yourself.
+A pipeline adds two temporary Tasks, using seven of the
 eight reserved slots. The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
 
-`EXIT` stops and collects the prime Process, closes both tiles and restores the
+JOBS shows the background Process identity. `BREAK identity` requests stop;
+pane closure restores the full shell, including its edited line.
+`PRIMES PASSES 1` runs one foreground pass and returns; with PASSES omitted
+or zero, it continues until BREAK. `RUN PRIMES PASSES 1` completes without
+waiting for another shell command. The display updates only changed numbers.
+
+`EXIT` stops and collects the prime Process, closes its pane and restores the
 OS display and input state.
 
 ## Scope
@@ -127,7 +136,8 @@ OS display and input state.
 There is one foreground pipeline of exactly two external commands. Resident
 commands such as TYPE, DIR and ECHO cannot be pipeline stages. Quoted `|` is
 literal text. Input redirection belongs on the left and output redirection on
-the right. Longer pipelines, scripts and background shell syntax
+the right. RUN supports one loadable background command with NIL default streams,
+PATH/aliases and file redirection. Background pipelines, longer pipelines and scripts
 are outside this demo. A failed stage reports the first failure in command order.
 
 This is a development play image, with focused raw/optimized slice checks and

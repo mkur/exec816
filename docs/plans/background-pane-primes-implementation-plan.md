@@ -1,7 +1,7 @@
 # Background commands console panes and primes
 
-Status: implementation in progress. Implement the reusable foundations first, then move the
-prime demonstration into a loadable `C:PRIMES` command. The default bitmap
+Status: implemented in F0–F4 and P1–P2. The reusable foundations landed first,
+followed by the prime demonstration as a loadable `C:PRIMES` command. The default bitmap
 shell still starts with the full screen available and no primes Process.
 
 Follow the current [Process](../reference/process.md),
@@ -10,8 +10,8 @@ Follow the current [Process](../reference/process.md),
 [console instance](../reference/console-windows.md),
 [cancellation](../reference/foreground-break.md),
 [platform](../reference/platform.md) and
-[testing](../contributing/testing.md) contracts. Changes below are proposed
-extensions; they do not describe existing public interfaces.
+[testing](../contributing/testing.md) contracts. The linked references describe the current public interfaces; the slices below
+preserve the implementation sequence.
 
 Slice progress and development evidence are recorded in the
 [implementation record](../history/background-pane-primes.md).

@@ -31,13 +31,12 @@ Matched buffer/filesystem measurements, confirmed-prefix errors, ownership,
 BREAK checkpoints and the bitmap/cartridge preview have development evidence.
 The accurate 256-byte MyDOS transport limit is recorded above.
 
-The [background command and primes plan](plans/background-pane-primes-implementation-plan.md)
-is the next planned command milestone. Implement positioned console writes,
-height changes and an owned lower pane, then independent background cancellation
-and bounded RUN/JOBS/BREAK support. Follow with a loadable `C:PRIMES` that uses
-the lower six rows and updates only changed numeric fields. The default bitmap
-shell starts full-screen without primes; closing the pane restores its height.
-One background job and one pane keep the first version bounded.
+The [background command and primes slice](history/background-pane-primes.md)
+implements positioned writes, height changes, an owned lower pane, independent
+background cancellation and bounded RUN/JOBS/BREAK support. The loadable
+`C:PRIMES` uses six lower rows and updates only changed numeric fields. The
+bitmap shell starts full-screen; pane closure restores its height and edited
+input. One background job and one pane keep this version bounded.
 
 1. Add shell `>>` append redirection, reusing the existing writable Open and
    seek-to-EOF behavior. Cover partial writes, final Close errors, BREAK and
@@ -235,8 +234,8 @@ The other possible milestones have no delivery order:
 - A RAM filesystem and broader volume assignments beyond the implemented
   [SYS: alias](reference/sys-volume.md) and [directory assigns](reference/assigns.md).
 - Longer shell pipelines and background job control beyond the current
-  [two-command foreground pipeline](guides/shell.md) and the planned
-  [single background job](plans/background-pane-primes-implementation-plan.md).
+  [two-command foreground pipeline](guides/shell.md) and the implemented
+  [single background job](guides/shell.md#one-background-job).
 - Regular expressions beyond the implemented [command toolbox](guides/toolbox.md),
   [writable commands](history/write-commands.md) (COPY, TEE, DELETE, RENAME, MAKEDIR), and
   [command usability](history/command-usability.md) services (PATH, fault text

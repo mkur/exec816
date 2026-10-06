@@ -127,7 +127,7 @@ assuming work is pending. Current behavior belongs in the
 ## Programs and shell
 
 - [Background commands, console panes and primes](background-pane-primes-implementation-plan.md):
-  proposed foundations for positioned writes, height changes, owned panes,
+  completed foundations for positioned writes, height changes, owned panes,
   cancellable background Processes and one shell job, followed by loadable
   PRIMES with numeric-only drawing.
 - [ASSIGN logical directories](assign-implementation-plan.md): implemented

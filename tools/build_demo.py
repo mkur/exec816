@@ -34,7 +34,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     media=output/'media';media.mkdir(exist_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN'):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES'):
         commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
@@ -49,6 +49,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text('Exec816 bitmap shell\n\n'
             'The full 80 by 30 screen is your shell.\nNo prime task is started.\n\n'
             'Try TASKS, DIR, MEM, HELLO | WC,\nand CAT STORY.TXT | WC.\n'
+            'RUN PRIMES opens a lower pane. JOBS shows its identity;\n'
+            'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
         (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
@@ -133,7 +135,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',

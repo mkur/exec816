@@ -40,9 +40,10 @@ metadata reservation is currently 880 bytes and the demo globals arena 4,096.
 Height-capacity and pane fields will be accounted in F2 before enlargement.
 Loaded command backing includes its existing 64 KiB text-alignment slack.
 
-Six Tasks cover the shell, root and resident workers. One background command
-and one foreground command fill the remaining two slots; a two-command pipeline
-alongside that job must fail admission cleanly rather than enlarge the pools.
+The initial six-Task idle estimate was corrected by F4: the standard shell has
+four live Tasks. One background command and a two-command foreground pipeline
+bring that to seven, within the eight-slot pool. Admission at capacity must
+fail cleanly rather than enlarge the pools.
 The six-row pane needs another console instance, not another worker Task.
 Each background scope needs one child cancellation signal; the parent uses the
 existing per-Process completion signal. Delay uses the DOS context's reply port.
@@ -121,9 +122,9 @@ normally and requests child cancellation. Raw probes cover new call shapes and
 layouts. Exact collection, ownership and stack/domain guards pass; 391 host
 checks passed.
 
-Each background scope uses 56 requested/64 rounded upper bytes and one child
-signal. The DOS context grows from 94 to 98 requested bytes, or 96 to 112
-rounded bytes. Delay lazily caches a 38-byte clock/alarm request (48 rounded)
+Each background scope uses 56 requested/56 rounded upper bytes and one child
+signal. The DOS context grows from 94 to 98 requested bytes, or 96 to 104
+rounded bytes. Delay lazily caches a 38-byte clock/alarm request (40 rounded)
 with the existing reply port and timer binding slots. The Process table remains
 1,028 bytes. Providers occupy 1,521 of the reserved 1,664 bytes for 45 entries.
 Fixed, root/kernel, idle, loading and per-Task bank-zero deltas are **0 bytes**.
@@ -169,3 +170,34 @@ The optimized command has 5,405 text bytes and 1,416 private BSS bytes, includin
 the 1,251-byte sieve. Its disk file is 6,554 bytes. The existing loader alignment
 slack is recorded separately. Fixed, root/kernel, idle, loading and per-Task
 bank-zero reservation deltas are **0 bytes**. These are development results.
+
+## P2 Shared demo startup and packaged bitmap walkthrough
+
+The optional automatic demonstration now runs `RUN PRIMES` through the shared
+shell. Its resident sieve, duplicate Process lifetime and complete-frame refresh
+loop are removed. The full-screen bitmap selection includes `C:PRIMES` among
+its 17 commands and starts without a background job. The OF816 preview includes
+matching 720 KiB system/work disks, ROM, guides, notices and checksums.
+
+The [P2 record](../development/background-pane-primes-p2.json) covers physical
+keys, actual loaded code and independent bitmap pixels: RUN/JOBS, HELLO,
+foreground pipeline, COPY/CMP, rejected second job/pane, edited input, Ctrl-L,
+isolated foreground BREAK, requested stop, stale identities, restart, finite
+completion and EXIT with a live job. Natural completion restores the full
+screen and preserves a draft while the shell remains inside cooked Read.
+The separate text fixture exercises the refactored automatic startup and exit.
+
+Two observed steady updates each issue two positioned writes and draw ten
+glyphs, with no fill, scroll, copy or label redraw. The sieve's finite result is
+1,229 primes and latest 9,973. The shell has four idle Tasks; the job adds one,
+and a foreground two-command pipeline fits within the existing eight slots.
+Guards, ownership and OS display/input restoration pass. All 391 host checks
+pass; these focused runs are development evidence, not release qualification.
+
+The command costs recorded in P1 are unchanged. Fixed, root/kernel, idle,
+loading and per-Task bank-zero reservation deltas are **0 bytes** relative to
+F0. The existing bitmap profile's two enlarged Task stacks remain accounted
+separately from the historical text compaction baseline.
+Current heap accounting uses eight-byte alignment. P2 corrects the earlier
+16-byte rounded estimates for scope/context/timer and command BSS; the archived
+F3/P1 records retain their original estimates and execution hashes.
