@@ -92,6 +92,13 @@ The DT1 fixture uses three Tasks solely to exercise these boundaries. The
 production presenter reuses the console worker and its existing 2,560-byte
 stack; its message port adds one owned signal, not a new Task.
 
+Native and AES admissions share a four-request turn budget. Each admission,
+including a native request deferred by scene ownership, gives captured input
+an opportunity before the next request. Completed cache/move transactions and
+released console borrows also have input boundaries. These service capture and
+the quiescent pointer without yielding or changing model-commit ordering;
+widget gestures still wait for the existing scene and AES gates.
+
 
 ## Presentation
 

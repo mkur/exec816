@@ -54,6 +54,14 @@ records lower construction CPU and panel latency, plus the remaining input
 latency caveat. Tables occupy 37,132 bytes of one additional 64 KiB upper RAM
 bank, with no bank-zero/VRAM growth. HY4 acceptance remains separate.
 
+The [presenter input latency plan](presenter-input-latency-plan.md)
+follows that refactor with input boundaries between native admissions, smaller
+widget steps and bounded text presentation. PI1's boundaries pass development
+checks; its [measurements](../../history/aes-hybrid.md#presenter-input-boundaries)
+show a small CPU-gap reduction and mixed response times. PI2–PI4 remain pending,
+preserving scene ownership and complete strip publication while measuring
+input, model and pixel latency separately. BR4 supplies the baseline.
+
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The

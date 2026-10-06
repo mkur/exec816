@@ -644,9 +644,12 @@ PUBLIC PROC Worker()
         FI
       END
       entry.busy=0
+      ; No console view remains borrowed when pointer delivery resumes.
+      DESKHOST.InputBoundary()
+    ELSE
+      DESKINPUT.Present()
     FI
 
-    DESKINPUT.Present()
     DESKHOST.Events()
     AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0

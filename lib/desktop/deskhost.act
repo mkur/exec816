@@ -110,12 +110,21 @@ RETURN(1)
 
 ; A bounded active-service boundary, never an idle poll or periodic wake.
 ; Capture/cursor may advance now; widget commits stay after native controls.
-PROC InputBoundary()
+PUBLIC PROC InputBoundary()
 
   DESKINPUT.Service(DESKINPUT.Mask())
   DESKINPUT.Present()
 
 RETURN
+
+BYTE FUNC NativeAdmission(DESKTYPES.Service POINTER service)
+
+  LET admitted=DESKCORE.Pump(service,1)
+  IF admitted<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN(admitted)
 
 BYTE FUNC AESAdmission(BYTE POINTER remaining)
 
@@ -144,11 +153,19 @@ RETURN
 
 PUBLIC PROC Controls()
   BYTE count,admitted,selected,aesRemaining,limit
+  LONGCARD priorToken
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
+    priorToken=service.scene.busy
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
+    IF priorToken<>0 AND service.scene.busy=0 THEN
+      ; Only one scene continuation can own the token. Service input after
+      ; its retirement, before a control can acquire the newly free scene.
+      InputBoundary()
+    FI
+
     lateAES=0
     limit=4
     aesRemaining=4
@@ -168,14 +185,14 @@ PUBLIC PROC Controls()
     count=0
     WHILE count<limit DO
       IF selected=0 THEN
-        admitted=DESKCORE.Pump(service,1)
+        admitted=NativeAdmission(service)
         IF admitted=0 THEN
           admitted=AESAdmission(@aesRemaining)
         FI
       ELSE
         admitted=AESAdmission(@aesRemaining)
         IF admitted=0 THEN
-          admitted=DESKCORE.Pump(service,1)
+          admitted=NativeAdmission(service)
         FI
       FI
 

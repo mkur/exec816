@@ -330,8 +330,9 @@ def intake(out, failure=0, replay=False):
             'USE AESHOST\nUSE AESINTAKEPROBE')
         host = host.replace('    count=0\n', '    count=0\n    AESINTAKEPROBE.StartTurn()\n')
         for port, call in enumerate(('DESKCORE.Pump(service,1)', 'AESHOST.Pump(1)')):
+            require(host.count('admitted='+call)==1, 'Admission wrapper changed')
             host = host.replace('admitted='+call, 'admitted='+call+
-                f'\n        AESINTAKEPROBE.Admission({port},admitted)')
+                f'\n  AESINTAKEPROBE.Admission({port},admitted)')
         # Finish after the deferred admission too: the budget covers the entire
         # presenter turn, not just the Controls prefix.
         host = host.replace('    lateAES=0\n    remaining=1',
@@ -340,6 +341,18 @@ def intake(out, failure=0, replay=False):
         require(host.count(needle) == 1, 'Deferred admission boundary changed')
         host = host.replace(needle, '    Events()\n  FI\n  AESINTAKEPROBE.FinishTurn()\n\nRETURN\n\nPUBLIC BYTE FUNC Runnable()')
         (out/'deskhost.act').write_text(host)
+        core=read_source(ROOT/'lib/desktop/deskcore.act').replace(
+            'USE HEAPCORE', 'USE HEAPCORE\nUSE AESINTAKEPROBE',1)
+        needle='      EXECLISTS.AddTail(@service.deferred,@request.message.mn_Node)'
+        require(core.count(needle)==1, 'Native deferral boundary changed')
+        (out/'deskcore.act').write_text(core.replace(needle,
+            needle+'\n      AESINTAKEPROBE.deferred==+1'))
+        pointer=read_source(ROOT/'lib/desktop/deskinput.act').replace(
+            'USE HEAPCORE', 'USE HEAPCORE\nUSE AESINTAKEPROBE',1)
+        needle='    IF AESLOCKS.MouseBlocked()=0 AND AESINPUT.Pop(@sample)<>0 THEN\n'
+        require(pointer.count(needle)==1, 'Retained input boundary changed')
+        (out/'deskinput.act').write_text(pointer.replace(needle,
+            needle+'      AESINTAKEPROBE.ObserveInput()\n'))
         if failure == 1:
             boot = read_source(ROOT/'lib/aes/aesboot.act').replace(
                 'EXEC.AllocMem(SIZEOF(AESSTATE.Service),', 'EXEC.AllocMem(0,')
@@ -389,6 +402,12 @@ def intake(out, failure=0, replay=False):
                 report['admission_turns'] = probe('turns', 24)
                 report['maximum_per_turn'] = probe('maximum', 1)[0]
                 report['deferred_admissions'] = probe('lateCount', 1)[0]
+                report['input_injected'] = probe('injected', 1)[0]
+                report['input_consumed'] = probe('consumed', 1)[0]
+                report['native_deferred'] = probe('deferred', 1)[0]
+                require(report['input_injected'] == report['input_consumed'] >= 61
+                        and report['native_deferred'] > 0,
+                        'Missing admission/late-wake input coverage')
                 require(report['maximum_per_turn'] <= 4 and report['deferred_admissions'] > 0,
                         'Missing bounded paint-before-AES admissions')
                 require(report['checks'] >= 90, 'Incomplete intake fixture')

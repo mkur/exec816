@@ -8,6 +8,7 @@ from bitmap_console_performance import native_markers
 from console_turn_profile import flat_markers
 from dos_concurrent_trace import call_marker
 from vbxe_builder_csites import csites,workpoints
+from presenter_control_trace import markers as control_markers
 
 
 def run(program,out,idle_only=False):
@@ -16,9 +17,12 @@ def run(program,out,idle_only=False):
         spans,marks,definition=original(p,breakdown)
         names='''CONSOLEDRIVER_COLLECT CONSOLEDRIVER_READQUANTUM CONSOLEDRIVER_WRITEQUANTUM CONSOLEDRIVER_ARRIVAL CONSOLECORE_FEED CONSOLECORE_EDITQUANTUM CONSOLEDISPLAY_PRESENT CONSOLEDISPLAY_CELLS CONSOLEDISPLAY_REMOVECURSOR CONSOLEDISPLAY_CURSOR CONSOLEDISPLAY_ADVANCE CONSOLEDISPLAY_PRESENTBATCH CONSOLEDISPLAY_FLUSHBATCH CONSOLEDISPLAY_POLL CONSOLEBITMAP_CLIPPEDTEXT CONSOLEBITMAP_DESKTOPDRAW CONSOLEBITMAP_RUN CONSOLEBITMAP_TEXT CONSOLEBITMAP_TEXTCARET CONSOLEBITMAP_FILL CONSOLEBITMAP_RAWFILL CONSOLEBITMAP_SCROLL CONSOLEBITMAP_CURSOR DESKHOST_CONTROLS DESKHOST_AFTERPAINT DESKHOST_EVENTS DESKHOST_CACHE DESKPAINT_PAINTSTRIP DESKINPUT_SERVICE DESKINPUT_ADVANCE DESKINPUT_PRESENT DESKCACHE_PUMP DESKMOVE_PUMP AESCORE_DISPATCH'''.split()
         extra=native_markers(p,[(n,n.lower()) for n in names])
+        controls='DESKCORE_PUMP DESKCORE_DISPATCH DESKHOST_NATIVEADMISSION DESKHOST_INPUTBOUNDARY DESKWIDGETINPUT_ADVANCE'.split()
+        extra.update(native_markers(p,[(n,n.lower()) for n in controls]))
         extra.update(csites(p,json.loads((p['output'].parent/'c-image.json').read_text())))
         definition['spans'].update(extra);spans.update(extra)
         definition['points'].update(workpoints(p,json.loads((p['output'].parent/'c-image.json').read_text())))
+        definition['points'].update(control_markers(p))
         mapped={**p,'labels':{**p['labels'],'collect':extra['consoledriver_collect']['entry']}}
         definition['points']['worker_turn']=call_marker(mapped,'M_CONSOLEDRIVER_WORKER_','collect')
         marks.update(flat_markers(definition))

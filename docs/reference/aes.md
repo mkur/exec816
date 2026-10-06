@@ -138,8 +138,12 @@ first endpoint on ordinary turns. When painting or a widget gesture can advance,
 at most three native requests precede the existing paint quantum, then one AES
 request is admitted after it. Both phases share the four-request limit; AES is
 not deferred across an entire repaint. Caller-owned messages and timer completions do not use that intake budget.
-The presenter services captured input before controls when signalled and after
-actual paint work. Widget model changes stay after native control admission.
+The presenter services captured input before controls when signalled, after
+each native/AES admission (including native deferral), after a cache/move token
+retires, after actual paint work, and after releasing a borrowed console view.
+These boundaries collect input and present the pointer when drawing is
+quiescent; they add no Yield or periodic wake. Widget model changes stay after
+native control admission and respect the existing scene/AES ownership gates.
 Each turn gives GUI painting its existing bounded quantum before new console
 output. Ready paint may continue without a voluntary Yield; VBI preemption
 provides Task fairness, and blocked work retains the ordinary signal wait path.

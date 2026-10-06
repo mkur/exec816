@@ -9,6 +9,7 @@ from statistics import median
 from sio_transaction_trace import read_events
 from console_turn_profile import analyze_events,Timeline
 from native_program import require,sha256
+from presenter_control_trace import admissions,summarize
 
 
 def analyze(out):
@@ -16,6 +17,7 @@ def analyze(out):
     j=json.loads((out/'results.json').read_text());d=json.loads((out/'presenter-definition.json').read_text())
     events=read_events(out/'emulator.log',kinds={'cpu'})
     p=analyze_events(events,d,include_segments=True);tl=Timeline(p['segments'],p['worker_dp']);spans=p['routine_spans']
+    controls=admissions(events,d,spans,p['worker_dp'])
     align=lambda t:t+round((events[0][0]-t)/(1<<32))*(1<<32)
     def group(s):return d['spans'][s['kind']].get('callee',s['kind'])
     def decompose(row):
@@ -47,6 +49,7 @@ def analyze(out):
     windows['whole_presenter_run']=[turnticks[0],turnticks[-1]]
     windows['before_worker_loop']=[events[0][0],turnticks[0]]
     kinds=['consoledisplay_present','consoledisplay_cells','consolebitmap_text','consolebitmap_clippedtext','pump','paint','deskhost_controls','commit','deskinput_service','deskinput_advance','consoledriver_writequantum','deskhost_cache','consolebitmap_run']
+    kinds += ['deskcore_pump','deskcore_dispatch','deskhost_inputboundary','deskwidgetinput_advance']
     result=dict(status=j['status'],scope='Optimized development replay, unchanged guest binary. Inclusive routine costs overlap; exclusive costs reconcile to each unit. CPU excludes native interrupts and off-Task time, includes kernel/C tails and bus stalls. RTL endpoints exclude the RTL instruction; C call sites include JSL through the return continuation.',image_sha256=j.get('xex_sha256',j.get('build',{}).get('xex_sha256')),trace_sha256=sha256(out/'emulator.log'),worker_dp=p['worker_dp'],source_trace=str(out/'emulator.log'),definition=d,windows={})
     for load,(a,b) in windows.items():
         selected=[s for s in spans if a<=s['start']<s['end']<=b]
@@ -84,9 +87,13 @@ def analyze(out):
         for k,rows in [('actual_worker_turn',turns),('input_service_gap',services)]:
             rows=[r for r in rows if a<=r['start']<r['end']<=b]
             if rows:result['windows'][load][k]=decompose(max(rows,key=lambda r:r['charged_cpu_ms']))
+        result['windows'][load]['native_admissions']=summarize(
+            [r for r in controls if a<=r['start']<r['end']<=b])
         if 'input_breakdown' in j:
             rows=[r for r in j['input_breakdown']['records'] if r['load']==load]
             result['windows'][load]['slowest_input_samples']=[decompose(dict(r,start=r['capture'],end=r['consumed'])) for r in sorted(rows,key=lambda r:r['elapsed_ms'],reverse=True)[:2]]
+    # Include setup and final retirement as well as the gesture windows.
+    result['native_admissions']=summarize(controls)
     result['runtime']={k:j[k] for k in ('runtime','ownership','AESChecks','AESFailures','stack_usage','feedback') if k in j}
     (out/'work-unit-analysis.json').write_text(json.dumps(result,indent=2)+'\n')
     for load,w in result['windows'].items():

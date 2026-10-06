@@ -843,6 +843,75 @@ and AES exchange counts also differ. These shorter gesture cohorts are not an
 equal-offered-load throughput comparison. **HY4 remains open**; its full
 frozen/matched comparisons and raw-pointer cohort were not rerun.
 
+## Presenter input boundaries
+
+PI1 of the [presenter latency plan](../plans/gem4xe/presenter-input-latency-plan.md)
+is implemented at the development tier. Native admissions now service input
+once per accepted/deferred request, matching the existing AES boundary. The
+presenter also services input after cache/move token retirement and after
+releasing a console borrow. Four shared admissions, endpoint alternation, the
+late AES opportunity, widget commit ordering and scene ownership remain intact.
+The boundaries introduce no Yield, timer binding or periodic idle wake.
+
+The [PI1 record](../development/presenter-input-pi1.json) compares the retained
+BR4 image with the same ten idle gestures and sixty-seven paint calls. Native
+code grows by 332 bytes; foreign C segment payloads are byte-identical. New
+passive markers distinguish individual native opcodes, deferral, widget input
+advancement and input boundaries without adding guest instructions.
+
+| Idle measurement, ms | Before median → after | Before p95 → after | Before maximum → after |
+| --- | ---: | ---: | ---: |
+| Input consumed | 2.966 → 7.260 | 19.132 → 25.449 | 38.583 → 25.700 |
+| Model commit | 12.417 → 18.549 | 28.665 → 37.125 | 48.257 → 44.867 |
+| Button pixels | 98.706 → 118.915 | 139.125 → 138.872 | 139.126 → 139.125 |
+| Combined visible feedback | 179.038 → 159.081 | 259.370 → 259.370 | 259.621 → 259.382 |
+
+Maximum charged CPU between input-service entries falls **32.708 → 31.615 ms**.
+The corresponding elapsed intervals are 45.944 → 70.454 ms: the latter contains
+32.263 ms off CPU. These intervals are selected by maximum CPU, not maximum
+elapsed time. The two slowest input samples after PI1 spend 21.875/22.133 ms off
+CPU and only 2.951/2.545 ms charged to the presenter. The original input p95
+and button median regressions remain part of the result.
+
+Because that cohort is completion-paced, an additional paired diagnostic uses
+initially parked clients, twenty fixed offers over 400 PAL frames and sixteen
+physical button edges. Both builds complete every offer inside the window and
+consume every edge. Input median is 2.793 → 2.807 ms, while p95/maximum falls
+49.855 → 48.815 ms; charged-CPU p95 falls 39.933 → 39.043 ms. The comparator
+checks equal external schedules and machine settings. The baseline uses the
+two pre-PI1 production modules from `5465f54`, with overrides recorded and
+checked against those sources; compiler/ABI and memory layouts match.
+
+This supports scheduling/workload phase as a contributor to the original
+cohort's regression, rather than establishing a uniform improvement. The
+fixed-offer diagnostic does not measure pixel latency. **Overall response-time
+acceptance remains open.**
+
+The longest steady native admission is `UPDATE_WIDGETS`, at 23.326 ms CPU.
+The complete trace, including setup and the full-redraw comparison, contains
+a 73.640 ms `SET_TREE`; closing and unregistering peak at 10.120/6.033 ms.
+An input boundary cannot divide these individual operations. Maximum idle
+widget-paint CPU is essentially unchanged at 19.802 ms. PI2–PI4 and any later
+model-operation continuation remain distinct work.
+
+Development checks pass: 395 host tests with four historical-source skips;
+182 intake assertions with 69 injected/copied input samples consumed, native
+deferral and arrival just before Wait; 138 C GUI-lock checks; twelve complete
+cache/move pixel scenes; and the bounded eight-Task console/SIO fairness case
+with 24 flood writes, eight small writes and a completed disk read. The settled
+presenter records zero turns in fifty idle PAL frames. Guards, ownership and
+cleanup pass. Twenty original idle button edges have no invalid sampled
+feedback pixels; the observer still starts after model observation and excludes
+the pointer, so this is not a whole-gesture flicker proof.
+
+Reserved bank-zero delta is **0 bytes fixed, 0 per public Task and 0 idle**,
+including guards, alignment and unused capacity. Upper-RAM and VRAM reservations
+are unchanged; native data payload remains 10,118 bytes. The idle-only panel
+worker touches 716 stack bytes, leaving 1,588 above its interrupt floor; this
+is not a stack-saving comparison with the earlier three-load run. No demo was
+refreshed. Original scroll/disk latency, raw-pointer and full HY4 comparisons
+were not rerun; **HY4 remains open**.
+
 The final tables use 37,132 bytes in one additional reserved 64 KiB CPU bank,
 including 28,404 unused bytes; no table padding. Mutable renderer state grows
 by two upper-RAM bytes. Linked C code grows from 72,741 to 74,100 bytes; worker
