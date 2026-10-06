@@ -1,0 +1,170 @@
+; Application locks are presenter policy, never kernel Forbid or Layers tokens.
+MODULE AESLOCKS
+USE AESTYPES
+USE AESSTATE
+
+BYTE FUNC Eligible(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client CARD code)
+
+  IF service.mouseOwner<>0 AND service.mouseOwner<>client.id THEN
+    RETURN(0)
+  FI
+
+  IF code=AESTYPES.BEG_UPDATE AND service.updateOwner<>0
+      AND service.updateOwner<>client.id THEN
+    RETURN(0)
+  FI
+
+  ; Existing owners may recurse while native work awaits their release.
+  IF (code=AESTYPES.BEG_UPDATE AND service.updateOwner=client.id)
+      OR (code=AESTYPES.BEG_MCTRL AND service.mouseOwner=client.id) THEN
+    RETURN(1)
+  FI
+
+RETURN(service.nativeBusy=0)
+
+CARD FUNC Acquire(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client CARD code)
+
+  IF code=AESTYPES.BEG_UPDATE THEN
+    IF service.updates=$ffff THEN
+      RETURN(AESTYPES.OVERFLOW)
+    FI
+
+    service.updateOwner=client.id
+    service.updates==+1
+  ELSE
+    IF service.mouseHolds=$ffff THEN
+      RETURN(AESTYPES.OVERFLOW)
+    FI
+
+    service.mouseHolds==+1
+  FI
+
+  service.mouseOwner=client.id
+
+RETURN(AESTYPES.OK)
+
+PROC Remove(AESSTATE.Service POINTER service BYTE position)
+
+  service.lockCount==-1
+  WHILE position<service.lockCount DO
+    service.lockOrder(position)=service.lockOrder(position+1)
+    position==+1
+  OD
+
+RETURN
+
+PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  CARD code,status
+  BYTE index
+
+  code=CARD(request.intin(0))
+  IF (code & $fefc)<>0
+      OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF (code & 1)<>0 THEN
+    code=code & $ff
+    IF Eligible(service,client,code)<>0 AND (service.lockCount=0
+        OR service.mouseOwner=client.id) THEN
+      status=Acquire(service,client,code)
+      IF status=AESTYPES.OK THEN
+        request.intout(0)=1
+      FI
+
+      RETURN(status)
+    FI
+
+    IF (CARD(request.intin(0)) & AESTYPES.TRY)<>0 THEN
+      RETURN(AESTYPES.OK)
+    FI
+
+    IF service.lockCount=AESTYPES.CLIENTS THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+
+    FOR index=0 TO AESTYPES.CLIENTS-1 DO
+      IF @service.clients(index)=client THEN
+        service.lockOrder(service.lockCount)=index
+        service.lockCount==+1
+        client.waiting=request
+        client.eventMask=0
+        RETURN(AESTYPES.PENDING)
+      FI
+    OD
+
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  IF code=AESTYPES.END_UPDATE THEN
+    IF service.updateOwner<>client.id OR service.updates=0 THEN
+      RETURN(AESTYPES.IDENTITY)
+    FI
+
+    service.updates==-1
+    IF service.updates=0 THEN
+      service.updateOwner=0
+    FI
+  ELSE
+    IF service.mouseOwner<>client.id OR service.mouseHolds=0 THEN
+      RETURN(AESTYPES.IDENTITY)
+    FI
+
+    service.mouseHolds==-1
+  FI
+
+  IF service.updates=0 AND service.mouseHolds=0 THEN
+    service.mouseOwner=0
+  FI
+
+  request.intout(0)=1
+
+RETURN(AESTYPES.OK)
+
+PUBLIC PROC Wake(AESSTATE.Service POINTER service)
+  BYTE position
+  CARD code,status
+
+  position=0
+  WHILE position<service.lockCount DO
+    BEGIN
+      LET client=@service.clients(service.lockOrder(position))
+      LET request=client.waiting
+      code=CARD(request.intin(0)) & $ff
+      IF Eligible(service,client,code)<>0 THEN
+        status=Acquire(service,client,code)
+        Remove(service,position)
+        client.waiting=NULL
+        IF status=AESTYPES.OK THEN
+          request.intout(0)=1
+        FI
+
+        AESSTATE.Reply(request,status)
+      ELSE
+        position==+1
+      FI
+    END
+  OD
+
+RETURN
+
+; Called before the exit reply. Pending peers become eligible in this turn.
+PUBLIC PROC Retire(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+  IF service.updateOwner=client.id THEN
+    service.updateOwner=0
+    service.updates=0
+  FI
+
+  IF service.mouseOwner=client.id THEN
+    service.mouseOwner=0
+    service.mouseHolds=0
+  FI
+
+RETURN
+
+ENDMODULE

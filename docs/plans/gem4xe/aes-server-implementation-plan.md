@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Design note](aes-server-design.md) ·
 [Desktop contract](../../reference/desktop.md) · [Roadmap](../../roadmap.md)
 
-Status: in progress, 2026-10-06. AS0a–AS2b have passed development checks; AS3a–AS4
+Status: in progress, 2026-10-06. AS0a–AS3a have passed development checks; AS3b–AS4
 remain pending. Implementation starts from Exec816
 `ab6eb2dec33412fd383b4970cbd23c05e9011e20`, using the
 GEM4XE source revision and provenance recorded in the design and
@@ -25,6 +25,8 @@ independent message waits through ordinary C GEM calls.
 transport, checked cancellation/collection and setup rollback.
 [AS2b](../../development/aes-server-as2b.json) adds the GEM timer/event profile,
 PAL/NTSC expiry, shared deadlines, failure checks and a preempted CPU peer.
+[AS3a](../../development/aes-server-as3a.json) adds recursive lock arbitration,
+FIFO eligible waits and exit release; native drawing exclusion follows in AS3b.
 Fixed and per-Task bank-zero reservation deltas are zero. Baseline widget latency
 targets remain open; an unchanged heavy-scroll pointer observation also timed
 out, while the dedicated widget scroll/disk cohorts passed. These observations
@@ -72,8 +74,8 @@ remains a retained-widget application; it is not an AES compatibility oracle.
 | AS1 — passed | Two C clients exchange messages and block independently in message waits | AS0c — passed |
 | AS2a — passed | One real timer open, shared alarm lifecycle and presenter wake integration | AS1, implemented timer.device |
 | AS2b — passed | GEM timer and combined-event semantics, including failure and race cases | AS2a — passed |
-| AS3a | Nested owner-aware lock arbitration and pending acquisitions | AS2b — passed |
-| AS3b | Native painting/interaction gates and complete registration/service retirement | AS3a |
+| AS3a — passed | Nested owner-aware lock arbitration and pending acquisitions | AS2b — passed |
+| AS3b | Native painting/interaction gates and complete registration/service retirement | AS3a — passed |
 | AS4 | Two-client proof under native GUI/SIO load, latency and lifetime evidence | AS3b |
 
 Commit each passing executable slice separately. Keep one current protocol and

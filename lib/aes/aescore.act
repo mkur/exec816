@@ -9,6 +9,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE AESMESSAGES
 USE AESEVENTS
+USE AESLOCKS
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -154,6 +155,7 @@ RETURN(AESTYPES.OK)
 PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
 
+  AESLOCKS.Retire(service,client)
   client.binding=NULL
   client.replies=NULL
   request.client=0
@@ -251,6 +253,11 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
   ELSEIF request.operation=AESTYPES.OP_WRITE THEN
     status=AESMESSAGES.Write(service,request)
     AESSTATE.Reply(request,status)
+  ELSEIF request.operation=AESTYPES.OP_UPDATE THEN
+    status=AESLOCKS.Request(service,client,request)
+    IF status<>AESTYPES.PENDING THEN
+      AESSTATE.Reply(request,status)
+    FI
   ELSEIF request.operation=AESTYPES.OP_MESAG
       OR request.operation=AESTYPES.OP_TIMER
       OR request.operation=AESTYPES.OP_MULTI THEN
@@ -268,6 +275,7 @@ RETURN
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
 
   AESEVENTS.Poll(service)
+  AESLOCKS.Wake(service)
 
 RETURN
 

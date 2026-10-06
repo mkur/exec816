@@ -193,6 +193,7 @@ def event_probes(out):
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
     registration = suite == "registration"
     events = suite == 'events'
+    locks = suite == 'locks'
     out.mkdir(parents=True, exist_ok=True)
     if replay or from_build:
         recorded = from_build or out
@@ -203,7 +204,8 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             event_probes(out)
         entries = ['AESClient'+n for n in
                    (('One', 'Two', 'Three', 'Four', 'Five') if registration else
-                    ('One', 'Two', 'Three', 'Four') if events else ('One', 'Two'))]
+                    ('One', 'Two', 'Three', 'Four') if events else
+                    ('One', 'Two', 'Three') if locks else ('One', 'Two'))]
         if events:
             entries.append('AESBurn')
         foreign = drawing(out, True, widgets=True,
@@ -229,6 +231,10 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
                     ('AESAlarms', 'ADDRESS(@AESEVENTPROBE.sends)'),
                     ('AESFour', 'ADDRESS(@AESEVENTPROBE.four)')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD({value})\n  END\n'
+        if locks:
+            for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
+                    ('AESLockCount', 'lockCount'), ('AESNativeBusy', 'nativeBusy')):
+                setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         source.write_text(f'''MODULE AESPROBE
 USE EXEC
 USE AESBOOT
@@ -276,7 +282,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='AS0c' if registration else 'AS2b' if events else 'AS1', c_mode=mode,
+        slice='AS0c' if registration else 'AS2b' if events else 'AS3a' if locks else 'AS1', c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     try:
@@ -291,7 +297,7 @@ ENDMODULE
                     report['AESFirstFailure'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESFirstFailure'], 2), 'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks else 1000),
                     'Incomplete application checks')
             if events:
                 values = bytes(data(bridge, program['image'], 'deadlines'))
@@ -465,12 +471,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'alarm', 'events', 'locks'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'events'):
+    elif args.suite in ('registration', 'messages', 'events', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'alarm':

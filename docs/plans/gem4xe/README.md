@@ -23,7 +23,9 @@ presenter admission with a shared intake budget. AS0c implements task-local
 [application registration](../../reference/aes.md) and cooperative retirement;
 AS1 adds copied FIFO messages and independent C message waits. AS2a implements
 the shared timer transport and its cancellation/collection lifecycle; AS2b adds
-GEM timer and combined-event waits with PAL/NTSC and raw/optimized C evidence. The implemented
+GEM timer and combined-event waits with PAL/NTSC and raw/optimized C evidence.
+AS3a implements recursive lock arbitration and queued acquisitions; native
+painting/input gates remain AS3b. The implemented
 [native interrupt ReplyMsg foundation](../../reference/ports.md#native-interrupt-reply)
 supports timer.device without another worker; ordinary Action!/C message calls
 remain Task-only.

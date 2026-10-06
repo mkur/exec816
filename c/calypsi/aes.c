@@ -208,6 +208,15 @@ WORD evnt_timer(UWORD lo, UWORD hi)
     return submit(c, AES_OP_TIMER);
 }
 
+WORD wind_update(WORD code)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0] = code;
+    return submit(c, AES_OP_UPDATE);
+}
+
 static WORD multi(struct ExecAESContext *c, WORD *message)
 {
     UWORD i, flags = (UWORD)c->request.intin[0];
@@ -275,10 +284,12 @@ void EXEC_CALL aes_call(AESPB *pb)
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_TIMER) inputs = 2;
+    if (op == AES_OP_UPDATE) inputs = 1;
     if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
     if (op == AES_OP_INIT) result = -1;
     if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
-        op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI) {
+        op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI &&
+        op != AES_OP_UPDATE) {
         c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
     }
     if (pb->control[1] != inputs || pb->control[2] != outputs ||
@@ -296,6 +307,7 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
     case AES_OP_TIMER:
         result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
+    case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
     case AES_OP_MULTI:
         if (c->busy) { c->diagnostic = AES_BUSY; break; }
         for (i = 0; i < 16; ++i) c->request.intin[i] = pb->int_in[i];

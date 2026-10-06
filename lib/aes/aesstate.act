@@ -42,6 +42,11 @@ PUBLIC TYPE Service=[
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count
   TimerState timer
+  LONGCARD updateOwner,mouseOwner
+  CARD updates,mouseHolds
+  BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
+  BYTE lockCount
+  BYTE nativeBusy
 ]
 
 Service POINTER boundService

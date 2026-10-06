@@ -8,7 +8,7 @@ and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_mesag`, `evnt_timer`,
-`evnt_multi`, `evnt_multi_moblk` and the corresponding `aes_call(AESPB *)`
+`evnt_multi`, `evnt_multi_moblk`, `wind_update` and the corresponding `aes_call(AESPB *)`
 operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
@@ -57,6 +57,19 @@ Rectangle/button inputs have no effect when their event bits are absent.
 A clock/device failure returns zero with `AES_TIMER_ERROR` for affected timed
 waits, preserving queued messages. The service does not automatically reopen
 or retry a failed timer. Message-only and native GUI service remain available.
+
+`wind_update` arbitrates recursive update and mouse-control ownership between
+registered AES clients. `BEG_UPDATE` acquires update ownership and its implicit
+mouse hold together; `BEG_MCTRL` adds an explicit mouse hold. Matching END calls
+remove only their corresponding hold. Wrong-owner release returns zero with
+`AES_IDENTITY`; nesting overflow returns `AES_OVERFLOW` without changing either
+hold. `0x100` on a BEGIN call tries without waiting, returning zero with `AES_OK`
+if unavailable. A normal contended BEGIN waits in arrival order among eligible
+callers; an existing mouse owner can upgrade without waiting behind a dependent
+peer. Exit releases every owned hold. Message and timer service continue.
+
+AS3a supplies arbitration only. Native painting/input gates are the next AS3b
+slice; this intermediate implementation does not yet exclude native drawing.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words
