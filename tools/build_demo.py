@@ -18,9 +18,9 @@ WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False):
-    require(not (aes_counters and aes_input), 'Select one resident GEM application profile')
-    if aes_counters or aes_input:
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False):
+    require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
+    if aes_counters or aes_input or gem_desktop:
         desktop=True
     if desktop:
         bitmap_shell_only=True
@@ -89,7 +89,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
     # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
@@ -101,7 +101,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        if aes_input:
+        if gem_desktop:
+            from build_gem_desktop import build_desktop
+            builder=build_desktop
+        elif aes_input:
             from build_gem_input import build_inputs
             builder=build_inputs
         elif aes_counters:
@@ -142,6 +145,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if aes_input:
         guide=(ROOT/'docs/aes-input-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if gem_desktop:
+        guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
@@ -197,6 +203,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/aes-input-distribution.txt',ROOT/'tools/build_gem_input.py',
             *sorted((ROOT/'examples/gem-input').glob('*')))})
+    if gem_desktop:
+        record.update(gem_desktop=True,expected_peak_tasks=8)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
+            *sorted((ROOT/'examples/gem-panel').glob('*')))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -230,7 +241,7 @@ def refresh_monitor(output):
             'Changed native demo artifacts')
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
-        guide=ROOT/('docs/aes-input-distribution.txt' if record.get('aes_input') else
+        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
                     'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
                     'docs/desktop-distribution.txt' if record.get('desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
@@ -266,6 +277,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
     parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
     parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
@@ -288,5 +300,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

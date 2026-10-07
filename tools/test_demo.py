@@ -42,7 +42,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     desktop=manifest.get('desktop',False)
     counters=manifest.get('aes_counters',False)
     input_apps=manifest.get('aes_input',False)
-    gem_apps=counters or input_apps
+    gem_desktop=manifest.get("gem_desktop",False)
+    gem_apps=counters or input_apps or gem_desktop
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text()) if gem_apps else None
     width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
     shell_cells=width*(height if shell_only else height-6)
@@ -131,6 +132,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 return address(foreign['symbols'],index,field)
             return foreign['symbols']['GEMCounters']+196*index+dict(ready=12,count=14,paints=18,work=38)[field]
         def counter_painter(r,title,bounds):
+            if gem_desktop:
+                from gem_desktop_oracle import paint
+                paint(b,foreign["symbols"],r,title,bounds)
+                return
             if input_apps:
                 from gem_input_oracle import state,paint
                 require(title in (b'Input A',b'Input B'),'Unexpected GEM input application')

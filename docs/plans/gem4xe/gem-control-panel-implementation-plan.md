@@ -10,3 +10,10 @@
    disabled control, outside-release cancellation, move/overlap/redraw, counter
    progress, close and shutdown with stack/ownership/heap checks. Build the
    distributable and cold-boot its exact image. Record scope and commit.
+
+Implemented; [development evidence](../../development/gem-control-panel.json).
+Six independent pixel checkpoints, physical controls, exact heap retirement,
+guards and OS ownership passed. Checked panel/counter stack peaks: 578/498
+bytes, leaving 190/270 above their checked floors. Fixed/per-Task/private-idle
+bank-zero delta: 0 bytes. The extracted OF816 package passed its focused boot,
+GEM controls, shell command/pipeline and EXIT smoke. No latency claim.

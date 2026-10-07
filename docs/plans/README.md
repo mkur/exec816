@@ -283,3 +283,5 @@ assuming work is pending. Current behavior belongs in the
   [implementation](gem4xe/application-widgets-implementation-plan.md): public GEM object/form subset.
 - [GEM Control Panel](gem4xe/gem-control-panel-design.md) and
   [implementation](gem4xe/gem-control-panel-implementation-plan.md): ordinary object-tree app beside the counter and shell.
+- [Small desktop facilities](gem4xe/desktop-facilities-design.md) and
+  [implementation](gem4xe/desktop-facilities-implementation-plan.md): windowed menus, classic resources and a file browser/Exec launcher.
