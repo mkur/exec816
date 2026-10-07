@@ -199,6 +199,13 @@ ordinary GEM counters, with unchanged ordinary message capacity and zero
 bank-zero growth. Matched native/coexistence diagnostics and the extracted
 OF816 counter bundle pass. PI4/HY4 remain open.
 
+The next proposed milestone is [AES application input](plans/gem4xe/aes-application-input-design.md):
+keyboard and single-button events for ordinary GEM application content, combined
+locally with messages/timers. The design keeps one presenter for focus and
+gesture routing, preserves shell cancellation, and targets zero bank-zero
+growth without per-wait RPC. Implementation is pending. Public widgets/forms,
+rectangle events, multiple clicks and resource loading follow separately.
+
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the
 [DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md), with smaller

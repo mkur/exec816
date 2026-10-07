@@ -56,6 +56,13 @@ existing Task/layer capacity with zero bank-zero growth.
 independent counters, matched native coexistence and the extracted OF816 ZIP.
 Menus, resources, resizing and broader GEM compatibility follow; PI4/HY4 remain open.
 
+The proposed [AES application input design](aes-application-input-design.md)
+adds `MU_KEYBD` and single-button `MU_BUTTON` waits, with presenter-owned routing
+and caller-local matching on existing Exec signals and timers. It defines
+focus, gesture capture, bounded inboxes, GUI-lock interaction and console
+cancellation coexistence. Implementation is pending; rectangle events,
+multiple clicks and public form/object calls remain later extensions.
+
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)
 trusts renderer geometry, uses generated chunk/work tables and sequential
 record pointers, and reserves full widget glyph runs once. BR1–BR4 retain list
