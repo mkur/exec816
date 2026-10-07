@@ -31,6 +31,14 @@ Matched buffer/filesystem measurements, confirmed-prefix errors, ownership,
 BREAK checkpoints and the bitmap/cartridge preview have development evidence.
 The accurate 256-byte MyDOS transport limit is recorded above.
 
+Before the next utility batch, implement the proposed
+[SpartaDOS write buffering design](plans/spartados-write-buffering-design.md)
+through the [SB0–SB5 implementation plan](plans/spartados-write-buffering-implementation-plan.md).
+Coalesce bitmap, free-count, map and length updates within each Write request,
+with ordered metadata publication before replying and four-sector BREAK
+checkpoints. Keep confirmed-prefix semantics; retaining dirty metadata between
+Write calls until Flush/Close is a separate follow-on decision.
+
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent
 background cancellation and bounded RUN/JOBS/BREAK support. The loadable
