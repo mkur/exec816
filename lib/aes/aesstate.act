@@ -6,6 +6,18 @@ USE INPUT
 
 PUBLIC CONST POINTER_EVENTS=16
 
+; One pending item per kind, independent of the immutable delivered record.
+PUBLIC TYPE GuiNotice=[
+  INT x,y,width,height
+]
+
+PUBLIC TYPE GuiPending=[
+  INT window
+  BYTE count
+  BYTE ARRAY order(AESTYPES.GUI_KINDS)
+  GuiNotice ARRAY notices(AESTYPES.GUI_KINDS)
+]
+
 PUBLIC TYPE Client=[
   LONGCARD id
   LONGCARD sequence
@@ -15,6 +27,7 @@ PUBLIC TYPE Client=[
   EXEC.MsgPort POINTER replies
   AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER pending
+  GuiPending gui
 ]
 
 PUBLIC TYPE Service=[
@@ -27,6 +40,7 @@ PUBLIC TYPE Service=[
   BYTE started
   LONGCARD nextClient
   CARD nextGem
+  LONGCARD nextGuiEpoch
   AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count

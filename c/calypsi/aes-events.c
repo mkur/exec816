@@ -179,7 +179,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         mask |= 1UL << c->timer.port->mp_SigBit;
     }
     for (;;) {
-        ready = ((flags & AES_MU_MESAG) && port_ready(c->receiving)) ? AES_MU_MESAG : 0;
+        ready = ((flags & AES_MU_MESAG) && ExecAESMessageReady(c)) ? AES_MU_MESAG : 0;
         if (flags & AES_MU_TIMER) {
             if (initial) {
                 if (milliseconds == 0) ready |= AES_MU_TIMER;
@@ -219,7 +219,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         record = (struct AESDelivery *)GetMsg(c->receiving);
         if (record == NULL) { status = AES_MALFORMED; goto done; }
         for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = record->words[i];
-        ExecAESRecycle(c->endpoint, record);
+        ExecAESRecycle(c, record);
     }
 done:
     if (submitted && c->timer.state != AES_ALARM_IDLE &&

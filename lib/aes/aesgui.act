@@ -1,0 +1,155 @@
+; Presenter-owned pending GUI facts; transport uses the caller's receive port.
+MODULE AESGUI
+USE EXEC
+USE AESTYPES
+USE AESSTATE
+
+; Close/reopen withdraws queued records by epoch, without removing a caller's
+; messages or waiting for that caller to consume them during an RPC.
+PUBLIC PROC Close(AESSTATE.Client POINTER client)
+
+  EXEC.Forbid()
+  client.endpoint.guiEpoch=0
+  client.endpoint.guiWaiting=0
+  client.gui.count=0
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC Open(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client INT window)
+
+  IF service.nextGuiEpoch=0 THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  client.gui.window=window
+  client.gui.count=0
+  client.endpoint.guiWaiting=0
+  client.endpoint.guiEpoch=service.nextGuiEpoch
+  service.nextGuiEpoch==+1
+  EXEC.Permit()
+
+RETURN(1)
+
+; At most one new record per call. Once PutMsg starts the producer owns only
+; its independent endpoint hold, never the record's fields or linkage.
+PUBLIC PROC Publish(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+  BYTE kind,index
+
+  LET endpoint=client.endpoint
+  IF client.gui.count=0 OR endpoint.guiEpoch=0 THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  IF endpoint.guiFree=0 THEN
+    endpoint.guiWaiting=1
+    EXEC.Permit()
+    RETURN
+  FI
+
+  endpoint.guiFree=0
+  endpoint.holds==+1
+  EXEC.Permit()
+
+  kind=client.gui.order(0)
+  client.gui.count==-1
+  index=0
+  WHILE index<client.gui.count DO
+    client.gui.order(index)=client.gui.order(index+1)
+    index==+1
+  OD
+
+  LET delivery=endpoint.gui
+  LET notice=@client.gui.notices(kind)
+  delivery.epoch=endpoint.guiEpoch
+  delivery.delivery.message.mn_ReplyPort=NULL
+  delivery.delivery.message.mn_Length=AESTYPES.GUIDELIVERY_SIZE
+  delivery.delivery.words(0)=AESTYPES.WM_REDRAW
+  IF kind=AESTYPES.GUI_TOPPED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_TOPPED
+  ELSEIF kind=AESTYPES.GUI_MOVED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_MOVED
+  ELSEIF kind=AESTYPES.GUI_CLOSED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_CLOSED
+  FI
+
+  delivery.delivery.words(1)=0
+  delivery.delivery.words(2)=0
+  delivery.delivery.words(3)=client.gui.window
+  delivery.delivery.words(4)=notice.x
+  delivery.delivery.words(5)=notice.y
+  delivery.delivery.words(6)=notice.width
+  delivery.delivery.words(7)=notice.height
+  EXEC.Forbid()
+  endpoint.guiWaiting=client.gui.count<>0
+  EXEC.Permit()
+  EXEC.PutMsg(endpoint.port,@delivery.delivery.message)
+  EXEC.Forbid()
+  endpoint.holds==-1
+  IF endpoint.state=AESTYPES.ENDPOINT_CLOSING AND endpoint.holds=0 THEN
+    service.directory.changed=1
+    EXEC.Signal(service.owner,service.mask)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Geometry is trusted on-screen work from the window manager. Bound unions can
+; overestimate damage; the application still clips against current visibility.
+PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    BYTE kind INT x,y,width,height)
+  BYTE index
+  INT right,bottom
+
+  IF client.endpoint.guiEpoch=0 THEN
+    RETURN
+  FI
+
+  index=0
+  WHILE index<client.gui.count AND client.gui.order(index)<>kind DO
+    index==+1
+  OD
+
+  LET notice=@client.gui.notices(kind)
+  IF index<client.gui.count AND kind=AESTYPES.GUI_REDRAW THEN
+    right=notice.x+notice.width
+    bottom=notice.y+notice.height
+    IF x+width>right THEN
+      right=x+width
+    FI
+
+    IF y+height>bottom THEN
+      bottom=y+height
+    FI
+
+    IF x<notice.x THEN
+      notice.x=x
+    FI
+
+    IF y<notice.y THEN
+      notice.y=y
+    FI
+
+    notice.width=right-notice.x
+    notice.height=bottom-notice.y
+  ELSE
+    notice.x=x
+    notice.y=y
+    notice.width=width
+    notice.height=height
+    IF index=client.gui.count THEN
+      client.gui.order(index)=kind
+      client.gui.count==+1
+    FI
+  FI
+
+  Publish(service,client)
+
+RETURN
+
+ENDMODULE

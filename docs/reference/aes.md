@@ -31,8 +31,9 @@ minus one. GEM IDs are never reused within a service lifetime. Native identities
 and request sequences are separately checked 32-bit values; exhaustion fails
 before reuse, reserving the last sequence for exit.
 
-Registration also publishes a caller-owned receive port and sixteen 32-byte
-message records in the service's shared endpoint directory. This directory works
+Registration also publishes a caller-owned receive port, sixteen 32-byte
+application message records and one 36-byte GUI delivery record in the service's
+shared endpoint directory. This directory works
 across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
 admission, waits for existing publishers without blocking the presenter, drains
@@ -48,6 +49,23 @@ returns zero with `AES_RESOURCE`, without replacing an older message or waiting
 for space. Other lengths and invalid pointers fail with `AES_MALFORMED`;
 unknown/retired IDs fail with `AES_IDENTITY`. The sender may reuse its buffer
 after return. Borrowed pointer payloads and long messages are unsupported.
+
+The internal GUI producer has a separate reserved record on the same receiving
+port, so it does not reduce the sixteen-entry application capacity. Per-window
+pending redraw/top/move/close facts remain in the presenter while that record is
+queued. Repeated pending redraws union their bounds; repeated moves retain the
+latest proposal. First-pending order between kinds is preserved, and published
+records are immutable. Recycling the GUI record wakes the existing service
+signal only when further GUI work needs it. This introduces no polling or
+additional application wait mechanism. Window calls are still pending; WA1
+establishes this transport with a service-producer fixture.
+
+An open epoch identifies GUI records independently of their GEM payload. The
+caller drops retired service-originated notifications before selecting message
+readiness, without dropping ordinary `appl_write` messages with similar words.
+Closing/reopening can therefore retire old GUI work without waiting for the
+blocked application to receive it. GUI storage remains registration-owned until
+the existing exit withdrawal, publication holds and receive-port drain complete.
 
 `evnt_mesag(words)` returns one after copying the oldest queued message, or
 blocks the application on its private receiving-port signal until a message
@@ -129,10 +147,11 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The presenter now handles registration, retirement and GUI locks only. Pending
-publishers retain an exit wake path; lock settlement and native input/drawing
-gates remain active. There is no presenter message FIFO, event scan or timer
-alarm, and no periodic AES wake.
+The presenter handles registration, retirement, GUI locks and its own pending
+GUI delivery. Pending publishers retain an exit wake path; lock settlement and
+native input/drawing gates remain active. Application message matching and
+timer waits stay caller-local. There is no presenter application-message FIFO,
+event-wait scan, timer alarm or periodic AES wake.
 Native and AES requests share at most four admissions per turn, alternating the
 first endpoint on ordinary turns. When painting or a widget gesture can advance,
 at most three native requests precede the existing paint quantum, then one AES
@@ -156,7 +175,7 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 3 has an 86-byte request and permits only init, exit and update
+profile: version 4 has an 86-byte request and permits only init, exit and update
 on the RPC endpoint. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the

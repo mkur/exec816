@@ -3,7 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: proposed, 2026-10-07. No WA slice is implemented by this document.
+Status: implementation in progress, 2026-10-07. WA1 passes development checks;
+WA2–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -42,6 +43,11 @@ status; this milestone adds desktop functionality.
   Keep large traces, images and intermediates under the development build tree.
 
 ## WA1 — Deliver durable GUI messages
+
+Implemented. [Evidence](../../development/aes-windows-wa1.json) covers the GUI
+producer, caller delivery, existing messaging/events/registration and both-mode
+layout/context probes. Reserved bank-zero delta is zero; four registrations add
+368 heap-reserved upper bytes.
 
 Establish the transport before adding window policy.
 

@@ -169,7 +169,8 @@ assuming work is pending. Current behavior belongs in the
   WA1–WA6 slices for durable GUI messages, GEM window ownership, delegated
   display access, private VDI workstations and a resident counter application.
   Concludes with two applications beside the native shell and an OF816 demo;
-  targets zero bank-zero growth. Menus, resources and resizing remain deferred.
+  targets zero bank-zero growth. WA1 passes development checks; WA2–WA6 remain
+  pending. Menus, resources and resizing remain deferred.
 - [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
   at the development tier; independent rectangles and underline-only focus
   repair reduce the five-press idle median from 319 to 119 ms. Release/status

@@ -8,6 +8,7 @@ USE TASKMEMORY
 USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
+USE AESGUI
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -27,6 +28,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.error=AESTYPES.OK
   service.nextClient=1
   service.nextGem=1
+  service.nextGuiEpoch=1
   service.started=1
   ; AESHOST publishes after endpoint initialization has settled.
 
@@ -79,7 +81,8 @@ CARD FUNC Register(AESSTATE.Service POINTER service
           EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.receiving),EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.records),
-          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH)=0 THEN
+          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH
+              +AESTYPES.GUIDELIVERY_SIZE)=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -175,6 +178,11 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   endpoint.records=request.records
   endpoint.holds=0
   endpoint.freeRecords=$ffff
+  endpoint.gui=AESTYPES.GuiDelivery POINTER(
+      ADDRESS(request.records)+SIZE(AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH))
+  endpoint.guiFree=1
+  endpoint.guiWaiting=0
+  endpoint.guiEpoch=0
   endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
   request.directory=@service.directory
   EXEC.Permit()
@@ -193,6 +201,9 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET endpoint=client.endpoint
   EXEC.Forbid()
   endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  endpoint.guiEpoch=0
+  endpoint.guiWaiting=0
+  client.gui.count=0
   IF endpoint.holds<>0 THEN
     client.pending=request
     EXEC.Permit()
@@ -208,6 +219,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.state=AESTYPES.ENDPOINT_RETIRED
   endpoint.port=NULL
   endpoint.records=NULL
+  endpoint.gui=NULL
   endpoint.owner=NULL
   EXEC.Permit()
   AESLOCKS.Retire(service,client)
@@ -335,6 +347,8 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
           AND endpoint.holds=0 THEN
         Retire(service,client,client.pending)
+      ELSEIF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
+        AESGUI.Publish(service,client)
       FI
     END
   OD

@@ -26,7 +26,7 @@ class DesktopContractTests(unittest.TestCase):
     def test_library_calls_are_not_task_entries(self):
         for module in ('DESKTOP', 'DESKCORE', 'DESKMOVE', 'DESKCACHE', 'DESKEVENTS', 'DESKSTATE', 'DESKPAINT', 'DESKINPUT', 'DESKDRAG', 'DESKHOST', 'DESKBOOT', 'DESKWIDGETS', 'DESKWIDGETINPUT'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
-        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS'):
+        for module in ('AESCORE', 'AESHOST', 'AESBOOT', 'AESSTATE', 'AESTYPES', 'AESLOCKS', 'AESGUI'):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_aes_protocol_is_generated(self):
@@ -40,6 +40,8 @@ class DesktopContractTests(unittest.TestCase):
         self.assertEqual(aes.layout()['Request']['size'], 86)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)
+        self.assertEqual(aes.layout()['GuiDelivery']['size'], 36)
+        self.assertEqual(aes.ABI['constants']['QUEUE_DEPTH'], 16)
         self.assertEqual(aes.ABI['constants']['RPC_INTIN_WORDS'], 1)
         self.assertEqual(aes.ABI['constants']['INTIN_WORDS'], 16)
 

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 3,
+  "version": 4,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -37,7 +37,16 @@
     "ENDPOINT_CLOSING": 2,
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 1,
-    "RPC_INTOUT_WORDS": 1
+    "RPC_INTOUT_WORDS": 1,
+    "GUI_KINDS": 4,
+    "GUI_REDRAW": 0,
+    "GUI_TOPPED": 1,
+    "GUI_MOVED": 2,
+    "GUI_CLOSED": 3,
+    "WM_REDRAW": 20,
+    "WM_TOPPED": 21,
+    "WM_CLOSED": 22,
+    "WM_MOVED": 28
   },
   "records": {
     "Delivery": [
@@ -49,6 +58,16 @@
         "words",
         "INT",
         "MESSAGE_WORDS"
+      ]
+    ],
+    "GuiDelivery": [
+      [
+        "delivery",
+        "Delivery"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
       ]
     ],
     "Endpoint": [
@@ -94,6 +113,26 @@
       ],
       [
         "freeRecords",
+        "CARD"
+      ],
+      [
+        "gui",
+        "GuiDelivery POINTER"
+      ],
+      [
+        "guiPad",
+        "BYTE"
+      ],
+      [
+        "guiEpoch",
+        "LONGCARD"
+      ],
+      [
+        "guiFree",
+        "CARD"
+      ],
+      [
+        "guiWaiting",
         "CARD"
       ]
     ],

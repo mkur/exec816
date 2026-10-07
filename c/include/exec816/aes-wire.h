@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 3
+#define AES_VERSION 4
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -39,6 +39,15 @@
 #define AES_ENDPOINT_RETIRED 3
 #define AES_RPC_INTIN_WORDS 1
 #define AES_RPC_INTOUT_WORDS 1
+#define AES_GUI_KINDS 4
+#define AES_GUI_REDRAW 0
+#define AES_GUI_TOPPED 1
+#define AES_GUI_MOVED 2
+#define AES_GUI_CLOSED 3
+#define AES_WM_REDRAW 20
+#define AES_WM_TOPPED 21
+#define AES_WM_CLOSED 22
+#define AES_WM_MOVED 28
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];
@@ -46,6 +55,13 @@ struct AESDelivery {
 #define AES_DELIVERY_SIZE 32
 #define AES_DELIVERY_OFFSET_MESSAGE 0
 #define AES_DELIVERY_OFFSET_WORDS 16
+struct AESGuiDelivery {
+    struct AESDelivery delivery;
+    ULONG epoch;
+};
+#define AES_GUIDELIVERY_SIZE 36
+#define AES_GUIDELIVERY_OFFSET_DELIVERY 0
+#define AES_GUIDELIVERY_OFFSET_EPOCH 32
 struct AESEndpoint {
     ULONG id;
     WORD gemId;
@@ -58,8 +74,13 @@ struct AESEndpoint {
     UBYTE recordsPad;
     UWORD holds;
     UWORD freeRecords;
+    struct AESGuiDelivery EXEC_PTR * gui;
+    UBYTE guiPad;
+    ULONG guiEpoch;
+    UWORD guiFree;
+    UWORD guiWaiting;
 };
-#define AES_ENDPOINT_SIZE 24
+#define AES_ENDPOINT_SIZE 36
 #define AES_ENDPOINT_OFFSET_ID 0
 #define AES_ENDPOINT_OFFSET_GEMID 4
 #define AES_ENDPOINT_OFFSET_STATE 6
@@ -71,6 +92,11 @@ struct AESEndpoint {
 #define AES_ENDPOINT_OFFSET_RECORDSPAD 19
 #define AES_ENDPOINT_OFFSET_HOLDS 20
 #define AES_ENDPOINT_OFFSET_FREERECORDS 22
+#define AES_ENDPOINT_OFFSET_GUI 24
+#define AES_ENDPOINT_OFFSET_GUIPAD 27
+#define AES_ENDPOINT_OFFSET_GUIEPOCH 28
+#define AES_ENDPOINT_OFFSET_GUIFREE 32
+#define AES_ENDPOINT_OFFSET_GUIWAITING 34
 struct AESDirectory {
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
@@ -78,7 +104,7 @@ struct AESDirectory {
     UWORD changed;
     struct AESEndpoint endpoints[AES_CLIENTS];
 };
-#define AES_DIRECTORY_SIZE 106
+#define AES_DIRECTORY_SIZE 154
 #define AES_DIRECTORY_OFFSET_OWNER 0
 #define AES_DIRECTORY_OFFSET_OWNERPAD 3
 #define AES_DIRECTORY_OFFSET_MASK 4

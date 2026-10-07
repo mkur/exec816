@@ -192,6 +192,7 @@ def caller_probes(out, timer=False):
 
 
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
+    gui = suite == 'gui'
     registration = suite == "registration"
     events = suite == 'events'
     locks = suite == 'locks'
@@ -222,6 +223,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
             client_optimization={n: mode == 'opt' for n in ('aes.c', f'aes_{suite}.c')})
         sy = foreign['symbols']
+        if gui:
+            from test_aes_gui import producer
+            producer(out, sy)
         source = out/(suite+'.act')
         exhaustion = f'''  service.nextClient=0
   entry^=${sy['AESExhausted']:x}
@@ -288,7 +292,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='HY3', suite=suite, c_mode=mode,
+        slice='WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     try:
@@ -297,13 +301,14 @@ ENDMODULE
             try:
                 report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
             finally:
-                for name in ('AESChecks', 'AESFailures', 'AESReady', 'AESDone'):
+                for name in (('AESChecks', 'AESFailures') if gui else
+                             ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
                     report['AESFirstFailure'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESFirstFailure'], 2), 'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 60 if gui else 1000),
                     'Incomplete application checks')
             if events or timers:
                 report['cpu_peer_iterations'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESBurns'], 4), 'little')
@@ -461,12 +466,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'console':
