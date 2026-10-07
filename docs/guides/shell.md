@@ -30,6 +30,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | `RUN command [arguments...]` | Start one loadable background command; default streams are NIL. |
 | `JOBS` | Show the running/stopping job or latest collected result. |
 | `BREAK identity` | Request cooperative cancellation of that job. |
+| `EXECUTE file` | Run a script through the ordinary command dispatcher. |
 | `EXIT` | Stop and collect the job, then release shell resources. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
@@ -43,6 +44,43 @@ It has no worker Task, so it does not appear under `TASKS`.
 TYPE maps ATASCII end-of-line to LF, drops CR, preserves printable ASCII/tab/LF
 and displays other bytes as dots. CAT is the external command for unchanged byte
 copying. TYPE rejects interactive Input when no file is supplied.
+
+## Scripts
+
+`EXECUTE file` runs one command per line, without echoing lines or adding them
+to history. The filename resolves against the current directory; PATH searches
+apply to commands inside the script. For example, save these lines as
+`WORK:SETUP.TXT`, then run `EXECUTE WORK:SETUP.TXT`:
+
+```text
+; Set up a working directory and a shortcut
+CD WORK:
+ALIAS LOG "ECHO ready"
+LOG >WORK:LOG.TXT
+```
+
+Blank lines and lines whose first non-space/tab character is `;` are ignored.
+LF, CR, CRLF and ATASCII `$9B` end a line; an unterminated final line also runs.
+Each line allows at most 255 bytes, excluding its ending. An overlong line
+(error 120) or embedded NUL (error 115) stops the script without executing that
+line. Inline comments retain the ordinary shell rules and are unsupported.
+
+Each command uses the existing aliases, argument parsing, redirection and
+external-command pipeline. Directory, PATH and alias changes remain in the
+shell session. `EXECUTE file <input >output` supplies streams for the whole
+script; individual lines can override them temporarily. The script source has
+its own handle and read buffer: a command reading Input cannot consume script
+text. Diagnostics still go to the shell console.
+
+ERROR (10), FAIL (20), syntax/read errors and BREAK stop the script. WARN (5)
+continues. The result is the last command's result, or OK for an empty script;
+trailing comments do not erase WARN. A failed final Close can replace OK/WARN
+with FAIL, while an earlier error remains causal. Streams and script storage
+are released before the next prompt. `EXIT` inside a script exits the shell.
+
+Only one script is active. Nested EXECUTE reports error 209 before opening its
+redirection targets. There are no script arguments, substitutions, labels or
+conditionals. EXECUTE is a builtin, so RUN and pipeline stages cannot invoke it.
 
 ## One background job
 

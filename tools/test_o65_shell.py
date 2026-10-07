@@ -58,7 +58,7 @@ RETURN(count)""")
         self.files = make(out/'volume.atr',source,binary_names=binary)
 
     def exercise(self, c):
-        c.command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
+        c.command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
         c.command('HELLO',b'Hello from disk!\n')
         c.command('ECHOARGS "two words" "" x',b'"two words" "" x\n')
         c.command('D1:HELLO',b'Hello from disk!\n')

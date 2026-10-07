@@ -20,6 +20,7 @@ def run(t,out,mode,bank=1,scenario=0):
     session=session.replace(dispatch,'          TestDispatch(0)')
     session=session.replace('"shell-commands.inc"','"'+str(ROOT/'examples/shell/shell-commands.inc')+'"')
     redirection=(ROOT/'examples/shell/shell-redirection.inc').read_text().replace('DOS.SelectOutput(', 'TestOutput(').replace('DOS.Close(', 'TestClose(')
+    session=session.replace('"shell-execute.inc"','"'+str(ROOT/'examples/shell/shell-execute.inc')+'"')
     session=session.replace('INCLUDE "shell-jobs.inc"','INCLUDE "'+str(ROOT/'examples/shell/shell-jobs.inc')+'"')
     (out/'shell-redirection.inc').write_text(redirection);(out/'shell-lifetime.inc').write_text(session)
     source=out/'shell_lifetime.act';source.write_bytes((ROOT/'tests/programs/shell_lifetime.act').read_bytes())

@@ -13,11 +13,12 @@ CASES=[('',0,[]),('   ',0,[]),('help',1,['help']),('HELP',1,['HELP']),('"echo" "
        ('echo a*b',2,['echo','a*b']),('echo `literal`',2,['echo','`literal`']),
        ('echo "< > | ;"',2,['echo','< > | ;']),('echo   x   y ',2,['echo','x','y']),
        ('cd ""',3,['cd','']),('cd /',3,['cd','/']),('cd ..',3,['cd','..']),('exit',4,['exit']),
+       ('execute file',20,['execute','file']),('ExEcUtE "SYS:FILE"',20,['ExEcUtE','SYS:FILE']),
        ('cls',16,['cls']),('CLS',16,['CLS']),
        ('tasks',8,['tasks']),('TASKS',8,['TASKS']),('ver',9,['ver']),('VER',9,['VER']),
        ('mount',10,['mount']),('MoUnT',10,['MoUnT']),('devices',11,['devices']),('DEVICES',11,['DEVICES']),
        ('echo '+' '.join(['x']*15),2,['echo']+['x']*15),('echo '+'x'*250,2,['echo','x'*250])]
-CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','cls extra','exit extra','tasks extra','ver extra','mount D2:','devices extra','cd one two')]
+CASES += [(s,None,None) for s in ('echo '+' '.join(['x']*16),'echo "unterminated','echo "bad*"','echo "bad*x"','echo pre"word"','echo "word"post','echo one|two','echo one;two','echo>>NIL:','echo a>NIL:','help extra','cls extra','exit extra','tasks extra','ver extra','mount D2:','devices extra','cd one two','EXECUTE','EXECUTE ""','EXECUTE one two','EXECUTE FILE|WC','HELLO|EXECUTE FILE')]
 
 CASES += [(s,12,[s]) for s in ('mounts','device','unknown','HELLO','D1:TOOLS/HELLO')]
 CASES += [('ECHOARGS \"two words\" \"\" >NIL: x',12,['ECHOARGS','two words','','x'])]

@@ -158,6 +158,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Shell EXECUTE](shell-execute.md): bounded scripts through ordinary dispatch,
+  separate source/input ownership, inherited streams and stop/cleanup rules.
 - [TAIL and FIND utilities](tail-find.md): bounded suffix buffering and recursive
   filename traversal through the existing command services.
 - [Shell append redirection](shell-append-redirection.md): `>>` preserves file

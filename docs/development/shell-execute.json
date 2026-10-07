@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "status": "implemented",
+  "tier": "development",
+  "baseline_revision": "25cc7e559458456e63bf67eb5d594e365e435854",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "8333bb1c6c2712eaad5998e0e2c705c0b2f14dfd776406626317fa2acef832a2",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act",
+      "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+      "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+    },
+    "image_format_version": 3
+  },
+  "emulator_rom_pin": "toolchain/altirra-shell-paced.json",
+  "host_checks": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "status": "pass",
+    "tests": 396
+  },
+  "scope": [
+    "existing dispatcher and aliases",
+    "directory/alias changes persist",
+    "two-command loaded pipeline",
+    "empty and indented comment lines",
+    "CR/LF/CRLF/ATASCII lines and final unterminated command",
+    "64-byte boundary and one-byte partial reads",
+    "separate script source and inherited Input",
+    "inherited and overridden input/output",
+    "outer append redirection",
+    "WARN continuation and final WARN retention",
+    "ERROR/FAIL/syntax stop",
+    "255/256-byte boundary and NUL rejection",
+    "nested EXECUTE rejected before redirection Open",
+    "arity, empty filename and builtin pipeline rejection",
+    "missing/interactive source rejection",
+    "allocation/read failure",
+    "lost terminal source Close completion",
+    "earlier command cause survives Close failure",
+    "physical BREAK during loaded command and parent source read",
+    "script EXIT with inherited output",
+    "following console output, OS restoration, guards and final allocation balance",
+    "independent MyDOS/SDFS persisted-byte and allocation audits"
+  ],
+  "artifacts": {
+    "parser_opt": {
+      "path": "build/development/shell-execute/parser-opt/results.json",
+      "sha256": "9ebff3a1bd69248a21049bfdec02c5811e9e412a9ac395c5df66d100d298ed21",
+      "mode": "opt",
+      "guards": "intact",
+      "cases": 104,
+      "checks": 530
+    },
+    "shell_opt": {
+      "path": "build/development/shell-execute/shell/results.json",
+      "sha256": "6441a7cac42025f056781247b33c5feef7ad59a7ab2d2c1f5a68f84d1c245eda",
+      "mode": "opt",
+      "guards": "intact",
+      "counts": {
+        "consumed": 769,
+        "output_bytes": 2131
+      },
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 1440,
+          "sector_bytes": 128,
+          "profile": 4
+        },
+        {
+          "alias": "WORKM",
+          "unit": 50,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 1,
+          "access": "readwrite"
+        },
+        {
+          "alias": "WORKS",
+          "unit": 51,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 2,
+          "access": "readwrite"
+        }
+      ],
+      "writable_media": {
+        "mydos": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 35,
+            "free": 1965,
+            "files": 11,
+            "directories": 2
+          },
+          "sha256": "70e66ffc2c5613e3b2c4cb6123374e746152c08f9a1fc2cf4bb3730df38adeae"
+        },
+        "sdfs": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 28,
+            "free": 1972,
+            "files": 9,
+            "directories": 2
+          },
+          "sha256": "34939ad51fb785c99ec3af9b715f064b23af43b8014adace54325baa613d28a0"
+        }
+      },
+      "configuration_overrides": {
+        "diskemu": "generic56k",
+        "accuratedisk": false
+      }
+    },
+    "resident_build": {
+      "path": "build/development/shell-execute/resident/build.json",
+      "sha256": "cacccfa4ed8deca767ffd4266f1f8542411caa9c23d21e0ddeab469c07f935c5",
+      "image_sha256": "523657a8ee6133c20bf8a3054e67f75c679d5ce531e31ccd516d4d8be9ec2c06"
+    },
+    "baseline_build": {
+      "path": "build/development/shell-execute/baseline/build.json",
+      "sha256": "3aebc6678edd5a48159c6416cbcb71fa95405184a5c382d8ba3aa304a08b032b",
+      "image_sha256": "b8b741c9d1f4842e8b3a27b8be5e82880f599ab946b23888e0ed6b3b55521f8a"
+    }
+  },
+  "memory": {
+    "shell_record_bytes": 128,
+    "shell_allocation_bytes": 2336,
+    "script_record_bytes": 86,
+    "script_heap_bytes_rounded": 88,
+    "script_read_buffer_bytes": 64,
+    "script_global_pointer_bytes": 3,
+    "script_source_handle": "Ordinary owned DOS handle/backend/context allocations; not included in the 88-byte state.",
+    "image_data_reservation_bytes": 4096,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "executable_bytes": {
+      "baseline": 817277,
+      "resident": 823562
+    },
+    "executable_bytes_delta": 6285,
+    "non_executable_segment_bytes_delta": 16,
+    "routines": {
+      "SHELLSCRIPTOPEN": {
+        "native_bytes": 1424,
+        "local_stack_peak_bytes": 34
+      },
+      "SHELLSCRIPTLINE": {
+        "native_bytes": 1524,
+        "local_stack_peak_bytes": 36
+      },
+      "SHELLSCRIPTNEXT": {
+        "native_bytes": 289,
+        "local_stack_peak_bytes": 14
+      },
+      "SHELLSCRIPTCLOSE": {
+        "native_bytes": 994,
+        "local_stack_peak_bytes": 24
+      },
+      "SHELLONECOMMAND": {
+        "native_bytes": 1393,
+        "local_stack_peak_bytes": 20
+      },
+      "SHELLCOMMAND": {
+        "native_bytes": 1423,
+        "local_stack_peak_bytes": 32
+      }
+    },
+    "observed_instrumented_stacks": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 538,
+        "remaining_above_floor": 742
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 232,
+        "remaining_above_floor": 536
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 586,
+        "remaining_above_floor": 182
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 125,
+        "remaining_above_floor": 643
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 363,
+        "remaining_above_floor": 405
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 343,
+        "remaining_above_floor": 425
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 54,
+        "remaining_above_floor": 202
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 279,
+        "remaining_above_floor": 1001
+      }
+    }
+  },
+  "source_inputs": {
+    "examples/shell/shell-session.inc": "db6aa6eb8de8aa13504c335245a7ef2f4cde27b43808292d05ad38d236b93b7c",
+    "examples/shell/shell-execute.inc": "034bf09b130f38d0c59140a11e31b3175264c163e4e0d791061ad26ca7fab522",
+    "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+    "examples/shell/shell-commands.inc": "57dd32ab69449d965d193e141c105c53af3bde4b60128c96aabc8583e3a8b6c6",
+    "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+    "examples/shell/shell-jobs.inc": "051bf39f585cada3711de5e50abfa600f7382ae7eaa4a872f1d7c23832ccbbc4",
+    "tools/test_shell_execute.py": "c97395c677b7e18f3f2b1b7ae48154052e6153df9d57942ef6d860dfccb9904b",
+    "tools/test_shell_parser.py": "b55489aebc52316998ac0720625c513e7fb6729764ef771689b9b529c559d1bf",
+    "tools/test_shell_core.py": "33cb651758e5d2746ac041a3c9e40d2add9cdd3303954c5d4bfd395fc99dd1d8",
+    "tools/build_demo.py": "f2f9fa383fb1aa2c5bc635a78fa261aec1cf3c83f53c6f071c4d4196f25184b1",
+    "examples/demo-disk/STORY.TXT": "da47c896453ef60b1c21c95a4f273531371ac5af537acc641511f7027ac64d66"
+  },
+  "limitations": [
+    "Development checks only; no release qualification or physical-hardware claim.",
+    "Physical walkthrough uses 128-byte system media and 256-byte native writable fixtures; accurate disk timing disabled.",
+    "Allocation/read/source-Close failures use private API-boundary proxies; BREAK uses real physical keys.",
+    "Parent source BREAK pause is a correctness rendezvous, not a latency measurement.",
+    "No script arguments, substitutions, conditionals, nesting, RUN EXECUTE or builtin pipeline stages.",
+    "Only full-line semicolon comments; no inline comments.",
+    "The optimized parser covers reused builtin parsing; no public ABI/layout, platform or compiler semantics change requires raw duplication.",
+    "Preview ZIPs and cartridges were not rebuilt."
+  ]
+}

@@ -27,6 +27,7 @@ CAT accepts several exact filenames:
 Use < to select Input and > for Output:
   WC <SYS:STORY.TXT
   ECHO saved >WORK:OUT.TXT
+  ECHO more >>WORK:OUT.TXT
 
 DIR lists a directory. LIST also accepts
 simple * and ? filename patterns:
@@ -89,6 +90,17 @@ Replace or remove them, or add your own:
   SAY world
   UNALIAS SAY
 Aliases last for this shell session.
+
+EXECUTE runs a file of shell commands:
+  EXECUTE WORK:SETUP.TXT
+Each line uses normal aliases, pipes
+and redirection. Blank lines and lines
+starting with ; are ignored. Errors or
+BREAK stop the script; WARN continues.
+Script input is separate from command
+Input. CD, PATH and aliases persist.
+One script at a time; no arguments or
+conditionals. EXIT also exits the shell.
 
 Ctrl-A/E move to the start/end. Ctrl-B/F
 or Atari left/right move across the

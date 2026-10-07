@@ -50,11 +50,11 @@ input. One background job and one pane keep this version bounded.
    seek-to-EOF. Development checks cover saved contents, partial writes,
    final Close errors, BREAK and restoration of the shell's selected streams;
    see the [implementation record](history/shell-append-redirection.md).
-2. Add a small Amiga-style `EXECUTE file` built-in. Read one bounded command per
-   line through the existing dispatcher; accept blank and comment lines, stop
-   on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
-   separate from the command's Input so a command cannot consume the rest of
-   the script. Begin with one active script and no arguments or conditionals.
+2. `EXECUTE file` is implemented through the existing dispatcher, with bounded
+   lines, blank/comment handling, WARN continuation and ERROR/FAIL/BREAK stops.
+   Its source remains separate from command Input; one active script keeps
+   arguments, nesting and conditionals out of this slice. See the
+   [implementation record](history/shell-execute.md).
 3. TAIL and FIND are implemented: a sixteen-line suffix ring for files/pipes
    and filename traversal with eight directory frames and LIST-style patterns.
    See the [implementation record](history/tail-find.md).
@@ -69,7 +69,8 @@ stores external commands in SYS:C, assigns C: there at startup and defaults
 PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
-ExNext after a mutation. The next utility slice is minimal EXECUTE.
+ExNext after a mutation. The three bounded command/shell utility steps above
+are implemented.
 
 The [OF816-first boot slice](history/of816-first-boot.md) is implemented through
 B4 at the development tier. The monitor runs before the main kernel payload.

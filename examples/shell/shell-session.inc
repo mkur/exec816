@@ -42,6 +42,7 @@ CONST ALIAS_NAME_CAPACITY=16
 CONST ALIAS_TEXT_CAPACITY=128
 
 CONST NO_REDIRECT=$ffff
+CONST DIAGNOSTIC_SCRIPT=$fe
 
 CONST CHAR_LOWER_A=97
 CONST CHAR_LOWER_Z=122
@@ -75,6 +76,7 @@ CONST CMD_CLS=16
 CONST CMD_RUN=17
 CONST CMD_JOBS=18
 CONST CMD_BREAK=19
+CONST CMD_EXECUTE=20
 CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
 
 TYPE ShellWord=[BYTE POINTER text]
@@ -123,10 +125,20 @@ TYPE ShellJob=[
   BYTE state,announce
 ]
 
+; Allocated only while EXECUTE owns a script and its inherited streams.
+TYPE ShellScript=[
+  DOS.FileHandle POINTER source
+  DOS.FileHandle POINTER oldInput,oldOutput,tempInput,tempOutput
+  CARD used,available
+  BYTE redirectActive,previousCR
+  BYTE ARRAY bytes(READ_CHUNK_SIZE)
+]
+
 ShellJob job
 ShellState POINTER shell
 ShellAlias POINTER aliases
 BYTE aliasCount
+ShellScript POINTER script
 BYTE ARRAY shellCon=c"CON:"
 BYTE ARRAY shellRoot=c"SYS:"
 
@@ -359,7 +371,9 @@ PROC ShellDiagnostic()
   LET secondary=shell.error
   LET saved=DOS.IoErr()
   header=c"Shell"
-  IF shell.diagnosticWord<shell.argc THEN
+  IF shell.diagnosticWord=DIAGNOSTIC_SCRIPT THEN
+    header=c"EXECUTE"
+  ELSEIF shell.diagnosticWord<shell.argc THEN
     header=CSTRING(shell.words(shell.diagnosticWord).text)
   FI
 
@@ -444,6 +458,9 @@ BYTE FUNC ShellClassify(BYTE POINTER word)
 
   ELSEIF ShellEqual(word,c"BREAK")<>0 THEN
     RETURN(CMD_BREAK)
+
+  ELSEIF ShellEqual(word,c"EXECUTE")<>0 THEN
+    RETURN(CMD_EXECUTE)
 
   ELSEIF ShellEqual(word,c"HELP")<>0 THEN
     RETURN(CMD_HELP)
@@ -786,6 +803,11 @@ BYTE FUNC ShellParse()
     RETURN(0)
   FI
 
+  IF shell.command=CMD_EXECUTE AND (shell.argc<>2
+      OR shell.words(1).text^=ASCII.NUL) THEN
+    RETURN(0)
+  FI
+
   IF (shell.command=CMD_CD OR shell.command=CMD_DIR OR shell.command=CMD_TYPE)
     AND shell.argc>2 THEN
     RETURN(0)
@@ -1116,6 +1138,7 @@ INCLUDE "shell-commands.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
 INCLUDE "shell-jobs.inc"
+INCLUDE "shell-execute.inc"
 
 ; Run a disk command in the foreground and keep its result for the shell.
 PROC ShellExternal()
@@ -1201,7 +1224,7 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
@@ -1280,6 +1303,9 @@ PROC ShellDispatch()
   WHEN CMD_BREAK THEN
     ShellBreakJob()
 
+  WHEN CMD_EXECUTE THEN
+    ShellScriptOpen()
+
   WHEN CMD_EXTERNAL THEN
     IF shell.background<>0 THEN
       ShellRun()
@@ -1296,7 +1322,7 @@ RETURN
 
 ; Own one command's complete interaction: its foreground scope, temporary
 ; streams and final result must be settled before the next prompt.
-PROC ShellCommand()
+PROC ShellOneCommand()
 
   IF shell.done<>0 THEN
     RETURN
@@ -1314,6 +1340,11 @@ PROC ShellCommand()
     IF ShellScope()<>0 THEN
       IF ShellPrepareCommand()=0 THEN
         ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_NUMBER)
+
+      ELSEIF shell.command=CMD_EXECUTE AND script<>NULL THEN
+        ; Reject nesting before its redirections can create or truncate files.
+        shell.diagnosticWord=0
+        ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
 
       ELSE
         IF ShellRedirect()<>0 THEN
@@ -1337,6 +1368,59 @@ PROC ShellCommand()
       ShellDiagnostic()
       ShellJobAnnounce()
     FI
+  FI
+
+  shell.lastStatus=shell.status
+  shell.lastError=shell.error
+
+RETURN
+
+; Reuse ordinary command execution without recursive dispatch or input changes.
+; Script lines have no prompt/history entry; each command settles its own I/O.
+PROC ShellCommand()
+
+  ShellOneCommand()
+  IF script=NULL THEN
+    RETURN
+  FI
+
+  WHILE shell.done=0 AND shell.status<PROCESS.RETURN_ERROR DO
+    BEGIN
+      LET primary=shell.status
+      LET secondary=shell.error
+      shell.status=PROCESS.RETURN_OK
+      shell.error=0
+      shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+      shell.command=CMD_EXECUTE
+      shell.argc=0
+      IF ShellScriptNext()=0 THEN
+        IF shell.status=PROCESS.RETURN_OK THEN
+          shell.status=primary
+          shell.error=secondary
+        ELSE
+          ShellDiagnostic()
+        FI
+
+        EXIT
+      FI
+
+      ShellOneCommand()
+    END
+  OD
+
+  LET primary=shell.status
+  LET secondary=shell.error
+  ShellScriptClose()
+  IF shell.status<>primary OR shell.error<>secondary THEN
+    shell.command=CMD_EXECUTE
+    shell.argc=0
+    shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+    ShellDiagnostic()
+  FI
+
+  ShellRetireBreak(0)
+  IF shell.done=0 THEN
+    ShellScope()
   FI
 
   shell.lastStatus=shell.status
@@ -1433,6 +1517,7 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
   FI
 
   aliases=NULL
+  script=NULL
   aliasCount=0
   job.identity=0
   job.state=0
@@ -1502,6 +1587,11 @@ LONGINT FUNC ShellFinish()
   FI
 
   IF ShellStopJob()=0 THEN
+    RETURN(PROCESS.RETURN_FAIL)
+  FI
+
+  ShellScriptClose()
+  IF script<>NULL THEN
     RETURN(PROCESS.RETURN_FAIL)
   FI
 
