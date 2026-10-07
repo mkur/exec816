@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies seventeen loadable commands, including CAT, WC and HELLO. Command
+The demo supplies eighteen loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -13,6 +13,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | CKSUM | `[FILE]` | POSIX cksum CRC-32 and byte length, as two decimal numbers. Filename is not included in output. |
 | HEXDUMP | `[FILE] [OFFSET n] [LENGTH n]` | Eight hexadecimal offset digits, up to sixteen hex bytes and printable ASCII per row. Defaults: offset zero, length up to 4,294,967,295 bytes. Offsets are skipped by reading, so pipes work. |
 | HEAD | `[FILE] [LINES n]` | First ten lines by default. Zero prints nothing. Finishes without draining the rest of a pipe. |
+| TAIL | `[FILE] [LINES n]` | Last ten lines by default, after reading to EOF. Supports zero through sixteen lines; zero does not read Input. |
 | GREP | `PATTERN [FILE] [NOCASE] [INVERT] [NUMBER]` | Select literal matching lines; optionally fold ASCII case, invert selection, or prefix one-based line numbers. Empty pattern matches every line. |
 | LIST | `[DIR or PATTERN] [NAMES]` | Enumerate a directory in disk order or match `*`/`?` in the final path component. Default output has directory markers and exact file sizes. NAMES emits bare names. |
 | MORE | `[FILE]` | Forward-only pager. Space advances a page, Return one displayed row, Q finishes, and BREAK cancels. |
@@ -43,6 +44,7 @@ Examples, using the current two-stage pipeline:
 
 ```text
 HEAD STORY.TXT LINES 5
+CAT STORY.TXT | TAIL LINES 3
 CAT STORY.TXT | GREP shell NOCASE
 GREP shell STORY.TXT NUMBER
 LIST NAMES | GREP .TXT
@@ -71,13 +73,18 @@ initial zero CRC, least-significant length bytes and a final complement; it is
 not the common reflected ZIP CRC variant. Byte counts are checked unsigned
 32-bit values. HEXDUMP represents nonprintable ASCII bytes as dots.
 
-HEAD, GREP and MORE recognize LF, CR, CRLF and ATASCII `$9B` as line endings.
+HEAD, TAIL, GREP and MORE recognize LF, CR, CRLF and ATASCII `$9B` as line endings.
 They emit LF for a present delimiter and preserve an unterminated final line.
-CRLF remains one delimiter across buffered reads. HEAD/GREP preserve embedded
+CRLF remains one delimiter across buffered reads. HEAD/TAIL/GREP preserve embedded
 NUL and other payload bytes; use TYPE or MORE for a sanitized console view.
 A line may contain at most 1,024 payload bytes, excluding its delimiter. An
 excess fails with ERROR_LINE_TOO_LONG instead of truncating or splitting it.
 Shared input buffering uses 512 bytes per reader and does not read whole files.
+
+TAIL retains up to sixteen lines in a fixed ring in the loaded command's upper
+RAM. It reads the whole input before emitting the selected suffix and produces
+no suffix if reading fails or BREAK interrupts it. A read error remains an error
+even when buffered bytes precede it. `LINES` above sixteen is an error.
 
 MORE on interactive Output uses the associated foreground console for keys,
 even with redirected or piped Input. It uses Output's actual dimensions, expands
@@ -135,7 +142,7 @@ GREP selected no lines. ERROR (10) includes malformed arguments, I/O failures,
 excessive text lines and BREAK. The shell retains primary and secondary results;
 its [pipeline aggregation](shell.md#pipes) handles successful early consumers.
 
-All sixteen commands accept a sole unquoted `?` for template help. For example,
+All supplied commands accept a sole unquoted `?` for template help. For example,
 `HEAD ? <STORY.TXT >NIL:` prints help on the console and consumes no data.
 `GREP "?" STORY.TXT` searches for a literal question mark. An empty template,
 as used by WC and HELLO, is displayed as `Arguments: (none)`.

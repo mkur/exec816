@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "completed_slices": [
+    "TAIL"
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0
+  },
+  "artifacts": {
+    "tail_vectors": {
+      "path": "build/development/tail-find/tail-vectors/results.json",
+      "sha256": "44c55a7e6adaca8054fad04865d2b8546d74f40ec83b03272c4c79a103f5a907",
+      "status": "pass"
+    },
+    "tail_shell": {
+      "path": "build/development/tail-find/shell/tail-results.json",
+      "sha256": "3e015a10d68fd360c9a53302619bb845202957f8d9b39290144cc136a8234a46",
+      "status": "pass"
+    }
+  },
+  "tail": {
+    "bss_bytes": 17306,
+    "text_bytes": 3973,
+    "file_bytes": 4953,
+    "cases": 32,
+    "head_regression_cases": 22,
+    "max_lines": 16,
+    "max_line_bytes": 1024,
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "host_tests": 396
+  },
+  "pins": {
+    "platform": "toolchain/altirra-shell-paced.json",
+    "configuration_overrides": {
+      "diskemu": "generic56k",
+      "accuratedisk": false
+    }
+  }
+}

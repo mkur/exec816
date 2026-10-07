@@ -1,0 +1,108 @@
+MODULE TAIL
+
+INCLUDE "command-common.inc"
+
+CONST MAX_LINES=16
+
+TYPE SavedLine=[
+  CARD length
+  BYTE terminated
+  BYTE ARRAY bytes(COMMAND.STREAM_LINE_BYTES)
+]
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+COMMAND.Reader reader
+SavedLine ARRAY lines(MAX_LINES)
+
+; Keep a bounded ring until EOF, then emit its lines in source order.
+LONGINT FUNC Suffix(CARD wanted)
+  CARD next,stored,index
+
+  IF wanted=0 THEN
+    RETURN(COMMAND.RETURN_OK)
+  FI
+
+  next=0
+  stored=0
+  DO
+    BEGIN
+      LET slot=@lines(next)
+      LET count=COMMAND.ReadLine(BYTE POINTER(@reader),slot.bytes,
+          COMMAND.STREAM_LINE_BYTES)
+      IF count=-2 THEN
+        EXIT
+      FI
+
+      IF count<0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      slot.length=CARD(count)
+      slot.terminated=reader.terminated
+      next==+1
+      IF next=wanted THEN
+        next=0
+      FI
+
+      IF stored<wanted THEN
+        stored==+1
+      FI
+    END
+  OD
+
+  IF stored<wanted THEN
+    next=0
+  FI
+
+  index=0
+  WHILE index<stored DO
+    BEGIN
+      LET slot=@lines(next)
+      IF COMMAND.WriteAll(COMMAND.Output(),slot.bytes,slot.length)=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF slot.terminated<>0 THEN
+        IF CommandText(c"\n")=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+      FI
+
+      next==+1
+      IF next=wanted THEN
+        next=0
+      FI
+
+      index==+1
+    END
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"FILE,LINES/K/N",values,2,arguments,
+      SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  LET wanted=CommandNumber(values(1),10)
+  IF wanted>MAX_LINES THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BAD_NUMBER)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  LET input=CommandInput(values(0))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.ReaderInit(BYTE POINTER(@reader),input)
+  LET status=CommandReadResult(@reader,Suffix(CARD(wanted)))
+
+RETURN(CommandFinish(input,BYTE(values(0)<>0),status))
+
+ENDMODULE

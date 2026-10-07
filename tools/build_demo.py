@@ -37,7 +37,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     media=output/'media';media.mkdir(exist_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES'):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES'):
         commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))

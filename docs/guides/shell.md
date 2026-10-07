@@ -176,7 +176,7 @@ PATH RESET
 
 ### Help and errors
 
-All sixteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+All supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
 `WC ?`. They print `Arguments: <template>` on the foreground console and return
 OK without reading Input or writing data Output. Quoted `"?"` remains data.
 Help still works with redirection and pipes; headless help fails explicitly.
