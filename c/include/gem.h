@@ -3,6 +3,7 @@
 #ifndef EXEC816_GEM_H
 #define EXEC816_GEM_H
 #include <exec/types.h>
+#include <gem/objects.h>
 #include <exec816/gem-constants.h>
 #define FAR
 #define SIMPLE_CALL EXEC_CALL

@@ -1,6 +1,8 @@
 #ifndef EXEC816_AES_PRIVATE_H
 #define EXEC816_AES_PRIVATE_H
 #include <exec816/aes.h>
+#include <gem.h>
+BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 
 /* A reservation pins the destination until publication.
  * These helpers require an admitted caller; they do not enter GEM recursively. */

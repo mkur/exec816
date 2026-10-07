@@ -311,3 +311,35 @@ profile with local hit testing, pressed/released drawing and a translated-key
 label. Its [guide](../guides/aes-applications.md#interactive-application-example)
 includes the optional `--aes-input` OF816 build. Public object/form and resource
 APIs remain outside this profile.
+
+## Application object trees and forms
+
+`gem.h` now declares the standard 24-byte `OBJECT` and 8-byte `GRECT` layouts.
+Application-owned trees support `G_BOX`, `G_IBOX`, `G_STRING`, `G_TITLE` and
+`G_BUTTON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/RBUTTON/LASTOB/
+HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
+with at most 32 objects, eight levels and 63 characters per label. Coordinates
+are pixels. Unsupported object types, indirect specs and user callbacks are
+outside this caller contract.
+
+`objc_draw`, `objc_find`, `objc_offset`, `objc_change`, `form_center`,
+`form_keybd` and `form_button` have named and AESPB bindings with their GEM
+opcodes/counts. Drawing requires an open workstation/window and BEG_UPDATE;
+the explicit object clip is intersected with the caller's visible work area.
+VDI's separate clip does not change the AES object clip. Local geometry and
+state changes do not contact the presenter or copy the tree. `form_center`
+centers within the caller's work area.
+
+The form subset is windowed and event-driven: `form_button` commits an accepted
+release/keyboard action without waiting or drawing. It toggles selectable
+buttons, selects radio peers exclusively, and returns zero for a momentary EXIT
+button. `form_keybd` navigates selectable controls with Tab/Shift-Tab, activates
+focus with Space and DEFAULT with Return; it reports the next object and
+unconsumed key. These are deliberate departures from modal GEM form handling.
+The application tracks press/cancel and redraws changed objects. It continues
+handling WM_* messages in `evnt_multi`. `form_do`, text editing and modal screen
+ownership are not implemented.
+
+The application binding reuses the extracted GEM4XE routines with its own GSX
+scratch, protected by the existing display grant. The native retained widget
+binding remains presenter-owned. No additional bank-zero reservation is needed.

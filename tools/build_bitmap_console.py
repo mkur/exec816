@@ -78,6 +78,18 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         sources.append(ROOT/'c/calypsi/aes-windows.c')
         sources.append(ROOT/'c/calypsi/aes-input.c')
         sources.append(ROOT/'c/calypsi/vdi.c')
+        # A second binding of the same extracted donor routines isolates the
+        # presenter's scratch from callers that can block acquiring DISPLAY.
+        from extract_gem_aes import extract as object_extract, PORT as object_port
+        object_extract(out/'app-objects')
+        for name in ('aes-objects.c','aes-graf.c','aes-form.c'):
+            path=out/'app-objects'/name
+            path.write_text(path.read_text().replace('"aes-hosted.h"','"application-hosted.h"'))
+            sources.append(path)
+        graf=out/'app-objects'/'app-graf.c'
+        graf.write_text((object_port/'widgets-graf.c').read_text().replace('"widgets.h"','"application-hosted.h"'))
+        sources += [graf,ROOT/'c/calypsi/aes-objects.c']
+        extra_includes.append(object_port)
         from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
         for path,content in vdi_files().items():
             require(path.read_text()==content, "Stale VDI file: "+str(path))

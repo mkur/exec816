@@ -360,6 +360,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
+    if (ExecAESObjects(c,pb)) goto globals;
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }
@@ -433,5 +434,6 @@ void EXEC_CALL aes_call(AESPB *pb)
         c->diagnostic = AES_UNSUPPORTED;
     }
     pb->int_out[0] = result;
+globals:
     for (i = 0; i < AES_GLOBAL_WORDS; ++i) pb->global[i] = c->request.global[i];
 }
