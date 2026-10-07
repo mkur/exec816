@@ -304,3 +304,10 @@ for the physical sequence to end. Close/loss requires observed release before
 rearming. Eligibility handback can signal a waiting caller without a new edge.
 The public `MU_BUTTON`/`evnt_button` waits consume the retained transitions and
 eligible levels without a presenter RPC.
+
+
+The [interactive example](../../examples/gem-input/input.c) exercises the input
+profile with local hit testing, pressed/released drawing and a translated-key
+label. Its [guide](../guides/aes-applications.md#interactive-application-example)
+includes the optional `--aes-input` OF816 build. Public object/form and resource
+APIs remain outside this profile.

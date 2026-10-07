@@ -3,8 +3,8 @@
 [History index](README.md) · [Implementation plan](../plans/gem4xe/aes-application-input-implementation-plan.md) ·
 [Current INPUT contract](../reference/input.md) · [Current AES contract](../reference/aes.md)
 
-Status: AI1–AI5 implemented, 2026-10-07. AI6–AI7 remain pending. Public caller-local
-input waits pass development checks. This is not hosted-system qualification; PI4/HY4 and the observed flicker remain open.
+Status: AI1–AI7 implemented, 2026-10-07. Caller-local input waits, the interactive
+application and the extracted OF816 demo pass development checks. This is not hosted-system qualification; PI4/HY4 and the observed flicker remain open.
 
 ## AI1 — Capture route policy and button qualifiers
 
@@ -218,3 +218,64 @@ external compiler issue for a future toolchain update. The application computes
 rectangle endpoints directly from the work-area origin. No actionc change or
 compiler override was needed. A separate exact-pixel failure corrected the
 indicator damage rectangle to cover all eight font rows.
+
+
+## AI7 — Coexistence, measurements and packaged demo
+
+`tools/build_demo.py --aes-input` packages two independent input applications
+beside the native shell. The no-option shell/PRIMES selection and existing
+counter profile retain their startup paths. The new ZIP contains OF816, the
+pinned ROM, matching disks, a short guide, notices and checksums. Its exact
+extracted boot image passed the five-second autoboot (249 observed PAL frames),
+pressed/released/key pixel checks, focus/movement/close, the eight-Task pipeline,
+scrolling BREAK, writable-disk byte/allocation audits and cooperative EXIT.
+
+The prompt has six Tasks, three registrations (including the controller), and
+three layers. A separate four-layer cohort keeps the native Control Panel,
+two input apps and verified root disk reads live with seven Tasks. It passes
+rapid A/B/C during application drawing, independent input, native Toggle
+progress and exact heap/ownership recovery. The load fixture warms its root
+console handle before recording the heap baseline, so a lazy I/O allocation is
+not misclassified as application leakage.
+
+[AI7 evidence](../development/aes-application-input-ai7.json) records twenty
+physical edges per load, with one edge outstanding at a time. Raw publication,
+presenter route entry and the correct caller's `MU_BUTTON` return are matched to
+the same edge. Completion means the entire control matches an independent pixel
+oracle in completed scanout; it includes frame/observation delay. Values below
+are **median / p95 / maximum milliseconds**, pooling press and release:
+
+| Load | Capture → route | Route → event return | Return → visible | Capture → visible |
+| --- | --- | --- | --- | --- |
+| Idle | 17.7 / 30.6 / 35.1 | 7.5 / 28.3 / 28.8 | 128.7 / 185.9 / 195.2 | 154.3 / 212.4 / 214.6 |
+| Scroll | 15.1 / 22.1 / 39.2 | 7.5 / 28.7 / 30.6 | 115.0 / 183.3 / 193.2 | 134.3 / 193.4 / 215.2 |
+| Disk | 18.2 / 30.7 / 82.9 | 27.5 / 50.3 / 58.2 | 142.1 / 247.5 / 282.1 | 193.7 / 275.1 / 314.9 |
+
+The redraw/presentation interval dominates this example. Median charged caller
+CPU is about 68–72 ms and presenter CPU about 49–53 ms per edge over the complete
+feedback interval; interrupt bodies and other Tasks are separate. This first
+ordinary GEM application is functional but its redraw path needs later tuning.
+These small cohorts do **not** close PI4/HY4 or establish a regression against
+the differently implemented native widget control.
+
+The same 60 edges in an unobserved replay have **zero guest-clock difference**
+in capture-observation-to-visible intervals. Pointer sampling takes a median
+8.04 µs in each load; maximum observed sample gaps are 317.0, 317.2 and 513.5 µs
+for idle, scrolling and disk respectively. These are current absolute costs,
+not an inferred before/after capture delta. Full source/ROM/emulator pins and
+per-edge provenance are retained in the evidence.
+
+Reserved bank-zero delta from AI6 is **0 fixed + 0 per public Task + 0 private
+idle**, including guards, alignment and unused capacity. Production upper-memory
+and VRAM reservations also remain unchanged. The older compaction-baseline tool
+still reports the pre-existing larger stacks in slots 6/7; those are not AI7
+growth. Packaged application stacks peak at 550 and 547 bytes in 1,024-byte pools.
+The 408-test host suite passes with four expected historical skips; all observed
+stack/domain guards, resource retirement and OS restoration checks pass.
+
+The frozen distribution was built with the production builder committed in
+AI6. AI7 subsequently added load/panel fixture options to that builder; the
+application, wrapper and packaged source inputs are unchanged. Its SHA-256,
+checksums and extracted walkthrough are recorded rather than silently replacing
+the tested artifact. Broader release qualification, public forms/objects,
+resource loading, rectangle events and multiple clicks remain separate work.

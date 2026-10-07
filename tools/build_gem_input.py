@@ -73,14 +73,16 @@ RETURN(inputCall()<>0)
     return source.replace('PROC Main()',stub+'PROC Main()',1)
 
 
-def build_inputs(out,source=None,program_output=None,**options):
+def build_inputs(out,source=None,program_output=None,load=False,panel=False,**options):
     from library_paths import read_source
     out.mkdir(parents=True,exist_ok=True)
-    instrument=source is None
+    instrument=source is None and not load
     options.pop('desktop',None)
     foreign=input_image(out,instrument)
-    original=source or ROOT/'tests/programs/gem_input_session.act'
-    source=out/'inputs.act';source.write_text(input_bindings(read_source(original),foreign))
+    original=source or ROOT/('tests/programs/gem_input_load.act' if load else 'tests/programs/gem_input_session.act')
+    text=read_source(original)
+    if panel:text=text.replace('CONST WITH_PANEL=0','CONST WITH_PANEL=1')
+    source=out/'inputs.act';source.write_text(input_bindings(text,foreign))
     memory=options.pop('memory_profile',None)
     if memory is None:
         profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
@@ -100,6 +102,9 @@ def build_inputs(out,source=None,program_output=None,**options):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--load',action='store_true')
+    parser.add_argument('--panel',action='store_true',help='Separate four-layer native-panel coexistence fixture; implies --load')
     parser.add_argument('--mouse-profile',choices=('off','mild'))
     args=parser.parse_args()
-    build_inputs(args.output.resolve(),mouse_profile=args.mouse_profile,stack_checks=True)
+    build_inputs(args.output.resolve(),mouse_profile=args.mouse_profile,stack_checks=True,load=args.load or args.panel,panel=args.panel,
+        **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)]) if args.load or args.panel else {}))

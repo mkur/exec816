@@ -18,8 +18,9 @@ WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False):
-    if aes_counters:
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False):
+    require(not (aes_counters and aes_input), 'Select one resident GEM application profile')
+    if aes_counters or aes_input:
         desktop=True
     if desktop:
         bitmap_shell_only=True
@@ -63,6 +64,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
     if aes_counters:
         (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 1; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
+    if aes_input:
+        (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
@@ -86,7 +89,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
     # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
@@ -98,7 +101,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        if aes_counters:
+        if aes_input:
+            from build_gem_input import build_inputs
+            builder=build_inputs
+        elif aes_counters:
             from build_aes_desktop import build_counters
             builder=build_counters
         else:builder=build_bitmap
@@ -133,6 +139,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if aes_counters:
         guide=(ROOT/'docs/aes-counter-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if aes_input:
+        guide=(ROOT/'docs/aes-input-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
@@ -183,6 +192,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/aes-counter-distribution.txt',ROOT/'tools/build_aes_desktop.py',
             *sorted((ROOT/'examples/gem-counter').glob('*')))})
+    if aes_input:
+        record.update(aes_input=True,expected_peak_tasks=8)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/aes-input-distribution.txt',ROOT/'tools/build_gem_input.py',
+            *sorted((ROOT/'examples/gem-input').glob('*')))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -216,7 +230,8 @@ def refresh_monitor(output):
             'Changed native demo artifacts')
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
-        guide=ROOT/('docs/aes-counter-distribution.txt' if record.get('aes_counters') else
+        guide=ROOT/('docs/aes-input-distribution.txt' if record.get('aes_input') else
+                    'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
                     'docs/desktop-distribution.txt' if record.get('desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
                     'docs/text-shell-distribution.txt')
@@ -251,6 +266,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
     parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
@@ -272,5 +288,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

@@ -1,0 +1,53 @@
+Exec816 GEM input desktop
+==========================
+
+Two interactive GEM windows and a native shell. No prime task is started.
+
+Boot in AltirraSDL
+-----------------
+
+Requires AltirraSDL: https://github.com/ilmenit/AltirraSDL
+Upstream Altirra will not run this build.
+
+Extract this ZIP into one folder. In System > Configure System, select:
+
+  Atari 800XL, PAL; 65C816 at 14.28MHz (8x).
+  Shadow ROMs in fast RAM enabled.
+  Memory: 64K base plus 4032K high memory (63 banks), giving 4MB total.
+  Firmware: the included altirraos-816.rom, registered as XL/XE OS.
+  Internal BASIC disabled.
+  VBXE FX 1.26 at $D600, with private 512K VRAM.
+  Input: ST mouse on joystick port 1; left button.
+  SIO Patch and D: burst I/O disabled.
+  "Unload disks when booting new image" disabled.
+
+1. Mount @SYSTEM_DISK@ in D1: with "Generic + 57600 baud" emulation.
+   Mount a disposable copy of work.atr in D8: with writes enabled.
+2. Boot Exec-of816.xex and leave the keyboard alone for the five-second countdown.
+3. Wait for SYS: ready, the shell prompt and both input apps.
+
+Both disks are required at startup. Keep these matching disks mounted throughout
+the session. Press a key during the countdown to enter OF816 instead; EXEC816
+continues into this desktop.
+
+Use the desktop
+---------------
+
+Click a window to bring it forward. Drag application titles to any on-screen pixel
+position; shell moves use its character grid. Escape cancels a title drag.
+Click X to close one application. Click another window to give it focus afterward.
+After focusing an app, press Activate: it highlights until you release. Release
+inside the button to increment Clicks; release outside to cancel. Escape/BREAK
+also cancels a held button. Moving outside while held keeps the highlight.
+Keys displays the last translated GEM scan/ASCII word in hexadecimal (for
+example Ctrl-C is 2E03). It does not cancel a shell command while a GEM app owns
+focus. Tick changes after a one-second event wait; activity restarts that wait.
+@POINTER_DESCRIPTION@
+
+Click the shell title before typing. Try TASKS, DIR, CAT STORY.TXT | WC, or
+CAT LONG.TXT. BREAK cancels a running command. SYS: is read-only; WORK: is a
+disposable writable disk. EXIT closes both input apps and returns to the OS.
+Cold-boot to start the applications again.
+
+This is a desktop development preview with fixed-size windows. Menus, resizing,
+file-manager icons and launching other GEM programs are not included yet.

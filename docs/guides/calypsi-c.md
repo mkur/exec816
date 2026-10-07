@@ -250,3 +250,12 @@ library bridge and `<hardware/vbxe.h>` for the pinned G3 adapter. Its launcher
 must bind the entry table and establish the cold-boot graphics baseline. The
 standard C message example and text demo do not enable graphics. The selected
 GEM renderer is integrated by the [G4 service backend](../../ports/gem4xe/adapter/README.md).
+
+
+A [small emitted-code reproducer](../../tests/programs/calypsi_array_copy.c)
+records a Calypsi 5.18 local-array indexing defect in both `-O0` and `-O2`:
+`box[2]=box[0]+127` reads the old destination slot in the generated code.
+The [AI6 record](../history/aes-application-input.md#ai6--ordinary-interactive-gem-application)
+has actual results and the diagnostic runner. The interactive example computes
+each endpoint directly from its origin. This remains an external compiler issue;
+the limited C binding checks do not qualify all C expressions.

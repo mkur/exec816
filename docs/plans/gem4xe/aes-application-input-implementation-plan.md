@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1–AI6 pass development checks; AI7 remains
-pending. See the [execution record](../../history/aes-application-input.md).
+Status: implemented, 2026-10-07. AI1–AI7 pass development checks. See the
+[execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
 slice. The result is an ordinary GEM application receiving keyboard and
@@ -315,6 +315,10 @@ Exit: one application demonstrates ordinary GEM input end to end. Suggested
 commit: `demo: add an interactive GEM input application`.
 
 ## AI7 — Demonstrate coexistence and record cost
+
+Implemented. [Evidence](../../development/aes-application-input-ai7.json) covers
+the exact extracted OF816 input demo, eight-Task pipeline, separate native-panel
+cohort, per-edge timing and matched unobserved replay. PI4/HY4 remain open.
 
 1. Run two independent instances beside the shell with independent FIFOs,
    windows and workstations. Keep the established resource budget: six public

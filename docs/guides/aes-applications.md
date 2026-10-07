@@ -199,3 +199,36 @@ The fixture adds test-only pause points and capacity/heap failure cases around
 the same application body. These hooks are omitted when a demo source is given
 to the builder. See the [input execution record](../history/aes-application-input.md#ai6--ordinary-interactive-gem-application)
 for exact scope and the external Calypsi array-indexing limitation encountered.
+
+
+Build the optional two-input-app desktop, with OF816 and matching disks:
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --aes-input --output build/gem-input-demo
+unzip build/gem-input-demo/exec816-demo.zip -d build/gem-input-demo/extracted
+python3 tools/test_demo.py --bundle build/gem-input-demo --boot-smoke \
+  --distribution-root build/gem-input-demo/extracted/exec816-demo
+```
+
+Distribute `build/gem-input-demo/exec816-demo.zip`. Follow its short guide for
+machine setup, D1/D8 disks and ST mouse capture. At the prompt there are six
+Tasks; a two-command pipeline uses all eight public slots. The two application
+registrations plus the controller use three of four AES slots. The shell and
+two windows use three of four layers. The existing `--aes-counters` profile and
+no-option five-second shell/PRIMES autoboot remain available.
+
+For focused cost measurements, the separate development root supplies continuous
+console writes or verified disk reads around the same unmodified C body:
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_gem_input.py --load --output build/gem-input-load
+python3 tools/measure_gem_input.py --program build/gem-input-load/program --output build/gem-input-observed
+python3 tools/measure_gem_input.py --program build/gem-input-load/program --output build/gem-input-replay --unobserved
+```
+
+`--panel` on the builder selects a separate four-layer, seven-Task cohort with
+the native Control Panel; run its measurement with `--count 4 --unobserved` for
+coexistence, rapid keys while drawing, and panel/disk progress. It has one free
+public Task slot, so it is not the two-child pipeline configuration. Timings
+report individual physical edges, caller/presenter CPU and completed scanout.
+They are development observations; broader latency gates remain open.

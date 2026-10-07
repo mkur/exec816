@@ -199,14 +199,16 @@ ordinary GEM counters, with unchanged ordinary message capacity and zero
 bank-zero growth. Matched native/coexistence diagnostics and the extracted
 OF816 counter bundle pass. PI4/HY4 remain open.
 
-The next proposed milestone is [AES application input](plans/gem4xe/aes-application-input-design.md):
-keyboard and single-button events for ordinary GEM application content, combined
+The [AES application input milestone](plans/gem4xe/aes-application-input-design.md)
+provides keyboard and single-button events for ordinary GEM application content, combined
 locally with messages/timers. The design keeps one presenter for focus and
-gesture routing, preserves shell cancellation, and targets zero bank-zero
-growth without per-wait RPC. The [AI1–AI7 plan](plans/gem4xe/aes-application-input-implementation-plan.md)
+gesture routing, preserves shell cancellation, and adds zero bank-zero
+reservations without per-wait RPC. The [AI1–AI7 plan](plans/gem4xe/aes-application-input-implementation-plan.md)
 provides seven executable slices through a two-application OF816 demo, committing
-after each passing slice. AI1–AI6 capture, inbox and application routing changes pass development checks; AI7
-remains pending. Public widgets/forms,
+after each passing slice. AI1–AI7 pass development checks: public input waits, independent
+interactive apps, native coexistence and the extracted OF816 ZIP.
+[Cost measurements](history/aes-application-input.md#ai7--coexistence-measurements-and-packaged-demo)
+show that redraw/presentation dominates button feedback; PI4/HY4 remain open. Public widgets/forms,
 rectangle events, multiple clicks and resource loading follow separately.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)

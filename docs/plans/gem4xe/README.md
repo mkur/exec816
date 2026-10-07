@@ -56,14 +56,17 @@ existing Task/layer capacity with zero bank-zero growth.
 independent counters, matched native coexistence and the extracted OF816 ZIP.
 Menus, resources, resizing and broader GEM compatibility follow; PI4/HY4 remain open.
 
-The proposed [AES application input design](aes-application-input-design.md)
+The implemented [AES application input design](aes-application-input-design.md)
 adds `MU_KEYBD` and single-button `MU_BUTTON` waits, with presenter-owned routing
 and caller-local matching on existing Exec signals and timers. It defines
 focus, gesture capture, bounded inboxes, GUI-lock interaction and console
 cancellation coexistence. The [AI1–AI7 implementation plan](aes-application-input-implementation-plan.md)
 orders capture, inboxes, keyboard/gesture routing, public waits and a
 two-application OF816 demo, with a commit after each passing slice.
-AI1–AI6 capture, inbox and application routing changes pass development checks; AI7 remains pending. Rectangle events,
+AI1–AI7 pass development checks, including public input waits, an interactive
+GEM application and the extracted two-app OF816 demo. The
+[execution record](../../history/aes-application-input.md) includes per-edge
+timing and unobserved replay; PI4/HY4 remain open. Rectangle events,
 multiple clicks and public form/object calls remain later extensions.
 
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)

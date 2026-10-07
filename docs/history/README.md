@@ -22,9 +22,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [Background console panes and primes](background-pane-primes.md): foundation
   slices, loadable command, numeric drawing, resource costs and packaged preview.
 
-- [AES application input](aes-application-input.md): AI1–AI6 capture policy,
-  qualifiers, inboxes, routing and public input waits pass development checks;
-  AI7 remains pending.
+- [AES application input](aes-application-input.md): AI1–AI7 pass development checks for
+  capture, routing, public input waits, interactive GEM apps, measured cost and
+  the extracted OF816 demo. PI4/HY4 remain open.
 - [AES window applications](aes-windows.md): WA1–WA6 complete at the development
   tier; durable GUI messages, windows, private VDI, two resident counters and an
   extracted OF816 demo. Includes coexistence timing and console repair fixes.

@@ -41,7 +41,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     require(not shell_only or boot_smoke or disk_failure,'Shell-only demo requires boot smoke or disk-failure scope')
     desktop=manifest.get('desktop',False)
     counters=manifest.get('aes_counters',False)
-    foreign=json.loads((out/'bitmap-console/c-image.json').read_text()) if counters else None
+    input_apps=manifest.get('aes_input',False)
+    gem_apps=counters or input_apps
+    foreign=json.loads((out/'bitmap-console/c-image.json').read_text()) if gem_apps else None
     width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
@@ -124,8 +126,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         def symbol(module,name):
             return next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
         def app(index,field):
+            if input_apps:
+                from gem_input_oracle import address
+                return address(foreign['symbols'],index,field)
             return foreign['symbols']['GEMCounters']+196*index+dict(ready=12,count=14,paints=18,work=38)[field]
         def counter_painter(r,title,bounds):
+            if input_apps:
+                from gem_input_oracle import state,paint
+                require(title in (b'Input A',b'Input B'),'Unexpected GEM input application')
+                paint(r,state(b,foreign['symbols'],int(title==b'Input B')),None)
+                return
             require(title in (b'Counter A',b'Counter B'),'Unexpected external application')
             index=int(title==b'Counter B');left,top,right,bottom=bounds
             count=number(app(index,'count'))
@@ -213,7 +223,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 terminal.column=cursor%width;terminal.row=cursor//width
                 if desktop:
                     from desktop_oracle import compose
-                    packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if counters else None)
+                    packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if gem_apps else None)
                 else:
                     terminal.paint(r,0,0,caret=True)
                 folder=out/f'pixels-{len(observations)}';folder.mkdir(exist_ok=True)
@@ -228,7 +238,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
-                        packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if counters else None)
+                        packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if gem_apps else None)
                         frame_data=b.rawscreen(str(folder/'scanout.bgra'))
                         raw=(folder/'scanout.bgra').read_bytes()
                         cropped=b''.join(raw[y*frame_data.stride+64:y*frame_data.stride+2624] for y in range(240))
@@ -383,6 +393,47 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             # Native keyboard focus is explicit, including after closing the focused app.
             click(100,32);cells('counter-shell-focus')
 
+        def input_interaction(closing=False):
+            from gem_input_oracle import state
+            def model(i):return state(b,foreign['symbols'],i)
+            def move(x,y):
+                saved['pointer']=schedule(b,p,saved['pointer'],(x,y))
+                x,y=saved['pointer']
+                rendezvous(f'(dw(${symbol("DESKINPUT","cursorX"):x})={x})&(dw(${symbol("DESKINPUT","cursorY"):x})={y})')
+            def button(value):
+                b._cmd_ok(f'MOUSE AT 2000 0 0 {value}')
+                rendezvous(f'dw(${symbol("DESKINPUT","buttons"):x})={value}')
+                frames(4)
+            def click(x,y):move(x,y);button(1);button(0);frames(30)
+            require(all(model(i)['ready'] for i in range(2)),'Missing GEM input instance')
+            if closing:
+                x,y,w,h=model(1)['work']
+                click(x+w-24,y-10);cells('input-after-disk-exposure')
+                click(x+w-2,y-10)
+                rendezvous(f'dw(${foreign["symbols"]["GEMInputsDone"]:x})=1')
+                frames(80);cells('input-physical-close')
+                require(model(0)['ready'],'Closing B retired A')
+                saved['input_coexistence']['physical_close']=True
+            else:
+                for i in (0,1):
+                    x,y,w,h=model(i)['work'];click(x+96,y-10)
+                    old=model(i)['activations'];move(x+48,y+60);button(1)
+                    rendezvous(f'dw(${app(i,"armed"):x})=1');cells('input-pressed-'+str(i))
+                    button(0);rendezvous(f'dw(${app(i,"activations"):x})={old+1}')
+                    cells('input-released-'+str(i))
+                    press('A' if i==0 else 'B');frames(20)
+                    require(model(i)['key']==('Key: 1E41' if i==0 else 'Key: 3042'),'Packaged GEM key translation differs: '+model(i)['key'])
+                    cells('input-key-'+str(i))
+                require(model(0)['activations']==model(1)['activations']==1,'Application activation isolation failed')
+                # Preserve a visible portion when the shell is raised for disk work.
+                x,y,w,h=model(1)['work'];move(x+96,y-10);button(1)
+                rendezvous(f'db(${symbol("DESKDRAG","phase"):x})=1')
+                move(x+231,y-21);button(0)
+                rendezvous(f'(dw(${app(1,"work"):x})={x+135})&(dw(${app(1,"work")+2:x})={y-11})')
+                cells('input-pixel-drag')
+                saved['input_coexistence']=dict(instances=[model(i) for i in range(2)])
+            click(100,32);cells('input-shell-focus')
+
         def begin(command):
             previous=number(saved['scope']+14)
             for character in command+'\n':press(character)
@@ -518,7 +569,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     (out/'integration-failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
                     raise
                 return
-            if counters:counter_interaction()
+            if input_apps:input_interaction()
+            elif counters:counter_interaction()
             elif desktop:desktop_interaction()
             if disk_failure:
                 require(b'Filesystem startup failed; check configured disks' in cells('failed-mount')[:shell_cells],
@@ -639,8 +691,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if shell_only:
                     tasks=command('TASKS',b'dos.filesystem')
                     require(b'primes' not in tasks.lower(),'Prime task started in shell-only demo')
-                    require(ledger()['live']==(6 if counters else 5 if desktop else 4),'Unexpected shell-only idle Task count')
-                    if counters:
+                    require(ledger()['live']==(6 if gem_apps else 5 if desktop else 4),'Unexpected shell-only idle Task count')
+                    if input_apps:
+                        require(b'GEM Input A' in tasks and b'GEM Input B' in tasks,'Missing GEM input Tasks')
+                    elif counters:
                         require(b'GEM Counter A' in tasks and b'GEM Counter B' in tasks,'Missing GEM counter Tasks')
                     elif desktop:require(b'desktop-app' in tasks,'Missing independent app Task')
                 command('ASSIGN',f'C: -> D{system_drive}:C'.encode())
@@ -695,7 +749,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['sys_cache']=dict(physical=first,system=second)
                 if desktop:
                     previous=begin('CAT SYS:STORY.TXT | WC')
-                    peak=8 if counters else 7
+                    peak=8 if gem_apps else 7
                     rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})={peak}')
                     saved['desktop_peak_tasks']=peak
                     ready(previous);result()
@@ -736,7 +790,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     command('HELLO | WC >WORK:PIPE.TXT')
                     command('CAT WORK:PIPE.TXT',b'1 3 17')
                     saved['filesystem_writes']=True
-                if counters:counter_interaction(closing=True)
+                if input_apps:input_interaction(closing=True)
+                elif counters:counter_interaction(closing=True)
                 frames(3);cells('boot-smoke')
                 save_screen(out/'boot-smoke.png')
                 for character in 'EXIT':press(character)
@@ -925,7 +980,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
-        mouse_profile_check=saved.get('mouse_profile_check'),counter_coexistence=saved.get('counter_coexistence'),
+        mouse_profile_check=saved.get('mouse_profile_check'),counter_coexistence=saved.get('counter_coexistence'),input_coexistence=saved.get('input_coexistence'),
         copy_break_frames=saved.get('copy_break_frames'),
         desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
@@ -934,7 +989,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Extracted OF816 AES input demo: two independent key/button/timer apps, exact pixels, physical drag/top/close, native shell/disk, eight-Task pipeline, writable media and EXIT' if input_apps else 'Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':
