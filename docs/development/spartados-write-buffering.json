@@ -1,13 +1,14 @@
 {
   "schema_version": 1,
-  "status": "in-progress",
+  "status": "complete",
   "tier": "development",
   "completed_slices": [
     "SB0",
     "SB1",
     "SB2",
     "SB3",
-    "SB4"
+    "SB4",
+    "SB5"
   ],
   "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
   "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
@@ -190,7 +191,7 @@
     "status": "pass",
     "tests": 396
   },
-  "scope": "SB0\u2013SB4 complete. Buffered Write, failure/lifetime/RESET behavior and matched COPY/BREAK measurements pass development checks; SB5 delivery pending. No hosted qualification or real-drive performance claim.",
+  "scope": "SB0\u2013SB5 complete at the development tier. Synchronous request-scoped metadata buffering, confirmed-prefix failure/lifetime/RESET coverage, matched COPY/BREAK measurements and exact archived standard/VBXE XEX/selected cartridge checks. Full release matrices and physical hardware qualification remain separate; no release published.",
   "sb1": {
     "status": "pass",
     "artifacts": [
@@ -1175,5 +1176,437 @@
       "scope": "Benchmark only; excluded from production costs"
     },
     "scope": "Matched 16 KiB COPY cold/warm on 128/256-byte targets; split directory timing, ordered bitmap-boundary trace and physical BREAK to Write reply. Guards, context restoration, byte identity and independent allocation checks pass. Transport policy unchanged."
+  },
+  "sb5": {
+    "status": "pass",
+    "packages": [
+      {
+        "variant": "standard",
+        "path": "build/development/spartados-write-buffering/sb5/standard-cart/exec816-demo.zip",
+        "sha256": "0f2db560c7ec9d4968c82c82f1a6201b51c9d719744010af6ca9ea79a9ea1ab4",
+        "bytes": 937210,
+        "manifest_sha256": "8deebc88793b188a8f3540906a0777326cb71baa1ab03558ff5864539f68700b",
+        "boot_manifest_sha256": "a27eeae590a16b6aa00d7bd3590224a05e9a22092de09439bcc80f5aa1f1f897",
+        "native_xex_sha256": "00c1234287eb6db90fd0f546f0d8eb6cd23ea587a7c6ac376873cfcfdff00ed3",
+        "boot_xex_sha256": "646d65195991d9f19d13fea53836968bb78c7f3991a8dd0cef414ec323669b75",
+        "runtime_revision": "3afebc4a800474cb565d35645d58700b63074f82",
+        "runtime_dirty": false,
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55",
+        "bank_zero_budget": {
+          "fixed_runtime": 10528,
+          "idle": 800,
+          "loading_excluding_os": 21872,
+          "loading_including_os": 52592,
+          "public": [
+            1824,
+            1312,
+            1312,
+            1312,
+            1312,
+            1312,
+            2848,
+            2848
+          ],
+          "runtime_excluding_os": 25408,
+          "runtime_including_os": 56128
+        },
+        "bank_zero_delta": {
+          "fixed": 0,
+          "root_kernel": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0,
+          "boot": 0
+        },
+        "comparison": {
+          "path": "build/release-preview-2026-10-07-5fd47b6/standard/memory.json",
+          "sha256": "8d626ef6d76a7be5fb29ba75f37f35e9ca1efe99883582535d9d0bca90b3f72b",
+          "scope": "Same variant from the preceding preview; includes guards, alignment and unused reserves"
+        },
+        "mounts": [
+          {
+            "alias": "D1",
+            "unit": 49,
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "profile": 4,
+            "format": 2
+          },
+          {
+            "alias": "WORK",
+            "unit": 56,
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "profile": 4,
+            "format": 2,
+            "access": "readwrite"
+          }
+        ],
+        "shell_only": true,
+        "primes": "loadable command; no automatic start"
+      },
+      {
+        "variant": "vbxe",
+        "path": "build/development/spartados-write-buffering/sb5/vbxe-cart/exec816-demo.zip",
+        "sha256": "5fb60db6d8178b40db2c4587d3a708e3f21129e15c22d39bad8af8b72aaf6c00",
+        "bytes": 1039783,
+        "manifest_sha256": "8fe7645a67316cfba730db73eda2e274bde1f7c7d85b25e992227cca74aef0a7",
+        "boot_manifest_sha256": "71f57677db61f6c5b64c7f2afd02df013ad57a6b3a3ddc580357a9a905a6cdbc",
+        "native_xex_sha256": "2ca6ba283e07788d2231699ba2bc4071e5477fddb87c05692d2807b48e7813e1",
+        "boot_xex_sha256": "194639793281769f41c1f40b081acae6d4da724adc3f7703b15c304fe881e648",
+        "runtime_revision": "3afebc4a800474cb565d35645d58700b63074f82",
+        "runtime_dirty": false,
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55",
+        "bank_zero_budget": {
+          "fixed_runtime": 10528,
+          "idle": 800,
+          "loading_excluding_os": 21872,
+          "loading_including_os": 52592,
+          "public": [
+            1824,
+            1312,
+            1312,
+            1312,
+            1312,
+            1312,
+            2848,
+            2848
+          ],
+          "runtime_excluding_os": 25408,
+          "runtime_including_os": 56128
+        },
+        "bank_zero_delta": {
+          "fixed": 0,
+          "root_kernel": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0,
+          "boot": 0
+        },
+        "comparison": {
+          "path": "build/release-preview-2026-10-07-5fd47b6/vbxe/memory.json",
+          "sha256": "bf3ae824b254a707aa7ddf73f67c7d6fc939146794ed1015662bea1ce41ab074",
+          "scope": "Same variant from the preceding preview; includes guards, alignment and unused reserves"
+        },
+        "mounts": [
+          {
+            "alias": "D1",
+            "unit": 49,
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "profile": 4,
+            "format": 2
+          },
+          {
+            "alias": "WORK",
+            "unit": 56,
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "profile": 4,
+            "format": 2,
+            "access": "readwrite"
+          }
+        ],
+        "shell_only": true,
+        "primes": "loadable command; no automatic start"
+      }
+    ],
+    "artifacts": [
+      {
+        "case": "standard-xex-smoke",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb5/standard-xex-smoke/results.json",
+        "sha256": "a445483497a93b68154322bbc6a10fab23fc1c6b2f0decbc1e09341bdcc0d0f7",
+        "route": "xex",
+        "cartridge_variant": null,
+        "package_sha256": "0f2db560c7ec9d4968c82c82f1a6201b51c9d719744010af6ca9ea79a9ea1ab4",
+        "copied_bytes": 23872,
+        "break_prefix_bytes": 1024,
+        "autoboot_frames": 249,
+        "key_to_prompt_frames": 217,
+        "guards": "intact",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 109,
+          "free": 2771,
+          "files": 3,
+          "directories": 1
+        },
+        "unrelated_bytes": "unchanged",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$87477f0a0571bee1",
+          "actual_kernel_id": "$87477f0a0571bee1",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observer_sha256": "c25e07e576a031d04bb20d1e782c329612056a838234f2b575bd86849fe6fb01"
+      },
+      {
+        "case": "vbxe-xex-smoke",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb5/vbxe-xex-smoke/results.json",
+        "sha256": "72e66f71c2802bf96bee2c3f92938b05ac1882cdb4c1eca3f869717da3687c19",
+        "route": "xex",
+        "cartridge_variant": null,
+        "package_sha256": "5fb60db6d8178b40db2c4587d3a708e3f21129e15c22d39bad8af8b72aaf6c00",
+        "copied_bytes": 23872,
+        "break_prefix_bytes": 1024,
+        "autoboot_frames": 249,
+        "key_to_prompt_frames": 219,
+        "guards": "intact",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 109,
+          "free": 2771,
+          "files": 3,
+          "directories": 1
+        },
+        "unrelated_bytes": "unchanged",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d13bc09b9e94348f",
+          "actual_kernel_id": "$d13bc09b9e94348f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observer_sha256": "c25e07e576a031d04bb20d1e782c329612056a838234f2b575bd86849fe6fb01"
+      },
+      {
+        "case": "standard-car-smoke",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb5/standard-car-smoke/results.json",
+        "sha256": "080151cb0dc0121f9ecbb3932ed2d30773907bf6341b9ee1c14dd79fea211fe6",
+        "route": "cartridge",
+        "cartridge_variant": "old",
+        "package_sha256": "0f2db560c7ec9d4968c82c82f1a6201b51c9d719744010af6ca9ea79a9ea1ab4",
+        "copied_bytes": 23872,
+        "break_prefix_bytes": 1024,
+        "autoboot_frames": 249,
+        "key_to_prompt_frames": 217,
+        "guards": "intact",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 109,
+          "free": 2771,
+          "files": 3,
+          "directories": 1
+        },
+        "unrelated_bytes": "unchanged",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$9ee717d75a56a1d6",
+          "actual_kernel_id": "$9ee717d75a56a1d6",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observer_sha256": "c25e07e576a031d04bb20d1e782c329612056a838234f2b575bd86849fe6fb01"
+      },
+      {
+        "case": "vbxe-car-smoke",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb5/vbxe-car-smoke/results.json",
+        "sha256": "fccd3fd2c0e4fff3a05e2d1a024b0e75187faa9127832571e422b970b125fd0c",
+        "route": "cartridge",
+        "cartridge_variant": "new",
+        "package_sha256": "5fb60db6d8178b40db2c4587d3a708e3f21129e15c22d39bad8af8b72aaf6c00",
+        "copied_bytes": 23872,
+        "break_prefix_bytes": 1024,
+        "autoboot_frames": 249,
+        "key_to_prompt_frames": 219,
+        "guards": "intact",
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 109,
+          "free": 2771,
+          "files": 3,
+          "directories": 1
+        },
+        "unrelated_bytes": "unchanged",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$8969fc7bddaa9114",
+          "actual_kernel_id": "$8969fc7bddaa9114",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "observer_sha256": "c25e07e576a031d04bb20d1e782c329612056a838234f2b575bd86849fe6fb01"
+      }
+    ],
+    "runtime_sources": {
+      "revision": "657cfcb",
+      "sha256": {
+        "lib/fs/fswtypes.act": "c5d4d8ac0e9b7761ef05dd75a873b3f12cc317fad5efe8cbb896c83aae6c497f",
+        "lib/fs/fsalloc.act": "315f6c812bb06d75ad7f8c6d566793e8895cb9255ba6c57345fb63829adccd5e",
+        "lib/fs/fswriteio.act": "5052fb207d792e65c58158062b661bf88899e679725bf2a7316fab5da592b6a5",
+        "lib/fs/fsabort.act": "06df69d56deff1c297516643a8aca1e3fe282c7408bc4659611fef6e1ea8bdab",
+        "lib/fs/fspacket.act": "deed5fbf69cffdda7842d3c9a10be2ee986d6ae7aca2e0f6b762f5c85f598d0c",
+        "lib/fs/fswrite.act": "54c09a966c2ca3996e9f10673480f09a0547d305c0045717f38f8500a3b33bbe",
+        "lib/spartados/sdfswrite.act": "f99f4922da46d7cf0b9343d87fc1e2f9b307de1ef3911042cb0a362a0dd57f43"
+      }
+    },
+    "observers": {
+      "tools/test_sdfs_buffering_demo.py": "c25e07e576a031d04bb20d1e782c329612056a838234f2b575bd86849fe6fb01",
+      "tools/test_cartridge.py": "348ff316a44d4652df062bc50862a55dce7334d8bf74c1748c69e48187da992d",
+      "tools/test_demo.py": "f43a80daf0ded03b0c1b2e2b25b41f374408c88c79d34bfee2bc8745bdd977e0"
+    },
+    "host_checks": {
+      "status": "pass",
+      "tests": 396,
+      "log": "build/development/spartados-write-buffering/sb5/host.log",
+      "sha256": "49bc2b3ace955a12f7e36740446d2bbcf2c6d0b4cc6df6513f929c299f8afb79"
+    },
+    "documentation_checks": {
+      "status": "pass",
+      "scope": "Changed-page content, relative links/anchors, indexes, preserved-design move and git diff whitespace"
+    },
+    "workspace_delta": 0,
+    "resident_production_code_delta": 0,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "boot": 0
+    },
+    "scope": "Development delivery: both archived XEX routes, standard old and VBXE new cartridge routes. OF816 five-second autoboot, full LONG.TXT COPY/reopen/CMP, DIR/LIST, physical BREAK, prompt recovery, exact persisted prefix, unrelated bytes, OS/context restoration and guards. Old/new CAR and raw ROM files, ROM, licences and complete checksums in both ZIPs. Built from clean 3afebc4 before documentation/observer delivery changes; runtime sources unchanged. No release publication or full platform qualification."
   }
 }

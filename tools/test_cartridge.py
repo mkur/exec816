@@ -10,7 +10,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_override=None):
+def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_override=None,
+        integration=None, distribution_root=None):
     # Published images use the tools from their release revision, including
     # historical stack placements. Do not reinterpret them with today's ABI.
     sys.path.insert(0, str(exec_source/'tools'))
@@ -25,7 +26,8 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
     demo = json.loads((demo_build/'demo-manifest.json').read_text())
     shell_only = demo.get('shell_only', False)
     require(cart['input_xex_sha256'] == boot['xex_sha256'], 'Cartridge and demo differ')
-    image = cartridge_build/f'Exec-of816-atarimax-8mbit-{variant}.car'
+    filename = f'Exec-of816-atarimax-8mbit-{variant}.car'
+    image = distribution_root/'cartridge'/filename if distribution_root else cartridge_build/filename
     require(sha256(image) == cart['files'][image.name], 'Changed cartridge image')
     output.mkdir(parents=True, exist_ok=True)
     case_build = output/'demo'
@@ -109,8 +111,9 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
         case['shell'] = test_demo.run(case_build, showcase=not shell_only,
                                      boot_smoke=shell_only, bootstrap=bootstrap,
                                      expected_cache=128 if manual else None,
-                                     media_path=demo_build/'of816'/boot['media']['name'],
-                                     rom_override=rom_override)
+                                     media_path=(distribution_root or demo_build/'of816')/boot['media']['name'],
+                                     rom_override=rom_override, integration=integration,
+                                     distribution_root=distribution_root)
         case['status'] = 'pass'
     except Exception as error:
         case.update(status='fail',error=str(error))

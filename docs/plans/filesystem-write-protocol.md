@@ -1,9 +1,10 @@
 # Filesystem mutation ordering
 
 This records the W0 decisions for the
-[write implementation plan](filesystem-write-implementation-plan.md).
+[write implementation plan](filesystem-write-implementation-plan.md), updated
+for [request-scoped SDFS buffering](spartados-write-buffering-implementation-plan.md).
 The protocol is implemented; see the [current write contract](../reference/filesystem-writes.md)
-and [development record](../history/filesystem-write-implementation.md).
+and [buffering development record](../history/spartados-write-buffering.md).
 No mount-time allocation audit or resident checker is introduced.
 
 ## Format inputs
@@ -12,7 +13,7 @@ The [native mutation fixtures](../../tests/fixtures/filesystem-write/README.md)
 exercise original MyDOS 4.50 and SpartaDOS X 4.50 on 128/256-byte media. Their
 manifest records exact bytes and native read-back; the host-only
 [allocation oracle](../../tools/filesystem_audit.py) separately verifies ownership
-and free counts. Mutation ordering below is Exec816's write-through policy;
+and free counts. Mutation ordering below is Exec816's synchronous publication policy;
 the native DOSes buffer writes and do not promise this ordering.
 
 MyDOS fields follow the pinned authors' 4.51 sources in the
@@ -43,8 +44,10 @@ an uncertain write. A successful operation means the peripheral confirmed its
 required writes; it is not a power-loss durability or sector-atomicity claim.
 
 Validate names, protection, sharing, representable lengths and required memory
-before mutation. Preflight allocation for one data commit unit, including new
-maps and directory growth; reserve metadata sectors before exposing references.
+before mutation. Preflight each payload group, including any required new maps
+and directory growth. Reserve metadata sectors before exposing references.
+For buffered SDFS extension, write actual payloads before publishing their
+allocation and pointers; retain working bits privately until ordered drain.
 Initialize new file payloads once with caller bytes and a zeroed unused tail;
 clear new map and directory storage before publishing it. Preserve unrelated
 bytes on partial updates,
@@ -74,11 +77,12 @@ treated as atomic records.
 | Extend MyDOS within the last sector | Update payload and used-byte trailer; write the sector; preserve the chain count; advance the confirmed cursor and length. |
 | Extend MyDOS with new sectors | Preflight up to four sectors on one VTOC page; write their allocation bits/free count together (one write when both occupy the same VTOC sector); initialize payloads with final successors and an EOF trailer; connect the old tail; publish the new directory sector count once; advance cursor/length. Preserve ten-bit ordinal encoding and its address limit. |
 | Extend SDFS within a data sector | Write changed payload; update directory byte length if EOF grows; advance the confirmed cursor/length. |
-| Extend SDFS within the current map | Preflight up to four payloads within the map and one bitmap page; write their allocation bits/free count together; initialize actual payloads once; publish all data pointers in one map write; publish directory length once; advance cursor/length. A zero pointer within existing logical data is unsupported for writers. |
-| Extend SDFS with a new map | Reserve one map and payload; initialize the map with its back-link; connect the map chain; initialize the actual payload once; publish its pointer; update directory length; advance cursor/length. |
+| Extend SDFS within the current map | Preflight up to four payloads within the map and one bitmap page; write actual payloads once; update the private bitmap/free count and retained map after the group completes; stage cursor/length. Retain metadata across groups of this Write. At drain, publish bitmap, sector 1 free count, map and directory length in order, then confirm staged bytes/cursor and advance the epoch. A zero pointer within existing logical data is unsupported for writers. |
+| Replace buffered SDFS metadata or use an immediate path | Drain accepted staged data before replacing a dirty bitmap/map or overwriting its scratch. Drain even if the bitmap scanner has not found a free candidate on the next page. Directory traversal reuses map scratch only after the file map is published. |
+| Extend SDFS with a new map | Drain any pending batch first. Reserve one map and payload; initialize the map with its back-link; connect the map chain; initialize the actual payload once; publish its pointer; update directory length; advance the confirmed cursor/length. This retains the immediate map-growth path. |
 | Truncate MyDOS | Validate old chain; retain its detached head in operation state; mark incomplete and publish the canonical empty extent (reusing the first sector when present); free detached tail allocation and counts; publish writable handle. |
 | Truncate SDFS | Validate old maps; retain old allocation for reclamation; mark incomplete and detach data/additional maps while retaining a zeroed first map; set length zero; release detached allocation/counts; publish writable handle. |
-| Flush | Ensure each accepted data unit's required writes have completed. Keep the native incomplete flag and writer lease; preserve position. There is no dirty write-back queue. |
+| Flush | Every Write has already settled its required writes before reply. Keep the native incomplete flag and writer lease; preserve position. There is no dirty cross-request queue. |
 | Last Close | Finish required data/allocation/extent updates; clear the native incomplete flag; consume the wrapper/backing and release the lease. Failure still consumes the wrapper after all I/O retires and leaves the mount unvalidated. |
 | Create directory | Preflight parent capacity and full child allocation; reserve and zero sectors; initialize child header where applicable; publish parent entry/extent; return the preallocated lock. MyDOS requires a contiguous eight-sector child. |
 | Delete file/empty directory | Validate target and reclaimable extent; reject live objects and nonempty directory; tombstone the parent entry to remove live reachability; release sectors and update counts. Finish reclamation before reporting success. |
@@ -92,10 +96,17 @@ there is a following record slot.
 
 ## Cancellation and storage
 
-Before the first mutation, ordinary cancellation leaves disk unchanged. A data
-write's protected unit is up to four new payload sectors plus dependent
-metadata writes. Existing sectors and map transitions use a single payload;
-honor BREAK between units and report only the confirmed prefix. Namespace
+Before the first mutation, ordinary cancellation leaves disk unchanged. MyDOS's
+protected unit is up to four new payload sectors plus dependent metadata.
+SDFS separates four-sector payload checkpoints from metadata publication:
+finish an already submitted group, then drain accepted data when BREAK stops
+further payloads. A BREAK before submission leaves unused reservations free.
+Drain also occurs at request end, logical exhaustion and dirty metadata
+replacement; no staged metadata survives reply. Existing sectors and map
+transitions use a single payload after any pending SDFS drain. A completed final
+request returns full success despite late BREAK. A failed publication returns
+only an earlier confirmed prefix and restores its cursor snapshot; the failed
+checkpoint can include more than four payload sectors. Namespace
 operations and truncation defer cancellation through required reclamation and
 finalization once mutation begins, bounded by volume geometry. Once an Open
 commits, retain the protected state through handle publication so a final
@@ -107,9 +118,10 @@ transaction. Reads needed to finish that unit use the same policy. A terminal
 transport error always wins over pending BREAK. Normal reads retain their
 existing cancellation path. No Forbid/IRQ/NMI exclusion spans I/O.
 
-The shared worker uses three additional 256-byte staged sectors,
-one 23-byte record and bounded scalar/entry state, totaling 878 requested bytes
-(880 after heap rounding). The existing block buffer
+The shared worker uses three 256-byte staged sectors, one private 256-byte
+bitmap page, one 23-byte record and bounded scalar/entry/snapshot state, totaling
+1,190 requested bytes (1,192 after heap rounding), 312 reserved upper-RAM bytes
+above the earlier workspace. The existing block buffer
 is separate. File backing owns rights, lease and cursor state, not sector buffers.
 The development record measures the remaining object growth. Fixed and
 per-Task bank-zero reservation deltas remain zero, including guards and padding.

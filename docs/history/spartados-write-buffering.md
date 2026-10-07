@@ -4,7 +4,7 @@
 [Implementation plan](../plans/spartados-write-buffering-implementation-plan.md) ·
 [Development evidence](../development/spartados-write-buffering.json)
 
-SB0–SB4 are complete at the development tier. SB5 delivery is pending. The
+SB0–SB5 are complete at the development tier. The
 runtime change is committed in `73384e3` and `657cfcb`; lifetime/failure coverage
 is in `db8cc95`. The frozen writer is `5fd47b6c54b476bec804c78c798c8b9ded67c4b6`.
 
@@ -22,7 +22,7 @@ to the confirmed result and advances the metadata epoch. Request end, BREAK,
 logical exhaustion and replacement of dirty bitmap/map state require a drain.
 Existing-sector writes and map growth retain their immediate path, settling a
 pending batch first. Every Write settles before reply; BLOCKCACHE retains only
-confirmed bytes. Flush/Close and MyDOS's write path are unchanged.
+bytes from completed physical I/O. Flush/Close and MyDOS's write path are unchanged.
 
 Allocation bits become unavailable in the private working bitmap after the
 payload group completes. A BREAK before its first submission leaves the group's
@@ -153,3 +153,30 @@ Full release matrices have not been run. Existing loaded FASTEST125 and accurate
 256-byte MyDOS transport timing gates remain open; this work changes neither
 SIO deadlines nor platform compatibility policy. Cross-Write buffering, recovery,
 journaling and real-hardware qualification remain separate work.
+
+## Packaged delivery
+
+Standard and VBXE shell-only demos were rebuilt from clean `3afebc4`, before
+this final documentation/observer slice. All buffered-write runtime sources
+match `657cfcb`; the delivery slice adds no production code or RAM. Both
+packages include OF816, the five-second autoboot, pinned AltirraOS ROM, matching
+720 KiB / 256-byte SYS and WORK disks, 17 loadable commands including PRIMES,
+old/new Atarimax CAR files and the raw cartridge image, licences and checksums.
+The ZIPs contain no diagnostic sources, manifests, intermediates or test output.
+Exact artifact hashes and local paths are in the linked development evidence.
+
+The exact archived standard/VBXE XEX files and, respectively, old/new cartridges
+boot through OF816 to the unsplit shell without starting PRIMES. Each route
+copies all 23,872 LONG.TXT bytes to WORK, reopens and compares them with CMP,
+lists the result with DIR/LIST, and receives physical BREAK during another
+Write. The cancelled copy contains the exact first 1,024 source bytes;
+unrelated files and allocation remain consistent. HELLO and subsequent listings
+confirm prompt recovery. Key-to-prompt latency is 217 PAL frames (4.34 s) on
+standard and 219 (4.38 s) on VBXE; this includes command finalization/cleanup
+and differs from SB4's Write-reply timing. Stack/domain guards, ownership and
+OS/context restoration pass. Both variants have zero reserved bank-zero change
+against their preceding preview, including all public Task pools.
+
+The final host suite passes 396 tests. Changed documentation links, anchors,
+indexes and content pass checks. This is a local development preview refresh;
+no GitHub release was published and no full platform qualification is claimed.

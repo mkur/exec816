@@ -1,12 +1,13 @@
 # SpartaDOS write buffering
 
-[Implementation plans](README.md) · [Roadmap](../roadmap.md) ·
+[History index](README.md) · [Roadmap](../roadmap.md) ·
 [Current write contract](../reference/filesystem-writes.md)
 
-Status: proposed design. The current implementation still settles metadata
-after each four-sector extension group. The
-[implementation plan](spartados-write-buffering-implementation-plan.md) divides
-the change into SB0–SB5 executable slices.
+This preserves the design prepared before SB0–SB5 implementation. Its cost
+model describes the earlier four-sector publication path. See the
+[implementation plan](../plans/spartados-write-buffering-implementation-plan.md)
+and [implementation and measurement record](spartados-write-buffering.md) for
+completed development evidence and actual behavior.
 
 Improve sequential file extension by retaining changed allocation and file
 metadata across the payload groups of one DOS Write request. Write payloads
@@ -18,7 +19,7 @@ Start with this bounded change before considering metadata retained between
 Write calls until Flush or Close. That later step changes public completion
 semantics and needs a separate decision. MyDOS keeps its current write path.
 
-## Current cost and native buffering
+## Cost before buffering and native references
 
 For ordinary SDFS extension, [TakeGroup](../../lib/fs/fsalloc.act) writes the
 bitmap and sector 1 free count. [Extend](../../lib/spartados/sdfswrite.act)
@@ -51,7 +52,7 @@ For an illustrative 16 KiB extension on 256-byte media, assume 64 new payload
 sectors fit within the current map and one bitmap page, with a directory record
 contained in one sector. Exclude creation, Open and Close:
 
-| Physical writes | Current groups | Proposed request buffering |
+| Physical writes | Earlier groups | Proposed request buffering |
 | --- | ---: | ---: |
 | Payload | 64 | 64 |
 | Bitmap | 16 | 1 |

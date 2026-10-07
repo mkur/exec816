@@ -1,13 +1,13 @@
 # SpartaDOS write buffering implementation plan
 
 [Implementation plans](README.md) · [Roadmap](../roadmap.md) ·
-[Design note](spartados-write-buffering-design.md)
+[Design note](../history/spartados-write-buffering-design.md)
 
-Status: SB0–SB4 implemented at the development tier; SB5 delivery pending. See the
+Status: SB0–SB5 implemented at the development tier. See the
 [execution record](../development/spartados-write-buffering.json). Follow the design note's
 request-scoped buffering decision. Deliver one executable slice at a time,
 run its development checks, record its costs and commit before starting the
-next slice. This plan does not change the current write contract.
+next slice. Update the current write contract only after executable acceptance.
 
 ## Outcome and limits
 

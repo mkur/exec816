@@ -143,12 +143,19 @@ are not a cache of running Processes or loaded executable images. See the
 ## Mutations
 
 A writable service allocates one shared upper-RAM workspace: three 256-byte
-sector buffers, one 23-byte record, ten sector reservations and bounded scalar
-state. Mounts without write access need no mutation workspace. Each mount keeps
+sector buffers, one private 256-byte bitmap, one 23-byte record, ten sector
+reservations and bounded scalar/cursor-snapshot state. Mounts without write
+access need no mutation workspace. Each mount keeps
 a list of live and detached inherited wrappers for writer exclusion. No per-file
 sector buffer, additional Task, direct page or bank-zero reservation is added.
 
-Writes run in payload-sized commit units. Their iterative helper frames remain
+MyDOS writes publish bounded payload groups. SDFS retains private bitmap, free
+count and current map changes across the four-sector work groups of one Write,
+then publishes their dependencies before reply or dirty-buffer replacement.
+BREAK stops additional payload groups and drains accepted staged data. There is
+no cross-request dirty queue or general write-back sector cache. See the
+[implementation and measurements](../history/spartados-write-buffering.md).
+The iterative helper frames remain
 live while BLOCKWIRE waits for SIO; the measured worker stack budget includes
 that depth. This keeps the mutation ordering explicit without an additional
 continuation state for every dependent metadata write. Reads retain their

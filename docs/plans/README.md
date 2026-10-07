@@ -68,13 +68,13 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
-- [SpartaDOS write buffering](spartados-write-buffering-design.md): proposed
-  metadata coalescing within a Write request, ordered publication and separate
-  cancellation checkpoints, preserving confirmed results with bounded upper-RAM
-  storage. The [implementation plan](spartados-write-buffering-implementation-plan.md)
-  defines SB0–SB5: baseline, ordered batch path, request coalescing, lifetime/fault
-  coverage, measurements and delivery. Buffering between Write calls until
-  Flush/Close is deferred.
+- [SpartaDOS write buffering implementation plan](spartados-write-buffering-implementation-plan.md):
+  SB0–SB5 implemented at the development tier. Ordered
+  metadata publication within one Write, independent cancellation checkpoints,
+  confirmed-prefix errors and bounded shared storage. See the
+  [implementation record](../history/spartados-write-buffering.md) and
+  [preserved design](../history/spartados-write-buffering-design.md).
+  Buffering between Write calls until Flush/Close remains deferred.
 - [COPY buffers and filesystem write performance](write-performance-implementation-plan.md):
   WP0–WP5 implemented at the development tier; a 16 KiB COPY buffer,
   initialized payload writes, sequential cursors and four-sector metadata groups

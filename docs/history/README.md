@@ -116,7 +116,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [SpartaDOS request-scoped write buffering](spartados-write-buffering.md): ordered
   publication within each Write, matched COPY gains, cancellation/failure coverage
-  and shared-memory costs.
+  and shared-memory costs; the [preserved design](spartados-write-buffering-design.md)
+  records the original proposal.
 
 - [COPY and filesystem write performance](write-performance.md): 16 KiB COPY,
   four-sector extension groups, retained cursors, matched physical-I/O costs and
