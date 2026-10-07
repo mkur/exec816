@@ -63,7 +63,7 @@ focus, gesture capture, bounded inboxes, GUI-lock interaction and console
 cancellation coexistence. The [AI1–AI7 implementation plan](aes-application-input-implementation-plan.md)
 orders capture, inboxes, keyboard/gesture routing, public waits and a
 two-application OF816 demo, with a commit after each passing slice.
-AI1–AI5 capture, inbox and application routing changes pass development checks; AI6–AI7 remain pending. Rectangle events,
+AI1–AI6 capture, inbox and application routing changes pass development checks; AI7 remains pending. Rectangle events,
 multiple clicks and public form/object calls remain later extensions.
 
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)

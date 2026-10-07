@@ -180,3 +180,41 @@ mutable shared state, signal, Task or bank reservation. Reserved bank-zero delta
 0 per public Task + 0 private idle**. An optimized 1,024-byte worker exercising
 combined input waits peaks at 432 bytes, with 336 bytes above its checked floor.
 The detailed evidence records code growth and every measured stack.
+
+
+## AI6 — Ordinary interactive GEM application
+
+The [GEM input example](../../examples/gem-input/input.c) now uses ordinary
+windows, a private VDI workstation and a combined key/button/message/timer wait.
+Its Activate control highlights on press, increments on release inside and
+cancels on release outside. Escape/BREAK cancels a held control. The keyboard
+label shows the translated scan/ASCII word; Tick changes after a one-second
+wait. Each event starts a new timeout, so this is an inactivity indicator.
+UPDATE is released before waiting. The resident wrapper owns attachment, Task
+lifetime and translation of the native input-loss diagnostic into a retry.
+
+[Development evidence](../development/aes-application-input-ai6.json) records
+sixteen exact-pixel checkpoints, including buffered clicks during UPDATE,
+independent instances, physical movement/close, source loss while armed and two
+complete restart cycles. Task-capacity failure and exhausted-heap startup return
+all allocations. The worker stack peaks are 529 and 550 bytes in 1,024-byte
+pools, leaving at least 218 bytes above their checked interrupt floors.
+
+The private model is 212 upper bytes per instance, 16 more than the counter.
+The two models and wrapper use 452 zero-initialized bytes plus one initialized
+byte and at most one byte of placement alignment; constants use 184 bytes.
+Registration allocations and fixed reservations are unchanged. Reserved
+bank-zero delta is **0 fixed + 0 per public Task + 0 private idle**. Production
+body/wrapper objects contain 4,012 + 984 text bytes. AI7 packaging and cost
+measurements remain pending; these checks do not qualify the hosted system.
+
+The pixel oracle also found a Calypsi 5.18 array-indexing defect. In
+`box[2]=box[0]+127`, emitted code reads the old destination slot instead of
+`box[0]`. The [minimal reproducer](../../tests/programs/calypsi_array_copy.c)
+initializes every element, so its results are defined: expected
+`18,68,145,91`, observed `18,68,229,126` in **both** raw and optimized native
+runs. [The diagnostic runner](../../tools/probe_calypsi_array.py) retains this
+external compiler issue for a future toolchain update. The application computes
+rectangle endpoints directly from the work-area origin. No actionc change or
+compiler override was needed. A separate exact-pixel failure corrected the
+indicator damage rectangle to cover all eight font rows.

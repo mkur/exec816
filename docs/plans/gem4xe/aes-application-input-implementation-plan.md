@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1–AI5 pass development checks; AI6–AI7 remain
+Status: in progress, 2026-10-07. AI1–AI6 pass development checks; AI7 remains
 pending. See the [execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
@@ -287,6 +287,10 @@ new kernel scheduling or wait services. Update AES reference/profile docs.
 Suggested commit: `aes: add caller-local keyboard and button waits`.
 
 ## AI6 — Add an interactive GEM application
+
+Implemented. [Evidence](../../development/aes-application-input-ai6.json) covers
+sixteen pixel checkpoints, physical input, loss recovery, allocation failure,
+repeat startup/retirement and measured 1,024-byte application stacks.
 
 1. Add a small resident C application with a VDI-drawn control and keyboard
    label. Keep its body on `<gem.h>`; keep Exec attachment and Task lifetime

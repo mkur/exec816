@@ -205,8 +205,8 @@ locally with messages/timers. The design keeps one presenter for focus and
 gesture routing, preserves shell cancellation, and targets zero bank-zero
 growth without per-wait RPC. The [AI1–AI7 plan](plans/gem4xe/aes-application-input-implementation-plan.md)
 provides seven executable slices through a two-application OF816 demo, committing
-after each passing slice. AI1–AI5 capture, inbox and application routing changes pass development checks; AI6–AI7
-remain pending. Public widgets/forms,
+after each passing slice. AI1–AI6 capture, inbox and application routing changes pass development checks; AI7
+remains pending. Public widgets/forms,
 rectangle events, multiple clicks and resource loading follow separately.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)

@@ -172,3 +172,30 @@ independent messages/timers during native GUI exclusion and repeated retirement.
 Active GEM traffic still exceeds the native GUI response limits in the HY4
 comparison. The profile remains available for development with that performance
 gate open; see the [hybrid record](../history/aes-hybrid.md).
+
+
+## Interactive application example
+
+[The input application](../../examples/gem-input/input.c) is a small ordinary GEM
+body using `<gem.h>`, `evnt_multi` and local hit testing. Its
+[resident wrapper](../../examples/gem-input/resident.c) supplies Exec attachment,
+two Task instances and the native input-loss recovery hook. The model and GEM
+arrays live in caller-owned upper memory, outside each 1,024-byte Task stack.
+
+Activate highlights until release. Release inside increments Clicks; release
+outside or Escape/BREAK cancels. Keys shows a hexadecimal GEM scan/ASCII word.
+Tick changes when the one-second combined wait expires; other events restart
+that timeout. The current VDI profile uses opaque white text cells, including
+inside the highlighted button. There is no continuous hover tracking.
+
+Build and run the development fixture:
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_gem_input.py --output build/gem-input
+python3 tools/test_gem_input.py --program build/gem-input/program --output build/gem-input-check
+```
+
+The fixture adds test-only pause points and capacity/heap failure cases around
+the same application body. These hooks are omitted when a demo source is given
+to the builder. See the [input execution record](../history/aes-application-input.md#ai6--ordinary-interactive-gem-application)
+for exact scope and the external Calypsi array-indexing limitation encountered.
