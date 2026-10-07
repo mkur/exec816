@@ -247,8 +247,8 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
   SDFSTYPES.MapCursor POINTER cursor
   SDFSTYPES.BackendState POINTER state
   SDFSTYPES.Volume POINTER volume
-  CARD index,sector
-  LONGCARD capacity,needed
+  CARD index,sector,sectorBytes,prefixEnd,prefix
+  LONGCARD needed
   BYTE ancestor
 
   state=SDFS.GetState(work)
@@ -283,15 +283,34 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     RETURN(FSSTATUS.ERROR)
   FI
 
+  ; Round the byte extent once. Only the required prefix may contain no holes.
+  sectorBytes=work.volume.block.dataBytes
+  IF sectorBytes=256 THEN
+    needed=LONGCARD(file.entry.length) RSH 8
+  ELSE
+    needed=LONGCARD(file.entry.length) RSH 7
+  FI
+
+  IF (LONGCARD(file.entry.length) & LONGCARD(sectorBytes-1))<>0 THEN
+    needed==+1
+  FI
+
+  prefix=0
+  IF needed>cursor.base THEN
+    prefix=volume.capacity
+    IF needed-cursor.base<LONGCARD(prefix) THEN
+      prefix=CARD(needed-cursor.base)
+    FI
+  FI
+
+  prefixEnd=4+(prefix LSH 1)
   file.entry.count==+1
-  FOR index=4 TO work.volume.block.dataBytes-2 STEP 2 DO
+  FOR index=4 TO sectorBytes-2 STEP 2 DO
     sector=SDFS.Word(state.map,index)
     IF sector<>0 THEN
       file.entry.count==+1
     ELSEIF (file.entry.flags & FSBTYPES.DIR)<>0 THEN
-      capacity=(cursor.base+LONGCARD((index-4) RSH 1))*LONGCARD(
-          work.volume.block.dataBytes)
-      IF capacity<LONGCARD(file.entry.length) THEN
+      IF index<prefixEnd THEN
         work.error=ERROR_DISK_NOT_VALIDATED
         RETURN(FSSTATUS.ERROR)
       FI
@@ -304,9 +323,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
   FI
 
   IF cursor.next=0 THEN
-    capacity=(cursor.base+LONGCARD(volume.capacity))*LONGCARD(
-        work.volume.block.dataBytes)
-    IF capacity<LONGCARD(file.entry.length) THEN
+    IF cursor.base+LONGCARD(volume.capacity)<needed THEN
       work.error=ERROR_DISK_NOT_VALIDATED
       RETURN(FSSTATUS.ERROR)
     FI

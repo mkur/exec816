@@ -1,0 +1,80 @@
+{
+  "tier": "development",
+  "status": "in-progress",
+  "slices": [
+    {
+      "slice": "DL1",
+      "status": "pass",
+      "checks": [
+        {
+          "path": "build/development/dir-latency/dl1-128/results.json",
+          "sha256": "6a716a86fedfa1a40a688f44a613c94a010cc69adc8557f4aa2403e18f2c996b",
+          "mode": "opt",
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": {
+            "checks": [
+              3570
+            ],
+            "dataReads": [
+              842
+            ],
+            "mapReads": [
+              18
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        },
+        {
+          "path": "build/development/dir-latency/dl1-256/results.json",
+          "sha256": "03576a0a3d813bddbfe75595c0d1eab446d7523fae266a19eb8225513020f65c",
+          "mode": "opt",
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": {
+            "checks": [
+              2695
+            ],
+            "dataReads": [
+              562
+            ],
+            "mapReads": [
+              12
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        }
+      ],
+      "routines": {
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 517,
+          "fixed_frame": 20,
+          "local_stack_peak": 26
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1144,
+          "fixed_frame": 24,
+          "local_stack_peak": 36
+        },
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 179,
+          "fixed_frame": 12,
+          "local_stack_peak": 12
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2211,
+          "fixed_frame": 34,
+          "local_stack_peak": 44
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

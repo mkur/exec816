@@ -5,7 +5,7 @@
 [Filesystem writes](../reference/filesystem-writes.md) ·
 [Development testing policy](../contributing/testing.md)
 
-Status: DL0 baseline captured; DL1–DL6 pending. Deliver one
+Status: DL0–DL1 development checks passed; DL2–DL6 pending. Deliver one
 executable slice at a time, record its costs and development checks, and commit
 before proceeding to the next slice.
 

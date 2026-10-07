@@ -110,12 +110,13 @@ def analyze(bundle, record, definition):
     for w,m in zip(windows,commands):
         inside = [s for s in spans if w['begin']<=s['begin']<=s['end']<=w['end'] and s['kind']!='dir']
         writes = [s for s in inside if s['kind']=='write' and s['dp']==w['dp']]
-        first = writes[0]['begin'] if writes else None
+        legacy = [c['begin'] for c in calls if c['site']=='dir_before_text' and w['begin']<=c['begin']<w['end']]
+        first = writes[0]['begin'] if writes else (legacy[0] if legacy else None)
         row = dict(command=m['command'],total_ms=w['ms'],begin=w['begin'],end=w['end'],
                    cache_hits=m['cache_after']['hits']-m['cache_before']['hits'],
                    cache_misses=m['cache_after']['misses']-m['cache_before']['misses'],
                    physical_sio_commands=sum(1 for t,e in events if w['begin']<=t<=w['end'] and e[0]=='command' and e[2]=='1'),
-                   output_writes=len(writes),first_write_ms=(first-w['begin'])/BASE_HZ*1000 if first else None,
+                   output_writes=len(writes) if 'write' in routines else None,first_write_ms=(first-w['begin'])/BASE_HZ*1000 if first else None,
                    routines={name:stats([s['ms'] for s in inside if s['kind']==name]) for name in sorted({s['kind'] for s in inside})})
         for name in ('lock','examine','exnext'):
             values=[(c['end']-c['begin'])/BASE_HZ*1000 for c in calls if c['site']=='dir_before_'+name and w['begin']<=c['begin']<=c['end']<=w['end']]

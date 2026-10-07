@@ -29,7 +29,7 @@ def run(t,out,mode,size):
     large=start('LARGE.BIN');sparse=start('SPARSE.BIN')
     def count(start):
         maps,data=media.chain(start);return len(maps)+sum(bool(s) for s in data)
-    config=struct.pack('<8H',size,root,start('BINARY.BIN'),large,sparse,start('EMPTY'),count(large),count(sparse))
+    config=struct.pack('<9H',size,root,start('BINARY.BIN'),large,sparse,start('EMPTY'),count(large),count(sparse),count(start('BINARY.BIN')))
     p=build(t,ROOT/'tests/programs/sdfs_files.act',out,optimize=mode=='opt',tasks=True,console=False,dos_mounts=[],
         image_data=[(0xa0000,bytes(514)),(0xa0800,config),*provider(raw)])
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:

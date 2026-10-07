@@ -67,6 +67,16 @@ PROC Fetch()
     FI
   FI
 
+  IF sector=config(2) THEN
+    IF phase=20 THEN
+      buffer(4)=0
+      buffer(5)=0
+    ELSEIF phase=21 OR phase=22 THEN
+      buffer(6)=0
+      buffer(7)=0
+    FI
+  FI
+
   IF sector=config(3) THEN
     IF phase=4 THEN
       buffer(0)=BYTE(sector)
@@ -235,20 +245,65 @@ PROC Full(CARD start LONGINT length BYTE seed,zero)
 
 RETURN
 
-PROC Accounting(CARD start LONGINT length,count)
+; Resume extent accounting without requesting payload sectors.
+BYTE FUNC MeasureCurrent()
   BYTE status
-  CARD prior
 
-  OpenFile(start,length)
-  prior=dataReads
   status=SDFSFILE.Measure(@work,@file,0)
   WHILE status=FSSTATUS.NEED_IO DO
     Fetch()
     status=SDFSFILE.Measure(@work,@file,1)
   OD
 
-  Require(status=FSSTATUS.DONE AND file.entry.count=count AND file.entry.length=length
-      AND dataReads=prior)
+RETURN(status)
+
+PROC Accounting(CARD start LONGINT length,count)
+  CARD prior
+
+  OpenFile(start,length)
+  prior=dataReads
+  Require(MeasureCurrent()=FSSTATUS.DONE AND file.entry.count=count
+      AND file.entry.length=length AND dataReads=prior)
+
+RETURN
+
+; Required directory slots reject holes; unused slots and preallocation count.
+PROC DirectoryAccounting()
+  LONGINT length
+
+  phase=0
+  FOR length=0 TO LONGINT(config(0))+1 STEP LONGINT(config(0)) DO
+    OpenFile(config(2),length)
+    file.entry.flags=FSBTYPES.DIR
+    work.entry.flags=FSBTYPES.DIR
+    Require(MeasureCurrent()=FSSTATUS.DONE AND file.entry.count=LONGINT(config(8)))
+  OD
+
+  OpenFile(config(2),LONGINT(config(0))+1)
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.DONE)
+  phase=20
+  OpenFile(config(2),1)
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.ERROR AND work.error=213)
+  phase=21
+  OpenFile(config(2),LONGINT(config(0)))
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.DONE
+      AND file.entry.count=LONGINT(config(8))-1)
+  phase=22
+  OpenFile(config(2),LONGINT(config(0))+1)
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.ERROR AND work.error=213)
+  phase=0
+  OpenFile(config(3),70003)
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.DONE AND file.entry.count=LONGINT(config(6)))
+  phase=6
+  OpenFile(config(3),70003)
+  work.entry.flags=FSBTYPES.DIR
+  Require(MeasureCurrent()=FSSTATUS.ERROR AND work.error=213)
+  phase=0
 
 RETURN
 
@@ -339,6 +394,7 @@ PROC Main()
   phase=14
   Accounting(config(3),70003,LONGINT(config(6)))
   Accounting(config(4),1024,LONGINT(config(7)))
+  DirectoryAccounting()
   BadMaps()
   Retirement()
   SDFS.DestroyVolume(@volume)
