@@ -173,7 +173,7 @@ WORD appl_init(void)
     if (c->identity != 0) { c->diagnostic = AES_OK; return c->gemId; }
     c->busy = 1;
     c->receiving = CreateMsgPort();
-    c->records = AllocMem((AES_QUEUE_DEPTH * sizeof(*c->records) + sizeof(struct AESGuiDelivery)), MEMF_PUBLIC | MEMF_CLEAR);
+    c->records = AllocMem(AES_REGISTRATIONSTORAGE_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
     c->busy = 0;
     if (c->receiving == NULL || c->records == NULL) {
         c->diagnostic = AES_RESOURCE;
@@ -183,7 +183,7 @@ WORD appl_init(void)
         if (ExecAESSubmit(c, AES_OP_INIT) > 0)
             return c->gemId;
     }
-    if (c->records != NULL) FreeMem(c->records, (AES_QUEUE_DEPTH * sizeof(*c->records) + sizeof(struct AESGuiDelivery)));
+    if (c->records != NULL) FreeMem(c->records, AES_REGISTRATIONSTORAGE_SIZE);
     if (c->receiving != NULL) DeleteMsgPort(c->receiving);
     c->records = NULL;
     c->receiving = NULL;
@@ -216,7 +216,7 @@ WORD appl_exit(void)
         c->view = NULL;
         c->request.view = NULL;
         DeleteMsgPort(c->receiving);
-        FreeMem(c->records, (AES_QUEUE_DEPTH * sizeof(*c->records) + sizeof(struct AESGuiDelivery)));
+        FreeMem(c->records, AES_REGISTRATIONSTORAGE_SIZE);
         c->receiving = NULL;
         c->records = NULL;
         c->directory = NULL;

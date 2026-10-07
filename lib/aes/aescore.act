@@ -11,6 +11,7 @@ USE HEAPCORE
 USE AESLOCKS
 USE AESGUI
 USE AESWINDOW
+USE AESINBOX
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -84,8 +85,7 @@ CARD FUNC Register(AESSTATE.Service POINTER service
           EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.receiving),EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.records),
-          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH
-              +AESTYPES.GUIDELIVERY_SIZE)=0 THEN
+          AESTYPES.REGISTRATIONSTORAGE_SIZE)=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -186,6 +186,8 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   endpoint.guiFree=1
   endpoint.guiWaiting=0
   endpoint.guiEpoch=0
+  endpoint.input=AESTYPES.InputInbox POINTER(ADDRESS(request.records)
+      +SIZE(AESTYPES.REGISTRATIONSTORAGE_OFFSET_INPUT))
   endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
   request.directory=@service.directory
   EXEC.Permit()
@@ -204,6 +206,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET endpoint=client.endpoint
   EXEC.Forbid()
   endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESINBOX.Close(client)
   endpoint.guiEpoch=0
   endpoint.guiWaiting=0
   client.gui.count=0
@@ -238,6 +241,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.port=NULL
   endpoint.records=NULL
   endpoint.gui=NULL
+  endpoint.input=NULL
   endpoint.owner=NULL
   EXEC.Permit()
   AESLOCKS.Retire(service,client)

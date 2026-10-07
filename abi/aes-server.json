@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 6,
+  "version": 7,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -70,7 +70,11 @@
     "WC_WORK": 1,
     "OP_GRAF_HANDLE": 77,
     "OP_DISPLAY": 200,
-    "DISPLAY_ERROR": 9
+    "DISPLAY_ERROR": 9,
+    "INPUT_SLOTS": 16,
+    "INPUT_KEY": 1,
+    "INPUT_BUTTON": 2,
+    "INPUT_LOST": 10
   },
   "records": {
     "Delivery": [
@@ -92,6 +96,135 @@
       [
         "epoch",
         "LONGCARD"
+      ]
+    ],
+    "InputRecord": [
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "buttons",
+        "CARD"
+      ],
+      [
+        "qualifiers",
+        "CARD"
+      ],
+      [
+        "key",
+        "INT"
+      ],
+      [
+        "pad",
+        "CARD"
+      ]
+    ],
+    "InputInbox": [
+      [
+        "windowEpoch",
+        "LONGCARD"
+      ],
+      [
+        "keyEpoch",
+        "LONGCARD"
+      ],
+      [
+        "buttonEpoch",
+        "LONGCARD"
+      ],
+      [
+        "interest",
+        "CARD"
+      ],
+      [
+        "loss",
+        "CARD"
+      ],
+      [
+        "eligible",
+        "CARD"
+      ],
+      [
+        "exhausted",
+        "CARD"
+      ],
+      [
+        "keyHead",
+        "BYTE"
+      ],
+      [
+        "keyTail",
+        "BYTE"
+      ],
+      [
+        "buttonHead",
+        "BYTE"
+      ],
+      [
+        "buttonTail",
+        "BYTE"
+      ],
+      [
+        "latest",
+        "InputRecord"
+      ],
+      [
+        "selectedKey",
+        "InputRecord"
+      ],
+      [
+        "selectedButton",
+        "InputRecord"
+      ],
+      [
+        "selectedWindow",
+        "LONGCARD"
+      ],
+      [
+        "nextKey",
+        "BYTE"
+      ],
+      [
+        "nextButton",
+        "BYTE"
+      ],
+      [
+        "selected",
+        "CARD"
+      ],
+      [
+        "keys",
+        "InputRecord",
+        "INPUT_SLOTS"
+      ],
+      [
+        "buttons",
+        "InputRecord",
+        "INPUT_SLOTS"
+      ]
+    ],
+    "RegistrationStorage": [
+      [
+        "records",
+        "Delivery",
+        "QUEUE_DEPTH"
+      ],
+      [
+        "gui",
+        "GuiDelivery"
+      ],
+      [
+        "input",
+        "InputInbox"
       ]
     ],
     "Endpoint": [
@@ -158,6 +291,14 @@
       [
         "guiWaiting",
         "CARD"
+      ],
+      [
+        "input",
+        "InputInbox POINTER"
+      ],
+      [
+        "inputPad",
+        "BYTE"
       ]
     ],
     "Directory": [

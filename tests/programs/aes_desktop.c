@@ -20,7 +20,7 @@ static volatile UBYTE retireAllowed[2];
 static ULONG held_bytes(struct ExecAESContext *c)
 {
     ULONG bytes = ((sizeof(*c)+7UL) & ~7UL) + 2*((sizeof(struct MsgPort)+7UL) & ~7UL)
-        + ((AES_QUEUE_DEPTH * sizeof(struct AESDelivery) + sizeof(struct AESGuiDelivery) + 7UL) & ~7UL);
+        + ((AES_REGISTRATIONSTORAGE_SIZE + 7UL) & ~7UL);
     if (c->timer.port) bytes += (sizeof(struct MsgPort)+7UL) & ~7UL;
     if (c->timer.query) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;
     if (c->timer.alarm) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;

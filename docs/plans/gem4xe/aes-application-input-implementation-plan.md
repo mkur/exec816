@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1 passes development checks; AI2–AI7 remain
+Status: in progress, 2026-10-07. AI1–AI2 pass development checks; AI3–AI7 remain
 pending. See the [execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
@@ -124,6 +124,11 @@ Exit: both route policies work without changing the existing sampling schedule o
 cancellation semantics. Suggested commit: `input: capture route policy and button qualifiers`.
 
 ## AI2 — Add bounded inboxes and safe wakeups
+
+Implemented. [Evidence](../../development/aes-application-input-ai2.json) covers
+252 transport assertions, registration/GUI/event regressions and both-mode
+layout probes. The inbox adds 592 heap-reserved bytes per registration and
+sixteen shared directory bytes; fixed bank and bank-zero reservations are unchanged.
 
 Establish transport and loss/retirement semantics before production routing.
 

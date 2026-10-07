@@ -3,11 +3,13 @@ MODULE AESGUI
 USE EXEC
 USE AESTYPES
 USE AESSTATE
+USE AESINBOX
 
 ; Close/reopen withdraws queued records by epoch, without removing a caller's
 ; messages or waiting for that caller to consume them during an RPC.
 PUBLIC PROC Close(AESSTATE.Client POINTER client)
 
+  AESINBOX.Close(client)
   EXEC.Forbid()
   client.endpoint.guiEpoch=0
   client.endpoint.guiWaiting=0
@@ -28,6 +30,7 @@ PUBLIC BYTE FUNC Open(AESSTATE.Service POINTER service
   client.gui.count=0
   client.endpoint.guiWaiting=0
   client.endpoint.guiEpoch=service.nextGuiEpoch
+  AESINBOX.Open(client,service.nextGuiEpoch)
   service.nextGuiEpoch==+1
   EXEC.Permit()
 

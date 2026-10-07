@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 6
+#define AES_VERSION 7
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -72,6 +72,10 @@
 #define AES_OP_GRAF_HANDLE 77
 #define AES_OP_DISPLAY 200
 #define AES_DISPLAY_ERROR 9
+#define AES_INPUT_SLOTS 16
+#define AES_INPUT_KEY 1
+#define AES_INPUT_BUTTON 2
+#define AES_INPUT_LOST 10
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];
@@ -86,6 +90,75 @@ struct AESGuiDelivery {
 #define AES_GUIDELIVERY_SIZE 36
 #define AES_GUIDELIVERY_OFFSET_DELIVERY 0
 #define AES_GUIDELIVERY_OFFSET_EPOCH 32
+struct AESInputRecord {
+    ULONG epoch;
+    WORD x;
+    WORD y;
+    UWORD buttons;
+    UWORD qualifiers;
+    WORD key;
+    UWORD pad;
+};
+#define AES_INPUTRECORD_SIZE 16
+#define AES_INPUTRECORD_OFFSET_EPOCH 0
+#define AES_INPUTRECORD_OFFSET_X 4
+#define AES_INPUTRECORD_OFFSET_Y 6
+#define AES_INPUTRECORD_OFFSET_BUTTONS 8
+#define AES_INPUTRECORD_OFFSET_QUALIFIERS 10
+#define AES_INPUTRECORD_OFFSET_KEY 12
+#define AES_INPUTRECORD_OFFSET_PAD 14
+struct AESInputInbox {
+    ULONG windowEpoch;
+    ULONG keyEpoch;
+    ULONG buttonEpoch;
+    UWORD interest;
+    UWORD loss;
+    UWORD eligible;
+    UWORD exhausted;
+    UBYTE keyHead;
+    UBYTE keyTail;
+    UBYTE buttonHead;
+    UBYTE buttonTail;
+    struct AESInputRecord latest;
+    struct AESInputRecord selectedKey;
+    struct AESInputRecord selectedButton;
+    ULONG selectedWindow;
+    UBYTE nextKey;
+    UBYTE nextButton;
+    UWORD selected;
+    struct AESInputRecord keys[AES_INPUT_SLOTS];
+    struct AESInputRecord buttons[AES_INPUT_SLOTS];
+};
+#define AES_INPUTINBOX_SIZE 592
+#define AES_INPUTINBOX_OFFSET_WINDOWEPOCH 0
+#define AES_INPUTINBOX_OFFSET_KEYEPOCH 4
+#define AES_INPUTINBOX_OFFSET_BUTTONEPOCH 8
+#define AES_INPUTINBOX_OFFSET_INTEREST 12
+#define AES_INPUTINBOX_OFFSET_LOSS 14
+#define AES_INPUTINBOX_OFFSET_ELIGIBLE 16
+#define AES_INPUTINBOX_OFFSET_EXHAUSTED 18
+#define AES_INPUTINBOX_OFFSET_KEYHEAD 20
+#define AES_INPUTINBOX_OFFSET_KEYTAIL 21
+#define AES_INPUTINBOX_OFFSET_BUTTONHEAD 22
+#define AES_INPUTINBOX_OFFSET_BUTTONTAIL 23
+#define AES_INPUTINBOX_OFFSET_LATEST 24
+#define AES_INPUTINBOX_OFFSET_SELECTEDKEY 40
+#define AES_INPUTINBOX_OFFSET_SELECTEDBUTTON 56
+#define AES_INPUTINBOX_OFFSET_SELECTEDWINDOW 72
+#define AES_INPUTINBOX_OFFSET_NEXTKEY 76
+#define AES_INPUTINBOX_OFFSET_NEXTBUTTON 77
+#define AES_INPUTINBOX_OFFSET_SELECTED 78
+#define AES_INPUTINBOX_OFFSET_KEYS 80
+#define AES_INPUTINBOX_OFFSET_BUTTONS 336
+struct AESRegistrationStorage {
+    struct AESDelivery records[AES_QUEUE_DEPTH];
+    struct AESGuiDelivery gui;
+    struct AESInputInbox input;
+};
+#define AES_REGISTRATIONSTORAGE_SIZE 1140
+#define AES_REGISTRATIONSTORAGE_OFFSET_RECORDS 0
+#define AES_REGISTRATIONSTORAGE_OFFSET_GUI 512
+#define AES_REGISTRATIONSTORAGE_OFFSET_INPUT 548
 struct AESEndpoint {
     ULONG id;
     WORD gemId;
@@ -103,8 +176,10 @@ struct AESEndpoint {
     ULONG guiEpoch;
     UWORD guiFree;
     UWORD guiWaiting;
+    struct AESInputInbox EXEC_PTR * input;
+    UBYTE inputPad;
 };
-#define AES_ENDPOINT_SIZE 36
+#define AES_ENDPOINT_SIZE 40
 #define AES_ENDPOINT_OFFSET_ID 0
 #define AES_ENDPOINT_OFFSET_GEMID 4
 #define AES_ENDPOINT_OFFSET_STATE 6
@@ -121,6 +196,8 @@ struct AESEndpoint {
 #define AES_ENDPOINT_OFFSET_GUIEPOCH 28
 #define AES_ENDPOINT_OFFSET_GUIFREE 32
 #define AES_ENDPOINT_OFFSET_GUIWAITING 34
+#define AES_ENDPOINT_OFFSET_INPUT 36
+#define AES_ENDPOINT_OFFSET_INPUTPAD 39
 struct AESDirectory {
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
@@ -129,7 +206,7 @@ struct AESDirectory {
     WORD topWindow;
     struct AESEndpoint endpoints[AES_CLIENTS];
 };
-#define AES_DIRECTORY_SIZE 156
+#define AES_DIRECTORY_SIZE 172
 #define AES_DIRECTORY_OFFSET_OWNER 0
 #define AES_DIRECTORY_OFFSET_OWNERPAD 3
 #define AES_DIRECTORY_OFFSET_MASK 4

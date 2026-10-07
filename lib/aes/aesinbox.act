@@ -1,0 +1,185 @@
+; Presenter producer, caller consumer. No IRQ follows these application pointers.
+MODULE AESINBOX
+USE EXEC
+USE AESTYPES
+USE AESSTATE
+USE A816MEMORY
+
+; Enter and return with Forbid held. The endpoint hold covers the final signal,
+; including a caller which starts exit immediately after observing publication.
+PROC Wake(AESTYPES.Endpoint POINTER endpoint)
+
+  endpoint.holds==+1
+  EXEC.Permit()
+  EXEC.Signal(endpoint.owner,LONGCARD(1) LSH endpoint.port.mp_SigBit)
+  EXEC.Forbid()
+  endpoint.holds==-1
+  IF endpoint.state=AESTYPES.ENDPOINT_CLOSING AND endpoint.holds=0 THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      service.directory.changed=1
+      EXEC.Signal(service.owner,service.mask)
+    END
+  FI
+
+RETURN
+
+; Cold open owns the lifetime transition. Records need not be cleared: empty
+; indices and the new nonrepeating window epoch withdraw every prior sample.
+PUBLIC PROC Open(AESSTATE.Client POINTER client LONGCARD epoch)
+
+  LET inbox=client.endpoint.input
+  EXEC.Forbid()
+  inbox.keyEpoch=1
+  inbox.buttonEpoch=1
+  inbox.keyHead=0
+  inbox.keyTail=0
+  inbox.buttonHead=0
+  inbox.buttonTail=0
+  inbox.interest=0
+  inbox.loss=0
+  inbox.eligible=0
+  inbox.exhausted=0
+  inbox.selected=0
+  inbox.selectedWindow=0
+  inbox.windowEpoch=epoch
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Close(AESSTATE.Client POINTER client)
+  CARD interest
+
+  LET endpoint=client.endpoint
+  LET inbox=endpoint.input
+  EXEC.Forbid()
+  interest=inbox.interest
+  inbox.windowEpoch=0
+  inbox.eligible=0
+  inbox.interest=0
+  IF interest<>0 THEN
+    Wake(endpoint)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Loss is durable outside the FIFO. Never overwrite a caller's frozen sample.
+; Exhausted source epochs remain stopped until a new window lifetime opens.
+PUBLIC PROC Lost(AESSTATE.Client POINTER client CARD sources)
+
+  LET endpoint=client.endpoint
+  LET inbox=endpoint.input
+  EXEC.Forbid()
+  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0 THEN
+    EXEC.Permit()
+    RETURN
+  FI
+
+  sources=sources & (inbox.loss XOR $ffff)
+  IF (sources & AESTYPES.INPUT_KEY)<>0 THEN
+    IF inbox.keyEpoch=$ffffffff THEN
+      inbox.exhausted=inbox.exhausted OR AESTYPES.INPUT_KEY
+    ELSE
+      inbox.keyEpoch==+1
+    FI
+  FI
+
+  IF (sources & AESTYPES.INPUT_BUTTON)<>0 THEN
+    inbox.eligible=0
+    IF inbox.buttonEpoch=$ffffffff THEN
+      inbox.exhausted=inbox.exhausted OR AESTYPES.INPUT_BUTTON
+    ELSE
+      inbox.buttonEpoch==+1
+    FI
+  FI
+
+  inbox.loss=inbox.loss OR sources
+  IF (inbox.interest & sources)<>0 THEN
+    Wake(endpoint)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+
+; Return zero when closed/lost or when this publication establishes overflow.
+PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
+    AESTYPES.InputRecord POINTER sample)
+  BYTE head,tail
+  LONGCARD epoch
+  AESTYPES.InputRecord POINTER target
+
+  LET endpoint=client.endpoint
+  LET inbox=endpoint.input
+  EXEC.Forbid()
+  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0
+      OR (inbox.loss & source)<>0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  IF source=AESTYPES.INPUT_KEY THEN
+    head=inbox.keyHead
+    tail=inbox.keyTail
+    epoch=inbox.keyEpoch
+    target=@inbox.keys(tail & (AESTYPES.INPUT_SLOTS-1))
+  ELSE
+    head=inbox.buttonHead
+    tail=inbox.buttonTail
+    epoch=inbox.buttonEpoch
+    target=@inbox.buttons(tail & (AESTYPES.INPUT_SLOTS-1))
+  FI
+
+  IF BYTE(tail-head)=AESTYPES.INPUT_SLOTS THEN
+    EXEC.Permit()
+    Lost(client,source)
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(sample),
+      AESTYPES.INPUTRECORD_SIZE)
+  target.epoch=epoch
+  IF source=AESTYPES.INPUT_KEY THEN
+    inbox.keyTail==+1
+  ELSE
+    inbox.buttonTail==+1
+  FI
+
+  IF (inbox.interest & source)<>0 THEN
+    Wake(endpoint)
+  FI
+
+  EXEC.Permit()
+
+RETURN(1)
+
+; Motion updates the snapshot without waking. Ownership handback can satisfy a
+; level wait without another edge, so false-to-true eligibility does wake it.
+PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
+    AESTYPES.InputRecord POINTER sample CARD eligible)
+  BYTE notify
+
+  LET endpoint=client.endpoint
+  LET inbox=endpoint.input
+  EXEC.Forbid()
+  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0 THEN
+    EXEC.Permit()
+    RETURN
+  FI
+
+  notify=inbox.eligible=0 AND eligible<>0
+      AND (inbox.interest & AESTYPES.INPUT_BUTTON)<>0
+  A816MEMORY.Move(BYTE POINTER(@inbox.latest),BYTE POINTER(sample),
+      AESTYPES.INPUTRECORD_SIZE)
+  inbox.latest.epoch=inbox.windowEpoch
+  inbox.eligible=eligible
+  IF notify<>0 THEN
+    Wake(endpoint)
+  FI
+
+  EXEC.Permit()
+
+RETURN
+ENDMODULE

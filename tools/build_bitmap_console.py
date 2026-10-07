@@ -76,6 +76,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     sources += list(client_sources)
     if ROOT/'c/calypsi/aes.c' in sources:
         sources.append(ROOT/'c/calypsi/aes-windows.c')
+        sources.append(ROOT/'c/calypsi/aes-input.c')
         sources.append(ROOT/'c/calypsi/vdi.c')
         from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
         for path,content in vdi_files().items():

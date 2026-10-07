@@ -190,7 +190,7 @@ assuming work is pending. Current behavior belongs in the
   caller-local keyboard and single-button waits, presenter routing, bounded
   input inboxes, focus/gesture ownership and preserved console cancellation.
   Seven executable slices from capture through a two-application OF816 demo.
-  AI1 capture changes pass development checks; AI2–AI7 remain pending.
+  AI1–AI2 capture/inbox changes pass development checks; AI3–AI7 remain pending.
   No new server Task, wait mechanism or per-wait presenter RPC.
 - [AES window application design](gem4xe/aes-window-app-design.md) and
   [implementation plan](gem4xe/aes-window-app-implementation-plan.md): completed

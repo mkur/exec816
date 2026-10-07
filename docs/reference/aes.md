@@ -216,11 +216,27 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 6 has a 112-byte request and permits init, exit, update,
+profile: version 7 has a 112-byte request and permits init, exit, update,
 window mutations and cold display delegation on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
+
+Version 7 reserves a 592-byte upper-memory input inbox per registration alongside
+the existing sixteen ordinary messages and one GUI record. The combined storage
+is 1,140 bytes, rounded to 1,144 by the heap. Each endpoint gains a padded
+four-byte inbox pointer, adding sixteen bytes to the shared directory. The
+registration owns this storage until endpoint withdrawal and publisher holds
+retire. This adds no signal, Task or bank-zero reservation.
+
+The inbox contains separate sixteen-record key/button FIFOs, immutable source
+epochs, selected-input interest and a coherent snapshot. Relevant input uses the
+receiving port's existing signal as a wake hint; it is not a message. Source loss
+stops admission until the caller acknowledges it without discarding unrelated
+messages/input. Exhausting a source epoch stops it until a fresh open-window
+lifetime. [AI2](../plans/gem4xe/aes-application-input-implementation-plan.md#ai2--add-bounded-inboxes-and-safe-wakeups)
+is internal transport groundwork: public keyboard/button waits and production
+routing remain pending.
 
 ## Resident counter capacity
 
