@@ -262,3 +262,11 @@ reopen creates a fresh one. GEM translation uses the pinned Atari mapping and
 shared Caps state. Ctrl-C is delivered as a key; physical BREAK becomes Escape,
 except when a native title gesture consumes it. This transport is internal until
 the public input-wait slice; `MU_KEYBD` remains unsupported by current bindings.
+
+Private button routing now retains the focused work-area recipient through
+release, even outside its window. Activation/chrome sequences remain native.
+`BEG_UPDATE` permits application input; explicit mouse control redirects content
+to its open-window owner without changing keyboard focus. A competing lock waits
+for the physical sequence to end. Close/loss requires observed release before
+rearming. Eligibility handback can signal a waiting caller without a new edge.
+The public `MU_BUTTON`/`evnt_button` profile remains pending in AI5.

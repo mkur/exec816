@@ -7,6 +7,7 @@ USE AESTYPES
 USE AESWINDOWSTATE
 USE AESINPUT
 USE AESKEYS
+USE AESMOUSE
 USE INPUT
 USE DESKMOUSE
 USE DESKMOUSECONFIG
@@ -63,6 +64,7 @@ PUBLIC BYTE FUNC Start()
     ELSE
       acquired=1
       DESKDRAG.Reset()
+      AESMOUSE.Reset()
       cursorX=320
       cursorY=120
       DESKMOUSE.Start(cursorX,cursorY,DESKMOUSECONFIG.DEFAULT)
@@ -175,6 +177,7 @@ PROC Consume()
   LET service=DESKSTATE.Get()
   Copy(@sample)
   IF sample.kind=INPUT.EVENT_LOSS THEN
+    AESMOUSE.Lost()
     released=0
     DESKWIDGETINPUT.Lost()
     focusWanted=0
@@ -189,7 +192,6 @@ PROC Consume()
     RETURN
   FI
 
-  buttons=sample.buttons
   IF sample.buttons=0 THEN
     released=1
   FI
@@ -244,6 +246,28 @@ PROC Consume()
 
 RETURN
 
+; Classify fresh absolute capture once, before any deferred native replay.
+PROC Fresh()
+
+  ; Observe the latest cursor separately from retained gesture events.
+  IF sample.kind<>INPUT.EVENT_LOSS THEN
+    buttons=sample.buttons
+    cursorX=sample.x
+    cursorY=sample.y
+    dirty=1
+  FI
+
+  IF AESMOUSE.Route(@sample)=0 THEN
+    IF AESLOCKS.MouseBlocked()<>0 THEN
+      AESMOUSE.Retained()
+      AESINPUT.Push(@sample)
+    ELSE
+      Consume()
+    FI
+  FI
+
+RETURN
+
 ; Retain a hint only until an actual empty observation. Never poll while idle.
 PUBLIC PROC Service(LONGCARD bits)
   CARD count,status
@@ -277,22 +301,13 @@ PUBLIC PROC Service(LONGCARD bits)
 
       ; Transform fresh capture once; replayed AES input is already absolute.
       DESKMOUSE.Apply(@sample)
-      ; Observe the latest cursor separately from retained gesture events.
-      IF sample.kind<>INPUT.EVENT_LOSS THEN
-        cursorX=sample.x
-        cursorY=sample.y
-        dirty=1
-      FI
-
-      IF AESLOCKS.MouseBlocked()<>0 THEN
-        AESINPUT.Push(@sample)
-      ELSE
-        Consume()
-      FI
+      Fresh()
     FI
 
     count==+1
   OD
+
+  AESMOUSE.Refresh()
 
 RETURN
 

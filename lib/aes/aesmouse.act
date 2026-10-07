@@ -1,0 +1,249 @@
+; Presenter-only physical gesture ownership, independent of display borrowing.
+MODULE AESMOUSE
+USE INPUT
+USE AESTYPES
+USE AESSTATE
+USE AESINBOX
+USE AESKEYS
+USE AESWINDOWSTATE
+USE DESKSTATE
+USE DESKTYPES
+USE LAYERS
+
+CONST NATIVE=1, TITLE=2
+LONGCARD owner,openEpoch
+AESTYPES.InputRecord latest
+BYTE manager,needRelease,nativePending
+
+PUBLIC PROC Reset()
+
+  owner=0
+  openEpoch=0
+  manager=0
+  nativePending=0
+  needRelease=1
+  latest.x=320
+  latest.y=120
+  latest.buttons=0
+  latest.qualifiers=0
+
+RETURN
+
+; A lock cannot transfer a physical sequence. Released deferred native work
+; is not ownership: an update owner must still be able to upgrade or unlock.
+PUBLIC BYTE FUNC LockReady(LONGCARD client)
+
+RETURN(latest.buttons=0 OR (owner=client AND owner<>0))
+
+PUBLIC PROC Cancel(LONGCARD client)
+
+  IF owner=client AND owner<>0 THEN
+    owner=0
+    openEpoch=0
+    needRelease=1
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC NativeGesture()
+
+RETURN(manager=TITLE OR nativePending=TITLE)
+
+PUBLIC PROC Retained()
+
+  IF manager<>0 THEN
+    IF manager=TITLE OR nativePending=0 THEN
+      nativePending=manager
+    FI
+  FI
+
+RETURN
+
+PUBLIC PROC Refresh()
+  BYTE index
+  CARD eligible
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR desktop=NULL THEN
+    RETURN
+  FI
+
+  IF service.pointerCount=0 THEN
+    nativePending=0
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.id<>0 AND client.endpoint<>NULL THEN
+        eligible=0
+        IF client.window<>NULL AND client.endpoint.input.windowEpoch<>0
+            AND (client.endpoint.input.loss & AESTYPES.INPUT_BUTTON)=0
+            AND needRelease=0 AND manager=0 AND nativePending=0 THEN
+          IF owner<>0 THEN
+            eligible=owner=client.id
+          ELSEIF service.mouseHolds<>0 THEN
+            eligible=service.mouseOwner=client.id
+          ELSE
+            eligible=latest.buttons=0 AND desktop.focus=client.window.id
+          FI
+        FI
+
+        AESINBOX.Snapshot(client,@latest,eligible)
+      FI
+    END
+  OD
+
+RETURN
+
+PUBLIC PROC Lost()
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  owner=0
+  openEpoch=0
+  manager=0
+  needRelease=1
+  IF service<>NULL AND service.live<>0 THEN
+    FOR index=0 TO AESTYPES.CLIENTS-1 DO
+      IF service.clients(index).id<>0 THEN
+        AESINBOX.Lost(@service.clients(index),AESTYPES.INPUT_BUTTON)
+      FI
+    OD
+  FI
+
+RETURN
+
+BYTE FUNC Publish(AESSTATE.Client POINTER client INPUT.Event POINTER sample)
+
+  Refresh()
+  IF sample.kind=INPUT.EVENT_BUTTON THEN
+    IF AESINBOX.Publish(client,AESTYPES.INPUT_BUTTON,@latest)=0 THEN
+      Cancel(client.id)
+      RETURN(0)
+    FI
+  FI
+
+RETURN(1)
+
+; Fresh normalized capture only. Return one for application/excluded sequences,
+; zero for the native path, which may retain the sample under a GUI lock.
+PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
+  CARD previous
+  BYTE accepted
+  AESSTATE.Client POINTER client
+
+  IF sample.kind=INPUT.EVENT_LOSS THEN
+    Lost()
+    RETURN(0)
+  FI
+
+  previous=latest.buttons
+  latest.x=sample.x
+  latest.y=sample.y
+  latest.buttons=sample.buttons & INPUT.LEFT
+  IF sample.kind=INPUT.EVENT_BUTTON THEN
+    latest.qualifiers=AESKEYS.Qualifiers(sample.qualifiers)
+  FI
+
+  IF needRelease<>0 THEN
+    IF latest.buttons=0 THEN
+      needRelease=0
+      manager=0
+      RETURN(0)
+    FI
+
+    RETURN(1)
+  FI
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR service.live=0 THEN
+    RETURN(0)
+  FI
+
+  IF owner<>0 THEN
+    client=AESSTATE.Find(service,owner)
+    IF client=NULL OR client.endpoint.input.windowEpoch<>openEpoch THEN
+      owner=0
+      openEpoch=0
+      needRelease=latest.buttons<>0
+      RETURN(1)
+    FI
+
+    accepted=Publish(client,sample)
+    IF latest.buttons=0 THEN
+      owner=0
+      openEpoch=0
+      needRelease=0
+    FI
+
+    RETURN(1)
+  FI
+
+  IF manager<>0 THEN
+    IF latest.buttons=0 THEN
+      manager=0
+    FI
+
+    RETURN(0)
+  FI
+
+  IF latest.buttons=0 THEN
+    RETURN(0)
+  FI
+
+  ; An unpaired held baseline cannot start a new application gesture.
+  IF previous<>0 OR sample.kind<>INPUT.EVENT_BUTTON THEN
+    needRelease=1
+    RETURN(1)
+  FI
+
+  client=NULL
+  LET desktop=DESKSTATE.Get()
+  IF nativePending=0 THEN
+    IF service.mouseHolds<>0 THEN
+      client=AESSTATE.Find(service,service.mouseOwner)
+      IF client.window=NULL OR client.endpoint.input.windowEpoch=0 THEN
+        needRelease=1
+        RETURN(1)
+      FI
+    ELSE
+      BEGIN
+        LET layer=LAYERS.Hit(@desktop.scene,sample.x,sample.y)
+        LET window=AESWINDOWSTATE.FindWindow(layer)
+        IF desktop.focus=window AND window<>0 THEN
+          client=AESWINDOWSTATE.Find(window)
+          IF client<>NULL THEN
+            BEGIN
+              LET work=@client.view.work
+              IF sample.x<work.left OR sample.x>=work.right
+                  OR sample.y<work.top OR sample.y>=work.bottom THEN
+                client=NULL
+              FI
+            END
+          FI
+        FI
+      END
+    FI
+  FI
+
+  IF client<>NULL AND client.endpoint.input.windowEpoch<>0 THEN
+    owner=client.id
+    openEpoch=client.endpoint.input.windowEpoch
+    accepted=Publish(client,sample)
+    RETURN(1)
+  FI
+
+  manager=NATIVE
+  BEGIN
+    LET layer=LAYERS.Find(@desktop.scene,
+        LAYERS.Hit(@desktop.scene,sample.x,sample.y))
+    IF layer<>NULL AND sample.y>=layer.bounds.top+2
+        AND sample.y<layer.bounds.top+14 THEN
+      manager=TITLE
+    FI
+  END
+
+RETURN(0)
+ENDMODULE

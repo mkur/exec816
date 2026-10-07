@@ -8,6 +8,7 @@ USE AESTYPES
 USE AESCORE
 USE HEAPCORE
 USE AESLOCKS
+USE AESMOUSE
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKDRAG
@@ -101,6 +102,7 @@ PUBLIC PROC Settle()
   FI
 
   AESWINDOWSTATE.Sync()
+  AESMOUSE.Refresh()
   IF service.lockCount=0 AND service.windowPending=0 THEN
     RETURN
   FI
@@ -114,6 +116,7 @@ PUBLIC PROC Settle()
 
   AESCORE.Settle(service)
   AESLOCKS.Wake(service)
+  AESMOUSE.Refresh()
 
 RETURN
 

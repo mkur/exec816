@@ -3,7 +3,7 @@
 [History index](README.md) · [Implementation plan](../plans/gem4xe/aes-application-input-implementation-plan.md) ·
 [Current INPUT contract](../reference/input.md) · [Current AES contract](../reference/aes.md)
 
-Status: AI1–AI3 implemented, 2026-10-07. AI4–AI7 remain pending. Public AES input
+Status: AI1–AI4 implemented, 2026-10-07. AI5–AI7 remain pending. Public AES input
 waits are not implemented yet. These are development checks, not hosted-system
 qualification; PI4/HY4 and the observed flicker remain open.
 
@@ -107,3 +107,41 @@ reference, one Caps byte and a sixteen-byte key snapshot), plus at most one byte
 of placement alignment. Per-registration storage and stack reservations are
 unchanged. The evidence records emitted routine growth and measured stacks;
 public input waits and pointer gesture routing remain pending.
+
+
+## AI4 — Content gestures and GUI locks
+
+The presenter now classifies each fresh physical sequence once. A focused GEM
+work-area press retains its application through release, including outside
+coordinates and later focus changes. Activation, title and close sequences
+remain native through release; accepting `WM_TOPPED` cannot cause click-through.
+Mouse-control owners receive content input outside their window, while a
+windowless owner provides exclusion only.
+
+Application routing happens before the native deferral decision. Update locks
+therefore freeze native actions without blocking content release. Competing
+locks wait for a physical sequence to end; its application owner may acquire
+and recurse. Released deferred native work does not prevent an update owner
+from upgrading or unlocking. Baselines and idle motion in that queue do not
+mistakenly acquire gesture ownership. Deferred title gestures also own BREAK.
+
+Close and loss cancel application capture until an observed release. Raw/
+normalized loss and input FIFO overflow retain source-specific diagnostics;
+there is no synthetic successful release. Coherent snapshots and eligibility
+are refreshed after focus and lock changes, with a wake when ownership handback
+makes a level match possible without a new edge. Windowless registrations also
+receive pointer snapshots for the later combined-wait output contract.
+
+[Development evidence](../development/aes-application-input-ai4.json) covers
+131 normalized presenter/lock assertions, physical window controls, inbox and
+lock regressions, and native widget interaction. The inbox fixture explicitly
+isolates its synthetic eligibility from production routing. The older widget
+continuation probe now names `PAINT_CONTENT`; literal phase 1 had become title
+painting during PI3 and could no longer hold an object continuation.
+
+Reserved bank-zero delta remains **0 fixed + 0 per public Task + 0 private
+idle**. Shared upper data gains 27 payload bytes plus at most one alignment byte.
+Per-registration storage, fixed banks and stack reservations are unchanged.
+The pointer fixture measures a 355-byte root stack peak and 177 bytes on its
+1,024-byte peer Task; all checked floors and domain guards pass. Broader UI
+latency work and PI4/HY4 remain open.

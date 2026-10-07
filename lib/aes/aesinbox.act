@@ -164,9 +164,13 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
   LET endpoint=client.endpoint
   LET inbox=endpoint.input
   EXEC.Forbid()
-  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR inbox.windowEpoch=0 THEN
+  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING THEN
     EXEC.Permit()
     RETURN
+  FI
+
+  IF inbox.windowEpoch=0 THEN
+    eligible=0
   FI
 
   notify=inbox.eligible=0 AND eligible<>0

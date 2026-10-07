@@ -85,3 +85,11 @@ ENDMODULE
     needle = '  changed=service.directory.changed<>0'
     require(host.count(needle) == 1, 'Input producer wake boundary changed')
     (out/'aeshost.act').write_text(host.replace(needle, '  AESINBOXPROBE.Pump()\n'+needle))
+
+    # This fixture owns its synthetic open epoch and eligibility directly.
+    # Production mouse policy is exercised by the pointer fixture.
+    mouse = read_source(ROOT/'lib/aes/aesmouse.act')
+    start = mouse.index('PUBLIC PROC Refresh()')
+    end = mouse.index('PUBLIC PROC Lost()', start)
+    mouse = mouse[:start]+'PUBLIC PROC Refresh()\n\nRETURN\n\n'+mouse[end:]
+    (out/'aesmouse.act').write_text(mouse)

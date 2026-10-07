@@ -4,6 +4,7 @@ MODULE DESKDRAG
 USE DISPLAY
 USE EXEC
 USE AESLOCKS
+USE AESMOUSE
 USE AESTYPES
 USE AESWINDOWSTATE
 USE INPUT
@@ -55,7 +56,8 @@ RETURN
 
 PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
 
-  IF phase<>0 AND ((sample.kind=INPUT.EVENT_KEY
+  IF (phase<>0 OR AESMOUSE.NativeGesture()<>0)
+      AND ((sample.kind=INPUT.EVENT_KEY
       AND (sample.code & 63)=ESC_SCAN) OR (sample.kind=INPUT.EVENT_CANCEL
       AND sample.code=INPUT.CANCEL_BREAK)) THEN
     IF AESLOCKS.MouseBlocked()<>0 THEN

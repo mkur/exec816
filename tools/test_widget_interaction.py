@@ -33,7 +33,7 @@ def build_fixture(out,mode):
         needle='  IF done=2 THEN\n'
         require(text.count(needle)==1,'Paint step return moved')
         text=text.replace(needle,needle+'''    IF WIDGETINPUTPROBE.holdPaint=1 AND window<>NULL
-        AND window.kind=DESKTYPES.CONTENT_WIDGETS AND started=1 AND commandIndex<>0 THEN
+        AND window.kind=DESKTYPES.CONTENT_WIDGETS AND started=PAINT_CONTENT AND commandIndex<>0 THEN
       WIDGETINPUTPROBE.heldIndex=commandIndex
       WIDGETINPUTPROBE.holdPaint=2
     FI

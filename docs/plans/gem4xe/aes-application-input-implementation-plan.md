@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1–AI3 pass development checks; AI4–AI7 remain
+Status: in progress, 2026-10-07. AI1–AI4 pass development checks; AI5–AI7 remain
 pending. See the [execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
@@ -201,6 +201,10 @@ lifetime; native keyboard behavior remains intact. Suggested commit:
 `aes: route captured keyboard input to GEM applications`.
 
 ## AI4 — Route content gestures through GUI locks
+
+Implemented. [Evidence](../../development/aes-application-input-ai4.json) covers
+content ownership, lock progress, deferred native input, loss/release recovery,
+window controls and native widget regressions. Public input waits remain AI5.
 
 This is a prerequisite for exposing button waits: a mouse-control owner must
 be able to receive the release needed to finish its operation.

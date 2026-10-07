@@ -3,6 +3,7 @@ MODULE AESLOCKS
 USE DISPLAY
 USE AESTYPES
 USE AESSTATE
+USE AESMOUSE
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE CONSOLEBITMAP
@@ -35,6 +36,10 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
+
+  IF AESMOUSE.LockReady(client.id)=0 THEN
+    RETURN(0)
+  FI
 
   IF service.mouseOwner<>0 AND service.mouseOwner<>client.id THEN
     RETURN(0)
@@ -79,6 +84,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
   FI
 
   service.mouseOwner=client.id
+  AESMOUSE.Refresh()
 
 RETURN(AESTYPES.OK)
 
@@ -159,6 +165,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     service.mouseOwner=0
   FI
 
+  AESMOUSE.Refresh()
   request.intout(0)=1
 
 RETURN(AESTYPES.OK)

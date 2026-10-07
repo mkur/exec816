@@ -7,6 +7,7 @@ USE A816MEMORY
 USE AESSTATE
 USE AESTYPES
 USE AESGUI
+USE AESMOUSE
 USE AESLOCKS
 USE AESWINDOWSTATE
 USE DESKTYPES
@@ -102,6 +103,7 @@ BYTE FUNC Close(AESSTATE.Client POINTER client)
   CARD captured,result
 
   LET desktop=DESKSTATE.Get()
+  AESMOUSE.Cancel(client.id)
   AESGUI.Close(client)
   IF desktop.focus=client.window.id THEN
     DESKCORE.Focus(desktop,0)
@@ -136,6 +138,7 @@ PROC Delete(AESSTATE.Client POINTER client)
   BYTE status
 
   LET desktop=DESKSTATE.Get()
+  AESMOUSE.Cancel(client.id)
   AESGUI.Close(client)
   status=LAYERS.Delete(@desktop.scene,client.window.layer)
   IF status<>LAYERTYPES.OK THEN
