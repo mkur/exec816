@@ -18,6 +18,11 @@ PUBLIC TYPE State=[
   LONGINT directoryLength
   LONGCARD ordinal
   FSBTYPES.Entry target
+  BYTE ARRAY bitmap(256)
+  BYTE batchActive,bitmapValid,freeValid,bitmapDirty,buffered,drain
+  CARD batchPage,batchMap,free
+  LONGINT staged,confirmedPosition,confirmedLength,confirmedCount
+  BYTE ARRAY confirmedStorage(FSBTYPES.CURSOR_STORAGE_BYTES)
 ]
 
 ENDMODULE

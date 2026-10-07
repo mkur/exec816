@@ -38,7 +38,7 @@ RETURN(BYTE POINTER($d1000)+SIZE(index LSH 6))
 PROC FileWrites()
   LONGINT index
 
-  LET buffer=BYTE POINTER($afff0)
+  LET buffer=BYTE POINTER($30fff0)
   FOR index=0 TO amount-1 DO
     buffer(CARD(index))=BYTE(index) XOR $6d
   OD
@@ -151,7 +151,7 @@ PROC Names()
   Require(DOS.IoErr()=0)
   file=DOS.Open(BYTE POINTER(c"CHILD"),DOS.MODE_NEWFILE)
   Require(file<>NULL)
-  Require(DOS.Write(file,BYTE POINTER($afff0),17)=17)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),17)=17)
   Require(DOS.Close(file)<>0)
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Examine(lock,@info)<>0)
@@ -170,12 +170,12 @@ PROC Truncate()
   phase=6
   file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
   Require(file<>NULL)
-  Require(DOS.Write(file,BYTE POINTER($afff0),amount)=amount)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),amount)=amount)
   Require(DOS.Close(file)<>0)
   file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
-  Require(DOS.Write(file,BYTE POINTER($afff0),1)=1)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),1)=1)
   Require(DOS.Close(file)<>0)
   Require(DOS.DeleteFile(Path(4))<>0)
   file=DOS.Open(Path(5),DOS.MODE_READWRITE)

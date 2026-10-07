@@ -22,7 +22,9 @@ RETURN(FSWTYPES.State POINTER(service.mutation))
 PUBLIC BYTE FUNC Error(FSTYPES.Service POINTER service LONGINT error)
 
   service.work.error=error
-  IF service.changed<>0 THEN
+  LET state=State(service)
+  IF service.changed<>0 AND (state.batchActive=0 OR
+      (error<>ERROR_BREAK AND error<>ERROR_DISK_FULL)) THEN
     service.selected.offline=1
     service.selected.writable=0
     service.selected.error=error
@@ -69,6 +71,7 @@ PUBLIC BYTE FUNC Read(FSTYPES.Service POINTER service CARD sector
     BYTE POINTER destination)
   LONGINT error
 
+  LET state=State(service)
   IF Checkpoint(service)=0 THEN
     RETURN(0)
   FI
@@ -80,7 +83,8 @@ PUBLIC BYTE FUNC Read(FSTYPES.Service POINTER service CARD sector
   FI
 
   IF status=2 THEN
-    IF service.committing<>0 THEN
+    IF service.committing<>0 OR (state<>NULL AND state.batchActive<>0 AND
+        state.staged<>0) THEN
       error=LONGINT(BLOCKWIRE.TransferCommitted(service.adapter.request,
           DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
     ELSE

@@ -34,7 +34,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
     before = Audit(media.read_bytes())
     before.sdfs()
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
-                   sector_bytes=size, format=2, access='readwrite')]
+                   sector_bytes=size, format=2, access='readwrite', profile=4)]
     program = build(compiler(ROOT/'build/actionc'), out/'sdfs_write_buffering.act',
                     out, optimize=mode == 'opt', tasks=True, task_capacity=8,
                     console_deferred=True,
@@ -43,7 +43,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
                                 (0xd0000, bytes(384*2))])
     with emulator(ROOT/'build/altirra-sio-multi',
                   ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest',
+        configuration = {**PIN['configuration'], 'diskemu': 'generic56k',
                          'accuratedisk': False}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)

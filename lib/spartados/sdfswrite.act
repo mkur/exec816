@@ -515,11 +515,96 @@ PUBLIC BYTE FUNC Mark(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
 
 RETURN(EntryIO(service,entry,1))
 
-; Initialize a bounded payload group, then publish its map and length once.
+; Save only the cursor state which can advance during the active Write.
+PUBLIC PROC Snapshot(FSTYPES.Service POINTER service)
+
+  LET state=FSWRITEIO.State(service)
+  LET file=service.operation.file
+  state.confirmedPosition=file.position
+  state.confirmedLength=file.entry.length
+  state.confirmedCount=file.entry.count
+  A816MEMORY.Move(state.confirmedStorage,file.storage,
+      SIZE(FSBTYPES.CURSOR_STORAGE_BYTES))
+
+RETURN
+
+PUBLIC PROC BeginBatch(FSTYPES.Service POINTER service)
+
+  LET state=FSWRITEIO.State(service)
+  state.batchActive=1
+  state.bitmapValid=0
+  state.freeValid=0
+  state.bitmapDirty=0
+  state.staged=0
+  state.batchMap=0
+  state.drain=0
+  Snapshot(service)
+
+RETURN
+
+; Payloads have completed; publish dependencies before confirming their bytes.
+PUBLIC BYTE FUNC Drain(FSTYPES.Service POINTER service)
+  LONGINT error
+
+  LET state=FSWRITEIO.State(service)
+  state.drain=0
+  IF state.staged=0 THEN
+    RETURN(1)
+  FI
+
+  LET file=service.operation.file
+  error=service.work.error
+  service.committing=1
+  IF FSWRITEIO.Write(service,state.batchPage,state.bitmap)=0 OR
+      FSWRITEIO.Read(service,1,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Word(state.scratch,13,state.free)
+  IF FSWRITEIO.Write(service,1,state.scratch)=0 OR
+      FSWRITEIO.Write(service,state.batchMap,state.map)=0 THEN
+    RETURN(0)
+  FI
+
+  ; EntryIO traverses the directory with the shared map buffer.
+  state.batchMap=0
+  IF EntryIO(service,@file.entry,0)=0 THEN
+    RETURN(0)
+  FI
+
+  FSWRITEIO.Length(state.row,3,file.entry.length)
+  IF EntryIO(service,@file.entry,1)=0 THEN
+    RETURN(0)
+  FI
+
+  service.operation.completed==+state.staged
+  service.selected.epoch==+1
+  state.staged=0
+  state.bitmapDirty=0
+  service.work.error=error
+  Snapshot(service)
+
+RETURN(1)
+
+PUBLIC PROC Restore(FSTYPES.Service POINTER service)
+
+  LET state=FSWRITEIO.State(service)
+  LET file=service.operation.file
+  file.position=state.confirmedPosition
+  file.entry.length=state.confirmedLength
+  file.entry.count=state.confirmedCount
+  A816MEMORY.Move(file.storage,state.confirmedStorage,
+      SIZE(FSBTYPES.CURSOR_STORAGE_BYTES))
+  LET cursor=SDFS.Map(file)
+  cursor.valid=0
+
+RETURN
+
+; Initialize one bounded payload group; publication belongs to the Write step.
 LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     BYTE POINTER source LONGINT length)
   CARD count,index,part,tail,offset
-  LONGINT completed,newLength
+  LONGINT completed
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
@@ -569,23 +654,12 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     completed==+LONGINT(part)
   OD
 
-  IF FSWRITEIO.Write(service,state.mapSector,state.map)=0 THEN
-    RETURN(0)
-  FI
-
-  newLength=file.position+completed
-  IF EntryIO(service,@file.entry,0)=0 THEN
-    RETURN(0)
-  FI
-
-  FSWRITEIO.Length(state.row,3,newLength)
-  IF EntryIO(service,@file.entry,1)=0 THEN
-    RETURN(0)
-  FI
-
+  state.buffered=1
+  state.batchMap=state.mapSector
+  state.staged==+completed
   file.entry.count==+LONGINT(count)
-  file.entry.length=newLength
-  file.position=newLength
+  file.position==+completed
+  file.entry.length=file.position
 
 RETURN(completed)
 
@@ -622,6 +696,8 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
       RETURN(Extend(service,file,source,length))
     FI
 
+    state.bitmapValid=0
+    state.freeValid=0
     needed=1
     IF state.mapOffset=sectorBytes THEN
       needed=2
@@ -645,8 +721,12 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
       state.data(index)=0
       index==+1
     OD
-  ELSEIF FSWRITEIO.Read(service,sector,state.data)=0 THEN
-    RETURN(0)
+  ELSE
+    state.bitmapValid=0
+    state.freeValid=0
+    IF FSWRITEIO.Read(service,sector,state.data)=0 THEN
+      RETURN(0)
+    FI
   FI
 
   A816MEMORY.Move(@state.data(within),source,SIZE(part))

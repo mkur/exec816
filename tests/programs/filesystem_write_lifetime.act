@@ -181,7 +181,7 @@ RETURN
 PROC Main()
   CARD index,ticks
 
-  buffer=BYTE POINTER($afff0)
+  buffer=BYTE POINTER($30fff0)
   groupLimit=FSWTYPES.EXTENSION_SECTORS
 
   FOR index=0 TO amount-1 DO

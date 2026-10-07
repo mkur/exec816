@@ -45,8 +45,11 @@ def run(t, out, mode, names, filesystem, failures):
     mounts = [dict(alias='D'+str(i+1), unit=49+i, profile=1, sector_bytes=128,
                    sectors=2000 if filesystem == 'sdfs' else 720,
                    format=2 if filesystem == 'sdfs' else 1) for i in range(2)]
+    if 'mutation' in names:
+        for mount in mounts:
+            mount.update(access='readwrite', profile=4)
     p = build(t, ROOT/'tests/programs/fsinit_failures.act', out, optimize=mode == 'opt',
-              tasks=True, task_capacity=8, dos_mounts=mounts)
+              tasks=True, task_capacity=8, dos_mounts=mounts, console_deferred=True)
     source = ROOT/'tests/fixtures'/('sdfs/sdfs-21-128.atr' if filesystem == 'sdfs' else 'mydos/mydos450-128.atr')
     media = out/'volume.atr'
     shutil.copyfile(source, media)
@@ -54,7 +57,7 @@ def run(t, out, mode, names, filesystem, failures):
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as b:
         machine = verify_machine(b, ROOT/'build/firmware/altirraos-816.rom', PIN)
-        b.config('diskemu', 'fastest')
+        b.config('diskemu', 'generic56k' if 'mutation' in names else 'fastest')
         for unit in range(2):
             b.mount(unit, str(media))
         for site, name in enumerate(names, 1):

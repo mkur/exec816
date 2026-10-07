@@ -3,7 +3,8 @@
   "status": "in-progress",
   "tier": "development",
   "completed_slices": [
-    "SB0"
+    "SB0",
+    "SB1"
   ],
   "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
   "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
@@ -186,5 +187,128 @@
     "status": "pass",
     "tests": 393
   },
-  "scope": "Frozen baseline only. Runtime buffering not yet implemented; development evidence does not qualify hosted hardware."
+  "scope": "SB0\u2013SB1 complete: ordered per-group publication and repeatable workspace allocation rollback. SB2\u2013SB5 pending. Development evidence does not qualify hosted hardware.",
+  "sb1": {
+    "status": "pass",
+    "artifacts": [
+      {
+        "case": "focused",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/focused/results.json",
+        "sha256": "7df4c4cdfe81fbbf713fab52f188c1fc3a0a3577259b60f08903e471635206f9",
+        "xex_sha256": "64abd0f07b7108006466e4ad36fbbc349b2c3685d16b177d2ef036710a26e372",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "layout-opt",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/layout-opt/results.json",
+        "sha256": "77736bf3800016e1479eb011855f00e28f0e96c660615ab6cc1c292117841a45",
+        "xex_sha256": "6b2dfcacd73e92a752f2528977e862b7586196d2f2ad02066b0d9066ed0c79e5",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "layout-raw",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/layout-raw/results.json",
+        "sha256": "5dc6d56dbb126081d7b707b1493b26373da57d16d6ba5ecfebfaa08a3d3556aa",
+        "xex_sha256": "6d007e47ea877ee89e618b68ab88258a2ee0cb1d654ebb025f4291e38f92332d",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "lifetime57",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/lifetime57/results.json",
+        "sha256": "a74ce519f5060d9de1be694e9d3a3321094c681a3ca39c5d8732d8dbe8e876da",
+        "xex_sha256": "2ac1a2c1633a64f0fc100cf398cec933b1142f133ff76a65521a4c6521ff17e3",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "edges57",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/edges57/results.json",
+        "sha256": "1330137dabb2ebfcf0448095516f3e08fffe5a62b990380b333936a62a5bc54b",
+        "xex_sha256": "76bf74b4d4230c43b4144b75b821c3fa54e034ec7f08e88ef277dd9980ddaeed",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "mydos57",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/mydos57/results.json",
+        "sha256": "9196d6487dc4d398816db45ada3c6de352a531f8dd53cb1eed5b48858e1434ee",
+        "xex_sha256": "468f65b4634951fcb103fa8fa02e2237200d670489215bf82bc8c2b71bad5f11",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "metadata-fault128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/metadata-fault128/results.json",
+        "sha256": "c974360d8e0ced49385b3ba1cb1e85212d303aaf07cbee073e64f53d6837768b",
+        "xex_sha256": "2ac1a2c1633a64f0fc100cf398cec933b1142f133ff76a65521a4c6521ff17e3",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "split-fault128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/split-fault128/results.json",
+        "sha256": "98a6d89f293f7609b8965565d00c94768a427ba4ddf85260913eba83a969b6a7",
+        "xex_sha256": "2ac1a2c1633a64f0fc100cf398cec933b1142f133ff76a65521a4c6521ff17e3",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "startup-mutation",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb1/startup-mutation/results.json",
+        "sha256": "48e69981a1b58b6e62785066f223fced012800559df32cd77a7134f35c4a07f0",
+        "xex_sha256": "662da5349fc181c13f90635a58b5ae96c2091488519d6f55632edc7ce6adc90d",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      }
+    ],
+    "focused": {
+      "verified_writes": 128,
+      "counts": {
+        "payload": 64,
+        "bitmap": 16,
+        "header": 16,
+        "map": 16,
+        "directory": 16
+      },
+      "publication_order": [
+        "payload",
+        "bitmap",
+        "header",
+        "map",
+        "directory"
+      ]
+    },
+    "workspace": {
+      "requested": 1190,
+      "rounded": 1192,
+      "rounded_delta": 312
+    },
+    "resident_executable_bytes": {
+      "baseline": 666619,
+      "current": 674239,
+      "delta": 7620
+    },
+    "worker_stack": {
+      "slot": 1,
+      "reserved_bytes": 1024,
+      "touched_bytes": 586,
+      "untouched_above_floor": 182
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "boot": 0
+    },
+    "transport_scope": "Acceptance uses nominal 57.6k. Focused count and metadata-fault probes also ran at 125k without timing claims.",
+    "diagnostic": "MyDOS remount on FASTEST125 hit the already documented loaded-transfer timing gate: sector17 read received 128 bytes but completion deadline expired. Identical media and raw/optimized path-placement diagnostics passed; original emitted image passes with Generic57600. No SIO policy or deadlines changed.",
+    "host_checks": {
+      "status": "pass",
+      "tests": 393
+    }
+  }
 }

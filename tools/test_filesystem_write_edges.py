@@ -148,18 +148,21 @@ def prepare(filesystem, size, name):
     return image
 
 
-def run(output, mode, filesystem, size, names, from_build):
+def run(output, mode, filesystem, size, names, from_build, profile=4):
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
     getattr(baseline, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count, sector_bytes=size,
-                   format=1 if filesystem == 'mydos' else 2, access='readwrite')]
+                   format=1 if filesystem == 'mydos' else 2, access='readwrite',
+                   profile=profile)]
     program = reuse(from_build) if from_build else build(compiler(ROOT/'build/actionc'),
                 ROOT/'tests/programs/filesystem_write_edges.act', output, optimize=mode == 'opt',
                 tasks=True, console_deferred=True, dos_mounts=mounts, system_mount='D1')
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest', 'accuratedisk': False}
+        configuration = {**PIN['configuration'],
+                         'diskemu': {1:'fastest', 2:'810', 4:'generic56k'}[profile],
+                         'accuratedisk': False}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
@@ -237,6 +240,7 @@ if __name__ == '__main__':
     parser.add_argument('--size', type=int, choices=(128, 256), default=128)
     parser.add_argument('--suite', default='normal,readonly,protected,full,incomplete,corrupt,legacy-empty')
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--profile', type=int, choices=(1, 2, 4), default=4)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -244,7 +248,7 @@ if __name__ == '__main__':
     result = dict(status='running')
     try:
         result = run(output, args.case, args.filesystem, args.size, args.suite.split(','),
-                     args.from_build.resolve() if args.from_build else None)
+                     args.from_build.resolve() if args.from_build else None, args.profile)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

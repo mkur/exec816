@@ -3,7 +3,7 @@
 [Implementation plans](README.md) · [Roadmap](../roadmap.md) ·
 [Design note](spartados-write-buffering-design.md)
 
-Status: SB0 implemented at the development tier; SB1–SB5 pending. See the
+Status: SB0–SB1 implemented at the development tier; SB2–SB5 pending. See the
 [execution record](../development/spartados-write-buffering.json). Follow the design note's
 request-scoped buffering decision. Deliver one executable slice at a time,
 run its development checks, record its costs and commit before starting the

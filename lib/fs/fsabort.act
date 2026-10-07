@@ -9,6 +9,7 @@ USE FSOBJECTS
 USE FSPACKET
 USE FSBACKEND
 USE FSBTYPES
+USE FSWRITEIO
 INCLUDE "../dos/dos-types.inc"
 
 ; Observe cancellation at a worker boundary before publishing further results.
@@ -38,6 +39,16 @@ PUBLIC BYTE FUNC Checkpoint(FSTYPES.Service POINTER service)
   FI
 
   action=service.packet.sp_Pkt.dp_Type
+  IF action=87 AND service.mutation<>NULL THEN
+    BEGIN
+      LET state=FSWRITEIO.State(service)
+      IF state.batchActive<>0 THEN
+        ignored=FSWRITEIO.Error(service,ERROR_BREAK)
+        RETURN(0)
+      FI
+    END
+  FI
+
   service.packet.sp_Pkt.dp_Res1=0
   IF action=82 OR action=1008 THEN
     service.packet.sp_Pkt.dp_Res1=-1

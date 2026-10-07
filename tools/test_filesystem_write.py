@@ -4,6 +4,7 @@ import argparse
 import json
 import shutil
 import time
+import re
 from pathlib import Path
 
 from native_program import ROOT, build, compiler, verify_machine, sha256, require, read_build
@@ -31,7 +32,7 @@ def reuse(path):
 
 
 def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
-        from_build=None, hint=0, fixture=None, cache_blocks=None):
+        from_build=None, hint=0, fixture=None, cache_blocks=None, profile=4):
     require(140 <= amount <= 33000, 'Amount must be 140..33000')
     paths = bytearray(7 * 64)
     for index, name in enumerate(['WRITE.BIN', 'WRENAMED.BIN', 'WRITEDIR',
@@ -44,17 +45,18 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
     getattr(before, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
-                   access='readwrite')]
+                   access='readwrite', profile=profile)]
     program = reuse(from_build) if from_build else build(
                     toolchain, ROOT/'tests/programs/filesystem_write.act', output,
                     optimize=mode == 'opt', tasks=True, dos_mounts=mounts,
                     console_deferred=True,
                     image_data=[(0xd1000, bytes(paths)),
-                                (0xaffd0, bytes([0xa5])*(CAPACITY+64))])
+                                (0x30ffd0, bytes([0xa5])*(CAPACITY+64))])
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     binary = ROOT/'build/altirra-sio-multi'
     with emulator(binary, ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest'}
+        configuration = {**PIN['configuration'],
+                         'diskemu': {1:'fastest', 2:'810', 4:'generic56k'}[profile]}
         if fast_media:
             configuration['accuratedisk'] = False
         for key, value in configuration.items():
@@ -78,11 +80,23 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
             runtime, _ = execute(bridge, program, before_run=before_run,
                                  timeout=900, frame_limit=60000)
         except Exception:
-            for name in ['checks', 'phase', 'lastResult', 'lastError']:
-                print(name, data(bridge, program['image'], name, True), flush=True)
+            view = {**program['image'], 'data': [d for d in program['image']['data']
+                                               if '_FSWRITETEST_' in d['name']]}
+            fields = {name: data(bridge, view, name, True)
+                      for name in ('checks', 'phase', 'lastResult', 'lastError')}
+            storage = (program['output']/'sio-storage-action.inc').read_text()
+            addresses = dict(re.findall(r'CONST (SD_\w+)=\$(\w+)', storage))
+            diagnostic = dict(fields=fields, registers=bridge.regs(),
+                              paths=list(bridge.memdump(0xd1000, 7*64)),
+                              sio={name:list(bridge.memdump(int(addresses[name],16),2))
+                                   for name in ('SD_PHASE','SD_ERROR','SD_ACTUAL',
+                                                'SD_CLOCK','SD_DEADLINE','SD_OFFLINE')},
+                              command=list(bridge.memdump(int(addresses['SD_COMMAND'],16),5)))
+            (output/'failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
+            print(fields, flush=True)
             raise
         clean_ownership(bridge, program, program['output'])
-        guard = far_read(bridge, 0xaffd0, amount + 102, output)
+        guard = far_read(bridge, 0x30ffd0, amount + 102, output)
         require(guard[:32] == guard[-32:] == bytes([0xa5])*32, 'Caller buffer guard changed')
         checks = data(bridge, program['image'], 'checks', True)
         layouts = data(bridge, program['image'], 'layouts', True)
@@ -118,6 +132,8 @@ if __name__ == '__main__':
     parser.add_argument('--hint', type=int, default=0)
     parser.add_argument('--fixture', type=Path, help='Independent audited input media')
     parser.add_argument('--cache-blocks', type=int, help='Boot cache override; zero disables it')
+    parser.add_argument('--profile', type=int, choices=(1, 2, 4), default=4,
+                        help='Peripheral profile; development defaults to nominal 57.6k')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -126,7 +142,7 @@ if __name__ == '__main__':
     try:
         result = run(compiler(ROOT/'build/actionc'), output, args.case,
                      args.filesystem, args.size, args.amount, args.fast_media,
-                     args.from_build, args.hint, args.fixture, args.cache_blocks)
+                     args.from_build, args.hint, args.fixture, args.cache_blocks, args.profile)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

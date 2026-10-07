@@ -51,7 +51,7 @@ def instrument(output):
     return {name: sha256(output/name) for name in (*edits, 'fswriteprobe.act')}
 
 
-def outcome(media, filesystem, baseline, fault, expected):
+def outcome(media, filesystem, baseline, fault, expected, target='WRITE.BIN'):
     audit = Audit(media.read_bytes())
     issue = None
     try:
@@ -60,13 +60,15 @@ def outcome(media, filesystem, baseline, fault, expected):
         require(fault, 'Allocation audit: ' + str(error))
         issue, report = str(error), None
     if not fault:
-        additions=expected if isinstance(expected,dict) else {'WRITE.BIN':expected}
+        additions=expected if isinstance(expected,dict) else {target:expected}
         require(audit.files == {**baseline.files, **additions},
                 'Unexpected committed contents')
     else:
         # Independently compare every pre-existing payload/map allocation.
         # Shared directory/bitmap sectors legitimately change in this test.
         for sector, owner in baseline.owners.items():
+            if owner == target or owner.startswith(target + ' '):
+                continue
             if any(owner == path or owner.startswith(path + ' ')
                    for path in baseline.files):
                 require(audit.image.sector(sector) == baseline.image.sector(sector),
@@ -77,17 +79,17 @@ def outcome(media, filesystem, baseline, fault, expected):
 
 
 def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=None,
-        amount=300, accurate=False, prime_tail=False, confirmed_bytes=0):
+        amount=300, accurate=False, prime_tail=False, confirmed_bytes=0, profile=4):
     require(1<=amount<=8192,'Amount must be 1..8192')
     observers = instrument(output)
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
     getattr(baseline, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
-                   access='readwrite',profile=4 if accurate else 1)]
+                   access='readwrite',profile=profile)]
     program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), output/'filesystem_write_lifetime.act', output,
                     optimize=mode == 'opt', tasks=True, task_capacity=8, console=True,
-                    dos_mounts=mounts, image_data=[(0xaffd0,bytes([0xa5])*(8192+64))])
+                    dos_mounts=mounts, image_data=[(0x30ffd0,bytes([0xa5])*(8192+64))])
     if from_build:
         record = program['build']
         require(sha256(output/'filesystem_write_lifetime.act') == record['source_sha256'], 'Changed test source')
@@ -100,7 +102,7 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
         configuration = {**PIN['configuration'],
-                         'diskemu': 'generic56k' if accurate else 'fastest',
+                         'diskemu': {1:'fastest', 2:'810', 4:'generic56k'}[profile],
                          'accuratedisk': accurate}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
@@ -172,7 +174,8 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
                 expected=payload[:confirmed_bytes]
             if name=='wire' and filesystem=='mydos' and prime_tail:
                 expected=payload[:size-3]+payload[:(size-3)*group_limit]
-            report = outcome(media, filesystem, baseline, expected is None, expected)
+            target = path.partition(':')[2] if path else 'WRITE.BIN'
+            report = outcome(media, filesystem, baseline, expected is None, expected, target)
             if name=='mkdir-break':
                 require(report['allocation']['directories']==baseline.directories+1,
                         'Committed directory was not published')
@@ -201,6 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--confirmed-bytes',type=int,default=0,
                         help='Expected earlier complete prefix on a later-group failure')
     parser.add_argument('--accurate-media',action='store_true')
+    parser.add_argument('--profile',type=int,choices=(1,2,4),default=4)
     parser.add_argument('--prime-tail',action='store_true',help='Start wire cancellation on newly allocated MyDOS sectors')
     parser.add_argument('--path', help='Existing short fixture path for split-record fault checks')
     parser.add_argument('--output', type=Path, required=True)
@@ -213,7 +217,7 @@ if __name__ == '__main__':
                      [int(n) for n in args.ordinals.split(',')] if args.ordinals else args.ordinal,
                      args.from_build.resolve() if args.from_build else None,
                      args.path, args.amount, args.accurate_media, args.prime_tail,
-                     args.confirmed_bytes)
+                     args.confirmed_bytes, args.profile)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise
