@@ -16,7 +16,9 @@ def expected_layout():
               [('BYTE', 1), ('WORD', 2), ('LONG', 4), ('BPTR', 4), ('APTR', 4),
                ('void EXEC_PTR *', 3), ('struct Node', 11), ('struct List', 11),
                ('struct MinNode', 6), ('struct MinList', 9)]]
-    for name, record in dict(load('ports.json')['records'], Task=load('tasks.json')['task']).items():
+    records = {**load('ports.json')['records'], **load('io.json')['records'],
+               'Task': load('tasks.json')['task']}
+    for name, record in records.items():
         checks.append((f'sizeof(struct {name})', record['size']))
         checks += [(f'offsetof(struct {name}, {field})', offset) for field, _, offset in record['fields']]
     packet = load('tasks.json')['create_packet']

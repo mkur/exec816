@@ -11,7 +11,7 @@ from native_program import ROOT,build,compiler,require,sha256
 
 def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
             client_sources=(),client_entries=(),client_roots=(),client_probes=(),
-            client_optimization=None):
+            client_optimization=None,renderer_source=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
@@ -76,6 +76,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     sources += list(client_sources)
     if ROOT/'c/calypsi/aes.c' in sources:
         sources.append(ROOT/'c/calypsi/aes-windows.c')
+    if renderer_source is not None:
+        sources[sources.index(ad/'gem-vbxe.c')]=renderer_source
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],

@@ -463,6 +463,8 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
+  BYTE accessHeld
+  CARD accessStatus
   BYTE handoff,deferOutput,paintSteps,paintProgress
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
@@ -551,6 +553,12 @@ PUBLIC PROC Worker()
       stopping=1
     FI
 
+    accessHeld=0
+    IF CONSOLEBITMAP.Enabled()<>0 THEN
+      accessStatus=DISPLAY.OwnerEnter()
+      accessHeld=accessStatus=DISPLAY.OK
+    FI
+
     CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
     IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
@@ -558,6 +566,10 @@ PUBLIC PROC Worker()
       EXEC.Permit()
       IF service.stop<>0 THEN
         CONSOLEDISPLAY.DiscardBatch()
+        IF accessHeld<>0 THEN
+          accessStatus=DISPLAY.OwnerDrop()
+        FI
+
         EXIT
       FI
     FI
@@ -620,7 +632,7 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0
+        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0
             AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           handoff=0
@@ -669,10 +681,10 @@ PUBLIC PROC Worker()
           FI
         FI
 
-        writing=instance.write<>NULL AND (AESLOCKS.PaintBlocked()=0
+        writing=instance.write<>NULL AND ((AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
             OR instance.writeCancel<>0)
         again=again OR (writing<>0 AND instance.writeCancel<>0)
-            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0)
+            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
         IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
           again=0
         FI
@@ -689,6 +701,10 @@ PUBLIC PROC Worker()
     IF stopping=0 AND writing=0 AND again=0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
       DESKHOST.Cache()
+    FI
+
+    IF accessHeld<>0 THEN
+      accessStatus=DISPLAY.OwnerDrop()
     FI
 
     IF CONSOLEBITMAP.Pending()<>0 THEN

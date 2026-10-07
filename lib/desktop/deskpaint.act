@@ -1,5 +1,6 @@
 ; Retained scene painter, called only by the existing console worker.
 MODULE DESKPAINT
+USE DISPLAY
 USE EXEC
 USE DESKSTATE
 USE DESKTYPES
@@ -414,7 +415,7 @@ PUBLIC BYTE FUNC PaintPending()
   BYTE slot
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
 
@@ -440,7 +441,7 @@ RETURN(0)
 PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
 
@@ -448,7 +449,7 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(1)
   FI
 
-RETURN(CONSOLEBITMAP.Pending()=0 AND PaintPending()<>0)
+RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0 AND PaintPending()<>0)
 
 ; True only when the next paint quantum can run without waiting for another
 ; scene owner or hardware completion. A retained dirty rectangle alone is not
@@ -460,7 +461,7 @@ PUBLIC BYTE FUNC Ready()
     RETURN(0)
   FI
 
-RETURN(CONSOLEBITMAP.Pending()=0
+RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
     AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
 
 ; One strip step. Return 2 for an unfinished strip, 1 for completed-strip
@@ -471,7 +472,7 @@ PUBLIC BYTE FUNC Pump()
   DESKTYPES.Window POINTER window
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
 

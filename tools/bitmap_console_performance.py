@@ -76,7 +76,7 @@ def markers(program,foreign,output):
     if 'complete_scroll' in foreign['symbols']:
         result['complete_scroll']=dict(entry=foreign['symbols']['complete_scroll'],returns=[],entry_only=True)
     current=None;busy_next=False
-    for path in output.glob('*vbxe.lst'):
+    for path in sorted(set(output.glob('*vbxe.lst')) | set(output.glob('*vbxe-fault.lst'))):
         for line in path.read_text().splitlines():
             if '.section ' in line:current=None
             start=re.search(r'\\ ([0-9a-f]{6})\s+(?:[0-9a-f.]+\s+)?(idle|submit|launch|start):',line)

@@ -22,6 +22,7 @@ struct IOStdReq {
     ULONG io_Actual;
     ULONG io_Length;
     void EXEC_PTR * io_Data;
+    UBYTE pad37[1];
     ULONG io_Offset;
 };
 

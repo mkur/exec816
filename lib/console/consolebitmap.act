@@ -90,6 +90,10 @@ PUBLIC BYTE FUNC Run(CARD operation)
     RETURN(1)
   FI
 
+  IF packet.status=DISPLAY.BUSY THEN
+    RETURN(0)
+  FI
+
   IF packet.status<>DISPLAY.OK THEN
     state.failed=1
     RETURN(0)
@@ -314,6 +318,10 @@ PUBLIC BYTE FUNC CopyStart()
   FI
 
   LET packet=GetPacket()
+  IF packet.status=DISPLAY.BUSY THEN
+    RETURN(0)
+  FI
+
   IF packet.status<>DISPLAY.OK THEN
     RETURN(0)
   FI

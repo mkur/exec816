@@ -151,8 +151,9 @@ access before direct application drawing. It finishes with two independent
 applications beside the native shell and an optional OF816 demo. The proposed
 profile keeps the existing Task/layer limits and targets zero bank-zero growth;
 menus, resources, resizing and broader GEM compatibility follow.
-[WA1–WA2](history/aes-windows.md) pass development checks for durable GUI delivery and window ownership
-with unchanged ordinary message capacity and zero bank-zero growth. WA3–WA6
+[WA1–WA3](history/aes-windows.md) pass development checks for durable GUI delivery,
+window ownership and delegated display access, with unchanged ordinary message
+capacity and zero bank-zero growth. WA4–WA6
 remain pending, and PI4/HY4 remain open.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)

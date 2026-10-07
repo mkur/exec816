@@ -1,5 +1,6 @@
 ; One presenter continuation owns copied geometry until the shared DMA retires.
 MODULE DESKMOVE
+USE DISPLAY
 USE DESKTYPES
 USE DESKEVENTS
 USE DESKSTATE
@@ -86,7 +87,7 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
   LONGCARD token
 
   LET layer=LAYERS.Find(@service.scene,window.layer)
-  eligible=(window.kind<>DESKTYPES.CONTENT_AES
+  eligible=(DISPLAY.Blocked()=0 AND window.kind<>DESKTYPES.CONTENT_AES
       AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
       AND ((layer.bounds.left OR left OR
           (layer.bounds.right-layer.bounds.left)) & 1)=0)

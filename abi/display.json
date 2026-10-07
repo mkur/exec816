@@ -1,8 +1,49 @@
 {
-  "version": 1,
+  "version": 2,
   "lease_bytes": 20,
-  "fields": {"owner": 0, "generation": 12, "kind": 16, "state": 17, "reserved": 18},
-  "errors": {"OK": 0, "BUSY": 1, "UNSUPPORTED": 2, "NO_MEMORY": 3, "INVALID_OWNER": 4, "DEVICE_FAULT": 5, "BAD_ARGUMENT": 6},
-  "states": {"FREE": 0, "ACQUIRING": 1, "ACTIVE": 2, "RELEASING": 3, "FAULTED": 4},
-  "kinds": {"TEXT": 1, "VBXE": 2}
+  "fields": {
+    "owner": 0,
+    "generation": 12,
+    "kind": 16,
+    "state": 17,
+    "reserved": 18
+  },
+  "errors": {
+    "OK": 0,
+    "BUSY": 1,
+    "UNSUPPORTED": 2,
+    "NO_MEMORY": 3,
+    "INVALID_OWNER": 4,
+    "DEVICE_FAULT": 5,
+    "BAD_ARGUMENT": 6
+  },
+  "states": {
+    "FREE": 0,
+    "ACQUIRING": 1,
+    "ACTIVE": 2,
+    "RELEASING": 3,
+    "FAULTED": 4
+  },
+  "kinds": {
+    "TEXT": 1,
+    "VBXE": 2
+  },
+  "grant_bytes": 32,
+  "grant_fields": {
+    "task": 0,
+    "mask": 4,
+    "owner": 8,
+    "generation": 20,
+    "state": 24,
+    "slot": 26,
+    "reserved": 28
+  },
+  "access_constants": {
+    "GRANTS": 8,
+    "GRANT_FREE": 0,
+    "GRANT_READY": 1,
+    "GRANT_QUEUED": 2,
+    "GRANT_OWNED": 3,
+    "GRANT_REVOKED": 4
+  }
 }

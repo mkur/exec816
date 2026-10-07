@@ -43,6 +43,17 @@ static UWORD outlineLeft,outlineTop,outlineRight,outlineBottom,outlineVisible,ou
 
 
 
+static UWORD render_enter(void)
+{
+    if (!display.lease.state) return DISPLAY_INVALID_OWNER;
+    return DisplayOwnerEnter();
+}
+static UWORD render_exit(UWORD status)
+{
+    /* A successful physical close already retired and reset arbitration. */
+    if (display.lease.state) DisplayOwnerEnd(display.operationPending);
+    return status;
+}
 static void latch(UWORD status) { if (status && !fault) fault=status; }
 /* Construction establishes record validity and enforces count/work bounds.
  * The admitted owner submits this private list without decoding it again. */
@@ -218,6 +229,9 @@ UWORD GemDrawingOpen(WORD *out)
         return DISPLAY_BAD_ARGUMENT;
     status=VbxeOpen(&display);
     if (status!=DISPLAY_OK) return status;
+    status=DisplayOwnerWake(VbxeCompletionMask(&display));
+    if (status==DISPLAY_OK) status=render_enter();
+    if (status!=DISPLAY_OK) { VbxeOwnerClose(&display); return status; }
     for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+GemRecordOffsets[i],template,21);
     dirty=fault=commandCount=0;
     commandWork=0;
@@ -227,7 +241,7 @@ UWORD GemDrawingOpen(WORD *out)
     flush();
     if (!status && !fault) latch(VbxeOwnerShow(&display));
     if (status || fault) { GemDrawingClose(); return DISPLAY_DEVICE_FAULT; }
-    return DISPLAY_OK;
+    return render_exit(DISPLAY_OK);
 }
 static UWORD close_owner(void)
 {
@@ -235,6 +249,7 @@ static UWORD close_owner(void)
     if (display.lease.state) {
         flush();
         if (display.lease.state) status=VbxeOwnerClose(&display);
+        if (status==DISPLAY_BUSY) return status;
     }
     GemVdiReset();
     dirty=commandCount=0; commandWork=0;
@@ -249,29 +264,19 @@ static UWORD fence_owner(void)
     if (!fault) latch(VbxeOwnerFence(&display));
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }
-UWORD GemDrawingClose(void)
+static UWORD draw_Close(void)
 {
-    UWORD status;
-    if (display.lease.state) {
-        status=DisplayCheck(&display.lease);
-        if (status!=DISPLAY_OK) return status;
-    }
     return close_owner();
 }
-UWORD GemDrawingFence(void)
+static UWORD draw_Fence(void)
 {
-    UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     return fence_owner();
 }
-UWORD GemDrawingCopy(const struct VbxeCopy *copy)
+static UWORD draw_Copy(const struct VbxeCopy *copy)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     pointer_erase(0,0,640,240);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
@@ -279,20 +284,16 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
+static UWORD draw_Fill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapFill(left,top,right,bottom,pen)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
 }
-UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
+static UWORD draw_ScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!copy || pen>=16) return DISPLAY_BAD_ARGUMENT;
     pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
@@ -303,12 +304,10 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
+static UWORD draw_CopyStart(const struct VbxeCopy *copy,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!copy || !id) return DISPLAY_BAD_ARGUMENT;
     /* Overlays are screen pixels only; offscreen captures/restores use the same
@@ -325,30 +324,24 @@ UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingPoll(ULONG id)
+static UWORD draw_Poll(ULONG id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerPoll(&display,id);
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
+static UWORD draw_Text(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapText(x,y,text,count,fg,bg)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
 }
-UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+static UWORD draw_TextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
     UWORD fillPen)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if ((fillX&1) || (fillWidth&1) || !fillWidth || !fillHeight ||
         fillX>=640 || fillY>=240 || fillWidth>640-fillX || fillHeight>240-fillY ||
@@ -455,24 +448,25 @@ static void cursor_show(void)
 #ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     cursor_render(cursor->x,cursor->y,cursor->visible);
     if (!fault) cursorVisible=cursor->visible;
-    return fault ? GEM_DEVICE_FAULT : GEM_OK;
+    return render_exit(fault ? GEM_DEVICE_FAULT : GEM_OK);
 }
 static UWORD close_backend(void *context)
 {
     UWORD status;
     (void)context;
     if (!display.lease.state) return close_owner()==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
+    status=render_enter();
     if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
     cursor_hide();
     cursorVisible=0;
     status=close_owner();
-    return status==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT;
+    return render_exit(status==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT);
 }
 static UWORD open_backend(void *context,WORD *out)
 {
@@ -509,24 +503,28 @@ static UWORD cursor_intersects(const struct GemCommand *cmd,const WORD *points)
 static UWORD command_backend(void *context,const struct GemCommand *cmd,
     const WORD *points,const WORD *ints,WORD *reply)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     if (cmd->opcode!=17 && cmd->opcode!=22 && cmd->opcode!=23 &&
         cmd->opcode!=25 && cmd->opcode!=32 && cmd->opcode!=129 &&
         cursor_intersects(cmd,points)) cursor_hide();
-    if (fault) return GEM_DEVICE_FAULT;
-    return GemVdiCommand(cmd->opcode,cmd->subopcode,cmd->point_pairs,cmd->int_words,points,ints,reply);
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
+    status=GemVdiCommand(cmd->opcode,cmd->subopcode,cmd->point_pairs,cmd->int_words,points,ints,reply);
+    if (!status && fence_owner()!=DISPLAY_OK) status=GEM_DEVICE_FAULT;
+    return render_exit(status);
 }
 static UWORD fence_backend(void *context)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     flush();
     cursor_show();
     if (!fault) latch(VbxeOwnerFence(&display));
-    return fault ? GEM_DEVICE_FAULT : GEM_OK;
+    return render_exit(fault ? GEM_DEVICE_FAULT : GEM_OK);
 }
 const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backend,close_backend,cursor_backend,0};
 
@@ -535,13 +533,11 @@ const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backe
 ULONG GemDrawingCompletionMask(void)
 { return VbxeCompletionMask(&display); }
 
-UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+static UWORD draw_TextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
     extern UWORD GemBitmapTextClip(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD,
                                   UWORD,UWORD,UWORD,UWORD);
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapTextClip(x,y,text,count,fg,bg,left,top,right,bottom))
         return DISPLAY_BAD_ARGUMENT;
@@ -570,10 +566,8 @@ static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
         top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
 }
 
-UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
+static UWORD draw_Pointer(UWORD x,UWORD y,UWORD visible)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
     if (display.operationPending) return DISPLAY_BUSY;
@@ -637,10 +631,8 @@ static void outline_hide(void)
     if (outlineDrawn && !fault) outline_toggle();
     outlineDrawn=0;
 }
-UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
+static UWORD draw_Outline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (visible>1 || (visible && (left>=right || top>=bottom ||
         right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
@@ -659,13 +651,10 @@ UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visi
 }
 
 /* Only a trusted, bounded renderer calls this synchronous closure. */
-UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
+static UWORD draw_Batch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
 {
-    UWORD status;
     if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
         bottom-top>16) return DISPLAY_BAD_ARGUMENT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (display.operationPending) return DISPLAY_BUSY;
     GemDrawingPrepare(left,top,right,bottom);
@@ -677,7 +666,7 @@ UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)
  * A callback returns nonzero only when every intersecting object is complete.
  * No callback or client pointer survives a call. The presenter freezes the
  * model until the strip retires; a new first chunk discards an abandoned one. */
-UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void))
 {
     UWORD status,complete,lo,hi,rows;
@@ -686,8 +675,6 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
         bottom-top>16) return DISPLAY_BAD_ARGUMENT;
     if (!first && (!stripActive || left!=stripLeft || top!=stripTop ||
         right!=stripRight || bottom!=stripBottom)) return DISPLAY_BAD_ARGUMENT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (display.operationPending) return DISPLAY_BUSY;
     if (first) {
@@ -739,4 +726,59 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
         if ((right&1) && !(y&1)) blit_and(base+hi,640,1,rows,0x0f);
         if (hi>lo) blit_and(base+lo,640,hi-lo,rows,mask);
     }
+}
+
+/* Native callers never block their service loop waiting for renderer access.
+ * The presenter can nest these units within one bounded service turn; DMA
+ * alone keeps the owner pin after the final return. */
+#define NATIVE_UNIT(name, parameters, arguments) \
+UWORD GemDrawing##name parameters \
+{ \
+    UWORD status=render_enter(); \
+    if (status!=DISPLAY_OK) return status; \
+    return render_exit(draw_##name arguments); \
+}
+NATIVE_UNIT(Close,(void),())
+NATIVE_UNIT(Fence,(void),())
+NATIVE_UNIT(Copy,(const struct VbxeCopy *copy),(copy))
+NATIVE_UNIT(Fill,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen),(left,top,right,bottom,pen))
+NATIVE_UNIT(ScrollStart,(const struct VbxeCopy *copy,UWORD pen,ULONG *id),(copy,pen,id))
+NATIVE_UNIT(CopyStart,(const struct VbxeCopy *copy,ULONG *id),(copy,id))
+NATIVE_UNIT(Poll,(ULONG id),(id))
+NATIVE_UNIT(Text,(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg),(x,y,text,count,fg,bg))
+NATIVE_UNIT(TextFill,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
+    UWORD fillPen),(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))
+NATIVE_UNIT(TextClip,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom),(x,y,text,count,fg,bg,left,top,right,bottom))
+NATIVE_UNIT(Pointer,(UWORD x,UWORD y,UWORD visible),(x,y,visible))
+NATIVE_UNIT(Outline,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible),(left,top,right,bottom,visible))
+NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void)),(left,top,right,bottom,draw))
+NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))
+
+/* A linked, bounded callback executes only after a delegated access grant.
+ * It must return with no external wait, RPC or caller buffer retained. */
+UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,void (*draw)(void *),void *context)
+{
+    UWORD status;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>16)
+        return DISPLAY_BAD_ARGUMENT;
+    status=DisplayEnter(grant);
+    if (status!=DISPLAY_OK) return status;
+    if (!fault) {
+        pointer_erase(left,top,right,bottom);
+        if (!fault) draw(context);
+        status=fence_owner();
+        if (!fault && outlineVisible && !outlineDrawn) {
+            outline_toggle();
+            if (!fault) outlineDrawn=1;
+        }
+        cursor_show();
+        if (!fault) status=fence_owner();
+    }
+    if (fault) status=DISPLAY_DEVICE_FAULT;
+    DisplayLeave(grant);
+    return status;
 }

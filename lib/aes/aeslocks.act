@@ -1,5 +1,6 @@
 ; Application locks are presenter policy, never kernel Forbid or Layers tokens.
 MODULE AESLOCKS
+USE DISPLAY
 USE AESTYPES
 USE AESSTATE
 USE AESWINDOWSTATE
@@ -27,7 +28,7 @@ PUBLIC BYTE FUNC NativeReady()
   LET desktop=DESKSTATE.Get()
   LET batch=CONSOLEBATCH.Get()
 
-RETURN(desktop<>NULL AND desktop.scene.busy=0
+RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
     AND CONSOLEBITMAP.Pending()=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)

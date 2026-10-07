@@ -1,6 +1,7 @@
 ; Presenter-owned gesture state. No nested input loop and no borrowed client
 ; pointer survives a turn; identities resolve against the current scene.
 MODULE DESKDRAG
+USE DISPLAY
 USE EXEC
 USE AESLOCKS
 USE AESTYPES
@@ -219,6 +220,10 @@ RETURN(0)
 PUBLIC PROC Advance()
   BYTE status,slot,drawn
 
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
+
   IF AESLOCKS.MouseBlocked()<>0 THEN
     RETURN
   FI
@@ -313,6 +318,10 @@ RETURN
 PUBLIC PROC Suspend()
   BYTE drawn
 
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
+
   IF DESKSTATE.outlineVisible<>0 AND CONSOLEBITMAP.Pending()=0 THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
@@ -325,6 +334,10 @@ RETURN
 
 PUBLIC PROC Present()
   BYTE drawn
+
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
 
   IF lossEpoch<>DESKSTATE.LossEpoch() THEN
     Cancel()
@@ -346,6 +359,10 @@ PUBLIC PROC Present()
 RETURN
 
 PUBLIC BYTE FUNC Runnable()
+
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
 
   IF AESLOCKS.MouseBlocked()<>0 THEN
     RETURN(0)

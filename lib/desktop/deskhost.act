@@ -1,5 +1,6 @@
 ; Lifecycle and scheduling hooks in the existing console presenter Task.
 MODULE DESKHOST
+USE DISPLAY
 USE EXEC
 USE DESKSTATE
 USE DESKTYPES
@@ -73,7 +74,8 @@ PUBLIC BYTE FUNC PaintReady()
 
   LET service=DESKSTATE.Get()
 
-RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.PaintBlocked()=0)
+RETURN(DISPLAY.Blocked()=0 AND (service=NULL OR service.scene.busy=0)
+    AND AESLOCKS.PaintBlocked()=0)
 
 ; Eligible controls that waited for the paint snapshot must get an admission
 ; opportunity before a fresh console write acquires that same scene again.
@@ -246,7 +248,7 @@ PUBLIC PROC Cache()
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live<>1 OR service.scene.busy<>0
       OR AESLOCKS.PaintBlocked()<>0
-      OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
+      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
       OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
     RETURN
   FI

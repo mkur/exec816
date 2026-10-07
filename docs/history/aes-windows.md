@@ -70,3 +70,52 @@ arenas, Task slots, stack/DP pools and VRAM are unchanged. The fixture's maximum
 observed presenter stack use is 658 bytes; this does not qualify future caller
 VDI stack use. Direct drawing, counter applications and the packaged demo remain
 WA3–WA6 work.
+
+## WA3 — Delegated renderer access
+
+Implemented on 2026-10-07. DISPLAY retains one physical lifetime owner and
+admits up to eight 32-byte borrowing grants. A FIFO and existing Exec signals
+serialize bounded drawing units. The presenter tries admission without waiting,
+reserves one bounded native service turn, and keeps asynchronous DMA pinned
+until its owner retires completion. Every shared native rendering entry uses
+the same arbiter. Borrowers fence and restore overlays before release.
+
+Revocation wakes queued Tasks and refuses an active unit. Grant collection
+releases retained Tasks before lifetime teardown. Quiescent recovery closes
+borrower admission while allowing the presenter to regain access for cleanup;
+unquiesced recovery preserves the active grant and parks for reset. Ordinary
+owner entry/exit avoids queue guards when no grant exists, since only that owner
+can admit one. See the [current contract](../reference/display.md#delegated-renderer-access).
+
+[Development evidence](../development/aes-windows-wa3.json) records 48 borrowed
+fills alongside native scrolling and accelerated pointer work, zero overlapping
+owners and 1,088 exact fill pixels after the pointer moved away. Two first units
+deliberately yield while holding access. The instrumented fill units cost
+2.89 ms median / 3.85 ms maximum charged CPU; elapsed time and admission waits
+are reported separately. Borrower stack peaks remain within existing 1 KiB
+pools; future VDI depth is not yet qualified. Raw/optimized arbitration checks
+pass 63 assertions each, layout/context bridges pass, presenter intake passes
+182 checks, and native panel pixels, owner faults, borrower faults and disk/GUI
+coexistence pass. The host suite passes 399 tests with four historical skips.
+
+The integration fixture exposed an old C `IOStdReq` padding error: `io_Offset`
+must start at byte 38 and the record occupies 42 bytes. The generator now emits
+that padding and every C image checks the emitted I/O layouts. The older GUI
+integration fixture also omitted its new GUI delivery allocation from expected
+heap returns; its assertion now counts the aligned allocation.
+
+Native begin/end bookkeeping has a cost. The observed clipped console write
+window increased from 1,584 ms in the WA2 control to 2,309 ms in this cohort.
+Physical gesture setup already consumed over four seconds of the fixture's
+six-second mouse hold. Its bounded hold is now eight seconds, and still requires
+console and disk progress before unlock. This is a functional test adjustment,
+not a relaxation or completion of PI4/HY4 latency acceptance.
+
+Reserved bank-zero delta is **0 fixed + 0 per public Task + 0 idle bytes**.
+The arbiter adds 49 live native upper-data bytes and 30 C bridge-table bytes
+inside existing arenas. Grants are caller-owned 32-byte records, at most 256
+payload bytes; WA3 itself allocates no production grants. The matched integrated
+image gains 11,032 payload bytes and retains the same seventeen populated CPU
+banks. Fixed arenas, stack/DP pools and VRAM reservations are unchanged.
+These are development checks. Private VDI, counter applications and the optional
+packaged demo remain WA4–WA6 work.

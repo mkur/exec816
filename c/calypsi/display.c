@@ -2,7 +2,7 @@
 #include <hardware/vbxe-notify.h>
 
 /* The native launcher binds the ordinary library before admitting C Tasks. */
-void EXEC_PTR *ExecDisplayEntries[15];
+void EXEC_PTR *ExecDisplayEntries[25];
 struct DisplayArgs { ULONG lease; UWORD kind; };
 ULONG EXEC_CALL _DisplayCall(UWORD entry, const struct DisplayArgs *args);
 
@@ -39,3 +39,14 @@ UWORD VbxeNotifyState(ULONG id)
     return _DisplayCall(13*3,&args);
 }
 void VbxeNotifyReset(void) { call(14,NULL,0); }
+
+UWORD DisplayDelegate(struct DisplayGrant *p) { return call(15,(struct DisplayLease *)p,0); }
+UWORD DisplayRevoke(struct DisplayGrant *p) { return call(16,(struct DisplayLease *)p,0); }
+UWORD DisplayGrantClose(struct DisplayGrant *p) { return call(17,(struct DisplayLease *)p,0); }
+UWORD DisplayEnter(struct DisplayGrant *p) { return call(18,(struct DisplayLease *)p,0); }
+UWORD DisplayLeave(struct DisplayGrant *p) { return call(19,(struct DisplayLease *)p,0); }
+UWORD DisplayOwnerEnter(void) { return call(20,NULL,0); }
+UWORD DisplayOwnerEnd(UWORD dma) { return call(21,NULL,dma); }
+UWORD DisplayOwnerWake(ULONG mask) { return call(22,(struct DisplayLease *)mask,0); }
+UWORD DisplayAccessFault(UWORD unquiesced) { return call(23,NULL,unquiesced); }
+UWORD DisplayDelegated(void) { return call(24,NULL,0); }

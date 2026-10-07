@@ -972,7 +972,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
-                'lib/display/display-types.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
+                'lib/display/display-types.inc','lib/display/display-access.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
             task_generated={name:sha256(output/name) for name in (
                 'execbuild.act','exec-build.json','input-build.inc','task-kernel/input.act',

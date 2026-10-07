@@ -1,5 +1,6 @@
 ; Permanent registry entries outlive every borrowed instance pointer.
 MODULE CONSOLEWINDOWS
+USE DISPLAY
 USE CONSOLETYPES
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
@@ -116,7 +117,7 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
     RETURN(1)
   FI
 
-  IF AESLOCKS.PaintBlocked()<>0 THEN
+  IF AESLOCKS.PaintBlocked()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
 

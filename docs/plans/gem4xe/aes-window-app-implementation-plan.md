@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: implementation in progress, 2026-10-07. WA1–WA2 pass development checks;
-WA3–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
+Status: implementation in progress, 2026-10-07. WA1–WA3 pass development checks;
+WA4–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -127,6 +127,12 @@ the application work area is not yet VDI-painted. Suggested commit:
 `aes: add application windows and redraw ownership`.
 
 ## WA3 — Serialize delegated display access
+
+Implemented. [Evidence](../../development/aes-windows-wa3.json) records two
+borrowers, native DMA/pointer contention, exact pixels, both timeout outcomes,
+raw/optimized arbitration/context checks and native disk/GUI coexistence.
+Bank-zero growth is zero. Native rendering overhead and the revised functional
+test hold are recorded explicitly; this does not close PI4/HY4.
 
 This is the ownership gate for direct VDI. Finish it before exposing application
 workstation drawing.
