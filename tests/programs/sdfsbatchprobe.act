@@ -1,0 +1,17 @@
+; Test-only trace of successfully completed physical filesystem writes.
+MODULE SDFSBATCHPROBE
+USE FSTYPES
+PUBLIC BYTE active
+PUBLIC CARD count
+PUBLIC CARD POINTER sectors
+
+PUBLIC PROC Completed(FSTYPES.Service POINTER service CARD sector)
+
+  IF active<>0 AND service.packet.sp_Pkt.dp_Type=87 AND count<384 THEN
+    sectors(count)=sector
+    count==+1
+  FI
+
+RETURN
+
+ENDMODULE

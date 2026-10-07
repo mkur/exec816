@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "status": "in-progress",
+  "tier": "development",
+  "completed_slices": [
+    "SB0"
+  ],
+  "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_local_build": "build/actionc-write-buffering; CARGO_PROFILE_DEV_OPT_LEVEL=3; pinned source unchanged",
+  "baseline": {
+    "focused": {
+      "status": "pass",
+      "amount": 16384,
+      "sector_bytes": 256,
+      "verified_writes": 128,
+      "counts": {
+        "bitmap": 16,
+        "header": 16,
+        "payload": 64,
+        "map": 16,
+        "directory": 16
+      },
+      "workspace_requested_bytes": 878,
+      "workspace_rounded_bytes": 880,
+      "media_sha256": "6b1b53da5a1a2b6522251b3171e5785df8d83ea78465b3fa5b823cce8a1de8bf"
+    },
+    "copy256": {
+      "status": "pass",
+      "bytes": 23872,
+      "rows": [
+        {
+          "case": "16384-cold-create",
+          "guest_seconds": 101.24,
+          "counts": {
+            "startFrame": 281,
+            "endFrame": 5343,
+            "maxGroupWrites": 8,
+            "reads": 101,
+            "writes": 196,
+            "readBytes": 25728,
+            "writeBytes": 46976,
+            "logicalReads": 368,
+            "payloadVisits": 0,
+            "cacheHits": 342,
+            "cacheMisses": 101,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 189
+          },
+          "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+          "target_before_sha256": "0f9d5b301cc3bf8c9b386abd0d9255bb267f375a23150e809454114bd8936e97",
+          "target_after_sha256": "af202237180017ec6b2c01909fd54c1b0a89134bb66c816df8faab3d1f17fafb"
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "focused": {
+      "path": "build/development/spartados-write-buffering/baseline/focused/results.json",
+      "xex_sha256": "7817fbd19d876877ca3a2b5a982c39649724a66a4e89c4b6e835c5ac4dda0487",
+      "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "fastest",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      }
+    },
+    "copy256": {
+      "path": "build/development/spartados-write-buffering/baseline/copy256/results.json",
+      "xex_sha256": "55617eb4ccd10c3cfbf8a161bf4b6fc6c96e37a25a5023c8df98ffbce9008d81",
+      "compiler_binary_sha256": "2e74c48d8ad6e0cfe4546d38bfd2c56ff1191465bc0e15bb2e4b3fd5868a2034",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "boot": 0
+  },
+  "host_checks": {
+    "status": "pass",
+    "tests": 393
+  },
+  "scope": "Frozen baseline only. Runtime buffering not yet implemented; development evidence does not qualify hosted hardware."
+}
