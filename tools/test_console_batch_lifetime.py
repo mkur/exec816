@@ -5,12 +5,12 @@ from pathlib import Path
 from test_console_bitmap_scroll import run
 
 
-def check(out,mode,replay=False):
+def check(out,mode,replay=False,phases=range(1,6)):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     reports=[]
-    # Accumulation, submission, DMA and repaint: abort, hide/show, stale view,
+    # Accumulation, submission, DMA, repaint and partial row: abort, hide/show, stale view,
     # focus and final close/Stop. Reuse one emitted image for all interleavings.
-    for phase,action in [(p,a) for p in range(1,5) for a in range(6)]:
+    for phase,action in [(p,a) for p in phases for a in range(6)]:
         run(out,mode,replay or bool(reports),batch=True,phase=phase,action=action)
         path=out/('results-replay.json' if replay or reports else 'results.json')
         report=json.loads(path.read_text());reports.append(report)
@@ -25,4 +25,5 @@ if __name__=='__main__':
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--mode',choices=('raw','opt'),default='opt')
     p.add_argument('--replay',action='store_true')
-    a=p.parse_args();check(a.output,a.mode,a.replay)
+    p.add_argument('--phases',type=int,nargs='+',choices=range(1,6),default=list(range(1,6)))
+    a=p.parse_args();check(a.output,a.mode,a.replay,a.phases)

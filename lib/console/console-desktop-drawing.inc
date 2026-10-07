@@ -1,67 +1,127 @@
-; One synchronous primitive holds a scene token across every clipped fragment.
-; Existing exposure damage is left pending when this paints only a dirty span.
-BYTE FUNC DesktopDraw(LAYERTYPES.Rect POINTER bounds BYTE text
+; One text fragment per private presenter step. The token freezes geometry and
+; model data; callers re-resolve their source under the ordinary view borrow.
+; Existing exposure damage stays pending when this repairs only a dirty span.
+BYTE FUNC DesktopPart(LAYERTYPES.Rect POINTER bounds BYTE text
     BYTE POINTER source CARD count,foreground,background)
-  CARD index
-  LONGCARD token
-  BYTE status,wasDirty,okay
+  CARD first,last,stop
+  BYTE status,okay
   LAYERTYPES.Rect clip
 
   LET service=DESKSTATE.Get()
-  LET id=DESKSTATE.Selected()
-  IF id=0 THEN
-    RETURN(1)
+  IF desktopToken=0 THEN
+    BEGIN
+      LET id=DESKSTATE.Selected()
+      IF id=0 THEN
+        RETURN(1)
+      FI
+
+      LET layer=LAYERS.Find(@service.scene,id)
+      IF layer=NULL THEN
+        RETURN(0)
+      FI
+
+      desktopWasDirty=layer.dirty
+      status=LAYERS.Invalidate(@service.scene,id,bounds)
+      IF status<>LAYERTYPES.OK THEN
+        RETURN(0)
+      FI
+
+      status=LAYERS.BeginPaint(@service.scene,id,@desktopToken)
+      IF status=LAYERTYPES.EMPTY THEN
+        RETURN(1)
+      FI
+
+      IF status<>LAYERTYPES.OK THEN
+        RETURN(0)
+      FI
+
+      desktopIndex=0
+      desktopGlyph=0
+    END
   FI
 
-  LET layer=LAYERS.Find(@service.scene,id)
-  IF layer=NULL THEN
-    RETURN(0)
-  FI
-
-  wasDirty=layer.dirty
-  status=LAYERS.Invalidate(@service.scene,id,bounds)
-  IF status<>LAYERTYPES.OK THEN
-    RETURN(0)
-  FI
-
-  status=LAYERS.BeginPaint(@service.scene,id,@token)
-  IF status=LAYERTYPES.EMPTY THEN
-    RETURN(1)
-  FI
-
-  IF status<>LAYERTYPES.OK THEN
-    RETURN(0)
-  FI
-
-  LET region=LAYERS.PaintRegion(@service.scene,token)
+  LET region=LAYERS.PaintRegion(@service.scene,desktopToken)
   okay=1
-  DO
-    index=0
-    WHILE index<region.count AND okay<>0 DO
-      REGIONS.Intersect(bounds,@region.rects(index),@clip)
-      IF REGIONS.Empty(@clip)=0 THEN
-        IF text<>0 THEN
-          okay=ClippedText(CARD(bounds.left),CARD(bounds.top),source,count,
-              foreground,background,@clip)
-        ELSE
-          okay=RawFill(CARD(clip.left),CARD(clip.top),CARD(clip.right-clip.left),
-              CARD(clip.bottom-clip.top),background)
+  WHILE desktopIndex<region.count DO
+    REGIONS.Intersect(bounds,@region.rects(desktopIndex),@clip)
+    IF REGIONS.Empty(@clip)=0 THEN
+      IF text<>0 THEN
+        ; Skip invisible whole cells; retain pixel clipping at partial edges.
+        first=CARD(clip.left-bounds.left) RSH 3
+        last=(CARD(clip.right-bounds.left)+7) RSH 3
+        IF last>count THEN
+          last=count
+        FI
+
+        IF desktopGlyph<first THEN
+          desktopGlyph=first
+        FI
+
+        stop=desktopGlyph+TEXT_GLYPHS
+        IF clip.top>bounds.top OR clip.bottom<bounds.bottom THEN
+          stop=desktopGlyph+CLIPPED_GLYPHS
+        FI
+
+        IF stop>last THEN
+          stop=last
+        FI
+
+        okay=ClippedText(CARD(bounds.left)+(desktopGlyph LSH 3),CARD(bounds.top),
+            source+SIZE(desktopGlyph),stop-desktopGlyph,foreground,background,@clip)
+        IF okay=0 THEN
+          EXIT
+        FI
+
+        desktopGlyph=stop
+        IF desktopGlyph<last THEN
+          RETURN(2)
+        FI
+      ELSE
+        okay=RawFill(CARD(clip.left),CARD(clip.top),CARD(clip.right-clip.left),
+            CARD(clip.bottom-clip.top),background)
+        IF okay=0 THEN
+          EXIT
         FI
       FI
 
-      index==+1
-    OD
-    IF okay=0 THEN
+      desktopIndex==+1
+      desktopGlyph=0
       EXIT
     FI
 
-    status=LAYERS.AdvancePaint(@service.scene,token)
-    IF status<>LAYERTYPES.OK THEN
-      okay=(status=LAYERTYPES.EMPTY)
-      EXIT
+    desktopIndex==+1
+  OD
+
+  IF okay<>0 THEN
+    IF desktopIndex<region.count THEN
+      RETURN(2)
+    FI
+
+    status=LAYERS.AdvancePaint(@service.scene,desktopToken)
+    IF status=LAYERTYPES.OK THEN
+      desktopIndex=0
+      RETURN(2)
+    FI
+
+    okay=(status=LAYERTYPES.EMPTY)
+  FI
+
+  status=LAYERS.Finish(@service.scene,desktopToken,okay<>0 AND desktopWasDirty=0)
+  desktopToken=0
+
+RETURN(okay)
+
+; Synchronous public primitives drain the same fragment traversal before
+; returning. Only the private console presenter can retain it across turns.
+BYTE FUNC DesktopDraw(LAYERTYPES.Rect POINTER bounds BYTE text
+    BYTE POINTER source CARD count,foreground,background)
+  BYTE status
+
+  DO
+    status=DesktopPart(bounds,text,source,count,foreground,background)
+    IF status<>2 THEN
+      RETURN(status)
     FI
   OD
 
-  status=LAYERS.Finish(@service.scene,token,okay<>0 AND wasDirty=0)
-
-RETURN(okay)
+RETURN(0)

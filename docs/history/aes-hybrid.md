@@ -1030,3 +1030,121 @@ C BSS grows two bytes (12,359 → 12,361). The idle panel worker touches 742 sta
 bytes, leaving 1,562 above its interrupt floor in the existing 2,560-byte stack.
 No demo was refreshed. PI3/PI4, the 20 ms gap target and **HY4 remain open**;
 original scroll/disk and raw-pointer acceptance cohorts were not rerun.
+
+## Bounded presenter text
+
+PI3 of the [presenter latency plan](../plans/gem4xe/presenter-input-latency-plan.md)
+is implemented. The [PI3 record](../development/presenter-input-pi3.json) compares
+the retained PI2 image from `391cdc3` with the final candidate using the original
+ten gestures under idle, scrolling and disk loads. Compiler/ABI, foreign C image,
+ROM, emulator, machine settings and mouse cadence match. The candidate also
+includes the separately committed [guarded interrupt-return fix](interrupt-reply.md#guarded-adapter-interrupt-returns)
+`93bc2fd`, needed after the changed workload exposed a nested NMI during SIO's
+guarded IRQ return. The old code fails its focused reproducer; corrected guarded,
+ordinary and private-COP return cases pass.
+
+Bitmap presentation now starts at most 32 glyphs from one dirty row. Dirty
+endpoints advance only when the whole segment completes. A new visible edit
+waits for the previous repair, preventing repeated scrolls from starving lower
+rows. Retained commands, titles and console exposure carry a scalar glyph/row
+offset; frame background, title and close mark have separate stages. The worker
+services input between ready steps, preserving four paint steps and four control
+admissions per turn. Text mode retains its four-row/160-cell budget.
+
+Thirty-two logical glyphs were insufficient across overlapping clips: one
+console text step still reached 42.643 ms CPU. The private presenter now returns
+after one visible fragment, retaining the scene token and re-resolving cells
+under its next borrow. Vertically clipped text uses at most sixteen glyphs per
+step because its raster fallback is more expensive. Public drawing drains the
+same traversal synchronously. No borrowed source/view pointer survives a return,
+and the existing scene token still freezes geometry and model data through the
+entire operation. Cancellation, hide/show and drawing failure between fragments
+preserve the accepted 64-byte prefix and release the token before cleanup.
+
+| Maximum charged CPU, ms | PI2 → PI3 |
+| --- | ---: |
+| Scrolling console `Present` | 49.675 → 7.472 |
+| Disk-load console `Present` | 49.168 → 7.929 |
+| Idle input-service gap | 29.939 → 29.910 |
+| Scrolling input-service gap | 57.021 → 26.561 |
+| Disk input-service gap | 57.777 → 30.131 |
+
+These samples exclude interrupt and off-Task time. The final steady gaps are
+dominated by atomic `UPDATE_WIDGETS` admissions, reaching 23.735 ms CPU. The
+whole run, including setup and full-redraw comparison, still has a 74.184 ms
+CPU gap and a 72.526 ms `SET_TREE` admission. The **20 ms gap target remains
+open**; the smaller text steps are measured cases, not worst-case bounds.
+
+| Response, ms | Before median/p95 | After median/p95 |
+| --- | ---: | ---: |
+| Idle input consumed | 5.739 / 20.388 | 7.002 / 23.174 |
+| Idle model commit | 16.785 / 28.979 | 20.957 / 34.132 |
+| Idle button pixels | 118.916 / 139.124 | 118.915 / 139.124 |
+| Idle combined feedback | 198.994 / 279.580 | 199.242 / 279.326 |
+| Scrolling input consumed | 27.974 / 54.499 | 7.764 / 12.311 |
+| Scrolling model commit | 46.480 / 78.819 | 19.612 / 37.360 |
+| Scrolling button pixels | 138.873 / 179.036 | 98.959 / 139.124 |
+| Scrolling combined feedback | 179.291 / 259.370 | 179.037 / 259.622 |
+| Disk input consumed | 11.798 / 46.406 | 9.023 / 28.553 |
+| Disk model commit | 30.138 / 68.983 | 30.366 / 58.310 |
+| Disk button pixels | 119.159 / 179.049 | 119.159 / 179.112 |
+| Disk combined feedback | 199.238 / 299.495 | 219.172 / 319.606 |
+
+Scrolling feedback improves; idle button pixels stay unchanged, and disk
+combined status feedback regresses. Background completions are two → one scroll
+writes and 21 → 24 disk reads. AES message/timer counts are 88/44 → 88/44 idle,
+102/51 → 92/46 scrolling, and 94/46 → 96/47 disk. These cohorts are completion
+paced, so both duration and scheduling phase affect the offered background work.
+
+The existing fixed-offer comparator passes identical relative schedules: twenty
+exchanges over 400 PAL frames and sixteen physical button edges. Both images
+complete all offers and consume all edges, with 99 public calls and twenty
+native timer expiries. Input median is 2.818 → 2.795 ms, p95/maximum is
+58.277 → 5.131 ms, and charged-CPU p95 is 46.098 → 4.274 ms. This supports
+retaining PI3 despite the original idle input regression, but the diagnostic
+has no pixel observer and remains sensitive to execution phase. It does not
+establish a uniform visible-response improvement or close HY4.
+
+Full repairs cost more in some cases. On the same expanded retained-text fixture,
+replacing only PI2's painter reduces a long-title/70-glyph-command maximum
+25.973 → 11.120 ms; total paint CPU rises 81.948 → 86.678 ms, and settled time
+rises 240.670 → 280.782 ms. A partial-height repair falls 49.148 → 15.368 ms per
+step, while total CPU rises 49.148 → 60.052 ms and settled time 120.335 →
+160.447 ms. Exact pixels match. Settled times include two PAL frames.
+
+In the overlapping-console fixture, fragment continuation reduces the
+intermediate PI3 maximum 42.643 → 15.426 ms. Its two scrolling stages take
+6.939 → 7.922 s and 10.589 → 10.971 s to settle. This compares two PI3 policies,
+not the original PI2 binary. The accepted tradeoff is more frequent input
+service at the cost of some throughput; broad console optimization remains
+separate.
+
+Development checks pass: 396 host tests with four historical-source skips;
+nineteen exact presentation scenes with 117 assertions; the same final image's
+fragment-fault replay with 111 assertions; twelve retained/background scenes
+with 41 assertions; twenty-four existing batch-lifetime cases and six new
+partial-row cases; eight bitmap failure cases; and eight-Task console/SIO
+fairness with 27 flood writes, eight short writes and two disk reads. Earlier
+non-desktop bitmap cases exercise the same ordinary path; final fragment and
+retained-text fixtures use the final production image. Guarded return and native
+IRQ regressions are recorded with the prerequisite fix. Guards, ownership and
+cleanup pass. Passive traces retain the list ceilings and confirm input between
+consecutive paint steps without exceeding four steps per turn.
+
+The feedback observer finds no invalid sampled idle/scroll pixels. Disk has six
+invalid sampled frames, at most four pixels, compared with five frames/four
+pixels before. The observer starts after model observation and excludes the
+pointer; whole-gesture flicker freedom is not established. Raw-pointer/outline
+acceptance and release qualification were not rerun. **HY4 remains open.**
+
+Reserved bank-zero delta is **0 bytes fixed, 0 per public Task and 0 idle**,
+including guards, alignment and unused capacity. New continuation state uses
+eleven live upper-RAM bytes: nine in the console fragment traversal and two in
+the retained painter. The matched linked executable payload grows 3,952 bytes
+(738,412 → 742,364), crossing into code bank `$1A`: one additional **64 KiB
+upper-bank reservation**, including unused capacity. Native data grows
+10,118 → 10,129 bytes within existing storage. The panel worker touches 796
+stack bytes, leaving 1,508 above its interrupt floor; kernel peak remains 287.
+VRAM reservations and production stack/data-arena sizes are unchanged. The
+batch-lifetime fixture alone expands its small test arena from 2 to 4 KiB.
+No demo was refreshed. PI4 remains the next comparison/attribution slice.

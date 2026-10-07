@@ -145,6 +145,12 @@ PROC Main()
   request.io_Command=EXEC.CMD_WRITE
   request.io_Data=text
   request.io_Length=512
+  IF targetPhase=5 THEN
+    FOR index=0 TO 511 DO
+      text(index)=IF (index & 63)=63 THEN 10 ELSE BYTE(65+(index MOD 26)) FI
+    OD
+  FI
+
   BATCHPROBE.target=targetPhase
   EXEC.SendIO(EXEC.IORequest POINTER(request))
   LET batch=CONSOLEBATCH.Get()

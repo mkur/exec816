@@ -17,6 +17,8 @@ USE REGIONS
 USE SCROLLPROBE
 
 CARD checks,checkpoint,gate
+CARD cutBytes
+BYTE fragmentFault
 BYTE ARRAY text(64)
 BYTE ARRAY bulk(512)
 DESKTYPES.Request request
@@ -89,8 +91,12 @@ PROC MovePanel(INT left,top CARD stage)
 RETURN
 
 PROC Main()
-  CARD row,column
+  CARD row,column,error
   DOS.FileHandle POINTER file
+  EXEC.MsgPort POINTER replies
+  EXEC.IOStdReq POINTER write
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
 
   Require(CONSOLE.ScreenWidth()=64 AND CONSOLE.ScreenHeight()=20)
   file=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
@@ -198,7 +204,94 @@ PROC Main()
   SCROLLPROBE.enabled=0
   Send(DESKTYPES.CLOSE,panel)
   Pause(18)
-  Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
+
+  ; Cancel while the second half-row owns unfinished clipped fragments. A
+  ; queued hide must wait for that token; showing again reconstructs exactly
+  ; the accepted prefix after the caller's source has been overwritten.
+  Require(DOS.Write(file,BYTE POINTER(c"\f\n\n\n\n\n\n\n\n\n\n\n\n\n"),14)=14)
+  Settled()
+  Require(DOS.Close(file)<>0)
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"Clip")
+  request.bytes=4
+  REGIONS.Assign(@request.bounds,377,0,537,173)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  DESKTOP.Prepare(@request,DESKTYPES.REPLACE)
+  request.payload=BYTE POINTER(@content)
+  request.bytes=DESKTYPES.CONTENT_SIZE
+  Send(DESKTYPES.REPLACE,panel)
+  Send(DESKTYPES.SHOW,panel)
+  Settled()
+  replies=EXEC.CreateMsgPort()
+  write=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(replies,EXEC.IOSTDREQ_SIZE))
+  Require(replies<>NULL AND write<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"console.device"),0,EXEC.IORequest POINTER(write),0)=0)
+  FOR column=0 TO 511 DO
+    bulk(column)=BYTE(65+(column MOD 26))
+  OD
+
+  write.io_Command=EXEC.CMD_WRITE
+  write.io_Data=bulk
+  write.io_Length=512
+  SCROLLPROBE.armFragment=1
+  EXEC.SendIO(EXEC.IORequest POINTER(write))
+  WHILE SCROLLPROBE.fragmentHeld=0 DO
+    EXEC.Yield()
+  OD
+
+  cutBytes=CARD(write.io_Actual)
+  Require(cutBytes<>0 AND cutBytes<512 AND CONSOLEBITMAP.TextPending()<>0)
+  LET client=DESKBOOT.Binding()
+  IF fragmentFault<>0 THEN
+    SCROLLPROBE.failFragment=1
+  ELSE
+    EXEC.AbortIO(EXEC.IORequest POINTER(write))
+    DESKTOP.Prepare(@request,DESKTYPES.HIDE)
+    request.window=DESKBOOT.WindowId()
+    Require(DESKTOP.Submit(client,@request)=DESKTYPES.OK)
+  FI
+
+  SCROLLPROBE.holdFragment=0
+  LET service=CONSOLEDRIVER.GetService()
+  EXEC.Signal(@service.task,$40000000)
+  error=EXEC.WaitIO(EXEC.IORequest POINTER(write))
+  Require(error=IF fragmentFault<>0 THEN EXEC.IOERR_SELFTEST ELSE EXEC.IOERR_ABORTED FI)
+  Require(write.io_Actual=LONGCARD(cutBytes) AND CONSOLEBITMAP.TextPending()=0)
+  IF fragmentFault<>0 THEN
+    checkpoint=19
+    WHILE gate<19 DO
+      EXEC.Yield()
+    OD
+
+    Send(DESKTYPES.CLOSE,panel)
+    EXEC.CloseDevice(EXEC.IORequest POINTER(write))
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(write))
+    EXEC.DeleteMsgPort(replies)
+    Require(DOS.ReleaseContext()<>0)
+    RETURN
+  FI
+
+  reply=DESKTOP.Collect(client)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(client.replies)
+    reply=DESKTOP.Collect(client)
+  OD
+
+  Require(reply=@request AND request.status=DESKTYPES.OK)
+  FOR column=0 TO 511 DO
+    bulk(column)=90
+  OD
+
+  Send(DESKTYPES.SHOW,DESKBOOT.WindowId())
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(19)
+  Send(DESKTYPES.CLOSE,panel)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(write))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(write))
+  EXEC.DeleteMsgPort(replies)
+  Require(DOS.ReleaseContext()<>0)
 
 RETURN
 

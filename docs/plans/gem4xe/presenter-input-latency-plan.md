@@ -3,9 +3,10 @@
 [GEM plans](README.md) · [Implementation plans](../README.md) ·
 [Current desktop contract](../../reference/desktop.md)
 
-Status: PI1 and PI2 are implemented and checked at the development tier;
-PI3–PI4 remain pending. The [PI1 record](../../history/aes-hybrid.md#presenter-input-boundaries)
-and [PI2 record](../../history/aes-hybrid.md#widget-paint-input-steps)
+Status: PI1–PI3 are implemented and checked at the development tier;
+PI4 remains pending. The [PI1 record](../../history/aes-hybrid.md#presenter-input-boundaries),
+the [PI2 record](../../history/aes-hybrid.md#widget-paint-input-steps)
+and [PI3 record](../../history/aes-hybrid.md#bounded-presenter-text)
 document smaller work units and mixed latency results. The 20 ms target
 and HY4 remain open. Shorten the work the existing
 presenter performs between input-service opportunities. Keep the gains from the
@@ -185,6 +186,27 @@ until the completed button is visible; extra fences must not erase the benefit.
 Commit: `Make widget paint steps resumable at input boundaries`.
 
 ## PI3 — Bound console and retained-text presentation
+
+Implemented. [Evidence](../../development/presenter-input-pi3.json) records one
+32-glyph dirty-row segment, with fragment traversal under the existing scene
+token and a 16-glyph cap for vertically clipped text. Titles, console exposure
+and retained commands have stage/row/glyph continuations. Public drawing stays
+synchronous; only the private presenter returns between fragments. Accepted
+bytes, caret completion, cancellation and fault cleanup retain their contracts.
+
+Original scroll/disk `Present` maxima fall 49.675/49.168 → 7.472/7.929 ms CPU.
+The overlapping-console fixture reaches 15.426 ms per text step, and long
+vertically clipped retained text falls 49.148 → 15.368 ms. Scrolling button
+median/p95 improves 138.873/179.036 → 98.959/139.124 ms. Idle button pixels stay
+unchanged; disk combined feedback regresses and full text repairs cost more.
+The fixed-offer input p95 improves 58.277 → 5.131 ms without a pixel observer.
+Longest loaded CPU gaps fall to 26.561/30.131 ms, now dominated by atomic
+`UPDATE_WIDGETS`; the 20 ms target and HY4 remain open. The matched image adds
+11 live upper data bytes and crosses into one additional 64 KiB code bank;
+reserved bank-zero and VRAM deltas are zero. A separately committed interrupt
+return fix (`93bc2fd`) resolves a guarded nested-NMI failure exposed by disk load.
+
+The following records the implementation scope for this slice.
 
 This slice addresses the approximately 50 ms loaded presentation call; broader
 console throughput optimization remains separate. Change

@@ -18,10 +18,13 @@ USE HEAPCORE
 USE AESLOCKS
 
 LONGCARD paintToken,paintLayer
-CARD regionIndex,commandIndex
+CARD regionIndex,commandIndex,glyphOffset
 INT nextY
 BYTE nextSlot,started
 CONST STRIP_HEIGHT=16
+CONST TEXT_GLYPHS=32
+CONST CLIPPED_GLYPHS=16
+CONST PAINT_TITLE=1, PAINT_CACHE=2, PAINT_CLOSE=3, PAINT_CLIENT=4, PAINT_CONTENT=5
 LAYERTYPES.Rect strip
 
 PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
@@ -135,6 +138,60 @@ BYTE FUNC FrameBackground(LAYERTYPES.Rect POINTER client)
 
 RETURN(1)
 
+; The scene token freezes the source while only this scalar offset survives a
+; step. Count visible whole/edge glyphs, including a repeated clipped fragment.
+; Return the same done/more/fault convention as PaintStrip.
+BYTE FUNC TextStep(CARD x,y BYTE POINTER source CARD length,foreground,background
+    LAYERTYPES.Rect POINTER clip)
+  CARD first,last,stop
+
+  IF INT(y)>=clip.bottom OR INT(y+8)<=clip.top OR INT(x)>=clip.right THEN
+    glyphOffset=0
+    RETURN(1)
+  FI
+
+  first=0
+  IF clip.left>INT(x) THEN
+    first=CARD(clip.left-INT(x)) RSH 3
+  FI
+
+  last=(CARD(clip.right-INT(x))+7) RSH 3
+  IF last>length THEN
+    last=length
+  FI
+
+  IF glyphOffset<first THEN
+    glyphOffset=first
+  FI
+
+  IF glyphOffset>=last THEN
+    glyphOffset=0
+    RETURN(1)
+  FI
+
+  stop=glyphOffset+TEXT_GLYPHS
+  ; Partial-height glyphs use the donor raster path, with a higher per-cell
+  ; cost than a complete atlas run. Keep that path within the same CPU target.
+  IF INT(y)<clip.top OR INT(y+8)>clip.bottom THEN
+    stop=glyphOffset+CLIPPED_GLYPHS
+  FI
+  IF stop>last THEN
+    stop=last
+  FI
+
+  IF CONSOLEBITMAP.ClippedText(x+(glyphOffset LSH 3),y,
+      source+SIZE(glyphOffset),stop-glyphOffset,foreground,background,clip)=0 THEN
+    RETURN(0)
+  FI
+
+  glyphOffset=stop
+  IF glyphOffset=last THEN
+    glyphOffset=0
+    RETURN(1)
+  FI
+
+RETURN(2)
+
 ; Frame, client and glyph coordinates are independently clipped in pixels.
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
@@ -148,14 +205,16 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   REGIONS.Assign(@client,layer.bounds.left+8,layer.bounds.top+16,
       layer.bounds.right-8,layer.bounds.bottom-8)
-  IF started=2 THEN
+  IF started=PAINT_CACHE THEN
     RETURN(DESKCACHE.Restored(service))
   FI
 
   IF started=0 THEN
+    commandIndex=0
+    glyphOffset=0
     frameNeeded=strip.left<client.left OR strip.top<client.top
         OR strip.right>client.right OR strip.bottom>client.bottom
-    okay=1
+    started=PAINT_CLIENT
     IF frameNeeded<>0 THEN
       okay=FrameBackground(@client)
       REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
@@ -164,7 +223,20 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         okay=Fill(@bounds,@strip,IF window.id=service.focus THEN 2 ELSE 7 FI)
       FI
 
-      REGIONS.Intersect(@bounds,@strip,@area)
+      IF okay=0 THEN
+        RETURN(0)
+      FI
+
+      started=PAINT_TITLE
+      RETURN(2)
+    FI
+  FI
+
+  IF started=PAINT_TITLE THEN
+    REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
+        layer.bounds.right-2,layer.bounds.top+14)
+    REGIONS.Intersect(@bounds,@strip,@area)
+    IF REGIONS.Empty(@area)=0 THEN
       titleLength=0
       WHILE titleLength<DESKTYPES.TITLE_BYTES AND window.title(titleLength)<>0 DO
         titleLength==+1
@@ -179,52 +251,58 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         titleLength=titleLimit
       FI
 
-      IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
-        okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
-            @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+      okay=TextStep(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
+          @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+      IF okay<>1 THEN
+        RETURN(okay)
       FI
 
-      IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
-        REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
-            layer.bounds.right-2,layer.bounds.top+14)
+      started=PAINT_CLOSE
+      RETURN(2)
+    FI
+
+    started=PAINT_CLOSE
+  FI
+
+  IF started=PAINT_CLOSE THEN
+    started=PAINT_CLIENT
+    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+      REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
+          layer.bounds.right-2,layer.bounds.top+14)
+      REGIONS.Intersect(@bounds,@strip,@area)
+      IF REGIONS.Empty(@area)=0 THEN
         okay=Fill(@bounds,@strip,8)
-        REGIONS.Intersect(@bounds,@strip,@area)
-        IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
+        IF okay<>0 THEN
           okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
               CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
         FI
+
+        RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
       FI
-
     FI
+  FI
 
-    ; Widget background and objects share a drawing batch. The console's
-    ; replacement glyphs cover the client; command clients need a separate fill.
-    IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
+  IF started=PAINT_CLIENT THEN
+    ; Cache completion still retires the whole client strip. A cache miss
+    ; paints its background once before the text/command continuation starts.
+    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       REGIONS.Intersect(@client,@strip,@area)
       cached=DESKCACHE.Restore(service,window,@client,@area)
       IF cached=DESKTYPES.CACHE_PENDING THEN
-        started=2
+        started=PAINT_CACHE
         RETURN(2)
       ELSEIF cached=DESKTYPES.CACHE_FAILED THEN
         RETURN(0)
       FI
 
       IF window.kind<>DESKTYPES.CONTENT_WIDGETS OR window.widgets=NULL THEN
-        okay=Fill(@client,@strip,window.content.background)
+        IF Fill(@client,@strip,window.content.background)=0 THEN
+          RETURN(0)
+        FI
       FI
     FI
 
-    IF okay=0 THEN
-      RETURN(0)
-    FI
-
-    commandIndex=0
-    started=1
-    ; Return from frame/setup before entering the widget C renderer. The
-    ; worker may drain ready steps without a new control-admission budget.
-    IF window.kind=DESKTYPES.CONTENT_WIDGETS AND frameNeeded<>0 THEN
-      RETURN(2)
-    FI
+    started=PAINT_CONTENT
   FI
 
   REGIONS.Intersect(@client,@strip,@area)
@@ -240,30 +318,29 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       FI
 
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-      row=CARD(area.top-client.top) RSH 3
+      row=(CARD(area.top-client.top) RSH 3)+commandIndex
       last=(CARD(area.bottom-client.top)+7) RSH 3
       first=CARD(area.left-client.left) RSH 3
       count=((CARD(area.right-client.left)+7) RSH 3)-first
-      WHILE row<last DO
-        index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
-        okay=CONSOLEBITMAP.ClippedText(CARD(client.left)+(first LSH 3),
-            CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,@area)
-        IF okay=0 THEN
-          RETURN(0)
-        FI
+      index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
+      entry.busy=1
+      okay=TextStep(CARD(client.left)+(first LSH 3),
+          CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,@area)
+      entry.busy=0
+      IF okay<>1 THEN
+        RETURN(okay)
+      FI
 
-        row==+1
-      OD
+      commandIndex==+1
+      RETURN(IF row+1=last THEN 1 ELSE 2 FI)
     END
-
-    RETURN(1)
   FI
 
   IF window.kind=DESKTYPES.CONTENT_WIDGETS THEN
     RETURN(DESKWIDGETS.Paint(service,window,@client,@area,@commandIndex))
   FI
 
-  ; A busy client list gets at most four commands before input is serviced again.
+  ; A step scans at most four commands and paints at most one text segment.
   count=0
   WHILE commandIndex<window.content.count AND count<4 DO
     BEGIN
@@ -276,9 +353,15 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         IF command.kind=DESKTYPES.DRAW_FILL THEN
           okay=Fill(@bounds,@bounds,CARD(command.pen))
         ELSE
-          okay=CONSOLEBITMAP.ClippedText(CARD(client.left+command.bounds.left),
+          okay=TextStep(CARD(client.left+command.bounds.left),
               CARD(client.top+command.bounds.top),@window.content.text(command.offset),
               command.count,CARD(command.pen),window.content.background,@bounds)
+          IF okay<>1 THEN
+            RETURN(okay)
+          FI
+
+          commandIndex==+1
+          RETURN(IF commandIndex=window.content.count THEN 1 ELSE 2 FI)
         FI
       FI
 
@@ -373,8 +456,8 @@ PUBLIC BYTE FUNC Ready()
 RETURN(CONSOLEBITMAP.Pending()=0
     AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
 
-; One strip step. Return 2 for an unfinished widget strip, 1 for other paint
-; progress, or 0 for no work. Non-widget work keeps its original turn budget.
+; One strip step. Return 2 for an unfinished strip, 1 for completed-strip
+; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
 PUBLIC BYTE FUNC Pump()
   BYTE count,slot,status,done
@@ -424,8 +507,7 @@ PUBLIC BYTE FUNC Pump()
 
   done=PaintStrip(window,layer)
   IF done=2 THEN
-    RETURN(IF window<>NULL AND window.kind=DESKTYPES.CONTENT_WIDGETS
-        THEN 2 ELSE 1 FI)
+    RETURN(2)
   FI
 
   IF done<>0 THEN

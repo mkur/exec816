@@ -50,7 +50,8 @@ def analyze(out):
     windows['before_worker_loop']=[events[0][0],turnticks[0]]
     kinds=['consoledisplay_present','consoledisplay_cells','consolebitmap_text','consolebitmap_clippedtext','pump','paint','deskhost_controls','commit','deskinput_service','deskinput_advance','consoledriver_writequantum','deskhost_cache','consolebitmap_run']
     kinds += ['deskcore_pump','deskcore_dispatch','deskhost_inputboundary','deskwidgetinput_advance',
-              'deskpaint_paintstrip','frame_background']
+              'deskpaint_paintstrip','frame_background','consolebitmap_desktoppart',
+              'consolebitmap_textstep','deskpaint_textstep']
     result=dict(status=j['status'],scope='Optimized development replay, unchanged guest binary. Inclusive routine costs overlap; exclusive costs reconcile to each unit. CPU excludes native interrupts and off-Task time, includes kernel/C tails and bus stalls. RTL endpoints exclude the RTL instruction; C call sites include JSL through the return continuation.',image_sha256=j.get('xex_sha256',j.get('build',{}).get('xex_sha256')),trace_sha256=sha256(out/'emulator.log'),worker_dp=p['worker_dp'],source_trace=str(out/'emulator.log'),definition=d,windows={})
     for load,(a,b) in windows.items():
         selected=[s for s in spans if a<=s['start']<s['end']<=b]

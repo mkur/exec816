@@ -226,6 +226,17 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     RETURN(0)
   FI
 
+  ; Finish a visible dirty segment before a new scroll can move its prefix.
+  ; Present owns the single text step in this turn. Cancellation and clear
+  ; can abandon the old repair; neither waits for its pixels to catch up.
+  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
+      AND instance.dirtyRows<>0 AND instance.writeCancel=0
+      AND instance.operation<>CONSOLETYPES.OP_CLEAR
+      AND (instance.operation<>CONSOLETYPES.OP_IDLE
+      OR request.io_Actual<>request.io_Length) THEN
+    RETURN(0)
+  FI
+
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
     CONSOLEDISPLAY.Edit(view,instance)
     IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -239,14 +250,6 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
 
   IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
     FinishWrite(instance,request)
-    RETURN(0)
-  FI
-
-  ; An obscured scroll repaints the retained rows in bounded passes. Let that
-  ; repaint reach the bottom before another write can invalidate its prefix.
-  ; Input, cancellation and desktop controls still run on every worker turn.
-  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
-      AND instance.dirtyRows<>0 AND DESKSTATE.CopyReady()=0 THEN
     RETURN(0)
   FI
 
@@ -618,11 +621,20 @@ PUBLIC PROC Worker()
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
         IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0
-            AND DESKHOST.PaintReady()<>0 AND
+            AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           handoff=0
           completeWrite=0
-          IF view.scrollState<>0
+          IF CONSOLEBITMAP.TextPending()<>0 THEN
+            ; A scene token freezes this model until the last text fragment.
+            ; Re-resolve the live request only to finish a held short reply.
+            IF instance.write<>NULL AND instance.operation=CONSOLETYPES.OP_IDLE THEN
+              BEGIN
+                LET request=EXEC.IOStdReq POINTER(instance.write)
+                completeWrite=request.io_Actual=request.io_Length
+              END
+            FI
+          ELSEIF view.scrollState<>0
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
@@ -630,7 +642,12 @@ PUBLIC PROC Worker()
           FI
 
           CONSOLEDISPLAY.Present(view,instance)
-          IF completeWrite<>0 THEN
+          ; Resume repair on a fresh worker turn without a voluntary Task
+          ; round trip per segment. Controls, input and registry rotation keep
+          ; their ordinary opportunities; blocked paint never takes this path.
+          again=CONSOLEBITMAP.Enabled()<>0 AND CONSOLEBITMAP.Failed()=0
+              AND view.claimed<>0 AND view.visible<>0 AND instance.dirtyRows<>0
+          IF completeWrite<>0 AND CONSOLEBITMAP.TextPending()=0 THEN
             BEGIN
               LET request=EXEC.IOStdReq POINTER(instance.write)
               IF CONSOLEBITMAP.Failed()<>0 THEN
@@ -644,6 +661,7 @@ PUBLIC PROC Worker()
 
         ; Cancellation may finish a retained model edit while pixels are held.
         IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
+            AND CONSOLEBITMAP.TextPending()=0
             AND instance.write<>NULL AND instance.writeCancel<>0 THEN
           CONSOLECORE.EditQuantum(instance)
           IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -653,7 +671,7 @@ PUBLIC PROC Worker()
 
         writing=instance.write<>NULL AND (AESLOCKS.PaintBlocked()=0
             OR instance.writeCancel<>0)
-        again=(writing<>0 AND instance.writeCancel<>0)
+        again=again OR (writing<>0 AND instance.writeCancel<>0)
             OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0)
         IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
           again=0

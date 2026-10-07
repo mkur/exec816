@@ -110,27 +110,37 @@ operations; use window controls for desktop placement and visual focus.
 
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One
-update token spans the repaint. Each turn paints at most sixteen scanlines or
-four retained commands. Widget painting has up to four ready steps within the
-same strip: frame work separately when needed, then at most one intersecting
+update token spans the repaint. Painting uses sixteen-scanline strips and up
+to four ready steps of the same strip per worker turn. Frame background, title
+and close mark have separate stages. Console exposure and retained text paint
+at most 32 glyphs from one row or command per step, reduced to 16 for vertically
+clipped glyphs on the slower raster path; a scalar offset resumes the
+unfinished text before advancing to another row or command. Command scanning
+remains capped at four commands per step. Widget painting handles at most one intersecting
 object part and eight examined objects per C call. Wide, vertically clipped
-text resumes in disjoint spans of at most 96 pixels. Input is serviced between steps, and unfinished
-widget scratch is published only when the strip is complete. Console model writes and layout edits wait while
+text resumes in disjoint spans of at most 96 pixels. Input is serviced between
+steps, and unfinished widget scratch is published only when the strip is
+complete. Console model writes and layout edits wait while
 input delivery and request intake continue. No application refresh callback
 runs inside the presenter. Covered damage is retained without keeping the
 worker runnable; later exposure reconstructs pixels from the current model.
 
-Ordinary console spans keep the existing short-write presentation pass. Each
-synchronous public draw holds a token through all clipped fragments. The
+Ordinary console spans keep the existing short-write presentation pass. Their
+private continuation retains a scene token, region index and glyph offset;
+each turn re-resolves the cells under the console borrow. It draws one clipped
+fragment, capped at 32 whole-height or 16 partial-height glyphs, before input
+service. Synchronous public draws drain that same traversal before returning.
+Each token remains held through all of its clipped fragments. The
 native/C bridge supports half-open pixel clips, including odd nibble edges and
-partial glyphs. Fully visible text retains the font-atlas path. Repainting does
-not acknowledge edits that occur after its token: model edits are gated until
+partial glyphs. Whole invisible glyphs are skipped before the C call; partial
+edge glyphs retain the pixel clip. Fully visible text retains the font-atlas
+path. Repainting does not acknowledge edits that occur after its token: model edits are gated until
 that token retires.
 
 A scroll can reuse pixels only when the layer is clean and fully visible.
 Its existing copy/fill list holds the scene token until completion IRQ/watchdog
 processing proves completion or quiescence. Obscured scrolls update retained
-cells and redraw visible damage. Before consuming more output, an obscured
+cells and redraw visible damage. Before consuming more output, a
 visible console drains its existing row damage using the ordinary bounded
 presentation passes. This prevents repeated scrolls from restarting repair at
 the top and starving the lower rows. Input, cancellation and desktop controls

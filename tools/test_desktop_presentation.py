@@ -49,10 +49,10 @@ def frame(raster, bounds, title, focused, background=0, close=False):
     rectangle(raster, (x+8, y+16, right-8, bottom-8), background)
 
 
-def scenes(font):
+def scenes(font, accepted=None):
     terminal = Terminal(64, 20)
     terminal.feed(b'ABC')
-    for stage in range(1, 19):
+    for stage in range(1, 20):
         if stage == 2:
             for row in range(25):
                 terminal.feed(bytes(33+(row*7+col) % 90 for col in range(64)))
@@ -64,6 +64,12 @@ def scenes(font):
         if stage == 17:
             terminal.feed(bytes(10 if col % 31 == 30 else 65+col % 26
                                 for col in range(512)))
+        if stage == 19:
+            if accepted is None:
+                yield None
+                continue
+            terminal.feed(b'\x0c'+b'\n'*13)
+            terminal.feed(bytes(65+col % 26 for col in range(accepted)))
         raster = Raster(font)
         rectangle(raster, (0, 0, 640, 240), 8)
         left, top = (32, 24) if stage < 3 else (80, 48)
@@ -78,13 +84,13 @@ def scenes(font):
             x, y = positions[stage-7]
             frame(raster, (x, y, x+160, y+80), b'Clip', False, 3, close=True)
             text(raster, x+11, y+19, b'XYZ', bg=3)
-        if stage in (16, 17):
+        if stage in (16, 17, 19):
             frame(raster, (377, 0, 537, 173), b'Clip', False, 3, close=True)
             text(raster, 388, 19, b'XYZ', bg=3)
         yield overlay(raster, (320, 120))
 
 
-def run(out, mode, replay=False, observe_moves=False):
+def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
     out.mkdir(parents=True, exist_ok=True)
     profile = json.loads(PROFILE.read_text())
     profile['image_data_bytes'] = 8192  # Fixture records, separate from the demo's 4 KiB.
@@ -97,7 +103,15 @@ def run(out, mode, replay=False, observe_moves=False):
         source = path.read_text().replace('USE EXEC\n', 'USE EXEC\nUSE SCROLLPROBE\n', 1)
         needle = '  consumed=CONSOLECORE.Feed(instance,'
         require(source.count(needle) == 1, 'Console feed boundary changed')
-        path.write_text(source.replace(needle, '  SCROLLPROBE.Feed(instance)\n'+needle))
+        source=source.replace(needle, '  SCROLLPROBE.Feed(instance)\n'+needle)
+        needle='          CONSOLEDISPLAY.Present(view,instance)'
+        require(source.count(needle)==1,'Console text boundary changed')
+        source=source.replace(needle,
+            '          IF SCROLLPROBE.holdFragment=0 THEN\n            SCROLLPROBE.BeforePresent()\n'+needle+
+            '\n            SCROLLPROBE.Presented()\n          FI')
+        source=source.replace('IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN\n          again=0',
+            'IF batch.phase=CONSOLETYPES.BATCH_GATHER OR SCROLLPROBE.holdFragment<>0 THEN\n          again=0')
+        path.write_text(source)
         include = ROOT/'lib/console/console-batch-display.inc'
         source = include.read_text()
         needle = '  CONSOLEBATCH.Publish(instance,reason)'
@@ -117,6 +131,7 @@ def run(out, mode, replay=False, observe_moves=False):
         generate_tasks.policy_modules = original
     require(p['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
     report = dict(status='running', tier='development', qualification=False, slice='DT2',
+                  fragment_fault=fragment_fault,
                   build=p['build'], observations=[], move_transactions=[], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                   reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
     address = lambda name: next(d['address'] for d in p['image']['data'] if '_DESKTEST_'+name+'_' in d['name'])
@@ -124,7 +139,9 @@ def run(out, mode, replay=False, observe_moves=False):
         os.environ['EXEC816_LATENCY_TRACE']='1'
         from bitmap_console_performance import native_markers
         from console_turn_profile import flat_markers
-        spans=native_markers(p,[('CONSOLEBITMAP_COPYSTART','copy'),('CONSOLEBITMAP_POLL','poll')])
+        spans=native_markers(p,[('CONSOLEBITMAP_COPYSTART','copy'),('CONSOLEBITMAP_POLL','poll'),
+            ('CONSOLEDISPLAY_CELLS','cells'),('CONSOLEBITMAP_DESKTOPDRAW','desktop_draw'),
+            ('DESKPAINT_PAINTSTRIP','paint_strip')])
         points={name:p['labels'][name] for name in ('native_irq','native_nmi','interrupt_schedule')}
         restore=p['labels']['context_restore']
         code=(p['output']/'hosted.bin').read_bytes()
@@ -139,6 +156,7 @@ def run(out, mode, replay=False, observe_moves=False):
             require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'], 'Unpinned emulator')
             report['machine'] = verify_machine(bridge, ROM, PIN)
             def before(b):
+                b.memload(address('FRAGMENTFAULT'),bytes([fragment_fault]))
                 if observe_moves: b.profile_start()
                 previous_clock = b.eval_expr('@clk') & 0xffffffff
                 for stage, expected in enumerate(scenes(font_bytes(out/'selected/src/vdi/font8x8.c')), 1):
@@ -163,12 +181,18 @@ def run(out, mode, replay=False, observe_moves=False):
                         b.regs = original
                     folder = out/f'stage-{stage}'
                     folder.mkdir(exist_ok=True)
+                    if expected is None:
+                        accepted=data(b,p['image'],'cutBytes',True)[0]
+                        require(0<accepted<512,'Missing partial-fragment cancellation')
+                        expected=list(scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted))[-1]
+                        report['fragment_accepted_prefix']=accepted
                     clock = b.eval_expr('@clk') & 0xffffffff
                     report['observations'].append(dict(stage=stage,
                         begin_cycle=previous_clock,end_cycle=clock,
                         stimulus_to_settled_cycles=(clock-previous_clock) & 0xffffffff,
                         timing_scope='Includes request, all repair, caret and two PAL settling frames; not DMA duration',
-                        pixels=pixels(b,folder,expected)))
+                        pixels='quiesced drawing failure' if fragment_fault and stage==19
+                               else pixels(b,folder,expected)))
                     previous_clock = clock
                     b.memload(address('GATE'), stage.to_bytes(2,'little'))
                 b.bp_clear_all()
@@ -196,8 +220,18 @@ def run(out, mode, replay=False, observe_moves=False):
                         if event[0]=='cpu' and int(event[4],16)==p['labels']['blitter_launched']]
             require(launches, 'Missing actual asynchronous launches')
             for row in report['observations']:
-                if row['stage'] not in (3,8,9,10,11,12,13,14): continue
                 align = lambda t:t+round((launches[0]-t)/(1<<32))*(1<<32)
+                row['text_work'] = {}
+                for kind in ('cells','desktop_draw','paint_strip'):
+                    calls = [s for s in profile if s['kind']==kind
+                             and align(row['begin_cycle'])<=s['start']<s['end']<=align(row['end_cycle'])]
+                    row['text_work'][kind] = dict(calls=len(calls),
+                        total_cpu_ms=sum(s['charged_cpu_ms'] for s in calls),
+                        max_cpu_ms=max((s['charged_cpu_ms'] for s in calls),default=0))
+                if row['stage'] in (16,17):
+                    require(row['text_work']['cells']['max_cpu_ms']<=20,
+                            'Overlapping console fragments exceeded 20 ms CPU')
+                if row['stage'] not in (3,8,9,10,11,12,13,14): continue
                 selected = [t for t in launches if align(row['begin_cycle'])<t<align(row['end_cycle'])]
                 require(len(selected)==1, 'Copied move must launch one list: '+str(row['stage']))
                 launch=selected[0]
@@ -226,5 +260,6 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--observe-moves', action='store_true')
+    parser.add_argument('--fragment-fault', action='store_true')
     args=parser.parse_args()
-    run(args.output.resolve(),args.mode,args.replay,args.observe_moves)
+    run(args.output.resolve(),args.mode,args.replay,args.observe_moves,args.fragment_fault)

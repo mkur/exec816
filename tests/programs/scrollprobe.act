@@ -1,10 +1,34 @@
 ; Fixture-only observation at the ordinary writer's model-consumption boundary.
 MODULE SCROLLPROBE
 USE CONSOLETYPES
+USE CONSOLEBITMAP
 
 PUBLIC BYTE enabled
 PUBLIC CARD feeds,overtakes
 PUBLIC CARD batches,multirow,maxRows
+PUBLIC BYTE armFragment,holdFragment,fragmentHeld
+PUBLIC BYTE failFragment
+
+PUBLIC PROC BeforePresent()
+  BYTE okay
+
+  IF failFragment<>0 THEN
+    failFragment=0
+    ; Quiesced drawing error from another primitive between text fragments.
+    okay=CONSOLEBITMAP.RawFill(640,0,8,8,0)
+  FI
+
+RETURN
+
+PUBLIC PROC Presented()
+
+  IF armFragment<>0 AND CONSOLEBITMAP.TextPending()<>0 THEN
+    armFragment=0
+    holdFragment=1
+    fragmentHeld=1
+  FI
+
+RETURN
 
 PUBLIC PROC Batch(CARD rows)
 

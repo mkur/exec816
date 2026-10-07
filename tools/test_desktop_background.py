@@ -35,7 +35,9 @@ DAMAGE = [(40, 46, 70, 56), (56, 52, 82, 64), (32, 99, 44, 108),
           (38, 32, 98, 40), (176, 97, 190, 107)]
 NAMES = ('empty desktop', 'first empty client', 'five retained commands',
          'shortened label', 'focus title', 'overlapping sparse damage',
-         'full repaint', 'short title and empty black client', 'closed')
+         'full repaint', 'short title and empty black client', 'closed',
+         'long retained text and title', 'vertically clipped long repair',
+         'closed after text continuation')
 
 
 def scene(stage, font):
@@ -50,6 +52,11 @@ def scene(stage, font):
                 left, top, right, bottom = bounds
                 rectangle(raster, (39+left, 45+top, 39+right, 45+bottom), pen)
             text(raster, 42, 64, b'Long label' if stage == 3 else b'OK', bg=3)
+    if stage in (10, 11):
+        frame(raster, (17, 19, 623, 99), b'A long title across paint steps',
+              False, 3, close=True)
+        text(raster, 28, 38, bytes(65+i % 26 for i in range(70)), bg=3)
+        rectangle(raster, (575, 39, 604, 45), 5)
     return overlay(raster, (320, 120))
 
 
@@ -90,7 +97,8 @@ def run(out, replay=False, painter=None, observe=True):
     require(p['build']['optimize'], 'Rendering checks use optimized code')
     foreign = json.loads((out/'c-image.json').read_text())
     definitions = markers(p, foreign, out/'drawing')
-    definitions['spans'].update(native_markers(p, [('DESKPAINT_PAINTSTRIP', 'paint_strip')]))
+    definitions['spans'].update(native_markers(p, [('DESKPAINT_PAINTSTRIP', 'paint_strip'),
+                                                 ('DESKINPUT_SERVICE', 'input_service')]))
     points = flat_markers(definitions)
     points.update({name: foreign['symbols'][name] for name in ('start', '_VbxeUpload', '_VbxeTextUpload')})
     points['drawing_call'] = p['labels']['console_bitmap_call']
@@ -218,11 +226,18 @@ def run(out, replay=False, painter=None, observe=True):
                            async_launches=hits.count(p['labels']['blitter_launched']),
                            painter_calls=len(paint),
                            painter_cpu_ms=sum(s['charged_cpu_ms'] for s in paint),
+                           painter_max_cpu_ms=max((s['charged_cpu_ms'] for s in paint), default=0),
                            painter_elapsed_ms=sum(s['elapsed_ms'] for s in paint))
                 if row['stage'] > 1:
                     require(not any(pc in hits for pc in copies) and row['async_launches'] == 0,
                             'Unexpected surface copy in retained repaint fixture')
                     row['surface_copy_bytes'] = 0
+                if row['stage'] in (10, 11) and not override.exists():
+                    require(row['painter_max_cpu_ms'] <= 20, 'Long-text step exceeded 20 ms CPU')
+                    services = [s['start'] for s in profile['routine_spans'] if s['kind'] == 'input_service']
+                    for left, right in zip(paint, paint[1:]):
+                        require(any(left['end'] < tick < right['start'] for tick in services),
+                                'Retained text skipped its input boundary')
             if not override.exists():
                 check_fills(report['scenes'])
         report.update(status='pass', memory_delta=dict(bank_zero=dict(fixed=0, root_kernel=0,

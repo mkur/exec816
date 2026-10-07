@@ -61,7 +61,7 @@ def scroll_scenes(font):
     return scenes
 
 
-def batch_scenes(font,accepted=None):
+def batch_scenes(font,accepted=None,long_rows=False):
     terminal=Terminal(80,30);scenes=[]
     def snapshot():
         raster=Raster(font);terminal.paint(raster,0,0,True)
@@ -76,5 +76,7 @@ def batch_scenes(font,accepted=None):
     terminal.feed(controls);snapshot()
     terminal.feed(bulk);snapshot()
     if accepted is not None:
+        if long_rows:
+            bulk=bytes(10 if i%64==63 else 65+i%26 for i in range(512))
         terminal.feed(bulk[:accepted]);snapshot()
     return scenes

@@ -117,6 +117,8 @@ PROC Damage(BYTE full)
 RETURN
 
 PROC Main()
+  CARD index
+  LAYERTYPES.Rect repair
 
   ; Hiding the console leaves the empty desktop as an independent starting scene.
   Send(DESKTYPES.HIDE,DESKBOOT.WindowId())
@@ -182,6 +184,49 @@ PROC Main()
   Pause(8)
   Send(DESKTYPES.CLOSE,panel)
   Pause(9)
+
+  ; Several text steps, including odd origins, a vertically clipped repair
+  ; and a later command overlapping the tail of the long text.
+  DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+  request.value=DESKTYPES.CONTENT_COMMANDS
+  request.payload=BYTE POINTER(c"A long title across paint steps")
+  request.bytes=31
+  REGIONS.Assign(@request.bounds,17,19,623,99)
+  Send(DESKTYPES.OPEN,0)
+  panel=request.window
+  content.background=3
+  content.count=2
+  content.textBytes=70
+  FOR index=0 TO 69 DO
+    content.text(index)=BYTE(65+(index MOD 26))
+  OD
+
+  content.commands(0).kind=DESKTYPES.DRAW_TEXT
+  content.commands(0).pen=1
+  content.commands(0).offset=0
+  content.commands(0).count=70
+  REGIONS.Assign(@content.commands(0).bounds,3,3,563,11)
+  content.commands(1).kind=DESKTYPES.DRAW_FILL
+  content.commands(1).pen=5
+  content.commands(1).count=0
+  REGIONS.Assign(@content.commands(1).bounds,550,4,579,10)
+  Replace()
+  Send(DESKTYPES.SHOW,panel)
+  Pause(10)
+  BEGIN
+    LET service=DESKSTATE.Get()
+    LET window=DESKCORE.Find(service,panel)
+    LET layer=DESKCORE.Layer(service,window)
+    REGIONS.Assign(@repair,35,41,581,44)
+    EXEC.Forbid()
+    Require(service.scene.busy=0)
+    Require(LAYERS.Invalidate(@service.scene,layer.id,@repair)=LAYERTYPES.OK)
+    EXEC.Permit()
+    EXEC.Signal(service.owner,service.mask)
+  END
+  Pause(11)
+  Send(DESKTYPES.CLOSE,panel)
+  Pause(12)
 
 RETURN
 

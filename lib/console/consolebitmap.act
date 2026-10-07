@@ -12,7 +12,12 @@ USE CALYPSIMETA
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
+; Private text progress owns a scene token, never a source/view pointer.
+LONGCARD desktopToken
+CARD desktopIndex,desktopGlyph
+BYTE desktopWasDirty
 LONGCARD completionMask
+CONST TEXT_GLYPHS=32, CLIPPED_GLYPHS=16
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -185,6 +190,38 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
   packet.background=0
 
 RETURN(Run(OP_TEXT))
+
+; Presenter-private continuation. Return 2 until every visible fragment of
+; this same frozen row segment has retired; Text/TextCaret stay synchronous.
+PUBLIC BYTE FUNC TextStep(CARD x,y BYTE POINTER characters CARD count)
+  LAYERTYPES.Rect bounds
+
+  IF DESKSTATE.Enabled()=0 THEN
+    RETURN(Text(x,y,characters,count))
+  FI
+
+  REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
+
+RETURN(DesktopPart(@bounds,1,characters,count,1,0))
+
+PUBLIC BYTE FUNC TextPending()
+
+RETURN(desktopToken<>0)
+
+; A quiesced fault in another primitive (for example the pointer between
+; fragments) must also retire our token, leaving its damage unacknowledged.
+PUBLIC PROC DiscardText()
+  BYTE status
+
+  IF desktopToken<>0 THEN
+    BEGIN
+      LET service=DESKSTATE.Get()
+      status=LAYERS.Finish(@service.scene,desktopToken,0)
+      desktopToken=0
+    END
+  FI
+
+RETURN
 
 ; The final text span and underline share one admitted drawing operation.
 PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER characters CARD count,caretX,caretY)

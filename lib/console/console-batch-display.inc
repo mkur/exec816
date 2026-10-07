@@ -82,7 +82,8 @@ PUBLIC PROC DiscardBatch()
 RETURN
 
 ; Only the associated view may consume final spans. Keep the caret absent
-; until all text is painted, with the ordinary row and cell budgets per pass.
+; until all text is painted, with one bounded row segment per pass. The batch
+; remains in PAINT while the dirty endpoints retain an unfinished row.
 PROC PresentBatch(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance)
   BYTE caret

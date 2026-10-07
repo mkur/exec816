@@ -19,13 +19,30 @@ PUBLIC PROC Launched(CARD rows)
 
 RETURN
 
+; Stop after real progress inside a row, with an unpainted suffix still owned
+; by the batch. Public abort/hide/close must preserve this accepted model too.
+PUBLIC PROC Painted(CONSOLETYPES.Instance POINTER instance)
+  CARD row
+
+  LET batch=CONSOLEBATCH.Get()
+  IF target=5 AND batch.phase=CONSOLETYPES.BATCH_PAINT THEN
+    FOR row=0 TO instance.height-1 DO
+      IF instance.damageFirst(row)<>0
+          AND instance.damageFirst(row)<instance.damageEnd(row) THEN
+        hit=5
+      FI
+    OD
+  FI
+
+RETURN
+
 ; Hold one new phase while the client exercises public cancellation/control.
 ; A pending control may drain DMA before applying its mutation.
 PUBLIC BYTE FUNC Blocked()
 
   LET batch=CONSOLEBATCH.Get()
   LET windows=CONSOLEWINDOWS.Registry()
-  IF target<>0 AND batch.phase=target THEN
+  IF target<>0 AND (batch.phase=target OR (target=5 AND hit=5)) THEN
     hit=target
     RETURN(windows.control.state<>CONSOLETYPES.CTL_PENDING)
   FI
