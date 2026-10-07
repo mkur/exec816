@@ -1,0 +1,82 @@
+; Settled Writes share one workspace across files and mounts without retained data.
+MODULE SDFSBATCHREUSE
+USE DOS
+USE FSBOOT
+USE FSREGISTRY
+USE FSWTYPES
+USE HEAPCORE
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Settled()
+
+  LET service=FSREGISTRY.Service()
+  LET state=FSWTYPES.State POINTER(service.mutation)
+  Require(state.batchActive=0 AND state.staged=0 AND state.bitmapDirty=0
+      AND state.bitmapValid=0 AND service.operation.output=NULL
+      AND service.operation.file=NULL)
+
+RETURN
+
+PROC Fill(BYTE seed CARD length)
+  CARD index
+
+  LET buffer=BYTE POINTER($30fff0)
+  FOR index=0 TO length-1 DO
+    buffer(index)=BYTE(index) XOR seed
+  OD
+
+RETURN
+
+PROC ReadBack(DOS.FileHandle POINTER file BYTE seed CARD length)
+  CARD index
+
+  LET buffer=BYTE POINTER($30fff0)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=LONGINT(length))
+  Require(DOS.Read(file,buffer,LONGINT(length))=LONGINT(length))
+  FOR index=0 TO length-1 DO
+    IF buffer(index)<>(BYTE(index) XOR seed) THEN
+      Require(0)
+    FI
+  OD
+
+RETURN
+
+PROC Main()
+
+  LET buffer=BYTE POINTER($30fff0)
+  Require(FSBOOT.Ensure()<>0)
+  LET first=DOS.Open(BYTE POINTER(c"D1:BATCHA.BIN"),DOS.MODE_NEWFILE)
+  LET second=DOS.Open(BYTE POINTER(c"D2:BATCHB.BIN"),DOS.MODE_NEWFILE)
+  Require(first<>NULL AND second<>NULL)
+  Fill($61,1500)
+  Require(DOS.Write(first,buffer,1500)=1500)
+  Settled()
+  Fill($72,1300)
+  Require(DOS.Write(second,buffer,1300)=1300)
+  Settled()
+  Require(DOS.Flush(first)<>0)
+  ReadBack(first,$61,1500)
+  ReadBack(second,$72,1300)
+  Require(DOS.Close(first)<>0 AND DOS.Close(second)<>0)
+
+  LET reopened=DOS.Open(BYTE POINTER(c"D1:BATCHA.BIN"),DOS.MODE_READWRITE)
+  Require(reopened<>NULL AND DOS.Seek(reopened,0,DOS.OFFSET_END)=0)
+  Fill($83,17)
+  Require(DOS.Write(reopened,buffer,17)=17)
+  Settled()
+  Require(DOS.Flush(reopened)<>0 AND DOS.Close(reopened)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

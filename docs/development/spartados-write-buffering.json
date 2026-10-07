@@ -5,7 +5,8 @@
   "completed_slices": [
     "SB0",
     "SB1",
-    "SB2"
+    "SB2",
+    "SB3"
   ],
   "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
   "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
@@ -188,7 +189,7 @@
     "status": "pass",
     "tests": 393
   },
-  "scope": "SB0\u2013SB2 complete: request-scoped metadata coalescing settles each Write before reply. Lifetime/reset/performance/delivery slices SB3\u2013SB5 pending. Development evidence does not qualify hosted hardware.",
+  "scope": "SB0\u2013SB3 complete. Request-scoped publication, lifetime/error retirement and actual RESET cuts development-tested. COPY measurements and delivery SB4\u2013SB5 pending.",
   "sb1": {
     "status": "pass",
     "artifacts": [
@@ -422,5 +423,146 @@
       "tests": 393
     },
     "diagnostic": "Large 256-byte cases progressed normally; the broad fixture repeats a large write and its unchanged per-sector truncate/reclaim. Narrower geometry checks retain read-back/overwrite/append/remount without that duplicate truncate."
+  },
+  "sb3": {
+    "status": "pass",
+    "artifacts": [
+      {
+        "case": "lifetimes",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/lifetimes/results.json",
+        "sha256": "6cf94a94de8e5f0dfc7ec4a1b8d5afc9323cfbcba2cf7609f89e02e191510ef8",
+        "xex_sha256": "8ed0905a4f374bd8c9d36b34d8131a68163c08798b4e4ec781a80f32c8aa7c34",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "reuse",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/reuse/results.json",
+        "sha256": "a105353771ed6ea19460758a2c9f61cf82764849693a6b65b6a3a86f58ba33b0",
+        "xex_sha256": "380cd6457546a3ade5ec789cfa8157794c5a0d5628b4503e5feae52bf0e0a9f7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "named-faults",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/named-faults/results.json",
+        "sha256": "74183a4d5f98eac7731a354228e38d7e1243bd912655899006fa6c9df9b82fa0",
+        "xex_sha256": "c9eea62c67db8882d7bf8085d867fb4f8d16ad7819b6a53337d7073e72a78fff",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "split-faults",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/split-faults/results.json",
+        "sha256": "e814b7e15b02b9383c3ef49c9ee68f32666eb95541ff38ce8aa8e6c926e3ca4b",
+        "xex_sha256": "c9eea62c67db8882d7bf8085d867fb4f8d16ad7819b6a53337d7073e72a78fff",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "error-precedence-final",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/error-precedence-final/results.json",
+        "sha256": "fab0794218ee7f785000806e6c2a6d663fb1f9b9916bbb692083475f8c899379",
+        "xex_sha256": "a40c7ca9279779f6e1f297a3a29cb85512e19651b82b8a83b77c0c4209ea4c58",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "reset-cuts",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/reset-cuts/results.json",
+        "sha256": "231d327caa4e111572b2c8496c78989fedb55e32b3d0deb34cfee13564ba6d20",
+        "xex_sha256": "8f77dbce62fbd1094c306e9503bc9e4c9f4f0704e9902ec42d41b6cff48dcaf7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "roundtrip128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/roundtrip128/results.json",
+        "sha256": "56523027c4164c6c070e0daab6c18c72efe9e5d0cbd0b0ca04fe03bd759b0dda",
+        "xex_sha256": "305db5d9521b6af460ef6b4b8b4d5775f2952ead27a06dfc89acde946e26bcb7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "roundtrip256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb3/roundtrip256/results.json",
+        "sha256": "56c00e2bb99074612fc5b3f4888aea665c9fd7c19143241e495d0e6ed5bdc4d1",
+        "xex_sha256": "305db5d9521b6af460ef6b4b8b4d5775f2952ead27a06dfc89acde946e26bcb7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      }
+    ],
+    "reset_cuts": [
+      {
+        "stage": "payload",
+        "published_length": 0,
+        "map_payloads": 0,
+        "bitmap_free": 1975,
+        "recorded_free": 1975,
+        "incomplete": true,
+        "external_finding": null,
+        "media_sha256": "0c581037ce6ad87daf8d548473e575b9e4e641bfb3ccc58d538fcf377aa6714d",
+        "classification": "unreferenced payload; allocation not published"
+      },
+      {
+        "stage": "bitmap",
+        "published_length": 0,
+        "map_payloads": 0,
+        "bitmap_free": 1967,
+        "recorded_free": 1975,
+        "incomplete": true,
+        "external_finding": "Allocation mismatch: live/free=[], lost=[8, 9, 10, 11, 12, 13, 14, 15]",
+        "media_sha256": "4a567fb18cc175af69a654c8008ef7a53f727d45b74bc6952394e9017ad3f155",
+        "classification": "allocated leaks and stale free count"
+      },
+      {
+        "stage": "header",
+        "published_length": 0,
+        "map_payloads": 0,
+        "bitmap_free": 1967,
+        "recorded_free": 1967,
+        "incomplete": true,
+        "external_finding": "Allocation mismatch: live/free=[], lost=[8, 9, 10, 11, 12, 13, 14, 15]",
+        "media_sha256": "03697e250a9dbaf0d0ec43be61f0b88e0bff980b0366ba2238fc13880b2886bc",
+        "classification": "allocated leaks; free count agrees"
+      },
+      {
+        "stage": "map",
+        "published_length": 0,
+        "map_payloads": 8,
+        "bitmap_free": 1967,
+        "recorded_free": 1967,
+        "incomplete": true,
+        "external_finding": null,
+        "media_sha256": "f480e677d3616c19146630873cb7637ca307c06f38ca1af885c3827ff33251e0",
+        "classification": "map pointers beyond published length"
+      },
+      {
+        "stage": "directory",
+        "published_length": 2000,
+        "map_payloads": 8,
+        "bitmap_free": 1967,
+        "recorded_free": 1967,
+        "incomplete": true,
+        "external_finding": null,
+        "media_sha256": "2f6d43da1f2c5dba4412ad506bb7205e9759b0e8111dd2ff34a28ab9e6204449",
+        "classification": "complete published prefix; writer incomplete"
+      }
+    ],
+    "workspace_delta": 0,
+    "resident_production_code_delta": 0,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "boot": 0
+    },
+    "host_checks": {
+      "status": "pass",
+      "tests": 396
+    },
+    "scope": "Optimized emitted lifetime/fault/reuse cases, independent allocation and byte audits, Exec read-back of persisted boundary media. Cold RESET is intercepted before cleanup; no sector tearing or resident repair qualification.",
+    "fixture_corrections": "The new combined-error scenario uses explicit dispatch ranges. Offline Open is checked after ending its canceled foreground scope; the failed Write and terminal Close retain I/O error6."
   }
 }

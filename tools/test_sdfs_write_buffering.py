@@ -18,9 +18,7 @@ from test_dos_stack import execute, ownership
 from test_sio_device import PIN
 
 
-def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
-        ordered=False, from_build=None):
-    require(1 <= amount <= 32768, 'Amount must be 1..32768')
+def instrument(out):
     for name in ('sdfsbatchprobe.act', 'sdfs_write_buffering.act'):
         (out/name).write_text(read_source(ROOT/'tests/programs'/name))
     source = read_source(library_file('fswriteio.act'))
@@ -29,6 +27,12 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
     require(source.count(marker) == 1, 'Stale verified-write observer')
     source = source.replace(marker, '\n  SDFSBATCHPROBE.Completed(service,sector)\n' + marker)
     (out/'fswriteio.act').write_text(source)
+
+
+def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
+        ordered=False, from_build=None):
+    require(1 <= amount <= 32768, 'Amount must be 1..32768')
+    instrument(out)
     media = out/'volume.atr'
     shutil.copyfile(ROOT/f'tests/fixtures/filesystem-write/sdfs-{size}.atr', media)
     before = Audit(media.read_bytes())

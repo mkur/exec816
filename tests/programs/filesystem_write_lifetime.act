@@ -203,17 +203,17 @@ PROC Main()
     Arm(3,1006)
   FI
 
-  IF scenario<14 THEN
+  IF scenario<14 OR scenario=23 THEN
     file=DOS.Open(path,DOS.MODE_NEWFILE)
     Require(file<>NULL)
   FI
 
   phase=1
-  IF scenario>=19 THEN
+  IF scenario>=19 AND scenario<=22 THEN
     NamespaceBreak()
-  ELSEIF scenario>=14 THEN
+  ELSEIF scenario>=14 AND scenario<=18 THEN
     MutationFailure()
-  ELSEIF scenario>=9 THEN
+  ELSEIF scenario>=9 AND scenario<=13 THEN
     Inheritance()
   ELSEIF scenario=4 OR scenario=5 OR scenario=7 THEN
     IF scenario=5 THEN
@@ -262,13 +262,13 @@ PROC Main()
     ELSEIF scenario=3 THEN
       Arm(3,87)
       expected=17
-    ELSEIF scenario=6 THEN
+    ELSEIF scenario=6 OR scenario=23 THEN
       BEGIN
         LET payload=LONGINT(service.mounts(0).item.spec.dataBytes)-
             IF service.mounts(0).item.spec.format=1 THEN LONGINT(3) ELSE LONGINT(0) FI
         Require(DOS.Write(file,buffer,payload)=payload)
       END
-      Arm(2,87)
+      Arm(IF scenario=23 THEN BYTE(6) ELSE BYTE(2) FI,87)
       expected=-1
       IF confirmedBytes<>0 THEN
         expected=LONGINT(confirmedBytes)
@@ -288,7 +288,7 @@ PROC Main()
     Require(result=expected)
     IF (scenario=1 OR scenario=2) AND expected<LONGINT(amount) THEN
       Require(error=DOS.ERROR_BREAK)
-    ELSEIF scenario=6 THEN
+    ELSEIF scenario=6 OR scenario=23 THEN
       Require(error=6)
       BEGIN
         LONGINT payload
@@ -314,7 +314,7 @@ PROC Main()
     END
 
     phase=2
-    IF scenario=6 THEN
+    IF scenario=6 OR scenario=23 THEN
       Require(DOS.Close(file)=0 AND DOS.IoErr()=6)
     ELSE
       Require(DOS.Close(file)<>0)
@@ -328,15 +328,21 @@ PROC Main()
     Require(FSWRITEPROBE.fired=1)
   FI
 
-  IF scenario=6 OR scenario=7 OR (scenario>=12 AND scenario<=18) THEN
+  IF scenario=6 OR scenario=7 OR scenario=23 OR
+      (scenario>=12 AND scenario<=18) THEN
     Require(service.mounts(0).item.offline<>0 AND
         service.mounts(0).item.writable=0 AND service.mounts(0).item.references=0)
-    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=6)
   FI
 
   IF scenario<=5 OR scenario>=19 THEN
     Require(DOS.BreakPending()<>0)
     Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0)
+  FI
+
+  ; A new request observes offline state after retiring the canceled scope.
+  IF scenario=6 OR scenario=7 OR scenario=23 OR
+      (scenario>=12 AND scenario<=18) THEN
+    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=6)
   FI
 
   Require(DOS.ReleaseContext()<>0)

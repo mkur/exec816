@@ -13,6 +13,7 @@ USE FSREGISTRY
 USE SDFS
 CARD checks,phase
 CARD hint
+BYTE fileOnly
 CARD ARRAY layouts(8)
 LONGINT amount
 LONGINT lastResult,lastError
@@ -201,8 +202,12 @@ PROC Main()
   Require(service.work.operations=1)
   service.mounts(0).item.volume.allocationHint=hint
   FileWrites()
-  Names()
-  Truncate()
+  IF fileOnly<>0 THEN
+    Require(DOS.Rename(Path(0),Path(1))<>0)
+  ELSE
+    Names()
+    Truncate()
+  FI
   phase=7
   Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0)
