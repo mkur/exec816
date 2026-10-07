@@ -21,7 +21,7 @@ def run(t,out,mode,size,replay=False):
         require(p['build']['source_sha256']==sha256(ROOT/'tests/programs/sdfs_dos.act'),'Stale DOS source')
         require(all(sha256(ROOT/name)==digest for name,digest in p['build']['task_inputs'].items()),'Stale DOS implementation')
     else:
-        p=build(t,ROOT/'tests/programs/sdfs_dos.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=False,dos_mounts=mounts,
+        p=build(t,ROOT/'tests/programs/sdfs_dos.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console_deferred=True,dos_mounts=mounts,
             image_data=[(0xd1000,names),(0xd2000,bytes(512)),(0xd3000,bytes(260)),(0xd3200,bytes(260)),(0xd5000,bytes(280))])
     hashes=[sha256(p) for p in media]
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:

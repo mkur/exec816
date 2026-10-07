@@ -71,6 +71,76 @@
         "fixed": 0,
         "per_task": 0
       }
+    },
+    {
+      "slice": "DL2",
+      "status": "pass",
+      "checks": [
+        {
+          "path": "build/development/dir-latency/dl2-block-fixture/results.json",
+          "sha256": "b3747ea4f4e1d13d7f47c051d89afa6e5960bd880f89570bd8eb5e8a514f85bf",
+          "mode": null,
+          "sector_bytes": null,
+          "backend": "fixture",
+          "checks": [
+            26839
+          ],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl2-block-sio/results.json",
+          "sha256": "af927cbcc4822d933ab5bc384a128239a0ae258e0940910bc566d8bc97c05b31",
+          "mode": null,
+          "sector_bytes": null,
+          "backend": "sio",
+          "checks": [
+            1876
+          ],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl2-dos/results.json",
+          "sha256": "f8841e0a2e8db0b82dc0f6e410a60d7569a666d0f7cbe7aa11cc04b777a2ad66",
+          "mode": "opt",
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": [
+            124
+          ],
+          "scope": "Real emulated SIO, GENERIC57600, mixed volumes; focused development evidence"
+        }
+      ],
+      "routines": {
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 63,
+          "fixed_frame": 0,
+          "local_stack_peak": 12
+        },
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 513,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1144,
+          "fixed_frame": 24,
+          "local_stack_peak": 36
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2211,
+          "fixed_frame": 34,
+          "local_stack_peak": 44
+        },
+        "M_FSINFO_CLEAR_E168B3AB": {
+          "code_bytes": 54,
+          "fixed_frame": 0,
+          "local_stack_peak": 10
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
     }
   ],
   "bank_zero_delta": {

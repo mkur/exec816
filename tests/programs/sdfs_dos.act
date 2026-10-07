@@ -190,7 +190,7 @@ PROC Inherit()
       AND result.secondary=0)
   Require(DOS.Seek(handle,0,DOS.OFFSET_CURRENT)=8)
   Require(DOS.Write(handle,output,1)=-1
-      AND DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+      AND DOS.IoErr()=DOS.ERROR_WRITE_PROTECTED)
   Require(DOS.Close(handle)<>0)
 
 RETURN

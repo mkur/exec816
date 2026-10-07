@@ -5,6 +5,7 @@ USE EXEC
 USE FSBTYPES
 USE SDFSTYPES
 USE BLOCKTYPES
+USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 
 PUBLIC CARD FUNC Word(BYTE POINTER bytes CARD offset)
@@ -196,13 +197,10 @@ RETURN(state.valid<>0 AND state.cached=work.volume
 PUBLIC PROC Cache(FSBTYPES.Workspace POINTER work CARD sector)
   SDFSTYPES.BackendState POINTER state
   BLOCKTYPES.Adapter POINTER adapter
-  CARD index
 
   state=GetState(work)
   adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
-  FOR index=0 TO work.volume.block.dataBytes-1 DO
-    state.map(index)=adapter.buffer(index)
-  OD
+  A816MEMORY.Move(state.map,adapter.buffer,SIZE(work.volume.block.dataBytes))
 
   state.cached=work.volume
   state.generation=work.volume.block.generation

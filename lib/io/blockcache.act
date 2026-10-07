@@ -3,8 +3,9 @@ MODULE BLOCKCACHE
 USE EXEC
 USE BLOCKTYPES
 USE BOOTCONFIG
+USE A816MEMORY
 
-CONST WAYS=4, BLOCK_BYTES=128, WORDS_PER_BLOCK=64
+CONST WAYS=4, BLOCK_BYTES=128
 CONST SHORT_SECTOR=0, FIRST_HALF=1, SECOND_HALF=2
 CONST ABSENT=$ffff
 
@@ -127,13 +128,8 @@ RETURN
 
 ; Both addresses are aligned heap storage; far indexing propagates bank carry.
 PROC Copy(BYTE POINTER source,destination)
-  CARD index
 
-  LET origin=CARD POINTER(source)
-  LET target=CARD POINTER(destination)
-  FOR index=0 TO WORDS_PER_BLOCK-1 DO
-    target(index)=origin(index)
-  OD
+  A816MEMORY.Move(destination,source,SIZE(BLOCK_BYTES))
 
 RETURN
 

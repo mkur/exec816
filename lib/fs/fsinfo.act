@@ -1,6 +1,7 @@
 MODULE FSINFO
 USE FSTYPES
 USE FSBTYPES
+USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 ; Kept in the caller's FIB reserved bytes, so each lock/info pair walks alone.
 PUBLIC TYPE Enumeration=[
@@ -21,13 +22,8 @@ RETURN(Enumeration POINTER(bytes))
 
 ; Start each public file-information result with deterministic reserved bytes.
 PUBLIC PROC Clear(FileInfoBlock POINTER info)
-  BYTE POINTER bytes
-  CARD index
 
-  bytes=BYTE POINTER(info)
-  FOR index=0 TO FILEINFOBLOCK_SIZE-1 DO
-    bytes(index)=0
-  OD
+  A816MEMORY.Clear(BYTE POINTER(info),SIZE(FILEINFOBLOCK_SIZE))
 
 RETURN
 
