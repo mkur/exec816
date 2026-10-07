@@ -17,6 +17,7 @@ PUBLIC TYPE BackendState=[
   FSBTYPES.Volume POINTER cached
   LONGCARD generation
   CARD sector
+  CARD allocated,firstEmpty
   BYTE valid
   BYTE ARRAY map(256)
   BYTE ARRAY row(23)

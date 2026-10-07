@@ -247,7 +247,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
   SDFSTYPES.MapCursor POINTER cursor
   SDFSTYPES.BackendState POINTER state
   SDFSTYPES.Volume POINTER volume
-  CARD index,sector,sectorBytes,prefixEnd,prefix
+  CARD sectorBytes,prefix
   LONGCARD needed
   BYTE ancestor
 
@@ -303,19 +303,11 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     FI
   FI
 
-  prefixEnd=4+(prefix LSH 1)
-  file.entry.count==+1
-  FOR index=4 TO sectorBytes-2 STEP 2 DO
-    sector=SDFS.Word(state.map,index)
-    IF sector<>0 THEN
-      file.entry.count==+1
-    ELSEIF (file.entry.flags & FSBTYPES.DIR)<>0 THEN
-      IF index<prefixEnd THEN
-        work.error=ERROR_DISK_NOT_VALIDATED
-        RETURN(FSSTATUS.ERROR)
-      FI
-    FI
-  OD
+  file.entry.count==+LONGINT(state.allocated)+1
+  IF (file.entry.flags & FSBTYPES.DIR)<>0 AND state.firstEmpty<prefix THEN
+    work.error=ERROR_DISK_NOT_VALIDATED
+    RETURN(FSSTATUS.ERROR)
+  FI
 
   IF LONGCARD(file.entry.count)>work.volume.block.sectors THEN
     work.error=ERROR_DISK_NOT_VALIDATED

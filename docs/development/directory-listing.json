@@ -210,6 +210,90 @@
         "fixed": 0,
         "per_task": 0
       }
+    },
+    {
+      "slice": "DL4",
+      "status": "pass",
+      "checks": [
+        {
+          "path": "build/development/dir-latency/dl4-128/results.json",
+          "sha256": "55421bc55821b6f3a1106feb7b7f4e2f99eba284e63d0c6061181186145b24c7",
+          "mode": "opt",
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": {
+            "checks": [
+              3570
+            ],
+            "dataReads": [
+              842
+            ],
+            "mapReads": [
+              18
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        },
+        {
+          "path": "build/development/dir-latency/dl4-256/results.json",
+          "sha256": "091fcc451942c9be2983cf4f384fe4c8e5be4571d1033fa1e06ffb19a3703107",
+          "mode": "opt",
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": {
+            "checks": [
+              2695
+            ],
+            "dataReads": [
+              562
+            ],
+            "mapReads": [
+              12
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        },
+        {
+          "path": "build/development/dir-latency/dl4-cancel/results.json",
+          "sha256": "4bd0380688370c3b6e6541e7039a61ae167b8fe002859c1f87f0d0eaebfbc24b",
+          "mode": null,
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": null,
+          "scope": "Controlled Task-side injection through the real foreground delivery function; unchanged production collection/abort/checkpoint logic. Scheduling hooks are not latency evidence."
+        }
+      ],
+      "routines": {
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 537,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1390,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 63,
+          "fixed_frame": 0,
+          "local_stack_peak": 12
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2064,
+          "fixed_frame": 32,
+          "local_stack_peak": 42
+        },
+        "M_FSINFO_CLEAR_E168B3AB": {
+          "code_bytes": 54,
+          "fixed_frame": 0,
+          "local_stack_peak": 10
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
     }
   ],
   "bank_zero_delta": {

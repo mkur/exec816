@@ -63,6 +63,8 @@ PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)
 
   state=GetState(work)
   state.valid=0
+  state.allocated=0
+  state.firstEmpty=0
   state.cached=FSBTYPES.Volume POINTER(0)
   state.directoryVolume=FSBTYPES.Volume POINTER(0)
 
@@ -201,6 +203,8 @@ PUBLIC PROC Cache(FSBTYPES.Workspace POINTER work CARD sector)
   state=GetState(work)
   adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
   A816MEMORY.Move(state.map,adapter.buffer,SIZE(work.volume.block.dataBytes))
+  state.allocated=0
+  state.firstEmpty=0
 
   state.cached=work.volume
   state.generation=work.volume.block.generation
@@ -234,7 +238,7 @@ PUBLIC BYTE FUNC ValidateMap(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     POINTER file)
   SDFSTYPES.MapCursor POINTER cursor
   SDFSTYPES.BackendState POINTER state
-  CARD next,sector,index
+  CARD next,sector,index,allocated,firstEmpty
 
   cursor=Map(file)
   state=GetState(work)
@@ -258,6 +262,8 @@ PUBLIC BYTE FUNC ValidateMap(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     FI
   FI
 
+  allocated=0
+  firstEmpty=(work.volume.block.dataBytes-4) RSH 1
   FOR index=4 TO work.volume.block.dataBytes-2 STEP 2 DO
     sector=Word(state.map,index)
     IF sector<>0 THEN
@@ -265,9 +271,16 @@ PUBLIC BYTE FUNC ValidateMap(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
           OR SectorAllowed(work,file,sector,0)=0 THEN
         RETURN(0)
       FI
+
+      allocated==+1
+    ELSEIF firstEmpty=(work.volume.block.dataBytes-4) RSH 1 THEN
+      firstEmpty=(index-4) RSH 1
     FI
   OD
 
+  ; The summary belongs to this successful cursor/ancestry validation.
+  state.allocated=allocated
+  state.firstEmpty=firstEmpty
   cursor.next=next
   cursor.valid=1
 
