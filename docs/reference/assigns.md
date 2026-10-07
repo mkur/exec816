@@ -6,10 +6,13 @@ calls resolve `DATA:NOTES.TXT` beneath the validated `WORK:DATA` directory.
 `ASSIGN NAME:` removes a mapping; `ASSIGN` lists occupied slots. Names ignore
 ASCII case, use the existing 1–31-byte volume-label spelling, and may not
 replace `SYS:`, a stream name or any configured physical mount name. Four
-assignments can exist at once. Standard shell startup assigns `C:` to `SYS:C`,
-using one slot and leaving three for other names. It is an ordinary replaceable,
-removable assignment, visible in `ASSIGN` output. Its target is the selected
-system drive's canonical `C` directory, such as `D2:C`.
+assignments can exist at once. Standard shell startup assigns `C:` to `SYS:C`
+and `S:` to `SYS:S` when present, using two slots and leaving two for other
+names. They are ordinary replaceable, removable assignments, visible in ASSIGN
+output, with canonical targets such as `D2:C` and `D2:S`. The shell runs the
+optional `S:STARTUP` and `S:USER` files before its first prompt; see
+[startup scripts](../guides/shell.md#startup-scripts). Older disks without SYS:S
+retain just C:.
 
 DOS `AssignPath(name, target)` takes the name **without** its colon. A null
 target removes it; a non-null target must resolve to a directory. It returns

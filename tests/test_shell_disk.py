@@ -35,8 +35,9 @@ class ShellDiskTests(unittest.TestCase):
             expected = make(path)
             image = Image(path.read_bytes())
             self.assertEqual((image.count, image.size, path.stat().st_size), (720, 128, 92176))
-            self.assertEqual(set(expected), {'README.TXT', 'HELLO.TXT', 'C/README.TXT', 'DOCS/COMMANDS.TXT', 'TOOLS/SUB/NOTE.TXT'})
-            self.assertLess(sum(map(len, expected.values())), 1024)
+            self.assertEqual(set(expected), {'README.TXT', 'HELLO.TXT', 'C/README.TXT', 'S/STARTUP', 'S/USER', 'DOCS/COMMANDS.TXT', 'TOOLS/SUB/NOTE.TXT'})
+            # Include the two short S: examples in the small data playground.
+            self.assertLess(sum(map(len, expected.values())), 1536)
             used = {0, 1, 2, 3, 360, *range(361, 369), 720}
             found = {}
             for entry in image.walk():

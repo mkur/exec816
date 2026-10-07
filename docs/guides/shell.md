@@ -45,6 +45,43 @@ TYPE maps ATASCII end-of-line to LF, drops CR, preserves printable ASCII/tab/LF
 and displays other bytes as dots. CAT is the external command for unchanged byte
 copying. TYPE rejects interactive Input when no file is supplied.
 
+## Startup scripts
+
+Boot assigns `C:` to `SYS:C` and `S:` to `SYS:S`, then runs `S:STARTUP` followed
+by `S:USER` before the first prompt. Both assignments follow the selected SYS
+drive. These short names fit the filesystems' 8.3 limit. The supplied scripts
+contain comments only, so the default shell and optional primes behavior stays
+the same. The OF816 five-second autoboot is unchanged.
+
+Use STARTUP for system setup and USER for local aliases, assigns or PATH changes:
+
+```text
+; S:USER
+ALIAS HI "HELLO"
+ALIAS LOG "ECHO ready"
+```
+
+Scripts use the same rules as [EXECUTE](#scripts). They run sequentially without
+nesting and inherit the shell console streams. Their directory, PATH and alias
+changes persist. ERROR/FAIL or BREAK stops the current file and skips remaining
+startup files; a recoverable failure leaves the prompt available and reports
+once. WARN continues. EXIT exits the shell before a prompt or optional primes
+launch. Missing STARTUP/USER files are silent and preserve the preceding result.
+An older disk without SYS:S still boots normally, with C: available; other
+assignment or source errors are reported. Startup is attempted after a
+successful system mount and C: assignment, never after each prompt or CD.
+
+C: and S: occupy two of the four system-wide assignment slots. S: is an ordinary
+replaceable/removable assign; USER is resolved through its current mapping when
+its turn arrives. S: is not added to PATH. `EXECUTE S:USER` reruns local setup
+manually after boot; nested EXECUTE remains unsupported inside a script.
+
+The supplied demo mounts SYS read-only. Edit `S/USER` in the system disk's source
+before rebuilding, or edit the ATR externally. A script stored on WORK can be
+run immediately with `EXECUTE WORK:USER`; startup does not scan WORK or save
+session changes automatically. Fatal console/ownership cleanup failures retain
+the ordinary shell shutdown policy.
+
 ## Scripts
 
 `EXECUTE file` runs one command per line, without echoing lines or adding them
@@ -129,8 +166,8 @@ for selection through the boot monitor.
 Built-ins take precedence. A bare command such as `HELLO` is searched in the
 current directory, then the shell's PATH, initially `C:`. Standard shell startup
 assigns `C:` to the existing `SYS:C` directory, where the demo keeps its external
-commands. This uses one of the four system-wide assignment slots and follows
-the selected system drive. A token containing
+commands. C: uses one assignment slot; S: uses a second when SYS:S exists.
+Both follow the selected system drive. A token containing
 `:` or `/`, such as `C:HELLO`, `SYS:C/HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
 There is no extension guessing. The file must use the supported
 [o65 command profile](../reference/program-loading.md). The child inherits

@@ -102,6 +102,15 @@ Input. CD, PATH and aliases persist.
 One script at a time; no arguments or
 conditionals. EXIT also exits the shell.
 
+S: names SYS:S, the scripts directory.
+Boot runs S:STARTUP, then S:USER before
+the prompt. Both are optional. Put local
+aliases and assigns in S:USER. The demo
+files contain comments only; edit them
+in the system disk source to customize.
+C: and S: leave two free assign slots.
+Run EXECUTE S:USER to repeat setup.
+
 Ctrl-A/E move to the start/end. Ctrl-B/F
 or Atari left/right move across the
 line. Ctrl-U clears, Ctrl-K cuts the

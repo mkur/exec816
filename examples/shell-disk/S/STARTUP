@@ -1,0 +1,2 @@
+; Exec816 system startup. C: and S: are ready.
+; Commands here run before S:USER.

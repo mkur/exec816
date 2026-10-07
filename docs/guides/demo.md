@@ -204,8 +204,11 @@ CD SYS:
 
 The commands above work while the current directory is WORK. Bare command
 names search CurrentDir and then C: through the default [PATH](shell.md#path).
-The supplied commands live in SYS:C; startup assigns C: there using one of four
-assignment slots. `C:HELLO` and `SYS:C/HELLO` are explicit command paths.
+The supplied commands live in SYS:C; startup assigns C: there and S: to SYS:S,
+using two of four assignment slots. Before the prompt, it runs optional S:STARTUP
+and S:USER. Both supplied files contain comments only; edit S/USER in the system
+source tree for local setup. See [startup scripts](shell.md#startup-scripts).
+`C:HELLO` and `SYS:C/HELLO` are explicit command paths.
 `PATH RESET` restores the C: search entry without changing its assignment.
 If the system disk failed to mount,
 the console stays usable; insert the matching disk and use `CD SYS:` to retry.

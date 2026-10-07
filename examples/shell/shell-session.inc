@@ -1304,7 +1304,7 @@ PROC ShellDispatch()
     ShellBreakJob()
 
   WHEN CMD_EXECUTE THEN
-    ShellScriptOpen()
+    ShellScriptOpen(shell.words(1).text,0)
 
   WHEN CMD_EXTERNAL THEN
     IF shell.background<>0 THEN
@@ -1375,47 +1375,46 @@ PROC ShellOneCommand()
 
 RETURN
 
-; Reuse ordinary command execution without recursive dispatch or input changes.
-; Script lines have no prompt/history entry; each command settles its own I/O.
-PROC ShellCommand()
+; Finish an opened script through ordinary dispatch. Startup uses the same
+; loop without creating a prompt or recording synthetic input in history.
+PROC ShellRunScript()
 
-  ShellOneCommand()
-  IF script=NULL THEN
-    RETURN
-  FI
+  IF script<>NULL THEN
+    WHILE shell.done=0 AND shell.status<PROCESS.RETURN_ERROR DO
+      BEGIN
+        LET primary=shell.status
+        LET secondary=shell.error
+        shell.status=PROCESS.RETURN_OK
+        shell.error=0
+        shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+        shell.command=CMD_EXECUTE
+        shell.argc=0
+        IF ShellScriptNext()=0 THEN
+          IF shell.status=PROCESS.RETURN_OK THEN
+            shell.status=primary
+            shell.error=secondary
+          ELSE
+            ShellDiagnostic()
+          FI
 
-  WHILE shell.done=0 AND shell.status<PROCESS.RETURN_ERROR DO
+          EXIT
+        FI
+
+        ShellOneCommand()
+      END
+    OD
+
     BEGIN
       LET primary=shell.status
       LET secondary=shell.error
-      shell.status=PROCESS.RETURN_OK
-      shell.error=0
-      shell.diagnosticWord=DIAGNOSTIC_SCRIPT
-      shell.command=CMD_EXECUTE
-      shell.argc=0
-      IF ShellScriptNext()=0 THEN
-        IF shell.status=PROCESS.RETURN_OK THEN
-          shell.status=primary
-          shell.error=secondary
-        ELSE
-          ShellDiagnostic()
-        FI
-
-        EXIT
+      ShellScriptClose()
+      IF shell.status<>primary OR shell.error<>secondary THEN
+        shell.command=CMD_EXECUTE
+        shell.argc=0
+        shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+        ShellDiagnostic()
       FI
-
-      ShellOneCommand()
     END
-  OD
-
-  LET primary=shell.status
-  LET secondary=shell.error
-  ShellScriptClose()
-  IF shell.status<>primary OR shell.error<>secondary THEN
-    shell.command=CMD_EXECUTE
-    shell.argc=0
-    shell.diagnosticWord=DIAGNOSTIC_SCRIPT
-    ShellDiagnostic()
   FI
 
   ShellRetireBreak(0)
@@ -1425,6 +1424,16 @@ PROC ShellCommand()
 
   shell.lastStatus=shell.status
   shell.lastError=shell.error
+
+RETURN
+
+; Reuse ordinary execution without recursive dispatch or changing command Input.
+PROC ShellCommand()
+
+  ShellOneCommand()
+  IF script<>NULL THEN
+    ShellRunScript()
+  FI
 
 RETURN
 

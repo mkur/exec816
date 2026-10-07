@@ -57,8 +57,9 @@ HELP lists built-in commands. BREAK cancels a foreground command.
 Ctrl-L clears the screen and redraws the prompt and your current input.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
-External commands live in SYS:C. Startup assigns C: there; the default PATH
-searches the current directory and then C:. PATH RESET restores that list.
+External commands live in SYS:C. Startup assigns C: there and S: to SYS:S.
+The default PATH searches the current directory and then C:.
+PATH RESET restores that list.
 File arguments still use the current directory. Try:
 
     PATH
@@ -69,8 +70,12 @@ File arguments still use the current directory. Try:
     ASSIGN
 
 The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST, MORE,
-COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN and PRIMES. C: uses one of four
-assignment slots. Each new shell starts with MKDIR -> MAKEDIR, LS -> LIST and CP -> COPY.
+COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN and PRIMES. C: and S: use two of four
+assignment slots. Before the prompt, optional S:STARTUP and S:USER run in order.
+The supplied files contain comments only. Edit S/USER in the system disk source
+for local setup; EXECUTE S:USER reruns it manually. Missing scripts are silent;
+errors or BREAK stop startup scripts and return to the prompt.
+Each new shell starts with MKDIR -> MAKEDIR, LS -> LIST and CP -> COPY.
 Use ALIAS to replace them or UNALIAS to remove them; five of the eight slots
 remain available for other aliases. Definitions last for this shell session.
 

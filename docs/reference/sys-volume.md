@@ -58,7 +58,10 @@ separate per-shell policy.
 
 The standard shell starts with a real SYS root lock and reports its mapping.
 `MOUNT` lists the physical volume once. Startup also assigns `C:` to the existing
-`SYS:C` command directory. The shell's default
+`SYS:C` command directory and `S:` to `SYS:S` when present. It runs optional
+`S:STARTUP` and `S:USER` before the first prompt; both mappings follow the selected
+system drive. See [startup scripts](../guides/shell.md#startup-scripts).
+The shell's default
 [PATH](../guides/shell.md#path) searches CurrentDir and then C:, so `HELLO` or
 `CAT SYS:STORY.TXT | WC` works from another directory. Explicit command paths
 such as `C:HELLO` or `SYS:C/HELLO` bypass search. File arguments still resolve

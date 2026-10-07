@@ -1,6 +1,6 @@
 ; Open one script independently of command Input. Transfer outer redirection
 ; ownership so each script command can temporarily override inherited streams.
-PROC ShellScriptOpen()
+PROC ShellScriptOpen(BYTE POINTER path BYTE optional)
 
   script=ShellScript POINTER(EXEC.AllocMem(SIZEOF(ShellScript),
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
@@ -9,9 +9,18 @@ PROC ShellScriptOpen()
     RETURN
   FI
 
-  script.source=DOS.Open(shell.words(1).text,DOS.MODE_OLDFILE)
+  script.source=DOS.Open(path,DOS.MODE_OLDFILE)
   IF script.source=NULL THEN
-    ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+    BEGIN
+      LET error=DOS.IoErr()
+      IF optional<>0 AND error=DOS.ERROR_OBJECT_NOT_FOUND THEN
+        EXEC.FreeMem(BYTE POINTER(script),SIZEOF(ShellScript))
+        script=NULL
+      ELSE
+        ShellFail(PROCESS.RETURN_ERROR,error)
+      FI
+    END
+
     RETURN
   FI
 

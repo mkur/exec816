@@ -70,7 +70,8 @@ PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The three bounded command/shell utility steps above
-are implemented.
+are implemented. The [startup script slice](history/shell-startup.md) now assigns
+S: to SYS:S and runs optional STARTUP/USER files sequentially before the prompt.
 
 The [OF816-first boot slice](history/of816-first-boot.md) is implemented through
 B4 at the development tier. The monitor runs before the main kernel payload.

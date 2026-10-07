@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "status": "implemented",
+  "tier": "development",
+  "baseline_revision": "19d6fdd3f35ce59d2546a546134f2e1537f99183",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "8333bb1c6c2712eaad5998e0e2c705c0b2f14dfd776406626317fa2acef832a2",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act",
+      "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+      "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+    },
+    "image_format_version": 3
+  },
+  "emulator_rom_pin": "toolchain/altirra-shell-paced.json",
+  "host_checks": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "status": "pass",
+    "tests": 396
+  },
+  "scope": [
+    "real ShellBootStart before first physical-key prompt",
+    "S assignment after system mount and C assignment",
+    "optional STARTUP then USER in order",
+    "existing EXECUTE interpreter and ownership cleanup",
+    "command PATH available during startup",
+    "directory and aliases persist",
+    "legacy disk with no S directory",
+    "missing system or user file",
+    "WARN continuation and WARN retained after missing USER",
+    "error in system or user script skips remaining commands",
+    "non-directory S target reports once",
+    "STARTUP may remap S before USER lookup",
+    "physical BREAK in loaded child skips remaining startup",
+    "following console commands, OS restoration, guards and allocation balance",
+    "normal setup on read-only MyDOS and SDFS media",
+    "ordinary EXECUTE selected failure/cleanup/BREAK/EXIT regression"
+  ],
+  "artifacts": {
+    "mydos": {
+      "path": "build/development/shell-startup/mydos/results.json",
+      "sha256": "f23043cac538d2120f073304802b934badeb3719852fd9d5a1d02b8ce75814e8",
+      "mode": "opt",
+      "cases": [
+        {
+          "path": "build/development/shell-startup/mydos/normal-results.json",
+          "sha256": "a5562b4f4a20b9eaa96b39d760f84bec8709a9272c82fd79c47619aefdaec1f4",
+          "scenario": "normal",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/normal-volume.atr",
+            "sha256": "8986ea2c4c8175776fc57c57d2193aa164f6643eb2e7569cb8ea3f538bc563c6"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/normal-writes.bin",
+            "sha256": "6beaece84276bae8c027d79068c679451688e321396dccc0e83b1737c5418036"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/legacy-results.json",
+          "sha256": "36cccfb9b9f4ec29191b5832e44113a722499c6bc5e640775c917e0788cba746",
+          "scenario": "legacy",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/legacy-volume.atr",
+            "sha256": "6dcbd5ec29ce50ebf17e3761ccddbb7bf16ff4873831f8d725ca1b76b04a30a7"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/legacy-writes.bin",
+            "sha256": "89ece6879962ae21702e1c56cdc0fb5ab340e6ff11fcfdd21935f044c5714fca"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/user-only-results.json",
+          "sha256": "4a5ffb92b2fd2145e2b3e057f71f0a09c86d8661826e3f33c5479af80ca744d4",
+          "scenario": "user-only",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/user-only-volume.atr",
+            "sha256": "5c224573b1187a8f9fd03292a9259254c2ae0fd57dc8472197407ae8092205d3"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/user-only-writes.bin",
+            "sha256": "90277bf9363541a2e20ae9ecf9fcedc9a4c3a751a227e45127432b3bc2f42ad9"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/system-only-results.json",
+          "sha256": "eaa75d2cf97dd1f60d33e744473fe1c407c9e5d551a67fbe03c5d40890f7a8d9",
+          "scenario": "system-only",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/system-only-volume.atr",
+            "sha256": "d7f7c5627531e6684f503d04b49bf3282f5a1e6cb66f4a39bef43765903b7e75"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/system-only-writes.bin",
+            "sha256": "7484bef0c649efad60c3cd8ad819cffea09a0889e810a579056d446f1bfe5db3"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/error-results.json",
+          "sha256": "fe604b641ad25f684972a36d52bbaf153ce7b6b27008ad08848df7c8c1c35c5b",
+          "scenario": "error",
+          "startup_result": [
+            10,
+            205
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/error-volume.atr",
+            "sha256": "c150d7db94eeda82f2ce98c6692aea6384c29c3e64577842ff313b64b90f3623"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/error-writes.bin",
+            "sha256": "f5f28fc33903e50f3ddcbab4f15d6b4a5c940fd94a33d2f16468bb9a4c97b8c6"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/user-error-results.json",
+          "sha256": "45b1feaa9658ea649f1fd7aa224d5df5161dca659d41897ca147aedcf0093a3a",
+          "scenario": "user-error",
+          "startup_result": [
+            10,
+            205
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/user-error-volume.atr",
+            "sha256": "97c11f27a4d41a6a7d7c270867517d5eca44a3a4ab247371b9597f12ded89a1e"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/user-error-writes.bin",
+            "sha256": "f7d931eb2b7e5b6c2444a10f4dbb86cd96d79b5f976cdc0aa35412557bcc6007"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/warn-results.json",
+          "sha256": "70cb32464abb63f6f97342a632ac68b716bf5eb721607fec9a6893e0b853ceba",
+          "scenario": "warn",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/warn-volume.atr",
+            "sha256": "cf195cd779f1c8cf08a812dab1826c24f1fb730967736155420bd4f9b2eec1fd"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/warn-writes.bin",
+            "sha256": "c818afcceb9b11ec4891113070a0e4cb07a973070aafa721f2f506811e7d848e"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/warn-last-results.json",
+          "sha256": "eb7138261f0b344c1c28d844fa5501ef4957efcac8c4da7fa86d64d0b9ff635a",
+          "scenario": "warn-last",
+          "startup_result": [
+            5,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/warn-last-volume.atr",
+            "sha256": "c15659d0abc1449a799d3e16cf65ff376e0d3927138e5d36028d79e7679b5081"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/warn-last-writes.bin",
+            "sha256": "ad79cc10db8cce10ac2ef94d717119e4cf56723b548b6881cee57af047058b34"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/wrong-type-results.json",
+          "sha256": "ea4dfe42a6128727eb93ab9bdf99afed0ee6a77fb5a383e7379c8e90a14126e7",
+          "scenario": "wrong-type",
+          "startup_result": [
+            10,
+            212
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/wrong-type-volume.atr",
+            "sha256": "160c003f0e169af741876fba61eb43bac021ce464d7914e01ae12b3eed394a5f"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/wrong-type-writes.bin",
+            "sha256": "bed9298bd26ebe3e3c77abd90bcd1ea16f30ead6b439fa4ffc92c0316a933298"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/remap-results.json",
+          "sha256": "5a32cd6b459972dca3cae8bc4d399964465f5e6affc7630352b6402415b00d3c",
+          "scenario": "remap",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/remap-volume.atr",
+            "sha256": "b6e1f836747ee7c5ed8eb217be3d4d428d4e9a6924083cdfa5ebdbc042a893ad"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/remap-writes.bin",
+            "sha256": "cec91560f0f12152a90583a4033d3a87449d95a6e6426a6243d36092a3ce739b"
+          }
+        },
+        {
+          "path": "build/development/shell-startup/mydos/break-results.json",
+          "sha256": "e4001e25d5236b070b28fbb8047e9759e6039da13a0d01fea7aa29e1835a4f05",
+          "scenario": "break",
+          "startup_result": [
+            10,
+            304
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/mydos/break-volume.atr",
+            "sha256": "48a574f269e803cc54c6bdef5f3cc949f7b74d3f42182e53152bdcf82d30c933"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/mydos/break-writes.bin",
+            "sha256": "ad79cc10db8cce10ac2ef94d717119e4cf56723b548b6881cee57af047058b34"
+          }
+        }
+      ],
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 1
+        }
+      ],
+      "configuration_overrides": {
+        "diskemu": "generic56k",
+        "accuratedisk": false
+      }
+    },
+    "sdfs": {
+      "path": "build/development/shell-startup/sdfs/results.json",
+      "sha256": "c559be17bc6cb2ccb5ed913767858ca0c32acf40e9ac79963992c482359638ac",
+      "mode": "opt",
+      "cases": [
+        {
+          "path": "build/development/shell-startup/sdfs/normal-results.json",
+          "sha256": "df80cc29c296712ca42d3113c4e89ecec9ae835f5331d13f3b288b0073954278",
+          "scenario": "normal",
+          "startup_result": [
+            0,
+            0
+          ],
+          "guards": "intact",
+          "media": {
+            "path": "build/development/shell-startup/sdfs/normal-volume.atr",
+            "sha256": "9f09f35c74268d22c85c16ef9ab47eb2ef9288ef56ff20833f9d1c9994d9c65b"
+          },
+          "writes": {
+            "path": "build/development/shell-startup/sdfs/normal-writes.bin",
+            "sha256": "6beaece84276bae8c027d79068c679451688e321396dccc0e83b1737c5418036"
+          }
+        }
+      ],
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 2
+        }
+      ],
+      "configuration_overrides": {
+        "diskemu": "generic56k",
+        "accuratedisk": false
+      }
+    },
+    "execute_regression": {
+      "path": "build/development/shell-startup/execute-regression/results.json",
+      "sha256": "135983f331e71819f61b31d6a588461ed373ee874ffccdc03ca89ced01f26054",
+      "mode": "opt",
+      "guards": "intact",
+      "counts": {
+        "consumed": 769,
+        "output_bytes": 2131
+      },
+      "writable_media": {
+        "mydos": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 35,
+            "free": 1965,
+            "files": 11,
+            "directories": 2
+          },
+          "sha256": "70e66ffc2c5613e3b2c4cb6123374e746152c08f9a1fc2cf4bb3730df38adeae"
+        },
+        "sdfs": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 28,
+            "free": 1972,
+            "files": 9,
+            "directories": 2
+          },
+          "sha256": "34939ad51fb785c99ec3af9b715f064b23af43b8014adace54325baa613d28a0"
+        }
+      },
+      "configuration_overrides": {
+        "diskemu": "generic56k",
+        "accuratedisk": false
+      }
+    },
+    "resident_build": {
+      "path": "build/development/shell-startup/resident/build.json",
+      "sha256": "da1fa77a80a4679782587d9eb786223b258aaa2179c1d30071fba201376c77a8",
+      "image_sha256": "212c32aac17dc7ad13b79cdeedc626c947952d43149faa8b088e919380e680d0"
+    },
+    "baseline_build": {
+      "path": "build/development/shell-execute/resident/build.json",
+      "sha256": "cacccfa4ed8deca767ffd4266f1f8542411caa9c23d21e0ddeab469c07f935c5",
+      "image_sha256": "523657a8ee6133c20bf8a3054e67f75c679d5ce531e31ccd516d4d8be9ec2c06"
+    }
+  },
+  "memory": {
+    "shell_record_bytes": 128,
+    "shell_allocation_bytes": 2336,
+    "script_record_bytes": 86,
+    "script_heap_bytes_rounded": 88,
+    "script_read_buffer_bytes": 64,
+    "script_source_handle": "Existing DOS handle/backend/context allocations; not included in the 88-byte state.",
+    "new_persistent_upper_heap_bytes": 288,
+    "new_assignment_slots_used": 1,
+    "assignment_slots_used_at_boot": 2,
+    "image_data_reservation_bytes": 4096,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "executable_bytes": {
+      "baseline": 823562,
+      "resident": 825616
+    },
+    "executable_bytes_delta": 2054,
+    "non_executable_segment_bytes_delta": 25,
+    "routines": {
+      "SHELLSCRIPTOPEN": {
+        "native_bytes": 1511,
+        "local_stack_peak_bytes": 38
+      },
+      "SHELLRUNSCRIPT": {
+        "native_bytes": 1375,
+        "local_stack_peak_bytes": 32
+      },
+      "SHELLCOMMAND": {
+        "native_bytes": 149,
+        "local_stack_peak_bytes": 8
+      },
+      "SHELLSTARTUPFILE": {
+        "native_bytes": 839,
+        "local_stack_peak_bytes": 26
+      },
+      "SHELLBOOTSCRIPTS": {
+        "native_bytes": 640,
+        "local_stack_peak_bytes": 30
+      },
+      "SHELLBOOTSTART": {
+        "native_bytes": 3947,
+        "local_stack_peak_bytes": 28
+      }
+    },
+    "observed_max_touched_stack_bytes_by_slot": {
+      "0": 546,
+      "1": 232,
+      "2": 141,
+      "3": 263,
+      "4": 399,
+      "5": 18,
+      "6": 18,
+      "7": 18,
+      "8": 58
+    }
+  },
+  "source_inputs": {
+    "examples/shell/shell-boot.inc": "1d8c307a308fad5bbed654572f69b11f5e55c9aed483c3c4bafed8c4a43b3581",
+    "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+    "examples/shell/shell-session.inc": "2893b8a860b5de8ebfdeb48ebcaa6375d2518be71838519a8eda57f2e1592166",
+    "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+    "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+    "examples/shell-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+    "examples/shell-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+    "tools/test_shell_startup_scripts.py": "b225f137a530bf87639659f265bea9a4761db5b20483cf312e6a754419f6ffa6",
+    "tools/test_shell_core.py": "505b56e464b51f046282083c27d724775a82ba22edc2ea1054aba9d5bbff02d6",
+    "tools/test_shell_entry.py": "c45cd8f0d0ac97688a7ee61948c6a0e98f39207d46ccb78a127437b8aa402dfd",
+    "tests/test_shell_disk.py": "09b8a3f4ce0880321594ee99c430ecdbc0bbc82b6cbeef63481fe299316ca788"
+  },
+  "commands": [
+    "CARGO_PROFILE_DEV_OPT_LEVEL=3 python3 tools/test_shell_startup_scripts.py --output build/development/shell-startup/mydos --scenario all --reuse",
+    "CARGO_PROFILE_DEV_OPT_LEVEL=3 python3 tools/test_shell_startup_scripts.py --output build/development/shell-startup/sdfs --filesystem sdfs",
+    "CARGO_PROFILE_DEV_OPT_LEVEL=3 python3 tools/test_shell_execute.py --output build/development/shell-startup/execute-regression",
+    "CARGO_PROFILE_DEV_OPT_LEVEL=3 python3 tools/native_program.py --compiler-dir build/actionc --source examples/shell/shell.act --tasks --task-capacity 8 --console --dos-mounts config/shell-sdfs.json --memory-profile build/development/shell-execute/parser-opt/memory-profile.json --output build/development/shell-startup/resident"
+  ],
+  "limitations": [
+    "Development checks do not qualify a release or physical hardware.",
+    "Startup EXIT and an OF-selected D2 are not separate startup scenarios in this slice; EXECUTE EXIT regression and existing SYS mapping contracts are retained.",
+    "No raw duplicate full-system run: no compiler or ABI behavior changed.",
+    "Preview ZIP and cartridge images were not rebuilt."
+  ]
+}
