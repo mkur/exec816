@@ -114,6 +114,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [Directory listing performance](directory-listing-performance.md): DL0–DL6,
+  matched warm root/SYS:C gains, one Write per row, exact extent caching,
+  invalidation/lifetime checks and upper-RAM costs.
 - [SpartaDOS request-scoped write buffering](spartados-write-buffering.md): ordered
   publication within each Write, matched COPY gains, cancellation/failure coverage
   and shared-memory costs; the [preserved design](spartados-write-buffering-design.md)

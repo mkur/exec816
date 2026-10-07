@@ -2,6 +2,7 @@
 """Passive DIR timing on a selected optimized OF816 demo, with media-derived rows."""
 import argparse
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -24,7 +25,9 @@ def markers(p):
              ('SDFSEXTENTS_LOOKUP','extent_lookup'), ('BLOCKCACHE_READ','cache_read'),
              ('BLOCKCACHE_COPY','cache_copy'), ('FSINFO_CLEAR','fib_clear'),
              ('CONSOLECORE_FEED','feed'), ('CONSOLECORE_FEEDBATCH','feed_batch'),
-             ('CONSOLEBITMAP_TEXT','bitmap_text'), ('DOSCLIENT_CALL','dos_call')]
+             ('CONSOLEBITMAP_TEXT','bitmap_text'),
+             ('CONSOLEBITMAP_TEXTCARET','bitmap_text_caret'),
+             ('CONSOLEBITMAP_CLIPPEDTEXT','bitmap_clipped_text'), ('DOSCLIENT_CALL','dos_call')]
     routines = native_markers(p, names)
     points = {}
     for key, r in routines.items():
@@ -62,10 +65,11 @@ def listing(media, path):
     return rows
 
 
-def validator(bundle):
+def validator(bundle, media_path=None):
     manifest = json.loads((bundle/'demo-manifest.json').read_text())
     require(manifest['filesystem']=='sdfs', 'Measurement oracle requires SDFS media')
-    media = Media((bundle/manifest['media']).read_bytes())
+    media = Media((media_path or bundle/manifest['media']).read_bytes())
+    require(media.size==manifest['sector_bytes'], 'Comparison media geometry differs')
     width = 80 if manifest['bitmap'] else 40
     def validate(command, screen):
         if not command.upper().startswith('DIR') or '>' in command: return
@@ -121,9 +125,13 @@ def analyze(bundle, record, definition):
         for name in ('lock','examine','exnext'):
             values=[(c['end']-c['begin'])/BASE_HZ*1000 for c in calls if c['site']=='dir_before_'+name and w['begin']<=c['begin']<=c['end']<=w['end']]
             row[name]=stats(values)
-        for name in ('bitmap_text','feed','feed_batch'):
+        for name in ('bitmap_text','bitmap_text_caret','bitmap_clipped_text','feed','feed_batch'):
             starts=[t for t,e in cpus if first is not None and first<=t<w['end'] and name in routines and int(e[4],16)==routines[name]['entry']]
             row['first_'+name+'_ms']=(starts[0]-w['begin'])/BASE_HZ*1000 if starts else None
+        drawing=[row['first_'+name+'_ms'] for name in
+                 ('bitmap_text','bitmap_text_caret','bitmap_clipped_text')
+                 if row['first_'+name+'_ms'] is not None]
+        row['first_bitmap_submission_ms']=min(drawing) if drawing else None
         selected=[pkt for pkt in packets if pkt['dp']==w['dp'] and w['begin']<=pkt['submitted']<=pkt['collected']<=w['end']]
         row['packet_queue_ms']=sum(pkt['dispatched']-pkt['submitted'] for pkt in selected)/BASE_HZ*1000
         rows.append(row)
@@ -131,7 +139,8 @@ def analyze(bundle, record, definition):
                 compiler_revision=p['build']['revision'],source_inputs=p['build']['task_inputs'],
                 image_sha256=sha256(bundle/'program.a816.json'),xex_sha256=sha256(bundle/'program.xex'),
                 manifest_sha256=sha256(bundle/'demo-manifest.json'),log_sha256=sha256(bundle/'emulator.log'),
-                rom=record['rom'],machine=record['machine'],rows=rows)
+                rom=record['rom'],machine=record['machine'],media_sha256=record['media_sha256'],
+                measurement_media_override=record.get('measurement_media_override',False),rows=rows)
 
 
 def main():
@@ -140,6 +149,8 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--analyze',action='store_true',help='Analyze an existing run.json and markers.json without executing')
     parser.add_argument('--command',action='append',help='Override command sequence; may be repeated')
+    parser.add_argument('--media',type=Path,help='Explicit read-only comparison media; its exact hash is recorded')
+    parser.add_argument('--primes',action='store_true',help='Repeat listings while RUN PRIMES progresses')
     args = parser.parse_args(); out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     bundle = args.bundle.resolve()
     if not args.analyze:
@@ -150,12 +161,28 @@ def main():
         p=read_build(bundle);require(p['build']['optimize'],'Timing requires optimized code')
         definition=markers(p);(out/'markers.json').write_text(json.dumps(definition,indent=2)+'\n')
         observe(definition['marks'])
-        record=test_demo.run(bundle,boot_smoke=True,measurement_commands=args.command or DEFAULT,
-                             profile_commands=True,measurement_validate=validator(bundle))
+        media=args.media.resolve() if args.media else None
+        commands=args.command or DEFAULT
+        if args.primes:commands=['RUN PRIMES']+commands+['BREAK 1','JOBS']
+        validate=validator(bundle,media);progress=[]
+        def check(command, screen):
+            validate(command,screen)
+            if args.primes and command.upper().startswith('DIR'):
+                count=re.search(br'Primes\s+(\d+)',screen)
+                passes=re.search(br'Pass\s+(\d+)',screen)
+                require(count is not None and passes is not None,'Missing prime pane')
+                progress.append([int(passes[1]),int(count[1])])
+        record=test_demo.run(bundle,boot_smoke=True,measurement_commands=commands,
+                             profile_commands=True,measurement_validate=check,
+                             media_path=media,measurement_media_sha256=sha256(media) if media else None)
+        if args.primes:
+            require(len(set(map(tuple,progress)))>1,'No prime progress across listings')
+            record['prime_progress']=progress
         (out/'run.json').write_text(json.dumps(record,indent=2)+'\n')
     else:
         record=json.loads((out/'run.json').read_text());definition=json.loads((out/'markers.json').read_text())
     result=analyze(bundle,record,definition)
+    result['prime_progress']=record.get('prime_progress')
     result['observer_sha256']=sha256(Path(__file__))
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     for r in result['rows']:

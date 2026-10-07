@@ -69,9 +69,10 @@ assuming work is pending. Current behavior belongs in the
 ## Filesystems and DOS
 
 - [Directory listing performance](directory-listing-performance-implementation-plan.md):
-  proposed DL0–DL6 slices for cheaper SDFS extent arithmetic, bulk copies, one
-  DIR Write per row, one map scan and a bounded cache of completed measurements.
-  Keeps exact FileInfoBlock results and filesystem/cancellation semantics.
+  DL0–DL6 implemented at the development tier: bulk copies, one DIR Write per
+  row, cheaper map accounting and a bounded cache of completed measurements.
+  Matched warm root/SYS:C listings improve 3.63×/2.53× with exact FIB results;
+  see the [execution record](../history/directory-listing-performance.md).
 - [SpartaDOS write buffering implementation plan](spartados-write-buffering-implementation-plan.md):
   SB0–SB5 implemented at the development tier. Ordered
   metadata publication within one Write, independent cancellation checkpoints,

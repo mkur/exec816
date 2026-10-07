@@ -5,9 +5,11 @@
 [Filesystem writes](../reference/filesystem-writes.md) ·
 [Development testing policy](../contributing/testing.md)
 
-Status: DL0–DL5 development checks passed; DL6 pending. Deliver one
-executable slice at a time, record its costs and development checks, and commit
-before proceeding to the next slice.
+Status: DL0–DL6 implemented and development checks passed, with a separate
+commit for each executable slice. The [execution record](../history/directory-listing-performance.md)
+and [development evidence](../development/directory-listing.json) preserve
+matched timings, memory costs and actual validation scope. All four performance
+targets pass; release qualification remains separate.
 
 Make cached directory listings respond promptly. Reduce repeated computation,
 memory copying and output requests while retaining accurate FileInfoBlock

@@ -1,6 +1,6 @@
 {
   "tier": "development",
-  "status": "in-progress",
+  "status": "pass",
   "slices": [
     {
       "slice": "DL1",
@@ -453,6 +453,94 @@
         "bank_zero_fixed_delta": 0,
         "bank_zero_per_task_delta": 0
       }
+    },
+    {
+      "slice": "DL6",
+      "status": "pass",
+      "scope": "Optimized OF816 bitmap matched-media timings, first-drawing control, live primes control, standard-console/MyDOS file and NIL routing, byte-for-byte media oracles and heap/stack/OS ownership checks",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "routines": {
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 63,
+          "fixed_frame": 0,
+          "local_stack_peak": 12
+        },
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 537,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1390,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2064,
+          "fixed_frame": 32,
+          "local_stack_peak": 42
+        },
+        "M_SDFSEXTENTS_IDENTITY_AA722862": {
+          "code_bytes": 597,
+          "fixed_frame": 16,
+          "local_stack_peak": 28
+        },
+        "M_SDFSEXTENTS_MATCHES_05F200A9": {
+          "code_bytes": 576,
+          "fixed_frame": 10,
+          "local_stack_peak": 10
+        },
+        "M_SDFSEXTENTS_TABLE_A4F1BB8A": {
+          "code_bytes": 823,
+          "fixed_frame": 18,
+          "local_stack_peak": 30
+        },
+        "M_SDFSEXTENTS_LOOKUP_1B38FF04": {
+          "code_bytes": 1342,
+          "fixed_frame": 22,
+          "local_stack_peak": 34
+        },
+        "M_SDFSEXTENTS_STORE_D4919F6B": {
+          "code_bytes": 973,
+          "fixed_frame": 18,
+          "local_stack_peak": 30
+        },
+        "M_SDFSEXTENTS_DISCARD_0C2C132E": {
+          "code_bytes": 155,
+          "fixed_frame": 12,
+          "local_stack_peak": 18
+        },
+        "M_SDFSDIR_MEASUREUNCACHED_EF17D10B": {
+          "code_bytes": 791,
+          "fixed_frame": 10,
+          "local_stack_peak": 20
+        },
+        "M_SDFSDIR_MEASURE_2E677570": {
+          "code_bytes": 405,
+          "fixed_frame": 4,
+          "local_stack_peak": 14
+        },
+        "M_FSINFO_CLEAR_E168B3AB": {
+          "code_bytes": 54,
+          "fixed_frame": 0,
+          "local_stack_peak": 10
+        },
+        "M_SHELLAPP_SHELLDIRROW_E1B6BF7B": {
+          "code_bytes": 1110,
+          "fixed_frame": 30,
+          "local_stack_peak": 44
+        },
+        "M_SHELLAPP_SHELLDIR_EB67AED9": {
+          "code_bytes": 1352,
+          "fixed_frame": 32,
+          "local_stack_peak": 44
+        }
+      },
+      "extent_cache_code_bytes": 4466,
+      "stack_scope": "Compiler local invocation peaks, not whole-call-chain bounds; native guards and existing Task reservations preserved"
     }
   ],
   "bank_zero_delta": {
@@ -462,7 +550,312 @@
   "host_checks": {
     "tests": 396,
     "status": "pass",
-    "tier": "development"
+    "tier": "development",
+    "scope": "Host suite and focused optimized emitted checks; no release qualification",
+    "log": "build/development/dir-latency/host-tests-dl6.log",
+    "log_sha256": "2f5d3eba964b0bb8f2dfaec95f049b94702268b58114c6cb34d9e8c9fa3ffdd3"
   },
-  "host_compiler_build": "Clean pinned compiler source 6510ea1d148c93edea595be8a5afa9630d5a75e3; separate host target, opt-level=1 debug=0, emitted binaries hashed in per-case build records. No compiler source or ABI override."
+  "host_compiler_build": "Clean pinned compiler source 6510ea1d148c93edea595be8a5afa9630d5a75e3; separate host target, opt-level=1 debug=0, emitted binaries hashed in per-case build records. No compiler source or ABI override.",
+  "integration": {
+    "status": "pass",
+    "matched_media_sha256": "a87fc518623515fe346c94adf8b6995824fb1210cb4385bea2e399d9687b63fb",
+    "summary": [
+      {
+        "command": "DIR",
+        "entries": 5,
+        "baseline_ms": {
+          "samples": 2,
+          "median": 736.3493633163655,
+          "minimum": 735.2974221114524,
+          "maximum": 737.4013045212785
+        },
+        "final_ms": {
+          "samples": 3,
+          "median": 203.07163025688666,
+          "minimum": 199.61494490251334,
+          "maximum": 302.1551948958173
+        },
+        "speedup": 3.626057280304884,
+        "first_write_ms": {
+          "samples": 3,
+          "median": 39.516887305657484,
+          "minimum": 38.84030962292371,
+          "maximum": 40.08696338628575
+        },
+        "physical_sio_commands": 0,
+        "cache_misses": 0,
+        "extent_map_walks": 0,
+        "output_writes_per_row": 1
+      },
+      {
+        "command": "DIR >NIL:",
+        "entries": 5,
+        "baseline_ms": {
+          "samples": 2,
+          "median": 494.2423584571858,
+          "minimum": 492.366210446038,
+          "maximum": 496.1185064683336
+        },
+        "final_ms": {
+          "samples": 3,
+          "median": 137.80200710762512,
+          "minimum": 137.51210565861126,
+          "maximum": 140.48921662468157
+        },
+        "speedup": 3.5866121896989225,
+        "first_write_ms": {
+          "samples": 3,
+          "median": 44.94882143395843,
+          "minimum": 44.86642542279938,
+          "maximum": 50.22618374662909
+        },
+        "physical_sio_commands": 0,
+        "cache_misses": 0,
+        "extent_map_walks": 0,
+        "output_writes_per_row": 1
+      },
+      {
+        "command": "DIR SYS:C",
+        "entries": 17,
+        "baseline_ms": {
+          "samples": 1,
+          "median": 2513.194075381425,
+          "minimum": 2513.194075381425,
+          "maximum": 2513.194075381425
+        },
+        "final_ms": {
+          "samples": 3,
+          "median": 993.3522136967687,
+          "minimum": 991.9406974269044,
+          "maximum": 1004.4068121554204
+        },
+        "speedup": 2.5300130615590537,
+        "first_write_ms": {
+          "samples": 3,
+          "median": 93.68419420366264,
+          "minimum": 90.4140804844801,
+          "maximum": 98.69977825675697
+        },
+        "physical_sio_commands": 0,
+        "cache_misses": 0,
+        "extent_map_walks": 0,
+        "output_writes_per_row": 1
+      },
+      {
+        "command": "DIR SYS:C >NIL:",
+        "entries": 17,
+        "baseline_ms": {
+          "samples": 1,
+          "median": 1298.0134737566239,
+          "minimum": 1298.0134737566239,
+          "maximum": 1298.0134737566239
+        },
+        "final_ms": {
+          "samples": 3,
+          "median": 401.8532406513303,
+          "minimum": 401.294935429439,
+          "maximum": 407.970844922108
+        },
+        "speedup": 3.23006844900089,
+        "first_write_ms": {
+          "samples": 3,
+          "median": 88.67276871742749,
+          "minimum": 88.52898098195746,
+          "maximum": 88.98134847521564
+        },
+        "physical_sio_commands": 0,
+        "cache_misses": 0,
+        "extent_map_walks": 0,
+        "output_writes_per_row": 1
+      }
+    ],
+    "first_root_bitmap_submission_ms": {
+      "samples": 3,
+      "median": 48.15253905176217,
+      "minimum": 46.53753494253424,
+      "maximum": 50.4919796046965
+    },
+    "targets": {
+      "warm_root_twice_faster": true,
+      "warm_c_twice_faster": true,
+      "first_root_write_75ms": true,
+      "first_root_submission_100ms": true
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$91213499097d0042",
+      "actual_kernel_id": "$91213499097d0042",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "inputs": {
+      "final-matched": {
+        "image_sha256": "8dc59ea788cc58f14fc9db8eb1e58ec1beab89edbe4788308f44ab2ec6592443",
+        "xex_sha256": "7f709ffc300f034076d090596918d91f0da5767b6e2b77e3fc1779285c284d2b",
+        "media_sha256": "a87fc518623515fe346c94adf8b6995824fb1210cb4385bea2e399d9687b63fb",
+        "log_sha256": "26fc29dc347b9e8994e76172a2cc21fe892e30a1ecaf36115f6234cd20667823",
+        "observer_sha256": "d7495af1adf3fdb3f4d377213a0842a41f942336b4b1ef25a245c87c68204f26",
+        "manifest_sha256": "340279f5718172cf01e43cd45ca6268eec7d11ac5268852457dc84c783686e79"
+      },
+      "final-first-draw": {
+        "image_sha256": "8dc59ea788cc58f14fc9db8eb1e58ec1beab89edbe4788308f44ab2ec6592443",
+        "xex_sha256": "7f709ffc300f034076d090596918d91f0da5767b6e2b77e3fc1779285c284d2b",
+        "media_sha256": "a87fc518623515fe346c94adf8b6995824fb1210cb4385bea2e399d9687b63fb",
+        "log_sha256": "0c933cba2cdebe893eec7b47a138739f32bc53d6120cedbf3907c77e12a0dc64",
+        "observer_sha256": "d7495af1adf3fdb3f4d377213a0842a41f942336b4b1ef25a245c87c68204f26",
+        "manifest_sha256": "340279f5718172cf01e43cd45ca6268eec7d11ac5268852457dc84c783686e79"
+      },
+      "final-primes": {
+        "image_sha256": "8dc59ea788cc58f14fc9db8eb1e58ec1beab89edbe4788308f44ab2ec6592443",
+        "xex_sha256": "7f709ffc300f034076d090596918d91f0da5767b6e2b77e3fc1779285c284d2b",
+        "media_sha256": "77809eaf03ea04f4227f90d58bfa4b7f73a09abb5e8acdcd94c88f8c68ed99d5",
+        "log_sha256": "1acc651b924c08f67a3622cedf5e3fadf4bb8035b48059d2f4e3e20ca2d561fb",
+        "observer_sha256": "d7495af1adf3fdb3f4d377213a0842a41f942336b4b1ef25a245c87c68204f26",
+        "manifest_sha256": "340279f5718172cf01e43cd45ca6268eec7d11ac5268852457dc84c783686e79"
+      }
+    },
+    "prime_progress": [
+      [
+        1,
+        168
+      ],
+      [
+        1,
+        303
+      ],
+      [
+        1,
+        431
+      ],
+      [
+        1,
+        551
+      ],
+      [
+        2,
+        431
+      ],
+      [
+        2,
+        783
+      ],
+      [
+        2,
+        1118
+      ],
+      [
+        3,
+        168
+      ]
+    ],
+    "prime_scope": "Fresh demo media: 6 root rows and 19 C: rows; separate loaded control, not a matched speedup comparison",
+    "prime_warm_rows": [
+      {
+        "command": "DIR",
+        "total_ms": 506.08172782109415,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 6
+      },
+      {
+        "command": "DIR",
+        "total_ms": 686.2156195771231,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 6
+      },
+      {
+        "command": "DIR",
+        "total_ms": 746.0337844791007,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 6
+      },
+      {
+        "command": "DIR SYS:C",
+        "total_ms": 2356.491522867184,
+        "cache_hits": 5,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 19
+      },
+      {
+        "command": "DIR SYS:C",
+        "total_ms": 2366.3918018435843,
+        "cache_hits": 5,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 19
+      },
+      {
+        "command": "DIR SYS:C",
+        "total_ms": 2387.603241708593,
+        "cache_hits": 5,
+        "cache_misses": 0,
+        "physical_sio_commands": 0,
+        "output_writes": 19
+      }
+    ],
+    "standard": {
+      "status": "pass",
+      "scope": "Development: packaged standard console/MyDOS DIR, NIL and exact persisted file redirection, OF816 autoboot, guards/ownership/OS return",
+      "verified_listings": [
+        "DIR",
+        "DIR SYS:C",
+        "TYPE WORK:DIR.TXT"
+      ],
+      "redirect_bytes": 200,
+      "xex_sha256": "634ad43ee58d5f3096e3d13b8555eb96c0be3034321cbb63e4b6df1d7086b759",
+      "media_sha256": "a7f637913f8219f40fd03f9d68bc318e96b4391bd7958866556f8911914b375c"
+    }
+  },
+  "integrated_images": {
+    "bundle": {
+      "native_routine_code_bytes": 797373,
+      "emitted_data_bytes": 8462
+    },
+    "final-bitmap": {
+      "native_routine_code_bytes": 820298,
+      "emitted_data_bytes": 8557
+    },
+    "note": "Whole image delta includes other post-preview work. Both bitmap manifests reserve 18 nonfree upper banks; code reservation and bank-zero layout are unchanged."
+  }
 }

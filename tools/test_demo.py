@@ -20,7 +20,7 @@ from test_shell_core import KEYS
 
 def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=None,media_path=None,
         expected_cache=None,cache_smoke=False,cache_override=None,system_drive=1,showcase=False,
-        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None):
+        retire_manifest=False, aperture_pattern=None, editing=False,disk_failure=None,measurement_commands=None,distribution_root=None,rom_override=None,disk_boot=False,copy_break=False,profile_commands=True,integration=None,measurement_validate=None,measurement_media_sha256=None):
     require(sum((stock_smoke,loading_smoke,boot_smoke,cache_smoke,showcase,editing,bool(disk_failure))) <= 1,'Select one demo smoke scope')
     require(disk_failure in (None,'missing','missing-work','wrong'),'Unknown disk failure')
     require(measurement_commands is None or boot_smoke,'Measurements require the boot-smoke scope')
@@ -85,7 +85,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     console=console_constants()
     media=manifest.get('media',next(name for name in manifest['artifacts'] if name.endswith('.atr')))
     media_path=Path(media_path) if media_path is not None else (distribution_root or out)/media
-    require(sha256(media_path)==manifest['artifacts'][media],'Changed companion media')
+    expected_media_sha256=manifest['artifacts'][media]
+    if measurement_media_sha256 is not None:
+        require(measurement_commands is not None and boot_smoke,
+                'Explicit comparison media is restricted to measurement runs')
+        expected_media_sha256=measurement_media_sha256
+    require(sha256(media_path)==expected_media_sha256,'Changed companion media')
     if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
     binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
     if distribution_root is not None:
@@ -793,7 +798,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             boot=p['build']['memory']['constants']
             require(b.memdump(boot['MANIFEST'],boot['MANIFEST_CAPACITY'])==bytes([0xd3])*boot['MANIFEST_CAPACITY'],
                     'OF816 shell reused retired manifest data')
-        require(sha256(media_path)==manifest['artifacts'][media],'Read-only demo media changed')
+        require(sha256(media_path)==expected_media_sha256,'Read-only demo media changed')
         if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
         saved['work_media']=[]
         if work_media:
@@ -828,6 +833,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     return dict(status='pass',tier='development',bundle_manifest_sha256=sha256(out/'demo-manifest.json'),
         xex_sha256=sha256(out/'program.xex'),media_sha256=sha256(media_path),screenshot_sha256=sha256(out/'boot-smoke.png') if boot_smoke else None if stock_smoke or loading_smoke or cache_smoke else sha256(out/'walkthrough.png'),
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
+        measurement_media_override=measurement_media_sha256 is not None,
         rom=dict(path=str(rom),sha256=sha256(rom),pinned_sha256=pin['rom']['sha256'],override=rom_override is not None),
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),distribution_root=str(distribution_root) if distribution_root else None,
