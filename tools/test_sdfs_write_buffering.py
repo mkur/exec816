@@ -11,7 +11,7 @@ from banked_test_memory import read
 from filesystem_audit import Audit, word
 from generate_dos_mounts import encode
 from library_paths import library_file, read_source
-from native_program import ROOT, build, compiler, require, sha256, verify_machine
+from native_program import ROOT, build, compiler, require, sha256, verify_machine, read_build
 from os_boundary import emulator
 from test_cooperative import data
 from test_dos_stack import execute, ownership
@@ -19,7 +19,7 @@ from test_sio_device import PIN
 
 
 def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
-        ordered=False):
+        ordered=False, from_build=None):
     require(1 <= amount <= 32768, 'Amount must be 1..32768')
     for name in ('sdfsbatchprobe.act', 'sdfs_write_buffering.act'):
         (out/name).write_text(read_source(ROOT/'tests/programs'/name))
@@ -35,12 +35,25 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
     before.sdfs()
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
                    sector_bytes=size, format=2, access='readwrite', profile=4)]
-    program = build(compiler(ROOT/'build/actionc'), out/'sdfs_write_buffering.act',
+    program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), out/'sdfs_write_buffering.act',
                     out, optimize=mode == 'opt', tasks=True, task_capacity=8,
                     console_deferred=True,
                     dos_mounts=mounts,
                     image_data=[(0x30ffd0, bytes([0xa5])*(amount+64)),
                                 (0xd0000, bytes(384*2))])
+    if from_build:
+        record = program['build']
+        require(record['optimize'] == (mode == 'opt'), 'Changed emission mode')
+        require(sha256(out/'sdfs_write_buffering.act') == record['source_sha256'],
+                'Changed test source')
+        require(amount <= len(next(s['bytes'] for s in program['image']['segments']
+                                  if s['address'] == 0x30ffd0))-64,
+                'Replayed caller-buffer reserve too small')
+        for group in ('platform_inputs', 'task_inputs', 'console_inputs', 'banked_inputs'):
+            for name, digest in record.get(group, {}).items():
+                require(sha256(ROOT/name) == digest, 'Changed build input: '+name)
+        for name in ('fswriteio.act', 'sdfsbatchprobe.act'):
+            require(sha256(out/name) == sha256(from_build/name), 'Changed observer: '+name)
     with emulator(ROOT/'build/altirra-sio-multi',
                   ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as bridge:
         configuration = {**PIN['configuration'], 'diskemu': 'generic56k',
@@ -67,7 +80,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
             for name in ('checks', 'phase', 'result', 'error'):
                 print(name, data(bridge, program['image'], name, True), flush=True)
             raise
-        ownership(bridge, program, out)
+        ownership(bridge, program, program['output'])
         view = {**program['image'], 'data': [d for d in program['image']['data']
                                            if '_SDFSBATCHPROBE_' in d['name']]}
         count = int.from_bytes(bytes(data(bridge, view, 'count')), 'little')
@@ -144,6 +157,7 @@ if __name__ == '__main__':
     p.add_argument('--expected-writes', type=int)
     p.add_argument('--cache-blocks', type=int)
     p.add_argument('--ordered', action='store_true')
+    p.add_argument('--from-build', type=Path)
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     out = args.output.resolve()
@@ -151,7 +165,8 @@ if __name__ == '__main__':
     result = dict(status='running')
     try:
         result = run(out, args.case, args.size, args.amount,
-                     args.expected_writes, args.cache_blocks, args.ordered)
+                     args.expected_writes, args.cache_blocks, args.ordered,
+                     args.from_build)
         print('SDFS Write:', result['verified_writes'], result['counts'], flush=True)
     except Exception as error:
         result.update(status='fail', error=str(error))

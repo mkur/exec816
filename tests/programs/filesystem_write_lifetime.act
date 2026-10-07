@@ -18,6 +18,7 @@ CARD checks,scenario,nth,phase,amount
 CARD collectedFrame
 CARD groupLimit
 CARD confirmedBytes
+CARD acceptedBytes
 BYTE gate,entered,primeTail
 LONGINT result,error,expected
 DOS.FileHandle POINTER file,con
@@ -276,12 +277,16 @@ PROC Main()
       Arm(5,87)
     FI
 
+    IF acceptedBytes<>0 AND (scenario=1 OR scenario=2) THEN
+      expected=LONGINT(acceptedBytes)
+    FI
+
     result=DOS.Write(file,buffer,IF scenario=3 THEN LONGINT(17)
         ELSE LONGINT(amount) FI)
     error=DOS.IoErr()
     collectedFrame=FSWRITEPROBE.Now()
     Require(result=expected)
-    IF scenario=1 OR (scenario=2 AND expected<LONGINT(amount)) THEN
+    IF (scenario=1 OR scenario=2) AND expected<LONGINT(amount) THEN
       Require(error=DOS.ERROR_BREAK)
     ELSEIF scenario=6 THEN
       Require(error=6)
@@ -301,6 +306,12 @@ PROC Main()
     ELSE
       Require(error=0)
     FI
+
+    BEGIN
+      LET state=FSWTYPES.State POINTER(service.mutation)
+      Require(state.batchActive=0 AND state.staged=0 AND state.bitmapDirty=0
+          AND service.operation.output=NULL AND service.operation.file=NULL)
+    END
 
     phase=2
     IF scenario=6 THEN

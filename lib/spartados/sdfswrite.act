@@ -62,9 +62,15 @@ BYTE FUNC LocateFrom(FSTYPES.Service POINTER service CARD first LONGCARD ordinal
       RETURN(Bad(service))
     FI
 
-    IF FSALLOC.Allocated(service,page)=0 OR
-        FSWRITEIO.Read(service,page,state.map)=0 THEN
+    IF FSALLOC.Allocated(service,page)=0 THEN
       RETURN(0)
+    FI
+
+    ; The pending map is newer than any clean block-cache copy.
+    IF state.staged=0 OR state.batchMap<>page THEN
+      IF FSWRITEIO.Read(service,page,state.map)=0 THEN
+        RETURN(0)
+      FI
     FI
 
     IF SDFS.Word(state.map,2)<>previous THEN
@@ -626,8 +632,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     FI
   OD
 
-  IF FSALLOC.FindGroup(service,BYTE(count),$ffff)=0 OR
-      FSALLOC.TakeGroup(service)=0 THEN
+  IF FSALLOC.FindGroup(service,BYTE(count),$ffff)=0 THEN
     RETURN(0)
   FI
 
@@ -654,6 +659,12 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     completed==+LONGINT(part)
   OD
 
+  ; BREAK before the first submission must leave unused reservations free.
+  ; Once submitted, the bounded payload group completes before cancellation.
+  IF FSALLOC.TakeGroup(service)=0 THEN
+    RETURN(0)
+  FI
+
   state.buffered=1
   state.batchMap=state.mapSector
   state.staged==+completed
@@ -678,13 +689,25 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   FI
 
   LET cursor=SDFS.Map(file)
-  IF LocateFrom(service,file.entry.start,LONGCARD(file.position)/
-      LONGCARD(sectorBytes),cursor)=0 THEN
+  LET ordinal=LONGCARD(file.position)/LONGCARD(sectorBytes)
+  IF state.staged<>0 AND (within<>0 OR cursor.valid=0 OR
+      ordinal<cursor.base OR ordinal>=cursor.base+
+      LONGCARD((sectorBytes-4) RSH 1)) THEN
+    state.drain=1
+    RETURN(0)
+  FI
+
+  IF LocateFrom(service,file.entry.start,ordinal,cursor)=0 THEN
     cursor.valid=0
     RETURN(0)
   FI
 
   sector=state.dataSector
+  IF state.staged<>0 AND sector<>0 THEN
+    state.drain=1
+    RETURN(0)
+  FI
+
   needed=0
   IF sector=0 THEN
     IF within<>0 OR file.position<>file.entry.length THEN

@@ -160,7 +160,7 @@ RETURN(1)
 ; The worker revisits this callback between bounded payload groups.
 PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
   LONGINT done
-  BYTE buffered,okay
+  BYTE buffered,okay,retry
 
   LET service=FSTYPES.Service POINTER(raw)
   LET operation=service.operation
@@ -170,6 +170,7 @@ PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
   done=0
   buffered=0
   okay=1
+  retry=0
   IF operation.remaining<>0 AND service.work.error=0 THEN
     IF Access(service)<>0 THEN
       IF sdfs<>0 THEN
@@ -196,16 +197,18 @@ PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
   FI
 
   IF sdfs<>0 THEN
-    ; SB1 publishes each group through the new ordered path.
+    retry=state.drain
     IF service.selected.offline=0 AND service.work.ioError=0 THEN
-      okay=SDFSWRITE.Drain(service)
+      IF operation.remaining=0 OR service.work.error<>0 OR retry<>0 THEN
+        okay=SDFSWRITE.Drain(service)
+      FI
     ELSE
       okay=0
     FI
   FI
 
   IF okay<>0 AND service.work.error=0 AND operation.remaining<>0 AND
-      (done>0 OR state.drain<>0) THEN
+      (done>0 OR retry<>0) THEN
     service.committing=0
     IF state.staged=0 THEN
       service.changed=0

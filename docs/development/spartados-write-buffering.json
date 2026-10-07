@@ -4,7 +4,8 @@
   "tier": "development",
   "completed_slices": [
     "SB0",
-    "SB1"
+    "SB1",
+    "SB2"
   ],
   "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
   "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
@@ -187,7 +188,7 @@
     "status": "pass",
     "tests": 393
   },
-  "scope": "SB0\u2013SB1 complete: ordered per-group publication and repeatable workspace allocation rollback. SB2\u2013SB5 pending. Development evidence does not qualify hosted hardware.",
+  "scope": "SB0\u2013SB2 complete: request-scoped metadata coalescing settles each Write before reply. Lifetime/reset/performance/delivery slices SB3\u2013SB5 pending. Development evidence does not qualify hosted hardware.",
   "sb1": {
     "status": "pass",
     "artifacts": [
@@ -310,5 +311,116 @@
       "status": "pass",
       "tests": 393
     }
+  },
+  "sb2": {
+    "status": "pass",
+    "artifacts": [
+      {
+        "case": "focused-final",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/focused-final/results.json",
+        "sha256": "5bc9779499204e4b4621798371c3a7321f707104c28a8459387ef0e9977e20b6",
+        "xex_sha256": "374939d0f27b6dc563c0cb6f7d0208af8b24878911e74e8b79a42484c1e59759"
+      },
+      {
+        "case": "focused-cache",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/focused-cache/results.json",
+        "sha256": "8c40f0d8e51d3d7c624aab92b0a0d5b5a09d20283e593246f1146ca796a4944d",
+        "xex_sha256": "374939d0f27b6dc563c0cb6f7d0208af8b24878911e74e8b79a42484c1e59759"
+      },
+      {
+        "case": "fragmented-final128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/fragmented-final128/results.json",
+        "sha256": "069267d09078e1e2c056b542cecf4738e99f430b31966c1fecaab5b959c50cd1",
+        "xex_sha256": "25661c262ce4c995cb22a73dc58c86867472505dc7db0bebf3492d65598ac453"
+      },
+      {
+        "case": "lifetime-final",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/lifetime-final/results.json",
+        "sha256": "9227ffd5b4ca0ca3bf8fde39704f7028912f027b766958d34225a4fe8e4e8b01",
+        "xex_sha256": "c8abb22627dd0f26ea8676f9306d3359dc42a3c4c6be4099ee70143906585906"
+      },
+      {
+        "case": "late-break",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/late-break/results.json",
+        "sha256": "934d288b59329fbee27f4127b918e2e1c504b41b23f280c5f86187877a9010c4",
+        "xex_sha256": "c8abb22627dd0f26ea8676f9306d3359dc42a3c4c6be4099ee70143906585906"
+      },
+      {
+        "case": "later-fault",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/later-fault/results.json",
+        "sha256": "5aa5d215d5ac301f0918003fc0f2aae4c83cc6d52fa89f772a1b9e8279bcbe99",
+        "xex_sha256": "c8abb22627dd0f26ea8676f9306d3359dc42a3c4c6be4099ee70143906585906"
+      },
+      {
+        "case": "edges128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/edges128/results.json",
+        "sha256": "488b73f75b3293aa6174581e2a21ec9ec720da261bc8fb6e1ef8c99e781d1289",
+        "xex_sha256": "a8c238c2212384118b234682d6fbd4ee12f92d7991e6c667e54a6f398f035b65"
+      },
+      {
+        "case": "split-success",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/split-success/results.json",
+        "sha256": "ab178982ba2cdc47e101df643e5e91532d963472f40789e437cc9f61c6c132a9",
+        "xex_sha256": "c8abb22627dd0f26ea8676f9306d3359dc42a3c4c6be4099ee70143906585906"
+      },
+      {
+        "case": "bitmap-status256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/bitmap-status256/results.json",
+        "sha256": "c598852afeb0bb49d8e79edea69f04d8c4cd3db602a22ee916aee5e72928f032",
+        "xex_sha256": "25661c262ce4c995cb22a73dc58c86867472505dc7db0bebf3492d65598ac453"
+      },
+      {
+        "case": "map-live256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb2/map-live256/results.json",
+        "sha256": "0293c8f2ae824542bb3746904f73ca2ace568674380dd89347fd90ada880a8d2",
+        "xex_sha256": "25661c262ce4c995cb22a73dc58c86867472505dc7db0bebf3492d65598ac453"
+      }
+    ],
+    "focused": {
+      "verified_writes": 68,
+      "counts": {
+        "payload": 64,
+        "bitmap": 1,
+        "header": 1,
+        "map": 1,
+        "directory": 1
+      },
+      "cache_disabled": true
+    },
+    "workspace": {
+      "requested": 1190,
+      "rounded": 1192,
+      "delta_from_sb1": 0
+    },
+    "resident_executable_bytes": 674736,
+    "worker_stack": {
+      "slot": 1,
+      "reserved_bytes": 1024,
+      "touched_bytes": 586,
+      "untouched_above_floor": 182
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "boot": 0
+    },
+    "correction": "Between-group BREAK exposed four unpublished reservations being drained as allocated. Working bitmap bits now change only after the reserved payload group completes; a BREAK before its first submission leaves them free. Exact regression: 512-byte prefix, no leaks.",
+    "host_checks": {
+      "status": "pass",
+      "tests": 393
+    },
+    "diagnostic": "Large 256-byte cases progressed normally; the broad fixture repeats a large write and its unchanged per-sector truncate/reclaim. Narrower geometry checks retain read-back/overwrite/append/remount without that duplicate truncate."
   }
 }

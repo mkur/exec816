@@ -79,7 +79,8 @@ def outcome(media, filesystem, baseline, fault, expected, target='WRITE.BIN'):
 
 
 def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=None,
-        amount=300, accurate=False, prime_tail=False, confirmed_bytes=0, profile=4):
+        amount=300, accurate=False, prime_tail=False, confirmed_bytes=0, profile=4,
+        accepted_bytes=0):
     require(1<=amount<=8192,'Amount must be 1..8192')
     observers = instrument(output)
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
@@ -137,6 +138,9 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
                 address=next(d['address'] for d in program['image']['data']
                              if '_FSWRITELIFETIME_CONFIRMEDBYTES_' in d['name'])
                 bridge.memload(address,confirmed_bytes.to_bytes(2,'little'))
+                address=next(d['address'] for d in program['image']['data']
+                             if '_FSWRITELIFETIME_ACCEPTEDBYTES_' in d['name'])
+                bridge.memload(address,accepted_bytes.to_bytes(2,'little'))
 
             try:
                 runtime, _ = execute(bridge, {**program, 'output': case_out}, before_run=before,
@@ -171,7 +175,9 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
                         'delete-break':{}, 'rename-break':{'TARGET':payload},
                         'truncate-break':b'', 'mkdir-break':{}}.get(name)
             if name=='before':
-                expected=payload[:confirmed_bytes]
+                expected=payload[:accepted_bytes or confirmed_bytes]
+            if name=='wire' and accepted_bytes:
+                expected=payload[:accepted_bytes]
             if name=='wire' and filesystem=='mydos' and prime_tail:
                 expected=payload[:size-3]+payload[:(size-3)*group_limit]
             target = path.partition(':')[2] if path else 'WRITE.BIN'
@@ -186,6 +192,7 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
     return dict(status='pass', build=program['build'], cases=cases, observers=observers,
                 configuration=configuration, machine=machine, path_override=path,
                 confirmed_bytes=confirmed_bytes,
+                accepted_bytes=accepted_bytes,
                 scope='Development only: task-side injection at physical write boundaries; '
                       'lost completion is injected after the real transport reply, not a device fault.',
                 bank_zero_delta=dict(fixed=0, per_task=0))
@@ -203,6 +210,8 @@ if __name__ == '__main__':
     parser.add_argument('--amount',type=int,default=300)
     parser.add_argument('--confirmed-bytes',type=int,default=0,
                         help='Expected earlier complete prefix on a later-group failure')
+    parser.add_argument('--accepted-bytes',type=int,default=0,
+                        help='Exact staged prefix drained after BREAK; full amount means late success')
     parser.add_argument('--accurate-media',action='store_true')
     parser.add_argument('--profile',type=int,choices=(1,2,4),default=4)
     parser.add_argument('--prime-tail',action='store_true',help='Start wire cancellation on newly allocated MyDOS sectors')
@@ -217,7 +226,7 @@ if __name__ == '__main__':
                      [int(n) for n in args.ordinals.split(',')] if args.ordinals else args.ordinal,
                      args.from_build.resolve() if args.from_build else None,
                      args.path, args.amount, args.accurate_media, args.prime_tail,
-                     args.confirmed_bytes, args.profile)
+                 args.confirmed_bytes, args.profile, args.accepted_bytes)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise
