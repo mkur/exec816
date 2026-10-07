@@ -4,7 +4,7 @@ USE FSBOOT
 USE DOSCORE
 USE DOSCLIENT
 INCLUDE "shell-observed.inc"
-CARD checks,executed
+CARD checks,executed,writes,rowStart
 BYTE stage,gate
 LONGCARD before,steady
 DOS.FileHandle POINTER sink,borrowedOutput,borrowedInput
@@ -56,6 +56,7 @@ PROC Run(CARD offset LONGINT status,error)
     FI
   OD
 
+  rowStart=writes
   shell.length=index
   ShellCommand()
   Check(shell.lastStatus=status AND shell.lastError=error AND shell.done=0)
@@ -133,6 +134,63 @@ PROC Numbers(CARD unused)
   ShellNumber(DOS.Output(),SYS.MAXLONGINT)
   ShellByte(DOS.Output(),ASCII.LF)
   Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady)
+  executed==+1
+
+RETURN
+
+; Exercise bounded row formatting with the largest FIB name and signed sizes.
+PROC Rows(CARD unused)
+  CARD index
+
+  rowStart=writes
+  LET info=DOS.FileInfoBlock POINTER(ShellScratch())
+  FOR index=0 TO 30 DO
+    info.fib_FileName(index)='X
+  OD
+
+  info.fib_FileName(31)=0
+  info.fib_DirEntryType=-1
+  info.fib_Size=SYS.MINLONGINT
+  ShellDirRow(info)
+  info.fib_Size=SYS.MAXLONGINT
+  ShellDirRow(info)
+  info.fib_DirEntryType=1
+  ShellDirRow(info)
+  Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady
+      AND writes-rowStart=3)
+  executed==+1
+
+RETURN
+
+; DIR follows the selected pipe stream and leaves borrowed handles with its caller.
+PROC PipeOutput(CARD offset)
+  DOS.PipePair pair
+  DOS.FileHandle POINTER ignored
+  CARD index
+
+  Check(DOS.Pipe(@pair)<>0)
+  ignored=DOS.SelectOutput(pair.writer)
+  Check(ignored=sink)
+  ; Run's ownership assertions apply to the usual three handles. Execute directly
+  ; here while this caller also owns the two pipe endpoints.
+  LET source=BYTE POINTER(ADDRESS($e0000)+SIZE(offset))
+  LET target=ShellLine()
+  FOR index=0 TO 9 DO
+    target(index)=source(index)
+  OD
+
+  rowStart=writes
+  shell.length=9
+  ShellCommand()
+  Check(shell.lastStatus=0 AND shell.lastError=0 AND shell.retiredDirectory=NULL)
+  ignored=DOS.SelectOutput(sink)
+  Check(ignored=pair.writer AND DOS.Close(pair.writer)<>0)
+  Check(DOS.Read(pair.reader,ShellTransfer(),10)=5)
+  LET buffer=ShellTransfer()
+  Check(buffer(0)='S AND buffer(1)='U AND buffer(2)='B
+      AND buffer(3)=CHAR_SLASH AND buffer(4)=ASCII.LF)
+  Check(DOS.Read(pair.reader,buffer,1)=0 AND DOS.Close(pair.reader)<>0)
+  Check(EXEC.AvailMem(0)=steady AND writes-rowStart=1)
   executed==+1
 
 RETURN

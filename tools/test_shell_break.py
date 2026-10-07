@@ -30,14 +30,15 @@ def instrument(out,size):
     (out/'shell-break-common.inc').write_text(source)
     for name in ('shell_break.act','breakprobe.act'):(out/name).write_bytes((ROOT/'tests/programs'/name).read_bytes())
     core=(ROOT/'examples/shell/shell-session.inc').read_text()
-    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
+    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc','shell-path.inc'):core=core.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     core=core.replace('PROC ShellDispatch()\n  CARD index','PROC ShellDispatch()\n  CARD index\n  IF scenario=1 AND shell.command=1 THEN Compute(0) RETURN FI')
     core=core.replace('  ShellWrite(shell.console,prompt,2)','  BREAKPROBE.Prompt(prompt)\n  ShellWrite(shell.console,prompt,2)\n  BREAKPROBE.Retained(0)')
     (out/'shell-observed.inc').write_text(core)
     requests=read_source(ROOT/'lib/console/console-requests.inc')
     needle='  instance.write=NULL\n'
     require(requests.count(needle)==1,'Missing write completion boundary')
-    requests=requests.replace(needle,'  BREAKPROBE.Written(instance,request)\n'+needle)
+    requests=requests.replace(needle,'  BREAKPROBE.Written(instance,request)\n'
+                              '  BREAKPROBE.Display(instance)\n'+needle)
     (out/'console-requests-probe.inc').write_text(requests)
     driver=read_source(ROOT/'lib/console/consoledriver.act').replace('USE EXEC\n','USE EXEC\nUSE BREAKPROBE\n',1)
     driver=driver.replace(str(ROOT/'lib/console/console-requests.inc'),str(out/'console-requests-probe.inc'))
@@ -217,12 +218,15 @@ def run(out,mode,name,size,profile,bank,replay,reuse=False):
         (directory/'consoledriver.act').write_bytes((out/'consoledriver.act').read_bytes())
         return directory
     generate_tasks.policy_modules=policy
-    try:p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc'),out/'shell_break.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile)])
+    fixture_profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    fixture_profile['image_data_bytes']=4096
+    profile_path=out/'fixture-memory.json';profile_path.write_text(json.dumps(fixture_profile)+'\n')
+    try:p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc'),out/'shell_break.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile)])
     finally:
         generate_tasks.task_entries=original
         generate_tasks.policy_modules=original_policy
     require(p['build']['optimize']==(mode=='opt'),'Reused compiler mode differs')
-    require(p['build']['dos_mounts']==[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile,boot=1,format=1)],'Reused mount configuration differs')
+    require(p['build']['dos_mounts']==[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile,boot=1,format=1,access='readonly')],'Reused mount configuration differs')
     require(p['build']['memory']['config']['kernel_bank']==bank,'Reused kernel bank differs')
     marks=markers(p);first=run_case(p,out/'observed',name,size,profile,True,marks)
     result=dict(status='pass',source_inputs=inputs,build=p['build'],case=first,marks=marks,observers=observers,pin=PIN,sector_bytes=size,profile=profile,bank_zero=dict(fixed_delta=0,per_task_delta=0))

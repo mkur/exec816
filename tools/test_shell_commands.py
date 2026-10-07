@@ -63,7 +63,9 @@ def prepare(size,scenario):
         for name in ('EMPTY','TEXT.TXT','B511.BIN','B512.BIN','B513.BIN','TOOLS/SUB/DATA.BIN'):
             cases.append(item('TYPE '+name,convert(contents[name]),source=contents[name]))
         cases += [item('TYPE',kind='default'),item('MEM',kind='memory'),
-                  item('signed-decimal',b'-2147483648 -1 0 2147483647\n',kind='numbers')]
+                  item('signed-decimal',b'-2147483648 -1 0 2147483647\n',kind='numbers'),
+                  item('row-bounds',b'X'*31+b' -2147483648\n'+b'X'*31+b' 2147483647\n'+b'X'*31+b'/\n',kind='rows'),
+                  item('DIR TOOLS',b'SUB/\n',kind='pipe')]
     elif scenario=='large':
         require(size==256,'Full TYPE requires 256-byte fixture');payload=contents['LARGE.BIN'];require(len(payload)==70003,'Not the full file')
         cases=[item('TYPE LARGE.BIN',convert(payload),source=payload)]
@@ -72,8 +74,11 @@ def prepare(size,scenario):
     else:cases=[item('DIR',b'TOOLS/\n'+diagnostic_text(210,'DIR'),210)]
     return disk,cases,derived,volume['sha256']
 
-def run(t,out,mode,bank=1,size=128,scenario='basic'):
+def run(t,out,mode,bank=1,size=128,scenario='basic',profile=1):
     out.mkdir(parents=True,exist_ok=True);source=instrument(out,'shell_commands.act')
+    observed=out/'shell-observed.inc'
+    observed.write_text(observed.read_text().replace('  NativeShellWrite(handle,bytes,count)',
+                                                   '  writes==+1\n  NativeShellWrite(handle,bytes,count)'))
     capture_address=None
     command_address=0xf8000
     source.write_text(source.read_text().replace('$e0000','$f8000'))
@@ -81,12 +86,18 @@ def run(t,out,mode,bank=1,size=128,scenario='basic'):
     blob=bytearray();calls=[]
     for case in cases:
         offset=len(blob);blob+=case['command'].encode()+b'\0';kind=case['kind']
-        if kind=='run':calls.append(f'  Run({offset},{case["status"]},{case["error"]})')
-        else:calls.append(f'  {dict(default="DefaultInput",memory="Memory",raw="RawText",numbers="Numbers")[kind]}({offset})')
+        if kind=='run':
+            calls.append(f'  Run({offset},{case["status"]},{case["error"]})')
+            if case['command'].startswith('DIR') and not case['error']:
+                calls.append(f'  Check(writes-rowStart={len(case["output"].splitlines())})')
+        else:calls.append(f'  {dict(default="DefaultInput",memory="Memory",raw="RawText",numbers="Numbers",rows="Rows",pipe="PipeOutput")[kind]}({offset})')
     # A straight sequence of tiny dispatch helpers keeps generated fixed frames bounded.
     (out/'shell-command-cases.inc').write_text('PROC Cases()\n'+'\n'.join(calls)+'\nRETURN\n')
-    p=build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
-            system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=disk.count,sector_bytes=size,profile=1)],
+    fixture_profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    fixture_profile['image_data_bytes']=4096
+    profile_path=out/'fixture-memory.json';profile_path.write_text(json.dumps(fixture_profile)+'\n')
+    p=build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
+            system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=disk.count,sector_bytes=size,profile=profile)],
             image_data=[(command_address,bytes(blob))])
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned shell bridge')
     require(sha256(ROOT/'build/firmware/altirraos-816.rom')==PIN['rom']['sha256'],'Unpinned ROM')
@@ -94,7 +105,7 @@ def run(t,out,mode,bank=1,size=128,scenario='basic'):
     observations=[];saved={}
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN)as b:
         for k,v in PIN['configuration'].items():b.config(k,str(v).lower()if isinstance(v,bool)else v)
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','fastest');b.mount(0,str(media))
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','generic56k' if profile==4 else 'fastest');b.mount(0,str(media))
         def before(b):
             nonlocal capture_address
             saved.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));saved['bytes']=b.memdump(saved['screen'],960)

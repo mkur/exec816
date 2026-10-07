@@ -141,6 +141,75 @@
         "fixed": 0,
         "per_task": 0
       }
+    },
+    {
+      "slice": "DL3",
+      "status": "pass",
+      "checks": [
+        {
+          "path": "build/development/dir-latency/dl3-commands/results.json",
+          "sha256": "15dd0fc5bd15f5971bd719433f9fe9493d3ab656b64b82ac64d22b173cb91283",
+          "mode": "opt",
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": [],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl3-redirection/results.json",
+          "sha256": "09a462824e2bda6f9c46a0c0341a0d1dfe75906d6dfe9ffd5594118e5a6563e0",
+          "mode": "opt",
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": [],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl3-break/results.json",
+          "sha256": "2b708b2f1e2c2d9f9220b944bd8d8a8229fc1d7cdea21146ae9879a2efa1db19",
+          "mode": null,
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": null,
+          "scope": null
+        }
+      ],
+      "routines": {
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 63,
+          "fixed_frame": 0,
+          "local_stack_peak": 12
+        },
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 513,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1144,
+          "fixed_frame": 24,
+          "local_stack_peak": 36
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2211,
+          "fixed_frame": 34,
+          "local_stack_peak": 44
+        },
+        "M_FSINFO_CLEAR_E168B3AB": {
+          "code_bytes": 54,
+          "fixed_frame": 0,
+          "local_stack_peak": 10
+        },
+        "M_SHELLAPP_SHELLDIR_EB67AED9": {
+          "code_bytes": 1352,
+          "fixed_frame": 32,
+          "local_stack_peak": 44
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      }
     }
   ],
   "bank_zero_delta": {

@@ -12,7 +12,7 @@ PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 from test_console_display import terminal
 from mydos_fixtures import Image
 LOADED_SOURCE_SHA256=sha256(Path(__file__))
-SCENARIOS=('basic','large','fault-read')
+SCENARIOS=('basic','large','fault-read','directory')
 LIMITS=dict(host_seconds=1800,guest_frames=30000)
 
 def convert(raw):return bytes(10 if x==155 else x if x in (9,10)or 32<=x<=126 else 46 for x in raw if x!=13)
@@ -25,7 +25,10 @@ def prepare(size,scenario):
         f=next(f for f in volume['files']if f['path']==name)
         return bytes((i&255)^f['seed']for i in range(f['bytes']))
     def item(command,output=b'',error=0,source=None,kind='run',done=0):return dict(command=command,output=output,status=10 if error else 0,error=error,kind=kind,source=source,done=done)
-    if scenario=='large':
+    if scenario=='directory':
+        cases=[item('DIR TOOLS >NIL:',b'SUB/\n'),item('DIR EDIR >NIL:'),
+               item('DIR TOOLS >RAW:',b'SUB/\n'),item('EXIT >NIL:',done=1)]
+    elif scenario=='large':
         payload=file('LARGE.BIN');cases=[item('TYPE <LARGE.BIN >NIL:',convert(payload),source=payload),item('EXIT >NIL:',done=1)]
     elif scenario=='fault-read':cases=[item('TYPE <EXT.BIN >NIL:',diagnostic_text(213,'TYPE'),213),item('ECHO recovered >NIL:',b'recovered\n'),item('EXIT >NIL:',done=1)]
     else:
@@ -63,7 +66,10 @@ def run(t,out,mode,bank=1,size=128,scenario='basic'):
         else:calls.append(f'  MissingOutput({offset})')
     # A straight sequence of tiny dispatch helpers keeps generated fixed frames bounded.
     (out/'shell-redirection-cases.inc').write_text('PROC Cases()\n'+'\n'.join(calls)+'\nRETURN\n')
-    p=build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
+    fixture_profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    fixture_profile['image_data_bytes']=4096
+    profile_path=out/'fixture-memory.json';profile_path.write_text(json.dumps(fixture_profile)+'\n')
+    p=build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
             system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=disk.count,sector_bytes=size,profile=1)],
             image_data=[(command_address,bytes(blob))])
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned shell bridge')

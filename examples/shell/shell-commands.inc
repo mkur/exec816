@@ -21,6 +21,45 @@ PROC ShellReleaseLock()
 
 RETURN
 
+; Stream one complete row from the drawing buffer, separate from the scratch FIB.
+PROC ShellDirRow(DOS.FileInfoBlock POINTER info)
+  CARD used
+  LONGCARD magnitude
+
+  LET buffer=ShellDrawBuffer()
+  LET name=BYTE POINTER(@info.fib_FileName(0))
+  used=STR.strnlen(name,32)
+  ; Leave room for a separator, sign, ten decimal digits, LF and a temporary NUL.
+  IF used+14>DRAW_CAPACITY THEN
+    ShellFail(PROCESS.RETURN_FAIL,DOS.ERROR_BAD_NUMBER)
+    RETURN
+  FI
+
+  A816MEMORY.Move(buffer,name,SIZE(used))
+  IF info.fib_DirEntryType>0 THEN
+    buffer(used)=CHAR_SLASH
+    used==+1
+
+  ELSE
+    buffer(used)=ASCII.SPACE
+    used==+1
+    IF info.fib_Size<0 THEN
+      magnitude=LONGCARD(-(info.fib_Size+1))+1
+      buffer(used)=CHAR_MINUS
+      used==+1
+
+    ELSE
+      magnitude=LONGCARD(info.fib_Size)
+    FI
+
+    used==+STR.u32toa(magnitude,buffer+SIZE(used),DRAW_CAPACITY-used-1)
+  FI
+
+  buffer(used)=ASCII.LF
+  ShellWrite(DOS.Output(),buffer,used+1)
+
+RETURN
+
 ; Show the named or current directory, distinguishing subdirectories from files.
 PROC ShellDir()
   SYS.CSTRING path
@@ -62,16 +101,7 @@ PROC ShellDir()
           EXIT
         FI
 
-        ShellText(DOS.Output(),CSTRING(@info.fib_FileName(0)))
-        IF info.fib_DirEntryType>0 THEN
-          ShellByte(DOS.Output(),CHAR_SLASH)
-
-        ELSE
-          ShellByte(DOS.Output(),ASCII.SPACE)
-          ShellNumber(DOS.Output(),info.fib_Size)
-        FI
-
-        ShellByte(DOS.Output(),ASCII.LF)
+        ShellDirRow(info)
         IF shell.status<>PROCESS.RETURN_OK THEN
           EXIT
         FI
