@@ -13,6 +13,7 @@ USE FSREGISTRY
 USE FSTYPES
 USE FSWTYPES
 USE FSWRITEPROBE
+USE SDFS
 USE HEAPCORE
 CARD checks,scenario,nth,phase,amount
 CARD collectedFrame
@@ -208,6 +209,18 @@ PROC Main()
     Require(file<>NULL)
   FI
 
+  IF scenario=6 AND service.mounts(0).item.spec.format=2 THEN
+    BEGIN
+      LET lock=DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)
+      LET info=DOS.FileInfoBlock POINTER($d0400)
+      Require(lock<>NULL AND DOS.Examine(lock,info)<>0)
+      Require(DOS.Examine(lock,info)<>0)
+      LET state=SDFS.GetState(service.work)
+      Require(state.extents<>NULL AND state.extents.filled<>0)
+      DOS.UnLock(lock)
+    END
+  FI
+
   phase=1
   IF scenario>=19 AND scenario<=22 THEN
     NamespaceBreak()
@@ -332,6 +345,12 @@ PROC Main()
       (scenario>=12 AND scenario<=18) THEN
     Require(service.mounts(0).item.offline<>0 AND
         service.mounts(0).item.writable=0 AND service.mounts(0).item.references=0)
+    BEGIN
+      LET state=SDFS.GetState(service.work)
+      IF state.extents<>NULL THEN
+        Require(state.extents.filled=0 AND state.extents.pending=0)
+      FI
+    END
   FI
 
   IF scenario<=5 OR scenario>=19 THEN

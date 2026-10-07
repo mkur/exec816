@@ -9,23 +9,38 @@ from test_cooperative import data
 from test_dos_stack import execute
 from banked_test_memory import read
 
-def run(t,out,mode):
+def run(t,out,mode,filesystem='mydos'):
     out.mkdir(parents=True,exist_ok=True)
-    media=out/'volume.atr';shutil.copyfile(ROOT/'tests/fixtures/mydos/mydos450-128.atr',media);old=sha256(media)
+    fixture='sdfs/sdfs-21-128.atr' if filesystem=='sdfs' else 'mydos/mydos450-128.atr'
+    media=out/'volume.atr';shutil.copyfile(ROOT/'tests/fixtures'/fixture,media);old=sha256(media)
     selector=out/'fault.txt';selector.write_text('none\n');os.environ['EXEC816_SIO_FAULT_FILE']=str(selector)
     pin=json.loads((ROOT/'toolchain/altirra-sio-sectors.json').read_text());binary=ROOT/'build/altirra-sio-sector-faults'
     require(sha256(binary/'AltirraBridgeServer')==pin['fault_responder']['binary_sha256'],'Unpinned responder')
     paths=bytearray(96)
-    for i,name in enumerate(('D8:TOOLS/SUB/DATA.BIN','D1:TOOLS/SUB/DATA.BIN','D1:')):paths[32*i:32*i+len(name)+1]=name.encode()+b'\0'
-    p=build(t,ROOT/'tests/programs/dos_offline.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,dos_mounts=[dict(alias='D8',unit=56,sectors=720,sector_bytes=128),dict(alias='D1',unit=49,sectors=720,sector_bytes=128)],image_data=[(0xd1000,bytes(paths))])
+    file='BINARY.BIN' if filesystem=='sdfs' else 'TOOLS/SUB/DATA.BIN'
+    for i,name in enumerate(('D8:'+file,'D1:'+file,'D1:')):paths[32*i:32*i+len(name)+1]=name.encode()+b'\0'
+    count=2000 if filesystem=='sdfs' else 720
+    mounts=[dict(alias=alias,unit=unit,sectors=count,sector_bytes=128,profile=4 if filesystem=='sdfs' else 1,format=2 if filesystem=='sdfs' else 1) for alias,unit in [('D8',56),('D1',49)]]
+    p=build(t,ROOT/'tests/programs/dos_offline.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console_deferred=True,dos_mounts=mounts,image_data=[(0xd1000,bytes(paths))])
     with emulator(binary,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin) as b:
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin);b.config('diskemu','fastest');b.mount(0,str(media));b.mount(7,str(media))
+        for key,value in pin['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin);b.config('diskemu','generic56k' if filesystem=='sdfs' else 'fastest');b.mount(0,str(media));b.mount(7,str(media))
         snapshot={}
         def before(b):
             flag=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_DOSOFFLINETEST_GO_'))
             marker=p['labels']['native_cop'];condition=f'db(${flag:x})=1'
             b.bp_set(marker,condition=condition)
-            run_to(b,marker,timeout=240,frame_limit=12000,condition=condition);b.bp_clear_all()
+            b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
+            original=b.regs
+            def regs():
+                r=original()
+                if int(r['PC'].lstrip('$'),16)==p['labels']['done']:
+                    require(b.peek16(adapter.STATE)==0xffff,'Stopped before fault was armed')
+                return r
+            b.regs=regs
+            try:run_to(b,marker,timeout=240,frame_limit=12000,condition=condition)
+            finally:b.regs=original
+            b.bp_clear_all()
             # Descriptor lies in upper RAM. Never invoke the far helper during
             # native execution; only change the host peripheral fault selector.
             selector.write_text('short\n')
@@ -39,10 +54,10 @@ def run(t,out,mode):
         require(hardware[0]==hardware[45]==1,'Reset latch lost')
         require(hardware[12:15]==hardware[16:19]==bytes(3),'Retained caller buffer')
         require(sha256(media)==old,'Media changed')
-        return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,checks=data(b,p['image'],'checks',True),hardware=hardware.hex(),media_sha256=old,emulator_sha256=sha256(binary/'AltirraBridgeServer'),fault='short')
+        return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,filesystem=filesystem,checks=data(b,p['image'],'checks',True),hardware=hardware.hex(),media_sha256=old,emulator_sha256=sha256(binary/'AltirraBridgeServer'),fault='short')
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
-    try:r=run(compiler(ROOT/'build/actionc'),out,args.case)
+    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--format',choices=('mydos','sdfs'),default='mydos');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
+    try:r=run(compiler(ROOT/'build/actionc'),out,args.case,args.format)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('DOS offline passed',args.case,flush=True)

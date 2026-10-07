@@ -5,6 +5,7 @@ USE FSLEASES
 USE FSSTATUS
 USE SDFS
 USE SDFSFILE
+USE SDFSEXTENTS
 USE SDFSTYPES
 USE FSBTYPES
 USE SDFSDATE
@@ -270,7 +271,7 @@ RETURN(status)
 
 ; Resolve directory or file extent information through the shared worker
 ; protocol.
-PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+BYTE FUNC MeasureUncached(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     POINTER file BYTE received)
   SDFSTYPES.BackendState POINTER state
   BYTE status
@@ -305,5 +306,24 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
   FI
 
 RETURN(SDFSFILE.Measure(work,file,0))
+
+; Cache only completed measurements, inside the existing backend protocol.
+PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file BYTE received)
+
+  IF received=0 AND SDFSEXTENTS.Lookup(work,file)<>0 THEN
+    RETURN(FSSTATUS.DONE)
+  FI
+
+  LET status=MeasureUncached(work,file,received)
+  IF status=FSSTATUS.DONE THEN
+    SDFSEXTENTS.Store(work,file)
+
+  ELSEIF status=FSSTATUS.ERROR THEN
+    SDFSEXTENTS.Discard(work)
+    SDFS.Invalidate(work)
+  FI
+
+RETURN(status)
 
 ENDMODULE

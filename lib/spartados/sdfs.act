@@ -32,6 +32,13 @@ RETURN(work.extra<>BYTE POINTER(0))
 PUBLIC PROC DestroyWork(FSBTYPES.Workspace POINTER work)
 
   IF work.extra<>BYTE POINTER(0) THEN
+    BEGIN
+      LET state=GetState(work)
+      IF state.extents<>NULL THEN
+        EXEC.FreeMem(BYTE POINTER(state.extents),SIZEOF(SDFSTYPES.ExtentCache))
+      FI
+    END
+
     EXEC.FreeMem(work.extra,SIZEOF(SDFSTYPES.BackendState))
     work.extra=BYTE POINTER(0)
   FI
@@ -67,6 +74,12 @@ PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)
   state.firstEmpty=0
   state.cached=FSBTYPES.Volume POINTER(0)
   state.directoryVolume=FSBTYPES.Volume POINTER(0)
+  IF state.extents<>NULL THEN
+    state.extents.volume=NULL
+    state.extents.filled=0
+    state.extents.next=0
+    state.extents.pending=0
+  FI
 
 RETURN
 

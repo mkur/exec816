@@ -9,6 +9,7 @@ USE DOSBREAKTYPES
 USE CONSOLEFOREGROUND
 INCLUDE "sio-storage-action.inc"
 PUBLIC BYTE mode,fired,attempts,accepted,wirePhase
+PUBLIC BYTE extentHits
 PUBLIC LONGINT threshold,committed
 PUBLIC DOSBREAKTYPES.Scope POINTER target
 

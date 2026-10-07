@@ -5,6 +5,8 @@ USE DOSCORE
 USE FSTYPES
 USE DOSBREAKTYPES
 USE CONSOLEFOREGROUND
+USE SDFS
+USE HEAPCORE
 INCLUDE "sio-storage-action.inc"
 INCLUDE "../../lib/exec/exec-abi.inc"
 PUBLIC BYTE mode,fired,wirePhase
@@ -33,6 +35,11 @@ PROC Deliver()
 RETURN
 
 PUBLIC PROC Before(FSTYPES.Service POINTER service)
+
+  LET state=SDFS.GetState(service.work)
+  IF state.extents<>NULL AND state.extents.filled<>0 THEN
+    HEAPCORE.Abort($f7ff)
+  FI
 
   IF Selected(service)<>0 THEN
     count==+1

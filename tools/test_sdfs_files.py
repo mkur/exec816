@@ -42,7 +42,7 @@ def run(t,out,mode,size):
                     print(item['name'],b.memdump(item['address'],item['size']).hex(' '),flush=True)
             raise
         ownership(b,p,out);require(data(b,p['image'],'finished')==[1],'SDFS fixture incomplete')
-        observations={name:data(b,p['image'],name,True) for name in ('checks','dataReads','mapReads')}
+        observations={name:data(b,p['image'],name,True) for name in ('checks','dataReads','mapReads','cacheBytes','stateBytes')}
     return dict(status='pass',mode=mode,sector_bytes=size,build=p['build'],runtime=runtime,machine=machine,observations=observations,fixture_sha256=sha256(source),provider_sha256=sha256(Path(__file__)),scope='Native parser, memory sector provider; no SIO timing claim')
 
 if __name__=='__main__':

@@ -126,6 +126,7 @@ mounts offline rather than continuing to return cached bytes.
 ## The cache belongs to the service
 
 The sector cache is shared by both backends, every mount and all open files.
+
 The default is **64 KiB of sector payload**, with additional tag/replacement
 storage. It resides in upper RAM and needs no Task of its own.
 
@@ -139,6 +140,16 @@ A warm cache avoids serial reads, but the loader still validates and relocates
 commands, and the filesystem still performs ordinary CPU work. Cached sectors
 are not a cache of running Processes or loaded executable images. See the
 [cache contract and measurements](sector-cache.md).
+
+SpartaDOS also retains up to 32 completed extent measurements in the shared
+worker workspace. Matching includes the volume incarnation, native entry
+identity and exact active ancestry. This avoids repeated map walks for warm
+Examine/ExNext calls while retaining exact allocated-block counts. Current
+names, enumeration cookies and the final cancellation checkpoint still belong
+to each request. Any mutation, parser/transport failure or mount teardown clears
+the table. Disabling sector caching also disables this optional accelerator;
+allocation failure falls back to the ordinary traversal. It reserves 2,304
+allocated upper-RAM bytes when present, with no per-file or bank-zero table.
 
 ## Mutations
 

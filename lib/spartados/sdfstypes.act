@@ -13,6 +13,31 @@ PUBLIC TYPE MapCursor=[
   BYTE valid
 ]
 
+PUBLIC CONST EXTENT_SLOTS=32
+
+; Exact request identity, including every active protected ancestor.
+PUBLIC TYPE ExtentKey=[
+  LONGCARD key
+  LONGINT length
+  CARD start,parent
+  BYTE flags,known,depth
+  CARD ARRAY ancestors(17)
+]
+
+; Completed measurements have known extents; names and other dates stay current.
+PUBLIC TYPE ExtentRecord=[
+  ExtentKey input
+  LONGINT length,count,days,minutes,ticks
+]
+
+PUBLIC TYPE ExtentCache=[
+  FSBTYPES.Volume POINTER volume
+  LONGCARD generation
+  BYTE filled,next,pending
+  ExtentKey input
+  ExtentRecord ARRAY rows(EXTENT_SLOTS)
+]
+
 PUBLIC TYPE BackendState=[
   FSBTYPES.Volume POINTER cached
   LONGCARD generation
@@ -28,6 +53,7 @@ PUBLIC TYPE BackendState=[
   BYTE filled,phase,resolvePhase,measurePhase
   FSBTYPES.Volume POINTER directoryVolume
   LONGCARD directoryGeneration
+  ExtentCache POINTER extents
 ]
 
 ENDMODULE

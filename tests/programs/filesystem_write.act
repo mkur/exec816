@@ -36,6 +36,21 @@ BYTE POINTER FUNC Path(CARD index)
 
 RETURN(BYTE POINTER($d1000)+SIZE(index LSH 6))
 
+; Populate and repeat a public measurement before the next mutation.
+PROC WarmInfo()
+  LONGCARD prior
+
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  Require(DOS.Examine(lock,@info)<>0)
+  prior=service.work.operations
+  Require(DOS.Examine(lock,@info)<>0)
+  IF service.selected.spec.format=2 AND service.adapter.cache.blocks<>0 THEN
+    Require(service.work.operations=prior)
+  FI
+
+RETURN
+
 PROC FileWrites()
   LONGINT index
 
@@ -54,6 +69,7 @@ PROC FileWrites()
       DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   lock=DOS.Lock(Path(6),DOS.SHARED_LOCK)
   Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+  WarmInfo()
   phase=2
   lastResult=DOS.Write(file,buffer,amount)
   Require(lastResult=amount)
@@ -74,6 +90,7 @@ PROC FileWrites()
 
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Examine(lock,@info)<>0)
+  WarmInfo()
   DO
     Require(DOS.ExNext(lock,@info)<>0)
     IF info.fib_FileName(0)='W THEN
@@ -148,6 +165,7 @@ PROC Names()
   Require(DOS.CreateDir(Path(2))=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Examine(lock,@info)<>0)
+  WarmInfo()
   LET previous=DOS.CurrentDir(lock)
   Require(DOS.IoErr()=0)
   file=DOS.Open(BYTE POINTER(c"CHILD"),DOS.MODE_NEWFILE)
@@ -173,11 +191,21 @@ PROC Truncate()
   Require(file<>NULL)
   Require(DOS.Write(file,BYTE POINTER($30fff0),amount)=amount)
   Require(DOS.Close(file)<>0)
+  lock=DOS.Lock(Path(4),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  WarmInfo()
+  Require(info.fib_Size=amount)
+  DOS.UnLock(lock)
   file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
   Require(DOS.Write(file,BYTE POINTER($30fff0),1)=1)
   Require(DOS.Close(file)<>0)
+  lock=DOS.Lock(Path(4),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  WarmInfo()
+  Require(info.fib_Size=1 AND info.fib_NumBlocks>0)
+  DOS.UnLock(lock)
   Require(DOS.DeleteFile(Path(4))<>0)
   file=DOS.Open(Path(5),DOS.MODE_READWRITE)
   Require(file<>NULL)

@@ -294,10 +294,175 @@
         "fixed": 0,
         "per_task": 0
       }
+    },
+    {
+      "slice": "DL5",
+      "status": "pass",
+      "checks": [
+        {
+          "path": "build/development/dir-latency/dl5-128/results.json",
+          "sha256": "70468c727f6c19b7f176501185b1221dbf2eceb748763bf19d56cb3038ad0840",
+          "mode": "opt",
+          "sector_bytes": 128,
+          "backend": null,
+          "checks": {
+            "checks": [
+              3757
+            ],
+            "dataReads": [
+              842
+            ],
+            "mapReads": [
+              18
+            ],
+            "cacheBytes": [
+              2302
+            ],
+            "stateBytes": [
+              474
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        },
+        {
+          "path": "build/development/dir-latency/dl5-256/results.json",
+          "sha256": "98ebe56945953a9717911d4ae522feb908d523a7f4541669443d0fed238bd4e8",
+          "mode": "opt",
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": {
+            "checks": [
+              2881
+            ],
+            "dataReads": [
+              562
+            ],
+            "mapReads": [
+              12
+            ],
+            "cacheBytes": [
+              2302
+            ],
+            "stateBytes": [
+              474
+            ]
+          },
+          "scope": "Native parser, memory sector provider; no SIO timing claim"
+        },
+        {
+          "path": "build/development/dir-latency/dl5-write/results.json",
+          "sha256": "3cc99598e3204412c4681803bf1307654cd302c3d203edc9eca7a137d9393e73",
+          "mode": null,
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": [
+            147
+          ],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl5-write/results-cache0.json",
+          "sha256": "80fad9a5178b99db4132a65609d6b8da8dc39a69092ec2f855ee7e9a0ada4a24",
+          "mode": null,
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": [
+            107
+          ],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl5-offline/results.json",
+          "sha256": "bd28ff5dd1715c9054d1717dfcb10a14d63fe2310193b650344a4f150d09558e",
+          "mode": null,
+          "sector_bytes": null,
+          "backend": null,
+          "checks": [
+            531
+          ],
+          "scope": null
+        },
+        {
+          "path": "build/development/dir-latency/dl5-cancel/results.json",
+          "sha256": "310e4307449889685925ea98871ac58f15d1d496670c60b32d11967f3a0572a8",
+          "mode": null,
+          "sector_bytes": 256,
+          "backend": null,
+          "checks": null,
+          "scope": "Controlled Task-side injection through the real foreground delivery function; unchanged production collection/abort/checkpoint logic. Scheduling hooks are not latency evidence."
+        },
+        {
+          "path": "build/development/dir-latency/dl5-failed-write/results.json",
+          "sha256": "a67876a25b50093322ad0274a793ae24e6cc6bbc4fa4c20e8606bae540ce5438",
+          "mode": null,
+          "sector_bytes": null,
+          "backend": null,
+          "checks": null,
+          "scope": "Development only: task-side injection at physical write boundaries; lost completion is injected after the real transport reply, not a device fault."
+        }
+      ],
+      "routines": {
+        "M_SDFS_CACHE_55DBD7B1": {
+          "code_bytes": 537,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_SDFS_VALIDATEMAP_D7214A91": {
+          "code_bytes": 1390,
+          "fixed_frame": 26,
+          "local_stack_peak": 38
+        },
+        "M_BLOCKCACHE_COPY_EC1E9165": {
+          "code_bytes": 63,
+          "fixed_frame": 0,
+          "local_stack_peak": 12
+        },
+        "M_SDFSFILE_MEASURE_B257955B": {
+          "code_bytes": 2064,
+          "fixed_frame": 32,
+          "local_stack_peak": 42
+        },
+        "M_SDFSEXTENTS_LOOKUP_1B38FF04": {
+          "code_bytes": 1342,
+          "fixed_frame": 22,
+          "local_stack_peak": 34
+        },
+        "M_SDFSEXTENTS_STORE_D4919F6B": {
+          "code_bytes": 973,
+          "fixed_frame": 18,
+          "local_stack_peak": 30
+        },
+        "M_FSINFO_CLEAR_E168B3AB": {
+          "code_bytes": 54,
+          "fixed_frame": 0,
+          "local_stack_peak": 10
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "memory": {
+        "extent_table_requested": 2302,
+        "extent_table_rounded": 2304,
+        "backend_workspace_before": 466,
+        "backend_workspace_after_dl4": 470,
+        "backend_workspace_after_dl5": 474,
+        "backend_workspace_rounded_before": 472,
+        "backend_workspace_rounded_after": 480,
+        "bank_zero_fixed_delta": 0,
+        "bank_zero_per_task_delta": 0
+      }
     }
   ],
   "bank_zero_delta": {
     "fixed": 0,
     "per_task": 0
-  }
+  },
+  "host_checks": {
+    "tests": 396,
+    "status": "pass",
+    "tier": "development"
+  },
+  "host_compiler_build": "Clean pinned compiler source 6510ea1d148c93edea595be8a5afa9630d5a75e3; separate host target, opt-level=1 debug=0, emitted binaries hashed in per-case build records. No compiler source or ABI override."
 }

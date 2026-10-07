@@ -1,0 +1,163 @@
+; Optional completed extent cache, owned by the serialized filesystem worker.
+MODULE SDFSEXTENTS
+USE EXEC
+USE SDFS
+USE SDFSTYPES
+USE FSBTYPES
+USE FSCORE
+USE BLOCKTYPES
+USE A816MEMORY
+
+; Capture the input before directory measurement refreshes its length and dates.
+PROC Identity(SDFSTYPES.ExtentKey POINTER key FSBTYPES.Workspace POINTER work)
+
+  key.key=work.entry.key
+  key.length=work.entry.length
+  key.start=work.entry.start
+  key.parent=work.entry.parent
+  key.flags=work.entry.flags
+  key.known=work.entry.known
+  key.depth=work.depth
+  A816MEMORY.Move(BYTE POINTER(@key.ancestors(0)),
+      BYTE POINTER(@work.ancestors(0)),SIZE(CARD(work.depth)+1) LSH 1)
+
+RETURN
+
+; Fast scalar rejection precedes the bounded exact ancestry comparison.
+BYTE FUNC Matches(SDFSTYPES.ExtentKey POINTER key
+    FSBTYPES.Workspace POINTER work)
+  BYTE index
+
+  IF key.key<>work.entry.key OR key.start<>work.entry.start
+      OR key.parent<>work.entry.parent OR key.length<>work.entry.length
+      OR key.flags<>work.entry.flags OR key.known<>work.entry.known
+      OR key.depth<>work.depth THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO work.depth DO
+    IF key.ancestors(index)<>work.ancestors(index) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; No cache allocation when sector caching is disabled. Failure is an ordinary miss.
+SDFSTYPES.ExtentCache POINTER FUNC Table(FSBTYPES.Workspace POINTER work)
+
+  LET state=SDFS.GetState(work)
+  LET adapter=BLOCKTYPES.Adapter POINTER(work.volume.block.adapter)
+  IF adapter.cache.blocks=0 THEN
+    IF state.extents<>NULL THEN
+      state.extents.pending=0
+    FI
+
+    RETURN(NULL)
+  FI
+
+  IF state.extents=NULL THEN
+    state.extents=SDFSTYPES.ExtentCache POINTER(EXEC.AllocMem(
+        SIZEOF(SDFSTYPES.ExtentCache),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  FI
+
+  LET cache=state.extents
+  IF cache<>NULL THEN
+    IF cache.volume<>work.volume OR cache.generation<>work.volume.block.generation THEN
+      cache.volume=work.volume
+      cache.generation=work.volume.block.generation
+      cache.filled=0
+      cache.next=0
+      cache.pending=0
+    FI
+  FI
+
+RETURN(cache)
+
+; Seed the usual measured cursor on a hit; the caller still publishes at its
+; cancellation checkpoint. A miss retains only the original input identity.
+PUBLIC BYTE FUNC Lookup(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file)
+  BYTE index
+
+  LET cache=Table(work)
+  IF cache=NULL THEN
+    RETURN(0)
+  FI
+
+  cache.pending=0
+  IF cache.filled<>0 THEN
+    FOR index=0 TO cache.filled-1 DO
+      BEGIN
+        LET row=@cache.rows(index)
+        IF Matches(@row.input,work)<>0 THEN
+          FSCORE.CopyEntry(@file.entry,@work.entry)
+          file.entry.length=row.length
+          file.entry.count=row.count
+          file.entry.known=1
+          IF (file.entry.flags & FSBTYPES.DIR)<>0 AND file.entry.parent=0 THEN
+            file.entry.days=row.days
+            file.entry.minutes=row.minutes
+            file.entry.ticks=row.ticks
+          FI
+
+          file.depth=work.depth
+          A816MEMORY.Move(BYTE POINTER(@file.ancestors(0)),
+              BYTE POINTER(@work.ancestors(0)),SIZE(CARD(work.depth)+1) LSH 1)
+          file.position=0
+          SDFS.Restart(file)
+          RETURN(1)
+        FI
+      END
+    OD
+  FI
+
+  Identity(@cache.input,work)
+  cache.pending=1
+
+RETURN(0)
+
+; Store only a complete known extent from the same uninterrupted incarnation.
+PUBLIC PROC Store(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+
+  LET state=SDFS.GetState(work)
+  LET cache=state.extents
+  IF cache=NULL THEN
+    RETURN
+  FI
+
+  IF cache.pending=0 OR cache.volume<>work.volume
+      OR cache.generation<>work.volume.block.generation OR file.entry.known=0 THEN
+    cache.pending=0
+    RETURN
+  FI
+
+  LET row=@cache.rows(cache.next)
+  A816MEMORY.Move(BYTE POINTER(@row.input),BYTE POINTER(@cache.input),
+      SIZEOF(SDFSTYPES.ExtentKey))
+  row.length=file.entry.length
+  row.count=file.entry.count
+  row.days=file.entry.days
+  row.minutes=file.entry.minutes
+  row.ticks=file.entry.ticks
+  IF cache.filled<SDFSTYPES.EXTENT_SLOTS THEN
+    cache.filled==+1
+  FI
+
+  cache.next=(cache.next+1) & (SDFSTYPES.EXTENT_SLOTS-1)
+  cache.pending=0
+
+RETURN
+
+; Failed measurement cannot leave a pending identity for the next request.
+PUBLIC PROC Discard(FSBTYPES.Workspace POINTER work)
+
+  LET state=SDFS.GetState(work)
+  LET cache=state.extents
+  IF cache<>NULL THEN
+    cache.pending=0
+  FI
+
+RETURN
+
+ENDMODULE

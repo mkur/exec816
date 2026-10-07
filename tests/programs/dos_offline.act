@@ -96,6 +96,8 @@ PROC Setup()
   Require(file<>DOS.FileHandle POINTER(0))
   lock=DOS.Lock(BYTE POINTER($d1040),DOS.SHARED_LOCK)
   Require(lock<>DOS.FileLock POINTER(0))
+  Require(DOS.Examine(lock,DOS.FileInfoBlock POINTER($d0400))<>0)
+  Require(DOS.Examine(lock,DOS.FileInfoBlock POINTER($d0400))<>0)
   other.tc_Node.ln_Type=EXEC.NT_TASK
   other.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
   other.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))

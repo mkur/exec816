@@ -6,6 +6,7 @@ USE FSBTYPES
 USE SDFSTYPES
 USE SDFS
 USE SDFSFILE
+USE SDFSEXTENTS
 USE BLOCKTYPES
 CARD checks,dataReads,mapReads
 BYTE phase,revision,finished
@@ -18,6 +19,10 @@ BLOCKTYPES.Adapter adapter
 BYTE ARRAY buffer(256)
 CARD POINTER config
 LONGCARD before
+CARD cacheBytes,stateBytes
+BYTE POINTER ARRAY held(64)
+LONGCARD ARRAY heldBytes(64)
+FSBTYPES.Volume otherVolume
 
 ; Stop at the first failed fixture invariant and retain its check index for
 ; diagnosis.
@@ -377,6 +382,128 @@ PROC Retirement()
 
 RETURN
 
+; Match exact identities, retain completed counts, replace bounded slots and
+; fall back cleanly when the optional allocation cannot be made.
+PROC Extents()
+  BYTE index,number
+  LONGCARD prior,steady
+
+  cacheBytes=SIZEOF(SDFSTYPES.ExtentCache)
+  stateBytes=SIZEOF(SDFSTYPES.BackendState)
+  Require(cacheBytes<=2304)
+  LET state=SDFS.GetState(@work)
+  OpenFile(config(2),777)
+  work.entry.key=42
+  work.entry.parent=volume.root
+  steady=EXEC.AvailMem(0)
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0 AND state.extents=NULL)
+  Require(EXEC.AvailMem(0)=steady)
+
+  adapter.cache.blocks=128
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0 AND state.extents<>NULL)
+  Require(MeasureCurrent()=FSSTATUS.DONE)
+  SDFSEXTENTS.Store(@work,@file)
+  prior=work.operations
+  work.entry.name(0)='Z
+  work.entry.days=99
+  Require(SDFSEXTENTS.Lookup(@work,@file)=1 AND work.operations=prior)
+  Require(file.entry.length=777 AND file.entry.count=LONGINT(config(8))
+      AND file.entry.name(0)='Z AND file.entry.days=99)
+
+  work.depth=1
+  work.ancestors(1)=123
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  Require(state.extents.pending=0)
+  work.depth=0
+  work.ancestors(0)=volume.root+1
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.ancestors(0)=volume.root
+  work.entry.length=776
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.length=777
+  work.entry.known=0
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.known=1
+  work.entry.flags=FSBTYPES.PROTECTED
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.flags=0
+  work.entry.parent==+1
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.parent=volume.root
+  work.entry.start==+1
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.start=config(2)
+  Require(SDFSEXTENTS.Lookup(@work,@file)=1)
+
+  block.generation==+1
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0 AND state.extents.filled=0)
+  Require(MeasureCurrent()=FSSTATUS.DONE)
+  SDFSEXTENTS.Store(@work,@file)
+  otherVolume.block=@block
+  otherVolume.state=volume.state
+  otherVolume.root=volume.root
+  work.volume=@otherVolume
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0 AND state.extents.filled=0)
+  work.volume=@volume
+  SDFS.Invalidate(@work)
+
+  ; More than 32 distinct identities must evict the oldest, without allocation.
+  steady=EXEC.AvailMem(0)
+  FOR index=0 TO 32 DO
+    work.entry.key=LONGCARD(index)
+    Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+    Require(MeasureCurrent()=FSSTATUS.DONE)
+    SDFSEXTENTS.Store(@work,@file)
+  OD
+
+  Require(state.extents.filled=32 AND EXEC.AvailMem(0)=steady)
+  work.entry.key=0
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+  work.entry.key=32
+  Require(SDFSEXTENTS.Lookup(@work,@file)=1)
+  SDFS.Invalidate(@work)
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0)
+  ; Discard a partial map traversal instead of making a completed cache row.
+  Require(SDFSFILE.Measure(@work,@file,0)=FSSTATUS.NEED_IO)
+  SDFSEXTENTS.Discard(@work)
+  Require(state.extents.filled=0 AND SDFSEXTENTS.Lookup(@work,@file)=0)
+  SDFSEXTENTS.Discard(@work)
+
+  ; Recreate the workspace without a cache, then consume every upper free chunk.
+  SDFS.DestroyWork(@work)
+  Require(SDFS.CreateWork(@work)<>0)
+  LET replacement=SDFS.GetState(@work)
+  number=0
+  DO
+    heldBytes(number)=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF heldBytes(number)=0 THEN
+      EXIT
+    FI
+
+    held(number)=EXEC.AllocMem(heldBytes(number),EXEC.MEMF_UPPER)
+    Require(held(number)<>NULL AND number<63)
+    number==+1
+  OD
+
+  Require(SDFSEXTENTS.Lookup(@work,@file)=0
+      AND replacement.extents=NULL)
+  Require(MeasureCurrent()=FSSTATUS.DONE)
+  FOR index=0 TO number-1 DO
+    EXEC.FreeMem(held(index),heldBytes(index))
+  OD
+
+  adapter.cache.blocks=0
+
+RETURN
+
 ; Exercise SpartaDOS maps, file reads, seeks and malformed metadata.
 PROC Main()
 
@@ -397,6 +524,7 @@ PROC Main()
   DirectoryAccounting()
   BadMaps()
   Retirement()
+  Extents()
   SDFS.DestroyVolume(@volume)
   SDFS.DestroyWork(@work)
   Require(EXEC.AvailMem(0)=before)

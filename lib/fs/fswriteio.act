@@ -112,6 +112,8 @@ PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
     RETURN(0)
   FI
 
+  ; Retire completed metadata before this sector can be physically changed.
+  SDFS.Invalidate(service.work)
   IF BLOCKIO.BeginStore(service.adapter,service.selected.block,LONGCARD(sector),
       source)=0 THEN
     RETURN(Failed(service,service.adapter.error))

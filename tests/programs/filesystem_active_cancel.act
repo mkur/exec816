@@ -240,6 +240,11 @@ PROC DirectoryCase()
     point=11
   FI
 
+  IF scenario=18 THEN
+    Require(DOS.ExNext(lock,info)<>0 AND DOS.Examine(lock,info)<>0)
+    point=13
+  FI
+
   StartScope(point,0)
   result=DOS.ExNext(lock,info)
   error=DOS.IoErr()
@@ -294,6 +299,8 @@ PROC Main()
   IF scenario=17 THEN
     ObjectCase()
   ELSEIF scenario=14 THEN
+    DirectoryCase()
+  ELSEIF scenario=18 THEN
     DirectoryCase()
   ELSEIF scenario<=5 OR scenario=12 OR scenario>=15 THEN
     ReadCase()

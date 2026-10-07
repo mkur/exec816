@@ -41,6 +41,10 @@ CACHE-BLOCKS@ .       \ current request: 512
 EXEC816
 ```
 
+Zero also disables the optional 32-entry SpartaDOS extent cache. With caching
+enabled, that table uses 2,304 allocated upper-RAM bytes and falls back to normal
+measurement if allocation fails.
+
 Capacity counts 128-byte blocks; a 256-byte sector takes two. Accept zero or a
 power of two from 16 through 2048. Invalid values, including negative or wider
 Forth cells, throw error -24 and leave the request unchanged. The getter reports
