@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1–AI4 pass development checks; AI5–AI7 remain
+Status: in progress, 2026-10-07. AI1–AI5 pass development checks; AI6–AI7 remain
 pending. See the [execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
@@ -244,6 +244,11 @@ no event path depends on physical display ownership. Suggested commit:
 `aes: route application mouse gestures through GUI locks`.
 
 ## AI5 — Expose caller-local GEM input waits
+
+Implemented. [Evidence](../../development/aes-application-input-ai5.json) covers
+all supported combinations, named/parameter-block calls, alarm/loss races,
+PAL/NTSC regressions and ordinary Task stacks. The inbox is now 594 payload
+bytes; combined heap reservation remains 1,144 bytes per registration.
 
 1. Extend the [binding inputs](../../../ports/gem4xe/aes-binding-inputs.json),
    generated constants, `gem.h` and dispatch for `evnt_keybd` (20, counts

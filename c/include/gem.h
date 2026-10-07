@@ -15,12 +15,6 @@ typedef struct { WORD *contrl, *intin, *ptsin, *intout, *ptsout; } VDIPB;
 #define MD_REPLACE 1
 #define FIS_SOLID 1
 
-#define MU_KEYBD 0x0001
-#define MU_BUTTON 0x0002
-#define MU_M1 0x0004
-#define MU_M2 0x0008
-#define MU_MESAG 0x0010
-#define MU_TIMER 0x0020
 typedef struct { WORD m_out, m_x, m_y, m_w, m_h; } MOBLK;
 #define END_UPDATE 0
 #define BEG_UPDATE 1
@@ -43,6 +37,9 @@ WORD vst_color(WORD handle, WORD color);
 void EXEC_CALL vdi_call(VDIPB *pb);
 WORD appl_write(WORD id, WORD length, const WORD *message);
 WORD evnt_mesag(WORD *message);
+WORD evnt_keybd(void);
+WORD evnt_button(WORD clicks, WORD mask, WORD state,
+    WORD *x, WORD *y, WORD *buttons, WORD *qualifiers);
 WORD evnt_timer(UWORD lo, UWORD hi);
 WORD wind_update(WORD code);
 WORD wind_create(WORD kind, WORD x, WORD y, WORD w, WORD h);

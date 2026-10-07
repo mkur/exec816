@@ -258,6 +258,36 @@ WORD evnt_mesag(WORD *message)
     return ExecAESEvents(c, MU_MESAG, 0, message) != 0;
 }
 
+WORD evnt_keybd(void)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return 0;
+    return ExecAESEvents(c, MU_KEYBD, 0, NULL) ? c->intout[5] : 0;
+}
+
+static WORD button(struct ExecAESContext *c, WORD clicks, WORD mask, WORD state)
+{
+    c->intin[1] = clicks; c->intin[2] = mask; c->intin[3] = state;
+    return ExecAESEvents(c, MU_BUTTON, 0, NULL) != 0;
+}
+
+WORD evnt_button(WORD clicks, WORD mask, WORD state,
+                 WORD *x, WORD *y, WORD *buttons, WORD *qualifiers)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    WORD result;
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!ExecAESPointer(x, 2) || !ExecAESPointer(y, 2) ||
+        !ExecAESPointer(buttons, 2) || !ExecAESPointer(qualifiers, 2)) {
+        c->diagnostic = AES_MALFORMED; return 0;
+    }
+    result = button(c, clicks, mask, state);
+    *x = c->intout[1]; *y = c->intout[2];
+    *buttons = c->intout[3]; *qualifiers = c->intout[4];
+    return result;
+}
+
 WORD evnt_timer(UWORD lo, UWORD hi)
 {
     struct ExecAESContext *c = ExecAESContext();
@@ -301,7 +331,8 @@ WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
     in[9] = m2flags; in[10] = m2x; in[11] = m2y; in[12] = m2w; in[13] = m2h;
     in[14] = tlo; in[15] = thi;
     result = multi(c, msg);
-    *mx = *my = *mb = *ks = *kr = *br = 0;
+    *mx = c->intout[1]; *my = c->intout[2]; *mb = c->intout[3];
+    *ks = c->intout[4]; *kr = c->intout[5]; *br = c->intout[6];
     return result;
 }
 
@@ -331,6 +362,7 @@ void EXEC_CALL aes_call(AESPB *pb)
     op = pb->control[0];
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
+    if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }
     if (op == AES_OP_TIMER) inputs = 2;
     if (op == AES_OP_UPDATE) inputs = 1;
     if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
@@ -342,7 +374,8 @@ void EXEC_CALL aes_call(AESPB *pb)
     if (op == AES_OP_GRAF_HANDLE) outputs = 5;
     if (op == AES_OP_INIT || op == AES_OP_CREATE) result = -1;
     if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
-        op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI &&
+        op != AES_OP_MESAG && op != AES_OP_KEYBD && op != AES_OP_BUTTON &&
+        op != AES_OP_TIMER && op != AES_OP_MULTI &&
         op != AES_OP_UPDATE && op != AES_OP_CREATE && op != AES_OP_OPEN &&
         op != AES_OP_CLOSE && op != AES_OP_DELETE && op != AES_OP_GET &&
         op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_GRAF_HANDLE) {
@@ -364,6 +397,11 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_WRITE:
         result = appl_write(pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
     case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
+    case AES_OP_KEYBD: result = evnt_keybd(); break;
+    case AES_OP_BUTTON:
+        result = button(c, pb->int_in[0], pb->int_in[1], pb->int_in[2]);
+        for (i = 1; i < 5; ++i) pb->int_out[i] = c->intout[i];
+        break;
     case AES_OP_TIMER:
         result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
     case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
@@ -389,7 +427,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         if (c->busy) { c->diagnostic = AES_BUSY; break; }
         for (i = 0; i < 16; ++i) c->intin[i] = pb->int_in[i];
         result = multi(c, (WORD *)(ULONG)pb->addr_in[0]);
-        for (i = 1; i < 7; ++i) pb->int_out[i] = 0;
+        for (i = 1; i < 7; ++i) pb->int_out[i] = c->intout[i];
         break;
     default:
         c->diagnostic = AES_UNSUPPORTED;

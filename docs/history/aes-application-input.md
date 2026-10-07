@@ -3,9 +3,8 @@
 [History index](README.md) · [Implementation plan](../plans/gem4xe/aes-application-input-implementation-plan.md) ·
 [Current INPUT contract](../reference/input.md) · [Current AES contract](../reference/aes.md)
 
-Status: AI1–AI4 implemented, 2026-10-07. AI5–AI7 remain pending. Public AES input
-waits are not implemented yet. These are development checks, not hosted-system
-qualification; PI4/HY4 and the observed flicker remain open.
+Status: AI1–AI5 implemented, 2026-10-07. AI6–AI7 remain pending. Public caller-local
+input waits pass development checks. This is not hosted-system qualification; PI4/HY4 and the observed flicker remain open.
 
 ## AI1 — Capture route policy and button qualifiers
 
@@ -145,3 +144,39 @@ Per-registration storage, fixed banks and stack reservations are unchanged.
 The pointer fixture measures a 355-byte root stack peak and 177 bytes on its
 1,024-byte peer Task; all checked floors and domain guards pass. Broader UI
 latency work and PI4/HY4 remain open.
+
+
+## AI5 — Public caller-local input waits
+
+`evnt_keybd`, `evnt_button`, `evnt_multi`, `evnt_multi_moblk` and their parameter
+blocks now use one local event transaction. All fifteen supported nonempty
+key/button/message/timer combinations work. A button wait selects the first
+matching retained edge, or an eligible level; single and inverse predicates,
+quick down/up and repeatable held levels are covered. Unsupported arguments fail
+before any payload is consumed, and windowless message/timer waits remain valid.
+
+Interest precedes the final readiness check. A bounded scan copies one immutable
+record per guard; timer I/O stays outside guards. The final decision reconciles
+new arrivals and changed level eligibility, freezes results, retires the alarm,
+and checks only source/lifetime epochs before committing. Input arriving during
+cancellation stays queued for the next result. Loss retires only the lost
+selected source; clock/device errors preserve all payloads. Button-loss recovery
+asks the presenter once to refresh an already observed released baseline.
+
+[Development evidence](../development/aes-application-input-ai5.json) records
+396 optimized input API assertions (390 in the earlier raw wrapper run), including arrivals during cancellation, source-specific
+loss after selection, close during a wait, byte-index wrap, pending unselected
+loss, simultaneous timer/input readiness and newly eligible levels during clock
+reads. The fixture rejects any presenter RPC for the event operations. Existing
+event/timer checks pass on PAL and NTSC, and generated layouts/C/native bridges
+pass in raw and optimized modes. Registration also passes with two separately
+linked binding instances; its symbol renaming includes the new named wrappers.
+
+Private wire version 8 uses two former scratch bytes for observed producer tails
+and adds a two-byte level-selection flag. The inbox grows from 592 to 594 payload
+bytes; combined storage grows from 1,140 to 1,142 but remains heap-rounded to
+**1,144 reserved bytes per registration**. The binding dispatch table adds eight shared constant bytes; there is no new
+mutable shared state, signal, Task or bank reservation. Reserved bank-zero delta is **0 fixed +
+0 per public Task + 0 private idle**. An optimized 1,024-byte worker exercising
+combined input waits peaks at 432 bytes, with 336 bytes above its checked floor.
+The detailed evidence records code growth and every measured stack.

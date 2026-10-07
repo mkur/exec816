@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 7,
+  "version": 8,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -74,7 +74,13 @@
     "INPUT_SLOTS": 16,
     "INPUT_KEY": 1,
     "INPUT_BUTTON": 2,
-    "INPUT_LOST": 10
+    "INPUT_LOST": 10,
+    "OP_KEYBD": 20,
+    "OP_BUTTON": 21,
+    "MU_KEYBD": 1,
+    "MU_BUTTON": 2,
+    "MU_M1": 4,
+    "MU_M2": 8
   },
   "records": {
     "Delivery": [
@@ -198,7 +204,15 @@
         "BYTE"
       ],
       [
-        "selected",
+        "keyTailSeen",
+        "BYTE"
+      ],
+      [
+        "buttonTailSeen",
+        "BYTE"
+      ],
+      [
+        "selectionFlags",
         "CARD"
       ],
       [
@@ -514,6 +528,12 @@
     "WM_REDRAW",
     "WM_TOPPED",
     "WM_MOVED",
-    "WM_CLOSED"
+    "WM_CLOSED",
+    "MU_KEYBD",
+    "MU_BUTTON",
+    "MU_M1",
+    "MU_M2",
+    "MU_MESAG",
+    "MU_TIMER"
   ]
 }

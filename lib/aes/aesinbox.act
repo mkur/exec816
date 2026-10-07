@@ -40,7 +40,9 @@ PUBLIC PROC Open(AESSTATE.Client POINTER client LONGCARD epoch)
   inbox.loss=0
   inbox.eligible=0
   inbox.exhausted=0
-  inbox.selected=0
+  inbox.keyTailSeen=0
+  inbox.buttonTailSeen=0
+  inbox.selectionFlags=0
   inbox.selectedWindow=0
   inbox.windowEpoch=epoch
   EXEC.Permit()

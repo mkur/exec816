@@ -17,6 +17,12 @@
 #define WM_TOPPED 21
 #define WM_MOVED 28
 #define WM_CLOSED 22
+#define MU_KEYBD 1
+#define MU_BUTTON 2
+#define MU_M1 4
+#define MU_M2 8
+#define MU_MESAG 16
+#define MU_TIMER 32
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

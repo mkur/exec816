@@ -9,6 +9,8 @@
 #define appl_exit Peer_appl_exit
 #define appl_write Peer_appl_write
 #define evnt_mesag Peer_evnt_mesag
+#define evnt_keybd Peer_evnt_keybd
+#define evnt_button Peer_evnt_button
 #define evnt_timer Peer_evnt_timer
 #define wind_update Peer_wind_update
 #define evnt_multi Peer_evnt_multi

@@ -6,9 +6,8 @@
 Status: implementation in progress, 2026-10-07. This note defines the next
 application-input milestone after WA1–WA6. The
 [implementation plan](aes-application-input-implementation-plan.md) has seven
-executable slices: AI1 capture, AI2 inboxes, AI3 keyboard and AI4 pointer routing pass development
-checks; AI5–AI7
-and public AES input waits remain pending. This note is not a qualification claim.
+executable slices. AI1–AI5 capture, routing and public input waits pass development
+checks; AI6–AI7 remain pending. This note is not a qualification claim.
 
 Give an ordinary GEM application keyboard events and left-button press/release
 events through `evnt_multi`. Add the corresponding `evnt_keybd` and

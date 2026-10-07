@@ -6,7 +6,7 @@ Exec816 supplies a small GEM source interface in `<gem.h>`. Application code
 uses ordinary GEM calls and private parameter blocks. The Exec816 startup
 wrapper supplies the retained service endpoint and owns Task termination.
 This profile supports registration, copied messages, timers, GUI locks and
-fixed-size GEM windows and private VDI drawing. Open with `graf_handle` and
+fixed-size GEM windows, keyboard/left-button input and private VDI drawing. Open with `graf_handle` and
 `v_opnvwk`; use `BEG_UPDATE` around visible-rectangle enumeration, user clipping
 and bar/text painting, then release with `END_UPDATE` before the event wait.
 See the [workstation profile](../reference/gem-vdi.md#resident-application-workstations)
@@ -72,7 +72,11 @@ disk, without pipeline children. See the [resource and timing record](../history
 ## Application body
 
 This event loop accepts a private eight-word quit message and a one-second
-heartbeat. Mouse and keyboard event bits are not yet supported.
+heartbeat without needing a window. To request `MU_KEYBD` or `MU_BUTTON`, first
+open an application window. Wait for down with `(clicks,mask,state)=(1,1,1)`,
+then release with `(1,1,0)`; use returned screen coordinates to distinguish an
+inside activation from an outside cancellation. `evnt_keybd` returns a GEM
+scan/ASCII word. Rectangle and multiple-click events remain unsupported.
 
 ```c
 #include <gem.h>
@@ -106,7 +110,9 @@ do not wait for the presenter to dispatch a request. Registration, exit and
 `wind_update` retain presenter arbitration. Existing GEM call sites need no change.
 
 For a native failure, inspect `ExecAESDiagnostic()` from `<exec816/aes.h>`.
-A failed timer does not consume a queued message. Unsupported event bits fail
+A failed timer consumes no selected payload. `AES_INPUT_LOST` retires only the
+lost selected input source; clear any armed application control and wait for
+release before accepting a new press. Unsupported event bits fail
 as a whole; they do not silently disappear from the requested mask.
 
 ## Startup and retirement
@@ -130,8 +136,10 @@ Tasks or invoke a second AES call from a callback while the first is pending.
 `wind_update(BEG_UPDATE)` excludes native painting and implicitly owns mouse
 control; match it with `END_UPDATE`. An explicit `BEG_MCTRL`/`END_MCTRL` pair
 excludes native gestures while allowing console painting. Locks recurse, so
-match every BEGIN with its corresponding END. Keep holds short: native damage
-and input wait until release. The application may still exchange messages and
+match every BEGIN with its corresponding END. Keep holds short: native damage and gestures
+wait until unlock, while application content input continues. A content press
+retains its recipient through physical release. Release update ownership before
+the ordinary event loop; use mouse control only for a bounded interaction. The application may still exchange messages and
 wait on a timer while holding a lock. Cooperative exit releases nested holds.
 
 ## Build and exercise the optional proof

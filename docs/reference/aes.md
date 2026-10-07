@@ -9,7 +9,8 @@ run in their callers. This adds no Task or kernel gateway. The native desktop
 and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
-`appl_init`, `appl_exit`, `appl_write`, `evnt_mesag`, `evnt_timer`,
+`appl_init`, `appl_exit`, `appl_write`, `evnt_keybd`, `evnt_button`,
+`evnt_mesag`, `evnt_timer`,
 `evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
 `wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`,
 `graf_handle`
@@ -84,27 +85,60 @@ with `AES_OVERFLOW`. This operation runs in the caller, without presenter RPC or
 request-sequence advancement. The named wrapper and parameter-block opcode use
 the same helper.
 
-`evnt_multi` supports `MU_MESAG`, `MU_TIMER` and their combination. It returns
-all selected conditions ready at one decision, consuming at most one message.
-Zero-duration `MU_TIMER` is immediately ready and submits no alarm; use it with
-`MU_MESAG` to drain the queue without blocking. Unsupported event bits or an
-empty mask fail as a whole with `AES_UNSUPPORTED`. This profile returns zero
-in the six mouse/keyboard output words; input-event reporting is future work.
-Rectangle/button inputs have no effect when their event bits are absent.
+`evnt_keybd()` waits for one GEM scan/ASCII word. `evnt_button(clicks, mask,
+state, ...)` waits for a left-button condition and returns one with the selected
+screen coordinates, buttons and modifiers. Supported arguments are `mask=1`,
+`state=0/1`, and `clicks=1` or `$0101`. The latter inverts the equality predicate;
+it does not request multiple clicks. Other button arguments fail as a whole
+with `AES_UNSUPPORTED`.
 
-Matching runs in the caller. It computes one absolute deadline, checks selected
-sources before sleeping and rechecks after alarm submission. Signals are hints;
-spurious wakes never restart the interval or trigger redundant clock queries.
-A successful alarm completion proves expiry. A message arriving before the
-alarm reply triggers a fresh clock check for simultaneous readiness. Unselected
-messages remain queued.
-The caller freezes one readiness result, retires any outstanding alarm and then
-consumes at most one message. A queued message can avoid a future alarm. These
-paths make progress independently of the presenter pump.
+`evnt_multi` supports all fifteen nonempty combinations of `MU_KEYBD`,
+`MU_BUTTON`, `MU_MESAG` and `MU_TIMER`. At one frozen decision it selects at most
+one key, one matching button condition and one message. It scans at most sixteen
+retained button transitions before considering an eligible current level; older
+nonmatching transitions retire together with the selected match. A quick down/up
+is retained. A down-level wait may return repeatedly while the button stays held.
+The application normally changes its next wait to release after accepting down.
 
-A clock/device failure returns zero with `AES_TIMER_ERROR` for affected timed
-waits, preserving queued messages. A failed timer binding does not automatically reopen or retry. The caller
-can retire and reinitialize its registration to obtain a fresh binding. Message-only and native GUI service remain available.
+Input waits require an open application window; otherwise they return zero with
+`AES_IDENTITY`. Message/timer-only calls still work without a window. Unselected
+button and rectangle arguments are ignored. Empty/unsupported event masks,
+rectangle events, right/middle buttons and multiple clicks fail explicitly.
+The named wrappers, `evnt_multi_moblk` and correctly sized AES parameter blocks
+use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
+(3/5/0/0); multi remains 25 (16/7/1/0).
+
+A button result supplies the selected button snapshot. A key-only result supplies
+the pointer snapshot captured when that key was published. When both return,
+modifiers are ORed; when neither returns, the result uses the last coherent
+presenter pointer snapshot. Key and click outputs are zero when their bits are
+absent. Native Shift maps to GEM left-Shift (2) and Control to 4; there is no Alt,
+separate right Shift or standalone Control-click guarantee.
+
+Matching runs in the caller on registration-owned upper-memory scratch, using
+the existing receive-port signal and one absolute timer alarm. Interest is
+published before the final readiness check. Signals are hints and can arrive
+without a message; no signal is cleared between an empty observation and Wait.
+Each record copy has a short guard; the bounded FIFO scan and timer I/O run
+outside guards. Successful alarm completion proves expiry; other readiness
+checks the clock for a simultaneously due timer. Spurious wakes do not restart
+the interval or issue redundant clock reads. Zero-duration `MU_TIMER` is ready
+immediately and submits no alarm; standalone `evnt_timer(0,0)` still waits at
+least one tick.
+
+The caller freezes readiness and result snapshots, retires an outstanding alarm,
+then rechecks only lifetime/loss epochs before committing consumer positions and
+detaching a message. Later arrivals remain for the next decision. Capture/FIFO
+loss returns zero with `AES_INPUT_LOST` and retires only the lost selected source;
+unrelated input/messages remain queued. Message/timer-only calls leave input
+loss pending. Close/reopen withdraws the input lifetime. Source epoch exhaustion
+returns `AES_OVERFLOW` until a fresh open lifetime.
+
+A clock/device failure returns zero with `AES_TIMER_ERROR` for timed waits and
+preserves all selected payloads. It does not automatically reopen the timer;
+retire and reinitialize the registration for a fresh binding. Untimed input and
+message calls remain available. Waits allocate no input signal, make no presenter
+RPC, acquire no display grant and hold no Layers transaction while blocked.
 
 `wind_update` arbitrates recursive update and mouse-control ownership between
 registered AES clients. `BEG_UPDATE` acquires update ownership and its implicit
@@ -216,15 +250,15 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 7 has a 112-byte request and permits init, exit, update,
+profile: version 8 has a 112-byte request and permits init, exit, update,
 window mutations and cold display delegation on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
 
-Version 7 reserves a 592-byte upper-memory input inbox per registration alongside
+Version 8 reserves a 594-byte upper-memory input inbox per registration alongside
 the existing sixteen ordinary messages and one GUI record. The combined storage
-is 1,140 bytes, rounded to 1,144 by the heap. Each endpoint gains a padded
+is 1,142 bytes, rounded to 1,144 by the heap. Each endpoint gains a padded
 four-byte inbox pointer, adding sixteen bytes to the shared directory. The
 registration owns this storage until endpoint withdrawal and publisher holds
 retire. This adds no signal, Task or bank-zero reservation.
@@ -235,8 +269,7 @@ receiving port's existing signal as a wake hint; it is not a message. Source los
 stops admission until the caller acknowledges it without discarding unrelated
 messages/input. Exhausting a source epoch stops it until a fresh open-window
 lifetime. [AI2](../plans/gem4xe/aes-application-input-implementation-plan.md#ai2--add-bounded-inboxes-and-safe-wakeups)
-is internal transport groundwork: public keyboard/button waits and production
-routing remain pending.
+established this transport; AI3–AI5 add production routing and public input waits.
 
 ## Resident counter capacity
 
@@ -260,8 +293,8 @@ inbox for each open AES window. The capture-time route selects the recipient,
 including keys queued before a focus change. Close drains and retires that route;
 reopen creates a fresh one. GEM translation uses the pinned Atari mapping and
 shared Caps state. Ctrl-C is delivered as a key; physical BREAK becomes Escape,
-except when a native title gesture consumes it. This transport is internal until
-the public input-wait slice; `MU_KEYBD` remains unsupported by current bindings.
+except when a native title gesture consumes it. Public input waits consume these
+records directly in their caller.
 
 Private button routing now retains the focused work-area recipient through
 release, even outside its window. Activation/chrome sequences remain native.
@@ -269,4 +302,5 @@ release, even outside its window. Activation/chrome sequences remain native.
 to its open-window owner without changing keyboard focus. A competing lock waits
 for the physical sequence to end. Close/loss requires observed release before
 rearming. Eligibility handback can signal a waiting caller without a new edge.
-The public `MU_BUTTON`/`evnt_button` profile remains pending in AI5.
+The public `MU_BUTTON`/`evnt_button` waits consume the retained transitions and
+eligible levels without a presenter RPC.
