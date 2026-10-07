@@ -74,6 +74,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         assembly.append(ROOT/'c/calypsi/io.s')
         extra_roots.append('ExecIOEntry')
     sources += list(client_sources)
+    if ROOT/'c/calypsi/aes.c' in sources:
+        sources.append(ROOT/'c/calypsi/aes-windows.c')
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],

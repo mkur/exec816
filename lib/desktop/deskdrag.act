@@ -3,6 +3,8 @@
 MODULE DESKDRAG
 USE EXEC
 USE AESLOCKS
+USE AESTYPES
+USE AESWINDOWSTATE
 USE INPUT
 USE DESKTYPES
 USE DESKSTATE
@@ -18,7 +20,7 @@ USE HEAPCORE
 LONGCARD windowId,lossEpoch
 LAYERTYPES.Rect origin,target
 INT pressX,pressY
-BYTE phase,blocked,dirty,focusWanted,escapePending
+BYTE phase,blocked,dirty,focusWanted,escapePending,pixelMotion
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
 CONST CLOSING=3
@@ -87,14 +89,23 @@ PROC Position(INT x,y)
     top=0
   FI
 
-  left=(left+4) & $fff8
-  top=(top+4) & $fff8
-  limit=(640-width) & $fff8
+  IF pixelMotion=0 THEN
+    left=(left+4) & $fff8
+    top=(top+4) & $fff8
+  FI
+
+  limit=640-width
+  IF pixelMotion=0 THEN
+    limit=limit & $fff8
+  FI
   IF left>limit THEN
     left=limit
   FI
 
-  limit=(240-height) & $fff8
+  limit=240-height
+  IF pixelMotion=0 THEN
+    limit=limit & $fff8
+  FI
   IF top>limit THEN
     top=limit
   FI
@@ -176,8 +187,15 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             RETURN(0)
           FI
 
+          IF window.kind=DESKTYPES.CONTENT_AES AND service.focus<>window.id THEN
+            AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
+            blocked=1
+            RETURN(1)
+          FI
+
           windowId=window.id
-          focusWanted=1
+          pixelMotion=window.kind=DESKTYPES.CONTENT_AES
+          focusWanted=window.kind<>DESKTYPES.CONTENT_AES
           IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
             phase=CLOSING
             RETURN(1)
@@ -253,7 +271,13 @@ PUBLIC PROC Advance()
   IF phase=MOVE_PENDING THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     DESKSTATE.outlineVisible=0
-    status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    IF window.kind=DESKTYPES.CONTENT_AES THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_MOVED,target.left,target.top,
+          target.right-target.left,target.bottom-target.top)
+      status=DESKTYPES.OK
+    ELSE
+      status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    FI
     IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
       HEAPCORE.Abort($faed)
     FI
@@ -262,6 +286,13 @@ PUBLIC PROC Advance()
     windowId=0
     dirty=0
   ELSEIF phase=CLOSE_PENDING THEN
+    IF window.kind=DESKTYPES.CONTENT_AES THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
+      phase=0
+      windowId=0
+      RETURN
+    FI
+
     FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
       IF @service.windows(slot)=window THEN
         BEGIN

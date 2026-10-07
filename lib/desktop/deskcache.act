@@ -135,7 +135,8 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   IF active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
       OR window.id=0 OR window.visualRevision=0
-      OR window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      OR window.kind=DESKTYPES.CONTENT_CONSOLE
+      OR window.kind=DESKTYPES.CONTENT_AES THEN
     RETURN(0)
   FI
 

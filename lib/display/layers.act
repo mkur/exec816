@@ -236,6 +236,28 @@ PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
 
 RETURN(LAYERTYPES.OK)
 
+; Select the content contract while hidden, before publishing a window.
+PUBLIC BYTE FUNC SetExternal(LAYERTYPES.Scene POINTER scene LONGCARD id)
+  BYTE status
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  LET layer=Find(scene,id)
+  IF id=0 OR layer=NULL THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  IF layer.shown<>0 THEN
+    RETURN(LAYERTYPES.BUSY)
+  FI
+
+  layer.externalPaint=1
+
+RETURN(LAYERTYPES.OK)
+
 PUBLIC BYTE FUNC Show(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE shown)
   BYTE status
   LAYERTYPES.Layer POINTER layer

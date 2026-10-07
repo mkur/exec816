@@ -151,8 +151,8 @@ capacity. Generic repeated subtraction remains subject to FULL.
 | Rect | 8 |
 | Region with 96 rectangle slots | 770 |
 | Eight-entry Damage record | 66 |
-| Layer including visibility and damage | 850 |
-| Scene with four layers, background, scratch region and transaction state | 5,074 |
+| Layer including visibility and damage | 852 |
+| Scene with four layers, background, scratch region and transaction state | 5,084 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:
@@ -174,3 +174,18 @@ retirement. `UPDATE_READ` completion never acknowledges paint and a failed read
 does not mark clean framebuffer pixels dirty merely because its destination
 failed. The saved source rectangle is owned by the scene. The existing copy,
 move and paint operations remain mutually exclusive with a read.
+
+## External application painting
+
+`SetExternal(scene,id)` marks a newly created hidden layer as application-painted.
+`BeginPaint` then admits `UPDATE_HANDOFF`: the manager paints frame pixels and
+accumulates work-area damage for the application. `PaintRegion` and `AdvancePaint`
+retain their usual traversal. After exhaustion and durable damage delivery,
+`FinishHandoff(scene,token)` retires manager damage and releases the transaction.
+Ordinary `Finish(...,1)` rejects this transaction; `Finish(...,0)` aborts it while
+preserving damage for retry. No token remains live while waiting for the app.
+
+The external flag persists across handoff, exposure and moves. `BeginCopy`,
+`BeginMove` and `BeginRead` return REDRAW for these layers, even when manager
+damage is empty. Handoff is not evidence that application pixels are valid.
+Deleting and recreating a layer resets the flag.

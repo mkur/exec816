@@ -7,6 +7,7 @@ USE AESTYPES
 USE AESCORE
 USE HEAPCORE
 USE AESLOCKS
+USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKDRAG
 USE CONSOLEBITMAP
@@ -94,7 +95,12 @@ RETURN(AESCORE.Idle(service))
 PUBLIC PROC Settle()
 
   LET service=AESSTATE.Get()
-  IF service=NULL OR service.live=0 OR service.lockCount=0 THEN
+  IF service=NULL OR service.live=0 THEN
+    RETURN
+  FI
+
+  AESWINDOWSTATE.Sync()
+  IF service.lockCount=0 AND service.windowPending=0 THEN
     RETURN
   FI
 
@@ -105,6 +111,7 @@ PUBLIC PROC Settle()
     DESKDRAG.Suspend()
   FI
 
+  AESCORE.Settle(service)
   AESLOCKS.Wake(service)
 
 RETURN

@@ -4,17 +4,18 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
-exit and GUI locks use ordinary Exec RPC; copied messaging and event/timer waits
+exit, window mutations and GUI locks use ordinary Exec RPC; copied messaging and event/timer waits
 run in their callers. This adds no Task or kernel gateway. The native desktop
 and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_mesag`, `evnt_timer`,
-`evnt_multi`, `evnt_multi_moblk`, `wind_update` and the corresponding `aes_call(AESPB *)`
-operations.
+`evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
+`wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`
+and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
-AES implementation. Window, resource, form and VDI workstation calls are pending.
+AES implementation. Resource, form and VDI workstation calls are pending.
 
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
@@ -57,8 +58,8 @@ queued. Repeated pending redraws union their bounds; repeated moves retain the
 latest proposal. First-pending order between kinds is preserved, and published
 records are immutable. Recycling the GUI record wakes the existing service
 signal only when further GUI work needs it. This introduces no polling or
-additional application wait mechanism. Window calls are still pending; WA1
-establishes this transport with a service-producer fixture.
+additional application wait mechanism. Redraw delivery remains durable while an
+application is delayed or its ordinary message queue is full.
 
 An open epoch identifies GUI records independently of their GEM payload. The
 caller drops retired service-originated notifications before selecting message
@@ -128,6 +129,43 @@ gestures and damage without another input edge. Blocked paint alone does not
 keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
+Each registration can own one window; native and GEM windows share four desktop
+slots. The supported kind is `NAME | CLOSER | MOVER`. Create reserves a hidden
+window and returns a positive handle, or minus one on failure. Open shows it;
+close hides it and retires the open epoch without deleting the handle. Delete
+requires a closed window. Exit closes and deletes any remaining window. Handles
+are not reused during a service lifetime. The initial profile permits moves at
+individual pixel positions, fixed dimensions of at least 32 by 32, and bounds
+fully inside the 640 by 240 desktop. Resizing and off-screen bounds fail without
+mutation.
+
+`WF_NAME` copies at most 64 characters plus terminator from the high-word,
+low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
+the window and `WF_TOP` raises it. Work insets are left/right 8, top 16 and bottom
+8 pixels. `wind_calc` converts border/work rectangles locally; `wind_get`
+provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
+`WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
+top queries; a native top window is reported as zero.
+
+`WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
+caller owns `BEG_UPDATE`. The presenter publishes the snapshot on acquisition;
+no client reads Layers or retains a scene token. A zero-width/height result ends
+the enumeration, including a completely covered or hidden window. An owner
+mutation invalidates a previous iterator; restart with FIRST. Geometry uses
+half-open internal bounds and GEM x/y/width/height at the binding.
+
+Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
+`WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
+application calls the corresponding set or close operation. Inactive clicks
+request top first. The existing native-window behavior is unchanged.
+
+For application windows the presenter paints the frame and transfers work-area
+damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
+manager damage after the complete frame transaction without claiming that the
+application pixels have been drawn. Such windows remain ineligible for pixel
+copy, copied move and VRAM-cache reuse. At this stage the application work area
+has no VDI paint implementation; direct workstations follow separately.
+
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words
 are zero. The binding exposes transport/resource errors through
@@ -175,8 +213,8 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 4 has an 86-byte request and permits only init, exit and update
-on the RPC endpoint. Public GEM arrays remain private to each caller. Rebuild
+profile: version 5 has a 108-byte request and permits init, exit, update and
+window mutations on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).

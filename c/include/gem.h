@@ -3,6 +3,7 @@
 #ifndef EXEC816_GEM_H
 #define EXEC816_GEM_H
 #include <exec/types.h>
+#include <exec816/gem-constants.h>
 #define FAR
 #define SIMPLE_CALL EXEC_CALL
 
@@ -30,6 +31,15 @@ WORD appl_write(WORD id, WORD length, const WORD *message);
 WORD evnt_mesag(WORD *message);
 WORD evnt_timer(UWORD lo, UWORD hi);
 WORD wind_update(WORD code);
+WORD wind_create(WORD kind, WORD x, WORD y, WORD w, WORD h);
+WORD wind_open(WORD handle, WORD x, WORD y, WORD w, WORD h);
+WORD wind_close(WORD handle);
+WORD wind_delete(WORD handle);
+WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4);
+WORD wind_set(WORD handle, WORD field, WORD w1, WORD w2, WORD w3, WORD w4);
+WORD wind_set_str(WORD handle, WORD field, const char *str);
+WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
+    WORD *ox, WORD *oy, WORD *ow, WORD *oh);
 WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
     WORD m1flags, WORD m1x, WORD m1y, WORD m1w, WORD m1h,
     WORD m2flags, WORD m2x, WORD m2y, WORD m2w, WORD m2h,

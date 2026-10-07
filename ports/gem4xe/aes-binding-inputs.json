@@ -69,6 +69,69 @@
         0,
         0
       ]
+    },
+    "wind_create": {
+      "opcode": 100,
+      "control_counts": [
+        5,
+        1,
+        0,
+        0
+      ]
+    },
+    "wind_open": {
+      "opcode": 101,
+      "control_counts": [
+        5,
+        1,
+        0,
+        0
+      ]
+    },
+    "wind_close": {
+      "opcode": 102,
+      "control_counts": [
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "wind_delete": {
+      "opcode": 103,
+      "control_counts": [
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "wind_get": {
+      "opcode": 104,
+      "control_counts": [
+        2,
+        5,
+        0,
+        0
+      ]
+    },
+    "wind_set": {
+      "opcode": 105,
+      "control_counts": [
+        6,
+        1,
+        0,
+        0
+      ]
+    },
+    "wind_calc": {
+      "opcode": 108,
+      "control_counts": [
+        6,
+        5,
+        0,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
@@ -79,5 +142,5 @@
     "10": "4: selected VBXE packed 4bpp display",
     "others": "zero; resources, application-private AES storage and AES system pointers unsupported"
   },
-  "unsupported": "All other opcodes and evnt_multi bits besides MU_MESAG/MU_TIMER fail explicitly; no VDI workstation or window profile."
+  "unsupported": "Unlisted opcodes, unsupported window fields/kinds, off-screen windows and resizing fail explicitly. evnt_multi supports MU_MESAG/MU_TIMER only; virtual workstations remain pending."
 }

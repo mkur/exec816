@@ -10,6 +10,7 @@ void ExecAESPublish(struct ExecAESContext *c, struct AESEndpoint *destination,
                     struct AESDelivery *record);
 void ExecAESRecycle(struct ExecAESContext *c, struct AESDelivery *record);
 BOOL ExecAESMessageReady(struct ExecAESContext *c);
+WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation);
 BOOL ExecAESEnter(struct ExecAESContext *c);
 BOOL ExecAESTimerRead(struct ExecAESContext *c);
 BOOL ExecAESTimerDeadline(struct TimerClockRequest *clock, ULONG milliseconds);

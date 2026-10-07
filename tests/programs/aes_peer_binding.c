@@ -1,4 +1,5 @@
 /* A second linked binding instance has its own private contexts table. */
+#define ExecAESSubmit Peer_ExecAESSubmit
 #define ExecAESPointer Peer_ExecAESPointer
 #define ExecAESContext Peer_ExecAESContext
 #define ExecAESAttach Peer_ExecAESAttach
@@ -13,4 +14,13 @@
 #define evnt_multi Peer_evnt_multi
 #define evnt_multi_moblk Peer_evnt_multi_moblk
 #define aes_call Peer_aes_call
+#define wind_create Peer_wind_create
+#define wind_open Peer_wind_open
+#define wind_close Peer_wind_close
+#define wind_delete Peer_wind_delete
+#define wind_get Peer_wind_get
+#define wind_set Peer_wind_set
+#define wind_set_str Peer_wind_set_str
+#define wind_calc Peer_wind_calc
 #include "../../c/calypsi/aes.c"
+#include "../../c/calypsi/aes-windows.c"

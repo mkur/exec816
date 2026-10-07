@@ -91,14 +91,16 @@ PUBLIC BYTE FUNC BeginPaint(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(status)
   FI
 
-RETURN(Claim(scene,id,LAYERTYPES.UPDATE_PAINT,token))
+RETURN(Claim(scene,id,IF layer.externalPaint<>0 THEN LAYERTYPES.UPDATE_HANDOFF
+    ELSE LAYERTYPES.UPDATE_PAINT FI,token))
 
 ; The read-only region is stable until AdvancePaint or Finish, including across
 ; yields. The owner may submit one bounded portion per worker turn.
 PUBLIC LAYERTYPES.Region POINTER FUNC PaintRegion(LAYERTYPES.Scene POINTER scene
     LONGCARD token)
 
-  IF token=0 OR token<>scene.busy OR scene.activeKind<>LAYERTYPES.UPDATE_PAINT THEN
+  IF token=0 OR token<>scene.busy OR (scene.activeKind<>LAYERTYPES.UPDATE_PAINT
+      AND scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF) THEN
     RETURN(NULL)
   FI
 
@@ -112,7 +114,8 @@ PUBLIC BYTE FUNC AdvancePaint(LAYERTYPES.Scene POINTER scene LONGCARD token)
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
-  IF token=0 OR token<>scene.busy OR scene.activeKind<>LAYERTYPES.UPDATE_PAINT THEN
+  IF token=0 OR token<>scene.busy OR (scene.activeKind<>LAYERTYPES.UPDATE_PAINT
+      AND scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF) THEN
     RETURN(LAYERTYPES.BAD_TOKEN)
   FI
 
@@ -155,7 +158,8 @@ PUBLIC BYTE FUNC BeginCopy(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1 THEN
+  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0
+      OR layer.visible.count<>1 THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
@@ -205,7 +209,7 @@ PUBLIC BYTE FUNC BeginRead(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.dirty<>0 OR layer.shown=0 THEN
+  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
@@ -257,7 +261,7 @@ PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
+  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
       OR scene.items(scene.order(0)).id<>id THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
@@ -328,6 +332,10 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
+  IF completed<>0 AND scene.activeKind=LAYERTYPES.UPDATE_HANDOFF THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
   layer=Find(scene,scene.activeId)
   IF scene.activeKind=LAYERTYPES.UPDATE_PAINT THEN
     IF completed<>0 THEN
@@ -347,6 +355,31 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     Mark(layer,@layer.bounds)
   FI
 
+  scene.busy=0
+  scene.activeKind=0
+  scene.activeId=0
+
+RETURN(LAYERTYPES.OK)
+
+; Retire manager damage only after frame completion and durable delivery of
+; external work. This does not certify the external content as reusable pixels.
+PUBLIC BYTE FUNC FinishHandoff(LAYERTYPES.Scene POINTER scene LONGCARD token)
+
+  IF scene=NULL THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+  IF token=0 OR token<>scene.busy OR scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF THEN
+    RETURN(LAYERTYPES.BAD_TOKEN)
+  FI
+
+  LET layer=Find(scene,scene.activeId)
+  IF scene.work.count<>0 OR scene.nextDamage<layer.damage.count THEN
+    RETURN(LAYERTYPES.BUSY)
+  FI
+
+  layer.dirty=0
+  layer.damage.count=0
   scene.busy=0
   scene.activeKind=0
   scene.activeId=0

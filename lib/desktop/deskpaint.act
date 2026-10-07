@@ -16,6 +16,7 @@ USE CONSOLEBATCH
 USE CONSOLEBITMAP
 USE HEAPCORE
 USE AESLOCKS
+USE AESWINDOWSTATE
 
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex,glyphOffset
@@ -282,6 +283,12 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     FI
   FI
 
+  IF started=PAINT_CLIENT AND window.kind=DESKTYPES.CONTENT_AES THEN
+    REGIONS.Intersect(@client,@strip,@area)
+    AESWINDOWSTATE.Damage(window,@area)
+    RETURN(1)
+  FI
+
   IF started=PAINT_CLIENT THEN
     ; Cache completion still retires the whole client strip. A cache miss
     ; paints its background once before the text/command continuation starts.
@@ -536,7 +543,12 @@ PUBLIC BYTE FUNC Pump()
     done=(status=LAYERTYPES.EMPTY)
   FI
 
-  status=LAYERS.Finish(@service.scene,paintToken,done<>0)
+  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_AES THEN
+    AESWINDOWSTATE.Handoff(window)
+    status=LAYERS.FinishHandoff(@service.scene,paintToken)
+  ELSE
+    status=LAYERS.Finish(@service.scene,paintToken,done<>0)
+  FI
   paintToken=0
   IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
     BEGIN

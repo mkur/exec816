@@ -35,3 +35,38 @@ the evidence. The integrated counter demo and its bank delta follow in WA6.
 
 These are development checks. Window lifecycle, direct VDI, integrated pixels
 and desktop latency remain later gates; PI4/HY4 are unchanged and open.
+
+## WA2 — GEM windows and redraw ownership
+
+Implemented on 2026-10-07. Named and AESPB bindings expose fixed-size windows,
+copied 64-character titles, pixel-position moves, top/work/current queries and
+caller-local rectangle conversion/enumeration. The presenter publishes visible
+work snapshots under update ownership. Close preserves the hidden handle;
+delete and cooperative exit release it. Physical title/drag/closer input sends
+requests and leaves committed state unchanged until the app accepts them.
+
+Application windows use an explicit external-paint Layers transaction. The
+presenter finishes the frame and durably hands work damage to `WM_REDRAW` before
+retiring its token. These layers remain excluded from pixel-copy, copied-move
+and cache paths. No scene transaction waits for an application redraw reply.
+The outline renderer now preserves adjacent packed pixels at odd X coordinates.
+
+[Development evidence](../development/aes-windows-wa2.json) records 176 C window
+assertions, an independent visible-pixel region oracle, physical top/move/close,
+exact outline restoration, copied-title inspection and full desktop-slot
+exhaustion beside the native shell. Full/partial occlusion, nested locks,
+deferred peer moves, stale iterators, queue-full close/reopen and remaining-window
+exit pass. Layers passes 53,345 assertions, the native desktop 317, and GUI and
+lock regressions pass. Raw/optimized layout/context bridges and 399 host tests
+(four historical skips) pass. These are development checks, not qualification.
+
+Reserved bank zero changes by **0 fixed + 0 per public Task + 0 idle bytes**.
+AES service storage is 988 live/992 heap-reserved upper bytes; desktop service
+is 12,480 bytes, including the enlarged 5,084-byte scene and all four title
+buffers. An attached C context is 259 live/264 reserved bytes. Each allocated
+window view uses 798 live/800 reserved bytes. At four attachments with four
+views, the WA2 delta is **3,536 live / 3,544 heap-reserved upper bytes**. Fixed
+arenas, Task slots, stack/DP pools and VRAM are unchanged. The fixture's maximum
+observed presenter stack use is 658 bytes; this does not qualify future caller
+VDI stack use. Direct drawing, counter applications and the packaged demo remain
+WA3–WA6 work.

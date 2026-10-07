@@ -304,6 +304,7 @@ RETURN
 INCLUDE "layers-update-checks.inc"
 INCLUDE "layers-damage-checks.inc"
 INCLUDE "layers-bank-checks.inc"
+INCLUDE "layers-external-checks.inc"
 
 PROC Main()
 
@@ -319,6 +320,7 @@ PROC Main()
   UpdateTransactions()
   DamageTransactions()
   BankCrossing()
+  ExternalTransactions()
   scenePhase=50
   FreeGuarded(canvas,768)
   FreeGuarded(model,3072)

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 4,
+  "version": 5,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -36,8 +36,8 @@
     "ENDPOINT_ACCEPTING": 1,
     "ENDPOINT_CLOSING": 2,
     "ENDPOINT_RETIRED": 3,
-    "RPC_INTIN_WORDS": 1,
-    "RPC_INTOUT_WORDS": 1,
+    "RPC_INTIN_WORDS": 6,
+    "RPC_INTOUT_WORDS": 5,
     "GUI_KINDS": 4,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
@@ -46,7 +46,28 @@
     "WM_REDRAW": 20,
     "WM_TOPPED": 21,
     "WM_CLOSED": 22,
-    "WM_MOVED": 28
+    "WM_MOVED": 28,
+    "OP_CREATE": 100,
+    "OP_OPEN": 101,
+    "OP_CLOSE": 102,
+    "OP_GET": 104,
+    "OP_SET": 105,
+    "OP_DELETE": 103,
+    "OP_CALC": 108,
+    "VISIBLE_RECTS": 96,
+    "NAME": 1,
+    "CLOSER": 2,
+    "MOVER": 8,
+    "WINDOW_KIND": 11,
+    "WF_KIND": 1,
+    "WF_NAME": 2,
+    "WF_WXYWH": 4,
+    "WF_CXYWH": 5,
+    "WF_TOP": 10,
+    "WF_FIRSTXYWH": 11,
+    "WF_NEXTXYWH": 12,
+    "WC_BORDER": 0,
+    "WC_WORK": 1
   },
   "records": {
     "Delivery": [
@@ -154,9 +175,70 @@
         "CARD"
       ],
       [
+        "topWindow",
+        "INT"
+      ],
+      [
         "endpoints",
         "Endpoint",
         "CLIENTS"
+      ]
+    ],
+    "Rect": [
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ]
+    ],
+    "WindowView": [
+      [
+        "handle",
+        "INT"
+      ],
+      [
+        "kind",
+        "INT"
+      ],
+      [
+        "shown",
+        "CARD"
+      ],
+      [
+        "updates",
+        "CARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "bounds",
+        "Rect"
+      ],
+      [
+        "work",
+        "Rect"
+      ],
+      [
+        "visibleCount",
+        "CARD"
+      ],
+      [
+        "visible",
+        "Rect",
+        "VISIBLE_RECTS"
       ]
     ],
     "Request": [
@@ -242,12 +324,43 @@
       [
         "recordsPad",
         "BYTE"
+      ],
+      [
+        "view",
+        "WindowView POINTER"
+      ],
+      [
+        "viewPad",
+        "BYTE"
       ]
     ]
   },
   "rpc_operations": [
     "OP_INIT",
     "OP_EXIT",
-    "OP_UPDATE"
+    "OP_UPDATE",
+    "OP_CREATE",
+    "OP_OPEN",
+    "OP_CLOSE",
+    "OP_DELETE",
+    "OP_SET"
+  ],
+  "public_constants": [
+    "NAME",
+    "CLOSER",
+    "MOVER",
+    "WF_KIND",
+    "WF_NAME",
+    "WF_WXYWH",
+    "WF_CXYWH",
+    "WF_TOP",
+    "WF_FIRSTXYWH",
+    "WF_NEXTXYWH",
+    "WC_BORDER",
+    "WC_WORK",
+    "WM_REDRAW",
+    "WM_TOPPED",
+    "WM_MOVED",
+    "WM_CLOSED"
   ]
 }

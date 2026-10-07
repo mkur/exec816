@@ -2,6 +2,8 @@
 MODULE DESKINPUT
 USE EXEC
 USE AESLOCKS
+USE AESTYPES
+USE AESWINDOWSTATE
 USE AESINPUT
 USE INPUT
 USE DESKMOUSE
@@ -197,6 +199,15 @@ PROC Consume()
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.layer=layerId THEN
+        IF window.kind=DESKTYPES.CONTENT_AES THEN
+          IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
+              AND released<>0 AND service.focus<>window.id THEN
+            AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
+          FI
+
+          RETURN
+        FI
+
         event.window=window.id
         event.kind=DESKTYPES.EVENT_MOTION
         IF sample.kind=INPUT.EVENT_BUTTON THEN

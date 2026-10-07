@@ -53,8 +53,8 @@ The [WA1–WA6 implementation plan](aes-window-app-implementation-plan.md) separ
 message delivery, window/damage ownership, delegated display access, direct VDI,
 the application loop and a two-instance/native-shell OF816 proof. It targets
 zero bank-zero growth within existing Task/layer capacity.
-[WA1](../../history/aes-windows.md) passes development checks for durable GUI
-delivery; the remaining slices are pending. Menus, resources,
+[WA1–WA2](../../history/aes-windows.md) pass development checks for durable GUI
+delivery and window ownership; WA3–WA6 remain pending. Menus, resources,
 resizing and broader GEM compatibility follow; PI4/HY4 remain open.
 
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)

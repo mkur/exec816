@@ -102,13 +102,13 @@ UWORD ExecAESDiagnostic(void)
 
 /* One caller, one packet, one outstanding call. A signal is only a hint: the
  * queue is checked first, including when the reply preceded PutMsg's return. */
-static WORD submit(struct ExecAESContext *c, UWORD operation)
+WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
 {
     struct AESRequest *r = &c->request;
     struct Message *reply;
     ULONG sequence;
     UWORD i;
-    WORD failure = operation == AES_OP_INIT ? -1 : 0;
+    WORD failure = (operation == AES_OP_INIT || operation == AES_OP_CREATE) ? -1 : 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return failure; }
     if (c->identity == 0 && operation != AES_OP_INIT) {
         c->diagnostic = AES_IDENTITY; return failure;
@@ -179,7 +179,7 @@ WORD appl_init(void)
     } else {
         c->request.receiving = c->receiving;
         c->request.records = c->records;
-        if (submit(c, AES_OP_INIT) > 0)
+        if (ExecAESSubmit(c, AES_OP_INIT) > 0)
             return c->gemId;
     }
     if (c->records != NULL) FreeMem(c->records, (AES_QUEUE_DEPTH * sizeof(*c->records) + sizeof(struct AESGuiDelivery)));
@@ -204,9 +204,12 @@ WORD appl_exit(void)
         return 0;
     }
     c->busy = 0;
-    result = submit(c, AES_OP_EXIT);
+    result = ExecAESSubmit(c, AES_OP_EXIT);
     if (result) {
         c->busy = 1;
+        if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
+        c->view = NULL;
+        c->request.view = NULL;
         DeleteMsgPort(c->receiving);
         FreeMem(c->records, (AES_QUEUE_DEPTH * sizeof(*c->records) + sizeof(struct AESGuiDelivery)));
         c->receiving = NULL;
@@ -263,7 +266,7 @@ WORD wind_update(WORD code)
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0] = code;
-    return submit(c, AES_OP_UPDATE);
+    return ExecAESSubmit(c, AES_OP_UPDATE);
 }
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
@@ -326,10 +329,17 @@ void EXEC_CALL aes_call(AESPB *pb)
     if (op == AES_OP_TIMER) inputs = 2;
     if (op == AES_OP_UPDATE) inputs = 1;
     if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
-    if (op == AES_OP_INIT) result = -1;
+    if (op == AES_OP_CREATE || op == AES_OP_OPEN) inputs = 5;
+    if (op == AES_OP_CLOSE || op == AES_OP_DELETE) inputs = 1;
+    if (op == AES_OP_GET) { inputs = 2; outputs = 5; }
+    if (op == AES_OP_SET) inputs = 6;
+    if (op == AES_OP_CALC) { inputs = 6; outputs = 5; }
+    if (op == AES_OP_INIT || op == AES_OP_CREATE) result = -1;
     if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
         op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI &&
-        op != AES_OP_UPDATE) {
+        op != AES_OP_UPDATE && op != AES_OP_CREATE && op != AES_OP_OPEN &&
+        op != AES_OP_CLOSE && op != AES_OP_DELETE && op != AES_OP_GET &&
+        op != AES_OP_SET && op != AES_OP_CALC) {
         c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
     }
     if (pb->control[1] != inputs || pb->control[2] != outputs ||
@@ -348,6 +358,24 @@ void EXEC_CALL aes_call(AESPB *pb)
     case AES_OP_TIMER:
         result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
     case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
+    case AES_OP_CREATE:
+        result = wind_create(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4]); break;
+    case AES_OP_OPEN:
+        result = wind_open(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4]); break;
+    case AES_OP_CLOSE: result = wind_close(pb->int_in[0]); break;
+    case AES_OP_DELETE: result = wind_delete(pb->int_in[0]); break;
+    case AES_OP_GET:
+        result = wind_get(pb->int_in[0], pb->int_in[1], &pb->int_out[1],
+            &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
+    case AES_OP_SET:
+        result = wind_set(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4], pb->int_in[5]); break;
+    case AES_OP_CALC:
+        result = wind_calc(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4], pb->int_in[5], &pb->int_out[1],
+            &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_MULTI:
         if (c->busy) { c->diagnostic = AES_BUSY; break; }
         for (i = 0; i < 16; ++i) c->intin[i] = pb->int_in[i];

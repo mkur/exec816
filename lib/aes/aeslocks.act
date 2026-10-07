@@ -2,6 +2,7 @@
 MODULE AESLOCKS
 USE AESTYPES
 USE AESSTATE
+USE AESWINDOWSTATE
 USE DESKSTATE
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
@@ -12,14 +13,14 @@ PUBLIC BYTE FUNC PaintBlocked()
   LET service=AESSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0
-    AND (service.updateOwner<>0 OR service.lockCount<>0))
+    AND (service.updateOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
 
 PUBLIC BYTE FUNC MouseBlocked()
 
   LET service=AESSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0
-    AND (service.mouseOwner<>0 OR service.lockCount<>0))
+    AND (service.mouseOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
 
 PUBLIC BYTE FUNC NativeReady()
 
@@ -49,7 +50,7 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     RETURN(1)
   FI
 
-RETURN(NativeReady())
+RETURN(service.windowPending=0 AND NativeReady()<>0)
 
 CARD FUNC Acquire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
@@ -60,7 +61,14 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
     FI
 
     service.updateOwner=client.id
+    IF service.updates=0 THEN
+      AESWINDOWSTATE.Snapshot(client)
+    FI
+
     service.updates==+1
+    IF client.view<>NULL THEN
+      client.view.updates=service.updates
+    FI
   ELSE
     IF service.mouseHolds=$ffff THEN
       RETURN(AESTYPES.OVERFLOW)
@@ -132,6 +140,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
 
     service.updates==-1
+    IF client.view<>NULL THEN
+      client.view.updates=service.updates
+    FI
     IF service.updates=0 THEN
       service.updateOwner=0
     FI

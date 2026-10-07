@@ -124,7 +124,7 @@ pressed pixels after the immutable paint snapshot retires. A fresh released
 button observation is required after ambiguous input. Applications read current
 state after LOSS; they must never synthesize commands from selected bits.
 
-The desktop service occupies 12,342 bytes (12,344 rounded), including its
+The desktop service occupies 12,480 bytes (12,480 rounded), including its
 sixteen deferred records, enlarged client event queues and DR7 rendering state.
 The AW4 widget work accounted for 1,456 bytes of its growth over the pre-widget
 service; AW5 adds no service storage. No new Task, kernel primitive, bank-zero

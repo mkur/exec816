@@ -1,12 +1,12 @@
 {
-  "version": 6,
+  "version": 7,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
     "EVENTS": 16,
     "COMMANDS": 32,
     "TEXT_BYTES": 256,
-    "TITLE_BYTES": 32,
+    "TITLE_BYTES": 65,
     "OK": 0,
     "BAD_ARGUMENT": 1,
     "FULL": 2,
@@ -56,7 +56,8 @@
     "SNAPSHOTS": 2,
     "CACHE_MISS": 0,
     "CACHE_PENDING": 1,
-    "CACHE_FAILED": 2
+    "CACHE_FAILED": 2,
+    "CONTENT_AES": 4
   },
   "records": {
     "Event": [

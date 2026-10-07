@@ -19,7 +19,8 @@ INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
                'tools/test_layers.py', 'tests/programs/native_layers.act',
                'tests/programs/layers-paint.inc',
                'tests/programs/layers-update-checks.inc',
-               'tests/programs/layers-bank-checks.inc')
+               'tests/programs/layers-bank-checks.inc',
+               'tests/programs/layers-external-checks.inc')
 
 
 def geometry_cases():

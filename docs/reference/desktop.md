@@ -40,7 +40,7 @@ Exact layouts, operation numbers and statuses come from
 | Operation | Result |
 | --- | --- |
 | REGISTER | Retain owner and assign client identity. |
-| OPEN | Copy a title of at most 31 bytes and create a hidden, fixed-size, fully onscreen window. Four slots include hidden windows. Return its ID in `window`. |
+| OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Four slots include hidden windows. Return its ID in `window`. |
 | SHOW / HIDE | Change visibility. Hiding the focused window clears focus. |
 | MOVE | Set the top-left position from `bounds.left/top`; preserve dimensions. |
 | RAISE | Move a window to the front. |
@@ -252,8 +252,8 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 12,342 bytes in upper RAM, including the
-5,074-byte Layers scene, four 668-byte client records, four 780-byte windows,
+The generated service occupies 12,480 bytes in upper RAM, including the
+5,084-byte Layers scene, four 668-byte client records, four 812-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
 fourteen-byte snapshot records. Public
 client handles are 18 bytes and requests are
@@ -295,7 +295,7 @@ Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
 first, then the least recently used unpinned slot. The generated Service is
-12,342 bytes, including the two fourteen-byte slot records and alignment.
+12,480 bytes, including the two fourteen-byte slot records and alignment.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.

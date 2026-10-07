@@ -601,6 +601,14 @@ static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYT
     r[12]=(UBYTE)(bytes-1); r[13]=(UBYTE)((bytes-1)>>8);
     r[14]=(UBYTE)(rows-1); r[16]=mask; r[20]=5;
 }
+static void outline_span(UWORD left,UWORD right,UWORD top,UWORD rows)
+{
+    ULONG address=GemScreenRows[top];
+    UWORD lo=left>>1,hi=right>>1;
+    if (left&1) { blit_xor(address+lo,320,1,rows,15); ++lo; }
+    if (hi>lo) blit_xor(address+lo,320,hi-lo,rows,255);
+    if (right&1) blit_xor(address+hi,320,1,rows,240);
+}
 static void outline_toggle(void)
 {
     ULONG address=GemScreenRows[outlineTop]+outlineLeft/2;
@@ -608,6 +616,14 @@ static void outline_toggle(void)
     UWORD rows=outlineBottom-outlineTop;
     flush();
     if (fault) return;
+    if ((outlineLeft|outlineRight)&1) {
+        outline_span(outlineLeft,outlineRight,outlineTop,1);
+        outline_span(outlineLeft,outlineRight,outlineBottom-1,1);
+        outline_span(outlineLeft,outlineLeft+1,outlineTop+1,rows-2);
+        outline_span(outlineRight-1,outlineRight,outlineTop+1,rows-2);
+        flush();
+        return;
+    }
     /* Admitted even screen bounds give four legal records and at most 3348
      * work units: two 320-byte rows plus two 238-row single-byte edges. */
     outline_record(0,address,bytes,1,255);
@@ -626,7 +642,7 @@ UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visi
     UWORD status=DisplayCheck(&display.lease);
     if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    if (visible>1 || (visible && ((left|right)&1 || left>=right || top>=bottom ||
+    if (visible>1 || (visible && (left>=right || top>=bottom ||
         right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {

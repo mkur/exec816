@@ -9,6 +9,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
 USE AESGUI
+USE AESWINDOW
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -29,6 +30,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.nextClient=1
   service.nextGem=1
   service.nextGuiEpoch=1
+  service.nextWindow=1
   service.started=1
   ; AESHOST publishes after endpoint initialization has settled.
 
@@ -211,6 +213,21 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   EXEC.Permit()
+  IF AESWINDOW.Retire(service,client)=0 THEN
+    client.pending=request
+    IF client.windowWaiting=0 THEN
+      client.windowWaiting=1
+      service.windowPending==+1
+    FI
+
+    RETURN
+  FI
+
+  IF client.windowWaiting<>0 THEN
+    client.windowWaiting=0
+    service.windowPending==-1
+  FI
+
   ; Admission is closed and every publisher has finished using the pool.
   WHILE EXEC.GetMsg(endpoint.port)<>NULL DO
   OD
@@ -254,7 +271,7 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     request.intout(index)=0
   OD
 
-  IF request.operation=AESTYPES.OP_INIT THEN
+  IF request.operation=AESTYPES.OP_INIT OR request.operation=AESTYPES.OP_CREATE THEN
     request.intout(0)=-1
   FI
 
@@ -328,8 +345,48 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       AESSTATE.Reply(request,status)
     FI
   ELSE
-    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
+    status=AESWINDOW.Request(service,client,request)
+    IF status=AESTYPES.PENDING THEN
+      client.pending=request
+      client.windowWaiting=1
+      service.windowPending==+1
+    ELSE
+      AESSTATE.Reply(request,status)
+    FI
   FI
+
+RETURN
+
+; Retry only admitted mutations, after the current frame/hardware unit retires.
+PUBLIC PROC Settle(AESSTATE.Service POINTER service)
+  BYTE index
+  CARD status
+
+  IF service.windowPending=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.windowWaiting<>0 THEN
+        BEGIN
+          LET request=client.pending
+          IF request.operation=AESTYPES.OP_EXIT THEN
+            Retire(service,client,request)
+          ELSE
+            status=AESWINDOW.Request(service,client,request)
+            IF status<>AESTYPES.PENDING THEN
+              client.pending=NULL
+              client.windowWaiting=0
+              service.windowPending==-1
+              AESSTATE.Reply(request,status)
+            FI
+          FI
+        END
+      FI
+    END
+  OD
 
 RETURN
 

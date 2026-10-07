@@ -28,6 +28,9 @@ struct ExecAESContext {
     ULONG identity, sequence;
     WORD gemId;
     struct ExecAESTimer timer;
+    struct AESWindowView *view;
+    UWORD visibleIndex;
+    ULONG visibleRevision;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

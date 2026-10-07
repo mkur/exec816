@@ -193,6 +193,7 @@ def caller_probes(out, timer=False):
 
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
     gui = suite == 'gui'
+    windows = suite == 'windows'
     registration = suite == "registration"
     events = suite == 'events'
     locks = suite == 'locks'
@@ -219,7 +220,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         foreign = drawing(out, True, widgets=True,
             client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers else ROOT/'c/calypsi/aes-events.c'), ROOT/f'tests/programs/aes_{suite}.c']+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
             client_entries=entries,
-            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
+            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
             client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())],
             client_optimization={n: mode == 'opt' for n in ('aes.c', f'aes_{suite}.c')})
         sy = foreign['symbols']
@@ -289,17 +290,24 @@ ENDMODULE
         program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
             tasks=True, task_capacity=8, foreign_image=foreign,
             console_deferred=True, memory_profile=memory)
+    from generate_mouse_acceleration import metadata
+    program['build']['desktop_mouse'] = metadata(None)
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='WA1' if gui else 'HY3', suite=suite, c_mode=mode,
+        slice='WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     try:
         with emulator(BRIDGE, ROM, out, pin=pin) as bridge:
             report['machine'] = verify_machine(bridge, ROM, pin)
             try:
-                report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
+                before = None
+                if windows:
+                    from test_aes_windows import physical
+                    before = lambda b: physical(b, program, foreign, report)
+                report['runtime'], _ = execute(bridge, program, before_run=before,
+                                              timeout=120, frame_limit=6000)
             finally:
                 for name in (('AESChecks', 'AESFailures') if gui else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
@@ -308,8 +316,23 @@ ENDMODULE
                     report['AESFirstFailure'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESFirstFailure'], 2), 'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 60 if gui else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 60 if gui or windows else 1000),
                     'Incomplete application checks')
+            if windows:
+                count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
+                raw = bridge.memdump(foreign['symbols']['AESVisible'], count*8)
+                import struct
+                rectangles = [struct.unpack_from('<hhhh', raw, i*8) for i in range(count)]
+                actual = set()
+                for x, y, w, h in rectangles:
+                    pixels = {(px, py) for px in range(x, x+w) for py in range(y, y+h)}
+                    require(not actual.intersection(pixels), 'Visible rectangles overlap')
+                    actual.update(pixels)
+                expected = {(x, y) for x in range(17, 201) for y in range(25, 121)
+                            if not (89 <= x < 209 and 49 <= y < 149)}
+                require(actual == expected, 'Visible work region differs from independent pixel oracle')
+                report['visible_rectangles'] = rectangles
+                report['visible_pixels'] = len(actual)
             if events or timers:
                 report['cpu_peer_iterations'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESBurns'], 4), 'little')
             report['status'] = 'pass'
@@ -392,7 +415,12 @@ def intake(out, failure=0, replay=False):
             bridge._cmd_ok('MOUSE ST')
             report['machine'] = verify_machine(bridge, ROM, PIN)
             try:
-                report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=6000)
+                before = None
+                if windows:
+                    from test_aes_windows import physical
+                    before = lambda b: physical(b, program, foreign, report)
+                report['runtime'], _ = execute(bridge, program, before_run=before,
+                                              timeout=120, frame_limit=6000)
             except Exception:
                 report['checks'] = data(bridge, program['image'], 'checks', True)[0]
                 raise
@@ -466,12 +494,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'windows', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'windows', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'console':

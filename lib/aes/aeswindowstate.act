@@ -1,0 +1,174 @@
+; Presenter-owned window publication and GUI facts, without window mutation.
+MODULE AESWINDOWSTATE
+USE EXEC
+USE AESTYPES
+USE AESSTATE
+USE AESGUI
+USE DESKTYPES
+USE DESKSTATE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE A816MEMORY
+USE HEAPCORE
+
+PUBLIC AESSTATE.Client POINTER FUNC Find(LONGCARD id)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR id=0 THEN
+    RETURN(NULL)
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(index).window<>NULL THEN
+      IF service.clients(index).window.id=id THEN
+        RETURN(@service.clients(index))
+      FI
+    FI
+  OD
+
+RETURN(NULL)
+
+; Called at lock grant and after an owner mutation. The caller cannot execute
+; a query until its RPC reply; no Forbid spans construction of this region.
+PUBLIC PROC Snapshot(AESSTATE.Client POINTER client)
+  LAYERTYPES.Rect work
+  BYTE status
+
+  IF client.window=NULL THEN
+    RETURN
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
+  LET view=client.view
+  REGIONS.Assign(@work,layer.bounds.left+8,layer.bounds.top+16,
+      layer.bounds.right-8,layer.bounds.bottom-8)
+  status=REGIONS.Clip(@layer.visible,@work,
+      LAYERTYPES.Region POINTER(@view.visibleCount))
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($fcb3)
+  FI
+
+  EXEC.Forbid()
+  A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(@layer.bounds),8)
+  A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
+  view.shown=layer.shown
+  view.revision==+1
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC LONGCARD FUNC FindWindow(LONGCARD layerId)
+  BYTE slot
+
+  LET desktop=DESKSTATE.Get()
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    IF desktop.windows(slot).id<>0 AND desktop.windows(slot).layer=layerId THEN
+      RETURN(desktop.windows(slot).id)
+    FI
+  OD
+
+RETURN(0)
+
+; Basic top identity is a coherent single word, shared by all caller bindings.
+PUBLIC PROC Sync()
+  BYTE slot
+  INT top
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  IF service=NULL OR desktop=NULL OR desktop.scene.busy<>0 THEN
+    RETURN
+  FI
+
+  IF service.windowRevision=desktop.scene.rebuilds
+      AND service.windowFocus=desktop.focus THEN
+    RETURN
+  FI
+
+  top=0
+  slot=0
+  WHILE slot<desktop.scene.count DO
+    BEGIN
+      LET layer=@desktop.scene.items(desktop.scene.order(slot))
+      IF layer.shown<>0 THEN
+        BEGIN
+          LET client=Find(IF layer.externalPaint<>0 THEN
+              FindWindow(layer.id) ELSE LONGCARD(0) FI)
+          IF client<>NULL THEN
+            top=client.gui.window
+          FI
+        END
+        EXIT
+      FI
+    END
+    slot==+1
+  OD
+
+  service.directory.topWindow=top
+  service.windowRevision=desktop.scene.rebuilds
+  service.windowFocus=desktop.focus
+
+RETURN
+
+PUBLIC PROC Control(DESKTYPES.Window POINTER window BYTE kind
+    INT x,y,width,height)
+
+  LET client=Find(window.id)
+  IF client<>NULL THEN
+    AESGUI.Post(AESSTATE.Get(),client,kind,x,y,width,height)
+  FI
+
+RETURN
+
+; Accumulate work while the frame transaction is active. Publication happens
+; once its last strip finishes, so an initial draw is not one message per strip.
+PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)
+
+  IF REGIONS.Empty(area)<>0 THEN
+    RETURN
+  FI
+
+  LET client=Find(window.id)
+  IF client.paintDirty=0 THEN
+    REGIONS.Copy(area,@client.paintDamage)
+    client.paintDirty=1
+    RETURN
+  FI
+
+  LET dirty=@client.paintDamage
+  IF area.left<dirty.left THEN
+    dirty.left=area.left
+  FI
+
+  IF area.top<dirty.top THEN
+    dirty.top=area.top
+  FI
+
+  IF area.right>dirty.right THEN
+    dirty.right=area.right
+  FI
+
+  IF area.bottom>dirty.bottom THEN
+    dirty.bottom=area.bottom
+  FI
+
+RETURN
+
+PUBLIC PROC Handoff(DESKTYPES.Window POINTER window)
+
+  LET client=Find(window.id)
+  IF client.paintDirty<>0 THEN
+    BEGIN
+      LET area=@client.paintDamage
+      AESGUI.Post(AESSTATE.Get(),client,AESTYPES.GUI_REDRAW,
+          area.left,area.top,area.right-area.left,area.bottom-area.top)
+    END
+    client.paintDirty=0
+  FI
+
+RETURN
+
+ENDMODULE

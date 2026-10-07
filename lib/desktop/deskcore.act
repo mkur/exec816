@@ -1,6 +1,7 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
 USE AESLOCKS
+USE AESWINDOWSTATE
 USE EXEC
 USE INPUT
 USE EXECLISTS
@@ -126,7 +127,9 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         FI
 
         client=DESKEVENTS.Find(service,service.windows(index).client)
-        client.focusBits=client.focusBits OR BYTE(1 LSH index)
+        IF client<>NULL THEN
+          client.focusBits=client.focusBits OR BYTE(1 LSH index)
+        FI
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
@@ -179,6 +182,8 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
       DESKEVENTS.Wake(service,@service.clients(index))
     FI
   OD
+
+  AESWINDOWSTATE.Sync()
 
 RETURN
 

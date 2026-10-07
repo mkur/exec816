@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "constants": {
     "MAX_LAYERS": 4,
     "MAX_RECTS": 96,
@@ -18,7 +18,8 @@
     "UPDATE_COPY": 2,
     "MAX_DAMAGE": 8,
     "UPDATE_MOVE": 3,
-    "UPDATE_READ": 4
+    "UPDATE_READ": 4,
+    "UPDATE_HANDOFF": 5
   },
   "records": {
     "Rect": [
@@ -84,6 +85,10 @@
       },
       {
         "name": "shown",
+        "type": "BYTE"
+      },
+      {
+        "name": "externalPaint",
         "type": "BYTE"
       }
     ],

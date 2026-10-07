@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: implementation in progress, 2026-10-07. WA1 passes development checks;
-WA2–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
+Status: implementation in progress, 2026-10-07. WA1–WA2 pass development checks;
+WA3–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -82,6 +82,10 @@ capacity or returning event matching to the presenter. No window compatibility
 claim yet. Suggested commit: `aes: retain GUI messages until delivery`.
 
 ## WA2 — Own GEM windows and hand off redraw work
+
+Implemented. [Evidence](../../development/aes-windows-wa2.json) records window
+lifecycle, physical controls, exact outline pixels, visible regions, external
+handoff, native regression and ABI checks. Reserved bank-zero delta is zero.
 
 1. Extend the [binding reference manifest](../../../ports/gem4xe/aes-binding-inputs.json)
    and [gem.h](../../../c/include/gem.h) with the selected window calls, fields,

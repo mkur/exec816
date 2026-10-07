@@ -3,6 +3,8 @@ MODULE AESSTATE
 USE EXEC
 USE AESTYPES
 USE INPUT
+USE DESKTYPES
+USE LAYERTYPES
 
 PUBLIC CONST POINTER_EVENTS=16
 
@@ -28,6 +30,10 @@ PUBLIC TYPE Client=[
   AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER pending
   GuiPending gui
+  AESTYPES.WindowView POINTER view
+  DESKTYPES.Window POINTER window
+  LAYERTYPES.Rect paintDamage
+  BYTE paintDirty,windowWaiting
 ]
 
 PUBLIC TYPE Service=[
@@ -41,6 +47,9 @@ PUBLIC TYPE Service=[
   LONGCARD nextClient
   CARD nextGem
   LONGCARD nextGuiEpoch
+  CARD nextWindow
+  BYTE windowPending
+  LONGCARD windowRevision,windowFocus
   AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count
