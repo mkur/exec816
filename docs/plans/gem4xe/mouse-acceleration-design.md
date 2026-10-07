@@ -3,7 +3,8 @@
 [GEM integration](README.md) · [Implementation plan](mouse-acceleration-implementation-plan.md) ·
 [Current input contract](../../reference/input.md) · [Current desktop contract](../../reference/desktop.md)
 
-Status: proposed, 2026-10-07. No acceleration is implemented by this note.
+Status: MA1–MA2 implemented, 2026-10-07; mild remains opt-in until MA3.
+See the [execution record](../../history/mouse-acceleration.md).
 Baseline: Exec816 `7f9a25d`, including PI3 and the subsequently tested desktop
 demo. The desktop is usable enough to defer further presenter optimization
 until it offers a more complete desktop experience. PI4 and HY4 remain open;
@@ -40,11 +41,11 @@ metadata. Make `mild` the desktop default only after the integration checks.
 A preferences window, persistent settings, multiple devices and per-application
 profiles are later work. The existing Control Panel remains a widget demo.
 
-## Why the current event stream is insufficient
+## Why the baseline event stream was insufficient
 
-Today [deskinput.act](../../../lib/desktop/deskinput.act) asks INPUT for bounded
-controller coordinates and multiplies them by `POINTER_PIXELS_PER_STEP = 2`.
-The [input library](../../../lib/input/input.act) has already discarded motion
+At the PI3 baseline, [deskinput.act](../../../lib/desktop/deskinput.act) asked INPUT for bounded
+controller coordinates and multiplied them by `POINTER_PIXELS_PER_STEP = 2`.
+The [input library](../../../lib/input/input.act) had already discarded motion
 beyond those controller bounds. Accelerating differences between these absolute
 coordinates would lose movement and give incorrect behavior at screen edges.
 

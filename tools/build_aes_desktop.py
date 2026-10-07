@@ -11,7 +11,7 @@ from generate_memory import PROFILE
 from native_program import ROOT, build, compiler
 
 
-def build_proof(out, load=False, pointer=False):
+def build_proof(out, load=False, pointer=False, mouse_profile=None):
     out.mkdir(parents=True, exist_ok=True)
     source=input_fixture(out, True) if pointer else fixture(out)
     foreign=drawing(out, True, widgets=True,
@@ -48,13 +48,13 @@ def build_proof(out, load=False, pointer=False):
     source.write_text(text)
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-    launcher=prepare(source,out,foreign,desktop=True,aes=True)
+    launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
     program=build(compiler(ROOT/'build/actionc'),launcher,out/'program',tasks=True,
         task_capacity=8,foreign_image=foreign,console_deferred=True,
         memory_profile=memory,stack_checks=True,
         dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)])
-    from generate_desktop import ABI
-    program['build']['desktop_pointer_pixels_per_step']=ABI['constants']['POINTER_PIXELS_PER_STEP']
+    from generate_mouse_acceleration import metadata
+    program['build']['desktop_mouse']=metadata(mouse_profile)
     (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
     return program
 
@@ -64,4 +64,5 @@ if __name__=='__main__':
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--load',action='store_true',help='Start continuous GEM exchange for matched native feedback observations')
     p.add_argument('--pointer',action='store_true',help='Use the AS0 raw-event window for matched pointer observation')
-    args=p.parse_args();build_proof(args.output.resolve(),args.load,args.pointer)
+    p.add_argument('--mouse-profile',choices=('off','mild'))
+    args=p.parse_args();build_proof(args.output.resolve(),args.load,args.pointer,args.mouse_profile)

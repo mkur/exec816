@@ -1,0 +1,306 @@
+{
+  "status": "pass-with-known-rendering-limitations",
+  "tier": "development",
+  "qualification": false,
+  "slice": "MA2",
+  "date": "2026-10-07",
+  "baseline": "29bc350",
+  "default_profile": "off",
+  "checks": {
+    "curve": {
+      "path": "build/mouse-acceleration/ma2/curve/results.json",
+      "sha256": "eacf012ebe91484abeb487aa22dc007a04928cee5e27c773759ce0d407a2f5b6",
+      "status": "pass"
+    },
+    "aes-queue": {
+      "path": "build/mouse-acceleration/ma2/aes-queue/results.json",
+      "sha256": "6efe5ac63a91192918da5ee9d4379b543523c68767b255db9d2d77c7847548d3",
+      "status": "pass"
+    },
+    "physical-off": {
+      "path": "build/mouse-acceleration/ma2/physical-off/results.json",
+      "sha256": "738543f1307ab41677834cf734c2d57e490d38d4afe2d24207fc39e2f2dc0125",
+      "status": "pass"
+    },
+    "physical-mild": {
+      "path": "build/mouse-acceleration/ma2/physical-mild/results.json",
+      "sha256": "c5ce94e1169f0d15c5c0e486b929b99901cf0b7390065d76d4545d8f72c2a696",
+      "status": "pass"
+    },
+    "boundary-mild": {
+      "path": "build/mouse-acceleration/ma2/boundary-mild/results.json",
+      "sha256": "663ec36e510b49b5f4cc2a0183d79f2f4da441647abd17217f18698afb38271e",
+      "status": "pass"
+    },
+    "drag-idle-final": {
+      "path": "build/mouse-acceleration/ma2/drag-idle-final/results.json",
+      "sha256": "081ef616baaf3cb78d0fc2c75481ae45d837852010089424acca756dd8850f37",
+      "status": "pass"
+    },
+    "lock-replay-fast": {
+      "path": "build/mouse-acceleration/ma2/lock-replay-fast/results.json",
+      "sha256": "59ab53ebf3aacb775427d2ced5e034c359f5f39fe6570fe2ab0d7f0849045c67",
+      "status": "pass"
+    }
+  },
+  "host": {
+    "tests": 399,
+    "skipped": 4,
+    "status": "pass",
+    "log": "build/mouse-acceleration/ma2/host-final.log"
+  },
+  "curve": {
+    "count": 2870,
+    "min_us": 19.030729694563835,
+    "mean_us": 159.78622083123173,
+    "max_us": 809.2994013073406
+  },
+  "arithmetic_audit": {
+    "external_helper_calls": 0,
+    "local_calls": [
+      "0304C3",
+      "03058C",
+      "03058C"
+    ],
+    "code_bytes": 1726
+  },
+  "memory": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "upper_reserved_delta": 0,
+    "transform_live_data": 76,
+    "transform_extent_with_alignment": 77,
+    "transform_code_bytes": 1726,
+    "linked_banks_before": [
+      1,
+      12,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      63
+    ],
+    "linked_banks_after": [
+      1,
+      12,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      63
+    ]
+  },
+  "known_rendering_failures": {
+    "drag-baseline": {
+      "path": "build/mouse-acceleration/ma2/drag-baseline/results.json",
+      "sha256": "32e91289385339efa274b7267998adfea348dccf233281942c02c031a2774a4c",
+      "pixels": {
+        "cursor": [
+          616,
+          86
+        ],
+        "live_cursor": [
+          616,
+          86
+        ],
+        "differing_pixels": 8,
+        "first_pixels": [
+          [
+            8,
+            87
+          ],
+          [
+            9,
+            87
+          ],
+          [
+            10,
+            87
+          ],
+          [
+            11,
+            87
+          ],
+          [
+            12,
+            87
+          ],
+          [
+            13,
+            87
+          ],
+          [
+            14,
+            87
+          ],
+          [
+            15,
+            87
+          ]
+        ]
+      },
+      "error": "No exact drag scene; bounds=[0, 0, 528, 184] expected=[0, 0, 528, 184] phase=0",
+      "samples_completed": 15,
+      "scenes_completed": 5
+    },
+    "drag-off": {
+      "path": "build/mouse-acceleration/ma2/drag-off/results.json",
+      "sha256": "23af32c8bbcd3745cefc62d309f85afcfecbc0d4f22cae392a6b4402db67c986",
+      "pixels": {
+        "cursor": [
+          616,
+          88
+        ],
+        "live_cursor": [
+          616,
+          88
+        ],
+        "differing_pixels": 8,
+        "first_pixels": [
+          [
+            8,
+            87
+          ],
+          [
+            9,
+            87
+          ],
+          [
+            10,
+            87
+          ],
+          [
+            11,
+            87
+          ],
+          [
+            12,
+            87
+          ],
+          [
+            13,
+            87
+          ],
+          [
+            14,
+            87
+          ],
+          [
+            15,
+            87
+          ]
+        ]
+      },
+      "error": "No exact drag scene; bounds=[0, 0, 528, 184] expected=[0, 0, 528, 184] phase=0",
+      "samples_completed": 15,
+      "scenes_completed": 5
+    },
+    "drag-mild": {
+      "path": "build/mouse-acceleration/ma2/drag-mild/results.json",
+      "sha256": "c5492a68072f7abfd25e97319a486b9ecf228e56aed13ad7416a64a12c30c051",
+      "pixels": {
+        "cursor": [
+          88,
+          46
+        ],
+        "live_cursor": [
+          88,
+          46
+        ],
+        "differing_pixels": 8,
+        "first_pixels": [
+          [
+            48,
+            207
+          ],
+          [
+            49,
+            207
+          ],
+          [
+            50,
+            207
+          ],
+          [
+            51,
+            207
+          ],
+          [
+            52,
+            207
+          ],
+          [
+            53,
+            207
+          ],
+          [
+            54,
+            207
+          ],
+          [
+            55,
+            207
+          ]
+        ]
+      },
+      "error": "No exact drag scene; bounds=[48, 40, 576, 224] expected=[48, 40, 576, 224] phase=0",
+      "samples_completed": 19,
+      "scenes_completed": 3
+    }
+  },
+  "scope": "Optimized transform/physical checks, raw+optimized deferred input, pinned PAL ST/VBXE emulator; existing rendering failures remain visible, no hosted qualification",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "changes": [],
+    "override": false,
+    "binary_sha256": "61c885fa0ce5b6f6877b53472edc6b559d95bee89f5186448d987674b461db07",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "source_inputs": {
+    "config/mouse.json": "34a49733a7fca3cfe9e4a4f6733a8345edd86df35c2595e41d082a000a213735",
+    "lib/desktop/deskmouse.act": "027ab93ff9a2b7ef340fd2bb4049c5678de4460f3a6238cadb3eb22df6588012",
+    "lib/desktop/deskmouseconfig.act": "5e8cfe4da8ddfdea0aab95d48e6e75140dcbaa854ab0cbfad2d99d7ae9687043",
+    "lib/desktop/mouse-gains.inc": "453fe8305f9a9131431f4cb6d661d57802237effbcfd59c0f830e1c9ad363b46",
+    "tests/programs/desktop_mouse_curve.act": "4bfe35e5748ee8e1bdd356ea59e87da6a5a2ce72023fa644cf9f1667a9904f79",
+    "tests/test_mouse_profile.py": "be23fc6707512eb211541ca8d100a57a894bb20d6a9863625f0447002f815e76",
+    "tools/generate_mouse_acceleration.py": "26bb9e36c11eccace936debff315139808d8623df4585caa6989bfcebcdb6002",
+    "tools/mouse_acceleration_oracle.py": "539c4755205a242dbf3f3ef25bba3f344b74e3fd00ff33350fb724a02ff1168a",
+    "tools/test_mouse_acceleration.py": "6b03226a7874afda5911d2adff73b761d1e8bb002c12ed7617a4730108a2baba",
+    "abi/desktop.json": "41cda5e33dd4d727fe3bbecfaa04d92b1e49b319fafb444e36269a0a89511abd",
+    "lib/desktop/deskinput.act": "b19aabb42dac8afcaad248a757809d09a62c02fb848922f9db2e69892a335f25",
+    "lib/desktop/desktypes.act": "49bce68ea1f06b415ac3dc8a4c1a0005de8c0bb5a089a16386365870704d75e4",
+    "tests/programs/aes_input.act": "01d366ade8c7c93e2e1687fe1227ec118444421906c5476591498a0b8b39c9c0",
+    "tools/build_aes_desktop.py": "19b87ca5e1932475ccd9cff05fc0e047b4d38581611373792788b4b7d6ab08e3",
+    "tools/build_bitmap_console.py": "f3575f105809474fa2301043a1174db95e57090595ec029da2dfd0f0af30ceb3",
+    "tools/build_demo.py": "57c3facfc0f66e3df5e363f068d96764a84b465a4678286b220172315c1ea15f",
+    "tools/build_desktop_input.py": "0104e75f1911b6f788d2b12dda1628107869cc661c06d0faa408eb75066e935d",
+    "tools/build_widget_panel.py": "dc4f4251e4469fe239dc5c3aeb67c9a2e4300987bae2a311bfdf6b58a4eebb85",
+    "tools/desktop_mouse.py": "3a9150c744e53f65329aaf658f78a9de2db61e53e4c69bb2c835f76aa730620e",
+    "tools/measure_desktop.py": "b3e22ee2d6dc952487bb02a83275a5a976c3a950e1804c79e95aff2b8d38a3c9",
+    "tools/test_aes_input.py": "15b7c49abe27de13722da63bb4578a718ecf1208f0a0f78c32f7f8e764360235",
+    "tools/test_desktop_drag.py": "bb33356dd6a600c94b28d8258d5ca8d8671cef96f9d19f710fea691c8a9df437",
+    "tools/test_desktop_mouse_boundary.py": "c8834dc36dbe840206d168edf6a58822f2d7270f74c88738d6a590decd811773",
+    "tools/test_desktop_pointer_scale.py": "d6075e5ffebbbaad4d6b937b8a5c0985364347dc7788921e4b59fbc29f80298a"
+  }
+}

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Passive physical ST capture/consumption and actual scanout observations."""
 import argparse
-from desktop_mouse import schedule, scale
+from desktop_mouse import schedule, scale, raw_record
+from mouse_acceleration_oracle import Pointer
 from bisect import bisect_left
 import hashlib
 import json
@@ -125,9 +126,9 @@ def trace_report(path, marks, windows, samples, native, cost_definition=None):
         result[name]['button_target_pass'] = bool(button) and max(button) <= (40 if name == 'idle' else 100)
         if cost_definition and 'scheduler' in cost_definition:
             from aes_timing_breakdown import input_breakdown
-            samples = [dict(capture=s['capture_cycle'], observed=s['consume_cycle'], kind=s['kind'])
+            breakdown_samples = [dict(capture=s['capture_cycle'], observed=s['consume_cycle'], kind=s['kind'])
                        for s in observed]
-            breakdown = input_breakdown(events, cost_definition['scheduler'], profile, samples, marks['consume'])
+            breakdown = input_breakdown(events, cost_definition['scheduler'], profile, breakdown_samples, marks['consume'])
             breakdown['summary'] = {kind:{key:distribution([r[key] for r in breakdown['records'] if r['kind']==kind])
                 for key in ('capture_to_ready_ms','ready_to_selected_ms','selected_to_consume_ms',
                             'runnable_off_cpu_ms','blocked_off_cpu_ms','charged_cpu_ms','elapsed_ms')}
@@ -204,10 +205,10 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
     disk = out/'disk.atr'
     make(disk, out/'media', binary_names={'TOOLS/SUB/DATA.BIN'}, filesystem='sdfs')
     report = dict(status='running', tier='development', qualification=False, build=p['build'],
-                  timing_breakdown=breakdown,
+                  timing_breakdown=breakdown, motion_origin=[570,8], reversal_steps=5,
                   pin=pin, samples=[], windows={}, observer=not unobserved,
                   reserved_bank_zero_delta=delta(p['build']['memory']), marks=marks,
-                  media_sha256=sha256(disk), scanout_scope='Actual last completed scanout; observation is an upper bound, at most one frame late')
+                  cost_definition=cost_definition, media_sha256=sha256(disk), scanout_scope='Actual last completed scanout; observation is an upper bound, at most one frame late')
     try:
         with emulator(BRIDGE, ROM, out, pin=pin) as b:
             b.config('diskemu', 'fastest' if fastest else 'generic56k')
@@ -281,11 +282,12 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     reach(f'dw(${at("DESKAPP", "updates"):x})>=1')
                     position = [584, 160]
                 # Paced physical phases move to a blank desktop margin. Expected
-                # pixels follow the image's fixed desktop sensitivity.
-                schedule(b,p,position,(590,24))
-                reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=590)&(dw(${at("DESKINPUT", "cursorY"):x})=24)')
+                # pixels follow the image's recorded pointer profile.
+                schedule(b,p,position,(570,8))
+                reach(f'(dw(${at("DESKINPUT", "cursorX"):x})=570)&(dw(${at("DESKINPUT", "cursorY"):x})=8)')
                 frames(3)
-                position = [590, 24]
+                position = [570, 8]
+                motion = Pointer(*position,p['build'].get('desktop_mouse',{}).get('profile','off'))
                 for load in loads:
                     mode = {'idle': 0, 'scroll': 2, 'disk': 3, 'two_clients': 0}[load]
                     b.memload(at('DESKTEST', 'mode'), mode.to_bytes(2, 'little'))
@@ -295,15 +297,18 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                     for i in range(count):
                         if second_app and not quiet_app and i % 10 == 0:
                             b._cmd_ok('KEY SPACE down')
-                        # Change one diagonal phase and reverse every ten steps.
-                        dx = 1 if (i//10) % 2 == 0 else -1
+                        # Change one diagonal phase and reverse every five steps.
+                        dx = 1 if (i//5) % 2 == 0 else -1
                         old = list(position)
-                        position = [position[0]+dx*scale(p), position[1]+dx*scale(p)]
                         head = b.peek(capture+1)[0]
                         submitted = clock()
                         b._cmd_ok(f'MOUSE AT {2000+(i*379)%7000} {dx*16} {dx*16} -1')
                         reach(f'db(${capture+1:x})!={head}', 'native_irq')
-                        raw = b.memdump(capture+128+(head & 31)*24, 24)
+                        raw = raw_record(b,p,capture,head)
+                        if 'desktop_mouse' in p['build']:
+                            position = list(motion.take(dx,dx,raw[24] | 32))
+                        else:
+                            position = [position[0]+dx*scale(p), position[1]+dx*scale(p)]
                         item = dict(load=load, kind='motion', submitted_clock=submitted,
                                     capture_observed_clock=clock(), record=raw.hex(), position=position)
                         report['samples'].append(item)
@@ -325,7 +330,7 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
                             reach(f'db(${capture+1:x})!={head}', 'native_irq')
                             item = dict(load=load, kind='button', submitted_clock=submitted,
                                         capture_observed_clock=clock(), buttons=pressed,
-                                        record=b.memdump(capture+128+(head & 31)*24, 24).hex())
+                                        record=raw_record(b,p,capture,head).hex())
                             report['samples'].append(item)
                             reach(f'dw(${at("DESKINPUT", "buttons"):x})={pressed}')
                             frames(1)
@@ -357,7 +362,10 @@ def run(out, program, count=100, unobserved=False, loads=('idle', 'scroll', 'dis
             report['timing'] = trace_report(out/'emulator.log', marks, report['windows'], report['samples'], native, cost_definition)
             if 'disk' in loads:
                 from gem_mouse_observe import timing
-                report['shared_timer'], _ = timing(out/'emulator.log', p['labels'], divisor=0 if fastest else 8)
+                # Desktop observation starts after some SIO lifecycle entries. The
+                # standalone transport fixture owns complete wire/startup gates.
+                report['shared_timer'], _ = timing(out/'emulator.log', p['labels'], serial=False)
+                report['shared_timer_scope'] = 'Capture/timer cadence during desktop disk traffic; standalone SIO tests cover wire timing'
             require(all(v['sample_gap_pass'] for v in report['timing'].values()), 'Sampling envelope failed')
         report['status'] = 'pass'
     except Exception as error:

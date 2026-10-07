@@ -156,15 +156,29 @@ reset-required hardware faults cannot return to free referenced storage.
 The presenter acquires the ST mouse source on joystick port 1 with the existing
 Timer 1 sampler and left button. A separate owned signal and route wake bounded
 input draining; idle turns do not call Take just to discover an empty queue.
-Desktop movement uses a fixed **two screen pixels per decoded ST step**, with
-no acceleration. The presenter acquires bounded controller coordinates, then
-scales them once before pointer drawing, hit testing, events and dragging.
-Coordinates are absolute and clipped to 640×240. Interior coordinates move in
-two-pixel increments; the inclusive right/bottom edges remain reachable at
-639/239. Overshoot is discarded in controller coordinates, so reversing at an
-edge moves immediately. `POINTER_PIXELS_PER_STEP` in `abi/desktop.json` records
-this desktop policy. Hardware capture and the general input API remain
-independent of screen geometry and sensitivity.
+The presenter acquires timed relative motion and applies the desktop profile
+once, before pointer drawing, hit testing, events, dragging and AES deferral.
+Deferred events already contain final absolute screen coordinates and are not
+accelerated again. The current default is `off`, a fixed **two screen pixels
+per decoded ST step**. Build with `--mouse-profile mild` to select acceleration:
+slow/reset motion is 1×, ordinary movement about 2× and fast movement up to 4×.
+The same curve applies while dragging. The profile is selected at build time;
+the Control Panel is a widget demo, not a preferences editor.
+
+[mouse.json](../../config/mouse.json) supplies the quarter-pixel gains and the
+default profile; build metadata records the selected profile and table hash.
+The mild axis gains are 4× through interval class 7, 3× for class 8, 2× for
+classes 9–10, 1.5× for classes 11–12 and 1× for classes 13–16. A diagonal column
+uses a 3/2 speed approximation with the same gain on both axes. Classes and
+reset semantics come from [INPUT](input.md#st-mouse-capture), not Task timing.
+
+Signed fractional remainders preserve small movement symmetrically across
+drains. Reset metadata and loss clear remainders while retaining screen position.
+Coordinates are absolute and clipped in pixel space to `0..639` and `0..239`.
+Clipping discards outward fractional motion and overshoot so reversal responds
+immediately. With `off`, reversing one step from 639 reaches 637; the previous
+controller-grid edge artifact is intentionally gone. Capture cadence, presenter
+budgets and GEM/native application coordinate interfaces are unchanged.
 
 Each graphical window has a keyboard route. Focus commits that route together
 with the console foreground selection. Captured keys and BREAK keep their route

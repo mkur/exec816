@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Desktop ST fastest supported controller spacing and aliasing negative control."""
 import argparse
-from desktop_mouse import scale
+from desktop_mouse import fast_distance
 from generate_input_native import definitions
 import json
 import os
@@ -21,8 +21,8 @@ from mouse_timer_trace import require_normal_cadence
 def run(out, program, unobserved=False, phase_offset=0):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
-    factor=scale(p)
-    supported=[min(639,320+97*factor),min(239,120+97*factor),0]
+    distance=fast_distance(p,97)
+    supported=[min(639,320+distance),min(239,120+distance),0]
     offsets, _ = definitions()
     capture = p['build']['memory']['input_storage']['POINTER_CAPTURE']
     at = lambda module, name: next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
@@ -122,7 +122,7 @@ def run(out, program, unobserved=False, phase_offset=0):
                         last[axis] = t
                 prior = bits
             require(burst_count == [-256, -256], 'Incomplete negative-control electrical trace')
-            expected = [max(0, supported[0]+factor*burst_count[0]), max(0, supported[1]+factor*burst_count[1]), 0]
+            expected = [max(0, supported[0]-fast_distance(p,-burst_count[0])), max(0, supported[1]-fast_distance(p,-burst_count[1])), 0]
             report['burst_axis_counts'] = burst_count
             report['burst_minimum_phase_us'] = min(burst_gaps)/BASE_HZ*1e6
             report['burst_ideal_position'] = expected

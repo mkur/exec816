@@ -150,6 +150,12 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                         return dict(clock=clock(), sha256=hashlib.sha256(rgb).hexdigest(), observations=attempt+1)
                     frames()
                 b.screenshot(str(out/'failure.png'))
+                (out/'expected.rgb').write_bytes(golden)
+                (out/'actual.rgb').write_bytes(rgb)
+                differences=[i//3 for i in range(0,len(rgb),3) if rgb[i:i+3]!=golden[i:i+3]]
+                report['pixel_failure']=dict(cursor=position,
+                    live_cursor=[read('DESKINPUT','cursorX'),read('DESKINPUT','cursorY')],
+                    differing_pixels=len(differences),first_pixels=[(i%640,i//640) for i in differences[:20]])
                 raise RuntimeError('No exact drag scene; bounds='+str(bounds())+' expected='+str(shell)+' phase='+str(read('DESKDRAG','phase',1)))
             def move(x, y):
                 nonlocal position

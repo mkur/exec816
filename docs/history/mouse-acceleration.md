@@ -47,3 +47,47 @@ built with `CARGO_PROFILE_DEV_OPT_LEVEL=2` to shorten iteration; emitted raw and
 optimized modes remain explicitly selected in each test. Binary hashes and
 machine pins are in the evidence. These development checks do not qualify the
 whole hosted system, NTSC acceleration or physical hardware. PI4/HY4 remain open.
+
+## MA2 — Desktop profiles
+
+Implemented on 2026-10-07, with `off` as the intermediate default. The desktop
+acquires relative input, applies the generated curve once, then publishes
+absolute pixels to cursor, gestures, native clients and deferred AES input.
+A replayed AES event is already transformed. Both profiles clamp in pixel space;
+`off` retains 2× motion, with the intentional odd-edge reversal change.
+
+The mild table supplies 1×, 1.5×, 2×, 3× and 4× gains with a common diagonal
+speed estimate, signed quarter-pixel remainders and reset on pause/reversal/loss.
+The Action! transform uses shifts/adds and a 64-byte table; emitted inspection
+finds no external arithmetic helper or gateway call. The new module occupies
+1,726 code bytes and 76 live data bytes (77-byte extent with internal alignment).
+It fits existing code/data reservations: **0 reserved upper-byte growth and no
+additional linked bank** against the equivalent MA1 two-application fixture
+(16 populated image banks in both). Bank zero remains **0 fixed + 0 per Task +
+0 idle bytes**. No Task, timer, signal, DP, stack or VRAM reservation is added.
+
+[MA2 evidence](../development/mouse-acceleration-ma2.json) records 2,870 optimized
+transform assertions against an independent rational oracle, including split
+runs and fractional tails, all classes, signs, resets and corners. Apply's
+measured elapsed mean is 159.8 µs; the maximum is 809.3 µs including preemption.
+The small AES queue fixture passes 35 assertions in each raw/optimized build,
+including fractional motion followed by deferred button delivery. Physical
+`off` and `mild` edge/reversal checks and the fastest supported diagonal capture
+trace pass. Idle physical drags pass full-scene pixels, both screen edges,
+Escape, event-queue loss, refused close, hide and retirement while held. Real
+update/mouse locks pass retained click and drag replay (101 C assertions), disk
+progress and frozen-pixel checks. Host checks pass: 399 tests, four historical-source skips.
+
+Physical integration helpers now observe coarse physical travel and finish with
+isolated slow phases. They never write guest cursor coordinates. Altirra paces
+electrical phases according to movement backlog, so a host packet cannot be
+assumed to have constant fast gain. The independent curve and captured-stream
+fixtures remain the displacement oracles.
+
+The expanded two-application drag run exposes a stale eight-pixel shell caret
+at `(8..15,87)` after Control Panel closure. The frozen PI3 image reproduces
+exactly those pixels; this is a retained rendering defect, not a change in
+pointer coordinates or geometry. A loaded scroll/move also left an old caret
+at `(48..55,207)` despite correct geometry. These exact-pixel failures are
+retained as limitations; no renderer assertion or acceptance limit is relaxed.
+PI4/HY4 and broader renderer work remain deferred.

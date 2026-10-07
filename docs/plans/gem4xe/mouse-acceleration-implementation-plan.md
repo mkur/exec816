@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](mouse-acceleration-design.md) ·
 [Current input contract](../../reference/input.md) · [Current desktop contract](../../reference/desktop.md)
 
-Status: MA1 implemented at the development tier, 2026-10-07; MA2–MA4 pending.
+Status: MA1–MA2 implemented at the development tier, 2026-10-07; MA3–MA4 pending.
 See the [execution record](../../history/mouse-acceleration.md).
 Implement the design in four executable slices, committing after each slice.
 Keep PI3 (`7f9a25d`) and its tested desktop demo as the existing baseline; no
@@ -98,7 +98,7 @@ evidence. Suggested commit: `input: preserve timed relative pointer runs`.
 
 ## MA2 — Apply the profile once in the desktop
 
-Deliver both profiles through one Task-side transform. Keep `off` as the
+Implemented with one Task-side transform. Deliver both profiles through it. Keep `off` as the
 intermediate default until MA3's loaded checks and tuning pass.
 
 1. Add a small desktop pointer-transform module, provisionally

@@ -1,0 +1,97 @@
+; Desktop policy over timed relative INPUT records. No IRQ or timer work.
+MODULE DESKMOUSE
+USE INPUT
+USE DESKMOUSECONFIG
+INCLUDE "mouse-gains.inc"
+
+INT pixelX,pixelY,remainderX,remainderY
+BYTE selectedProfile
+
+PUBLIC PROC Start(INT x,y BYTE selected)
+
+  pixelX=x
+  pixelY=y
+  remainderX=0
+  remainderY=0
+  selectedProfile=selected
+
+RETURN
+
+; The curve uses only these fixed gains; no general arithmetic helper is needed.
+INT FUNC ScaledDistance(INT steps BYTE gain)
+
+  CASE gain OF
+  WHEN 4 THEN
+    RETURN(steps LSH 2)
+  WHEN 6 THEN
+    RETURN((steps LSH 2)+(steps LSH 1))
+  WHEN 8 THEN
+    RETURN(steps LSH 3)
+  WHEN 12 THEN
+    RETURN((steps LSH 3)+(steps LSH 2))
+  ELSE
+    RETURN(steps LSH 4)
+  ESAC
+
+RETURN(0)
+
+; Signed remainder gives symmetric fine motion. Clipping discards outward debt.
+PROC Move(INT distance,maximum INT POINTER position,remainder)
+  INT pixels
+
+  distance==+remainder^
+  LET negative=distance<0
+  LET magnitude=CARD(IF negative<>0 THEN -distance ELSE distance FI)
+  pixels=INT(magnitude RSH 2)
+  remainder^=INT(magnitude & 3)
+  IF negative<>0 THEN
+    pixels=-pixels
+    remainder^=-remainder^
+  FI
+  position^==+pixels
+  IF position^<0 OR (position^=0 AND remainder^<0) THEN
+    position^=0
+    remainder^=0
+  ELSEIF position^>maximum OR (position^=maximum AND remainder^>0) THEN
+    position^=maximum
+    remainder^=0
+  FI
+
+RETURN
+
+; Call once for fresh capture; AES deferral stores the resulting absolute event.
+PUBLIC PROC Apply(INPUT.Event POINTER event)
+  BYTE gain
+  INT steps,distance
+
+  IF event.kind=INPUT.EVENT_LOSS
+      OR (event.motionInfo & INPUT.MOTION_CLASS_MASK)=INPUT.MOTION_RESET THEN
+    remainderX=0
+    remainderY=0
+  FI
+
+  IF event.kind<>INPUT.EVENT_LOSS AND (event.x<>0 OR event.y<>0) THEN
+    gain=8
+    IF selectedProfile=DESKMOUSECONFIG.MILD THEN
+      gain=mouseGains(BYTE(event.motionInfo))
+    FI
+    steps=IF event.x<>0 THEN event.x ELSE event.y FI
+    IF steps<0 THEN
+      steps=-steps
+    FI
+    distance=ScaledDistance(steps,gain)
+    IF event.x<>0 THEN
+      Move(IF event.x<0 THEN -distance ELSE distance FI,639,@pixelX,@remainderX)
+    FI
+    IF event.y<>0 THEN
+      Move(IF event.y<0 THEN -distance ELSE distance FI,239,@pixelY,@remainderY)
+    FI
+  FI
+
+  event.x=pixelX
+  event.y=pixelY
+  event.motionInfo=0
+  event.flags=event.flags & BYTE(255-INPUT.RELATIVE)
+
+RETURN
+ENDMODULE

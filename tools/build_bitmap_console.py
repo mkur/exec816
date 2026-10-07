@@ -89,7 +89,10 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     return foreign
 
 
-def prepare(source,out,foreign,desktop=False,aes=False):
+def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
+    if desktop:
+        from generate_mouse_acceleration import configuration
+        (out/'deskmouseconfig.act').write_text(configuration(mouse_profile))
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
@@ -156,7 +159,7 @@ RETURN
 
 
 def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,aes=False,
-                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),**kwargs):
+                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),mouse_profile=None,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     if aes:
         from generate_aes_server import files as aes_files
@@ -171,12 +174,12 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
     foreign=drawing(out,optimize,probe,fault,widgets=desktop,
         client_sources=client_sources,client_entries=client_entries,
         client_roots=client_roots,client_probes=client_probes)
-    launcher=prepare(Path(source),out,foreign,desktop,aes)
+    launcher=prepare(Path(source),out,foreign,desktop,aes,mouse_profile)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:
-        from generate_desktop import ABI
-        program['build']['desktop_pointer_pixels_per_step']=ABI['constants']['POINTER_PIXELS_PER_STEP']
+        from generate_mouse_acceleration import metadata
+        program['build']['desktop_mouse']=metadata(mouse_profile)
         (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
     return program
 

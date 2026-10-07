@@ -89,13 +89,14 @@ def fixture(out):
     return fixture
 
 
-def build(out, aes=False):
+def build(out, aes=False, mouse_profile=None):
     source=fixture(out)
-    return build_bitmap(source, out, True, desktop=True, aes=aes, stack_checks=True,
+    return build_bitmap(source, out, True, desktop=True, aes=aes, stack_checks=True,mouse_profile=mouse_profile,
         dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2)])
 
 
 if __name__=='__main__':
     import argparse
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--output',type=Path,required=True)
-    build(a.parse_args().output.resolve())
+    a.add_argument('--mouse-profile',choices=('off','mild'))
+    args=a.parse_args();build(args.output.resolve(),mouse_profile=args.mouse_profile)

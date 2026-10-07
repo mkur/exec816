@@ -16,7 +16,7 @@ from native_program import ROOT, build, compiler, require, sha256
 DEMO_IMAGE_DATA_BYTES = 4096
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None):
     if desktop:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
@@ -83,7 +83,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
         program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,
+            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
@@ -177,6 +177,7 @@ if __name__=='__main__':
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
+    parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
@@ -189,5 +190,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
