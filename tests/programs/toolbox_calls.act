@@ -185,6 +185,7 @@ PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
   FI
 
   T.state.entry==+1
+  T.state.first==+1
 
 RETURN(-1)
 

@@ -31,9 +31,39 @@ The [evidence record](../development/tail-find.json) pins the actual artifacts.
 The demo builder includes TAIL in SYS:C and STORY.TXT introduces it. This slice
 does not refresh the previously built preview ZIP.
 
-## FIND — next slice
+## FIND — implemented
 
-Use `FIND [DIR] [PATTERN pattern]` for recursive filename matching with the
-existing case-insensitive `*`/`?` matcher. Keep directory frames and output paths
-bounded, retain each public enumeration record separately and release all
-locks on success, errors and BREAK. GREP continues to search file contents.
+`FIND [DIR] [PATTERN pattern]` walks descendants in filesystem order, matching
+entry names with LIST's existing case-insensitive `*`/`?` matcher. It prints paths
+using the supplied directory prefix and appends `/` to directories. The start
+directory is omitted. Filtering affects output only, so a matching file can be
+found beneath an unmatched directory. Empty results return WARN with IoErr zero.
+GREP continues to search file contents.
+
+Eight iterative frames retain each directory lock, its path-prefix length and
+the complete public FileInfoBlock. Descending cannot overwrite the parent's
+enumeration key or reserved cookie. The path buffer holds 255 bytes plus NUL.
+The ninth frame or an oversized path reports an error rather than skipping a
+subtree or truncating a name. All exits release retained locks while preserving
+the first enumeration, write, BREAK or cleanup error. Lookup follows existing
+DOS path rules; this command adds no path normalization or filesystem snapshot.
+
+The optimized command has 7,851 text bytes and 2,722 upper-RAM BSS bytes,
+including the aligned 2,128-byte frame array. Reserved bank-zero growth remains
+**0 fixed bytes and 0 per public Task**, including guards, alignment and unused
+capacity. Kernel APIs, Task pools and stack reservations are unchanged.
+
+Development checks pass: 24 emitted command cases, 13 existing LIST cases after
+updating the controlled enumeration progress counter, the host suite and a
+physical-key session. The latter checks depth-first parent resumption, matching
+beneath unmatched directories, case folding, relative paths, directory markers,
+no-match/empty WARN, file/missing/invalid roots, maximum depth, recovery after a
+depth error, help, a FIND-to-WC pipeline and native MyDOS/SDFS subdirectories.
+The fixture failures cover path overflow, partial/failed writes, enumeration and
+Close errors, causal-error preservation and BREAK before and after enumeration.
+Native filesystem images remain byte-identical after ejection. Guards, complete
+shell retirement, allocation balance and OS console restoration pass. The pins
+and scope match the TAIL development checks; no full release matrix was run.
+
+The demo builder includes both commands in SYS:C. STORY.TXT introduces them;
+the earlier preview archives remain the previously built versions.

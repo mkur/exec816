@@ -42,6 +42,8 @@ folding and line numbers:
   HEAD SYS:STORY.TXT LINES 5
   TAIL SYS:STORY.TXT LINES 3
   GREP shell SYS:STORY.TXT NOCASE NUMBER
+FIND searches filenames in subdirs:
+  FIND SYS: PATTERN *.TXT
 CMP compares files. CKSUM checks bytes
 and length; HEXDUMP shows their values:
   CMP SYS:STORY.TXT SYS:STORY.TXT

@@ -12,7 +12,7 @@ from os_boundary import emulator
 from test_cooperative import data
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'tail', 'grep', 'list', 'more', 'cat', 'wc', 'hello')
+NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'tail', 'find', 'grep', 'list', 'more', 'cat', 'wc', 'hello')
 STRIDE = 4372
 
 
@@ -100,6 +100,25 @@ def behavior_vectors(name):
             case['args']=b'x '+case['args']
         common[1]['expected']=b'x\n'
         return cases+common
+    if name == 'find':
+        return [c('empty',status=5,opens=1),
+                c('one',entries=1,expected=b'A\n',opens=1),
+                c('root-prefix',args=b'SYS:',entries=1,expected=b'SYS:A\n',opens=1),
+                c('no-match',args=b'PATTERN Z*',entries=1,status=5,opens=1),
+                c('fold',args=b'PATTERN a',entries=1,expected=b'A\n',opens=1),
+                c('question',args=b'PATTERN "?"',entries=1,expected=b'A\n',opens=1),
+                c('empty-pattern',args=b'PATTERN ""',entries=1,status=5,opens=1),
+                c('bad-pattern',args=b'PATTERN X/Y',error=311),
+                c('missing',args=b'MISSING',error=205),
+                c('path-limit',args=b'R'*254+b':',entries=1,error=120,opens=1),
+                c('enumeration-error',enumerationError=226,error=226,opens=1),
+                c('enumeration-close-errors',enumerationError=226,closeError=202,error=226,opens=1),
+                c('close-error',entries=1,expected=b'A\n',closeError=202,error=202,opens=1),
+                c('partial-write',entries=1,expected=b'A\n',writeChunk=1,opens=1),
+                c('write-error',entries=1,writeFail=1,error=214,opens=1),
+                c('zero-write',entries=1,writeChunk=0,error=206,opens=1),
+                c('break',breakAt=0,error=304,opens=1),
+                c('break-after-entry',entries=1,breakAt=1,error=304,opens=1)]
     if name == 'list':
         return [c('empty',opens=1),c('mixed',expected=b'A 1\nB/\nC 3\n',entries=3,opens=1),
                 c('names',args=b'NAMES',expected=b'A\nB\n',entries=2,opens=1),
@@ -120,7 +139,7 @@ def behavior_vectors(name):
 
 TEMPLATES = dict(cmp='FROM/A,TO/A',cksum='FILE',hexdump='FILE,OFFSET/K/N,LENGTH/K/N',
                  head='FILE,LINES/K/N',tail='FILE,LINES/K/N',grep='PATTERN/A,FILE,NOCASE/S,INVERT/S,NUMBER/S',
-                 list='DIR,NAMES/S',more='FILE',cat='FILE',wc='',hello='')
+                 list='DIR,NAMES/S',find='DIR,PATTERN/K',more='FILE',cat='FILE',wc='',hello='')
 
 
 def vectors(name):

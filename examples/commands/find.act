@@ -1,0 +1,210 @@
+MODULE FIND
+
+INCLUDE "command-common.inc"
+INCLUDE "command-pattern.inc"
+
+CONST MAX_DEPTH=8
+CONST PATH_BYTES=256
+
+TYPE DirectoryFrame=[
+  BYTE POINTER lock
+  CARD prefix
+  COMMAND.FileInfoBlock info
+]
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(2)
+BYTE ARRAY path(PATH_BYTES)
+DirectoryFrame ARRAY frames(MAX_DEPTH)
+CARD depth
+BYTE found
+CSTRING pattern
+
+; Each directory retains its complete public enumeration record.
+BYTE FUNC OpenFrame()
+
+  LET frame=@frames(depth)
+  frame.prefix=CARD(STR.strlen(CSTRING(@path(0))))
+  frame.lock=COMMAND.Lock(path,COMMAND.SHARED_LOCK)
+  IF frame.lock=NULL THEN
+    RETURN(0)
+  FI
+
+  IF COMMAND.Examine(frame.lock,BYTE POINTER(@frame.info))=0 THEN
+    RETURN(0)
+  FI
+
+  IF frame.info.fib_DirEntryType<=0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_WRONG_TYPE)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Release a frame once. The Process ledger still owns any failed retirement.
+LONGINT FUNC ReleaseFrame(CARD index)
+
+  COMMAND.SetIoErr(0)
+  COMMAND.UnLock(frames(index).lock)
+  frames(index).lock=NULL
+
+RETURN(COMMAND.IoErr())
+
+; Extend the current directory prefix without truncating an output/lookup path.
+BYTE FUNC EntryPath(DirectoryFrame POINTER frame)
+  CARD used
+
+  used=frame.prefix
+  path(used)=ASCII.NUL
+  IF used<>0 AND path(used-1)<>': AND path(used-1)<>'/ THEN
+    IF used=PATH_BYTES-1 THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+      RETURN(0)
+    FI
+
+    path(used)='/
+    used==+1
+    path(used)=ASCII.NUL
+  FI
+
+  LET capacity=SIZE(PATH_BYTES-used)
+  IF STR.strlcpy(@path(used),CSTRING(@frame.info.fib_FileName(0)),
+      capacity)>=capacity THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Walk depth first in filesystem order; patterns select output, not descent.
+LONGINT FUNC Walk()
+
+  DO
+    BEGIN
+      IF COMMAND.BreakPending()<>0 THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      LET frame=@frames(depth)
+      IF COMMAND.ExNext(frame.lock,BYTE POINTER(@frame.info))=0 THEN
+        IF COMMAND.IoErr()<>COMMAND.ERROR_NO_MORE_ENTRIES THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
+        IF depth=0 THEN
+          COMMAND.SetIoErr(0)
+          RETURN(IF found<>0 THEN COMMAND.RETURN_OK
+              ELSE COMMAND.RETURN_WARN FI)
+        FI
+
+        IF ReleaseFrame(depth)<>0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
+        depth==-1
+      ELSE
+        IF EntryPath(frame)=0 THEN
+          RETURN(COMMAND.RETURN_ERROR)
+        FI
+
+        IF PatternMatch(pattern,CSTRING(@frame.info.fib_FileName(0)))<>0 THEN
+          found=1
+          IF CommandText(CSTRING(@path(0)))=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+
+          IF frame.info.fib_DirEntryType>0 THEN
+            IF CommandText(c"/")=0 THEN
+              RETURN(COMMAND.RETURN_ERROR)
+            FI
+          FI
+
+          IF CommandText(c"\n")=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+        FI
+
+        IF frame.info.fib_DirEntryType>0 THEN
+          IF depth=MAX_DEPTH-1 THEN
+            COMMAND.SetIoErr(COMMAND.ERROR_TOO_MANY_LEVELS)
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+
+          depth==+1
+          IF OpenFrame()=0 THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+        FI
+      FI
+    END
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+
+LONGINT FUNC Main()
+  CARD index
+  LONGINT status,cause
+  CSTRING root
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"DIR,PATTERN/K",values,2,arguments,
+      SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  root=c""
+  IF values(0)<>0 THEN
+    root=CSTRING(BYTE POINTER(values(0)))
+  FI
+
+  pattern=c"*"
+  IF values(1)<>0 THEN
+    pattern=CSTRING(BYTE POINTER(values(1)))
+  FI
+
+  index=0
+  WHILE pattern(index)<>ASCII.NUL DO
+    IF pattern(index)=': OR pattern(index)='/ THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_BAD_ARGUMENTS)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    index==+1
+  OD
+
+  IF STR.strlcpy(path,root,SIZE(PATH_BYTES))>=SIZE(PATH_BYTES) THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  FOR index=0 TO MAX_DEPTH-1 DO
+    frames(index).lock=NULL
+  OD
+
+  depth=0
+  found=0
+  status=COMMAND.RETURN_ERROR
+  IF OpenFrame()<>0 THEN
+    status=Walk()
+  FI
+
+  cause=IF status>=COMMAND.RETURN_ERROR THEN COMMAND.IoErr() ELSE LONGINT(0) FI
+  FOR index=0 TO MAX_DEPTH-1 DO
+    IF frames(index).lock<>NULL THEN
+      BEGIN
+        LET error=ReleaseFrame(index)
+        IF cause=0 AND error<>0 THEN
+          cause=error
+          status=COMMAND.RETURN_ERROR
+        FI
+      END
+    FI
+  OD
+
+  COMMAND.SetIoErr(cause)
+
+RETURN(status)
+
+ENDMODULE

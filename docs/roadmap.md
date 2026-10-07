@@ -55,9 +55,9 @@ input. One background job and one pane keep this version bounded.
    on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
    separate from the command's Input so a command cannot consume the rest of
    the script. Begin with one active script and no arguments or conditionals.
-3. TAIL is implemented with a bounded sixteen-line ring, file/pipe input and
-   the shared text reader. FIND filename traversal is the next slice; see the
-   [implementation record](history/tail-find.md).
+3. TAIL and FIND are implemented: a sixteen-line suffix ring for files/pipes
+   and filename traversal with eight directory frames and LIST-style patterns.
+   See the [implementation record](history/tail-find.md).
 
 The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
 is implemented with exact CAT/DELETE names and read-only LIST filtering. The
