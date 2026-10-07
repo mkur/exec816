@@ -91,3 +91,39 @@ pointer coordinates or geometry. A loaded scroll/move also left an old caret
 at `(48..55,207)` despite correct geometry. These exact-pixel failures are
 retained as limitations; no renderer assertion or acceptance limit is relaxed.
 PI4/HY4 and broader renderer work remain deferred.
+
+## MA3 — Loaded checks and mild default
+
+The default is now `mild`; `--mouse-profile off` remains available. The generated
+default module exactly matches the explicit mild module used in MA2/MA3 images.
+No curve tuning was needed. Bank-zero deltas remain **0 fixed, 0 per Task and
+0 idle**, with no additional upper reservation or linked bank in this slice.
+
+[MA3 evidence](../development/mouse-acceleration-ma3.json) records nine physical
+traces across idle, scrolling and disk work: alternating axes, interval bands,
+pauses and reversal. Every delivered run matches an independent rational
+transform; hardware counts, epochs, cleanup and guards pass with no selected
+trace loss. The observed queue high-water is three records; MA1's delayed-drain
+high-water 60 remains the stronger capacity test. Sampled classes can differ
+near a boundary under different loads, but captured-fact replay remains exact.
+
+A matched 10-motion/10-button cohort per load and profile shows:
+
+| Load | Button consumption median, off → mild | p95, off → mild |
+| --- | --- | --- |
+| Idle | 2.62 → 2.61 ms | 7.95 → 2.62 ms |
+| Scrolling | 6.44 → 6.41 ms | 11.76 → 11.68 ms |
+| Disk | 7.43 → 7.99 ms | 8.76 → 11.35 ms |
+
+Cursor scanout p95 remains about 46.6 ms for both profiles, with frame-granular
+observation. The largest capture gap is 319.2 µs for mild, below 1 ms. These
+small cohorts show no broad timing regression; their tails are observations,
+not a statistical bound or widget-feedback result. No HY4 claim is made.
+The measurement tool now keeps each load's source samples when computing its
+breakdown, and separates partial desktop cadence traces from full SIO lifecycle
+analysis. Existing MA1 wire-timing gates remain the transport evidence.
+
+Physical positioning helpers use coarse observed travel and a slow exact tail;
+this keeps real lock/replay gestures inside the fixture's six-second lock.
+The previously recorded exact-pixel caret failures remain open. No presenter,
+renderer, Task schedule or sampling budget was changed to enable mild motion.

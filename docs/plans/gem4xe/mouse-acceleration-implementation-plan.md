@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](mouse-acceleration-design.md) ·
 [Current input contract](../../reference/input.md) · [Current desktop contract](../../reference/desktop.md)
 
-Status: MA1–MA2 implemented at the development tier, 2026-10-07; MA3–MA4 pending.
+Status: MA1–MA3 implemented at the development tier, 2026-10-07; MA4 pending.
 See the [execution record](../../history/mouse-acceleration.md).
 Implement the design in four executable slices, committing after each slice.
 Keep PI3 (`7f9a25d`) and its tested desktop demo as the existing baseline; no
@@ -151,6 +151,7 @@ Suggested commit: `desktop: add task-side mouse acceleration profiles`.
 
 ## MA3 — Check loaded behavior and choose the mild default
 
+Implemented: mild is now the default, with the recorded rendering limitations.
 Deliver a usable profile with evidence from the actual physical-input path.
 Keep the PI3 renderer and budgets unchanged to isolate the feature.
 

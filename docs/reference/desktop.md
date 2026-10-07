@@ -159,9 +159,9 @@ input draining; idle turns do not call Take just to discover an empty queue.
 The presenter acquires timed relative motion and applies the desktop profile
 once, before pointer drawing, hit testing, events, dragging and AES deferral.
 Deferred events already contain final absolute screen coordinates and are not
-accelerated again. The current default is `off`, a fixed **two screen pixels
-per decoded ST step**. Build with `--mouse-profile mild` to select acceleration:
-slow/reset motion is 1×, ordinary movement about 2× and fast movement up to 4×.
+accelerated again. The current default is `mild`: slow/reset motion is 1×,
+ordinary movement about 2× and fast movement up to 4×. Build with
+`--mouse-profile off` for a fixed **two screen pixels per decoded ST step**.
 The same curve applies while dragging. The profile is selected at build time;
 the Control Panel is a widget demo, not a preferences editor.
 
