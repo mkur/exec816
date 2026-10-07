@@ -3,7 +3,8 @@
 [GEM integration](README.md) · [Design note](mouse-acceleration-design.md) ·
 [Current input contract](../../reference/input.md) · [Current desktop contract](../../reference/desktop.md)
 
-Status: MA1–MA3 implemented at the development tier, 2026-10-07; MA4 pending.
+Status: MA1–MA4 implemented at the development tier, 2026-10-07.
+The extracted demo walkthrough passes; pre-existing caret artifacts remain open.
 See the [execution record](../../history/mouse-acceleration.md).
 Implement the design in four executable slices, committing after each slice.
 Keep PI3 (`7f9a25d`) and its tested desktop demo as the existing baseline; no
@@ -37,7 +38,8 @@ load. GEM/native GUI clients retain absolute screen-coordinate interfaces.
 
 ## MA1 — Deliver timed relative motion
 
-Implemented. The desktop still selects absolute input and fixed 2× scaling.
+Implemented. In this slice the desktop still selected absolute input and fixed
+2× scaling. MA2 subsequently switched it to relative input.
 The 32-slot capacity diagnostic required 64 slots; the final upper layout is
 recorded in the design and [MA1 evidence](../../development/mouse-acceleration-ma1.json).
 
@@ -98,8 +100,8 @@ evidence. Suggested commit: `input: preserve timed relative pointer runs`.
 
 ## MA2 — Apply the profile once in the desktop
 
-Implemented with one Task-side transform. Deliver both profiles through it. Keep `off` as the
-intermediate default until MA3's loaded checks and tuning pass.
+Implemented with one Task-side transform. This slice retained `off` as its
+intermediate default; MA3 subsequently enabled `mild`.
 
 1. Add a small desktop pointer-transform module, provisionally
    `lib/desktop/deskmouse.act`, owning pixel position, fractional remainders,
@@ -195,6 +197,8 @@ the next slice's artifact.
 Suggested commit: `desktop: validate and enable mild mouse acceleration`.
 
 ## MA4 — Refresh the desktop demo
+
+Implemented; see the [archive and walkthrough record](../../history/mouse-acceleration.md#ma4--accelerated-desktop-demo).
 
 Build the desktop distribution with [build_demo.py](../../../tools/build_demo.py),
 including OF816, matching disk/ROM, licenses and checksums. Preserve the

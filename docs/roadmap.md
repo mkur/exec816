@@ -133,13 +133,14 @@ targets remain open. Following the tested PI3 demo, further presenter latency
 work is deferred until the desktop experience is more complete; PI4/HY4 remain
 open.
 
-The proposed [mouse acceleration design](plans/gem4xe/mouse-acceleration-design.md)
+The implemented [mouse acceleration design](plans/gem4xe/mouse-acceleration-design.md)
 adds precise slow movement and faster desktop travel, with a fixed 2× off option.
 The [MA1–MA4 plan](plans/gem4xe/mouse-acceleration-implementation-plan.md) preserves
 timed relative motion in capture, applies the curve once in the desktop Task,
-checks loaded behavior and refreshes the OF816 preview. It retains the current
-sampling schedule and targets zero bank-zero reservation growth. Capture timing
-and stricter-coalescing queue capacity are the first implementation gates.
+checks loaded behavior and refreshes the OF816 preview. All four slices pass
+development checks and the extracted-demo walkthrough, with pre-existing caret
+artifacts recorded separately. Mild is now the default. Sampling cadence and
+bank-zero reservations are unchanged; net reserved upper growth is 512 bytes.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the

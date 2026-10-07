@@ -3,7 +3,7 @@
 import adapter_state as adapter
 from stack_budget import bank_zero_delta
 import argparse
-from desktop_mouse import schedule
+from desktop_mouse import schedule, fast_distance
 import json
 import re
 import shutil
@@ -217,6 +217,28 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok(f'MOUSE AT 2000 0 0 {value}')
                 rendezvous(f'dw(${symbol("DESKINPUT","buttons"):x})={value}')
                 frames(2)
+            # Fast supported physical motion, followed by a slow inward phase
+            # at the clipped corner. Use only controller input on the exact ZIP.
+            origin=saved['pointer']
+            b._cmd_ok('MOUSE AT 70000 272 272 -1')
+            for index in range(80):
+                b._cmd_ok(f'MOUSE AT {70000+(16+16*index)*114} 16 16 -1')
+            frames(30)
+            expected=[min(limit,start+fast_distance(p,97)) for start,limit in zip(origin,(639,239))]
+            actual=[number(symbol('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+            require(actual==expected,'Packaged fast pointer motion differs')
+            saved['pointer']=tuple(actual)
+            move(639,239)
+            b._cmd_ok('MOUSE AT 70000 -16 -16 -1')
+            frames(10)
+            step=1 if p['build']['desktop_mouse']['profile']=='mild' else 2
+            expected=[639-step,239-step]
+            actual=[number(symbol('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+            require(actual==expected,'Packaged fine edge reversal differs')
+            saved['pointer']=tuple(actual)
+            saved['mouse_profile_check']=dict(profile=p['build']['desktop_mouse']['profile'],
+                fast_steps_per_axis=97,edge_reversal=actual)
+            move(320,120)
             from generate_desktop import layout as desktop_layout
             service=pointer(symbol('DESKSTATE','service'))
             types=desktop_layout()
@@ -722,6 +744,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
+        mouse_profile_check=saved.get('mouse_profile_check'),
         desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),

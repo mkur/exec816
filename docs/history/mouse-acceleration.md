@@ -125,5 +125,37 @@ analysis. Existing MA1 wire-timing gates remain the transport evidence.
 
 Physical positioning helpers use coarse observed travel and a slow exact tail;
 this keeps real lock/replay gestures inside the fixture's six-second lock.
-The previously recorded exact-pixel caret failures remain open. No presenter,
+A follow-up frozen PI3 loaded-drag control reproduces the same eight pixels
+at `(48..55,207)` as mild, with identical final geometry and cursor position.
+Both recorded exact-pixel caret failures therefore predate acceleration and
+remain open. No presenter,
 renderer, Task schedule or sampling budget was changed to enable mild motion.
+
+## MA4 — Accelerated desktop demo
+
+Built and tested `build/desktop/mouse-acceleration-demo/exec816-demo.zip` with
+`tools/build_demo.py --desktop`. The archive is 339,473 bytes, SHA-256
+`a04abcb0d6f5141b4b19aad12799c2643db6a553b59b169cfebffc7940c4c093`.
+Its 15 files contain boot/media, pinned ROM, user guide, licenses and checksums;
+intermediates and diagnostic output remain outside it. The guide reflects the
+selected pointer profile, including an explicit `--mouse-profile off` build.
+
+[MA4 evidence](../development/mouse-acceleration-ma4.json) records the exact
+extracted archive's passing walkthrough: 250-frame/five-second OF816 autoboot,
+97 fast transitions on each axis, one-pixel inward movement from the corner,
+Control Panel toggle/radio/apply/cancel/disabled/default actions, title dragging
+and focus, shell/disk commands, writable WORK media, a seven-Task pipeline,
+BREAK during scrolling, guards, ownership cleanup and EXIT. Host checks pass:
+399 tests, four historical-source skips. The standard build selection remains
+the shell/prime demo; this runtime walkthrough tests the desktop variant.
+
+Against the PI3 demo, reserved bank-zero change is **0 fixed, 0 per public Task
+and 0 idle bytes**, including all guards, alignment and spare capacity. Both
+images populate the same 17 CPU banks. The feature's total additional reserved
+upper storage is MA1's 512 bytes; MA4 adds none. No additional Task or VRAM is
+reserved. The older bank-zero-compaction comparison still reports the existing
+two extra Task slots; it is identical in these two demos.
+
+All four acceleration slices are implemented. Physical hardware/NTSC support,
+subjective curve tuning, runtime preferences and the two pre-existing caret
+artifacts remain outside this development-tested result. PI4/HY4 remain open.

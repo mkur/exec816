@@ -6350,5 +6350,107 @@
     "skipped": 4,
     "status": "pass",
     "log": "build/mouse-acceleration/ma3/host.log"
+  },
+  "followup_rendering_control": {
+    "drag-baseline-load": {
+      "path": "build/mouse-acceleration/ma3/drag-baseline-load/results.json",
+      "sha256": "a3a942ec9c0f29c9b1397a947d2105aab484d56d8b68e62062f307435e99c932",
+      "status": "fail",
+      "pixels": {
+        "cursor": [
+          88,
+          46
+        ],
+        "live_cursor": [
+          88,
+          46
+        ],
+        "differing_pixels": 8,
+        "first_pixels": [
+          [
+            48,
+            207
+          ],
+          [
+            49,
+            207
+          ],
+          [
+            50,
+            207
+          ],
+          [
+            51,
+            207
+          ],
+          [
+            52,
+            207
+          ],
+          [
+            53,
+            207
+          ],
+          [
+            54,
+            207
+          ],
+          [
+            55,
+            207
+          ]
+        ]
+      }
+    },
+    "drag-load-final": {
+      "path": "build/mouse-acceleration/ma3/drag-load-final/results.json",
+      "sha256": "6c6aec78432bcd811f3d2f14ba33b538cced4159ae38ba7376f5a408d16bd744",
+      "status": "fail",
+      "pixels": {
+        "cursor": [
+          88,
+          46
+        ],
+        "live_cursor": [
+          88,
+          46
+        ],
+        "differing_pixels": 8,
+        "first_pixels": [
+          [
+            48,
+            207
+          ],
+          [
+            49,
+            207
+          ],
+          [
+            50,
+            207
+          ],
+          [
+            51,
+            207
+          ],
+          [
+            52,
+            207
+          ],
+          [
+            53,
+            207
+          ],
+          [
+            54,
+            207
+          ],
+          [
+            55,
+            207
+          ]
+        ]
+      }
+    }
   }
 }

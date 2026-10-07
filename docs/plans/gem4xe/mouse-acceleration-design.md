@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Implementation plan](mouse-acceleration-implementation-plan.md) ·
 [Current input contract](../../reference/input.md) · [Current desktop contract](../../reference/desktop.md)
 
-Status: MA1–MA3 implemented, 2026-10-07; mild is the desktop default.
+Status: MA1–MA4 implemented, 2026-10-07; mild is the desktop default.
 See the [execution record](../../history/mouse-acceleration.md).
 Baseline: Exec816 `7f9a25d`, including PI3 and the subsequently tested desktop
 demo. The desktop is usable enough to defer further presenter optimization

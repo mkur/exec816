@@ -104,15 +104,16 @@ implemented through MP4: about 4 kHz capture with preserved fine SIO timing,
 one blitter list per pointer move, combined measurements and a refreshed OF816
 preview. The [execution record](../../history/mouse-performance.md) separates
 the measured savings from open pointer, outline and move-repair timing targets.
-The current 2× pointer travel and memory reservations remain unchanged.
+That slice kept 2× pointer travel and memory reservations unchanged.
 
-The proposed [mouse acceleration design](mouse-acceleration-design.md) adds fine
+The implemented [mouse acceleration design](mouse-acceleration-design.md) adds fine
 slow motion and faster desktop travel, with a fixed 2× off option. Timed relative
 runs preserve capture timing across coalescing; the desktop applies the profile
 once before cursor, hit-test and application delivery. The
-[MA1–MA4 implementation plan](mouse-acceleration-implementation-plan.md) covers
-capture/queue proofs, the Task-side transform, loaded checks and an OF816 demo.
-It targets zero bank-zero growth and the existing sampling schedule. PI3 is the
+[MA1–MA4 implementation plan](mouse-acceleration-implementation-plan.md) is
+complete at the development tier: mild is the default, with loaded checks and
+a passing extracted OF816 demo. Bank zero is unchanged; the capture reservation
+grows by a net 512 upper bytes. Sampling cadence is unchanged. PI3 is the
 accepted usability baseline; broader presenter optimization is deferred while
 the desktop gains functionality. PI4/HY4 acceptance remains open.
 

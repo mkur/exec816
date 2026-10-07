@@ -235,7 +235,9 @@ order. An unquiesced blitter fault retains referenced storage until reset.
 
 ## Demonstration client
 
-Build the optional local preview with `tools/build_demo.py --desktop`; the
+Build the default mild preview with `tools/build_demo.py --desktop`. To compare
+fixed 2× motion, use `tools/build_demo.py --desktop --mouse-profile off --output build/desktop-off`. Both builds include OF816 and matching media;
+without `--desktop`, the standard shell/prime demo remains selected. The
 [distribution guide](../desktop-distribution.txt) describes ST/port 1 setup,
 interaction and the outstanding timing limits.
 

@@ -156,10 +156,12 @@ assuming work is pending. Current behavior belongs in the
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
 - [Mouse acceleration design](gem4xe/mouse-acceleration-design.md) and
-  [implementation plan](gem4xe/mouse-acceleration-implementation-plan.md): proposed
-  timed relative capture and a desktop-owned mild curve, with fixed 2× off mode.
-  MA1–MA4 cover capture/queue checks, the transform, loaded tuning and an OF816
-  preview. Target zero bank-zero growth; retain the current sampling schedule.
+  [implementation plan](gem4xe/mouse-acceleration-implementation-plan.md): MA1–MA4
+  implemented at the development tier, with timed relative capture, a default
+  mild desktop curve and fixed 2× off mode. Capture/queue, transform, loaded
+  checks and the extracted OF816 preview pass, with pre-existing caret artifacts
+  recorded separately. Zero bank-zero growth; 512 extra reserved upper bytes;
+  the sampling schedule is unchanged.
   PI3 remains the accepted usability baseline while broader latency work is
   deferred for desktop functionality.
 - [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented

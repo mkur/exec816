@@ -21,6 +21,16 @@ BITMAP_FILES = ('Exec-bitmap-console.xex', 'system.atr', 'README.txt',
 GEM_NOTICES = BITMAP_FILES[3:]
 
 
+def pointer_description(profile):
+    return {
+        'mild': 'The pointer uses mild acceleration: slow movement gives one screen pixel\n'
+                'per ST step, and fast movement reaches up to four. The same curve applies\n'
+                'while dragging. Moving back from an edge responds immediately.',
+        'off': 'The pointer moves two screen pixels per ST mouse step, with fixed sensitivity\n'
+               'and no acceleration. Moving back from an edge responds immediately.',
+    }[profile]
+
+
 def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
     """Include only boot files and user documentation, checking recorded hashes."""
     record = json.loads((bundle/'of816.json').read_text())
@@ -66,6 +76,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
                 raise ValueError(f'Changed bitmap shell notice: {name}')
             files[name] = content
         guide = (ROOT/('docs/desktop-distribution.txt' if demo.get('desktop') else 'docs/bitmap-shell-distribution.txt')).read_text()
+        if demo.get('desktop'):
+            guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:
