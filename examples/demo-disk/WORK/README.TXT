@@ -1,1 +1,1 @@
-Run SYS:HELLO here. SYS paths start at the system volume root.
+Run HELLO or C:HELLO here. C: points to SYS:C on the system volume.

@@ -1,0 +1,30 @@
+; Small raw/optimized probe for the shared record across a bank boundary.
+MODULE SDFSBATCHLAYOUT
+USE FSWTYPES
+USE FSBTYPES
+USE A816MEMORY
+CARD ARRAY results(8)
+
+PROC Main()
+
+  LET state=FSWTYPES.State POINTER($30fff0)
+  state.data(255)=$31
+  state.bitmap(0)=$42
+  state.bitmap(255)=$53
+  state.batchActive=1
+  state.staged=8193
+  state.confirmedPosition=$12345678
+  state.confirmedStorage(27)=$64
+  A816MEMORY.Move(state.scratch,state.bitmap,256)
+  results(0)=CARD(SIZEOF(FSWTYPES.State))
+  results(1)=CARD(state.data(255))
+  results(2)=CARD(state.bitmap(0))
+  results(3)=CARD(state.scratch(255))
+  results(4)=CARD(state.batchActive)
+  results(5)=CARD(state.staged)
+  results(6)=CARD(state.confirmedPosition RSH 16)
+  results(7)=CARD(state.confirmedStorage(27))
+
+RETURN
+
+ENDMODULE

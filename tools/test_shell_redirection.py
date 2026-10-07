@@ -34,7 +34,8 @@ def prepare(size,scenario):
             item('CD TOOLS >NIL:'),item('CD >NIL:',b'D1:TOOLS\n'),item('CD : >NIL:'),
             item('ECHO must-not-run <TEXT.TXT >TEXT.TXT',diagnostic_text(214,'Shell'),214),item('ECHO must-not-run <MISSING >NIL:',diagnostic_text(205,'Shell'),205),
             item('ECHO must-not-run >CONSOLE:',diagnostic_text(209,'Shell'),209),item('ECHO cooked >CON:',b'cooked\n'),item('TYPE <RAW: >NIL:',diagnostic_text(212,'TYPE'),212),item('ECHO raw >RAW:',b'raw\n')]
-        for command in ('ECHO bad>NIL:','ECHO bad >','ECHO bad >>NIL:','ECHO bad >NIL: >RAW:','ECHO bad <NIL: <RAW:',
+        cases.append(item('ECHO bad <TEXT.TXT >>NIL:',diagnostic_text(219,'Shell'),219))
+        for command in ('ECHO bad>NIL:','ECHO bad >','ECHO bad >>>NIL:','ECHO bad >NIL: >RAW:','ECHO bad <NIL: <RAW:',
                         '<NIL:','EXIT extra >NIL:','CD TOOLS extra >NIL:','ECHO "bad*e" >NIL:','ECHO "x">NIL:','ECHO >NIL: <'):
             cases.append(item(command,diagnostic_text(115,'Shell'),115))
         cases += [item('UNKNOWN >RAW:',diagnostic_text(209,'Shell'),209),item('ECHO bad',b'bad'+diagnostic_text(206,'ECHO'),206,kind='missing')]

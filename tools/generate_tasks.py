@@ -386,7 +386,7 @@ def application_entry(routine):
         return False
     # These shared resident shell helpers run on the shell's Task. They are
     # included into several application/fixture modules, not Task entries.
-    if re.fullmatch(r'M_.+_SHELL(?:DIAGNOSTIC|PROMPT|CLEAR|RELEASELOCK|DIR|CLOSECOMMANDINPUT|TYPE|MEM|UNREDIRECT|EXTERNAL|DISPATCH|COMMAND|READSTEP|INITIALPROMPT)_[0-9A-F]+', routine['name']):
+    if re.fullmatch(r'M_.+_SHELL[A-Z0-9]*_[0-9A-F]+', routine['name']):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False

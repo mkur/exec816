@@ -47,6 +47,61 @@ BYTE FUNC ShellBootSIO()
 
 RETURN(1)
 
+; Missing startup files are optional. Other setup and execution errors retain
+; normal EXECUTE results; the first interactive prompt must not report twice.
+PROC ShellStartupFile(BYTE POINTER path)
+
+  LET primary=shell.status
+  LET secondary=shell.error
+  shell.status=PROCESS.RETURN_OK
+  shell.error=0
+  shell.command=CMD_EXECUTE
+  shell.argc=1
+  shell.words(0).text=path
+  shell.diagnosticWord=0
+  IF ShellPoll()=0 THEN
+    IF ShellScope()<>0 THEN
+      ShellScriptOpen(path,1)
+    FI
+  FI
+
+  IF script=NULL AND shell.status=PROCESS.RETURN_OK THEN
+    shell.status=primary
+    shell.error=secondary
+  ELSE
+    ShellDiagnostic()
+  FI
+
+  ShellRunScript()
+  ShellClear()
+
+RETURN
+
+; S uses an existing ASSIGN slot. Keep older disks without SYS:S usable and
+; run the two optional files sequentially, without nested EXECUTE support.
+PROC ShellBootScripts()
+
+  IF DOS.AssignPath(BYTE POINTER(c"S"),BYTE POINTER(c"SYS:S"))=0 THEN
+    BEGIN
+      LET error=DOS.IoErr()
+      IF error<>DOS.ERROR_OBJECT_NOT_FOUND THEN
+        shell.diagnosticWord=$ff
+        ShellFail(PROCESS.RETURN_ERROR,error)
+        ShellDiagnostic()
+      FI
+    END
+
+    ShellRunScript()
+    RETURN
+  FI
+
+  ShellStartupFile(BYTE POINTER(c"S:STARTUP"))
+  IF shell.done=0 AND shell.status<PROCESS.RETURN_ERROR THEN
+    ShellStartupFile(BYTE POINTER(c"S:USER"))
+  FI
+
+RETURN
+
 ; Present system startup and prepare an interactive shell on the system volume.
 ; A disk startup failure still leaves the console usable when possible.
 BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
@@ -105,7 +160,17 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     ELSE
       ShellText(shell.console,c": ready, read-only")
     FI
+
+    ; Filesystem startup publishes all configured volumes before SYS resolves.
+    ShellText(shell.console,CSTRING(EXECBUILD.otherMountsReady))
     ShellCacheStatus()
+
+    ; Publish the command directory through the ordinary, replaceable ASSIGN.
+    IF DOS.AssignPath(BYTE POINTER(c"C"),BYTE POINTER(c"SYS:C"))=0 THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+      ShellByte(shell.console,ASCII.LF)
+      ShellText(shell.console,c"C: assignment failed")
+    FI
 
   ELSE
     ShellText(shell.console,CSTRING(EXECBUILD.mountFailure))
@@ -113,6 +178,16 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
 
   ShellByte(shell.console,ASCII.LF)
   ShellByte(shell.console,ASCII.LF)
-  ShellInitialPrompt()
+  ShellDiagnostic()
+  IF shell.status=PROCESS.RETURN_OK THEN
+    ShellBootScripts()
+  FI
+
+  shell.lastStatus=shell.status
+  shell.lastError=shell.error
+  ShellClear()
+  IF shell.done=0 THEN
+    ShellPrompt()
+  FI
 
 RETURN(shell.done=0)

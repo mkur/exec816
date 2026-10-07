@@ -31,6 +31,8 @@ def run(output,mode):
         runtime,_=execute(bridge,program,timeout=240,frame_limit=12000)
         ownership(bridge,program,output)
         observations=dict(checks=data(bridge,program['image'],'checks',True),
+                          alias_storage_bytes=int.from_bytes(bytes(data(
+                              bridge,program['image'],'aliasStorage')),'little'),
                           finished=data(bridge,program['image'],'finished'))
         require(observations['finished']==[1],'Alias fixture did not finish')
     return dict(status='pass',tier='development',mode=mode,

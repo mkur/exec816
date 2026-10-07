@@ -55,6 +55,8 @@ Ctrl-W: delete word. Ctrl-P/N: history.
 Atari Ctrl-+/*: left/right, Ctrl--/=: up/down.
 Past newest history restores your draft.
 
-PATH searches here, then SYS: by default.
+Commands live in SYS:C, assigned as C:.
+PATH searches here, then C: by default.
+PATH RESET restores the C: search entry.
 Every supplied command supports ? help.
 Errors are explained on the console.

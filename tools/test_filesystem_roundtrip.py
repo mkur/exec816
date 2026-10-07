@@ -27,14 +27,15 @@ def run(output, mode, filesystem, media, from_build=None):
         contents.extend(payload)
     require(len(contents) < 65536, 'Roundtrip expected arena full')
     mounts = [dict(alias='D1', unit=49, sectors=audit.image.count,
-                   sector_bytes=audit.image.size, format=1 if filesystem == 'mydos' else 2)]
+                   sector_bytes=audit.image.size, format=1 if filesystem == 'mydos' else 2,
+                   profile=4)]
     program = reuse(from_build) if from_build else build(compiler(ROOT/'build/actionc'), ROOT/'tests/programs/filesystem_roundtrip.act', output,
                     optimize=mode == 'opt', tasks=True, console_deferred=True,
                     dos_mounts=mounts,
                     image_data=[(0xd1000, bytes(paths)), (0xe0000, bytes(contents))])
     before_hash = sha256(media)
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest', 'accuratedisk': False}
+        configuration = {**PIN['configuration'], 'diskemu': 'generic56k', 'accuratedisk': False}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)

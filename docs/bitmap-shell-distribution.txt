@@ -26,14 +26,17 @@ Extract this ZIP into one folder. In System > Configure System, select:
    Mount a disposable copy of work.atr in D8: with writes enabled.
 2. Use File > Boot Image to start Exec-of816.xex.
 3. Leave the keyboard alone for the five-second OF816 countdown.
-   The bitmap shell opens automatically; wait for SYS: ready and the > prompt.
+   Exec816 then loads with progress dots and the bitmap shell opens
+   automatically; wait for SYS: ready and the > prompt.
 
 Boot the XEX; the ATR supplies its system files. Keep this matching disk
 and work.atr mounted for the whole session. A disk from another build can contain
 incompatible commands.
 
 Press a key during the countdown to enter OF816 instead. Type EXEC816
-to continue into the bitmap shell.
+to resume loading and continue into the bitmap shell. OF816 appends its banner
+without clearing earlier boot messages. CACHE-BLOCKS! and SYSTEM-DRIVE! settings
+entered in Forth are preserved while loading resumes and the kernel starts.
 
 Try it
 ------
@@ -45,15 +48,59 @@ Try it
     CAT STORY.TXT | WC
     TYPE STORY.TXT
     MEM
+    CLS
+    RUN PRIMES
+    JOBS
 
-The pipelines print 1 3 17 and 24 133 746 respectively (lines, words, bytes).
+The pipelines print 1 3 17 and 108 518 3171 respectively (lines, words, bytes).
 TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
+Ctrl-L clears the screen and redraws the prompt and your current input.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
-SYS: is read-only; WORK: is writable. Try ECHO saved >WORK:OUT.TXT and
+External commands live in SYS:C. Startup assigns C: there and S: to SYS:S.
+The default PATH searches the current directory and then C:.
+PATH RESET restores that list.
+File arguments still use the current directory. Try:
+
+    PATH
+    DIR C:
+    LIST *.TXT NAMES
+    LS *.TXT NAMES
+    ALIAS
+    ASSIGN
+
+The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST, MORE,
+COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN and PRIMES. C: and S: use two of four
+assignment slots. Before the prompt, optional S:STARTUP and S:USER run in order.
+The supplied files contain comments only. Edit S/USER in the system disk source
+for local setup; EXECUTE S:USER reruns it manually. Missing scripts are silent;
+errors or BREAK stop startup scripts and return to the prompt.
+Each new shell starts with MKDIR -> MAKEDIR, LS -> LIST and CP -> COPY.
+Use ALIAS to replace them or UNALIAS to remove them; five of the eight slots
+remain available for other aliases. Definitions last for this shell session.
+
+PRIMES opens a six-row pane below the shell. Only changing numbers are updated.
+PRIMES PASSES 1 runs one foreground pass; physical BREAK stops a foreground run.
+RUN PRIMES starts it in the background and immediately returns the prompt.
+JOBS shows its identity; BREAK identity requests stop. Closing the pane restores
+the full screen and preserves an edited line. RUN PRIMES PASSES 1 completes
+naturally, finding 1,229 primes through 10,000, with 9,973 as the last prime.
+One background job and one pane are supported. Background streams default to
+NIL; file redirection is supported. EXIT stops and collects the job.
+
+Create a directory with MKDIR WORK:NOTES. CD .. or CD / moves to the parent
+and CD : to the volume root. CD .. is a shell shortcut; other paths do not
+support . or .. components. CLS clears the screen and returns the prompt home.
+
+SYS: is read-only; WORK: is writable (720 KiB, 256-byte sectors).
+Try ECHO saved >WORK:OUT.TXT and
 CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
 even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
+
+Ctrl-A/E move to the start/end; Ctrl-B/F move left/right. Ctrl-U clears the
+line, Ctrl-K cuts to the end, and Ctrl-W cuts a word. Ctrl-P/N or Atari
+up/down browse the ten-command history; Atari left/right move the cursor.
 
 This is a development preview. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.

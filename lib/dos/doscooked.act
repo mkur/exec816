@@ -9,6 +9,7 @@ USE COOKEDLINE
 USE DOSBREAKTYPES
 USE DOSCANCEL
 USE CONSOLETYPES
+USE CONSOLECORE
 USE HEAPCORE
 INCLUDE "dos-types.inc"
 
@@ -119,12 +120,24 @@ RETURN(LONGINT(request.io_Actual))
 BYTE FUNC Begin(DOSCLIENT.ClientContext POINTER client COOKEDLINE.Session
     POINTER state)
   CONSOLETYPES.Instance POINTER instance
-  CARD available,width
+  CARD available,width,row,index
 
   instance=CONSOLETYPES.Instance POINTER(client.request.io_Unit)
   EXEC.Forbid()
   width=instance.width
   available=width-instance.column
+  state.echo(COOKEDLINE.PROMPT_OFFSET)=0
+  IF available>=3 AND instance.column<>0
+      AND instance.column<=COOKEDLINE.PROMPT_BYTES THEN
+    ; Retained cells change in Task context. Snapshot the short prefix while
+    ; switching is forbidden; keyboard and other interrupts remain enabled.
+    state.echo(COOKEDLINE.PROMPT_OFFSET)=BYTE(instance.column)
+    row=CONSOLECORE.CellOffset(instance,instance.lineStart)
+    FOR index=0 TO instance.column-1 DO
+      state.echo(COOKEDLINE.PROMPT_OFFSET+1+index)=instance.cells(row+index)
+    OD
+  FI
+
   EXEC.Permit()
   IF width<3 THEN
     DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)

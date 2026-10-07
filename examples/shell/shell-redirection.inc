@@ -80,7 +80,8 @@ RETURN
 BYTE FUNC ShellRedirect()
   DOS.FileHandle POINTER ignored
 
-  IF shell.inputRedirect=NO_REDIRECT AND shell.outputRedirect=NO_REDIRECT THEN
+  IF shell.background=0 AND shell.inputRedirect=NO_REDIRECT
+      AND shell.outputRedirect=NO_REDIRECT THEN
     RETURN(1)
   FI
 
@@ -94,17 +95,49 @@ BYTE FUNC ShellRedirect()
       ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
-  FI
-
-  IF shell.outputRedirect<>NO_REDIRECT THEN
-    shell.tempOutput=DOS.Open(line+SIZE(shell.outputRedirect),DOS.MODE_NEWFILE)
-    IF shell.tempOutput=NULL THEN
+  ELSEIF shell.background<>0 THEN
+    shell.tempInput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+    IF shell.tempInput=NULL THEN
       ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
       RETURN(0)
     FI
   FI
 
-  ; Complete all opens against the pre-command directory before either selector.
+  IF shell.outputRedirect<>NO_REDIRECT THEN
+    BEGIN
+      LET mode=IF shell.outputAppend<>0 THEN DOS.MODE_READWRITE
+          ELSE DOS.MODE_NEWFILE FI
+      shell.tempOutput=DOS.Open(line+SIZE(shell.outputRedirect),mode)
+      IF shell.tempOutput=NULL THEN
+        ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+        RETURN(0)
+      FI
+
+      IF shell.outputAppend<>0 THEN
+        IF DOS.Seek(shell.tempOutput,0,DOS.OFFSET_END)<0 THEN
+          ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+          RETURN(0)
+        FI
+      FI
+    END
+  FI
+
+  IF shell.background<>0 THEN
+    IF shell.tempOutput=NULL THEN
+      shell.tempOutput=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+      IF shell.tempOutput=NULL THEN
+        ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+        RETURN(0)
+      FI
+    FI
+
+    IF DOS.IsInteractive(shell.tempInput)<>0 OR DOS.IsInteractive(shell.tempOutput)<>0 THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_WRONG_TYPE)
+      RETURN(0)
+    FI
+  FI
+
+  ; Complete all opens and positioning before either selector.
   shell.redirectActive=2
   IF shell.tempInput<>NULL THEN
     ignored=DOS.SelectInput(shell.tempInput)

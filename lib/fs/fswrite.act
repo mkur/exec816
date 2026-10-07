@@ -157,39 +157,72 @@ PUBLIC BYTE FUNC Open(FSTYPES.Service POINTER service)
 
 RETURN(1)
 
-; The worker revisits this callback after each committed payload. It can
-; honor BREAK between units while retaining the confirmed byte prefix.
+; The worker revisits this callback between bounded payload groups.
 PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
   LONGINT done
+  BYTE buffered,okay,retry
 
   LET service=FSTYPES.Service POINTER(raw)
   LET operation=service.operation
   LET file=operation.file
+  LET state=FSWRITEIO.State(service)
+  LET sdfs=service.selected.spec.format=FSFORMATS.SDFS
   done=0
-  IF Access(service)<>0 THEN
-    IF service.selected.spec.format=FSFORMATS.SDFS THEN
-      done=SDFSWRITE.Write(service,file,operation.output+
-          SIZE(operation.completed),operation.remaining)
-    ELSE
-      done=MYDOSWRITE.Write(service,file,operation.output+
-          SIZE(operation.completed),operation.remaining)
+  buffered=0
+  okay=1
+  retry=0
+  IF operation.remaining<>0 AND service.work.error=0 THEN
+    IF Access(service)<>0 THEN
+      IF sdfs<>0 THEN
+        state.buffered=0
+        done=SDFSWRITE.Write(service,file,operation.output+
+            SIZE(operation.completed+state.staged),operation.remaining)
+        buffered=state.buffered
+      ELSE
+        done=MYDOSWRITE.Write(service,file,operation.output+
+            SIZE(operation.completed),operation.remaining)
+      FI
     FI
   FI
 
   IF done>0 THEN
-    operation.completed==+done
     operation.remaining==-done
-    service.selected.epoch==+1
+    IF buffered=0 THEN
+      operation.completed==+done
+      service.selected.epoch==+1
+      IF sdfs<>0 THEN
+        SDFSWRITE.Snapshot(service)
+      FI
+    FI
   FI
 
-  IF done>0 AND operation.remaining<>0 THEN
+  IF sdfs<>0 THEN
+    retry=state.drain
+    IF service.selected.offline=0 AND service.work.ioError=0 THEN
+      IF operation.remaining=0 OR service.work.error<>0 OR retry<>0 THEN
+        okay=SDFSWRITE.Drain(service)
+      FI
+    ELSE
+      okay=0
+    FI
+  FI
+
+  IF okay<>0 AND service.work.error=0 AND operation.remaining<>0 AND
+      (done>0 OR retry<>0) THEN
     service.committing=0
-    service.changed=0
+    IF state.staged=0 THEN
+      service.changed=0
+    FI
+
     RETURN(FSSTATUS.MORE)
   FI
 
+  IF sdfs<>0 AND (okay=0 OR service.selected.offline<>0) THEN
+    SDFSWRITE.Restore(service)
+  FI
+
   service.packet.sp_Pkt.dp_Res1=operation.completed
-  IF done=0 AND operation.completed=0 THEN
+  IF operation.requested<>0 AND operation.completed=0 THEN
     service.packet.sp_Pkt.dp_Res1=-1
   FI
 
@@ -232,6 +265,10 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service FSTYPES.FileObject
   IF operation.requested<0 OR LONGCARD(operation.file.position)>maximum OR
       LONGCARD(operation.requested)>maximum-LONGCARD(operation.file.position) THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_TOO_LARGE))
+  FI
+
+  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+    SDFSWRITE.BeginBatch(service)
   FI
 
   service.nextStep=@WriteStep

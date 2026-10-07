@@ -25,6 +25,8 @@ Computer > CPU
 Computer > Memory
   Memory Size: 64K
   High memory banks: 4032K (63 banks above the base RAM).
+  Both settings are required, giving 4MB total RAM.
+  CPU high memory is separate from Atari extended memory and VBXE VRAM.
   Select the 65C816 CPU first to enable this control.
 
 Computer > Firmware
@@ -49,11 +51,14 @@ Close the settings window, then:
 2. In the same Disk drives window, set Emulation level to
    "Generic + 57600 baud". This setting applies to all drives.
 3. Choose File > Boot Image... and select Exec-of816.xex. Leave the keyboard
-   alone; Exec816 starts after the five-second countdown.
+   alone; after the five-second countdown, Exec816 loads with progress dots
+   and starts the demo.
 
 The ATR contains the system files. Boot the XEX, not the ATR.
 To enter the OF816 Forth monitor, press a key during the countdown.
-Type EXEC816 to continue into the demo.
+Type EXEC816 to resume loading and continue into the demo. OF816 preserves
+earlier screen text and any CACHE-BLOCKS! or SYSTEM-DRIVE! settings entered
+before continuing.
 
 Try it
 ------
@@ -71,27 +76,37 @@ TASKS comes first so the boot messages remain visible beside the task list:
     HELLO | WC
     CAT STORY.TXT | WC
 
-HELLO | WC prints 1 3 17. CAT STORY.TXT | WC prints 24 133 746.
+HELLO | WC prints 1 3 17. CAT STORY.TXT | WC prints 108 518 3171.
 The columns count lines, words and bytes. The lower screen shows the
 prime search advancing independently.
 
 Type HELP to list the shell's built-in commands:
 
-    HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
+    HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS
+    RUN JOBS BREAK EXIT
 
 Edit at the prompt: Ctrl-A/E beginning/end, Ctrl-B/F left/right, Ctrl-U clear,
 Ctrl-K delete to end, Ctrl-W delete previous word. Ctrl-P/N recalls the last
 10 commands; going past the newest restores your unfinished draft.
 Atari cursor chords: Ctrl-+ left, Ctrl-* right, Ctrl-- up, Ctrl-= down.
+Ctrl-L clears the screen and redraws the prompt and your current input.
 Up/down browse history. History lasts for this shell session only.
 
 The disk also includes CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST and MORE.
 Try HEAD STORY.TXT LINES 5, CKSUM STORY.TXT, or LIST NAMES.
 MORE LONG.TXT pages text: Space advances a page, Return a line, Q quits.
 GREP shell STORY.TXT NOCASE searches literal text; there is no regex.
+The prime search is the loaded C:PRIMES command. JOBS shows its identity;
+BREAK identity stops it and restores the full shell. RUN PRIMES restarts it.
+PRIMES PASSES 1 runs one foreground pass; RUN PRIMES PASSES 1 runs it in the
+background. One pass finds 1,229 primes through 10,000, with latest prime 9,973.
+Only changing numeric fields are redrawn. EXIT stops and collects the job.
 
 Commands remain available after CD through the default PATH (current directory,
-then SYS:). Try:
+then C:). External commands live in SYS:C; startup assigns C: there
+and S: to SYS:S. Optional S:STARTUP and S:USER run before the prompt.
+Their supplied contents are comments only; edit S/USER for local setup.
+The shell starts at SYS: root, where the text files remain. Try:
 
     CD SYS:WORK
     HEAD SYS:STORY.TXT LINES 3
@@ -103,6 +118,9 @@ then SYS:). Try:
 HEAD MISSING explains error 205; HEAD ? prints its argument template without
 reading Input. Every supplied command supports ?. PATH lists the search order;
 PATH ADD directory, PATH SET directory, PATH CLEAR and PATH RESET change it.
+PATH RESET restores C: in the search list. C: is an ordinary assignment and
+uses one of the four assignment slots; S: uses a second.
+C:HELLO and SYS:C/HELLO bypass search.
 ALIAS LS "DIR SYS:" defines a session-local command shortcut; LS runs it and
 UNALIAS LS removes it. ALIAS alone lists up to eight definitions.
 
@@ -110,7 +128,7 @@ Try CAT LONG.TXT | WC, then press BREAK to cancel it. EXIT stops the demo
 and restores the OS display. SYS: is read-only; WORK: is writable. Keep both
 disks mounted until shutdown. Pipes support two external commands.
 
-Try saving output to the disposable WORK: disk:
+Try saving output to the disposable 720 KiB WORK: disk (256-byte sectors):
 
     ECHO saved >WORK:OUT.TXT
     CAT WORK:OUT.TXT
@@ -168,7 +186,7 @@ Included files
 --------------
 
 Exec-of816.xex       Exec816 with the OF816 boot monitor
-@SYSTEM_DISK@        System disk with sixteen commands and sample text
+@SYSTEM_DISK@        System disk with seventeen commands and sample text
 work.atr            Disposable writable WORK: disk for drive D8
 altirraos-816.rom    AltirraOS 3.44 for 65C816
 README.txt          This guide

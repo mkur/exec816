@@ -4,6 +4,7 @@ INCLUDE "../../examples/shell/shell-session.inc"
 
 CARD checks
 BYTE finished
+LONGCARD aliasStorage
 
 PROC Check(BYTE okay)
 
@@ -70,6 +71,33 @@ PROC Main()
   Check(shell<>NULL AND SIZEOF(ShellState)=HEADER_SIZE)
   aliases=NULL
   aliasCount=0
+
+  LET beforeAliases=EXEC.AvailMem(0)
+  Check(ShellAliasDefaults()<>0 AND aliasCount=3)
+  aliasStorage=beforeAliases-EXEC.AvailMem(0)
+  PrepareLine(c"mkdir notes")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_EXTERNAL)
+  Same(shell.words(0).text,BYTE POINTER(c"MAKEDIR"))
+  Same(shell.words(1).text,BYTE POINTER(c"notes"))
+  PrepareLine(c"ls *.txt")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_EXTERNAL)
+  Same(shell.words(0).text,BYTE POINTER(c"LIST"))
+  Same(shell.words(1).text,BYTE POINTER(c"*.txt"))
+  PrepareLine(c"cp one.txt two.txt")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_EXTERNAL)
+  Same(shell.words(0).text,BYTE POINTER(c"COPY"))
+  Same(shell.words(2).text,BYTE POINTER(c"two.txt"))
+  SetAlias(c"ALIAS LS DIR")
+  Check(aliasCount=3)
+  PrepareLine(c"ls")
+  Check(ShellAliasExpand()<>0 AND shell.command=CMD_DIR)
+  DropAlias(c"UNALIAS MKDIR")
+  DropAlias(c"UNALIAS LS")
+  DropAlias(c"UNALIAS CP")
+  Check(aliasCount=0)
+  PrepareLine(c"mkdir notes")
+  Check(ShellAliasExpand()<>0)
+  Same(shell.words(0).text,BYTE POINTER(c"mkdir"))
 
   SetAlias(c"ALIAS H ECHO")
   SetAlias(c"ALIAS X CAT")

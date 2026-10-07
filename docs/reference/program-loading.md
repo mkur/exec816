@@ -90,6 +90,28 @@ dynamic entry. No loaded-code finalizer or asynchronous callback is published.
 
 ## Checked providers
 
+`COMMAND.Delay(ticks)` waits for LONGCARD VBI ticks through timer.device and
+returns LONGINT -1 on success, zero with IoErr on failure. Positive waits require
+Task context with scheduling enabled. A pending BREAK returns ERROR_BREAK;
+interrupted alarms are aborted and their exact replies collected before return.
+Zero ticks completes immediately unless cancellation is already pending.
+The DOS context lazily caches one clock/alarm request and binding, using its
+existing reply port. Context cleanup closes the idle binding and frees it.
+
+
+`COMMAND.OpenPane(rows)` returns an owned, output-only lower console handle,
+or NULL with IoErr. It preserves the default console's input route and focus.
+`COMMAND.Close` and Process cleanup restore the parent's full height and retire
+the pane. Only one full-width pane is supported; desktop mode and inheritance
+of the pane handle are unsupported. See [console instances](console-windows.md).
+
+`COMMAND.WriteAt(handle,column,row,buffer,length)` writes a printable horizontal
+span to an owned console handle. Coordinates are zero-based CARD values; length
+and result are LONGINT. It returns the accepted byte count, or -1 with IoErr.
+It preserves the ordinary cursor, rejects non-console streams and does not
+interpret escape sequences. Cancellation may return an accepted prefix with
+ERROR_BREAK; wait for the synchronous call before reusing the buffer.
+
 [abi/program.json](../../abi/program.json) defines the explicit `COMMAND` imports.
 [build_command.py](../../tools/build_command.py) compiles a standalone o65 command
 against their generated declarations. Names are `exec816_<operation>_v1`, plus
@@ -162,7 +184,8 @@ and publishes an Image; staging is freed before return. Break is checked between
 reads and before/after validation. The first causal error survives cleanup.
 
 The shell dispatches built-ins first. Bare tokens use the shell's bounded
-[PATH search](../guides/shell.md#path), initially CurrentDir then SYS:. Tokens
+[PATH search](../guides/shell.md#path), initially CurrentDir then C:. Standard
+shell startup assigns C: to SYS:C, which holds the supplied disk commands. Tokens
 containing `:` or `/` use one exact loader call. PROGRAMFILE.Load itself remains
 an exact-path service. There is no implicit extension, script or background
 syntax; one foreground pipeline of two external commands is supported. The bounded argument tail keeps

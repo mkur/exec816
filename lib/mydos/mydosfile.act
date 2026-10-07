@@ -90,7 +90,7 @@ BYTE FUNC SectorAllowed(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
 RETURN(1)
 
 ; Bound total work and detect loops even across successive one-byte reads.
-BYTE FUNC Visit(FSBTYPES.Cursor POINTER file)
+PUBLIC BYTE FUNC Visit(FSBTYPES.Cursor POINTER file)
 
   LET chain=Chain(file)
   chain.hops==+1

@@ -23,6 +23,19 @@ PUBLIC PROC Reply(FSTYPES.Service POINTER service)
   FSTYPES.Packet POINTER packet
 
   packet=service.packet
+  IF service.mutation<>NULL THEN
+    BEGIN
+      LET state=FSWRITEIO.State(service)
+      state.batchActive=0
+      state.staged=0
+      state.bitmapValid=0
+      state.freeValid=0
+      state.bitmapDirty=0
+      state.batchMap=0
+      state.drain=0
+    END
+  FI
+
   EXEC.Forbid()
   FSOPERATION.ReplyReady(DOSBREAKTYPES.Scope POINTER(service.client.foreground),
       FSOPERATION.WirePacket POINTER(packet))

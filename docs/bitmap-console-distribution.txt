@@ -10,7 +10,8 @@ Setup
 -----
 
 Follow the main README.txt for AltirraSDL, the included AltirraOS ROM, PAL,
-65C816 at 8x, shadow ROM, and 64K base RAM plus 4032K high memory (63 banks).
+65C816 at 8x, shadow ROM, and the required 4MB RAM: 64K base RAM plus 4032K
+high memory (63 banks).
 In System > Configure System, enable VBXE with the FX 1.26 core at $D600.
 Keep SIO Patch and D: burst I/O disabled; use Generic + 57600 baud disk
 emulation and keep disks mounted when booting a new image.
@@ -32,7 +33,7 @@ Wait for the SYS: ready message and prompt. Try:
     HELLO | WC
     CAT STORY.TXT | WC
 
-The pipes print 1 3 17 and 24 133 746 respectively. The shell occupies the
+The pipes print 1 3 17 and 108 518 3171 respectively. The shell occupies the
 upper 24 rows; the independent prime search uses the lower six. BREAK cancels
 input or a running command/pipeline. EXIT, or Ctrl-D on an empty input line,
 restores the OS display. Disk access is read-only. If the disk format is wrong,

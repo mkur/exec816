@@ -101,7 +101,8 @@ RETURN(1)
 ; Check retained terminal geometry and storage before admitting it to service.
 BYTE FUNC Validate(EXEC.IOStdReq POINTER request)
 
-  IF request.io_Offset<>0 THEN
+  IF request.io_Offset<>0
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
     RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
@@ -135,6 +136,53 @@ RETURN(0)
 
 INCLUDE "console-requests.inc"
 INCLUDE "console-lifetime.inc"
+
+; Check the whole positioned span before committing its first byte. Geometry
+; is stable while the worker owns this borrow; a later resize drains it first.
+BYTE FUNC PositionValid(CONSOLETYPES.Instance POINTER instance
+    EXEC.IOStdReq POINTER request)
+  CARD index
+
+  LET column=CARD(request.io_Offset)
+  LET row=CARD(request.io_Offset RSH CONSOLETYPES.POSITION_ROW_SHIFT)
+  IF row>=instance.height OR column>=instance.width THEN
+    RETURN(BYTE(EXEC.IOERR_BADADDRESS))
+  FI
+
+  IF request.io_Length>LONGCARD(instance.width-column) THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+  FI
+
+  FOR index=0 TO CARD(request.io_Length)-1 DO
+    IF request.io_Data(index)<ASCII.SPACE OR request.io_Data(index)>=127 THEN
+      RETURN(BYTE(EXEC.IOERR_BADLENGTH))
+    FI
+  OD
+
+RETURN(0)
+
+; Use the same FIFO, cancellation identity and short-write presentation as
+; stream output, without scrolling or moving the cursor.
+BYTE FUNC PositionedWrite(CONSOLETYPES.Instance POINTER instance
+    EXEC.IOStdReq POINTER request)
+  CARD count
+
+  IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
+    FinishWrite(instance,request)
+    RETURN(0)
+  FI
+
+  count=CARD(request.io_Length-request.io_Actual)
+  IF count>CONSOLETYPES.SOURCE_QUANTUM THEN
+    count=CONSOLETYPES.SOURCE_QUANTUM
+  FI
+
+  CONSOLECORE.WriteAt(instance,CARD(request.io_Offset)+CARD(request.io_Actual),
+      CARD(request.io_Offset RSH CONSOLETYPES.POSITION_ROW_SHIFT),
+      request.io_Data+SIZE(request.io_Actual),count)
+  request.io_Actual==+LONGCARD(count)
+
+RETURN(request.io_Actual=request.io_Length)
 
 ; Commit one bounded prefix, then publish a pointer-free display continuation
 ; before replying. Cancellation never consumes another source byte.
@@ -203,6 +251,9 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     FI
 
     error=Validate(request)
+    IF error=0 AND request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+      error=PositionValid(instance,request)
+    FI
     IF error<>0 THEN
       request.io_Error=error
       FinishWrite(instance,request)
@@ -246,6 +297,10 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     FI
 
     RETURN(0)
+  FI
+
+  IF request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT THEN
+    RETURN(PositionedWrite(instance,request))
   FI
 
   IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
@@ -362,6 +417,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   instance.count=width*height
+  instance.capacity=instance.count
   cells=EXEC.AllocMem(LONGCARD(instance.count),EXEC.MEMF_PUBLIC)
   fifo=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC)
   instance.cells=cells
@@ -437,7 +493,7 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
   FI
 
   IF instance.cells<>BYTE POINTER(0) THEN
-    EXEC.FreeMem(instance.cells,LONGCARD(instance.count))
+    EXEC.FreeMem(instance.cells,LONGCARD(instance.capacity))
     instance.cells=BYTE POINTER(0)
   FI
 

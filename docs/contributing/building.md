@@ -52,6 +52,17 @@ See the [demo guide](../guides/demo.md) for machine setup, media alternatives an
 the walkthrough, and the [boot monitor guide](../guides/boot-monitor.md) for
 repackaging an existing image.
 
+For a full-screen standard text shell without starting the prime task, use:
+
+```sh
+CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 python3 tools/build_demo.py --text-shell-only --output build/demo-text-shell
+```
+
+This starts the same standalone shell as the bitmap selection, using the
+40 by 24 Atari text display. PRIMES remains available as a command; `RUN PRIMES`
+opens its lower pane on demand. Fixed and per-Task bank-zero reservations are
+unchanged. See the [text shell package guide](../text-shell-distribution.txt).
+
 For a full-screen bitmap shell without the prime task, use a fresh output
 directory and the shell-only boot selection:
 
@@ -63,6 +74,19 @@ This keeps OF816's five-second autoboot and packages the matching disk, ROM
 and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distribution.txt)
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
+
+To refresh OF816 assembly, boot guides and the ZIP around an existing matching
+native build, use:
+
+```sh
+python3 tools/build_demo.py --refresh-monitor --output build/demo-bitmap-shell
+```
+
+This verifies the existing native artifacts and records their reuse without
+recompiling them. The native build must already contain the current loader's
+progress callbacks; rebuild it first when the loader or kernel changes. OF816
+runs from INITAD before the main payload, then returns to the reader with RTS.
+The XEX and cartridge routes retain their guarded final kernel entry.
 
 To add Atarimax 8 Mbit cartridge images to an existing demo, preserving its
 exact XEX, disk and firmware, use a separate output directory:
@@ -96,8 +120,42 @@ Repeat with `--variant old --manual` and a different output directory to check
 the other power-on bank, final-second countdown cancellation and Forth entry.
 The fixture checks the cartridge handoff, documented shell/disk commands and
 EXIT, using the source revision's original guard and ownership assertions.
-It reads upper RAM through the debugger because cartridge boot places the OS
-screen below the scratch area assumed by the older XEX test helper.
+It selects the bitmap/desktop boot smoke or the standard shell/prime walkthrough
+from the matching demo manifest. Upper-RAM reads use the debugger without
+borrowing the cartridge-era OS screen or loader workspace.
+
+## Firmware diagnostics
+
+The supported ROM remains the bundled AltirraOS 65816 build. For a diagnostic
+run with another locally installed 16 KiB ROM, add `--rom-override path/to/ROM`
+to `test_cartridge.py` or `test_demo.py`. Results record the actual ROM hash and
+the override separately from the platform pin; the emulator and machine checks
+remain in place. Passing development checks does not qualify another firmware.
+
+The [XLOS boot record](../development/xlos-boot.json) uses Drac's XLOS 2.48
+`XLOS816A.ROM` and `XLOS816F.ROM` from the December 2025 archive. The cartridge
+loader now copies TRIG3 into GINTLK when disabling the cartridge, before enabling
+interrupts. A constant `1` incorrectly advertised that the cartridge remained
+present and triggered XLOS's cartridge-removal halt during INITAD callbacks.
+The loader grows by one byte inside its existing 1 KiB boot reservation; fixed,
+public-Task and idle runtime bank-zero reservation changes are all **0 bytes**.
+
+Altirra's default XEX loader fails before Exec's INITAD under XLOS, including
+for a minimal executable with no Exec code. The checked XEX route uses **Computer
+→ Boot → Program load mode: Disk Boot**, with D1 set to **Off**, SYS media already
+on D2 and writable WORK media on D8. Cancel the OF816 countdown and enter
+`decimal`, `2 SYSTEM-DRIVE!`, then `EXEC816`. Keep the disk and CPU settings from
+the demo guide. Attaching SYS on D1 after loading did not pass filesystem startup;
+use D2 for this route. The equivalent automated check is:
+
+```sh
+python3 tools/test_demo.py --bundle build/demo-bitmap-shell --boot-smoke \
+  --rom-override path/to/XLOS816A.ROM --disk-boot --system-drive 2
+```
+
+Cartridges can keep SYS on D1 from cold start and use the normal countdown.
+These are bounded development checks of boot, shell, disk commands and cleanup;
+physical hardware and the rest of XLOS's services are outside their scope.
 
 ## Build an individual program
 

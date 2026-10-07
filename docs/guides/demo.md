@@ -19,8 +19,10 @@ instructions. Building from source is an [optional alternative](#build-from-sour
 
 Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL); upstream Altirra will not
 run this build. Follow the [settings table and ROM import steps](../../README.md#installation)
-in the main README. Open **System → Configure System…** to configure the machine;
-the UI labels the 8× CPU setting **65C816 (14.28MHz)** and 63 high banks **4032K**.
+in the main README. Open **System → Configure System…** to configure the machine.
+Current builds require **4 MB of RAM**: **64 KiB base RAM plus 63 high banks
+(4,032 KiB)**. The UI labels the 8× CPU setting **65C816 (14.28MHz)**;
+set **Memory Size** to **64K** and **High memory banks** to **4032K**.
 The tested configuration is recorded in the [platform pin](../../toolchain/altirra-shell-paced.json).
 
 In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
@@ -37,7 +39,7 @@ after a timeout; correct the settings and cold-boot again.
 
 The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
 nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The
-disposable WORK: disk remains 720 sectors of 128 bytes (90 KiB).
+disposable WORK: disk also has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
 SYS: is read-only; WORK: is explicitly writable. Try:
 
 ```text
@@ -60,6 +62,14 @@ The included [OF816 monitor](boot-monitor.md) can change capacity before boot, f
 If allocation fails, the shell reports the fallback and remains usable.
 
 ## A short walkthrough
+
+Successful startup reports both configured disks:
+
+```text
+Filesystems: mounting...
+SYS: -> D1: ready, read-only
+WORK: -> D8: ready, read-write
+```
 
 Wait for `SYS: -> D1: ready, read-only` and the `>` prompt. The lower tile should advance
 without typing. Run these commands in order, starting with `TASKS` to reproduce
@@ -84,7 +94,8 @@ The second screenshot is taken after the last command above:
 Type `HELP` to list the shell's built-in commands:
 
 ```text
-HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT
+HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS
+RUN JOBS BREAK EXIT
 ```
 
 The prompt supports insertion, Backspace and Ctrl-A/E for beginning/end.
@@ -94,7 +105,7 @@ Atari cursor chords work too: Ctrl-+/Ctrl-* moves left/right and Ctrl--/Ctrl-=
 browses history. Moving past the newest command restores your draft. See the
 [shell guide](shell.md#editing-and-break) for the complete editing rules.
 
-`HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `24 133 746`.
+`HELLO | WC` prints `1 3 17`. `CAT STORY.TXT | WC` prints `108 518 3171`.
 The [command toolbox](toolbox.md) also supplies CMP, CKSUM, HEXDUMP, HEAD, GREP,
 LIST and MORE. Try `HEAD STORY.TXT LINES 5`, `LIST NAMES`, or `MORE LONG.TXT`.
 In MORE, Space advances a page, Return a displayed row, and Q quits.
@@ -115,11 +126,19 @@ CAT STORY.TXT | WC >NIL:
 
 Run `MEM`, repeat a few pipelines, and run `MEM` again to observe reclaimed
 command memory. `TASKS` at the prompt shows the shell, console, filesystem,
-SIO and prime Tasks. A pipeline adds two temporary Tasks, using seven of the
+SIO and loaded command Tasks. The optional demo starts C:PRIMES through RUN;
+the bitmap shell starts full-screen until you enter RUN PRIMES yourself.
+A pipeline adds two temporary Tasks, using seven of the
 eight reserved slots. The prime search checks candidates up to 10,000 and then
 starts a new numbered pass; its latest prime eventually reaches 9,973.
 
-`EXIT` stops and collects the prime Process, closes both tiles and restores the
+JOBS shows the background Process identity. `BREAK identity` requests stop;
+pane closure restores the full shell, including its edited line.
+`PRIMES PASSES 1` runs one foreground pass and returns; with PASSES omitted
+or zero, it continues until BREAK. `RUN PRIMES PASSES 1` completes without
+waiting for another shell command. The display updates only changed numbers.
+
+`EXIT` stops and collects the prime Process, closes its pane and restores the
 OS display and input state.
 
 ## Scope
@@ -127,7 +146,8 @@ OS display and input state.
 There is one foreground pipeline of exactly two external commands. Resident
 commands such as TYPE, DIR and ECHO cannot be pipeline stages. Quoted `|` is
 literal text. Input redirection belongs on the left and output redirection on
-the right. Longer pipelines, scripts and background shell syntax
+the right. RUN supports one loadable background command with NIL default streams,
+PATH/aliases and file redirection. Background pipelines, longer pipelines and scripts
 are outside this demo. A failed stage reports the first failure in command order.
 
 This is a development play image, with focused raw/optimized slice checks and
@@ -193,7 +213,13 @@ CD SYS:
 ```
 
 The commands above work while the current directory is WORK. Bare command
-names search CurrentDir and then SYS: through the default [PATH](shell.md#path).
+names search CurrentDir and then C: through the default [PATH](shell.md#path).
+The supplied commands live in SYS:C; startup assigns C: there and S: to SYS:S,
+using two of four assignment slots. Before the prompt, it runs optional S:STARTUP
+and S:USER. Both supplied files contain comments only; edit S/USER in the system
+source tree for local setup. See [startup scripts](shell.md#startup-scripts).
+`C:HELLO` and `SYS:C/HELLO` are explicit command paths.
+`PATH RESET` restores the C: search entry without changing its assignment.
 If the system disk failed to mount,
 the console stays usable; insert the matching disk and use `CD SYS:` to retry.
 To choose D2 before startup, see the [OF816 guide](boot-monitor.md).
@@ -232,7 +258,7 @@ Development artifacts remain in `build/demo`:
 - `of816/ALTIRRAOS-LICENSE.txt` and `of816/OF816-LICENSE.txt`: upstream notices.
 - `of816/of816.json`: monitor build inputs, memory layout, media and ROM hashes.
 - `program.xex`: direct native entry used by development fixtures.
-- `work.atr`: disposable writable disk, with the same format and 128-byte sectors.
+- `work.atr`: disposable writable 720 KiB disk, with the same format and 256-byte sectors.
 - `system.atr`: 720 KiB read-only SDFS data disk with HELLO, CAT, WC, the command toolbox and sample text.
 - `system.verification.json`: independent producer/read-back hashes for every
   file in SDFS builds.
@@ -246,8 +272,9 @@ To retain MyDOS, pass `--format mydos --output build/demo-mydos`. Large MyDOS
 images use an extended VTOC and 16-bit file links. The mount descriptor always
 matches the chosen disk geometry.
 Both filesystem options use the filename `system.atr`; the format and geometry
-are recorded in the build manifests. WORK: uses the same format but stays at
-720 sectors of 128 bytes. Keep SYS: on D1–D7; D8 is reserved for WORK:.
+are recorded in the build manifests. WORK: uses the same format and always has
+2,880 sectors of 256 bytes (720 KiB), regardless of the SYS: geometry.
+Keep SYS: on D1–D7; D8 is reserved for WORK:.
 
 Pass `--bitmap-console` for the optional [80×30 bitmap console preview](bitmap-console.md).
 The ZIP then also contains `bitmap-console/Exec-bitmap-console.xex`, its matching

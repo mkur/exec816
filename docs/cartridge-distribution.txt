@@ -2,8 +2,11 @@ Exec816 Atarimax boot images
 ===========================
 
 These images contain the exact matching XEX from this ZIP. OF816 still offers
-its five-second countdown before starting the shell and prime demo. Keep the
-matching system.atr mounted in D1; the cartridge does not contain the disk.
+its five-second countdown before starting the selected Exec816 demo described
+in ../README.txt. Keep the matching system.atr mounted in D1 and a disposable
+copy of work.atr in D8 with writes enabled. Both disks are required during
+startup; the cartridge does not contain them.
+WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
 is too small for this uncompressed boot image.
@@ -27,14 +30,46 @@ Use the OS ROM, CPU, memory and disk settings described in ../README.txt.
 In AltirraSDL, boot the appropriate CAR instead of Exec-of816.xex. Keep the
 system disk mounted and BASIC disabled. A cold boot is required.
 
-The loader switches the cartridge off before every XEX initialization call
-and before entering OF816. Exec runs from RAM. This is a new boot medium for
+The loader switches the cartridge off before every XEX initialization call.
+OF816 runs inside one of those calls, before the main kernel payload loads.
+EXEC816 or countdown expiry returns to the reader; it resumes copying from
+the cartridge with progress dots, preserving settings entered in Forth.
+OF816 appends its banner without clearing earlier boot messages.
+Exec runs from RAM. This is a new boot medium for
 the existing native-65C816 AltirraOS build, not a stock 6502 XL/XE build.
 Physical Atarimax/accelerator hardware has not been qualified. Warm reset
 does not reload the cartridge; power cycle or perform an emulator cold reset.
 
 The original XEX, disk, ROM and original boot guide remain in this ZIP.
 SHA256SUMS in its parent directory covers all files.
+
+Experimental XLOS boot
+----------------------
+
+Development checks also exercised Drac's XLOS 2.48 (December 2025), using the
+same CPU, memory, VBXE and disk settings. The bundled AltirraOS remains the
+supported ROM; these checks do not qualify all XLOS services or physical hardware.
+The cartridge interlock now follows the hardware value when the loader switches
+the cartridge off, avoiding XLOS's cartridge-removal halt. With these updated
+CAR images, keep SYS on D1 and WORK on D8 and use the normal countdown.
+
+For the XEX under XLOS, Altirra's default program loader fails before Exec starts.
+Use this checked alternative in AltirraSDL:
+
+1. Computer -> Boot -> Program load mode: Disk Boot.
+2. Disk Drives: set D1 to Off, mount system.atr read-only on D2, and mount a
+   disposable writable copy of work.atr on D8. Use Generic + 57600 baud.
+3. Boot Exec-of816.xex and press a key during the countdown to enter Forth.
+4. Enter these three lines:
+
+   decimal
+   2 SYSTEM-DRIVE!
+   EXEC816
+
+Startup should report SYS: -> D2: ready, read-only. Keep both disks mounted.
+Use D2 for this route; attaching SYS on D1 after XEX loading failed disk startup
+in the earlier development checks. Those original results predate the
+OF816-first loading sequence.
 
 References
 ----------

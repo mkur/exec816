@@ -16,6 +16,8 @@ USE PROGRAMIMAGE
 USE PROCESS
 USE PIPELINE
 USE ASCII
+USE A816MEMORY
+USE DOSARGS
 USE SYS
 USE CSTRING.IMPL AS STR
 
@@ -40,6 +42,7 @@ CONST ALIAS_NAME_CAPACITY=16
 CONST ALIAS_TEXT_CAPACITY=128
 
 CONST NO_REDIRECT=$ffff
+CONST DIAGNOSTIC_SCRIPT=$fe
 
 CONST CHAR_LOWER_A=97
 CONST CHAR_LOWER_Z=122
@@ -69,6 +72,12 @@ CONST CMD_EXTERNAL=12
 CONST CMD_PATH=13
 CONST CMD_ALIAS=14
 CONST CMD_UNALIAS=15
+CONST CMD_CLS=16
+CONST CMD_RUN=17
+CONST CMD_JOBS=18
+CONST CMD_BREAK=19
+CONST CMD_EXECUTE=20
+CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
 
 TYPE ShellWord=[BYTE POINTER text]
 TYPE ShellAlias=[
@@ -88,7 +97,8 @@ TYPE ShellState=[
   CARD length
   CARD argumentLength
   CARD argsUsed
-  BYTE ARRAY reservedDraw(2)
+  BYTE background
+  BYTE outputAppend
   CARD inputRedirect,outputRedirect
   BYTE argc,command,done
   BYTE ARRAY reservedLine(2)
@@ -109,9 +119,26 @@ TYPE ShellState=[
   BYTE secondCommandStart,secondCommandEnd
 ]
 
+TYPE ShellJob=[
+  LONGCARD identity
+  PROCESS.Result outcome
+  BYTE state,announce
+]
+
+; Allocated only while EXECUTE owns a script and its inherited streams.
+TYPE ShellScript=[
+  DOS.FileHandle POINTER source
+  DOS.FileHandle POINTER oldInput,oldOutput,tempInput,tempOutput
+  CARD used,available
+  BYTE redirectActive,previousCR
+  BYTE ARRAY bytes(READ_CHUNK_SIZE)
+]
+
+ShellJob job
 ShellState POINTER shell
 ShellAlias POINTER aliases
 BYTE aliasCount
+ShellScript POINTER script
 BYTE ARRAY shellCon=c"CON:"
 BYTE ARRAY shellRoot=c"SYS:"
 
@@ -344,7 +371,9 @@ PROC ShellDiagnostic()
   LET secondary=shell.error
   LET saved=DOS.IoErr()
   header=c"Shell"
-  IF shell.diagnosticWord<shell.argc THEN
+  IF shell.diagnosticWord=DIAGNOSTIC_SCRIPT THEN
+    header=c"EXECUTE"
+  ELSEIF shell.diagnosticWord<shell.argc THEN
     header=CSTRING(shell.words(shell.diagnosticWord).text)
   FI
 
@@ -421,11 +450,26 @@ RETURN
 ; Ordinary dispatch and pipeline validation use the same classification.
 BYTE FUNC ShellClassify(BYTE POINTER word)
 
-  IF ShellEqual(word,c"HELP")<>0 THEN
+  IF ShellEqual(word,c"RUN")<>0 THEN
+    RETURN(CMD_RUN)
+
+  ELSEIF ShellEqual(word,c"JOBS")<>0 THEN
+    RETURN(CMD_JOBS)
+
+  ELSEIF ShellEqual(word,c"BREAK")<>0 THEN
+    RETURN(CMD_BREAK)
+
+  ELSEIF ShellEqual(word,c"EXECUTE")<>0 THEN
+    RETURN(CMD_EXECUTE)
+
+  ELSEIF ShellEqual(word,c"HELP")<>0 THEN
     RETURN(CMD_HELP)
 
   ELSEIF ShellEqual(word,c"ECHO")<>0 THEN
     RETURN(CMD_ECHO)
+
+  ELSEIF ShellEqual(word,c"CLS")<>0 THEN
+    RETURN(CMD_CLS)
 
   ELSEIF ShellEqual(word,c"CD")<>0 THEN
     RETURN(CMD_CD)
@@ -546,6 +590,7 @@ BYTE FUNC ShellParse()
   writeAt=0
   shell.argc=0
   shell.argsUsed=0
+  shell.outputAppend=0
   shell.pipeline=0
   shell.pipelineIndex=0
   shell.secondArgumentOffset=0
@@ -599,6 +644,11 @@ BYTE FUNC ShellParse()
     IF line(readAt)=CHAR_LESS OR line(readAt)=CHAR_GREATER THEN
       redirect=line(readAt)
       readAt==+1
+      IF redirect=CHAR_GREATER AND line(readAt)=CHAR_GREATER THEN
+        shell.outputAppend=1
+        readAt==+1
+      FI
+
       IF redirect=CHAR_LESS AND shell.pipeline<>0 THEN
         RETURN(0)
       FI
@@ -742,9 +792,19 @@ BYTE FUNC ShellParse()
     RETURN(1)
   FI
 
-  IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT
+  IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT OR shell.command=CMD_CLS
+      OR shell.command=CMD_JOBS
       OR (shell.command>=CMD_MEM AND shell.command<=CMD_DEVICES))
     AND shell.argc<>1 THEN
+    RETURN(0)
+  FI
+
+  IF shell.command=CMD_BREAK AND shell.argc<>2 THEN
+    RETURN(0)
+  FI
+
+  IF shell.command=CMD_EXECUTE AND (shell.argc<>2
+      OR shell.words(1).text^=ASCII.NUL) THEN
     RETURN(0)
   FI
 
@@ -834,52 +894,12 @@ PROC ShellAliasShow(BYTE index)
 
 RETURN
 
-PROC ShellAliasCommand()
+; Store a validated alias in the existing bounded session table.
+PROC ShellAliasSet(BYTE POINTER name,text)
   ShellAlias POINTER entry
   BYTE index,position,value
 
-  IF shell.argc=1 THEN
-    IF aliases<>NULL THEN
-      FOR index=0 TO ALIAS_CAPACITY-1 DO
-        IF aliases(index).name(0)<>ASCII.NUL THEN
-          IF ShellPoll()<>0 THEN
-            RETURN
-          FI
-
-          ShellAliasShow(index)
-          IF shell.status<>PROCESS.RETURN_OK THEN
-            RETURN
-          FI
-        FI
-      OD
-    FI
-
-    RETURN
-  FI
-
-  LET name=shell.words(1).text
-  IF ShellAliasName(name)=0 OR ShellClassify(name)<>CMD_EXTERNAL THEN
-    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
-    RETURN
-  FI
-
   index=ShellAliasIndex(name)
-  IF shell.argc=2 THEN
-    IF index=ALIAS_CAPACITY THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
-    ELSE
-      ShellAliasShow(index)
-    FI
-
-    RETURN
-  FI
-
-  LET text=shell.words(2).text
-  IF ShellAliasText(text)=0 THEN
-    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
-    RETURN
-  FI
-
   IF index=ALIAS_CAPACITY THEN
     IF aliasCount=ALIAS_CAPACITY THEN
       ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BUFFER_OVERFLOW)
@@ -919,6 +939,69 @@ PROC ShellAliasCommand()
   OD
 
   STR.strlcpy(@entry.text(0),CSTRING(text),ALIAS_TEXT_CAPACITY)
+
+RETURN
+
+; Default aliases are ordinary entries: users can replace or remove them.
+BYTE FUNC ShellAliasDefaults()
+
+  ShellAliasSet(BYTE POINTER(c"MKDIR"),BYTE POINTER(c"MAKEDIR"))
+  IF aliases=NULL THEN
+    RETURN(0)
+  FI
+
+  ShellAliasSet(BYTE POINTER(c"LS"),BYTE POINTER(c"LIST"))
+  ShellAliasSet(BYTE POINTER(c"CP"),BYTE POINTER(c"COPY"))
+
+RETURN(aliasCount=3)
+
+; List, inspect or change the session's aliases using the same validation.
+PROC ShellAliasCommand()
+  BYTE index
+
+  IF shell.argc=1 THEN
+    IF aliases<>NULL THEN
+      FOR index=0 TO ALIAS_CAPACITY-1 DO
+        IF aliases(index).name(0)<>ASCII.NUL THEN
+          IF ShellPoll()<>0 THEN
+            RETURN
+          FI
+
+          ShellAliasShow(index)
+          IF shell.status<>PROCESS.RETURN_OK THEN
+            RETURN
+          FI
+        FI
+      OD
+    FI
+
+    RETURN
+  FI
+
+  LET name=shell.words(1).text
+  IF ShellAliasName(name)=0 OR ShellClassify(name)<>CMD_EXTERNAL THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  IF shell.argc=2 THEN
+    index=ShellAliasIndex(name)
+    IF index=ALIAS_CAPACITY THEN
+      ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_OBJECT_NOT_FOUND)
+    ELSE
+      ShellAliasShow(index)
+    FI
+
+    RETURN
+  FI
+
+  LET text=shell.words(2).text
+  IF ShellAliasText(text)=0 THEN
+    ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_ARGUMENTS)
+    RETURN
+  FI
+
+  ShellAliasSet(name,text)
 
 RETURN
 
@@ -1054,6 +1137,8 @@ RETURN
 INCLUDE "shell-commands.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
+INCLUDE "shell-jobs.inc"
+INCLUDE "shell-execute.inc"
 
 ; Run a disk command in the foreground and keep its result for the shell.
 PROC ShellExternal()
@@ -1139,10 +1224,11 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellText(DOS.Output(),
-        c"HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
     ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
+    ShellText(DOS.Output(),c"Ctrl-L clear screen\n")
     ShellText(DOS.Output(),c"History: Ctrl-P/N or Atari up/down\n")
     ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
 
@@ -1159,9 +1245,16 @@ PROC ShellDispatch()
 
     ShellByte(DOS.Output(),ASCII.LF)
 
+  WHEN CMD_CLS THEN
+    ShellByte(DOS.Output(),ASCII.FF)
+
   WHEN CMD_CD THEN
     IF shell.argc=2 THEN
-      ShellChange(shell.words(1).text)
+      IF ShellEqual(shell.words(1).text,c"..")<>0 THEN
+        ShellChange(BYTE POINTER(c"/"))
+      ELSE
+        ShellChange(shell.words(1).text)
+      FI
 
     ELSEIF DOS.NameFromLock(shell.directory,ShellScratch(),LINE_CAPACITY)=0 THEN
       ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
@@ -1204,8 +1297,20 @@ PROC ShellDispatch()
   WHEN CMD_UNALIAS THEN
     ShellUnaliasCommand()
 
+  WHEN CMD_JOBS THEN
+    ShellJobs()
+
+  WHEN CMD_BREAK THEN
+    ShellBreakJob()
+
+  WHEN CMD_EXECUTE THEN
+    ShellScriptOpen(shell.words(1).text,0)
+
   WHEN CMD_EXTERNAL THEN
-    IF shell.pipeline<>0 THEN
+    IF shell.background<>0 THEN
+      ShellRun()
+
+    ELSEIF shell.pipeline<>0 THEN
       ShellPipeline()
 
     ELSE
@@ -1217,7 +1322,7 @@ RETURN
 
 ; Own one command's complete interaction: its foreground scope, temporary
 ; streams and final result must be settled before the next prompt.
-PROC ShellCommand()
+PROC ShellOneCommand()
 
   IF shell.done<>0 THEN
     RETURN
@@ -1226,12 +1331,22 @@ PROC ShellCommand()
   shell.status=PROCESS.RETURN_OK
   shell.error=0
   shell.diagnosticWord=$ff
+  ShellCollectJob()
+  IF shell.done<>0 THEN
+    RETURN
+  FI
+
   IF ShellPoll()=0 THEN
     IF ShellScope()<>0 THEN
-      IF ShellParse()=0 THEN
+      IF ShellPrepareCommand()=0 THEN
         ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_BAD_NUMBER)
 
-      ELSEIF ShellAliasExpand()<>0 THEN
+      ELSEIF shell.command=CMD_EXECUTE AND script<>NULL THEN
+        ; Reject nesting before its redirections can create or truncate files.
+        shell.diagnosticWord=0
+        ShellFail(PROCESS.RETURN_ERROR,DOS.ERROR_ACTION_NOT_KNOWN)
+
+      ELSE
         IF ShellRedirect()<>0 THEN
           IF ShellPoll()=0 THEN
             shell.diagnosticWord=0
@@ -1251,11 +1366,74 @@ PROC ShellCommand()
   IF shell.done=0 THEN
     IF ShellScope()<>0 THEN
       ShellDiagnostic()
+      ShellJobAnnounce()
     FI
   FI
 
   shell.lastStatus=shell.status
   shell.lastError=shell.error
+
+RETURN
+
+; Finish an opened script through ordinary dispatch. Startup uses the same
+; loop without creating a prompt or recording synthetic input in history.
+PROC ShellRunScript()
+
+  IF script<>NULL THEN
+    WHILE shell.done=0 AND shell.status<PROCESS.RETURN_ERROR DO
+      BEGIN
+        LET primary=shell.status
+        LET secondary=shell.error
+        shell.status=PROCESS.RETURN_OK
+        shell.error=0
+        shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+        shell.command=CMD_EXECUTE
+        shell.argc=0
+        IF ShellScriptNext()=0 THEN
+          IF shell.status=PROCESS.RETURN_OK THEN
+            shell.status=primary
+            shell.error=secondary
+          ELSE
+            ShellDiagnostic()
+          FI
+
+          EXIT
+        FI
+
+        ShellOneCommand()
+      END
+    OD
+
+    BEGIN
+      LET primary=shell.status
+      LET secondary=shell.error
+      ShellScriptClose()
+      IF shell.status<>primary OR shell.error<>secondary THEN
+        shell.command=CMD_EXECUTE
+        shell.argc=0
+        shell.diagnosticWord=DIAGNOSTIC_SCRIPT
+        ShellDiagnostic()
+      FI
+    END
+  FI
+
+  ShellRetireBreak(0)
+  IF shell.done=0 THEN
+    ShellScope()
+  FI
+
+  shell.lastStatus=shell.status
+  shell.lastError=shell.error
+
+RETURN
+
+; Reuse ordinary execution without recursive dispatch or changing command Input.
+PROC ShellCommand()
+
+  ShellOneCommand()
+  IF script<>NULL THEN
+    ShellRunScript()
+  FI
 
 RETURN
 
@@ -1348,7 +1526,11 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
   FI
 
   aliases=NULL
+  script=NULL
   aliasCount=0
+  job.identity=0
+  job.state=0
+  job.announce=0
   shell.historyAvailable=1
   ShellPathReset()
   shell.diagnosticWord=$ff
@@ -1373,7 +1555,11 @@ BYTE FUNC ShellOpen(BYTE POINTER consoleName)
 
   shell.initialized=2
 
-RETURN(ShellScope())
+  IF ShellScope()=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(ShellAliasDefaults())
 
 ; Make the shell ready for input, reporting any recoverable startup failure.
 PROC ShellInitialPrompt()
@@ -1406,6 +1592,15 @@ LONGINT FUNC ShellFinish()
   DOS.FileHandle POINTER ignored
 
   IF shell=NULL THEN
+    RETURN(PROCESS.RETURN_FAIL)
+  FI
+
+  IF ShellStopJob()=0 THEN
+    RETURN(PROCESS.RETURN_FAIL)
+  FI
+
+  ShellScriptClose()
+  IF script<>NULL THEN
     RETURN(PROCESS.RETURN_FAIL)
   FI
 

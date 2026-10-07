@@ -30,6 +30,8 @@ class AliasShell(Commands):
     def prepare(self,toolchain,out,mode,size):
         source=out/'files'
         source.mkdir(exist_ok=True)
+        (source/'TOOLS/SUB').mkdir(parents=True,exist_ok=True)
+        (source/'TOOLS/SUB/NOTE.TXT').write_text('parent path check\n')
         for name in ('HELLO','WC'):
             compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',
                             source/name,mode=='opt')
@@ -38,9 +40,25 @@ class AliasShell(Commands):
         make(out/'volume.atr',source,binary_names={'HELLO','WC'},sector_bytes=size)
 
     def exercise(self,c):
-        c.command('ALIAS')
+        # ShellStart skips the boot-time C: assignment; this fixture keeps
+        # its command binaries at D1: rather than SYS:C.
+        c.command('PATH SET D1:')
+        defaults=b'MKDIR -> MAKEDIR\nLS -> LIST\nCP -> COPY\n'
+        c.command('ALIAS',defaults)
+        c.command('CLS',b'\x0c')
+        c.check_screen('clear-screen')
+        c.command('CLS >NIL:')
+        c.check_screen('redirected-clear')
+        c.command('CLS extra',error=115,diagnostic='Shell')
+        c.command('CD TOOLS/SUB')
+        c.command('CD ..')
+        c.command('CD',b'D1:TOOLS\n')
+        c.command('CD ..')
+        c.command('CD',b'D1:\n')
+        c.command('CD ..')
+        c.command('CD',b'D1:\n')
         c.command('ALIAS HI "ECHO hello"')
-        c.command('ALIAS',b'HI -> ECHO hello\n')
+        c.command('ALIAS',defaults+b'HI -> ECHO hello\n')
         c.command('ALIAS HI',b'HI -> ECHO hello\n')
         c.command('hi world',b'hello world\n')
         c.command('HI world >NIL:')
@@ -52,12 +70,13 @@ class AliasShell(Commands):
         c.command('HELLO | COUNT',b'1 3 17\n')
         c.command('ALIAS 1BAD ECHO',error=311)
         c.command('ALIAS HELP ECHO',error=311)
+        c.command('ALIAS CLS ECHO',error=311)
         c.command('ALIAS X "ECHO hi|WC"',error=311)
         c.command('UNALIAS HI')
         c.command('ALIAS HI',error=205)
         c.command('UNALIAS HI',error=205)
         c.command('HI',error=205)
-        c.command('ALIAS',b'H -> HELLO\nCOUNT -> WC\n')
+        c.command('ALIAS',defaults+b'H -> HELLO\nCOUNT -> WC\n')
         c.check_screen('aliases')
 
 
@@ -65,11 +84,13 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',choices=('raw','opt'),required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--reuse',action='store_true')
     args=parser.parse_args()
     scenario=AliasShell()
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
     result=run(compiler(ROOT/'build/actionc'),args.output.resolve(),args.case,
-               external=scenario,pin=pin,bridge_build=ROOT/'build/shell-paced-bridge')
+               external=scenario,pin=pin,bridge_build=ROOT/'build/shell-paced-bridge',
+               reuse=args.reuse)
     result.update(tier='development',runner_sha256=sha256(Path(__file__)))
     (args.output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Alias shell checks passed',args.case,flush=True)

@@ -1,0 +1,125 @@
+; Owned output panes use ordinary DOS ledger cleanup and one console worker.
+MODULE DOSPANE
+USE EXEC
+USE HEAPCORE
+USE DOSCLIENT
+USE DOSOBJECTS
+USE DOSSTREAMS
+USE DOSRAW
+USE CONSOLE
+USE CONSOLETYPES
+USE CONSOLEWINDOWS
+USE CONSOLETILING
+USE CONSOLEDRIVER
+USE DESKSTATE
+INCLUDE "dos-types.inc"
+
+; Prepare every owned allocation before publishing the lower tile.
+PUBLIC BYTE POINTER FUNC Open(CARD rows)
+  LONGINT cause
+
+  LET self=EXEC.FindTask(NULL)
+  IF self.tc_TDNestCnt<>255 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(NULL)
+  FI
+
+  LET client=DOSCLIENT.Ensure()
+  IF client=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET windows=CONSOLEWINDOWS.Registry()
+  IF DESKSTATE.Enabled()<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+  IF windows.pane<>0 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(NULL)
+  FI
+
+  LET width=CONSOLE.ScreenWidth()
+  LET height=CONSOLE.ScreenHeight()
+  IF height=0 THEN
+    DOSCLIENT.SetError(ERROR_DEVICE_NOT_MOUNTED)
+    RETURN(NULL)
+  FI
+
+  IF rows=0 OR rows>=height THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(NULL)
+  FI
+
+  LET unit=CONSOLE.Create(width,rows)
+  IF unit=0 THEN
+    DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+    RETURN(NULL)
+  FI
+
+  LET handle=DOSSTREAMS.Handle POINTER(DOSRAW.Open(client,unit))
+  IF handle=NULL THEN
+    cause=DOSCLIENT.IoErr()
+  ELSEIF CONSOLETILING.Dock(unit)<>0 THEN
+    handle.header.backend=DOSOBJECTS.BACKEND_PANE
+    DOSCLIENT.SetError(0)
+    RETURN(BYTE POINTER(handle))
+  ELSE
+    cause=ERROR_OBJECT_IN_USE
+    IF DOSRAW.Close(client,handle)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+  FI
+
+  WHILE CONSOLE.Destroy(unit)=0 DO
+    EXEC.Yield()
+  OD
+
+  DOSCLIENT.SetError(cause)
+
+RETURN(NULL)
+
+; Close the exclusive binding while layout is paused, then restore the host
+; before releasing the instance's Task lease. A busy close retains its handle.
+PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER handle)
+
+  LET endpoint=DOSRAW.RawEndpoint POINTER(handle.endpoint)
+  LET unit=endpoint.unit
+  LET self=EXEC.FindTask(NULL)
+  IF self.tc_TDNestCnt<>255 THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
+    RETURN(0)
+  FI
+
+  LET parent=CONSOLEWINDOWS.Find(0)
+  DO
+    WHILE CONSOLETILING.Lock()=0 DO
+      IF CONSOLEDRIVER.State()<>2 THEN
+        DOSCLIENT.SetError(ERROR_DEVICE_NOT_MOUNTED)
+        RETURN(0)
+      FI
+
+      EXEC.Yield()
+    OD
+
+    IF CONSOLETILING.CanResize(parent,CONSOLE.ScreenHeight())<>0 THEN
+      EXIT
+    FI
+
+    ; Let an admitted positioned write finish before restoring its host.
+    CONSOLETILING.Unlock()
+    EXEC.Yield()
+  OD
+
+  IF DOSRAW.CloseExclusive(client,handle)=0 THEN
+    CONSOLETILING.Unlock()
+    RETURN(0)
+  FI
+
+  CONSOLE.RetirePane(unit)
+
+RETURN(-1)
+
+ENDMODULE

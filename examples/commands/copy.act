@@ -2,6 +2,8 @@ MODULE COPY
 
 INCLUDE "command-transfer.inc"
 
+CONST TRANSFER_BYTES=16384
+BYTE ARRAY transferBuffer(TRANSFER_BYTES)
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
 ADDRESS ARRAY values(3)
 
@@ -29,7 +31,7 @@ LONGINT FUNC Main()
   LET output=CommandOutput(values(1),BYTE(values(2)<>0))
   status=COMMAND.RETURN_ERROR
   IF output<>NULL THEN
-    status=CommandTransfer(input,output,NULL)
+    status=CommandTransfer(input,output,NULL,transferBuffer,TRANSFER_BYTES)
     status=CommandFinish(output,1,status)
   FI
 

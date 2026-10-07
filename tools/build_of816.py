@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append a pinned OF816 boot monitor to an existing hosted Exec XEX."""
+"""Run pinned OF816 before the main payload of a hosted Exec XEX."""
 import argparse
 import adapter_state as adapter
 import json
@@ -10,6 +10,7 @@ from pathlib import Path
 
 from native_program import ROOT, command, read_build, require, sha256, xex_segment
 from boot_config import ABI as BOOT_ABI, files as boot_files, valid_blocks
+from banked_image import split_setup
 
 PIN = json.loads((ROOT/'toolchain/of816.json').read_text())
 ROM_PIN = json.loads((ROOT/'toolchain/altirra.json').read_text())['rom']
@@ -56,7 +57,10 @@ def boot_layout(program):
     layout = dict(OF_CODE=free[-1] << 16, OF_DATA=free[-2] << 16,
                   OF_DP=root['dp'], OF_STACK=root['stack_base'], OF_ADAPTER=kernel_low+16,
                   OF_STAGE=c['STAGE'], EXEC_LOADER=program['labels']['loader_start'],
-                  EXEC_OLD_MEMLO=c['OLD_MEMLO'])
+                  EXEC_OLD_MEMLO=c['OLD_MEMLO'],
+                  EXEC_LOADER_ERROR=program['labels']['loader_error'],
+                  EXEC_PROGRESS_ADD=program['labels']['loader_progress_add'],
+                  EXEC_PROGRESS_FINISH=program['labels']['loader_progress_finish'])
     # Reject even one payload byte in an arena borrowed by the monitor.
     borrowed = [(root['dp'],root['dp']+256),
                 (root['stack_base']-16,root['stack_base']+1552),
@@ -147,16 +151,20 @@ SEGMENTS {{
     adapter = (output/'boot.bin').read_bytes()
     forth = (output/'forth.bin').read_bytes()
     require(len(adapter) <= 0x4f0 and 0 < len(forth) <= 65536, 'OF816 boot regions overflow')
-    raw = Path(program['xex']).read_bytes()
+    setup, payload = split_setup(list(xex_segments(Path(program['xex']).read_bytes())),
+                                program['build']['memory'], program['labels'])
+    raw = b'\xff\xff'+b''.join(xex_segment(address,data) for address,data in setup)
     raw += xex_segment(layout['OF_ADAPTER'], adapter)
-    raw += xex_segment(0x2e0, struct.pack('<H', labels['of_park']))
+    raw += xex_segment(0x2e2, struct.pack('<H', program['labels']['loader_of_begin']))
     for offset in range(0, len(forth), 256):
         page = forth[offset:offset+256]
         raw += xex_segment(labels['of_target'], (layout['OF_CODE']+offset).to_bytes(3, 'little'))
         raw += xex_segment(labels['of_count'], bytes([len(page) & 255]))
         raw += xex_segment(layout['OF_STAGE'], page)
         raw += xex_segment(0x2e2, struct.pack('<H', labels['of_load']))
-    raw += xex_segment(0x2e0, struct.pack('<H', labels['of_start']))
+    monitor_segment = len(setup)+2+4*((len(forth)+255)//256)
+    raw += xex_segment(0x2e2, struct.pack('<H', labels['of_start']))
+    raw += b''.join(xex_segment(address,data) for address,data in payload)
     xex = output/'Exec-of816.xex'
     xex.write_bytes(raw)
     # Keep the pinned firmware and its redistribution notice beside the boot files.
@@ -164,7 +172,8 @@ SEGMENTS {{
         if source.resolve() != (output/source.name).resolve():
             shutil.copyfile(source, output/source.name)
     (output/'README.md').write_bytes((ROOT/'docs/guides/boot-monitor.md').read_bytes())
-    inputs = [ROOT/'docs/guides/boot-monitor.md', *PORT.glob('*.s'), ROOT/'tools/build_of816.py', ROOT/'toolchain/of816.json',
+    inputs = [ROOT/'docs/guides/boot-monitor.md', *PORT.glob('*.s'), ROOT/'tools/build_of816.py',
+              ROOT/'tools/banked_image.py',ROOT/'toolchain/of816.json',
               ROOT/'toolchain/altirra.json', ROOT/'tools/boot_config.py', ROOT/'abi/boot-v1.json']
     kernel_low,kernel_high = program['build']['memory']['regions']['kernel-stack']
     borrowed_bytes = 256+program['build']['memory']['task_pools'][0]['stack_bytes']+32+kernel_high-kernel_low
@@ -174,6 +183,11 @@ SEGMENTS {{
                            license=notice.name,license_sha256=sha256(output/notice.name)),
                   inputs={str(p.relative_to(ROOT)):sha256(p) for p in sorted(inputs)},
                   layout=layout, labels=labels, adapter_bytes=len(adapter), forth_bytes=len(forth),
+                  loading=dict(mode='initad-return',setup_segments=len(setup),
+                               monitor_init_segment=monitor_segment,
+                               native_payload_records=(len(payload)-1)//2,
+                               of_page_records=(len(forth)+255)//256,progress_bytes=16384,
+                               saved_context_bytes=8),
                   boot_config=program['build']['memory']['boot_config'],
                   guide_sha256=sha256(output/'README.md'),
                   boot_definitions_sha256=sha256(output/'boot-config.inc'),

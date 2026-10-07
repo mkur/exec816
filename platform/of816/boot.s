@@ -10,8 +10,8 @@
 .export of_saved_vectors, of_saved_iocb, of_saved_nmien
 .export of_nmis, of_irqs
 .export of_autoboot, of_autoboot_wait, of_seconds
+.export of_os_stack, of_return
 
-OS_STACK = $01ef
 CIOV = $e456
 NMIEN = $d40e
 NMIST = $d40f
@@ -41,6 +41,13 @@ of_target:
     inx
     cpx of_count
     bne of_copy
+    lda of_count
+    ldx #0
+    cmp #0
+    bne :+
+    inx                      ; zero denotes a full 256-byte page
+:
+    jsr EXEC_PROGRESS_ADD
     plx
     pla
     plp
@@ -48,15 +55,32 @@ of_target:
 of_count: .byte 0
 
 of_start:
+    ; INITAD owns a live emulation-mode loader frame. Keep it on page one,
+    ; with all ROM activations below this saved context, until the final RTS.
+    php
     sei
+    pha
+    xba
+    pha
+    phx
+    phy
+    phb
+    phd
+    phk
+    plb
+    jsr EXEC_PROGRESS_FINISH
+    lda EXEC_LOADER_ERROR
+    beq :+
+    jmp EXEC_LOADER           ; failed bootstrap never starts the monitor
+:
     cld
     lda #0
     sta NMIEN
     clc
     xce
     rep #$30
-    lda #OS_STACK
-    tcs
+    tsc
+    sta of_os_stack
     lda #0
     tcd
     phk
@@ -259,7 +283,7 @@ print_hint:
     and #$ff00
     cmp #$0100
     beq already_os
-    lda #OS_STACK
+    lda f:of_os_stack
     tcs
 already_os:
     phx
@@ -310,7 +334,7 @@ cio:
     and #$ff00
     cmp #$0100
     beq @on_os_stack
-    lda #OS_STACK
+    lda f:of_os_stack
     tcs
 @on_os_stack:
     phy
@@ -407,12 +431,16 @@ of_wait_key:
     plx
     rtl
 
-; Discard the Forth activation before restoring the OS vectors. All subsequent
-; instructions live in bank zero; the kernel may reclaim both upper OF banks.
+; Retire Forth and return to the paused INITAD reader. Mask NMI as well as IRQ
+; across the stack/mode transition; the caller's complete frame stays live.
 of_handoff:
     sei
     rep #$30
-    lda #OS_STACK
+    sep #$20
+    lda #0
+    sta f:NMIEN
+    rep #$20
+    lda f:of_os_stack
     tcs
     lda #0
     tcd
@@ -425,14 +453,28 @@ of_handoff:
     sep #$30
     sec
     xce
-    cld
-    cli
-    jmp EXEC_LOADER
+of_return:
+    ; The OS now sees E=1 and a valid page-one stack before VBI is enabled.
+    lda #$40
+    sta NMIEN
+    pld
+    plb
+    ply
+    plx
+    pla
+    xba
+    pla
+    plp
+    rts
 
 of_bye:
     sei
     rep #$30
-    lda #OS_STACK
+    sep #$20
+    lda #0
+    sta f:NMIEN
+    rep #$20
+    lda f:of_os_stack
     tcs
     lda #0
     tcd
@@ -440,6 +482,7 @@ of_bye:
     plb
     jsr release_keyboard
 of_leave:
+    rep #$30
     jsr restore_vectors
     lda EXEC_OLD_MEMLO
     sta $02e7
@@ -447,6 +490,8 @@ of_leave:
     sec
     xce
     cld
+    lda #$40
+    sta NMIEN
     cli
 of_park:
     jmp of_park
@@ -486,8 +531,6 @@ restore_vectors:
     sep #$20
     lda #0
     sta NMIST
-    lda of_saved_nmien
-    sta NMIEN
     rep #$20
     rts
 
@@ -505,3 +548,4 @@ of_irqs: .word 0
 of_saved_nmien: .byte $40
 of_saved_vectors: .res 6,0
 of_saved_iocb: .res 32,0
+of_os_stack: .word 0

@@ -1,0 +1,15 @@
+; Fail one allocation in the fixture's console/raw adapter copies.
+MODULE PANEFAULT
+USE EXEC
+PUBLIC BYTE failAt,calls
+
+PUBLIC BYTE POINTER FUNC AllocMem(LONGCARD bytes,flags)
+
+  calls==+1
+  IF failAt<>0 AND calls=failAt THEN
+    RETURN(NULL)
+  FI
+
+RETURN(EXEC.AllocMem(bytes,flags))
+
+ENDMODULE

@@ -3,6 +3,11 @@ MODULE DOSCALLS
 USE TOOLBOXSTATE AS T
 INCLUDE "../../lib/dos/command-buffers.inc"
 
+PUBLIC TYPE AssignInfo=[
+  BYTE ARRAY name(32)
+  BYTE ARRAY target(256)
+]
+
 PUBLIC BYTE POINTER FUNC Selected(BYTE output)
 
 RETURN(BYTE POINTER(IF output<>0 THEN ADDRESS(4) ELSE ADDRESS(1) FI))
@@ -180,6 +185,7 @@ PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
   FI
 
   T.state.entry==+1
+  T.state.first==+1
 
 RETURN(-1)
 
@@ -233,6 +239,25 @@ PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
 RETURN(0)
 
 PUBLIC LONGINT FUNC Rename(BYTE POINTER oldName,newName)
+
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
+
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
+
+  T.state.error=209
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC WriteAt(BYTE POINTER handle CARD column,row
+    BYTE POINTER buffer LONGINT length)
 
   T.state.error=209
 

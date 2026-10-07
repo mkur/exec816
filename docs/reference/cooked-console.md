@@ -30,18 +30,26 @@ before acquiring a fresh line. Output/transport errors do not become EOF.
 
 ## Editing and ownership
 
-Echo preserves the prompt already written by the caller. It displays at most
-36 characters with a leading space or `<` when earlier text is hidden.
+Ordinary echo preserves the prompt already written by the caller. It displays
+at most 36 characters with a leading space or `<` when earlier text is hidden.
 The horizontal viewport follows the logical cursor, including movement back
 through a long line. Ctrl-A/E moves to the beginning/end, Ctrl-B/F moves left/right,
 Ctrl-U clears the whole line, Ctrl-K deletes through the end, and Ctrl-W deletes
 spaces and then the word immediately before the cursor. Boundary moves are no-ops.
 Atari Ctrl-+/Ctrl-* are left/right; Ctrl--/Ctrl-= are previous/next history.
+Ctrl-L clears the edited console with FF and redraws the current input at the
+top of the screen, retaining the logical cursor and history browsing state.
+At acquisition, the adapter saves the row prefix before the input cursor, up
+to 16 characters, and restores it after FF. This includes the shell's `> `
+prompt. Longer prefixes and prefixes on a previous row are not restored.
 The first echo draws that prefix and the current text; subsequent appends emit
 only the new characters while the whole line fits. Deletion, loss and changes
 to the viewport or cursor use a bounded redraw, including clearing stale suffix
 characters and placing the physical caret. At width 36 this emits at most
-111 bytes into the existing 128-byte echo buffer.
+111 bytes into the existing 128-byte echo buffer. The remaining 17 bytes retain
+the prefix and its length. A screen clear resets the old caret before painting,
+so FF, prefix, text and cursor movement fit in the first 111 bytes as well.
+Session size and fixed/per-Task bank-zero reservations are unchanged.
 The adapter reduces that width to fit the current row, retaining one unused
 final column; if no space remains it starts a new row. Echo uses the edited
 console even when command Output is redirected. One input lease spans line

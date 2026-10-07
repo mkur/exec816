@@ -149,7 +149,8 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
     RETURN(BYTE(EXEC.IOERR_BADLENGTH))
   FI
 
-  IF request.io_Offset<>0 THEN
+  IF request.io_Offset<>0
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
     RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
@@ -157,7 +158,8 @@ BYTE FUNC Immediate(EXEC.IOStdReq POINTER request)
     RETURN(0)
   FI
 
-  IF request.io_Command<>EXEC.CMD_READ AND request.io_Command<>EXEC.CMD_WRITE THEN
+  IF request.io_Command<>EXEC.CMD_READ AND request.io_Command<>EXEC.CMD_WRITE
+      AND request.io_Command<>CONSOLETYPES.CONCMD_WRITE_AT THEN
     RETURN(BYTE(EXEC.IOERR_NOCMD))
   FI
 
@@ -319,7 +321,7 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
     CASE request.io_Command OF
     WHEN EXEC.CMD_READ THEN
       instance.readReady=1
-    WHEN EXEC.CMD_WRITE THEN
+    WHEN EXEC.CMD_WRITE,CONSOLETYPES.CONCMD_WRITE_AT THEN
       EXECLISTS.AddTail(EXECLISTS.List POINTER(@instance.writes),
           @request.io_Message.mn_Node)
       IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE

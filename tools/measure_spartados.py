@@ -61,7 +61,8 @@ def payload_trace(log_path, media_path):
     The final receive stamp is the start bit; include its ten serial bits.
     """
     media = Media(media_path.read_bytes())
-    entry = media.row(media.entry(media.word(25), 'HELLO'))
+    commands = media.row(media.entry(media.word(25), 'C'))
+    entry = media.row(media.entry(int.from_bytes(commands[1:3], 'little'), 'HELLO'))
     _, sectors = media.chain(int.from_bytes(entry[1:3], 'little'))
     sectors = sectors[:(2359+media.size-1)//media.size]
     text = log_path.read_text()
@@ -110,8 +111,8 @@ def run(bundle, output):
     require(manifest['filesystem'] == 'sdfs', 'SpartaDOS benchmark requires SDFS media')
     media = bundle/manifest['media']
     require(sha256(media) == manifest['artifacts'][manifest['media']], 'Changed benchmark disk')
-    payload = ROOT/'build/demo/media/HELLO'
-    require(sha256(payload) == manifest['files']['HELLO']['sha256'], 'Changed HELLO payload')
+    payload = bundle/'media/C/HELLO'
+    require(sha256(payload) == manifest['files']['C/HELLO']['sha256'], 'Changed HELLO payload')
     require(payload.stat().st_size == 2359, 'Reassemble reader for the changed HELLO length')
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer') == pin['emulator']['sha256'],
             'Changed emulator binary')

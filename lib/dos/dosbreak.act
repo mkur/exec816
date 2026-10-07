@@ -149,7 +149,7 @@ PUBLIC LONGINT FUNC End()
     RETURN(-1)
   FI
 
-  IF scope.groupActive<>0 THEN
+  IF scope.groupActive<>0 OR scope.handle=NULL THEN
     DOSCLIENT.SetError(ERROR_OBJECT_IN_USE)
     RETURN(0)
   FI

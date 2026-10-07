@@ -37,6 +37,10 @@ Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL) with these settings.
 Upstream Altirra will not run this build. The exact tested emulator build is
 recorded in the [platform pin](toolchain/altirra-shell-paced.json).
 
+Current builds require **4 MB of RAM**: **64 KiB base RAM plus 4,032 KiB of
+linear high memory (63 banks)**. These are CPU high banks, separate from Atari
+extended memory and VBXE VRAM.
+
 These steps use AltirraSDL's desktop interface. Open **System → Configure System…**.
 The first column below gives the page in the settings window's left-hand tree.
 Select the CPU before setting high memory.

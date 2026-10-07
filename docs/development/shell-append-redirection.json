@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "status": "implemented",
+  "tier": "development",
+  "baseline_revision": "2ca9f57",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act",
+      "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+      "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+    },
+    "image_format_version": 3
+  },
+  "emulator_rom_pin": "toolchain/altirra-shell-paced.json",
+  "host_checks": {
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "status": "pass",
+    "tests": 396
+  },
+  "scope": [
+    "create missing output",
+    "preserve and append existing output",
+    "multi-sector append",
+    "quoted target and redirected input",
+    "alias expansion",
+    "right pipeline stage",
+    "missing command preserves file",
+    "ordinary > still truncates",
+    "syntax errors before Open",
+    "seek and readonly Open failures",
+    "partial append and BREAK",
+    "terminal Close failure",
+    "restored streams and following console output",
+    "independent persisted-byte and allocation audits"
+  ],
+  "artifacts": {
+    "parser_raw": {
+      "path": "build/development/shell-append/parser-raw/results.json",
+      "sha256": "cef1939dfde00dbbdcbcbcfb0f2cbe7412c8937722a86ac6b036f087ae9c5d05",
+      "mode": "raw",
+      "guards": "intact",
+      "cases": 97,
+      "checks": 509
+    },
+    "parser_opt": {
+      "path": "build/development/shell-append/parser-opt/results.json",
+      "sha256": "fa4bd40985c0a48c5e46dbc4f052e99f5b22a9ae1609c6d848043119bd6e95bf",
+      "mode": "opt",
+      "guards": "intact",
+      "cases": 97,
+      "checks": 509
+    },
+    "filesystems_opt": {
+      "path": "build/development/shell-append/filesystems-opt/results.json",
+      "sha256": "4cc92b05331d1599c927477c4e1af54bf5764b2adf9710bd42fe9aa85b06180a",
+      "mode": "opt",
+      "guards": "intact",
+      "sector_bytes": 256,
+      "mounts": [
+        {
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 720,
+          "sector_bytes": 128,
+          "profile": 4
+        },
+        {
+          "alias": "WORKM",
+          "unit": 50,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 1,
+          "access": "readwrite"
+        },
+        {
+          "alias": "WORKS",
+          "unit": 51,
+          "sectors": 2000,
+          "sector_bytes": 256,
+          "profile": 4,
+          "format": 2,
+          "access": "readwrite"
+        }
+      ],
+      "writable_media": {
+        "mydos": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 43,
+            "free": 1957,
+            "files": 10,
+            "directories": 2
+          },
+          "sha256": "7ffdc7955053cecb083c1e3a89716bbfa4c618e545c842b698eaa71d9a6d308e"
+        },
+        "sdfs": {
+          "audit": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 39,
+            "free": 1961,
+            "files": 10,
+            "directories": 2
+          },
+          "sha256": "6fd8bc58a8db2fa719bad11d83078feb17538968f51e9e789accb85e7e32ea41"
+        }
+      },
+      "counts": {
+        "consumed": 1200,
+        "output_bytes": 5874
+      },
+      "configuration_overrides": {
+        "accuratedisk": false,
+        "diskemu": "generic56k"
+      }
+    }
+  },
+  "memory": {
+    "shell_record_bytes": 128,
+    "shell_allocation_bytes": 2336,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "routine_native_bytes": {
+      "ShellParse": {
+        "before": 4524,
+        "after": 4641
+      },
+      "ShellRedirect": {
+        "before": 2883,
+        "after": 3250
+      }
+    },
+    "routine_native_bytes_delta": 484,
+    "local_stack_peak_bytes": {
+      "ShellParse": {
+        "before": 42,
+        "after": 42
+      },
+      "ShellRedirect": {
+        "before": 28,
+        "after": 38
+      }
+    }
+  },
+  "break_confirmed_append_bytes": {
+    "mydos256": 248,
+    "sdfs256": 251
+  },
+  "raw_probe_reason": "Access to a repurposed byte in the packed shell state; unchanged 128-byte emitted record and guards.",
+  "fixture_address": "$30e000",
+  "source_inputs": {
+    "examples/shell/shell-session.inc": "5e0a32e7264f2c2b17f50369aa158a0ae8d4fc7aca1572896b4c103615e8d24a",
+    "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+    "tools/test_shell_parser.py": "a05045cf2425876d0ef04782edc6566a483bad8201cc27accaff02978872e2f4",
+    "tools/test_shell_append.py": "be3be47f6cbeba9e85aa9844125101e6cce3d9d8cd66d9ecb63eb0fe04abd812",
+    "tools/test_shell_redirection.py": "d29364fb39f814cf7f912752fb95087d4f67de32dee493dfbc8ac781a2d0eed7",
+    "tests/programs/shell_parser.act": "e7f9e35c4cae382902a6d216ab9b439674e3437fbdae42bc005426eca68e6207"
+  },
+  "limitations": [
+    "Development checks only; no release qualification or physical-hardware claim.",
+    "Physical shell coverage uses 256-byte writable media and accurate disk timing disabled.",
+    "RUN uses the shared parser and inheritance; this slice does not add a dedicated background append case.",
+    "Append seeks once before the command; it has no concurrent-writer append guarantee.",
+    "Nonseekable append destinations are unsupported."
+  ]
+}

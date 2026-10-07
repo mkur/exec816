@@ -20,7 +20,7 @@ class DemoPackageTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         (self.root/'docs').mkdir()
         for name in ('LICENSE', 'LICENSE-MIT', 'LICENSING.md', 'docs/demo-distribution.txt',
-                     'docs/bitmap-shell-distribution.txt'):
+                     'docs/bitmap-shell-distribution.txt', 'docs/text-shell-distribution.txt'):
             (self.root/name).write_bytes((ROOT/name).read_bytes())
         self.bundle = self.root/'bundle'
         self.bundle.mkdir()
@@ -168,6 +168,46 @@ class DemoPackageTests(unittest.TestCase):
         with patch.object(package_demo, 'ROOT', self.root):
             with self.assertRaises(FileNotFoundError):
                 package_demo.package(self.bundle, self.archive)
+        self.assertFalse(self.archive.exists())
+
+    def text_shell(self):
+        source=self.root/'shell';source.mkdir()
+        manifest=source/'demo-manifest.json'
+        manifest.write_text(json.dumps(dict(shell_only=True,
+            artifacts={'program.xex':'native-image-digest'})))
+        path=self.bundle/'of816.json';record=json.loads(path.read_text())
+        record['exec_xex_sha256']='native-image-digest'
+        record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
+        path.write_text(json.dumps(record))
+        return source
+
+    def test_text_shell_package_describes_manual_primes_and_keeps_boot_files(self):
+        source=self.text_shell()
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive,text_shell=source)
+        with zipfile.ZipFile(self.archive) as archive:
+            files={name.removeprefix('exec816-demo/'):archive.read(name) for name in archive.namelist()}
+        self.assertEqual(set(files),set(self.boot_files)|set(package_demo.LICENSE_FILES)|
+                         {'README.txt','SHA256SUMS'})
+        self.assertIn(b'40 by 24',files['README.txt'])
+        self.assertIn(b'No prime task is started',files['README.txt'])
+        self.assertIn(b'RUN PRIMES',files['README.txt'])
+        self.assertNotIn(b'@SYSTEM_',files['README.txt'])
+        for name,content in self.boot_files.items():
+            self.assertEqual(files[name],content)
+        sums=dict(line.split('  ',1)[::-1] for line in files['SHA256SUMS'].decode().splitlines())
+        self.assertEqual(set(sums),set(files)-{'SHA256SUMS'})
+        for name,digest in sums.items():
+            self.assertEqual(hashlib.sha256(files[name]).hexdigest(),digest)
+
+    def test_text_shell_rejects_a_boot_image_wrapping_another_native_build(self):
+        source=self.text_shell()
+        path=self.bundle/'of816.json';record=json.loads(path.read_text())
+        record['exec_xex_sha256']='another-native-image'
+        path.write_text(json.dumps(record))
+        with patch.object(package_demo,'ROOT',self.root):
+            with self.assertRaisesRegex(ValueError,'OF816 does not wrap this text shell'):
+                package_demo.package(self.bundle,self.archive,text_shell=source)
         self.assertFalse(self.archive.exists())
 
     def test_shell_only_boot_includes_notices_without_an_optional_demo(self):

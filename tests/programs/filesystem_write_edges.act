@@ -102,6 +102,20 @@ PROC Main()
     error=DOS.IoErr()
     Require(result=206 AND error=DOS.ERROR_DISK_FULL)
     Require(DOS.Close(file)<>0)
+  ELSEIF scenario=11 THEN
+    file=DOS.Open(original,DOS.MODE_NEWFILE)
+    Require(file<>NULL)
+    expected=LONGINT(service.mounts(0).item.spec.dataBytes)*3
+    IF service.mounts(0).item.spec.format=1 THEN
+      expected=(LONGINT(service.mounts(0).item.spec.dataBytes)-3)*3
+    FI
+
+    result=DOS.Write(file,buffer,1000)
+    error=DOS.IoErr()
+    Require(result=expected AND error=DOS.ERROR_DISK_FULL)
+    Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=expected)
+    Require(service.mounts(0).item.offline=0)
+    Require(DOS.Close(file)<>0)
   ELSE
     expected=DOS.ERROR_DISK_NOT_VALIDATED
     IF scenario=2 THEN

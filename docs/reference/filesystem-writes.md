@@ -31,7 +31,9 @@ without I/O. A nonempty Write through a read-only handle returns
 `ERROR_DISK_WRITE_PROTECTED`.
 
 `Flush(handle)` succeeds once that handle's confirmed writes are settled. The
-implementation writes through and retains no dirty sectors. Flush preserves
+implementation settles all required writes before each Write reply; no dirty
+metadata survives between requests. SDFS coalesces private metadata within one
+Write; it does not make the general sector cache dirty. Flush preserves
 position and ownership and leaves a live writer's native incomplete flag set.
 Valid read-only disk, NIL, console and pipe handles also succeed without a
 filesystem write. Ownership validation still applies.
@@ -52,18 +54,38 @@ structures produce explicit errors before mutation when discovered in preflight.
 
 Completed mutations advance a mount-wide metadata epoch. An older ExNext cookie
 returns `ERROR_OBJECT_IN_USE`, including after a change elsewhere on that mount;
-restart with Examine. The cookie occupies 22 of the existing 32 reserved FIB
-bytes. Enumeration sees a live writer's last committed metadata. An unexplained
+restart with Examine. Examine refreshes directory metadata through the retained
+lock, including its extent after child creation. The cookie occupies 22 of the
+existing 32 reserved FIB bytes. Enumeration sees a live writer's last committed
+metadata. An unexplained
 native incomplete entry does not grant permission to resume writing it.
 
 ## Completion, cancellation and errors
 
 Write returns the confirmed byte count, or -1 when no bytes completed. Short
 positive results retain their causal IoErr. Position advances only by this
-prefix. A unit consists of one payload sector and its required allocation,
-link/map and length updates. BREAK before its first write changes nothing;
-after submission, completion is collected and the unit finishes before BREAK
-is honored. A final completed unit returns success even if BREAK has arrived.
+prefix. MyDOS sequential extension commits at most four new payload sectors
+with their VTOC, link and length updates; groups stop at a VTOC page. Existing
+sectors, overwrites and SDFS map transitions retain the single-payload path.
+
+SDFS sequential extension writes payloads in groups of up to four sectors while
+retaining one private bitmap page, free count and current file map across groups
+of the same Write request. Metadata publication follows completed payloads:
+bitmap, sector 1 free count, file map, then directory length. Only a complete
+publication confirms the staged prefix. It occurs at request end, before dirty
+bitmap/map replacement or an immediate write path, and when BREAK or logical
+disk exhaustion stops further payloads. The native incomplete flag stays set
+until terminal Close. No additional zero-fill write precedes a new file payload.
+
+BREAK before a group's first payload submission leaves its unused reservations
+free. Once submitted, that group finishes before BREAK stops further payloads;
+SDFS then drains all accepted staged data before replying. Control messages
+continue to be pumped during I/O. If all requested bytes are accepted and drained,
+a late BREAK permits full success. Logical exhaustion or BREAK after a successful
+drain leaves the mount usable and reports the confirmed prefix with its causal
+IoErr. A failed SDFS publication can cover more than four payload sectors: only
+an earlier confirmed prefix is returned, and the cursor is restored to its
+confirmed position. A physical error takes precedence over pending BREAK.
 
 Create, truncate, delete and rename finish their operation once mutation starts.
 Reclaiming a large file therefore delays cancellation for a volume-bounded walk.
@@ -78,7 +100,8 @@ terminal close errors; they turn an otherwise successful command into FAIL and
 preserve an earlier command failure. Unresolved ownership remains an invariant
 failure, distinct from an ordinary disk error.
 
-A failed or uncertain mutation invalidates the mount and cached metadata.
+A physical mutation failure or uncertain completion invalidates the mount and
+cached metadata. Detected metadata inconsistency after mutation starts does too.
 Ordinary operations then fail; Close and UnLock can still retire ownership.
 Additional physical bytes may have changed beyond a returned prefix: no rollback
 is promised. Before explicitly mounting writable again, restore a known-good
@@ -93,6 +116,17 @@ journaled. Power loss, torn sectors and uncertain multi-sector completion can
 leave incomplete entries, lost allocation or inconsistent counts. Verified SIO
 WRITE completion does not establish power-loss durability.
 
+The earlier [write-performance development record](../history/write-performance.md)
+includes a repeatable Generic 57600 timeout when a 16 KiB COPY writes to
+accurately timed 256-byte MyDOS media. The verified write transmits its payload
+but exceeds the existing one-second transport deadline, leaving the bus offline
+and requiring reset. This occurs with the frozen filesystem too. Fast-media
+binary checks and that record's bundled 128-byte WORK disk pass; they do not qualify that
+accurate 256-byte timing case. This slice leaves transport deadlines unchanged.
+The current SDFS demo uses 720 KiB WORK media with 256-byte sectors; its buffered
+Write checks and emulator measurements are recorded in the
+[SpartaDOS buffering record](../history/spartados-write-buffering.md).
+
 ## Format limits
 
 MyDOS uses 125/253-byte payloads. New files have sixteen-bit links and one
@@ -106,7 +140,7 @@ directories grow as mapped files and preserve record zero's authoritative
 length. Writers reject sparse files, while existing sparse reads remain
 supported. Lengths remain limited to 24 bits and actual disk capacity.
 
-Formatting, repair, write-back caching, atomic replacement, cross-directory
+Formatting, repair, cross-request write-back caching, atomic replacement, cross-directory
 moves, recursive deletion, sparse creation, seek past EOF, SetFileSize,
 SetProtection and SetFileDate remain unsupported. MODE_NEWFILE truncates during
 Open, so a later command failure does not restore old redirected output.

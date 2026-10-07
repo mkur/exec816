@@ -1,0 +1,160 @@
+{
+  "slice": "P1",
+  "tier": "development",
+  "status": "pass",
+  "artifact": "build/background-pane-primes/p1-prep2/results.json",
+  "artifact_sha256": "85ce620232e52287fcfcb76799690d858fc658a7dc34411ca82f6962a703e614",
+  "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "image_sha256": "54a11b64cf9e4b7ac8f55d6f18fa4854f0c7c75269de6c409a1b7fcfbab52921",
+  "xex_sha256": "fa63edeb4c0d06ea6b051f1641c7933f9ed7a2da601d7dcb72e10ff18e49f194",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$91213499097d0042",
+    "actual_kernel_id": "$91213499097d0042",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 386,
+        "untouched_above_floor": 894
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 232,
+        "untouched_above_floor": 536
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 375,
+        "untouched_above_floor": 393
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 18,
+        "untouched_above_floor": 750
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 117,
+        "untouched_above_floor": 139
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 260,
+      "untouched_from_base": 1276,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "loading": 0,
+    "per_task": 0
+  },
+  "sources": {
+    "docs/guides/commands.md": "79d4c06bbc95626178e1bbc23a08eafb5072b315535ee5fed7261e79c2fabd8a",
+    "docs/guides/toolbox.md": "a6ed3819303defe5feb523824a00d433329f8b4582fa1368373e278b6bc19ad0",
+    "docs/history/background-pane-primes.md": "8423b5d1b76aaaa4dee40f8152f77126ae0ed6ebbb61c037d28b1a7ae643c961",
+    "examples/commands/primes.act": "5b6e910217e8be79ae9567337e2ca526fb391b2cd4a996d6add020d5e273e329",
+    "tests/programs/primes_fields.act": "f6531eeb7d796972eee2653daae5d36b98dc77548fbc81f8a34ac746b6050bbb",
+    "tools/test_primes_fields.py": "8f177711cb40a2aa32bf61dc866b034078ce8b021c3b6bb3da454dfaf45fcda6"
+  },
+  "command": {
+    "source": "/Users/michalkurcewicz/action/exec816-commands/examples/commands/primes.act",
+    "source_sha256": "5b6e910217e8be79ae9567337e2ca526fb391b2cd4a996d6add020d5e273e329",
+    "file_sha256": "c982b0b577fbebe7a79ed3724148b17605c6cccb72604c6a6dd72556ca7df838",
+    "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_sha256": "cb43ec00312fe8ffe2dcbd04088a7a83c176981f5b12135588edba773a460263",
+    "optimize": true,
+    "api_sha256": "9a2d3b259acbcbb14bd7b0c1b6bf6d2571f26c3d3174ac8e50cd492d42b893a2",
+    "profile_sha256": "bc099028d7555872e730f09a991fb44df8992339cadb9e7b6a4e17e58c29d22b"
+  },
+  "costs": {
+    "text_bytes": 5405,
+    "data_bytes": 0,
+    "bss_requested_bytes": 1416,
+    "bss_rounded_bytes": 1424,
+    "sieve_bytes": 1251,
+    "file_bytes": 6554,
+    "text_backing_requested_bytes": 70940,
+    "text_alignment_slack_bytes": 65535
+  },
+  "scope": [
+    "Actual resident providers with a test-only numeric write counter and exported command state.",
+    "Unchanged fields issue zero writes; three changed fields issue three writes / 20 bytes.",
+    "Padded growth and shrink, including 4,294,967,295 and one-digit values.",
+    "Cancelled first field preserves old cached and retained values.",
+    "One complete pass: 1,229 primes, latest 9,973.",
+    "Foreground finite completion and independent background cooperative cancellation.",
+    "Heap, ownership and stack/domain guards return to baseline."
+  ],
+  "limits": [
+    "Development scope; production loaded-image / bitmap integration follows in P2.",
+    "ABI raw call shapes were checked in F1\u2013F3; this calculation fixture is optimized."
+  ]
+}

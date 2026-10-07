@@ -82,7 +82,7 @@ ENDMODULE
 def instrument(out,source='shell_core.act'):
     cooked_observer(out)
     s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
-    for name in ('shell-commands.inc','shell-redirection.inc','shell-path.inc'):
+    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc','shell-path.inc'):
         s=s.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     s=s.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)','BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)')
     command_step='      ShellCommand()\n      ShellClear()'
@@ -254,11 +254,21 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
             press('\x03',ctrl);ready();expected.extend(b'\n');line.clear();expected.extend(draw(line))
         def before(b):
             state.update(screen=b.peek16(88),cursor=b.peek(752),mask=b.peek(16));state['bytes']=b.memdump(state['screen'],960)
-            b._cmd_ok('KEY ALL up');rendezvous(f'db(${at("stage"):x})=1');state['shell']=int.from_bytes(far(at('shell'),3),'little')
+            b._cmd_ok('KEY ALL up')
+            if external and hasattr(external,'before_prompt'):
+                external.before_prompt(b,p,rendezvous,key)
+            rendezvous(f'db(${at("stage"):x})=1');state['shell']=int.from_bytes(far(at('shell'),3),'little')
             handle=int.from_bytes(far(state['shell'],3),'little');state['cooked']=int.from_bytes(far(handle+16,3),'little')
-            expected.extend(diagnostic_text(218,'Shell') if no_mount else b'');expected.extend(draw(line))
+            expected.extend(external.startup_output(p) if external and hasattr(external,'startup_output')
+                            else diagnostic_text(218,'Shell') if no_mount else b'')
+            expected.extend(draw(line))
+            if external and hasattr(external,'startup_result'):
+                actual=tuple(int.from_bytes(far(state['shell']+offset,4),'little',signed=True)
+                             for offset in (32,36))
+                require(actual==external.startup_result,f'Wrong startup result {actual}')
             ts=p['build']['task_storage'];created=b.eval_expr(f'dw(${ts["CREATED"]:x})');live=b.eval_expr(f'db(${ts["LIVE"]:x})')
-            require((created,live)==((1,2)if no_mount else(3,4)),f'Unexpected shell Task count: {created}/{live}')
+            wanted=getattr(external,'startup_tasks',(1,2)if no_mount else(3,4))
+            require((created,live)==wanted,f'Unexpected shell Task count: {created}/{live}')
             observations.append(dict(stage='startup',created=created,live=live,shell_pointer=state['shell']))
             check_screen('initial');b.poke(at('gate'),1)
             command('echo "hello world"',b'hello world\n');check_screen('quoted-echo')
@@ -274,7 +284,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                 external.exercise(SimpleNamespace(command=command,check_screen=check_screen,append=append,press=press,
                     rendezvous=rendezvous,ready=ready,far=far,at=at,p=p,state=state,expected=expected,line=line,b=b))
             elif not smoke:
-                command('help',b'HELP ECHO CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
+                command('help',b'HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT\nEdit: Ctrl-A/E home/end, B/F left/right\nCtrl-U clear, K cut end, W cut word\nCtrl-L clear screen\nHistory: Ctrl-P/N or Atari up/down\nAtari left/right move the cursor\n')
                 command('cd',b'' if no_mount else b'D1:\n',211 if no_mount else 0)
                 if not no_mount:
                     for cmd in ('cd tools/sub','cd /','cd :','cd d1:tools','cd missing'):
@@ -319,7 +329,8 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
                 if eof=='partial':append('echo final')
                 press('\x04',True);rendezvous(f'db(${at("stage"):x})=2')
                 expected.extend(b'\n'+(b'final\n' if eof=='partial' else b''));line.clear()
-            else:command('exit',exit=True)
+            else:command(getattr(external,'exit_command','exit'),
+                         getattr(external,'exit_output',b''),exit=True)
             check_screen('exit')
             require(b.peek(at('stage'))==bytes([2]),'Missing exit rendezvous')
             counts['consumed']=b.peek16(at('consumed'));counts['output_bytes']=len(expected)

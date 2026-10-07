@@ -42,7 +42,9 @@
     "BATCH_FLUSH_CANCEL": 5,
     "BATCH_FLUSH_BARRIER": 6,
     "BATCH_FLUSH_SHORT": 7,
-    "SCROLL_GATHER": 4
+    "SCROLL_GATHER": 4,
+    "CONCMD_WRITE_AT": 9,
+    "POSITION_ROW_SHIFT": 16
   },
   "storage": {
     "service_offset": 0,
@@ -54,11 +56,11 @@
     "keymap_offset": 3760,
     "routes_offset": 416,
     "windows_offset": 688,
-    "bitmap_offset": 868
+    "bitmap_offset": 872
   },
   "records": {
     "Instance": {
-      "size": 200,
+      "size": 202,
       "alignment": 2,
       "fields": [
         [
@@ -225,6 +227,11 @@
           "cellOrigin",
           "CARD",
           198
+        ],
+        [
+          "capacity",
+          "CARD",
+          200
         ]
       ]
     },
@@ -590,7 +597,7 @@
       ]
     },
     "Windows": {
-      "size": 180,
+      "size": 184,
       "alignment": 2,
       "fields": [
         [
@@ -632,6 +639,11 @@
           "control",
           "Control",
           172
+        ],
+        [
+          "pane",
+          "LONGCARD",
+          180
         ]
       ]
     },

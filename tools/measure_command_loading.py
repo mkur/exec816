@@ -65,8 +65,9 @@ def prepare(bundle, output, filesystem=None):
     disk_name=filesystem+'.atr'
     from make_data_disk import make
     for kind in ('sdfs','mydos'):
-        files=make(output/(kind+'.atr'),bundle/'media',binary_names=set(manifest['commands']),
-                   filesystem=kind,sector_bytes=manifest['mounts'][0]['sector_bytes'])
+        files=make(output/(kind+'.atr'),bundle/'media',binary_names={f'C/{name}' for name in manifest['commands']},
+                   filesystem=kind,sector_bytes=manifest['mounts'][0]['sector_bytes'],
+                   sectors=manifest['system_sectors'])
         require({name:hashlib.sha256(data).hexdigest() for name,data in files.items()}==
                 {name:item['sha256'] for name,item in manifest['files'].items()},'Comparison payloads differ')
     classes=sector_classes(output/disk_name,filesystem)
@@ -108,9 +109,13 @@ ENDMODULE
     (output/'blockwire.act').write_text(text)
     source=output/'demo.act'; source.write_text(read_source(ROOT/'examples/demo.act'))
     manifest['mounts'][0]['format']=2 if filesystem=='sdfs' else 1
-    program=build(compiler(ROOT/'build/actionc'),source,output,optimize=True,tasks=True,task_capacity=8,
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=4096
+    (output/'memory.json').write_text(json.dumps(profile))
+    program=build(compiler(ROOT/'build/actionc'),source,output,memory_profile=output/'memory.json',optimize=True,tasks=True,task_capacity=8,
                   console=True,stack_checks=True,dos_mounts=manifest['mounts'],image_data=[(table_address,bytes(classes))])
     shutil.copyfile(bundle/'README.md',output/'README.md')
+    shutil.copyfile(bundle/'PRIMES.profile.json',output/'PRIMES.profile.json')
     manifest['kernel']=program['build'];manifest['filesystem']=filesystem;manifest['media']=disk_name
     artifacts=['program.xex','sdfs.atr','mydos.atr','sdfs.verification.json','README.md']
     manifest['artifacts']={name:sha256(output/name) for name in artifacts}
@@ -137,14 +142,19 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
     with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', output, pin=pin) as b:
         for key, value in manifest['configuration'].items(): b.config(key, str(value).lower() if isinstance(value, bool) else value)
         b.mount(0, str(bundle/media)); machine = verify_machine(b, ROOT/'build/firmware/altirraos-816.rom', pin)
-        def num(address, size=4):
+        def far(address, size):
             raw = b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2, 'little') for i in range(0, size, 2))
-            return int.from_bytes(raw[:size], 'little')
+            return raw[:size]
+        def num(address, size=4):
+            return int.from_bytes(far(address,size),'little')
         def counts(address):return {name:num(address+2*i,2) for i,name in enumerate(names)}
+        last_prime={}
         def prime_state():
-            return dict(live_tasks=num(p['build']['task_storage']['LIVE'],1),
-                        frames=num(at('demoFrames')),pass_number=num(at('demoPass')),
-                        candidate=num(at('demoCandidate'),2),count=num(at('demoCount'),2))
+            from prime_observer import state
+            identity=num(at('job'))
+            if num(at('job')+12,1)!=3:
+                last_prime.update(state(far,p,bundle,identity))
+            return dict(**last_prime,live_tasks=num(p['build']['task_storage']['LIVE'],1))
         def rendezvous(condition):
             marker = p['labels']['native_nmi']; b.bp_clear_all(); b.bp_set(marker, condition=condition)
             run_to(b, marker, 12000, 240, condition)
@@ -165,9 +175,9 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
                       bytes([2 if filesystem=='sdfs' else 1]),output)
                 write(b,manifest['observer_table']['address'],sector_classes(bundle/media,filesystem),output)
             b._cmd_ok('KEY ALL up')
-            rendezvous(f'(db(${at("started"):x})=1)&(dw(${at("demoFrames"):x})>0)')
+            rendezvous(f'db(${at("started"):x})=1')
             windows = p['build']['memory']['console_storage']['WINDOWS']
-            row = windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*(num(at('demoShellUnit'))&3)
+            row = windows+console['WINDOWS_ITEMS']+console['WINDOW_SIZE']*0
             top = num(row+console['WINDOW_INSTANCE'], 3)
             dos = p['build']['memory']['dos_storage']['BASE']; scope = num(num(dos, 3)+83, 3)
             ready = f'(db(${top+51:x})=2)&(db(${scope+54:x})=0)'
@@ -175,14 +185,11 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
             prime['before'] = prime_state()
             require(prime['before']['live_tasks'] == 5, 'Unexpected initial demo Task count')
             if prime_worker == 'stopped':
-                # Use the demo's existing shutdown protocol; the worker exits
-                # normally, and DemoFinish still collects its Process result.
-                # This global is in the checked bank-zero static-data arena.
-                require(at('demoStop') < 65536, 'Prime stop flag needs a far-memory writer')
-                b.memload(at('demoStop'), b'\x01')
+                identity=num(at('job'))
+                for char in 'BREAK '+str(identity)+'\n':press(char)
                 rendezvous(ready+f'&(db(${p["build"]["task_storage"]["LIVE"]:x})=4)')
                 prime['stopped'] = prime_state()
-                prime['stop_flag_address'] = at('demoStop')
+                prime['stopped_identity'] = identity
             for char in 'HELLO': press(char)
             previous = num(scope+14)
             start_frame=b.eval_expr('@frame'); start_tick=num(adapter.VBI_COUNT,2)
@@ -221,7 +228,7 @@ def run(bundle, output, filesystem=None, prime_worker='active', cpu_trace=False)
         b._cmd_ok('KEY ALL up'); ownership(b, p, bundle)
     result = dict(status='pass', media_sha256=sha256(bundle/media), xex_sha256=sha256(bundle/'program.xex'),
                   filesystem=filesystem,mount_table_override=override,observer=manifest['observer'],observer_table=manifest['observer_table'],runtime_table_sha256=hashlib.sha256(sector_classes(bundle/media,filesystem)).hexdigest(),bundle_manifest_sha256=sha256(bundle/'demo-manifest.json'),
-                  payload_sha256=manifest['files']['HELLO']['sha256'], compiler=p['build']['revision'],
+                  payload_sha256=manifest['files']['C/HELLO']['sha256'], compiler=p['build']['revision'],
                   machine=machine, configuration=manifest['configuration'], samples=samples, directory=directory, runtime=runtime,
                   prime_worker=prime,cpu_trace=cpu_trace,harness_sha256=sha256(Path(__file__)),
                   conditions=f'Cold startup; first disk command HELLO; demo prime worker {prime_worker}; guest timing excludes debugger pauses.')

@@ -44,13 +44,17 @@ PROC Main()
   Check(SIZEOF(FSINSPECT.Info)=35 AND SIZEOF(DEVICEINSPECT.Info)=2)
   Check(FSINSPECT.Snapshot(rows,7)=0 AND buffer(16)=$a5)
   Check(FSINSPECT.Snapshot(FSINSPECT.Info POINTER(0),8)=0)
-  Check(DEVICEINSPECT.Snapshot(devices,1)=0 AND buffer(16)=$a5)
-  Check(DEVICEINSPECT.Snapshot(DEVICEINSPECT.Info POINTER(0),2)=0)
+  Check(DEVICEINSPECT.Snapshot(devices,DEVICEINSPECT.CAPACITY-1)=0
+      AND buffer(16)=$a5)
+  Check(DEVICEINSPECT.Snapshot(NULL,DEVICEINSPECT.CAPACITY)=0)
   Check(FSINSPECT.Snapshot(rows,8)=0 AND buffer(16)=$a5)
   EXEC.Forbid()
-  Check(DEVICEINSPECT.Snapshot(devices,2)=1 AND self.tc_TDNestCnt=0)
+  Check(DEVICEINSPECT.Snapshot(devices,DEVICEINSPECT.CAPACITY)=2
+      AND self.tc_TDNestCnt=0)
   Check(devices(0).kind=DEVICEINSPECT.SIO
       AND devices(0).state=DEVICEINSPECT.INACTIVE)
+  Check(devices(1).kind=DEVICEINSPECT.TIMER
+      AND devices(1).state=DEVICEINSPECT.READY)
   Check(SIODRIVER.State()=0)
   ; Eight diagnostic mount records exercise capacity, holes, publication and
   ; offline state without a filesystem worker or disk traffic. Restore the

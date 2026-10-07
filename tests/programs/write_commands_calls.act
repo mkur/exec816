@@ -1,6 +1,15 @@
 MODULE DOSCALLS
 
 USE WRITECOMMANDSTATE AS T
+INCLUDE "../../lib/dos/dos-types.inc"
+
+PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
+
+RETURN(0)
 
 PUBLIC BYTE POINTER FUNC Selected(BYTE output)
 

@@ -52,21 +52,31 @@ SYS itself holds no reference. Busy unmount leaves it intact; successful
 unmount makes it unavailable until the same slot is remounted with a new
 generation. Service restart preserves selection, not old mount objects.
 Absent/unpublished selection reports `ERROR_DEVICE_NOT_MOUNTED`; offline media
-retains its causal error. This is one fixed alias, without general assigns,
-C: or RAM:. Command search is separate per-shell policy.
+retains its causal error. SYS is one fixed alias, separate from the ordinary
+[directory assigns](assigns.md); there is no RAM: filesystem. Command search is
+separate per-shell policy.
 
 The standard shell starts with a real SYS root lock and reports its mapping.
-`MOUNT` lists the physical volume once. The shell's default
-[PATH](../guides/shell.md#path) searches CurrentDir and then SYS:, so `HELLO` or
+Initial filesystem startup publishes all configured volumes together; after
+success, the shell reports each volume's physical drive and access mode.
+For the demo, these are SYS: on D1: read-only and WORK: on D8: read-write.
+`MOUNT` lists the physical volume once. Startup also assigns `C:` to the existing
+`SYS:C` command directory and `S:` to `SYS:S` when present. It runs optional
+`S:STARTUP` and `S:USER` before the first prompt; both mappings follow the selected
+system drive. See [startup scripts](../guides/shell.md#startup-scripts).
+The shell's default
+[PATH](../guides/shell.md#path) searches CurrentDir and then C:, so `HELLO` or
 `CAT SYS:STORY.TXT | WC` works from another directory. Explicit command paths
-such as `SYS:HELLO` bypass search. A failed initial mount leaves a usable console; after
-correcting media, `CD SYS:` retries filesystem startup. An offline SIO device
-after a transport timeout requires a cold boot. Initial filesystem startup
-publishes the configured mount set together: every configured volume must mount
-successfully. In demo builds this includes WORK: on D8:, even when the first
-request names SYS:. Missing WORK: therefore prevents SYS: startup as well. The
-failure message lists the other required drives instead of attributing every
-startup error to the system disk.
+such as `C:HELLO` or `SYS:C/HELLO` bypass search. File arguments still resolve
+against CurrentDir; the shell starts at SYS root. A failed initial mount leaves
+a usable console; after correcting media, `CD SYS:` retries filesystem startup,
+then `SYS:C/ASSIGN C: SYS:C` establishes the command assignment. An offline SIO
+device after a transport timeout requires a cold boot. Initial filesystem
+startup publishes the configured mount set together: every configured volume
+must mount successfully. In demo builds this includes WORK: on D8:, even when
+the first request names SYS:. Missing WORK: therefore prevents SYS: startup as
+well. The failure message lists the other required drives instead of
+attributing every startup error to the system disk.
 
 Validation is focused development coverage; see the
 [implementation record](../plans/sys-volume-implementation-plan.md).

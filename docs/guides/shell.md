@@ -4,8 +4,9 @@
 
 The shell executes built-ins in its own Task and loads external commands into
 child Processes. It supports per-command stream redirection and one foreground
-pipeline of two external commands. The [demo](demo.md) adds an independent prime
-Process in a second console tile; the shell itself also works as a resident entry.
+pipeline of two external commands, plus one separately owned background job.
+`RUN PRIMES` opens a lower console pane; the optional [demo](demo.md) starts
+that same disk command automatically. The shell also works as a resident entry.
 Source lives in [examples/shell](../../examples/shell/).
 
 ## Built-in commands
@@ -14,6 +15,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | --- | --- |
 | `HELP` | List implemented commands. |
 | `ECHO [words...]` | Print words separated by spaces, then LF. |
+| `CLS` | Clear the output console and move its cursor to the top left; writes FF when redirected. |
 | `CD [directory]` | Change directory, or print its canonical path. |
 | `DIR [directory]` | List entries in disk order, with directory markers and exact file sizes. |
 | `TYPE [file]` | Print a text view of a file, or borrow noninteractive Input when no file is given. |
@@ -21,20 +23,123 @@ Source lives in [examples/shell](../../examples/shell/).
 | `TASKS` | Snapshot live public Tasks, including workers; omit unused slots and private idle. |
 | `VER` | Print abbreviated Exec816 and compiler-pin revisions. |
 | `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
-| `DEVICES` | List resident drivers and runtime state. |
+| `DEVICES` | List resident drivers and runtime state, including `timer.device`. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
 | `UNALIAS name` | Remove a command alias. |
-| `EXIT` | Release shell resources and finish through coordinated shutdown. |
+| `RUN command [arguments...]` | Start one loadable background command; default streams are NIL. |
+| `JOBS` | Show the running/stopping job or latest collected result. |
+| `BREAK identity` | Request cooperative cancellation of that job. |
+| `EXECUTE file` | Run a script through the ordinary command dispatcher. |
+| `EXIT` | Stop and collect the job, then release shell resources. |
 
 Command names ignore case. MOUNT only lists; it does not mount/unmount media or
 probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
 not automatic format discovery. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
 
+The resident `timer.device` appears as `ready` even with no open requests.
+It has no worker Task, so it does not appear under `TASKS`.
+
 TYPE maps ATASCII end-of-line to LF, drops CR, preserves printable ASCII/tab/LF
 and displays other bytes as dots. CAT is the external command for unchanged byte
 copying. TYPE rejects interactive Input when no file is supplied.
+
+## Startup scripts
+
+Boot assigns `C:` to `SYS:C` and `S:` to `SYS:S`, then runs `S:STARTUP` followed
+by `S:USER` before the first prompt. Both assignments follow the selected SYS
+drive. These short names fit the filesystems' 8.3 limit. The supplied scripts
+contain comments only, so the default shell and optional primes behavior stays
+the same. The OF816 five-second autoboot is unchanged.
+
+Use STARTUP for system setup and USER for local aliases, assigns or PATH changes:
+
+```text
+; S:USER
+ALIAS HI "HELLO"
+ALIAS LOG "ECHO ready"
+```
+
+Scripts use the same rules as [EXECUTE](#scripts). They run sequentially without
+nesting and inherit the shell console streams. Their directory, PATH and alias
+changes persist. ERROR/FAIL or BREAK stops the current file and skips remaining
+startup files; a recoverable failure leaves the prompt available and reports
+once. WARN continues. EXIT exits the shell before a prompt or optional primes
+launch. Missing STARTUP/USER files are silent and preserve the preceding result.
+An older disk without SYS:S still boots normally, with C: available; other
+assignment or source errors are reported. Startup is attempted after a
+successful system mount and C: assignment, never after each prompt or CD.
+
+C: and S: occupy two of the four system-wide assignment slots. S: is an ordinary
+replaceable/removable assign; USER is resolved through its current mapping when
+its turn arrives. S: is not added to PATH. `EXECUTE S:USER` reruns local setup
+manually after boot; nested EXECUTE remains unsupported inside a script.
+
+The supplied demo mounts SYS read-only. Edit `S/USER` in the system disk's source
+before rebuilding, or edit the ATR externally. A script stored on WORK can be
+run immediately with `EXECUTE WORK:USER`; startup does not scan WORK or save
+session changes automatically. Fatal console/ownership cleanup failures retain
+the ordinary shell shutdown policy.
+
+## Scripts
+
+`EXECUTE file` runs one command per line, without echoing lines or adding them
+to history. The filename resolves against the current directory; PATH searches
+apply to commands inside the script. For example, save these lines as
+`WORK:SETUP.TXT`, then run `EXECUTE WORK:SETUP.TXT`:
+
+```text
+; Set up a working directory and a shortcut
+CD WORK:
+ALIAS LOG "ECHO ready"
+LOG >WORK:LOG.TXT
+```
+
+Blank lines and lines whose first non-space/tab character is `;` are ignored.
+LF, CR, CRLF and ATASCII `$9B` end a line; an unterminated final line also runs.
+Each line allows at most 255 bytes, excluding its ending. An overlong line
+(error 120) or embedded NUL (error 115) stops the script without executing that
+line. Inline comments retain the ordinary shell rules and are unsupported.
+
+Each command uses the existing aliases, argument parsing, redirection and
+external-command pipeline. Directory, PATH and alias changes remain in the
+shell session. `EXECUTE file <input >output` supplies streams for the whole
+script; individual lines can override them temporarily. The script source has
+its own handle and read buffer: a command reading Input cannot consume script
+text. Diagnostics still go to the shell console.
+
+ERROR (10), FAIL (20), syntax/read errors and BREAK stop the script. WARN (5)
+continues. The result is the last command's result, or OK for an empty script;
+trailing comments do not erase WARN. A failed final Close can replace OK/WARN
+with FAIL, while an earlier error remains causal. Streams and script storage
+are released before the next prompt. `EXIT` inside a script exits the shell.
+
+Only one script is active. Nested EXECUTE reports error 209 before opening its
+redirection targets. There are no script arguments, substitutions, labels or
+conditionals. EXECUTE is a builtin, so RUN and pipeline stages cannot invoke it.
+
+## One background job
+
+`RUN HELLO` returns the prompt immediately. RUN uses the same PATH, aliases,
+quoting and copied argument tail as ordinary commands. Built-ins and background
+pipelines are unsupported. A second running/stopping job reports error 202.
+
+Input and Output default to NIL. Explicit file/NIL redirection works normally,
+for example `RUN CAT <WORK:INPUT.TXT >WORK:OUTPUT.TXT`. Interactive redirection
+is rejected before launch. A background command has its own cancellation scope;
+keyboard BREAK applies to the shell's current foreground interaction. Commands
+requiring OpenConsole must run in the foreground. A graphical command can open
+its own output pane through OpenPane.
+
+JOBS shows the Process identity. `BREAK 7` requests stop for job 7 and returns
+the prompt; the command must cooperate and settle its I/O. Result collection
+and diagnostics happen at complete-command boundaries, preserving a typed draft
+and the foreground result. While idle, one completed Process/Image can remain
+retained until the next command. Owned panes close during child cleanup, so
+layout restoration is immediate. EXIT waits for cancellation and collection;
+uncooperative commands can delay it. There is no forced termination, promotion
+or job lifetime beyond the shell.
 
 ## Paths and directories
 
@@ -49,17 +154,21 @@ DOS uses bounded 8.3 names on both supported filesystems. Examples:
 | `:` | Current volume's root. |
 | `/TOOLS` | TOOLS relative to the parent directory. |
 
-There are no `.` or `..` aliases; embedded/trailing empty components are
-unsupported. Relative paths need a selected current directory. A failed CD
-preserves the previous selection. SYS starts at the configured system volume;
+`CD ..` is a shell shortcut for `CD /`, including clamping at the volume root.
+Other paths do not support `.` or `..` components; embedded/trailing empty
+components are unsupported. Relative paths need a selected current directory.
+A failed CD preserves the previous selection. SYS starts at the configured system volume;
 canonical names still use its physical mount name. See [SYS:](../reference/sys-volume.md)
 for selection through the boot monitor.
 
 ## External commands
 
 Built-ins take precedence. A bare command such as `HELLO` is searched in the
-current directory, then the shell's PATH, initially `SYS:`. A token containing
-`:` or `/`, such as `SYS:HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
+current directory, then the shell's PATH, initially `C:`. Standard shell startup
+assigns `C:` to the existing `SYS:C` directory, where the demo keeps its external
+commands. C: uses one assignment slot; S: uses a second when SYS:S exists.
+Both follow the selected system drive. A token containing
+`:` or `/`, such as `C:HELLO`, `SYS:C/HELLO` or `/TOOLS/HELLO`, names an exact DOS path.
 There is no extension guessing. The file must use the supported
 [o65 command profile](../reference/program-loading.md). The child inherits
 selected streams and the current directory. Its copied argument tail retains
@@ -77,13 +186,14 @@ Each shell stores at most four search directories. The current directory always
 comes first and does not consume an entry. `PATH` displays this order without
 accessing media. `PATH ADD directory` appends one directory; `PATH SET directory`
 replaces the explicit list. `PATH CLEAR` leaves current-directory lookup only,
-and `PATH RESET` restores `SYS:`. Subcommands ignore case.
+and `PATH RESET` restores `C:`. Subcommands ignore case.
 
 ADD/SET validate the directory and store its absolute name, so a later CD does
 not change its meaning. Duplicate names ignoring case are successful no-ops.
 Invalid directories, a fifth entry, BREAK or cleanup failure preserve the old
-list. Entries hold names, not locks; PATH does not pin media. Default/reset SYS:
-is resolved lazily and follows the selected system volume. Physical names use
+list. Entries hold names, not locks; PATH does not pin media. Default/reset C:
+is resolved through its current assignment. RESET changes the search list only;
+it does not recreate or replace C:. Physical names use
 the canonical mount spelling; assigned prefixes retain their logical spelling,
 so replacing an assignment redirects later command search. PATH never changes
 the child's directory.
@@ -93,6 +203,12 @@ directory skips that first attempt; invalid executables, unavailable volumes,
 resource errors and BREAK stop lookup. A broken local command therefore reports
 its own error. Joined paths are limited to 255 bytes and are never truncated.
 Serial commands and both pipeline stages use the same search rules.
+
+The shell still starts in `SYS:`. PATH applies only to executable lookup; file
+arguments remain relative to the current directory. If startup cannot establish
+C:, the console remains usable. After correcting media, use `CD SYS:` and
+`SYS:C/ASSIGN C: SYS:C` to restore the command assignment. Explicit command
+paths also work when C: has been removed or redirected.
 
 ### Command aliases
 
@@ -108,6 +224,11 @@ GREET friend
 UNALIAS GREET
 ```
 
+Each new shell starts with `MKDIR -> MAKEDIR`, `LS -> LIST` and `CP -> COPY`.
+They accept the target command's arguments, including `LS *.TXT`, and are
+ordinary aliases that can be replaced or removed. They consume three of the
+eight slots, leaving five for additional aliases.
+
 An alias replaces one command word, then the shell appends that invocation's
 arguments. It works at the start of a command or in either pipeline stage;
 the ordinary parser then applies redirection and pipeline rules. Expansion
@@ -116,9 +237,10 @@ keep precedence and cannot be assigned. Names contain 1–15 ASCII letters,
 digits, `_` or `-`, starting with a letter; comparison ignores case. Alias
 replacements are at most 127 printable bytes and may contain fixed arguments,
 but no quotes or shell operators (`|`, `<`, `>`, `;`). A resulting line over
-255 bytes fails before opening files. The table holds eight aliases, allocates
-upper RAM only on first use, and lasts for this shell session. Other shell
-sessions and loaded programs have their own command lookup rules.
+255 bytes fails before opening files. The table holds eight aliases and its
+1,152-byte payload is allocated in upper RAM at session startup. It lasts for
+this shell session. Other shell sessions and loaded programs have their own
+command lookup rules.
 
 ```text
 CD SYS:WORK
@@ -129,7 +251,7 @@ PATH RESET
 
 ### Help and errors
 
-All sixteen supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
+All supplied commands accept a sole unquoted `?`, for example `HEAD ?` or
 `WC ?`. They print `Arguments: <template>` on the foreground console and return
 OK without reading Input or writing data Output. Quoted `"?"` remains data.
 Help still works with redirection and pipes; headless help fails explicitly.
@@ -151,21 +273,27 @@ There is no variable or wildcard shell expansion, script syntax or command list.
 `*` and `?` in the final component of its own path argument; other commands
 receive the characters literally.
 
-Use at most one `<source` and one `>destination`, at word boundaries. Space after
-the operator is optional and the target may be quoted:
+Use at most one `<source` and one output redirection, either `>destination` to
+replace a file or `>>destination` to append. Operators start at word boundaries;
+space after the operator is optional and the target may be quoted:
 
 ```text
 TYPE <SYS:STORY.TXT >NIL:
 DIR WORK >NIL:
 HELLO >RAW:
+ECHO message >>WORK:LOG.TXT
+HELLO | WC >>WORK:COUNTS.TXT
 ```
 
-Duplicate operators, append `>>`, attached operators and missing targets fail
-before execution. Targets resolve against the directory selected before the
-command. The shell restores borrowed streams before closing temporary handles;
+Duplicate input or output redirections, `>>>`, attached operators and missing
+targets fail before execution. Targets resolve against the directory selected
+before the command. The shell restores borrowed streams before closing temporary handles;
 a successful redirected CD still changes directory. Input redirection does not
-run a script. Output redirection requires an explicitly writable mount and
-creates or truncates the target during Open. Terminal Close errors make an
+run a script. File output requires an explicitly writable mount. `>` creates or
+truncates the target during Open; `>>` preserves existing bytes or creates a
+missing file, then seeks to its end before executing the command. Append
+requires a seekable file; targets such as NIL:, CON: and RAW: fail with a seek
+error and the command does not run. Terminal Close errors make an
 otherwise successful command fail while restoring the prompt and streams.
 See [filesystem writes](../reference/filesystem-writes.md).
 Diagnostics use the shell's retained console.
@@ -204,6 +332,7 @@ the cursor, with `<` when text to the left is hidden.
 | --- | --- |
 | Ctrl-A / Ctrl-E | Beginning / end of line. |
 | Ctrl-B / Ctrl-F | One character left / right. |
+| Ctrl-L | Clear the screen and redraw the prompt and current input, retaining its cursor. |
 | Ctrl-U | Clear the whole line. |
 | Ctrl-K | Delete from the cursor to the end. |
 | Ctrl-W | Delete spaces and the preceding word. |
@@ -251,6 +380,8 @@ The 4 KiB upper-RAM data area accommodates shell globals and help/fault strings,
 matching the demo; it does not enlarge bank-zero reservations.
 This is a development XEX and sample data disk. Use the [demo builder](demo.md)
 for the OF816 distribution including external commands and the matching ROM.
+The sample disk includes a C directory for the boot assignment, with a short
+readme in place of executable commands.
 The [earlier shell guide](../history/shell-guide.md) and
 [implementation record](../history/shell-implementation.md) preserve historical
 startup transcripts and measurements.

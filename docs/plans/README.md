@@ -10,6 +10,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [OF816 before kernel loading](of816-first-boot-implementation-plan.md): implemented through B4;
+  an INITAD monitor returns to the paused XEX/cartridge reader, preserves Forth
+  boot settings and earlier screen text, and adds small loading messages.
+  [Development record](../history/of816-first-boot.md).
 - [Two larger Task stacks](../history/larger-task-stacks.md): implemented; two
   2,560-byte worker stacks within the eight-Task layout, costing 3,072 bank-zero
   bytes and leaving 9,408 bytes free after startup. Raw/optimized Action! and C,
@@ -64,6 +68,19 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [SpartaDOS write buffering implementation plan](spartados-write-buffering-implementation-plan.md):
+  SB0–SB5 implemented at the development tier. Ordered
+  metadata publication within one Write, independent cancellation checkpoints,
+  confirmed-prefix errors and bounded shared storage. See the
+  [implementation record](../history/spartados-write-buffering.md) and
+  [preserved design](../history/spartados-write-buffering-design.md).
+  Buffering between Write calls until Flush/Close remains deferred.
+- [COPY buffers and filesystem write performance](write-performance-implementation-plan.md):
+  WP0–WP5 implemented at the development tier; a 16 KiB COPY buffer,
+  initialized payload writes, sequential cursors and four-sector metadata groups
+  selected after accurate BREAK measurements. See the
+  [execution record](../history/write-performance.md), including the remaining
+  accurate 256-byte MyDOS transport limit.
 - [MyDOS and SpartaDOS write support](filesystem-write-implementation-plan.md):
   W0–W9 implemented with lightweight mounts, write-through file/namespace
   operations, inherited writers and shell cleanup. Both sector geometries pass
@@ -116,6 +133,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [Background commands, console panes and primes](background-pane-primes-implementation-plan.md):
+  completed foundations for positioned writes, height changes, owned panes,
+  cancellable background Processes and one shell job, followed by loadable
+  PRIMES with numeric-only drawing.
 - [ASSIGN logical directories](assign-implementation-plan.md): implemented
   four-slot, system-wide directory assignments with bounded DOS resolution,
   a loadable command and explicit shell PATH interaction.

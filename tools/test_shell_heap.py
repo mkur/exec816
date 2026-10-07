@@ -12,6 +12,8 @@ def run(t,out,mode,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
     s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('PROC ShellWrite(','PROC NativeShellWrite(')
     old='  LET candidate=DOS.Lock(path,DOS.SHARED_LOCK)\n  LET lockError=DOS.IoErr()';require(s.count(old)==1,'Missing CD allocation sample')
+    s=s.replace('"shell-execute.inc"','"'+str(ROOT/'examples/shell/shell-execute.inc')+'"')
+    s=s.replace('INCLUDE "shell-jobs.inc"','INCLUDE "'+str(ROOT/'examples/shell/shell-jobs.inc')+'"')
     s=s.replace('INCLUDE \"shell-commands.inc\"','INCLUDE \"'+str(ROOT/'examples/shell/shell-commands.inc')+'\"')
     s=s.replace('INCLUDE \"shell-redirection.inc\"','INCLUDE \"'+str(ROOT/'examples/shell/shell-redirection.inc')+'\"')
     s=s.replace('INCLUDE \"shell-path.inc\"','INCLUDE \"'+str(ROOT/'examples/shell/shell-path.inc')+'\"')

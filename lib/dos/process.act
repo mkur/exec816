@@ -5,6 +5,7 @@ USE DOSCLIENT
 USE DOSPROCESS
 USE DOSGROUP
 USE DOSBREAKTYPES
+USE DOSBREAK
 USE PROCESSSTATE
 USE HEAPCORE
 USE PROGRAMIMAGE
@@ -143,7 +144,7 @@ RETURN
 
 ; Prepare process resources before making its Task runnable.
 LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
-    CARD length BYTE foreground PROGRAMIMAGE.Image POINTER image BYTE POINTER group)
+    CARD length BYTE foreground PROGRAMIMAGE.Image POINTER image BYTE POINTER group BYTE background)
   Admission admission
   PROCESSSTATE.Entry POINTER process,accepted
   CARD index
@@ -174,6 +175,7 @@ LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
     RETURN(0)
   FI
 
+  process.breakFlags=background
   process.image=BYTE POINTER(image)
   identity=process.identity
   process.length=length
@@ -229,13 +231,13 @@ PUBLIC LONGCARD FUNC Start(LONGINT FUNC POINTER entry() BYTE POINTER arguments
     CARD length)
 
 RETURN(StartInternal(entry,arguments,length,0,PROGRAMIMAGE.Image POINTER(0),
-    BYTE POINTER(0)))
+    BYTE POINTER(0),0))
 
 PUBLIC LONGCARD FUNC StartForeground(LONGINT FUNC POINTER entry() BYTE
     POINTER arguments CARD length)
 
 RETURN(StartInternal(entry,arguments,length,1,PROGRAMIMAGE.Image POINTER(0),
-    BYTE POINTER(0)))
+    BYTE POINTER(0),0))
 
 ; Start a process from an already loaded image with inherited DOS state.
 PUBLIC LONGCARD FUNC StartLoaded(BYTE POINTER image,arguments CARD length
@@ -247,7 +249,61 @@ PUBLIC LONGCARD FUNC StartLoaded(BYTE POINTER image,arguments CARD length
   FI
 
 RETURN(StartInternal(@ExecuteImage,arguments,length,foreground,
-    PROGRAMIMAGE.Image POINTER(image),BYTE POINTER(0)))
+    PROGRAMIMAGE.Image POINTER(image),BYTE POINTER(0),0))
+
+; Start a resident entry with a private cancellation scope and no keyboard loan.
+PUBLIC LONGCARD FUNC StartBackground(LONGINT FUNC POINTER entry() BYTE
+    POINTER arguments CARD length)
+
+RETURN(StartInternal(entry,arguments,length,0,NULL,NULL,
+    PROCESSSTATE.BREAK_BACKGROUND))
+
+; Loaded images retain execution ownership until ordinary Process collection.
+PUBLIC LONGCARD FUNC StartBackgroundLoaded(BYTE POINTER image,arguments CARD length)
+
+  IF image=NULL THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(StartInternal(@ExecuteImage,arguments,length,0,
+    PROGRAMIMAGE.Image POINTER(image),NULL,PROCESSSTATE.BREAK_BACKGROUND))
+
+; Task-side publication excludes switching. IRQ/NMI never follow these pointers.
+; The kernel resolves the parent's identity before any scope is touched.
+PUBLIC BYTE FUNC RequestBreak(LONGCARD identity)
+
+  EXEC.Forbid()
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  IF process.state>=PROCESSSTATE.STATE_QUIESCING THEN
+    EXEC.Permit()
+    DOSCLIENT.SetError(0)
+    RETURN(1)
+  FI
+
+  IF (process.breakFlags & PROCESSSTATE.BREAK_BACKGROUND)=0
+      AND process.foreground=0 AND process.groupScope=NULL THEN
+    EXEC.Permit()
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(0)
+  FI
+
+  process.breakFlags=process.breakFlags OR PROCESSSTATE.BREAK_PENDING
+  LET scope=DOSBREAKTYPES.Scope POINTER(process.breakScope)
+  IF scope<>NULL THEN
+    scope.pending=1
+    EXEC.Signal(EXEC.Task POINTER(scope.owner),scope.mask)
+  FI
+
+  EXEC.Permit()
+  DOSCLIENT.SetError(0)
+
+RETURN(1)
 
 ; Reserve a loaded command for a later coordinated launch.
 PUBLIC LONGCARD FUNC PrepareLoaded(BYTE POINTER image,arguments CARD length BYTE
@@ -259,7 +315,7 @@ PUBLIC LONGCARD FUNC PrepareLoaded(BYTE POINTER image,arguments CARD length BYTE
   FI
 
 RETURN(StartInternal(@ExecuteImage,arguments,length,0,
-    PROGRAMIMAGE.Image POINTER(image),group))
+    PROGRAMIMAGE.Image POINTER(image),group,0))
 
 ; Launch a prepared process only after its admission checks still hold.
 PUBLIC BYTE FUNC StartPrepared(LONGCARD identity)

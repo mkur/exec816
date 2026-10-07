@@ -69,12 +69,14 @@ Try these shell commands
     TYPE STORY.TXT
     MEM
 
-The pipelines print 1 3 17 and 24 133 746 respectively (lines, words, bytes).
+The pipelines print 1 3 17 and 108 518 3171 respectively (lines, words, bytes).
 TASKS lists the shell and service workers and desktop-app, without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
+Ctrl-L clears the shell window and redraws the prompt and your current input.
 EXIT or Ctrl-D closes the shell and restores the OS display.
 
-SYS: is read-only; WORK: is writable. Try ECHO saved >WORK:OUT.TXT and
+SYS: is read-only; WORK: is writable (720 KiB, 256-byte sectors).
+Try ECHO saved >WORK:OUT.TXT and
 CAT WORK:OUT.TXT. Redirection creates or truncates its target when opened,
 even if the command later fails. Keep SYS: on D1-D7; D8 is reserved for WORK:.
 

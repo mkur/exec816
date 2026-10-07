@@ -7,6 +7,8 @@ USE FSWTYPES
 USE FSWRITEIO
 USE FSALLOC
 USE MYDOS
+USE MYDOSFILE
+USE FSCORE
 USE SDFS
 USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
@@ -66,6 +68,7 @@ BYTE FUNC ReadPayload(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER ent
 
   IF next<>0 THEN
     IF MYDOS.DataSector(service.work.volume,LONGCARD(next))=0 OR
+        next>Limit(entry) OR
         state.data(sectorBytes-1)<>BYTE(sectorBytes-3) THEN
       RETURN(Bad(service))
     FI
@@ -246,9 +249,95 @@ PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
 
 RETURN(EntryIO(service,entry,1))
 
+; Reserve and initialize a bounded extension before linking it to the tail.
+LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
+    BYTE POINTER source LONGINT length CARD previous)
+  CARD count,index,part,tail,next
+  LONGINT completed
+
+  LET state=FSWRITEIO.State(service)
+  LET payload=service.selected.spec.dataBytes-3
+  LET chain=MYDOSFILE.Chain(file)
+  count=FSWTYPES.EXTENSION_SECTORS
+  IF length<LONGINT(payload)*LONGINT(count) THEN
+    count=CARD((length+LONGINT(payload)-1)/LONGINT(payload))
+  FI
+
+  IF FSALLOC.FindGroup(service,BYTE(count),Limit(@file.entry))=0 OR
+      FSALLOC.TakeGroup(service)=0 THEN
+    RETURN(0)
+  FI
+
+  count=CARD(state.reservations)
+  completed=0
+  FOR index=0 TO count-1 DO
+    part=payload
+    IF LONGINT(part)>length-completed THEN
+      part=CARD(length-completed)
+    FI
+
+    A816MEMORY.Move(state.data,source+SIZE(completed),SIZE(part))
+    tail=part
+    WHILE tail<payload DO
+      state.data(tail)=0
+      tail==+1
+    OD
+
+    next=0
+    IF index+1<count THEN
+      next=state.reserved(index+1)
+    FI
+
+    Trailer(service,@file.entry,next,BYTE(part))
+    IF FSWRITEIO.Write(service,state.reserved(index),state.data)=0 THEN
+      RETURN(0)
+    FI
+
+    completed==+LONGINT(part)
+  OD
+
+  IF ReadPayload(service,@file.entry,previous)=0 THEN
+    RETURN(0)
+  FI
+
+  IF state.next<>0 THEN
+    Bad(service)
+    RETURN(0)
+  FI
+
+  Trailer(service,@file.entry,state.reserved(0),BYTE(payload))
+  IF FSWRITEIO.Write(service,previous,state.data)=0 THEN
+    RETURN(0)
+  FI
+
+  FSCORE.CopyEntry(@state.target,@file.entry)
+  state.target.count==+LONGINT(count)
+  IF Mark(service,@state.target,1)=0 THEN
+    RETURN(0)
+  FI
+
+  file.entry.count=state.target.count
+  FOR index=0 TO count-1 DO
+    chain.sector=state.reserved(index)
+    IF MYDOSFILE.Visit(file)=0 THEN
+      Bad(service)
+      RETURN(0)
+    FI
+  OD
+
+  file.position==+completed
+  file.entry.length=file.position
+  chain.base=file.position-LONGINT(part)
+  chain.offset=part
+  chain.used=part
+  chain.next=0
+  chain.valid=1
+
+RETURN(completed)
+
 PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     POINTER file BYTE POINTER source LONGINT length)
-  CARD sector,previous,payload,within,part,newSector,index
+  CARD sector,previous,payload,within,part,index
   LONGINT ordinal,hops
   BYTE used
 
@@ -256,20 +345,44 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   payload=service.selected.spec.dataBytes-3
   ordinal=file.position/LONGINT(payload)
   within=CARD(file.position MOD LONGINT(payload))
-  sector=file.entry.start
+  LET chain=MYDOSFILE.Chain(file)
+  IF chain.valid=0 OR chain.base>file.position THEN
+    MYDOSFILE.Restart(file)
+  FI
+
+  sector=chain.sector
   previous=0
-  hops=0
+  hops=chain.base/LONGINT(payload)
   WHILE sector<>0 DO
     IF ReadPayload(service,@file.entry,sector)=0 THEN
+      chain.valid=0
       RETURN(0)
     FI
 
+    IF chain.valid=0 THEN
+      IF MYDOSFILE.Visit(file)=0 THEN
+        Bad(service)
+        RETURN(0)
+      FI
+    FI
+
+    chain.used=CARD(state.data(payload+2))
+    chain.next=state.next
+    IF (chain.next=0 AND chain.hops<>LONGCARD(file.entry.count)) OR
+        (chain.next<>0 AND chain.hops>=LONGCARD(file.entry.count)) THEN
+      chain.valid=0
+      Bad(service)
+      RETURN(0)
+    FI
+
+    chain.valid=1
     IF hops=ordinal THEN
       EXIT
     FI
 
     previous=sector
-    sector=state.next
+    MYDOSFILE.Advance(file)
+    sector=chain.sector
     hops==+1
     IF hops>file.entry.count THEN
       Bad(service)
@@ -277,26 +390,13 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     FI
   OD
 
-  newSector=0
   IF sector=0 THEN
     IF hops<>ordinal OR within<>0 OR previous=0 THEN
       Bad(service)
       RETURN(0)
     FI
 
-    IF FSALLOC.Find(service,1,0,Limit(@file.entry))=0 THEN
-      RETURN(0)
-    FI
-
-    newSector=FSALLOC.Take(service)
-    IF newSector=0 THEN
-      RETURN(0)
-    FI
-
-    sector=newSector
-    FSWRITEIO.Zero(state.data)
-    Trailer(service,@file.entry,0,0)
-    state.next=0
+    RETURN(Extend(service,file,source,length,previous))
   FI
 
   part=payload-within
@@ -320,28 +420,17 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     RETURN(0)
   FI
 
-  IF newSector<>0 THEN
-    IF ReadPayload(service,@file.entry,previous)=0 THEN
-      RETURN(0)
-    FI
-
-    Trailer(service,@file.entry,newSector,BYTE(payload))
-    IF FSWRITEIO.Write(service,previous,state.data)=0 THEN
-      RETURN(0)
-    FI
-
-    file.entry.count==+1
-    IF Mark(service,@file.entry,1)=0 THEN
-      RETURN(0)
-    FI
-  FI
-
   file.position==+LONGINT(part)
   IF file.position>file.entry.length THEN
     file.entry.length=file.position
   FI
 
-  file.storage(0)=0
+  chain.sector=sector
+  chain.base=ordinal*LONGINT(payload)
+  chain.offset=within+part
+  chain.used=CARD(used)
+  chain.next=state.next
+  chain.valid=1
 
 RETURN(LONGINT(part))
 

@@ -7,6 +7,7 @@ USE DOSOBJECTS
 USE DOSSTREAMS
 USE DOSPIPE
 USE DOSRAW
+USE DOSPANE
 USE DOSCOOKED
 USE COOKEDLINE
 USE DOSBREAK
@@ -419,6 +420,7 @@ DOSOBJECTS.Header POINTER FUNC Object(DOSCORE.DosSlot POINTER owner BYTE
         OR header.backend=DOSOBJECTS.BACKEND_NIL
         OR header.backend=DOSOBJECTS.BACKEND_RAW
         OR header.backend=DOSOBJECTS.BACKEND_CON
+        OR header.backend=DOSOBJECTS.BACKEND_PANE
         OR header.backend=DOSOBJECTS.BACKEND_PIPE THEN
       RETURN(header)
     FI
@@ -484,6 +486,11 @@ PUBLIC LONGINT FUNC Read(BYTE POINTER identity,buffer LONGINT length)
     RETURN(DOSCOOKED.Read(client,DOSCOOKED.Handle POINTER(header),buffer,length))
   FI
 
+  IF header.backend=DOSOBJECTS.BACKEND_PANE THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(-1)
+  FI
+
   IF header.backend=DOSOBJECTS.BACKEND_RAW THEN
     request=DOSRAW.Prepare(client,DOSSTREAMS.Handle POINTER(header),buffer,length,1)
     IF request=EXEC.IOStdReq POINTER(0) THEN
@@ -540,7 +547,8 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
   FI
 
   IF header.backend=DOSOBJECTS.BACKEND_RAW
-      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+      OR header.backend=DOSOBJECTS.BACKEND_CON
+      OR header.backend=DOSOBJECTS.BACKEND_PANE THEN
     request=DOSRAW.Prepare(client,DOSSTREAMS.Handle POINTER(header),buffer,length,0)
     IF request=EXEC.IOStdReq POINTER(0) THEN
       IF length=0 AND DOSCLIENT.IoErr()=0 THEN
@@ -582,6 +590,44 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
 
 RETURN(result)
 
+; Console-only positioned output shares raw I/O ownership and cancellation.
+PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
+    BYTE POINTER buffer LONGINT length)
+  INT error
+
+  LET slot=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(-1)
+  FI
+
+  LET header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=NULL THEN
+    RETURN(-1)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_RAW
+      AND header.backend<>DOSOBJECTS.BACKEND_CON
+      AND header.backend<>DOSOBJECTS.BACKEND_PANE THEN
+    DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
+    RETURN(-1)
+  FI
+
+  LET handle=DOSSTREAMS.Handle POINTER(header)
+  LET request=DOSRAW.Prepare(client,handle,buffer,length,0)
+  IF request=NULL THEN
+    RETURN(IF length=0 AND DOSCLIENT.IoErr()=0 THEN LONGINT(0)
+        ELSE LONGINT(-1) FI)
+  FI
+
+  request.io_Command=CONSOLETYPES.CONCMD_WRITE_AT
+  request.io_Offset=LONGCARD(column)
+      OR (LONGCARD(row) LSH CONSOLETYPES.POSITION_ROW_SHIFT)
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
+      DOSBREAKTYPES.Scope POINTER(client.foreground))
+
+RETURN(DOSRAW.Complete(client,handle,error))
+
 ; Apply a position change only to a valid caller-owned file.
 PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)
   DOSCORE.DosSlot POINTER slot
@@ -603,7 +649,8 @@ PUBLIC LONGINT FUNC Seek(BYTE POINTER identity LONGINT offset,mode)
   FI
 
   IF header.backend=DOSOBJECTS.BACKEND_RAW
-      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+      OR header.backend=DOSOBJECTS.BACKEND_CON
+      OR header.backend=DOSOBJECTS.BACKEND_PANE THEN
     IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
       DOSCLIENT.SetError(ERROR_BAD_STREAM_NAME)
       RETURN(-1)
@@ -663,6 +710,10 @@ PUBLIC LONGINT FUNC Close(BYTE POINTER identity)
 
   IF header.backend=DOSOBJECTS.BACKEND_RAW THEN
     RETURN(DOSRAW.Close(client,DOSSTREAMS.Handle POINTER(header)))
+  FI
+
+  IF header.backend=DOSOBJECTS.BACKEND_PANE THEN
+    RETURN(DOSPANE.Close(client,DOSSTREAMS.Handle POINTER(header)))
   FI
 
   item=File(client,header)
@@ -800,7 +851,8 @@ BYTE FUNC LiveSelection(DOSCORE.DosSlot POINTER owner BYTE POINTER identity)
   FI
 
   IF header.backend=DOSOBJECTS.BACKEND_RAW
-      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+      OR header.backend=DOSOBJECTS.BACKEND_CON
+      OR header.backend=DOSOBJECTS.BACKEND_PANE THEN
     IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
       BadObject(owner,DOSOBJECTS.KIND_FILE)
       RETURN(0)
@@ -992,7 +1044,8 @@ PUBLIC LONGINT FUNC IsInteractive(BYTE POINTER identity)
   owner.error=0
   header=DOSOBJECTS.Header POINTER(identity)
   IF header.backend=DOSOBJECTS.BACKEND_RAW
-      OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+      OR header.backend=DOSOBJECTS.BACKEND_CON
+      OR header.backend=DOSOBJECTS.BACKEND_PANE THEN
     RETURN(-1)
   FI
 
@@ -1013,7 +1066,7 @@ PUBLIC BYTE POINTER FUNC OpenConsole()
     RETURN(NULL)
   FI
 
-  IF scope.active=0 THEN
+  IF scope.active=0 OR scope.handle=NULL THEN
     DOSCLIENT.SetError(ERROR_OBJECT_WRONG_TYPE)
     RETURN(NULL)
   FI
@@ -1119,7 +1172,8 @@ PUBLIC LONGINT FUNC Flush(BYTE POINTER identity)
   FI
 
   IF header.backend<>DOSOBJECTS.BACKEND_FILE THEN
-    IF header.backend=DOSOBJECTS.BACKEND_RAW OR header.backend=DOSOBJECTS.BACKEND_CON THEN
+    IF header.backend=DOSOBJECTS.BACKEND_RAW OR header.backend=DOSOBJECTS.BACKEND_CON
+      OR header.backend=DOSOBJECTS.BACKEND_PANE THEN
       IF DOSRAW.Live(DOSSTREAMS.Handle POINTER(header))=0 THEN
         slot.error=ERROR_BAD_STREAM_NAME
         RETURN(0)

@@ -12,7 +12,7 @@ from os_boundary import emulator
 from test_cooperative import data
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'grep', 'list', 'more', 'cat', 'wc', 'hello')
+NAMES = ('cmp', 'cksum', 'hexdump', 'head', 'tail', 'find', 'grep', 'list', 'more', 'cat', 'wc', 'hello')
 STRIDE = 4372
 
 
@@ -64,6 +64,29 @@ def behavior_vectors(name):
                 c('early-prefix-error',b'x\n',b'LINES 1',b'x\n',prefixError=226,error=226),
                 c('syntax-diagnostic',args=b'LINES -1',interactive=1,error=115,opens=1,consoleExpected=b'Arguments: FILE,LINES/K/N\n'),
                 c('zero-write',b'x\n',writeChunk=0,error=206)]+common
+    if name == 'tail':
+        sequence=b''.join(f'{i}\n'.encode() for i in range(20))
+        return [c('empty'),c('short',b'a\nb\n',expected=b'a\nb\n'),
+                c('default-wrap',sequence,expected=b''.join(f'{i}\n'.encode() for i in range(10,20))),
+                c('one',sequence,b'LINES 1',b'19\n'),
+                c('maximum',sequence,b'LINES 16',b''.join(f'{i}\n'.encode() for i in range(4,20))),
+                c('zero',b'a\n',b'LINES 0',noReads=True),
+                c('mixed',b'a\r\nb\rc\nd\x9be',b'LINES 3',b'c\nd\ne',chunk=1),
+                c('unterminated',b'a\nb',b'LINES 1',b'b'),
+                c('blank',b'a\n\nb\n\n',b'LINES 3',b'\nb\n\n'),
+                c('nul',b'a\0b\n',expected=b'a\0b\n'),
+                c('exact-line',b'x'*1024+b'\n',expected=b'x'*1024+b'\n'),
+                c('long-line',b'x'*1025,error=120),
+                c('named',b'a\nb\n',b'A LINES 1',b'b\n',opens=1),
+                c('empty-name',args=b'""',error=210),
+                c('too-many-lines',args=b'LINES 17',error=115,noReads=True),
+                c('max-number',args=b'LINES=4294967295',error=115,noReads=True),
+                c('partial-write',b'ab\ncd\n',b'LINES 1',b'cd\n',writeChunk=1),
+                c('write-error',b'x\n',writeFail=1,error=214),
+                c('zero-write',b'x\n',writeChunk=0,error=206),
+                c('close-error',b'x\n',b'A',b'x\n',closeError=202,error=202,opens=1),
+                c('read-close-errors',b'x\n',b'A',readFail=1,closeError=202,error=226,opens=1),
+                c('wide',b'x\n',length=65538,expected=b'x\n'*10)]+common
     if name == 'grep':
         cases=[c('literal',b'a.c\nabc\n',b'"a.c"',b'a.c\n'),
                c('fold-number',b'Ab\r\nxx\x9bab',b'ab NOCASE NUMBER',b'1:Ab\n3:ab',chunk=1),
@@ -77,6 +100,25 @@ def behavior_vectors(name):
             case['args']=b'x '+case['args']
         common[1]['expected']=b'x\n'
         return cases+common
+    if name == 'find':
+        return [c('empty',status=5,opens=1),
+                c('one',entries=1,expected=b'A\n',opens=1),
+                c('root-prefix',args=b'SYS:',entries=1,expected=b'SYS:A\n',opens=1),
+                c('no-match',args=b'PATTERN Z*',entries=1,status=5,opens=1),
+                c('fold',args=b'PATTERN a',entries=1,expected=b'A\n',opens=1),
+                c('question',args=b'PATTERN "?"',entries=1,expected=b'A\n',opens=1),
+                c('empty-pattern',args=b'PATTERN ""',entries=1,status=5,opens=1),
+                c('bad-pattern',args=b'PATTERN X/Y',error=311),
+                c('missing',args=b'MISSING',error=205),
+                c('path-limit',args=b'R'*254+b':',entries=1,error=120,opens=1),
+                c('enumeration-error',enumerationError=226,error=226,opens=1),
+                c('enumeration-close-errors',enumerationError=226,closeError=202,error=226,opens=1),
+                c('close-error',entries=1,expected=b'A\n',closeError=202,error=202,opens=1),
+                c('partial-write',entries=1,expected=b'A\n',writeChunk=1,opens=1),
+                c('write-error',entries=1,writeFail=1,error=214,opens=1),
+                c('zero-write',entries=1,writeChunk=0,error=206,opens=1),
+                c('break',breakAt=0,error=304,opens=1),
+                c('break-after-entry',entries=1,breakAt=1,error=304,opens=1)]
     if name == 'list':
         return [c('empty',opens=1),c('mixed',expected=b'A 1\nB/\nC 3\n',entries=3,opens=1),
                 c('names',args=b'NAMES',expected=b'A\nB\n',entries=2,opens=1),
@@ -96,8 +138,8 @@ def behavior_vectors(name):
 
 
 TEMPLATES = dict(cmp='FROM/A,TO/A',cksum='FILE',hexdump='FILE,OFFSET/K/N,LENGTH/K/N',
-                 head='FILE,LINES/K/N',grep='PATTERN/A,FILE,NOCASE/S,INVERT/S,NUMBER/S',
-                 list='DIR,NAMES/S',more='FILE',cat='FILE',wc='',hello='')
+                 head='FILE,LINES/K/N',tail='FILE,LINES/K/N',grep='PATTERN/A,FILE,NOCASE/S,INVERT/S,NUMBER/S',
+                 list='DIR,NAMES/S',find='DIR,PATTERN/K',more='FILE',cat='FILE',wc='',hello='')
 
 
 def vectors(name):
@@ -146,7 +188,17 @@ ENDMODULE
     declarations=read_source(ROOT/'lib/dos/command.act').split('PUBLIC EXTERNAL')[0].replace('MODULE COMMAND','')
     api=api.replace('USE DOSFAULT\n','')
     api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
-    api=api.replace('USE DOSCOMMAND','USE DOSCOMMAND\n'+declarations)
+    marker='; Explicit task-only providers.'
+    require(api.count(marker)==1,'Stale command provider declaration marker')
+    api=api.replace(marker,declarations+'\n'+marker)
+    # The transport fixture exposes the current API; unrelated pane/timer
+    # operations reject explicitly rather than importing live drivers.
+    for module,signature in [('DOSPANE','PUBLIC BYTE POINTER FUNC Open(CARD rows)'),
+                             ('DOSDELAY','PUBLIC LONGINT FUNC Delay(LONGCARD ticks)')]:
+        result='NULL' if module=='DOSPANE' else '0'
+        (out/(module.lower()+'.act')).write_text(
+            f'MODULE {module}\nUSE DOSCLIENT\n{signature}\n\n'
+            f'  DOSCLIENT.SetError(209)\n\nRETURN({result})\n\nENDMODULE\n')
     (out/'command.act').write_text(api)
     source=read_source(ROOT/f'examples/commands/{name}.act').replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR').replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','')
     # Relocate include paths when copying and bind the exact compiler library.
@@ -206,7 +258,7 @@ def run(out,mode,names=NAMES):
         path,blob=fixture(folder,name,cases)
         # Fixture-only larger upper-RAM data arena accommodates command BSS and
         # observers together. It changes no bank-zero execution reservation.
-        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=8192
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=24576 if name=='tail' else 8192
         (folder/'profile.json').write_text(json.dumps(profile))
         p=build(toolchain,path,folder,optimize=mode=='opt',banked=True,console=False,memory_profile=folder/'profile.json',
                 image_data=[(0x300000,blob),(0x200000,bytes(STRIDE*len(cases)))])

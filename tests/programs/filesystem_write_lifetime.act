@@ -11,17 +11,22 @@ USE PROCESS
 USE FSBOOT
 USE FSREGISTRY
 USE FSTYPES
+USE FSWTYPES
 USE FSWRITEPROBE
 USE HEAPCORE
-CARD checks,scenario,nth,phase
-BYTE gate,entered
+CARD checks,scenario,nth,phase,amount
+CARD collectedFrame
+CARD groupLimit
+CARD confirmedBytes
+CARD acceptedBytes
+BYTE gate,entered,primeTail
 LONGINT result,error,expected
 DOS.FileHandle POINTER file,con
 FSTYPES.Service POINTER service
 BYTE ARRAY path=[68 49 58 87 82 73 84 69 46 66 73 78 0]
 BYTE ARRAY conName=[67 79 78 58 0]
 BYTE ARRAY renamed=[68 49 58 84 65 82 71 69 84 0]
-BYTE ARRAY buffer(300)
+BYTE POINTER buffer
 PROCESS.Result outcome
 
 PROC Require(BYTE okay)
@@ -114,7 +119,7 @@ PROC MutationFailure()
 
   IF scenario>=15 AND scenario<=17 THEN
     file=DOS.Open(path,DOS.MODE_NEWFILE)
-    Require(file<>NULL AND DOS.Write(file,buffer,300)=300)
+    Require(file<>NULL AND DOS.Write(file,buffer,LONGINT(amount))=LONGINT(amount))
     Require(DOS.Close(file)<>0)
     file=NULL
   FI
@@ -145,7 +150,7 @@ PROC NamespaceBreak()
 
   IF scenario<>22 THEN
     file=DOS.Open(path,DOS.MODE_NEWFILE)
-    Require(file<>NULL AND DOS.Write(file,buffer,300)=300)
+    Require(file<>NULL AND DOS.Write(file,buffer,LONGINT(amount))=LONGINT(amount))
     Require(DOS.Close(file)<>0)
     file=NULL
   FI
@@ -177,7 +182,10 @@ RETURN
 PROC Main()
   CARD index,ticks
 
-  FOR index=0 TO 299 DO
+  buffer=BYTE POINTER($30fff0)
+  groupLimit=FSWTYPES.EXTENSION_SECTORS
+
+  FOR index=0 TO amount-1 DO
     buffer(index)=BYTE(index) XOR $69
   OD
 
@@ -195,17 +203,17 @@ PROC Main()
     Arm(3,1006)
   FI
 
-  IF scenario<14 THEN
+  IF scenario<14 OR scenario=23 THEN
     file=DOS.Open(path,DOS.MODE_NEWFILE)
     Require(file<>NULL)
   FI
 
   phase=1
-  IF scenario>=19 THEN
+  IF scenario>=19 AND scenario<=22 THEN
     NamespaceBreak()
-  ELSEIF scenario>=14 THEN
+  ELSEIF scenario>=14 AND scenario<=18 THEN
     MutationFailure()
-  ELSEIF scenario>=9 THEN
+  ELSEIF scenario>=9 AND scenario<=13 THEN
     Inheritance()
   ELSEIF scenario=4 OR scenario=5 OR scenario=7 THEN
     IF scenario=5 THEN
@@ -222,45 +230,91 @@ PROC Main()
       Require(result<>0)
     FI
   ELSE
-    expected=300
+    expected=LONGINT(amount)
     IF scenario=1 THEN
       Arm(1,87)
       expected=-1
+      IF confirmedBytes<>0 THEN
+        expected=LONGINT(confirmedBytes)
+      FI
     ELSEIF scenario=2 THEN
       Arm(4,87)
       expected=LONGINT(service.mounts(0).item.spec.dataBytes)
       IF service.mounts(0).item.spec.format=1 THEN
         expected==-3
+        IF primeTail<>0 THEN
+          FSWRITEPROBE.mode=0
+          Require(DOS.Write(file,buffer,expected)=expected)
+          Arm(4,87)
+          expected=expected*LONGINT(groupLimit)
+          IF expected>LONGINT(amount) THEN
+            expected=LONGINT(amount)
+          FI
+        FI
+      ELSE
+        expected=LONGINT(amount)
+        IF expected>LONGINT(service.mounts(0).item.spec.dataBytes)*
+            LONGINT(groupLimit) THEN
+          expected=LONGINT(service.mounts(0).item.spec.dataBytes)*
+              LONGINT(groupLimit)
+        FI
       FI
     ELSEIF scenario=3 THEN
       Arm(3,87)
       expected=17
-    ELSEIF scenario=6 THEN
+    ELSEIF scenario=6 OR scenario=23 THEN
       BEGIN
         LET payload=LONGINT(service.mounts(0).item.spec.dataBytes)-
             IF service.mounts(0).item.spec.format=1 THEN LONGINT(3) ELSE LONGINT(0) FI
         Require(DOS.Write(file,buffer,payload)=payload)
       END
-      Arm(2,87)
+      Arm(IF scenario=23 THEN BYTE(6) ELSE BYTE(2) FI,87)
       expected=-1
+      IF confirmedBytes<>0 THEN
+        expected=LONGINT(confirmedBytes)
+      FI
     ELSE
       Arm(5,87)
     FI
 
-    result=DOS.Write(file,buffer,IF scenario=3 OR scenario=6 THEN LONGINT(17)
-        ELSE LONGINT(300) FI)
+    IF acceptedBytes<>0 AND (scenario=1 OR scenario=2) THEN
+      expected=LONGINT(acceptedBytes)
+    FI
+
+    result=DOS.Write(file,buffer,IF scenario=3 THEN LONGINT(17)
+        ELSE LONGINT(amount) FI)
     error=DOS.IoErr()
+    collectedFrame=FSWRITEPROBE.Now()
     Require(result=expected)
-    IF scenario=1 OR scenario=2 THEN
+    IF (scenario=1 OR scenario=2) AND expected<LONGINT(amount) THEN
       Require(error=DOS.ERROR_BREAK)
-    ELSEIF scenario=6 THEN
+    ELSEIF scenario=6 OR scenario=23 THEN
       Require(error=6)
+      BEGIN
+        LONGINT payload
+
+        LET object=FSTYPES.FileObject POINTER(FSREGISTRY.FindObject(
+            DOSCORE.Current(),BYTE POINTER(file),DOSOBJECTS.KIND_FILE))
+        Require(object<>NULL)
+        payload=LONGINT(service.mounts(0).item.spec.dataBytes)
+        IF service.mounts(0).item.spec.format=1 THEN
+          payload==-3
+        FI
+
+        Require(object.backing.cursor.position=payload+LONGINT(confirmedBytes))
+      END
     ELSE
       Require(error=0)
     FI
 
+    BEGIN
+      LET state=FSWTYPES.State POINTER(service.mutation)
+      Require(state.batchActive=0 AND state.staged=0 AND state.bitmapDirty=0
+          AND service.operation.output=NULL AND service.operation.file=NULL)
+    END
+
     phase=2
-    IF scenario=6 THEN
+    IF scenario=6 OR scenario=23 THEN
       Require(DOS.Close(file)=0 AND DOS.IoErr()=6)
     ELSE
       Require(DOS.Close(file)<>0)
@@ -274,15 +328,21 @@ PROC Main()
     Require(FSWRITEPROBE.fired=1)
   FI
 
-  IF scenario=6 OR scenario=7 OR (scenario>=12 AND scenario<=18) THEN
+  IF scenario=6 OR scenario=7 OR scenario=23 OR
+      (scenario>=12 AND scenario<=18) THEN
     Require(service.mounts(0).item.offline<>0 AND
         service.mounts(0).item.writable=0 AND service.mounts(0).item.references=0)
-    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=6)
   FI
 
   IF scenario<=5 OR scenario>=19 THEN
     Require(DOS.BreakPending()<>0)
     Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0)
+  FI
+
+  ; A new request observes offline state after retiring the canceled scope.
+  IF scenario=6 OR scenario=7 OR scenario=23 OR
+      (scenario>=12 AND scenario<=18) THEN
+    Require(DOS.Open(path,DOS.MODE_OLDFILE)=NULL AND DOS.IoErr()=6)
   FI
 
   Require(DOS.ReleaseContext()<>0)

@@ -15,10 +15,40 @@ from test_filesystem_write import reuse
 from generate_dos_mounts import encode
 from filesystem_audit import Audit, word
 from mydos_fixtures import Image
+from make_shell_disk import make as make_mydos
+import sdfs_reference
 
 CASES = {'normal': 1, 'readonly': 2, 'protected': 3, 'full': 4,
          'incomplete': 5, 'corrupt': 6, 'sparse': 7, 'legacy-empty': 8,
-         'tenbit-full': 9, 'full-directory': 4, 'fragmented': 10}
+         'tenbit-full': 9, 'full-directory': 4, 'fragmented': 10,
+         'partial-group': 11}
+
+
+def limited(filesystem, size, folder):
+    """Consistent media with fewer free payloads than a full extension group."""
+    tree=folder/'limited-source';tree.mkdir(exist_ok=True)
+    (tree/'KEEP.BIN').write_bytes(bytes(range(256)))
+    (tree/'CREATE.BIN').write_bytes(b'')
+    payload=size-3 if filesystem=='mydos' else size
+    wanted=3
+    for sectors in range(680,720):
+        for part in range(15):
+            count=min(50,max(0,sectors-part*50))
+            (tree/f'FILL{part}.BIN').write_bytes(bytes([0x59])*(count*payload))
+        path=folder/'initial.atr'
+        try:
+            if filesystem=='mydos':
+                make_mydos(path,tree,binary_names={p.name for p in tree.iterdir()},sector_bytes=size)
+            else:
+                sdfs_reference.make(path,tree,720,size)
+        except (ValueError,StopIteration):
+            continue
+        image=Image(path.read_bytes())
+        header=image.sector(360 if filesystem=='mydos' else 1)
+        if word(header,3 if filesystem=='mydos' else 13)==wanted:
+            audit=Audit(image.data);getattr(audit,filesystem)()
+            return image
+    raise ValueError('Could not produce a consistent nearly-full image')
 
 
 def entry(image, filesystem, name):
@@ -118,18 +148,21 @@ def prepare(filesystem, size, name):
     return image
 
 
-def run(output, mode, filesystem, size, names, from_build):
+def run(output, mode, filesystem, size, names, from_build, profile=4):
     baseline = Audit((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
     getattr(baseline, filesystem)()
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count, sector_bytes=size,
-                   format=1 if filesystem == 'mydos' else 2, access='readwrite')]
+                   format=1 if filesystem == 'mydos' else 2, access='readwrite',
+                   profile=profile)]
     program = reuse(from_build) if from_build else build(compiler(ROOT/'build/actionc'),
                 ROOT/'tests/programs/filesystem_write_edges.act', output, optimize=mode == 'opt',
                 tasks=True, console_deferred=True, dos_mounts=mounts, system_mount='D1')
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'], 'diskemu': 'fastest', 'accuratedisk': False}
+        configuration = {**PIN['configuration'],
+                         'diskemu': {1:'fastest', 2:'810', 4:'generic56k'}[profile],
+                         'accuratedisk': False}
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
@@ -138,8 +171,9 @@ def run(output, mode, filesystem, size, names, from_build):
             case_out = output/name
             case_out.mkdir(exist_ok=True)
             media = case_out/'volume.atr'
-            initial = prepare(filesystem, size, name)
+            initial = limited(filesystem,size,case_out) if name=='partial-group' else prepare(filesystem, size, name)
             media.write_bytes(initial.data)
+            mounts[0]['sectors']=initial.count
             mounts[0]['access'] = 'readonly' if name == 'readonly' else 'readwrite'
             if index:
                 bridge.state_load(slot='loaded')
@@ -164,7 +198,7 @@ def run(output, mode, filesystem, size, names, from_build):
             bridge.regs()
             bridge._cmd_ok('EJECT drive=0')
             report = None
-            if name not in ('normal', 'legacy-empty', 'tenbit-full'):
+            if name not in ('normal', 'legacy-empty', 'tenbit-full', 'partial-group'):
                 require(media.read_bytes() == initial.data, 'Rejected operation changed media')
             elif name == 'tenbit-full':
                 after = Image(media.read_bytes())
@@ -179,7 +213,13 @@ def run(output, mode, filesystem, size, names, from_build):
             else:
                 audit = Audit(media.read_bytes())
                 report = getattr(audit, filesystem)()
-                expected = dict(baseline.files)
+                if name=='partial-group':
+                    initial_audit=Audit(initial.data);getattr(initial_audit,filesystem)()
+                    expected=dict(initial_audit.files)
+                    length=(size-3)*3 if filesystem=='mydos' else size*3
+                    expected['CREATE.BIN']=bytes((i&255)^0xc3 for i in range(length))
+                else:
+                    expected = dict(baseline.files)
                 if name == 'normal':
                     payload = bytearray(expected['CREATE.BIN'])
                     payload[124:128] = bytes(i ^ 0xc3 for i in range(4))
@@ -200,6 +240,7 @@ if __name__ == '__main__':
     parser.add_argument('--size', type=int, choices=(128, 256), default=128)
     parser.add_argument('--suite', default='normal,readonly,protected,full,incomplete,corrupt,legacy-empty')
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--profile', type=int, choices=(1, 2, 4), default=4)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -207,7 +248,7 @@ if __name__ == '__main__':
     result = dict(status='running')
     try:
         result = run(output, args.case, args.filesystem, args.size, args.suite.split(','),
-                     args.from_build.resolve() if args.from_build else None)
+                     args.from_build.resolve() if args.from_build else None, args.profile)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

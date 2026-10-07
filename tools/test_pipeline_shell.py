@@ -22,11 +22,14 @@ class Pipelines(Commands):
             (source/(name+'.profile.json')).rename(out/(name+'.profile.json'))
         for name in ('STORY.TXT','LONG.TXT'):
             shutil.copyfile(ROOT/'examples/demo-disk'/name,source/name)
-        make(out/'volume.atr',source,binary_names=set(self.commands))
+        self.files=make(out/'volume.atr',source,binary_names=set(self.commands))
 
     def exercise(self,c):
         c.command('HELLO|WC',b'1 3 17\n')
-        c.command('CAT "STORY.TXT" | WC',b'24 133 746\n')
+        story=self.files['STORY.TXT']
+        lines=story.count(b'\n')
+        counts=f'{lines} {len(story.split())} {len(story)}\n'.encode('ascii')
+        c.command('CAT "STORY.TXT" | WC',counts)
         c.command('CAT <STORY.TXT | WC >NIL:')
         c.command('CAT <NIL:|WC',b'0 0 0\n')
         for command in ('|WC','HELLO|','HELLO|WC|CAT','HELP|WC','HELLO|TYPE','HELLO >NIL:|WC','CAT|WC <NIL:'):

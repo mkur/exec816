@@ -1,0 +1,210 @@
+MODULE SHELLJOBS
+USE HEAPCORE
+USE FSBOOT
+USE DOSCLIENT
+USE DOSCORE
+USE DOSBREAKTYPES
+USE PROCESSSTATE
+USE TASKSTACKS
+USE EXECLISTS
+INCLUDE "../../examples/shell/shell-session.inc"
+INCLUDE "../../examples/shell/shell-boot.inc"
+
+CARD checks
+BYTE finished,holdReady,holdStop
+LONGCARD before
+EXEC.Task ARRAY capacityTasks(2)
+BYTE ARRAY name=c"capacity",lineBuffer(80),fileBytes(64)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($eb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Occupy spare slots to exercise rejection at the eight-Task capacity.
+PROC Hold()
+  LONGCARD ignored
+
+  LET bit=EXEC.AllocSignal($ff)
+  Require(bit<>$ff)
+  LET mask=LONGCARD(1) LSH bit
+  holdReady==+1
+  WHILE holdStop=0 DO
+    ignored=EXEC.Wait(mask)
+  OD
+
+  EXEC.FreeSignal(bit)
+  holdReady==+1
+  EXEC.RemTask(NULL)
+
+RETURN
+
+PROC Command(CSTRING text)
+
+  A816MEMORY.Move(ShellLine(),BYTE POINTER(text),STR.strlen(text)+1)
+  ShellCommand()
+  ShellClear()
+
+RETURN
+
+PROCESSSTATE.Entry POINTER FUNC JobEntry()
+
+RETURN(PROCESSSTATE.Entry POINTER(DOSCORE.Control(
+    PROCESSSTATE.OP_FIND,BYTE POINTER(@job.identity))))
+
+PROC Retired()
+
+  LET entry=JobEntry()
+  Require(entry<>NULL)
+  WHILE entry.state<>PROCESSSTATE.STATE_RETIRED DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC File(CSTRING path,expected)
+
+  LET file=DOS.Open(BYTE POINTER(path),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  LET count=DOS.Read(file,fileBytes,63)
+  Require(count=LONGINT(STR.strlen(expected)))
+  fileBytes(CARD(count))=0
+  Require(STR.strcmp(CSTRING(fileBytes),expected)=0)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  before=EXEC.AvailMem(0)
+  Require(SIZEOF(ShellState)=128 AND SIZEOF(ShellJob)<=64)
+  Require(ShellBootStart(shellCon)<>0)
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET task=@capacityTasks(index)
+      task.tc_Node.ln_Name=name
+      task.tc_Node.ln_Pri=128
+      task.tc_Node.ln_Type=EXEC.NT_TASK
+      task.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(index+4))
+      task.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(index+4))
+      task.tc_SPReg=task.tc_SPUpper-SIZE(2)
+      EXECLISTS.NewList(@task.tc_MemEntry)
+      Require(EXEC.AddTask(task,@Hold,NULL)<>0)
+    END
+  OD
+
+  WHILE holdReady<>2 DO
+    EXEC.Yield()
+  OD
+
+  Command(c"RUN HELP")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_BAD_NUMBER AND job.state=0)
+  Command(c"RUN WAIT|HELLO")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_BAD_NUMBER AND job.state=0)
+  Command(c"RUN WAIT <CON:")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_OBJECT_WRONG_TYPE AND job.state=0)
+  Command(c"RUN MISSING")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_OBJECT_NOT_FOUND AND job.state=0)
+  Command(c"RUN CONQUERY")
+  Require(shell.status=0)
+  Retired()
+  Command(c"JOBS")
+  Require(job.state=JOB_DONE AND job.outcome.primary=10
+      AND job.outcome.secondary=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Command(c"CONQUERY")
+  Require(shell.status=0)
+  Command(c"PATH SET C:")
+  Require(shell.status=0)
+  Command(c"ALIAS bg WAIT")
+  Require(shell.status=0)
+  Command(c"RUN bg")
+  Require(shell.status=0 AND job.state=JOB_RUNNING)
+  LET entry=JobEntry()
+  WHILE entry.breakScope=NULL DO
+    EXEC.Yield()
+  OD
+
+  LET scope=DOSBREAKTYPES.Scope POINTER(entry.breakScope)
+  LET client=DOSCLIENT.ClientContext POINTER(scope.client)
+  LET inputHeader=DOSOBJECTS.Header POINTER(client.input)
+  LET outputHeader=DOSOBJECTS.Header POINTER(client.output)
+  Require(scope.handle=NULL AND inputHeader.backend=DOSOBJECTS.BACKEND_NIL
+      AND outputHeader.backend=DOSOBJECTS.BACKEND_NIL)
+  Require(DOS.Input()=shell.console AND DOS.Output()=shell.console)
+  LET identity=job.identity
+  Command(c"RUN WAIT")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_OBJECT_IN_USE AND job.identity=identity)
+  Command(c"HELLO")
+  Require(shell.status=0 AND scope.pending=0)
+  LET available=EXEC.AvailMem(0)
+  Command(c"HELLO|WC")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_NO_FREE_STORE)
+  Require(job.identity=identity AND scope.pending=0 AND EXEC.AvailMem(0)=available)
+  Command(c"BREAK wrong")
+  Require(shell.status=10 AND shell.error=DOS.ERROR_BAD_NUMBER)
+  Command(c"BREAK 0")
+  Require(shell.status=10 AND shell.error=PROCESS.ERROR_INVALID_PROCESS)
+  A816MEMORY.Move(lineBuffer,BYTE POINTER(c"BREAK "),6)
+  LET digits=STR.u32toa(identity,BYTE POINTER(ADDRESS(lineBuffer)+SIZE(6)),11)
+  lineBuffer(6+CARD(digits))=0
+  Command(CSTRING(lineBuffer))
+  Require(shell.status=0 AND job.state=JOB_STOPPING)
+  Retired()
+  Command(c"JOBS")
+  Require(job.state=JOB_DONE AND job.outcome.primary=10
+      AND job.outcome.secondary=DOS.ERROR_BREAK)
+  Command(c"HELLO|WC")
+  Require(shell.status=0)
+  Command(c"RUN HELLO")
+  Require(shell.status=0 AND job.identity<>identity)
+  Retired()
+  Command(c"JOBS")
+  Require(job.state=JOB_DONE AND job.outcome.primary=0 AND job.outcome.secondary=0)
+  Command(CSTRING(lineBuffer))
+  Require(shell.status=10 AND shell.error=PROCESS.ERROR_INVALID_PROCESS)
+  Command(c"RUN ECHOARGS \"two words\" \"\" x >WORK:ARGS.TXT")
+  Require(shell.status=0)
+  Retired()
+  Command(c"JOBS")
+  Require(job.outcome.primary=0)
+  File(c"WORK:ARGS.TXT",c"\"two words\" \"\" x\n")
+  Command(c"CD WORK:")
+  Require(shell.status=0)
+  Command(c"RUN CAT <INPUT.TXT >OUTPUT.TXT")
+  Require(shell.status=0)
+  Command(c"CD SYS:")
+  Require(shell.status=0)
+  IF job.state<>JOB_DONE THEN
+    Retired()
+    Command(c"JOBS")
+  FI
+
+  Require(job.outcome.primary=0)
+  File(c"WORK:OUTPUT.TXT",c"inherited streams\n")
+  Command(c"RUN WAIT")
+  Require(shell.status=0 AND job.state=JOB_RUNNING)
+  ; The boot-created mapping intentionally survives shell/service restart.
+  Require(DOS.AssignPath(BYTE POINTER(c"C"),NULL)<>0)
+  Command(c"EXIT")
+  Require(shell.done<>0 AND ShellFinish()=0 AND shell=NULL)
+  holdStop=1
+  FOR index=0 TO 1 DO
+    EXEC.Signal(@capacityTasks(index),$ffffffff)
+  OD
+
+  WHILE holdReady<>4 OR EXEC.FindTask(name)<>NULL DO
+    EXEC.Yield()
+  OD
+
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+  finished=1
+
+RETURN
+
+ENDMODULE

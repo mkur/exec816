@@ -1,6 +1,6 @@
 {
   "abi": "exec816.process",
-  "version": 6,
+  "version": 7,
   "argument_limit": 255,
   "record_bytes": 128,
   "states": {
@@ -27,7 +27,8 @@
     "NO_FREE_STORE": 103,
     "BAD_NUMBER": 115,
     "OBJECT_IN_USE": 202,
-    "INVALID_PROCESS": 305
+    "INVALID_PROCESS": 305,
+    "OBJECT_WRONG_TYPE": 212
   },
   "record": [
     [
@@ -151,9 +152,14 @@
       121
     ],
     [
-      "reserved",
-      "BYTE[4]",
+      "breakFlags",
+      "BYTE",
       124
+    ],
+    [
+      "breakScope",
+      "BYTE POINTER",
+      125
     ]
   ],
   "calls": {
@@ -220,20 +226,46 @@
         4
       ],
       "result_bytes": 1
+    },
+    "StartBackground": {
+      "sizes": [
+        3,
+        3,
+        2
+      ],
+      "result_bytes": 4
+    },
+    "StartBackgroundLoaded": {
+      "sizes": [
+        3,
+        3,
+        2
+      ],
+      "result_bytes": 4
+    },
+    "RequestBreak": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 1
     }
   },
   "dos_storage": {
-    "client_allocation_bytes": 88,
+    "client_allocation_bytes": 98,
     "client_suspended_offset": 86,
     "client_foreground_loan_offset": 87,
     "file_object_bytes": 116,
     "file_backing_bytes": 94,
-    "cooked_session_bytes": 402
+    "cooked_session_bytes": 410
   },
   "resident_entries": {
     "count_offset": 17,
     "entries_offset": 18,
     "capacity": 36,
     "descriptor_bytes": 128
+  },
+  "break_flags": {
+    "BACKGROUND": 1,
+    "PENDING": 2
   }
 }

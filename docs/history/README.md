@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Background console panes and primes](background-pane-primes.md): foundation
+  slices, loadable command, numeric drawing, resource costs and packaged preview.
+
 - [AES window applications](aes-windows.md): WA1–WA6 complete at the development
   tier; durable GUI messages, windows, private VDI, two resident counters and an
   extracted OF816 demo. Includes coexistence timing and console repair fixes.
@@ -96,6 +99,10 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [OF816 before kernel loading](of816-first-boot.md): returning INITAD monitor,
+  preserved settings/text, small progress output and the bitmap/cartridge preview.
+- [XLOS boot diagnostics](../development/xlos-boot.json): cartridge interlock
+  correction, the XEX Disk Boot route through D2 and bounded firmware checks.
 - [Bank manager](bank-manager.md)
 - [Banked loading and memory ownership](banked-loading.md)
 - [Native interrupt masking in the pinned emulator](emulator-native-irq-fix.md)
@@ -116,6 +123,15 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
+- [SpartaDOS request-scoped write buffering](spartados-write-buffering.md): ordered
+  publication within each Write, matched COPY gains, cancellation/failure coverage
+  and shared-memory costs; the [preserved design](spartados-write-buffering-design.md)
+  records the original proposal.
+
+- [COPY and filesystem write performance](write-performance.md): 16 KiB COPY,
+  four-sector extension groups, retained cursors, matched physical-I/O costs and
+  BREAK timing, unchanged bank-zero reservations and a recorded MyDOS transport
+  timing limit.
 - [Larger demo system disk](system-disk-capacity.md): 720 KiB default, 360 KiB
   option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
@@ -151,6 +167,17 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Shell startup scripts](shell-startup.md): S: naming, optional STARTUP/USER,
+  sequential execution before the prompt, compatibility and memory costs.
+- [Shell EXECUTE](shell-execute.md): bounded scripts through ordinary dispatch,
+  separate source/input ownership, inherited streams and stop/cleanup rules.
+- [TAIL and FIND utilities](tail-find.md): bounded suffix buffering and recursive
+  filename traversal through the existing command services.
+- [Shell append redirection](shell-append-redirection.md): `>>` preserves file
+  contents, seeks to EOF and uses the existing stream cleanup on success,
+  BREAK and errors, with no additional bank-zero reservations.
+- [System command directory](system-command-directory.md): SYS:C command
+  storage, the boot C: assignment and CurrentDir-then-C: default PATH.
 - [Bounded shell command aliases](shell-aliases.md): eight session-local
   definitions, one-pass expansion and normal pipeline/redirection parsing.
 - [ASSIGN logical directories](assign.md): four boot-lifetime logical directory

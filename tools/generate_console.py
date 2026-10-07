@@ -37,7 +37,7 @@ def constants(abi=ABI):
     require(0<result['BATCH_MAX_ROWS']<=4 and 0<result['BATCH_MAX_TURNS']<=4
             and 0<result['BATCH_MAX_BYTES']<=256 and result['BATCH_SIZE']<=64,
             'Invalid bounded batch capacity')
-    require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==180,'Invalid window capacity')
+    require(result['WINDOW_SLOTS']==4 and result['WINDOW_SIZE']==38 and result['WINDOWS_SIZE']==184,'Invalid window capacity')
     require(result['CONTROL_SIZE']==8,'Invalid presentation transaction')
     s=abi['storage'];end=0
     for name,key in [('Service','service_offset'),('Instance','instance_offset'),('Presentation','presentation_offset'),('Routes','routes_offset'),('Windows','windows_offset')]:

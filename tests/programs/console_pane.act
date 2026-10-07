@@ -1,0 +1,156 @@
+MODULE PANETEST
+USE EXEC
+USE DOS
+USE DOSCOOKED
+USE PROCESS
+USE PROGRAMAPI
+USE HEAPCORE
+USE CONSOLE
+USE CONSOLECORE
+USE CONSOLEDRIVER
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE PANEFAULT
+
+CARD checks
+BYTE phase,closeNow,finished
+DOS.FileHandle POINTER ioConsole
+BYTE ARRAY input(8),scratch(80),cells(26)
+CONSOLETYPES.Instance model
+CARD ARRAY paneSize(2)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($e900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise both ring rotation cycles and capacity-based growth without reinit.
+PROC Core()
+  CARD origin,row,column
+
+  FOR origin=0 TO 2 DO
+    cells(0)=$a5
+    cells(25)=$a5
+    Require(CONSOLECORE.Init(@model,BYTE POINTER(ADDRESS(cells)+SIZE(1)),
+        8,3,24)<>0)
+    CONSOLECORE.EditQuantum(@model)
+    model.cellOrigin=origin*8
+    FOR row=0 TO 2 DO
+      FOR column=0 TO 7 DO
+        model.cells(CONSOLECORE.CellOffset(@model,row*8+column))=BYTE(65+row)
+      OD
+    OD
+
+    model.row=2
+    model.lineStart=16
+    model.column=4
+    Require(CONSOLECORE.Resize(@model,2,scratch)<>0)
+    Require(model.height=2 AND model.count=16 AND model.capacity=24)
+    Require(model.cellOrigin=0 AND model.row=1 AND model.column=4)
+    Require(model.cells(0)='B AND model.cells(8)='C)
+    Require(CONSOLECORE.Resize(@model,3,scratch)<>0)
+    Require(model.cells(0)='B AND model.cells(8)='C AND model.cells(16)=' )
+    Require(model.height=3 AND model.row=1 AND model.lineStart=8)
+    Require(CONSOLECORE.Resize(@model,4,scratch)=0)
+    Require(cells(0)=$a5 AND cells(25)=$a5)
+  OD
+
+  Require(SIZEOF(CONSOLETYPES.Instance)=202)
+  Require(SIZEOF(CONSOLETYPES.Windows)=184)
+
+RETURN
+
+; Every allocation failure must leave a full host and no retained pane lease.
+PROC Rollback()
+  BYTE index
+
+  EXEC.Forbid()
+  Require(PROGRAMAPI.OpenPane(6)=NULL)
+  EXEC.Permit()
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  LET baseline=EXEC.AvailMem(0)
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET height=instance.height
+  LET windows=CONSOLEWINDOWS.Registry()
+  FOR index=1 TO 6 DO
+    PANEFAULT.calls=0
+    PANEFAULT.failAt=index
+    Require(PROGRAMAPI.OpenPane(6)=NULL)
+    PANEFAULT.failAt=0
+    Require(instance.height=height AND windows.pane=0)
+    Require(EXEC.AvailMem(0)=baseline)
+  OD
+
+  Require(PROGRAMAPI.OpenPane(0)=NULL)
+  Require(PROGRAMAPI.OpenPane(height)=NULL)
+
+RETURN
+
+; Normal return deliberately leaves the pane to the DOS ownership finalizer.
+LONGINT FUNC Child()
+
+  LET pane=PROGRAMAPI.OpenPane(6)
+  Require(pane<>NULL)
+  Require(PROGRAMAPI.ConsoleInfo(pane,BYTE POINTER(paneSize))<>0)
+  Require(paneSize(0)=CONSOLE.ScreenWidth() AND paneSize(1)=6)
+  Require(PROGRAMAPI.OpenPane(6)=NULL)
+  Require(DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(PROGRAMAPI.Write(pane,BYTE POINTER(c"PRIME SEARCH"),12)=12)
+  Require(PROGRAMAPI.WriteAt(pane,10,2,BYTE POINTER(c" 1229"),5)=5)
+  phase=1
+  WHILE closeNow=0 DO
+    EXEC.Yield()
+  OD
+
+  phase=2
+  DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+
+RETURN(10)
+
+; Keep a cooked Read and edited draft alive while the child restores the host.
+PROC Main()
+  CARD index
+  PROCESS.Result result
+
+  Core()
+  ioConsole=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(ioConsole<>NULL)
+  Require(DOS.BeginForeground(ioConsole)<>0)
+  Rollback()
+  LET instance=CONSOLEDRIVER.GetInstance()
+  LET height=instance.height
+  LET host=CONSOLEWINDOWS.Find(0)
+  LET windows=CONSOLEWINDOWS.Registry()
+  LET route=host.route
+  Require(DOS.Write(ioConsole,BYTE POINTER(c"\f"),1)=1)
+  FOR index=0 TO height+2 DO
+    Require(DOS.Write(ioConsole,BYTE POINTER(c"marker\n"),7)=7)
+  OD
+
+  Require(DOS.Write(ioConsole,BYTE POINTER(c"> "),2)=2)
+  LET child=PROCESS.Start(@Child,NULL,0)
+  Require(child<>0)
+  WHILE phase=0 DO
+    EXEC.Yield()
+  OD
+
+  Require(instance.height=height-6 AND instance.column=2)
+  Require(CONSOLE.Hide(0)=0 AND CONSOLE.ResizeHeight(0,height)=0)
+  Require(DOS.Read(ioConsole,input,8)=4)
+  Require(input(0)='a AND input(1)='b AND input(2)='c AND input(3)=10)
+  Require(instance.height=height AND windows.pane=0)
+  Require(host.route=route)
+  Require(PROCESS.Wait(child,@result)<>0 AND result.primary=10
+      AND result.secondary=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.EndForeground()<>0)
+  Require(DOS.Close(ioConsole)<>0 AND DOS.ReleaseContext()<>0)
+  finished=1
+
+RETURN
+
+ENDMODULE

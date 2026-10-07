@@ -18,9 +18,10 @@ PUBLIC TYPE ClientContext=[
   BYTE POINTER directory,foreground
   BYTE suspended,foregroundLoan
   BYTE POINTER assignPath,assignOther
+  EXEC.IORequest POINTER timer
 ]
 
-PUBLIC CONST CLIENT_SIZE=94
+PUBLIC CONST CLIENT_SIZE=98
 
 ; Read this Task's detailed DOS error without allocating a client context.
 PUBLIC LONGINT FUNC IoErr()
@@ -163,7 +164,19 @@ PUBLIC LONGINT FUNC ReleaseContext()
     FI
   FI
 
+  IF client.timer<>NULL THEN
+    IF client.timer.io_Message.mn_Node.ln_Type<>EXEC.NT_FREEMSG THEN
+      slot.error=ERROR_OBJECT_IN_USE
+      RETURN(0)
+    FI
+  FI
+
   slot.active=1
+  IF client.timer<>NULL THEN
+    EXEC.CloseDevice(client.timer)
+    EXEC.DeleteIORequest(client.timer)
+  FI
+
   IF client.request<>EXEC.IOStdReq POINTER(0) THEN
     EXEC.DeleteIORequest(EXEC.IORequest POINTER(client.request))
   FI

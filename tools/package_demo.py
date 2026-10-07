@@ -31,7 +31,7 @@ def pointer_description(profile):
     }[profile]
 
 
-def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
+def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text_shell=None):
     """Include only boot files and user documentation, checking recorded hashes."""
     record = json.loads((bundle/'of816.json').read_text())
     media = record['media']
@@ -61,6 +61,18 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None):
     for name, source in LICENSE_FILES.items():
         files[name] = (ROOT/source).read_bytes()
     guide = (ROOT/'docs/demo-distribution.txt').read_text()
+    if text_shell is not None:
+        if bitmap_shell is not None:
+            raise ValueError('Select one shell boot variant')
+        manifest = text_shell/'demo-manifest.json'
+        if hashlib.sha256(manifest.read_bytes()).hexdigest() != media['manifest_sha256']:
+            raise ValueError('Changed text shell manifest')
+        demo = json.loads(manifest.read_text())
+        if not demo.get('shell_only') or demo.get('bitmap'):
+            raise ValueError('Expected a shell-only text build')
+        if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
+            raise ValueError('OF816 does not wrap this text shell')
+        guide = (ROOT/'docs/text-shell-distribution.txt').read_text()
     if bitmap_shell is not None:
         manifest = bitmap_shell/'demo-manifest.json'
         if hashlib.sha256(manifest.read_bytes()).hexdigest() != media['manifest_sha256']:

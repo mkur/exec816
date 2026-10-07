@@ -2,6 +2,8 @@ MODULE TEE
 
 INCLUDE "command-transfer.inc"
 
+CONST TRANSFER_BYTES=512
+BYTE ARRAY transferBuffer(TRANSFER_BYTES)
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
 ADDRESS ARRAY values(2)
 
@@ -25,7 +27,8 @@ LONGINT FUNC Main()
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  LET status=CommandTransfer(COMMAND.Input(),output,COMMAND.Output())
+  LET status=CommandTransfer(COMMAND.Input(),output,COMMAND.Output(),
+      transferBuffer,TRANSFER_BYTES)
 
 RETURN(CommandFinish(output,1,status))
 

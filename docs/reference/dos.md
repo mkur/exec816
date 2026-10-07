@@ -149,6 +149,9 @@ layouts, milestones and measurements are retained in the
 
 ## Foreground console access
 
+OpenConsole requires a console-bound foreground scope. An unbound background
+cancellation scope reports ERROR_OBJECT_WRONG_TYPE rather than selecting unit zero.
+
 `OpenConsole()` returns a new caller-owned RAW FileHandle for the active
 foreground scope's console. It works independently of redirected Input/Output.
 It fails with ERROR_OBJECT_WRONG_TYPE without an active scope and never falls

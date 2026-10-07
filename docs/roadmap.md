@@ -13,6 +13,10 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
   development records do not replace it.
 - Confirm the supported machine and disk profiles, document remaining limits,
   and verify the packaged OF816 boot XEX, system disk, ROM and notices together.
+- Investigate the verified-write deadline exposed by 16 KiB COPY on accurately
+  timed 256-byte MyDOS media before qualifying that case. The
+  [write-performance record](history/write-performance.md) preserves the
+  reproducible timeout and the passing bundled 128-byte WORK scope.
 
 ## Commands and CLI
 
@@ -20,25 +24,63 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
-1. Add shell `>>` append redirection, reusing the existing writable Open and
-   seek-to-EOF behavior. Cover partial writes, final Close errors, BREAK and
-   restoration of the shell's selected streams.
-2. Add a small Amiga-style `EXECUTE file` built-in. Read one bounded command per
-   line through the existing dispatcher; accept blank and comment lines, stop
-   on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
-   separate from the command's Input so a command cannot consume the rest of
-   the script. Begin with one active script and no arguments or conditionals.
-3. Add focused loadable TAIL and FIND utilities after the shared argument and
-   pattern behavior is settled.
+The [COPY and filesystem write-performance slice](history/write-performance.md)
+implements a 16 KiB loadable COPY buffer, fewer physical writes during file
+extension, retained sequential cursors and bounded four-sector metadata groups.
+Matched buffer/filesystem measurements, confirmed-prefix errors, ownership,
+BREAK checkpoints and the bitmap/cartridge preview have development evidence.
+The accurate 256-byte MyDOS transport limit is recorded above.
+
+The [SpartaDOS write buffering slice](history/spartados-write-buffering.md)
+now coalesces bitmap, free-count, map and length updates within each Write,
+with ordered publication before replying and four-sector BREAK checkpoints.
+Matched COPY, failure and cancellation checks pass at the development tier;
+see the [SB0–SB5 plan](plans/spartados-write-buffering-implementation-plan.md).
+Retaining dirty metadata between Write calls until Flush/Close remains a
+separate design decision.
+
+The [background command and primes slice](history/background-pane-primes.md)
+implements positioned writes, height changes, an owned lower pane, independent
+background cancellation and bounded RUN/JOBS/BREAK support. The loadable
+`C:PRIMES` uses six lower rows and updates only changed numeric fields. The
+bitmap shell starts full-screen; pane closure restores its height and edited
+input. One background job and one pane keep this version bounded.
+
+1. Shell `>>` append redirection is implemented through writable Open and
+   seek-to-EOF. Development checks cover saved contents, partial writes,
+   final Close errors, BREAK and restoration of the shell's selected streams;
+   see the [implementation record](history/shell-append-redirection.md).
+2. `EXECUTE file` is implemented through the existing dispatcher, with bounded
+   lines, blank/comment handling, WARN continuation and ERROR/FAIL/BREAK stops.
+   Its source remains separate from command Input; one active script keeps
+   arguments, nesting and conditionals out of this slice. See the
+   [implementation record](history/shell-execute.md).
+3. TAIL and FIND are implemented: a sixteen-line suffix ring for files/pipes
+   and filename traversal with eight directory frames and LIST-style patterns.
+   See the [implementation record](history/tail-find.md).
 
 The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
 is implemented with exact CAT/DELETE names and read-only LIST filtering. The
 [ASSIGN slice](history/assign.md) adds four bounded logical directory names.
 The [shell alias slice](history/shell-aliases.md) adds eight session-local
 command shortcuts without changing DOS lookup.
+The [system command directory slice](history/system-command-directory.md)
+stores external commands in SYS:C, assigns C: there at startup and defaults
+PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
-ExNext after a mutation. The next batch is `>>` and minimal EXECUTE.
+ExNext after a mutation. The three bounded command/shell utility steps above
+are implemented. The [startup script slice](history/shell-startup.md) now assigns
+S: to SYS:S and runs optional STARTUP/USER files sequentially before the prompt.
+
+The [OF816-first boot slice](history/of816-first-boot.md) is implemented through
+B4 at the development tier. The monitor runs before the main kernel payload.
+`EXEC816` restores the
+paused XEX/cartridge reader and returns with RTS; loading then resumes with
+progress dots. Defaults are initialized before Forth, its settings survive
+kernel startup, and the existing screen text is preserved. The bitmap/no-primes
+preview includes both Atarimax forms. Remote image loading remains a later
+extension.
 
 ## Follow-on capabilities
 
@@ -228,9 +270,9 @@ The other possible milestones have no delivery order:
   the selected coverage and remaining qualification limits.
 - A RAM filesystem and broader volume assignments beyond the implemented
   [SYS: alias](reference/sys-volume.md) and [directory assigns](reference/assigns.md).
-- Longer shell pipelines and background execution beyond the current
-  [two-command foreground pipeline](guides/shell.md) and the proposed
-  [command and CLI sequence](#commands-and-cli).
+- Longer shell pipelines and background job control beyond the current
+  [two-command foreground pipeline](guides/shell.md) and the implemented
+  [single background job](guides/shell.md#one-background-job).
 - Regular expressions beyond the implemented [command toolbox](guides/toolbox.md),
   [writable commands](history/write-commands.md) (COPY, TEE, DELETE, RENAME, MAKEDIR), and
   [command usability](history/command-usability.md) services (PATH, fault text

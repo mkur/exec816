@@ -91,7 +91,7 @@ PROC Reset()
   T.breakFlag=0
   T.breakAfter=0
   T.calls(0)=0
-  T.success=c"SYS:HEAD"
+  T.success=c"C:HEAD"
   T.canonical=c"D1:ONE"
   shell.status=0
   shell.error=0
@@ -110,7 +110,7 @@ PROC Main()
   Require(shell.pathCount=1)
   Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL)
   Require(T.attempts=2 AND T.error=0)
-  Require(STR.strcmp(CSTRING(T.calls),c"HEAD\nSYS:HEAD\n")=0)
+  Require(STR.strcmp(CSTRING(T.calls),c"HEAD\nC:HEAD\n")=0)
   Reset()
   T.success=c"HEAD"
   Require(ShellLoadCommand(BYTE POINTER(c"HEAD"))<>NULL AND T.attempts=1)
@@ -209,7 +209,7 @@ PROC Main()
   ShellPathUpdate(BYTE POINTER(c"second"),0)
   Require(STR.strcmp(CSTRING(ShellPathEntry(0)),c"D1:SECOND")=0)
   shell=State POINTER($200000)
-  Require(shell.pathCount=1 AND STR.strcmp(CSTRING(ShellPathEntry(0)),c"SYS:")=0)
+  Require(shell.pathCount=1 AND STR.strcmp(CSTRING(ShellPathEntry(0)),c"C:")=0)
   finished=1
 
 RETURN

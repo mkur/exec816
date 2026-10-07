@@ -1,9 +1,6 @@
 INCLUDE "command-write.inc"
 INCLUDE "command-files.inc"
 
-CONST TRANSFER_BYTES=512
-BYTE ARRAY transferBuffer(TRANSFER_BYTES)
-
 ; Append is an ordinary update open followed by Seek; Close still consumes a
 ; failed output handle, so retain the seek error before releasing it.
 BYTE POINTER FUNC CommandOutput(ADDRESS name BYTE append)
@@ -33,7 +30,8 @@ RETURN(output)
 
 ; Copy counted binary chunks, optionally mirroring to a borrowed stream. A
 ; committed read prefix is forwarded before reporting its saved causal error.
-LONGINT FUNC CommandTransfer(BYTE POINTER input,output,mirror)
+LONGINT FUNC CommandTransfer(BYTE POINTER input,output,mirror,buffer
+    LONGINT capacity)
 
   DO
     BEGIN
@@ -41,9 +39,9 @@ LONGINT FUNC CommandTransfer(BYTE POINTER input,output,mirror)
         RETURN(COMMAND.RETURN_ERROR)
       FI
 
-      LET count=COMMAND.Read(input,transferBuffer,TRANSFER_BYTES)
+      LET count=COMMAND.Read(input,buffer,capacity)
       LET cause=COMMAND.IoErr()
-      IF count<0 OR count>TRANSFER_BYTES THEN
+      IF count<0 OR count>capacity THEN
         COMMAND.SetIoErr(IF cause<>0 THEN cause
             ELSE LONGINT(COMMAND.ERROR_BAD_STREAM_NAME) FI)
         RETURN(COMMAND.RETURN_ERROR)
@@ -53,7 +51,7 @@ LONGINT FUNC CommandTransfer(BYTE POINTER input,output,mirror)
         RETURN(IF cause=0 THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
       FI
 
-      IF COMMAND.WriteAll(output,transferBuffer,count)=0 THEN
+      IF COMMAND.WriteAll(output,buffer,count)=0 THEN
         IF cause<>0 THEN
           COMMAND.SetIoErr(cause)
         FI
@@ -62,7 +60,7 @@ LONGINT FUNC CommandTransfer(BYTE POINTER input,output,mirror)
       FI
 
       IF mirror<>NULL THEN
-        IF COMMAND.WriteAll(mirror,transferBuffer,count)=0 THEN
+        IF COMMAND.WriteAll(mirror,buffer,count)=0 THEN
           IF cause<>0 THEN
             COMMAND.SetIoErr(cause)
           FI

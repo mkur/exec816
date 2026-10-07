@@ -5,8 +5,9 @@ shell/prime demo. This optional program must be selected explicitly. It is not
 a desktop or an AES application environment.
 
 1. Cold-reset into the supplied altirraos-816.rom with BASIC disabled.
-2. Select Atari 800XL, 64 KiB base RAM plus fifteen CPU high banks, 65C816 at 8x,
-   shadow ROM and PAL. Enable VBXE full FX 1.26 at $D600, private 512 KiB VRAM,
+2. Select Atari 800XL with the required 4MB RAM: 64K base RAM plus 4032K high
+   memory (63 CPU high banks). Select 65C816 at 8x, shadow ROM and PAL.
+   Enable VBXE full FX 1.26 at $D600, private 512 KiB VRAM,
    no shared RAM and no VBXE IRQ. Other cores/bases are unsupported.
 3. Mount gem-vdi/graphics.atr as drive 1. Select physical generic56k disk emulation:
    SIO patch OFF, burst OFF, random delay OFF and accurate sector timing ON.

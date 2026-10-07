@@ -21,6 +21,7 @@ FAILURES={
  'buffer':('blockio','adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)','adapter.buffer=BYTE POINTER(0)',103),
  'workspace':('fsinit','service.work=FSBTYPES.Workspace POINTER(EXEC.AllocMem(SIZEOF(\n      FSBTYPES.Workspace),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','service.work=FSBTYPES.Workspace POINTER(0)',103),
  'operation':('fsinit','service.operation=FSBTYPES.Operation POINTER(EXEC.AllocMem(SIZEOF(\n      FSBTYPES.Operation),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','service.operation=FSBTYPES.Operation POINTER(0)',103),
+ 'mutation':('fsinit','service.mutation=EXEC.AllocMem(SIZEOF(FSWTYPES.State),\n        EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)','service.mutation=NULL',103),
  'backend-volume':('mydos','volume.state=EXEC.AllocMem(SIZEOF(MYDOSTYPES.Volume),\n      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)','volume.state=BYTE POINTER(0)',103),
  'sdfs-work':('sdfs','work.extra=EXEC.AllocMem(SIZEOF(SDFSTYPES.BackendState),EXEC.MEMF_UPPER\n      OR EXEC.MEMF_CLEAR)','work.extra=BYTE POINTER(0)',103),
  'sdfs-volume':('sdfs','volume.state=EXEC.AllocMem(SIZEOF(SDFSTYPES.Volume),EXEC.MEMF_UPPER\n      OR EXEC.MEMF_CLEAR)','volume.state=BYTE POINTER(0)',103),
@@ -55,11 +56,13 @@ def run(t,out,mode,fault,filesystem='mydos'):
         error=225
     media=out/'volume.atr';media.write_bytes(disk.data);before=sha256(media)
     mounts=[dict(alias='D1',unit=49,sectors=2000 if filesystem=='sdfs' else 720,sector_bytes=128,format=2 if filesystem=='sdfs' else 1)]
+    if fault=='mutation':
+        mounts[0].update(access='readwrite',profile=4)
     if fault.startswith('duplicate-'):
         mounts.append(dict(alias='D2',unit=50,sectors=720,sector_bytes=128));error=202
-    p=build(t,ROOT/'tests/programs/dos_startup_fail.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,dos_mounts=mounts,image_data=[(0xd1000,b'D1:TOOLS/SUB/DATA.BIN\0')])
+    p=build(t,ROOT/'tests/programs/dos_startup_fail.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,dos_mounts=mounts,console_deferred=True,image_data=[(0xd1000,b'D1:TOOLS/SUB/DATA.BIN\0')])
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','fastest');b.mount(0,str(media))
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','generic56k' if fault=='mutation' else 'fastest');b.mount(0,str(media))
         def before_run(b):
             # Build valid production descriptors; corrupt the loaded test image
             # explicitly to exercise the independent native validation gate.

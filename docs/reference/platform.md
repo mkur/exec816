@@ -8,6 +8,10 @@ adapter controls OS entry, hardware ownership and context transitions. Compiler
 semantics and ABI primitives belong to actionc; emulator correctness belongs to
 actionc-vm. Platform tests must qualify the hosted combination.
 
+Other ROMs remain outside this platform contract. The
+[firmware diagnostics](../contributing/building.md#firmware-diagnostics) record
+bounded XLOS boot checks and their setup without extending platform qualification.
+
 ## Compiler and memory contract
 
 Use the revision and generated ABI selected by [actionc.json](../../toolchain/actionc.json):
@@ -102,7 +106,6 @@ only when populated. The existing native data arena and all stack/DP reservation
 place. The effective origin is recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
-
 The text, bitmap and desktop demos use a 4 KiB arena to hold their composed
 application globals and the resident fault strings. `tools/build_demo.py`
 derives `demo-memory.json` from the default profile with this explicit 2 KiB
@@ -170,6 +173,14 @@ in `diagnostic_scratch` and checked against every live phase. It does not reserv
 production bytes; instrumented runs must report their borrowing and restore
 scratch when the observation ends.
 
+The monitor runs inside an INITAD activation before the main image records.
+Its eight-byte saved caller context remains on the live page-one loader stack;
+ROM calls and native interrupt wrappers use an anchor below that frame. The
+monitor restores the context and returns with RTS before payload loading
+resumes. It retires its keyboard, vectors and borrowed native storage at that
+return. The manifest, staging and loader remain live until their existing
+startup boundaries; returning from the monitor does not retire them early.
+
 The reserved aperture supports the optional [display adapter](display.md). The
 [aperture development record](../development/vbxe-aperture.json) covers the
 unmapped RAM reservation, loading, Task execution and OF816 handoff; mapped
@@ -202,8 +213,10 @@ Use `memory.json`'s `boot_config` address, not a hard-coded historical location.
 The fields are magic `$4245`, version 1, record size 8, cache-block count,
 system-drive byte and a reserved zero byte.
 
-The loader initializes defaults during startup. A monitor may change settings
-before `loader_start`; Task initialization validates and captures them before
+The first setup callback initializes defaults once, before OF816. A monitor may
+change settings before `loader_start`; resumed copy/zero-fill callbacks preserve
+the entire boot record and skip initialization. Task initialization validates
+and captures these requests before
 admission. Later writes have no effect. Invalid headers or drive values select
 build defaults with status 1; invalid cache capacity selects defaults with status
 2; valid input has status 0.

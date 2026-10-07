@@ -8,8 +8,12 @@ USE FSBTYPES
 USE FSWTYPES
 USE FSINFO
 USE DOSCORE
+USE DOSOBJECTS
+USE FSREGISTRY
+USE SDFS
 CARD checks,phase
 CARD hint
+BYTE fileOnly
 CARD ARRAY layouts(8)
 LONGINT amount
 LONGINT lastResult,lastError
@@ -35,7 +39,7 @@ RETURN(BYTE POINTER($d1000)+SIZE(index LSH 6))
 PROC FileWrites()
   LONGINT index
 
-  LET buffer=BYTE POINTER($afff0)
+  LET buffer=BYTE POINTER($30fff0)
   FOR index=0 TO amount-1 DO
     buffer(CARD(index))=BYTE(index) XOR $6d
   OD
@@ -53,6 +57,21 @@ PROC FileWrites()
   phase=2
   lastResult=DOS.Write(file,buffer,amount)
   Require(lastResult=amount)
+  BEGIN
+    LET registry=DOSCORE.GetRegistry()
+    LET service=FSTYPES.Service POINTER(registry.runtime)
+    IF service.mounts(0).item.spec.format=2 THEN
+      BEGIN
+        LET object=FSTYPES.FileObject POINTER(FSREGISTRY.FindObject(
+            DOSCORE.Current(),BYTE POINTER(file),DOSOBJECTS.KIND_FILE))
+        Require(object<>NULL)
+        LET sectorBytes=LONGCARD(service.mounts(0).item.spec.dataBytes)
+        LET map=SDFS.Map(@object.backing.cursor)
+        Require(map.hops=(LONGCARD(amount)-1)/sectorBytes/((sectorBytes-4) RSH 1))
+      END
+    FI
+  END
+
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Examine(lock,@info)<>0)
   DO
@@ -114,6 +133,7 @@ PROC FileWrites()
 
 RETURN
 
+; A retained CurrentDir lock must still examine a directory after children grow it.
 PROC Names()
 
   phase=5
@@ -127,11 +147,19 @@ PROC Names()
   Require(lock<>NULL)
   Require(DOS.CreateDir(Path(2))=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-  DOS.UnLock(lock)
-  file=DOS.Open(Path(3),DOS.MODE_NEWFILE)
+  Require(DOS.Examine(lock,@info)<>0)
+  LET previous=DOS.CurrentDir(lock)
+  Require(DOS.IoErr()=0)
+  file=DOS.Open(BYTE POINTER(c"CHILD"),DOS.MODE_NEWFILE)
   Require(file<>NULL)
-  Require(DOS.Write(file,BYTE POINTER($afff0),17)=17)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),17)=17)
   Require(DOS.Close(file)<>0)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Examine(lock,@info)<>0)
+  Require(DOS.ExNext(lock,@info)<>0 AND info.fib_Size=17)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  Require(DOS.CurrentDir(previous)=lock AND DOS.IoErr()=0)
+  DOS.UnLock(lock)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_DIR_NOT_EMPTY)
   Require(DOS.DeleteFile(Path(3))<>0)
   Require(DOS.DeleteFile(Path(2))<>0)
@@ -143,12 +171,12 @@ PROC Truncate()
   phase=6
   file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
   Require(file<>NULL)
-  Require(DOS.Write(file,BYTE POINTER($afff0),amount)=amount)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),amount)=amount)
   Require(DOS.Close(file)<>0)
   file=DOS.Open(Path(4),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
-  Require(DOS.Write(file,BYTE POINTER($afff0),1)=1)
+  Require(DOS.Write(file,BYTE POINTER($30fff0),1)=1)
   Require(DOS.Close(file)<>0)
   Require(DOS.DeleteFile(Path(4))<>0)
   file=DOS.Open(Path(5),DOS.MODE_READWRITE)
@@ -174,8 +202,12 @@ PROC Main()
   Require(service.work.operations=1)
   service.mounts(0).item.volume.allocationHint=hint
   FileWrites()
-  Names()
-  Truncate()
+  IF fileOnly<>0 THEN
+    Require(DOS.Rename(Path(0),Path(1))<>0)
+  ELSE
+    Names()
+    Truncate()
+  FI
   phase=7
   Require(DOS.ReleaseContext()<>0)
   Require(FSBOOT.Stop()<>0)

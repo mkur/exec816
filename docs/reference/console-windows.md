@@ -77,7 +77,7 @@ Rectangles cannot overlap or extend beyond it. An already visible instance can
 only be shown again at its existing position. Hide erases its rectangle and
 retains its cells and I/O; output continues while hidden. Showing it later
 redraws all retained cells. Hide the full-screen default before showing tiles.
-There is no additional physical screen, overlapping, resize/reflow, scrollback
+There is no additional physical screen, overlapping, width reflow, scrollback
 or escape-sequence emulation.
 
 Focus accepts a visible instance. Only its cursor is overlaid, and subsequent
@@ -103,6 +103,39 @@ mailboxes intact. IRQs remain enabled during both scans; only each bitmap
 read/clear excludes IRQ, with NMI scheduling deferred by the existing entry
 protocol. Loss acknowledgement precedes the head snapshot so a new overflow is
 never silently cleared. Retained route slots cannot be reused during this scan.
+
+## Height changes and owned panes
+
+`CONSOLE.ResizeHeight(unit,height)` returns one on success, zero on rejection.
+The owner may change height at fixed width within the original cell capacity.
+It preserves the unit, endpoints, input route, focus and cooked draft. Shrinking
+keeps the cursor row and discards older rows above it when necessary; growing
+appends blank rows. The circular retained buffer is normalized using one shared
+80-byte upper-RAM row. Width changes and scrollback are unsupported.
+
+The existing presentation transaction settles borrowed drawing and pending DMA
+before changing cells or geometry. Scheduling and IRQ capture remain enabled.
+An active positioned write prevents resizing until its admitted span completes;
+queued writes validate against the new geometry when claimed. Ordinary streams
+and pending reads retain their ownership.
+
+`COMMAND.OpenPane(rows)` prepares one full-width output instance below the
+permanent default console. The default must be visible at full screen size and
+focused; desktop mode rejects this operation. One association is supported.
+A second pane or conflicting Show, Hide, Focus or resize returns busy. Unit-zero
+focus remains available. Allocation and admission failures preserve the layout.
+
+The returned DOS handle owns retirement, unlike ordinary RAW/CON handles.
+Close restores the parent's full height before releasing the child's instance
+lease. Process return also closes it through ordinary DOS ownership cleanup,
+even while the parent is waiting in a cooked Read. Its draft and captured route
+survive. The pane is output-only and cannot be inherited as a selected stream.
+Additional RAW bindings must close before the owning pane can retire.
+
+The capacity field fits the instance's former alignment padding; the pane
+association fits the existing 880-byte resident console reservation. Bank-zero
+reservation changes by zero bytes. The implementation and development checks
+are recorded in the [pane record](../history/background-pane-primes.md).
 
 ## Memory and asynchronous entry
 

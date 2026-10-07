@@ -10,6 +10,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from build_of816 import boot_layout, xex_segments
 from native_program import xex_segment
 from boot_config import ABI as BOOT_ABI
+from banked_image import split_setup
 
 
 class OF816PackageTests(unittest.TestCase):
@@ -21,7 +22,9 @@ class OF816PackageTests(unittest.TestCase):
         (self.folder/'manifest.bin').write_bytes(bytes(32)+seed)
         self.xex = self.folder/'program.xex'
         self.xex.write_bytes(b'\xff\xff'+xex_segment(0x1400,b'\xea'))
-        self.program = dict(output=self.folder,xex=self.xex,labels=dict(loader_start=0x6800),
+        self.program = dict(output=self.folder,xex=self.xex,labels=dict(loader_start=0x6800,
+            loader_error=0x6820,loader_init=0x6830,loader_progress_add=0x6900,
+            loader_progress_finish=0x6920),
             image=dict(segments=[dict(address=0x10000,bytes=[0x6b])],zero_fill=[]),
             build=dict(tasks=True,banked=True,dos_mounts=[],system_mount=None,task_storage=dict(CAPACITY=4),memory=dict(
                 task_pools=[dict(dp=0x0b00,stack_base=0x2410),dict(dp=0x0c00,stack_base=0x3050)],
@@ -98,3 +101,33 @@ class OF816PackageTests(unittest.TestCase):
         for truncated in (b'',raw[:3],raw[:-1]):
             with self.subTest(size=len(truncated)),self.assertRaises(RuntimeError):
                 list(xex_segments(truncated))
+
+    def native_records(self):
+        memory=self.program['build']['memory']
+        memory['regions']['resident']=[0x1400,0x2400]
+        memory['constants'].update(LOADER=0x6800,LOADER_BYTES=5120,MANIFEST=0x6000,CHUNK=1024)
+        return [(0x6800,b'\xea'),(0x2e0,struct.pack('<H',0x6800)),(0x1400,b'\xea'),
+                (0x6000,b'EBM1'),(0x5bf0,bytes(8)),(0x2e2,struct.pack('<H',0x6830)),
+                (0x5bf0,struct.pack('<HHHBB',0,0,1,2,0)+b'\x6b'),
+                (0x2e2,struct.pack('<H',0x6830)),(0x2e0,struct.pack('<H',0x6800))]
+
+    def test_setup_boundary_precedes_payload_and_keeps_guarded_runad(self):
+        segments=self.native_records()
+        setup,payload=split_setup(segments,self.program['build']['memory'],self.program['labels'])
+        self.assertEqual(setup,segments[:6])
+        self.assertEqual(payload,segments[6:])
+        self.assertEqual(setup[1],payload[-1])
+
+    def test_rejects_bad_setup_and_later_direct_writes(self):
+        original=self.native_records()
+        for index,item in [(4,(0x5bf0,b'\1'+bytes(7))),
+                           (5,(0x2e2,struct.pack('<H',0x6900))),
+                           (6,(0x0980,bytes(8))),
+                           (7,(0x2e2,struct.pack('<H',0x6900))),
+                           (8,(0x2e0,struct.pack('<H',0x6830)))]:
+            bad=list(original);bad[index]=item
+            with self.subTest(index=index),self.assertRaises(ValueError):
+                split_setup(bad,self.program['build']['memory'],self.program['labels'])
+        for bad in (original[:5],original[:6]+original[7:]):
+            with self.assertRaises(ValueError):
+                split_setup(bad,self.program['build']['memory'],self.program['labels'])

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "completed_slices": [
+    "TAIL",
+    "FIND"
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0
+  },
+  "artifacts": {
+    "tail_vectors": {
+      "path": "build/development/tail-find/tail-vectors/results.json",
+      "sha256": "44c55a7e6adaca8054fad04865d2b8546d74f40ec83b03272c4c79a103f5a907",
+      "status": "pass"
+    },
+    "tail_shell": {
+      "path": "build/development/tail-find/shell/tail-results.json",
+      "sha256": "3e015a10d68fd360c9a53302619bb845202957f8d9b39290144cc136a8234a46",
+      "status": "pass"
+    },
+    "find_vectors": {
+      "path": "build/development/tail-find/find-vectors/results.json",
+      "sha256": "575044aa527965f616f497d19ca29bc393a63881b6ceec26d6135568e156c2ca",
+      "status": "pass"
+    },
+    "find_shell": {
+      "path": "build/development/tail-find/find-shell/find-results.json",
+      "sha256": "e5949a684d53b2b07227a0fc100d581a2df0bf52434daf281a9c2e925932561e",
+      "status": "pass"
+    }
+  },
+  "tail": {
+    "bss_bytes": 17306,
+    "text_bytes": 3973,
+    "file_bytes": 4953,
+    "cases": 32,
+    "head_regression_cases": 22,
+    "max_lines": 16,
+    "max_line_bytes": 1024,
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "host_tests": 396
+  },
+  "pins": {
+    "platform": "toolchain/altirra-shell-paced.json",
+    "configuration_overrides": {
+      "diskemu": "generic56k",
+      "accuratedisk": false
+    }
+  },
+  "status": "implemented",
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1312,
+      1312,
+      1312,
+      1312,
+      1312,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 25408,
+    "loading_excluding_os": 21872,
+    "runtime_including_os": 56128,
+    "loading_including_os": 52592
+  },
+  "find": {
+    "bss_bytes": 2722,
+    "text_bytes": 7851,
+    "file_bytes": 9312,
+    "cases": 24,
+    "list_regression_cases": 13,
+    "directory_frames": 8,
+    "path_bytes": 256,
+    "frame_array_bytes": 2128,
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "host_tests": 396
+  },
+  "source_inputs": {
+    "examples/commands/tail.act": "075df8c80ce3f69d962feb7936b26a2d56081b714d724cec582e51897a9a61ca",
+    "examples/commands/find.act": "8fb6d81b6eb23790c8b2b750442a60e143628239e06d1724ec1506d22fca793d",
+    "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+    "tools/test_tail_find_shell.py": "2449416e860896cc130baaed9aafa036cb33b489742b03a98867912733ff912a",
+    "tools/test_toolbox.py": "2b7052e051e2a9fca53193dfa1a32e0c27807ae0fbc76c83170a67d69a560c95",
+    "tests/programs/toolbox_calls.act": "6646d3030a0193203c1012658d10f6bcd083c82d2f6860a852fb7da3cc4d826d",
+    "tools/build_demo.py": "3f1ddc80527564cac7b91c195a1aae3eaf0629246663b0b975d9d97fab74cdee"
+  },
+  "limitations": [
+    "Development tier; no release qualification or physical-hardware claim.",
+    "Previously built preview ZIPs are not refreshed by this slice.",
+    "TAIL supports at most sixteen 1024-byte lines; FIND uses eight frames and 255-byte paths.",
+    "FIND takes no filesystem snapshot, supports filename patterns only and follows existing DOS path rules.",
+    "Nested lock cleanup is exercised by an eight-frame depth error; BREAK injection uses a controlled one-frame directory."
+  ]
+}

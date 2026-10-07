@@ -1,0 +1,79 @@
+; One cached timer binding per DOS context; the existing reply port is shared.
+MODULE DOSDELAY
+USE EXEC
+USE TIMER
+USE DOSCLIENT
+USE DOSBREAKTYPES
+USE DOSCANCEL
+INCLUDE "dos-types.inc"
+
+PUBLIC LONGINT FUNC Delay(LONGCARD ticks)
+  INT error
+
+  LET client=DOSCLIENT.Ensure()
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  LET scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
+  IF scope<>NULL THEN
+    IF scope.pending<>0 THEN
+      DOSCLIENT.SetError(ERROR_BREAK)
+      RETURN(0)
+    FI
+  FI
+
+  IF ticks=0 THEN
+    DOSCLIENT.SetError(0)
+    RETURN(-1)
+  FI
+
+  client.busy=1
+  IF client.timer=NULL THEN
+    client.timer=EXEC.CreateIORequest(client.port,SIZEOF(TIMER.TimerClockRequest))
+    IF client.timer=NULL THEN
+      client.busy=0
+      DOSCLIENT.SetError(ERROR_NO_FREE_STORE)
+      RETURN(0)
+    FI
+
+    error=EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+        client.timer,0)
+    IF error<>0 THEN
+      EXEC.DeleteIORequest(client.timer)
+      client.timer=NULL
+      client.busy=0
+      DOSCLIENT.SetError(LONGINT(error))
+      RETURN(0)
+    FI
+  FI
+
+  LET clock=TIMER.TimerClockRequest POINTER(client.timer)
+  client.timer.io_Command=TIMER.TD_READCLOCK
+  error=EXEC.DoIO(client.timer)
+  IF error=0 THEN
+    BEGIN
+      LET low=clock.ticks_lo+ticks
+      IF low<clock.ticks_lo THEN
+        IF clock.ticks_hi=LONGCARD($ffffffff) THEN
+          error=TIMER.TIMERERR_OVERFLOW
+        ELSE
+          clock.ticks_hi==+1
+        FI
+      FI
+
+      IF error=0 THEN
+        clock.ticks_lo=low
+        client.timer.io_Command=TIMER.TD_WAITUNTIL
+        client.timer.io_Flags=0
+        error=DOSCANCEL.Transfer(client.timer,scope)
+      FI
+    END
+  FI
+
+  client.busy=0
+  DOSCLIENT.SetError(LONGINT(error))
+
+RETURN(IF error=0 THEN LONGINT(-1) ELSE LONGINT(0) FI)
+
+ENDMODULE

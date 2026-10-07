@@ -1,0 +1,178 @@
+{
+  "format": "exec816-xlos-boot-development-v1",
+  "date": "2026-10-06",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_base_revision": "c5db999b0f18a9bd82bb9fd714a223b1fe3e9e17",
+  "source_changes": {
+    "platform/altirraos/cartridge.s": "60b0dc9a2f963e24bf5defb080a72672d096e01f80f730afae8523582fe86a64",
+    "tools/test_cartridge.py": "cb79a32e94604508bd89139771ef8ff70ab1e4badc63a4d2addcdb589692c0e4",
+    "tools/test_demo.py": "a23a77b836b1d95f41d109e5ecc97330c340826ca5358f634954a69b9f969b30",
+    "docs/cartridge-distribution.txt": "2933aed7eb6802a2eda834129d61b12cb887f5cc92be71a0525b32c10428779e",
+    "docs/contributing/building.md": "8699a5ed2bc11ffab965fe068313fcdcdd68fe99aa1a99ee48abfa3a4d4d0ef7",
+    "docs/reference/platform.md": "f7088e3b2eb049527e494a3a86605a9117deaf75fd45f4a4acbc10b76a5077ee",
+    "docs/history/README.md": "85f766ef6ce41edbacdf7da42e739dc8982b29483eb60c5aac54a8b1b970f2e7"
+  },
+  "native_image": {
+    "build": "build/release-preview-c5db999-full/native",
+    "reused": true,
+    "optimized": true,
+    "compiler_revision": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08",
+    "compiler_override": false,
+    "xex_sha256": "f2947d3f5fb7faea3ec37f32bb48aa2b87639b9b0447b7ee6c8abcdd93e8cb06"
+  },
+  "machine": {
+    "pin": "toolchain/altirra-gem-vdi.json",
+    "pin_sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "model": "800XL",
+    "cpu": "65C816",
+    "cpu_multiplier": 8,
+    "shadow_rom": true,
+    "video": "PAL",
+    "base_ram_kib": 64,
+    "high_banks": 63,
+    "vbxe": "FX 1.26, D600, private 512 KiB VRAM",
+    "diskemu": "generic56k",
+    "siopatch": false,
+    "burstio": false
+  },
+  "firmware": {
+    "archive": "xlos-20251207.arc",
+    "version": "2.48",
+    "download": "https://drac030.krap.pl/en-pliki.php",
+    "programming_reference": "https://drac030.krap.pl/en-specyfikacja.php",
+    "sha256": {
+      "XLOS816A.ROM": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+      "XLOS816F.ROM": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5"
+    },
+    "distribution_rom_unchanged": true,
+    "xlos_rom_redistributed": false
+  },
+  "findings": {
+    "cartridge": "Disabled cartridge reported TRIG3=0, but the loader set GINTLK=1 before enabling NMI. XLOS halted during INITAD as a cartridge removal. Copying TRIG3 into GINTLK avoids the mismatch.",
+    "xex": "Default Altirra XEX boot failed before Exec INITAD, also for an eight-byte executable without Exec. Disk Boot with D1 Off, SYS on D2 from cold start and OF816 SYSTEM-DRIVE! selection passed.",
+    "remaining_d1_limit": "Disk Boot followed by late SYS attachment on D1 reached the shell but timed out on filesystem startup with both XLOS and the bundled ROM. This route is unsupported; its precise transport cause was not resolved."
+  },
+  "checks": [
+    {
+      "name": "xlos-a",
+      "artifact": "build/xlos-diagnostic/check-xlos-a/results.json",
+      "sha256": "b5fa5a89e106ccb9533570230d73ac0552d82be6b5ed5fd9c7136561dcd690fd",
+      "status": "pass",
+      "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+      "rom": {
+        "path": "/Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM",
+        "sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": true
+      },
+      "screens": 42,
+      "variant": "new",
+      "route": "autoboot",
+      "of816_guards": "intact",
+      "os_handoff_restored": true
+    },
+    {
+      "name": "altirra-new",
+      "artifact": "build/xlos-diagnostic/check-altirra-new/results.json",
+      "sha256": "55d292feb6820a7bfeaf40de083fcf94914c110d6ca912b9ff1436f522c4190c",
+      "status": "pass",
+      "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "screens": 42,
+      "variant": "new",
+      "route": "autoboot",
+      "of816_guards": "intact",
+      "os_handoff_restored": true
+    },
+    {
+      "name": "altirra-old",
+      "artifact": "build/xlos-diagnostic/check-altirra-old/results.json",
+      "sha256": "86a326cce076b181062dd3022d76d16a4105e44ad2a150fd32d2015a1b0be550",
+      "status": "pass",
+      "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "screens": 42,
+      "variant": "old",
+      "route": "forth-command",
+      "of816_guards": "intact",
+      "os_handoff_restored": true
+    },
+    {
+      "name": "xlos-a-xex-d2",
+      "artifact": "build/xlos-diagnostic/xex-diskboot-d2/results-current.json",
+      "sha256": "6f83daa892a4a9ae3491ec962b8e9e1f0ad35cb3458201ab083aac9e7d5d05f8",
+      "status": "pass",
+      "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+      "rom": {
+        "path": "/Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM",
+        "sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": true
+      },
+      "screens": 42,
+      "system_drive": 2,
+      "disk_boot": true,
+      "autoboot_frames": 249
+    },
+    {
+      "name": "xlos-f-manual-xex-d2",
+      "artifact": "build/xlos-diagnostic/manual-xex-f/results.json",
+      "sha256": "a765e87ad503bb65aa48b62d7d75f45f5a92b991d18575440a5d0bc7bd641f19",
+      "status": "pass",
+      "scope": "XLOS F Disk Boot, physical Forth drive selection, Exec shell startup",
+      "rom_sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "rom_override": true,
+      "system_drive": 2,
+      "physical_forth_input": true,
+      "of816_guards": "intact",
+      "os_handoff_restored": true
+    },
+    {
+      "name": "xlos-f-cartridge-startup",
+      "artifact": "build/xlos-diagnostic/XLOS816F-cart-candidate/results.json",
+      "sha256": "4281f98f881da883c9afd0beaac5d15e20532081c66f17e815c4077c14d4c267",
+      "status": "startup-reached",
+      "scope": "INITAD, OF816 countdown and native Exec entry only",
+      "rom_sha256": "2899b04db54bbdef833ce8a203b3cd55c83c8ed78c1feaa158bf7dc13d4f9da5",
+      "rom_override": true,
+      "image_sha256": "1928e1e544039c036e327ca16062b32fb9749a311ab9160b98124d3db4e0cfb5"
+    }
+  ],
+  "full_walkthrough_screen_checks": 168,
+  "host_tests": 362,
+  "bank_zero_delta": {
+    "relative_to": "c5db999 preview",
+    "fixed_runtime": 0,
+    "per_public_task": 0,
+    "idle": 0,
+    "boot_reserved": 0,
+    "boot_reader_reserved_bytes": 1024,
+    "boot_reader_code_growth_bytes": 1
+  },
+  "supported_platform": "Bundled pinned AltirraOS 65816; focused XLOS diagnostics do not extend platform qualification.",
+  "excluded": [
+    "Physical Atari/accelerator/cartridge hardware",
+    "Full platform qualification matrices",
+    "Unrelated XLOS ROM services",
+    "Raw NIR replay: compiler and native payload unchanged"
+  ],
+  "preview": {
+    "assets": "build/release-preview-xlos-fix/assets",
+    "package_checks": "build/release-preview-xlos-fix/package-checks.json",
+    "published": false,
+    "source_committed": false
+  }
+}

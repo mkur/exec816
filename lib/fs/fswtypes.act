@@ -2,6 +2,9 @@
 MODULE FSWTYPES
 USE FSBTYPES
 
+; Four sectors keep accurate-disk BREAK latency below the eight-sector result.
+PUBLIC CONST EXTENSION_SECTORS=4
+
 PUBLIC TYPE State=[
   BYTE ARRAY data(256)
   BYTE ARRAY map(256)
@@ -15,6 +18,11 @@ PUBLIC TYPE State=[
   LONGINT directoryLength
   LONGCARD ordinal
   FSBTYPES.Entry target
+  BYTE ARRAY bitmap(256)
+  BYTE batchActive,bitmapValid,freeValid,bitmapDirty,buffered,drain
+  CARD batchPage,batchMap,free
+  LONGINT staged,confirmedPosition,confirmedLength,confirmedCount
+  BYTE ARRAY confirmedStorage(FSBTYPES.CURSOR_STORAGE_BYTES)
 ]
 
 ENDMODULE

@@ -9,6 +9,7 @@ USE MYDOS
 USE MYDOSTYPES
 USE SDFS
 USE SDFSTYPES
+USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 
 BYTE FUNC Allowed(FSTYPES.Service POINTER service CARD sector)
@@ -47,23 +48,28 @@ BYTE FUNC Bitmap(FSTYPES.Service POINTER service CARD sector BYTE cached)
   SDFSTYPES.Volume POINTER native
 
   LET state=FSWRITEIO.State(service)
-  LET size=service.selected.spec.dataBytes
+  LET sectorBytes=service.selected.spec.dataBytes
   offset=LONGCARD(sector) RSH 3
   IF service.selected.spec.format=FSFORMATS.MYDOS THEN
     offset==+10
-    physical=360-CARD(offset/LONGCARD(size))
+    physical=360-CARD(offset/LONGCARD(sectorBytes))
   ELSE
     native=SDFSTYPES.Volume POINTER(service.work.volume.state)
-    physical=native.bitmap+CARD(offset/LONGCARD(size))
+    physical=native.bitmap+CARD(offset/LONGCARD(sectorBytes))
   FI
 
-  state.bitmapOffset=CARD(offset MOD LONGCARD(size))
+  state.bitmapOffset=CARD(offset MOD LONGCARD(sectorBytes))
   state.bitmapMask=BYTE($80 RSH (sector & 7))
   IF cached<>0 AND state.bitmapSector=physical THEN
     RETURN(FSWRITEIO.Checkpoint(service))
   FI
 
   state.bitmapSector=physical
+  IF state.batchActive<>0 AND state.bitmapValid<>0 AND
+      state.batchPage=physical THEN
+    A816MEMORY.Move(state.scratch,state.bitmap,SIZE(sectorBytes))
+    RETURN(FSWRITEIO.Checkpoint(service))
+  FI
 
 RETURN(FSWRITEIO.Read(service,physical,state.scratch))
 
@@ -81,10 +87,10 @@ PUBLIC BYTE FUNC Allocated(FSTYPES.Service POINTER service CARD sector)
 RETURN(1)
 
 ; Validate the recorded count and every requested free bit before mutation.
-PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
-    CARD maximum)
+BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous
+    CARD maximum BYTE partial)
   LONGCARD sector,limit,visited
-  CARD header,offset,free
+  CARD header,offset,free,page
   BYTE cached
 
   LET state=FSWRITEIO.State(service)
@@ -115,7 +121,11 @@ PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
   FI
 
   IF free<CARD(count) THEN
-    RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+    IF partial=0 OR free=0 THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+    FI
+
+    count=BYTE(free)
   FI
 
   limit=service.selected.spec.sectors
@@ -130,6 +140,7 @@ PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
 
   visited=0
   cached=0
+  page=0
   WHILE visited<=limit-4 DO
     IF Allowed(service,CARD(sector))<>0 THEN
       IF Bitmap(service,CARD(sector),cached)=0 THEN
@@ -137,7 +148,13 @@ PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
       FI
 
       cached=1
+      IF partial<>0 AND state.reservations<>0 AND
+          state.bitmapSector<>page THEN
+        RETURN(1)
+      FI
+
       IF (state.scratch(state.bitmapOffset) & state.bitmapMask)<>0 THEN
+        page=state.bitmapSector
         state.reserved(state.reservations)=CARD(sector)
         state.reservations==+1
         IF state.reservations=count THEN
@@ -160,7 +177,219 @@ PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
     FI
   OD
 
+  IF partial<>0 AND state.reservations<>0 THEN
+    RETURN(1)
+  FI
+
 RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+
+; Namespace callers still require their complete exact/contiguous reservation.
+PUBLIC BYTE FUNC Find(FSTYPES.Service POINTER service BYTE count,contiguous
+    CARD maximum)
+
+RETURN(Reserve(service,count,contiguous,maximum,0))
+
+; Extension can commit a smaller prefix, bounded by one bitmap page.
+BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
+    CARD maximum)
+  LONGCARD sector,limit,visited,offset
+  CARD page
+
+  LET state=FSWRITEIO.State(service)
+  LET sectorBytes=service.selected.spec.dataBytes
+  LET native=SDFSTYPES.Volume POINTER(service.work.volume.state)
+  state.reservations=0
+  state.used=0
+  IF state.freeValid=0 THEN
+    IF FSWRITEIO.Read(service,1,state.scratch)=0 THEN
+      RETURN(0)
+    FI
+
+    state.free=SDFS.Word(state.scratch,13)
+    IF LONGCARD(state.free)>service.selected.spec.sectors THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    state.freeValid=1
+  FI
+
+  IF state.free=0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+  FI
+
+  IF CARD(count)>state.free THEN
+    count=BYTE(state.free)
+  FI
+
+  limit=service.selected.spec.sectors
+  IF limit>LONGCARD(maximum) THEN
+    limit=LONGCARD(maximum)
+  FI
+
+  sector=LONGCARD(service.work.volume.allocationHint)
+  IF sector<4 OR sector>limit THEN
+    sector=4
+  FI
+
+  visited=0
+  WHILE visited<=limit-4 DO
+    IF Allowed(service,CARD(sector))<>0 THEN
+      offset=sector RSH 3
+      page=native.bitmap+CARD(offset/LONGCARD(sectorBytes))
+      IF state.bitmapValid=0 OR state.batchPage<>page THEN
+        IF state.reservations<>0 THEN
+          RETURN(1)
+        FI
+
+        IF state.bitmapDirty<>0 THEN
+          state.drain=1
+          RETURN(0)
+        FI
+
+        IF FSWRITEIO.Read(service,page,state.bitmap)=0 THEN
+          RETURN(0)
+        FI
+
+        state.batchPage=page
+        state.bitmapValid=1
+      FI
+
+      IF FSWRITEIO.Checkpoint(service)=0 THEN
+        RETURN(0)
+      FI
+
+      state.bitmapOffset=CARD(offset MOD LONGCARD(sectorBytes))
+      state.bitmapMask=BYTE($80 RSH (sector & 7))
+      IF (state.bitmap(state.bitmapOffset) & state.bitmapMask)<>0 THEN
+        state.reserved(state.reservations)=CARD(sector)
+        state.reservations==+1
+        IF state.reservations=count THEN
+          RETURN(1)
+        FI
+      FI
+    FI
+
+    sector==+1
+    visited==+1
+    IF sector>limit THEN
+      sector=4
+    FI
+  OD
+
+  IF state.reservations<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+
+PUBLIC BYTE FUNC FindGroup(FSTYPES.Service POINTER service BYTE count
+    CARD maximum)
+
+  LET state=FSWRITEIO.State(service)
+  IF state.batchActive<>0 THEN
+    RETURN(ReserveBatch(service,count,maximum))
+  FI
+
+RETURN(Reserve(service,count,0,maximum,1))
+
+; Update only the working bitmap. The writer publishes it after payloads.
+BYTE FUNC TakeBatch(FSTYPES.Service POINTER service)
+  CARD index,sector,offset
+  BYTE mask
+
+  LET state=FSWRITEIO.State(service)
+  IF state.reservations=0 OR state.free<CARD(state.reservations) THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+  FI
+
+  FOR index=0 TO CARD(state.reservations)-1 DO
+    sector=state.reserved(index)
+    offset=CARD((LONGCARD(sector) RSH 3) MOD
+        LONGCARD(service.selected.spec.dataBytes))
+    mask=BYTE($80 RSH (sector & 7))
+    IF (state.bitmap(offset) & mask)=0 THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    state.bitmap(offset)=state.bitmap(offset) & (mask XOR 255)
+  OD
+
+  state.free==-CARD(state.reservations)
+  state.bitmapDirty=1
+  state.used=state.reservations
+  service.work.volume.allocationHint=4
+  IF sector<>$ffff THEN
+    service.work.volume.allocationHint=sector+1
+  FI
+
+RETURN(1)
+
+; Set all preflighted bits together. MyDOS's first VTOC includes its count,
+; so that common case needs only one verified metadata write.
+PUBLIC BYTE FUNC TakeGroup(FSTYPES.Service POINTER service)
+  CARD header,offset,free,page,index,sector
+
+  LET state=FSWRITEIO.State(service)
+  IF state.batchActive<>0 THEN
+    RETURN(TakeBatch(service))
+  FI
+
+  IF state.reservations=0 THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_FULL))
+  FI
+
+  header=1
+  offset=13
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    header=360
+    offset=3
+  FI
+
+  IF Bitmap(service,state.reserved(0),0)=0 THEN
+    RETURN(0)
+  FI
+
+  page=state.bitmapSector
+  FOR index=0 TO CARD(state.reservations)-1 DO
+    sector=state.reserved(index)
+    IF Bitmap(service,sector,1)=0 THEN
+      RETURN(0)
+    FI
+
+    IF state.bitmapSector<>page OR
+        (state.scratch(state.bitmapOffset) & state.bitmapMask)=0 THEN
+      RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    state.scratch(state.bitmapOffset)=state.scratch(state.bitmapOffset)
+        & (state.bitmapMask XOR 255)
+  OD
+
+  IF page<>header THEN
+    IF FSWRITEIO.Write(service,page,state.scratch)=0 OR
+        FSWRITEIO.Read(service,header,state.scratch)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  free=SDFS.Word(state.scratch,offset)
+  IF free<CARD(state.reservations) OR
+      LONGCARD(free)>service.selected.spec.sectors THEN
+    RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))
+  FI
+
+  FSWRITEIO.Word(state.scratch,offset,free-CARD(state.reservations))
+  IF FSWRITEIO.Write(service,header,state.scratch)=0 THEN
+    RETURN(0)
+  FI
+
+  state.used=state.reservations
+  service.work.volume.allocationHint=4
+  IF sector<>$ffff THEN
+    service.work.volume.allocationHint=sector+1
+  FI
+
+RETURN(1)
 
 ; Reserve before linking; free only after reachability has been removed.
 BYTE FUNC Change(FSTYPES.Service POINTER service CARD sector BYTE release)

@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies sixteen loadable commands, including CAT, WC and HELLO. Command
+The demo supplies nineteen loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -13,8 +13,10 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | CKSUM | `[FILE]` | POSIX cksum CRC-32 and byte length, as two decimal numbers. Filename is not included in output. |
 | HEXDUMP | `[FILE] [OFFSET n] [LENGTH n]` | Eight hexadecimal offset digits, up to sixteen hex bytes and printable ASCII per row. Defaults: offset zero, length up to 4,294,967,295 bytes. Offsets are skipped by reading, so pipes work. |
 | HEAD | `[FILE] [LINES n]` | First ten lines by default. Zero prints nothing. Finishes without draining the rest of a pipe. |
+| TAIL | `[FILE] [LINES n]` | Last ten lines by default, after reading to EOF. Supports zero through sixteen lines; zero does not read Input. |
 | GREP | `PATTERN [FILE] [NOCASE] [INVERT] [NUMBER]` | Select literal matching lines; optionally fold ASCII case, invert selection, or prefix one-based line numbers. Empty pattern matches every line. |
 | LIST | `[DIR or PATTERN] [NAMES]` | Enumerate a directory in disk order or match `*`/`?` in the final path component. Default output has directory markers and exact file sizes. NAMES emits bare names. |
+| FIND | `[DIR] [PATTERN pattern]` | Walk directory contents recursively in filesystem order and print matching paths. Default pattern is `*`; directories get a trailing `/`. |
 | MORE | `[FILE]` | Forward-only pager. Space advances a page, Return one displayed row, Q finishes, and BREAK cancels. |
 | COPY | `FROM TO [APPEND]` | Copy one named input to an exact destination filename. Create/truncate by default; APPEND opens or creates, then seeks to EOF. |
 | TEE | `FILE [APPEND]` | Copy Input to the named file and Output. Create/truncate by default; APPEND preserves existing content. |
@@ -22,6 +24,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
 | MAKEDIR | `NAME` | Create one directory under an existing parent. |
 | ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
+| PRIMES | `[PASSES n]` | Search through 10,000 in a six-row lower pane. Zero or omitted PASSES runs until cancelled. |
 
 Commands with an optional FILE borrow Input when it is absent; CAT also accepts
 up to eight exact files and concatenates them in order. LIST defaults to the
@@ -30,12 +33,30 @@ inherited streams remain owned by the Process. LIST matches ASCII letters
 without case: `*` matches zero or more bytes and `?` one byte. Its parent path
 must be exact. An unmatched pattern reports Object not found; an exact empty
 directory succeeds. The shell does not expand patterns, and CAT and DELETE use
-exact names. There is no regex, recursive traversal or directory sorting.
+exact names. There is no regex or directory sorting. FIND adds recursive
+filename traversal; GREP searches file contents.
+
+FIND starts in DIR, or the current directory when omitted. It prints descendants
+using the supplied path prefix; the starting directory itself is not printed.
+Patterns match entry names without ASCII case and do not restrict descent into
+directories. They use the same `*`/`?` rules as LIST and cannot contain `:` or
+`/`. Supply an exact DOS directory path: a trailing slash on a named directory
+is an invalid component. An empty directory or no matches returns WARN with
+IoErr zero. The walk supports eight open directory levels, including its start,
+and paths up to 255 bytes; exceeding a bound fails explicitly. It releases its
+locks on completion, errors and BREAK. There is no filesystem snapshot.
+
+`PRIMES PASSES 1` finishes after one pass: 1,229 primes, ending at 9,973.
+`PRIMES` runs in the foreground and physical BREAK stops it. `RUN PRIMES`
+returns the prompt while calculation continues below it. Use JOBS to find its
+identity, then `BREAK identity` to stop it. Closing the pane restores the full
+shell display, including an edited line. See [background jobs](shell.md#one-background-job).
 
 Examples, using the current two-stage pipeline:
 
 ```text
 HEAD STORY.TXT LINES 5
+CAT STORY.TXT | TAIL LINES 3
 CAT STORY.TXT | GREP shell NOCASE
 GREP shell STORY.TXT NUMBER
 LIST NAMES | GREP .TXT
@@ -45,16 +66,19 @@ CMP STORY.TXT STORY.TXT
 CAT LONG.TXT | MORE
 CAT SYS:STORY.TXT SYS:STORY.TXT | WC
 LIST SYS:*.TXT NAMES
+FIND SYS: PATTERN *.TXT
+FIND WORK: PATTERN README.?XT
 ```
 
 The shell's default [PATH](shell.md#path) searches the current directory and then
-SYS:, so commands remain available after CD. Qualified paths such as `SYS:HEAD`
+C: (assigned to SYS:C at startup), so commands remain available after CD.
+Qualified paths such as `C:HEAD` or `SYS:C/HEAD`
 bypass search.
 
 `ASSIGN DATA: WORK:DATA` lets commands use `DATA:FILE` independently of the
 physical volume name. `ASSIGN DATA:` removes it, and `ASSIGN` lists current
-mappings. `C:` is an ordinary assign; use `PATH SET C:` to search it for bare
-commands. See the [ASSIGN contract](../reference/assigns.md) for limits.
+mappings, including the boot C: assignment. Reassigning C: redirects the default
+command search. See the [ASSIGN contract](../reference/assigns.md) for limits.
 
 ## Bytes, text and limits
 
@@ -63,13 +87,18 @@ initial zero CRC, least-significant length bytes and a final complement; it is
 not the common reflected ZIP CRC variant. Byte counts are checked unsigned
 32-bit values. HEXDUMP represents nonprintable ASCII bytes as dots.
 
-HEAD, GREP and MORE recognize LF, CR, CRLF and ATASCII `$9B` as line endings.
+HEAD, TAIL, GREP and MORE recognize LF, CR, CRLF and ATASCII `$9B` as line endings.
 They emit LF for a present delimiter and preserve an unterminated final line.
-CRLF remains one delimiter across buffered reads. HEAD/GREP preserve embedded
+CRLF remains one delimiter across buffered reads. HEAD/TAIL/GREP preserve embedded
 NUL and other payload bytes; use TYPE or MORE for a sanitized console view.
 A line may contain at most 1,024 payload bytes, excluding its delimiter. An
 excess fails with ERROR_LINE_TOO_LONG instead of truncating or splitting it.
 Shared input buffering uses 512 bytes per reader and does not read whole files.
+
+TAIL retains up to sixteen lines in a fixed ring in the loaded command's upper
+RAM. It reads the whole input before emitting the selected suffix and produces
+no suffix if reading fails or BREAK interrupts it. A read error remains an error
+even when buffered bytes precede it. `LINES` above sixteen is an error.
 
 MORE on interactive Output uses the associated foreground console for keys,
 even with redirected or piped Input. It uses Output's actual dimensions, expands
@@ -98,8 +127,9 @@ DELETE WORK:NOTES/TWO.TXT WORK:LOG.TXT
 DELETE WORK:NOTES
 ```
 
-COPY and TEE preserve exact bytes, including NUL and ATASCII, with a 512-byte
-transfer buffer per running command. COPY opens its source before its output;
+COPY and TEE preserve exact bytes, including NUL and ATASCII. COPY uses a
+16 KiB transfer buffer in the loaded command's upper-RAM BSS; TEE uses 512 bytes.
+COPY opens its source before its output;
 a missing source or a destination alias of the same open file cannot truncate
 that file. Directory targets are errors: supply the complete destination name.
 APPEND is an update open followed by an EOF seek; it also creates a missing file.
@@ -122,11 +152,12 @@ formats, sharing and recovery limits. No filesystem scan is added to mounting.
 ## Results and diagnostics
 
 OK (0) means success. WARN (5), with IoErr zero, means CMP found a difference or
-GREP selected no lines. ERROR (10) includes malformed arguments, I/O failures,
-excessive text lines and BREAK. The shell retains primary and secondary results;
+GREP selected no lines, or FIND found no matching entries. ERROR (10) includes
+malformed arguments, I/O failures, excessive text lines, traversal bounds and
+BREAK. The shell retains primary and secondary results;
 its [pipeline aggregation](shell.md#pipes) handles successful early consumers.
 
-All sixteen commands accept a sole unquoted `?` for template help. For example,
+All supplied commands accept a sole unquoted `?` for template help. For example,
 `HEAD ? <STORY.TXT >NIL:` prints help on the console and consumes no data.
 `GREP "?" STORY.TXT` searches for a literal question mark. An empty template,
 as used by WC and HELLO, is displayed as `Arguments: (none)`.

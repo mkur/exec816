@@ -1,0 +1,98 @@
+; Load the real COPY artifacts before measuring their source Open to target
+; Close. The host supplies identical media and chooses the buffer variant.
+MODULE WRITEPERFORMANCE
+USE EXEC
+USE DOS
+USE PROCESS
+USE PROGRAM
+USE PROGRAMFILE
+USE PROGRAMIMAGE
+USE FSBOOT
+USE FSTYPES
+USE DOSCORE
+USE BLOCKIO
+USE HEAPCORE
+USE WRITEPERFPROBE
+
+CARD checks
+CARD argumentBytes
+BYTE warm,variant
+BYTE ARRAY arguments(128)
+PROCESS.Result outcome
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LONGINT count
+  CSTRING path
+
+  Require(FSBOOT.Ensure()<>0)
+  LET stream=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_READWRITE)
+  Require(stream<>NULL)
+  DOS.SelectInput(stream)
+  DOS.SelectOutput(stream)
+  path=c"SYS:COPY512"
+  IF variant<>0 THEN
+    path=c"SYS:COPY16"
+  FI
+
+  IF variant=2 THEN
+    BEGIN
+      LET warmImage=PROGRAMFILE.Load(BYTE POINTER(path))
+      Require(warmImage<>NULL)
+      PROGRAM.Unload(warmImage)
+      LET before=EXEC.AvailMem(EXEC.MEMF_UPPER)
+      WRITEPERFPROBE.failAllocation=1
+      LET failed=PROGRAMFILE.Load(BYTE POINTER(path))
+      Require(failed=NULL AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+      Require(WRITEPERFPROBE.allocationFailed<>0 AND
+          EXEC.AvailMem(EXEC.MEMF_UPPER)=before)
+      Require(WRITEPERFPROBE.active=0 AND WRITEPERFPROBE.target=NULL)
+      Require(DOS.Close(stream)<>0)
+      Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+      RETURN
+    END
+  FI
+
+  LET image=PROGRAMFILE.Load(BYTE POINTER(path))
+  Require(image<>NULL)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  BLOCKIO.Invalidate(service.adapter)
+  IF warm<>0 THEN
+    BEGIN
+      LET source=DOS.Open(BYTE POINTER(c"SYS:LONG.TXT"),DOS.MODE_OLDFILE)
+      Require(source<>NULL)
+      DO
+        count=DOS.Read(source,BYTE POINTER($efff0),16384)
+        Require(count>=0)
+        IF count=0 THEN
+          EXIT
+        FI
+      OD
+
+      Require(DOS.Close(source)<>0)
+    END
+  FI
+
+  WRITEPERFPROBE.armed=1
+  LET identity=PROCESS.StartLoaded(BYTE POINTER(image),arguments,argumentBytes,0)
+  Require(identity<>0)
+  PROGRAM.Unload(image)
+  Require(PROCESS.Wait(identity,@outcome)<>0)
+  Require(outcome.primary=0 AND outcome.secondary=0)
+  Require(WRITEPERFPROBE.active=0 AND WRITEPERFPROBE.finished<>0)
+  Require(DOS.Close(stream)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

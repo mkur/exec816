@@ -435,7 +435,7 @@ RETURN(1)
 ; Reject a busy final close before changing ownership. CloseDevice itself
 ; cannot fail; keep CLOSING published through endpoint reclamation.
 ; Detached inheritance wrappers use this same reference transaction.
-PUBLIC LONGINT FUNC ReleaseEndpoint(DOSSTREAMS.Handle POINTER item)
+LONGINT FUNC ReleaseBinding(DOSSTREAMS.Handle POINTER item BYTE exclusive)
   StreamRegistry POINTER registry
   RawEndpoint POINTER endpoint
 
@@ -447,6 +447,11 @@ PUBLIC LONGINT FUNC ReleaseEndpoint(DOSSTREAMS.Handle POINTER item)
   registry=UnitRegistry(endpoint.unit)
   EXEC.Forbid()
   IF endpoint.references>1 THEN
+    IF exclusive<>0 THEN
+      EXEC.Permit()
+      RETURN(ERROR_OBJECT_IN_USE)
+    FI
+
     endpoint.references==-1
     EXEC.Permit()
     RETURN(0)
@@ -470,9 +475,13 @@ PUBLIC LONGINT FUNC ReleaseEndpoint(DOSSTREAMS.Handle POINTER item)
 
 RETURN(0)
 
+PUBLIC LONGINT FUNC ReleaseEndpoint(DOSSTREAMS.Handle POINTER item)
+
+RETURN(ReleaseBinding(item,0))
+
 ; Reject busy ownership before consuming a wrapper's final reference.
-PUBLIC LONGINT FUNC CloseSized(DOSCLIENT.ClientContext POINTER client
-    DOSSTREAMS.Handle POINTER item CARD bytes)
+LONGINT FUNC CloseSizedMode(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item CARD bytes BYTE exclusive)
   LONGINT error
   DOSBREAKTYPES.Scope POINTER scope
 
@@ -485,7 +494,7 @@ PUBLIC LONGINT FUNC CloseSized(DOSCLIENT.ClientContext POINTER client
   FI
 
   client.busy=1
-  error=ReleaseEndpoint(item)
+  error=ReleaseBinding(item,exclusive)
   IF error<>0 THEN
     client.busy=0
     DOSCLIENT.SetError(error)
@@ -501,6 +510,17 @@ PUBLIC LONGINT FUNC CloseSized(DOSCLIENT.ClientContext POINTER client
   client.busy=0
 
 RETURN(-1)
+
+PUBLIC LONGINT FUNC CloseSized(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item CARD bytes)
+
+RETURN(CloseSizedMode(client,item,bytes,0))
+
+; An owned pane may retire only after its final shared endpoint has closed.
+PUBLIC LONGINT FUNC CloseExclusive(DOSCLIENT.ClientContext POINTER client
+    DOSSTREAMS.Handle POINTER item)
+
+RETURN(CloseSizedMode(client,item,SIZEOF(DOSSTREAMS.Handle),1))
 
 PUBLIC LONGINT FUNC Close(DOSCLIENT.ClientContext POINTER client
     DOSSTREAMS.Handle POINTER item)

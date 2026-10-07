@@ -1,0 +1,56 @@
+MODULE SDFSBATCHTEST
+USE DOS
+USE FSBOOT
+USE FSWTYPES
+USE SDFSBATCHPROBE
+USE HEAPCORE
+CARD checks,phase
+CARD workspaceBytes
+LONGINT amount
+LONGINT result,error
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LONGINT index
+
+  LET buffer=BYTE POINTER($30fff0)
+  workspaceBytes=CARD(SIZEOF(FSWTYPES.State))
+  FOR index=0 TO amount-1 DO
+    buffer(CARD(index))=BYTE(index) XOR $6d
+  OD
+
+  phase=1
+  Require(FSBOOT.Ensure()<>0)
+  LET file=DOS.Open(BYTE POINTER(c"D1:BATCH.BIN"),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  phase=2
+  SDFSBATCHPROBE.sectors=CARD POINTER($d0000)
+  SDFSBATCHPROBE.active=1
+  result=DOS.Write(file,buffer,amount)
+  error=DOS.IoErr()
+  SDFSBATCHPROBE.active=0
+  Require(result=amount AND error=0)
+  Require(DOS.Flush(file)<>0)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=amount)
+  Require(DOS.Read(file,buffer,amount)=amount)
+  FOR index=0 TO amount-1 DO
+    Require(buffer(CARD(index))=(BYTE(index) XOR $6d))
+  OD
+
+  phase=3
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

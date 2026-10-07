@@ -1,24 +1,132 @@
 Exec816 at work
 
-This is a small computer doing several
-things at once. The shell accepts your
-commands while another task searches
-for prime numbers in its own text area.
-
-CAT reads this file from disk. A pipe
-carries its bytes to WC, which counts
-lines, words and bytes. The pipe has a
-bounded buffer: a full buffer makes the
-writer wait, and an empty one makes the
-reader wait. Other tasks can still run.
-
-The commands are separate programs,
-loaded from disk into upper memory.
+Small commands, real files and tasks.
+Programs load from disk into upper RAM.
 When they finish, their streams close
 and their memory returns to the system.
 
+Read this guide a page at a time:
+  MORE SYS:STORY.TXT
+Space advances a page, Return one row,
+and Q returns to the shell.
+
+Commands live in SYS:C, named by C:.
+The default PATH searches the current
+directory, then C:. File arguments use
+the current directory. PATH lists the
+search path; PATH RESET restores it.
+
+CAT reads files; TYPE shows plain text.
+WC counts lines, words and bytes. A pipe
+joins two programs while other tasks
+can run. Try:
+  HELLO | WC
+  CAT SYS:STORY.TXT | WC
+CAT accepts several exact filenames:
+  CAT SYS:STORY.TXT SYS:README.TXT | WC
+Use < to select Input and > for Output:
+  WC <SYS:STORY.TXT
+  ECHO saved >WORK:OUT.TXT
+  ECHO more >>WORK:OUT.TXT
+
+DIR lists a directory. LIST also accepts
+simple * and ? filename patterns:
+  LS SYS:*.TXT NAMES
+LS is a preset alias for LIST. Patterns
+are supported by LIST, not expanded by
+the shell. CAT and DELETE use exact
+names and accept up to eight files.
+
+HEAD selects the start of a file; GREP
+finds literal text, with optional case
+folding and line numbers:
+  HEAD SYS:STORY.TXT LINES 5
+  TAIL SYS:STORY.TXT LINES 3
+  GREP shell SYS:STORY.TXT NOCASE NUMBER
+FIND searches filenames in subdirs:
+  FIND SYS: PATTERN *.TXT
+CMP compares files. CKSUM checks bytes
+and length; HEXDUMP shows their values:
+  CMP SYS:STORY.TXT SYS:STORY.TXT
+  CKSUM SYS:STORY.TXT
+  HEXDUMP SYS:STORY.TXT LENGTH 32
+
+SYS: is read-only. WORK: is writable.
+MKDIR and CP are preset aliases for
+MAKEDIR and COPY. Supply an exact name
+for the copy's destination:
+  MKDIR WORK:NOTES
+  CP SYS:STORY.TXT WORK:NOTES/ONE.TXT
+
+ASSIGN gives a directory a logical name:
+  ASSIGN DATA: WORK:NOTES
+  RENAME DATA:ONE.TXT DATA:TWO.TXT
+  CMP SYS:STORY.TXT DATA:TWO.TXT
+RENAME stays within the same directory;
+give its destination the full name.
+ASSIGN lists mappings; ASSIGN DATA:
+removes this one. C: is also an assign.
+
+TEE copies Input to a file and Output:
+  HELLO | TEE WORK:LOG.TXT
+  HELLO | TEE WORK:LOG.TXT APPEND
+COPY and TEE create or truncate files;
+APPEND preserves their previous bytes.
+DELETE removes files or empty folders:
+  DELETE DATA:TWO.TXT WORK:LOG.TXT
+  ASSIGN DATA:
+  DELETE WORK:NOTES
+
+CD prints the current directory. CD ..
+or CD / moves to the parent; CD : goes
+to this volume's root. CD .. stays at
+root if there is no parent. Other paths
+do not support . or .. components.
+
+ALIAS lists the current definitions.
+MKDIR, LS and CP leave five free slots.
+Replace or remove them, or add your own:
+  ALIAS SAY "ECHO hello"
+  SAY world
+  UNALIAS SAY
+Aliases last for this shell session.
+
+EXECUTE runs a file of shell commands:
+  EXECUTE WORK:SETUP.TXT
+Each line uses normal aliases, pipes
+and redirection. Blank lines and lines
+starting with ; are ignored. Errors or
+BREAK stop the script; WARN continues.
+Script input is separate from command
+Input. CD, PATH and aliases persist.
+One script at a time; no arguments or
+conditionals. EXIT also exits the shell.
+
+S: names SYS:S, the scripts directory.
+Boot runs S:STARTUP, then S:USER before
+the prompt. Both are optional. Put local
+aliases and assigns in S:USER. The demo
+files contain comments only; edit them
+in the system disk source to customize.
+C: and S: leave two free assign slots.
+Run EXECUTE S:USER to repeat setup.
+
+Ctrl-A/E move to the start/end. Ctrl-B/F
+or Atari left/right move across the
+line. Ctrl-U clears, Ctrl-K cuts the
+tail, and Ctrl-W cuts a word. Ctrl-P/N
+or Atari up/down browse the last ten
+commands.
+
+CLS clears the screen and homes the
+cursor. HELP lists builtins; a command
+followed by ? shows its argument help.
+MEM, TASKS, VER, MOUNT and DEVICES show
+memory, tasks, version, disks and
+drivers.
+
 Try CAT LONG.TXT | WC and press BREAK.
-The shell returns to its prompt while
-the prime search continues below it.
-Then try another command. A useful
+The foreground command stops and the
+shell returns to its prompt. EXIT or
+Ctrl-D closes the shell. A useful
 system should also know how to stop.

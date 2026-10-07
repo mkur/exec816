@@ -122,6 +122,18 @@ PUBLIC PROC Dirty(CONSOLETYPES.Instance POINTER instance CARD first,last)
 
 RETURN
 
+; An admitted printable row span never advances the ordinary stream cursor.
+; The worker bounds each copy to its source quantum and owns the instance.
+PUBLIC PROC WriteAt(CONSOLETYPES.Instance POINTER instance CARD column,row
+    BYTE POINTER bytes CARD length)
+
+  LET first=row*instance.width+column
+  LET offset=CellOffset(instance,first)
+  A816MEMORY.Move(instance.cells+SIZE(offset),bytes,SIZE(length))
+  Dirty(instance,first,first+length)
+
+RETURN
+
 ; Consume only a successfully presented prefix of one row.
 PUBLIC PROC Presented(CONSOLETYPES.Instance POINTER instance CARD row,last
     LONGCARD generation)
@@ -176,6 +188,7 @@ PUBLIC BYTE FUNC Init(CONSOLETYPES.Instance POINTER instance BYTE POINTER cells
   instance.width=width
   instance.height=height
   instance.count=count
+  instance.capacity=count
   instance.column=0
   instance.row=0
   instance.lineStart=0
@@ -225,6 +238,94 @@ PUBLIC PROC EditQuantum(CONSOLETYPES.Instance POINTER instance)
   Dirty(instance,0,instance.count)
 
 RETURN
+
+; Rotate whole physical rows into logical order using one row of upper scratch.
+; A presentation transaction excludes the worker, while IRQ capture continues.
+PROC Normalize(CONSOLETYPES.Instance POINTER instance BYTE POINTER scratch)
+  CARD start,hole,next,moved
+
+  IF instance.cellOrigin=0 THEN
+    RETURN
+  FI
+
+  LET shift=instance.cellOrigin/instance.width
+  LET width=instance.width
+  LET cells=instance.cells
+  start=0
+  moved=0
+  WHILE moved<instance.height DO
+    A816MEMORY.Move(scratch,cells+SIZE(start*width),SIZE(width))
+    hole=start
+    DO
+      next=hole+shift
+      IF next>=instance.height THEN
+        next==-instance.height
+      FI
+
+      IF next=start THEN
+        EXIT
+      FI
+
+      A816MEMORY.Move(cells+SIZE(hole*width),cells+SIZE(next*width),SIZE(width))
+      moved==+1
+      hole=next
+    OD
+
+    A816MEMORY.Move(cells+SIZE(hole*width),scratch,SIZE(width))
+    moved==+1
+    start==+1
+  OD
+
+  instance.cellOrigin=0
+
+RETURN
+
+; Width and allocation stay fixed. Growth cannot exceed the original backing.
+PUBLIC BYTE FUNC CanResize(CONSOLETYPES.Instance POINTER instance CARD height)
+
+RETURN(height<>0 AND height<=CONSOLETYPES.MAX_HEIGHT
+    AND height*instance.width<=instance.capacity)
+
+; Keep the current cursor/input row when shrinking; growth appends blank rows.
+; The caller owns an initialized instance and a row-sized upper scratch buffer.
+PUBLIC BYTE FUNC Resize(CONSOLETYPES.Instance POINTER instance CARD height
+    BYTE POINTER scratch)
+  CARD drop,count
+
+  IF CanResize(instance,height)=0 THEN
+    RETURN(0)
+  FI
+
+  IF height=instance.height THEN
+    RETURN(1)
+  FI
+
+  EditQuantum(instance)
+  Normalize(instance,scratch)
+  count=height*instance.width
+  drop=0
+  IF height<instance.height THEN
+    IF instance.row>=height THEN
+      drop=instance.row-height+1
+    FI
+
+    IF drop<>0 THEN
+      A816MEMORY.Move(instance.cells,instance.cells+SIZE(drop*instance.width),
+          SIZE(count))
+    FI
+  ELSE
+    A816MEMORY.Fill(instance.cells+SIZE(instance.count),ASCII.SPACE,
+        SIZE(count-instance.count))
+  FI
+
+  instance.row==-drop
+  instance.lineStart=instance.row*instance.width
+  instance.height=height
+  instance.count=count
+  Clean(instance)
+  Dirty(instance,0,count)
+
+RETURN(1)
 
 ; Advance within the retained terminal or request scrolling at its bottom
 ; edge.

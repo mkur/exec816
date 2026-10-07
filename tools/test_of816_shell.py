@@ -6,7 +6,8 @@ from pathlib import Path
 from native_program import ROOT, require, sha256
 from os_boundary import run_to
 from test_demo import run as run_demo
-from test_of816 import PIN, check_boot_guards, check_exit, enter_forth, press, screen_text
+from test_of816 import boot_environment, check_loading_paused, check_loading_complete
+from test_of816 import check_boot_guards, check_exit, enter_forth, press, screen_text
 from test_vbxe_aperture import PATTERN
 
 
@@ -17,13 +18,17 @@ def run(output, record, program):
     require(sha256(bundle/'demo-manifest.json') == media['manifest_sha256'],
             'Standard shell manifest changed')
     labels = record['labels']
-    report = dict(status='running',tier='development',boot=record,pin=PIN,cases=[],
+    pin,_,_=boot_environment(record)
+    report = dict(status='running',tier='development',boot=record,pin=pin,cases=[],
                   inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                           (Path(__file__),ROOT/'tools/test_of816.py',ROOT/'tools/test_demo.py',
                            ROOT/'tools/test_vbxe_aperture.py')})
     try:
         for manual in (False, True):
             case = dict(route='forth-command' if manual else 'autoboot')
+            case_bundle=output/case['route']/'demo'
+            shutil.copytree(bundle,case_bundle,dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns('of816','*-walkthrough.atr','results.json'))
 
             def bootstrap(bridge, native):
                 bridge.boot(str(output/'Exec-of816.xex'))
@@ -36,6 +41,7 @@ def run(output, record, program):
                 run_to(bridge,labels['of_start'],3000,90)
                 bridge.bp_clear_all()
                 saved = dict(vectors=bridge.memdump(0x256,9),iocb=bridge.memdump(0x340,32))
+                check_loading_paused(bridge,record,native)
                 dp_neighbours = (record['layout']['OF_DP']-256,record['layout']['OF_DP']+256)
                 neighbour_patterns = (bytes((i*29+7)&255 for i in range(256)),
                                       bytes((i*43+11)&255 for i in range(256)))
@@ -85,11 +91,17 @@ def run(output, record, program):
                             'Missing countdown')
                     case.update(frames=elapsed,clock_wrap=True)
                 check_boot_guards(bridge,record['layout'])
+                settings=check_loading_paused(bridge,record,native)
+                case['payload_pending_at_return']=True
                 case['boot_guards'] = 'intact'
                 for address,pattern in zip(dp_neighbours,neighbour_patterns):
                     require(bridge.memdump(address,256) == pattern,
                             'OF816 DP initialization changed an adjacent page')
                 case['dp_neighbours_intact'] = True
+                bridge.bp_clear_all()
+                bridge.bp_set(native['labels']['loader_start'])
+                run_to(bridge,native['labels']['loader_start'],3000,60)
+                check_loading_complete(bridge,record,native,settings)
                 bridge.bp_clear_all()
                 bridge.bp_set(native['labels']['start'])
                 run_to(bridge,native['labels']['start'],3000,60)
@@ -101,12 +113,12 @@ def run(output, record, program):
 
             # Reuse the standard physical-key smoke observer and its ownership,
             # stack/domain guard and OS restoration checks after native startup.
-            case['shell'] = run_demo(bundle,boot_smoke=True,bootstrap=bootstrap,
+            case['shell'] = run_demo(case_bundle,boot_smoke=True,bootstrap=bootstrap,
                                      media_path=output/media['name'],expected_cache=128 if manual else 512,
                                      system_drive=2 if manual else 1,retire_manifest=True,
                                      aperture_pattern=PATTERN)
             screenshot = case['route']+'-shell.png'
-            shutil.copyfile(bundle/'boot-smoke.png',output/screenshot)
+            shutil.copyfile(case_bundle/'boot-smoke.png',output/screenshot)
             case['screenshot'] = dict(name=screenshot,sha256=sha256(output/screenshot))
             report['cases'].append(case)
         report['exit_cases'] = [check_exit(output,record),check_exit(output,record,busy=True)]
