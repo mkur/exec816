@@ -180,25 +180,27 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
       HEAPCORE.Abort(4)
     FI
 
-    entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
-    IF DESKINPUT.Key(@capturedEvent)<>0 THEN
-      ; The graphical endpoint owns this capture-time route.
-    ELSEIF capturedEvent.kind=INPUT.EVENT_LOSS THEN
-      IF entry<>NULL THEN
-        Lose(CONSOLETYPES.Instance POINTER(entry.instance))
+    IF DESKINPUT.Key(@capturedEvent)=0 THEN
+      EXEC.Forbid()
+      entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
+      IF capturedEvent.kind=INPUT.EVENT_LOSS THEN
+        IF entry<>NULL THEN
+          Lose(CONSOLETYPES.Instance POINTER(entry.instance))
+        FI
+      ELSEIF capturedEvent.kind=INPUT.EVENT_CANCEL THEN
+        bound=CONSOLEFOREGROUND.Deliver(capturedEvent.route)
+        IF bound=0 AND entry<>NULL THEN
+          ; Durable mailbox notices have no fabricated capture tick. They are
+          ; already coalesced; do not suppress two separate acknowledgements.
+          instance=CONSOLETYPES.Instance POINTER(entry.instance)
+          instance.lastValid=0
+          Deliver(instance,$100)
+        FI
+      ELSEIF capturedEvent.kind=INPUT.EVENT_KEY AND entry<>NULL THEN
+        raw=LONGCARD(capturedEvent.code) OR (LONGCARD(capturedEvent.tick) LSH 16)
+        Deliver(CONSOLETYPES.Instance POINTER(entry.instance),raw)
       FI
-    ELSEIF capturedEvent.kind=INPUT.EVENT_CANCEL THEN
-      bound=CONSOLEFOREGROUND.Deliver(capturedEvent.route)
-      IF bound=0 AND entry<>NULL THEN
-        ; Durable mailbox notices have no fabricated capture tick. They are
-        ; already coalesced; do not suppress two separate acknowledgements.
-        instance=CONSOLETYPES.Instance POINTER(entry.instance)
-        instance.lastValid=0
-        Deliver(instance,$100)
-      FI
-    ELSEIF capturedEvent.kind=INPUT.EVENT_KEY AND entry<>NULL THEN
-      raw=LONGCARD(capturedEvent.code) OR (LONGCARD(capturedEvent.tick) LSH 16)
-      Deliver(CONSOLETYPES.Instance POINTER(entry.instance),raw)
+      EXEC.Permit()
     FI
 
     consumed==+1
@@ -218,9 +220,7 @@ PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
   FI
 
   IF pending<>0 THEN
-    EXEC.Forbid()
     pumped=Pump(instance)
-    EXEC.Permit()
     pending=pumped=CONSOLETYPES.RAW_SLOTS
   FI
 

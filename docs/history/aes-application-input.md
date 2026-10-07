@@ -3,7 +3,7 @@
 [History index](README.md) · [Implementation plan](../plans/gem4xe/aes-application-input-implementation-plan.md) ·
 [Current INPUT contract](../reference/input.md) · [Current AES contract](../reference/aes.md)
 
-Status: AI1–AI2 implemented, 2026-10-07. AI3–AI7 remain pending. Public AES input
+Status: AI1–AI3 implemented, 2026-10-07. AI4–AI7 remain pending. Public AES input
 waits are not implemented yet. These are development checks, not hosted-system
 qualification; PI4/HY4 and the observed flicker remain open.
 
@@ -75,3 +75,35 @@ and 367 bytes for the C input helper object, separately from data costs. Its
 root stack peaks at 380 bytes, leaving 900 above the checked floor; the
 presenter remains within its existing stack. Physical routing and public event
 matching remain pending in AI3–AI5.
+
+
+## AI3 — Keyboard translation and capture-time routing
+
+Every open GEM window now owns an unfiltered native keyboard route. Closing
+withdraws focus, invalidates the open epoch, drains capture and retires the old
+route before completing. Reopening cannot inherit an earlier capture identity.
+The presenter translates each key before publishing it to the original
+recipient's inbox, even when another application now has focus. Translation
+runs outside the console input guard; native console delivery retains a short
+per-record guard.
+
+The machine-readable mapping pins GEM4XE's scan/ATASCII reference and source
+hash. Generated shared data implements GEM scan/ASCII words and Task-side
+KEYDEF translation, including Return, Shift-Tab, cursor chords, Ctrl-letter
+shortcuts and shared Caps state. Captured repeats are preserved; there is no
+repeat timer. Physical BREAK becomes one Escape, while a title gesture consumes
+Escape/BREAK without also delivering it to the application.
+
+[Development evidence](../development/aes-application-input-ai3.json) covers
+original-recipient delivery with two AES clients and the native console,
+close/reopen, source-specific loss, physical Ctrl-C/BREAK, title cancellation,
+window controls and console publication races. The console race probe was
+updated to include the worker's existing desktop wake mask after the integration
+merge; its former probe string no longer matched the worker.
+
+Reserved bank-zero delta is **0 fixed + 0 per public Task + 0 private idle**.
+The new shared upper data has 84 payload bytes (64 scans, a three-byte array
+reference, one Caps byte and a sixteen-byte key snapshot), plus at most one byte
+of placement alignment. Per-registration storage and stack reservations are
+unchanged. The evidence records emitted routine growth and measured stacks;
+public input waits and pointer gesture routing remain pending.

@@ -6,6 +6,7 @@ USE AESLOCKS
 USE AESTYPES
 USE AESWINDOWSTATE
 USE AESINPUT
+USE AESKEYS
 USE INPUT
 USE DESKMOUSE
 USE DESKMOUSECONFIG
@@ -24,6 +25,7 @@ INPUT.Lease lease
 INPUT.Config config
 INPUT.Event sample
 DESKTYPES.Event event
+AESTYPES.InputRecord keySample
 LONGCARD wakeMask,route,focusPending
 INT cursorX,cursorY
 CARD buttons
@@ -136,6 +138,17 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
+        IF window.kind=DESKTYPES.CONTENT_AES THEN
+          BEGIN
+            LET client=AESWINDOWSTATE.Find(window.id)
+            keySample.x=cursorX
+            keySample.y=cursorY
+            keySample.buttons=buttons
+            AESKEYS.Key(client,captured,@keySample)
+          END
+          RETURN(1)
+        FI
+
         Copy(captured)
         event.window=window.id
         event.kind=DESKTYPES.EVENT_KEY

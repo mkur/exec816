@@ -31,6 +31,13 @@ donor application signatures, parameter counts and globals for the
 These are reference inputs for new native bindings; the widget extraction and
 its upstream licensing remain independent.
 
+[aes-keyboard-inputs.json](aes-keyboard-inputs.json) records the pinned donor
+keyboard mapping and its source hash. `tools/generate_aes_keyboard.py` emits
+the shared GPL Task-side scan table and ATASCII special-key mapping. The
+translator reads the pinned OS KEYDEF table; it does not link donor polling or
+interrupt ownership. Shift-Tab deliberately retains GEM Tab with its captured
+Shift qualifier. Existing upstream licence notices apply to this derived table.
+
 Using the pinned local compiler, firmware and `build/shell-paced-bridge`, run:
 
 ```sh

@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Design note](aes-application-input-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current INPUT contract](../../reference/input.md)
 
-Status: in progress, 2026-10-07. AI1–AI2 pass development checks; AI3–AI7 remain
+Status: in progress, 2026-10-07. AI1–AI3 pass development checks; AI4–AI7 remain
 pending. See the [execution record](../../history/aes-application-input.md).
 
 Implement the design in seven executable slices, committing after each passing
@@ -167,6 +167,10 @@ wakeup and no publication into retired storage. Suggested commit:
 `aes: add bounded application input inboxes`.
 
 ## AI3 — Route and translate GEM keyboard input
+
+Implemented. [Evidence](../../development/aes-application-input-ai3.json) covers
+translation, original-recipient routing, physical Ctrl-C/BREAK and console/window
+regressions. Public input waits remain pending in AI5.
 
 1. Add a machine-readable Atari-to-GEM mapping and generated translation data,
    checking the pinned donor reference and recording provenance for reused

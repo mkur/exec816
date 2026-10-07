@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-07",
+  "slice": "AI3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_base": "d94ad4fbfaacd63abe1e217375fb56ec789a27e1",
+  "scope": "Task-side GEM translation, capture-time routing and keyboard open lifetimes; public input waits remain unsupported.",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_override": false,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes": "guards, alignment and unused capacity"
+  },
+  "upper_memory": {
+    "new_shared_payload": 84,
+    "maximum_new_alignment": 1,
+    "per_registration_reserved_delta": 0,
+    "fixed_bank_reservation_delta": 0,
+    "new_tasks": 0,
+    "new_signal_bits": 0
+  },
+  "code_growth": {
+    "routines": {
+      "M_AESKEYS_SPECIAL_91A486E1": 220,
+      "M_AESKEYS_QUALIFIERS_FF233E57": 7,
+      "M_AESKEYS_TRANSLATE_22F19AFA": 645,
+      "M_AESKEYS_KEY_63D6BED7": 560,
+      "M_DESKDRAG_ESCAPE_F161A6CB": 53,
+      "M_DESKINPUT_KEY_F4A91E65": 223,
+      "M_CONSOLEINPUT_PUMP_600356CC": 86,
+      "M_CONSOLEINPUT_SERVICE_4560B6F3": -93,
+      "M_AESWINDOW_CLOSE_52A08E7C": 912,
+      "M_AESWINDOW_RETIRE_D2DA1755": 26,
+      "M_AESWINDOW_REQUEST_D6A6EB4B": 282
+    },
+    "bytes": 2921,
+    "baseline": "build/aes-input/ai2/gui-opt/program/program.a816.json",
+    "scope": "Changed production routines plus new AESKEYS module; optimized native code, excludes fixture code."
+  },
+  "host_tests": {
+    "tests": 408,
+    "expected_historical_skips": 4
+  },
+  "generated_checks": [
+    "aes-keyboard"
+  ],
+  "cases": [
+    {
+      "name": "keyboard-final-opt",
+      "results": {
+        "path": "build/aes-input/ai3/keyboard-final-opt/results.json",
+        "sha256": "9559aa58f7fff68e94da50b36deaae47b852edba3a4a40beebfcb2a468635d6a"
+      },
+      "status": "pass",
+      "checks": 111,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 221,
+          "remaining_above_floor": 1059
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 152,
+          "remaining_above_floor": 616
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "physical_keys": [
+        "Ctrl-C through unfiltered AES route",
+        "BREAK to GEM Escape",
+        "title gesture consumes BREAK"
+      ]
+    },
+    {
+      "name": "windows-opt",
+      "results": {
+        "path": "build/aes-input/ai3/windows-opt/results.json",
+        "sha256": "fa0e8ceba937cab7eb007292526a9f50518489cd8c37423096d5073a0ef9d0ea"
+      },
+      "status": "pass",
+      "checks": 176,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 519,
+          "remaining_above_floor": 761
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 187,
+          "remaining_above_floor": 581
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 180,
+          "remaining_above_floor": 588
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 161,
+          "remaining_above_floor": 607
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "physical_keys": null
+    },
+    {
+      "name": "console-wake-opt",
+      "results": {
+        "path": "build/aes-input/ai3/console-wake-opt/results.json",
+        "sha256": "1e0f8bf56f9c61fdbf4ede5ac9467237c6be3307fa81c5d48fc0a1a187f94cd4"
+      },
+      "status": "pass",
+      "checks": [
+        184
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": null,
+      "physical_keys": null
+    },
+    {
+      "name": "foreground-opt",
+      "results": {
+        "path": "build/aes-input/ai3/foreground-opt/results.json",
+        "sha256": "998ff8f1df6d550815d7c8ea6a6501d809bb18b43c5b6d540c0a6b79eaa0bfe6"
+      },
+      "status": "pass",
+      "checks": [
+        127
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": null,
+      "physical_keys": null
+    }
+  ],
+  "source_sha256": {
+    "lib/aes/aeswindow.act": "b80438fbd90209ac57bdf585593924a92928dbe8ce2944e33f861322d6e10b2c",
+    "lib/console/consoleinput.act": "5aeedafd044cd7bdbd3c73d624d69216875467e3645e9cc8e365672bd871147b",
+    "lib/desktop/deskdrag.act": "141abfaf193ef0273bc55fb8c536a995268f91bfb084979d8cc46dd85b3fac43",
+    "lib/desktop/deskinput.act": "362cda1f1c46fa5706f2b893e0b16c396a6db4db5748b0b040234c3869db9e2b",
+    "ports/gem4xe/README.md": "50e1e0ff579ccb889395b79870f26c80e63009ab7dc6d8bcf47d1d0fac8a29a9",
+    "tools/test_aes_server.py": "793ce4a809f71b81d4ab9dec4d7f404fb1262b99f70c386b762f806f8abefd7e",
+    "tools/test_console_input_wake.py": "52baaba7d02a09645ca093dcaf7174e702028eede99d76a6a9b3baa470ee9cd6",
+    "lib/aes/aes-keyboard.inc": "23dc6b88c7bb829b33185efd638afc86c6e92498a326aeaa205cca02a5ba694b",
+    "lib/aes/aeskeys.act": "e04d33c3df39b074fad5ca95649b46cee4a0c25f560b1774632a06f601250342",
+    "ports/gem4xe/aes-keyboard-inputs.json": "59f11ea7d786e3c538ead7a132885f62b4ed09a17f9745c8719edfae23adb302",
+    "tests/programs/aes_keyboard.c": "bcca8698c6ea0cab347bd24d21106e3b2e2f6e52b5d5d4e4d09aa1be9d6eec25",
+    "tests/test_aes_keyboard.py": "053d109ce4669c69ade46174975343bfb93eae1a572dcba29ab01ef0dbafe674",
+    "tools/generate_aes_keyboard.py": "b48493a76b679bc0addaea99cf9780097ca466098386d04bee73a9f8ee1f487e",
+    "tools/test_aes_keyboard.py": "1951ce6d244fa229db26932acfad63b16682634ec077bb8fdd35b0569585ad25"
+  }
+}

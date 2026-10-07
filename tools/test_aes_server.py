@@ -196,6 +196,7 @@ def caller_probes(out, timer=False):
 def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
+    keyboard = suite == 'keyboard'
     windows = suite == 'windows'
     borrowed = suite == 'display'
     vdi = suite == 'vdi'
@@ -252,6 +253,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             producer(out, sy)
         if inbox:
             from test_aes_inbox import producer
+            producer(out, sy)
+        if keyboard:
+            from test_aes_keyboard import producer
             producer(out, sy)
         source = out/('display-fixture.act' if borrowed else suite+'.act')
         exhaustion = f'''  service.nextClient=0
@@ -321,7 +325,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
+        slice='AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     if borrowed:
@@ -337,6 +341,9 @@ ENDMODULE
                     before = lambda b: physical(b, program, foreign, report)
                 if vdi:
                     from test_vdi_client import physical
+                    before = lambda b: physical(b, program, foreign, report)
+                if keyboard:
+                    from test_aes_keyboard import physical
                     before = lambda b: physical(b, program, foreign, report)
                 if windows:
                     from test_aes_windows import physical
@@ -354,7 +361,7 @@ ENDMODULE
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration or inbox else 100 if events or locks or timers else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration or inbox else 100 if events or locks or timers or keyboard else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
@@ -530,12 +537,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'windows', 'display', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'windows', 'display', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'windows', 'display', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'windows', 'display', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'console':

@@ -20,8 +20,8 @@ def run(out,mode,bitmap=False,replay=False):
         directory=original(*args,**kwargs)
         for name,replacements in {
             'consoledriver.act':[
-                ('    bits=Collect(bits,displayMask)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(bits,displayMask)\n    INPUTWAKEPROBE.Point(2)'),
-                ('        bits=EXEC.Wait($e0000000 OR displayMask)','        INPUTWAKEPROBE.Point(4)\n        bits=EXEC.Wait($e0000000 OR displayMask)'),
+                ('    bits=Collect(bits,displayMask OR desktopMask)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(bits,displayMask OR desktopMask)\n    INPUTWAKEPROBE.Point(2)'),
+                ('        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)','        INPUTWAKEPROBE.Point(4)\n        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'),
                 ('          CONSOLEDISPLAY.Advance(view,instance,entry.unit)','          INPUTWAKEPROBE.Point(6)\n          CONSOLEDISPLAY.Advance(view,instance,entry.unit)')],
             'consoleinput.act': [('    IF status=INPUT.EMPTY THEN\n      EXIT','    IF status=INPUT.EMPTY THEN\n      INPUTWAKEPROBE.Point(3)\n      EXIT')],
             'input.act': [('      index==+1\n    UNTIL raw=', '      index==+1\n      IF index=RAW_SLOTS THEN\n        INPUTWAKEPROBE.Point(5)\n      FI\n    UNTIL raw=')]

@@ -254,3 +254,11 @@ focus under the current desktop policy; click another window to restore it.
 No auto-focus successor, resize, menu, resource loader or dynamic GEM launcher
 is supplied. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 records development coverage and measured stack use, not hardware qualification.
+
+The presenter now publishes translated keyboard records into the private input
+inbox for each open AES window. The capture-time route selects the recipient,
+including keys queued before a focus change. Close drains and retires that route;
+reopen creates a fresh one. GEM translation uses the pinned Atari mapping and
+shared Caps state. Ctrl-C is delivered as a key; physical BREAK becomes Escape,
+except when a native title gesture consumes it. This transport is internal until
+the public input-wait slice; `MU_KEYBD` remains unsupported by current bindings.

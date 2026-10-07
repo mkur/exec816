@@ -1,6 +1,8 @@
 ; GEM window mutation runs in the presenter. No application draws in this code.
 MODULE AESWINDOW
 USE EXEC
+USE INPUT
+USE CONSOLEINPUT
 USE A816MEMORY
 USE AESSTATE
 USE AESTYPES
@@ -95,24 +97,40 @@ CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
 RETURN(AESTYPES.RESOURCE)
 
-PROC Close(AESSTATE.Client POINTER client)
+BYTE FUNC Close(AESSTATE.Client POINTER client)
   BYTE status
+  CARD captured,result
 
   LET desktop=DESKSTATE.Get()
   AESGUI.Close(client)
+  IF desktop.focus=client.window.id THEN
+    DESKCORE.Focus(desktop,0)
+  FI
+
+  IF client.window.keyRoute<>0 THEN
+    captured=CONSOLEINPUT.Pump(NULL)
+    result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+        client.window.keyRoute)
+    IF result=INPUT.BUSY THEN
+      RETURN(0)
+    FI
+
+    IF result<>INPUT.OK THEN
+      HEAPCORE.Abort($fcc2)
+    FI
+
+    client.window.keyRoute=0
+  FI
+
   client.paintDirty=0
   status=LAYERS.Show(@desktop.scene,client.window.layer,0)
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb5)
   FI
 
-  IF desktop.focus=client.window.id THEN
-    DESKCORE.Focus(desktop,0)
-  FI
-
   AESWINDOWSTATE.Snapshot(client)
 
-RETURN
+RETURN(1)
 
 PROC Delete(AESSTATE.Client POINTER client)
   BYTE status
@@ -145,7 +163,10 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     RETURN(0)
   FI
 
-  Close(client)
+  IF Close(client)=0 THEN
+    RETURN(0)
+  FI
+
   Delete(client)
   AESWINDOWSTATE.Sync()
 
@@ -155,7 +176,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
   BYTE POINTER title
-  CARD length
+  CARD length,routeStatus
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
@@ -187,7 +208,15 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       RETURN(AESTYPES.MALFORMED)
     FI
 
+    routeStatus=INPUT.CreateRoute(INPUT.Lease POINTER(desktop.keyboard),INPUT.ROUTE_UNFILTERED,
+        @window.keyRoute)
+    IF routeStatus<>INPUT.OK THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+
     IF AESGUI.Open(service,client,client.gui.window)=0 THEN
+      routeStatus=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),window.keyRoute)
+      window.keyRoute=0
       RETURN(AESTYPES.OVERFLOW)
     FI
 
@@ -196,7 +225,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     status=LAYERS.Order(@desktop.scene,window.layer,1)
     DESKCORE.Focus(desktop,window.id)
   ELSEIF request.operation=AESTYPES.OP_CLOSE THEN
-    Close(client)
+    IF Close(client)=0 THEN
+      RETURN(AESTYPES.PENDING)
+    FI
   ELSEIF request.operation=AESTYPES.OP_DELETE THEN
     IF layer.shown<>0 THEN
       RETURN(AESTYPES.BUSY)
