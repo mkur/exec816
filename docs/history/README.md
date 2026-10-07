@@ -158,6 +158,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [Shell append redirection](shell-append-redirection.md): `>>` preserves file
+  contents, seeks to EOF and uses the existing stream cleanup on success,
+  BREAK and errors, with no additional bank-zero reservations.
 - [System command directory](system-command-directory.md): SYS:C command
   storage, the boot C: assignment and CurrentDir-then-C: default PATH.
 - [Bounded shell command aliases](shell-aliases.md): eight session-local

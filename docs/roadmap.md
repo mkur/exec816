@@ -46,9 +46,10 @@ background cancellation and bounded RUN/JOBS/BREAK support. The loadable
 bitmap shell starts full-screen; pane closure restores its height and edited
 input. One background job and one pane keep this version bounded.
 
-1. Add shell `>>` append redirection, reusing the existing writable Open and
-   seek-to-EOF behavior. Cover partial writes, final Close errors, BREAK and
-   restoration of the shell's selected streams.
+1. Shell `>>` append redirection is implemented through writable Open and
+   seek-to-EOF. Development checks cover saved contents, partial writes,
+   final Close errors, BREAK and restoration of the shell's selected streams;
+   see the [implementation record](history/shell-append-redirection.md).
 2. Add a small Amiga-style `EXECUTE file` built-in. Read one bounded command per
    line through the existing dispatcher; accept blank and comment lines, stop
    on ERROR/FAIL or BREAK, and continue after WARN. Keep the script source
@@ -67,7 +68,7 @@ stores external commands in SYS:C, assigns C: there at startup and defaults
 PATH to CurrentDir followed by C:.
 Before allowing patterns in mutating commands, account for the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
-ExNext after a mutation. The next utility batch is `>>` and minimal EXECUTE.
+ExNext after a mutation. The next utility slice is minimal EXECUTE.
 
 The [OF816-first boot slice](history/of816-first-boot.md) is implemented through
 B4 at the development tier. The monitor runs before the main kernel payload.

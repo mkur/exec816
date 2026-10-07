@@ -104,11 +104,22 @@ BYTE FUNC ShellRedirect()
   FI
 
   IF shell.outputRedirect<>NO_REDIRECT THEN
-    shell.tempOutput=DOS.Open(line+SIZE(shell.outputRedirect),DOS.MODE_NEWFILE)
-    IF shell.tempOutput=NULL THEN
-      ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
-      RETURN(0)
-    FI
+    BEGIN
+      LET mode=IF shell.outputAppend<>0 THEN DOS.MODE_READWRITE
+          ELSE DOS.MODE_NEWFILE FI
+      shell.tempOutput=DOS.Open(line+SIZE(shell.outputRedirect),mode)
+      IF shell.tempOutput=NULL THEN
+        ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+        RETURN(0)
+      FI
+
+      IF shell.outputAppend<>0 THEN
+        IF DOS.Seek(shell.tempOutput,0,DOS.OFFSET_END)<0 THEN
+          ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
+          RETURN(0)
+        FI
+      FI
+    END
   FI
 
   IF shell.background<>0 THEN
@@ -126,7 +137,7 @@ BYTE FUNC ShellRedirect()
     FI
   FI
 
-  ; Complete all opens against the pre-command directory before either selector.
+  ; Complete all opens and positioning before either selector.
   shell.redirectActive=2
   IF shell.tempInput<>NULL THEN
     ignored=DOS.SelectInput(shell.tempInput)

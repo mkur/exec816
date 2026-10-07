@@ -80,6 +80,7 @@ slash-separated command-line argument.
 | Screen presentation or cursor | `tools/test_console_display.py`; add `tools/test_console_scroll.py` when changing scrolling or its cost. |
 | Cooked line state | `tools/test_cooked_line.py --case opt` for editing, viewport, history and ownership; `tools/test_dos_cooked.py` for public CON calls and physical keys; `tools/test_demo.py --editing` for prompt-only history and packaged OF816 boot; `tools/test_shell_core.py --smoke --history-unavailable --paced` for the optional-history failure path. |
 | Shell input/session integration | `tools/test_shell_core.py --smoke`; the affected command, redirection or lifetime scenario for the specific change. |
+| Shell append redirection | `tools/test_shell_append.py --case opt` for native MyDOS/SDFS saved bytes, partial append/BREAK, seek/Open/Close errors and restored streams; `tools/test_shell_parser.py` in raw and optimized modes for the packed state flag and syntax. |
 | Console windows | `tools/test_console_windows.py` for lifetime; `tools/test_console_focus.py` for display/routing; the bounded `tools/test_console_fairness.py` case when worker scheduling changes. |
 | Foreground cancellation | The affected console/filesystem cancellation fixture or one `tools/test_shell_break.py` scenario; expand when the failure crosses those boundaries. |
 | Resident Process lifetime | `tools/test_process_lifetime.py` in optimized mode: arguments/results, setup rollback, slot leases, collection and reuse. |

@@ -96,7 +96,7 @@ TYPE ShellState=[
   CARD argumentLength
   CARD argsUsed
   BYTE background
-  BYTE ARRAY reservedDraw(1)
+  BYTE outputAppend
   CARD inputRedirect,outputRedirect
   BYTE argc,command,done
   BYTE ARRAY reservedLine(2)
@@ -573,6 +573,7 @@ BYTE FUNC ShellParse()
   writeAt=0
   shell.argc=0
   shell.argsUsed=0
+  shell.outputAppend=0
   shell.pipeline=0
   shell.pipelineIndex=0
   shell.secondArgumentOffset=0
@@ -626,6 +627,11 @@ BYTE FUNC ShellParse()
     IF line(readAt)=CHAR_LESS OR line(readAt)=CHAR_GREATER THEN
       redirect=line(readAt)
       readAt==+1
+      IF redirect=CHAR_GREATER AND line(readAt)=CHAR_GREATER THEN
+        shell.outputAppend=1
+        readAt==+1
+      FI
+
       IF redirect=CHAR_LESS AND shell.pipeline<>0 THEN
         RETURN(0)
       FI

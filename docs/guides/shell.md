@@ -198,21 +198,27 @@ There is no variable or wildcard shell expansion, script syntax or command list.
 `*` and `?` in the final component of its own path argument; other commands
 receive the characters literally.
 
-Use at most one `<source` and one `>destination`, at word boundaries. Space after
-the operator is optional and the target may be quoted:
+Use at most one `<source` and one output redirection, either `>destination` to
+replace a file or `>>destination` to append. Operators start at word boundaries;
+space after the operator is optional and the target may be quoted:
 
 ```text
 TYPE <SYS:STORY.TXT >NIL:
 DIR WORK >NIL:
 HELLO >RAW:
+ECHO message >>WORK:LOG.TXT
+HELLO | WC >>WORK:COUNTS.TXT
 ```
 
-Duplicate operators, append `>>`, attached operators and missing targets fail
-before execution. Targets resolve against the directory selected before the
-command. The shell restores borrowed streams before closing temporary handles;
+Duplicate input or output redirections, `>>>`, attached operators and missing
+targets fail before execution. Targets resolve against the directory selected
+before the command. The shell restores borrowed streams before closing temporary handles;
 a successful redirected CD still changes directory. Input redirection does not
-run a script. Output redirection requires an explicitly writable mount and
-creates or truncates the target during Open. Terminal Close errors make an
+run a script. File output requires an explicitly writable mount. `>` creates or
+truncates the target during Open; `>>` preserves existing bytes or creates a
+missing file, then seeks to its end before executing the command. Append
+requires a seekable file; targets such as NIL:, CON: and RAW: fail with a seek
+error and the command does not run. Terminal Close errors make an
 otherwise successful command fail while restoring the prompt and streams.
 See [filesystem writes](../reference/filesystem-writes.md).
 Diagnostics use the shell's retained console.
