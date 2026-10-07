@@ -13,6 +13,36 @@ See the [workstation profile](../reference/gem-vdi.md#resident-application-works
 for supported attributes and output buffers.
 See the [window contract](../reference/aes.md) for supported kinds and fields.
 
+## Counter example
+
+The [counter body](../../examples/gem-counter/counter.c) uses only `<gem.h>`
+through its [model header](../../examples/gem-counter/counter.h). It opens a
+fixed 208×104 window, updates six decimal digits on a one-second timer, accepts
+top/move/close requests and reconstructs exposed pixels from its current model.
+It handles both bits when `evnt_multi` returns a message and timer together.
+
+The separate [resident wrapper](../../examples/gem-counter/resident.c) supplies
+two upper-memory models, attaches each Task, and detaches before removal. A
+registered controller sends ordinary GEM close messages during shutdown. It
+uses no application window and consumes one of the four registrations: the two
+counter instances plus controller occupy three. Each counter requests a 1,024-byte
+stack. Failure to detach prevents Task/image retirement.
+
+Build and exercise the focused counter proof:
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_aes_desktop.py \
+  --counters --output build/aes-windows/counters
+python3 tools/test_gem_counter.py --program build/aes-windows/counters/program \
+  --output build/aes-windows/counters-test
+```
+
+The proof adds development-only pause and timing hooks outside rendering
+ownership. It compares full framebuffers after timers, physical top/drag/close,
+full cover/exposure, simultaneous readiness and repeated restart. Closing the
+focused window clears keyboard focus under the current desktop policy; click
+another window to focus it. The packaged shell/counter selection follows in WA6.
+
 ## Application body
 
 This event loop accepts a private eight-word quit message and a one-second

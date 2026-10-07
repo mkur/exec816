@@ -151,3 +151,42 @@ adds 92 live bytes inside the existing C data bank. Four workstations/contexts
 therefore add 1,252 live upper bytes, including scratch, and 1,184 heap-reserved
 bytes. Fixed arenas, staging, VRAM, stack/DP pools and Task capacity are unchanged.
 WA5–WA6 follow; PI4/HY4 remain open and this is not hosted qualification.
+
+
+## WA5 — Ordinary GEM counter
+
+Implemented on 2026-10-07. The [counter body](../../examples/gem-counter/counter.c)
+uses GEM window, VDI and combined message/timer calls. One redraw helper handles
+both exposure and model changes under `BEG_UPDATE`; it enumerates visible work
+rectangles and clips each bar/text call. Covered counters continue updating their
+models. Top, move and close requests go through ordinary GEM acknowledgments.
+The separate resident wrapper owns attachment, two Task entries and cooperative
+shutdown through copied GEM close messages.
+
+[Development evidence](../development/aes-windows-wa5.json) records ten exact
+full-screen comparisons: timers, deferred/accepted top, physical drag, full cover,
+latest-model exposure, simultaneous timer/message readiness, repeated redraws,
+physical close and two complete restarts. Five test Tasks leave only one spare
+slot: the first counter starts, the second creation fails, and cleanup returns
+the heap before a normal two-instance launch. Final service shutdown, ownership,
+OS restoration and guards pass. Host checks pass 399 tests with four historical
+skips. These are development checks, not qualification.
+
+The timed clients touch 514 and 500 bytes of their existing 1,024-byte pools,
+leaving 254 and 268 bytes above the interrupt reserve. Across 192 physical units,
+charged CPU is 1.82 ms median / 6.85 ms maximum. The 60 complete redraw calls take
+76.88 ms median / 194.25 ms p95 elapsed, including update arbitration and
+scheduling. The caller-observed logical hold is 60.18 ms median / 114.23 ms maximum;
+physical units are independently released between chunks. This functional
+fixture deliberately delays consumers and polls its controller, so these are
+diagnostics rather than production GUI response limits. PI4/HY4 remain open.
+
+Reserved bank-zero delta is **0 fixed + 0 per public Task + 0 idle bytes**.
+Two application models add 392 live upper bytes; wrapper mutable data adds 29,
+configuration adds 32 read-only bytes, and the native call pointer adds three.
+A fully initialized counter uses 2,052 live / 2,088 heap-reserved bytes for its
+binding, delivery, view, workstation and timer. The controller uses 869 / 888.
+Their combined heap allocation is 4,973 / 5,064; service storage is separate.
+Existing fixed arenas, stack/DP pools and VRAM reservations are unchanged.
+The focused scenario uses four public Tasks, three registrations and three
+layers. Native disk/pipeline integration and the optional packaged demo remain WA6.

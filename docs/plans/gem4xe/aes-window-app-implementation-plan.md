@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: implementation in progress, 2026-10-07. WA1–WA4 pass development checks;
-WA5–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
+Status: implementation in progress, 2026-10-07. WA1–WA5 pass development checks;
+WA6 remains pending. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -212,6 +212,11 @@ workstation state and measured stack headroom. Suggested commit:
 `vdi: add private application workstations`.
 
 ## WA5 — Run the counter application through GEM
+
+Implemented. [Evidence](../../development/aes-windows-wa5.json) records two
+ordinary GEM counters, exact pixels, physical controls, simultaneous readiness,
+partial Task-startup unwind, repeated retirement and separate logical/physical
+timing. Existing 1 KiB stacks fit; bank-zero growth is zero.
 
 1. Add a resident C counter example and a separate Exec attachment/startup
    wrapper. Keep the application body restricted to the supported GEM calls.
