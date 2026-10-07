@@ -21,7 +21,10 @@ class Startup(Toolbox):
         self.filesystem = filesystem
         self.commands = commands
         self.mounts = [dict(alias='D1', unit=49, sectors=2000, sector_bytes=256,
-                            profile=4, format=1 if filesystem == 'mydos' else 2)]
+                            profile=4, format=1 if filesystem == 'mydos' else 2),
+                       dict(alias='WORK', unit=56, sectors=2880, sector_bytes=256,
+                            profile=4, format=1 if filesystem == 'mydos' else 2,
+                            access='readwrite')]
         self.startup_result = (0, 0)
         self.startup_tasks = (3, 4)
         self.output = b''
@@ -141,10 +144,16 @@ class Startup(Toolbox):
         self.files = make(out/'volume.atr', source,
                           binary_names={'C/'+name for name in self.commands},
                           sector_bytes=256, filesystem=self.filesystem, sectors=2000)
+        workspace = out/'workspace'
+        workspace.mkdir(exist_ok=True)
+        (workspace/'README.TXT').write_text('Writable WORK: disk.\n')
+        make(out/'work.atr', workspace, sector_bytes=256,
+             filesystem=self.filesystem, sectors=2880)
 
     def mount_extra(self, bridge, out):
         bridge.config('diskemu', 'generic56k')
         bridge.config('accuratedisk', 'false')
+        bridge.mount(7, str(out/'work.atr'))
 
     def before_prompt(self, bridge, program, wait, key):
         if self.scenario == 'break':
@@ -158,9 +167,15 @@ class Startup(Toolbox):
         strings = program['build']['exec_build']['strings']
         return (strings['banner']+strings['slots']+strings['stackChecks']+
                 'console.device: ready\n'+'sio.device: D1'+strings['sioReady']+
-                strings['mountStart']+'SYS: -> D1: ready, read-only\n\n').encode()+self.output
+                strings['mountStart']+'SYS: -> D1: ready, read-only\n'+
+                'WORK: -> D8: ready, read-write\n\n').encode()+self.output
 
     def exercise(self, c):
+        if self.scenario == 'normal':
+            filesystem = b'SDFS       ' if self.filesystem == 'sdfs' else b'MyDOS      '
+            c.command('MOUNT', b'MOUNT FILESYSTEM ACCESS    STATE\n'+
+                      b'D1:   '+filesystem+b'read-only mounted\n'+
+                      b'WORK: '+filesystem+b'writable  mounted\n')
         c.command('ASSIGN', self.assigns)
         c.command('CD', self.directory)
         c.command('PATH', b'Current directory\nC:\n')

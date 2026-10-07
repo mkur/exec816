@@ -160,6 +160,9 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     ELSE
       ShellText(shell.console,c": ready, read-only")
     FI
+
+    ; Filesystem startup publishes all configured volumes before SYS resolves.
+    ShellText(shell.console,CSTRING(EXECBUILD.otherMountsReady))
     ShellCacheStatus()
 
     ; Publish the command directory through the ordinary, replaceable ASSIGN.

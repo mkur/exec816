@@ -57,6 +57,9 @@ retains its causal error. SYS is one fixed alias, separate from the ordinary
 separate per-shell policy.
 
 The standard shell starts with a real SYS root lock and reports its mapping.
+Initial filesystem startup publishes all configured volumes together; after
+success, the shell reports each volume's physical drive and access mode.
+For the demo, these are SYS: on D1: read-only and WORK: on D8: read-write.
 `MOUNT` lists the physical volume once. Startup also assigns `C:` to the existing
 `SYS:C` command directory and `S:` to `SYS:S` when present. It runs optional
 `S:STARTUP` and `S:USER` before the first prompt; both mappings follow the selected

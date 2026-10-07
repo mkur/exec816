@@ -32,9 +32,16 @@ def generate(output, mounts, task_capacity, stack_checks=True, system_mount=None
                    version=f"Exec816 ({build['display']})\nactionc pin: {compiler[:7]}\n")
     if mount:
         strings.update(sioReady=' ready, '+PROFILE_NAMES[mount['profile']]+' profile\n',
-                       mountStart='SYS: mounting...\n')
+                       mountStart='Filesystems: mounting...\n')
     else:
         strings.update(sioReady='', mountStart='SYS: no system volume configured\n')
+    # Initial startup publishes the complete mount set together. Emit these
+    # lines only after the shell has successfully selected SYS; its own drive
+    # and access mode remain runtime values because OF816 can change the drive.
+    strings['otherMountsReady'] = ''.join(
+        f"\n{m['alias']}: -> D{m['unit']-48}: ready, "
+        + ('read-write' if m.get('access', 'readonly') == 'readwrite' else 'read-only')
+        for m in mounts if m is not mount)
     required = ''.join(f"Required: {m['alias']}: on D{m['unit']-48}:\n"
                        for m in mounts if m is not mount)
     strings['mountFailure'] = ('Filesystem startup failed; check configured disks\n'

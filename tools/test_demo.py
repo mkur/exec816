@@ -518,6 +518,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 startup=cells('system-volume')
                 require(f'SYS: -> D{system_drive}: ready, read-only'.encode() in startup[:shell_cells],
                         'Wrong system-volume startup mapping')
+                for mount in manifest['mounts']:
+                    if mount['alias'].upper() != p['build']['system_mount'].upper():
+                        access='read-write' if mount.get('access','readonly')=='readwrite' else 'read-only'
+                        status=f"{mount['alias']}: -> D{mount['unit']-48}: ready, {access}".encode()
+                        require(status in startup[:shell_cells], 'Missing companion-volume startup status')
                 if measurement_commands is not None:
                     saved['measurements']=[]
                     for text in measurement_commands:

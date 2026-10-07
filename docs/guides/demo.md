@@ -63,6 +63,14 @@ If allocation fails, the shell reports the fallback and remains usable.
 
 ## A short walkthrough
 
+Successful startup reports both configured disks:
+
+```text
+Filesystems: mounting...
+SYS: -> D1: ready, read-only
+WORK: -> D8: ready, read-write
+```
+
 Wait for `SYS: -> D1: ready, read-only` and the `>` prompt. The lower tile should advance
 without typing. Run these commands in order, starting with `TASKS` to reproduce
 the first screenshot:
