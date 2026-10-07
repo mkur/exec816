@@ -65,7 +65,7 @@ PROC Main()
   event.x=-123
   event.y=239
   event.buttons=1
-  event.reserved=0
+  event.motionInfo=0
   LET stage=CARD POINTER(C_STAGE)
   stage^=1
   result=cMain()

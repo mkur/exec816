@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Mouse acceleration](mouse-acceleration.md): timed relative capture, interval
+  and coalescing checks, queue capacity and upper-memory accounting. MA1 passes
+  development checks; desktop profiles and the refreshed demo follow.
 - [Hybrid AES refactor](aes-hybrid.md): shared endpoint lifetime, caller transport
   migration, bounded presenter/widget/text steps and measured latency tradeoffs.
 - [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.

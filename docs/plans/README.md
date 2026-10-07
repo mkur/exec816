@@ -155,6 +155,13 @@ assuming work is pending. Current behavior belongs in the
   and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
+- [Mouse acceleration design](gem4xe/mouse-acceleration-design.md) and
+  [implementation plan](gem4xe/mouse-acceleration-implementation-plan.md): proposed
+  timed relative capture and a desktop-owned mild curve, with fixed 2× off mode.
+  MA1–MA4 cover capture/queue checks, the transform, loaded tuning and an OF816
+  preview. Target zero bank-zero growth; retain the current sampling schedule.
+  PI3 remains the accepted usability baseline while broader latency work is
+  deferred for desktop functionality.
 - [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
   at the development tier; independent rectangles and underline-only focus
   repair reduce the five-press idle median from 319 to 119 ms. Release/status

@@ -39,8 +39,8 @@ class NativeInterruptPackageTests(unittest.TestCase):
                 self.assertEqual(memory[key],value,key)
             n=memory['native_interrupt_storage'];t=memory['timer_device_storage']
             self.assertEqual(n['BYTES']+n['CODE_BYTES']+t['BYTES'],8960)
-            self.assertEqual(n['RESERVATION_BYTES'],10240)
-            self.assertEqual(n['CODE_BASE']-(t['BASE']+t['BYTES']),1280)
+            self.assertEqual(n['RESERVATION_BYTES'],9728)
+            self.assertEqual(n['CODE_BASE']-(t['BASE']+t['BYTES']),768)
             self.assertLessEqual(n['BASE']+n['BYTES'],t['BASE'])
             self.assertLessEqual(t['BASE']+t['BYTES'],n['CODE_BASE'])
             self.assertLessEqual(n['CODE_BASE']+n['CODE_BYTES'],0x400000)

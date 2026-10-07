@@ -33,7 +33,7 @@ UWORD main(void)
         check(event.tick == 0xfffe && event.kind == INPUT_EVENT_BUTTON);
         check(event.flags == INPUT_INJECTED && event.code == INPUT_LEFT);
         check(event.qualifiers == 3 && event.x == -123 && event.y == 239);
-        check(event.buttons == 1 && event.reserved == 0);
+        check(event.buttons == 1 && event.motionInfo == 0);
         return failures;
     }
     config.version = INPUT_VERSION;

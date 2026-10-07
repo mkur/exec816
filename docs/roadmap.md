@@ -129,8 +129,17 @@ about 4 kHz with fine SIO timing preserved; each pointer move uses one blitter
 list. [Matched measurements](history/mouse-performance.md) show lower IRQ
 overhead and pointer setup cost. The OF816 preview is refreshed, with 2× travel
 and memory reservations unchanged. Pointer, outline and move-repair timing
-targets remain open; presentation scheduling and exposure repair remain focused
-performance follow-ups.
+targets remain open. Following the tested PI3 demo, further presenter latency
+work is deferred until the desktop experience is more complete; PI4/HY4 remain
+open.
+
+The proposed [mouse acceleration design](plans/gem4xe/mouse-acceleration-design.md)
+adds precise slow movement and faster desktop travel, with a fixed 2× off option.
+The [MA1–MA4 plan](plans/gem4xe/mouse-acceleration-implementation-plan.md) preserves
+timed relative motion in capture, applies the curve once in the desktop Task,
+checks loaded behavior and refreshes the OF816 preview. It retains the current
+sampling schedule and targets zero bank-zero reservation growth. Capture timing
+and stricter-coalescing queue capacity are the first implementation gates.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the

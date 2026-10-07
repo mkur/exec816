@@ -31,7 +31,11 @@ remain the caller's obligation in Exec's shared address space.
 | --- | ---: | --- |
 | InputLease | 32 | Task lease, acquisition generation, published route, wake mask, state and reserved fields. Zero before Acquire; otherwise opaque and address-stable. |
 | InputConfig | 32 | Version, source, wake mask, keyboard filters/flags, pointer protocol/port, initial position, inclusive bounds and zero reserved fields. |
-| InputEvent | 24 | Acquisition and route u32; tick u16; kind/flags u8; code/qualifiers u16; x/y i16; buttons/reserved u16. |
+| InputEvent | 24 | Acquisition and route u32; tick u16; kind/flags u8; code/qualifiers u16; x/y i16; buttons/motionInfo u16. |
+
+The current INPUT version is 3. Rebuild callers with the generated bindings;
+version-2 configurations are not accepted. `motionInfo` is zero for keyboard
+and absolute-pointer events.
 
 `SOURCE_KEYBOARD=2` and `SOURCE_POINTER=3` admit independent consumers. The
 pointer backend decodes an ST mouse on joystick port 1, including its left
@@ -52,13 +56,19 @@ console selects Ctrl-C `$92/$BF` plus BREAK. IRQ work matches raw codes and latc
 routes; it never translates characters or invokes application callbacks.
 
 Keyboard configurations require bytes 16–31 to be zero. Pointer configurations
-require the keyboard fields at 8–15 to be zero, `pointerProtocol=POINTER_ST=1`
+require the keyboard filter fields and reserved word to be zero, `pointerProtocol=POINTER_ST=1`
 at offset 16 and `pointerPort=1` at 18. Signed 16-bit `initialX`, `initialY`,
 `maxX`, `maxY` occupy offsets 20, 22, 24 and 26. Bounds are inclusive, start at
 zero, and must contain the initial position; negative values are malformed.
 The reserved u32 at offset 28 is zero for both sources. Unknown source, protocol
 or port returns UNSUPPORTED; malformed fields/version return BAD_ARGUMENT before
 hardware changes.
+
+Pointer `flags=POINTER_RELATIVE` selects timed relative delivery; otherwise flags
+are zero. Relative configurations require all four coordinate/bound fields to
+be zero. Bounds and screen policy then belong to the consumer. The flag is not
+valid for keyboard acquisitions. Timed motion currently has development coverage
+on the pinned PAL configuration; NTSC acceleration is not covered.
 
 ## Calls and ownership
 
@@ -156,15 +166,35 @@ remain independent. Route zero continues tracking electrical phase and counters
 without addressed output. A newly published route receives a position baseline;
 consumers require a released-button observation before arming gestures.
 
-The fixed capture reservation contains 32 private 24-byte samples and sixteen
-durable route notices. One legal phase transition means one pixel, without
-acceleration. Task code clips to the configured inclusive bounds. Unchanged
-samples produce no event. Adjacent motion coalesces only within the same
-acquisition, route, epoch and button state, and stops on either axis reversing.
+The fixed capture reservation contains 64 private 28-byte samples and sixteen
+24-byte durable route notices. In absolute mode one legal phase transition means
+one coordinate unit, without acceleration, and Task code clips to configured
+inclusive bounds. Unchanged samples produce no event. Adjacent motion coalesces
+only within the same acquisition, route, epoch, button state, exact step vector
+and interval class, up to 64 transitions per record.
 Coalescing preserves the earliest outstanding tick. Button changes are barriers.
 Movement and a simultaneous button edge expand to POINTER with the previous
 buttons, followed by a retained BUTTON with the new state. Pending includes that
 retained output, and retirement, Discard, loss and Release account for it.
+
+Relative POINTER/BUTTON events set `RELATIVE` alongside `TICK_VALID`; `x/y` are
+unclipped signed transition counts. The low five `motionInfo` bits contain an
+interval class; `MOTION_DIAGONAL` marks simultaneous two-axis motion. Classes
+0–15 use the inclusive upper age bounds in
+[input-native.json](../../abi/input-native.json), measured in two-scanline PAL
+quanta. `MOTION_RESET=16` marks unknown/zero duration, a saturated pause, baseline
+or reversal. A retained BUTTON carries zero delta and zero metadata, so its
+preceding movement is applied once. LOSS has no timing/relative flags or motion
+metadata. Baselines carry zero delta and reset metadata.
+
+Capture maintains saturating motion age from `VCOUNT` differences at existing
+samples. It handles beam wrap under the established sub-millisecond capture-gap
+contract, with a cheap idle path once age reaches 255 quanta. An entire missed
+frame cannot be inferred from beam phase alone. Producer timing/direction history
+survives ring draining; partial reads do not change later timing classes. The
+public VBI tick remains separate. Capture selects no GUI gain and never waits
+for a run to fill. Relative consumers apply their own transform before coalescing
+events with different classes. See the [desktop acceleration design](../plans/gem4xe/mouse-acceleration-design.md).
 
 Opposite quadrature phases and signed counter overflow produce HARDWARE loss;
 a full raw ring produces RAW loss. A per-route notice epoch prevents older
@@ -181,7 +211,7 @@ generated. Arbitrary host bursts are not guaranteed.
 | Shared fields | Writers and serialization |
 | --- | --- |
 | Phase, button level, cumulative counters, epoch, disabled/baseline flags | Timer IRQ; claim, publication and Discard transactions save/set I. |
-| Ring head, last motion counts and coalescing directions | Timer IRQ. Take copies a complete sample and advances tail under saved I; no masked ring walk. |
+| Ring head, last motion counts, interval age and direction history | Timer IRQ. Take copies a complete sample and advances tail under saved I; no masked ring walk. |
 | Route, acquisition and binding activation | Admitted Task/kernel publication under Forbid or SWITCHING plus saved I. IRQ reads fixed resident storage. |
 | Notice payloads and loss mask | IRQ or Discard under saved I; Take copies and acknowledges one notice atomically. Notice identity/epoch remain after acknowledgement. |
 | Coordinates, consumed counters/route/epoch and retained BUTTON | Consumer Task under Forbid. Pending is published last; native Take checks it against the retained notice epoch before copying. |
@@ -220,7 +250,7 @@ controls. This is focused development evidence on the pinned emulator, not a
 general latency guarantee or hosted-system qualification.
 
 Keyboard capture uses 560 bytes and a 144-byte descriptor. Pointer capture
-reserves 1,536 bytes including two 16-byte guards and 224 bytes of unused
+reserves 2,560 bytes including two 16-byte guards and 224 bytes of unused
 capacity, plus a 144-byte descriptor. The shared acquisition allocator uses four
 bytes. All are inside the existing 64 KiB upper Task arena. No additional input
 Task or reserved bank-zero memory is

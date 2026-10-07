@@ -106,6 +106,16 @@ preview. The [execution record](../../history/mouse-performance.md) separates
 the measured savings from open pointer, outline and move-repair timing targets.
 The current 2× pointer travel and memory reservations remain unchanged.
 
+The proposed [mouse acceleration design](mouse-acceleration-design.md) adds fine
+slow motion and faster desktop travel, with a fixed 2× off option. Timed relative
+runs preserve capture timing across coalescing; the desktop applies the profile
+once before cursor, hit-test and application delivery. The
+[MA1–MA4 implementation plan](mouse-acceleration-implementation-plan.md) covers
+capture/queue proofs, the Task-side transform, loaded checks and an OF816 demo.
+It targets zero bank-zero growth and the existing sampling schedule. PI3 is the
+accepted usability baseline; broader presenter optimization is deferred while
+the desktop gains functionality. PI4/HY4 acceptance remains open.
+
 The [AES widget library plan](aes-widgets-implementation-plan.md) is implemented
 through AW6 at the development tier: selected object/drawing/form code runs in
 the existing presenter, with retained trees and bounded updates. The Control

@@ -291,10 +291,12 @@ while eligible work remains; runnable Tasks can retain excess backlog until the
 next safe opportunity. See the instruction/exit inventory and measured limits
 in the [implementation record](../history/interrupt-reply.md).
 
-All new storage occupies the already reserved upper Task bank: `$5800–$58FF`
-source state, `$5900–$5AFF` timer state, `$5B00–$5FFF` alignment capacity and
-`$6000–$7FFF` native code. The complete suballocation is 10,240 bytes including
-1,280 alignment bytes and unused code capacity. Fixed and per-Task bank-zero
+Storage occupies the already reserved upper Task bank: `$5A00–$5AFF`
+source state, `$5B00–$5CFF` timer state, `$5D00–$5FFF` alignment capacity and
+`$6000–$7FFF` native code, including pointer capture routines. The complete
+suballocation is 9,728 bytes including 768 alignment bytes and unused code
+capacity. MA1 moved state within this bank to accommodate the larger pointer
+ring; source and timer state sizes are unchanged. Fixed and per-Task bank-zero
 reservation deltas are both **0 bytes**. Linker limits retain the existing near
 adapter reservation; no private interrupt stack or timer Task is allocated.
 
@@ -353,6 +355,15 @@ sampling counters and test entry points are excluded from production. See
 [mouse development](../history/gem-mouse.md) and the
 [4 kHz development record](../history/mouse-performance.md).
 
+Timed relative pointer capture measures short intervals with a saturating
+`VCOUNT` age under the same sampling-gap contract. It does not derive time from
+the number of normal/fine POKEY IRQs or from Task scheduling. See the
+[INPUT representation and limits](input.md#st-mouse-capture). The guarded
+64-sample ring reserves `$4800–$51FF` in the upper Task bank. Its 2,304 live bytes,
+two 16-byte guards and 224 spare bytes use no bank-zero storage. The pointer
+routines share the existing native-code reservation at `$6000–$7FFF`, with
+same-bank near calls and unchanged public interrupt entry protocols.
+
 The VBXE backend participates in both native and emulation IRQ routing, including
 when SIO owns the serial route. It acknowledges only its owned source and chains
 unowned work. The emulation shim has an inactive fast path; its active path
@@ -363,7 +374,7 @@ but cannot consume this state or switch across the protected entry protocol.
 
 The generated [blitter layout](../../abi/blitter.json) reserves 64 bytes after
 the serial binding in upper Task metadata. Its 2 KiB code reservation starts at
-offset `$5000` in the existing upper Task bank, outside the guarded pointer code
+offset `$5200` in the existing upper Task bank, outside the guarded pointer capture
 reservation. Packaging checks segment bounds and overlap. The bank-zero shim
 fits the existing resident adapter segment; fixed, root/kernel, per-Task and
 idle bank-zero reservation deltas are all zero, including guards and padding.

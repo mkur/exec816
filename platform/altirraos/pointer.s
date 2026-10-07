@@ -18,7 +18,17 @@ PI_FLAGS = PI+9
 PI_SLOT = PI+10
 PI_LOSS_TAG = PI+36
 PI_LOSS_CODE = PI+40
-.segment "SIGNAL_CODE"
+PI_AGE = PI+IN_POINTERCAPTURE_MOTIONAGE
+PI_BEAM = PI+IN_POINTERCAPTURE_MOTIONBEAM
+PI_LAST_X = PI+IN_POINTERCAPTURE_MOTIONX
+PI_LAST_Y = PI+IN_POINTERCAPTURE_MOTIONY
+PI_CLASS = PI+IN_POINTERCAPTURE_MOTIONCLASS
+PI_VECTOR = PI+IN_POINTERCAPTURE_MOTIONVECTOR
+PI_STEPS = PI+IN_POINTERCAPTURE_MOTIONSTEPS
+PI_CLOCK_SCRATCH = PI+IN_POINTERCAPTURE_MOTIONSCRATCH
+; Use spare native-work code in the same upper bank. Near calls and interrupt
+; entry costs stay unchanged; SIGNAL_CODE has no room for timed capture.
+.segment "NATIVE_WORK"
 .export pointer_claim,pointer_claim_end,pointer_release,pointer_release_end
 .export pointer_publish,pointer_publish_end,pointer_discard,pointer_discard_end
 .export pointer_take,pointer_take_end,pointer_sample,pointer_notify,pointer_port_read
@@ -69,6 +79,7 @@ pointer_claim:
     lda f:PI_CONFIG+INPUT_CONFIG_INITIALY
     sta f:PI+72
     sep #$20
+    jsr pointer_history_reset
     lda f:$d300
     and #15
     sta f:PI+62
@@ -133,6 +144,7 @@ pointer_publish:
     sep #$20
     lda #1
     sta f:PI+65
+    jsr pointer_history_reset
     lda f:PI+66
     beq :+
     lda #INPUT_LOSS_HARDWARE
@@ -176,6 +188,7 @@ pointer_port_read:
     eor #1
     sta f:PI_NEW_BUTTONS
 pointer_decode:
+    jsr pointer_age
     ; Most ticks observe an idle mouse. Keep both electrical reads, but avoid
     ; table decoding, counter arithmetic and queue work for an unchanged level.
     lda f:PI_NEW_PHASE
@@ -219,10 +232,14 @@ pointer_changed:
     sta f:PI+62
     lda f:PI_DX
     cmp #2
-    beq pointer_bad_phase
+    bne :+
+    jmp pointer_bad_phase
+:
     lda f:PI_DY
     cmp #2
-    beq pointer_bad_phase
+    bne :+
+    jmp pointer_bad_phase
+:
     ldx #52
     lda f:PI_DX
     jsr pointer_count
@@ -231,6 +248,7 @@ pointer_changed:
     lda f:PI_DY
     jsr pointer_count
     bcs pointer_bad_phase
+    jsr pointer_motion_time
     lda f:PI+66
     bne pointer_sample_done
     rep #$20
@@ -327,10 +345,26 @@ pointer_count_overflow:
     sec
     rts
 
-; A=index0..31, return X=index*24, M=16. Fixed bounded arithmetic.
+; Raw records and durable notices deliberately have different strides.
 pointer_slot:
     rep #$20
-    and #31
+    and #IN_POINTER_SLOTS-1
+    asl
+    asl
+    sta f:PI_SLOT
+    asl
+    asl
+    asl
+    sec
+    sbc f:PI_SLOT
+    tax
+    rts
+.assert IN_POINTERSAMPLE_SIZE = 28, error, "Update raw pointer stride"
+
+.a8
+pointer_notice_slot:
+    rep #$20
+    and #15
     asl
     asl
     asl
@@ -339,6 +373,105 @@ pointer_slot:
     clc
     adc f:PI_SLOT
     tax
+    rts
+.assert IN_POINTERNOTICE_SIZE = 24, error, "Update pointer notice stride"
+
+; Age uses beam differences at the existing captures, including idle samples.
+; Under the capture-gap contract at most one beam wrap can occur per sample.
+; Saturation restores the cheap idle path; motion then restarts from slow.
+.a8
+pointer_history_reset:
+    lda #255
+    sta f:PI_AGE
+    lda #0
+    sta f:PI_LAST_X
+    sta f:PI_LAST_Y
+    rts
+pointer_age:
+    lda f:PI_AGE
+    cmp #255
+    beq pointer_age_done
+    lda f:$d40b
+pointer_age_at:
+    sta f:PI_CLOCK_SCRATCH
+    sec
+    sbc f:PI_BEAM
+    bcs :+
+    clc
+    adc #IN_POINTER_CLOCK_QUANTA
+:
+    clc
+    adc f:PI_AGE
+    bcc :+
+    lda #255
+:
+    sta f:PI_AGE
+    lda f:PI_CLOCK_SCRATCH
+    sta f:PI_BEAM
+pointer_age_done:
+    rts
+
+; Producer history survives ring draining. Timing is a fact, not GUI gain.
+pointer_motion_time:
+    lda #0
+    sta f:PI_CLASS
+    sta f:PI_VECTOR
+    sta f:PI_STEPS
+    lda f:PI_DX
+    ora f:PI_DY
+    bne :+
+    rts
+:
+    lda #1
+    sta f:PI_STEPS
+    lda f:PI_DX
+    beq pointer_time_y
+    cmp f:PI_LAST_X
+    beq pointer_time_x_known
+    lda f:PI_LAST_X
+    beq pointer_time_x_known
+    lda #255
+    sta f:PI_AGE
+pointer_time_x_known:
+    lda f:PI_DX
+    sta f:PI_LAST_X
+    cmp #255
+    bne :+
+    lda #2
+:
+    sta f:PI_VECTOR
+pointer_time_y:
+    lda f:PI_DY
+    beq pointer_time_class
+    cmp f:PI_LAST_Y
+    beq pointer_time_y_known
+    lda f:PI_LAST_Y
+    beq pointer_time_y_known
+    lda #255
+    sta f:PI_AGE
+pointer_time_y_known:
+    lda f:PI_DY
+    sta f:PI_LAST_Y
+    cmp #255
+    bne :+
+    lda #2
+:
+    asl
+    asl
+    ora f:PI_VECTOR
+    sta f:PI_VECTOR
+pointer_time_class:
+    lda f:PI_AGE
+    rep #$20
+    and #255
+    tax
+    sep #$20
+    lda f:pointer_age_class,x
+    sta f:PI_CLASS
+    lda f:$d40b
+    sta f:PI_BEAM
+    lda #0
+    sta f:PI_AGE
     rts
 
 .a8
@@ -368,24 +501,18 @@ pointer_enqueue:
     lda f:PI_EVENTS+11,x
     cmp f:PI+63
     bne pointer_append
-    lda f:PI_DX
-    beq :+
-    cmp f:PI+68
-    beq :+
-    lda f:PI+68
+    lda f:PI_CLASS
+    cmp f:PI_EVENTS+IN_POINTERSAMPLE_INTERVAL,x
     bne pointer_append
-:
-    lda f:PI_DY
-    beq :+
-    cmp f:PI+69
-    beq :+
-    lda f:PI+69
+    lda f:PI_VECTOR
+    cmp f:PI_EVENTS+IN_POINTERSAMPLE_VECTOR,x
     bne pointer_append
-:
-    ; The complete identity is immutable for this acquisition. Updating only
-    ; counts preserves the earliest capture tick and the previous extrema.
+    lda f:PI_EVENTS+IN_POINTERSAMPLE_STEPS,x
+    cmp #IN_POINTER_RUN_LIMIT
+    bcs pointer_append
+    inc
+    sta f:PI_EVENTS+IN_POINTERSAMPLE_STEPS,x
     jsr pointer_store_counts
-    jsr pointer_directions
     rts
 pointer_append16:
     sep #$20
@@ -393,7 +520,7 @@ pointer_append:
     lda f:PI+1
     sec
     sbc f:PI+2
-    cmp #32
+    cmp #IN_POINTER_SLOTS
     bcc :+
     lda #INPUT_LOSS_RAW
     jmp pointer_loss
@@ -416,6 +543,11 @@ pointer_append:
     lda f:PI_FLAGS
     and #$ff
     sta f:PI_EVENTS+22,x
+    lda f:PI_CLASS
+    sta f:PI_EVENTS+IN_POINTERSAMPLE_INTERVAL,x
+    lda f:PI_STEPS
+    and #255
+    sta f:PI_EVENTS+IN_POINTERSAMPLE_STEPS,x
     sep #$20
     lda f:PI_KIND
     sta f:PI_EVENTS+10,x
@@ -424,23 +556,10 @@ pointer_append:
     jsr pointer_store_counts
     lda #0
     sta f:PI+65
-    sta f:PI+68
-    sta f:PI+69
-    jsr pointer_directions
     lda f:PI+1
     inc
     sta f:PI+1
     jmp pointer_notify
-pointer_directions:
-    lda f:PI_DX
-    beq :+
-    sta f:PI+68
-:
-    lda f:PI_DY
-    beq :+
-    sta f:PI+69
-:
-    rts
 pointer_store_counts:
     rep #$20
     lda f:PI+52
@@ -496,7 +615,7 @@ pointer_loss_tag:
     ; Preserve the first unacknowledged cause, but advance its baseline/epoch.
     txa
     lsr
-    jsr pointer_slot
+    jsr pointer_notice_slot
     .a16
     sep #$20
     lda f:PI_NOTICES+10,x
@@ -509,7 +628,7 @@ pointer_loss_tag:
     sta f:PI+44
     txa
     lsr
-    jsr pointer_slot
+    jsr pointer_notice_slot
     .a16
 pointer_notice_store:
     lda f:PI+48
@@ -550,6 +669,7 @@ pointer_notice_store:
     sep #$20
     lda #1
     sta f:PI+65
+    jsr pointer_history_reset
     bra pointer_notify
 pointer_loss_other_route:
     .a16
@@ -569,7 +689,8 @@ pointer_notify:
     jmp signal_post_binding
 
 .a16
-; Take one coherent 24-byte record. 0 empty,1 sample,2 durable loss,3 pending
+; Take one coherent record (28-byte raw, 24-byte loss/public event).
+; 0 empty,1 sample,2 durable loss,3 pending
 ; public event,4 invalidated sample. No ring scan with IRQ masked.
 pointer_take:
     signal_stack_check 40
@@ -602,7 +723,7 @@ pointer_take:
     sta f:PI+44
     txa
     lsr
-    jsr pointer_slot
+    jsr pointer_notice_slot
     .a16
     txa
     clc
@@ -657,6 +778,16 @@ pointer_take_copy:
         sta [1],y
     .endrepeat
     pla
+    cmp #1
+    bne pointer_take_return
+    pha
+    ldy #24
+    lda f:PI+24,x
+    sta [1],y
+    ldy #26
+    lda f:PI+26,x
+    sta [1],y
+    pla
 pointer_take_return:
     tax
     tsc
@@ -684,7 +815,7 @@ pointer_obsolete:
     pha
     lda 3,s
     and #15
-    jsr pointer_slot
+    jsr pointer_notice_slot
     .a16
     lda f:PI_NOTICES+4,x
     cmp 3,s
@@ -721,6 +852,7 @@ pointer_obsolete_no:
     rts
 pointer_gray:
     .byte 0,255,1,2, 1,0,2,255, 255,2,0,1, 2,1,255,0
+.include "pointer-timing.inc"
 
 ; Diagnostic-only decoder entry. The real-controller acceptance path never
 ; uses it. A fixture holds Forbid; saved I protects the same shared scratch.
@@ -728,6 +860,43 @@ pointer_gray:
 .export pointer_probe_suspend,pointer_probe_suspend_end
 .export pointer_probe_sample,pointer_probe_sample_end
 .export pointer_probe_nmi,pointer_probe_nmi_end
+.export pointer_probe_clock,pointer_probe_clock_end
+.export pointer_probe_timed,pointer_probe_timed_end
+.a16
+; Inject captured facts for deterministic decoder/coalescing proofs. Electrical
+; timing acceptance continues to use pointer_port_read and the real controller.
+pointer_probe_timed:
+    signal_stack_check 40
+    php
+    sei
+    lda 5,s
+    sta f:PI_NEW_PHASE
+    sep #$20
+    lda 7,s
+    sta f:PI_AGE
+    jsr pointer_changed
+    rep #$20
+    plp
+    rtl
+pointer_probe_timed_end:
+.a16
+pointer_probe_clock:
+    signal_stack_check 40
+    php
+    sei
+    sep #$20
+    lda 5,s
+    sta f:PI_BEAM
+    lda 9,s
+    sta f:PI_AGE
+    lda 7,s
+    jsr pointer_age_at
+    rep #$20
+    lda f:PI_AGE
+    and #255
+    plp
+    rtl
+pointer_probe_clock_end:
 .a16
 pointer_probe_suspend:
     signal_stack_check 40
@@ -766,3 +935,4 @@ pointer_probe_nmi:
     rtl
 pointer_probe_nmi_end:
 .endif
+.segment "SIGNAL_CODE"

@@ -73,9 +73,9 @@ class InputAbiTests(unittest.TestCase):
         from generate_sio_adapter import ABI as sio
         from generate_program import ABI as program
         self.assertLessEqual(sio['native_offset']+sio['native_reserved_bytes'], program['provider_offset'])
-        self.assertEqual(values['POINTERSAMPLE_SIZE'], 24)
+        self.assertEqual(values['POINTERSAMPLE_SIZE'], 28)
         self.assertEqual(values['POINTERCAPTURE_EVENTS'], 128)
-        self.assertEqual(storage['POINTER_RESERVED_BYTES'], 1536)
+        self.assertEqual(storage['POINTER_RESERVED_BYTES'], 2560)
         self.assertLessEqual(storage['POINTER_STATE']+144, storage['POINTER_RESERVE'])
         self.assertEqual(storage['POINTER_CAPTURE']-storage['POINTER_RESERVE'], 16)
         self.assertEqual(storage['POINTER_RESERVED_BYTES']-storage['POINTER_CAPTURE_BYTES']-32, 224)

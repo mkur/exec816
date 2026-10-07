@@ -533,11 +533,16 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name.startswith('POINTERPROBE.'):
             require(irq_probe == 12, 'Pointer probe is unavailable in production')
             operation=name.split('.')[1]
-            require(operation in ('Suspend','Sample','Nmi'), 'Unknown pointer probe')
+            require(operation in ('Suspend','Sample','Nmi','Clock','Timed'), 'Unknown pointer probe')
             label='pointer_probe_'+operation.lower()
             result='None';peak=40
             if operation=='Sample':
                 arguments=[dict(alignment=2,offset=0,size=2)];outgoing=3
+            elif operation=='Clock':
+                arguments=[dict(alignment=2,offset=i*2,size=2) for i in range(3)];outgoing=7
+                result='Some(NativeResult(A16))'
+            elif operation=='Timed':
+                arguments=[dict(alignment=2,offset=i*2,size=2) for i in range(2)];outgoing=5
         elif tasks and name.startswith('TIMERPROBE.'):
             require(irq_probe == 11, 'Timer probe is unavailable in production')
             operation = name.split('.')[1]
@@ -940,7 +945,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'abi/timer-device.json','tools/generate_timer_device.py','lib/io/timer.act',
                 'lib/io/timer-types.inc','lib/io/timernative.act','lib/io/timerdriver.act',
                 'platform/altirraos/timer-device.inc','platform/altirraos/timer-device.s',
-                'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
+                'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/pointer-timing.inc','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',

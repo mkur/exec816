@@ -76,3 +76,12 @@ if __name__ == '__main__':
     write(ROOT/'lib/input/inputnative.act', native, a.check)
     write(ROOT/'platform/altirraos/input-native.inc', HEADER+''.join(
         f'IN_{k}=${v:x}\n' for k,v in values.items()), a.check)
+
+    bounds = ABI['motion_interval_upper_bounds']
+    require(len(bounds) == 16 and bounds == sorted(set(bounds)) and bounds[-1] == 255,
+            'Invalid motion interval classes')
+    ages = [16 if age in (0, 255) else next(i for i, limit in enumerate(bounds) if age <= limit)
+            for age in range(256)]
+    table = HEADER+'pointer_age_class:\n'
+    table += ''.join('    .byte '+','.join(map(str, ages[i:i+16]))+'\n' for i in range(0,256,16))
+    write(ROOT/'platform/altirraos/pointer-timing.inc', table, a.check)
