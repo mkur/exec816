@@ -25,6 +25,37 @@ arm:
     sta f:E816_PROBE0
     sta f:E816_PROBE0+1
     rep #$20
+.if .defined(SWITCHING_PROBE) .or .defined(QUIET_PROBE)
+    ; Model an IRQ-open private adapter entry such as sio_start. Its Task
+    ; stack/DP remain valid, but it still owns the switching guard. A second
+    ; VBI at the empty interrupt-return checkpoint must leave this owner alone.
+    .ifdef SWITCHING_PROBE
+    sep #$20
+    lda #1
+    sta f:E816_SWITCHING
+    .endif
+    rep #$20
+    cli
+guarded_tick:
+    lda f:CONTROL+5
+    and #$ff
+    beq guarded_tick
+    .ifdef SWITCHING_PROBE
+    sei
+    lda f:CONTROL+4
+    and #$ff
+    jne duplicate
+    sep #$20
+    lda f:E816_SWITCHING
+    cmp #1
+    jne duplicate
+    lda #0
+    sta f:E816_SWITCHING
+    lda #1
+    sta f:CONTROL+46
+    rep #$20
+    .endif
+.endif
     plp
     rtl
 

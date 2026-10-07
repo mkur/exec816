@@ -1,0 +1,173 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "391cdc3",
+  "trigger": "PI3 matched disk cohort: NMI at the IRQ return surrounding guarded sio_start armed a private COP; the live SWITCHING guard rejected that COP with FF11, ending in FF93.",
+  "reproducer": {
+    "artifact": "build/presenter-input/pi3/guard-before/return-39",
+    "before_status": 4,
+    "notifications": 1,
+    "subsequent_callback_before_guard_release": false
+  },
+  "semantics": "A near IRQ/NMI return under SWITCHING cannot redirect an otherwise owned unmasked Task frame. Only the classified COP restore can finish its own held guard; the far selected-return range retains its existing admission.",
+  "memory": {
+    "reserved_bank_zero": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "upper_state_bytes": 0,
+    "upper_reservation_bytes": 0,
+    "vram_bytes": 0
+  },
+  "cases": [
+    {
+      "boundary": 39,
+      "switching_guard": true,
+      "resume_nmi": false,
+      "replies": 1,
+      "callbacks": 1,
+      "subsequent_ticks": 0,
+      "return_slots_clear": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "xex_sha256": "2c06c6bdf9eb5031bef22d5d560530bf78e759b66e385f8f644e23c6500c3da7",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "native_probe_sha256": "06c52aea41db663c7fae22be79edfcf80ba6cc4bfb9de58993030df58b42deb6"
+    },
+    {
+      "boundary": 33,
+      "switching_guard": false,
+      "resume_nmi": true,
+      "replies": 1,
+      "callbacks": 1,
+      "subsequent_ticks": 1,
+      "return_slots_clear": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "xex_sha256": "e52b7ce03dc7a230c9106010f05dfb8c1bb2d25bcb137a6f109bb8e3b479fedb",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "native_probe_sha256": "d6835c0f03d70311b7755125ffa8d9cae682716bdc27da65a3fb4d311ba82c2e"
+    },
+    {
+      "boundary": 39,
+      "switching_guard": false,
+      "resume_nmi": false,
+      "replies": 1,
+      "callbacks": 1,
+      "subsequent_ticks": 0,
+      "return_slots_clear": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "xex_sha256": "daf817508d0c3e36207f09d420a5d4d499480dd4dbbb721bfb655fa82c5a027a",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "native_probe_sha256": "3f89a2a41fa32657976cb40900308efc6855605a73fd4845e133c19b908f5bf8"
+    },
+    {
+      "boundary": 39,
+      "switching_guard": false,
+      "resume_nmi": true,
+      "replies": 1,
+      "callbacks": 1,
+      "subsequent_ticks": 1,
+      "return_slots_clear": true,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "return_s": 10766,
+        "return_d": 2816,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "xex_sha256": "8f3a9da79c0e4e2b66e20198411e7b35aa7d931bc17d7af1af1020def120464b",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "native_probe_sha256": "62d57acb4a7e61bf464e09451a072bb44cfe6864ced1276f8a41985476fca563"
+    }
+  ],
+  "pins": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": true,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$eeca81434d995c35",
+    "actual_kernel_id": "$eeca81434d995c35",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "irq_regression": {
+    "replies": 3,
+    "preserved": [
+      "A",
+      "X",
+      "Y",
+      "P",
+      "D",
+      "DBR",
+      "S"
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "return_s": 10766,
+      "return_d": 2816,
+      "return_p": 0,
+      "return_dbr": 0,
+      "return_e": 0
+    },
+    "xex_sha256": "b5f2060f7089c222e893b577b4e253e0c68728ac0d0cc2bf1217d8bc7bec74ad"
+  },
+  "host_tests": {
+    "tests": 396,
+    "skipped": 4,
+    "status": "pass"
+  }
+}

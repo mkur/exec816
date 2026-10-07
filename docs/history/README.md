@@ -23,7 +23,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.
 
 - [Native interrupt replies and timer.device](interrupt-reply.md): shared port
-  transactions, exact return handoff, bounded native completion and Action!/C timers.
+  transactions, exact return handoff, guarded adapter returns, bounded native
+  completion and Action!/C timers.
 
 - [Hosted AES widget application](aes-widgets.md): Control Panel, loaded semantic
   input, matched updates, independent contexts, the AW6 local preview and its

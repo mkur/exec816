@@ -283,7 +283,9 @@ An armed redirect also prevents interrupt-exit scheduling until that COP consume
 the saved PC, including an interrupt immediately after RTI. This prevents Task
 removal or slot reuse while return state is still live.
 Only recognized instruction ranges and an original unmasked Task frame qualify.
-Foreign/ROM frames are never redirected. No extra VBI is needed for a reply
+An IRQ/NMI restore around a private adapter entry which still holds SWITCHING
+does not qualify, even with a valid Task stack/DP and I=0. COP's own classified
+restore may finish its guarded transition. Foreign/ROM frames are never redirected. No extra VBI is needed for a reply
 arriving after the last wake check. Idle revisits bounded service opportunities
 while eligible work remains; runnable Tasks can retain excess backlog until the
 next safe opportunity. See the instruction/exit inventory and measured limits

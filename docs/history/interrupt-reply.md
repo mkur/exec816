@@ -180,3 +180,32 @@ blink phase. Neither is a relaxation of queue, disk-data or rendering checks.
 
 AES AS2/TD4 integration, complete release qualification and arbitrary third-party
 interrupt handlers remain outside these development results.
+
+## Guarded adapter interrupt returns
+
+PI3's loaded panel run exposed a nested-return case in the existing interceptor.
+An NMI during the IRQ restore around `sio_start` could recognize the outer Task
+stack, DP and unmasked flags while SIO still held `SWITCHING`. It armed the
+private COP trampoline inside that protected adapter entry. COP correctly
+rejected the context with `$FF11`; the nonreturning fallback parked the active
+graphics system at `$FF93`.
+
+The interceptor now excludes near IRQ/NMI returns while another adapter entry
+holds `SWITCHING`. The COP's own classified restore can still finish its
+transition, and the far selected-return range keeps its existing protocol.
+No deferred callback, scheduling decision or new public API is introduced.
+
+The [development record](../development/interrupt-guarded-return.json) includes
+a synthetic private Task entry holding the guard across nested real VBIs.
+That probe faults with status 4 before the fix. Afterwards it preserves the
+guard, delivers exactly one reply after release, clears the return slots and
+restores ownership. Selected PLA/COP handoff and quiet-return probes also pass,
+including another NMI before the private COP consumes its original PC. The
+quiet handoff probe explicitly interrupts ordinary Task code; interrupting a
+live guarded COP may now correctly defer instead of reaching that trampoline.
+
+Reserved bank-zero delta is **0 bytes fixed, 0 per public Task and 0 idle**,
+including guards, alignment and unused capacity. There is no state, upper-RAM
+reservation or VRAM growth; the extra instructions fit the existing native
+code reservation. These are focused optimized development checks, not release
+qualification.
