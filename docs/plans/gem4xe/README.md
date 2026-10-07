@@ -46,6 +46,15 @@ are implemented; HY4's integrated functional proof and demo refresh are recorded
 in the [hybrid history](../../history/aes-hybrid.md). Its native GUI latency
 acceptance remains open.
 
+The proposed [AES window application design](aes-window-app-design.md) is the
+next functionality milestone: a resident GEM counter window with ordinary
+window calls, durable redraw/control messages and a private VDI workstation.
+The [WA1–WA6 implementation plan](aes-window-app-implementation-plan.md) separates
+message delivery, window/damage ownership, delegated display access, direct VDI,
+the application loop and a two-instance/native-shell OF816 proof. It targets
+zero bank-zero growth within existing Task/layer capacity. Menus, resources,
+resizing and broader GEM compatibility follow; PI4/HY4 remain open.
+
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)
 trusts renderer geometry, uses generated chunk/work tables and sequential
 record pointers, and reserves full widget glyph runs once. BR1–BR4 retain list

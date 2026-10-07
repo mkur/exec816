@@ -142,6 +142,17 @@ development checks and the extracted-demo walkthrough, with pre-existing caret
 artifacts recorded separately. Mild is now the default. Sampling cadence and
 bank-zero reservations are unchanged; net reserved upper growth is 512 bytes.
 
+The next functionality milestone is an ordinary
+[AES window application](plans/gem4xe/aes-window-app-design.md): a resident
+counter using GEM window calls, durable `WM_REDRAW` delivery and a private VDI
+workstation. The [WA1–WA6 plan](plans/gem4xe/aes-window-app-implementation-plan.md)
+first establishes delivery and window ownership, then proves delegated display
+access before direct application drawing. It finishes with two independent
+applications beside the native shell and an optional OF816 demo. The proposed
+profile keeps the existing Task/layer limits and targets zero bank-zero growth;
+menus, resources, resizing and broader GEM compatibility follow. No WA slice is
+implemented yet, and PI4/HY4 remain open.
+
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the
 [DR0–DR7 plan](plans/gem4xe/desktop-rendering-implementation-plan.md), with smaller
