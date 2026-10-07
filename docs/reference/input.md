@@ -9,8 +9,8 @@ The console and interactive GEM application use the same implementation. It owns
 and route identities; consumers own text translation, focus and interaction.
 It adds no Task, private kernel service or COP signature. The public C surface is
 [exec/input.h](../../c/include/exec/input.h); exact generated records and constants
-come from [input.json](../../abi/input.json). Configuration version is 2; rebuild
-callers when updating from version 1.
+come from [input.json](../../abi/input.json). Rebuild callers when updating the
+configuration version.
 Standalone C images bind the eight-entry native table through
 [input-bridge.inc](../../c/calypsi/input-bridge.inc) before admitting C callers,
 as shown by the [interactive launcher](../../tests/programs/gem_interactive_launcher.act).
@@ -33,8 +33,8 @@ remain the caller's obligation in Exec's shared address space.
 | InputConfig | 32 | Version, source, wake mask, keyboard filters/flags, pointer protocol/port, initial position, inclusive bounds and zero reserved fields. |
 | InputEvent | 24 | Acquisition and route u32; tick u16; kind/flags u8; code/qualifiers u16; x/y i16; buttons/motionInfo u16. |
 
-The current INPUT version is 3. Rebuild callers with the generated bindings;
-version-2 configurations are not accepted. `motionInfo` is zero for keyboard
+The current INPUT version is 4. Rebuild callers with the generated bindings;
+older configurations are not accepted. `motionInfo` is zero for keyboard
 and absolute-pointer events.
 
 `SOURCE_KEYBOARD=2` and `SOURCE_POINTER=3` admit independent consumers. The
@@ -50,8 +50,9 @@ An old pointer to reused storage cannot independently prove its old acquisition.
 
 Keyboard configuration permits zero to two filters. Each active mask is nonzero, with no
 value bits outside that mask; unused pairs and reserved fields are zero. The
-only flag is `CAPTURE_BREAK=1`. A matching raw scan becomes durable cancellation,
-without an additional ordinary KEY. GEM selects Escape `$1C/$3F` plus BREAK;
+only flag is `CAPTURE_BREAK=1`. On filtered routes a matching raw scan becomes
+durable cancellation, without an additional ordinary KEY. The standalone
+interactive GEM profile selects Escape `$1C/$3F` plus BREAK;
 console selects Ctrl-C `$92/$BF` plus BREAK. IRQ work matches raw codes and latches
 routes; it never translates characters or invokes application callbacks.
 
@@ -82,13 +83,19 @@ publication guards serialize state with Task switching, IRQ and NMI.
 | Call | Contract |
 | --- | --- |
 | `Acquire(lease, config)` | Admit one consumer without waiting for another owner. Copy configuration and retain ownership before enabling capture. |
-| `CreateRoute(lease, flags, outTag)` | Reserve one of sixteen route slots; flags must be zero. Return a nonzero, nonrepeating tag. |
+| `CreateRoute(lease, flags, outTag)` | Reserve one of sixteen route slots. Keyboard flags are zero or `ROUTE_UNFILTERED=1`; pointer flags must be zero. Return a nonzero, nonrepeating tag. |
 | `PublishRoute(lease, tag)` | Select an admitted route, or zero to stop addressed capture. Queued records retain their captured identities. |
 | `RetireRoute(lease, tag)` | Release an unpublished route only after queued records and notices no longer refer to it; otherwise BUSY. |
 | `Discard(lease, tag)` | Keyboard: discard ordinary records and loss, preserving cancellation. Pointer: establish a durable RAW loss boundary that invalidates earlier samples and pending button output for this route. Later arrivals survive. |
 | `Pending(lease, outMask)` | Observe DATA=1, LOSS=2 and CANCEL=4. This does not authorize clearing a wake or consuming work. |
 | `Take(lease, event)` | Copy and acknowledge one event: cancellation first, then loss, then ordinary input. EMPTY leaves the output unchanged. |
 | `Release(lease)` | Stop capture, purge routes/records, retire producer wakes and release ownership. Only success permits reuse of the lease, signal or storage. |
+
+`ROUTE_UNFILTERED` bypasses the configured raw-key filters for that route;
+physical BREAK still follows `CAPTURE_BREAK`. Route identity and filter policy
+are published in one IRQ-masked transaction. NMI may tick but cannot switch
+inside that transaction. IRQ reads one resident flag, without resolving any
+application pointers. Existing console and native-widget routes remain filtered.
 
 Status values are OK=0, EMPTY=1, BUSY=2, BAD_ARGUMENT=3, INVALID_OWNER=4,
 EXHAUSTED=5, UNSUPPORTED=6 and NO_MEMORY=7. Failed admission unwinds its partial
@@ -130,7 +137,7 @@ Release's purge boundary makes that safe across reacquisition.
 | --- | --- |
 | KEY=1 | Raw scan byte in code, SHIFT=1 and CONTROL=2 in qualifiers; capture tick is valid. Translation and Caps state belong to the consumer. |
 | POINTER=2 | Code zero; bounded x/y position and button state before any simultaneous button edge. |
-| BUTTON=3 | Changed-button mask in code, resulting state in buttons. Initially LEFT=1 is the only defined button. |
+| BUTTON=3 | Changed-button mask in code, resulting state in buttons and captured SHIFT/CONTROL qualifiers. Initially LEFT=1 is the only defined button. |
 | LOSS=4 | RAW=1, NORMALIZED=2 or HARDWARE=3 in code. Consumers abandon incomplete gestures. |
 | CANCEL=5 | BREAK=1 or KEY_FILTER=2 in code. Delivery survives ordinary queue overflow and Discard. |
 
@@ -139,6 +146,14 @@ Durable mailboxes do not invent a capture time: their timestamp is zero and
 TICK_VALID is clear. Timestamps use Exec ticks, not milliseconds. Compute unsigned
 16-bit elapsed intervals below half the range; do not use injected timestamps
 as evidence of physical keyboard latency.
+
+Pointer button edges and baselines capture qualifiers from POKEY. Shift has a
+live status bit; Control is observable only through a held ordinary key's scan
+code. Standalone Control-click is not supported. A released unmodified baseline
+clears stale qualifiers. Pure motion does not resample modifiers; simultaneous
+movement/button expansion preserves the edge qualifiers in its retained BUTTON
+record, including relative delivery. Idle sampling and motion interval encoding
+are unchanged.
 
 Signals are notifications, not queue contents. After a bounded drain, keep the
 consumer runnable while Pending reports work; otherwise remaining records could
@@ -249,9 +264,11 @@ ticks for the recorded small-redraw workload during physical SIO, including wrap
 controls. This is focused development evidence on the pinned emulator, not a
 general latency guarantee or hosted-system qualification.
 
-Keyboard capture uses 560 bytes and a 144-byte descriptor. Pointer capture
+Keyboard capture uses 560 bytes and a 160-byte descriptor. Pointer capture
 reserves 2,560 bytes including two 16-byte guards and 224 bytes of unused
-capacity, plus a 144-byte descriptor. The shared acquisition allocator uses four
+capacity, plus a 160-byte descriptor. Route policy uses sixteen bytes per
+descriptor and one former padding byte in keyboard capture; the fixed upper
+reservations are unchanged. The shared acquisition allocator uses four
 bytes. All are inside the existing 64 KiB upper Task arena. No additional input
 Task or reserved bank-zero memory is
 introduced: fixed, each public Task and private-idle deltas are zero, counting

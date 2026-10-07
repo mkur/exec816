@@ -6,7 +6,6 @@ from pathlib import Path
 from native_program import ROOT,build,compiler,require,verify_machine,sha256
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
-from test_cooperative import data
 from test_banked import changed_image
 from dos_concurrent_trace import call_marker
 from sio_transaction_trace import read_events,BASE_HZ
@@ -115,9 +114,9 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
         runtime,_=execute(b,p,before_run=before,expected_status=4 if removal else 0,timeout=1200,frame_limit=60000)
         if trace:b.profile_stop()
         if removal:
-            require(data(b,p['image'],'phase')==[0] and data(b,p['image'],'checks',True)[0]>10,'Removal guard not reached')
+            require(b.peek(at('phase'))[0]==0 and b.peek16(at('checks'))>10,'Removal guard not reached')
         else:
-            require(data(b,p['image'],'phase')==[11],'Foreground completion missing')
+            require(b.peek(at('phase'))[0]==11,'Foreground completion missing')
             require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'Console not restored')
             ownership(b,p,out)
         timing=None
@@ -131,7 +130,7 @@ def run(out,optimize,bank,publication=False,removal=False,trace=False):
             timing=dict(marks=marks,samples=samples,captures=len(captures),signals=len(delivered),limit_ms=100,
                         scope='Passive capture entry to worker Signal call after durable pending store. First two samples have no intentional Forbid hold; last two include fixture holds. Two live Tasks during delivery; eight-Task timing remains B5.')
         return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,pin=PIN,
-                    checks=data(b,p['image'],'checks',True),events=events,publication=race,removal_guard=removal,
+                    checks=[b.peek16(at('checks'))],events=events,publication=race,removal_guard=removal,
                     timing=timing,
                     fixture_sha256=sha256(source),bank_zero=dict(fixed_delta=0,per_task_delta=0))
 

@@ -185,10 +185,13 @@ assuming work is pending. Current behavior belongs in the
   the sampling schedule is unchanged.
   PI3 remains the accepted usability baseline while broader latency work is
   deferred for desktop functionality.
-- [AES application input design](gem4xe/aes-application-input-design.md): proposed
+- [AES application input design](gem4xe/aes-application-input-design.md) and
+  [AI1–AI7 implementation plan](gem4xe/aes-application-input-implementation-plan.md):
   caller-local keyboard and single-button waits, presenter routing, bounded
   input inboxes, focus/gesture ownership and preserved console cancellation.
-  No new Task, wait mechanism or per-wait presenter RPC; implementation pending.
+  Seven executable slices from capture through a two-application OF816 demo.
+  AI1 capture changes pass development checks; AI2–AI7 remain pending.
+  No new server Task, wait mechanism or per-wait presenter RPC.
 - [AES window application design](gem4xe/aes-window-app-design.md) and
   [implementation plan](gem4xe/aes-window-app-implementation-plan.md): completed
   WA1–WA6 slices for durable GUI messages, GEM window ownership, delegated

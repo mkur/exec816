@@ -3,10 +3,11 @@
 [GEM integration](README.md) · [Window applications](aes-window-app-design.md) ·
 [Hybrid model](hybrid-aes-vdi-design.md) · [Current AES contract](../../reference/aes.md)
 
-Status: proposed, 2026-10-07. This note defines the next application-input
-milestone after WA1–WA6. It does not change the implemented API or qualify new
-input behavior. An implementation plan will divide the work into executable
-slices.
+Status: implementation in progress, 2026-10-07. This note defines the next
+application-input milestone after WA1–WA6. The
+[implementation plan](aes-application-input-implementation-plan.md) has seven
+executable slices: AI1 capture changes pass development checks, while AI2–AI7
+and public AES input waits remain pending. This note is not a qualification claim.
 
 Give an ordinary GEM application keyboard events and left-button press/release
 events through `evnt_multi`. Add the corresponding `evnt_keybd` and

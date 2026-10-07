@@ -2,7 +2,7 @@
 #ifndef EXEC_INPUT_H
 #define EXEC_INPUT_H
 #include <exec/tasklease.h>
-#define INPUT_VERSION 3
+#define INPUT_VERSION 4
 #define INPUT_SOURCE_KEYBOARD 2
 #define INPUT_OK 0
 #define INPUT_EMPTY 1
@@ -45,6 +45,7 @@
 #define INPUT_MOTION_CLASS_MASK 31
 #define INPUT_MOTION_RESET 16
 #define INPUT_MOTION_DIAGONAL 32
+#define INPUT_ROUTE_UNFILTERED 1
 #define INPUT_LEASE_BYTES 32
 #define INPUT_CONFIG_BYTES 32
 #define INPUT_EVENT_BYTES 24

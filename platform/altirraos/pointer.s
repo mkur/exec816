@@ -274,6 +274,7 @@ pointer_changed:
     beq pointer_sample_done
     jmp pointer_enqueue
 pointer_state_sample:
+    jsr pointer_qualifiers
     lda #IN_POINTER_STATE_SAMPLE
     sta f:PI_KIND
     lda f:PI_NEW_BUTTONS
@@ -296,6 +297,28 @@ pointer_bad_phase:
     sta f:PI+63
     lda #INPUT_LOSS_HARDWARE
     jmp pointer_loss
+
+pointer_qualifiers:
+    ; Capture qualifiers with the edge/baseline, never during the idle path.
+    ; SKSTAT has live Shift; Control is observable only while a key is held.
+    lda f:$d20f
+    eor #$ff
+    and #8
+    lsr
+    lsr
+    ora f:PI_FLAGS
+    sta f:PI_FLAGS
+    lda f:$d20f
+    and #4
+    bne pointer_state_modifiers
+    lda f:$d209
+    and #$80
+    beq pointer_state_modifiers
+    lda f:PI_FLAGS
+    ora #IN_POINTER_CONTROL
+    sta f:PI_FLAGS
+pointer_state_modifiers:
+    rts
 
 ; Checked signed cumulative counter, X=52 or56, A=0/+1/-1. C=overflow.
 pointer_count:

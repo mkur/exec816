@@ -45,7 +45,7 @@ UWORD main(void)
     memset(&event, 0xa5, sizeof(event));
     check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
     check(InputCreateRoute(&lease, 0, &tag) == INPUT_INVALID_OWNER && tag == 0xdeadbeefUL);
-    check(InputCreateRoute(&lease, 1, &tag) == INPUT_BAD_ARGUMENT);
+    check(InputCreateRoute(&lease, 2, &tag) == INPUT_BAD_ARGUMENT);
     check(InputPublishRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
     check(InputRetireRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
     check(InputDiscard(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
@@ -142,6 +142,10 @@ UWORD main(void)
     check(InputRetireRoute(&lease, tag) == INPUT_BUSY);
     check(InputPublishRoute(&lease, 0) == INPUT_OK);
     check(InputDiscard(&lease, tag) == INPUT_OK);
+    check(InputRetireRoute(&lease, tag) == INPUT_OK);
+    check(InputCreateRoute(&lease, INPUT_ROUTE_UNFILTERED, &tag) == INPUT_OK);
+    check(InputPublishRoute(&lease, tag) == INPUT_OK);
+    check(InputPublishRoute(&lease, 0) == INPUT_OK);
     check(InputRetireRoute(&lease, tag) == INPUT_OK);
     check(AllocSignal(17) == 17);
     pointerConfig.wakeMask = 0x20000UL;

@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "alignment": 2,
   "constants": {
     "SOURCE_KEYBOARD": 2,
@@ -43,7 +43,8 @@
     "RELATIVE": 4,
     "MOTION_CLASS_MASK": 31,
     "MOTION_RESET": 16,
-    "MOTION_DIAGONAL": 32
+    "MOTION_DIAGONAL": 32,
+    "ROUTE_UNFILTERED": 1
   },
   "records": {
     "Lease": {

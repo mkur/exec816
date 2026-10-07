@@ -22,6 +22,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [Background console panes and primes](background-pane-primes.md): foundation
   slices, loadable command, numeric drawing, resource costs and packaged preview.
 
+- [AES application input](aes-application-input.md): AI1 capture route policy
+  and button qualifiers pass development checks; AI2–AI7 remain pending.
 - [AES window applications](aes-windows.md): WA1–WA6 complete at the development
   tier; durable GUI messages, windows, private VDI, two resident counters and an
   extracted OF816 demo. Includes coexistence timing and console repair fixes.

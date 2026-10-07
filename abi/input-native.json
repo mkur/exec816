@@ -158,7 +158,7 @@
           40
         ],
         [
-          "pad",
+          "routeFlags",
           "BYTE",
           41
         ],
@@ -185,7 +185,7 @@
       ]
     },
     "State": {
-      "size": 144,
+      "size": 160,
       "alignment": 2,
       "fields": [
         [
@@ -232,6 +232,11 @@
           "ownerIncarnation",
           "LONGCARD",
           140
+        ],
+        [
+          "routeFlags",
+          "BYTE[16]",
+          144
         ]
       ]
     },
@@ -717,7 +722,10 @@
     "POINTER_SLOTS": 64,
     "POINTER_DISABLED": 1,
     "POINTER_RUN_LIMIT": 64,
-    "POINTER_CLOCK_QUANTA": 156
+    "POINTER_CLOCK_QUANTA": 156,
+    "POINTER_SHIFT": 2,
+    "POINTER_CONTROL": 4,
+    "POINTER_QUALIFIER_SHIFT": 1
   },
   "motion_interval_upper_bounds": [
     1,

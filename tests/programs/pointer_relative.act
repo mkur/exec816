@@ -124,13 +124,16 @@ PROC Main()
   ; Movement on a press is applied once; retained button carries no delta.
   phase=(phase+1) & 3
   Timed(CARD(forward(phase))+256,20)
+  hardware.events((hardware.head-1) & 63).flags=
+      INPUTNATIVE.POINTER_SHIFT OR INPUTNATIVE.POINTER_CONTROL
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
       AND event.x=1 AND event.buttons=0)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_BUTTON
-      AND event.x=0 AND event.y=0 AND event.buttons=1 AND event.motionInfo=0)
+      AND event.x=0 AND event.y=0 AND event.buttons=1 AND event.motionInfo=0
+      AND event.qualifiers=(INPUT.SHIFT OR INPUT.CONTROL))
   Timed(CARD(forward(phase)),20)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_BUTTON
-      AND event.x=0 AND event.buttons=0)
+      AND event.x=0 AND event.buttons=0 AND event.qualifiers=0)
   ; Direction reversal resets velocity independently of ring occupancy.
   phase=(phase+3) & 3
   Timed(CARD(forward(phase)),20)

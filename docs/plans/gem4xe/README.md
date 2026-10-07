@@ -60,7 +60,10 @@ The proposed [AES application input design](aes-application-input-design.md)
 adds `MU_KEYBD` and single-button `MU_BUTTON` waits, with presenter-owned routing
 and caller-local matching on existing Exec signals and timers. It defines
 focus, gesture capture, bounded inboxes, GUI-lock interaction and console
-cancellation coexistence. Implementation is pending; rectangle events,
+cancellation coexistence. The [AI1–AI7 implementation plan](aes-application-input-implementation-plan.md)
+orders capture, inboxes, keyboard/gesture routing, public waits and a
+two-application OF816 demo, with a commit after each passing slice.
+AI1 capture changes pass development checks; AI2–AI7 remain pending. Rectangle events,
 multiple clicks and public form/object calls remain later extensions.
 
 The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)
