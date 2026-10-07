@@ -24,6 +24,12 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
+Next: [directory listing performance](plans/directory-listing-performance-implementation-plan.md).
+Warm DIR still performs substantial extent calculation and small output writes
+with no physical SIO. DL0–DL6 reduce arithmetic/copying, batch each row, summarize
+maps once and cache completed measurements with mutation invalidation, preserving
+accurate block counts and the current DOS interfaces.
+
 The [COPY and filesystem write-performance slice](history/write-performance.md)
 implements a 16 KiB loadable COPY buffer, fewer physical writes during file
 extension, retained sequential cursors and bounded four-sector metadata groups.

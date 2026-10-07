@@ -1,0 +1,3729 @@
+{
+  "scope": "Passive native entry/return observation of unchanged optimized bitmap preview. Routine durations are inclusive elapsed guest time, not exclusive CPU costs. No primes task. PAL, 8x CPU, 4 MiB, pinned AltirraOS816 ROM and VBXE emulator.",
+  "source": "/Users/michalkurcewicz/action/exec816-commands/build/release-preview-2026-10-07-5fd47b6/vbxe",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "xex_sha256": "98fa9442d15c136f214d052d890c90e7726ff60ab15345ae5d29feaab799f835",
+  "image_sha256": "c4d2d295c495f0c2a0144b0b64f8e90a47deac9c27b32451ccdac78ebe88c30d",
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "validation_record_sha256": "0f79519022433103d8418c577f438a5ddebe3872d3fc6632d4d159f657242822",
+  "log_sha256": "dbb90b3032d9dbab979daa88e75ce18508d1f23605478217cbe6dac66f81aedc",
+  "probe_sha256": "241f267f0789bffc705c607b2d7af76226be8306540a2fd718c107e6f0f6f797",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$91213499097d0042",
+    "actual_kernel_id": "$91213499097d0042",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "tier": "development",
+  "boundaries": "DIR routine entry to final RTL instruction; first text is ShellText call, first bitmap text is draw submission, not a scanout measurement. Includes guest preemption, excludes typing, dispatch and prompt redraw.",
+  "runner_override": {
+    "reason": "Replay the released 5fd47b6 bitmap image, before the mount-banner fix. Host observer omits only the new companion-volume banner assertion; native instructions and media remain unchanged.",
+    "original_runner_sha256": "d404d7ab72fd7ebc55e491f5ea5ce92eeea575acd635d120375623bb73541ae6",
+    "omitted_assertion": "                for mount in manifest['mounts']:\n                    if mount['alias'].upper() != p['build']['system_mount'].upper():\n                        access='read-write' if mount.get('access','readonly')=='readwrite' else 'read-only'\n                        status=f\"{mount['alias']}: -> D{mount['unit']-48}: ready, {access}\".encode()\n                        require(status in startup[:shell_cells], 'Missing companion-volume startup status')\n"
+  },
+  "native_changes": false,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  },
+  "rows": [
+    {
+      "command": "DIR",
+      "total_ms": 1800.0177620143816,
+      "dp": 2816,
+      "begin": 4319720025.125,
+      "end": 4322912262.125,
+      "cache_hits": 18,
+      "cache_misses": 5,
+      "physical_sio_commands": 5,
+      "entry_to_first_text_ms": 160.46083969218148,
+      "entry_to_first_text_return_ms": 175.56193515737004,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 12.496634380211425,
+          "min_ms": 12.496634380211425,
+          "max_ms": 12.496634380211425,
+          "sum_ms": 12.496634380211425
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 71.08428639697539,
+          "min_ms": 71.08428639697539,
+          "max_ms": 71.08428639697539,
+          "sum_ms": 71.08428639697539
+        },
+        "exnext": {
+          "count": 6,
+          "mean_ms": 235.29466148091026,
+          "min_ms": 29.868236866329564,
+          "max_ms": 476.9277071917832,
+          "sum_ms": 1411.7679688854616
+        },
+        "text": {
+          "count": 5,
+          "mean_ms": 15.589663635376857,
+          "min_ms": 15.101095465188566,
+          "max_ms": 16.134886992707706,
+          "sum_ms": 77.94831817688429
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 5,
+          "mean_ms": 2.2385635887163278,
+          "min_ms": 1.8397076879918914,
+          "max_ms": 3.8294057196505675,
+          "sum_ms": 11.19281794358164
+        },
+        "cache_copy": {
+          "count": 46,
+          "mean_ms": 1.1067334644257436,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 3.2371271210453085,
+          "sum_ms": 50.90973936358421
+        },
+        "cache_read": {
+          "count": 23,
+          "mean_ms": 2.1071001660546087,
+          "min_ms": 0.1771972387116055,
+          "max_ms": 4.597824294206623,
+          "sum_ms": 48.463303819256
+        },
+        "directory_measure": {
+          "count": 24,
+          "mean_ms": 8.878930844207868,
+          "min_ms": 0.3571433606013147,
+          "max_ms": 33.030650752277694,
+          "sum_ms": 213.09434026098884
+        },
+        "directory_select": {
+          "count": 8,
+          "mean_ms": 1.2720016380524373,
+          "min_ms": 0.9540034311700797,
+          "max_ms": 2.8526358970310652,
+          "sum_ms": 10.176013104419498
+        },
+        "dos_call": {
+          "count": 9,
+          "mean_ms": 166.10752346614277,
+          "min_ms": 7.393227033785888,
+          "max_ms": 475.9832896096445,
+          "sum_ms": 1494.967711195285
+        },
+        "entry_result": {
+          "count": 24,
+          "mean_ms": 3.8078845487860975,
+          "min_ms": 0.36073805398806563,
+          "max_ms": 13.432170955159371,
+          "sum_ms": 91.38922917086634
+        },
+        "entry_step": {
+          "count": 6,
+          "mean_ms": 0.500390717326939,
+          "min_ms": 0.460332206056283,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 3.002344303961634
+        },
+        "feed": {
+          "count": 18,
+          "mean_ms": 0.18947323410100006,
+          "min_ms": 0.06900401618880739,
+          "max_ms": 0.35270285700591647,
+          "sum_ms": 3.4105182138180012
+        },
+        "file_measure": {
+          "count": 12,
+          "mean_ms": 14.03960952701823,
+          "min_ms": 0.4921910572486639,
+          "max_ms": 33.000272068950444,
+          "sum_ms": 168.47531432421877
+        },
+        "map_cache": {
+          "count": 14,
+          "mean_ms": 7.516020551577003,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.547898936957536,
+          "sum_ms": 105.22428772207805
+        },
+        "measure_entry": {
+          "count": 6,
+          "mean_ms": 0.6080670558333415,
+          "min_ms": 0.5671157448980023,
+          "max_ms": 0.6710094321935102,
+          "sum_ms": 3.648402335000049
+        },
+        "publish": {
+          "count": 6,
+          "mean_ms": 8.149921739060972,
+          "min_ms": 5.136887333851157,
+          "max_ms": 9.11219531449338,
+          "sum_ms": 48.89953043436583
+        },
+        "size_continue": {
+          "count": 18,
+          "mean_ms": 11.724867806912807,
+          "min_ms": 0.41592717010230074,
+          "max_ms": 33.089082140858416,
+          "sum_ms": 211.04762052443053
+        },
+        "validate_map": {
+          "count": 14,
+          "mean_ms": 6.007608666976931,
+          "min_ms": 5.104464609186345,
+          "max_ms": 14.652886538789561,
+          "sum_ms": 84.10652133767704
+        },
+        "word": {
+          "count": 2578,
+          "mean_ms": 0.014593534317268994,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.8489411161029579,
+          "sum_ms": 37.622131469919466
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 14,
+          "mean_ms": 1.2150265030601213,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 3.2371271210453085,
+          "sum_ms": 17.010371042841697
+        },
+        "cache_read": {
+          "count": 7,
+          "mean_ms": 2.7313728929508363,
+          "min_ms": 2.4200039753079805,
+          "max_ms": 4.597824294206623,
+          "sum_ms": 19.119610250655853
+        },
+        "directory_measure": {
+          "count": 12,
+          "mean_ms": 8.082591722243446,
+          "min_ms": 0.3571433606013147,
+          "max_ms": 33.030650752277694,
+          "sum_ms": 96.99110066692135
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 1.1862135755357854,
+          "min_ms": 1.0143378927202524,
+          "max_ms": 1.3580892583513184,
+          "sum_ms": 2.372427151071571
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 51.082684056524556,
+          "min_ms": 11.330473555038985,
+          "max_ms": 71.77721641040966,
+          "sum_ms": 153.24805216957367
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4535953277444076,
+          "min_ms": 0.4107818246663631,
+          "max_ms": 2.496408830822452,
+          "sum_ms": 2.907190655488815
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5203142466861861,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 0.5203142466861861,
+          "sum_ms": 0.5203142466861861
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 16.71308637554819,
+          "min_ms": 0.4924025098008258,
+          "max_ms": 33.000272068950444,
+          "sum_ms": 66.85234550219276
+        },
+        "map_cache": {
+          "count": 4,
+          "mean_ms": 7.119942231162749,
+          "min_ms": 6.713054657665366,
+          "max_ms": 8.199636583547017,
+          "sum_ms": 28.479768924650998
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.6188511359935944,
+          "min_ms": 0.5671157448980023,
+          "max_ms": 0.6705865270891864,
+          "sum_ms": 1.2377022719871889
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 6.706217691812135,
+          "min_ms": 5.136887333851157,
+          "max_ms": 8.275548049773112,
+          "sum_ms": 13.41243538362427
+        },
+        "size_continue": {
+          "count": 10,
+          "mean_ms": 9.655635421967665,
+          "min_ms": 0.41592717010230074,
+          "max_ms": 33.089082140858416,
+          "sum_ms": 96.55635421967665
+        },
+        "validate_map": {
+          "count": 4,
+          "mean_ms": 5.192235039379513,
+          "min_ms": 5.127231000635767,
+          "max_ms": 5.2574152885833945,
+          "sum_ms": 20.768940157518053
+        },
+        "word": {
+          "count": 773,
+          "mean_ms": 0.013881645770209375,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 10.730512180371846
+        }
+      },
+      "first_publish_ms": 79.67341858160447,
+      "entry_to_first_feed_ms": 167.5084827715509,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 198.8856450501072,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4319722636.375,
+          "dispatched": 4319729049.5,
+          "collected": 4319742000.625,
+          "queue_ms": 3.616191062887399,
+          "service_ms": 7.302795825644684
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4319744242.875,
+          "dispatched": 4319754082.375,
+          "collected": 4319867903.75,
+          "queue_ms": 5.548233031989952,
+          "service_ms": 64.18085395818032
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4319875924.25,
+          "dispatched": 4319879803.375,
+          "collected": 4320002487.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 69.17818260760468
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4320090690.875,
+          "dispatched": 4320101747.25,
+          "collected": 4320788172.5,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 387.056989282175
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4320911114.25,
+          "dispatched": 4320914993.5,
+          "collected": 4321225371.125,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 175.0137091737985
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4321338807.5,
+          "dispatched": 4321349863.875,
+          "collected": 4321795811.125,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 251.45782437878768
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4321909086.25,
+          "dispatched": 4321920142.625,
+          "collected": 4322752488.125,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 469.3375473477506
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4322839050.375,
+          "dispatched": 4322845664.875,
+          "collected": 4322889616.5,
+          "queue_ms": 3.729741083398296,
+          "service_ms": 24.783155407758056
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4322898474.125,
+          "dispatched": 4322902353.375,
+          "collected": 4322911066.125,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 4.912888596927735
+        }
+      ]
+    },
+    {
+      "command": "DIR",
+      "total_ms": 735.2974221114524,
+      "dp": 2816,
+      "begin": 4323602109.0,
+      "end": 4324906120.375,
+      "cache_hits": 21,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 137.00969439467477,
+      "entry_to_first_text_return_ms": 152.0083058562489,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 15.859364317240855,
+          "min_ms": 15.859364317240855,
+          "max_ms": 15.859364317240855,
+          "sum_ms": 15.859364317240855
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 47.79095518756546,
+          "min_ms": 47.79095518756546,
+          "max_ms": 47.79095518756546,
+          "sum_ms": 47.79095518756546
+        },
+        "exnext": {
+          "count": 6,
+          "mean_ms": 60.794547061584844,
+          "min_ms": 30.008500392596908,
+          "max_ms": 88.96943664811053,
+          "sum_ms": 364.7672823695091
+        },
+        "text": {
+          "count": 5,
+          "mean_ms": 15.771752476461808,
+          "min_ms": 14.998611461574137,
+          "max_ms": 16.22348561206351,
+          "sum_ms": 78.85876238230904
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 5,
+          "mean_ms": 1.841399308409186,
+          "min_ms": 1.8397076879918914,
+          "max_ms": 1.8424565711699952,
+          "sum_ms": 9.20699654204593
+        },
+        "cache_copy": {
+          "count": 42,
+          "mean_ms": 1.0628142294007792,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.2004866228067086,
+          "sum_ms": 44.63819763483272
+        },
+        "cache_read": {
+          "count": 21,
+          "mean_ms": 2.426975196749887,
+          "min_ms": 2.419792522755819,
+          "max_ms": 2.561183795968023,
+          "sum_ms": 50.966479131747626
+        },
+        "directory_measure": {
+          "count": 21,
+          "mean_ms": 9.188677366971339,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 33.05059777636496,
+          "sum_ms": 192.96222470639813
+        },
+        "directory_select": {
+          "count": 7,
+          "mean_ms": 0.9927495940614456,
+          "min_ms": 0.9543558520903495,
+          "max_ms": 1.0143378927202524,
+          "sum_ms": 6.949247158430119
+        },
+        "dos_call": {
+          "count": 9,
+          "mean_ms": 46.94642152580715,
+          "min_ms": 6.666535096189766,
+          "max_ms": 88.02523051852394,
+          "sum_ms": 422.5177937322644
+        },
+        "entry_result": {
+          "count": 24,
+          "mean_ms": 3.6556886375266253,
+          "min_ms": 0.36059708561995774,
+          "max_ms": 13.43195950260721,
+          "sum_ms": 87.73652730063901
+        },
+        "entry_step": {
+          "count": 6,
+          "mean_ms": 0.5003554752349121,
+          "min_ms": 0.460332206056283,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 3.0021328514094723
+        },
+        "feed": {
+          "count": 18,
+          "mean_ms": 0.1894379920089731,
+          "min_ms": 0.06900401618880739,
+          "max_ms": 0.35270285700591647,
+          "sum_ms": 3.4098838561615157
+        },
+        "file_measure": {
+          "count": 12,
+          "mean_ms": 13.627917281641173,
+          "min_ms": 0.4919796046965021,
+          "max_ms": 33.020501029773925,
+          "sum_ms": 163.53500737969406
+        },
+        "map_cache": {
+          "count": 13,
+          "mean_ms": 6.848823461734191,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.199213678442694,
+          "sum_ms": 89.03470500254448
+        },
+        "measure_entry": {
+          "count": 6,
+          "mean_ms": 0.5458060265856944,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6710094321935102,
+          "sum_ms": 3.2748361595141664
+        },
+        "publish": {
+          "count": 6,
+          "mean_ms": 8.363195132644186,
+          "min_ms": 7.7468461851845065,
+          "max_ms": 8.62684122309795,
+          "sum_ms": 50.17917079586512
+        },
+        "size_continue": {
+          "count": 15,
+          "mean_ms": 12.740871475849534,
+          "min_ms": 0.4310107854898439,
+          "max_ms": 33.10867674402541,
+          "sum_ms": 191.11307213774302
+        },
+        "validate_map": {
+          "count": 13,
+          "mean_ms": 5.874200695798178,
+          "min_ms": 5.104464609186345,
+          "max_ms": 12.959081111789326,
+          "sum_ms": 76.36460904537631
+        },
+        "word": {
+          "count": 2447,
+          "mean_ms": 0.013997519497090445,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.15520617328677616,
+          "sum_ms": 34.25193020938032
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.0594054800043418,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 10.594054800043418
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 2.4201308468392777,
+          "min_ms": 2.4199334911239267,
+          "max_ms": 2.420426880412304,
+          "sum_ms": 12.100654234196389
+        },
+        "directory_measure": {
+          "count": 9,
+          "mean_ms": 9.073084423919449,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 33.03107365738202,
+          "sum_ms": 81.65775981527504
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 0.9989370985044665,
+          "min_ms": 0.9838182410248965,
+          "max_ms": 1.0140559559840367,
+          "sum_ms": 1.997874197008933
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 42.405470136556055,
+          "min_ms": 9.901688660081565,
+          "max_ms": 70.4684660808961,
+          "sum_ms": 127.21641040966817
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4538067802965693,
+          "min_ms": 0.41141618232284854,
+          "max_ms": 2.49619737827029,
+          "sum_ms": 2.9076135605931386
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5205256992383479,
+          "min_ms": 0.5205256992383479,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 0.5205256992383479
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 16.713015891364137,
+          "min_ms": 0.4919796046965021,
+          "max_ms": 33.00062448987072,
+          "sum_ms": 66.85206356545655
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 6.806822117185125,
+          "min_ms": 6.712772720929151,
+          "max_ms": 6.854093509957301,
+          "sum_ms": 20.420466351555376
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.43206804825065304,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6707979796413482,
+          "sum_ms": 0.8641360965013061
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 8.011373327938944,
+          "min_ms": 7.7468461851845065,
+          "max_ms": 8.275900470693381,
+          "sum_ms": 16.02274665587789
+        },
+        "size_continue": {
+          "count": 7,
+          "mean_ms": 11.63163233516317,
+          "min_ms": 0.4315746589622755,
+          "max_ms": 33.088729719938144,
+          "sum_ms": 81.42142634614218
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.213973536478149,
+          "min_ms": 5.127231000635767,
+          "max_ms": 5.2574152885833945,
+          "sum_ms": 15.641920609434449
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013882529758960472,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.912584105252623
+        }
+      },
+      "first_publish_ms": 59.600580225803135,
+      "entry_to_first_feed_ms": 143.95414862858925,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 176.36425662445603,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4323613216.25,
+          "dispatched": 4323617095.375,
+          "collected": 4323630047.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 7.303218730749007
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4323632288.875,
+          "dispatched": 4323636168.125,
+          "collected": 4323714639.5,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 44.24792670772605
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4323718739.5,
+          "dispatched": 4323722684.0,
+          "collected": 4323842982.625,
+          "queue_ms": 2.224198912006135,
+          "service_ms": 67.8332034074874
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4323932837.125,
+          "dispatched": 4323943893.5,
+          "collected": 4324048448.5,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 58.95579091007769
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4324169331.625,
+          "dispatched": 4324177627.0,
+          "collected": 4324261648.125,
+          "queue_ms": 4.677541906371629,
+          "service_ms": 47.37728351135289
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4324381993.375,
+          "dispatched": 4324385872.5,
+          "collected": 4324476102.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 50.87816244912804
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4324596431.25,
+          "dispatched": 4324604172.875,
+          "collected": 4324751810.25,
+          "queue_ms": 4.3652969710126746,
+          "service_ms": 83.24879930192463
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4324837878.25,
+          "dispatched": 4324844492.75,
+          "collected": 4324888693.5,
+          "queue_ms": 3.729741083398296,
+          "service_ms": 24.923630386577557
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4324893621.625,
+          "dispatched": 4324897570.25,
+          "collected": 4324904924.375,
+          "queue_ms": 2.226524890079915,
+          "service_ms": 4.14679600044546
+        }
+      ]
+    },
+    {
+      "command": "DIR",
+      "total_ms": 737.4013045212785,
+      "dp": 2816,
+      "begin": 4325623165.0,
+      "end": 4326930907.5,
+      "cache_hits": 21,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 140.38687358943528,
+      "entry_to_first_text_return_ms": 155.96141131891414,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 13.287396441112579,
+          "min_ms": 13.287396441112579,
+          "max_ms": 13.287396441112579,
+          "sum_ms": 13.287396441112579
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 50.20588430162156,
+          "min_ms": 50.20588430162156,
+          "max_ms": 50.20588430162156,
+          "sum_ms": 50.20588430162156
+        },
+        "exnext": {
+          "count": 6,
+          "mean_ms": 61.29007437021207,
+          "min_ms": 32.37296283087038,
+          "max_ms": 89.67942383408587,
+          "sum_ms": 367.7404462212724
+        },
+        "text": {
+          "count": 5,
+          "mean_ms": 15.390024232462476,
+          "min_ms": 14.645626667832005,
+          "max_ms": 15.985319554145246,
+          "sum_ms": 76.95012116231239
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 5,
+          "mean_ms": 2.2569176702439737,
+          "min_ms": 1.8416812451454017,
+          "max_ms": 3.9136343195950256,
+          "sum_ms": 11.284588351219869
+        },
+        "cache_copy": {
+          "count": 42,
+          "mean_ms": 1.15334612923349,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 3.2370566368612548,
+          "sum_ms": 48.440537427806575
+        },
+        "cache_read": {
+          "count": 21,
+          "mean_ms": 2.6080826294816277,
+          "min_ms": 2.419792522755819,
+          "max_ms": 4.598388167679055,
+          "sum_ms": 54.76973521911418
+        },
+        "directory_measure": {
+          "count": 21,
+          "mean_ms": 9.252720639158635,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 33.031144141566074,
+          "sum_ms": 194.30713342233136
+        },
+        "directory_select": {
+          "count": 8,
+          "mean_ms": 1.2253146766397087,
+          "min_ms": 0.9542853679062955,
+          "max_ms": 2.852988317951335,
+          "sum_ms": 9.80251741311767
+        },
+        "dos_call": {
+          "count": 9,
+          "mean_ms": 47.87248972536386,
+          "min_ms": 7.393227033785888,
+          "max_ms": 88.7356406096036,
+          "sum_ms": 430.85240752827474
+        },
+        "entry_result": {
+          "count": 24,
+          "mean_ms": 3.6957265909102657,
+          "min_ms": 0.36073805398806563,
+          "max_ms": 13.432241439343425,
+          "sum_ms": 88.69743818184638
+        },
+        "entry_step": {
+          "count": 6,
+          "mean_ms": 0.5004024646909481,
+          "min_ms": 0.460332206056283,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 3.002414788145688
+        },
+        "feed": {
+          "count": 18,
+          "mean_ms": 0.1894262446449641,
+          "min_ms": 0.06900401618880739,
+          "max_ms": 0.3521389835334849,
+          "sum_ms": 3.409672403609354
+        },
+        "file_measure": {
+          "count": 12,
+          "mean_ms": 13.639641150922143,
+          "min_ms": 0.49205008888055607,
+          "max_ms": 33.00048352150261,
+          "sum_ms": 163.6756938110657
+        },
+        "map_cache": {
+          "count": 13,
+          "mean_ms": 7.191832032502534,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.19970706773107,
+          "sum_ms": 93.49381642253294
+        },
+        "measure_entry": {
+          "count": 6,
+          "mean_ms": 0.5692302704196205,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.7207712661355918,
+          "sum_ms": 3.415381622517723
+        },
+        "publish": {
+          "count": 6,
+          "mean_ms": 7.736943157324927,
+          "min_ms": 5.630770011517115,
+          "max_ms": 8.626559286361733,
+          "sum_ms": 46.421658943949566
+        },
+        "size_continue": {
+          "count": 15,
+          "mean_ms": 12.821218746725423,
+          "min_ms": 0.43136320641011366,
+          "max_ms": 33.088729719938144,
+          "sum_ms": 192.31828120088133
+        },
+        "validate_map": {
+          "count": 13,
+          "mean_ms": 5.819884499194149,
+          "min_ms": 5.10439412500229,
+          "max_ms": 12.818324196233606,
+          "sum_ms": 75.65849848952394
+        },
+        "word": {
+          "count": 2447,
+          "mean_ms": 0.013939536390224659,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.15520617328677616,
+          "sum_ms": 34.11004554687974
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.0593349958202878,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 10.593349958202879
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 2.420243621533764,
+          "min_ms": 2.419792522755819,
+          "max_ms": 2.420426880412304,
+          "sum_ms": 12.10121810766882
+        },
+        "directory_measure": {
+          "count": 9,
+          "mean_ms": 9.222510894113803,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 33.031144141566074,
+          "sum_ms": 83.00259804702422
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 0.9991837931486554,
+          "min_ms": 0.9840296935770582,
+          "max_ms": 1.0143378927202524,
+          "sum_ms": 1.9983675862973107
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 44.38666307667222,
+          "min_ms": 12.121235615940138,
+          "max_ms": 71.77672302112128,
+          "sum_ms": 133.15998923001666
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4537715382045424,
+          "min_ms": 0.4111342455866328,
+          "max_ms": 2.496408830822452,
+          "sum_ms": 2.907543076409085
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5205256992383479,
+          "min_ms": 0.5205256992383479,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 0.5205256992383479
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 16.71313923868623,
+          "min_ms": 0.49254347816893373,
+          "max_ms": 33.00048352150261,
+          "sum_ms": 66.85255695474493
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 7.2551955066802565,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.199002225890533,
+          "sum_ms": 21.76558652004077
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.4322090166187609,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.671079916377564,
+          "sum_ms": 0.8644180332375218
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 6.953335241105249,
+          "min_ms": 5.630770011517115,
+          "max_ms": 8.275900470693381,
+          "sum_ms": 13.906670482210497
+        },
+        "size_continue": {
+          "count": 7,
+          "mean_ms": 11.823913189262317,
+          "min_ms": 0.43136320641011366,
+          "max_ms": 33.088729719938144,
+          "sum_ms": 82.76739232483622
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.213832568110042,
+          "min_ms": 5.127019548083606,
+          "max_ms": 5.2574152885833945,
+          "sum_ms": 15.641497704330124
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013881541662922332,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.911949747596138
+        }
+      },
+      "first_publish_ms": 59.58535564204748,
+      "entry_to_first_feed_ms": 148.7918306011314,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 177.13260471482803,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4325625776.375,
+          "dispatched": 4325633592.0,
+          "collected": 4325646542.875,
+          "queue_ms": 4.407023607972607,
+          "service_ms": 7.3026548572765755
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4325648785.0,
+          "dispatched": 4325657197.5,
+          "collected": 4325735418.875,
+          "queue_ms": 4.7435855868301715,
+          "service_ms": 44.106958339618174
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4325743464.25,
+          "dispatched": 4325747343.5,
+          "collected": 4325870027.875,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 69.1784645443409
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4325962740.25,
+          "dispatched": 4325966619.375,
+          "collected": 4326071175.0,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 58.95614333099796
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4326190835.25,
+          "dispatched": 4326194714.375,
+          "collected": 4326282598.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 49.55531528280369
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4326395254.25,
+          "dispatched": 4326406310.625,
+          "collected": 4326494593.0,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 49.780089345751705
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4326608802.375,
+          "dispatched": 4326615416.875,
+          "collected": 4326765440.5,
+          "queue_ms": 3.729741083398296,
+          "service_ms": 84.59434237551436
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4326853253.875,
+          "dispatched": 4326864310.25,
+          "collected": 4326908261.25,
+          "queue_ms": 6.234396563755059,
+          "service_ms": 24.782802986837783
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4326917119.25,
+          "dispatched": 4326920998.375,
+          "collected": 4326929710.75,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 4.912677144375574
+        }
+      ]
+    },
+    {
+      "command": "DIR >NIL:",
+      "total_ms": 492.366210446038,
+      "dp": 2816,
+      "begin": 4328486707.625,
+      "end": 4329359893.25,
+      "cache_hits": 21,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 132.6114813097089,
+      "entry_to_first_text_return_ms": 138.44834707539974,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 11.080748090935876,
+          "min_ms": 11.080748090935876,
+          "max_ms": 11.080748090935876,
+          "sum_ms": 11.080748090935876
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 48.17114687635241,
+          "min_ms": 48.17114687635241,
+          "max_ms": 48.17114687635241,
+          "sum_ms": 48.17114687635241
+        },
+        "exnext": {
+          "count": 6,
+          "mean_ms": 59.76739279473079,
+          "min_ms": 28.756137410326495,
+          "max_ms": 90.34782535146938,
+          "sum_ms": 358.6043567683847
+        },
+        "text": {
+          "count": 5,
+          "mean_ms": 3.028620807776943,
+          "min_ms": 2.2623308555793167,
+          "max_ms": 5.8368657656908365,
+          "sum_ms": 15.143104038884715
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "cache_copy": {
+          "count": 42,
+          "mean_ms": 1.09816204770383,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 2.54574775966021,
+          "sum_ms": 46.12280600356086
+        },
+        "cache_read": {
+          "count": 21,
+          "mean_ms": 2.5684638052638795,
+          "min_ms": 2.4198630069398726,
+          "max_ms": 3.9067973537417937,
+          "sum_ms": 53.937739910541474
+        },
+        "directory_measure": {
+          "count": 21,
+          "mean_ms": 9.181984725875932,
+          "min_ms": 0.12461603740736615,
+          "max_ms": 33.050809228917124,
+          "sum_ms": 192.82167924339458
+        },
+        "directory_select": {
+          "count": 7,
+          "mean_ms": 0.9926992482156928,
+          "min_ms": 0.9541443995381876,
+          "max_ms": 1.0143378927202524,
+          "sum_ms": 6.94889473750985
+        },
+        "dos_call": {
+          "count": 9,
+          "mean_ms": 46.05876720655985,
+          "min_ms": 6.666112191085443,
+          "max_ms": 87.19351714668746,
+          "sum_ms": 414.5289048590387
+        },
+        "entry_result": {
+          "count": 24,
+          "mean_ms": 3.768113847933662,
+          "min_ms": 0.36059708561995774,
+          "max_ms": 13.432100470975318,
+          "sum_ms": 90.43473235040788
+        },
+        "entry_step": {
+          "count": 6,
+          "mean_ms": 0.500390717326939,
+          "min_ms": 0.460332206056283,
+          "max_ms": 0.520455215054294,
+          "sum_ms": 3.002344303961634
+        },
+        "file_measure": {
+          "count": 12,
+          "mean_ms": 13.627905534277163,
+          "min_ms": 0.49190912051244823,
+          "max_ms": 33.02014860885366,
+          "sum_ms": 163.53486641132596
+        },
+        "map_cache": {
+          "count": 13,
+          "mean_ms": 6.9524731653156655,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.199566099362965,
+          "sum_ms": 90.38215114910365
+        },
+        "measure_entry": {
+          "count": 6,
+          "mean_ms": 0.5456768055815955,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6706570112732404,
+          "sum_ms": 3.274060833489573
+        },
+        "publish": {
+          "count": 6,
+          "mean_ms": 11.327243029936511,
+          "min_ms": 5.783791175098219,
+          "max_ms": 17.805714575706357,
+          "sum_ms": 67.96345817961907
+        },
+        "size_continue": {
+          "count": 15,
+          "mean_ms": 12.731506477261568,
+          "min_ms": 0.4315746589622755,
+          "max_ms": 33.10888819657757,
+          "sum_ms": 190.97259715892352
+        },
+        "validate_map": {
+          "count": 13,
+          "mean_ms": 5.966773538762561,
+          "min_ms": 5.10474654592256,
+          "max_ms": 12.958728690869055,
+          "sum_ms": 77.56805600391328
+        },
+        "word": {
+          "count": 2447,
+          "mean_ms": 0.01399708743221067,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.1550652049186683,
+          "sum_ms": 34.25087294661951
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.0594336736779635,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 10.594336736779635
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 2.4201449436760885,
+          "min_ms": 2.4198630069398726,
+          "max_ms": 2.420426880412304,
+          "sum_ms": 12.100724718380443
+        },
+        "directory_measure": {
+          "count": 9,
+          "mean_ms": 9.05738994560344,
+          "min_ms": 0.12461603740736615,
+          "max_ms": 33.01944376701312,
+          "sum_ms": 81.51650951043095
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 0.9989018564124397,
+          "min_ms": 0.9838887252089504,
+          "max_ms": 1.0139149876159288,
+          "sum_ms": 1.9978037128248793
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 42.53419775136657,
+          "min_ms": 9.90767981572615,
+          "max_ms": 70.46867753344827,
+          "sum_ms": 127.60259325409972
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4537362961125153,
+          "min_ms": 0.41141618232284854,
+          "max_ms": 2.4960564099021822,
+          "sum_ms": 2.9074725922250306
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.520455215054294,
+          "min_ms": 0.520455215054294,
+          "max_ms": 0.520455215054294,
+          "sum_ms": 0.520455215054294
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 16.71299827031812,
+          "min_ms": 0.49190912051244823,
+          "max_ms": 32.9887126627656,
+          "sum_ms": 66.85199308127248
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 6.7128901945692405,
+          "min_ms": 6.712631752561043,
+          "max_ms": 6.713054657665366,
+          "sum_ms": 20.13867058370772
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.43199756406659906,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6706570112732404,
+          "sum_ms": 0.8639951281331981
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 7.70970102018808,
+          "min_ms": 7.60594830126068,
+          "max_ms": 7.81345373911548,
+          "sum_ms": 15.41940204037616
+        },
+        "size_continue": {
+          "count": 7,
+          "mean_ms": 11.611524204369497,
+          "min_ms": 0.4315746589622755,
+          "max_ms": 33.076888377017085,
+          "sum_ms": 81.28066943058647
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.214020525934186,
+          "min_ms": 5.127231000635767,
+          "max_ms": 5.2574152885833945,
+          "sum_ms": 15.642061577802556
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013882310182063106,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.912443136884514
+        }
+      },
+      "first_publish_ms": 55.34291260384082,
+      "entry_to_first_feed_ms": null,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": null,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4328489329.625,
+          "dispatched": 4328493208.75,
+          "collected": 4328506171.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 7.3092098863935915
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4328508412.875,
+          "dispatched": 4328516827.375,
+          "collected": 4328591437.75,
+          "queue_ms": 4.744713333775034,
+          "service_ms": 42.07081123066795
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4328595537.75,
+          "dispatched": 4328599482.0,
+          "collected": 4328719781.125,
+          "queue_ms": 2.224057943638027,
+          "service_ms": 67.8334853442236
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4328744496.125,
+          "dispatched": 4328748375.375,
+          "collected": 4328852931.25,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 58.95628429936606
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4328882022.125,
+          "dispatched": 4328885901.25,
+          "collected": 4328972308.0,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 48.72247416402233
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4329000922.625,
+          "dispatched": 4329004801.75,
+          "collected": 4329093084.75,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 49.78044176667198
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4329121581.5,
+          "dispatched": 4329125460.625,
+          "collected": 4329275484.5,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 84.59448334388246
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4329293861.25,
+          "dispatched": 4329298503.75,
+          "collected": 4329342455.375,
+          "queue_ms": 2.6177825957633365,
+          "service_ms": 24.783155407758056
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4329347393.875,
+          "dispatched": 4329351343.125,
+          "collected": 4329358696.625,
+          "queue_ms": 2.2268773110001847,
+          "service_ms": 4.14644357952519
+        }
+      ]
+    },
+    {
+      "command": "DIR >NIL:",
+      "total_ms": 496.1185064683336,
+      "dp": 2816,
+      "begin": 4330946686.5,
+      "end": 4331826526.625,
+      "cache_hits": 21,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 136.21561957712308,
+      "entry_to_first_text_return_ms": 138.4263560099749,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 11.579423693117501,
+          "min_ms": 11.579423693117501,
+          "max_ms": 11.579423693117501,
+          "sum_ms": 11.579423693117501
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 47.649704882721366,
+          "min_ms": 47.649704882721366,
+          "max_ms": 47.649704882721366,
+          "sum_ms": 47.649704882721366
+        },
+        "exnext": {
+          "count": 6,
+          "mean_ms": 60.406637354644,
+          "min_ms": 28.325338077388817,
+          "max_ms": 92.15666096684565,
+          "sum_ms": 362.439824127864
+        },
+        "text": {
+          "count": 5,
+          "mean_ms": 2.303606393761304,
+          "min_ms": 2.2107364328518324,
+          "max_ms": 2.365378732666177,
+          "sum_ms": 11.518031968806518
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "cache_copy": {
+          "count": 42,
+          "mean_ms": 1.0982325318878838,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 2.5461706647645332,
+          "sum_ms": 46.125766339291125
+        },
+        "cache_read": {
+          "count": 21,
+          "mean_ms": 2.497801732554946,
+          "min_ms": 2.419792522755819,
+          "max_ms": 3.906867837925848,
+          "sum_ms": 52.453836383653865
+        },
+        "directory_measure": {
+          "count": 21,
+          "mean_ms": 9.278910548119251,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 35.0556613601474,
+          "sum_ms": 194.85712151050427
+        },
+        "directory_select": {
+          "count": 8,
+          "mean_ms": 1.5019650990514237,
+          "min_ms": 0.9543558520903495,
+          "max_ms": 5.0659097605088395,
+          "sum_ms": 12.01572079241139
+        },
+        "dos_call": {
+          "count": 9,
+          "mean_ms": 46.2818809753946,
+          "min_ms": 6.666535096189766,
+          "max_ms": 87.19316472576719,
+          "sum_ms": 416.5369287785514
+        },
+        "entry_result": {
+          "count": 24,
+          "mean_ms": 3.7680110584985833,
+          "min_ms": 0.36059708561995774,
+          "max_ms": 13.432029986791264,
+          "sum_ms": 90.432265403966
+        },
+        "entry_step": {
+          "count": 6,
+          "mean_ms": 0.5003554752349121,
+          "min_ms": 0.460332206056283,
+          "max_ms": 0.5205256992383479,
+          "sum_ms": 3.0021328514094723
+        },
+        "file_measure": {
+          "count": 12,
+          "mean_ms": 13.78589583283407,
+          "min_ms": 0.49205008888055607,
+          "max_ms": 35.025353161004205,
+          "sum_ms": 165.43074999400883
+        },
+        "map_cache": {
+          "count": 13,
+          "mean_ms": 6.8489861175435465,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.198861257522426,
+          "sum_ms": 89.0368195280661
+        },
+        "measure_entry": {
+          "count": 6,
+          "mean_ms": 0.5457355424016405,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6709389480094562,
+          "sum_ms": 3.274413254409843
+        },
+        "publish": {
+          "count": 6,
+          "mean_ms": 12.194245483256012,
+          "min_ms": 4.326883090703277,
+          "max_ms": 19.548083605519757,
+          "sum_ms": 73.16547289953607
+        },
+        "size_continue": {
+          "count": 15,
+          "mean_ms": 12.86730600520549,
+          "min_ms": 0.43136320641011366,
+          "max_ms": 35.11409274872811,
+          "sum_ms": 193.00959007808237
+        },
+        "validate_map": {
+          "count": 13,
+          "mean_ms": 6.226887287223159,
+          "min_ms": 5.10439412500229,
+          "max_ms": 12.959222080157433,
+          "sum_ms": 80.94953473390106
+        },
+        "word": {
+          "count": 2447,
+          "mean_ms": 0.015212169091438871,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.5003968259562237,
+          "sum_ms": 37.22417776675092
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.059426625259558,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 10.594266252595581
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 2.4203282025546287,
+          "min_ms": 2.4201449436760885,
+          "max_ms": 2.420426880412304,
+          "sum_ms": 12.101641012773143
+        },
+        "directory_measure": {
+          "count": 9,
+          "mean_ms": 9.299338654732598,
+          "min_ms": 0.12475700577547404,
+          "max_ms": 35.0556613601474,
+          "sum_ms": 83.69404789259337
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 0.9993600036087902,
+          "min_ms": 0.9843821144973278,
+          "max_ms": 1.0143378927202524,
+          "sum_ms": 1.9987200072175804
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 43.73597658421428,
+          "min_ms": 10.406919291380207,
+          "max_ms": 74.09494783465539,
+          "sum_ms": 131.20792975264283
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4535953277444076,
+          "min_ms": 0.4107818246663631,
+          "max_ms": 2.496408830822452,
+          "sum_ms": 2.907190655488815
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5203142466861861,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 0.5203142466861861,
+          "sum_ms": 0.5203142466861861
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 17.22229936324588,
+          "min_ms": 0.4924025098008258,
+          "max_ms": 35.025353161004205,
+          "sum_ms": 68.88919745298352
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 6.713007668209332,
+          "min_ms": 6.712631752561043,
+          "max_ms": 6.713266110217528,
+          "sum_ms": 20.139023004627994
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.432138532434707,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.6709389480094562,
+          "sum_ms": 0.864277064869414
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 5.966556664350087,
+          "min_ms": 4.326883090703277,
+          "max_ms": 7.606230237996896,
+          "sum_ms": 11.933113328700173
+        },
+        "size_continue": {
+          "count": 7,
+          "mean_ms": 11.922732015305941,
+          "min_ms": 0.43136320641011366,
+          "max_ms": 35.11409274872811,
+          "sum_ms": 83.45912410714159
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.939725684953554,
+          "min_ms": 5.257203836031233,
+          "max_ms": 7.30469889861414,
+          "sum_ms": 17.81917705486066
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013881212297576285,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.911738295043975
+        }
+      },
+      "first_publish_ms": 55.3210625067841,
+      "entry_to_first_feed_ms": null,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": null,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4330949308.5,
+          "dispatched": 4330953187.625,
+          "collected": 4330967034.5,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 7.807885488575219
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4330969276.75,
+          "dispatched": 4330973155.875,
+          "collected": 4331051377.375,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 44.107028823802224
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331055477.375,
+          "dispatched": 4331059422.75,
+          "collected": 4331186151.125,
+          "queue_ms": 2.2246923012945126,
+          "service_ms": 71.45876886685397
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331204436.875,
+          "dispatched": 4331208316.0,
+          "collected": 4331312871.5,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 58.9560728468139
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331341842.75,
+          "dispatched": 4331345721.875,
+          "collected": 4331432378.625,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 48.863442532130215
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331457073.125,
+          "dispatched": 4331461018.125,
+          "collected": 4331546914.125,
+          "queue_ms": 2.224480848742351,
+          "service_ms": 48.43447578797794
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331578618.75,
+          "dispatched": 4331582497.875,
+          "collected": 4331732521.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 84.5941309229622
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331754818.875,
+          "dispatched": 4331758698.0,
+          "collected": 4331802648.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 24.78238008173346
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4331807587.75,
+          "dispatched": 4331811536.125,
+          "collected": 4331818890.625,
+          "queue_ms": 2.226383921711807,
+          "service_ms": 4.147007452997621
+        }
+      ]
+    },
+    {
+      "command": "DIR SYS:C",
+      "total_ms": 6419.094940786237,
+      "dp": 2816,
+      "begin": 4333383797.75,
+      "end": 4344767725.625,
+      "cache_hits": 36,
+      "cache_misses": 18,
+      "physical_sio_commands": 18,
+      "entry_to_first_text_ms": 885.6906533742894,
+      "entry_to_first_text_return_ms": 902.523263304947,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 71.26423251886509,
+          "min_ms": 71.26423251886509,
+          "max_ms": 71.26423251886509,
+          "sum_ms": 71.26423251886509
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 45.6994779941329,
+          "min_ms": 45.6994779941329,
+          "max_ms": 45.6994779941329,
+          "sum_ms": 45.6994779941329
+        },
+        "exnext": {
+          "count": 18,
+          "mean_ms": 282.0383313354983,
+          "min_ms": 16.694390445727883,
+          "max_ms": 766.7706543328743,
+          "sum_ms": 5076.689964038969
+        },
+        "text": {
+          "count": 17,
+          "mean_ms": 15.623093040035101,
+          "min_ms": 13.62980860724662,
+          "max_ms": 16.83260993065766,
+          "sum_ms": 265.5925816805967
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 17,
+          "mean_ms": 1.9652980655905916,
+          "min_ms": 1.840412529832431,
+          "max_ms": 3.910603499680707,
+          "sum_ms": 33.41006711504006
+        },
+        "cache_copy": {
+          "count": 108,
+          "mean_ms": 1.1626953527897876,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 3.1550130466224684,
+          "sum_ms": 125.57109810129705
+        },
+        "cache_read": {
+          "count": 54,
+          "mean_ms": 2.037893550399559,
+          "min_ms": 0.17705627034349763,
+          "max_ms": 9.849671332249756,
+          "sum_ms": 110.0462517215762
+        },
+        "directory_measure": {
+          "count": 37,
+          "mean_ms": 10.691776358789337,
+          "min_ms": 0.14484499823084698,
+          "max_ms": 33.03107365738202,
+          "sum_ms": 395.5957252752055
+        },
+        "directory_select": {
+          "count": 20,
+          "mean_ms": 1.5290944614937856,
+          "min_ms": 1.0312540968931982,
+          "max_ms": 2.9828201849786926,
+          "sum_ms": 30.58188922987571
+        },
+        "dos_call": {
+          "count": 21,
+          "mean_ms": 246.65614975512787,
+          "min_ms": 15.715153676666493,
+          "max_ms": 765.8260252981834,
+          "sum_ms": 5179.779144857685
+        },
+        "entry_result": {
+          "count": 68,
+          "mean_ms": 4.966106228952698,
+          "min_ms": 0.2245626103958533,
+          "max_ms": 23.607620186106438,
+          "sum_ms": 337.69522356878343
+        },
+        "entry_step": {
+          "count": 18,
+          "mean_ms": 0.8851599622893952,
+          "min_ms": 0.5406841758777747,
+          "max_ms": 2.391246428213973,
+          "sum_ms": 15.932879321209114
+        },
+        "feed": {
+          "count": 68,
+          "mean_ms": 0.2171814651804399,
+          "min_ms": 0.06103930339071215,
+          "max_ms": 2.3148415726995015,
+          "sum_ms": 14.768339632269914
+        },
+        "file_measure": {
+          "count": 36,
+          "mean_ms": 10.955940179916361,
+          "min_ms": 0.5117151762316055,
+          "max_ms": 33.00062448987072,
+          "sum_ms": 394.413846476989
+        },
+        "map_cache": {
+          "count": 35,
+          "mean_ms": 9.193844193301466,
+          "min_ms": 6.712631752561043,
+          "max_ms": 18.182382055290613,
+          "sum_ms": 321.7845467655513
+        },
+        "measure_entry": {
+          "count": 18,
+          "mean_ms": 1.1098752884173653,
+          "min_ms": 0.2138490144196544,
+          "max_ms": 10.173475673793558,
+          "sum_ms": 19.977755191512575
+        },
+        "publish": {
+          "count": 18,
+          "mean_ms": 8.234252149493507,
+          "min_ms": 5.181785759093517,
+          "max_ms": 8.94972927024905,
+          "sum_ms": 148.21653869088314
+        },
+        "size_continue": {
+          "count": 19,
+          "mean_ms": 20.388681694240944,
+          "min_ms": 0.641617527443017,
+          "max_ms": 33.088729719938144,
+          "sum_ms": 387.38495219057796
+        },
+        "validate_map": {
+          "count": 35,
+          "mean_ms": 6.351349963438847,
+          "min_ms": 5.178402518258928,
+          "max_ms": 9.449885040295808,
+          "sum_ms": 222.29724872035965
+        },
+        "word": {
+          "count": 6818,
+          "mean_ms": 0.014729964250508687,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.8489411161029579,
+          "sum_ms": 100.42889625996823
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.0594548189331796,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 10.594548189331796
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 1.971611790030435,
+          "min_ms": 0.17754965963187522,
+          "max_ms": 2.420426880412304,
+          "sum_ms": 9.858058950152175
+        },
+        "directory_measure": {
+          "count": 5,
+          "mean_ms": 10.931716332172224,
+          "min_ms": 0.14484499823084698,
+          "max_ms": 33.03107365738202,
+          "sum_ms": 54.65858166086112
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 1.0464434385568222,
+          "min_ms": 1.0312540968931982,
+          "max_ms": 1.0616327802204462,
+          "sum_ms": 2.0928868771136444
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 290.18430204446423,
+          "min_ms": 44.755342348730366,
+          "max_ms": 765.8260252981834,
+          "sum_ms": 870.5529061333928
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.460150356861424,
+          "min_ms": 0.4022532383958364,
+          "max_ms": 2.5180474753270117,
+          "sum_ms": 2.920300713722848
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5406841758777747,
+          "min_ms": 0.5406841758777747,
+          "max_ms": 0.5406841758777747,
+          "sum_ms": 0.5406841758777747
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 13.589033506771415,
+          "min_ms": 0.5118561445997133,
+          "max_ms": 33.00062448987072,
+          "sum_ms": 54.35613402708566
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 7.371564894553312,
+          "min_ms": 6.712843205113205,
+          "max_ms": 8.547828452773482,
+          "sum_ms": 22.114694683659934
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.40651753153109976,
+          "min_ms": 0.2138490144196544,
+          "max_ms": 0.5991860486425451,
+          "sum_ms": 0.8130350630621995
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 8.273680218895683,
+          "min_ms": 7.597631167542315,
+          "max_ms": 8.94972927024905,
+          "sum_ms": 16.547360437791365
+        },
+        "size_continue": {
+          "count": 3,
+          "mean_ms": 18.049143452700648,
+          "min_ms": 0.641617527443017,
+          "max_ms": 33.088729719938144,
+          "sum_ms": 54.14743035810194
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.611363366174264,
+          "min_ms": 5.2574152885833945,
+          "max_ms": 6.234608016307221,
+          "sum_ms": 16.834090098522793
+        },
+        "word": {
+          "count": 657,
+          "mean_ms": 0.014095227582841591,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.15485375236650648,
+          "sum_ms": 9.260564521926925
+        }
+      },
+      "first_publish_ms": 113.0731245215886,
+      "entry_to_first_feed_ms": 894.1476981980013,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 939.7795818596265,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4333404446.375,
+          "dispatched": 4333408960.5,
+          "collected": 4333510010.25,
+          "queue_ms": 2.54539533873994,
+          "service_ms": 56.979273420837096
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4333512252.5,
+          "dispatched": 4333516197.125,
+          "collected": 4333590894.75,
+          "queue_ms": 2.2242693961901887,
+          "service_ms": 42.1200091911376
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4333594994.625,
+          "dispatched": 4333599948.625,
+          "collected": 4334952417.75,
+          "queue_ms": 2.7934291824257556,
+          "service_ms": 762.621461870171
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4335071565.25,
+          "dispatched": 4335089563.375,
+          "collected": 4335619380.5,
+          "queue_ms": 10.14866524100657,
+          "service_ms": 298.7498220274353
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4335752978.75,
+          "dispatched": 4335757498.75,
+          "collected": 4336110774.75,
+          "queue_ms": 2.548708095390475,
+          "service_ms": 199.20296484671803
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4336245828.5,
+          "dispatched": 4336250342.125,
+          "collected": 4336679721.375,
+          "queue_ms": 2.5451134020037243,
+          "service_ms": 242.11556868754218
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4336816137.5,
+          "dispatched": 4336820653.125,
+          "collected": 4337307793.0,
+          "queue_ms": 2.5462411489485874,
+          "service_ms": 274.68525287610714
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4337425423.25,
+          "dispatched": 4337439148.0,
+          "collected": 4337933648.0,
+          "queue_ms": 7.7390224407545185,
+          "service_ms": 278.8354321173872
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4338052763.75,
+          "dispatched": 4338070757.75,
+          "collected": 4338584171.25,
+          "queue_ms": 10.146339262932791,
+          "service_ms": 289.50025303822076
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4338701459.375,
+          "dispatched": 4338719454.5,
+          "collected": 4339034371.5,
+          "queue_ms": 10.146973620589277,
+          "service_ms": 177.57334231771733
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4339168038.875,
+          "dispatched": 4339172556.0,
+          "collected": 4339777774.875,
+          "queue_ms": 2.5470869591572347,
+          "service_ms": 341.26686862734874
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4339904240.625,
+          "dispatched": 4339918038.5,
+          "collected": 4340232621.5,
+          "queue_ms": 7.780255688426074,
+          "service_ms": 177.3850085779252
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4340369657.5,
+          "dispatched": 4340374169.0,
+          "collected": 4340999230.625,
+          "queue_ms": 2.5439151708748073,
+          "service_ms": 352.4556689724393
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4341117661.25,
+          "dispatched": 4341135661.125,
+          "collected": 4341485821.0,
+          "queue_ms": 10.149652019583325,
+          "service_ms": 197.44586462243737
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4341620515.125,
+          "dispatched": 4341625037.25,
+          "collected": 4342118840.75,
+          "queue_ms": 2.5499063265193924,
+          "service_ms": 278.4426942438386
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4342255788.5,
+          "dispatched": 4342260374.375,
+          "collected": 4342725621.0,
+          "queue_ms": 2.5858532603869016,
+          "service_ms": 262.34022997579575
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4342862245.5,
+          "dispatched": 4342866757.625,
+          "collected": 4343252734.375,
+          "queue_ms": 2.544267591795077,
+          "service_ms": 217.6420503003331
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4343377724.0,
+          "dispatched": 4343392382.625,
+          "collected": 4343901560.0,
+          "queue_ms": 8.265609779821506,
+          "service_ms": 287.1116145248168
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4344036871.875,
+          "dispatched": 4344041392.625,
+          "collected": 4344587268.75,
+          "queue_ms": 2.5491310004947993,
+          "service_ms": 307.80506612121303
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4344704891.375,
+          "dispatched": 4344722884.875,
+          "collected": 4344732031.875,
+          "queue_ms": 10.146057326196575,
+          "service_ms": 5.157750652331123
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4344737725.75,
+          "dispatched": 4344743050.5,
+          "collected": 4344766278.875,
+          "queue_ms": 3.002485272329742,
+          "service_ms": 13.097864470191533
+        }
+      ]
+    },
+    {
+      "command": "DIR SYS:C",
+      "total_ms": 2513.194075381425,
+      "dp": 2816,
+      "begin": 4346349737.875,
+      "end": 4350806755.625,
+      "cache_hits": 56,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 172.6353613512664,
+      "entry_to_first_text_return_ms": 188.02706310730935,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 82.97024580654347,
+          "min_ms": 82.97024580654347,
+          "max_ms": 82.97024580654347,
+          "sum_ms": 82.97024580654347
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 45.69990089923722,
+          "min_ms": 45.69990089923722,
+          "max_ms": 45.69990089923722,
+          "sum_ms": 45.69990089923722
+        },
+        "exnext": {
+          "count": 18,
+          "mean_ms": 61.31273503538541,
+          "min_ms": 9.086821008233962,
+          "max_ms": 72.09228071313079,
+          "sum_ms": 1103.6292306369373
+        },
+        "text": {
+          "count": 17,
+          "mean_ms": 15.674140173804046,
+          "min_ms": 14.594807571129113,
+          "max_ms": 16.373546439914346,
+          "sum_ms": 266.4603829546688
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 17,
+          "mean_ms": 1.847581185963564,
+          "min_ms": 1.8399896247281073,
+          "max_ms": 1.872200896840758,
+          "sum_ms": 31.408880161380587
+        },
+        "cache_copy": {
+          "count": 112,
+          "mean_ms": 1.765162482154915,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 10.731851379868871,
+          "sum_ms": 197.69819800135048
+        },
+        "cache_read": {
+          "count": 56,
+          "mean_ms": 4.018825671064812,
+          "min_ms": 2.419792522755819,
+          "max_ms": 12.16937631364898,
+          "sum_ms": 225.0542375796295
+        },
+        "directory_measure": {
+          "count": 37,
+          "mean_ms": 10.75337382071864,
+          "min_ms": 0.14498596659895485,
+          "max_ms": 32.88975286835387,
+          "sum_ms": 397.87483136658966
+        },
+        "directory_select": {
+          "count": 20,
+          "mean_ms": 1.358607317104115,
+          "min_ms": 1.0312540968931982,
+          "max_ms": 2.852847349583227,
+          "sum_ms": 27.1721463420823
+        },
+        "dos_call": {
+          "count": 21,
+          "mean_ms": 58.21993267216484,
+          "min_ms": 7.994598092134106,
+          "max_ms": 80.4101897575203,
+          "sum_ms": 1222.6185861154615
+        },
+        "entry_result": {
+          "count": 68,
+          "mean_ms": 4.596405281736478,
+          "min_ms": 0.2245626103958533,
+          "max_ms": 21.590433322666726,
+          "sum_ms": 312.55555915808054
+        },
+        "entry_step": {
+          "count": 18,
+          "mean_ms": 0.6876084575382131,
+          "min_ms": 0.5403317549575051,
+          "max_ms": 1.7878313285281915,
+          "sum_ms": 12.376952235687835
+        },
+        "feed": {
+          "count": 68,
+          "mean_ms": 0.186589256236793,
+          "min_ms": 0.06103930339071215,
+          "max_ms": 0.30005117151762317,
+          "sum_ms": 12.688069424101926
+        },
+        "file_measure": {
+          "count": 36,
+          "mean_ms": 11.019285882440839,
+          "min_ms": 0.5117856604156593,
+          "max_ms": 32.85958563757878,
+          "sum_ms": 396.6942917678702
+        },
+        "map_cache": {
+          "count": 36,
+          "mean_ms": 8.06360993989892,
+          "min_ms": 6.712631752561043,
+          "max_ms": 16.28748525118449,
+          "sum_ms": 290.2899578363611
+        },
+        "measure_entry": {
+          "count": 18,
+          "mean_ms": 1.0740614913419577,
+          "min_ms": 0.2133556251312768,
+          "max_ms": 9.528897810620276,
+          "sum_ms": 19.33310684415524
+        },
+        "publish": {
+          "count": 18,
+          "mean_ms": 9.039569194401802,
+          "min_ms": 6.0880009134750255,
+          "max_ms": 23.500554710528505,
+          "sum_ms": 162.71224549923244
+        },
+        "size_continue": {
+          "count": 19,
+          "mean_ms": 20.03863497806569,
+          "min_ms": 0.641688011627071,
+          "max_ms": 32.948395709486746,
+          "sum_ms": 380.73406458324814
+        },
+        "validate_map": {
+          "count": 36,
+          "mean_ms": 5.956608604928473,
+          "min_ms": 5.127231000635767,
+          "max_ms": 8.249257449120991,
+          "sum_ms": 214.43790977742503
+        },
+        "word": {
+          "count": 6949,
+          "mean_ms": 0.013962045571488443,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.1552766574708301,
+          "sum_ms": 97.02225467627319
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 14,
+          "mean_ms": 1.2061454958693247,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 2.9733048201314105,
+          "sum_ms": 16.886036942170545
+        },
+        "cache_read": {
+          "count": 7,
+          "mean_ms": 2.7240526069783777,
+          "min_ms": 2.4200039753079805,
+          "max_ms": 4.405684408475582,
+          "sum_ms": 19.068368248848643
+        },
+        "directory_measure": {
+          "count": 5,
+          "mean_ms": 10.833602347969139,
+          "min_ms": 0.14498596659895485,
+          "max_ms": 32.88975286835387,
+          "sum_ms": 54.168011739845696
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 1.0461967439126334,
+          "min_ms": 1.0312540968931982,
+          "max_ms": 1.0611393909320688,
+          "sum_ms": 2.092393487825267
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 54.201139306351045,
+          "min_ms": 37.43711048677787,
+          "max_ms": 80.4101897575203,
+          "sum_ms": 162.60341791905313
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4603970515056126,
+          "min_ms": 0.4023942067639442,
+          "max_ms": 2.518399896247281,
+          "sum_ms": 2.920794103011225
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5403317549575051,
+          "min_ms": 0.5403317549575051,
+          "max_ms": 0.5403317549575051,
+          "sum_ms": 0.5403317549575051
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 13.466584858023708,
+          "min_ms": 0.5117856604156593,
+          "max_ms": 32.85958563757878,
+          "sum_ms": 53.86633943209483
+        },
+        "map_cache": {
+          "count": 4,
+          "mean_ms": 7.084629654951725,
+          "min_ms": 6.712702236745097,
+          "max_ms": 8.199495615178911,
+          "sum_ms": 28.3385186198069
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.4064822894390728,
+          "min_ms": 0.2133556251312768,
+          "max_ms": 0.5996089537468687,
+          "sum_ms": 0.8129645788781455
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 7.525102942150811,
+          "min_ms": 6.0880009134750255,
+          "max_ms": 8.962204970826596,
+          "sum_ms": 15.050205884301622
+        },
+        "size_continue": {
+          "count": 3,
+          "mean_ms": 17.886301492808027,
+          "min_ms": 0.641688011627071,
+          "max_ms": 32.948395709486746,
+          "sum_ms": 53.658904478424084
+        },
+        "validate_map": {
+          "count": 4,
+          "mean_ms": 5.4902774116516,
+          "min_ms": 5.127231000635767,
+          "max_ms": 6.234608016307221,
+          "sum_ms": 21.9611096466064
+        },
+        "word": {
+          "count": 788,
+          "mean_ms": 0.01388073301805412,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 10.938017618226647
+        }
+      },
+      "first_publish_ms": 124.77998361947562,
+      "entry_to_first_feed_ms": 179.67708375917528,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 225.25398975723837,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4346354901.125,
+          "dispatched": 4346359419.5,
+          "collected": 4346496711.75,
+          "queue_ms": 2.547791800997774,
+          "service_ms": 77.4154577454365
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4346498953.125,
+          "dispatched": 4346502898.5,
+          "collected": 4346577595.875,
+          "queue_ms": 2.2246923012945126,
+          "service_ms": 42.1198682227695
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4346588127.375,
+          "dispatched": 4346592006.625,
+          "collected": 4346653791.125,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 34.838640557445316
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4346770333.75,
+          "dispatched": 4346788324.125,
+          "collected": 4346895781.625,
+          "queue_ms": 10.144295221595225,
+          "service_ms": 60.592433663810176
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4347028873.625,
+          "dispatched": 4347033382.25,
+          "collected": 4347140844.5,
+          "queue_ms": 2.5422940346415666,
+          "service_ms": 60.595112062804226
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4347274291.125,
+          "dispatched": 4347278873.75,
+          "collected": 4347387774.5,
+          "queue_ms": 2.5840206716014995,
+          "service_ms": 61.40624405289697
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4347523694.875,
+          "dispatched": 4347528214.125,
+          "collected": 4347637274.375,
+          "queue_ms": 2.5482851902861516,
+          "service_ms": 61.496181871749805
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4347772865.875,
+          "dispatched": 4347777386.75,
+          "collected": 4347883122.375,
+          "queue_ms": 2.549201484678853,
+          "service_ms": 59.62151402846715
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4348018950.25,
+          "dispatched": 4348023465.25,
+          "collected": 4348131794.125,
+          "queue_ms": 2.545888728028318,
+          "service_ms": 61.08377891085019
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4348267627.625,
+          "dispatched": 4348272141.125,
+          "collected": 4348381140.5,
+          "queue_ms": 2.5450429178196705,
+          "service_ms": 61.46185607411553
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4348516752.5,
+          "dispatched": 4348521267.625,
+          "collected": 4348628047.625,
+          "queue_ms": 2.545959212212372,
+          "service_ms": 60.21040938623782
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4348764709.5,
+          "dispatched": 4348769222.125,
+          "collected": 4348879510.875,
+          "queue_ms": 2.544549528531293,
+          "service_ms": 62.188900432631925
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4349016455.5,
+          "dispatched": 4349020973.75,
+          "collected": 4349136507.75,
+          "queue_ms": 2.54772131681372,
+          "service_ms": 65.14655776390335
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4349271213.75,
+          "dispatched": 4349275733.0,
+          "collected": 4349380892.75,
+          "queue_ms": 2.5482851902861516,
+          "service_ms": 59.296793392530645
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4349515084.75,
+          "dispatched": 4349519602.875,
+          "collected": 4349630876.25,
+          "queue_ms": 2.5476508326296665,
+          "service_ms": 62.744104350424806
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4349765504.5,
+          "dispatched": 4349770021.875,
+          "collected": 4349880243.375,
+          "queue_ms": 2.5472279275253427,
+          "service_ms": 62.1509799416109
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4350014960.0,
+          "dispatched": 4350019476.5,
+          "collected": 4350124832.0,
+          "queue_ms": 2.546734538236965,
+          "service_ms": 59.40717162475912
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4350260475.75,
+          "dispatched": 4350264994.125,
+          "collected": 4350374038.875,
+          "queue_ms": 2.547791800997774,
+          "service_ms": 61.487441832927104
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4350509424.75,
+          "dispatched": 4350513940.0,
+          "collected": 4350621714.5,
+          "queue_ms": 2.5460296963964257,
+          "service_ms": 60.77118155457097
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4350757602.25,
+          "dispatched": 4350762113.5,
+          "collected": 4350770861.125,
+          "queue_ms": 2.5437742025067,
+          "service_ms": 4.932553684278785
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4350776617.375,
+          "dispatched": 4350782330.0,
+          "collected": 4350805559.5,
+          "queue_ms": 3.2211976954491184,
+          "service_ms": 13.098498827848019
+        }
+      ]
+    },
+    {
+      "command": "DIR SYS:C >NIL:",
+      "total_ms": 1298.0134737566239,
+      "dp": 2816,
+      "begin": 4353255648.25,
+      "end": 4355557607.0,
+      "cache_hits": 56,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 170.9251331093816,
+      "entry_to_first_text_return_ms": 173.22171927841111,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 82.50364050810639,
+          "min_ms": 82.50364050810639,
+          "max_ms": 82.50364050810639,
+          "sum_ms": 82.50364050810639
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 46.25355416498092,
+          "min_ms": 46.25355416498092,
+          "max_ms": 46.25355416498092,
+          "sum_ms": 46.25355416498092
+        },
+        "exnext": {
+          "count": 18,
+          "mean_ms": 50.42400544075249,
+          "min_ms": 7.791462673690651,
+          "max_ms": 58.443582344557704,
+          "sum_ms": 907.6320979335447
+        },
+        "text": {
+          "count": 17,
+          "mean_ms": 2.6645053175341515,
+          "min_ms": 2.2280755421291016,
+          "max_ms": 4.521348954508098,
+          "sum_ms": 45.296590398080575
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "cache_copy": {
+          "count": 112,
+          "mean_ms": 1.2026105881744054,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 10.731851379868871,
+          "sum_ms": 134.6923858755334
+        },
+        "cache_read": {
+          "count": 56,
+          "mean_ms": 2.710522160932308,
+          "min_ms": 2.419792522755819,
+          "max_ms": 12.092760005582349,
+          "sum_ms": 151.78924101220926
+        },
+        "directory_measure": {
+          "count": 37,
+          "mean_ms": 9.959232328938791,
+          "min_ms": 0.14477451404679303,
+          "max_ms": 32.88968238416982,
+          "sum_ms": 368.49159617073525
+        },
+        "directory_select": {
+          "count": 19,
+          "mean_ms": 1.2130068397110267,
+          "min_ms": 1.0612098751161225,
+          "max_ms": 2.5476508326296665,
+          "sum_ms": 23.047129954509508
+        },
+        "dos_call": {
+          "count": 21,
+          "mean_ms": 48.79414986642576,
+          "min_ms": 6.8478204175765,
+          "max_ms": 79.94273864887458,
+          "sum_ms": 1024.677147194941
+        },
+        "entry_result": {
+          "count": 68,
+          "mean_ms": 3.7991223972782158,
+          "min_ms": 0.22470357876396116,
+          "max_ms": 13.484047314623071,
+          "sum_ms": 258.3403230149187
+        },
+        "entry_step": {
+          "count": 18,
+          "mean_ms": 0.6943788549953943,
+          "min_ms": 0.5403317549575051,
+          "max_ms": 2.0267727124710486,
+          "sum_ms": 12.498819389917097
+        },
+        "file_measure": {
+          "count": 36,
+          "mean_ms": 10.199200443079244,
+          "min_ms": 0.5117856604156593,
+          "max_ms": 32.859515153394725,
+          "sum_ms": 367.1712159508528
+        },
+        "map_cache": {
+          "count": 36,
+          "mean_ms": 6.905584164302706,
+          "min_ms": 6.712631752561043,
+          "max_ms": 8.19970706773107,
+          "sum_ms": 248.6010299148974
+        },
+        "measure_entry": {
+          "count": 18,
+          "mean_ms": 0.5936334612542958,
+          "min_ms": 0.2133556251312768,
+          "max_ms": 0.7408592585909648,
+          "sum_ms": 10.685402302577325
+        },
+        "publish": {
+          "count": 18,
+          "mean_ms": 14.222549268836234,
+          "min_ms": 5.7000559644421385,
+          "max_ms": 20.05986926593542,
+          "sum_ms": 256.0058868390522
+        },
+        "size_continue": {
+          "count": 19,
+          "mean_ms": 18.95489984160349,
+          "min_ms": 0.641688011627071,
+          "max_ms": 32.948325225302696,
+          "sum_ms": 360.1430969904663
+        },
+        "validate_map": {
+          "count": 36,
+          "mean_ms": 5.996058211164663,
+          "min_ms": 5.127019548083606,
+          "max_ms": 8.107795691724734,
+          "sum_ms": 215.8580956019279
+        },
+        "word": {
+          "count": 6949,
+          "mean_ms": 0.014176277324460565,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.5003263417721697,
+          "sum_ms": 98.51095112767646
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 14,
+          "mean_ms": 1.750112220890183,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 10.731851379868871,
+          "sum_ms": 24.501571092462562
+        },
+        "cache_read": {
+          "count": 7,
+          "mean_ms": 3.8019269570386816,
+          "min_ms": 2.4199334911239267,
+          "max_ms": 12.092760005582349,
+          "sum_ms": 26.61348869927077
+        },
+        "directory_measure": {
+          "count": 5,
+          "mean_ms": 10.564479636414386,
+          "min_ms": 0.14477451404679303,
+          "max_ms": 32.88968238416982,
+          "sum_ms": 52.82239818207193
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 1.1168218963346814,
+          "min_ms": 1.0614213276682845,
+          "max_ms": 1.1722224650010784,
+          "sum_ms": 2.233643792669363
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 53.63101623626674,
+          "min_ms": 35.6406800877951,
+          "max_ms": 79.94273864887458,
+          "sum_ms": 160.89304870880022
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.460150356861424,
+          "min_ms": 0.4022532383958364,
+          "max_ms": 2.5180474753270117,
+          "sum_ms": 2.920300713722848
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.540472723325613,
+          "min_ms": 0.540472723325613,
+          "max_ms": 0.540472723325613,
+          "sum_ms": 0.540472723325613
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 13.130287194856344,
+          "min_ms": 0.5118561445997133,
+          "max_ms": 32.859515153394725,
+          "sum_ms": 52.521148779425374
+        },
+        "map_cache": {
+          "count": 4,
+          "mean_ms": 6.78350359962728,
+          "min_ms": 6.712631752561043,
+          "max_ms": 6.854304962509462,
+          "sum_ms": 27.13401439850912
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.40627083688691096,
+          "min_ms": 0.2133556251312768,
+          "max_ms": 0.5991860486425451,
+          "sum_ms": 0.8125416737738219
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 6.925881651416239,
+          "min_ms": 5.7000559644421385,
+          "max_ms": 8.15170733839034,
+          "sum_ms": 13.851763302832477
+        },
+        "size_continue": {
+          "count": 3,
+          "mean_ms": 17.437857619128845,
+          "min_ms": 0.641688011627071,
+          "max_ms": 32.948325225302696,
+          "sum_ms": 52.31357285738653
+        },
+        "validate_map": {
+          "count": 4,
+          "mean_ms": 5.455070561716656,
+          "min_ms": 5.127019548083606,
+          "max_ms": 6.234608016307221,
+          "sum_ms": 21.820282246866626
+        },
+        "word": {
+          "count": 788,
+          "mean_ms": 0.013880822464988198,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 10.9380881024107
+        }
+      },
+      "first_publish_ms": 124.31288493175016,
+      "entry_to_first_feed_ms": null,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": null,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353260812.5,
+          "dispatched": 4353265327.375,
+          "collected": 4353401794.0,
+          "queue_ms": 2.545818243844264,
+          "service_ms": 76.94990970976023
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353404035.75,
+          "dispatched": 4353407981.125,
+          "collected": 4353483660.875,
+          "queue_ms": 2.2246923012945126,
+          "service_ms": 42.67380342524941
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353487760.75,
+          "dispatched": 4353491705.25,
+          "collected": 4353550238.75,
+          "queue_ms": 2.224198912006135,
+          "service_ms": 33.00548789857044
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353580977.0,
+          "dispatched": 4353584856.125,
+          "collected": 4353673709.375,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 50.101990614326056
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353701848.875,
+          "dispatched": 4353705728.125,
+          "collected": 4353795400.0,
+          "queue_ms": 2.1874061679299786,
+          "service_ms": 50.5635915356953
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353824192.875,
+          "dispatched": 4353828072.0,
+          "collected": 4353917656.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 50.51411163848944
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4353942761.75,
+          "dispatched": 4353947403.5,
+          "collected": 4354036815.375,
+          "queue_ms": 2.617359690659013,
+          "service_ms": 50.41698443286311
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354067931.625,
+          "dispatched": 4354071810.75,
+          "collected": 4354160164.875,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 49.820547267398666
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354185183.25,
+          "dispatched": 4354189128.625,
+          "collected": 4354276770.375,
+          "queue_ms": 2.2246923012945126,
+          "service_ms": 49.41885790247527
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354307683.5,
+          "dispatched": 4354311562.625,
+          "collected": 4354400608.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 50.210465773585064
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354429546.25,
+          "dispatched": 4354433425.375,
+          "collected": 4354520420.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 49.05403176581207
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354545317.875,
+          "dispatched": 4354549497.0,
+          "collected": 4354637304.25,
+          "queue_ms": 2.3564977254753807,
+          "service_ms": 49.51217896216268
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354668962.125,
+          "dispatched": 4354672841.25,
+          "collected": 4354770205.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 54.90090628563857
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354795163.25,
+          "dispatched": 4354799842.125,
+          "collected": 4354887291.25,
+          "queue_ms": 2.6382934933230335,
+          "service_ms": 49.310241774848144
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4354918533.25,
+          "dispatched": 4354922412.375,
+          "collected": 4355014269.5,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 51.79579604132629
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355039405.625,
+          "dispatched": 4355043350.375,
+          "collected": 4355132061.5,
+          "queue_ms": 2.224339880374243,
+          "service_ms": 50.02185009705672
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355163476.625,
+          "dispatched": 4355167355.75,
+          "collected": 4355254727.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 49.26640061236659
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355283217.0,
+          "dispatched": 4355287096.125,
+          "collected": 4355376634.125,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 50.488102974573536
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355402271.875,
+          "dispatched": 4355405932.375,
+          "collected": 4355493906.875,
+          "queue_ms": 2.064058845835583,
+          "service_ms": 49.60648680042686
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355524997.25,
+          "dispatched": 4355528876.375,
+          "collected": 4355536411.375,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 4.248786614771512
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4355541350.5,
+          "dispatched": 4355549056.875,
+          "collected": 4355556411.375,
+          "queue_ms": 4.3454204311094635,
+          "service_ms": 4.147007452997621
+        }
+      ]
+    },
+    {
+      "command": "DIR WORK:",
+      "total_ms": 1239.7525159329498,
+      "dp": 2816,
+      "begin": 4357162646.125,
+      "end": 4359361282.125,
+      "cache_hits": 2,
+      "cache_misses": 3,
+      "physical_sio_commands": 3,
+      "entry_to_first_text_ms": 1139.4655043354821,
+      "entry_to_first_text_return_ms": 1155.3239523583302,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 23.085332382266742,
+          "min_ms": 23.085332382266742,
+          "max_ms": 23.085332382266742,
+          "sum_ms": 23.085332382266742
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 971.3778530235601,
+          "min_ms": 971.3778530235601,
+          "max_ms": 971.3778530235601,
+          "sum_ms": 971.3778530235601
+        },
+        "exnext": {
+          "count": 2,
+          "mean_ms": 79.20128027471917,
+          "min_ms": 15.357446442592748,
+          "max_ms": 143.04511410684557,
+          "sum_ms": 158.40256054943833
+        },
+        "text": {
+          "count": 1,
+          "mean_ms": 15.858448022848155,
+          "min_ms": 15.858448022848155,
+          "max_ms": 15.858448022848155,
+          "sum_ms": 15.858448022848155
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 1,
+          "mean_ms": 3.9141277088834032,
+          "min_ms": 3.9141277088834032,
+          "max_ms": 3.9141277088834032,
+          "sum_ms": 3.9141277088834032
+        },
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.242967440536018,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 2.894292049806944,
+          "sum_ms": 12.429674405360181
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 1.441528435434373,
+          "min_ms": 0.17705627034349763,
+          "max_ms": 4.255271159704474,
+          "sum_ms": 7.207642177171865
+        },
+        "directory_measure": {
+          "count": 8,
+          "mean_ms": 8.423045015428988,
+          "min_ms": 0.355522224368074,
+          "max_ms": 32.8777705570647,
+          "sum_ms": 67.3843601234319
+        },
+        "directory_select": {
+          "count": 3,
+          "mean_ms": 3.5712691429170214,
+          "min_ms": 1.0143378927202524,
+          "max_ms": 8.381979167694562,
+          "sum_ms": 10.713807428751064
+        },
+        "dos_call": {
+          "count": 5,
+          "mean_ms": 232.3361700867942,
+          "min_ms": 14.37828015771541,
+          "max_ms": 968.2353156775151,
+          "sum_ms": 1161.680850433971
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4842559478078716,
+          "min_ms": 0.4107818246663631,
+          "max_ms": 2.55773007094938,
+          "sum_ms": 2.9685118956157432
+        },
+        "entry_step": {
+          "count": 2,
+          "mean_ms": 4.168822307962316,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 7.817330369238446,
+          "sum_ms": 8.337644615924631
+        },
+        "feed": {
+          "count": 4,
+          "mean_ms": 0.2028534817072397,
+          "min_ms": 0.06118027175882004,
+          "max_ms": 0.35629755039266736,
+          "sum_ms": 0.8114139268289589
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 12.825901246019406,
+          "min_ms": 0.4919796046965021,
+          "max_ms": 32.847673810473665,
+          "sum_ms": 51.30360498407762
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 6.713172131305456,
+          "min_ms": 6.7129841734813125,
+          "max_ms": 6.713266110217528,
+          "sum_ms": 20.13951639391637
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.5534065710995109,
+          "min_ms": 0.5269397599872564,
+          "max_ms": 0.5798733822117654,
+          "sum_ms": 1.1068131421990217
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 6.667134211754225,
+          "min_ms": 4.707286232042392,
+          "max_ms": 8.626982191466057,
+          "sum_ms": 13.33426842350845
+        },
+        "size_continue": {
+          "count": 6,
+          "mean_ms": 11.12617514755864,
+          "min_ms": 0.4143765180531141,
+          "max_ms": 32.93648388238164,
+          "sum_ms": 66.75705088535184
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.735603487933343,
+          "min_ms": 5.118279509260917,
+          "max_ms": 6.961793343191721,
+          "sum_ms": 17.20681046380003
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013877918644115821,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.909623769522357
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 10,
+          "mean_ms": 1.242967440536018,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 2.894292049806944,
+          "sum_ms": 12.429674405360181
+        },
+        "cache_read": {
+          "count": 5,
+          "mean_ms": 1.441528435434373,
+          "min_ms": 0.17705627034349763,
+          "max_ms": 4.255271159704474,
+          "sum_ms": 7.207642177171865
+        },
+        "directory_measure": {
+          "count": 8,
+          "mean_ms": 8.423045015428988,
+          "min_ms": 0.355522224368074,
+          "max_ms": 32.8777705570647,
+          "sum_ms": 67.3843601234319
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 1.1659141305282508,
+          "min_ms": 1.0143378927202524,
+          "max_ms": 1.317490368336249,
+          "sum_ms": 2.3318282610565015
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 376.68470121989327,
+          "min_ms": 19.717316131433268,
+          "max_ms": 968.2353156775151,
+          "sum_ms": 1130.0541036596799
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4842559478078716,
+          "min_ms": 0.4107818246663631,
+          "max_ms": 2.55773007094938,
+          "sum_ms": 2.9685118956157432
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5203142466861861,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 0.5203142466861861,
+          "sum_ms": 0.5203142466861861
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 12.825901246019406,
+          "min_ms": 0.4919796046965021,
+          "max_ms": 32.847673810473665,
+          "sum_ms": 51.30360498407762
+        },
+        "map_cache": {
+          "count": 3,
+          "mean_ms": 6.713172131305456,
+          "min_ms": 6.7129841734813125,
+          "max_ms": 6.713266110217528,
+          "sum_ms": 20.13951639391637
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.5534065710995109,
+          "min_ms": 0.5269397599872564,
+          "max_ms": 0.5798733822117654,
+          "sum_ms": 1.1068131421990217
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 6.667134211754225,
+          "min_ms": 4.707286232042392,
+          "max_ms": 8.626982191466057,
+          "sum_ms": 13.33426842350845
+        },
+        "size_continue": {
+          "count": 6,
+          "mean_ms": 11.12617514755864,
+          "min_ms": 0.4143765180531141,
+          "max_ms": 32.93648388238164,
+          "sum_ms": 66.75705088535184
+        },
+        "validate_map": {
+          "count": 3,
+          "mean_ms": 5.735603487933343,
+          "min_ms": 5.118279509260917,
+          "max_ms": 6.961793343191721,
+          "sum_ms": 17.20681046380003
+        },
+        "word": {
+          "count": 642,
+          "mean_ms": 0.013877918644115821,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 0.014237805178895908,
+          "sum_ms": 8.909623769522357
+        }
+      },
+      "first_publish_ms": 988.331061393134,
+      "entry_to_first_feed_ms": 1146.5755964019233,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 1191.1435213052544,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4357169241.5,
+          "dispatched": 4357173259.875,
+          "collected": 4357203416.5,
+          "queue_ms": 2.2658550647820137,
+          "service_ms": 17.004520855565218
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4357205658.75,
+          "dispatched": 4357209537.875,
+          "collected": 4358922044.25,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 965.6369162323666
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4358930042.25,
+          "dispatched": 4358933921.375,
+          "collected": 4359181321.625,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 139.50243804792643
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4359299619.25,
+          "dispatched": 4359313350.5,
+          "collected": 4359324388.375,
+          "queue_ms": 7.742687618325324,
+          "service_ms": 6.223964904515076
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4359330079.375,
+          "dispatched": 4359350919.625,
+          "collected": 4359360085.375,
+          "queue_ms": 11.751264133841007,
+          "service_ms": 5.168323279939214
+        }
+      ]
+    },
+    {
+      "command": "DIR WORK:",
+      "total_ms": 221.96329465631206,
+      "dp": 2816,
+      "begin": 4360911461.25,
+      "end": 4361305101.5,
+      "cache_hits": 3,
+      "cache_misses": 0,
+      "physical_sio_commands": 0,
+      "entry_to_first_text_ms": 118.59689954171184,
+      "entry_to_first_text_return_ms": 133.5726741276525,
+      "call_sites": {
+        "lock": {
+          "count": 1,
+          "mean_ms": 31.71273747883712,
+          "min_ms": 31.71273747883712,
+          "max_ms": 31.71273747883712,
+          "sum_ms": 31.71273747883712
+        },
+        "examine": {
+          "count": 1,
+          "mean_ms": 47.68536987985266,
+          "min_ms": 47.68536987985266,
+          "max_ms": 47.68536987985266,
+          "sum_ms": 47.68536987985266
+        },
+        "exnext": {
+          "count": 2,
+          "mean_ms": 23.212450608208027,
+          "min_ms": 9.182961435283536,
+          "max_ms": 37.241939781132515,
+          "sum_ms": 46.42490121641605
+        },
+        "text": {
+          "count": 1,
+          "mean_ms": 14.97577458594066,
+          "min_ms": 14.97577458594066,
+          "max_ms": 14.97577458594066,
+          "sum_ms": 14.97577458594066
+        }
+      },
+      "inner_calls": {},
+      "routines": {
+        "bitmap_text": {
+          "count": 1,
+          "mean_ms": 1.84146979259324,
+          "min_ms": 1.84146979259324,
+          "max_ms": 1.84146979259324,
+          "sum_ms": 1.84146979259324
+        },
+        "cache_copy": {
+          "count": 6,
+          "mean_ms": 1.0594242757867562,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 6.356545654720537
+        },
+        "cache_read": {
+          "count": 3,
+          "mean_ms": 2.420003975307981,
+          "min_ms": 2.4199334911239267,
+          "max_ms": 2.4200744594920347,
+          "sum_ms": 7.260011925923942
+        },
+        "directory_measure": {
+          "count": 5,
+          "mean_ms": 11.026052364110019,
+          "min_ms": 0.12461603740736615,
+          "max_ms": 35.05643668617199,
+          "sum_ms": 55.13026182055009
+        },
+        "directory_select": {
+          "count": 4,
+          "mean_ms": 1.7971176197772982,
+          "min_ms": 0.9838887252089504,
+          "max_ms": 2.8530588021353886,
+          "sum_ms": 7.188470479109193
+        },
+        "dos_call": {
+          "count": 5,
+          "mean_ms": 23.705268974694768,
+          "min_ms": 7.393297517969943,
+          "max_ms": 46.74137520281824,
+          "sum_ms": 118.52634487347385
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4843264319919256,
+          "min_ms": 0.410922793034471,
+          "max_ms": 2.55773007094938,
+          "sum_ms": 2.968652863983851
+        },
+        "entry_step": {
+          "count": 2,
+          "mean_ms": 1.145826138072878,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 1.7713380294595698,
+          "sum_ms": 2.291652276145756
+        },
+        "feed": {
+          "count": 4,
+          "mean_ms": 0.2026067870630509,
+          "min_ms": 0.061109787574766095,
+          "max_ms": 0.3556631927361819,
+          "sum_ms": 0.8104271482522036
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 13.70654826263535,
+          "min_ms": 0.49190912051244823,
+          "max_ms": 35.02556461355637,
+          "sum_ms": 54.8261930505414
+        },
+        "map_cache": {
+          "count": 2,
+          "mean_ms": 7.801964817114687,
+          "min_ms": 6.7129841734813125,
+          "max_ms": 8.890945460748062,
+          "sum_ms": 15.603929634229374
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.3866057495358616,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.5798733822117654,
+          "sum_ms": 0.7732114990717232
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 15.963081794076228,
+          "min_ms": 8.034421656124582,
+          "max_ms": 23.891741932027873,
+          "sum_ms": 31.926163588152455
+        },
+        "size_continue": {
+          "count": 3,
+          "mean_ms": 18.21987964120731,
+          "min_ms": 0.6430976953081499,
+          "max_ms": 35.113951780360004,
+          "sum_ms": 54.65963892362193
+        },
+        "validate_map": {
+          "count": 2,
+          "mean_ms": 5.866116702073222,
+          "min_ms": 5.127231000635767,
+          "max_ms": 6.605002403510676,
+          "sum_ms": 11.732233404146443
+        },
+        "word": {
+          "count": 511,
+          "mean_ms": 0.016789856790179664,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.5001853734040618,
+          "sum_ms": 8.579616819781808
+        }
+      },
+      "before_first_inner_calls": {},
+      "before_first_text": {
+        "cache_copy": {
+          "count": 6,
+          "mean_ms": 1.0594242757867562,
+          "min_ms": 1.0590953495945046,
+          "max_ms": 1.05972970725099,
+          "sum_ms": 6.356545654720537
+        },
+        "cache_read": {
+          "count": 3,
+          "mean_ms": 2.420003975307981,
+          "min_ms": 2.4199334911239267,
+          "max_ms": 2.4200744594920347,
+          "sum_ms": 7.260011925923942
+        },
+        "directory_measure": {
+          "count": 5,
+          "mean_ms": 11.026052364110019,
+          "min_ms": 0.12461603740736615,
+          "max_ms": 35.05643668617199,
+          "sum_ms": 55.13026182055009
+        },
+        "directory_select": {
+          "count": 2,
+          "mean_ms": 0.9991133089646014,
+          "min_ms": 0.9838887252089504,
+          "max_ms": 1.0143378927202524,
+          "sum_ms": 1.9982266179292028
+        },
+        "dos_call": {
+          "count": 3,
+          "mean_ms": 34.34553320580395,
+          "min_ms": 19.99692688957525,
+          "max_ms": 46.74137520281824,
+          "sum_ms": 103.03659961741185
+        },
+        "entry_result": {
+          "count": 2,
+          "mean_ms": 1.4843264319919256,
+          "min_ms": 0.410922793034471,
+          "max_ms": 2.55773007094938,
+          "sum_ms": 2.968652863983851
+        },
+        "entry_step": {
+          "count": 1,
+          "mean_ms": 0.5203142466861861,
+          "min_ms": 0.5203142466861861,
+          "max_ms": 0.5203142466861861,
+          "sum_ms": 0.5203142466861861
+        },
+        "file_measure": {
+          "count": 4,
+          "mean_ms": 13.70654826263535,
+          "min_ms": 0.49190912051244823,
+          "max_ms": 35.02556461355637,
+          "sum_ms": 54.8261930505414
+        },
+        "map_cache": {
+          "count": 2,
+          "mean_ms": 7.801964817114687,
+          "min_ms": 6.7129841734813125,
+          "max_ms": 8.890945460748062,
+          "sum_ms": 15.603929634229374
+        },
+        "measure_entry": {
+          "count": 2,
+          "mean_ms": 0.3866057495358616,
+          "min_ms": 0.19333811685995778,
+          "max_ms": 0.5798733822117654,
+          "sum_ms": 0.7732114990717232
+        },
+        "publish": {
+          "count": 2,
+          "mean_ms": 15.963081794076228,
+          "min_ms": 8.034421656124582,
+          "max_ms": 23.891741932027873,
+          "sum_ms": 31.926163588152455
+        },
+        "size_continue": {
+          "count": 3,
+          "mean_ms": 18.21987964120731,
+          "min_ms": 0.6430976953081499,
+          "max_ms": 35.113951780360004,
+          "sum_ms": 54.65963892362193
+        },
+        "validate_map": {
+          "count": 2,
+          "mean_ms": 5.866116702073222,
+          "min_ms": 5.127231000635767,
+          "max_ms": 6.605002403510676,
+          "sum_ms": 11.732233404146443
+        },
+        "word": {
+          "count": 511,
+          "mean_ms": 0.016789856790179664,
+          "min_ms": 0.013744415890518327,
+          "max_ms": 1.5001853734040618,
+          "sum_ms": 8.579616819781808
+        }
+      },
+      "first_publish_ms": 75.46389165735101,
+      "entry_to_first_feed_ms": 124.95584165869022,
+      "entry_to_first_feed_batch_ms": null,
+      "entry_to_first_bitmap_text_ms": 174.10382884184617,
+      "packets": [
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4360932863.125,
+          "dispatched": 4360937371.75,
+          "collected": 4360967531.5,
+          "queue_ms": 2.5422940346415666,
+          "service_ms": 17.00628296016657
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4360969772.75,
+          "dispatched": 4360973651.875,
+          "collected": 4361051936.625,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 44.142693820933516
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4361056036.625,
+          "dispatched": 4361060679.125,
+          "collected": 4361119679.625,
+          "queue_ms": 2.6177825957633365,
+          "service_ms": 33.26881681019596
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4361257264.5,
+          "dispatched": 4361261779.625,
+          "collected": 4361270764.875,
+          "queue_ms": 2.545959212212372,
+          "service_ms": 5.066544118165325
+        },
+        {
+          "dp": 2816,
+          "packet": 136902,
+          "submitted": 4361291313.25,
+          "dispatched": 4361295192.375,
+          "collected": 4361303904.75,
+          "queue_ms": 2.1873356837459244,
+          "service_ms": 4.912677144375574
+        }
+      ]
+    }
+  ],
+  "source_record": "build/development/dir-latency/results.json",
+  "status": "captured",
+  "measurements_kind": "Historical passive preview observation; host WORK-banner assertion exception documented in runner_override."
+}
