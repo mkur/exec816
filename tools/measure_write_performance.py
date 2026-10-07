@@ -13,6 +13,7 @@ from pathlib import Path
 
 from build_command import compile_command
 from filesystem_audit import Audit
+from filesystem_audit import word
 from generate_dos_mounts import encode
 from library_paths import library_file, read_source
 from make_shell_disk import make as make_mydos
@@ -25,13 +26,33 @@ import sdfs_reference
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 
+def physical_phase(audit, sector, filesystem):
+    if filesystem=='mydos':
+        header=audit.image.sector(360)
+        pages=1 if header[0]==2 else (header[0]-2)*(2 if audit.image.size==128 else 1)
+        if sector==360:return 'header'
+        if 361-pages<=sector<360:return 'bitmap'
+        return 'payload' if audit.owners.get(sector) in audit.files else 'directory'
+    header=audit.image.sector(1)
+    owner=audit.owners.get(sector,'')
+    if sector==1:return 'header'
+    if word(header,16)<=sector<word(header,16)+header[15]:return 'bitmap'
+    if owner.endswith(' map'):
+        return 'map' if owner.removesuffix(' map') in audit.files else 'directory'
+    return 'payload' if owner.removesuffix(' data') in audit.files else 'directory'
+
+
 def instrument(out, frozen=None):
     includes={p.name:p for p in (ROOT/'lib').rglob('*.inc')}
     frozen_names=set()
     if frozen:
         for path in (frozen/'lib').rglob('*.act'):
-            frozen_names.add(path.name)
-            (out/path.name).write_text(read_source(path,includes))
+            current=ROOT/path.relative_to(frozen)
+            # Unchanged modules retain their owner paths and alias identities.
+            # Only changed frozen inputs need private comparison overrides.
+            if read_source(path,includes)!=read_source(current,includes):
+                frozen_names.add(path.name)
+                (out/path.name).write_text(read_source(path,includes))
     def original(name):
         path=out/name if name in frozen_names else library_file(name)
         return read_source(path,includes)
@@ -70,10 +91,15 @@ RETURN(result)''')
     (out/'blockwire.act').write_text(wire)
     io=original('fswriteio.act').replace('USE EXEC\n','USE EXEC\nUSE WRITEPERFPROBE\n',1)
     io=io.replace('  LET status=BLOCKIO.BeginFetch(', '  IF WRITEPERFPROBE.active<>0 THEN WRITEPERFPROBE.logicalReads==+1 FI\n  LET status=BLOCKIO.BeginFetch(')
+    marker='\nRETURN(1)\n\nPUBLIC PROC Zero('
+    require(io.count(marker)==1,'Stale verified-write observer')
+    io=io.replace(marker,'\n  WRITEPERFPROBE.Verified()\n'+marker)
     (out/'fswriteio.act').write_text(io)
     writer=original('fswrite.act').replace('USE EXEC\n','USE EXEC\nUSE WRITEPERFPROBE\n',1)
     writer=writer.replace('  done=0\n','  WRITEPERFPROBE.GroupBegin()\n  done=0\n',1)
-    writer=writer.replace('  IF done>0 THEN\n','  WRITEPERFPROBE.GroupEnd()\n  IF done>0 THEN\n',1)
+    end='  IF okay<>0 AND service.work.error=0' if 'SDFSWRITE.Drain(service)' in writer else '  IF done>0 THEN\n'
+    require(writer.count(end)==1,'Stale work-group end observer')
+    writer=writer.replace(end,'  WRITEPERFPROBE.GroupEnd()\n'+end,1)
     (out/'fswrite.act').write_text(writer)
     mydos=original('mydoswrite.act').replace('USE FSTYPES\n','USE FSTYPES\nUSE WRITEPERFPROBE\n',1)
     mydos=mydos.replace('  high=state.data(sectorBytes-3)','  IF WRITEPERFPROBE.active<>0 THEN WRITEPERFPROBE.payloadVisits==+1 FI\n  high=state.data(sectorBytes-3)',1)
@@ -116,8 +142,7 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
     out.mkdir(parents=True,exist_ok=True)
     require(not binary or not any(warmed),
             'Binary comparisons currently use cold source cases (--cold-create-only)')
-    if from_build is None:
-        instrument(out,frozen)
+    instrument(out,frozen)
     source_audit=Audit(source.read_bytes());source_audit.sdfs()
     selected='BINARY.BIN' if binary else 'LONG.TXT'
     content=source_audit.files[selected]
@@ -126,7 +151,16 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
     program=read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'),out/'write_performance.act',out,
                 optimize=True,tasks=True,task_capacity=8,console_deferred=True,
                 dos_mounts=mounts,system_mount='D1',
-                image_data=[(0xeffd0,bytes([0xa5])*(16384+64))])
+                image_data=[(0xeffd0,bytes([0xa5])*(16384+64)),(0x320000,bytes(8192))])
+    if from_build:
+        require(program['build']['source_sha256']==sha256(out/'write_performance.act'),
+                'Changed benchmark source')
+        for group in ('platform_inputs','task_inputs','console_inputs','banked_inputs'):
+            for name,digest in program['build'].get(group,{}).items():
+                require(sha256(ROOT/name)==digest,'Changed benchmark input: '+name)
+        for path in out.glob('*.act'):
+            require((from_build/path.name).exists() and sha256(path)==sha256(from_build/path.name),
+                    'Changed benchmark observer/override: '+path.name)
     rows=[]
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
         configuration={**PIN['configuration'],'diskemu':'generic56k','accuratedisk':not fast}
@@ -153,6 +187,8 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
                             bridge.memload(boot['address']+boot['abi']['fields']['cache_blocks'],
                                            cache_blocks.to_bytes(2,'little'))
                         bridge.memload(program['build']['task_storage']['BASE']+0x900,encode(mounts))
+                        at=next(d['address'] for d in program['image']['data'] if '_WRITEPERFPROBE_TRACE_' in d['name'])
+                        bridge.memload(at,(0x320000).to_bytes(3,'little'))
                         for name,value in [('variant',variant),('warm',int(warm))]:
                             at=next(d['address'] for d in program['image']['data'] if '_WRITEPERFORMANCE_'+name.upper()+'_' in d['name'])
                             bridge.poke(at,value)
@@ -180,17 +216,33 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
                     for name in ('maxGroupRequests','maxGroupFrames'):
                         if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
                             counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
+                    verified=int.from_bytes(bytes(data(b,view,'verifiedWrites')),'little')
+                    require(verified==counts['writes'],'Submitted Write did not complete successfully')
+                    trace_count=int.from_bytes(bytes(data(b,view,'traceCount')),'little')
+                    require(trace_count<2048,'Physical request trace overflow')
+                    trace=b.memdump(0x320000,trace_count*4)
                     frames=(counts['endFrame']-counts['startFrame'])&65535
                     require(frames>0 or load_failure,'Missing measured interval')
                     time.sleep(3);b.regs();b._cmd_ok('EJECT drive=7')
                     audit=Audit(media.read_bytes());allocation=getattr(audit,filesystem)()
                     require(audit.files=={**extras,'KEEP.BIN':bytes(range(256)),'COPY.BIN':content},'Persisted benchmark bytes differ')
+                    breakdown={}
+                    for at in range(0,len(trace),4):
+                        unit,command=trace[at:at+2]
+                        sector=int.from_bytes(trace[at+2:at+4],'little')
+                        owner=source_audit if unit==49 else audit
+                        require(unit in (49,56),'Unexpected benchmark unit')
+                        phase=physical_phase(owner,sector,'sdfs' if unit==49 else filesystem)
+                        role='source' if unit==49 else 'target'
+                        key=role+'-'+('read' if command==0x52 else 'write')
+                        breakdown.setdefault(key,{})[phase]=breakdown.setdefault(key,{}).get(phase,0)+1
                     if load_failure:require(sha256(media)==before_hash,'Failed COPY load changed destination')
                     rows.append(dict(case=label,buffer_bytes=512 if variant==0 else 16384,warm_source=warm,overwrite=existing,
                                      guest_pal_frames=frames,guest_seconds=frames/50,
                                      effective_bytes_per_second=len(content)*50/frames if frames else None,
                                      load_failure=load_failure,
                                      host_seconds_including_boot=host_seconds,counts=counts,runtime=runtime,
+                                     verified_writes=verified,physical_breakdown=breakdown,
                                      source_sha256=sha256(source),target_before_sha256=before_hash,target_after_sha256=sha256(media),allocation=allocation))
                     (out/'progress.json').write_text(json.dumps(rows,indent=2)+'\n')
                     print(label,frames,'frames',counts['reads'],'reads',counts['writes'],'writes',flush=True)
@@ -213,6 +265,7 @@ if __name__=='__main__':
     p.add_argument('--filesystem',choices=('mydos','sdfs'),default='sdfs')
     p.add_argument('--size',type=int,choices=(128,256),default=128)
     p.add_argument('--cold-create-only',action='store_true')
+    p.add_argument('--create-only',action='store_true',help='Cold/warm source runs on fresh target media')
     p.add_argument('--binary',action='store_true')
     p.add_argument('--fast-media',action='store_true')
     p.add_argument('--load-failure',action='store_true')
@@ -229,7 +282,7 @@ if __name__=='__main__':
             require(args.source_image is not None,'Need --source-image or --prepare-source')
             result=run(out,args.source_image.resolve(),args.filesystem,args.size,args.frozen_sources,
                        args.from_build,warmed=(False,) if args.cold_create_only else (False,True),
-                       overwrite=(True,) if args.load_failure else (False,) if args.cold_create_only else (False,True),
+                       overwrite=(True,) if args.load_failure else (False,) if (args.cold_create_only or args.create_only) else (False,True),
                        binary=args.binary,fast=args.fast_media,load_failure=args.load_failure,
                        variants=(0,1) if args.buffer is None else (0 if args.buffer==512 else 1,),
                        cache_blocks=args.cache_blocks,split_row=args.split_row)

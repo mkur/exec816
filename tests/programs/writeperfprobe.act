@@ -11,6 +11,9 @@ PUBLIC CARD groupRequests,maxGroupRequests,groupStart,maxGroupFrames
 PUBLIC LONGCARD reads,writes,readBytes,writeBytes,logicalReads,payloadVisits
 PUBLIC LONGCARD cacheHits,cacheMisses,cacheEvictions
 PUBLIC BYTE POINTER target
+PUBLIC BYTE POINTER trace
+PUBLIC CARD traceCount
+PUBLIC LONGCARD verifiedWrites
 VOLATILE CARD clock=E816_VBI_COUNT
 
 PUBLIC PROC Begin()
@@ -32,6 +35,17 @@ RETURN
 PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
 
   IF active<>0 THEN
+    BEGIN
+      LET offset=SIZE(traceCount)*4
+      IF traceCount<2048 THEN
+        trace(offset)=request.io_Unit^
+        trace(offset+1)=request.sio_Command
+        trace(offset+2)=request.sio_Aux1
+        trace(offset+3)=request.sio_Aux2
+        traceCount==+1
+      FI
+    END
+
     IF request.sio_Command=$52 THEN
       reads==+1
       readBytes==+request.io_Length
@@ -49,6 +63,14 @@ PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
     IF protected<>0 THEN
       groupRequests==+1
     FI
+  FI
+
+RETURN
+
+PUBLIC PROC Verified()
+
+  IF active<>0 THEN
+    verifiedWrites==+1
   FI
 
 RETURN

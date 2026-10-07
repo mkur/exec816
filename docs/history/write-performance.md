@@ -5,6 +5,10 @@
 > [mutation ordering](../plans/filesystem-write-protocol.md) and
 > [execution record](../development/write-performance.json).
 
+The later [SpartaDOS buffering record](spartados-write-buffering.md) supersedes
+the SDFS per-group publication path measured here; these WP measurements remain
+tied to their original revision.
+
 COPY owns a 16,384-byte upper-heap BSS buffer. TEE keeps 512 bytes; their shared
 transfer routine accepts a pointer and capacity. Command loading allocates and
 clears ordinary BSS before Main opens the destination. Unloading frees it.

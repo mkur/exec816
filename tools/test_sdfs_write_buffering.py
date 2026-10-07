@@ -18,9 +18,19 @@ from test_dos_stack import execute, ownership
 from test_sio_device import PIN
 
 
-def instrument(out):
+def instrument(out, hint=0):
     for name in ('sdfsbatchprobe.act', 'sdfs_write_buffering.act'):
         (out/name).write_text(read_source(ROOT/'tests/programs'/name))
+    if hint:
+        path = out/'sdfs_write_buffering.act'
+        source = path.read_text().replace('USE FSBOOT\n', 'USE FSBOOT\nUSE FSTYPES\nUSE DOSCORE\n', 1)
+        marker = '  phase=2\n'
+        require(source.count(marker) == 1, 'Stale allocation-hint observer')
+        source = source.replace(marker, f'''  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  service.mounts(0).item.volume.allocationHint={hint}
+{marker}''', 1)
+        path.write_text(source)
     source = read_source(library_file('fswriteio.act'))
     source = source.replace('USE EXEC\n', 'USE EXEC\nUSE SDFSBATCHPROBE\n', 1)
     marker = '\nRETURN(1)\n\nPUBLIC PROC Zero('
@@ -30,13 +40,15 @@ def instrument(out):
 
 
 def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
-        ordered=False, from_build=None):
+        ordered=False, from_build=None, fixture=None, hint=0):
     require(1 <= amount <= 32768, 'Amount must be 1..32768')
-    instrument(out)
+    require(0 <= hint <= 65535, 'Invalid allocation hint')
+    instrument(out, hint)
     media = out/'volume.atr'
-    shutil.copyfile(ROOT/f'tests/fixtures/filesystem-write/sdfs-{size}.atr', media)
+    shutil.copyfile(fixture or ROOT/f'tests/fixtures/filesystem-write/sdfs-{size}.atr', media)
     before = Audit(media.read_bytes())
     before.sdfs()
+    require(before.image.size == size, 'Fixture sector size mismatch')
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
                    sector_bytes=size, format=2, access='readwrite', profile=4)]
     program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), out/'sdfs_write_buffering.act',
@@ -150,6 +162,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
                 allocation=allocation, media_sha256=sha256(media),
                 cache_blocks_override=cache_blocks,
                 observer_sha256=sha256(out/'fswriteio.act'),
+                fixture=str(fixture) if fixture else None, allocation_hint=hint,
                 bank_zero_delta=dict(fixed=0, per_task=0))
 
 
@@ -162,6 +175,8 @@ if __name__ == '__main__':
     p.add_argument('--cache-blocks', type=int)
     p.add_argument('--ordered', action='store_true')
     p.add_argument('--from-build', type=Path)
+    p.add_argument('--fixture', type=Path, help='Independent audited input media')
+    p.add_argument('--hint', type=int, default=0, help='Test-only allocation search start after Open')
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     out = args.output.resolve()
@@ -170,7 +185,7 @@ if __name__ == '__main__':
     try:
         result = run(out, args.case, args.size, args.amount,
                      args.expected_writes, args.cache_blocks, args.ordered,
-                     args.from_build)
+                     args.from_build, args.fixture, args.hint)
         print('SDFS Write:', result['verified_writes'], result['counts'], flush=True)
     except Exception as error:
         result.update(status='fail', error=str(error))

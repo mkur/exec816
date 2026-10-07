@@ -6,7 +6,8 @@
     "SB0",
     "SB1",
     "SB2",
-    "SB3"
+    "SB3",
+    "SB4"
   ],
   "baseline_runtime_revision": "5fd47b6c54b476bec804c78c798c8b9ded67c4b6",
   "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
@@ -187,9 +188,9 @@
   },
   "host_checks": {
     "status": "pass",
-    "tests": 393
+    "tests": 396
   },
-  "scope": "SB0\u2013SB3 complete. Request-scoped publication, lifetime/error retirement and actual RESET cuts development-tested. COPY measurements and delivery SB4\u2013SB5 pending.",
+  "scope": "SB0\u2013SB4 complete. Buffered Write, failure/lifetime/RESET behavior and matched COPY/BREAK measurements pass development checks; SB5 delivery pending. No hosted qualification or real-drive performance claim.",
   "sb1": {
     "status": "pass",
     "artifacts": [
@@ -564,5 +565,615 @@
     },
     "scope": "Optimized emitted lifetime/fault/reuse cases, independent allocation and byte audits, Exec read-back of persisted boundary media. Cold RESET is intercepted before cleanup; no sector tearing or resident repair qualification.",
     "fixture_corrections": "The new combined-error scenario uses explicit dispatch ranges. Offline Open is checked after ending its canceled foreground scope; the failed Write and terminal Close retain I/O error6."
+  },
+  "sb4": {
+    "status": "pass",
+    "artifacts": [
+      {
+        "case": "current256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/current256/results.json",
+        "sha256": "ff62ab225d7ba37b7be5f497b520dc6e54022dc6b080c53e01e9fa5c71fbeea9",
+        "xex_sha256": "c73725b89338028bf5a4e69f40d79e5ca193f42a8d6be357ab4bc577b180b8f7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "frozen-matched256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/frozen-matched256/results.json",
+        "sha256": "cb7d27befd69d67468da79b9c231344901e0ccfad9d121862a46436859a27d16",
+        "xex_sha256": "5ab8b05540ef9f96980619085b9a5e3adfa8b176e4dbd6da71b4bae350a6408b",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "current128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/current128/results.json",
+        "sha256": "4358a2b246fa062c6cc09d9fa4dbd8676ba9911066c242d1d1dff10eebc211e9",
+        "xex_sha256": "c73725b89338028bf5a4e69f40d79e5ca193f42a8d6be357ab4bc577b180b8f7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "frozen128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/frozen128/results.json",
+        "sha256": "2f1c3a0bbe5c4b3e4ca85c292391a36f21a97c244dbe23c89465b9d8b9d2bffd",
+        "xex_sha256": "5ab8b05540ef9f96980619085b9a5e3adfa8b176e4dbd6da71b4bae350a6408b",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "current-split128",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/current-split128/results.json",
+        "sha256": "491c4679f247151a6343036b83e873f2af153696ec7cf3f8935d6fc5c5cc7fde",
+        "xex_sha256": "c73725b89338028bf5a4e69f40d79e5ca193f42a8d6be357ab4bc577b180b8f7",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "bitmap-boundary256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/bitmap-boundary256/results.json",
+        "sha256": "bd910b99e5fe6493338ead3375238abc185dbfe3c33e70e5c0c80524b9aff4c9",
+        "xex_sha256": "73886be76d63f2eec8f35ad4ae7ccf830554442d0192ff7252387d6e70cafa40",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "break-payload256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/break-payload256/results.json",
+        "sha256": "8f1c9afdafd8193bf5e6f9ac9c3577dcecb5cdebf7032388264035fa6ecf25cf",
+        "xex_sha256": "a40c7ca9279779f6e1f297a3a29cb85512e19651b82b8a83b77c0c4209ea4c58",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "break-between256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/break-between256/results.json",
+        "sha256": "f2526169786fce836d992e46fb3df821d263a5a2e16909bf65a7f053dfe2ef23",
+        "xex_sha256": "a40c7ca9279779f6e1f297a3a29cb85512e19651b82b8a83b77c0c4209ea4c58",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      },
+      {
+        "case": "break-drain256",
+        "status": "pass",
+        "path": "build/development/spartados-write-buffering/sb4/break-drain256/results.json",
+        "sha256": "954fa64f8b7ec59b50ebd45449f4af066fb700685a48e99022f6fb98923daaca",
+        "xex_sha256": "a40c7ca9279779f6e1f297a3a29cb85512e19651b82b8a83b77c0c4209ea4c58",
+        "compiler_binary_sha256": "3db294c2ce4dedf037510ed06bbd186a4e86c5131155f89c03e0fce85bdcde55"
+      }
+    ],
+    "copy_rows": [
+      {
+        "variant": "current256",
+        "case": "16384-cold-create",
+        "guest_pal_frames": 3112,
+        "guest_seconds": 62.24,
+        "effective_bytes_per_second": 383.54755784061695,
+        "counts": {
+          "startFrame": 287,
+          "endFrame": 3399,
+          "maxGroupWrites": 8,
+          "reads": 101,
+          "writes": 108,
+          "readBytes": 25728,
+          "writeBytes": 27264,
+          "logicalReads": 50,
+          "payloadVisits": 0,
+          "cacheHits": 48,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 150
+        },
+        "verified_writes": 108,
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 3,
+            "header": 3,
+            "map": 3,
+            "directory": 5,
+            "payload": 94
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "0f9d5b301cc3bf8c9b386abd0d9255bb267f375a23150e809454114bd8936e97",
+        "target_after_sha256": "af202237180017ec6b2c01909fd54c1b0a89134bb66c816df8faab3d1f17fafb"
+      },
+      {
+        "variant": "current256",
+        "case": "16384-warm-create",
+        "guest_pal_frames": 2187,
+        "guest_seconds": 43.74,
+        "effective_bytes_per_second": 545.7704618198445,
+        "counts": {
+          "startFrame": 1139,
+          "endFrame": 3326,
+          "maxGroupWrites": 8,
+          "reads": 4,
+          "writes": 108,
+          "readBytes": 896,
+          "writeBytes": 27264,
+          "logicalReads": 50,
+          "payloadVisits": 0,
+          "cacheHits": 145,
+          "cacheMisses": 4,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 150
+        },
+        "verified_writes": 108,
+        "physical_breakdown": {
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 3,
+            "header": 3,
+            "map": 3,
+            "directory": 5,
+            "payload": 94
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "0f9d5b301cc3bf8c9b386abd0d9255bb267f375a23150e809454114bd8936e97",
+        "target_after_sha256": "af202237180017ec6b2c01909fd54c1b0a89134bb66c816df8faab3d1f17fafb"
+      },
+      {
+        "variant": "frozen-matched256",
+        "case": "16384-cold-create",
+        "guest_pal_frames": 5052,
+        "guest_seconds": 101.04,
+        "effective_bytes_per_second": 236.2628661916073,
+        "counts": {
+          "startFrame": 289,
+          "endFrame": 5341,
+          "maxGroupWrites": 8,
+          "reads": 101,
+          "writes": 196,
+          "readBytes": 25728,
+          "writeBytes": 46976,
+          "logicalReads": 368,
+          "payloadVisits": 0,
+          "cacheHits": 342,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 189
+        },
+        "verified_writes": 196,
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 25,
+            "header": 25,
+            "map": 25,
+            "directory": 27,
+            "payload": 94
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "0f9d5b301cc3bf8c9b386abd0d9255bb267f375a23150e809454114bd8936e97",
+        "target_after_sha256": "af202237180017ec6b2c01909fd54c1b0a89134bb66c816df8faab3d1f17fafb"
+      },
+      {
+        "variant": "frozen-matched256",
+        "case": "16384-warm-create",
+        "guest_pal_frames": 4126,
+        "guest_seconds": 82.52,
+        "effective_bytes_per_second": 289.2874454677654,
+        "counts": {
+          "startFrame": 1141,
+          "endFrame": 5267,
+          "maxGroupWrites": 8,
+          "reads": 4,
+          "writes": 196,
+          "readBytes": 896,
+          "writeBytes": 46976,
+          "logicalReads": 368,
+          "payloadVisits": 0,
+          "cacheHits": 439,
+          "cacheMisses": 4,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 167
+        },
+        "verified_writes": 196,
+        "physical_breakdown": {
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 25,
+            "header": 25,
+            "map": 25,
+            "directory": 27,
+            "payload": 94
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "0f9d5b301cc3bf8c9b386abd0d9255bb267f375a23150e809454114bd8936e97",
+        "target_after_sha256": "af202237180017ec6b2c01909fd54c1b0a89134bb66c816df8faab3d1f17fafb"
+      },
+      {
+        "variant": "current128",
+        "case": "16384-cold-create",
+        "guest_pal_frames": 4885,
+        "guest_seconds": 97.7,
+        "effective_bytes_per_second": 244.3398157625384,
+        "counts": {
+          "startFrame": 287,
+          "endFrame": 5172,
+          "maxGroupWrites": 9,
+          "reads": 101,
+          "writes": 233,
+          "readBytes": 25344,
+          "writeBytes": 29824,
+          "logicalReads": 113,
+          "payloadVisits": 0,
+          "cacheHits": 108,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 9,
+          "maxGroupFrames": 178
+        },
+        "verified_writes": 233,
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 11,
+            "header": 11,
+            "map": 14,
+            "directory": 10,
+            "payload": 187
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "074bd348255d7df01b9916d9a4b6b6199ba7541d356cb6fb81c4f2e55b51b09b",
+        "target_after_sha256": "21042ebabadec688af47629e4520c0db8b952be4b877fbec9123e0fc28810160"
+      },
+      {
+        "variant": "current128",
+        "case": "16384-warm-create",
+        "guest_pal_frames": 4015,
+        "guest_seconds": 80.3,
+        "effective_bytes_per_second": 297.2851805728518,
+        "counts": {
+          "startFrame": 1139,
+          "endFrame": 5154,
+          "maxGroupWrites": 9,
+          "reads": 4,
+          "writes": 233,
+          "readBytes": 512,
+          "writeBytes": 29824,
+          "logicalReads": 113,
+          "payloadVisits": 0,
+          "cacheHits": 205,
+          "cacheMisses": 4,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 9,
+          "maxGroupFrames": 178
+        },
+        "verified_writes": 233,
+        "physical_breakdown": {
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 11,
+            "header": 11,
+            "map": 14,
+            "directory": 10,
+            "payload": 187
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "074bd348255d7df01b9916d9a4b6b6199ba7541d356cb6fb81c4f2e55b51b09b",
+        "target_after_sha256": "21042ebabadec688af47629e4520c0db8b952be4b877fbec9123e0fc28810160"
+      },
+      {
+        "variant": "frozen128",
+        "case": "16384-cold-create",
+        "guest_pal_frames": 8376,
+        "guest_seconds": 167.52,
+        "effective_bytes_per_second": 142.50238777459407,
+        "counts": {
+          "startFrame": 289,
+          "endFrame": 8665,
+          "maxGroupWrites": 9,
+          "reads": 101,
+          "writes": 409,
+          "readBytes": 25344,
+          "writeBytes": 52352,
+          "logicalReads": 752,
+          "payloadVisits": 0,
+          "cacheHits": 699,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 9,
+          "maxGroupFrames": 177
+        },
+        "verified_writes": 409,
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 55,
+            "header": 55,
+            "map": 58,
+            "directory": 54,
+            "payload": 187
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "074bd348255d7df01b9916d9a4b6b6199ba7541d356cb6fb81c4f2e55b51b09b",
+        "target_after_sha256": "21042ebabadec688af47629e4520c0db8b952be4b877fbec9123e0fc28810160"
+      },
+      {
+        "variant": "frozen128",
+        "case": "16384-warm-create",
+        "guest_pal_frames": 7485,
+        "guest_seconds": 149.7,
+        "effective_bytes_per_second": 159.46559786239146,
+        "counts": {
+          "startFrame": 1141,
+          "endFrame": 8626,
+          "maxGroupWrites": 9,
+          "reads": 4,
+          "writes": 409,
+          "readBytes": 512,
+          "writeBytes": 52352,
+          "logicalReads": 752,
+          "payloadVisits": 0,
+          "cacheHits": 796,
+          "cacheMisses": 4,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 9,
+          "maxGroupFrames": 178
+        },
+        "verified_writes": 409,
+        "physical_breakdown": {
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 55,
+            "header": 55,
+            "map": 58,
+            "directory": 54,
+            "payload": 187
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "074bd348255d7df01b9916d9a4b6b6199ba7541d356cb6fb81c4f2e55b51b09b",
+        "target_after_sha256": "21042ebabadec688af47629e4520c0db8b952be4b877fbec9123e0fc28810160"
+      },
+      {
+        "variant": "current-split128",
+        "case": "16384-cold-create",
+        "guest_pal_frames": 5214,
+        "guest_seconds": 104.28,
+        "effective_bytes_per_second": 228.92213271960108,
+        "counts": {
+          "startFrame": 287,
+          "endFrame": 5501,
+          "maxGroupWrites": 10,
+          "reads": 101,
+          "writes": 246,
+          "readBytes": 25344,
+          "writeBytes": 31488,
+          "logicalReads": 180,
+          "payloadVisits": 0,
+          "cacheHits": 175,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 10,
+          "maxGroupFrames": 199
+        },
+        "verified_writes": 246,
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 12,
+            "header": 12,
+            "map": 14,
+            "directory": 21,
+            "payload": 187
+          }
+        },
+        "source_sha256": "8ed56fff81d760564e75672496a78a522174945039ef027e2bbe7c6cd2c3cf9f",
+        "target_before_sha256": "868407e9ea7172b4cc04d3c4e0fe5be691f8ab72c0b21f3723bba845e6e6c68a",
+        "target_after_sha256": "b22a827859a60f2e22bf6f5f0d160bffc11a413638d54c75e6fd3adfa3cc7897"
+      }
+    ],
+    "break_measurements": [
+      {
+        "variant": "break-payload256",
+        "mode": "wire",
+        "ordinal": 1,
+        "frames": 156,
+        "seconds": 3.12,
+        "accepted_bytes": 1024
+      },
+      {
+        "variant": "break-between256",
+        "mode": "before",
+        "ordinal": 5,
+        "frames": 82,
+        "seconds": 1.64,
+        "accepted_bytes": 1024
+      },
+      {
+        "variant": "break-drain256",
+        "mode": "wire",
+        "ordinal": 9,
+        "frames": 77,
+        "seconds": 1.54,
+        "accepted_bytes": 2000
+      }
+    ],
+    "bitmap_boundary": {
+      "verified_writes": 72,
+      "counts": {
+        "payload": 64,
+        "bitmap": 2,
+        "header": 2,
+        "map": 2,
+        "directory": 2
+      },
+      "hint": 2028,
+      "scope": "Fast-media functional trace; not an accurately timed COPY measurement"
+    },
+    "resident_executable_bytes": {
+      "current256": 744418,
+      "frozen-matched256": 736301
+    },
+    "production_resident_code_delta": 8117,
+    "workspace": {
+      "baseline_requested": 878,
+      "baseline_rounded": 880,
+      "current_requested": 1190,
+      "current_rounded": 1192,
+      "rounded_delta": 312,
+      "ceiling_delta": 384
+    },
+    "worker_stack": {
+      "baseline_touched": 582,
+      "current_touched": 586,
+      "reserved": 1024,
+      "untouched_above_interrupt_floor": 182
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21872,
+      "runtime_including_os": 56128,
+      "loading_including_os": 52592
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "per_public_task": 0,
+      "idle": 0,
+      "boot": 0
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$91213499097d0042",
+      "actual_kernel_id": "$91213499097d0042",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "host_checks": {
+      "status": "pass",
+      "tests": 396,
+      "log": "build/development/spartados-write-buffering/sb4/host.log",
+      "sha256": "8ada92b05b0f1560a0a2d9d650627ecd5bd8509e67a0c107eaf52777bf025f4b"
+    },
+    "trace_reservation": {
+      "bytes": 8192,
+      "address": 3276800,
+      "scope": "Benchmark only; excluded from production costs"
+    },
+    "scope": "Matched 16 KiB COPY cold/warm on 128/256-byte targets; split directory timing, ordered bitmap-boundary trace and physical BREAK to Write reply. Guards, context restoration, byte identity and independent allocation checks pass. Transport policy unchanged."
   }
 }
