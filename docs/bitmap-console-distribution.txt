@@ -10,7 +10,8 @@ Setup
 -----
 
 Follow the main README.txt for AltirraSDL, the included AltirraOS ROM, PAL,
-65C816 at 8x, shadow ROM, and 64K base RAM plus 4032K high memory (63 banks).
+65C816 at 8x, shadow ROM, and the required 4MB RAM: 64K base RAM plus 4032K
+high memory (63 banks).
 In System > Configure System, enable VBXE with the FX 1.26 core at $D600.
 Keep SIO Patch and D: burst I/O disabled; use Generic + 57600 baud disk
 emulation and keep disks mounted when booting a new image.

@@ -19,8 +19,10 @@ instructions. Building from source is an [optional alternative](#build-from-sour
 
 Use [AltirraSDL](https://github.com/ilmenit/AltirraSDL); upstream Altirra will not
 run this build. Follow the [settings table and ROM import steps](../../README.md#installation)
-in the main README. Open **System → Configure System…** to configure the machine;
-the UI labels the 8× CPU setting **65C816 (14.28MHz)** and 63 high banks **4032K**.
+in the main README. Open **System → Configure System…** to configure the machine.
+Current builds require **4 MB of RAM**: **64 KiB base RAM plus 63 high banks
+(4,032 KiB)**. The UI labels the 8× CPU setting **65C816 (14.28MHz)**;
+set **Memory Size** to **64K** and **High memory banks** to **4032K**.
 The tested configuration is recorded in the [platform pin](../../toolchain/altirra-shell-paced.json).
 
 In **System → Configure System… → Computer → Boot**, uncheck **Unload disks

@@ -16,7 +16,8 @@ python3 tools/build_demo.py --output build/demo-bitmap --bitmap-shell-only
 
 Distribute `build/demo-bitmap/exec816-demo.zip`. Extract it, follow the main
 README for the included AltirraOS ROM, PAL, 65C816 ×8 with shadow ROM, and
-**64 KiB base RAM plus 63 high banks (4,032 KiB)**. Enable VBXE FX 1.26 at
+the required **4 MB of RAM: 64 KiB base RAM plus 63 high banks (4,032 KiB)**.
+Enable VBXE FX 1.26 at
 `$D600`; the [graphics setup](gem-vdi.md) describes the same hardware profile.
 Use physical SIO with Generic + 57600 baud disk emulation and disable SIO Patch
 and D: burst I/O.

@@ -66,9 +66,9 @@ See the [installation guide](../../README.md#installation).
 Configure [AltirraSDL](https://github.com/ilmenit/AltirraSDL) using the
 [installation guide's settings table and ROM import steps](../../README.md#installation).
 The [pinned machine configuration](../../toolchain/altirra-shell-paced.json) uses
-800XL, AltirraOS 65816, PAL, 8× CPU, shadow ROM, 64 KB base RAM plus 15 native high
-banks, BASIC disabled, VBI enabled and DLI disabled. Upstream Altirra will not
-run this build.
+800XL, AltirraOS 65816, PAL, 8× CPU, shadow ROM, **4 MB of RAM (64 KiB base RAM
+plus 4,032 KiB of native high memory, or 63 banks)**, BASIC disabled, VBI enabled
+and DLI disabled. Upstream Altirra will not run this build.
 
 In **System → Configure System… → Computer → Boot**, uncheck **Unload disks
 when booting new image**. Open **File → Disk Drives…**, use the **…** button on

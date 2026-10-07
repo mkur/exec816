@@ -20,7 +20,8 @@ separately selected graphics XEX, its matching SDFS disk and notices. Maps,
 manifests, extracted source and test evidence remain outside the ZIP.
 
 For graphics, cold-boot with the supplied AltirraOS ROM. Select Atari 800XL,
-64 KiB base RAM plus fifteen CPU high banks, 65C816 at 8×, shadow ROM and PAL.
+**4 MB of RAM (64 KiB base RAM plus 4,032 KiB of CPU high memory, or 63 banks)**,
+65C816 at 8×, shadow ROM and PAL.
 Enable full VBXE FX 1.26 at `$D600`, private 512 KiB VRAM, no shared RAM and no
 VBXE IRQ. Mount **`gem-vdi/graphics.atr`** as drive 1 and load
 **`gem-vdi/Exec-gem-vdi.xex`** directly. Use physical `generic56k` SIO with patch,

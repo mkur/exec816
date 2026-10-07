@@ -25,6 +25,8 @@ Computer > CPU
 Computer > Memory
   Memory Size: 64K
   High memory banks: 4032K (63 banks above the base RAM).
+  Both settings are required, giving 4MB total RAM.
+  CPU high memory is separate from Atari extended memory and VBXE VRAM.
   Select the 65C816 CPU first to enable this control.
 
 Computer > Firmware
