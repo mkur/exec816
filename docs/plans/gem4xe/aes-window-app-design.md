@@ -3,8 +3,10 @@
 [GEM integration](README.md) · [Implementation plan](aes-window-app-implementation-plan.md) ·
 [Hybrid model](hybrid-aes-vdi-design.md) · [Current AES contract](../../reference/aes.md)
 
-Status: proposed, 2026-10-07. This note defines the next desktop milestone;
-it does not extend the implemented AES or DISPLAY contracts yet.
+Status: implemented through WA6, 2026-10-07. The
+[execution record](../../history/aes-windows.md) tracks the slices; current
+contracts describe the implemented interface. The foundation below records
+the starting point for this design.
 
 Build a small resident C counter application using ordinary GEM calls. It opens
 a titled window, updates its contents on `MU_TIMER`, handles `WM_REDRAW`, and
@@ -18,7 +20,7 @@ The application body should need only the supported GEM interface. Exec-specific
 startup, endpoint attachment and Task retirement belong in its resident wrapper.
 This is source compatibility for rebuilt applications, not GEM binary loading.
 
-## Existing foundation and missing work
+## Starting foundation and missing work
 
 The current [AES layer](../../reference/aes.md) supplies registration, copied
 application messages, message/timer waits and recursive update/mouse locks.

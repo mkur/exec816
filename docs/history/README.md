@@ -19,8 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
-- [AES window applications](aes-windows.md): durable GUI message transport and
-  the staged window, workstation and direct-drawing implementation.
+- [AES window applications](aes-windows.md): WA1–WA6 complete at the development
+  tier; durable GUI messages, windows, private VDI, two resident counters and an
+  extracted OF816 demo. Includes coexistence timing and console repair fixes.
 - [Mouse acceleration](mouse-acceleration.md): timed relative capture, interval
   and coalescing checks, queue capacity, desktop profiles and upper-memory
   accounting. MA1–MA4 are implemented; mild is the default, with loaded evidence

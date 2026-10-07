@@ -76,7 +76,7 @@ def counter_image(out, instrument=False):
         text=text.replace('    if (!wind_update(END_UPDATE)) okay=0;',
             '    CounterPaintDone();\n    if (!wind_update(END_UPDATE)) okay=0;\n    CounterUpdateEnd();')
         body=out/'counter.c';body.write_text(text)
-        sources.append(ROOT/'tests/programs/gem_counter_probe.c')
+        sources.extend([ROOT/'tests/programs/gem_counter_probe.c',ROOT/'tests/programs/gem_counter_notifications.c'])
         events=ROOT/'c/calypsi/aes-events.c'
         text=events.read_text().replace('#include "aes-private.h"',
             '#include "'+str(ROOT/'c/calypsi/aes-private.h')+'"\nextern void CounterEventWait(struct ExecAESContext *);')
@@ -126,6 +126,7 @@ def build_counters(out,source=None,program_output=None,**options):
     from library_paths import read_source
     out.mkdir(parents=True,exist_ok=True)
     instrument=source is None
+    options.pop('desktop',None)
     foreign=counter_image(out,instrument)
     original=source or ROOT/'tests/programs/gem_counter_session.act'
     source=out/'counters.act';source.write_text(counter_bindings(read_source(original),foreign))

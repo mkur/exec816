@@ -7,7 +7,7 @@ from test_gem_cursor import overlay
 from native_program import require
 
 
-def compose(bridge, program, font, terminal, pointer=(320, 120)):
+def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
     def symbol(module, name):
         return next(d['address'] for d in program['image']['data']
                     if '_'+module+'_'+name.upper()+'_' in d['name'])
@@ -63,6 +63,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120)):
             retained(bridge, result, context,
                      (left+8, top+16, right-8, bottom-8),
                      number(window, wf['id'], 4) == focused)
+        elif kind == 4:
+            require(external is not None, "External application needs an independent painter")
+            external(result, title, bounds)
         else:
             for index in range(number(content, cf['count'])):
                 start = cf['commands']+index*types['Command']['size']

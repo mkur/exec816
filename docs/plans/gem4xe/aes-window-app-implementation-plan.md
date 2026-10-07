@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: implementation in progress, 2026-10-07. WA1–WA5 pass development checks;
-WA6 remains pending. See the [execution record](../../history/aes-windows.md).
+Status: implemented, 2026-10-07. WA1–WA6 pass development checks;
+PI4/HY4 remain open. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -245,6 +245,11 @@ Exit: the example is an ordinary GEM event-loop application rather than a native
 retained command client. Suggested commit: `examples: add a GEM counter window`.
 
 ## WA6 — Prove coexistence and package the demo
+
+Implemented. [Evidence](../../development/aes-windows-wa6.json) covers the
+matched native/counter workload, delayed-client progress, both console repairs,
+exact pixels, cleanup, capacity and the extracted OF816 bundle. Bank-zero growth
+is zero. Timing and broader compatibility limits remain explicit.
 
 1. Produce an explicit Task/stack/layer admission table for each integration
    scenario. Two counters, native shell and disk/pipeline activity must fit the

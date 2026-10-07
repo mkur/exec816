@@ -41,7 +41,33 @@ The proof adds development-only pause and timing hooks outside rendering
 ownership. It compares full framebuffers after timers, physical top/drag/close,
 full cover/exposure, simultaneous readiness and repeated restart. Closing the
 focused window clears keyboard focus under the current desktop policy; click
-another window to focus it. The packaged shell/counter selection follows in WA6.
+another window to focus it.
+
+## Optional OF816 counter desktop
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --aes-counters \
+  --output build/aes-counter-demo
+```
+
+Distribute only `build/aes-counter-demo/exec816-demo.zip`. Extract it and follow
+its short guide: boot `Exec-of816.xex`, mount the matching `system.atr` in D1
+and a disposable `work.atr` in D8, and use the bundled pinned ROM with VBXE.
+The five-second countdown enters a native shell and two counters. This explicit
+selection replaces the native panel; the default build still starts shell/prime.
+The selected pointer acceleration profile applies to both native and GEM windows.
+
+Click a title to focus/top, drag a counter to any on-screen pixel position, or
+click X to close it. Click the shell before typing `CAT STORY.TXT | WC` or
+`CAT LONG.TXT`; BREAK cancels the command. `EXIT` first closes/detaches counters,
+then stops desktop admission and releases the shell/services. Cold-boot to
+restart the resident applications. There is no application launcher yet.
+
+The counter desktop uses six of eight Task slots at its prompt; a two-command
+pipeline uses all eight. Three of four desktop layers and three of four AES
+registrations are occupied (the controller has no window). A separate native
+panel/coexistence proof uses the fourth layer and seven Tasks while reading
+disk, without pipeline children. See the [resource and timing record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo).
 
 ## Application body
 

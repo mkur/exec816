@@ -189,3 +189,8 @@ The external flag persists across handoff, exposure and moves. `BeginCopy`,
 `BeginMove` and `BeginRead` return REDRAW for these layers, even when manager
 damage is empty. Handoff is not evidence that application pixels are valid.
 Deleting and recreating a layer resets the flag.
+
+The [resident counter example](../guides/aes-applications.md#counter-example)
+uses this external-paint path. Shell plus two counters consume three layers;
+adding the native panel fills the fourth. Neither delayed redraw delivery nor
+fully covered timer updates make an external layer copy/cache eligible.

@@ -165,12 +165,13 @@ assuming work is pending. Current behavior belongs in the
   PI3 remains the accepted usability baseline while broader latency work is
   deferred for desktop functionality.
 - [AES window application design](gem4xe/aes-window-app-design.md) and
-  [implementation plan](gem4xe/aes-window-app-implementation-plan.md): proposed
+  [implementation plan](gem4xe/aes-window-app-implementation-plan.md): completed
   WA1–WA6 slices for durable GUI messages, GEM window ownership, delegated
   display access, private VDI workstations and a resident counter application.
   Concludes with two applications beside the native shell and an OF816 demo;
-  targets zero bank-zero growth. WA1–WA2 pass development checks; WA3–WA6 remain
-  pending. Menus, resources and resizing remain deferred.
+  zero bank-zero growth. All six slices pass development checks, including the
+  extracted two-counter demo and matched coexistence diagnostics. Menus,
+  resources and resizing remain deferred; PI4/HY4 remain open.
 - [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
   at the development tier; independent rectangles and underline-only focus
   repair reduce the five-press idle median from 319 to 119 ms. Release/status

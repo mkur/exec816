@@ -468,7 +468,7 @@ RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
 ; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
 PUBLIC BYTE FUNC Pump()
-  BYTE count,slot,status,done
+  BYTE count,slot,status,done,fullConsole
   DESKTYPES.Window POINTER window
 
   LET service=DESKSTATE.Get()
@@ -544,6 +544,14 @@ PUBLIC BYTE FUNC Pump()
     done=(status=LAYERTYPES.EMPTY)
   FI
 
+  fullConsole=0
+  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    ; An exposure can cover only part of a console whose model still has
+    ; dirty rows elsewhere. Only a full-window repaint acknowledges them all.
+    fullConsole=layer.damage.count=1
+        AND REGIONS.Equal(@layer.damage.rects(0),@layer.bounds)<>0
+  FI
+
   IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_AES THEN
     AESWINDOWSTATE.Handoff(window)
     status=LAYERS.FinishHandoff(@service.scene,paintToken)
@@ -556,8 +564,10 @@ PUBLIC BYTE FUNC Pump()
       LET entry=CONSOLEWINDOWS.Find(window.console)
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      CONSOLECORE.Clean(instance)
-      view.presentedGeneration=instance.generation
+      IF fullConsole<>0 THEN
+        CONSOLECORE.Clean(instance)
+        view.presentedGeneration=instance.generation
+      FI
       view.cursorOn=0
       view.index=$ffff
     END

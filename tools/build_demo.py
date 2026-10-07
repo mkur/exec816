@@ -16,7 +16,9 @@ from native_program import ROOT, build, compiler, require, sha256
 DEMO_IMAGE_DATA_BYTES = 4096
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False):
+    if aes_counters:
+        desktop=True
     if desktop:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
@@ -48,6 +50,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
         (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
+    if aes_counters:
+        (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 1; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==set(commands)|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
@@ -70,7 +74,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if bitmap_shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
     # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
@@ -82,7 +86,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        program=build_bitmap(source,output/'bitmap-console',program_output=output,
+        if aes_counters:
+            from build_aes_desktop import build_counters
+            builder=build_counters
+        else:builder=build_bitmap
+        program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
         copy_notices(output/'bitmap-console/selected',output)
@@ -108,6 +116,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=(ROOT/'docs/bitmap-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     if desktop:
         guide=(ROOT/'docs/desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if aes_counters:
+        guide=(ROOT/'docs/aes-counter-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
@@ -148,6 +159,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if desktop:
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
+    if aes_counters:
+        record.update(aes_counters=True,expected_peak_tasks=8)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/aes-counter-distribution.txt',ROOT/'tools/build_aes_desktop.py',
+            *sorted((ROOT/'examples/gem-counter').glob('*')))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -177,6 +193,7 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK remains 720 sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
@@ -191,5 +208,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

@@ -117,7 +117,18 @@ PUBLIC BYTE FUNC Runnable(CONSOLETYPES.Window POINTER entry)
     RETURN(1)
   FI
 
-  IF AESLOCKS.PaintBlocked()<>0 OR DISPLAY.Blocked()<>0 THEN
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
+
+  ; The desktop binds console unit zero. Its frozen text continuation must
+  ; retire the scene token before a queued AES update lock can be granted.
+  ; Finish existing work without admitting a new write under that lock.
+  IF CONSOLEBITMAP.TextPending()<>0 THEN
+    RETURN(entry.unit=0)
+  FI
+
+  IF AESLOCKS.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
 
@@ -152,12 +163,13 @@ PUBLIC CONSOLETYPES.Window POINTER FUNC Take()
   BYTE count,index
 
   windows=Registry()
-  ; With only the permanent default instance, no other slot can be runnable.
+  ; A retained desktop text segment owns unit zero's frozen source. Select it
+  ; before other views, including views with ready input, until it retires.
   IF windows.presenting<>0 THEN
     RETURN(NULL)
   FI
 
-  IF windows.liveCount=1 THEN
+  IF windows.liveCount=1 OR CONSOLEBITMAP.TextPending()<>0 THEN
     entry=@windows.items(0)
     entry.busy=1
     IF entry.state=CONSOLETYPES.WIN_LIVE THEN

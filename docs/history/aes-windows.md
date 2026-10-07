@@ -120,7 +120,6 @@ banks. Fixed arenas, stack/DP pools and VRAM reservations are unchanged.
 These are development checks. Private VDI, counter applications and the optional
 packaged demo remain WA4–WA6 work.
 
-
 ## WA4 — Private application VDI
 
 Implemented on 2026-10-07. Each application owns one virtual workstation with
@@ -151,7 +150,6 @@ adds 92 live bytes inside the existing C data bank. Four workstations/contexts
 therefore add 1,252 live upper bytes, including scratch, and 1,184 heap-reserved
 bytes. Fixed arenas, staging, VRAM, stack/DP pools and Task capacity are unchanged.
 WA5–WA6 follow; PI4/HY4 remain open and this is not hosted qualification.
-
 
 ## WA5 — Ordinary GEM counter
 
@@ -190,3 +188,127 @@ Their combined heap allocation is 4,973 / 5,064; service storage is separate.
 Existing fixed arenas, stack/DP pools and VRAM reservations are unchanged.
 The focused scenario uses four public Tasks, three registrations and three
 layers. Native disk/pipeline integration and the optional packaged demo remain WA6.
+
+## WA6 — Coexistence and the OF816 demo
+
+The optional `tools/build_demo.py --aes-counters` selection packages the same
+resident application body and wrapper with the production shell. It replaces
+the native panel, retains the five-second OF816 boot, matching system/work disks,
+pinned ROM, notices and checksums, and distributes only `exec816-demo.zip`.
+The default shell/prime selection is unchanged. The donor checkout is unchanged.
+
+The four-layer coexistence fixture exposed a continuation deadlock: a console
+text segment retained its scene token while a newly queued AES update lock made
+that console appear unrunnable. Both counter clients then waited indefinitely
+for the scene to become idle. `CONSOLEWINDOWS` now selects the already frozen
+unit-zero text source before other views and lets that existing segment finish
+before granting the update lock. It still blocks fresh writes. No new kernel
+operation, ownership bypass or persistent storage is involved.
+
+The same fixture also exposed stale console text after scroll plus a partial
+exposure: the scene painter marked every model row clean after painting only
+the exposed rectangle. It now acknowledges all rows only after a successful
+full-window repaint; partial exposure leaves remaining model damage pending.
+The original failing comparison differed in 2,496 pixels at x=40–238/y=120–190,
+so this was distinct from the previously recorded caret artifacts. The exact
+framebuffer oracle is unchanged.
+
+Resource admission uses existing pools:
+
+| Scenario | Public Tasks | Layers | AES registrations |
+| --- | ---: | ---: | ---: |
+| Packaged counter desktop at prompt | 6: shell, presenter, SIO, filesystem, two counters | 3 | 3, including controller |
+| Same desktop with CAT/WC pipeline | 8: above plus two Processes | 3 | 3 |
+| Panel proof before disk access | 5: root, presenter, panel, two counters | 4 | 3 |
+| Panel proof with root-driven disk reads | 7: above plus SIO/filesystem | 4 | 3 |
+| Matched native control, no counters | 3 before disk / 5 after disk | 2 | 0 |
+
+Requested stack sizes remain 1,536 bytes for the root, 2,560 for the presenter,
+and 1,024 for the SIO/filesystem/panel/counter Tasks. Loaded commands reuse the
+remaining suitable existing pools; the second pipeline Process can occupy the
+spare 2,560-byte pool. Every pool retains its existing 256-byte interrupt floor
+and guards. No extra Task, direct page or stack class is introduced.
+
+Reserved bank-zero growth against the pre-WA profile is **0 fixed + 0 per public
+Task + 0 idle bytes**, counting alignment, guards and spare capacity. The common
+stack helper also reports a historical +3,072-byte delta against the older
+bank-zero-compaction record: the two enlarged presenter-capable pools predate
+WA1 and are not a change made here. Demo global arena reservation stays 4 KiB;
+the instrumented coexistence fixture uses an explicit 8 KiB upper arena.
+Per-counter, controller, workstation and display scratch costs are recorded in
+WA4/WA5; WA6 adds no production persistent data. The [full development record](../development/aes-windows-wa6.json)
+reports linked banks and measured stacks separately.
+
+PI4/HY4 remain open. The two earlier caret artifacts (x=8–15, y=87 after panel
+close; x=48–55, y=207 after scroll/move) remain recorded in the
+[mouse history](mouse-acceleration.md). Passing new scene checkpoints does not
+close those historical cases or qualify the hosted system.
+
+The production bundle uses 3,196 bytes of native global payload (3,209 including
+internal alignment) within the existing 4,096-byte arena. Against the pre-WA
+native panel demo, populated image banks rise from 17 to 19 and emitted segment
+payload from 901,998 to 949,845 bytes. These are image measurements, separate
+from heap-reserved runtime objects. Upper banks `$0E` and `$1C` are newly
+populated; the pinned machine already supplies all 63 high banks.
+
+The final extracted ZIP walkthrough checks every archive checksum and its
+counter-specific guide, then boots for 249 PAL frames before handoff. It checks
+both counter timers, pixel-position drag, top/overlap repair, physical close,
+accelerated pointer motion, native shell commands, the eight-Task pipeline,
+BREAK during output, writable WORK media and orderly EXIT. All complete scene
+comparisons are exact. Guard checks, Task retirement, media audit and OS return
+pass. The packaged counter stack peaks are 500 and 498 bytes in the two 1 KiB
+pools (268/270 bytes above the 256-byte interrupt floor); presenter peak is
+738/2,560, filesystem 577/1,024, and root 589/1,536. These are observed peaks,
+not a guarantee for larger application bodies.
+
+An untraced four-layer replay also passes. While one counter is paused outside
+all ownership, its peer advances four timer events, the root completes 32 disk
+reads and the native panel accepts three updates. The retained reference image
+matches again after the delayed client resumes. Service shutdown follows client
+retirement and releases all checked ownership.
+
+Matched diagnostics use one instrumented image, enabling either zero or two
+counters while running the same native panel toggles/title drags and offered
+idle/scroll/disk root workload. Scene geometry and achieved throughput differ
+when the two applications are present. Each panel cohort has eight releases,
+so its p95 equals its maximum; these are development observations, not acceptance
+statistics. Release-to-label ends at the first exact completed scanout and has
+up to one-frame observation quantization. The 782 ms native idle outlier remains
+included. The counter replay reproduces these gesture timings without tracing.
+
+| Load | Native release-to-label p50 / p95 / max (ms) | With counters (ms) |
+| --- | ---: | ---: |
+| idle | 180.62 / 782.10 / 782.10 | 180.62 / 280.91 / 280.91 |
+| scroll | 160.41 / 160.66 / 160.66 | 180.62 / 260.70 / 260.70 |
+| disk | 240.71 / 260.79 / 260.79 | 240.62 / 300.97 / 300.97 |
+
+The counter-specific boundaries are separate. Notification runs from a producer
+marker just before GUI `PutMsg` to the application's message-ready hook.
+Update wait includes `BEG_UPDATE` to its return; physical wait brackets
+`DISPLAY.Enter`. Drawing CPU excludes native interrupts and other Tasks.
+Repaint runs from before `BEG_UPDATE` through `END_UPDATE` return, after all
+pixel fences, and is distinct from scanout. Timings include both timer repairs
+and redraw messages from exposure; they are not all full-window redraws.
+
+| Boundary (ms, p50 / p95 / max) | Idle | Scroll | Disk |
+| --- | ---: | ---: | ---: |
+| GUI notification | 4.74 / 11.60 / 11.60 | 4.68 / 26.16 / 26.16 | 6.68 / 15.48 / 15.48 |
+| Update-lock wait | 32.13 / 133.19 / 152.21 | 41.52 / 126.72 / 142.42 | 31.80 / 153.81 / 182.50 |
+| Physical-access wait | 0.91 / 12.89 / 30.82 | 0.91 / 12.55 / 20.42 | 0.93 / 21.13 / 45.63 |
+| Caller drawing CPU | 28.31 / 32.95 / 33.14 | 26.89 / 31.63 / 31.67 | 26.89 / 29.59 / 30.58 |
+| Completed repaint | 116.17 / 199.97 / 254.69 | 110.62 / 183.56 / 236.99 | 126.69 / 210.59 / 260.78 |
+| Logical update hold | 80.20 / 126.25 / 129.71 | 66.49 / 102.56 / 109.96 | 86.00 / 129.62 / 150.68 |
+| Physical unit CPU | 1.72 / 7.18 / 8.20 | 1.72 / 7.10 / 7.86 | 1.72 / 6.86 / 7.80 |
+
+The distinction matters: median notification delivery is under 7 ms in these
+cohorts, while redraw CPU and update ownership account for much larger portions
+of completion. Physical ownership is bounded per strip/chunk; elapsed ownership
+can still include preemption. This milestone adds working application windows,
+not a claim that whole-response latency is solved.
+
+The instrumented counter stack peaks are 547 and 533 bytes, leaving 221 and 235
+bytes above the interrupt floor. The host suite passes 399 tests with four
+historical skips; the nine packaging checks also pass. Local documentation links,
+Python syntax and whitespace checks pass. These development checks do not
+qualify physical hardware or broaden the advertised GEM profile.

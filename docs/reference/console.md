@@ -67,7 +67,11 @@ resume on fresh worker turns, with input, control admission and instance
 rotation between them, without a voluntary Task handoff per segment. A short
 WRITE's presentation pass completes its active fragment sequence before reply.
 Cancellation preserves the accepted prefix; a quiesced drawing failure retires
-the token without acknowledging partially drawn damage.
+the token without acknowledging partially drawn damage. A queued AES update lock
+still permits the existing unit-zero text continuation to finish and release
+its scene token. Other views cannot replace its frozen source. A scene exposure
+acknowledges all dirty console rows only if it repainted the full window;
+partial exposure preserves model damage outside the painted rectangle.
 
 The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
@@ -95,7 +99,9 @@ retains the request or source after reply.
 See the [batching measurements](../history/console-output-batching.md): cached
 CAT improves by 1.66× on the pinned demo; broader latency targets remain open.
 
-The worker is the sole drawing owner, with one list in flight. A retained VBXE
+The worker owns console drawing and the physical display lifetime, with one
+list in flight. [Delegated VDI drawing](display.md#delegated-renderer-access)
+shares its renderer through the common physical arbiter. A retained VBXE
 completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it
 if that interrupt is lost. It queries completion on a notification, continues
 bounded input and READ service, and waits when no actionable work remains.

@@ -55,7 +55,12 @@ Private storage is 282 live / 288 heap-reserved upper bytes per workstation,
 including its grant and parameter arrays. The AES context is 267 live / 272
 reserved bytes. No Task, DP, stack pool, bank-zero reservation, staging page or
 VRAM extent is added. See [WA4 evidence](../development/aes-windows-wa4.json) for
-emitted layout, preemption, pixel and stack checks; these are development results.
+emitted layout, preemption, pixel and stack checks. The
+[two-counter demo](../guides/aes-applications.md#optional-of816-counter-desktop)
+exercises this interface beside native shell/disk work using existing 1 KiB
+caller stacks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
+separates logical update waits, physical access and repaint completion; these
+are development results.
 
 ## Supervised packet workload
 

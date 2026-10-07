@@ -121,9 +121,9 @@ snapshot work, uses this arbiter. The adapter's trusted `GemDrawingBorrow` helpe
 runs one synchronous callback over an admitted rectangle of at most sixteen rows,
 restores intersecting overlays, fences and releases. It is an internal renderer
 callback, not an application callback API. A borrower must not issue AES RPC,
-wait for an event or retain caller buffers within the unit. This helper does not
-yet expose an application workstation or grant permission to draw arbitrary
-desktop pixels; window clipping belongs to the application VDI layer.
+wait for an event or retain caller buffers within the unit. The [application VDI layer](gem-vdi.md#resident-application-workstations)
+uses this helper with private workstation state and the published visible work
+region. The helper grants no permission to draw arbitrary desktop pixels.
 
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.

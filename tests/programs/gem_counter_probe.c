@@ -10,12 +10,14 @@ void CounterBeforeWait(struct Counter *app)
     while (CounterPause[who]) { CounterHeld[who]=1; ExecYield(); }
     CounterHeld[who]=0;
 }
+extern void CounterNoticeOne(void),CounterNoticeTwo(void);
 void CounterObserved(struct Counter *app,WORD events)
 {
     UWORD who=app==GEMCounters ? 0:1;
     ++CounterEvents[who];
     if ((events & (MU_MESAG|MU_TIMER))==(MU_MESAG|MU_TIMER)) ++CounterBoth[who];
     if (events & MU_MESAG) {
+        if (who) CounterNoticeTwo(); else CounterNoticeOne();
         switch (app->message[0]) {
         case WM_REDRAW: ++CounterMessages[who][0]; break;
         case WM_TOPPED: ++CounterMessages[who][1]; break;

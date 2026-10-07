@@ -267,3 +267,12 @@ then exits. `build/demo/screenshots-results.json` records the command sequence,
 screen text, image hashes and focused execution checks.
 The [published capture record](../development/demo-screenshots.json) identifies
 the exact image and command sequence shown here.
+
+## Optional GEM counter desktop
+
+`tools/build_demo.py --aes-counters --output build/aes-counter-demo` packages
+an explicit VBXE desktop selection with a native shell and two resident GEM
+counter windows. It includes OF816 and the matching ROM/disks; distribute only
+its `exec816-demo.zip`. The default build above remains shell/prime. Follow the
+[counter application guide](aes-applications.md#optional-of816-counter-desktop)
+for controls, capacity and current limits.

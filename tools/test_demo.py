@@ -33,6 +33,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     shell_only=manifest.get('shell_only',False)
     require(not shell_only or boot_smoke or disk_failure,'Shell-only demo requires boot smoke or disk-failure scope')
     desktop=manifest.get('desktop',False)
+    counters=manifest.get('aes_counters',False)
+    foreign=json.loads((out/'bitmap-console/c-image.json').read_text()) if counters else None
     width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
     shell_cells=width*(height if shell_only else height-6)
     screenshots=[];commands=[]
@@ -98,6 +100,18 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
         def pointer(address):return number(address,3)
+        def symbol(module,name):
+            return next(d['address'] for d in p['image']['data'] if '_'+module+'_'+name.upper()+'_' in d['name'])
+        def app(index,field):
+            return foreign['symbols']['GEMCounters']+196*index+dict(ready=12,count=14,paints=18,work=38)[field]
+        def counter_painter(r,title,bounds):
+            require(title in (b'Counter A',b'Counter B'),'Unexpected external application')
+            index=int(title==b'Counter B');left,top,right,bottom=bounds
+            count=number(app(index,'count'))
+            r.clip=(left+8,top+16,right-9,bottom-9);r.text=2 if index else 4
+            r.apply(8,(left+16,top+30),b'GEM counter')
+            r.apply(8,(left+16,top+46),('Count: %06d'%count).encode())
+            r.clip=(0,0,639,239)
         def rendezvous(condition):
             b.bp_clear_all();marker=p['labels']['native_irq' if desktop else 'native_nmi']
             # Qualify bank zero: the bridge's PC fields and breakpoints use
@@ -167,7 +181,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 terminal.column=cursor%width;terminal.row=cursor//width
                 if desktop:
                     from desktop_oracle import compose
-                    packed=compose(b,p,r.font,terminal,saved['pointer'])
+                    packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if counters else None)
                 else:
                     terminal.paint(r,0,0,caret=True)
                 folder=out/f'pixels-{len(observations)}';folder.mkdir(exist_ok=True)
@@ -182,7 +196,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
-                        packed=compose(b,p,r.font,terminal,saved['pointer'])
+                        packed=compose(b,p,r.font,terminal,saved['pointer'],counter_painter if counters else None)
                         frame_data=b.rawscreen(str(folder/'scanout.bgra'))
                         raw=(folder/'scanout.bgra').read_bytes()
                         cropped=b''.join(raw[y*frame_data.stride+64:y*frame_data.stride+2624] for y in range(240))
@@ -286,6 +300,56 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             move(100,100);button(1);button(0)
             cells('shell-focus-restored')
             saved['desktop_interaction']=dict(app_updates=number(updates,2),drag_bounds=[440,88,632,232],pointer=saved['pointer'])
+
+        def counter_interaction(closing=False):
+            def move(x,y):
+                saved['pointer']=schedule(b,p,saved['pointer'],(x,y))
+                x,y=saved['pointer']
+                rendezvous(f'(dw(${symbol("DESKINPUT","cursorX"):x})={x})&(dw(${symbol("DESKINPUT","cursorY"):x})={y})')
+            def button(value):
+                b._cmd_ok(f'MOUSE AT 2000 0 0 {value}')
+                rendezvous(f'dw(${symbol("DESKINPUT","buttons"):x})={value}')
+                frames(4)
+            def work(index):return [number(app(index,'work')+i*2,2) for i in range(4)]
+            def click(x,y):move(x,y);button(1);button(0);frames(30)
+            require(all(number(app(i,'ready'),2)==1 for i in range(2)),'Missing counter instance')
+            before=[number(app(i,'count')) for i in range(2)]
+            frames(180)
+            require(all(number(app(i,'count'))>before[i] for i in range(2)),'Counter timers stopped')
+            if closing:
+                x,y,w,h=work(1)
+                # Click its visible rightmost title after raising it, then close.
+                click(x+w-24,y-10);cells('counter-after-disk-exposure')
+                click(x+w-2,y-10)
+                rendezvous(f'dw(${foreign["symbols"]["GEMCountersDone"]:x})=1')
+                frames(80);cells('counter-physical-close')
+                old=number(app(0,'count'));frames(100)
+                require(number(app(0,'count'))>old,'Peer counter stopped after close')
+                saved['counter_coexistence']['after_disk_counts']=before
+                saved['counter_coexistence']['physical_close']=True
+            else:
+                x,y,w,h=work(1)
+                # B extends beyond the shell's right edge after this pixel drag.
+                move(x+96,y-10);button(1)
+                rendezvous(f'db(${symbol("DESKDRAG","phase"):x})=1')
+                move(x+287,y+1);button(0)
+                rendezvous(f'(dw(${app(1,"work"):x})={x+191})&(dw(${app(1,"work")+2:x})={y+11})')
+                cells('counter-pixel-drag')
+                ax,ay,_,_=work(0);click(ax+96,ay-10);cells('counter-A-top')
+                x,y,w,h=work(1);click(x+96,y-10);cells('counter-B-top')
+                # Sustained high-rate controller input exercises the selected acceleration.
+                move(320,120)
+                b._cmd_ok('MOUSE AT 70000 272 272 -1')
+                for index in range(80):b._cmd_ok(f'MOUSE AT {70000+(16+16*index)*114} 16 16 -1')
+                frames(30)
+                expected=[min(limit,start+fast_distance(p,97)) for start,limit in zip((320,120),(639,239))]
+                actual=[number(symbol('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+                require(actual==expected,'Counter-demo accelerated pointer differs')
+                saved['pointer']=tuple(actual)
+                saved['mouse_profile_check']=dict(profile=p['build']['desktop_mouse']['profile'],fast_steps_per_axis=97,result=actual)
+                saved['counter_coexistence']=dict(initial_counts=before,work=[work(0),work(1)])
+            # Native keyboard focus is explicit, including after closing the focused app.
+            click(100,32);cells('counter-shell-focus')
 
         def begin(command):
             previous=number(saved['scope']+14)
@@ -409,7 +473,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 rendezvous(f'db(${saved["top"]+51:x})=2')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
             ready();cells('startup')
-            if desktop:desktop_interaction()
+            if counters:counter_interaction()
+            elif desktop:desktop_interaction()
             if disk_failure:
                 require(b'Filesystem startup failed; check configured disks' in cells('failed-mount')[:shell_cells],
                         'Missing bounded system-volume failure message')
@@ -508,8 +573,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if shell_only:
                     tasks=command('TASKS',b'dos.filesystem')
                     require(b'primes' not in tasks.lower(),'Prime task started in shell-only demo')
-                    require(ledger()['live']==(5 if desktop else 4),'Unexpected shell-only idle Task count')
-                    if desktop:require(b'desktop-app' in tasks,'Missing independent app Task')
+                    require(ledger()['live']==(6 if counters else 5 if desktop else 4),'Unexpected shell-only idle Task count')
+                    if counters:
+                        require(b'GEM Counter A' in tasks and b'GEM Counter B' in tasks,'Missing GEM counter Tasks')
+                    elif desktop:require(b'desktop-app' in tasks,'Missing independent app Task')
                 mounted=command('MOUNT',b'SDFS')
                 require(mounted[:shell_cells].count(f'D{system_drive}:   SDFS'.encode())==1,
                         'Mount listing duplicated or omitted the physical volume')
@@ -530,8 +597,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 saved['sys_cache']=dict(physical=first,system=second)
                 if desktop:
                     previous=begin('CAT SYS:STORY.TXT | WC')
-                    rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})=7')
-                    saved['desktop_peak_tasks']=7
+                    peak=8 if counters else 7
+                    rendezvous(f'db(${p["build"]["task_storage"]["LIVE"]:x})={peak}')
+                    saved['desktop_peak_tasks']=peak
                     ready(previous);result()
                     require(b'24 133 746' in cells('desktop-pipeline'),'Desktop pipeline result differs')
                     # BREAK must still reach a writer whose obscured console
@@ -569,6 +637,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     command('HELLO | WC >WORK:PIPE.TXT')
                     command('CAT WORK:PIPE.TXT',b'1 3 17')
                     saved['filesystem_writes']=True
+                if counters:counter_interaction(closing=True)
                 frames(3);cells('boot-smoke')
                 save_screen(out/'boot-smoke.png')
                 for character in 'EXIT':press(character)
@@ -744,7 +813,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
-        mouse_profile_check=saved.get('mouse_profile_check'),
+        mouse_profile_check=saved.get('mouse_profile_check'),counter_coexistence=saved.get('counter_coexistence'),
         desktop_scroll_break_cycles=saved.get('desktop_scroll_break_cycles'),
         desktop_scroll_break_checkpoint=saved.get('desktop_scroll_break_checkpoint'),
         cache=saved.get('cache'),cache_commands=saved.get('cache_commands'),startup_memory=saved.get('startup_memory'),
@@ -752,7 +821,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

@@ -7,8 +7,9 @@ from sio_transaction_trace import read_events
 from measure_desktop import distribution
 
 
-def setup(p,foreign):
+def setup(p,foreign,lean=False,notifications=False):
     definition=markers(p,foreign,p['output'].parent/'drawing')
+    if lean:definition["spans"]={}
     points=flat_markers(definition)
     spans=native_markers(p,[('DISPLAY_ENTER','access'),('DISPLAY_LEAVE','leave')])
     sy=foreign['symbols']
@@ -17,6 +18,13 @@ def setup(p,foreign):
     for name,span in spans.items():
         points[name]=span['entry']
         for i,pc in enumerate(span['returns']):points[name+str(i)]=pc
+    if notifications:
+        for index in (1,2):
+            name='notice'+str(index)
+            notice=native_markers(p,[('AESGUI_NOTICE'+str(index),name)])[name]
+            points[name]=notice['entry']
+            points['received'+str(index)]=sy['CounterNoticeOne' if index==1 else 'CounterNoticeTwo']
+        definition['notifications']={k:v for k,v in points.items() if k.startswith(('notice','received'))}
     saved={k:os.environ.get(k) for k in ('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS')}
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{v:x}' for v in set(points.values())))
     return definition,spans,sy,saved
@@ -35,7 +43,7 @@ def result(out,config):
     def end(kind,dp,tick,start_kind=None):
         begin=active.pop((start_kind or kind,dp))
         if dp not in timelines:timelines[dp]=Timeline(profile['segments'],dp)
-        rows.append(dict(kind=kind,dp=dp,**timelines[dp].measure(begin,tick)))
+        rows.append(dict(kind=kind,dp=dp,start=begin,end=tick,**timelines[dp].measure(begin,tick)))
     for tick,event in events:
         if event[0]!='cpu':continue
         pc,dp=int(event[4],16),int(event[9],16)

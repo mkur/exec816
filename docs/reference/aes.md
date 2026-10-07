@@ -221,3 +221,20 @@ window mutations and cold display delegation on the RPC endpoint. Queries and re
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
+
+## Resident counter capacity
+
+The optional [counter desktop](../guides/aes-applications.md#optional-of816-counter-desktop)
+runs two independent GEM applications beside the native shell. Its resident
+controller also registers to send shutdown messages: three registrations are
+used, and shell plus counters occupy three desktop layers. Prompt services use
+six public Tasks, leaving exactly two slots for a disk-command pipeline. The
+native Control Panel is replaced in this bundle; adding it would leave only one
+Task slot after disk services start. The separate four-layer coexistence proof
+uses root-driven disk I/O rather than pipeline children.
+
+All clients must detach before service shutdown. Closing a focused window clears
+focus under the current desktop policy; click another window to restore it.
+No auto-focus successor, resize, menu, resource loader or dynamic GEM launcher
+is supplied. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
+records development coverage and measured stack use, not hardware qualification.
