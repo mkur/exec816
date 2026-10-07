@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 5
+#define AES_VERSION 6
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -69,6 +69,9 @@
 #define AES_WF_NEXTXYWH 12
 #define AES_WC_BORDER 0
 #define AES_WC_WORK 1
+#define AES_OP_GRAF_HANDLE 77
+#define AES_OP_DISPLAY 200
+#define AES_DISPLAY_ERROR 9
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];
@@ -188,8 +191,10 @@ struct AESRequest {
     UBYTE recordsPad;
     struct AESWindowView EXEC_PTR * view;
     UBYTE viewPad;
+    UBYTE EXEC_PTR * displayGrant;
+    UBYTE displayGrantPad;
 };
-#define AES_REQUEST_SIZE 108
+#define AES_REQUEST_SIZE 112
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -212,5 +217,7 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_RECORDSPAD 103
 #define AES_REQUEST_OFFSET_VIEW 104
 #define AES_REQUEST_OFFSET_VIEWPAD 107
-#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET)
+#define AES_REQUEST_OFFSET_DISPLAYGRANT 108
+#define AES_REQUEST_OFFSET_DISPLAYGRANTPAD 111
+#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY)
 #endif

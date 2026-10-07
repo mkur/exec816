@@ -217,3 +217,31 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
     vwk.text_color=color;vwk.wrt_mode=mode;vwk.clip=clip;
     vwk.xmn_clip=x0;vwk.ymn_clip=y0;vwk.xmx_clip=x1;vwk.ymx_clip=y1;
 }
+
+/* Application state is selected only during an admitted synchronous unit.
+ * This save area is shared renderer scratch, protected by DISPLAY access. */
+#include <exec816/vdi-unit.h>
+static Vwk nativeWorkstation;
+void GemVdiPaint(void *context)
+{
+    struct ExecVDIUnit *u=context;
+    UWORD i;
+    nativeWorkstation=vwk;
+    vwk.clip=1;
+    vwk.xmn_clip=u->left; vwk.ymn_clip=u->top;
+    vwk.xmx_clip=u->right-1; vwk.ymx_clip=u->bottom-1;
+    vwk.text_color=u->textColor; vwk.fill_color=u->fillColor;
+    vwk.wrt_mode=0; vwk.fill_style=1; vwk.fill_per=0;
+    vwk.h_align=vwk.v_align=vwk.text_effects=0;
+    if (u->operation==8) {
+        contrl[3]=u->count; ptsin[0]=u->x; ptsin[1]=u->y;
+        for (i=0;i<u->count;++i) intin[i]=u->glyphs[i];
+        vdi_v_gtext();
+    } else {
+        ptsin[0]=u->left; ptsin[1]=u->top;
+        ptsin[2]=u->right-1; ptsin[3]=u->bottom-1;
+        vdi_vr_recfl();
+    }
+    dev_flush();
+    vwk=nativeWorkstation;
+}

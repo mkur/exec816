@@ -9,6 +9,7 @@ struct ExecAESTimer {
     UBYTE state, opened;
     UWORD error;
 };
+struct ExecVDIWorkstation;
 
 /* Runtime hooks, separate from GEM application entry points. The startup
  * controller retains the service until every attached Task has detached. */
@@ -31,6 +32,7 @@ struct ExecAESContext {
     struct AESWindowView *view;
     UWORD visibleIndex;
     ULONG visibleRevision;
+    struct ExecVDIWorkstation *workstation;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

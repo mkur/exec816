@@ -197,6 +197,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
     gui = suite == 'gui'
     windows = suite == 'windows'
     borrowed = suite == 'display'
+    vdi = suite == 'vdi'
     registration = suite == "registration"
     events = suite == 'events'
     locks = suite == 'locks'
@@ -227,12 +228,20 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from generate_display import expected_layout as display_layout
             renderer = instrument(out)
             extra_probes = [(ROOT/'c/calypsi/display-layout.c', display_layout())]
-        foreign = drawing(out, True, widgets=True, fault=borrowed, renderer_source=renderer,
-            client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
-            client_entries=entries,
-            client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
-            client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
-            client_optimization={n: mode == 'opt' for n in ('aes.c', f'aes_{suite}.c')})
+        import build_bitmap_console as bitmap_builder
+        original_extract=bitmap_builder.extract
+        if vdi:
+            from test_vdi_client import extract_with_preemption
+            bitmap_builder.extract=extract_with_preemption
+        try:
+            foreign = drawing(out, True, widgets=True, fault=borrowed, renderer_source=renderer,
+                client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else []),
+                client_entries=entries,
+                client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
+                client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
+                client_optimization={n: mode == 'opt' for n in ('aes.c', f'aes_{suite}.c')})
+        finally:
+            bitmap_builder.extract=original_extract
         sy = foreign['symbols']
         if borrowed:
             from test_display_borrow import producer
@@ -308,7 +317,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
+        slice='WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     if borrowed:
@@ -321,6 +330,9 @@ ENDMODULE
                 before = None
                 if borrowed:
                     from test_display_borrow import physical
+                    before = lambda b: physical(b, program, foreign, report)
+                if vdi:
+                    from test_vdi_client import physical
                     before = lambda b: physical(b, program, foreign, report)
                 if windows:
                     from test_aes_windows import physical
@@ -336,7 +348,7 @@ ENDMODULE
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 60 if gui or windows or borrowed else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (160 if registration else 100 if events or locks or timers else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
@@ -512,12 +524,12 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'windows', 'display', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'windows', 'display', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'windows', 'display', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'windows', 'display', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None)
     elif args.suite == 'console':

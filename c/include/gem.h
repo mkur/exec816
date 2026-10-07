@@ -11,6 +11,9 @@ typedef struct {
     WORD *control, *global, *int_in, *int_out;
     LONG *addr_in, *addr_out;
 } AESPB;
+typedef struct { WORD *contrl, *intin, *ptsin, *intout, *ptsout; } VDIPB;
+#define MD_REPLACE 1
+#define FIS_SOLID 1
 
 #define MU_KEYBD 0x0001
 #define MU_BUTTON 0x0002
@@ -27,6 +30,17 @@ typedef struct { WORD m_out, m_x, m_y, m_w, m_h; } MOBLK;
 
 WORD appl_init(void);
 WORD appl_exit(void);
+WORD graf_handle(WORD *wchar, WORD *hchar, WORD *wbox, WORD *hbox);
+void v_opnvwk(WORD *work_in, WORD *handle, WORD *work_out);
+void v_clsvwk(WORD handle);
+void v_bar(WORD handle, const WORD *pxy);
+void v_gtext(WORD handle, WORD x, WORD y, const char *text);
+void vs_clip(WORD handle, WORD clip, const WORD *pxy);
+WORD vswr_mode(WORD handle, WORD mode);
+WORD vsf_interior(WORD handle, WORD style);
+WORD vsf_color(WORD handle, WORD color);
+WORD vst_color(WORD handle, WORD color);
+void EXEC_CALL vdi_call(VDIPB *pb);
 WORD appl_write(WORD id, WORD length, const WORD *message);
 WORD evnt_mesag(WORD *message);
 WORD evnt_timer(UWORD lo, UWORD hi);

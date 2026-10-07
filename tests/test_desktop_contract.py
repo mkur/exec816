@@ -30,14 +30,15 @@ class DesktopContractTests(unittest.TestCase):
             self.assertFalse(application_entry({'name': 'M_' + module + '_INIT'}))
 
     def test_aes_protocol_is_generated(self):
-        import generate_aes_server
-        for path, expected in generate_aes_server.files().items():
-            self.assertEqual(path.read_text(), expected)
+        import generate_aes_server, generate_vdi_client
+        for generator in (generate_aes_server, generate_vdi_client):
+            for path, expected in generator.files().items():
+                self.assertEqual(path.read_text(), expected)
 
     def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
         import generate_aes_server as aes
-        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET'])
-        self.assertEqual(aes.layout()['Request']['size'], 108)
+        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET', 'OP_DISPLAY'])
+        self.assertEqual(aes.layout()['Request']['size'], 112)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)
         self.assertEqual(aes.layout()['GuiDelivery']['size'], 36)

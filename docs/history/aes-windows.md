@@ -119,3 +119,35 @@ image gains 11,032 payload bytes and retains the same seventeen populated CPU
 banks. Fixed arenas, stack/DP pools and VRAM reservations are unchanged.
 These are development checks. Private VDI, counter applications and the optional
 packaged demo remain WA4–WA6 work.
+
+
+## WA4 — Private application VDI
+
+Implemented on 2026-10-07. Each application owns one virtual workstation with
+private parameters, pens and clipping. Open uses one cold delegation exchange;
+attributes and drawing execute locally without presenter RPC. The shared
+backend selects that state only while admitted to DISPLAY, restores native
+state, and releases access between 16-row strips or 32-glyph chunks. Opening
+leaves physical pixels unchanged. Exit also closes an omitted workstation.
+
+[Development evidence](../development/aes-windows-wa4.json) records 158 C
+assertions, exact complete desktop pixels with two distinct callers, forced
+preemption inside the selected backend, long text crossing multiple chunks,
+odd clipped glyphs, full/partial occlusion, exposure, cursor restoration,
+failed-open unwind and complete cleanup. Raw/optimized context/layout probes
+and 399 host checks (four historical skips) pass. The binding uses explicit
+full initializers for automatic control arrays: Calypsi 5.18 emitted only the
+first store for the initial partial-zero initializer.
+
+The assertion-heavy clients touch 738 and 751 bytes in their existing 1,024-byte
+pools, leaving 30 and 17 bytes above the 256-byte interrupt reserve. This is a
+narrow measured fit; the counter's actual event/redraw stack still needs its own
+measurement. No pool enlargement is included.
+
+Reserved bank-zero delta remains **0 fixed + 0 per public Task + 0 idle bytes**.
+A workstation uses 282 live / 288 heap-reserved upper bytes; the enlarged AES
+context uses 267 / 272, an eight-byte increase. Shared native-workstation scratch
+adds 92 live bytes inside the existing C data bank. Four workstations/contexts
+therefore add 1,252 live upper bytes, including scratch, and 1,184 heap-reserved
+bytes. Fixed arenas, staging, VRAM, stack/DP pools and Task capacity are unchanged.
+WA5–WA6 follow; PI4/HY4 remain open and this is not hosted qualification.

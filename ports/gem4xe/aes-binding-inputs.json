@@ -132,6 +132,15 @@
         0,
         0
       ]
+    },
+    "graf_handle": {
+      "opcode": 77,
+      "control_counts": [
+        0,
+        5,
+        0,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
@@ -142,5 +151,71 @@
     "10": "4: selected VBXE packed 4bpp display",
     "others": "zero; resources, application-private AES storage and AES system pointers unsupported"
   },
-  "unsupported": "Unlisted opcodes, unsupported window fields/kinds, off-screen windows and resizing fail explicitly. evnt_multi supports MU_MESAG/MU_TIMER only; virtual workstations remain pending."
+  "unsupported": "Unlisted opcodes, unsupported window fields/kinds, off-screen windows and resizing fail explicitly. evnt_multi supports MU_MESAG/MU_TIMER only. Application VDI is confined to the visible work area under BEG_UPDATE; fixed font, solid fill and replace mode only.",
+  "vdi_calls": {
+    "v_opnvwk": {
+      "opcode": 100,
+      "point_pairs": 0,
+      "intin": 11,
+      "intout": 45,
+      "ptsout_pairs": 6
+    },
+    "v_clsvwk": {
+      "opcode": 101,
+      "point_pairs": 0,
+      "intin": 0,
+      "intout": 0,
+      "ptsout_pairs": 0
+    },
+    "v_gtext": {
+      "opcode": 8,
+      "point_pairs": 1,
+      "intin": "string length",
+      "intout": 0,
+      "ptsout_pairs": 0
+    },
+    "v_bar": {
+      "opcode": 11,
+      "subopcode": 1,
+      "point_pairs": 2,
+      "intin": 0,
+      "intout": 0,
+      "ptsout_pairs": 0
+    },
+    "vst_color": {
+      "opcode": 22,
+      "point_pairs": 0,
+      "intin": 1,
+      "intout": 1,
+      "ptsout_pairs": 0
+    },
+    "vsf_interior": {
+      "opcode": 23,
+      "point_pairs": 0,
+      "intin": 1,
+      "intout": 1,
+      "ptsout_pairs": 0
+    },
+    "vsf_color": {
+      "opcode": 25,
+      "point_pairs": 0,
+      "intin": 1,
+      "intout": 1,
+      "ptsout_pairs": 0
+    },
+    "vswr_mode": {
+      "opcode": 32,
+      "point_pairs": 0,
+      "intin": 1,
+      "intout": 1,
+      "ptsout_pairs": 0
+    },
+    "vs_clip": {
+      "opcode": 129,
+      "point_pairs": 2,
+      "intin": 1,
+      "intout": 0,
+      "ptsout_pairs": 0
+    }
+  }
 }

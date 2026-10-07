@@ -73,6 +73,8 @@ const UWORD AESLayout[] = {
     offsetof(struct AESRequest, recordsPad),
     offsetof(struct AESRequest, view),
     offsetof(struct AESRequest, viewPad),
+    offsetof(struct AESRequest, displayGrant),
+    offsetof(struct AESRequest, displayGrantPad),
     sizeof(struct ExecAESContext),
     offsetof(struct ExecAESContext, request),
 };

@@ -1,5 +1,6 @@
 ; Ordinary-message admission. Only the existing presenter executes policy.
 MODULE AESCORE
+USE DISPLAY
 USE EXEC
 USE EXECLISTS
 USE AESTYPES
@@ -344,6 +345,21 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     IF status<>AESTYPES.PENDING THEN
       AESSTATE.Reply(request,status)
     FI
+  ELSEIF request.operation=AESTYPES.OP_DISPLAY THEN
+    BEGIN
+      LET grant=DISPLAY.Grant POINTER(request.displayGrant)
+      IF grant.task<>request.owner THEN
+        status=AESTYPES.IDENTITY
+      ELSE
+        status=DISPLAY.Delegate(grant)
+        status=IF status=DISPLAY.OK THEN AESTYPES.OK
+            ELSEIF status=DISPLAY.NO_MEMORY THEN AESTYPES.RESOURCE
+            ELSE AESTYPES.DISPLAY_ERROR FI
+      FI
+
+      request.intout(0)=INT(status=AESTYPES.OK)
+      AESSTATE.Reply(request,status)
+    END
   ELSE
     status=AESWINDOW.Request(service,client,request)
     IF status=AESTYPES.PENDING THEN

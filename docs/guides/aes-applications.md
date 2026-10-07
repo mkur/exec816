@@ -6,7 +6,11 @@ Exec816 supplies a small GEM source interface in `<gem.h>`. Application code
 uses ordinary GEM calls and private parameter blocks. The Exec816 startup
 wrapper supplies the retained service endpoint and owns Task termination.
 This profile supports registration, copied messages, timers, GUI locks and
-fixed-size GEM windows. Application VDI workstations follow in the next slice.
+fixed-size GEM windows and private VDI drawing. Open with `graf_handle` and
+`v_opnvwk`; use `BEG_UPDATE` around visible-rectangle enumeration, user clipping
+and bar/text painting, then release with `END_UPDATE` before the event wait.
+See the [workstation profile](../reference/gem-vdi.md#resident-application-workstations)
+for supported attributes and output buffers.
 See the [window contract](../reference/aes.md) for supported kinds and fields.
 
 ## Application body

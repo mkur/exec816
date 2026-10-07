@@ -11,11 +11,14 @@ and retained Control Panel remain independent clients of their existing service.
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_mesag`, `evnt_timer`,
 `evnt_multi`, `evnt_multi_moblk`, `wind_update`, `wind_create`, `wind_open`,
-`wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`
+`wind_close`, `wind_delete`, `wind_get`, `wind_set`, `wind_set_str`, `wind_calc`,
+`graf_handle`
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
-AES implementation. Resource, form and VDI workstation calls are pending.
+AES implementation. Resource and form calls are pending. Selected
+[private VDI workstation calls](gem-vdi.md#resident-application-workstations)
+execute directly in the caller.
 
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
@@ -163,8 +166,8 @@ For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
 manager damage after the complete frame transaction without claiming that the
 application pixels have been drawn. Such windows remain ineligible for pixel
-copy, copied move and VRAM-cache reuse. At this stage the application work area
-has no VDI paint implementation; direct workstations follow separately.
+copy, copied move and VRAM-cache reuse. Applications reconstruct their work pixels through their private VDI workstation
+while owning `BEG_UPDATE`.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words
@@ -213,8 +216,8 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 5 has a 108-byte request and permits init, exit, update and
-window mutations on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
+profile: version 6 has a 112-byte request and permits init, exit, update,
+window mutations and cold display delegation on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).

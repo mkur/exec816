@@ -3,8 +3,8 @@
 [GEM integration](README.md) · [Design note](aes-window-app-design.md) ·
 [Current AES contract](../../reference/aes.md) · [Current display contract](../../reference/display.md)
 
-Status: implementation in progress, 2026-10-07. WA1–WA3 pass development checks;
-WA4–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
+Status: implementation in progress, 2026-10-07. WA1–WA4 pass development checks;
+WA5–WA6 remain pending. See the [execution record](../../history/aes-windows.md).
 
 Implement the design in six executable slices, committing after each passing
 slice. The result is a resident C counter using ordinary GEM window, VDI and
@@ -172,6 +172,11 @@ RPC and declare the direct drawing gate complete. Suggested commit:
 `display: serialize delegated renderer access`.
 
 ## WA4 — Add private virtual workstations
+
+Implemented. [Evidence](../../development/aes-windows-wa4.json) covers private
+workstations, bounded direct drawing, exact pixels, forced preemption, cleanup
+and emitted layouts. Both callers fit existing 1 KiB pools with narrow measured
+headroom; bank-zero growth is zero.
 
 1. Add `graf_handle`, virtual open/close, the selected attributes, clipping,
    bar and text bindings, with private VDI parameter arrays and a common

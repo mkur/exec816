@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 5,
+  "version": 6,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -67,7 +67,10 @@
     "WF_FIRSTXYWH": 11,
     "WF_NEXTXYWH": 12,
     "WC_BORDER": 0,
-    "WC_WORK": 1
+    "WC_WORK": 1,
+    "OP_GRAF_HANDLE": 77,
+    "OP_DISPLAY": 200,
+    "DISPLAY_ERROR": 9
   },
   "records": {
     "Delivery": [
@@ -332,6 +335,14 @@
       [
         "viewPad",
         "BYTE"
+      ],
+      [
+        "displayGrant",
+        "BYTE POINTER"
+      ],
+      [
+        "displayGrantPad",
+        "BYTE"
       ]
     ]
   },
@@ -343,7 +354,8 @@
     "OP_OPEN",
     "OP_CLOSE",
     "OP_DELETE",
-    "OP_SET"
+    "OP_SET",
+    "OP_DISPLAY"
   ],
   "public_constants": [
     "NAME",
