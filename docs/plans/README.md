@@ -279,6 +279,8 @@ assuming work is pending. Current behavior belongs in the
 - [Native pointer loops: implementation plan](compiler-pointer-loops-plan.md)
 - [Direct-page partition implementation plan](direct-page-partition-implementation-plan.md)
 
+## GEM desktop applications
+
 - [Application-owned widgets](gem4xe/application-widgets-design.md) and
   [implementation](gem4xe/application-widgets-implementation-plan.md): public GEM object/form subset.
 - [GEM Control Panel](gem4xe/gem-control-panel-design.md) and

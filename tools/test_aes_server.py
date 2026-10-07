@@ -193,7 +193,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs'):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -246,7 +246,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
                 client_entries=entries,
                 client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
                 client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
-                client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', f'aes_{suite}.c')})
+                client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', 'aes-resource.c', 'dos.c', f'aes_{suite}.c')})
         finally:
             bitmap_builder.extract=original_extract
         sy = foreign['symbols']
@@ -330,14 +330,15 @@ ENDMODULE
         launcher = prepare(source, out, foreign, desktop=True, aes=True)
         program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
             tasks=True, task_capacity=8, foreign_image=foreign,
-            console_deferred=True, memory_profile=memory)
+            console_deferred=True, memory_profile=memory,
+            **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite=='resources' else {}))
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse'] = metadata(None)
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
         slice='AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
-        native_mode='opt', video=video, build=program['build'],
+        native_mode='opt', video=video, filesystem=filesystem if suite=='resources' else None, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     if borrowed:
         from test_display_borrow import trace_setup, trace_result, trace_restore
@@ -345,6 +346,16 @@ ENDMODULE
     try:
         with emulator(BRIDGE, ROM, out, pin=pin) as bridge:
             report['machine'] = verify_machine(bridge, ROM, pin)
+            if suite=='resources':
+                from build_gem_resource import resource
+                from make_data_disk import make
+                media=out/'media';media.mkdir(exist_ok=True)
+                payload=resource();(media/'DESKTOP.RSC').write_bytes(payload)
+                bad=bytearray(payload);bad[72:76]=b'\xff'*4
+                (media/'BAD.RSC').write_bytes(bad);(media/'SHORT.RSC').write_bytes(payload[:35])
+                make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC'},filesystem=filesystem,sector_bytes=128,sectors=720)
+                bridge.mount(0,str(out/'resources.atr'))
+
             try:
                 before = None
                 if borrowed:
@@ -362,17 +373,20 @@ ENDMODULE
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite == 'objects' else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('objects','resources') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
                     report['AESFirstFailure'] = int.from_bytes(bridge.memdump(foreign['symbols']['AESFirstFailure'], 2), 'little')
+                if suite=='resources':
+                    report['resource_status']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceStatus'],2),'little')
+                    report['resource_error']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceError'],4),'little')
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite == 'objects' else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('objects','resources') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
@@ -548,14 +562,15 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
-                     args.video, args.from_build.resolve() if args.from_build else None)
+                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
     else:

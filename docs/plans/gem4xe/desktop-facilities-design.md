@@ -13,7 +13,8 @@ Start menu support with window-scoped `menu_popup`, `menu_ienable`,
 `menu_tnormal` and `menu_text`. A popup uses the caller's tree and work area;
 click-release, Up/Down, Return and Escape select/cancel. It holds UPDATE only
 while drawing. WM_REDRAW reconstructs the popup; other window messages are
-returned to the caller's message queue before the popup cancels. The caller
+saved in one caller-local deferred-message slot before the popup cancels.
+The next message wait consumes that slot before the port queue. The caller
 repaints its content on return. A screen-wide active-application menu bar,
 accessories and cascading menus are later work, not emulated with global state.
 
@@ -35,7 +36,10 @@ absolute bounded path per application; no global current-directory changes.
 Open enters a directory or launches a native Exec disk command with an empty
 argument tail. A Stop action requests cancellation of that child. The browser
 continues processing events and polls collection on its normal timer until
-retirement; closing cancels and collects before freeing its Task.
+retirement; closing cancels and collects before freeing its Task. A small disk-loaded
+TICK companion prints periodically and waits through COMMAND.Delay, providing a
+Stop example that works with all four desktop layers occupied. PRIMES uses the
+separate tiled-console mode and cannot open its pane in desktop mode.
 
 Use the existing Program/Process loader and lifecycle. Add thin ordinary C DOS
 and program bindings over the existing Action!/C bridge, preserving per-Task

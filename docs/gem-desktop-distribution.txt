@@ -1,7 +1,8 @@
 Exec816 GEM desktop
 ==========================
 
-A GEM Control Panel, an independent counter and a native shell. No prime task is started.
+A GEM Control Panel, counter, Files browser and native shell.
+No prime task is started.
 
 Boot in AltirraSDL
 -----------------
@@ -24,7 +25,7 @@ Extract this ZIP into one folder. In System > Configure System, select:
 1. Mount @SYSTEM_DISK@ in D1: with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8: with writes enabled.
 2. Boot Exec-of816.xex and leave the keyboard alone for the five-second countdown.
-3. Wait for SYS: ready, the shell prompt and the panel and counter.
+3. Wait for SYS: ready, the shell prompt and the three GEM windows.
 
 Both disks are required at startup. Keep these matching disks mounted throughout
 the session. Press a key during the countdown to enter OF816 instead; EXEC816
@@ -43,10 +44,21 @@ focus and Return activates Apply. Escape/BREAK cancels a held press. Release
 outside a button to cancel it. The counter continues independently.
 @POINTER_DESCRIPTION@
 
+Files loads its interface from DESKTOP.RSC on the system disk. Select a row and
+press Return to enter a folder or launch an Exec command. Up returns to the parent;
+Next pages through eight entries. File (or F) opens Open/Refresh/Stop/Cancel.
+Use Tab or Up/Down and Return in that popup; Escape cancels. Launched commands
+have no arguments or keyboard input; their output appears in the shell. Stop
+requests BREAK. Try opening C and launching HELLO or TICK. TICK prints periodically until Stop.
+PRIMES needs tiled-console mode and cannot run in this desktop. Closing Files stops
+and collects its running command. This browser does not launch GEM binaries.
+
+With all three GEM windows open, one Task slot remains for a disk command.
+Close one GEM window before running a two-command shell pipeline.
 Click the shell title before typing. Try TASKS, DIR, CAT STORY.TXT | WC, or
 CAT LONG.TXT. BREAK cancels a running command. SYS: is read-only; WORK: is a
-disposable writable disk. EXIT closes the panel and counter and returns to the OS.
+disposable writable disk. EXIT closes all GEM applications and returns to the OS.
 Cold-boot to start the applications again.
 
-This is a desktop development preview with fixed-size windows. Menus, resizing,
-file-manager icons and launching other GEM programs are not included yet.
+This is a desktop development preview with fixed-size windows. A global menu
+bar, resizing, file-manager icons and launching GEM programs remain future work.

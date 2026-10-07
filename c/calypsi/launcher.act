@@ -2,6 +2,9 @@
 MODULE CALYPSI
 USE EXEC
 USE HEAPCORE
+USE PROGRAMFILE
+USE PROGRAM
+USE PROCESS
 INCLUDE "../../examples/example-output.inc"
 INCLUDE "c-image.inc"
 INCLUDE "dos-bridge.inc"
@@ -17,7 +20,7 @@ PROC Main()
     RETURN
   FI
 
-  BindDos()
+  BindDos(0)
   BindIO()
   LET previous=DOS.SelectOutput(console)
   LET entry=ADDRESS POINTER(@cMain)

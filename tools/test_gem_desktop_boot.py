@@ -10,7 +10,11 @@ class DesktopBoot:
     def exercise(self,s):
         sy=json.loads((s.p['output']/'bitmap-console/c-image.json').read_text())['symbols']
         panel=sy['GEMPanel'];counter=sy['GEMCounter']
-        s.rendezvous('dw($%x)=1'%(panel+8));s.frames(150)
+        state={name:s.b.memdump(sy[name],178 if name=='GEMBrowser' else 24).hex() for name in ('GEMPanel','GEMCounter','GEMBrowser') if name in sy}
+        state['failure']=s.number(sy['GEMDesktopFailure'],2)
+        (s.p['output']/'gem-startup.json').write_text(json.dumps(state,indent=2)+'\n')
+        require(s.number(panel+8,2)==1,'GEM desktop startup failed; see gem-startup.json')
+        s.frames(150)
         position=[320,120]
         def move(x,y):
             nonlocal position
@@ -22,6 +26,9 @@ class DesktopBoot:
         click(458,56);click(456,104)
         require(s.number(panel+178+2*24+10,2)==1,'Packaged panel toggle')
         require(s.number(counter+14,4)>0,'Packaged counter did not advance')
+        if s.manifest.get('gem_desktop') and 'GEMBrowser' in sy:
+            from test_gem_files import exercise
+            exercise(s,sy,click,move)
         click(96,32)
         s.command('HELLO',b'Hello from disk!')
         s.command('CAT STORY.TXT | WC')

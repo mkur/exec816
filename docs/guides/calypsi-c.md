@@ -53,7 +53,8 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
-| DOS output (`<proto/dos.h>`) | `Output`, `Write` |
+| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `IoErr`, `ExecDOSDetach` |
+| Native program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
 The standard launcher binds both DOS and caller-context device I/O. Include
@@ -123,8 +124,8 @@ scheduling and message policy remains in the existing kernel. Caller-context
 helpers handle memory clearing and port allocation, as the Action! binding does.
 No Action! function is called using a C argument convention.
 
-The DOS binding uses a separate, ordinary-call bridge. The launcher installs two
-native entry addresses in six bytes of upper-bank storage, selects its open
+The DOS binding uses a separate, ordinary-call bridge. The launcher installs sixteen
+native entry addresses in 48 bytes of upper-bank storage, selects its open
 console as standard output, and restores the previous selection after C returns.
 `Output()` looks up the calling Task's current selection; the binding does not
 cache a global console handle. Treat `BPTR` as an opaque 32-bit handle: Exec816
@@ -182,8 +183,8 @@ The Calypsi linker selects referenced shim/runtime routines for this executable.
 
 ## Current limits and development checks
 
-This binding does not provide C disk commands/o65, DOS calls beyond
-`Output`/`Write`, `stdio`, `malloc`, arbitrary CRT initialization or
+This binding does not provide C disk commands/o65, the full DOS API,
+`stdio`, `malloc`, arbitrary CRT initialization or
 general Action!/C callbacks.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
 arithmetic helpers can be linked; a general-purpose C library port is separate.
@@ -259,3 +260,23 @@ The [AI6 record](../history/aes-application-input.md#ai6--ordinary-interactive-g
 has actual results and the diagnostic runner. The interactive example computes
 each endpoint directly from its origin. This remains an external compiler issue;
 the limited C binding checks do not qualify all C expressions.
+
+
+## Desktop file and launcher calls
+
+The GEM desktop adds ordinary file/directory bindings over the same native call
+bridge. DateStamp and FileInfoBlock come from the machine-readable DOS ABI;
+Calypsi layout probes check their 12/260-byte sizes and every field offset.
+Read accepts upper-RAM buffers and native stack buffers on MyDOS and SDFS.
+Each caller retains its handles and locks until Close/UnLock. After retiring
+all DOS resources, call ExecDOSDetach before removing a raw Task.
+
+ExecStartProgram loads an existing Exec native disk command with an empty
+argument tail, NIL input and RAW shell output. It returns a parent-owned Process
+identity, or zero on failure with IoErr. ExecCollectProgram returns zero while
+pending and nonzero after copying primary/secondary results and collecting it.
+ExecBreakProgram requests cancellation; ExecWaitProgram waits and collects.
+The owner must collect before retiring. These are Exec816 extensions built from
+the existing Program/Process calls, without new kernel operations. They do not
+load C/GEM executables. The [Files example](../../examples/gem-browser/browser.c)
+shows the bounded event-loop and shutdown use.

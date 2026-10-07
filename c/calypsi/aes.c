@@ -212,6 +212,8 @@ WORD appl_exit(void)
     result = ExecAESSubmit(c, AES_OP_EXIT);
     if (result) {
         c->busy = 1;
+        ExecAESResourceFree(c);
+        c->messagePending=0;
         if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
         c->view = NULL;
         c->request.view = NULL;
@@ -360,7 +362,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
-    if (ExecAESObjects(c,pb)) goto globals;
+    if (ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }

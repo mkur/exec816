@@ -232,3 +232,37 @@ coexistence, rapid keys while drawing, and panel/disk progress. It has one free
 public Task slot, so it is not the two-child pipeline configuration. Timings
 report individual physical edges, caller/presenter CPU and completed scanout.
 They are development observations; broader latency gates remain open.
+
+
+## GEM Control Panel and Files desktop
+
+The [panel](../../examples/gem-panel/panel.c) uses a compiled-in OBJECT tree,
+local form state changes and changed-object drawing. The
+[browser](../../examples/gem-browser/browser.c) loads its trees from a classic
+RSC generated from [resource.json](../../examples/gem-browser/resource.json).
+Both are ordinary GEM application bodies; the resident wrapper supplies Task
+startup and Exec attachment. They reuse the counter and native shell.
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --gem-desktop --output build/gem-desktop-demo
+python3 tools/test_gem_desktop_boot.py --bundle build/gem-desktop-demo
+```
+
+Distribute `build/gem-desktop-demo/exec816-demo.zip`, including OF816, its pinned
+ROM, matching D1/D8 disks, notices and guide. Boot retains the five-second delay.
+The no-option build still starts the standard shell/prime demo.
+
+Use Toggle, Small/Large, Apply and Cancel in the panel. Tab/Shift-Tab changes
+keyboard focus, Space activates it and Return activates Apply. Release outside
+or Escape cancels a press. In Files, select a directory/file and press Return;
+Up and Next navigate, and File or F opens the popup. Tab/Up/Down and Return select;
+Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
+arguments, NIL input and shell output; Stop requests cancellation. TICK prints periodically until Stop, without a private pane. PRIMES requires
+tiled-console mode and returns an error in this desktop. Close one GEM window
+before a two-child shell pipeline.
+Closing Files collects its child before retirement. EXIT closes the desktop.
+
+This profile uses four layers, four AES registrations and seven idle Tasks.
+It offers a bounded object/form, resource and window-popup subset, not a global
+menu bar or dynamic GEM executable loader. See the [current AES contract](../reference/aes.md)
+and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).

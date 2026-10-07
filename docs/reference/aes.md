@@ -284,8 +284,8 @@ uses root-driven disk I/O rather than pipeline children.
 
 All clients must detach before service shutdown. Closing a focused window clears
 focus under the current desktop policy; click another window to restore it.
-No auto-focus successor, resize, menu, resource loader or dynamic GEM launcher
-is supplied. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
+No auto-focus successor, resize or dynamic GEM launcher is supplied.
+Window-scoped menus and resource loading are described below. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 records development coverage and measured stack use, not hardware qualification.
 
 The presenter now publishes translated keyboard records into the private input
@@ -309,8 +309,7 @@ eligible levels without a presenter RPC.
 The [interactive example](../../examples/gem-input/input.c) exercises the input
 profile with local hit testing, pressed/released drawing and a translated-key
 label. Its [guide](../guides/aes-applications.md#interactive-application-example)
-includes the optional `--aes-input` OF816 build. Public object/form and resource
-APIs remain outside this profile.
+includes the optional `--aes-input` OF816 build. The application object/form and resource subsets below extend this profile.
 
 ## Application object trees and forms
 
@@ -343,3 +342,52 @@ ownership are not implemented.
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget
 binding remains presenter-owned. No additional bank-zero reservation is needed.
+
+
+## Resources and popup menus
+
+`rsrc_load`, `rsrc_free`, `rsrc_gaddr(R_TREE, index, &tree)` and `rsrc_obfix`
+provide named and AESPB bindings (110/111/112/114). Load accepts classic
+big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
+trees, using the object/string subset above. Each tree ends with LASTOB within
+32 objects. TEDINFO, icons, bitmaps, extensions and indirect specs are unsupported.
+Character coordinates use the fixed 8×8 cell. File extents and string offsets are
+checked once during loading; valid object links remain the caller's responsibility.
+Already loaded coordinates are pixels and must not be passed through obfix again.
+
+Each caller owns one resource allocation in upper RAM. Failed replacement leaves
+its previous resource intact. Explicit free or successful appl_exit releases it;
+borrowed tree/string pointers then expire. Application strings assigned to an
+object remain application-owned.
+
+`menu_popup`, `menu_ienable`, `menu_tnormal` and `menu_text` have named and AESPB
+bindings (36/32/33/34). Popup menus have one level of direct children, no scrolling
+or cascades, and must fit their owning window's work area. The caller supplies a
+valid MENU/tree and keeps strings alive; enter without an UPDATE lock. Button release, Tab/Up/Down, Return and
+Escape select or cancel. The popup acquires UPDATE only while painting and uses
+ordinary caller-local evnt_multi waits. On return it restores tree positions and
+states; the application repaints the underlying content. Non-redraw window
+messages cancel the popup and are preserved in one deferred caller-local slot,
+consumed by the next message wait. This adds no kernel signal or service queue.
+There is no global menu bar or accessory protocol yet.
+
+The private C context is now 288 bytes: the resource pointer and deferred message
+add 21 upper-RAM bytes per attached caller. Rebuild bindings and applications.
+The version-8 server wire record and all bank-zero reservations are unchanged.
+
+## Small GEM desktop
+
+`tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
+the shell. Files loads `SYS:DESKTOP.RSC`, enumerates DOS directories eight entries
+at a time and launches native Exec disk commands using Program/Process. Its
+window-scoped File menu offers Open, Refresh, Stop and Cancel. A launched command
+has an empty argument tail, NIL input and RAW output in the shell; closing Files
+requests BREAK and collects the child before Task retirement. Dynamic GEM/G4A
+loading remains unsupported. Current VDI rectangles and fixed-font text suffice.
+
+All four AES registrations and four desktop layers are used. Seven idle public
+Tasks leave one slot for a launched command. Close one GEM window before a
+shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
+PRIMES requires tiled-console mode and returns an error in desktop mode.
+This optional profile does not change the
+default shell/prime demo or its five-second OF816 autoboot.

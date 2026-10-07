@@ -71,6 +71,7 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
 {
     struct AESDelivery *record;
     BOOL stale;
+    if (c->messagePending) return TRUE;
     for (;;) {
         Forbid();
         record = (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head;

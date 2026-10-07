@@ -2,6 +2,7 @@
 #include <proto/exec.h>
 #include "create-task-packet.h"
 #include "dos-bridge.h"
+#include <dos/dos.h>
 #include "tasklease-packet.h"
 __attribute__((section("exec_layout")))
 const UWORD ExecCLayout[] = {
@@ -76,4 +77,21 @@ const UWORD ExecCLayout[] = {
     offsetof(struct TaskLease, pad2),
     sizeof(struct ExecRetainTaskPacket),
     offsetof(struct ExecRetainTaskPacket, lease),
+    sizeof(struct DateStamp),
+    offsetof(struct DateStamp, ds_Days),
+    offsetof(struct DateStamp, ds_Minute),
+    offsetof(struct DateStamp, ds_Tick),
+    sizeof(struct FileInfoBlock),
+    offsetof(struct FileInfoBlock, fib_DiskKey),
+    offsetof(struct FileInfoBlock, fib_DirEntryType),
+    offsetof(struct FileInfoBlock, fib_FileName),
+    offsetof(struct FileInfoBlock, fib_Protection),
+    offsetof(struct FileInfoBlock, fib_EntryType),
+    offsetof(struct FileInfoBlock, fib_Size),
+    offsetof(struct FileInfoBlock, fib_NumBlocks),
+    offsetof(struct FileInfoBlock, fib_Date),
+    offsetof(struct FileInfoBlock, fib_Comment),
+    offsetof(struct FileInfoBlock, fib_OwnerUID),
+    offsetof(struct FileInfoBlock, fib_OwnerGID),
+    offsetof(struct FileInfoBlock, fib_Reserved),
 };

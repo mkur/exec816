@@ -33,6 +33,9 @@ struct ExecAESContext {
     UWORD visibleIndex;
     ULONG visibleRevision;
     struct ExecVDIWorkstation *workstation;
+    struct ExecAESResource *resource;
+    WORD deferredMessage[8];
+    UBYTE messagePending;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

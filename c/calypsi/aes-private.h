@@ -2,6 +2,9 @@
 #define EXEC816_AES_PRIVATE_H
 #include <exec816/aes.h>
 #include <gem.h>
+void ExecAESResourceFree(struct ExecAESContext *);
+BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
+BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 
 /* A reservation pins the destination until publication.

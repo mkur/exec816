@@ -1,0 +1,28 @@
+; Native disk-command companion for the browser's launch/Stop demonstration.
+MODULE TICK
+USE COMMAND
+USE CSTRING AS STR
+
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"",NULL,0,NULL,0)
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  LET text=c"Tick from disk!\n"
+  DO
+    IF COMMAND.BreakPending()<>0 THEN
+      COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF COMMAND.WriteAll(COMMAND.Output(),BYTE POINTER(text),STR.strlen(text))=0
+        OR COMMAND.Delay(50)=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  OD
+
+RETURN(COMMAND.RETURN_OK)
+ENDMODULE

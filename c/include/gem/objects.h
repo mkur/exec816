@@ -36,4 +36,17 @@ WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 /* Windowed subset: commit an accepted activation, no input wait or drawing. */
 WORD form_button(OBJECT *,WORD,WORD,WORD *);
 WORD form_keybd(OBJECT *,WORD,WORD,WORD,WORD *,WORD *);
+#define R_TREE 0
+WORD rsrc_load(const char *);
+WORD rsrc_free(void);
+WORD rsrc_gaddr(WORD,WORD,void **);
+WORD rsrc_obfix(OBJECT *,WORD);
+typedef struct {
+    LONG mn_tree; /* GEM4XE 32-bit address representation. */
+    WORD mn_menu,mn_item,mn_scroll,mn_keystate;
+} MENU;
+WORD menu_popup(const MENU *,WORD,WORD,MENU *);
+WORD menu_ienable(OBJECT *,WORD,WORD);
+WORD menu_tnormal(OBJECT *,WORD,WORD);
+WORD menu_text(OBJECT *,WORD,const char *);
 #endif

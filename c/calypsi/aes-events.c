@@ -221,7 +221,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         if (status != AES_OK) { Permit(); goto done; }
         if (!ExecAESInputStable(c, inputFlags) ||
             ((flags & AES_MU_MESAG) &&
-             (port_ready(c->receiving) != ((ready & AES_MU_MESAG) != 0)))) {
+             ((c->messagePending || port_ready(c->receiving)) != ((ready & AES_MU_MESAG) != 0)))) {
             Permit();
             continue;
         }
@@ -254,7 +254,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     Forbid();
     status = ExecAESInputCommitState(c, inputFlags);
     if (status == AES_OK) {
-        if (ready & AES_MU_MESAG) {
+        if ((ready & AES_MU_MESAG) && !c->messagePending) {
             record = (struct AESDelivery *)GetMsg(c->receiving);
             if (record == NULL) status = AES_MALFORMED;
         }
@@ -266,9 +266,14 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     Permit();
     if (status != AES_OK) goto done;
     if (ready & AES_MU_MESAG) {
-        if (record == NULL) { status = AES_MALFORMED; goto done; }
-        for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = record->words[i];
-        ExecAESRecycle(c, record);
+        if (c->messagePending) {
+            for (i=0;i<AES_MESSAGE_WORDS;++i) message[i]=c->deferredMessage[i];
+            c->messagePending=0;
+        } else {
+            if (record == NULL) { status = AES_MALFORMED; goto done; }
+            for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = record->words[i];
+            ExecAESRecycle(c, record);
+        }
     }
 done:
     if (submitted && c->timer.state != AES_ALARM_IDLE &&

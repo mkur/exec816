@@ -1,0 +1,279 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "host_tests": {
+    "run": 408,
+    "skipped": 4,
+    "failures": 0
+  },
+  "raw_emitted_c_layout_checks": 88,
+  "focused": [
+    {
+      "case": "resources-opt",
+      "checks": 34,
+      "failures": 0,
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "record_sha256": "4fd596ebe2430128492dbdcaac4b9c70e23d80c787f783c1d562ceec910baac7"
+    },
+    {
+      "case": "resources-raw",
+      "checks": 34,
+      "failures": 0,
+      "c_mode": "raw",
+      "native_mode": "opt",
+      "record_sha256": "1d85cfa8406ad07932faed9db36d9897a55aa82f05da78e8b85236bbca0f1208"
+    },
+    {
+      "case": "resources-mydos",
+      "checks": 34,
+      "failures": 0,
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "record_sha256": "3503a724aa1e00c61b1ec25a3594400a69c6ab5863fb62c4296bbe4360a07f60"
+    },
+    {
+      "case": "events-opt",
+      "checks": 371,
+      "failures": 0,
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "record_sha256": "152297a90a72bd03961b22b3f27c8a1672479957b8f33bf3cae3dce04afcd613"
+    }
+  ],
+  "source_sha256": {
+    "c/calypsi/aes-resource.c": "47e6f03fae8212249129ebb5787a4c9473098762203ea0d56eb86433ea803b27",
+    "c/calypsi/aes-menu.c": "469580ac1e3a079506bfadb2a8dfb4aa3ac8da3423d0a759c9940f7556eedc57",
+    "c/calypsi/aes-events.c": "c2b0139ee1c8e00fec1c152cba16d6cd94ad0ad090211169b3e6441fd17e1ba2",
+    "c/calypsi/dos.c": "c6d4dc271ffaaae4d70bbc1b51050f51357c8e351813717d762e08c4770142ad",
+    "c/calypsi/dos-bridge.inc": "1b7d99ad31d1ca40afc65cb3f37afaf60936d3a6915aa6c0cb6f2efb5047344a",
+    "c/include/gem/objects.h": "aff0a49cfbfc08bfff2be1464dc502b2f96e5aa5fbedec1c5295c7a482859cad",
+    "examples/gem-browser/browser.c": "8d2fe7dbc602fffeabc9fc38d3f3a6cbddef5decd7739238adb511d3cdf05c3d",
+    "examples/gem-browser/resource.json": "7aae6fba97fb58004c43fb439ef35d7562f04fa77b984806a1479708717ec4ca",
+    "examples/gem-browser/tick.act": "44e67309b72aa0051cb80cd05ae302388df5c66e712dd9fc39e8688b5274c89f",
+    "examples/gem-panel/resident.c": "215de0c3a2aac25b2df637149f31bcfc8605d1653f603e1ee5ee1d9b6cd69b4e",
+    "lib/mydos/mydosfile.act": "a495ac6f707ef6f6c6f06bd0ba3c5cbf2be011f196f3464aabd6ad6500fae886",
+    "lib/spartados/sdfsfile.act": "7a8e9c4e5618f1237b3a47d0125b9c3a3a812b560b26c5dcec2254ad6d5513ff"
+  },
+  "scope": "Exact OF816 GEM desktop: panel toggle/counter progress; independent startup/browser/shell pixels; RSC directory browsing; popup keyboard/mouse; HELLO launch; TICK Stop/collection; invalid executable; close during popup with live child; shell HELLO/CAT-WC; guards, ownership and OS return.",
+  "bundle": {
+    "path": "build/gem-desktop/demo/exec816-demo.zip",
+    "sha256": "12df218dab8e723c394ae5e9036918bc761f8db5c32d60ce10437ec505c5bf09",
+    "boot_xex_sha256": "a6a0d37c308c63169ff93e1fb7df840e2d35af40501ce7cab9d5561de03d0d53",
+    "manifest_sha256": "c81a9f678098908ca3cace7ec770ea08060c61a84b78de616d1587284669d5dd",
+    "autoboot_frames": 249,
+    "peak_tasks": 8
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$8fc080a207de2b02",
+    "actual_kernel_id": "$8fc080a207de2b02",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "browser": {
+    "resource": true,
+    "navigation": true,
+    "popup_keyboard": true,
+    "popup_mouse": true,
+    "launch": "HELLO",
+    "cancel": "TICK",
+    "invalid_executable": true,
+    "close_during_popup_with_child": true
+  },
+  "integration": {
+    "profile": "gem-desktop",
+    "panel_toggle": true,
+    "counter": true,
+    "shell": true
+  },
+  "runtime": {
+    "status": 0,
+    "live_tasks": 0,
+    "guards": "intact",
+    "switches": 4639,
+    "irq_depth": 0,
+    "os_owner": 255,
+    "return_d": 3328,
+    "return_dbr": 0,
+    "return_e": 0
+  },
+  "stack_usage_before_browser_close": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 433,
+      "remaining_above_floor": 847
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 174,
+      "remaining_above_floor": 594
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 346,
+      "remaining_above_floor": 422
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 521,
+      "remaining_above_floor": 247
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 500,
+      "remaining_above_floor": 268
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 579,
+      "remaining_above_floor": 189
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 699,
+      "remaining_above_floor": 1605
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 349,
+      "remaining_above_floor": 1955
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 129,
+      "remaining_above_floor": 127
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 289,
+      "remaining_above_floor": 991
+    }
+  },
+  "stack_usage_after_exit": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 556,
+      "remaining_above_floor": 724
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 174,
+      "remaining_above_floor": 594
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 346,
+      "remaining_above_floor": 422
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 521,
+      "remaining_above_floor": 247
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 500,
+      "remaining_above_floor": 268
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 579,
+      "remaining_above_floor": 189
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 708,
+      "remaining_above_floor": 1596
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 353,
+      "remaining_above_floor": 1951
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 129,
+      "remaining_above_floor": 127
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 302,
+      "remaining_above_floor": 978
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "guards_alignment_unused_capacity_included": true
+  },
+  "limitations": [
+    "Window-scoped one-level popup only; no global menu bar/cascades.",
+    "Classic version-zero RSC object/string subset; no icons or TEDINFO.",
+    "Native Exec commands only, empty arguments/NIL input/RAW shell output; no dynamic GEM executable loading.",
+    "Seven idle Tasks; close a GEM window before a two-child pipeline.",
+    "PRIMES tiled pane is unavailable in desktop mode; TICK is the launcher Stop example.",
+    "No new latency or hosted qualification claim."
+  ]
+}

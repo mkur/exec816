@@ -40,8 +40,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     media=output/'media';media.mkdir(exist_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES'):
-        commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',command_dir/name)
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES')+(('TICK',) if gem_desktop else ()):
+        command_source=ROOT/'examples/gem-browser/tick.act' if name=='TICK' else ROOT/f'examples/commands/{name.lower()}.act'
+        commands[name]=compile_command(toolchain,command_source,command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
     binary_names={f'C/{name}' for name in commands}
@@ -66,6 +67,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 1; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+    if gem_desktop:
+        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO or TICK; File > Stop cancels TICK.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        from build_gem_resource import resource
+        (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
@@ -103,7 +108,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         from build_bitmap_artifact import copy_notices
         if gem_desktop:
             from build_gem_desktop import build_desktop
-            builder=build_desktop
+            from functools import partial
+            builder=partial(build_desktop,files=True)
         elif aes_input:
             from build_gem_input import build_inputs
             builder=build_inputs
@@ -207,7 +213,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record.update(gem_desktop=True,expected_peak_tasks=8)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
-            *sorted((ROOT/'examples/gem-panel').glob('*')))})
+            *sorted((ROOT/'examples/gem-panel').glob('*')),
+            *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py')})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics

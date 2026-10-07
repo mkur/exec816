@@ -88,7 +88,8 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
             sources.append(path)
         graf=out/'app-objects'/'app-graf.c'
         graf.write_text((object_port/'widgets-graf.c').read_text().replace('"widgets.h"','"application-hosted.h"'))
-        sources += [graf,ROOT/'c/calypsi/aes-objects.c']
+        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
+        assembly.append(ROOT/'c/calypsi/dos.s')
         extra_includes.append(object_port)
         from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
         for path,content in vdi_files().items():
@@ -125,6 +126,10 @@ def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
     if 'ExecIOEntry' in sy:
         binding+=f'CONST C_EXECIOENTRY=${sy["ExecIOEntry"]:x}\n'
         binding+=read_source(ROOT/'c/calypsi/io-bridge.inc')
+    if 'ExecDosEntries' in sy:
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE DOS\nUSE PROGRAMFILE\nUSE PROGRAM\nUSE PROCESS\n',1)
+        binding+=f'CONST C_EXECDOSENTRIES=${sy["ExecDosEntries"]:x}\n'
+        binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc')
     binding+=f'''
 PROC Main()
 
@@ -145,6 +150,8 @@ PROC Main()
 
 RETURN
 '''
+    if 'ExecDosEntries' in sy:
+        binding=binding.replace('  BindDisplay()', '  BindDos(0)\n  BindDisplay()', 1)
     if 'ExecIOEntry' in sy:
         binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
