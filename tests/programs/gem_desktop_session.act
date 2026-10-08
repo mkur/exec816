@@ -1,0 +1,36 @@
+MODULE DESKTOPTEST
+USE EXEC
+USE AESBOOT
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+USE DOS
+
+CARD checks,ready,mode
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc70+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  Require(DesktopStart()<>0)
+  ready=1
+  WHILE mode<>9 DO
+    EXEC.Yield()
+  OD
+
+  Require(DesktopStop()<>0)
+  Require(DOS.ReleaseContext()<>0)
+  LET service=AESSTATE.Get()
+  Require(service.count=0)
+  Require(AESCORE.Idle(service)<>0)
+
+RETURN
+ENDMODULE

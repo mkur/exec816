@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "default_profile": "mild",
+  "fraction_bits": 2,
+  "diagonal_speed_numerator": 3,
+  "diagonal_speed_denominator": 2,
+  "bands": [
+    {
+      "maximum_age": 16,
+      "gain_quarters": 16
+    },
+    {
+      "maximum_age": 24,
+      "gain_quarters": 12
+    },
+    {
+      "maximum_age": 48,
+      "gain_quarters": 8
+    },
+    {
+      "maximum_age": 96,
+      "gain_quarters": 6
+    }
+  ],
+  "slow_gain_quarters": 4,
+  "off_gain_quarters": 8
+}

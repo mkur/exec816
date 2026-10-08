@@ -18,7 +18,7 @@ from mouse_timer_trace import accounting, require_normal_cadence
 from generate_platform_timer import ABI as TIMER_ABI
 
 
-def fixture(out, capture=False):
+def fixture(out, capture=False, divisor=0):
     # Reuse the existing exact-byte, deadline and guard assertions. Only add
     # ownership order/capture checks around those real transfers.
     for name in ('timerprobe.act', 'producerprobe.act', 'sioprobe.act'):
@@ -26,6 +26,7 @@ def fixture(out, capture=False):
     if capture:
         (out/'timerprobe.act').write_text((ROOT/'tests/programs/timer_input_probe.act').read_text())
     text = (ROOT/'tests/programs/sio_adapter.act').read_text()
+    text = text.replace('  desc.divisor=0', f'  desc.divisor={divisor}')
     text = text.replace('INCLUDE "tasks_exec_helpers.inc"',
                         f'INCLUDE "{ROOT}/tests/programs/tasks_exec_helpers.inc"')
     text = text.replace('USE EXEC\n', 'USE EXEC\nUSE TIMERPROBE\n')
@@ -113,16 +114,20 @@ VOLATILE BYTE pokmsk=$10''')
     return path
 
 
-def run(out, mode, order, emulation=False, unobserved=False, capture=False, replay=False):
+def run(out, mode, order, emulation=False, unobserved=False, capture=False, replay=False, baud=125000):
     out.mkdir(parents=True, exist_ok=True)
     pin = json.loads(json.dumps(PIN))
-    pin['startup_configuration']['diskemu'] = 'fastest'
+    disk_mode = 'generic56k' if baud == 57600 else 'fastest'
+    pin['startup_configuration']['diskemu'] = disk_mode
     report = dict(status='running', slice='M3' if capture else 'M1', tier='development', mode=mode,
-                  order=order, emulation=emulation, observer=not unobserved, pin=pin, capture=capture)
+                  order=order, emulation=emulation, observer=not unobserved, pin=pin, capture=capture, baud=baud)
     try:
+        require(baud == 125000 or unobserved,
+                '57.6k development case uses exact-byte/ownership checks; timing oracle is pinned to 125k')
+        require(not replay or baud == 125000, '57.6k requires its matching fresh fixture')
         require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
                 'Unpinned timer observer')
-        p = read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'), fixture(out,capture), out/'program',
+        p = read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'), fixture(out,capture,8 if baud == 57600 else 0), out/'program',
                   optimize=mode == 'opt', tasks=True, task_capacity=8, io_test_device=True, irq_probe=11,
                   image_data=[(a, bytes([0xa5])*256) for a in (0x8ffa0, 0xcffa0)])
         capture_boundaries = [r['address'] for r in p['image']['routines']
@@ -139,7 +144,7 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False, repl
             for name in ('EXEC816_LATENCY_TRACE', 'EXEC816_MASK_TRACE', 'EXEC816_LATENCY_PCS'):
                 os.environ.pop(name, None)
         with emulator(BRIDGE, ROM, out, pin=pin) as b:
-            b.config('diskemu', 'fastest')
+            b.config('diskemu', disk_mode)
             b._cmd_ok('MOUSE ST')
             report['machine'] = verify_machine(b, ROM, pin)
             at = lambda n: next(d['address'] for d in p['image']['data'] if '_'+n.upper()+'_' in d['name'])
@@ -265,9 +270,10 @@ if __name__ == '__main__':
     p.add_argument('--capture', action='store_true')
     p.add_argument('--recovery', action='store_true')
     p.add_argument('--replay',action='store_true',help='Reuse the built fixture')
+    p.add_argument('--baud', type=int, choices=(125000,57600), default=125000)
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     if args.recovery:
         recovery_run(args.output.resolve(), args.mode,args.capture,args.replay)
     else:
-        run(args.output.resolve(), args.mode, args.order, args.emulation, args.unobserved, args.capture, args.replay)
+        run(args.output.resolve(), args.mode, args.order, args.emulation, args.unobserved, args.capture, args.replay, args.baud)

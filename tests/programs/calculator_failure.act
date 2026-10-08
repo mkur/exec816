@@ -1,0 +1,84 @@
+MODULE CALCFAIL
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,phase,scenario,stop
+LONGCARD child,baseline
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa90+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+  PROGRAMIMAGE.Image POINTER image
+  BYTE round
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  DOS.SelectInput(input)
+  DOS.SelectOutput(output)
+  phase=1
+  WHILE scenario=0 DO
+    EXEC.Yield()
+  OD
+  FOR round=0 TO 1 DO
+    BEGIN
+      image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:C/CALC.APP"))
+      Require(image<>NULL)
+      IF scenario=3 THEN
+        EXEC.Forbid()
+      FI
+      child=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+      Require(child<>0)
+      IF scenario=3 THEN
+        Require(PROCESS.RequestStop(child)<>0)
+        EXEC.Permit()
+      FI
+      PROGRAM.Unload(image)
+      IF scenario=4 THEN
+        stop=0
+        phase=CARD(round)+2
+        WHILE stop=0 DO
+          EXEC.Yield()
+        OD
+        Require(PROCESS.RequestStop(child)<>0)
+      FI
+      Require(PROCESS.Wait(child,@result)<>0)
+      IF scenario<3 THEN
+        Require(result.primary=1)
+      ELSE
+        Require(result.primary=0)
+      FI
+      child=0
+      LET service=AESSTATE.Get()
+      Require(service.count=0 AND AESCORE.Idle(service)<>0)
+      IF round=0 THEN
+        baseline=EXEC.AvailMem(0)
+      ELSE
+        Require(EXEC.AvailMem(0)=baseline)
+      FI
+    END
+  OD
+  DOS.SelectInput(NULL)
+  DOS.SelectOutput(NULL)
+  Require(DOS.Close(input)<>0)
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  phase=4
+
+RETURN
+ENDMODULE

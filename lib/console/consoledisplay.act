@@ -20,6 +20,7 @@ LONGCARD bitmapUnit,bitmapGeneration,bitmapModel
 BYTE bitmapReady,batchCopyReady
 
 CONST ROW_BUDGET=4, CELL_BUDGET=160
+CONST BITMAP_GLYPHS=32
 
 ; Physical text capabilities; the common model can retain larger geometry.
 PUBLIC CARD FUNC Width()
@@ -300,10 +301,11 @@ RETURN
 
 ; Refresh a bounded dirty span so screen work leaves time for input and other
 ; tasks.
-; Return whether the final bitmap span also drew the new caret.
+; Return 1 when the final bitmap span drew the new caret, or 2 while a
+; desktop fragment still owns this row's unacknowledged dirty endpoint.
 BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     POINTER instance)
-  CARD row,base,first,last,stop,rows,remaining
+  CARD row,base,first,last,stop,rows,remaining,rowLimit
   BYTE okay,caret
   BYTE POINTER source
   LONGCARD generation
@@ -317,7 +319,13 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   base=0
   rows=0
   remaining=CELL_BUDGET
-  WHILE row<instance.height AND rows<ROW_BUDGET AND remaining<>0 DO
+  rowLimit=ROW_BUDGET
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    remaining=BITMAP_GLYPHS
+    rowLimit=1
+  FI
+
+  WHILE row<instance.height AND rows<rowLimit AND remaining<>0 DO
     first=instance.damageFirst(row)
     last=instance.damageEnd(row)
     IF first<last THEN
@@ -341,7 +349,18 @@ BYTE FUNC Cells(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
               AND instance.row<view.height AND instance.column<view.width
               AND (view.cursorOn=0 OR (view.previousCursor>=base+first
               AND view.previousCursor<base+stop))
-          IF caret<>0 THEN
+          IF DESKSTATE.Enabled()<>0 THEN
+            okay=CONSOLEBITMAP.TextStep((view.left+first) LSH 3,
+                (view.top+row) LSH 3,source,stop-first)
+            IF okay=2 THEN
+              RETURN(2)
+            FI
+
+            IF okay<>0 AND caret<>0 THEN
+              okay=CONSOLEBITMAP.Fill((view.left+instance.column) LSH 3,
+                  ((view.top+instance.row) LSH 3)+7,8,1,1)
+            FI
+          ELSEIF caret<>0 THEN
             okay=CONSOLEBITMAP.TextCaret((view.left+first) LSH 3,
                 (view.top+row) LSH 3,source,stop-first,
                 (view.left+instance.column) LSH 3,
@@ -536,6 +555,7 @@ PUBLIC PROC Present(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
 
   IF CONSOLEBITMAP.Enabled()<>0 THEN
     IF CONSOLEBITMAP.Failed()<>0 THEN
+      CONSOLEBITMAP.DiscardText()
       CONSOLECORE.Clean(instance)
       view.index=instance.lineStart+instance.column
       RETURN

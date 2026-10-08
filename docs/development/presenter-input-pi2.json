@@ -1,0 +1,1272 @@
+{
+  "slice": "PI2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "hy4_closed": false,
+  "performance_acceptance": "Open: shorter widget steps and idle model response; button pixels effectively unchanged, combined status feedback and fixed-offer input p95 regress. No overall GUI latency improvement claimed.",
+  "baseline": "df2fda0",
+  "scope": "Resumable widget/frame painting only; PI3/PI4 and scene-token lifetime changes remain pending.",
+  "policy": {
+    "objects_or_parts_per_call": 1,
+    "examined_per_call": 8,
+    "strip_height": 16,
+    "partial_glyph_text_span_pixels": 96,
+    "maximum_steps_per_worker_turn": 4,
+    "publication": "Complete scratch strip only; scene token persists through the full repaint.",
+    "pi1": "Retained: smaller CPU gaps and better model/fixed-offer tails than the PI2 diagnostic without PI1; original input p95 alone favours disabling it."
+  },
+  "matched": {
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_binary_sha256": "2e74c48d8ad6e0cfe4546d38bfd2c56ff1191465bc0e15bb2e4b3fd5868a2034",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "memory_layout_identical": true,
+    "pi1_comparison_foreign_payloads_identical": true
+  },
+  "original_idle": {
+    "gestures": 10,
+    "edges": 20,
+    "before": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 7.260293862660157,
+          "p95_ms": 25.448596589411302,
+          "max_ms": 25.69994318974765
+        },
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 18.54918174910732,
+          "p95_ms": 37.12507700397108,
+          "max_ms": 44.86734171719208
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 118.91506514853133,
+          "p95_ms": 138.87223895830013,
+          "max_ms": 139.12492475813352
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 159.0806184000372,
+          "p95_ms": 259.370378880683,
+          "max_ms": 259.38186780268376
+        }
+      },
+      "work": {
+        "paint_quanta": 67,
+        "paint_cpu_ms": 825.7007185157722,
+        "max_quantum_cpu_ms": 19.801544731377728,
+        "primitive_entries": {
+          "GemWidgetFill": 505,
+          "GemWidgetText": 67,
+          "start": 361,
+          "VbxeOwnerSubmit": 361,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47650,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      },
+      "maximum_cpu_ms": {
+        "paint": 19.801544731377728,
+        "pump": 23.69382234320441,
+        "deskhost_controls": 27.487563065723684,
+        "deskcore_pump": 23.326106354995
+      },
+      "maximum_cpu_gap": {
+        "elapsed_ms": 70.45443972826936,
+        "charged_cpu_ms": 31.615398820658633,
+        "interrupt_ms": 6.57645630896883,
+        "off_cpu_ms": 32.26258459864191
+      },
+      "gap_exclusive_cpu_ms": {
+        "model_call": 16.878213197740557,
+        "other_worker": 5.401837381709918,
+        "deskcore_dispatch": 4.538406127049151,
+        "deskcore_pump": 1.9094870302052922,
+        "consolebitmap_run": 0.7309209886393592,
+        "DisplayCheck": 0.6807362495929539,
+        "consoledriver_collect": 0.595732323623902,
+        "deskinput_service": 0.367293083105082,
+        "deskinput_present": 0.18100338465051827,
+        "deskhost_controls": 0.17910031168106189,
+        "consolebitmap_cursor": 0.046731014027762315,
+        "deskhost_events": 0.03164739864021912,
+        "consoledriver_arrival": 0.02509236952320269,
+        "deskhost_inputboundary": 0.016845719988891693,
+        "deskhost_nativeadmission": 0.013110058234032867,
+        "deskmove_pump": 0.006061639828638852,
+        "consoledisplay_poll": 0.004933892883775809,
+        "deskcache_pump": 0.004510987779452169,
+        "deskhost_afterpaint": 0.0037356617548588273
+      },
+      "maximum_whole_run_gap_cpu_ms": 76.46046753568966,
+      "paint_steps_per_turn": null,
+      "whole_run_steps": null,
+      "native_admissions": {
+        "NEXT_EVENT": {
+          "calls": 10,
+          "deferred": 0,
+          "max_cpu_ms": 1.524643385270779
+        },
+        "UPDATE_WIDGETS": {
+          "calls": 20,
+          "deferred": 10,
+          "max_cpu_ms": 23.326106354995
+        }
+      },
+      "fences": {
+        "calls": 809,
+        "total_cpu_ms": 51.73200785475747,
+        "max_cpu_ms": 2.0880234684139225
+      },
+      "prepared_lists": {
+        "cursor": {
+          "lists": 254,
+          "mean": 3.0551181102362204,
+          "median": 4.0,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 60,
+            "3": 60,
+            "4": 134
+          }
+        },
+        "widget_drawing": {
+          "lists": 107,
+          "mean": 15.97196261682243,
+          "median": 15,
+          "p95": 38,
+          "maximum": 40,
+          "histogram": {
+            "1": 8,
+            "5": 32,
+            "10": 4,
+            "12": 2,
+            "13": 1,
+            "14": 3,
+            "15": 4,
+            "16": 2,
+            "17": 10,
+            "18": 5,
+            "21": 6,
+            "22": 2,
+            "29": 10,
+            "30": 8,
+            "31": 2,
+            "37": 2,
+            "38": 2,
+            "39": 2,
+            "40": 2
+          }
+        }
+      },
+      "maximum_queued_work": 5226,
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      },
+      "aes_progress": {
+        "AESMessages": 84,
+        "AESTimers": 42
+      },
+      "stack": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 716,
+        "remaining_above_floor": 1588
+      }
+    },
+    "after": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 5.739315654960183,
+          "p95_ms": 20.387550237602184,
+          "max_ms": 23.42767406421673
+        },
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 16.78538552734152,
+          "p95_ms": 28.978937916121,
+          "max_ms": 31.46223668870942
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 118.91555853781969,
+          "p95_ms": 139.12379701118866,
+          "max_ms": 139.12407894792486
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 198.9944726302865,
+          "p95_ms": 279.5796041326287,
+          "max_ms": 279.5796041326287
+        }
+      },
+      "work": {
+        "paint_quanta": 134,
+        "paint_cpu_ms": 944.2284730729272,
+        "max_quantum_cpu_ms": 16.36931738887111,
+        "primitive_entries": {
+          "GemWidgetFill": 505,
+          "GemWidgetText": 67,
+          "start": 427,
+          "VbxeOwnerSubmit": 427,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47650,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      },
+      "maximum_cpu_ms": {
+        "paint": 16.36931738887111,
+        "pump": 17.095163516258587,
+        "deskhost_controls": 28.969493035457774,
+        "deskcore_pump": 23.683954557436856,
+        "deskpaint_paintstrip": 16.56371276849188
+      },
+      "maximum_cpu_gap": {
+        "elapsed_ms": 65.32093563525281,
+        "charged_cpu_ms": 29.939496376408098,
+        "interrupt_ms": 6.057199325043453,
+        "off_cpu_ms": 29.324239933801252
+      },
+      "gap_exclusive_cpu_ms": {
+        "model_call": 16.64681362149147,
+        "deskcore_dispatch": 5.633377926327111,
+        "other_worker": 2.6291305493960206,
+        "deskcore_pump": 1.4037630096182716,
+        "consolebitmap_run": 1.177508778805124,
+        "DisplayCheck": 0.6804543128567381,
+        "consoledriver_collect": 0.5947455450471469,
+        "deskinput_service": 0.3675750198412978,
+        "VbxeOwnerSubmit": 0.23957574159934253,
+        "deskinput_present": 0.18036902699403282,
+        "VbxeOwnerFence": 0.12870412008249468,
+        "deskhost_controls": 0.10495095005631686,
+        "consolebitmap_cursor": 0.041444700223716796,
+        "deskhost_events": 0.03164739864021912,
+        "consoledriver_arrival": 0.02452849605077117,
+        "deskhost_inputboundary": 0.016845719988891693,
+        "deskhost_nativeadmission": 0.013251026602140746,
+        "deskcache_pump": 0.010361175055929199,
+        "deskmove_pump": 0.005850187276477031,
+        "consoledisplay_poll": 0.0048634086997218695,
+        "deskhost_afterpaint": 0.0037356617548588273
+      },
+      "maximum_whole_run_gap_cpu_ms": 74.21928193532653,
+      "paint_steps_per_turn": {
+        "maximum": 2,
+        "histogram": {
+          "0": 100,
+          "2": 67
+        },
+        "consecutive_steps_with_input": 67
+      },
+      "whole_run_steps": {
+        "maximum": 4,
+        "histogram": {
+          "0": 188,
+          "1": 99,
+          "2": 119,
+          "3": 10,
+          "4": 6
+        },
+        "consecutive_steps_with_input": 157
+      },
+      "native_admissions": {
+        "NEXT_EVENT": {
+          "calls": 10,
+          "deferred": 0,
+          "max_cpu_ms": 1.9958301556713691
+        },
+        "UPDATE_WIDGETS": {
+          "calls": 20,
+          "deferred": 10,
+          "max_cpu_ms": 23.683954557436856
+        }
+      },
+      "fences": {
+        "calls": 1008,
+        "total_cpu_ms": 54.388415783382364,
+        "max_cpu_ms": 1.7984744403203365
+      },
+      "prepared_lists": {
+        "cursor": {
+          "lists": 253,
+          "mean": 3.0513833992094863,
+          "median": 4,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 60,
+            "3": 60,
+            "4": 133
+          }
+        },
+        "widget_drawing": {
+          "lists": 174,
+          "mean": 9.82183908045977,
+          "median": 5.0,
+          "p95": 30,
+          "maximum": 35,
+          "histogram": {
+            "1": 26,
+            "5": 81,
+            "9": 4,
+            "10": 4,
+            "11": 4,
+            "12": 11,
+            "13": 8,
+            "16": 4,
+            "20": 2,
+            "21": 2,
+            "24": 10,
+            "25": 6,
+            "29": 2,
+            "30": 2,
+            "32": 2,
+            "33": 2,
+            "34": 2,
+            "35": 2
+          }
+        }
+      },
+      "maximum_queued_work": 3934,
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      },
+      "aes_progress": {
+        "AESMessages": 88,
+        "AESTimers": 44
+      },
+      "stack": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 742,
+        "remaining_above_floor": 1562
+      }
+    },
+    "without_pi1": {
+      "latency": {
+        "capture_to_button_consumed_ms": {
+          "count": 20,
+          "median_ms": 5.238243590520723,
+          "p95_ms": 11.049523597399979,
+          "max_ms": 13.82695287004549
+        },
+        "capture_to_commit_ms": {
+          "count": 20,
+          "median_ms": 13.54713065935135,
+          "p95_ms": 32.44718267667918,
+          "max_ms": 37.7524567262352
+        },
+        "capture_to_button_pixels_ms": {
+          "count": 20,
+          "median_ms": 118.9156995061878,
+          "p95_ms": 139.1243608846611,
+          "max_ms": 139.1252771790538
+        },
+        "capture_to_visible_ms": {
+          "count": 20,
+          "median_ms": 199.24567826225473,
+          "p95_ms": 279.57854686986786,
+          "max_ms": 279.5791107433403
+        }
+      },
+      "work": {
+        "paint_quanta": 134,
+        "paint_cpu_ms": 941.8416671483086,
+        "max_quantum_cpu_ms": 16.366850442429225,
+        "primitive_entries": {
+          "GemWidgetFill": 505,
+          "GemWidgetText": 67,
+          "start": 427,
+          "VbxeOwnerSubmit": 427,
+          "vram_win": 0
+        },
+        "logical_requested_damage_pixels": 47650,
+        "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+      },
+      "maximum_cpu_ms": {
+        "paint": 16.366850442429225,
+        "pump": 17.09953353566993,
+        "deskhost_controls": 25.926408873112962,
+        "deskcore_pump": 24.184744685140103,
+        "deskpaint_paintstrip": 16.56145727460215
+      },
+      "maximum_cpu_gap": {
+        "elapsed_ms": 74.43045255075214,
+        "charged_cpu_ms": 35.03106237991257,
+        "interrupt_ms": 7.324504954333297,
+        "off_cpu_ms": 32.07488521650627
+      },
+      "gap_exclusive_cpu_ms": {
+        "model_call": 15.971363685702565,
+        "deskcore_dispatch": 6.979343905021152,
+        "other_worker": 3.066907816555043,
+        "deskinput_service": 2.918891030041769,
+        "deskcore_pump": 1.7632323482933665,
+        "consolebitmap_run": 1.1768039369645846,
+        "deskhost_controls": 1.1706013287678376,
+        "DisplayCheck": 0.6803838286726841,
+        "consoledriver_collect": 0.5955208710717402,
+        "VbxeOwnerSubmit": 0.2450030237714959,
+        "deskinput_present": 0.18699454029510318,
+        "VbxeOwnerFence": 0.12271296443790979,
+        "deskhost_events": 0.06244898707179095,
+        "consolebitmap_cursor": 0.0410922793034471,
+        "consoledriver_arrival": 0.030519651695356077,
+        "deskmove_pump": 0.006061639828638852,
+        "consoledisplay_poll": 0.0048634086997218695,
+        "deskcache_pump": 0.004510987779452169,
+        "deskhost_afterpaint": 0.0038061459389127673
+      },
+      "maximum_whole_run_gap_cpu_ms": 100.53109832684643,
+      "paint_steps_per_turn": {
+        "maximum": 2,
+        "histogram": {
+          "0": 99,
+          "2": 67
+        },
+        "consecutive_steps_with_input": 67
+      },
+      "whole_run_steps": {
+        "maximum": 4,
+        "histogram": {
+          "0": 194,
+          "1": 103,
+          "2": 119,
+          "3": 10,
+          "4": 6
+        },
+        "consecutive_steps_with_input": 157
+      },
+      "native_admissions": {
+        "NEXT_EVENT": {
+          "calls": 10,
+          "deferred": 0,
+          "max_cpu_ms": 0.4372133936865906
+        },
+        "UPDATE_WIDGETS": {
+          "calls": 20,
+          "deferred": 10,
+          "max_cpu_ms": 24.184744685140103
+        }
+      },
+      "fences": {
+        "calls": 1008,
+        "total_cpu_ms": 51.84760191660593,
+        "max_cpu_ms": 1.2732967849344285
+      },
+      "prepared_lists": {
+        "cursor": {
+          "lists": 253,
+          "mean": 3.0513833992094863,
+          "median": 4,
+          "p95": 4,
+          "maximum": 4,
+          "histogram": {
+            "1": 60,
+            "3": 60,
+            "4": 133
+          }
+        },
+        "widget_drawing": {
+          "lists": 174,
+          "mean": 9.82183908045977,
+          "median": 5.0,
+          "p95": 30,
+          "maximum": 35,
+          "histogram": {
+            "1": 26,
+            "5": 81,
+            "9": 4,
+            "10": 4,
+            "11": 4,
+            "12": 11,
+            "13": 8,
+            "16": 4,
+            "20": 2,
+            "21": 2,
+            "24": 10,
+            "25": 6,
+            "29": 2,
+            "30": 2,
+            "32": 2,
+            "33": 2,
+            "34": 2,
+            "35": 2
+          }
+        }
+      },
+      "maximum_queued_work": 3934,
+      "feedback": {
+        "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+        "edges": 20,
+        "edges_with_invalid_pixels": 0,
+        "invalid_frames": 0,
+        "max_invalid_pixels": 0
+      },
+      "aes_progress": {
+        "AESMessages": 86,
+        "AESTimers": 44
+      },
+      "stack": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 742,
+        "remaining_above_floor": 1562
+      }
+    }
+  },
+  "fixed_offers": {
+    "scope": "Identical external offer and button-edge schedules on the same recorded machine. Backlog and boundary-crossing calls remain visible. These distributions do not replace continuous-workload or scanout acceptance.",
+    "order": [
+      "PI1",
+      "PI2 with PI1",
+      "PI2 without PI1"
+    ],
+    "schedule": {
+      "frames": 400,
+      "period_frames": 20,
+      "offers": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100,
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        360,
+        380
+      ],
+      "edges": [
+        [
+          12,
+          1
+        ],
+        [
+          37,
+          0
+        ],
+        [
+          62,
+          1
+        ],
+        [
+          87,
+          0
+        ],
+        [
+          112,
+          1
+        ],
+        [
+          137,
+          0
+        ],
+        [
+          162,
+          1
+        ],
+        [
+          187,
+          0
+        ],
+        [
+          212,
+          1
+        ],
+        [
+          237,
+          0
+        ],
+        [
+          262,
+          1
+        ],
+        [
+          287,
+          0
+        ],
+        [
+          312,
+          1
+        ],
+        [
+          337,
+          0
+        ],
+        [
+          362,
+          1
+        ],
+        [
+          387,
+          0
+        ]
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    "cohorts": [
+      {
+        "offered": 20,
+        "started": 20,
+        "completed": 20,
+        "pending": 0,
+        "calls": 99,
+        "native_progress": {
+          "reads": 0,
+          "writes": 0
+        },
+        "input": {
+          "capture_to_ready_ms": {
+            "count": 16,
+            "median_ms": 0.6007367006917318,
+            "p95_ms": 0.7513614020150019,
+            "max_ms": 0.7513614020150019
+          },
+          "ready_to_selected_ms": {
+            "count": 16,
+            "median_ms": 0.4902879842792076,
+            "p95_ms": 0.4924025098008258,
+            "max_ms": 0.4924025098008258
+          },
+          "selected_to_consume_ms": {
+            "count": 16,
+            "median_ms": 1.722774426646405,
+            "p95_ms": 48.81523135023732,
+            "max_ms": 48.81523135023732
+          },
+          "runnable_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.49035846846326153,
+            "p95_ms": 1.8452759385321529,
+            "max_ms": 1.8452759385321529
+          },
+          "blocked_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.6007367006917318,
+            "p95_ms": 0.7513614020150019,
+            "max_ms": 0.7513614020150019
+          },
+          "charged_cpu_ms": {
+            "count": 16,
+            "median_ms": 1.4332958827368727,
+            "p95_ms": 39.0430926204469,
+            "max_ms": 39.0430926204469
+          },
+          "elapsed_ms": {
+            "count": 16,
+            "median_ms": 2.806609724843842,
+            "p95_ms": 48.81523135023732,
+            "max_ms": 48.81523135023732
+          }
+        },
+        "caller_cpu_ms": 360.5204693118911
+      },
+      {
+        "offered": 20,
+        "started": 20,
+        "completed": 20,
+        "pending": 0,
+        "calls": 99,
+        "native_progress": {
+          "reads": 0,
+          "writes": 0
+        },
+        "input": {
+          "capture_to_ready_ms": {
+            "count": 16,
+            "median_ms": 0.6023578369249724,
+            "p95_ms": 0.6669918337024355,
+            "max_ms": 0.6669918337024355
+          },
+          "ready_to_selected_ms": {
+            "count": 16,
+            "median_ms": 0.490992826119747,
+            "p95_ms": 1.4766436559300458,
+            "max_ms": 1.4766436559300458
+          },
+          "selected_to_consume_ms": {
+            "count": 16,
+            "median_ms": 1.721294258781272,
+            "p95_ms": 58.277239670190404,
+            "max_ms": 58.277239670190404
+          },
+          "runnable_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.4914862154081246,
+            "p95_ms": 2.7934291824257556,
+            "max_ms": 2.7934291824257556
+          },
+          "blocked_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.6023578369249724,
+            "p95_ms": 0.6669918337024355,
+            "max_ms": 0.6669918337024355
+          },
+          "charged_cpu_ms": {
+            "count": 16,
+            "median_ms": 1.4322386199760635,
+            "p95_ms": 46.098136539141976,
+            "max_ms": 46.098136539141976
+          },
+          "elapsed_ms": {
+            "count": 16,
+            "median_ms": 2.817746225924365,
+            "p95_ms": 58.277239670190404,
+            "max_ms": 58.277239670190404
+          }
+        },
+        "caller_cpu_ms": 360.80677606751823
+      },
+      {
+        "offered": 20,
+        "started": 20,
+        "completed": 20,
+        "pending": 0,
+        "calls": 99,
+        "native_progress": {
+          "reads": 0,
+          "writes": 0
+        },
+        "input": {
+          "capture_to_ready_ms": {
+            "count": 16,
+            "median_ms": 0.5332833365521111,
+            "p95_ms": 0.667555707174867,
+            "max_ms": 0.667555707174867
+          },
+          "ready_to_selected_ms": {
+            "count": 16,
+            "median_ms": 0.49035846846326153,
+            "p95_ms": 1.2195173525012724,
+            "max_ms": 1.2195173525012724
+          },
+          "selected_to_consume_ms": {
+            "count": 16,
+            "median_ms": 1.7210828062291104,
+            "p95_ms": 59.35029088822759,
+            "max_ms": 59.35029088822759
+          },
+          "runnable_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.49035846846326153,
+            "p95_ms": 2.7959666130516974,
+            "max_ms": 2.7959666130516974
+          },
+          "blocked_off_cpu_ms": {
+            "count": 16,
+            "median_ms": 0.5332833365521111,
+            "p95_ms": 0.667555707174867,
+            "max_ms": 0.667555707174867
+          },
+          "charged_cpu_ms": {
+            "count": 16,
+            "median_ms": 1.4323091041601175,
+            "p95_ms": 46.91476629559093,
+            "max_ms": 46.91476629559093
+          },
+          "elapsed_ms": {
+            "count": 16,
+            "median_ms": 2.7001786069223925,
+            "p95_ms": 59.35029088822759,
+            "max_ms": 59.35029088822759
+          }
+        },
+        "caller_cpu_ms": 360.74277642839724
+      }
+    ]
+  },
+  "pixel_steps": {
+    "scope": "Passive console turn accounting on the pinned native adapter.\n\nCharged CPU includes calls into C and the kernel, scheduling/return overhead and\nbus stalls. Native IRQ/NMI bodies and time assigned to another Task are separate.\nThis is a conservative service charge, not an instruction-only profiler. No\ninstructions, storage or scheduling changes are inserted into the guest.\n WidgetPaint entry through stack-matched RTL, including nested primitives, callback return, publication and fence; only its RTL instruction is excluded.",
+    "scan_initial": [
+      {
+        "stage": 1,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 12.318238910370903
+      },
+      {
+        "stage": 2,
+        "paint_steps": 7,
+        "max_step_cpu_ms": 7.697507256346749
+      },
+      {
+        "stage": 3,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 12.36630912389569
+      },
+      {
+        "stage": 4,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 12.412546748635075
+      },
+      {
+        "stage": 5,
+        "paint_steps": 33,
+        "max_step_cpu_ms": 66.99761340552793
+      },
+      {
+        "stage": 6,
+        "paint_steps": 33,
+        "max_step_cpu_ms": 66.97414217223798
+      },
+      {
+        "stage": 7,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 8,
+        "paint_steps": 33,
+        "max_step_cpu_ms": 66.93304989293452
+      },
+      {
+        "stage": 9,
+        "paint_steps": 33,
+        "max_step_cpu_ms": 66.99979841523361
+      },
+      {
+        "stage": 10,
+        "paint_steps": 20,
+        "max_step_cpu_ms": 4.738158304658017
+      },
+      {
+        "stage": 11,
+        "paint_steps": 2,
+        "max_step_cpu_ms": 4.658017787388688
+      },
+      {
+        "stage": 12,
+        "paint_steps": 7,
+        "max_step_cpu_ms": 8.520833010280823
+      },
+      {
+        "stage": 13,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 14,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 15,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 16,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 17,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 4.764871810414461
+      },
+      {
+        "stage": 18,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 3.154096752229767
+      },
+      {
+        "stage": 19,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 3.154096752229767
+      },
+      {
+        "stage": 20,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 5.688496558257293
+      },
+      {
+        "stage": 21,
+        "paint_steps": 6,
+        "max_step_cpu_ms": 5.7497473142001665
+      }
+    ],
+    "final": [
+      {
+        "stage": 1,
+        "next_index": 7,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 11.910840326539128
+      },
+      {
+        "stage": 2,
+        "next_index": 7,
+        "paint_steps": 7,
+        "max_step_cpu_ms": 7.709207630899702
+      },
+      {
+        "stage": 3,
+        "next_index": 7,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 12.378291435184858
+      },
+      {
+        "stage": 4,
+        "next_index": 7,
+        "paint_steps": 23,
+        "max_step_cpu_ms": 12.427277943102347
+      },
+      {
+        "stage": 5,
+        "next_index": 9,
+        "paint_steps": 43,
+        "max_step_cpu_ms": 14.995580641659819
+      },
+      {
+        "stage": 6,
+        "next_index": 9,
+        "paint_steps": 43,
+        "max_step_cpu_ms": 15.045131023049738
+      },
+      {
+        "stage": 7,
+        "next_index": 9,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 8,
+        "next_index": 9,
+        "paint_steps": 43,
+        "max_step_cpu_ms": 14.985994792628484
+      },
+      {
+        "stage": 9,
+        "next_index": 9,
+        "paint_steps": 43,
+        "max_step_cpu_ms": 15.044355697025145
+      },
+      {
+        "stage": 10,
+        "next_index": 9,
+        "paint_steps": 20,
+        "max_step_cpu_ms": 4.956870727777394
+      },
+      {
+        "stage": 11,
+        "next_index": 1,
+        "paint_steps": 2,
+        "max_step_cpu_ms": 4.700872171293484
+      },
+      {
+        "stage": 12,
+        "next_index": 9,
+        "paint_steps": 7,
+        "max_step_cpu_ms": 8.533097258306208
+      },
+      {
+        "stage": 13,
+        "next_index": 9,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 14,
+        "next_index": 9,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 15,
+        "next_index": 9,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 16,
+        "next_index": 9,
+        "paint_steps": 0,
+        "max_step_cpu_ms": 0
+      },
+      {
+        "stage": 17,
+        "next_index": 8,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 4.743726555198279
+      },
+      {
+        "stage": 18,
+        "next_index": 16,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 3.1617795282916465
+      },
+      {
+        "stage": 19,
+        "next_index": 24,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 3.1622024333959704
+      },
+      {
+        "stage": 20,
+        "next_index": 32,
+        "paint_steps": 1,
+        "max_step_cpu_ms": 5.7861171531719995
+      },
+      {
+        "stage": 21,
+        "next_index": 32,
+        "paint_steps": 6,
+        "max_step_cpu_ms": 5.755949922396913
+      },
+      {
+        "stage": 22,
+        "next_index": 2,
+        "paint_steps": 22,
+        "max_step_cpu_ms": 17.498333049047126
+      }
+    ],
+    "explanation": "Initial one-object candidate still reaches 67 ms on an odd-x, vertically clipped 63-character label. Final horizontal continuation bounds that fixture at 15.045 ms. Stage 22 covers a long selected/disabled/focused button. Initial timing was reanalyzed with entry-stack matching; unfiltered shared-RTL numbers are superseded."
+  },
+  "checks": {
+    "host": {
+      "tests": 396,
+      "historical_skips": 4
+    },
+    "intake": {
+      "checks": 182,
+      "maximum_per_turn": 4,
+      "deferred_admissions": 12,
+      "input_injected": 69,
+      "input_consumed": 69,
+      "native_deferred": 10
+    },
+    "pixel_scenes": 22,
+    "presentation": {
+      "checks": 49,
+      "scenes": 10
+    },
+    "interaction": {
+      "checks": 122,
+      "continuation_cases": [
+        "physical motion/press/release",
+        "hide",
+        "patch",
+        "close"
+      ]
+    },
+    "fairness": {
+      "checks": 68,
+      "floods": 24,
+      "smalls": 8,
+      "reads": 2,
+      "computes": 56
+    },
+    "idle_presenter_turns": 0,
+    "guards_ownership_cleanup": "Pass in all selected emitted cases; development scope only."
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "upper_ram_reservation_delta": 0,
+    "vram_reservation_delta": 0,
+    "mutable_upper_c_bytes_delta": 2,
+    "native_code_payload_bytes": {
+      "before": 647474,
+      "after": 648138
+    },
+    "native_data_payload_bytes": {
+      "before": 10118,
+      "after": 10118
+    },
+    "c_code_payload_bytes": {
+      "before": 74100,
+      "after": 74644
+    },
+    "c_bss_bytes": {
+      "before": 12359,
+      "after": 12361
+    },
+    "worker_stack": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 742,
+      "remaining_above_floor": 1562
+    },
+    "scope": "All reservations include guards, alignment and unused capacity. Continuation offset uses two bytes inside existing C upper storage; worker counters use existing stack reservation."
+  },
+  "diagnostic_override": {
+    "host_revision": "5465f54",
+    "host_sha256": "717f81f336ada6f3e5bcb23c2b891aeab8e4b00f33deed63b70d1cf81c8b734e",
+    "worker_change": "Remove PI1 post-borrow InputBoundary only; preserve all PI2 step code.",
+    "script": "build/presenter-input/pi2/build-comparison.py"
+  },
+  "limitations": [
+    "Only original idle latency cohort rerun; no scroll/disk/raw-pointer/HY4 qualification.",
+    "Complete-run maxima include setup, matched full redraw and retirement.",
+    "Feedback observer begins after model observation and excludes pointer pixels; no whole-gesture flicker claim.",
+    "Fixed-offer diagnostic has equal external load and no backlog, but does not measure pixels.",
+    "20 ms CPU gap target remains open; observed idle UPDATE_WIDGETS admission alone takes 23.684 ms.",
+    "First one-object/frame candidate regressed button median to 138.872 ms; final client-frame skip and scratch-change handling restore it to 118.916 ms.",
+    "No public ABI/layout changes, donor edits, new Tasks or demo refresh."
+  ],
+  "sources": {
+    "build/presenter-input/pi1/fixed-after/results.json": "aa8e6298459ed59fdea76fcef6d6b6c699f7655774d29653ed1c5e221daf976d",
+    "build/presenter-input/pi1/panel-run/results.json": "bde80748db86c171ca83a70f6cfaf6e8fd3c1bd0c1af8874ac0fbd995f4a43d3",
+    "build/presenter-input/pi1/panel-run/work-unit-analysis.json": "5d4bb10116bf47fd83a7e07449af72b1e890b12a02ec1cfbeb7d91c01c40c4fe",
+    "build/presenter-input/pi2/build-comparison.py": "4d3550ef10719266416958ed0ac0a2d357d5d15778931b18d5280decdec275e9",
+    "build/presenter-input/pi2/candidate/c-image.json": "07410f69ed67464a4cb560d3a3bdec6cb14dcc4bee091c5f1f086198d58971b8",
+    "build/presenter-input/pi2/candidate/program/build.json": "921c63ac2e1b541eaa696927ead7f7e34598569ec9044b60b0803dfe05ebe3cd",
+    "build/presenter-input/pi2/candidate/program/program.xex": "c0eee62b4011182c0a35b0ea6e24c83e6a3f7556a44a04ef477ccd441b63ab9f",
+    "build/presenter-input/pi2/candidate-without-pi1/c-image.json": "a6a095ca0eaa8f5736ccdf994438c9aed0ca23ff3f991c3a5f63b2bd61163825",
+    "build/presenter-input/pi2/candidate-without-pi1/program/build.json": "66f7673c08e3b1b4a149c7ce316ef4149a184acdd3f7583348bbed8edae73ce3",
+    "build/presenter-input/pi2/candidate-without-pi1/program/program.xex": "9870d7a6398a5d332b3cdaca462f168183085b00c1872e35fdbaecfaef595c52",
+    "build/presenter-input/pi2/checked-interaction/interaction-results.json": "17b2eb8b85ca98edf76d3336d5a7a98e3c17e79755fd3249791865c51c1501de",
+    "build/presenter-input/pi2/final-fairness/results.json": "aeeee1e9242e5d33dec3457b2dd2f6bf4d5742ac4ed77c05acc90ad90eac15f0",
+    "build/presenter-input/pi2/final-intake/results.json": "1e663ea0995ff7c01710ea0bddd402e58a04aa3ff51462e34f4dc478935ccea8",
+    "build/presenter-input/pi2/final-pixels/c-image.json": "a6a0c2dbf49cc97e12e4d5b1da78f24a2300c743db1fbb3d4a94f8bf6f51d0b8",
+    "build/presenter-input/pi2/final-pixels/emulator.log": "5693ba6d1e8386481b4580e8fb1303611b5507a100e2632db84bceafd825ab94",
+    "build/presenter-input/pi2/final-pixels/pixel-results.json": "bb14d6bdaa80dd24b9dd89e1eec1af41d6266551d0483f5acff2eaa7438dc87b",
+    "build/presenter-input/pi2/final-pixels/program/build.json": "d2a145f0eeada1d94b64ed3d8b8a3e56666519ba51bb03bfc72957b0a7f8d37b",
+    "build/presenter-input/pi2/final-presentation/presentation-results.json": "6fde9af2b4ecee6a0b92363593be4da12bdfe4b524f4304f15c3362694d73dc7",
+    "build/presenter-input/pi2/fixed/results.json": "194071e61653b61b99afb5f36b2c636626325885d3b7f7eb4efc75d3bd70a9fc",
+    "build/presenter-input/pi2/fixed-comparison.json": "a5ac084da324584539c96c1295c7ce7c334936e6a56868a33f8149b877993cd8",
+    "build/presenter-input/pi2/fixed-image/c-image.json": "78825e2b94bbcc9077f82bc588e91bb05436c1ec8e5eb541bac018368b38b72a",
+    "build/presenter-input/pi2/fixed-image/program/build.json": "74530773fcaf0646fda6505ac3daf2b271b20de286deb9fba78c94c1a7a578e1",
+    "build/presenter-input/pi2/fixed-image/program/program.xex": "95ac65dc3576c1190a3868ed0a68bc64f0c662d4f7b9981784126721d17eccbf",
+    "build/presenter-input/pi2/fixed-image-without-pi1/c-image.json": "abbadd5692c81f6be5d65e06ab0506c76dfb32ffb13b05a40fbd3480c7843833",
+    "build/presenter-input/pi2/fixed-image-without-pi1/program/build.json": "d63a437ba6be4040ed789e4e0ae819922e556fff7148e15ac3af9b54481535e6",
+    "build/presenter-input/pi2/fixed-image-without-pi1/program/program.xex": "9a343b34f1adca0c9108f80d798b4b4f5941d1fc48133524eb18a7f37a2484be",
+    "build/presenter-input/pi2/fixed-without-pi1/results.json": "5cda20314f92c445cdac3a064045f1d07f9a4212c5f1b486e7d283584330d169",
+    "build/presenter-input/pi2/idle/results.json": "db5fed3c111b53892a880746d47f001982e9d8d55c78c56814e6e51664928837",
+    "build/presenter-input/pi2/panel/c-image.json": "50ae31fe028029a180e8a38bebc6430ca56187c1f0edbf03e780af100d016069",
+    "build/presenter-input/pi2/panel/program/build.json": "d95e2a6768a94581a725dc100ea68c06baf9de6e1ccbb436573d033096ebb44b",
+    "build/presenter-input/pi2/panel-run/emulator.log": "4145cab8d8ccb56061c146259d9b14b2121bd9ce382b762fbf33f6376699fbe5",
+    "build/presenter-input/pi2/panel-run/presenter-definition.json": "182b8f802e34a9b2272861a75666551773aea94d924dc35472a0e7723c367b8d",
+    "build/presenter-input/pi2/panel-run/results.json": "bdd4c68ec101b0528492c352e42df637da196444479b07faec9817116703c0b0",
+    "build/presenter-input/pi2/panel-run/work-unit-analysis.json": "a4e05f8c1e8b5430ac5a8164379c2511d42ebb217441b71eb50bbf0d08173e5e",
+    "build/presenter-input/pi2/pixels/c-image.json": "78b2f8805fe1c589961853721ae777b97d8d29e1865d1b3a09819c28f9b5bd1e",
+    "build/presenter-input/pi2/pixels/corrected-timing.json": "17091f0d06fa8a9a45d982e7dfe2d7dc83d8babebcd44c1ff5012357fc8dccd5",
+    "build/presenter-input/pi2/pixels/emulator.log": "40be84db1a4511793d4b897c2e4fb3623d4f94bc9781d886a05cb45233af9493",
+    "build/presenter-input/pi2/pixels/program/build.json": "e60b5a37d31e365ba744deea9740b9e68aa61e9b973d21a8cad268d1c1edd9b4",
+    "build/presenter-input/pi2/prototype-run/results.json": "85f65a5793ed0248ed3e8d97249f3286e30d6a7c2ae3c850b8506954e77382b6",
+    "build/presenter-input/pi2/prototype-run/work-unit-analysis.json": "d79bff7d011bf938212432b1bef76bc68763b21f18aeb3ce1484f99a81f60b55",
+    "build/presenter-input/pi2/without-pi1-run/emulator.log": "0428dd00a880e235835608b81ce1b50d492329dae941c2a243907ab9d272b11f",
+    "build/presenter-input/pi2/without-pi1-run/presenter-definition.json": "f58e1c5b0824a065ceb7a82efed827e4f06b4306f22c0e0fa0a2b25207c126af",
+    "build/presenter-input/pi2/without-pi1-run/results.json": "fbbedba70a97276dcceaf29a657966629b3c85d040924eba1df1a851ec854556",
+    "build/presenter-input/pi2/without-pi1-run/work-unit-analysis.json": "f8db7dda7a7ce566bc53335f1f174f9623dd5e4905fd41a31256902b40091b25",
+    "docs/development/presenter-input-pi1.json": "d48f64bcdfb30dd2888778478df2e84afa291996fc33aede09e2da13d30b8358",
+    "lib/console/consoledriver.act": "a4e490ab3e0ea32ebaffdf2d96b956d3301cbc0a8e3f19d3ccbd1fcba4bb0dd0",
+    "lib/desktop/deskpaint.act": "f5f61b069024c65307f0465f0c8b83035506ecbf3818384a83c8f6816d8ef54e",
+    "lib/desktop/deskwidgets.act": "92bd9881bfc75464ae62d7f4a4de09e73fa5c63fca966d7eeca1c31747c0ef74",
+    "ports/gem4xe/aes/widgets-render.c": "42053b572867911895f7d3842b00566bd484843b7b4ba5e53827a5fa914b0dae",
+    "tests/programs/widgets_pixels.c": "b6aa071f780cf42e9298054c4decbb6fa324a0ec1961895212bf8b73501c8948",
+    "tests/test_console_turn_profile.py": "4eebd98d6420dcc7a436f6d9b04ca239aafe6f1aa6fde110084b3ef50ac78314",
+    "tools/analyze_vbxe_builder.py": "890d7cd80dd0315bd3bc573989bf9389b238f733ea3f036259bfdef0c5767247",
+    "tools/console_turn_profile.py": "8ab830bcda6036b99d39fc0718ad4a3509221caf63936fb428ed3b458b9d601f",
+    "tools/profile_vbxe_builder.py": "5e5b67ff79e2d8bf7f1cdb11edf26a9df7c7184ba9625e80a230f404ecf600f9",
+    "tools/test_widget_interaction.py": "0ff43fed606b449417e8b1fb2e7d8cfac56f0e7c447e477d569eb9526a7e12fb",
+    "tools/test_widget_pixels.py": "98740a183525160ff01767eebe77426c00cf51505525f99f18c5a097c5417259"
+  }
+}

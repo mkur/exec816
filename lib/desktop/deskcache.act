@@ -1,9 +1,11 @@
 ; Optional compact client pixels. Retained models remain authoritative.
 MODULE DESKCACHE
+USE DISPLAY
 USE DESKTYPES
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
+USE DESKGEOMETRY
 USE CONSOLEBITMAP
 USE HEAPCORE
 
@@ -19,8 +21,7 @@ RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
 
 PUBLIC PROC ClientBounds(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
-  REGIONS.Assign(area,layer.bounds.left+8,layer.bounds.top+16,
-      layer.bounds.right-8,layer.bounds.bottom-8)
+  DESKGEOMETRY.Work(@layer.bounds,area)
 
 RETURN
 
@@ -132,10 +133,11 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   BYTE index,status
   LONGCARD token
 
-  IF active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
+  IF DISPLAY.Blocked()<>0 OR active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
       OR window.id=0 OR window.visualRevision=0
-      OR window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      OR window.kind=DESKTYPES.CONTENT_CONSOLE
+      OR window.kind=DESKTYPES.CONTENT_AES THEN
     RETURN(0)
   FI
 
@@ -204,7 +206,7 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,area)
   BYTE index
 
-  IF active<>0 OR CONSOLEBITMAP.Pending()<>0
+  IF DISPLAY.Blocked()<>0 OR active<>0 OR CONSOLEBITMAP.Pending()<>0
       OR service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
       OR service.scene.activeId<>window.layer OR service.scene.busy=0
       OR REGIONS.Empty(area)<>0 OR REGIONS.Contains(client,area)=0

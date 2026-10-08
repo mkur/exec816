@@ -22,7 +22,7 @@ from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from sio_transaction_trace import BASE_HZ, read_events
 from stack_budget import stack_usage
-from test_desktop_presentation import rectangle, frame, text
+from test_desktop_presentation import desktop, rectangle, frame, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from test_gem_interactive import pixels
@@ -35,12 +35,15 @@ DAMAGE = [(40, 46, 70, 56), (56, 52, 82, 64), (32, 99, 44, 108),
           (38, 32, 98, 40), (176, 97, 190, 107)]
 NAMES = ('empty desktop', 'first empty client', 'five retained commands',
          'shortened label', 'focus title', 'overlapping sparse damage',
-         'full repaint', 'short title and empty black client', 'closed')
+         'full repaint', 'short title and empty black client', 'closed',
+         'long retained text and title', 'vertically clipped long repair',
+         'closed after text continuation', 'minimum-width long title',
+         'minimum-width empty title', 'closed minimum window')
 
 
 def scene(stage, font):
     raster = Raster(font)
-    rectangle(raster, (0, 0, 640, 240), 8)
+    desktop(raster)
     if 2 <= stage <= 8:
         frame(raster, BOUNDS, b'X' if stage == 8 else b'Background',
               5 <= stage <= 7, 0 if stage == 8 else 3, close=True)
@@ -50,6 +53,15 @@ def scene(stage, font):
                 left, top, right, bottom = bounds
                 rectangle(raster, (39+left, 45+top, 39+right, 45+bottom), pen)
             text(raster, 42, 64, b'Long label' if stage == 3 else b'OK', bg=3)
+    if stage in (10, 11):
+        frame(raster, (17, 19, 623, 99), b'A long title across paint steps',
+              False, 3, close=True)
+        text(raster, 28, 38, bytes(65+i % 26 for i in range(70)), bg=3)
+        rectangle(raster, (575, 39, 604, 45), 5)
+    if stage in (13,14):
+        frame(raster,(575,193,607,225),b'Minimum title' if stage==13 else b'',True,close=True)
+    menu_bar(raster, b'Background' if 5 <= stage <= 7 else
+             b'Minimum title' if stage==13 else b'' if stage==14 else b'Desktop')
     return overlay(raster, (320, 120))
 
 
@@ -90,7 +102,8 @@ def run(out, replay=False, painter=None, observe=True):
     require(p['build']['optimize'], 'Rendering checks use optimized code')
     foreign = json.loads((out/'c-image.json').read_text())
     definitions = markers(p, foreign, out/'drawing')
-    definitions['spans'].update(native_markers(p, [('DESKPAINT_PAINTSTRIP', 'paint_strip')]))
+    definitions['spans'].update(native_markers(p, [('DESKPAINT_PAINTSTRIP', 'paint_strip'),
+                                                 ('DESKINPUT_SERVICE', 'input_service')]))
     points = flat_markers(definitions)
     points.update({name: foreign['symbols'][name] for name in ('start', '_VbxeUpload', '_VbxeTextUpload')})
     points['drawing_call'] = p['labels']['console_bitmap_call']
@@ -98,10 +111,10 @@ def run(out, replay=False, painter=None, observe=True):
               ('GemDrawingCopy', 'GemDrawingCopyStart', 'GemDrawingScrollStart')]
     points.update({f'copy_{i}': pc for i, pc in enumerate(copies)})
     # The bridge only sets bank-zero PC breakpoints. Observe the existing
-    # FindTask gateway called by Display.Valid while a drawing packet is live.
+    # FindTask gateway called by Display.OwnerEnter while a drawing packet is live.
     # A fill can validate ownership several times; correlate samples with the
     # passive drawing-call trace instead of counting gateway crossings as fills.
-    find_caller = call_marker(p, 'M_DISPLAY_VALID_', 'tasks_find_task', after=True)
+    find_caller = call_marker(p, 'M_DISPLAY_OWNERENTER_', 'tasks_find_task', after=True)
     # @s and REGS expose only S8; @ra uses the complete native S internally.
     # Reject an ambiguous low-word return before relying on that expression.
     needle = b'\x22'+p['labels']['tasks_find_task'].to_bytes(3, 'little')
@@ -218,11 +231,18 @@ def run(out, replay=False, painter=None, observe=True):
                            async_launches=hits.count(p['labels']['blitter_launched']),
                            painter_calls=len(paint),
                            painter_cpu_ms=sum(s['charged_cpu_ms'] for s in paint),
+                           painter_max_cpu_ms=max((s['charged_cpu_ms'] for s in paint), default=0),
                            painter_elapsed_ms=sum(s['elapsed_ms'] for s in paint))
                 if row['stage'] > 1:
                     require(not any(pc in hits for pc in copies) and row['async_launches'] == 0,
                             'Unexpected surface copy in retained repaint fixture')
                     row['surface_copy_bytes'] = 0
+                if row['stage'] in (10, 11) and not override.exists():
+                    require(row['painter_max_cpu_ms'] <= 20, 'Long-text step exceeded 20 ms CPU')
+                    services = [s['start'] for s in profile['routine_spans'] if s['kind'] == 'input_service']
+                    for left, right in zip(paint, paint[1:]):
+                        require(any(left['end'] < tick < right['start'] for tick in services),
+                                'Retained text skipped its input boundary')
             if not override.exists():
                 check_fills(report['scenes'])
         report.update(status='pass', memory_delta=dict(bank_zero=dict(fixed=0, root_kernel=0,

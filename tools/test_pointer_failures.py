@@ -18,7 +18,7 @@ def run(out,mode,replay=False):
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             r['machine']=verify_machine(b,ROM,PIN)
             try:runtime,_=execute(b,p,timeout=80,frame_limit=3000)
-            finally:r.update(checks=b.peek16(at('checks')),tags=b.memdump(at('tag'),8).hex(),source=b.memdump(0x3f4680,144).hex(),event=b.memdump(at('event'),24).hex(),capture=b.memdump(0x3f4810,1280).hex())
+            finally:r.update(checks=b.peek16(at('checks')),tags=b.memdump(at('tag'),8).hex(),source=b.memdump(0x3f4680,144).hex(),event=b.memdump(at('event'),24).hex(),capture=b.memdump(p['build']['memory']['input_storage']['POINTER_CAPTURE'],p['build']['memory']['input_storage']['POINTER_CAPTURE_BYTES']).hex())
             clean_ownership(b,p,p['output'])
             storage=p['build']['memory']['input_storage'];n=storage['POINTER_GUARD_BYTES']
             for address in (storage['POINTER_RESERVE'],storage['POINTER_CAPTURE']+storage['POINTER_CAPTURE_BYTES']):

@@ -49,8 +49,7 @@ Use the desktop
 Click a window to give it keyboard focus. Drag a title with the left button;
 release commits the move and repairs exposed content. Escape cancels a drag.
 Windows remain onscreen on an eight-pixel grid. Only the left button is supported.
-The pointer moves two screen pixels per ST mouse step, with fixed sensitivity
-and no acceleration.
+@POINTER_DESCRIPTION@
 
 The Control Panel runs on its own Task. Click Toggle, select Small or Large,
 or press Apply or Cancel. The status label reports the action. Locked is

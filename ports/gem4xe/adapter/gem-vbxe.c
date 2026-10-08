@@ -9,6 +9,7 @@
 #include "gem-vbxe.h"
 #endif
 #include "vbxe-internal.h"
+#include "gem-vbxe-tables.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -27,8 +28,9 @@ static UBYTE page[4096];
 static ULONG pageAddress;
 static UWORD dirty, fault;
 static UBYTE commands[VBXE_BCB_BYTES];
+static UBYTE *commandNext;
 static UWORD commandCount;
-static ULONG commandWork;
+static UWORD commandWork;
 /* The 5120 bytes immediately after the screen hold one 640 x 16 strip.
  * Only widget callbacks redirect drawing, never other owner operations. */
 #define WIDGET_STRIP_BASE 76800UL
@@ -41,12 +43,26 @@ static UWORD outlineLeft,outlineTop,outlineRight,outlineBottom,outlineVisible,ou
 
 
 
+static UWORD render_enter(void)
+{
+    if (!display.lease.state) return DISPLAY_INVALID_OWNER;
+    return DisplayOwnerEnter();
+}
+static UWORD render_exit(UWORD status)
+{
+    /* A successful physical close already retired and reset arbitration. */
+    if (display.lease.state) DisplayOwnerEnd(display.operationPending);
+    return status;
+}
 static void latch(UWORD status) { if (status && !fault) fault=status; }
+/* Construction establishes record validity and enforces count/work bounds.
+ * The admitted owner submits this private list without decoding it again. */
 static void drain(void)
 {
     if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));
     commandCount=0;
     commandWork=0;
+    commandNext=commands;
 }
 static void flush(void)
 {
@@ -71,28 +87,38 @@ volatile uint8_t *vram_win(uint32_t address)
 void blit_start(void) { flush(); }
 void blit_run(void) { flush(); }
 uint8_t blit_pending(void) { return (uint8_t)(commandCount!=0 || dirty); }
+/* Producer strides are fixed screen/atlas pitches or a 0–320-byte raster
+ * band. The work table also provides products for variable raster pitches. */
+static UWORD row_step(UWORD stride,UWORD rows)
+{
+    switch (stride) {
+    case 0: return 0;
+    case 320: return GemStep320[rows];
+    case 640: return GemStep640[rows];
+    case 1024: return GemStep1024[rows];
+    case 1280: return GemStep1280[rows];
+    default: return GemWork2[((rows-1)<<9)|(stride-1)]>>1;
+    }
+}
 void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
                uint16_t bytes, uint16_t rows, uint8_t am, uint8_t xm, uint8_t mode)
 {
-    UWORD n,limit;
-    ULONG work;
+    UWORD n,limit,work,column=bytes-1;
+    const UWORD *costs;
     UBYTE *record;
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
-    /* Check the whole operation before an arena flush could draw a prefix. */
-    if (mode>6 || !VbxeBlitExtent(source,ss,bytes,rows) ||
-        !VbxeBlitExtent(dest,ds,bytes,rows)) {
-        latch(DISPLAY_BAD_ARGUMENT); return;
-    }
+    /* Private renderer geometry is already clipped to screen/strip/atlas.
+     * The producer supplies nonempty dimensions and a known hardware mode. */
     if (dirty) flush();
-    limit=(UWORD)VBXE_LIST_WORK/(bytes*(mode ? 3 : 2));
-    if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
+    if (mode) { limit=GemRowLimit3[column]; costs=GemWork3; }
+    else { limit=GemRowLimit2[column]; costs=GemWork2; }
     while (rows && !fault) {
         n=rows<limit ? rows : limit;
-        work=(ULONG)bytes*n*(mode ? 3 : 2);
-        if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+        work=costs[((n-1)<<9)|column];
+        if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
         if (fault) return;
-        record=commands+commandCount*21;
+        record=commandNext;
 
         record[0]=(UBYTE)source; record[1]=(UBYTE)(source>>8); record[2]=(UBYTE)(source>>16);
         record[3]=(UBYTE)ss; record[4]=(UBYTE)(ss>>8); record[5]=1;
@@ -101,14 +127,27 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
         record[12]=(UBYTE)(bytes-1); record[13]=(UBYTE)((bytes-1)>>8);
         record[14]=(UBYTE)(n-1); record[15]=am; record[16]=xm; record[20]=mode;
         commandCount++;
+        commandNext=record+21;
         commandWork+=work;
-        source+=(ULONG)n*ss; dest+=(ULONG)n*ds; rows-=n;
+        rows-=n;
+        if (rows) { source+=row_step(ss,n); dest+=row_step(ds,n); }
     }
 }
 
+/* Encode one already reserved atlas record; no queue or hardware policy. */
+static UBYTE *glyph_record(UBYTE *r,ULONG source,UWORD stride,ULONG dest,UWORD bytes,UBYTE ink)
+{
+    r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
+    r[3]=0; r[4]=(UBYTE)(stride>>8);
+    r[6]=(UBYTE)dest; r[7]=(UBYTE)(dest>>8); r[8]=(UBYTE)(dest>>16);
+    r[9]=64; r[10]=1; r[12]=(UBYTE)(bytes-1); r[13]=0;
+    r[14]=7; r[15]=ink; r[16]=0; r[20]=6;
+    return r+21;
+}
+
 /* Called only after the device's complete-cell visibility check. The atlas
- * supplies four/five bytes by eight rows. Submission still validates every
- * address and record; this private producer avoids general rectangle setup. */
+ * supplies four/five bytes by eight rows. Immutable atlas/screen geometry and
+ * the strip redirection establish extents; this producer bounds each list. */
 void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uint8_t ink)
 {
     UBYTE *r;
@@ -116,16 +155,55 @@ void blit_glyph(uint32_t source,uint16_t stride,uint32_t dest,uint16_t bytes,uin
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     if (dirty) flush();
-    if (commandCount==VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+    if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
     if (fault) return;
-    r=commands+commandCount*21;
-    r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
-    r[3]=0; r[4]=(UBYTE)(stride>>8);
-    r[6]=(UBYTE)dest; r[7]=(UBYTE)(dest>>8); r[8]=(UBYTE)(dest>>16);
-    r[9]=64; r[10]=1; r[12]=(UBYTE)(bytes-1); r[13]=0;
-    r[14]=7; r[15]=ink; r[16]=0; r[20]=6;
-    commandCount++; commandWork+=work;
+    r=commandNext;
+    r=glyph_record(r,source,stride,dest,bytes,ink);
+    commandCount++; commandNext=r; commandWork+=work;
 }
+/* Complete visible cells, nonzero stencil ink and constant X parity. The
+ * caller supplies immutable atlas geometry; only this boundary reserves list
+ * capacity. Blank cells consume neither records nor work. */
+void blit_glyph_run(uint32_t atlas,uint16_t stride,uint32_t dest,uint16_t bytes,
+    const uint16_t *glyphs,uint16_t count,uint8_t ink,const uint8_t *inkmap)
+{
+    const UBYTE *capacity=bytes==4 ? GemGlyphCapacity96 : GemGlyphCapacity120;
+    UWORD n,room,written,ch,offset;
+    ULONG source;
+    UBYTE *r;
+    if (fault) return;
+    if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
+    if (dirty) flush();
+    while (count && !fault) {
+        /* Do not launch a full queue for a blank-only suffix. */
+        while (count && !inkmap[*glyphs&255]) {
+            ++glyphs;--count;dest+=4;
+        }
+        if (!count) return;
+        n=VBXE_LIST_RECORDS-commandCount;
+        room=capacity[((UWORD)VBXE_LIST_WORK-commandWork)>>3];
+        if (room<n) n=room;
+        if (!n) { drain(); continue; }
+        if (count<n) n=count;
+        count-=n;
+        r=commandNext;written=0;
+        do {
+            ch=*glyphs++&255;
+            if (inkmap[ch]) {
+                offset=ch<<2;
+                if (bytes==5) offset+=ch;
+                source=atlas+offset;
+                r=glyph_record(r,source,stride,dest,bytes,ink);
+                ++written;
+            }
+            dest+=4;
+        } while (--n);
+        commandNext=r;
+        commandCount+=written;
+        commandWork+=bytes==4 ? (written<<6)+(written<<5) : (written<<7)-(written<<3);
+    }
+}
+
 void blit_fill(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,0); }
 void blit_and(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
@@ -151,15 +229,19 @@ UWORD GemDrawingOpen(WORD *out)
         return DISPLAY_BAD_ARGUMENT;
     status=VbxeOpen(&display);
     if (status!=DISPLAY_OK) return status;
-    for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+i*21,template,21);
+    status=DisplayOwnerWake(VbxeCompletionMask(&display));
+    if (status==DISPLAY_OK) status=render_enter();
+    if (status!=DISPLAY_OK) { VbxeOwnerClose(&display); return status; }
+    for (i=0;i<VBXE_LIST_RECORDS;i++) memcpy(commands+GemRecordOffsets[i],template,21);
     dirty=fault=commandCount=0;
     commandWork=0;
+    commandNext=commands;
     pointer_reset();
     status=GemVdiOpen(out);
     flush();
     if (!status && !fault) latch(VbxeOwnerShow(&display));
     if (status || fault) { GemDrawingClose(); return DISPLAY_DEVICE_FAULT; }
-    return DISPLAY_OK;
+    return render_exit(DISPLAY_OK);
 }
 static UWORD close_owner(void)
 {
@@ -167,9 +249,11 @@ static UWORD close_owner(void)
     if (display.lease.state) {
         flush();
         if (display.lease.state) status=VbxeOwnerClose(&display);
+        if (status==DISPLAY_BUSY) return status;
     }
     GemVdiReset();
     dirty=commandCount=0; commandWork=0;
+    commandNext=commands;
     stripActive=stripRedirect=0;
     return fault ? DISPLAY_DEVICE_FAULT : status;
 }
@@ -180,29 +264,19 @@ static UWORD fence_owner(void)
     if (!fault) latch(VbxeOwnerFence(&display));
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
 }
-UWORD GemDrawingClose(void)
+static UWORD draw_Close(void)
 {
-    UWORD status;
-    if (display.lease.state) {
-        status=DisplayCheck(&display.lease);
-        if (status!=DISPLAY_OK) return status;
-    }
     return close_owner();
 }
-UWORD GemDrawingFence(void)
+static UWORD draw_Fence(void)
 {
-    UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     return fence_owner();
 }
-UWORD GemDrawingCopy(const struct VbxeCopy *copy)
+static UWORD draw_Copy(const struct VbxeCopy *copy)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     pointer_erase(0,0,640,240);
     status=fence_owner();
     if (status!=DISPLAY_OK) return status;
@@ -210,20 +284,16 @@ UWORD GemDrawingCopy(const struct VbxeCopy *copy)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
+static UWORD draw_Fill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapFill(left,top,right,bottom,pen)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
 }
-UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
+static UWORD draw_ScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!copy || pen>=16) return DISPLAY_BAD_ARGUMENT;
     pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
@@ -234,12 +304,10 @@ UWORD GemDrawingScrollStart(const struct VbxeCopy *copy,UWORD pen,ULONG *id)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
+static UWORD draw_CopyStart(const struct VbxeCopy *copy,ULONG *id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!copy || !id) return DISPLAY_BAD_ARGUMENT;
     /* Overlays are screen pixels only; offscreen captures/restores use the same
@@ -256,30 +324,24 @@ UWORD GemDrawingCopyStart(const struct VbxeCopy *copy,ULONG *id)
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingPoll(ULONG id)
+static UWORD draw_Poll(ULONG id)
 {
     UWORD status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerPoll(&display,id);
     if (status==DISPLAY_DEVICE_FAULT) latch(status);
     return status;
 }
-UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
+static UWORD draw_Text(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapText(x,y,text,count,fg,bg)) return DISPLAY_BAD_ARGUMENT;
     return fence_owner();
 }
-UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+static UWORD draw_TextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
     UWORD fillPen)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if ((fillX&1) || (fillWidth&1) || !fillWidth || !fillHeight ||
         fillX>=640 || fillY>=240 || fillWidth>640-fillX || fillHeight>240-fillY ||
@@ -318,12 +380,13 @@ static UWORD cursorMasksReady;
 #include "gem-cursor-masks.h"
 
 
-/* Only the admitted cursor operation calls this producer. Submit validates
- * the entire list before DMA; no record flushes a partially prepared move. */
+/* Only the admitted cursor operation calls this producer. Fixed private VRAM
+ * slots and clipped screen coordinates establish every extent; no record
+ * flushes a partially prepared move. cursor_render bounds count and work. */
 static void cursor_record(UWORD index,ULONG source,UWORD sourceStride,
     ULONG destination,UWORD destinationStride,UWORD bytes,UWORD rows,UBYTE mode)
 {
-    UBYTE *r=commands+index*21;
+    UBYTE *r=commands+GemRecordOffsets[index];
     r[0]=(UBYTE)source; r[1]=(UBYTE)(source>>8); r[2]=(UBYTE)(source>>16);
     r[3]=(UBYTE)sourceStride; r[4]=(UBYTE)(sourceStride>>8); r[5]=1;
     r[6]=(UBYTE)destination; r[7]=(UBYTE)(destination>>8); r[8]=(UBYTE)(destination>>16);
@@ -357,7 +420,7 @@ static void cursor_render(UWORD x,UWORD y,UWORD draw)
         rows=240-y;
         if (rows>16) rows=16;
         bytes=((x&1)+width+1)/2;
-        address=(ULONG)y*320+x/2;
+        address=GemScreenRows[y]+x/2;
         if (!cursorMasksReady) {
             memcpy(page,cursorMasks,1024);
             latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
@@ -385,24 +448,25 @@ static void cursor_show(void)
 #ifndef GEM_DRAWING_ONLY
 static UWORD cursor_backend(void *context,const struct GemCursor *cursor)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     cursor_render(cursor->x,cursor->y,cursor->visible);
     if (!fault) cursorVisible=cursor->visible;
-    return fault ? GEM_DEVICE_FAULT : GEM_OK;
+    return render_exit(fault ? GEM_DEVICE_FAULT : GEM_OK);
 }
 static UWORD close_backend(void *context)
 {
     UWORD status;
     (void)context;
     if (!display.lease.state) return close_owner()==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT;
-    status=DisplayCheck(&display.lease);
+    status=render_enter();
     if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
     cursor_hide();
     cursorVisible=0;
     status=close_owner();
-    return status==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT;
+    return render_exit(status==DISPLAY_OK ? GEM_OK : GEM_DEVICE_FAULT);
 }
 static UWORD open_backend(void *context,WORD *out)
 {
@@ -439,24 +503,28 @@ static UWORD cursor_intersects(const struct GemCommand *cmd,const WORD *points)
 static UWORD command_backend(void *context,const struct GemCommand *cmd,
     const WORD *points,const WORD *ints,WORD *reply)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     if (cmd->opcode!=17 && cmd->opcode!=22 && cmd->opcode!=23 &&
         cmd->opcode!=25 && cmd->opcode!=32 && cmd->opcode!=129 &&
         cursor_intersects(cmd,points)) cursor_hide();
-    if (fault) return GEM_DEVICE_FAULT;
-    return GemVdiCommand(cmd->opcode,cmd->subopcode,cmd->point_pairs,cmd->int_words,points,ints,reply);
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
+    status=GemVdiCommand(cmd->opcode,cmd->subopcode,cmd->point_pairs,cmd->int_words,points,ints,reply);
+    if (!status && fence_owner()!=DISPLAY_OK) status=GEM_DEVICE_FAULT;
+    return render_exit(status);
 }
 static UWORD fence_backend(void *context)
 {
-    UWORD status=DisplayCheck(&display.lease);
+    UWORD status=render_enter();
     (void)context;
-    if (status!=DISPLAY_OK || fault) return GEM_DEVICE_FAULT;
+    if (status!=DISPLAY_OK) return GEM_DEVICE_FAULT;
+    if (fault) return render_exit(GEM_DEVICE_FAULT);
     flush();
     cursor_show();
     if (!fault) latch(VbxeOwnerFence(&display));
-    return fault ? GEM_DEVICE_FAULT : GEM_OK;
+    return render_exit(fault ? GEM_DEVICE_FAULT : GEM_OK);
 }
 const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backend,close_backend,cursor_backend,0};
 
@@ -465,13 +533,11 @@ const struct GemBackend GemVbxeBackend={open_backend,command_backend,fence_backe
 ULONG GemDrawingCompletionMask(void)
 { return VbxeCompletionMask(&display); }
 
-UWORD GemDrawingTextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+static UWORD draw_TextClip(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
     extern UWORD GemBitmapTextClip(UWORD,UWORD,const UBYTE *,UWORD,UWORD,UWORD,
                                   UWORD,UWORD,UWORD,UWORD);
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (GemBitmapTextClip(x,y,text,count,fg,bg,left,top,right,bottom))
         return DISPLAY_BAD_ARGUMENT;
@@ -500,10 +566,8 @@ static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
         top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
 }
 
-UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible)
+static UWORD draw_Pointer(UWORD x,UWORD y,UWORD visible)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (x>=640 || y>=240 || visible>1) return DISPLAY_BAD_ARGUMENT;
     if (display.operationPending) return DISPLAY_BUSY;
@@ -523,7 +587,7 @@ void GemDrawingPrepare(UWORD left,UWORD top,UWORD right,UWORD bottom)
  * DMA lists; background writes remove it before modifying the saved pixels. */
 static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYTE mask)
 {
-    UBYTE *r=commands+index*21;
+    UBYTE *r=commands+GemRecordOffsets[index];
     memset(r,0,21);
     r[5]=1;
     r[6]=(UBYTE)address; r[7]=(UBYTE)(address>>8); r[8]=(UBYTE)(address>>16);
@@ -531,13 +595,31 @@ static void outline_record(UWORD index,ULONG address,UWORD bytes,UWORD rows,UBYT
     r[12]=(UBYTE)(bytes-1); r[13]=(UBYTE)((bytes-1)>>8);
     r[14]=(UBYTE)(rows-1); r[16]=mask; r[20]=5;
 }
+static void outline_span(UWORD left,UWORD right,UWORD top,UWORD rows)
+{
+    ULONG address=GemScreenRows[top];
+    UWORD lo=left>>1,hi=right>>1;
+    if (left&1) { blit_xor(address+lo,320,1,rows,15); ++lo; }
+    if (hi>lo) blit_xor(address+lo,320,hi-lo,rows,255);
+    if (right&1) blit_xor(address+hi,320,1,rows,240);
+}
 static void outline_toggle(void)
 {
-    ULONG address=(ULONG)outlineTop*320+outlineLeft/2;
+    ULONG address=GemScreenRows[outlineTop]+outlineLeft/2;
     UWORD bytes=(outlineRight-outlineLeft)/2;
     UWORD rows=outlineBottom-outlineTop;
     flush();
     if (fault) return;
+    if ((outlineLeft|outlineRight)&1) {
+        outline_span(outlineLeft,outlineRight,outlineTop,1);
+        outline_span(outlineLeft,outlineRight,outlineBottom-1,1);
+        outline_span(outlineLeft,outlineLeft+1,outlineTop+1,rows-2);
+        outline_span(outlineRight-1,outlineRight,outlineTop+1,rows-2);
+        flush();
+        return;
+    }
+    /* Admitted even screen bounds give four legal records and at most 3348
+     * work units: two 320-byte rows plus two 238-row single-byte edges. */
     outline_record(0,address,bytes,1,255);
     outline_record(1,address+(ULONG)(rows-1)*320,bytes,1,255);
     outline_record(2,address+320,1,rows-2,240);
@@ -549,12 +631,10 @@ static void outline_hide(void)
     if (outlineDrawn && !fault) outline_toggle();
     outlineDrawn=0;
 }
-UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
+static UWORD draw_Outline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible)
 {
-    UWORD status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
-    if (visible>1 || (visible && ((left|right)&1 || left>=right || top>=bottom ||
+    if (visible>1 || (visible && (left>=right || top>=bottom ||
         right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {
@@ -571,13 +651,10 @@ UWORD GemDrawingOutline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visi
 }
 
 /* Only a trusted, bounded renderer calls this synchronous closure. */
-UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
+static UWORD draw_Batch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void))
 {
-    UWORD status;
     if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
         bottom-top>16) return DISPLAY_BAD_ARGUMENT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (display.operationPending) return DISPLAY_BUSY;
     GemDrawingPrepare(left,top,right,bottom);
@@ -589,7 +666,7 @@ UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)
  * A callback returns nonzero only when every intersecting object is complete.
  * No callback or client pointer survives a call. The presenter freezes the
  * model until the strip retires; a new first chunk discards an abandoned one. */
-UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void))
 {
     UWORD status,complete,lo,hi,rows;
@@ -598,13 +675,11 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
         bottom-top>16) return DISPLAY_BAD_ARGUMENT;
     if (!first && (!stripActive || left!=stripLeft || top!=stripTop ||
         right!=stripRight || bottom!=stripBottom)) return DISPLAY_BAD_ARGUMENT;
-    status=DisplayCheck(&display.lease);
-    if (status!=DISPLAY_OK) return status;
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (display.operationPending) return DISPLAY_BUSY;
     if (first) {
         stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
-        stripOffset=WIDGET_STRIP_BASE-(ULONG)top*320;
+        stripOffset=WIDGET_STRIP_BASE-GemScreenRows[top];
     }
     stripRedirect=1;
     complete=draw();
@@ -615,7 +690,7 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
         /* Preserve the neighbouring nibble at either odd clip edge. Pointer
          * save/restore sees screen coordinates only at this publish boundary. */
         GemDrawingPrepare(left,top,right,bottom);
-        screen=(ULONG)top*320;scratch=WIDGET_STRIP_BASE;
+        screen=GemScreenRows[top];scratch=WIDGET_STRIP_BASE;
         lo=left/2;hi=right/2;rows=bottom-top;
         if (left&1) {
             blit_and(screen+lo,320,1,rows,0xf0);
@@ -651,4 +726,83 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
         if ((right&1) && !(y&1)) blit_and(base+hi,640,1,rows,0x0f);
         if (hi>lo) blit_and(base+lo,640,hi-lo,rows,mask);
     }
+}
+
+/* GEM's flat-title dither (0000/5555 rows), expressed as constant packed
+ * pixels. Scratch is already white. Each strided command covers every second
+ * row, including a preserved neighbour at odd clipped byte edges. */
+void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                     UWORD originX,UWORD originY)
+{
+    UWORD y=top+(((top-originY)&1)^1),lo=left>>1,hi=right>>1,rows;
+    UBYTE ink=map_col[1],value=(originX&1) ? ink<<4:ink;
+    ULONG base;
+    if (y>=bottom) return;
+    rows=(bottom-y+1)>>1;
+    base=GemScreenRows[y];
+    if (left&1) {
+        blit_and(base+lo,640,1,rows,0xf0);
+        blit_or(base+lo,640,1,rows,value&15);
+        ++lo;
+    }
+    if (hi>lo) blit_fill(base+lo,640,hi-lo,rows,value);
+    if (right&1) {
+        blit_and(base+hi,640,1,rows,0x0f);
+        blit_or(base+hi,640,1,rows,value&0xf0);
+    }
+}
+
+/* Native callers never block their service loop waiting for renderer access.
+ * The presenter can nest these units within one bounded service turn; DMA
+ * alone keeps the owner pin after the final return. */
+#define NATIVE_UNIT(name, parameters, arguments) \
+UWORD GemDrawing##name parameters \
+{ \
+    UWORD status=render_enter(); \
+    if (status!=DISPLAY_OK) return status; \
+    return render_exit(draw_##name arguments); \
+}
+NATIVE_UNIT(Close,(void),())
+NATIVE_UNIT(Fence,(void),())
+NATIVE_UNIT(Copy,(const struct VbxeCopy *copy),(copy))
+NATIVE_UNIT(Fill,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen),(left,top,right,bottom,pen))
+NATIVE_UNIT(ScrollStart,(const struct VbxeCopy *copy,UWORD pen,ULONG *id),(copy,pen,id))
+NATIVE_UNIT(CopyStart,(const struct VbxeCopy *copy,ULONG *id),(copy,id))
+NATIVE_UNIT(Poll,(ULONG id),(id))
+NATIVE_UNIT(Text,(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg),(x,y,text,count,fg,bg))
+NATIVE_UNIT(TextFill,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
+    UWORD fillPen),(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))
+NATIVE_UNIT(TextClip,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
+    UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom),(x,y,text,count,fg,bg,left,top,right,bottom))
+NATIVE_UNIT(Pointer,(UWORD x,UWORD y,UWORD visible),(x,y,visible))
+NATIVE_UNIT(Outline,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible),(left,top,right,bottom,visible))
+NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void)),(left,top,right,bottom,draw))
+NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))
+
+/* A linked, bounded callback executes only after a delegated access grant.
+ * It must return with no external wait, RPC or caller buffer retained. */
+UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,void (*draw)(void *),void *context)
+{
+    UWORD status;
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>16)
+        return DISPLAY_BAD_ARGUMENT;
+    status=DisplayEnter(grant);
+    if (status!=DISPLAY_OK) return status;
+    if (!fault) {
+        pointer_erase(left,top,right,bottom);
+        if (!fault) draw(context);
+        status=fence_owner();
+        if (!fault && outlineVisible && !outlineDrawn) {
+            outline_toggle();
+            if (!fault) outlineDrawn=1;
+        }
+        cursor_show();
+        if (!fault) status=fence_owner();
+    }
+    if (fault) status=DISPLAY_DEVICE_FAULT;
+    DisplayLeave(grant);
+    return status;
 }

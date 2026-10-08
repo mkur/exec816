@@ -38,7 +38,8 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False,phase=
         path=directory/'consoledriver.act';text=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE BATCHPROBE\n',1)
         text=text.replace('IF CONSOLEBITMAP.Pending()=0 AND', 'IF CONSOLEBITMAP.Pending()=0 AND BATCHPROBE.Blocked()=0 AND')
         text=text.replace('          CONSOLEDISPLAY.Present(view,instance)',
-            '          IF BATCHPROBE.Blocked()=0 THEN\n            CONSOLEDISPLAY.Present(view,instance)\n          FI')
+            '          IF BATCHPROBE.Blocked()=0 THEN\n            CONSOLEDISPLAY.Present(view,instance)\n'
+            '            BATCHPROBE.Painted(instance)\n          FI')
         text=text.replace('IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN\n          again=0',
             'IF batch.phase=CONSOLETYPES.BATCH_GATHER OR BATCHPROBE.Blocked()<>0 THEN\n          again=0')
         path.write_text(text)
@@ -48,7 +49,14 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False,phase=
         generate_tasks.policy_modules=instrument
     try:
         source=ROOT/'tests/programs'/('console_batch_bitmap.act' if batch else 'console_bitmap_scroll.act')
-        p=read_build(out/'program') if replay else build_bitmap(source,out,mode=='opt',probe=False)
+        options={}
+        if batch:
+            from generate_memory import PROFILE
+            # Resident code plus this fixture's retained source/probe storage.
+            profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=4096
+            memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+            options['memory_profile']=memory
+        p=read_build(out/'program') if replay else build_bitmap(source,out,mode=='opt',probe=False,**options)
     finally:generate_tasks.policy_modules=original
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
     require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Changed replay image')
@@ -73,6 +81,10 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False,phase=
                 b.regs=regs
                 try:run_to(b,marker,frame_limit=15000,timeout=60,condition=condition)
                 except Exception:
+                    if batch:
+                        print('Batch probe', {d['name']:b.memdump(d['address'],d['size']).hex()
+                              for d in p['image']['data'] if '_BATCHPROBE_' in d['name']
+                              or '_CONSOLEBATCH_BATCH_' in d['name']}, flush=True)
                     print('Status/checks/regs',b.peek16(adapter.STATE),data(b,p['image'],'checks',True),b.regs(),flush=True);raise
                 finally:b.regs=original
             def before(b):
@@ -94,7 +106,8 @@ def run(out,mode,replay=False,observe=False,performance=False,batch=False,phase=
                 if batch:
                     reach(f'dw(${address("CHECKPOINT"):x})=6')
                     accepted=data(b,p['image'],'cutBytes',True)[0]
-                    expected=batch_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted)[-1]
+                    expected=batch_scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted,
+                                          long_rows=phase==5)[-1]
                     folder=out/'stage-6';folder.mkdir(exist_ok=True)
                     result['observations'].append(dict(stage=6,accepted=accepted,
                         pixels=pixels(b,folder,expected) if action<4 else 'stopped'))

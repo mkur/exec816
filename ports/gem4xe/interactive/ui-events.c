@@ -100,7 +100,7 @@ UWORD UiPostMouse(const struct InputEvent *e)
 {
     struct InputEvent copy;
     UWORD status=INPUT_INVALID_OWNER;
-    if (!GemUpperExtent(e,sizeof(*e)) || e->reserved || e->qualifiers ||
+    if (!GemUpperExtent(e,sizeof(*e)) || e->motionInfo || e->qualifiers ||
         (e->flags&~INPUT_TICK_VALID) || (!(e->flags&INPUT_TICK_VALID) && e->tick) ||
         e->x<0 || e->x>639 || e->y<0 || e->y>239 || (e->buttons&~INPUT_LEFT) ||
         (e->kind==INPUT_EVENT_POINTER ? (e->code!=0 || e->flags!=INPUT_TICK_VALID) :
@@ -132,7 +132,7 @@ UWORD UiPostCaptured(const struct InputEvent *e)
 UWORD UiPostPointer(const struct InputEvent *e)
 {
     UWORD status;
-    if (!GemUpperExtent(e,sizeof(*e)) || e->reserved ||
+    if (!GemUpperExtent(e,sizeof(*e)) || e->motionInfo ||
         (e->flags&~(INPUT_TICK_VALID|INPUT_INJECTED)) || (!(e->flags&INPUT_TICK_VALID) && e->tick) || (e->qualifiers&~3) ||
         e->x<0 || e->x>639 || e->y<0 || e->y>239 || (e->buttons&~INPUT_LEFT) ||
         (e->kind!=INPUT_EVENT_POINTER && e->kind!=INPUT_EVENT_BUTTON) ||

@@ -1,0 +1,752 @@
+{
+  "slice": "CAL4",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true,
+    "baseline": "21ac5c2 / current LG6 memory profile"
+  },
+  "checks": {
+    "standalone": {
+      "path": "build/calculator/cal3/results.json",
+      "sha256": "d5e34fb36805936aee077b74f0374060c623498d948aa0138a65f949d185f5f7",
+      "status": "pass"
+    },
+    "failures": {
+      "path": "build/calculator/failure/results.json",
+      "sha256": "bc7049a0755b5099b238f823594d0fb753a1da73fb4bf62ea97353e4b46295b1",
+      "status": "pass",
+      "cases": {
+        "missing": {
+          "cycles": 2,
+          "checks": 15,
+          "stacks": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 401,
+              "untouched_above_floor": 879
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 275,
+              "untouched_above_floor": 493
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 155,
+              "untouched_above_floor": 613
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 557,
+              "untouched_above_floor": 211
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 658,
+              "untouched_above_floor": 1646
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 58,
+              "untouched_above_floor": 198
+            }
+          ],
+          "guards": "intact"
+        },
+        "bad": {
+          "cycles": 2,
+          "checks": 15,
+          "stacks": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 408,
+              "untouched_above_floor": 872
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 275,
+              "untouched_above_floor": 493
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 155,
+              "untouched_above_floor": 613
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 557,
+              "untouched_above_floor": 211
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 658,
+              "untouched_above_floor": 1646
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 58,
+              "untouched_above_floor": 198
+            }
+          ],
+          "guards": "intact"
+        },
+        "early": {
+          "cycles": 2,
+          "checks": 17,
+          "stacks": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 401,
+              "untouched_above_floor": 879
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 275,
+              "untouched_above_floor": 493
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 155,
+              "untouched_above_floor": 613
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 280,
+              "untouched_above_floor": 488
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 658,
+              "untouched_above_floor": 1646
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 58,
+              "untouched_above_floor": 198
+            }
+          ],
+          "guards": "intact"
+        },
+        "armed": {
+          "cycles": 2,
+          "checks": 17,
+          "stacks": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 407,
+              "untouched_above_floor": 873
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1024,
+              "touched_bytes": 297,
+              "untouched_above_floor": 471
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1024,
+              "touched_bytes": 155,
+              "untouched_above_floor": 613
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1024,
+              "touched_bytes": 626,
+              "untouched_above_floor": 142
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1024,
+              "touched_bytes": 18,
+              "untouched_above_floor": 750
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 658,
+              "untouched_above_floor": 1646
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 58,
+              "untouched_above_floor": 198
+            }
+          ],
+          "guards": "intact"
+        }
+      }
+    },
+    "old_cartridge": {
+      "path": "build/calculator/cart-old/results.json",
+      "sha256": "5c440ff8d78555e00421e0f10259dfba37a68173425f6c97b57a4bec180655bb",
+      "status": "pass",
+      "scope": "Full existing desktop regression",
+      "autoboot_frames": 249,
+      "of816_guards": "intact",
+      "stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 572,
+          "untouched_above_floor": 708
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 346,
+          "untouched_above_floor": 422
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 180,
+          "untouched_above_floor": 588
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 723,
+          "untouched_above_floor": 45
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 631,
+          "untouched_above_floor": 137
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 718,
+          "untouched_above_floor": 50
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 709,
+          "untouched_above_floor": 1595
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 351,
+          "untouched_above_floor": 1953
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 135,
+          "untouched_above_floor": 121
+        }
+      ],
+      "integration": {
+        "profile": "gem-desktop",
+        "panel_toggle": true,
+        "panel_keyboard": true,
+        "panel_drag": true,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "exit_with_gui_child_and_popup": true
+      }
+    },
+    "new_cartridge": {
+      "path": "build/calculator/cart-new/results.json",
+      "sha256": "41cf21136ec32244c547e3b29dbcb527b0e023a6374466bb3db9547b87344e9e",
+      "status": "pass",
+      "scope": "Cold boot, three initial apps, disk HELLO and EXIT",
+      "autoboot_frames": 249,
+      "of816_guards": "intact",
+      "stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 562,
+          "untouched_above_floor": 718
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 313,
+          "untouched_above_floor": 455
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 159,
+          "untouched_above_floor": 609
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 612,
+          "untouched_above_floor": 156
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 631,
+          "untouched_above_floor": 137
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 685,
+          "untouched_above_floor": 83
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 675,
+          "untouched_above_floor": 1629
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 312,
+          "untouched_above_floor": 1992
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ],
+      "integration": {
+        "profile": "gem-desktop-cold-boot",
+        "three_apps_ready": true,
+        "shell": true
+      }
+    },
+    "default_demo": {
+      "path": "build/calculator/default-demo/smoke-results.json",
+      "sha256": "fb2c926c7cde5a904002f43ce64b0539737f255da8854c68b788209be0d4703c",
+      "status": "pass",
+      "scope": "Extracted no-option OF816 shell/prime boot, disk commands and pipeline, EXIT",
+      "autoboot_frames": 249
+    },
+    "calculator_desktop": {
+      "path": "build/calculator/distribution/calculator-results.json",
+      "sha256": "771c44ffceea0c6e3fa854d48f3fd427db8248c7584ef3e8cbb8454a995bdf9a",
+      "status": "pass",
+      "scope": "Extracted OF816 calculator: Files launch/Stop/reload, window capacity, two private instances, idle shell collection, feedback and session exit",
+      "integration": {
+        "profile": "calculator",
+        "no_window_cleanup": true,
+        "files_launch": true,
+        "stop": true,
+        "relaunch": true,
+        "counter": true,
+        "shell": true,
+        "independent_instances": 2,
+        "resource_isolation": true,
+        "idle_run_collection": true,
+        "heap_restored": true,
+        "exit_with_calculator_and_popup": true,
+        "feedback": [
+          140.45467937449516,
+          33.84876067659178,
+          140.45467937449516,
+          140.20150018537342,
+          37.89286122087065,
+          140.45411550102273
+        ]
+      },
+      "stacks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 583,
+          "untouched_above_floor": 697
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 321,
+          "untouched_above_floor": 447
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 683,
+          "untouched_above_floor": 85
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 688,
+          "untouched_above_floor": 80
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 717,
+          "untouched_above_floor": 51
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 743,
+          "untouched_above_floor": 1561
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 582,
+          "untouched_above_floor": 1722
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 129,
+          "untouched_above_floor": 127
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 299,
+        "untouched_from_base": 1237,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "guards": "intact",
+      "final_live_tasks": 0
+    },
+    "host": {
+      "status": "pass",
+      "tests": 416,
+      "skipped_historical_sources": 4
+    },
+    "documentation": {
+      "status": "pass",
+      "scope": "Local link targets in changed pages; diff whitespace; guides and final ZIP contents/checksums"
+    },
+    "files_timer_audit": {
+      "path": "build/calculator/heap-debug/heap-debug.json",
+      "sha256": "5b503fd798332e2b3ce2e6acf41043865366bc5dd5bfc4142ccee7b637157605",
+      "status": "pass",
+      "lost_extents": [
+        {
+          "address": 372632,
+          "size": 112,
+          "bytes": "00000000000004000000000016fc0d01abaf05000000a8af0500000aa508186b000000000000060000000098af052600105b3f385c3f0a00010000000000842000003200000002a3abaf05a8af05070000000098af052600105b3f385c3f0b0000000000000084200000000000002000"
+        }
+      ],
+      "explanation": "Files opens its child-collection timer on first launch: 27-byte port rounded to 32 and two 38-byte TimerClockRequests rounded to 40 each. Query/alarm commands and shared reply-port pointers identify all 112 bytes. Retained by Files until its normal appl_exit; repeated launch baselines include this existing allocation."
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$d8b1a96f8b8daaf7",
+    "actual_kernel_id": "$d8b1a96f8b8daaf7",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/calculator/distribution/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "application": {
+    "bytes": 6691,
+    "sha256": "1625e99a5ccdf10bac1cdf3e0300074713977f36b7a9b64b25b39e9ce7708e7a",
+    "span": 65778,
+    "entry": 4036,
+    "verified_banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ]
+  },
+  "resource": {
+    "bytes": 650,
+    "sha256": "6047068d5b03cc21fd187f2b5bd4672fbc298a392038114969f0226b27a65eac"
+  },
+  "shared_component": {
+    "bytes": 152221,
+    "previous_bytes": 149030,
+    "delta_bytes": 3191,
+    "calculator_body_and_state_excluded": true
+  },
+  "cartridge_capacity": {
+    "program.xex": {
+      "bytes": 950827,
+      "headroom": 81364
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 975801,
+      "headroom": 56390
+    }
+  },
+  "artifacts": {
+    "gui_zip": {
+      "path": "build/calculator/distribution/exec816-demo.zip",
+      "sha256": "5e65a487402b83a91eaf677f3090cffa8dc3d4931aa8a93aba700b64c97ac0bc"
+    },
+    "final_zip_with_cartridges": {
+      "path": "build/calculator/cartridge-distribution/exec816-demo.zip",
+      "sha256": "e4dcb15e03549cb1dc947567911e3892c47c92f08ecf0930b1b6ddcd80180284"
+    },
+    "default_zip": {
+      "path": "build/calculator/default-demo/exec816-demo.zip",
+      "sha256": "9c622d5640e53e3aadd9ebe08511ee5d993518cbaacb140d193aed0e5baf11de"
+    },
+    "gui_manifest": {
+      "path": "build/calculator/distribution/demo-manifest.json",
+      "sha256": "927dc3c746865748c389466af33df8750126cdf392a07ae67257fdcd03929327"
+    },
+    "cartridge_manifest": {
+      "path": "build/calculator/cartridge-distribution/cartridge-demo.json",
+      "sha256": "985acb39ea5610a13140a9bd4476f92184d30ffc1d1fa5d6d62ad50a262d586b"
+    }
+  },
+  "startup": {
+    "autoboot_frames": 249,
+    "shell_frames_after_native_entry": 6804,
+    "three_apps_frames_after_native_entry": 7017,
+    "frame_hz": 50,
+    "previous_lg6_seconds": [
+      133.16,
+      137.3
+    ]
+  },
+  "feedback": {
+    "samples_ms": [
+      140.45467937449516,
+      33.84876067659178,
+      140.45467937449516,
+      140.20150018537342,
+      37.89286122087065,
+      140.45411550102273
+    ],
+    "median_ms": 140.32780784319806,
+    "max_ms": 140.45467937449516,
+    "scope": "Six physical press edges to matching full button scanout, with Counter and Files alive; frame-granular bounded smoke, not p95 or HY4/PI4 closure."
+  },
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "notes": [
+    "No new imports, opcodes, Task slots, layer slots, AES registrations or bank-zero reservations.",
+    "Calculator walkthrough minimum public-Task margin: 51 bytes above the 256-byte interrupt reserve. The broader existing desktop regression reached 45 bytes; guards remain enabled.",
+    "Independent button and settled full-scene pixel comparisons pass. These samples do not exclude all transient/subframe artifacts.",
+    "Default OF816 shell/prime boot and five-second countdown retained. No general hardware/release qualification claimed."
+  ],
+  "observer_inputs": {
+    "tools/test_calculator_desktop.py": "6b58e23b34df7bef63c4f92014512229ca5ea384f7f37dbef939c436d3ede2b0",
+    "tools/test_calculator_failure.py": "bf42469f7ef14b2f5f4e506617df9ba7b9d9b5ef039fd078de5261a383e6aeb1",
+    "tools/gem_desktop_oracle.py": "bc38ed020574c0abac05ffeb99fff66831cd63831767396461e51b3774e49635",
+    "tests/programs/calculator_failure.act": "58c3c188a373d227739e18a03cdcccdda018a6620abf3c9fb2076277c8abbd57",
+    "tools/build_demo.py": "b46ad66eb0f6c649977395434e7a5f00953ca6fe7538b177bc3eedd5232c1113",
+    "tools/build_gem_desktop.py": "d53c09305e58833d0470da33e26d5cf28752b085979a88a1ca5154b924cf14f8",
+    "tools/package_demo.py": "e03478acda8617b3e64b4787c12e68b7a30de944039cd9a348cf36700306e0e5"
+  }
+}

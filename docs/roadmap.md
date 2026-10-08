@@ -94,6 +94,38 @@ kernel startup, and the existing screen text is preserved. The bitmap/no-primes
 preview includes both Atarimax forms. Remote image loading remains a later
 extension.
 
+## Next desktop milestones
+
+With [application menus and window switching](history/application-menu-bars.md)
+implemented, the next sequence focuses on window usability and reusable GEM
+application facilities:
+
+The [classic GEM appearance](history/classic-gem-appearance.md) is implemented
+through GA1–GA4: flat outlined frames, left closers, centered patterned titles,
+consistent menus/controls and a patterned desktop. The exact OF816 package
+passes development walkthroughs. Current work-area insets and font metrics are
+retained; painting and input share frame geometry. The resizing milestone below
+extends that geometry with working gadgets and revisits the actual client insets.
+
+1. **Resizable windows and vertical scrolling.** Add the GEM size gadget,
+   vertical scrollbar and arrows, with `WM_SIZED`, `WM_VSLID`, `WM_ARROWED`
+   and corresponding slider fields. The presenter handles the gadgets;
+   applications own their content and scroll position.
+2. **Use resizing and scrolling in Files.** Replace the fixed eight-row,
+   page-based list with a list that adapts to the window's work area and supports
+   continuous scrolling. Preserve selection across redraws and refreshes.
+   Exercise geometry changes, overlapping windows and repaint correctness with
+   Files running beside the calculator, counter and shell.
+3. **Editable TEDINFO and dialogs.** Add text entry and keyboard editing,
+   then use them for path entry, New Folder and Rename. Keep the interfaces
+   compatible with GEM callers to support further application ports.
+
+Start milestones 1–2 with a short design note covering window geometry,
+clipping, damage and application messages, followed by an implementation plan
+in small executable slices. Keep application state caller-owned and validation
+minimal. Record reserved bank-zero changes for each slice. Cartridge size does
+not block these milestones; compression remains separate work.
+
 ## Follow-on capabilities
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
@@ -183,8 +215,46 @@ about 4 kHz with fine SIO timing preserved; each pointer move uses one blitter
 list. [Matched measurements](history/mouse-performance.md) show lower IRQ
 overhead and pointer setup cost. The OF816 preview is refreshed, with 2× travel
 and memory reservations unchanged. Pointer, outline and move-repair timing
-targets remain open; presentation scheduling and exposure repair remain focused
-performance follow-ups.
+targets remain open. Following the tested PI3 demo, further presenter latency
+work is deferred until the desktop experience is more complete; PI4/HY4 remain
+open.
+
+The implemented [mouse acceleration design](plans/gem4xe/mouse-acceleration-design.md)
+adds precise slow movement and faster desktop travel, with a fixed 2× off option.
+The [MA1–MA4 plan](plans/gem4xe/mouse-acceleration-implementation-plan.md) preserves
+timed relative motion in capture, applies the curve once in the desktop Task,
+checks loaded behavior and refreshes the OF816 preview. All four slices pass
+development checks and the extracted-demo walkthrough, with pre-existing caret
+artifacts recorded separately. Mild is now the default. Sampling cadence and
+bank-zero reservations are unchanged; net reserved upper growth is 512 bytes.
+
+The completed functionality milestone is an ordinary
+[AES window application](plans/gem4xe/aes-window-app-design.md): a resident
+counter using GEM window calls, durable `WM_REDRAW` delivery and a private VDI
+workstation. The [WA1–WA6 plan](plans/gem4xe/aes-window-app-implementation-plan.md)
+first establishes delivery and window ownership, then proves delegated display
+access before direct application drawing. It finishes with two independent
+applications beside the native shell and an optional OF816 demo. The implemented
+profile keeps the existing Task/layer limits and targets zero bank-zero growth;
+menus, resources, resizing and broader GEM compatibility follow.
+[WA1–WA6](history/aes-windows.md) pass development checks for durable GUI delivery,
+window ownership, delegated display access, private application VDI and two
+ordinary GEM counters, with unchanged ordinary message capacity and zero
+bank-zero growth. Matched native/coexistence diagnostics and the extracted
+OF816 counter bundle pass. PI4/HY4 remain open.
+
+The [AES application input milestone](plans/gem4xe/aes-application-input-design.md)
+provides keyboard and single-button events for ordinary GEM application content, combined
+locally with messages/timers. The design keeps one presenter for focus and
+gesture routing, preserves shell cancellation, and adds zero bank-zero
+reservations without per-wait RPC. The [AI1–AI7 plan](plans/gem4xe/aes-application-input-implementation-plan.md)
+provides seven executable slices through a two-application OF816 demo, committing
+after each passing slice. AI1–AI7 pass development checks: public input waits, independent
+interactive apps, native coexistence and the extracted OF816 ZIP.
+[Cost measurements](history/aes-application-input.md#ai7--coexistence-measurements-and-packaged-demo)
+show that redraw/presentation dominates button feedback; PI4/HY4 remain open.
+Rectangle events and multiple clicks remain follow-on work; public widgets/forms
+and resource loading are covered by the desktop application milestone below.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the
@@ -204,8 +274,22 @@ Control Panel; [interaction measurements and the packaged walkthrough](history/a
 pass correctness checks while widget-feedback latency remains open. Long
 clipped drawing calls and scene-token waits need focused follow-up. Existing
 Task/stack pools and window layers are reused. The library can later support a task bar; desktop work-area,
-window-switching and launcher policy are separate work. Editable fields,
-resource-file loading, menus and full AES compatibility remain deferred.
+window-switching and launcher policy are separate work. Editable fields and
+full AES compatibility remain deferred.
+
+The [desktop application milestone](plans/gem4xe/desktop-facilities-implementation-plan.md)
+now provides application-owned widgets/forms, a GEM Control Panel, classic
+resources, windowed popup menus and a Files browser beside the counter and shell.
+The [loadable GEM applications](plans/gem4xe/loadable-gem-applications-implementation-plan.md)
+work puts the panel, counter, Files and calculator in separate APP files. The
+shared GUI remains resident and ships in the [compressed boot image](reference/boot-loading.md),
+replacing upstream's shared disk-component placement. Program/Process owns each private C image; Files can launch
+native commands or a GEM child, while the shell collects closed initial apps
+through existing completion signals. Caller-local AES/VDI execution and the
+bank-zero reservation remain unchanged. The historical upstream disk-component
+cartridge/package checks are recorded in the
+[LG6 development results](development/loadable-gem-lg6.json); their sizes and
+headroom describe that build, rather than the current compressed image.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
@@ -288,6 +372,21 @@ The other possible milestones have no delivery order:
 
 ## Deferred API and compiler work
 
+- **Arithmetic in latency-sensitive paths.** Measure software multiply,
+  divide and remainder helper calls in the optimized presenter and timer paths
+  before attributing GUI delays to them. First candidates are the
+  [layer-selection counter](../lib/desktop/deskpaint.act) (`MOD 5`, currently
+  a 16-iteration helper), [console cursor coordinates](../lib/console/consoledisplay.act)
+  (separate division and remainder on the same operands), and repaint row
+  offsets (`row*width`). Consider bounded increment/wrap, shared coordinate
+  calculation and incremental row offsets. Also audit caller-side deadline
+  conversion and relative timer submission; preserve PAL/NTSC rounding and
+  overflow behavior. These conversions are outside native interrupt expiry.
+  General compiler improvements, including constant multiplication such as
+  timer open-record indexing by 24 and reuse of quotient/remainder work, belong
+  in actionc with focused regressions. Avoid Exec-specific compiler workarounds.
+  Compare any resulting GUI improvement against the unchanged HY4 limits;
+  the arithmetic contribution to the measured presenter delays is still unknown.
 - **Narrow DOS scalar types.** Review `Open` modes and Boolean return widths
   together across DOS, COMMAND and providers. Retain 32-bit positions and counts
   where needed. This is an ABI migration requiring rebuilt callers; expected

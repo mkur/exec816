@@ -1,0 +1,29 @@
+; Fixed desktop geometry shared by drawing, input and work-area publication.
+MODULE DESKGEOMETRY
+USE DESKTYPES
+USE LAYERTYPES
+USE REGIONS
+
+PUBLIC PROC Work(LAYERTYPES.Rect POINTER bounds,work)
+
+  REGIONS.Assign(work,bounds.left+DESKTYPES.WORK_LEFT,
+      bounds.top+DESKTYPES.WORK_TOP,bounds.right-DESKTYPES.WORK_RIGHT,
+      bounds.bottom-DESKTYPES.WORK_BOTTOM)
+
+RETURN
+
+PUBLIC BYTE FUNC TitleHit(LAYERTYPES.Rect POINTER bounds INT x,y)
+
+RETURN(x>=bounds.left+DESKTYPES.FRAME_EDGE
+    AND x<bounds.right-DESKTYPES.FRAME_EDGE
+    AND y>=bounds.top+DESKTYPES.FRAME_EDGE
+    AND y<bounds.top+DESKTYPES.TITLE_HEIGHT-DESKTYPES.FRAME_EDGE)
+
+PUBLIC BYTE FUNC CloseHit(LAYERTYPES.Rect POINTER bounds INT x,y)
+
+RETURN(x>=bounds.left+DESKTYPES.CLOSE_LEFT
+    AND x<bounds.left+DESKTYPES.CLOSE_RIGHT
+    AND y>=bounds.top+DESKTYPES.CLOSE_TOP
+    AND y<bounds.top+DESKTYPES.CLOSE_BOTTOM)
+
+ENDMODULE

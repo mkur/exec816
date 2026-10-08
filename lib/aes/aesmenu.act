@@ -1,0 +1,270 @@
+; Presenter-owned registration; caller storage remains borrowed until withdrawal.
+MODULE AESMENU
+USE EXEC
+USE AESTYPES
+USE AESSTATE
+USE AESLOCKS
+
+CONST G_BOX=20,G_IBOX=25,G_STRING=28,G_TITLE=32
+CONST SELECTED=1,DISABLED=8,LASTOB=32,HIDETREE=128
+
+PUBLIC AESTYPES.MenuObject POINTER FUNC Object(AESSTATE.Menu POINTER menu INT index)
+
+RETURN(AESTYPES.MenuObject POINTER(ADDRESS(menu.tree)
+    +SIZE(CARD(index))*SIZE(AESTYPES.MENUOBJECT_SIZE)))
+
+BYTE FUNC Label(LONGCARD location)
+  BYTE length
+
+  LET text=BYTE POINTER(ADDRESS(location))
+  FOR length=0 TO 63 DO
+    IF text(length)=0 THEN
+      RETURN(1)
+    FI
+  OD
+
+RETURN(0)
+
+; Links and pointers are caller-owned. This cold pass establishes only the
+; supported shape, object budget and screen geometry used by later drawing.
+BYTE FUNC Prepare(AESSTATE.Menu POINTER menu)
+  INT index,child,parent,bar,active,boxes,title,box
+  BYTE depth
+  AESTYPES.MenuObject POINTER cursor
+
+  menu.count=0
+  WHILE menu.count<AESTYPES.MENU_OBJECTS DO
+    BEGIN
+      LET object=Object(menu,INT(menu.count))
+      IF object.kind<>G_BOX AND object.kind<>G_IBOX
+          AND object.kind<>G_STRING AND object.kind<>G_TITLE THEN
+        RETURN(0)
+      FI
+      IF (object.kind=G_STRING OR object.kind=G_TITLE)
+          AND Label(object.spec)=0 THEN
+        RETURN(0)
+      FI
+      menu.parent(menu.count)=-1
+      menu.count==+1
+      IF (object.flags & LASTOB)<>0 THEN
+        EXIT
+      FI
+    END
+  OD
+  cursor=Object(menu,INT(menu.count)-1)
+  IF (cursor.flags & LASTOB)=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO INT(menu.count)-1 DO
+    cursor=Object(menu,index)
+    child=cursor.head
+    WHILE child>=0 AND child<>index DO
+      menu.parent(child)=index
+      cursor=Object(menu,child)
+      child=cursor.next
+    OD
+  OD
+  FOR index=0 TO INT(menu.count)-1 DO
+    menu.x(index)=0
+    menu.y(index)=0
+    parent=index
+    depth=0
+    WHILE parent>0 DO
+      cursor=Object(menu,parent)
+      menu.x(index)==+cursor.x
+      menu.y(index)==+cursor.y
+      parent=menu.parent(parent)
+      depth==+1
+      IF depth>8 THEN
+        RETURN(0)
+      FI
+    OD
+  OD
+
+  cursor=Object(menu,0)
+  bar=cursor.head
+  boxes=cursor.tail
+  cursor=Object(menu,bar)
+  active=cursor.head
+  cursor=Object(menu,active)
+  title=cursor.head
+  cursor=Object(menu,boxes)
+  box=cursor.head
+  menu.titles=0
+  WHILE title<>active AND title>=0 AND box<>boxes AND box>=0 DO
+    BEGIN
+      LET heading=Object(menu,title)
+      LET dropdown=Object(menu,box)
+      IF heading.kind<>G_TITLE OR heading.width<=0 OR heading.height<=0
+          OR heading.height>16 OR menu.x(title)<0
+          OR menu.x(title)+heading.width>432
+          OR dropdown.kind<>G_BOX OR dropdown.width<=0
+          OR dropdown.width>640 OR dropdown.height<=0
+          OR dropdown.height>224 THEN
+        RETURN(0)
+      FI
+      menu.title(menu.titles)=title
+      menu.box(menu.titles)=box
+      menu.titles==+1
+      title=heading.next
+      box=dropdown.next
+    END
+  OD
+
+RETURN(menu.titles<>0 AND title=active AND box=boxes)
+
+; Retiring a window invalidates its command, but keeps the installed tree.
+; The caller has already reached a boundary with no live paint reference.
+PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER client)
+  BYTE source,target
+
+  LET menu=client.menu
+  IF menu<>NULL THEN
+    IF menu.selectedTitle>=0 THEN
+      BEGIN
+        LET title=Object(menu,menu.selectedTitle)
+        title.state=title.state & $fffe
+      END
+    FI
+    menu.selectedTitle=-1
+    menu.damage=$ffffffff
+    EXEC.Forbid()
+    ; Remove only the undelivered menu kind. Published records stay immutable
+    ; and are rejected by their window/menu lifetime at the consumer.
+    target=0
+    source=0
+    WHILE source<client.gui.count DO
+      IF client.gui.order(source)<>AESTYPES.GUI_MENU THEN
+        client.gui.order(target)=client.gui.order(source)
+        target==+1
+      FI
+      source==+1
+    OD
+    client.gui.count=target
+    client.endpoint.guiWaiting=target<>0
+    client.endpoint.menuConsumed=1
+    client.endpoint.menuNormal=1
+    EXEC.Permit()
+    service.menuRevision==+1
+  FI
+
+RETURN
+
+PROC Withdraw(AESSTATE.Service POINTER service AESSTATE.Client POINTER client)
+
+  IF client.menu<>NULL THEN
+    Close(service,client)
+    EXEC.Forbid()
+    client.endpoint.menuEpoch=0
+    EXEC.Permit()
+    EXEC.FreeMem(BYTE POINTER(client.menu),LONGCARD(SIZEOF(AESSTATE.Menu)))
+    client.menu=NULL
+    service.menuRevision==+1
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client)
+
+  IF client.menu<>NULL THEN
+    IF AESLOCKS.NativeReady()=0 OR (service.mouseOwner<>0
+        AND service.mouseOwner<>client.id) THEN
+      RETURN(0)
+    FI
+    Withdraw(service,client)
+  FI
+
+RETURN(1)
+
+PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  LONGCARD location,value
+  INT operation,item
+
+  IF AESLOCKS.NativeReady()=0 OR (service.mouseOwner<>0
+      AND service.mouseOwner<>client.id) THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  operation=request.intin(0)
+  item=request.intin(3)
+  location=(LONGCARD(CARD(request.intin(1))) LSH 16)
+      OR LONGCARD(CARD(request.intin(2)))
+  value=(LONGCARD(CARD(request.intin(4))) LSH 16)
+      OR LONGCARD(CARD(request.intin(5)))
+  IF operation=30 THEN
+    IF item<>0 AND item<>1 THEN
+      RETURN(AESTYPES.UNSUPPORTED)
+    FI
+    IF item=0 THEN
+      Withdraw(service,client)
+    ELSE
+      IF service.nextMenuEpoch=0 THEN
+        RETURN(AESTYPES.OVERFLOW)
+      FI
+      BEGIN
+        LET candidate=AESSTATE.Menu POINTER(EXEC.AllocMem(
+            LONGCARD(SIZEOF(AESSTATE.Menu)),EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+        IF candidate=NULL THEN
+          RETURN(AESTYPES.RESOURCE)
+        FI
+        candidate.tree=AESTYPES.MenuObject POINTER(ADDRESS(location))
+        IF Prepare(candidate)=0 THEN
+          EXEC.FreeMem(BYTE POINTER(candidate),LONGCARD(SIZEOF(AESSTATE.Menu)))
+          RETURN(AESTYPES.UNSUPPORTED)
+        FI
+        Withdraw(service,client)
+        candidate.generation=service.nextMenuEpoch
+        candidate.selectedTitle=-1
+        candidate.damage=$ffffffff
+        service.nextMenuEpoch==+1
+        client.menu=candidate
+        EXEC.Forbid()
+        client.endpoint.menuEpoch=candidate.generation
+        client.endpoint.menuConsumed=1
+        client.endpoint.menuNormal=1
+        EXEC.Permit()
+      END
+    FI
+  ELSE
+    IF client.menu=NULL OR LONGCARD(ADDRESS(client.menu.tree))<>location THEN
+      RETURN(AESTYPES.IDENTITY)
+    FI
+    BEGIN
+      LET object=Object(client.menu,item)
+      CASE operation OF
+      WHEN 32 THEN
+        IF value<>0 THEN
+          object.state=object.state & $fff7
+        ELSE
+          object.state=object.state OR DISABLED
+        FI
+      WHEN 33 THEN
+        IF value<>0 THEN
+          object.state=object.state & $fffe
+          IF client.menu.selectedTitle=item THEN
+            EXEC.Forbid()
+            client.endpoint.menuNormal=1
+            EXEC.Permit()
+          FI
+        ELSE
+          object.state=object.state OR SELECTED
+        FI
+      WHEN 34 THEN
+        IF Label(value)=0 THEN
+          RETURN(AESTYPES.UNSUPPORTED)
+        FI
+        object.spec=value
+      ELSE
+        RETURN(AESTYPES.UNSUPPORTED)
+      ESAC
+      client.menu.damage=client.menu.damage OR (LONGCARD(1) LSH CARD(item))
+    END
+  FI
+  service.menuRevision==+1
+  request.intout(0)=1
+
+RETURN(AESTYPES.OK)
+
+ENDMODULE

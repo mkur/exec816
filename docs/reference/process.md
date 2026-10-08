@@ -17,6 +17,8 @@ Use the `PROCESS` module:
 | `StartBackground(entry, arguments, length)` | As Start with a private cancellation scope; no parent suspension or keyboard loan. |
 | `StartBackgroundLoaded(image, arguments, length)` | The loaded-image form of StartBackground; retain execution ownership until collection. |
 | `RequestBreak(identity)` | Request cooperative cancellation of an owned scoped child. Return one on acceptance or zero with IoErr. |
+| `RequestStop(identity)` | Request native BREAK or, for an owned C/GEM child, cooperative `WM_CLOSED`. No forced removal. |
+| `CompletionMask(identity)` | Borrow an owned child's completion signal until collection; zero with IoErr for an invalid identity. |
 | `Wait(identity, @result)` | Wait for kernel-acknowledged retirement, collect the two `LONGINT` results, and release the completion record. Return -1 on success, zero on error. |
 | `Collect(identity, @result)` | Collect an already retired child without waiting. Return -1 on success, zero on error. |
 | `GetArgStr()` | Borrow this child's argument text as a read-only `CSTRING`. Empty arguments return a non-null empty string; outside a Process return `CSTRING(0)`. |

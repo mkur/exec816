@@ -10,6 +10,16 @@ assuming work is pending. Current behavior belongs in the
 [reference](../reference/README.md), and implementation results in
 [history](../history/README.md).
 
+- [Classic GEM appearance design](gem4xe/classic-gem-appearance-design.md) and
+  [GA1–GA4 implementation plan](gem4xe/classic-gem-appearance-implementation-plan.md):
+  flat frames, left closers, centered patterned titles, consistent menus/controls
+  and a patterned desktop pass development checks, including the exact OF816 ZIP.
+- [Application menu-bar design](gem4xe/application-menu-bar-design.md) and
+  [AM1–AM6 implementation plan](gem4xe/application-menu-bar-implementation-plan.md):
+  application-owned GEM menus, durable selections, presenter interaction and
+  Files integration pass development checks, including the exact OF816 ZIP.
+- [Desktop menu and window switching](gem4xe/desktop-menu-window-switching-plan.md): active-window menu, covered-window access and focus restoration; implemented with development checks.
+
 ## Exec and project history
 
 - [OF816 before kernel loading](of816-first-boot-implementation-plan.md): implemented through B4;
@@ -183,10 +193,45 @@ assuming work is pending. Current behavior belongs in the
   and a refreshed OF816 preview. IRQ overhead and pointer setup cost fall;
   pointer, outline and move-repair timing targets remain open. The 2× travel
   and memory reservations are unchanged.
+- [Mouse acceleration design](gem4xe/mouse-acceleration-design.md) and
+  [implementation plan](gem4xe/mouse-acceleration-implementation-plan.md): MA1–MA4
+  implemented at the development tier, with timed relative capture, a default
+  mild desktop curve and fixed 2× off mode. Capture/queue, transform, loaded
+  checks and the extracted OF816 preview pass, with pre-existing caret artifacts
+  recorded separately. Zero bank-zero growth; 512 extra reserved upper bytes;
+  the sampling schedule is unchanged.
+  PI3 remains the accepted usability baseline while broader latency work is
+  deferred for desktop functionality.
+- [AES application input design](gem4xe/aes-application-input-design.md) and
+  [AI1–AI7 implementation plan](gem4xe/aes-application-input-implementation-plan.md):
+  caller-local keyboard and single-button waits, presenter routing, bounded
+  input inboxes, focus/gesture ownership and preserved console cancellation.
+  Seven executable slices from capture through a two-application OF816 demo.
+  AI1–AI2 capture/inbox changes pass development checks; AI3–AI7 remain pending.
+  No new server Task, wait mechanism or per-wait presenter RPC.
+- [AES window application design](gem4xe/aes-window-app-design.md) and
+  [implementation plan](gem4xe/aes-window-app-implementation-plan.md): completed
+  WA1–WA6 slices for durable GUI messages, GEM window ownership, delegated
+  display access, private VDI workstations and a resident counter application.
+  Concludes with two applications beside the native shell and an OF816 demo;
+  zero bank-zero growth. All six slices pass development checks, including the
+  extracted two-counter demo and matched coexistence diagnostics. Menus,
+  resources and resizing remain deferred; PI4/HY4 remain open.
 - [Separate widget focus damage](gem4xe/widget-focus-damage-plan.md): implemented
   at the development tier; independent rectangles and underline-only focus
   repair reduce the five-press idle median from 319 to 119 ms. Release/status
   regressions and remaining timing limits are recorded.
+- [VBXE command builder refactor](gem4xe/vbxe-builder-refactor-plan.md): BR1–BR4
+  implemented at the development tier. Trusted geometry, generated upper-memory
+  tables, sequential records and reserved glyph runs reduce maximum widget-paint
+  CPU by 40–44% in the original panel samples. One additional upper RAM bank;
+  zero bank-zero/VRAM growth. HY4 remains open.
+- [Presenter input latency](gem4xe/presenter-input-latency-plan.md): PI1–PI3
+  implemented at the development tier. Bounded text steps reduce loaded CPU
+  gaps and scrolling button latency; idle pixels are unchanged, disk combined
+  feedback regresses and full repairs cost more. PI4, the 20 ms CPU-gap target
+  and HY4 remain open. Zero bank-zero/VRAM growth; the matched PI3 image uses
+  one additional upper code bank.
 - [AES widget library](gem4xe/aes-widgets-implementation-plan.md): AW0–AW6 implemented
   at the development tier;
   actual GEM4XE object/drawing/form extraction, retained widget windows, bounded
@@ -250,3 +295,25 @@ assuming work is pending. Current behavior belongs in the
 
 - [Native pointer loops: implementation plan](compiler-pointer-loops-plan.md)
 - [Direct-page partition implementation plan](direct-page-partition-implementation-plan.md)
+
+## GEM desktop applications
+
+- [Control Panel session settings](gem4xe/control-panel-settings-plan.md): runtime
+  Off/Mild acceleration, staged Apply/Cancel and focused redraw/lifetime checks.
+  CP1–CP3 implemented; [development record](../history/control-panel-settings.md).
+
+- [GEM4XE calculator port](gem4xe/calculator-port-implementation-plan.md): CAL1–CAL4 pass development
+  checks: TEDINFO text drawing, classic resource loading, a windowed
+  `CALC.APP` and Files/shell launch with owned cleanup. Reuses the donor arithmetic
+  and layout, stays disk-loaded and targets zero bank-zero growth.
+- [Application-owned widgets](gem4xe/application-widgets-design.md) and
+  [implementation](gem4xe/application-widgets-implementation-plan.md): public GEM object/form subset.
+- [GEM Control Panel](gem4xe/gem-control-panel-design.md) and
+  [implementation](gem4xe/gem-control-panel-implementation-plan.md): ordinary object-tree app beside the counter and shell.
+- [Small desktop facilities](gem4xe/desktop-facilities-design.md) and
+  [implementation](gem4xe/desktop-facilities-implementation-plan.md): windowed menus, classic resources and a file browser/Exec launcher.
+- [Loadable GEM applications](gem4xe/loadable-gem-applications-implementation-plan.md):
+  LG1–LG6 pass development checks: disk-loaded shared GUI, private C image/Process
+  lifetime on both filesystems, three loadable apps, cooperative Stop and idle
+  collection. Both final Atarimax variants pass; the OF816 XEX has 56,444 bytes
+  of headroom.

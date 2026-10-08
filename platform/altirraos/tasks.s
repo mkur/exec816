@@ -178,6 +178,7 @@ general_finalizer_start:
     .include "dos.s"
     .include "sio.s"
     .include "platform-timer.s"
+    .include "calypsi-call.s"
     .include "display.s"
     .include "blitter.s"
     .if SIGNAL_IRQ_PROBE = 10

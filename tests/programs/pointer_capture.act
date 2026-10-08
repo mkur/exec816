@@ -39,7 +39,7 @@ PROC Records()
   hardware.events(0).xCount=4
   hardware.events(0).yCount=-3
   hardware.events(0).epoch=hardware.epoch
-  hardware.events(0).flags=0
+  hardware.events(0).flags=INPUTNATIVE.POINTER_SHIFT OR INPUTNATIVE.POINTER_CONTROL
   Require(INPUT.Take(@mouse,@event)=INPUT.OK)
   Require(event.kind=INPUT.EVENT_POINTER AND event.buttons=0
       AND event.x=104 AND event.y=97 AND event.tick=123)
@@ -47,7 +47,8 @@ PROC Records()
   Require(INPUT.RetireRoute(@mouse,tag)=INPUT.BUSY)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK)
   Require(event.kind=INPUT.EVENT_BUTTON AND event.buttons=1
-      AND event.x=104 AND event.y=97 AND event.tick=123)
+      AND event.x=104 AND event.y=97 AND event.tick=123
+      AND event.qualifiers=(INPUT.SHIFT OR INPUT.CONTROL))
   Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
   ; A pending expansion cannot survive a durable loss boundary.
   hardware.head=2

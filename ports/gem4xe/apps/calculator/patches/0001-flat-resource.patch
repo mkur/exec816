@@ -1,0 +1,11 @@
+--- a/tools/calcrsc.py
++++ b/tools/calcrsc.py
+@@ -98,7 +98,7 @@
+                  ch(KX + 2 * (KW + GAP) + GAP), ch(KY + 4 * (KH + GAP)),
+                  ch(KW * 2), ch(KH)))
+     assert len(objs) == NOBS_CALC, (len(objs), NOBS_CALC)
+-    return r.tree(objs, look3d=True)
++    return r.tree(objs, look3d=False)
+ 
+ 
+ INDICES = [("ADCALC", ADCALC), ("CROOT", CROOT), ("CTITLE", CTITLE),

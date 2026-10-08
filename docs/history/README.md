@@ -2,6 +2,9 @@
 
 [Documentation home](../README.md)
 
+- [Classic GEM appearance](classic-gem-appearance.md): frame, menu and desktop
+  appearance implemented through GA4, with matched costs and a tested OF816 ZIP.
+
 These pages preserve earlier designs, completed implementation slices and
 revision-specific measurements. Some use the future tense because they were
 written before implementation. Start with the [current architecture](../architecture/README.md)
@@ -22,14 +25,38 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [RAM filesystem](ram-filesystem.md): shared-worker backend, dynamic storage,
   allocation failures, command integration and memory costs.
 
+- [Application menu bars](application-menu-bars.md): registration, delivery,
+  presenter integration and Files menu implementation evidence.
+
+- [Desktop menu and window switching](desktop-menu-window-switching.md): active
+  window menus, covered-window selection, keyboard cycling and focus restoration.
+
+- [Control Panel session settings](control-panel-settings.md): runtime Off/Mild,
+  staged Apply/Cancel, physical redraw checks and reduced Files popup stack use.
+
+- [GEM4XE calculator port](calculator-port.md): noneditable TEDINFO, classic
+  resources and a private windowed APP with Files/shell ownership and disk packaging.
+
 - [Background console panes and primes](background-pane-primes.md): foundation
   slices, loadable command, numeric drawing, resource costs and packaged preview.
 
-- [Hybrid AES refactor](aes-hybrid.md): shared endpoint lifetime, caller transport migration and per-slice evidence.
+- [AES application input](aes-application-input.md): AI1–AI7 pass development checks for
+  capture, routing, public input waits, interactive GEM apps, measured cost and
+  the extracted OF816 demo. PI4/HY4 remain open.
+- [AES window applications](aes-windows.md): WA1–WA6 complete at the development
+  tier; durable GUI messages, windows, private VDI, two resident counters and an
+  extracted OF816 demo. Includes coexistence timing and console repair fixes.
+- [Mouse acceleration](mouse-acceleration.md): timed relative capture, interval
+  and coalescing checks, queue capacity, desktop profiles and upper-memory
+  accounting. MA1–MA4 are implemented; mild is the default, with loaded evidence
+  and a passing extracted OF816 demo. Pre-existing caret artifacts remain open.
+- [Hybrid AES refactor](aes-hybrid.md): shared endpoint lifetime, caller transport
+  migration, bounded presenter/widget/text steps and measured latency tradeoffs.
 - [AES service foundation](aes-server.md): private C bindings, presenter-owned messages/timers, GUI ownership, the two-client proof and latency follow-up.
 
 - [Native interrupt replies and timer.device](interrupt-reply.md): shared port
-  transactions, exact return handoff, bounded native completion and Action!/C timers.
+  transactions, exact return handoff, guarded adapter returns, bounded native
+  completion and Action!/C timers.
 
 - [Hosted AES widget application](aes-widgets.md): Control Panel, loaded semantic
   input, matched updates, independent contexts, the AW6 local preview and its

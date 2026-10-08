@@ -1,0 +1,543 @@
+{
+  "slice": "BR3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "cb7b212",
+  "checks": {
+    "host": {
+      "tests": 393,
+      "skips": 4
+    },
+    "widget_stages": 16,
+    "glyph_run_cases": 16,
+    "cursor_cases": 62,
+    "render_cases": 87,
+    "display_cases": [
+      "busy-timeout",
+      "retained-owner",
+      "map-nmi",
+      "copy-fault"
+    ],
+    "table_load_modes": [
+      "raw",
+      "opt"
+    ],
+    "panel_gestures_per_load": 10,
+    "panel_loads": [
+      "idle",
+      "scroll",
+      "disk"
+    ],
+    "submission_fault": "Fixture fails the second submission between reserved chunks; close/reopen resets pointer/count/fault"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "memory": {
+    "added_reserved_upper_bytes": 0,
+    "table_bank": 15,
+    "table_payload_bytes": 37132,
+    "table_payload_delta": 2050,
+    "table_padding_bytes": 0,
+    "table_unused_bytes": 28404,
+    "data_bytes": 3559,
+    "bss_bytes": 12359,
+    "code_bytes_before": 72674,
+    "code_bytes_after": 74100,
+    "added_vram_bytes": 0
+  },
+  "stack_usage": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 406,
+      "remaining_above_floor": 874
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 217,
+      "remaining_above_floor": 551
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 499,
+      "remaining_above_floor": 269
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 503,
+      "remaining_above_floor": 265
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 250,
+      "remaining_above_floor": 518
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 150,
+      "remaining_above_floor": 618
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 743,
+      "remaining_above_floor": 1561
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 127,
+      "remaining_above_floor": 129
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "latency": {
+    "idle": {
+      "capture_to_commit_ms": {
+        "count": 20,
+        "median_ms": 12.416634831310203,
+        "p95_ms": 28.665212812896915,
+        "max_ms": 48.257278549266324
+      },
+      "capture_to_application_ms": {
+        "count": 10,
+        "median_ms": 31.004441913279077,
+        "p95_ms": 52.72964099585694,
+        "max_ms": 52.72964099585694
+      },
+      "capture_to_button_consumed_ms": {
+        "count": 20,
+        "median_ms": 2.9657630124376393,
+        "p95_ms": 19.1320859512334,
+        "max_ms": 38.58261944602251
+      },
+      "capture_to_visible_ms": {
+        "count": 20,
+        "median_ms": 179.03758075725386,
+        "p95_ms": 259.36967403884245,
+        "max_ms": 259.6210206391788
+      },
+      "capture_to_button_pixels_ms": {
+        "count": 20,
+        "median_ms": 98.70591038076967,
+        "p95_ms": 139.1254181474219,
+        "max_ms": 139.12570008415813
+      },
+      "commit_to_patch_ms": {
+        "count": 10,
+        "median_ms": 109.99698327692249,
+        "p95_ms": 160.5123636307249,
+        "max_ms": 160.5123636307249
+      },
+      "patch_to_visible_ms": {
+        "count": 10,
+        "median_ms": 76.835936784145,
+        "p95_ms": 99.34224159440863,
+        "max_ms": 99.34224159440863
+      },
+      "press_feedback": {
+        "count": 10,
+        "median_ms": 118.91626337966024,
+        "p95_ms": 139.1254181474219,
+        "max_ms": 139.1254181474219
+      },
+      "application_label": {
+        "count": 10,
+        "median_ms": 199.2518808704515,
+        "p95_ms": 259.6210206391788,
+        "max_ms": 259.6210206391788
+      }
+    },
+    "scroll": {
+      "capture_to_commit_ms": {
+        "count": 20,
+        "median_ms": 50.6144106323982,
+        "p95_ms": 85.81935749437183,
+        "max_ms": 92.23630809482661
+      },
+      "capture_to_application_ms": {
+        "count": 10,
+        "median_ms": 59.80258789730172,
+        "p95_ms": 75.97109584580316,
+        "max_ms": 75.97109584580316
+      },
+      "capture_to_button_consumed_ms": {
+        "count": 20,
+        "median_ms": 41.10898405506788,
+        "p95_ms": 77.48587144530639,
+        "max_ms": 84.05422207310902
+      },
+      "capture_to_visible_ms": {
+        "count": 20,
+        "median_ms": 179.29132381984806,
+        "p95_ms": 259.3686872602657,
+        "max_ms": 259.3698150072105
+      },
+      "capture_to_button_pixels_ms": {
+        "count": 20,
+        "median_ms": 139.11491600399788,
+        "p95_ms": 159.0806184000372,
+        "max_ms": 179.29075994637563
+      },
+      "commit_to_patch_ms": {
+        "count": 10,
+        "median_ms": 91.75793193765251,
+        "p95_ms": 137.0920199216498,
+        "max_ms": 137.0920199216498
+      },
+      "patch_to_visible_ms": {
+        "count": 10,
+        "median_ms": 72.00805211318632,
+        "p95_ms": 89.93246205483952,
+        "max_ms": 89.93246205483952
+      },
+      "press_feedback": {
+        "count": 10,
+        "median_ms": 139.12379701118866,
+        "p95_ms": 179.29075994637563,
+        "max_ms": 179.29075994637563
+      },
+      "application_label": {
+        "count": 10,
+        "median_ms": 219.4465863804821,
+        "p95_ms": 259.3698150072105,
+        "max_ms": 259.3698150072105
+      }
+    },
+    "disk": {
+      "capture_to_commit_ms": {
+        "count": 20,
+        "median_ms": 33.364957237245534,
+        "p95_ms": 65.77908283160342,
+        "max_ms": 80.14383002598046
+      },
+      "capture_to_application_ms": {
+        "count": 10,
+        "median_ms": 50.60954722369848,
+        "p95_ms": 69.3930184006011,
+        "max_ms": 69.3930184006011
+      },
+      "capture_to_button_consumed_ms": {
+        "count": 20,
+        "median_ms": 9.781301673717435,
+        "p95_ms": 54.23666333511423,
+        "max_ms": 68.88891551624731
+      },
+      "capture_to_visible_ms": {
+        "count": 20,
+        "median_ms": 179.24522716347678,
+        "p95_ms": 279.34841600893174,
+        "max_ms": 279.4905121239845
+      },
+      "capture_to_button_pixels_ms": {
+        "count": 20,
+        "median_ms": 99.30530788196437,
+        "p95_ms": 159.07201932958264,
+        "max_ms": 179.01728131224635
+      },
+      "commit_to_patch_ms": {
+        "count": 10,
+        "median_ms": 137.66738231608207,
+        "p95_ms": 181.53991025953687,
+        "max_ms": 181.53991025953687
+      },
+      "patch_to_visible_ms": {
+        "count": 10,
+        "median_ms": 77.55586224007195,
+        "p95_ms": 107.12996860634442,
+        "max_ms": 107.12996860634442
+      },
+      "press_feedback": {
+        "count": 10,
+        "median_ms": 139.03583274948932,
+        "p95_ms": 159.07201932958264,
+        "max_ms": 159.07201932958264
+      },
+      "application_label": {
+        "count": 10,
+        "median_ms": 259.34895168873055,
+        "p95_ms": 279.4905121239845,
+        "max_ms": 279.4905121239845
+      }
+    }
+  },
+  "feedback": {
+    "idle": {
+      "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+      "edges": 20,
+      "edges_with_invalid_pixels": 0,
+      "invalid_frames": 0,
+      "max_invalid_pixels": 0
+    },
+    "scroll": {
+      "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+      "edges": 20,
+      "edges_with_invalid_pixels": 0,
+      "invalid_frames": 0,
+      "max_invalid_pixels": 0
+    },
+    "disk": {
+      "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+      "edges": 20,
+      "edges_with_invalid_pixels": 0,
+      "invalid_frames": 0,
+      "max_invalid_pixels": 0
+    }
+  },
+  "idle_label_cpu": {
+    "before": {
+      "calls": 67,
+      "total_cpu_ms": 61.85332523235111,
+      "max_cpu_ms": 3.0204587392634967
+    },
+    "after": {
+      "calls": 67,
+      "total_cpu_ms": 37.00306888137371,
+      "max_cpu_ms": 2.52911349222348
+    }
+  },
+  "widget_paint_max_cpu_ms": {
+    "idle": 19.804223130371774,
+    "scroll": 18.006453531891978,
+    "disk": 18.601340045307236
+  },
+  "idle_input_regression": {
+    "consumption_p95_before_ms": 11.0495235974,
+    "consumption_p95_after_ms": 19.1320859512334,
+    "input_service_gap_wall_before_ms": 66.94009831133991,
+    "input_service_gap_wall_after_ms": 45.94356472351169,
+    "input_service_gap_cpu_before_ms": 32.70085525508931,
+    "input_service_gap_cpu_after_ms": 32.70832657859903,
+    "slowest_samples": [
+      {
+        "capture": 4326138427.75,
+        "observed": 4326206852,
+        "load": "idle",
+        "edge": "release",
+        "presenter_state_at_capture": "ready",
+        "ready": 4326138427.75,
+        "selected": 4326146368.5,
+        "consumed": 4326206337.875,
+        "capture_to_ready_ms": 0.0,
+        "ready_to_selected_ms": 4.477578276210601,
+        "selected_to_consume_ms": 33.81513972079805,
+        "runnable_off_cpu_ms": 23.53762939134088,
+        "blocked_off_cpu_ms": 0.0,
+        "elapsed_ms": 38.29271799700865,
+        "charged_cpu_ms": 12.188759464263814,
+        "off_cpu_ms": 23.53762939134088,
+        "interrupt_ms": 2.56632914140396,
+        "start": 4326138427.75,
+        "end": 4326206337.875,
+        "submissions": [],
+        "exclusive_cpu_ms": {
+          "other_worker": 5.825517812058152,
+          "deskinput_service": 2.302506840490062,
+          "consoledriver_collect": 1.7375761052977323,
+          "pump": 1.2449621429447446,
+          "deskhost_cache": 0.8448234300705265,
+          "deskinput_present": 0.168386715704863,
+          "deskhost_events": 0.031294977719949414,
+          "consoledriver_arrival": 0.02509236952320269,
+          "consoledisplay_poll": 0.0048634086997218695,
+          "deskhost_afterpaint": 0.0037356617548588273
+        },
+        "inclusive_routines": {
+          "consoledriver_collect": {
+            "calls": 1,
+            "charged_cpu_ms": 1.7375761052977323,
+            "max_cpu_ms": 1.7375761052977323
+          },
+          "deskhost_cache": {
+            "calls": 1,
+            "charged_cpu_ms": 0.8448234300705265,
+            "max_cpu_ms": 0.8448234300705265
+          },
+          "deskinput_present": {
+            "calls": 2,
+            "charged_cpu_ms": 0.168386715704863,
+            "max_cpu_ms": 0.08697748312256214
+          },
+          "deskhost_events": {
+            "calls": 1,
+            "charged_cpu_ms": 0.031294977719949414,
+            "max_cpu_ms": 0.031294977719949414
+          },
+          "consoledriver_arrival": {
+            "calls": 1,
+            "charged_cpu_ms": 0.02509236952320269,
+            "max_cpu_ms": 0.02509236952320269
+          },
+          "consoledisplay_poll": {
+            "calls": 1,
+            "charged_cpu_ms": 0.0048634086997218695,
+            "max_cpu_ms": 0.0048634086997218695
+          },
+          "deskhost_afterpaint": {
+            "calls": 1,
+            "charged_cpu_ms": 0.0037356617548588273,
+            "max_cpu_ms": 0.0037356617548588273
+          }
+        }
+      },
+      {
+        "capture": 4321621690.25,
+        "observed": 4321655620,
+        "load": "idle",
+        "edge": "release",
+        "presenter_state_at_capture": "selected",
+        "ready": 4321621690.25,
+        "selected": 4321621690.25,
+        "consumed": 4321655417.375,
+        "capture_to_ready_ms": 0.0,
+        "ready_to_selected_ms": 0.0,
+        "selected_to_consume_ms": 19.017831088881966,
+        "runnable_off_cpu_ms": 0.9000830303688155,
+        "blocked_off_cpu_ms": 0.0,
+        "elapsed_ms": 19.017831088881966,
+        "charged_cpu_ms": 14.954276909804209,
+        "off_cpu_ms": 0.9000830303688155,
+        "interrupt_ms": 3.163471148708941,
+        "start": 4321621690.25,
+        "end": 4321655417.375,
+        "submissions": [
+          {
+            "start": 4321635759.75,
+            "end": 4321636228.75,
+            "charged_cpu_ms": 0.2223071165061272,
+            "before_first_fence_cpu_ms": 0.010572627608091021,
+            "from_first_fence_cpu_ms": 0.21173448889803617
+          }
+        ],
+        "exclusive_cpu_ms": {
+          "other_worker": 4.668872351732995,
+          "consolebitmap_run": 4.205227389026176,
+          "deskhost_cache": 2.3036345874349253,
+          "DisplayCheck": 1.7979810510319592,
+          "deskinput_service": 0.7726476255992918,
+          "consoledriver_collect": 0.5895297154271554,
+          "VbxeOwnerSubmit": 0.15936474014595867,
+          "consoledisplay_poll": 0.15358503705353554,
+          "deskinput_present": 0.09036072395715126,
+          "VbxeOwnerFence": 0.07887180195635901,
+          "_Mul16": 0.06914498455691527,
+          "deskhost_events": 0.03157691445616518,
+          "consoledriver_arrival": 0.024951401155094807,
+          "consolebitmap_cursor": 0.004792924515667929,
+          "deskhost_afterpaint": 0.0037356617548588273
+        },
+        "inclusive_routines": {
+          "consolebitmap_run": {
+            "calls": 2,
+            "charged_cpu_ms": 5.815650026290601,
+            "max_cpu_ms": 3.250730568567719
+          },
+          "deskhost_cache": {
+            "calls": 1,
+            "charged_cpu_ms": 5.554365156002644,
+            "max_cpu_ms": 5.554365156002644
+          },
+          "consoledisplay_poll": {
+            "calls": 1,
+            "charged_cpu_ms": 2.718504494776417,
+            "max_cpu_ms": 2.718504494776417
+          },
+          "DisplayCheck": {
+            "calls": 2,
+            "charged_cpu_ms": 1.3634460563394182,
+            "max_cpu_ms": 0.6819344807218709
+          },
+          "consoledriver_collect": {
+            "calls": 1,
+            "charged_cpu_ms": 0.5895297154271554,
+            "max_cpu_ms": 0.5895297154271554
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 1,
+            "charged_cpu_ms": 0.2223071165061272,
+            "max_cpu_ms": 0.2223071165061272
+          },
+          "deskinput_present": {
+            "calls": 1,
+            "charged_cpu_ms": 0.08676603057040032,
+            "max_cpu_ms": 0.08676603057040032
+          },
+          "VbxeOwnerFence": {
+            "calls": 3,
+            "charged_cpu_ms": 0.07887180195635901,
+            "max_cpu_ms": 0.04616714055533079
+          },
+          "_Mul16": {
+            "calls": 2,
+            "charged_cpu_ms": 0.06914498455691527,
+            "max_cpu_ms": 0.03524209202697007
+          },
+          "deskhost_events": {
+            "calls": 1,
+            "charged_cpu_ms": 0.03157691445616518,
+            "max_cpu_ms": 0.03157691445616518
+          },
+          "consoledriver_arrival": {
+            "calls": 1,
+            "charged_cpu_ms": 0.024951401155094807,
+            "max_cpu_ms": 0.024951401155094807
+          },
+          "deskhost_afterpaint": {
+            "calls": 1,
+            "charged_cpu_ms": 0.0037356617548588273,
+            "max_cpu_ms": 0.0037356617548588273
+          }
+        }
+      }
+    ],
+    "interpretation": "The slow samples contain no widget paint/run work. The worst includes 23.538 ms runnable off CPU; the next is dominated by existing cache/presenter work. Label CPU is lower, list distribution identical, longest idle service gap shorter. Completion-paced scheduling phases still affect input p95; retained as a limitation, not a latency guarantee."
+  },
+  "sources": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "3835cf85a856d5253ded26e02095e6381b8f295fa06b209a7ebb9fbd48343956",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "6c56af284d93ea28f80fcdc596108e5f0e26b7858146aa4ea8fa913a9bcbb514",
+    "ports/gem4xe/patches/0007-widget-glyph-runs.patch": "5d89100868e95188aec78fd010607b4df610374fdf90c15b4b747e3a8fee6f23",
+    "tools/generate_vbxe_tables.py": "4fd6491dab914ec624ff311e55cf9932c8183910183177c4a0d178e71d1434a5",
+    "tests/programs/vbxe-builder-probe.h": "85310f99f0bf1526deddc48b8e696db38a634d646296b1254577f7925c73f543",
+    "tests/programs/widgets_pixels.c": "67e96572010bf989b48d1b7b2af960a26656ed1c6fba62b41362af4efe995f4e",
+    "tools/test_widget_pixels.py": "d3613d2420d5cb0f19694eb19a8893fbb36acd1692193f40084c75465a41f166",
+    "build/vbxe-builder/br3/panel/program/build.json": "0b8f0730418a44105502c287f7e9062c90232d4a36d1805029dec9c7b1976b61",
+    "build/vbxe-builder/br3/panel-run/results.json": "0d45c23fe3f014a6fa2a61cba7e8b082e45435e358beb61c033fa55963030b40",
+    "build/vbxe-builder/br3/panel-run/work-unit-analysis.json": "65034884a4a506cc4ee5eb15fa3b47cd4c944438f8bc93173e62632ca0d173c8",
+    "build/vbxe-builder/br3/pixels-edges/pixel-results.json": "614798a21f982f742626fd46524efe087d4d3ca091f33bfd9d7ebbd8ac4dfd65",
+    "build/vbxe-builder/br3/cursor/results.json": "37e4220a3aa7e582755a54d5f62dea25bd0b8f634b1ded46776c723e2207d921",
+    "build/vbxe-builder/br3/render/results.json": "6c1018c040017160b244e8f3ca51c682b5cf84243cfb27b813c3b6e8241b4924",
+    "build/vbxe-builder/br3/display/results.json": "aca195a3db7a304999d512db85a1fd97b7b239253d77a593b38e591a18d380dd",
+    "build/vbxe-builder/br3/tables-opt/results.json": "442021e04ce06dd9c8f469544d903ebdbf8ca9741bc471862c8ab5fe4037f55b",
+    "build/vbxe-builder/br3/tables-raw/results.json": "693f2621ab622249fced3ca37e299d9d2936c8cddeb9f9a1d19a4dfec52b3fe0",
+    "build/vbxe-builder/br3/host.log": "4d272fc69d012cb6f532fb06893944e6a2d25015bf8ee55bf8bc4ab5055d89c7"
+  }
+}

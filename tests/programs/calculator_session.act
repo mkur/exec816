@@ -1,0 +1,69 @@
+MODULE CALCULATORTEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,ready,completed
+LONGCARD calculator,counter,baseline
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa80+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  PROCESS.Result result
+  PROGRAMIMAGE.Image POINTER image
+  BYTE cycle
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  LET peer=PROGRAMFILE.Load(BYTE POINTER(c"SYS:C/COUNTER.APP"))
+  Require(peer<>NULL)
+  counter=PROCESS.StartLoaded(BYTE POINTER(peer),NULL,0,0)
+  Require(counter<>0)
+  PROGRAM.Unload(peer)
+
+  FOR cycle=0 TO 1 DO
+    image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:C/CALC.APP"))
+    Require(image<>NULL)
+    calculator=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+    Require(calculator<>0)
+    PROGRAM.Unload(image)
+    ready=cycle+1
+    Require(PROCESS.Wait(calculator,@result)<>0)
+    Require(result.primary=0)
+    calculator=0
+    completed==+1
+    IF cycle=0 THEN
+      baseline=EXEC.AvailMem(0)
+    ELSE
+      Require(EXEC.AvailMem(0)=baseline)
+    FI
+  OD
+
+  Require(PROCESS.RequestStop(counter)<>0)
+  Require(PROCESS.Wait(counter,@result)<>0 AND result.primary=0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0)
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+
+RETURN
+ENDMODULE

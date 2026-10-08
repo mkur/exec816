@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "parents": {
+    "local": "1cec17088d9981b12010eea7b98d04201c9d38a7",
+    "upstream": "901ff53c79060fca587568580dc526649ac50ad5"
+  },
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "binary_sha256": "0f8183cc119258f5d77215c461f68d58f851fb3afc19ece6f42d87715502e70b",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act",
+      "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+      "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+    }
+  },
+  "policy": {
+    "shared_gem": "Resident C runtime and lookup tables in compressed boot image",
+    "disk_component": false,
+    "applications": [
+      "C:PANEL.APP",
+      "C:COUNTER.APP",
+      "C:FILES.APP",
+      "C:CALC.APP"
+    ],
+    "native_base": 2560,
+    "output_block_bytes": 65535
+  },
+  "artifacts": {
+    "native_image_sha256": "33c843be12dc7682211f517e95bb0dd38f66997972bd8ee349a17c3536c73405",
+    "native_xex_bytes": 401702,
+    "of816_xex_bytes": 426676,
+    "of816_xex_sha256": "dd2dcba288f29f511234e3ae51bdf6a84f6892cf88869a08c5989a5f963da87f",
+    "distribution_sha256": "0bb4f7fa2766aeeb846a052bf10a0d25bd05cc66d0e27ab1314be5db41a62471",
+    "shared_c_payload_bytes": 158900,
+    "cartridge_capacity": {
+      "program.xex": {
+        "bytes": 401702,
+        "headroom": 630489
+      },
+      "of816/Exec-of816.xex": {
+        "bytes": 426676,
+        "headroom": 605515
+      }
+    },
+    "compression": {
+      "codec": "LZ4-HC12",
+      "library_version": "1.10.0",
+      "maximum_output_block_bytes": 65535,
+      "streaming_input_bytes": 1024,
+      "input_scratch_upper_bytes": 0,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0
+      },
+      "expanded_payload_bytes": 1150756,
+      "compressed_output_bytes": 1150382,
+      "stored_payload_bytes": 386143,
+      "records": 433,
+      "compressed_blocks": 35,
+      "loader_bytes": 2857,
+      "loader_capacity_bytes": 4608
+    }
+  },
+  "memory": {
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1312,
+        1312,
+        1312,
+        1312,
+        1312,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 25408,
+      "loading_excluding_os": 21360,
+      "runtime_including_os": 56640,
+      "loading_including_os": 52592
+    },
+    "reservation_delta_from_local_parent": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0,
+      "runtime_including_os": 0,
+      "loading_including_os": 0
+    },
+    "upper_image_arena_bytes": 4608,
+    "component_loader_upper_arena_bytes_removed": 512
+  },
+  "checks": {
+    "host": {
+      "tests": 420,
+      "status": "pass",
+      "log_sha256": "6532aac2400860683822a74f1c67610207dc461bb51904db12a731034e9c1773"
+    },
+    "abi_generators": {
+      "status": "pass",
+      "checks": 16,
+      "memory_fixture_checks": 1
+    },
+    "emitted": [
+      {
+        "scope": "13 decoder cases: fragments, 65535-byte blocks, RAW, malformed input, bounds and live OS context",
+        "status": "pass",
+        "result_sha256": "8f354ab86ffe3aaadc6a8f790dfb9a515ed245330f0f9369fc8344446e1671c7",
+        "development_path": "build/upstream-compression-merge/loader-cases/results.json"
+      },
+      {
+        "scope": "6 optimized timeout admission/default/expiry cases",
+        "status": "pass",
+        "result_sha256": "f121160c209c5683e87b04da8bf4f12e2663e165c61f79e9f30d15e9aa5e9450",
+        "development_path": "build/upstream-compression-merge/sio-limits/results.json"
+      },
+      {
+        "scope": "Raw native/C bridge, two private C images, concurrent Tasks, IRQ/NMI and cleanup",
+        "status": "pass",
+        "result_sha256": "90273c0c197a9a6d9cc851e2651ef771e4540dd3ad26c7147bcd7e11b7f6c06d",
+        "development_path": "build/upstream-compression-merge/c-bridge-raw/results.json"
+      },
+      {
+        "scope": "Optimized native/C bridge, two private C images, concurrent Tasks, IRQ/NMI and cleanup",
+        "status": "pass",
+        "result_sha256": "45700ff166bfa731b8a36505bd16a16f1a9d0b2f680f9390efbdaa11f5c2f04e",
+        "development_path": "build/upstream-compression-merge/c-bridge-opt/results.json"
+      },
+      {
+        "scope": "One optimized deferred-return boundary 39 with the switching guard held",
+        "status": "pass",
+        "result_sha256": "4cf0377936bae031ce1db42a85c7b6f05eb47cae06fad7b52a111e5ac16b6807",
+        "development_path": "build/upstream-compression-merge/switching-guard/results.json"
+      },
+      {
+        "scope": "OF816 handoff, all expanded image bytes and 8x decoder timing",
+        "status": "pass",
+        "result_sha256": "1a6d6271b1543c71c7687f5254ef6b32b3315fe3762d43490153ae0da8aeddd9",
+        "development_path": "build/upstream-compression-merge/expanded-image/8x/results.json"
+      },
+      {
+        "scope": "Extracted XEX: five-second OF816 autoboot, three loaded apps, counter, physical shell focus, disk HELLO, RAM create/read/delete, guards and EXIT",
+        "status": "pass",
+        "result_sha256": "fcb6445dfafc70a726fb65f99df2ec0761f0f7662181c60c05acc2a32042a298",
+        "development_path": "build/upstream-compression-merge/gem-desktop/gem-desktop-results.json"
+      },
+      {
+        "scope": "Extracted new Atarimax cartridge: same focused resident-GEM smoke, context restoration, interlock and complete INITAD/segment consumption",
+        "status": "pass",
+        "result_sha256": "7c3c3445f6063d2b45656d254e353939ec326e2e05b87469d3a626c2886788fd",
+        "development_path": "build/upstream-compression-merge/cartridge-boot/results.json"
+      }
+    ]
+  },
+  "not_executed": [
+    "Full desktop/Files/menu/calculator walkthrough",
+    "Old cartridge and manual OF816 boot",
+    "1x measurements",
+    "Full release qualification and physical hardware"
+  ],
+  "expanded_image": {
+    "bytes": 1164539,
+    "extents": 60,
+    "timing": {
+      "decoder_calls": 396,
+      "decoder_ms": 5875.138536663758,
+      "native_loading_phase_ms": 5973.020486932937,
+      "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+      "payload_kib_per_second": 191.21590322752502
+    }
+  },
+  "source_inputs": {
+    "tools/build_demo.py": "b39215d33ee5c0377ed7206ab68c9e34440f458d5f017cbf09898fb73c0324a0",
+    "tools/build_gem_desktop.py": "7d565dad545a6c723c31944b790cbd791e0a58a1b58b69a6fc56565601190347",
+    "tools/build_bitmap_console.py": "b73c22826565822ac2c3e2daf64fc665b301614ac03a331c83bd10035a917bd7",
+    "tools/banked_image.py": "077095041884acb338114347ccacc48c8532dbcaaf95613a7ed7c054ea505d1e",
+    "tools/native_program.py": "dcf80fe8e9f4dad0828f655be82cfe77030ea53d31d2e85f8e529bf493ad97bc",
+    "tools/test_gem_desktop_boot.py": "8e78060dcfa5137df9259a12389e75d829489c01dc9db59c79a2a48cbcc616fe",
+    "tools/test_demo.py": "17ccb2967d21e18a74c6505092e6f95fc074a3eeabb0710a4ce5ae20545c3907",
+    "lib/io/siodriver.act": "a26294e79b1d60fa7918540291329d588bf680f1ee6af55b778e0a9cd0206ba0",
+    "platform/altirraos/lz4.s": "58f683a456bd71482fdf4cf22bab115dad89576e10ffb8cfc5a21a51d2aa6f0c",
+    "abi/memory-v1.json": "d61ab01fe1c7ef48ca3d29f6283f9beadcbc90fe68ba5f840d36911e22936d9f",
+    "platform/altirraos/memory-4m.json": "77d519a3d44a4e9370f09118f9e1f8b7ec82680590d9c4ef3e835a78db1d5d32"
+  },
+  "platform": {
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "clock_multiplier": 8,
+    "nominal_cpu_hz": 14187580.0,
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
+  },
+  "tested_source_state": "Merged worktree before commit; recorded parents and source hashes identify the tested inputs."
+}

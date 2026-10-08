@@ -23,7 +23,7 @@ def run(out):
             ownership(b,p,p['output'])
             row['checks']=data(b,p['image'],'checks',True)[0]
             row['service_bytes']=data(b,p['image'],'serviceBytes',True)[0]
-            require(row['checks']==31,'Incomplete pointer checks')
+            require(row['checks']==35,'Incomplete pointer checks')
             report['cases'][mode]=row
     report['status']='pass'
     (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')

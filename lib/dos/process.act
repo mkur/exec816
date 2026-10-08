@@ -9,6 +9,7 @@ USE DOSBREAK
 USE PROCESSSTATE
 USE HEAPCORE
 USE PROGRAMIMAGE
+USE CPROGRAMBIND
 INCLUDE "process-types.inc"
 INCLUDE "command-results.inc"
 
@@ -54,6 +55,13 @@ PUBLIC LONGINT FUNC ExecuteImage()
 
   IF image.magic<>PROGRAMIMAGE.MAGIC OR image.running<>1 THEN
     HEAPCORE.Abort($ff96)
+  FI
+
+  IF image.kind=PROGRAMIMAGE.KIND_C THEN
+    BEGIN
+      LET entry=ADDRESS POINTER(@image.entry)
+      RETURN(CPROGRAMBIND.Run(entry^,@process.breakFlags))
+    END
   FI
 
 RETURN(image.entry())
@@ -305,6 +313,33 @@ PUBLIC BYTE FUNC RequestBreak(LONGCARD identity)
 
 RETURN(1)
 
+; Native commands use BREAK. C/GEM children receive a durable cooperative close;
+; no Task or image is forcibly removed. OP_FIND enforces parent ownership.
+PUBLIC BYTE FUNC RequestStop(LONGCARD identity)
+
+  EXEC.Forbid()
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  LET image=PROGRAMIMAGE.Image POINTER(process.image)
+  IF image=NULL OR image.kind<>PROGRAMIMAGE.KIND_C THEN
+    EXEC.Permit()
+    RETURN(RequestBreak(identity))
+  FI
+
+  IF process.state<PROCESSSTATE.STATE_QUIESCING THEN
+    process.breakFlags=process.breakFlags OR PROCESSSTATE.BREAK_PENDING
+    CPROGRAMBIND.Stop(EXEC.Task POINTER(@process.task))
+  FI
+
+  EXEC.Permit()
+  DOSCLIENT.SetError(0)
+
+RETURN(1)
+
 ; Reserve a loaded command for a later coordinated launch.
 PUBLIC LONGCARD FUNC PrepareLoaded(BYTE POINTER image,arguments CARD length BYTE
     POINTER group)
@@ -376,6 +411,16 @@ PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
   FI
 
 RETURN(-1)
+
+; Borrow the owned child's durable completion signal until collection.
+PUBLIC LONGCARD FUNC CompletionMask(LONGCARD identity)
+
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(process.mask)
 
 ; Wait for a child to finish and return its collected command result.
 PUBLIC LONGINT FUNC Wait(LONGCARD identity Result POINTER outcome)

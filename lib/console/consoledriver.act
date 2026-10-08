@@ -29,6 +29,7 @@ USE DESKPAINT
 USE DESKINPUT
 INCLUDE "console-storage-action.inc"
 CONST DELETE=127
+CONST PAINT_STEPS=4
 
 PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()
 
@@ -276,6 +277,17 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
     RETURN(0)
   FI
 
+  ; Finish a visible dirty segment before a new scroll can move its prefix.
+  ; Present owns the single text step in this turn. Cancellation and clear
+  ; can abandon the old repair; neither waits for its pixels to catch up.
+  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
+      AND instance.dirtyRows<>0 AND instance.writeCancel=0
+      AND instance.operation<>CONSOLETYPES.OP_CLEAR
+      AND (instance.operation<>CONSOLETYPES.OP_IDLE
+      OR request.io_Actual<>request.io_Length) THEN
+    RETURN(0)
+  FI
+
   IF instance.operation<>CONSOLETYPES.OP_IDLE THEN
     CONSOLEDISPLAY.Edit(view,instance)
     IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -293,14 +305,6 @@ BYTE FUNC WriteQuantum(CONSOLETYPES.Instance POINTER instance
 
   IF instance.writeCancel<>0 OR request.io_Actual=request.io_Length THEN
     FinishWrite(instance,request)
-    RETURN(0)
-  FI
-
-  ; An obscured scroll repaints the retained rows in bounded passes. Let that
-  ; repaint reach the bottom before another write can invalidate its prefix.
-  ; Input, cancellation and desktop controls still run on every worker turn.
-  IF CONSOLEBITMAP.Enabled()<>0 AND view.claimed<>0 AND view.visible<>0
-      AND instance.dirtyRows<>0 AND DESKSTATE.CopyReady()=0 THEN
     RETURN(0)
   FI
 
@@ -515,7 +519,9 @@ RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR display
 PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
-  BYTE handoff,deferOutput
+  BYTE accessHeld
+  CARD accessStatus
+  BYTE handoff,deferOutput,paintSteps,paintProgress
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -603,6 +609,12 @@ PUBLIC PROC Worker()
       stopping=1
     FI
 
+    accessHeld=0
+    IF CONSOLEBITMAP.Enabled()<>0 THEN
+      accessStatus=DISPLAY.OwnerEnter()
+      accessHeld=accessStatus=DISPLAY.OK
+    FI
+
     CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
     IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
@@ -610,6 +622,10 @@ PUBLIC PROC Worker()
       EXEC.Permit()
       IF service.stop<>0 THEN
         CONSOLEDISPLAY.DiscardBatch()
+        IF accessHeld<>0 THEN
+          accessStatus=DISPLAY.OwnerDrop()
+        FI
+
         EXIT
       FI
     FI
@@ -632,19 +648,34 @@ PUBLIC PROC Worker()
     bits=0
 
     ; Commit visible GUI feedback before starting another console-output
-    ; quantum. An existing scene/DMA owner still gates both paths; painting
-    ; retains its one-quantum budget for this turn.
+    ; quantum. Drain at most four steps of the same strip, with input between
+    ; C calls. This never renews the turn's control or output budgets.
     deferOutput=0
-    IF DESKPAINT.Pump()<>0 THEN
+    paintSteps=0
+    DO
+      paintProgress=DESKPAINT.Pump()
+      IF paintProgress=0 THEN
+        EXIT
+      FI
+
+      paintSteps==+1
       DESKINPUT.Service(DESKINPUT.Mask())
+      DESKINPUT.Present()
       IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
         ; One handoff at most before the next eligible output quantum. This
         ; lets queued status patches run without starving console writers.
         handoff=1
         deferOutput=1
       FI
+
+      IF paintProgress<>2 OR paintSteps=PAINT_STEPS OR deferOutput<>0
+          OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
+        EXIT
+      FI
+    OD
+    IF paintSteps=0 THEN
+      DESKINPUT.Present()
     FI
-    DESKINPUT.Present()
 
     DESKHOST.AfterPaint()
     Arrival(service)
@@ -657,12 +688,21 @@ PUBLIC PROC Worker()
       ReadQuantum(service,instance)
       BEGIN
         LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0
-            AND DESKHOST.PaintReady()<>0 AND
+        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0
+            AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
             (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
           handoff=0
           completeWrite=0
-          IF view.scrollState<>0
+          IF CONSOLEBITMAP.TextPending()<>0 THEN
+            ; A scene token freezes this model until the last text fragment.
+            ; Re-resolve the live request only to finish a held short reply.
+            IF instance.write<>NULL AND instance.operation=CONSOLETYPES.OP_IDLE THEN
+              BEGIN
+                LET request=EXEC.IOStdReq POINTER(instance.write)
+                completeWrite=request.io_Actual=request.io_Length
+              END
+            FI
+          ELSEIF view.scrollState<>0
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
@@ -670,7 +710,12 @@ PUBLIC PROC Worker()
           FI
 
           CONSOLEDISPLAY.Present(view,instance)
-          IF completeWrite<>0 THEN
+          ; Resume repair on a fresh worker turn without a voluntary Task
+          ; round trip per segment. Controls, input and registry rotation keep
+          ; their ordinary opportunities; blocked paint never takes this path.
+          again=CONSOLEBITMAP.Enabled()<>0 AND CONSOLEBITMAP.Failed()=0
+              AND view.claimed<>0 AND view.visible<>0 AND instance.dirtyRows<>0
+          IF completeWrite<>0 AND CONSOLEBITMAP.TextPending()=0 THEN
             BEGIN
               LET request=EXEC.IOStdReq POINTER(instance.write)
               IF CONSOLEBITMAP.Failed()<>0 THEN
@@ -684,6 +729,7 @@ PUBLIC PROC Worker()
 
         ; Cancellation may finish a retained model edit while pixels are held.
         IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
+            AND CONSOLEBITMAP.TextPending()=0
             AND instance.write<>NULL AND instance.writeCancel<>0 THEN
           CONSOLECORE.EditQuantum(instance)
           IF instance.operation=CONSOLETYPES.OP_IDLE THEN
@@ -691,23 +737,30 @@ PUBLIC PROC Worker()
           FI
         FI
 
-        writing=instance.write<>NULL AND (AESLOCKS.PaintBlocked()=0
+        writing=instance.write<>NULL AND ((AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
             OR instance.writeCancel<>0)
-        again=(writing<>0 AND instance.writeCancel<>0)
-            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0)
+        again=again OR (writing<>0 AND instance.writeCancel<>0)
+            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
         IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
           again=0
         FI
       END
       entry.busy=0
+      ; No console view remains borrowed when pointer delivery resumes.
+      DESKHOST.InputBoundary()
+    ELSE
+      DESKINPUT.Present()
     FI
 
-    DESKINPUT.Present()
     DESKHOST.Events()
     AESHOST.Settle()
     IF stopping=0 AND writing=0 AND again=0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
       DESKHOST.Cache()
+    FI
+
+    IF accessHeld<>0 THEN
+      accessStatus=DISPLAY.OwnerDrop()
     FI
 
     IF CONSOLEBITMAP.Pending()<>0 THEN

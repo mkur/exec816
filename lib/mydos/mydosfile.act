@@ -7,6 +7,7 @@ USE MYDOSTYPES
 USE FSBTYPES
 USE FSCORE
 USE BLOCKIO
+USE FSNAMES
 USE BLOCKTYPES
 USE SYS
 INCLUDE "../dos/dos-types.inc"
@@ -258,7 +259,7 @@ PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
     RETURN(Fail(op,ERROR_BAD_NUMBER))
   FI
 
-  IF BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
+  IF FSNAMES.Mapped(op.output,LONGCARD(op.requested))=0 THEN
     RETURN(Fail(op,ERROR_BAD_NUMBER))
   FI
 

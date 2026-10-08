@@ -102,6 +102,21 @@ class CalypsiImageTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'not a linked function'):
             self.parse(blob)
 
+    def test_table_bank_is_readonly_and_nonexecutable(self):
+        blob = elf_image()
+        struct.pack_into('<H', blob, 44, 6)
+        struct.pack_into('<IIIIIIII', blob, 52+5*32,
+                         1, 258, 0xf0000, 0xf0000, 2, 65536, 4, 1)
+        blob[258:260] = b'AB'
+        image = self.parse(blob)
+        self.assertEqual(image['provenance']['readonly_table_banks'], [15])
+        self.assertFalse(image['segments'][-1]['writable'])
+        self.assertFalse(image['segments'][-1]['executable'])
+        for flags in (5, 6, 7):
+            struct.pack_into('<I', blob, 52+5*32+24, flags)
+            with self.assertRaisesRegex(RuntimeError, 'upper-bank layout'):
+                self.parse(blob)
+
     def test_rejects_code_bank_write_permission_and_overlap(self):
         blob = elf_image()
         struct.pack_into('<I', blob, 52+2*32+24, 7)

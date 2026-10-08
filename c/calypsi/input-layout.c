@@ -38,5 +38,5 @@ const unsigned short __exec_layout[] = {
     offsetof(struct InputEvent, x),
     offsetof(struct InputEvent, y),
     offsetof(struct InputEvent, buttons),
-    offsetof(struct InputEvent, reserved),
+    offsetof(struct InputEvent, motionInfo),
 };

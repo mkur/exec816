@@ -91,7 +91,8 @@ def irq_case(bridge, toolchain, output, optimize, crossing=False, invalid=False)
                 preserved=['A','X','Y','P','D','DBR','S'], native_probe_sha256=sha256(output/'probe.bin'))
 
 
-def deferred_case(bridge, toolchain, output, boundary, idle=False, burst=1, resume_nmi=False):
+def deferred_case(bridge, toolchain, output, boundary, idle=False, burst=1, resume_nmi=False,
+                  switching=False):
     source=ROOT/'tests/programs/interrupt_deferred.act'
     if idle:
         output.mkdir(parents=True,exist_ok=True)
@@ -106,6 +107,14 @@ def deferred_case(bridge, toolchain, output, boundary, idle=False, burst=1, resu
                   FAULT=program['labels']['heap_fault'], HEAP_PROBE=1, BURST=burst)
     if resume_nmi:
         labels['RESUME_PROBE']=1
+        if boundary==39:
+            # Interrupt ordinary Task code, outside a COP's live guard, so
+            # the quiet-return probe really must use its private trampoline.
+            labels['QUIET_PROBE']=1
+    if switching:
+        require(boundary==39 and not idle and not resume_nmi,
+                'Switching guard probe needs the root quiet-return boundary')
+        labels['SWITCHING_PROBE']=1
     (output/'probe.cfg').write_text('MEMORY { RAM: start=$0e0000,size=$1000,file=%O; } SEGMENTS { PROBE: load=RAM,type=ro; }\n')
     command(['ca65', '-I', output, '-I', ROOT/'platform/altirraos',
              *[v for k, a in labels.items() for v in ('-D', f'{k}={a}')],
@@ -157,6 +166,7 @@ def deferred_case(bridge, toolchain, output, boundary, idle=False, burst=1, resu
     require(data(bridge,image,'atReturn',True) == [(int.from_bytes(control[6:8],'little')+extra_ticks)&0xffff],
             'Completion waited for a later tick')
     require(int.from_bytes(control[44:46],'little')==extra_ticks,'Missing private COP NMI handoff check')
+    require(control[46]==int(switching),'Guarded adapter entry was not preserved')
     abi=json.loads((ROOT/'abi/native-interrupts.json').read_text())
     storage=program['build']['memory']['native_interrupt_storage']
     state=far_read(bridge,storage['BASE'],storage['BYTES'],output)
@@ -168,7 +178,7 @@ def deferred_case(bridge, toolchain, output, boundary, idle=False, burst=1, resu
     return dict(build=program['build'], runtime=runtime, boundary=boundary,
                 stack_usage=stack_usage(bridge,program['build']['memory']),
                 notifications=1, replies=1, subsequent_ticks=extra_ticks, idle=idle, callbacks=burst,
-                resume_nmi=resume_nmi, return_slots_clear=True,
+                resume_nmi=resume_nmi, switching_guard=switching, return_slots_clear=True,
                 native_probe_sha256=sha256(output/'probe.bin'))
 
 
@@ -228,6 +238,7 @@ def main():
     p.add_argument('--boundary', type=int, choices=range(30,40), action='append')
     p.add_argument('--idle', action='store_true')
     p.add_argument('--resume-nmi', action='store_true', help='Inject NMI before consuming the private return COP')
+    p.add_argument('--switching', action='store_true', help='Hold the adapter switching guard across nested VBI return')
     p.add_argument('--burst', type=int, choices=(1,5), default=1)
     p.add_argument('--crossing', action='store_true')
     args = p.parse_args()
@@ -249,7 +260,7 @@ def main():
                 report['scope'] = 'Deferred native reply at selected restore boundaries'
                 for boundary in args.boundary or range(30,40):
                     print('Deferred boundary', boundary, flush=True)
-                    report['cases'].append(deferred_case(bridge, toolchain, output/f'return-{boundary}', boundary, args.idle, args.burst,args.resume_nmi))
+                    report['cases'].append(deferred_case(bridge, toolchain, output/f'return-{boundary}', boundary, args.idle, args.burst,args.resume_nmi,args.switching))
         report['status'] = 'pass'
     except Exception as error:
         report.update(status='fail', error=str(error))

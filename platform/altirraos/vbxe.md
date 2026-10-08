@@ -26,9 +26,25 @@ that palette. G4 uses these two operations for GEM colours.
 
 Each public drawing operation admits its owner once. Private composition through
 `vbxe-internal.h` reuses that admission only within the same synchronous call;
-it retains argument checks, full-list rejection, dependency fences and recovery.
+it retains dependency fences and recovery. Public `VbxeSubmit` validates every
+raw record before executing any prefix. Private `VbxeOwnerSubmit` accepts only
+prepared lists from internal producers that establish geometry and bound count
+and work during construction; it does not decode those records again. Both
+paths use the same upload, launch and fence routine, and zero count remains a
+no-op. The prepared-list contract is private C driver composition, not a new
+kernel operation or public raw-list API.
 There is no cached authorization across calls. Acquisition, retirement and fault
 transitions retain their separate mandatory ownership checks.
+
+The GEM producer drains at 64 records or 8,192 work units. General rectangles
+derive their extents from renderer clipping and fixed surface layouts before
+splitting; the private builder does not revalidate them. Atlas glyphs derive extents
+from the fixed atlas, admitted screen clip and widget-strip mapping. Pointer
+lists use clipped screen coordinates and fixed private storage, at most four
+records / 1,440 work units. Admitted XOR outlines use four records and at most
+3,348 work units. Each producer initializes every field it varies and retains
+the immutable records until synchronous submission returns. No externally
+supplied records enter the prepared path.
 
 The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-screen-scrolling)
 adds one active operation to the same owner. Start validates and uploads a copy

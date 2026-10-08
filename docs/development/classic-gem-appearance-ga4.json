@@ -1,0 +1,1227 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GA4",
+  "baseline": "application-menu AM6 exact ZIP",
+  "artifact_build": "b5e8010-dirty",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false
+  },
+  "c_tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "renderer_upstream": {
+    "COPYING": {
+      "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "role": "notice"
+    },
+    "COPYING.LIB": {
+      "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "role": "notice"
+    },
+    "docs/licence.md": {
+      "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "role": "notice"
+    },
+    "src/portab.h": {
+      "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+      "role": "adapt"
+    },
+    "src/vdi/vdi.c": {
+      "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+      "role": "extract"
+    },
+    "src/vdi/vdi.h": {
+      "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+      "role": "adapt"
+    },
+    "src/vdi/vdidev.h": {
+      "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+      "role": "adapt"
+    },
+    "src/vdi/dev_vbxe.c": {
+      "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+      "role": "extract"
+    },
+    "src/vdi/font.c": {
+      "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+      "role": "extract-default-font-only"
+    },
+    "src/vdi/font.h": {
+      "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+      "role": "adapt"
+    },
+    "src/vdi/font8x8.c": {
+      "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+      "role": "unchanged-font"
+    },
+    "src/vbxe/vbxe.c": {
+      "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+      "role": "adapt"
+    },
+    "src/vbxe/vbxe.h": {
+      "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+      "role": "adapt"
+    },
+    "src/sys/zwin.h": {
+      "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+      "role": "replace"
+    },
+    "src/sys/farmem.h": {
+      "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+      "role": "replace"
+    },
+    "src/vdi/pointer.c": {
+      "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+      "role": "reference-only"
+    },
+    "src/vdi/pointer.h": {
+      "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+      "role": "reference-only"
+    },
+    "src/vdi/print.h": {
+      "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+      "role": "reference-only"
+    },
+    "src/sys/ctx.h": {
+      "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+      "role": "reference-only"
+    },
+    "src/sys/irq.h": {
+      "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+      "role": "reference-only"
+    },
+    "src/vdi/fillpat.c": {
+      "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+      "role": "reference-only"
+    },
+    "src/vdi/sintbl.c": {
+      "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+      "role": "reference-only"
+    },
+    "tools/vdiref.py": {
+      "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+      "role": "host-oracle-only"
+    },
+    "tools/devref.py": {
+      "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+      "role": "host-oracle-only"
+    },
+    "tools/fontref.py": {
+      "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "role": "host-oracle-only"
+    },
+    "tools/vbxeref.py": {
+      "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "role": "host-oracle-only"
+    },
+    "tools/anticref.py": {
+      "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+      "role": "host-oracle-only"
+    },
+    "src/vdi/font6x6.c": {
+      "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+      "role": "host-oracle-only"
+    }
+  },
+  "machine_pin": "toolchain/altirra-gem-vdi.json",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "bank_zero_note": "Includes guards, alignment and unused reserved capacity; budget, Task pools and phase/runtime reservations exactly match AM6.",
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1312,
+      1312,
+      1312,
+      1312,
+      1312,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 25408,
+    "loading_excluding_os": 21872,
+    "runtime_including_os": 56128,
+    "loading_including_os": 52592
+  },
+  "memory": {
+    "global_arena_reserved": 5120,
+    "global_arena_used_including_alignment": 4931,
+    "global_arena_delta_from_am6": 1,
+    "additional_declared_c_scratch": 36,
+    "additional_native_continuation": 2,
+    "additional_vram_bytes": 0,
+    "owned_banks": [
+      1,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      63
+    ],
+    "manifest_extents": 63,
+    "manifest_limit": 64,
+    "initialized_segment_bytes_delta": 4165
+  },
+  "checks": {
+    "desktop": {
+      "report": "build/classic-gem/final/gem-desktop-results.json",
+      "sha256": "26e70e3563029aa82c3cf7565d8eb9f3adbc868b19cf7cab7119d4a2b10a7ee6",
+      "status": "pass",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "gem-desktop",
+        "desktop_menu": {
+          "windows": 4,
+          "covered_counter": true,
+          "pointer": true,
+          "keyboard_cycle": 8,
+          "keyboard_menu": true,
+          "outside_cancel": true,
+          "escape": true,
+          "disabled_close": true,
+          "next_window": true,
+          "independent_pixels": 5,
+          "counter_during_menu": true,
+          "held_escape": true,
+          "gesture_ownership": true,
+          "drag_limit": true,
+          "focus_restoration": true,
+          "window_reuse": true
+        },
+        "panel_settings": {
+          "staging": true,
+          "cancel": true,
+          "defaults": true,
+          "keyboard": true,
+          "outside_release": true,
+          "escape": true,
+          "held_profile_deferral": true,
+          "physical_off_step": 2,
+          "physical_mild_step": 1,
+          "repeated_applies": 6,
+          "independent_pixels": 6,
+          "shell_output": true,
+          "counter_progress": true,
+          "reopen_profile": 0,
+          "reopen_verified": true
+        },
+        "panel_keyboard": true,
+        "panel_drag": true,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "menu_quit_with_child": true,
+        "exit_with_gui_child_and_popup": true
+      },
+      "scenes": 21,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 597,
+          "untouched_above_floor": 683
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 341,
+          "untouched_above_floor": 427
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 730,
+          "untouched_above_floor": 38
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 643,
+          "untouched_above_floor": 125
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 688,
+          "untouched_above_floor": 80
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 761,
+          "untouched_above_floor": 1543
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 357,
+          "untouched_above_floor": 1947
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 135,
+          "untouched_above_floor": 121
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 305,
+        "untouched_from_base": 1231,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "calculator": {
+      "report": "build/classic-gem/final-calculator/calculator-results.json",
+      "sha256": "84e9c8332f0d36ba53b7561956c932120d375f6632145d716745adfff3f7ab2f",
+      "status": "pass",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "calculator",
+        "no_window_cleanup": true,
+        "files_launch": true,
+        "stop": true,
+        "relaunch": true,
+        "counter": true,
+        "shell": true,
+        "independent_instances": 2,
+        "resource_isolation": true,
+        "idle_run_collection": true,
+        "heap_restored": true,
+        "exit_with_calculator_and_popup": true,
+        "feedback": [
+          140.4535516275503,
+          140.2105221609323,
+          140.45467937449516,
+          37.89229734739822,
+          140.46764846436108,
+          140.46200972963678
+        ]
+      },
+      "scenes": 12,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 595,
+          "untouched_above_floor": 685
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 313,
+          "untouched_above_floor": 455
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 174,
+          "untouched_above_floor": 594
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 684,
+          "untouched_above_floor": 84
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 679,
+          "untouched_above_floor": 89
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 688,
+          "untouched_above_floor": 80
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 774,
+          "untouched_above_floor": 1530
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 582,
+          "untouched_above_floor": 1722
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 131,
+          "untouched_above_floor": 125
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 289,
+        "untouched_from_base": 1247,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "background": {
+      "report": "build/classic-gem/ga4/background/background-results.json",
+      "sha256": "0909a9d7d79559427e832fc2ecc7c1fd2ed2cc967102433cbfb563d6b1c79f9b",
+      "status": "pass",
+      "checks": 66,
+      "scenes": 15,
+      "max_painter_cpu_ms": 15.367596165096513,
+      "guards": "intact",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 207,
+          "remaining_above_floor": 1073
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 696,
+          "remaining_above_floor": 1608
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 49,
+          "remaining_above_floor": 207
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      }
+    }
+  },
+  "comparison": {
+    "before": {
+      "report": "build/classic-gem/comparison/before/results.json",
+      "sha256": "1f36764e2d9e58b829cfe309120a02d2cf9ef5544de48f393bdc9297200faa25",
+      "status": "pass",
+      "package_sha256": "767038b7635c38772dd720e8b98da810c4549d891e9a50cf5f95f4e14d9746c3",
+      "measurements": {
+        "focus": {
+          "samples": [
+            {
+              "title": "GEM Control Panel",
+              "ms": 942.5077426876182
+            },
+            {
+              "title": "Counter",
+              "ms": 401.15368512459486
+            },
+            {
+              "title": "Files",
+              "ms": 280.90823100204545
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 360.9861583159355
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9914065682801
+            },
+            {
+              "title": "Counter",
+              "ms": 441.3183925658921
+            },
+            {
+              "title": "Files",
+              "ms": 300.8648409383419
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.0312400000564
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9930981886976
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27556637566096
+            },
+            {
+              "title": "Files",
+              "ms": 280.6550518129237
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.03067612658396
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9925343152252
+            },
+            {
+              "title": "Counter",
+              "ms": 441.06577725024283
+            },
+            {
+              "title": "Files",
+              "ms": 280.907667128573
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.02842063269424
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9930981886976
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27613024913336
+            },
+            {
+              "title": "Files",
+              "ms": 280.6556156863961
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.0267290122769
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9919704417525
+            },
+            {
+              "title": "Counter",
+              "ms": 461.52874556478275
+            },
+            {
+              "title": "Files",
+              "ms": 280.90823100204545
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 340.77749693746216
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9919704417525
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27613024913336
+            },
+            {
+              "title": "Files",
+              "ms": 280.9087948755179
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.0312400000564
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1423.9925343152252
+            },
+            {
+              "title": "Counter",
+              "ms": 441.06577725024283
+            }
+          ],
+          "count": 30,
+          "median_ms": 441.06577725024283,
+          "p95_ms": 1423.9930981886976,
+          "max_ms": 1423.9930981886976
+        },
+        "button": {
+          "model_address": 327946,
+          "samples_ms": [
+            100.28771643930818,
+            140.4535516275503,
+            100.28828031278061,
+            100.28771643930818,
+            100.28884418625304,
+            100.28828031278061,
+            100.28771643930818,
+            180.6120564606508,
+            100.28771643930818,
+            100.29053580667035,
+            100.28828031278061,
+            100.28771643930818,
+            140.45693486838488,
+            100.28828031278061,
+            100.28771643930818,
+            160.41072543731912,
+            140.45411550102273,
+            100.28771643930818,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.29053580667035,
+            140.20206405884582,
+            100.28828031278061,
+            100.28771643930818,
+            100.29730228833952,
+            100.28771643930818,
+            140.20150018537342,
+            100.28771643930818
+          ],
+          "median_ms": 100.28828031278061,
+          "max_ms": 180.6120564606508,
+          "scope": "30 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+          "count": 30,
+          "p95_ms": 160.41072543731912
+        },
+        "paint_units": {
+          "count": 1910,
+          "max_cpu_ms": 8.129081915309024,
+          "max_elapsed_ms": 21.14631247894285
+        }
+      },
+      "scope": "Same idle shell, Files, ticking Counter and Control Panel; 30 Ctrl-Tab changes and 30 button presses. Submission to matching title/button scanout; PAL-frame polling. Not an HY4/PI4 gate.",
+      "guards": "intact"
+    },
+    "before_border_refinement": {
+      "report": "build/classic-gem/comparison/after/results.json",
+      "sha256": "608ae79666def3e016ca7973950e18b599a80432adc3ca90a9afc061eb31671d",
+      "status": "pass",
+      "package_sha256": "06d7692487fda35dcaf4fe0e98a89ed3c4199133950638a07969f384be79e7c2",
+      "measurements": {
+        "focus": {
+          "samples": [
+            {
+              "title": "GEM Control Panel",
+              "ms": 962.7265537885954
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27556637566096
+            },
+            {
+              "title": "Files",
+              "ms": 260.9521849392215
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 421.36291037654064
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.2379884377744
+            },
+            {
+              "title": "Counter",
+              "ms": 501.44083769043067
+            },
+            {
+              "title": "Files",
+              "ms": 300.85412734236564
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 421.3617826295957
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.497370235093
+            },
+            {
+              "title": "Counter",
+              "ms": 501.18935012172614
+            },
+            {
+              "title": "Files",
+              "ms": 280.90823100204545
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 441.06634112371523
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.237424564302
+            },
+            {
+              "title": "Counter",
+              "ms": 501.44196543737553
+            },
+            {
+              "title": "Files",
+              "ms": 280.90823100204545
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 441.3178286924197
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.237424564302
+            },
+            {
+              "title": "Counter",
+              "ms": 501.44196543737553
+            },
+            {
+              "title": "Files",
+              "ms": 300.8654048118143
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 421.11029506089125
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.237424564302
+            },
+            {
+              "title": "Counter",
+              "ms": 501.44140156390307
+            },
+            {
+              "title": "Files",
+              "ms": 260.69900575009973
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 421.10973118741884
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1544.2368606908296
+            },
+            {
+              "title": "Counter",
+              "ms": 501.44083769043067
+            },
+            {
+              "title": "Files",
+              "ms": 260.6984418766273
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 441.0646495032979
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1524.2949114648163
+            },
+            {
+              "title": "Counter",
+              "ms": 521.3974476267271
+            }
+          ],
+          "count": 30,
+          "median_ms": 501.18935012172614,
+          "p95_ms": 1544.2379884377744,
+          "max_ms": 1544.497370235093
+        },
+        "button": {
+          "model_address": 327946,
+          "samples_ms": [
+            100.28828031278061,
+            140.45467937449516,
+            100.28828031278061,
+            100.28828031278061,
+            100.28884418625304,
+            100.28884418625304,
+            100.28828031278061,
+            140.45411550102273,
+            100.28884418625304,
+            100.29899390875681,
+            100.28771643930818,
+            100.28828031278061,
+            120.49750556472632,
+            100.28828031278061,
+            100.28715256583575,
+            160.3960647270359,
+            100.28828031278061,
+            100.28884418625304,
+            100.28828031278061,
+            140.45467937449516,
+            120.24489024907702,
+            100.28940805972549,
+            100.29899390875681,
+            160.4141086781537,
+            100.28771643930818,
+            100.29617454139465,
+            100.28771643930818,
+            140.45467937449516,
+            120.50427204639551,
+            100.28771643930818
+          ],
+          "median_ms": 100.28884418625304,
+          "max_ms": 160.4141086781537,
+          "scope": "30 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+          "count": 30,
+          "p95_ms": 160.3960647270359
+        },
+        "paint_units": {
+          "count": 2081,
+          "max_cpu_ms": 13.494972363151431,
+          "max_elapsed_ms": 26.72048369066465
+        }
+      },
+      "scope": "Same idle shell, Files, ticking Counter and Control Panel; 30 Ctrl-Tab changes and 30 button presses. Submission to matching title/button scanout; PAL-frame polling. Not an HY4/PI4 gate.",
+      "guards": "intact"
+    },
+    "final": {
+      "report": "build/classic-gem/comparison/final/results.json",
+      "sha256": "18b83fd62a565c90eddf7d53273e5b66e47784aba7d2c311c78194370c73191b",
+      "status": "pass",
+      "package_sha256": "c64e2ab42d1f10ca89fbda360a2477dfa9996277b85664f9cea312f856159b27",
+      "measurements": {
+        "focus": {
+          "samples": [
+            {
+              "title": "GEM Control Panel",
+              "ms": 822.2622885650688
+            },
+            {
+              "title": "Counter",
+              "ms": 401.1542489980673
+            },
+            {
+              "title": "Files",
+              "ms": 240.74295968727577
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 360.98164732815604
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.9202457360593
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27556637566096
+            },
+            {
+              "title": "Files",
+              "ms": 280.6561795598685
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.0295483796391
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.91347925439
+            },
+            {
+              "title": "Counter",
+              "ms": 461.271619261354
+            },
+            {
+              "title": "Files",
+              "ms": 260.6984418766273
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 360.98672218940794
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.660863938741
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27500250218856
+            },
+            {
+              "title": "Files",
+              "ms": 280.6561795598685
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 341.03011225311155
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.661427812213
+            },
+            {
+              "title": "Counter",
+              "ms": 441.3178286924197
+            },
+            {
+              "title": "Files",
+              "ms": 260.95162106574907
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 361.2393375050573
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1323.703690128972
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27556637566096
+            },
+            {
+              "title": "Files",
+              "ms": 260.69956962357213
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 360.98672218940794
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.6603000652683
+            },
+            {
+              "title": "Counter",
+              "ms": 461.2766941226058
+            },
+            {
+              "title": "Files",
+              "ms": 280.90823100204545
+            },
+            {
+              "title": "Exec816 Shell",
+              "ms": 340.7780608109346
+            },
+            {
+              "title": "GEM Control Panel",
+              "ms": 1343.91347925439
+            },
+            {
+              "title": "Counter",
+              "ms": 461.27556637566096
+            }
+          ],
+          "count": 30,
+          "median_ms": 441.3178286924197,
+          "p95_ms": 1343.91347925439,
+          "max_ms": 1343.9202457360593
+        },
+        "button": {
+          "model_address": 327946,
+          "samples_ms": [
+            100.28715256583575,
+            140.45467937449516,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            140.4535516275503,
+            100.28940805972549,
+            140.45467937449516,
+            100.28771643930818,
+            140.45467937449516,
+            100.03566499713129,
+            100.28828031278061,
+            140.45467937449516,
+            100.28828031278061,
+            100.28771643930818,
+            160.42031128635045,
+            100.28771643930818,
+            140.45411550102273,
+            100.28771643930818,
+            140.20150018537342,
+            120.2465818694943,
+            100.28884418625304,
+            100.28884418625304,
+            160.41072543731912,
+            100.28771643930818,
+            140.4535516275503,
+            100.28771643930818,
+            100.28828031278061,
+            120.24376250213214,
+            100.28828031278061
+          ],
+          "median_ms": 100.28884418625304,
+          "max_ms": 160.42031128635045,
+          "scope": "30 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+          "count": 30,
+          "p95_ms": 160.41072543731912
+        },
+        "paint_units": {
+          "count": 1713,
+          "max_cpu_ms": 13.520276185226797,
+          "max_elapsed_ms": 23.576889081858923
+        }
+      },
+      "scope": "Same idle shell, Files, ticking Counter and Control Panel; 30 Ctrl-Tab changes and 30 button presses. Submission to matching title/button scanout; PAL-frame polling. Not an HY4/PI4 gate.",
+      "guards": "intact"
+    }
+  },
+  "host": {
+    "tests": 417,
+    "skips": 4,
+    "generators": [
+      "generate_desktop.py --check",
+      "generate_console_bitmap.py --check"
+    ],
+    "python_syntax": "pass",
+    "diff_whitespace": "pass"
+  },
+  "package": {
+    "path": "build/classic-gem/final/exec816-demo.zip",
+    "sha256": "c64e2ab42d1f10ca89fbda360a2477dfa9996277b85664f9cea312f856159b27",
+    "bytes": 449440,
+    "payload_checksums": 18,
+    "of816": true,
+    "development_files_in_zip": false
+  },
+  "artifacts": {
+    "program.xex": "0f93b5edf620e96bfc46fe356e213558c14aaf013b837bb8956f51d8f2bf81a2",
+    "system.atr": "b787d0d2318c66061ee06d8f5958fd4b421b33a61c6a6bb4879c95cc12848a6c",
+    "work.atr": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a",
+    "of816/Exec-of816.xex": "a5571326e8a0f525f87fe926c6d5ebf5e8b19469f9d916efc87c611130461408"
+  },
+  "publication": {
+    "frames": 37,
+    "directory": "build/classic-gem/comparison/final/first-focus",
+    "first_sha256": "0bff78d2e37d1fea21ff4fb8776b6e53e03cb4633296a80c889e1379c75623fe",
+    "last_sha256": "45fbe22c7bda896c78c8a25b51649def768e7502834ec892c55f254ffbc7ff16",
+    "scope": "First focus transition sampled at PAL-frame boundaries; complete title fragments observed. Background source audit confirms fill/stipple remain in shared scratch until publication. Sub-frame tearing is not qualified."
+  },
+  "screenshots": [
+    {
+      "source": "build/classic-gem/final/pixels-0/scanout.bgra",
+      "sha256": "c3cfd143911bec2b64d99f9a8de91ea98899469a6746ba073307855fd7e387fb",
+      "images": [
+        {
+          "path": "build/classic-gem/screenshots/desktop-native.png",
+          "width": 640,
+          "height": 240,
+          "sha256": "f832906aa9e6b2ee698d635d48d281ad99f320a3822966ed119b221fe58b6d32"
+        },
+        {
+          "path": "build/classic-gem/screenshots/desktop-display.png",
+          "width": 640,
+          "height": 480,
+          "sha256": "08d5764312cbab57bd4e485e5dab658856d72eaf9d1e6a52d75cae2626aed61d"
+        }
+      ]
+    },
+    {
+      "source": "build/classic-gem/final/pixels-2/scanout.bgra",
+      "sha256": "1a60b8fc35b0a269b44360ed2d6ab7d188134eb576fd8cba4226312eea9a8051",
+      "images": [
+        {
+          "path": "build/classic-gem/screenshots/windows-menu-native.png",
+          "width": 640,
+          "height": 240,
+          "sha256": "050c3891fcacacfb7c003e47a7cd7aa4f25f17da02b6ea7e7af543f84c752f0f"
+        },
+        {
+          "path": "build/classic-gem/screenshots/windows-menu-display.png",
+          "width": 640,
+          "height": 480,
+          "sha256": "a49e818bdc92d3225dc90a455c0e3f7d35f67dfcc12b0692e7d2b6d437d32f47"
+        }
+      ]
+    },
+    {
+      "source": "build/classic-gem/final/pixels-5/scanout.bgra",
+      "sha256": "9cec603225f667076e6416f0fe3ff775178359edabfc6d28e1ad735f9c267539",
+      "images": [
+        {
+          "path": "build/classic-gem/screenshots/control-panel-native.png",
+          "width": 640,
+          "height": 240,
+          "sha256": "ebd29aa6804df478604b9c982d81274a798b93b1faea114af3600767f924f2cf"
+        },
+        {
+          "path": "build/classic-gem/screenshots/control-panel-display.png",
+          "width": 640,
+          "height": 480,
+          "sha256": "292fcaff82e30446db1bc22940bd6ebc0e5955acdd749bcf9d1b463331829976"
+        }
+      ]
+    },
+    {
+      "source": "build/classic-gem/final/pixels-14/scanout.bgra",
+      "sha256": "7602d274e674dc1807d612a6e22415e6439e1ec575f47e665d00a5873ded1a24",
+      "images": [
+        {
+          "path": "build/classic-gem/screenshots/files-menu-native.png",
+          "width": 640,
+          "height": 240,
+          "sha256": "4dc134bc7da076e65cd7d17c3232f7445b4247b45d19c13ce0226b99090ad50c"
+        },
+        {
+          "path": "build/classic-gem/screenshots/files-menu-display.png",
+          "width": 640,
+          "height": 480,
+          "sha256": "097d7153d3174efff36021c6c1f2dddaced254de19ce12cfce5537fad0400105"
+        }
+      ]
+    },
+    {
+      "source": "build/classic-gem/final-calculator/pixels-10/scanout.bgra",
+      "sha256": "58377c1f092780cbcc7381469acffd357ad71d557e7934452fa35a1a70cd184e",
+      "images": [
+        {
+          "path": "build/classic-gem/screenshots/two-calculators-native.png",
+          "width": 640,
+          "height": 240,
+          "sha256": "426c7c46f44a1f58095b5d0c34a5c9bcba5f1427e26729a056bf8abcc400d05b"
+        },
+        {
+          "path": "build/classic-gem/screenshots/two-calculators-display.png",
+          "width": 640,
+          "height": 480,
+          "sha256": "18bfa685db66d76a09fcdb5dc60c500b626fb4bea27842dddd572180f0e4e89d"
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "abi/console-bitmap.json": "0e53294728078c6a8fac5fdcea26cc9d84ab872f8434ce3daf05007b85b8a884",
+    "abi/desktop.json": "1350b4c5d7edc05287f4505b0fed3d68535622a2a0714a44c06effe49efb82ff",
+    "c/calypsi/aes-windows.c": "960b4e728c5e8cf1774a937db1c014b5e94514e8b557cb244acf3abb735fe4a1",
+    "c/include/exec816/desktop-geometry.h": "0be09ea61bd6ddc10788abb59b447d90852e4983b9990cdf7778a1b961026721",
+    "c/include/hardware/console-bitmap.h": "547578d62bc6df56a69e9325571ba5847caa86ce59963dd5e46dcb571f328483",
+    "examples/gem-browser/browser.c": "a0993803c5bbb318e27e3945fbae59ef51eaabb47661ba444b8d6ab67ef113b8",
+    "lib/aes/aesmouse.act": "7577f55355223cafdd53ca078a49b0bf9ceeaef8ddb3cc26679c3cbe52827670",
+    "lib/aes/aeswindow.act": "36412d88d50c216f20e85db37ee99273cd94d826f9c4528fc3e635356aeb6d7f",
+    "lib/aes/aeswindowstate.act": "fb3df3077e6a8284ef6e2c52e7487426603ead979c6f81e9d95f5e5f8bdcf81f",
+    "lib/console/console-bitmap-types.inc": "f6d885004cbd336128ba094db27507fb62d47168c298934803e0c9169eb298dd",
+    "lib/console/console-bitmap.c": "e8f30ce3f167d812fb851f66dbeb43c1ed93e658b78a53b22b30d3923c738b4f",
+    "lib/console/consolebitmap.act": "90ba5d4c2078c4e7485850792b95692a42ec511ab9c8a28424f377f292282d31",
+    "lib/desktop/deskcache.act": "95df6befc2228b973e4c466d3c9717c60dff4249a9a20fa9ea169b120de24b01",
+    "lib/desktop/deskcore.act": "b44fe29703b34123c8b218207143fbf1b879e5f9d0f7a57726487a6226cfc69b",
+    "lib/desktop/deskdrag.act": "196f808558e23167158b0d367641bbed97aeab790e5a2e9407822c9c5dce5a8f",
+    "lib/desktop/deskgeometry.act": "ab2727be71904f8d7508dc35023f31ca1e1f218c6d75d786211b51967e1f4238",
+    "lib/desktop/deskmenu.act": "6ff88c062bc40e1d1a8e0679629b1d55da8bc519553bde712cedd072cf143ebc",
+    "lib/desktop/deskmenupaint.act": "db5ca8e1e80a5f8165b58e14a0da753fd085abdd30d1e1efd52ec15bc579b7bf",
+    "lib/desktop/deskmove.act": "7a18a1f95ca84efed8007d0b8442d5e6bb4a9387e6715eec96d9eb73aa75df5a",
+    "lib/desktop/deskpaint.act": "0cdee1178393722b3dcce62b769d39f01ad5df9b44b09dfb7db8b87386130ab8",
+    "lib/desktop/desktop-frame.c": "cd1e177184aa975f49d44a0eb57e48fa851b544007a0904f2d4625829f74e668",
+    "lib/desktop/desktypes.act": "7a608fa6acf0d4396c0afafa733f2ca000b7b044c05d5bad65629431b440315d",
+    "lib/desktop/deskwidgets.act": "e16bc8168b6e8614bb306da4e1653c69cb1edfff8345d45dfe3dd8f56f2a77cd",
+    "ports/gem4xe/adapter/gem-drawing.h": "008ea76fd72c80ca77f28dbe02efad48dd4bf739d113d1b258f8f9a11425e421",
+    "ports/gem4xe/adapter/gem-vbxe.c": "7975fec22b5595f5ea76b2e1c27d73deaf363bb30d85b25954236bdc24262a9b",
+    "tests/programs/desktop_background.act": "d668961c36e203201df7dcbca7e6466fc4aab43da2a5d38bc69acef7b48f9996",
+    "tests/programs/desktop_presentation.act": "851bf3e97905ca8dd3fd31504b2b3b388be7b656bb6fa46e984667cefda99aec",
+    "tools/build_bitmap_console.py": "67aa7e11acd82b95857eaf72a4adfad6b42ab42e98d78e29304e5019b2fe76d8",
+    "tools/desktop_oracle.py": "c1c62ca40d0a129cd5ab84b3a2ae390d84395b961b86f12a38473cebbe487af0",
+    "tools/generate_desktop.py": "d8741d02739b01d9517ed30677c48baa0b5a784df4238fdf776c7a9e003879d9",
+    "tools/loadable_gem_feedback.py": "514e814f2dc8d2ee5284dbcae9a731547f1d0a71a6017f3a352ec29aa2edd2a0",
+    "tools/measure_classic_gem.py": "77e5e3410359674cff5ca36a1b1c11b8691218e109a91ea2fae5cdcd7f24a1a0",
+    "tools/test_aes_menus.py": "d443579a649a4eb00c45974e083781dc0d3e99234a72035910a56c2aeb9517d3",
+    "tools/test_aes_windows.py": "0882bd1c7489e5db0e9efdee848bb3ce70400cc013d8f8ee43a155732348b345",
+    "tools/test_calculator.py": "c675538a61c2ec992a66eb4e3b9f79ddec345d57a8e95dedd1495df0bca0edff",
+    "tools/test_calculator_desktop.py": "3e569835ec46d24fcc675103a0c73eb50ea250e70b5dc164742965f3ade6146d",
+    "tools/test_demo.py": "fe5a1d6cb1cc0a6794580277a6dfd8327b7a52eac412dd60bf2d2c14387c84a4",
+    "tools/test_desktop_apps.py": "ad6d0321862d15417a6deee69e4e97a285b80207f11397a0215ca408527f2e0a",
+    "tools/test_desktop_background.py": "e4e30ce9e8cb63aca10aa2b66fade0cf17f8a7d1612c8e40c76e06abb0b4d363",
+    "tools/test_desktop_cache.py": "00431c52f3cb5a5fcd639616a85b270ea58af2db73f26826e0b6b1b770476ac2",
+    "tools/test_desktop_drag.py": "35727c010780c0ace03a9d193f5e3b18b73ded642cb284118992ed3aaf26e7a4",
+    "tools/test_desktop_presentation.py": "47f843ba8aa4f4b6fa9a9428d34f6c71f8e7308177a858d1991b95a8829ae448",
+    "tools/test_desktop_snapshots.py": "a73b21afe5541f1a0eca47037a3ac154d0b3a875ef5b653546a0157ec564de57",
+    "tools/test_gem_counter.py": "67fb6e8388e3dd4cbb831a3fbd2533dcad101beeb1f0dc05dae11a0fe9924990",
+    "tools/test_gem_desktop.py": "e677d3e5351f53fe057a35106d72d35a30c5ceea3276a08468313a9e1c2c46e9",
+    "tools/test_gem_desktop_boot.py": "a4b964a8dab32bac56b4002bd4998b8a5a9b6753c696604aa1c689f652d3a685",
+    "tools/test_gem_files.py": "af1d0157b18517f51395f3bd8049700811f97f860a8a7e9eb3b722cf6f352d1d",
+    "tools/test_gem_input.py": "4a34827ae09affb5da20b193d227501c89e010f9e8e4e639cf5326304ea5f7db"
+  },
+  "limits": [
+    "Development checks, not hosted release qualification.",
+    "Matched appearance comparison only; HY4/PI4 remain open.",
+    "Original 250 ms native move-repair target remains open.",
+    "No cartridge-size gate applied; loader/manifest limits remain enforced.",
+    "Raw matrix not repeated: 78-byte packet layout and native/C calling convention remain unchanged."
+  ]
+}

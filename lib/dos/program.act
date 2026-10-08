@@ -7,6 +7,8 @@ USE O65MEMORY
 USE PROGRAMIMAGE
 USE PROGRAMPROVIDERS
 USE PROGRAMPLACE
+USE CPROGRAM
+USE CPROGRAMBIND
 
 ; Validate, allocate and relocate an image before exposing it as executable.
 PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
@@ -14,6 +16,15 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
   PROGRAMIMAGE.Image POINTER image
   LONGINT error
   ADDRESS POINTER entryAddress
+
+  IF length>=4 AND LONGCARD POINTER(bytes)^=CPROGRAM.FILE_MAGIC THEN
+    IF CPROGRAMBIND.Runner()=0 THEN
+      DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_BAD_PROVIDER))
+      RETURN(NULL)
+    FI
+
+    RETURN(CPROGRAM.Load(bytes,length))
+  FI
 
   validation=O65.Validate(bytes,length)
   IF validation=O65TYPES.Validation POINTER(0) THEN

@@ -11,18 +11,18 @@ from native_program import ROOT,build,compiler,require,sha256
 
 def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=False,
             client_sources=(),client_entries=(),client_roots=(),client_probes=(),
-            client_optimization=None):
+            client_optimization=None,renderer_source=None):
     for path,content in files().items():require(path.read_text()==content,'Stale console packet: '+str(path))
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
              src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',
-             ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c']
+             ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c',ROOT/'lib/desktop/desktop-frame.c']
     extra_roots=[];extra_includes=[];extra_probes=[]
     if widgets or widget_probe:
         from extract_gem_aes import extract as aes_extract,PORT as aes
         from generate_widgets import expected_layout as aes_layout
         aes_record=aes_extract(out/'aes-selected')
-        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',
+        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',aes/'menu-render.c',
                     *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c','aes-form.c'))]
         extra_includes=[aes,out/'aes-selected']
         extra_probes=[(aes/'widget-layout.c',aes_layout())]
@@ -39,6 +39,17 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
                 'extern void WidgetPixelProbe(void);\nstruct ConsoleBitmapPacket ConsoleBitmapPacket')
             text=text.replace('p->status=GemDrawingOpen(workout);',
                 'p->status=GemDrawingOpen(workout);\n        if (!p->status) WidgetPixelProbe();')
+            instrumented.write_text(text)
+            sources[sources.index(original)]=instrumented
+            original=ad/'gem-vbxe.c'
+            instrumented=out/'gem-vbxe.c'
+            text=original.read_text().replace('static void drain(void)',
+                'static UWORD BuilderSubmit(const UBYTE *,UWORD);\nstatic void drain(void)')
+            needle='if (commandCount && !fault) latch(VbxeOwnerSubmit(&display,commands,commandCount));'
+            require(text.count(needle)==1,'Private list publication changed')
+            text=text.replace(needle,'if (commandCount && !fault) latch(BuilderSubmit(commands,commandCount));')
+            probe_source=ROOT/'tests/programs/vbxe-builder-probe.h'
+            text+='\n'+probe_source.read_text()
             instrumented.write_text(text)
             sources[sources.index(original)]=instrumented
     if fault:
@@ -63,6 +74,29 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         assembly.append(ROOT/'c/calypsi/io.s')
         extra_roots.append('ExecIOEntry')
     sources += list(client_sources)
+    if ROOT/'c/calypsi/aes.c' in sources:
+        sources.append(ROOT/'c/calypsi/aes-windows.c')
+        sources.append(ROOT/'c/calypsi/aes-input.c')
+        sources.append(ROOT/'c/calypsi/vdi.c')
+        # A second binding of the same extracted donor routines isolates the
+        # presenter's scratch from callers that can block acquiring DISPLAY.
+        from extract_gem_aes import extract as object_extract, PORT as object_port
+        object_extract(out/'app-objects')
+        for name in ('aes-objects.c','aes-graf.c','aes-form.c'):
+            path=out/'app-objects'/name
+            path.write_text(path.read_text().replace('"aes-hosted.h"','"application-hosted.h"'))
+            sources.append(path)
+        graf=out/'app-objects'/'app-graf.c'
+        graf.write_text((object_port/'widgets-graf.c').read_text().replace('"widgets.h"','"application-hosted.h"'))
+        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
+        assembly.append(ROOT/'c/calypsi/dos.s')
+        extra_includes.append(object_port)
+        from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
+        for path,content in vdi_files().items():
+            require(path.read_text()==content, "Stale VDI file: "+str(path))
+        extra_probes.append((ROOT/'c/calypsi/vdi-layout.c',vdi_layout()))
+    if renderer_source is not None:
+        sources[sources.index(ad/'gem-vbxe.c')]=renderer_source
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
@@ -73,11 +107,15 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
     if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
+    if widget_probe:foreign['provenance']['builder_probe_sha256']=sha256(probe_source)
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign
 
 
-def prepare(source,out,foreign,desktop=False,aes=False):
+def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
+    if desktop:
+        from generate_mouse_acceleration import configuration
+        (out/'deskmouseconfig.act').write_text(configuration(mouse_profile))
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
@@ -88,6 +126,10 @@ def prepare(source,out,foreign,desktop=False,aes=False):
     if 'ExecIOEntry' in sy:
         binding+=f'CONST C_EXECIOENTRY=${sy["ExecIOEntry"]:x}\n'
         binding+=read_source(ROOT/'c/calypsi/io-bridge.inc')
+    if 'ExecDosEntries' in sy:
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE DOS\nUSE PROGRAMFILE\nUSE PROGRAM\nUSE PROCESS\n',1)
+        binding+=f'CONST C_EXECDOSENTRIES=${sy["ExecDosEntries"]:x}\n'
+        binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc')
     binding+=f'''
 PROC Main()
 
@@ -108,6 +150,8 @@ PROC Main()
 
 RETURN
 '''
+    if 'ExecDosEntries' in sy:
+        binding=binding.replace('  BindDisplay()', '  BindDos(0)\n  BindDisplay()', 1)
     if 'ExecIOEntry' in sy:
         binding=binding.replace('  BindDisplay()', '  BindIO()\n  BindDisplay()', 1)
     if 'ConsoleBridgeProbe' in sy:
@@ -144,7 +188,7 @@ RETURN
 
 
 def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output=None,compiler_dir=None,desktop=False,aes=False,
-                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),**kwargs):
+                 client_sources=(),client_entries=(),client_roots=(),client_probes=(),mouse_profile=None,**kwargs):
     out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
     if aes:
         from generate_aes_server import files as aes_files
@@ -159,12 +203,12 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
     foreign=drawing(out,optimize,probe,fault,widgets=desktop,
         client_sources=client_sources,client_entries=client_entries,
         client_roots=client_roots,client_probes=client_probes)
-    launcher=prepare(Path(source),out,foreign,desktop,aes)
+    launcher=prepare(Path(source),out,foreign,desktop,aes,mouse_profile)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
                  task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
     if desktop:
-        from generate_desktop import ABI
-        program['build']['desktop_pointer_pixels_per_step']=ABI['constants']['POINTER_PIXELS_PER_STEP']
+        from generate_mouse_acceleration import metadata
+        program['build']['desktop_mouse']=metadata(mouse_profile)
         (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
     return program
 

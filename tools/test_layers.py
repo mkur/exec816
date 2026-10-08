@@ -19,7 +19,8 @@ INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
                'tools/test_layers.py', 'tests/programs/native_layers.act',
                'tests/programs/layers-paint.inc',
                'tests/programs/layers-update-checks.inc',
-               'tests/programs/layers-bank-checks.inc')
+               'tests/programs/layers-bank-checks.inc',
+               'tests/programs/layers-external-checks.inc')
 
 
 def geometry_cases():
@@ -54,6 +55,7 @@ def scene_commands():
             cmd(1, 3, 4, 8, 20, 16), cmd(2, 3, 1),
             cmd(1, 4, 12, 0, 16, 24), cmd(2, 4, 1),
             cmd(6, 1, 10, 2, 18, 14),
+            cmd(1, 6, 0, 0, 32, 2), cmd(1, 7, 16, 2, 32, 10),
             cmd(1, 5, 0, 0, 8, 24, status=2),
             cmd(3, 1, 1), cmd(5, 1, 4, 2), cmd(2, 3, 0),
             cmd(6, 3, 4, 8, 20, 16), cmd(5, 3, 0, 0),
@@ -150,18 +152,19 @@ def check_bank_scene(raw):
     pixels = bytearray([255])*(640*240)
     expected = bytearray(640*240)
     bounds = [(64, 40, 192, 80), (256, 96, 384, 136),
-              (448, 152, 576, 192), (160, 168, 288, 216)]
+              (448, 152, 576, 192), (160, 168, 288, 216),
+              (0, 0, 640, 16), (432, 16, 640, 80)]
     for ident, (l, t, r, b) in enumerate(bounds, 1):
         for y in range(t, b):
             expected[y*640+l:y*640+r] = bytes([ident])*(r-l)
     counts = []
-    for slot in range(5):
+    for slot in range(7):
         at = records['Scene']['fields']['items'] + slot*records['Layer']['size']
         ident, = struct.unpack_from('<I', scene, at)
-        require(ident == (slot+1 if slot < 4 else 0), 'Cross-bank identity changed')
+        require(ident == (slot+1 if slot < 6 else 0), 'Cross-bank identity changed')
         at += records['Layer']['fields']['visible']
         count, = struct.unpack_from('<H', scene, at)
-        require(0 < count <= 81, 'Cross-bank region count')
+        require(0 < count <= 91, 'Cross-bank region count')
         counts.append(count)
         for index in range(count):
             l, t, r, b = struct.unpack_from('<4h', scene, at+2+index*8)

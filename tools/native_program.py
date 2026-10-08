@@ -172,7 +172,8 @@ def image_regions(image, labels, imports, memory=None, image_version=None, stack
         validate(image['routines'])
     regions, executable = [], []
     for segment in image["segments"]:
-        require(set(segment) == {"address", "bytes", "writable", "executable"}, "Invalid segment fields")
+        fields = {"address", "bytes", "writable", "executable"}
+        require(set(segment) == fields, "Invalid segment fields")
         raw = segment["bytes"]
         require(isinstance(raw, list) and len(raw) <= (0x1000000 if memory else APP_LIMIT-APP_BASE), "Invalid payload size")
         require(all(type(byte) is int and 0 <= byte <= 255 for byte in raw), "Invalid payload bytes")
@@ -496,6 +497,10 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label='console_probe_'+operation.lower()
             result='Some(NativeResult(A16))' if operation=='Take' else 'None'
             peak=5
+        elif tasks and name=='CALYPSICALL.Invoke':
+            label,result,peak='calypsi_invoke','Some(NativeResult(A16X16))',40
+            arguments=[dict(alignment=2,offset=0,size=3),dict(alignment=2,offset=4,size=4)]
+            outgoing=9
         elif tasks and name=='CONSOLEBITMAP.Call':
             require(console_native,'Bitmap call requires console support')
             label,result,peak='console_bitmap_call','None',36
@@ -533,11 +538,16 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name.startswith('POINTERPROBE.'):
             require(irq_probe == 12, 'Pointer probe is unavailable in production')
             operation=name.split('.')[1]
-            require(operation in ('Suspend','Sample','Nmi'), 'Unknown pointer probe')
+            require(operation in ('Suspend','Sample','Nmi','Clock','Timed'), 'Unknown pointer probe')
             label='pointer_probe_'+operation.lower()
             result='None';peak=40
             if operation=='Sample':
                 arguments=[dict(alignment=2,offset=0,size=2)];outgoing=3
+            elif operation=='Clock':
+                arguments=[dict(alignment=2,offset=i*2,size=2) for i in range(3)];outgoing=7
+                result='Some(NativeResult(A16))'
+            elif operation=='Timed':
+                arguments=[dict(alignment=2,offset=i*2,size=2) for i in range(2)];outgoing=5
         elif tasks and name.startswith('TIMERPROBE.'):
             require(irq_probe == 11, 'Timer probe is unavailable in production')
             operation = name.split('.')[1]
@@ -940,7 +950,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'abi/timer-device.json','tools/generate_timer_device.py','lib/io/timer.act',
                 'lib/io/timer-types.inc','lib/io/timernative.act','lib/io/timerdriver.act',
                 'platform/altirraos/timer-device.inc','platform/altirraos/timer-device.s',
-                'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
+                'tools/input_diagnostics.py','abi/input-native.json','abi/input.json','tools/generate_input_native.py','tools/generate_input.py','lib/input/inputnative.act','lib/input/input.act','lib/input/input-types.inc','lib/input/inputcapture.act','lib/input/task-input.inc','platform/altirraos/input.s','platform/altirraos/pointer.s','platform/altirraos/pointer-timing.inc','platform/altirraos/input-native.inc','platform/altirraos/input.inc','abi/filesystems.json','tools/generate_filesystem_formats.py','tools/filesystem_formats.py',
                 'lib/spartados/sdfs.act','lib/spartados/sdfstypes.act','lib/spartados/sdfsfile.act',
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',
@@ -967,8 +977,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'platform/altirraos/heap.s','platform/altirraos/heap-probe.s','lib/exec/task-memory.inc','lib/exec/heap-call-types.inc',
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
+                'lib/exec/calypsicall.act','platform/altirraos/calypsi-call.s',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
-                'lib/display/display-types.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
+                'lib/display/display-types.inc','lib/display/display-access.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
             task_generated={name:sha256(output/name) for name in (
                 'execbuild.act','exec-build.json','input-build.inc','task-kernel/input.act',

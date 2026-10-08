@@ -1,7 +1,10 @@
 ; Application locks are presenter policy, never kernel Forbid or Layers tokens.
 MODULE AESLOCKS
+USE DISPLAY
 USE AESTYPES
 USE AESSTATE
+USE AESMOUSE
+USE AESWINDOWSTATE
 USE DESKSTATE
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
@@ -12,27 +15,31 @@ PUBLIC BYTE FUNC PaintBlocked()
   LET service=AESSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0
-    AND (service.updateOwner<>0 OR service.lockCount<>0))
+    AND (service.updateOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
 
 PUBLIC BYTE FUNC MouseBlocked()
 
   LET service=AESSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0
-    AND (service.mouseOwner<>0 OR service.lockCount<>0))
+    AND (service.mouseOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
 
 PUBLIC BYTE FUNC NativeReady()
 
   LET desktop=DESKSTATE.Get()
   LET batch=CONSOLEBATCH.Get()
 
-RETURN(desktop<>NULL AND desktop.scene.busy=0
+RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
     AND CONSOLEBITMAP.Pending()=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
+
+  IF AESMOUSE.LockReady(client.id)=0 THEN
+    RETURN(0)
+  FI
 
   IF service.mouseOwner<>0 AND service.mouseOwner<>client.id THEN
     RETURN(0)
@@ -49,7 +56,7 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     RETURN(1)
   FI
 
-RETURN(NativeReady())
+RETURN(service.windowPending=0 AND NativeReady()<>0)
 
 CARD FUNC Acquire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code)
@@ -60,7 +67,14 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
     FI
 
     service.updateOwner=client.id
+    IF service.updates=0 THEN
+      AESWINDOWSTATE.Snapshot(client)
+    FI
+
     service.updates==+1
+    IF client.view<>NULL THEN
+      client.view.updates=service.updates
+    FI
   ELSE
     IF service.mouseHolds=$ffff THEN
       RETURN(AESTYPES.OVERFLOW)
@@ -70,6 +84,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
   FI
 
   service.mouseOwner=client.id
+  AESMOUSE.Refresh()
 
 RETURN(AESTYPES.OK)
 
@@ -132,6 +147,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
 
     service.updates==-1
+    IF client.view<>NULL THEN
+      client.view.updates=service.updates
+    FI
     IF service.updates=0 THEN
       service.updateOwner=0
     FI
@@ -147,6 +165,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     service.mouseOwner=0
   FI
 
+  AESMOUSE.Refresh()
   request.intout(0)=1
 
 RETURN(AESTYPES.OK)

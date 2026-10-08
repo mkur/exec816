@@ -1,0 +1,177 @@
+MODULE POINTERREL
+USE EXEC
+USE INPUT
+USE INPUTNATIVE
+USE POINTERPROBE
+USE HEAPCORE
+INPUT.Lease mouse
+INPUT.Config config
+INPUT.Event event
+INPUTNATIVE.PointerCapture POINTER hardware
+CARD checks,phase,total,records,highWater
+LONGCARD tag
+BYTE ARRAY forward=[15 13 12 14]
+BYTE ARRAY bounds=[1 2 3 4 6 8 12 16 24 32 48 64 96 128 192 255]
+BYTE ARRAY phases=[3 1 0 2]
+
+PROC Require(BYTE good)
+
+  IF good=0 THEN
+    HEAPCORE.Abort($f000+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Timed(CARD levels,age)
+
+  EXEC.Forbid()
+  POINTERPROBE.Timed(levels,age)
+  EXEC.Permit()
+  LET used=BYTE(hardware.head-hardware.tail)
+  IF used>highWater THEN
+    highWater=CARD(used)
+  FI
+
+RETURN
+
+PROC Advance(CARD age)
+
+  phase=(phase+1) & 3
+  Timed(CARD(forward(phase)),age)
+
+RETURN
+
+PROC Drain()
+
+  WHILE INPUT.Take(@mouse,@event)=INPUT.OK DO
+    Require(event.kind=INPUT.EVENT_POINTER AND event.y=0
+        AND event.flags=(INPUT.TICK_VALID OR INPUT.RELATIVE)
+        AND event.x>0 AND event.x<=64 AND event.motionInfo=8)
+    total==+CARD(event.x)
+    records==+1
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index,next,age,expected,stride,xPhase,yPhase
+
+  hardware=INPUTNATIVE.PointerCapture POINTER($3f4810)
+  Require(EXEC.AllocSignal(17)=17)
+  config.version=INPUT.VERSION
+  config.source=INPUT.SOURCE_POINTER
+  config.wakeMask=$20000
+  config.pointerProtocol=INPUT.POINTER_ST
+  config.pointerPort=1
+  config.flags=INPUT.POINTER_RELATIVE
+  config.maxX=639
+  Require(INPUT.CheckConfig(@config)=INPUT.BAD_ARGUMENT)
+  config.maxX=0
+  Require(INPUT.Acquire(@mouse,@config)=INPUT.OK)
+  EXEC.Forbid()
+  POINTERPROBE.Suspend()
+  ; Every beam phase, wrap, zero interval, saturation and accumulated age.
+  FOR index=0 TO 155 DO
+    next=IF index=155 THEN CARD(0) ELSE index+1 FI
+    Require(POINTERPROBE.Clock(index,next,17)=18)
+    Require(POINTERPROBE.Clock(index,index,17)=17)
+    Require(POINTERPROBE.Clock(index,next,254)=255)
+  OD
+  Require(POINTERPROBE.Clock(154,2,12)=16)
+  Require(POINTERPROBE.Clock(154,2,254)=255)
+  EXEC.Permit()
+  Require(INPUT.CreateRoute(@mouse,0,@tag)=INPUT.OK)
+  Require(INPUT.PublishRoute(@mouse,tag)=INPUT.OK)
+  hardware.phase=15
+  Timed(15,255)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=0 AND event.y=0
+      AND event.motionInfo=INPUT.MOTION_RESET)
+  ; Exercise every duration class through the emitted decoder and raw copy.
+  FOR age=0 TO 255 DO
+    expected=0
+    WHILE age>CARD(bounds(expected)) DO
+      expected==+1
+    OD
+    IF age=0 OR age=255 THEN
+      expected=INPUT.MOTION_RESET
+    FI
+    Advance(age)
+    Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=1 AND event.y=0
+        AND event.motionInfo=expected)
+  OD
+  ; The same facts survive a single drain, every sample, or a partial drain.
+  FOR stride=0 TO 2 DO
+    total=0
+    records=0
+    FOR index=1 TO 65 DO
+      Advance(20)
+      IF stride=1 OR (stride=2 AND (index & 7)=0) THEN
+        Drain()
+      FI
+    OD
+    Drain()
+    Require(total=65)
+    IF stride=0 THEN
+      Require(records=2)
+    FI
+  OD
+  ; Timing change is a barrier even though direction and route match.
+  Advance(20)
+  Advance(40)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=1 AND event.motionInfo=8)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=1 AND event.motionInfo=10)
+  ; Movement on a press is applied once; retained button carries no delta.
+  phase=(phase+1) & 3
+  Timed(CARD(forward(phase))+256,20)
+  hardware.events((hardware.head-1) & 63).flags=
+      INPUTNATIVE.POINTER_SHIFT OR INPUTNATIVE.POINTER_CONTROL
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
+      AND event.x=1 AND event.buttons=0)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_BUTTON
+      AND event.x=0 AND event.y=0 AND event.buttons=1 AND event.motionInfo=0
+      AND event.qualifiers=(INPUT.SHIFT OR INPUT.CONTROL))
+  Timed(CARD(forward(phase)),20)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_BUTTON
+      AND event.x=0 AND event.buttons=0 AND event.qualifiers=0)
+  ; Direction reversal resets velocity independently of ring occupancy.
+  phase=(phase+3) & 3
+  Timed(CARD(forward(phase)),20)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=-1
+      AND event.motionInfo=INPUT.MOTION_RESET)
+  Advance(20)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=1
+      AND event.motionInfo=INPUT.MOTION_RESET)
+  ; Baseline/loss cannot leak a pending button delta or acceleration history.
+  Advance(20)
+  Require(INPUT.Discard(@mouse,tag)=INPUT.OK)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS
+      AND event.motionInfo=0 AND event.flags=0)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  Timed(CARD(forward(phase)),255)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=0
+      AND event.motionInfo=INPUT.MOTION_RESET)
+  ; Alternating legal axes: 60 vectors in 30.9 ms, each axis about 972 Hz.
+  ; Hold delivery for the PI3 worst service gap, not capture itself.
+  xPhase=phase
+  yPhase=0
+  FOR index=0 TO 59 DO
+    IF (index & 1)=0 THEN
+      xPhase=(xPhase+1) & 3
+    ELSE
+      yPhase=(yPhase+1) & 3
+    FI
+    Timed(CARD(phases(xPhase)) OR (CARD(phases(yPhase)) LSH 2),4)
+  OD
+  Require(BYTE(hardware.head-hardware.tail)=60)
+  total=0
+  FOR index=0 TO 59 DO
+    Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER)
+    total==+CARD(event.x+event.y)
+  OD
+  Require(total=60 AND INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  Require(INPUT.Release(@mouse)=INPUT.OK)
+  EXEC.FreeSignal(17)
+
+RETURN
+ENDMODULE

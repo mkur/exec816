@@ -47,10 +47,58 @@ void ExecAESPublish(struct ExecAESContext *c, struct AESEndpoint *endpoint,
     Permit();
 }
 
-void ExecAESRecycle(struct AESEndpoint *endpoint, struct AESDelivery *record)
+void ExecAESRecycle(struct ExecAESContext *c, struct AESDelivery *record)
 {
-    UWORD slot = (UWORD)(record - (struct AESDelivery *)endpoint->records);
+    struct AESEndpoint *endpoint = c->endpoint;
     Forbid();
-    endpoint->freeRecords |= (UWORD)(1U << slot);
+    if (record == &endpoint->gui->delivery) {
+        if (endpoint->gui->menuEpoch &&
+            endpoint->gui->menuEpoch == endpoint->menuEpoch &&
+            endpoint->gui->epoch == endpoint->guiEpoch)
+            endpoint->menuConsumed = 1;
+        endpoint->guiFree = 1;
+        if (endpoint->guiWaiting) {
+            c->directory->changed = 1;
+            Signal(c->directory->owner, c->directory->mask);
+        }
+    } else {
+        UWORD slot = (UWORD)(record - (struct AESDelivery *)endpoint->records);
+        endpoint->freeRecords |= (UWORD)(1U << slot);
+    }
     Permit();
+}
+
+/* This Task is the only receiver. Drop retired GUI notifications before the
+ * event decision, leaving ordinary words (including WM_* lookalikes) opaque.
+ * Keep the selected live record queued until timer retirement succeeds. */
+BOOL ExecAESMessageReady(struct ExecAESContext *c)
+{
+    struct AESDelivery *record;
+    BOOL stale;
+    if (c->messagePending) {
+        Forbid();
+        stale = c->deferredEpoch &&
+            (c->deferredEpoch != c->endpoint->guiEpoch ||
+             (c->deferredMenuEpoch && c->deferredMenuEpoch != c->endpoint->menuEpoch));
+        if (stale) c->messagePending=0;
+        Permit();
+        if (!stale) return TRUE;
+    }
+    for (;;) {
+        Forbid();
+        record = (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head;
+        if ((struct Node *)record == (struct Node *)&c->receiving->mp_MsgList.lh_Tail) {
+            Permit();
+            return FALSE;
+        }
+        stale = record == &c->endpoint->gui->delivery &&
+            (c->endpoint->guiEpoch == 0 ||
+             c->endpoint->gui->epoch != c->endpoint->guiEpoch ||
+             (c->endpoint->gui->menuEpoch &&
+              c->endpoint->gui->menuEpoch != c->endpoint->menuEpoch));
+        Permit();
+        if (!stale) return TRUE;
+        record = (struct AESDelivery *)GetMsg(c->receiving);
+        ExecAESRecycle(c, record);
+    }
 }

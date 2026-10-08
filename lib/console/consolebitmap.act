@@ -12,7 +12,12 @@ USE CALYPSIMETA
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
+; Private text progress owns a scene token, never a source/view pointer.
+LONGCARD desktopToken
+CARD desktopIndex,desktopGlyph
+BYTE desktopWasDirty
 LONGCARD completionMask
+CONST TEXT_GLYPHS=32, CLIPPED_GLYPHS=16
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -77,12 +82,18 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
-      OR operation=OP_TEXT_CLIP OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
+      OR operation=OP_TEXT_CLIP OR operation=OP_FRAME
+      OR operation=OP_MENU_ROW OR operation=OP_DESKTOP
+      OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
     drawingChanged=1
   FI
   IF packet.status=DISPLAY.BUSY AND
       (operation=OP_SCROLL OR operation=OP_COPY_START OR operation=OP_POLL) THEN
     RETURN(1)
+  FI
+
+  IF packet.status=DISPLAY.BUSY THEN
+    RETURN(0)
   FI
 
   IF packet.status<>DISPLAY.OK THEN
@@ -138,6 +149,65 @@ PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
 
 RETURN(Run(OP_FILL))
 
+PUBLIC BYTE FUNC Background(LAYERTYPES.Rect POINTER clip)
+
+  LET packet=GetPacket()
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+
+RETURN(Run(OP_DESKTOP))
+
+PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
+    BYTE POINTER title BYTE focused,closer CARD POINTER progress)
+
+  LET packet=GetPacket()
+  packet.x=CARD(bounds.left)
+  packet.y=CARD(bounds.top)
+  packet.width=CARD(bounds.right-bounds.left)
+  packet.height=CARD(bounds.bottom-bounds.top)
+  packet.text=LONGCARD(ADDRESS(title))
+  packet.foreground=CARD(focused)
+  packet.background=CARD(closer)
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+  packet.fillX=progress^
+  IF Run(OP_FRAME)=0 THEN
+    RETURN(0)
+  FI
+
+  progress^=packet.fillX
+
+RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
+
+PUBLIC BYTE FUNC MenuRow(LAYERTYPES.Rect POINTER bounds,clip
+    BYTE POINTER title CARD rowTop BYTE enabled,selected CARD POINTER progress)
+
+  LET packet=GetPacket()
+  packet.x=CARD(bounds.left)
+  packet.y=CARD(bounds.top)
+  packet.width=CARD(bounds.right-bounds.left)
+  packet.height=CARD(bounds.bottom-bounds.top)
+  packet.text=LONGCARD(ADDRESS(title))
+  packet.foreground=CARD(enabled)
+  packet.background=CARD(selected)
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+  packet.fillY=rowTop
+  packet.fillX=progress^
+  IF Run(OP_MENU_ROW)=0 THEN
+    RETURN(0)
+  FI
+
+  progress^=packet.fillX
+
+RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
+
 PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,background
     LAYERTYPES.Rect POINTER clip)
 
@@ -185,6 +255,38 @@ PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
   packet.background=0
 
 RETURN(Run(OP_TEXT))
+
+; Presenter-private continuation. Return 2 until every visible fragment of
+; this same frozen row segment has retired; Text/TextCaret stay synchronous.
+PUBLIC BYTE FUNC TextStep(CARD x,y BYTE POINTER characters CARD count)
+  LAYERTYPES.Rect bounds
+
+  IF DESKSTATE.Enabled()=0 THEN
+    RETURN(Text(x,y,characters,count))
+  FI
+
+  REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
+
+RETURN(DesktopPart(@bounds,1,characters,count,1,0))
+
+PUBLIC BYTE FUNC TextPending()
+
+RETURN(desktopToken<>0)
+
+; A quiesced fault in another primitive (for example the pointer between
+; fragments) must also retire our token, leaving its damage unacknowledged.
+PUBLIC PROC DiscardText()
+  BYTE status
+
+  IF desktopToken<>0 THEN
+    BEGIN
+      LET service=DESKSTATE.Get()
+      status=LAYERS.Finish(@service.scene,desktopToken,0)
+      desktopToken=0
+    END
+  FI
+
+RETURN
 
 ; The final text span and underline share one admitted drawing operation.
 PUBLIC BYTE FUNC TextCaret(CARD x,y BYTE POINTER characters CARD count,caretX,caretY)
@@ -277,6 +379,10 @@ PUBLIC BYTE FUNC CopyStart()
   FI
 
   LET packet=GetPacket()
+  IF packet.status=DISPLAY.BUSY THEN
+    RETURN(0)
+  FI
+
   IF packet.status<>DISPLAY.OK THEN
     RETURN(0)
   FI

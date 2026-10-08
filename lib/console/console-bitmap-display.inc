@@ -17,10 +17,6 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
     IF operation=CONSOLETYPES.OP_CLEAR THEN
       synchronized=1
     ELSE
-      IF instance.dirtyRows<>0 AND instance.dirtyRows<=ROW_BUDGET THEN
-        Cells(view,instance)
-      FI
-
       synchronized=instance.dirtyRows=0
           AND view.presentedGeneration=instance.generation
     FI

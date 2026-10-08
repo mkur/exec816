@@ -6,6 +6,7 @@ USE AESSTATE
 USE AESINPUT
 USE A816MEMORY
 USE HEAPCORE
+USE DESKMOUSE
 
 CARD checks,serviceBytes
 INPUT.Event sample,result
@@ -73,6 +74,33 @@ PROC Main()
   Require(service.pointerLost=0 AND AESINPUT.Pending()=0)
   AESINPUT.Push(@sample)
   Require(AESINPUT.Pop(@result)<>0 AND result.kind=INPUT.EVENT_BUTTON)
+  ; Deferral owns final screen coordinates, including fractional motion.
+  DESKMOUSE.Start(320,120,1)
+  sample.kind=INPUT.EVENT_POINTER
+  sample.flags=INPUT.TICK_VALID OR INPUT.RELATIVE
+  sample.x=1
+  sample.y=0
+  sample.motionInfo=11
+  DESKMOUSE.Apply(@sample)
+  AESINPUT.Push(@sample)
+  sample.x=1
+  sample.y=0
+  sample.motionInfo=11
+  sample.flags=INPUT.TICK_VALID OR INPUT.RELATIVE
+  DESKMOUSE.Apply(@sample)
+  AESINPUT.Push(@sample)
+  sample.kind=INPUT.EVENT_BUTTON
+  sample.x=0
+  sample.y=0
+  sample.motionInfo=0
+  DESKMOUSE.Apply(@sample)
+  AESINPUT.Push(@sample)
+  Require(service.pointerCount=2)
+  Require(AESINPUT.Pop(@result)<>0 AND result.kind=INPUT.EVENT_POINTER
+      AND result.x=323 AND result.flags=INPUT.TICK_VALID AND result.motionInfo=0)
+  Require(AESINPUT.Pop(@result)<>0 AND result.kind=INPUT.EVENT_BUTTON
+      AND result.x=323 AND result.motionInfo=0)
+  Require(AESINPUT.Pending()=0)
   AESSTATE.Bind(NULL)
   Require(AESINPUT.Pending()=0 AND AESINPUT.Pop(@result)=0)
   EXEC.FreeMem(BYTE POINTER(service),LONGCARD(serviceBytes))

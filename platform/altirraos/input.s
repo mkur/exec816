@@ -20,6 +20,7 @@ CI_ERRORS = IN_CAPTURE+IN_CAPTURE_ERRORS
 CI_HARDWARE_LOST = IN_CAPTURE+IN_CAPTURE_HARDWARELOST
 CI_BINDING = IN_CAPTURE+IN_CAPTURE_BINDING
 CI_ROUTE = IN_CAPTURE+IN_CAPTURE_ROUTE
+CI_ROUTE_FLAGS = IN_CAPTURE+IN_CAPTURE_ROUTEFLAGS
 CI_TAKEN_ROUTE = IN_CAPTURE+IN_CAPTURE_TAKENROUTE
 CI_BREAK_ROUTE = IN_CAPTURE+IN_CAPTURE_BREAKROUTE
 CI_BREAK_PENDING = IN_CAPTURE+IN_CAPTURE_BREAKPENDING
@@ -38,7 +39,8 @@ CI_EVENTS = IN_CAPTURE+IN_CAPTURE_EVENTS
 .a16
 .i16
 ; The Task caller holds Forbid and has fully initialized the route. I=1
-; covers both halves; NMI can tick but cannot switch the interrupted Task.
+; covers both halves and the filter policy; NMI can tick but cannot switch the
+; interrupted Task. Only this Task-side path resolves the fixed route table.
 input_publish:
     signal_stack_check 1
     php
@@ -47,6 +49,20 @@ input_publish:
     sta f:CI_ROUTE
     lda 7,s
     sta f:CI_ROUTE+2
+    ora 5,s
+    beq input_publish_no_route
+    lda 5,s
+    and #15
+    tax
+    sep #$20
+    lda f:IN_STATE+IN_STATE_ROUTEFLAGS,x
+    bra input_publish_flags
+input_publish_no_route:
+    sep #$20
+    lda #0
+input_publish_flags:
+    sta f:CI_ROUTE_FLAGS
+    rep #$20
     plp
     rtl
 input_publish_end:
@@ -449,6 +465,8 @@ input_capture:
     lda #INPUT_CANCEL_BREAK
     bra input_capture_cancel
 input_capture_filters:
+    lda f:CI_ROUTE_FLAGS
+    bne input_capture_ring  ; unfiltered routes still retain durable BREAK
     lda f:CI_CONFIG+INPUT_CONFIG_FILTERCOUNT
     beq input_capture_ring
     lda f:$d209
@@ -649,4 +667,3 @@ input_emu_entry:
 input_route_bits:
     .word $0001,$0002,$0004,$0008,$0010,$0020,$0040,$0080
     .word $0100,$0200,$0400,$0800,$1000,$2000,$4000,$8000
-

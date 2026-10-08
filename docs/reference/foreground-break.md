@@ -196,7 +196,7 @@ cancellation and visibility remain separate measurements. These results cover
 the recorded workloads and pins, not arbitrary uncooperative Tasks.
 
 The transport's maximum active timeout is 1,000,000 µs for FASTEST125 and
-GENERIC57600, and 2,000,000 µs for STOCK810. Error retirement retains its existing
+2,000,000 µs for STOCK810 and GENERIC57600. Error retirement retains its existing
 three-tick quiet interval (60 ms on PAL). Thus active error paths have that
 finite transport allowance in addition to scheduling and DOS cleanup; they are
 outside B5's healthy-path 500 ms prompt gate. B4 records fault/cancellation

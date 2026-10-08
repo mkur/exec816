@@ -22,12 +22,13 @@ PROC Main()
   LAYERTYPES.Scene POINTER scene
   LAYERTYPES.Layer POINTER layer
   LAYERTYPES.Rect bounds
-  LONGCARD token,id
+  LONGCARD token,id,bar,popup
   DESKTYPES.Snapshot snapshot
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
   Require(SIZEOF(LAYERTYPES.Scene)=LAYERTYPES.SCENE_SIZE)
+  Require(SIZEOF(DESKTYPES.Service)=DESKTYPES.SERVICE_SIZE)
   Require(SIZEOF(LAYERTYPES.Damage)=LAYERTYPES.DAMAGE_SIZE)
   Require(LAYERS.Init(scene,640,240)=LAYERTYPES.OK)
   Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
@@ -88,6 +89,27 @@ PROC Main()
   Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.OK)
   Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
   Require(layer.dirty=0 AND layer.damage.count=0)
+  ; Disjoint chrome above a clean window preserves copied moves. Both source
+  ; and target must remain uncovered, including a popup above the destination.
+  REGIONS.Assign(@bounds,0,0,640,16)
+  Require(LAYERS.Create(scene,@bounds,@bar)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,bar,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,64,48,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.bounds.left=64 AND layer.bounds.top=48 AND layer.dirty=0)
+  Require(LAYERS.BeginMove(scene,id,0,0,@token)=LAYERTYPES.REDRAW)
+  Require(scene.busy=0 AND layer.bounds.left=64)
+  REGIONS.Assign(@bounds,128,16,224,96)
+  Require(LAYERS.Create(scene,@bounds,@popup)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,100,48,@token)=LAYERTYPES.REDRAW)
+  Require(LAYERS.BeginMove(scene,id,64,112,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,0)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,120,32,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginMove(scene,id,64,112,@token)=LAYERTYPES.REDRAW)
   Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
   Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
   Require(SIZEOF(DESKTYPES.Snapshot)=DESKTYPES.SNAPSHOT_SIZE)

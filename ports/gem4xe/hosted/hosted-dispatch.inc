@@ -189,13 +189,59 @@ void GemWidgetFill(uint16_t mode,uint16_t style,uint16_t pen,
 void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
     uint16_t colour,uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
 {
+    extern const uint8_t map_col[16];
+    extern void vbxe_widget_text_run(WORD,WORD,const WORD *,UWORD,WORD);
     WORD color=vwk.text_color,mode=vwk.wrt_mode,clip=vwk.clip;
     WORD x0=vwk.xmn_clip,y0=vwk.ymn_clip,x1=vwk.xmx_clip,y1=vwk.ymx_clip;
-    uint16_t i;
+    UWORD n;
     vwk.text_color=colour;vwk.wrt_mode=1;vwk.clip=1;
     vwk.xmn_clip=left;vwk.ymn_clip=top;vwk.xmx_clip=right-1;vwk.ymx_clip=bottom-1;
-    for (i=0;i<count;i++,x+=8)
-        if (x<right && x+8>left && y<bottom && y+8>top) dev_glyph(glyphs[i],x,y,1);
+    /* Signed cell coordinates; the admitted clip is inside the screen. */
+    if (y<(WORD)bottom && y+8>(WORD)top) {
+        while (count && x+8<=(WORD)left) { ++glyphs;--count;x+=8; }
+        if (count && x<(WORD)left) {
+            dev_glyph(*glyphs++,x,y,1);--count;x+=8;
+        }
+        if (count && y>=(WORD)top && y+8<=(WORD)bottom && map_col[colour&15]) {
+            n=x<(WORD)right ? ((UWORD)((WORD)right-x)>>3) : 0;
+            if (count<n) n=count;
+            if (n) {
+                vbxe_widget_text_run(x,y,glyphs,n,colour);
+                glyphs+=n;count-=n;x+=(WORD)(n<<3);
+            }
+        }
+        while (count && x<(WORD)right) {
+            dev_glyph(*glyphs++,x,y,1);--count;x+=8;
+        }
+    }
     vwk.text_color=color;vwk.wrt_mode=mode;vwk.clip=clip;
     vwk.xmn_clip=x0;vwk.ymn_clip=y0;vwk.xmx_clip=x1;vwk.ymx_clip=y1;
+}
+
+/* Application state is selected only during an admitted synchronous unit.
+ * This save area is shared renderer scratch, protected by DISPLAY access. */
+#include <exec816/vdi-unit.h>
+static Vwk nativeWorkstation;
+void GemVdiPaint(void *context)
+{
+    struct ExecVDIUnit *u=context;
+    UWORD i;
+    nativeWorkstation=vwk;
+    vwk.clip=1;
+    vwk.xmn_clip=u->left; vwk.ymn_clip=u->top;
+    vwk.xmx_clip=u->right-1; vwk.ymx_clip=u->bottom-1;
+    vwk.text_color=u->textColor; vwk.fill_color=u->fillColor;
+    vwk.wrt_mode=0; vwk.fill_style=1; vwk.fill_per=0;
+    vwk.h_align=vwk.v_align=vwk.text_effects=0;
+    if (u->operation==8) {
+        contrl[3]=u->count; ptsin[0]=u->x; ptsin[1]=u->y;
+        for (i=0;i<u->count;++i) intin[i]=u->glyphs[i];
+        vdi_v_gtext();
+    } else {
+        ptsin[0]=u->left; ptsin[1]=u->top;
+        ptsin[2]=u->right-1; ptsin[3]=u->bottom-1;
+        vdi_vr_recfl();
+    }
+    dev_flush();
+    vwk=nativeWorkstation;
 }

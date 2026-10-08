@@ -1,0 +1,242 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "AM2",
+  "baseline": "e10c590",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "checks": {
+    "menus": {
+      "status": "pass",
+      "AESChecks": 229,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 504,
+          "remaining_above_floor": 776
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 158,
+          "remaining_above_floor": 610
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 700,
+          "remaining_above_floor": 1604
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "report_sha256": "5499d8e4f5ff7918a688882b26d1f88abe2291483583bddebf19b99e0e770415",
+      "image_sha256": "0b7e197dc2d25bb395a50bcc6a9fe718d636718a0d77245a1119572d6c9f3743"
+    },
+    "gui": {
+      "status": "pass",
+      "AESChecks": 101,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 474,
+          "remaining_above_floor": 806
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 674,
+          "remaining_above_floor": 1630
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "report_sha256": "6d45039346d10983183dc9caa090146b6615d82a8feb0810d5afc1cf89d549cd",
+      "image_sha256": "8ff62024ac2c2b52a37374b307282e94ff1909e67c6753fe83e86f7a801089ef"
+    },
+    "events": {
+      "status": "pass",
+      "AESChecks": 371,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 627,
+          "remaining_above_floor": 653
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 471,
+          "remaining_above_floor": 297
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 471,
+          "remaining_above_floor": 297
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 471,
+          "remaining_above_floor": 297
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 471,
+          "remaining_above_floor": 297
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 132,
+          "remaining_above_floor": 636
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 696,
+          "remaining_above_floor": 1608
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "report_sha256": "9ccfe0ca104f820dc1cc376efcbba7a91b46425512b73dc5ab8b4acedb8db931",
+      "image_sha256": "a3edd3cf9e6096bf50b48f1738bd56e725850927bb922128ec4e23b643c2e6fe"
+    }
+  },
+  "host_checks": {
+    "tests": 417,
+    "historical_skips": 4
+  },
+  "wire_layout": "unchanged from AM1; fifth pending GUI kind adds 8 native bytes per client",
+  "source_sha256": {
+    "lib/aes/aesgui.act": "9b9d9eb7b2165e8d29f6f349e22a028efc1055a420ce02adec2718936f7fb0a0",
+    "lib/aes/aesmenu.act": "be6f3495a93fa49948d64eb32b135aee215fb253b439c680604d48ac7f25b9ad",
+    "c/calypsi/aes-messages.c": "788ca99d042ad4416392030558189cd9409491bf33d3b18edd840fc47f2ba003",
+    "c/calypsi/aes-events.c": "97b6ceeb510ee457123b18ea6a2276f5d4a2937c8f9543593f4c96a48d4405a6",
+    "tests/programs/aes_menus.c": "82b1a914e0e1786260136ec596c9f838792132eee86e5ecb5f795f653d877bab"
+  }
+}

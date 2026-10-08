@@ -2,11 +2,12 @@
 MODULE DOSCANCEL
 USE EXEC
 USE DOSBREAKTYPES
+USE DOSCLIENT
 INCLUDE "dos-types.inc"
 
 ; Wait for a device request while forwarding foreground cancellation safely.
 PUBLIC INT FUNC Transfer(EXEC.IORequest POINTER request DOSBREAKTYPES.Scope
-    POINTER scope)
+    POINTER scope DOSCLIENT.ClientContext POINTER client)
   LONGCARD bits,mask
   INT error
   ; Before publication the request and caller buffer remain wholly ours.
@@ -40,7 +41,8 @@ PUBLIC INT FUNC Transfer(EXEC.IORequest POINTER request DOSBREAKTYPES.Scope
       FI
     FI
 
-    bits=EXEC.Wait(mask)
+    bits=EXEC.Wait(mask OR client.waitMask)
+    DOSCLIENT.ServiceWait(client,bits)
   OD
 
 RETURN(0)

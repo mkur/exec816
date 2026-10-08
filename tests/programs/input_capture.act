@@ -50,7 +50,7 @@ PROC Admission()
   BYTE index
   BYTE POINTER src,dst
 
-  Require(SIZEOF(INPUTNATIVE.State)=144)
+  Require(SIZEOF(INPUTNATIVE.State)=160)
   Require(SIZEOF(INPUTNATIVE.Capture)=560)
   Require(SIZEOF(INPUTNATIVE.RawEvent)=8)
   Require(EXEC.AllocSignal(16)=16)
@@ -59,7 +59,9 @@ PROC Admission()
   config.wakeMask=$10000
   config.filter0Value=$1c
   config.filter0Mask=$3f
-  config.filterCount=1
+  config.filter1Value=$92
+  config.filter1Mask=$bf
+  config.filterCount=2
   config.flags=INPUT.CAPTURE_BREAK
   Require(INPUT.Acquire(@lease,@config)=INPUT.OK)
   Require(INPUT.Acquire(@copied,@config)=INPUT.BUSY)
@@ -208,7 +210,19 @@ PROC Main()
   Admission()
   Records()
   stage=1
-  WHILE received<4 DO
+  WHILE received<5 DO
+    IF INPUT.Take(@lease,@event)=INPUT.OK THEN
+      events(received)=event
+      received==+1
+    ELSE
+      ignored=EXEC.Wait($10000)
+    FI
+  OD
+
+  Require(INPUT.CreateRoute(@lease,INPUT.ROUTE_UNFILTERED,@other)=INPUT.OK)
+  Require(INPUT.PublishRoute(@lease,other)=INPUT.OK)
+  stage=2
+  WHILE received<8 DO
     IF INPUT.Take(@lease,@event)=INPUT.OK THEN
       events(received)=event
       received==+1
@@ -220,7 +234,7 @@ PROC Main()
   Require(INPUT.Release(@lease)=INPUT.OK)
   Require(INPUT.Release(@copied)=INPUT.INVALID_OWNER)
   EXEC.FreeSignal(16)
-  stage=2
+  stage=3
 
 RETURN
 

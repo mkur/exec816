@@ -80,13 +80,12 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
 RETURN((sio.sio_Direction=EXEC.SIODIR_READ AND sio.sio_Command=$52)
     OR (sio.sio_Direction=EXEC.SIODIR_WRITE AND sio.sio_Command=$57))
 
-; Verified generic disk writes include motor startup, seek and another rotation.
+; Generic disk operations include motor startup, seek and rotation.
 ; Keep that mechanical allowance separate from serial byte/phase timing.
 LONGCARD FUNC TimeoutLimit(EXEC.IOSIOReq POINTER request)
 
   IF request.sio_Profile=EXEC.SIO_PROFILE_STOCK810 OR
-      (request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600 AND
-      request.sio_Direction=EXEC.SIODIR_WRITE AND request.sio_Command=$57) THEN
+      request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600 THEN
     RETURN(2000000)
   FI
 
@@ -156,9 +155,9 @@ PUBLIC CARD FUNC DeadlineTicks(LONGCARD microseconds CARD profile)
 
   IF microseconds=0 THEN
     microseconds=1000000
-    ; A cold 810 seek/rotation plus a stock-speed sector can exceed one
-    ; second. This changes its device-operation budget, never byte timing.
-    IF profile=EXEC.SIO_PROFILE_STOCK810 THEN
+    ; Motor spin-up, seek and rotation can exceed one second even at 57.6k:
+    ; the serial rate does not shorten a drive's mechanical delays.
+    IF profile=EXEC.SIO_PROFILE_STOCK810 OR profile=EXEC.SIO_PROFILE_GENERIC57600 THEN
       microseconds=2000000
     FI
   FI

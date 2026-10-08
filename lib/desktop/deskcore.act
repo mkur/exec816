@@ -1,6 +1,8 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
 USE AESLOCKS
+USE AESWINDOWSTATE
+USE AESMOUSE
 USE EXEC
 USE INPUT
 USE EXECLISTS
@@ -11,6 +13,7 @@ USE DESKMOVE
 USE DESKCACHE
 USE DESKEVENTS
 USE DESKWIDGETS
+USE DESKSTATE
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -114,6 +117,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
   LAYERTYPES.Rect frame
   DESKTYPES.ClientRecord POINTER client
 
+  DESKSTATE.TopChrome()
   IF service.focus=id THEN
     RETURN
   FI
@@ -126,13 +130,15 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         FI
 
         client=DESKEVENTS.Find(service,service.windows(index).client)
-        client.focusBits=client.focusBits OR BYTE(1 LSH index)
+        IF client<>NULL THEN
+          client.focusBits=client.focusBits OR BYTE(1 LSH index)
+        FI
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
             IF service.windows(index).kind<>DESKTYPES.CONTENT_CONSOLE THEN
               REGIONS.Copy(@layer.bounds,@frame)
-              frame.bottom=frame.top+16
+              frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
               IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
                 DESKWIDGETS.FocusDamage(service,@service.windows(index))
@@ -173,12 +179,57 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
     FI
   FI
 
+  AESMOUSE.Refresh()
   EXEC.Permit()
   FOR index=0 TO DESKTYPES.CLIENTS-1 DO
     IF service.clients(index).id<>0 THEN
       DESKEVENTS.Wake(service,@service.clients(index))
     FI
   OD
+
+  AESWINDOWSTATE.Sync()
+
+RETURN
+
+; Restore the nearest shown owner in stacking order. A closing AES route may
+; still exist while its captured input drains, but its retired epoch is final.
+PUBLIC PROC RestoreFocus(DESKTYPES.Service POINTER service LONGCARD closing)
+  BYTE rank,slot,eligible
+
+  IF service.focus<>closing THEN
+    RETURN
+  FI
+
+  rank=0
+  WHILE rank<service.scene.count DO
+    BEGIN
+      LET layer=@service.scene.items(service.scene.order(rank))
+      IF layer.shown<>0 THEN
+        FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+          BEGIN
+            LET window=@service.windows(slot)
+            IF window.id<>0 AND window.id<>closing AND window.layer=layer.id THEN
+              eligible=window.id=service.consoleWindow OR window.keyRoute<>0
+              IF window.kind=DESKTYPES.CONTENT_AES THEN
+                BEGIN
+                  LET client=AESWINDOWSTATE.Find(window.id)
+                  eligible=client<>NULL AND client.endpoint.input.windowEpoch<>0
+                END
+              FI
+
+              IF eligible<>0 THEN
+                Focus(service,window.id)
+                RETURN
+              FI
+            FI
+          END
+        OD
+      FI
+    END
+    rank==+1
+  OD
+
+  Focus(service,0)
 
 RETURN
 
@@ -266,8 +317,10 @@ CARD FUNC Content(DESKTYPES.Service POINTER service
 
   LET source=DESKTYPES.Content POINTER(request.payload)
   LET layer=Layer(service,window)
-  width=CARD(layer.bounds.right-layer.bounds.left)-16
-  height=CARD(layer.bounds.bottom-layer.bounds.top)-24
+  width=CARD(layer.bounds.right-layer.bounds.left)
+      -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
+  height=CARD(layer.bounds.bottom-layer.bounds.top)
+      -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
   IF source.count>DESKTYPES.COMMANDS OR source.textBytes>DESKTYPES.TEXT_BYTES
       OR source.background>15 THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)
@@ -408,12 +461,11 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   CASE request.operation OF
   WHEN DESKTYPES.SHOW THEN
     status=LAYERS.Show(@service.scene,window.layer,1)
+    DESKSTATE.TopChrome()
   WHEN DESKTYPES.HIDE THEN
     DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Show(@service.scene,window.layer,0)
-    IF service.focus=window.id THEN
-      Focus(service,0)
-    FI
+    RestoreFocus(service,window.id)
   WHEN DESKTYPES.MOVE THEN
     IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
         ((request.bounds.left & 7)<>0 OR (request.bounds.top & 7)<>0) THEN
@@ -425,6 +477,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
         request.bounds.left,request.bounds.top,request))
   WHEN DESKTYPES.RAISE THEN
     status=LAYERS.Order(@service.scene,window.layer,1)
+    DESKSTATE.TopChrome()
   WHEN DESKTYPES.FOCUS THEN
     BEGIN
       LET layer=Layer(service,window)
@@ -442,9 +495,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Delete(@service.scene,window.layer)
     IF status=LAYERTYPES.OK THEN
-      IF service.focus=window.id THEN
-        Focus(service,0)
-      FI
+      RestoreFocus(service,window.id)
 
       FOR index=0 TO DESKTYPES.WINDOWS-1 DO
         IF @service.windows(index)=window THEN

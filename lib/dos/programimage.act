@@ -3,10 +3,11 @@ USE EXEC
 USE HEAPCORE
 
 PUBLIC CONST MAGIC=LONGCARD($31474d49)
+PUBLIC CONST KIND_NATIVE=0, KIND_C=1
 
 PUBLIC TYPE Image=[
   LONGCARD magic,references
-  BYTE ownerHeld,running
+  BYTE ownerHeld,running,kind
   BYTE POINTER backing,data,bss
   LONGCARD backingBytes,textBytes,dataBytes,bssBytes
   ADDRESS text

@@ -70,6 +70,7 @@ RETURN
 ; The same legal source lifecycle runs with or without diagnostic audits.
 PROC Source(CARD source)
 
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
   config.source=source
   config.pointerProtocol=0
   config.pointerPort=0
@@ -119,7 +120,18 @@ PROC Source(CARD source)
     Require(INPUT.RetireRoute(@lease,peerTag)=INPUT.OK)
   FI
 
-  Require(INPUT.CreateRoute(@lease,1,@tag)=INPUT.BAD_ARGUMENT)
+  Require(INPUT.CreateRoute(@lease,2,@tag)=INPUT.BAD_ARGUMENT)
+  IF source=INPUT.SOURCE_KEYBOARD THEN
+    Require(INPUT.CreateRoute(@lease,INPUT.ROUTE_UNFILTERED,@tag)=INPUT.OK)
+    Require(INPUT.PublishRoute(@lease,tag)=INPUT.OK)
+    Require(capture.routeFlags=INPUT.ROUTE_UNFILTERED)
+    Require(INPUT.PublishRoute(@lease,0)=INPUT.OK)
+    Require(capture.routeFlags=0)
+    Require(INPUT.RetireRoute(@lease,tag)=INPUT.OK)
+  ELSE
+    Require(INPUT.CreateRoute(@lease,INPUT.ROUTE_UNFILTERED,@tag)
+        =INPUT.BAD_ARGUMENT)
+  FI
   Require(INPUT.PublishRoute(@lease,$ffffffff)=INPUT.BAD_ARGUMENT)
   Require(INPUT.RetireRoute(@lease,0)=INPUT.BAD_ARGUMENT)
   Require(INPUT.Discard(@lease,0)=INPUT.BAD_ARGUMENT)

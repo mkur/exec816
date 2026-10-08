@@ -1,0 +1,113 @@
+{
+  "slice": "BR1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "02c870f",
+  "checks": {
+    "host": {
+      "tests": 389,
+      "skips": 4
+    },
+    "render_cases": 87,
+    "widget_stages": 15,
+    "cursor_cases": 62,
+    "panel_idle_gestures": 10
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "code_bytes": {
+    "before": 72741,
+    "after": 72669
+  },
+  "latency": {
+    "idle": {
+      "capture_to_commit_ms": {
+        "count": 20,
+        "median_ms": 18.622062395419093,
+        "p95_ms": 30.39877131970357,
+        "max_ms": 40.9785883145681
+      },
+      "capture_to_application_ms": {
+        "count": 10,
+        "median_ms": 30.752954344574622,
+        "p95_ms": 44.64736057875973,
+        "max_ms": 44.64736057875973
+      },
+      "capture_to_button_consumed_ms": {
+        "count": 20,
+        "median_ms": 4.733576832694512,
+        "p95_ms": 17.86957324645923,
+        "max_ms": 18.12275243558098
+      },
+      "capture_to_visible_ms": {
+        "count": 20,
+        "median_ms": 199.2466650408315,
+        "p95_ms": 279.5790402591563,
+        "max_ms": 299.5344519643237
+      },
+      "capture_to_button_pixels_ms": {
+        "count": 20,
+        "median_ms": 119.1677509483647,
+        "p95_ms": 139.12548863160595,
+        "max_ms": 159.082944378111
+      },
+      "commit_to_patch_ms": {
+        "count": 10,
+        "median_ms": 123.7778394905967,
+        "p95_ms": 198.62746148391764,
+        "max_ms": 198.62746148391764
+      },
+      "patch_to_visible_ms": {
+        "count": 10,
+        "median_ms": 77.31974022349125,
+        "p95_ms": 97.34753918568212,
+        "max_ms": 97.34753918568212
+      },
+      "press_feedback": {
+        "count": 10,
+        "median_ms": 119.16831482183713,
+        "p95_ms": 159.082944378111,
+        "max_ms": 159.082944378111
+      },
+      "application_label": {
+        "count": 10,
+        "median_ms": 239.41376894438656,
+        "p95_ms": 299.5344519643237,
+        "max_ms": 299.5344519643237
+      }
+    }
+  },
+  "widget_paint_max_cpu_ms": 29.307887603100742,
+  "feedback": {
+    "idle": {
+      "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+      "edges": 20,
+      "edges_with_invalid_pixels": 0,
+      "invalid_frames": 0,
+      "max_invalid_pixels": 0
+    }
+  },
+  "sources": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "ace921f7d41919b6514f23b30da6704ae3f6d93ed8fe3120541f7590ebe88737",
+    "build/vbxe-builder/br1/panel/program/build.json": "60a7070f083e3c525e4770829049d6605c46560d088c647cbac6d0363e66c912",
+    "build/vbxe-builder/br1/panel-run/results.json": "b888ba68e3d9d8c02ab4c0dce710bbadfed19120bff2171377d94d34ae533dd7",
+    "build/vbxe-builder/br1/panel-run/work-unit-analysis.json": "bd0a54b5958f8c82d566ea80337555cc018e5bacfa510b1e2daf5e56ae90a698",
+    "build/vbxe-builder/br1/render/results.json": "8239f6e3e5e91b60efd51be808ac2baeea30fb92cfae2cef54007ea583f42ffe",
+    "build/vbxe-builder/br1/pixels/pixel-results.json": "e5d9a4ad7d4621d808293fa47f87f0c7ee0ef6b764011bfda6d3190d730333c2",
+    "build/vbxe-builder/br1/cursor/results.json": "3d66d361086dad5d69beb6f71379362f2e6fa633ad2dbf185007ec5dcf8332b1",
+    "build/vbxe-builder/br1/host.log": "3b0002936c8accffd91963c80d0bdfb0e9db19d1e5a7fce59d5d6a5b76c8fa6d"
+  }
+}

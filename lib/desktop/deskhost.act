@@ -1,5 +1,6 @@
 ; Lifecycle and scheduling hooks in the existing console presenter Task.
 MODULE DESKHOST
+USE DISPLAY
 USE EXEC
 USE DESKSTATE
 USE DESKTYPES
@@ -18,6 +19,7 @@ USE CONSOLEWINDOWS
 USE AESHOST
 USE AESLOCKS
 USE DESKWIDGETINPUT
+USE DESKMENU
 
 BYTE firstPort,lateAES
 
@@ -39,12 +41,19 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
+  IF DESKMENU.Start()=0 THEN
+    stopped=DESKCORE.Stop(service)
+    EXEC.FreeSignal(bit)
+    RETURN(0)
+  FI
+
   service.consoleOwner=DESKSTATE.Owner()
   LET windows=CONSOLEWINDOWS.Registry()
   service.keyboard=BYTE POINTER(CONSOLECAPTURE.GetLease())
   service.consoleRoute=@windows.items(0).route
   service.consoleFocus=@windows.focusSlot
   IF DESKINPUT.Start()=0 THEN
+    DESKMENU.Stop()
     stopped=DESKCORE.Stop(service)
     EXEC.FreeSignal(bit)
     RETURN(0)
@@ -73,7 +82,8 @@ PUBLIC BYTE FUNC PaintReady()
 
   LET service=DESKSTATE.Get()
 
-RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.PaintBlocked()=0)
+RETURN(DISPLAY.Blocked()=0 AND (service=NULL OR service.scene.busy=0)
+    AND AESLOCKS.PaintBlocked()=0)
 
 ; Eligible controls that waited for the paint snapshot must get an admission
 ; opportunity before a fresh console write acquires that same scene again.
@@ -110,12 +120,21 @@ RETURN(1)
 
 ; A bounded active-service boundary, never an idle poll or periodic wake.
 ; Capture/cursor may advance now; widget commits stay after native controls.
-PROC InputBoundary()
+PUBLIC PROC InputBoundary()
 
   DESKINPUT.Service(DESKINPUT.Mask())
   DESKINPUT.Present()
 
 RETURN
+
+BYTE FUNC NativeAdmission(DESKTYPES.Service POINTER service)
+
+  LET admitted=DESKCORE.Pump(service,1)
+  IF admitted<>0 THEN
+    InputBoundary()
+  FI
+
+RETURN(admitted)
 
 BYTE FUNC AESAdmission(BYTE POINTER remaining)
 
@@ -144,11 +163,19 @@ RETURN
 
 PUBLIC PROC Controls()
   BYTE count,admitted,selected,aesRemaining,limit
+  LONGCARD priorToken
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
+    priorToken=service.scene.busy
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
+    IF priorToken<>0 AND service.scene.busy=0 THEN
+      ; Only one scene continuation can own the token. Service input after
+      ; its retirement, before a control can acquire the newly free scene.
+      InputBoundary()
+    FI
+
     lateAES=0
     limit=4
     aesRemaining=4
@@ -168,14 +195,14 @@ PUBLIC PROC Controls()
     count=0
     WHILE count<limit DO
       IF selected=0 THEN
-        admitted=DESKCORE.Pump(service,1)
+        admitted=NativeAdmission(service)
         IF admitted=0 THEN
           admitted=AESAdmission(@aesRemaining)
         FI
       ELSE
         admitted=AESAdmission(@aesRemaining)
         IF admitted=0 THEN
-          admitted=DESKCORE.Pump(service,1)
+          admitted=NativeAdmission(service)
         FI
       FI
 
@@ -229,7 +256,7 @@ PUBLIC PROC Cache()
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live<>1 OR service.scene.busy<>0
       OR AESLOCKS.PaintBlocked()<>0
-      OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
+      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
       OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
     RETURN
   FI
@@ -273,6 +300,7 @@ PUBLIC PROC Stop()
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKINPUT.Stop()
+    DESKMENU.Stop()
     IF DESKCORE.Stop(service)=0 THEN
       HEAPCORE.Abort($fae2)
     FI

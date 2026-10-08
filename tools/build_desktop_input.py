@@ -18,9 +18,9 @@ def fixture(out, second_app=False):
     return source
 
 
-def build(out, mode='opt', second_app=False, profile=4, aes=False):
+def build(out, mode='opt', second_app=False, profile=4, aes=False, mouse_profile=None):
     source = fixture(out, second_app)
-    return build_bitmap(source, out, mode == 'opt', desktop=True, aes=aes, stack_checks=True,
+    return build_bitmap(source, out, mode == 'opt', desktop=True, aes=aes, stack_checks=True,mouse_profile=mouse_profile,
         dos_mounts=[dict(alias='D1', unit=49, sectors=720, sector_bytes=128, profile=profile, format=2)])
 
 
@@ -31,5 +31,6 @@ if __name__ == '__main__':
     parser.add_argument('--second-app', action='store_true')
     parser.add_argument('--aes', action='store_true')
     parser.add_argument('--profile', choices=(1, 4), type=int, default=4)
+    parser.add_argument('--mouse-profile', choices=('off','mild'))
     args = parser.parse_args()
-    build(args.output.resolve(), args.mode, args.second_app, args.profile, args.aes)
+    build(args.output.resolve(), args.mode, args.second_app, args.profile, args.aes,args.mouse_profile)

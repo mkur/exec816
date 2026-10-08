@@ -1,0 +1,302 @@
+; GEM window mutation runs in the presenter. No application draws in this code.
+MODULE AESWINDOW
+USE EXEC
+USE INPUT
+USE CONSOLEINPUT
+USE A816MEMORY
+USE AESSTATE
+USE AESTYPES
+USE AESGUI
+USE AESMENU
+USE AESMOUSE
+USE AESLOCKS
+USE AESWINDOWSTATE
+USE DESKTYPES
+USE DESKSTATE
+USE DESKCORE
+USE DESKMENU
+USE DESKCACHE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE HEAPCORE
+
+PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+RETURN((service.mouseOwner=0 OR service.mouseOwner=client.id)
+    AND AESLOCKS.NativeReady()<>0)
+
+BYTE FUNC ValidBounds(INT x,y,width,height LAYERTYPES.Rect POINTER rect)
+
+  IF x<0 OR y<0 OR width<32 OR height<32 OR width>640 OR height>240
+      OR x>640-width OR y>240-height THEN
+    RETURN(0)
+  FI
+
+  REGIONS.Assign(rect,x,y,x+width,y+height)
+
+RETURN(1)
+
+CARD FUNC Create(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESTYPES.Request POINTER request)
+  BYTE slot,status
+  LAYERTYPES.Rect bounds
+
+  IF client.window<>NULL THEN
+    RETURN(AESTYPES.RESOURCE)
+  FI
+
+  IF request.intin(0)<>AESTYPES.WINDOW_KIND THEN
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF request.view=NULL OR ValidBounds(request.intin(1),request.intin(2),
+      request.intin(3),request.intin(4),@bounds)=0 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  IF service.nextWindow=0 OR desktop.nextWindow=0 THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    IF desktop.windows(slot).id=0 THEN
+      BEGIN
+        LET window=@desktop.windows(slot)
+        status=LAYERS.Create(@desktop.scene,@bounds,@window.layer)
+        IF status<>LAYERTYPES.OK THEN
+          RETURN(AESTYPES.RESOURCE)
+        FI
+
+        status=LAYERS.SetExternal(@desktop.scene,window.layer)
+        IF status<>LAYERTYPES.OK THEN
+          HEAPCORE.Abort($fcb4)
+        FI
+
+        window.id=desktop.nextWindow
+        desktop.nextWindow==+1
+        window.kind=DESKTYPES.CONTENT_AES
+        window.visualRevision=1
+        client.window=window
+        client.view=request.view
+        client.gui.window=INT(service.nextWindow)
+        IF service.nextWindow=$7fff THEN
+          service.nextWindow=0
+        ELSE
+          service.nextWindow==+1
+        FI
+
+        client.view.handle=client.gui.window
+        client.view.kind=AESTYPES.WINDOW_KIND
+        client.view.updates=IF service.updateOwner=client.id THEN service.updates ELSE CARD(0) FI
+        AESWINDOWSTATE.Snapshot(client)
+        request.intout(0)=client.gui.window
+        RETURN(AESTYPES.OK)
+      END
+    FI
+  OD
+
+RETURN(AESTYPES.RESOURCE)
+
+BYTE FUNC Close(AESSTATE.Client POINTER client)
+  BYTE status
+  CARD captured,result
+
+  LET desktop=DESKSTATE.Get()
+  AESMOUSE.Cancel(client.id)
+  AESMENU.Close(AESSTATE.Get(),client)
+  AESGUI.Close(client)
+  DESKCORE.RestoreFocus(desktop,client.window.id)
+
+  IF client.window.keyRoute<>0 THEN
+    captured=CONSOLEINPUT.Pump(NULL)
+    result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+        client.window.keyRoute)
+    IF result=INPUT.BUSY THEN
+      RETURN(0)
+    FI
+
+    IF result<>INPUT.OK THEN
+      HEAPCORE.Abort($fcc2)
+    FI
+
+    client.window.keyRoute=0
+  FI
+
+  client.paintDirty=0
+  status=LAYERS.Show(@desktop.scene,client.window.layer,0)
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($fcb5)
+  FI
+
+  AESWINDOWSTATE.Snapshot(client)
+
+RETURN(1)
+
+PROC Delete(AESSTATE.Client POINTER client)
+  BYTE status
+
+  LET desktop=DESKSTATE.Get()
+  AESMOUSE.Cancel(client.id)
+  AESMENU.Close(AESSTATE.Get(),client)
+  AESGUI.Close(client)
+  status=LAYERS.Delete(@desktop.scene,client.window.layer)
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($fcb6)
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(client.window),DESKTYPES.WINDOW_SIZE)
+  client.view.handle=0
+  client.view.visibleCount=0
+  client.view.shown=0
+  client.window=NULL
+  client.view=NULL
+  client.gui.window=0
+
+RETURN
+
+PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+
+  IF client.window=NULL THEN
+    RETURN(1)
+  FI
+
+  IF Ready(service,client)=0 THEN
+    RETURN(0)
+  FI
+
+  IF Close(client)=0 THEN
+    RETURN(0)
+  FI
+
+  Delete(client)
+  AESWINDOWSTATE.Sync()
+
+RETURN(1)
+
+PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  BYTE status
+  BYTE POINTER title
+  CARD length,routeStatus
+  LONGCARD titleAddress
+  LAYERTYPES.Rect bounds
+
+  IF Ready(service,client)=0 THEN
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  IF request.operation=AESTYPES.OP_CREATE THEN
+    RETURN(Create(service,client,request))
+  FI
+
+  IF client.window=NULL OR request.intin(0)<>client.gui.window THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET window=client.window
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  status=LAYERTYPES.OK
+  IF request.operation=AESTYPES.OP_OPEN THEN
+    IF layer.shown<>0 THEN
+      RETURN(AESTYPES.BUSY)
+    FI
+
+    IF ValidBounds(request.intin(1),request.intin(2),request.intin(3),
+        request.intin(4),@bounds)=0
+        OR request.intin(3)<>layer.bounds.right-layer.bounds.left
+        OR request.intin(4)<>layer.bounds.bottom-layer.bounds.top THEN
+      RETURN(AESTYPES.MALFORMED)
+    FI
+
+    routeStatus=INPUT.CreateRoute(INPUT.Lease POINTER(desktop.keyboard),INPUT.ROUTE_UNFILTERED,
+        @window.keyRoute)
+    IF routeStatus<>INPUT.OK THEN
+      RETURN(AESTYPES.RESOURCE)
+    FI
+
+    IF AESGUI.Open(service,client,client.gui.window)=0 THEN
+      routeStatus=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),window.keyRoute)
+      window.keyRoute=0
+      RETURN(AESTYPES.OVERFLOW)
+    FI
+
+    status=LAYERS.Move(@desktop.scene,window.layer,bounds.left,bounds.top)
+    status=LAYERS.Show(@desktop.scene,window.layer,1)
+    status=LAYERS.Order(@desktop.scene,window.layer,1)
+    DESKCORE.Focus(desktop,window.id)
+    IF client.closeRequested<>0 THEN
+      AESGUI.Post(service,client,AESTYPES.GUI_CLOSED,0,0,0,0)
+    FI
+  ELSEIF request.operation=AESTYPES.OP_CLOSE THEN
+    IF Close(client)=0 THEN
+      RETURN(AESTYPES.PENDING)
+    FI
+  ELSEIF request.operation=AESTYPES.OP_DELETE THEN
+    IF layer.shown<>0 THEN
+      RETURN(AESTYPES.BUSY)
+    FI
+
+    Delete(client)
+  ELSEIF request.operation=AESTYPES.OP_SET THEN
+    CASE request.intin(1) OF
+    WHEN AESTYPES.WF_NAME THEN
+      titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
+          OR LONGCARD(CARD(request.intin(3)))
+      IF titleAddress=0 OR titleAddress>$ffffff THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+
+      title=BYTE POINTER(ADDRESS(titleAddress))
+      length=0
+      WHILE length<DESKTYPES.TITLE_BYTES AND title(SIZE(length))<>0 DO
+        length==+1
+      OD
+
+      IF length=DESKTYPES.TITLE_BYTES THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+
+      A816MEMORY.Move(@window.title(0),title,length+1)
+      DESKMENU.Renamed(window.id)
+      REGIONS.Copy(@layer.bounds,@bounds)
+      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
+      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    WHEN AESTYPES.WF_TOP THEN
+      IF layer.shown=0 THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+
+      status=LAYERS.Order(@desktop.scene,window.layer,1)
+      DESKCORE.Focus(desktop,window.id)
+    WHEN AESTYPES.WF_CXYWH THEN
+      IF ValidBounds(request.intin(2),request.intin(3),request.intin(4),
+          request.intin(5),@bounds)=0
+          OR request.intin(4)<>layer.bounds.right-layer.bounds.left
+          OR request.intin(5)<>layer.bounds.bottom-layer.bounds.top THEN
+        RETURN(AESTYPES.MALFORMED)
+      FI
+
+      status=LAYERS.Move(@desktop.scene,window.layer,bounds.left,bounds.top)
+    ELSE
+      RETURN(AESTYPES.UNSUPPORTED)
+    ESAC
+  ELSE
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  AESWINDOWSTATE.Snapshot(client)
+  AESWINDOWSTATE.Sync()
+  request.intout(0)=1
+
+RETURN(AESTYPES.OK)
+
+ENDMODULE

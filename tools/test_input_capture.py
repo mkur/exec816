@@ -57,10 +57,14 @@ def run(output, mode, replay=False, input_diagnostics=False):
                 saved.update(hardware())
                 key('ALL','up')
                 checkpoint(f'db(${at("stage"):x})=1')
-                for index,(name,modifier) in enumerate([('A',None),('A','SHIFT'),('ESC',None),('BREAK',None)]):
+                stimuli = [('A',None),('A','SHIFT'),('ESC',None),('C','CTRL'),('BREAK',None),
+                           ('ESC',None),('C','CTRL'),('BREAK',None)]
+                for index,(name,modifier) in enumerate(stimuli):
+                    if index == 5:
+                        checkpoint(f'db(${at("stage"):x})=2')
                     if modifier:key(modifier,'down')
                     key(name,'down')
-                    if index==3:
+                    if index==7:
                         b.bp_clear_all()
                         break
                     checkpoint(f'db(${at("received"):x})>={index+1}')
@@ -69,18 +73,23 @@ def run(output, mode, replay=False, input_diagnostics=False):
                     frames(4)
             runtime,_=execute(b,p,before_run=before,frame_limit=5000,timeout=120)
             key('ALL','up')
-            raw=b.memdump(at('events'),4*24)
+            raw=b.memdump(at('events'),8*24)
             events=[]
-            for i in range(4):
+            for i in range(8):
                 r=raw[i*24:i*24+24]
                 events.append(dict(acquisition=int.from_bytes(r[:4],'little'),route=int.from_bytes(r[4:8],'little'),
                     tick=int.from_bytes(r[8:10],'little'),kind=r[10],flags=r[11],code=int.from_bytes(r[12:14],'little'),
                     qualifiers=int.from_bytes(r[14:16],'little')))
                 require(r[16:]==bytes(8),'Unused event fields not zero')
-            require([(e['kind'],e['code'],e['qualifiers']) for e in events]==[(1,63,0),(1,127,1),(5,2,0),(5,1,0)],
+            require([(e['kind'],e['code'],e['qualifiers']) for e in events]==[
+                    (1,63,0),(1,127,1),(5,2,0),(5,2,0),(5,1,0),
+                    (1,28,0),(1,146,2),(5,1,0)],
                     'Wrong physical events: '+str(events))
-            require([e['flags'] for e in events]==[1,1,0,0],'Invented/lost timestamps')
+            require([e['flags'] for e in events]==[1,1,0,0,0,1,1,0],'Invented/lost timestamps')
             require(all(e['acquisition']==2 and e['route'] for e in events),'Stale acquisition/route')
+            require(len({e['route'] for e in events[:5]}) == 1 and
+                    len({e['route'] for e in events[5:]}) == 1 and
+                    events[0]['route'] != events[5]['route'], 'Route policy did not switch')
             require(hardware()==saved,'Keyboard hardware was not restored')
             clean_ownership(b,p,p['output'])
             case.update(status='pass',runtime=runtime,checks=data(b,p['image'],'checks',True),events=events,

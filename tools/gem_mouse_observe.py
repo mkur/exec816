@@ -1,5 +1,6 @@
 """Read-only cursor timing and real-controller rate workload."""
 import hashlib
+from generate_input_native import definitions
 from bisect import bisect_left
 import adapter_state as adapter
 from native_program import require
@@ -42,7 +43,8 @@ def visible(b,p,foreign,output,folder,reach,get,command,expected,observe):
         head=b.peek(capture+1)[0];old=list(expected)
         command(2000,dx*16,dy*16)
         reach(f'db(${capture+1:x})!={head}','native_irq')
-        raw=b.memdump(capture+128+(head&31)*24,24)
+        offsets, _ = definitions()
+        raw=b.memdump(capture+offsets['POINTERCAPTURE_EVENTS']+(head&(offsets['POINTER_SLOTS']-1))*offsets['POINTERSAMPLE_SIZE'],offsets['POINTERSAMPLE_SIZE'])
         tick=int.from_bytes(raw[8:10],'little')
         expected[:]=[old[0]+dx,old[1]+dy]
         # Compare a stable blank region containing both old and new arrows;

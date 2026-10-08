@@ -25,9 +25,12 @@ def check_layout(path, expected):
     return dict(expected)
 
 
-def read_image(path, task_entries=()):
+def read_image(path, task_entries=(), base_bank=12):
     path = Path(path)
     raw = path.read_bytes()
+    require(1 <= base_bank <= 252, 'Invalid C link bank')
+    code_base = base_bank << 16
+    data_base, extra_base, table_base = (code_base+n*65536 for n in (1,2,3))
 
     def bytes_at(offset, size):
         require(0 <= offset <= offset+size <= len(raw), 'Truncated Calypsi ELF')
@@ -80,9 +83,10 @@ def read_image(path, task_entries=()):
                     'Invalid host-only C metadata')
             info = struct.unpack('<IIII', payload)
         else:
-            require((address in (0xc0000, 0xe0000) and reserved == 65536 and
+            require((address in (code_base, extra_base) and reserved == 65536 and
                      (permissions == 5 or (permissions == 4 and not payload))) or
-                    (0xd0000 <= address <= address+reserved <= 0xe0000 and permissions in (4, 6)),
+                    (data_base <= address <= address+reserved <= extra_base and permissions in (4, 6)) or
+                    (address == table_base and reserved == 65536 and permissions == 4),
                     'C sections must fit the standalone upper-bank layout')
             if payload:
                 segments.append(dict(address=address, bytes=list(payload), writable=bool(permissions & 2), executable=bool(permissions & 1)))
@@ -94,7 +98,7 @@ def read_image(path, task_entries=()):
             (workspace == 20 or (workspace == 23 and symbols.get('_FillInd') == 20)),
             'C runtime register allocation changed')
     _, bss, bss_size, workspace = info
-    require(bss_size == 0 or 0xd0000 <= bss < bss+bss_size <= 0xe0000, 'C BSS outside data bank')
+    require(bss_size == 0 or data_base <= bss < bss+bss_size <= extra_base, 'C BSS outside data bank')
     zero_fill = [dict(address=bss, size=bss_size, writable=True)] if bss_size else []
     extents = sorted((s['address'], s['address']+len(s['bytes'])) for s in segments)
     extents += [(s['address'], s['address']+s['size']) for s in zero_fill]
@@ -109,4 +113,5 @@ def read_image(path, task_entries=()):
                 task_entries=[symbols[name] for name in task_entries], symbols=symbols,
                 provenance=dict(format='calypsi65816-standalone-v1', elf_sha256=sha256(path),
                     entry=entry, task_entries=list(task_entries), dp_workspace_bytes=workspace,
+                    readonly_table_banks=[base_bank+3] if any(s['address']==table_base for s in segments) else [],
                     stack_checks=False, bank_zero_delta=dict(fixed=0, per_task=0)))

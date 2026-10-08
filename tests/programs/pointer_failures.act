@@ -55,6 +55,19 @@ PROC Loss(CARD reason)
 
 RETURN
 
+; Timing classes may split one direction into several absolute records.
+PROC DrainTo(INT x,y)
+  CARD count
+
+  count=0
+  WHILE INPUT.Take(@mouse,@event)=INPUT.OK DO
+    Require(event.kind=INPUT.EVENT_POINTER)
+    count==+1
+  OD
+  Require(count<>0 AND event.x=x AND event.y=y)
+
+RETURN
+
 PROC Main()
   LONGCARD oldAcquisition
 
@@ -79,11 +92,10 @@ PROC Main()
       FI
       Sample(phase)
     OD
-    Require(INPUT.Take(@mouse,@event)=INPUT.OK)
     IF axis=0 THEN
-      Require(event.x=108 AND event.y=100)
+      DrainTo(108,100)
     ELSE
-      Require(event.x=100 AND event.y=108)
+      DrainTo(100,108)
     FI
     FOR index=1 TO 8 DO
       phase=reverse(index AND 3)
@@ -92,15 +104,14 @@ PROC Main()
       FI
       Sample(phase)
     OD
-    Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=100 AND event.y=100)
+    DrainTo(100,100)
   OD
   ; Clip the intervening extreme before applying a reversal.
   hardware.x=200
   Sample(13)
   Sample(12)
   Sample(13)
-  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=200)
-  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=199)
+  DrainTo(199,100)
   Sample(15)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=198)
   ; Opposite state is observable hardware loss; held input cannot manufacture
@@ -127,10 +138,10 @@ PROC Main()
   Sample(12)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK)
   ; Full ring uses durable storage; all pre-loss entries become obsolete.
-  FOR index=0 TO 32 DO
+  FOR index=0 TO INPUTNATIVE.POINTER_SLOTS DO
     Sample(12+((index+1) AND 1)*256)
   OD
-  Require(hardware.head-hardware.tail=32)
+  Require(BYTE(hardware.head-hardware.tail)=INPUTNATIVE.POINTER_SLOTS)
   Loss(INPUT.LOSS_RAW)
   Sample(12)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK)

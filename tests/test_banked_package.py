@@ -99,6 +99,29 @@ def model(blob, memory, expected, every=False):
 
 
 class BankedPackageTests(unittest.TestCase):
+    def test_resident_gem_runtime_and_tables_are_loaded_from_compressed_image(self):
+        code = bytes(range(256))*256
+        tables = bytes(range(16))*4096
+        image = {'entry':0x100000, 'segments':[
+            {'address':0xc0000,'bytes':list(code),'executable':True},
+            {'address':0xd0000,'bytes':[0x59]*200,'executable':False},
+            {'address':0xe0000,'bytes':[0x6b]*200,'executable':True},
+            {'address':0xf0000,'bytes':list(tables),'executable':False},
+            {'address':0x100000,'bytes':[0x6b],'executable':True}],
+            'zero_fill':[{'address':0xd00c8,'size':80}]}
+        blob, head, spans = self.make(image)
+        ram = model(blob,self.memory,head)
+        for segment in image['segments']:
+            start = segment['address']
+            self.assertEqual(bytes(ram[start+i] for i in range(len(segment['bytes']))),
+                             bytes(segment['bytes']))
+        self.assertEqual(bytes(ram[0xd00c8+i] for i in range(80)),bytes(80))
+        self.assertLess(len(blob),len(code)+len(tables))
+        self.assertTrue(any(d[7]==1 for a,d in segments(blob)
+                            if a==self.memory['constants']['STAGE'] and len(d)>8))
+        for bank in range(12,17):
+            self.assertEqual(head[32+bank*4:36+bank*4],bytes([2,0,2,0]))
+
     def test_compressed_continuations_preserve_banks_offsets_and_raw_fallback(self):
         seed=random.Random(816).randbytes(4096)
         data=seed*33

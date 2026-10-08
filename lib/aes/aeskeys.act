@@ -1,0 +1,84 @@
+; Translation runs in the presenter, outside the native console input guard.
+; Tables and semantics follow the pinned GEM4XE reference; no donor polling.
+MODULE AESKEYS
+USE INPUT
+USE AESTYPES
+USE AESSTATE
+USE AESINBOX
+INCLUDE "aes-keyboard.inc"
+BYTE caps
+
+PUBLIC CARD FUNC Qualifiers(CARD native)
+
+RETURN((native & 3) LSH 1)
+
+PUBLIC CARD FUNC Translate(BYTE code)
+  BYTE index,row,value
+  CARD specialKey
+
+  index=code & 63
+  IF index=TAB_INDEX THEN
+    RETURN(TAB_KEY)
+  FI
+
+  row=code RSH 6
+  IF row=3 THEN
+    row=2
+  FI
+
+  LET keydef=CARD POINTER(KEYDEF_ADDRESS)
+  LET table=BYTE POINTER(ADDRESS(keydef^))
+  value=table(CARD(index)+(CARD(row) LSH 6))
+  IF row=0 AND caps<>0 AND value>=97 AND value<=122 THEN
+    value=table(CARD(index)+64)
+  FI
+
+  IF value=CAPS_TOGGLE THEN
+    caps=caps XOR 1
+    RETURN(0)
+  ELSEIF value=CAPS_ON THEN
+    caps=1
+    RETURN(0)
+  FI
+
+  specialKey=Special(value)
+  IF specialKey<>0 THEN
+    RETURN(specialKey)
+  FI
+
+  IF value>=$80 OR scans(index)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN((CARD(scans(index)) LSH 8) OR CARD(value))
+
+PUBLIC PROC Key(AESSTATE.Client POINTER client INPUT.Event POINTER captured
+    AESTYPES.InputRecord POINTER sample)
+  CARD key
+  BYTE accepted
+
+  IF client.endpoint.input.windowEpoch=0 THEN
+    RETURN
+  FI
+
+  IF captured.kind=INPUT.EVENT_LOSS THEN
+    AESINBOX.Lost(client,AESTYPES.INPUT_KEY)
+    RETURN
+  FI
+
+  key=0
+  IF captured.kind=INPUT.EVENT_KEY THEN
+    key=Translate(BYTE(captured.code))
+  ELSEIF captured.kind=INPUT.EVENT_CANCEL
+      AND captured.code=INPUT.CANCEL_BREAK THEN
+    key=$011b
+  FI
+
+  IF key<>0 THEN
+    sample.key=INT(key)
+    sample.qualifiers=Qualifiers(captured.qualifiers)
+    accepted=AESINBOX.Publish(client,AESTYPES.INPUT_KEY,sample)
+  FI
+
+RETURN
+ENDMODULE

@@ -28,6 +28,8 @@ PUBLIC BYTE FUNC Kind()
 
 RETURN(sharedKind)
 
+INCLUDE "display-access.inc"
+
 ; Reserve ownership before the adapter snapshots or mutates presentation.
 PUBLIC CARD FUNC Acquire(Lease POINTER lease CARD requested)
 
@@ -62,6 +64,7 @@ PUBLIC CARD FUNC Acquire(Lease POINTER lease CARD requested)
     RETURN(NO_MEMORY)
   FI
 
+  AccessReset()
   generation==+1
   lease.generation=generation
   lease.kind=BYTE(requested)
@@ -102,6 +105,10 @@ PUBLIC CARD FUNC BeginRelease(Lease POINTER lease)
     RETURN(INVALID_OWNER)
   FI
 
+  IF grantCount<>0 OR physical=2 THEN
+    RETURN(BUSY)
+  FI
+
   lease.state=RELEASING
   sharedState=RELEASING
 
@@ -123,6 +130,7 @@ PUBLIC CARD FUNC Release(Lease POINTER lease)
   lease.generation=0
   lease.kind=0
   lease.state=FREE
+  AccessReset()
   current=NULL
   sharedKind=0
   sharedState=FREE

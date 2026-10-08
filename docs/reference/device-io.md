@@ -102,13 +102,12 @@ Profile selection also bounds timeout and command forms. Disk geometry and the
 peripheral must agree; see the [block adapter](block-io.md). A nominal speed is
 not qualification for every emulator or physical drive.
 
-Zero `sio_TimeoutUS` selects the operation's default active deadline. The default
-and maximum are one second, except STOCK810 and GENERIC57600 verified WRITE
-(`$57`, direction WRITE), which allow two seconds. Verified writes include
-motor startup, seek and a verification rotation. Explicit shorter deadlines
-are honored; the minimum is 4,041 microseconds. The deadline starts at COMMAND
-assertion and does not restart after a byte or ACK. Serial byte and phase
-timing are independent of this mechanical allowance.
+A zero timeout selects one second for FASTEST125/HAPPY1050 and two seconds for
+STOCK810/GENERIC57600. Those are also the maximum explicit values; the minimum
+nonzero value is 4,041 µs. The two-second allowance includes motor spin-up,
+seek and rotation. A faster serial rate does not remove those delays. This
+changes the bounded request deadline, not byte timing or the offline-on-error
+policy.
 
 One SIO worker owns bus transactions; native IRQ code moves time-sensitive bytes.
 Task-side callbacks use the [resident driver boundary](resident-drivers.md), with

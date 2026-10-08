@@ -1,0 +1,237 @@
+{
+  "slice": "LG5",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "compiler": {
+    "pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "host_profile": "CARGO_PROFILE_DEV_OPT_LEVEL=2 CARGO_PROFILE_DEV_DEBUG=0"
+  },
+  "tests": {
+    "lg5-wait-raw": {
+      "path": "build/loadable-gem/lg5-wait-raw/results.json",
+      "sha256": "ba12be0fc18fdf4052863c798f42181cd4fd398fdc4571709957e986abd655fe",
+      "status": "pass",
+      "checks": [
+        12
+      ],
+      "completed": null
+    },
+    "lg5-wait-opt": {
+      "path": "build/loadable-gem/lg5-wait-opt/results.json",
+      "sha256": "d334be2147fe3b08c6924d1317ecbd50734591a40ef2d1ca0d1c142e8cdf38fb",
+      "status": "pass",
+      "checks": [
+        12
+      ],
+      "completed": null
+    },
+    "lg5-process": {
+      "path": "build/loadable-gem/lg5-process/results.json",
+      "sha256": "dc8478881a1de35f1f1445ade78afd9b9bc99ece67c1c97f637da0b28763d6a2",
+      "status": "pass",
+      "checks": [
+        87
+      ],
+      "completed": [
+        12
+      ]
+    },
+    "lg5-process-mydos": {
+      "path": "build/loadable-gem/lg5-process-mydos/results.json",
+      "sha256": "822c3baddf115f3963b3e32d67a9aed109ce4007ef6933d52556c0b27034cddb",
+      "status": "pass",
+      "checks": [
+        87
+      ],
+      "completed": [
+        12
+      ]
+    }
+  },
+  "desktop": {
+    "path": "build/loadable-gem/lg5-demo-fixed/gem-desktop-results.json",
+    "sha256": "6c4de48f4b52eacd304852402ff1b802ac63836685281a30b42f8f601650b507",
+    "status": "pass",
+    "checks": null,
+    "completed": null,
+    "integration": {
+      "profile": "gem-desktop",
+      "panel_toggle": true,
+      "counter": true,
+      "shell": true,
+      "files_relaunch": true,
+      "idle_job_collection": true,
+      "heap_restored": true,
+      "exit_with_gui_child_and_popup": true
+    },
+    "browser": {
+      "resource": true,
+      "navigation": true,
+      "popup_keyboard": true,
+      "popup_mouse": true,
+      "launch": "HELLO",
+      "cancel": "TICK",
+      "gem_launch": "PANEL.APP",
+      "gem_stop": true,
+      "idle_collection": true,
+      "invalid_executable": true,
+      "close_during_popup_with_child": true
+    },
+    "startup_frames": 6658,
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 594,
+        "remaining_above_floor": 686
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 321,
+        "remaining_above_floor": 447
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 174,
+        "remaining_above_floor": 594
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 685,
+        "remaining_above_floor": 83
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 633,
+        "remaining_above_floor": 135
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 712,
+        "remaining_above_floor": 56
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 709,
+        "remaining_above_floor": 1595
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 343,
+        "remaining_above_floor": 1961
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 131,
+        "remaining_above_floor": 125
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 299,
+        "remaining_above_floor": 981
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$a64a063ef047dcda",
+      "actual_kernel_id": "$a64a063ef047dcda",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "capacity": {
+    "program.xex": {
+      "bytes": 950773,
+      "headroom": 81418
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 975747,
+      "headroom": 56444
+    }
+  },
+  "applications": {
+    "panel": {
+      "bytes": 6389,
+      "sha256": "119a506d6116a59f712d03f7b5ede5a657fb2ba74d60967bb51d989c846bfa96",
+      "span": 66213,
+      "entry": 4347
+    },
+    "counter": {
+      "bytes": 4336,
+      "sha256": "c1fc9c197c89ac502095f470d78473d1d7cba23a3a2b2f84332afe7a0a84d21b",
+      "span": 65776,
+      "entry": 2893
+    },
+    "files": {
+      "bytes": 8630,
+      "sha256": "65d07c86eeab14d1529f7fed12003ebb786447b5bef96b3961d7ac297fc07b6a",
+      "span": 67710,
+      "entry": 6146
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true
+  },
+  "upper_memory": {
+    "dos_context_bytes": 106,
+    "previous_bytes": 98,
+    "rounded_allocation_delta": 8,
+    "extra_tasks": 0,
+    "extra_timer_requests": 0,
+    "extra_completion_signals": 0
+  },
+  "host_tests": {
+    "status": "pass",
+    "tests": 414,
+    "skipped": 4
+  },
+  "limits": [
+    "C routines have no per-routine stack checks. The smallest measured public-Task margin above the 256-byte interrupt reserve is 56 bytes.",
+    "One cooperative child per Files; one background shell job. Four layers and eight Task slots remain the limits.",
+    "The final cartridge variants and bounded interaction comparison follow in LG6.",
+    "The final documentation and host-only body-exclusion/manifest-path checks follow the passing runtime build; LG6 rebuilds current inputs."
+  ]
+}

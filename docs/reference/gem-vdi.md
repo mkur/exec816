@@ -1,9 +1,70 @@
-# Minimal VDI hosting contracts
+# GEM VDI hosting contracts
 
 [Reference index](README.md) · [Run the workload](../guides/gem-vdi.md) ·
 [Drawing record](../history/gem-vdi.md) · [Input record](../history/gem-input.md)
 
-This is the current supervised hosting contract for the selected GEM4XE VDI
+The resident [AES application profile](aes.md) uses direct caller-side VDI
+with private virtual workstations. The separate supervised packet workload
+below retains its own restricted interface; its packet limits do not constrain
+resident `v_gtext` strings.
+
+## Resident application workstations
+
+`graf_handle` returns physical handle 1 and four 8-pixel metrics. It is local,
+including AESPB opcode 77. Each registration may open one private workstation
+with `v_opnvwk`: pass that physical handle, device 1, solid fill (`work_in[7]=1`),
+raster coordinates (`work_in[10]=2`) and text/fill pens 0–15 at words 6 and 9.
+Unused line/marker inputs are ignored. Success replaces the handle with 2;
+failure sets it to zero. Handles are local to the owning Task. Opening performs
+one cold AES delegation exchange and never opens, clears or repalettes hardware.
+
+The 57-word inquiry is generated from [vdi-client.json](../../abi/vdi-client.json).
+It describes 640×240, sixteen colours, one fixed 8×8 face and the bar GDP.
+Line, marker, polygon, raster-copy, input-device and external-font capabilities
+are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `v_gtext`,
+`vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1)`.
+Named calls and `vdi_call(VDIPB *)` share helpers; opcodes/counts are recorded in
+the [binding manifest](../../ports/gem4xe/aes-binding-inputs.json).
+
+Attribute changes are caller-local. Drawing requires a shown application window
+and `wind_update(BEG_UPDATE)` ownership. Every draw is confined to its published
+visible work region, intersected with the private user clip. Clip-off removes
+only that user clip. Inclusive signed corners are ordered and widened before
+conversion; empty intersections do no hardware work. Text is left-aligned at
+the baseline, with top at `y-6`, and uses replace mode. Named strings stream
+until their terminator or screen-right exclusion; parameter-block text uses its
+explicit word count. Glyph indices are 0–255, a caller obligation. Strings are
+not truncated at a fixed call-size limit.
+
+The binding releases [physical access](display.md#delegated-renderer-access)
+between at most 16-row fill strips or 32-glyph text chunks. Each admitted unit
+selects private attributes, renders through the existing backend, fences,
+restores native attributes and overlays, then releases access. Shared parameter
+scratch and the 92-byte native-workstation save area remain protected by that
+ownership. No warm drawing/attribute call uses presenter RPC, and no physical
+unit waits for an AES reply or an application event.
+
+Classic void calls report failures through `ExecAESDiagnostic()`: resource
+exhaustion, unsupported operation/attribute, malformed counts, missing update
+ownership, or `AES_DISPLAY_ERROR`. Valid pointers and live caller-owned handles
+are application responsibilities. Closing releases only the virtual grant,
+signal and storage. `appl_exit` also closes an omitted workstation before
+retiring the registration. Failure to release ownership prevents disposal.
+
+Private storage is 282 live / 288 heap-reserved upper bytes per workstation,
+including its grant and parameter arrays. The AES context is 267 live / 272
+reserved bytes. No Task, DP, stack pool, bank-zero reservation, staging page or
+VRAM extent is added. See [WA4 evidence](../development/aes-windows-wa4.json) for
+emitted layout, preemption, pixel and stack checks. The
+[two-counter demo](../guides/aes-applications.md#optional-of816-counter-desktop)
+exercises this interface beside native shell/disk work using existing 1 KiB
+caller stacks. The [WA6 record](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
+separates logical update waits, physical access and repaint completion; these
+are development results.
+
+## Supervised packet workload
+
+This is the supervised hosting contract for the selected GEM4XE VDI
 subset. It uses one renderer Task and one client owned by its supervising Task. It is a private,
 rebuilt client/service ABI, not a discoverable resident service or an AES/GEMDOS
 environment. [Display ownership](display.md) is a reusable platform interface.

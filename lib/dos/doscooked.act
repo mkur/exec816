@@ -91,7 +91,7 @@ LONGINT FUNC Wire(DOSCLIENT.ClientContext POINTER client BYTE POINTER buffer
     scope=DOSBREAKTYPES.Scope POINTER(client.foreground)
   FI
 
-  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)
+  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)
   secondary=LONGINT(error)
   IF error=EXEC.CONERR_INPUTOVERFLOW THEN
     secondary=ERROR_BUFFER_OVERFLOW
@@ -193,7 +193,7 @@ LONGINT FUNC CancelLine(DOSCLIENT.ClientContext POINTER client
   request.io_Offset=0
   request.io_Flags=0
   error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
-      DOSBREAKTYPES.Scope POINTER(0))
+      DOSBREAKTYPES.Scope POINTER(0),client)
   ; A canceled Write finishes its logical scroll before collection. At
   ; column zero the next prompt already starts a fresh line; a second LF
   ; would scroll a whole screen again during command retirement.

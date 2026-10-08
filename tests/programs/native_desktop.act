@@ -58,6 +58,44 @@ CARD FUNC Call(DESKTYPES.Client POINTER client DESKTYPES.Request POINTER item)
 RETURN(item.status)
 
 ; Only this Task touches service-owned state, including diagnostic injection.
+PROC FocusCases()
+  BYTE slot
+  LAYERTYPES.Rect bounds
+
+  FOR slot=0 TO 2 DO
+    BEGIN
+      LET item=@service.windows(slot)
+      item.id=LONGCARD(slot)+1
+      item.keyRoute=item.id
+      item.kind=DESKTYPES.CONTENT_COMMANDS
+      REGIONS.Assign(@bounds,INT(slot)*16,16,128+INT(slot)*16,96)
+      Require(LAYERS.Create(@service.scene,@bounds,@item.layer)=LAYERTYPES.OK)
+      Require(LAYERS.Show(@service.scene,item.layer,1)=LAYERTYPES.OK)
+    END
+  OD
+
+  DESKCORE.Focus(service,3)
+  DESKCORE.RestoreFocus(service,1)
+  Require(service.focus=3)
+  Require(LAYERS.Show(@service.scene,service.windows(2).layer,0)=LAYERTYPES.OK)
+  DESKCORE.RestoreFocus(service,3)
+  Require(service.focus=2)
+  ; A shown but unroutable window must not absorb keyboard focus.
+  service.windows(0).keyRoute=0
+  DESKCORE.RestoreFocus(service,2)
+  Require(service.focus=0)
+  service.windows(0).keyRoute=1
+  DESKCORE.Focus(service,2)
+  Require(LAYERS.Delete(@service.scene,service.windows(1).layer)=LAYERTYPES.OK)
+  DESKCORE.RestoreFocus(service,2)
+  Require(service.focus=1)
+  Require(LAYERS.Show(@service.scene,service.windows(0).layer,0)=LAYERTYPES.OK)
+  DESKCORE.RestoreFocus(service,1)
+  Require(service.focus=0)
+  Require(DESKCORE.Init(service,16)<>0)
+
+RETURN
+
 PROC Presenter()
   BYTE index,count
   LONGCARD bits
@@ -65,6 +103,8 @@ PROC Presenter()
 
   Require(EXEC.AllocSignal(16)=16)
   Require(DESKCORE.Init(service,16)<>0)
+  service.live=0
+  FocusCases()
   EXEC.Signal(root,$10000)
   WHILE stop=0 DO
     IF hold<>0 AND held=0 THEN

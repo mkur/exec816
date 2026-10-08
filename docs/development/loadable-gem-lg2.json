@@ -1,0 +1,325 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-08",
+  "scope": "LG2 emitted raw/optimized C and native probes: independent reconstruction at all permitted bases; simultaneous copies in banks 3/5; initialized/BSS data, static object/string/function pointers, imported function pointers, switch code; negative 32-bit entry results; native/C/gateway returns, IRQ/NMI, retained reuse and heap restoration.",
+  "cases": [
+    {
+      "mode": "opt",
+      "xex_sha256": "a8ab15db31f21a17aee086644850a1b1d26e9f0cbebfe6303780e58428fb4ceb",
+      "image_sha256": "797ffab912a5b3c88c83de301508efc359f6d8ef7b4565adf71e7d092942d7d1",
+      "app_sha256": "6a707dccf2dd22eec93cff2a3ae2b74249cfee34d1b57740cb38b74118d61387",
+      "app_bytes": 1688,
+      "span": 65594,
+      "backing_bytes": 131129,
+      "fixups": 43,
+      "imports": 65,
+      "verified_bases": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "created": 2,
+      "switches": 255,
+      "irq_entries": 236,
+      "nmi_entries": 24,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_above_floor": 1006
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1536,
+          "touched_bytes": 130,
+          "untouched_above_floor": 1150
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1536,
+          "touched_bytes": 111,
+          "untouched_above_floor": 1169
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1536,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1262
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1536,
+          "touched_bytes": 28,
+          "untouched_above_floor": 1252
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 278,
+        "untouched_from_base": 1258,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "guards": "intact",
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "c_tools": {
+        "cc65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      }
+    },
+    {
+      "mode": "raw",
+      "xex_sha256": "f8dea76073ba30da9f703f6f24d9ef52d0bdb8b33db748bdfa50290c0d96dac1",
+      "image_sha256": "76bdb1c221e3085e611fabecf797bb9ea64ec5f8f1b410e6ed8806fa857efbf3",
+      "app_sha256": "bf9c60bda14c96df392b225c250d6f47ef240b57ae888368289b323e9f206fcd",
+      "app_bytes": 2030,
+      "span": 65594,
+      "backing_bytes": 131129,
+      "fixups": 69,
+      "imports": 65,
+      "verified_bases": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "created": 2,
+      "switches": 252,
+      "irq_entries": 256,
+      "nmi_entries": 26,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 300,
+          "untouched_above_floor": 980
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1536,
+          "touched_bytes": 128,
+          "untouched_above_floor": 1152
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1536,
+          "touched_bytes": 126,
+          "untouched_above_floor": 1154
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1536,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1262
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1536,
+          "touched_bytes": 21,
+          "untouched_above_floor": 1259
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 286,
+        "untouched_from_base": 1250,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "guards": "intact",
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "c_tools": {
+        "cc65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      }
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true
+  },
+  "bridge_stack_bytes": 40,
+  "host_tests": {
+    "tests": 414,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "limits": [
+    "Not yet dispatched through PROGRAMFILE/Process (LG3).",
+    "Probe C entry deliberately uses the internal LONG __simple_call (ULONG) signature; ordinary int main sign conversion belongs to LG3.",
+    "C routine stack overflow has no Action per-function checks; existing Task/domain guards remain.",
+    "No hosted/release/hardware qualification claim."
+  ]
+}

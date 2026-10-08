@@ -1,0 +1,104 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "AM5",
+  "baseline": "7acd94a",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "browser_model_bytes": 2272,
+  "browser_model_growth": 244,
+  "private_menu_tree_bytes": 240,
+  "files_image": {
+    "bytes": 10282,
+    "span": 68253,
+    "sha256": "b62e14db3559af0c1738226a5708c863d18fcffeea424963bede0c32944e3c36"
+  },
+  "checks": {
+    "status": "pass",
+    "commands": [
+      "pointer Refresh",
+      "keyboard Open",
+      "disabled Open",
+      "keyboard Quit",
+      "pointer Quit"
+    ],
+    "focus_restoration": true,
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 425,
+        "remaining_above_floor": 855
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 323,
+        "remaining_above_floor": 445
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 155,
+        "remaining_above_floor": 613
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 625,
+        "remaining_above_floor": 143
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 612,
+        "remaining_above_floor": 156
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 18,
+        "remaining_above_floor": 750
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 754,
+        "remaining_above_floor": 1550
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 68,
+        "remaining_above_floor": 188
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      }
+    }
+  },
+  "report_sha256": "f99c2516a0f06fd9f0dbd257f04f066ceb889a5596a0e0de6f566145c2529007",
+  "remaining_integration": "Exact OF816 native/GEM launch, Stop and Quit-with-child in AM6"
+}

@@ -1,0 +1,6 @@
+; Ordinary native/C entry bridge. The owner retains admitted code until return.
+MODULE CALYPSICALL
+
+PUBLIC EXTERNAL LONGINT FUNC Invoke(ADDRESS entry LONGCARD argument)
+
+ENDMODULE

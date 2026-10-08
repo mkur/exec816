@@ -33,7 +33,7 @@ UWORD main(void)
         check(event.tick == 0xfffe && event.kind == INPUT_EVENT_BUTTON);
         check(event.flags == INPUT_INJECTED && event.code == INPUT_LEFT);
         check(event.qualifiers == 3 && event.x == -123 && event.y == 239);
-        check(event.buttons == 1 && event.reserved == 0);
+        check(event.buttons == 1 && event.motionInfo == 0);
         return failures;
     }
     config.version = INPUT_VERSION;
@@ -45,7 +45,7 @@ UWORD main(void)
     memset(&event, 0xa5, sizeof(event));
     check(InputAcquire(&lease, &config) == INPUT_BAD_ARGUMENT);
     check(InputCreateRoute(&lease, 0, &tag) == INPUT_INVALID_OWNER && tag == 0xdeadbeefUL);
-    check(InputCreateRoute(&lease, 1, &tag) == INPUT_BAD_ARGUMENT);
+    check(InputCreateRoute(&lease, 2, &tag) == INPUT_BAD_ARGUMENT);
     check(InputPublishRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
     check(InputRetireRoute(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
     check(InputDiscard(&lease, 0x1234567fUL) == INPUT_INVALID_OWNER);
@@ -142,6 +142,10 @@ UWORD main(void)
     check(InputRetireRoute(&lease, tag) == INPUT_BUSY);
     check(InputPublishRoute(&lease, 0) == INPUT_OK);
     check(InputDiscard(&lease, tag) == INPUT_OK);
+    check(InputRetireRoute(&lease, tag) == INPUT_OK);
+    check(InputCreateRoute(&lease, INPUT_ROUTE_UNFILTERED, &tag) == INPUT_OK);
+    check(InputPublishRoute(&lease, tag) == INPUT_OK);
+    check(InputPublishRoute(&lease, 0) == INPUT_OK);
     check(InputRetireRoute(&lease, tag) == INPUT_OK);
     check(AllocSignal(17) == 17);
     pointerConfig.wakeMask = 0x20000UL;

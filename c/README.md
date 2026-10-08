@@ -17,6 +17,7 @@ supported calls, ABI details and current limits.
 - [calypsi/exec.c](calypsi/exec.c) and [gateway.s](calypsi/gateway.s): the shim.
 - [include/exec/io.h](include/exec/io.h) and [include/devices/timer.h](include/devices/timer.h): generated device and VBI timer records.
 - [calypsi/io.c](calypsi/io.c), [io.s](calypsi/io.s) and [io-bridge.inc](calypsi/io-bridge.inc): caller-context device I/O binding installed by the launcher.
+- [include/proto/dos.h](include/proto/dos.h) and [include/exec816/program.h](include/exec816/program.h): file/directory calls and native Exec command launch/collection.
 - [include/gem.h](include/gem.h) and [calypsi/aes.c](calypsi/aes.c): the optional [AES application profile](../docs/reference/aes.md), with Task-local attachment in [include/exec816/aes.h](include/exec816/aes.h).
 
 Build with `python3 tools/build_calypsi.py` from the repository root.

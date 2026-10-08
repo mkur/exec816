@@ -4,6 +4,8 @@
 
 The initial measurements below describe 32 KiB blocks at `53e1f63`. The
 [64 KiB follow-up](#64-kib-follow-up) switches the current default to 65,535 bytes.
+The [upstream desktop integration](#upstream-desktop-integration) keeps the shared
+GEM runtime in that compressed image.
 
 The streaming LZ4 loader reduces the full standard OF816 XEX from **903,505 to
 314,057 bytes**, and VBXE from **947,374 to 339,432 bytes**. The actual emitted
@@ -174,4 +176,47 @@ python3 tools/measure_loader_compression.py --bundle build/compressed-loader-64k
   --output build/compressed-loader-64k/standard-timing --multiplier 8
 python3 tools/measure_loader_compression.py --bundle build/compressed-loader-64k/vbxe \
   --output build/compressed-loader-64k/vbxe-timing --multiplier 8
+```
+
+## Upstream desktop integration
+
+The merge of upstream `901ff53` into the commands branch retains its desktop,
+menu, application and renderer changes. The shared C runtime and lookup tables
+stay in the compressed boot image, replacing upstream's `GEMSYS.BIN` bootstrap.
+Panel, counter, Files and calculator remain independent disk-loaded APPs.
+Current behavior is described by the [platform contract](../reference/platform.md)
+and [C loading contract](../reference/c-program-loading.md).
+
+The fresh optimized GEM desktop contains 158,900 initialized C bytes, all
+loaded before native startup. Its expanded initialized payload is 1,150,756
+bytes; stored payload is 386,143 bytes. The full OF816 XEX is **426,676 bytes**,
+leaving **605,515 bytes** of Atarimax payload capacity. Both cartridge formats
+are generated from that same XEX.
+
+The 8x PAL decoder takes **5.875 seconds**, including interrupts and bus stalls
+but excluding XEX transport, progress output and application loading. After
+OF816 handoff, all 1,164,539 image bytes across 60 extents match, including
+zero-fill. The compiler remains at its clean recorded pin without an override.
+
+Fixed, per-public-Task and private-idle bank-zero reservation deltas are **0**
+relative to the local parent, counting guards, alignment and unused capacity.
+All loading/runtime reservation totals match that parent. The loader occupies
+2,857 bytes of its existing 4,608-byte capacity. Removing the shared component
+loader also removes its extra 512-byte upper arena allowance; desktop globals
+use 4.5 KiB for shell and menu state.
+
+Development checks pass: 420 host tests, 16 ABI generator checks, one generated
+memory check, 13 emitted decoder cases, six optimized SIO deadline cases,
+raw/optimized C bridge probes and one guarded interrupt-return boundary. The
+extracted XEX and new Atarimax cartridge each pass five-second OF816 autoboot,
+three loaded GEM applications, counter progress, shell/disk and RAM commands,
+guards, ownership cleanup and EXIT. This focused smoke does not repeat the full
+desktop/menu/Files/calculator walkthrough, old/manual cartridge route, 1x timing
+or release qualification. Exact inputs and selected scope are recorded in
+[upstream-compression-merge.json](../development/upstream-compression-merge.json).
+
+```sh
+CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --gem-desktop \
+  --output build/upstream-compression-merge/gem-desktop
+python3 tools/test_gem_desktop_boot.py --bundle build/upstream-compression-merge/gem-desktop --smoke
 ```

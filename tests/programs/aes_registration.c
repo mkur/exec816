@@ -11,14 +11,17 @@ WORD Peer_appl_init(void);
 
 ULONG AESService;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone;
+volatile UWORD AESFirstFailure;
 static struct Task *controller, *workers[5];
 static ULONG wake, commands[5];
 static WORD ids[5];
-static void check(BOOL okay)
+static void check(BOOL okay, UWORD line)
 {
-    Forbid(); ++AESChecks; if (!okay) ++AESFailures; Permit();
+    Forbid(); ++AESChecks;
+    if (!okay) { if (!AESFailures) AESFirstFailure = line; ++AESFailures; }
+    Permit();
 }
-#define CHECK(t) check((t) != 0)
+#define CHECK(t) check((t) != 0, __LINE__)
 
 static void raw(struct ExecAESContext *c, UWORD status)
 {
@@ -147,8 +150,11 @@ UWORD AESRun(void)
         for (attempts = 0; attempts < 128 &&
              destination->state != AES_ENDPOINT_CLOSING; ++attempts) ExecYield();
         CHECK(destination->state == AES_ENDPOINT_CLOSING);
-        CHECK(AESDone == 0 && destination->records != NULL);
-        CHECK(wind_update(BEG_UPDATE | AES_TRY) == 1);
+        CHECK(AESDone == 0 && destination->records != NULL && destination->input != NULL);
+        /* A repaint may still own the native display. A blocking acquisition
+         * proves this RPC progresses while the other client's exit is held;
+         * TRY is legitimately allowed to report busy at this boundary. */
+        CHECK(wind_update(BEG_UPDATE) == 1);
         CHECK(wind_update(END_UPDATE) == 1);
         CHECK(ExecAESReserve(c, ids[1], &destination) == NULL);
         CHECK(ExecAESDiagnostic() == AES_IDENTITY);
@@ -156,7 +162,7 @@ UWORD AESRun(void)
         ExecAESPublish(c, destination, record);
         while (AESDone < 1) Wait(wake);
         CHECK(destination->state == AES_ENDPOINT_RETIRED);
-        CHECK(destination->port == NULL && destination->records == NULL);
+        CHECK(destination->port == NULL && destination->records == NULL && destination->input == NULL);
     }
     CHECK(ExecAESDetach());
     for (round = 0; round < 3; ++round) {

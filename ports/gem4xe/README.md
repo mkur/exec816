@@ -31,6 +31,13 @@ donor application signatures, parameter counts and globals for the
 These are reference inputs for new native bindings; the widget extraction and
 its upstream licensing remain independent.
 
+[aes-keyboard-inputs.json](aes-keyboard-inputs.json) records the pinned donor
+keyboard mapping and its source hash. `tools/generate_aes_keyboard.py` emits
+the shared GPL Task-side scan table and ATASCII special-key mapping. The
+translator reads the pinned OS KEYDEF table; it does not link donor polling or
+interrupt ownership. Shift-Tab deliberately retains GEM Tab with its captured
+Shift qualifier. Existing upstream licence notices apply to this derived table.
+
 Using the pinned local compiler, firmware and `build/shell-paced-bridge`, run:
 
 ```sh
@@ -71,7 +78,9 @@ checks, not the G4 pixel corpus or a worst-case C stack bound.
 In the G1 probe, the VBXE device table and its dependency closure are linked for
 sizing but never bound or executed. G4 excludes the donor low-level hardware
 implementation, substitutes the bounded adapter and fixes wide-coordinate
-arithmetic through separate reproducible patches. The recording callbacks validate actual GEM
+arithmetic through separate reproducible patches. The widget-run patch routes
+complete nonzero-ink label cells to the adapter's reserved-run encoder, preserving
+partial/zero-ink drawing and the immutable font atlas. The recording callbacks validate actual GEM
 calls without changing the hardware. The test verifies inactive MEMAC/blitter/IRQ,
 OS presentation and the unmapped aperture sentinel after execution.
 

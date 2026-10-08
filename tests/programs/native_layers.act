@@ -154,7 +154,7 @@ PROC Snapshot(BYTE POINTER output)
   A816MEMORY.Fill(output,255,768)
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     layer=@scene.items(slot)
-    Require(layer.visible.count<=81)
+    Require(layer.visible.count<=91)
     IF layer.visible.count>maxRects THEN
       maxRects=layer.visible.count
     FI
@@ -279,6 +279,8 @@ PROC SceneFailures()
   Require(LAYERS.Delete(scene,handles(3))=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,handles(4))=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,handles(5))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(6))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(7))=LAYERTYPES.OK)
   Require(scene.count=0)
   REGIONS.Assign(@bounds,0,0,8,8)
   Require(LAYERS.Create(scene,@bounds,NULL)=LAYERTYPES.BAD_ARGUMENT)
@@ -304,13 +306,14 @@ RETURN
 INCLUDE "layers-update-checks.inc"
 INCLUDE "layers-damage-checks.inc"
 INCLUDE "layers-bank-checks.inc"
+INCLUDE "layers-external-checks.inc"
 
 PROC Main()
 
   first=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
   second=LAYERTYPES.Region POINTER(Guarded(LAYERTYPES.REGION_SIZE))
   scene=LAYERTYPES.Scene POINTER(Guarded(LAYERTYPES.SCENE_SIZE))
-  model=Guarded(3072)
+  model=Guarded(LAYERTYPES.MAX_LAYERS*768)
   canvas=Guarded(768)
   Geometry()
   RegionFailures()
@@ -319,9 +322,10 @@ PROC Main()
   UpdateTransactions()
   DamageTransactions()
   BankCrossing()
+  ExternalTransactions()
   scenePhase=50
   FreeGuarded(canvas,768)
-  FreeGuarded(model,3072)
+  FreeGuarded(model,LAYERTYPES.MAX_LAYERS*768)
   FreeGuarded(BYTE POINTER(scene),LAYERTYPES.SCENE_SIZE)
   FreeGuarded(BYTE POINTER(second),LAYERTYPES.REGION_SIZE)
   FreeGuarded(BYTE POINTER(first),LAYERTYPES.REGION_SIZE)

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 3,
+  "version": 10,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -36,10 +36,107 @@
     "ENDPOINT_ACCEPTING": 1,
     "ENDPOINT_CLOSING": 2,
     "ENDPOINT_RETIRED": 3,
-    "RPC_INTIN_WORDS": 1,
-    "RPC_INTOUT_WORDS": 1
+    "RPC_INTIN_WORDS": 6,
+    "RPC_INTOUT_WORDS": 5,
+    "GUI_KINDS": 5,
+    "GUI_REDRAW": 0,
+    "GUI_TOPPED": 1,
+    "GUI_MOVED": 2,
+    "GUI_CLOSED": 3,
+    "WM_REDRAW": 20,
+    "WM_TOPPED": 21,
+    "WM_CLOSED": 22,
+    "WM_MOVED": 28,
+    "OP_CREATE": 100,
+    "OP_OPEN": 101,
+    "OP_CLOSE": 102,
+    "OP_GET": 104,
+    "OP_SET": 105,
+    "OP_DELETE": 103,
+    "OP_CALC": 108,
+    "VISIBLE_RECTS": 96,
+    "NAME": 1,
+    "CLOSER": 2,
+    "MOVER": 8,
+    "WINDOW_KIND": 11,
+    "WF_KIND": 1,
+    "WF_NAME": 2,
+    "WF_WXYWH": 4,
+    "WF_CXYWH": 5,
+    "WF_TOP": 10,
+    "WF_FIRSTXYWH": 11,
+    "WF_NEXTXYWH": 12,
+    "WC_BORDER": 0,
+    "WC_WORK": 1,
+    "OP_GRAF_HANDLE": 77,
+    "OP_DISPLAY": 200,
+    "DISPLAY_ERROR": 9,
+    "INPUT_SLOTS": 16,
+    "INPUT_KEY": 1,
+    "INPUT_BUTTON": 2,
+    "INPUT_LOST": 10,
+    "OP_KEYBD": 20,
+    "OP_BUTTON": 21,
+    "MU_KEYBD": 1,
+    "MU_BUTTON": 2,
+    "MU_M1": 4,
+    "MU_M2": 8,
+    "OP_MOUSE_PROFILE": 201,
+    "MOUSE_QUERY": -1,
+    "MOUSE_OFF": 0,
+    "MOUSE_MILD": 1,
+    "OP_MENU": 202,
+    "MENU_OBJECTS": 32,
+    "MN_SELECTED": 10,
+    "GUI_MENU": 4
   },
   "records": {
+    "MenuObject": [
+      [
+        "next",
+        "INT"
+      ],
+      [
+        "head",
+        "INT"
+      ],
+      [
+        "tail",
+        "INT"
+      ],
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "flags",
+        "CARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "spec",
+        "LONGCARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "width",
+        "INT"
+      ],
+      [
+        "height",
+        "INT"
+      ]
+    ],
     "Delivery": [
       [
         "message",
@@ -49,6 +146,157 @@
         "words",
         "INT",
         "MESSAGE_WORDS"
+      ]
+    ],
+    "GuiDelivery": [
+      [
+        "delivery",
+        "Delivery"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "menuEpoch",
+        "LONGCARD"
+      ]
+    ],
+    "InputRecord": [
+      [
+        "epoch",
+        "LONGCARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "buttons",
+        "CARD"
+      ],
+      [
+        "qualifiers",
+        "CARD"
+      ],
+      [
+        "key",
+        "INT"
+      ],
+      [
+        "pad",
+        "CARD"
+      ]
+    ],
+    "InputInbox": [
+      [
+        "windowEpoch",
+        "LONGCARD"
+      ],
+      [
+        "keyEpoch",
+        "LONGCARD"
+      ],
+      [
+        "buttonEpoch",
+        "LONGCARD"
+      ],
+      [
+        "interest",
+        "CARD"
+      ],
+      [
+        "loss",
+        "CARD"
+      ],
+      [
+        "eligible",
+        "CARD"
+      ],
+      [
+        "exhausted",
+        "CARD"
+      ],
+      [
+        "keyHead",
+        "BYTE"
+      ],
+      [
+        "keyTail",
+        "BYTE"
+      ],
+      [
+        "buttonHead",
+        "BYTE"
+      ],
+      [
+        "buttonTail",
+        "BYTE"
+      ],
+      [
+        "latest",
+        "InputRecord"
+      ],
+      [
+        "selectedKey",
+        "InputRecord"
+      ],
+      [
+        "selectedButton",
+        "InputRecord"
+      ],
+      [
+        "selectedWindow",
+        "LONGCARD"
+      ],
+      [
+        "nextKey",
+        "BYTE"
+      ],
+      [
+        "nextButton",
+        "BYTE"
+      ],
+      [
+        "keyTailSeen",
+        "BYTE"
+      ],
+      [
+        "buttonTailSeen",
+        "BYTE"
+      ],
+      [
+        "selectionFlags",
+        "CARD"
+      ],
+      [
+        "keys",
+        "InputRecord",
+        "INPUT_SLOTS"
+      ],
+      [
+        "buttons",
+        "InputRecord",
+        "INPUT_SLOTS"
+      ]
+    ],
+    "RegistrationStorage": [
+      [
+        "records",
+        "Delivery",
+        "QUEUE_DEPTH"
+      ],
+      [
+        "gui",
+        "GuiDelivery"
+      ],
+      [
+        "input",
+        "InputInbox"
       ]
     ],
     "Endpoint": [
@@ -95,6 +343,46 @@
       [
         "freeRecords",
         "CARD"
+      ],
+      [
+        "gui",
+        "GuiDelivery POINTER"
+      ],
+      [
+        "guiPad",
+        "BYTE"
+      ],
+      [
+        "guiEpoch",
+        "LONGCARD"
+      ],
+      [
+        "guiFree",
+        "CARD"
+      ],
+      [
+        "guiWaiting",
+        "CARD"
+      ],
+      [
+        "input",
+        "InputInbox POINTER"
+      ],
+      [
+        "inputPad",
+        "BYTE"
+      ],
+      [
+        "menuEpoch",
+        "LONGCARD"
+      ],
+      [
+        "menuConsumed",
+        "CARD"
+      ],
+      [
+        "menuNormal",
+        "CARD"
       ]
     ],
     "Directory": [
@@ -115,9 +403,70 @@
         "CARD"
       ],
       [
+        "topWindow",
+        "INT"
+      ],
+      [
         "endpoints",
         "Endpoint",
         "CLIENTS"
+      ]
+    ],
+    "Rect": [
+      [
+        "left",
+        "INT"
+      ],
+      [
+        "top",
+        "INT"
+      ],
+      [
+        "right",
+        "INT"
+      ],
+      [
+        "bottom",
+        "INT"
+      ]
+    ],
+    "WindowView": [
+      [
+        "handle",
+        "INT"
+      ],
+      [
+        "kind",
+        "INT"
+      ],
+      [
+        "shown",
+        "CARD"
+      ],
+      [
+        "updates",
+        "CARD"
+      ],
+      [
+        "revision",
+        "LONGCARD"
+      ],
+      [
+        "bounds",
+        "Rect"
+      ],
+      [
+        "work",
+        "Rect"
+      ],
+      [
+        "visibleCount",
+        "CARD"
+      ],
+      [
+        "visible",
+        "Rect",
+        "VISIBLE_RECTS"
       ]
     ],
     "Request": [
@@ -203,12 +552,61 @@
       [
         "recordsPad",
         "BYTE"
+      ],
+      [
+        "view",
+        "WindowView POINTER"
+      ],
+      [
+        "viewPad",
+        "BYTE"
+      ],
+      [
+        "displayGrant",
+        "BYTE POINTER"
+      ],
+      [
+        "displayGrantPad",
+        "BYTE"
       ]
     ]
   },
   "rpc_operations": [
     "OP_INIT",
     "OP_EXIT",
-    "OP_UPDATE"
+    "OP_UPDATE",
+    "OP_CREATE",
+    "OP_OPEN",
+    "OP_CLOSE",
+    "OP_DELETE",
+    "OP_SET",
+    "OP_DISPLAY",
+    "OP_MOUSE_PROFILE",
+    "OP_MENU"
+  ],
+  "public_constants": [
+    "NAME",
+    "CLOSER",
+    "MOVER",
+    "WF_KIND",
+    "WF_NAME",
+    "WF_WXYWH",
+    "WF_CXYWH",
+    "WF_TOP",
+    "WF_FIRSTXYWH",
+    "WF_NEXTXYWH",
+    "WC_BORDER",
+    "WC_WORK",
+    "WM_REDRAW",
+    "WM_TOPPED",
+    "WM_MOVED",
+    "WM_CLOSED",
+    "MU_KEYBD",
+    "MU_BUTTON",
+    "MU_M1",
+    "MU_M2",
+    "MU_MESAG",
+    "MU_TIMER",
+    "MN_SELECTED"
   ]
 }

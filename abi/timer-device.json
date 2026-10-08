@@ -6,7 +6,7 @@
     "TimerRequest": {"size": 34, "fields": [["tr_Request", "IORequest", 0], ["seconds", "LONGCARD", 26], ["microseconds", "LONGCARD", 30]]},
     "TimerClockRequest": {"size": 38, "fields": [["tc_Request", "IORequest", 0], ["ticks_hi", "LONGCARD", 26], ["ticks_lo", "LONGCARD", 30], ["ticks_per_second", "LONGCARD", 34]]}
   },
-  "state_offset": 22784,
+  "state_offset": 23296,
   "state_bytes": 512,
   "open_capacity": 8,
   "pending_capacity": 16,

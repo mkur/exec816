@@ -1,0 +1,131 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "MA4",
+  "date": "2026-10-07",
+  "baseline": "ec7137a",
+  "artifacts": {
+    "exec816-demo.zip": {
+      "path": "build/desktop/mouse-acceleration-demo/exec816-demo.zip",
+      "bytes": 339473,
+      "sha256": "a04abcb0d6f5141b4b19aad12799c2643db6a553b59b169cfebffc7940c4c093"
+    },
+    "demo-results.json": {
+      "path": "build/desktop/mouse-acceleration-demo/demo-results.json",
+      "bytes": 15838,
+      "sha256": "c9c62e944f243ff1aca8b5f88d4656c0278e65aff95744f05641d878c0097ae3"
+    },
+    "demo-manifest.json": {
+      "path": "build/desktop/mouse-acceleration-demo/demo-manifest.json",
+      "bytes": 150387,
+      "sha256": "bf34b8d55ae00a7b32ddf5b29de0d53f14cc1ab211598007dcc062e16169f00c"
+    },
+    "program.xex": {
+      "path": "build/desktop/mouse-acceleration-demo/program.xex",
+      "bytes": 924864,
+      "sha256": "70a9dc5841557941696e185c2c48305810191d3c550ca558ab83b38b9f0a7d46"
+    },
+    "of816/of816.json": {
+      "path": "build/desktop/mouse-acceleration-demo/of816/of816.json",
+      "bytes": 4450,
+      "sha256": "439e3663f76fbabf1606634189a2372c010afd3845472c62488c2d8f0234a0ef"
+    },
+    "of816/Exec-of816.xex": {
+      "path": "build/desktop/mouse-acceleration-demo/of816/Exec-of816.xex",
+      "bytes": 949767,
+      "sha256": "838adfd56a1074fb5fe4dc93b454f85bfec8ba0a22041a07bd451e4270d4d2b8"
+    }
+  },
+  "scope": "Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT",
+  "mouse": {
+    "profile": "mild",
+    "fast_steps_per_axis": 97,
+    "edge_reversal": [
+      638,
+      238
+    ]
+  },
+  "autoboot_frames": 250,
+  "desktop_interaction": {
+    "app_updates": 5,
+    "drag_bounds": [
+      440,
+      88,
+      632,
+      232
+    ],
+    "pointer": [
+      100,
+      100
+    ]
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "idle": 0
+  },
+  "memory_comparison": {
+    "baseline": "build/desktop/pi3-demo/demo-manifest.json",
+    "populated_banks_before": 17,
+    "populated_banks_after": 17,
+    "total_feature_upper_reserved_growth": 512,
+    "ma4_upper_reserved_growth": 0,
+    "additional_tasks": 0,
+    "additional_vram": 0
+  },
+  "archive_members": [
+    "exec816-demo/ALTIRRAOS-LICENSE.txt",
+    "exec816-demo/EXEC816-GPL-3.0.txt",
+    "exec816-demo/EXEC816-LICENSING.md",
+    "exec816-demo/EXEC816-MIT.txt",
+    "exec816-demo/Exec-of816.xex",
+    "exec816-demo/GEM-COPYING.LIB.txt",
+    "exec816-demo/GEM-COPYING.txt",
+    "exec816-demo/GEM-FONT-NOTICE.txt",
+    "exec816-demo/GEM-LICENSING.md",
+    "exec816-demo/OF816-LICENSE.txt",
+    "exec816-demo/README.txt",
+    "exec816-demo/SHA256SUMS",
+    "exec816-demo/altirraos-816.rom",
+    "exec816-demo/system.atr",
+    "exec816-demo/work.atr"
+  ],
+  "all_archive_checksums_pass": true,
+  "host": {
+    "tests": 399,
+    "skipped": 4,
+    "status": "pass",
+    "log": "build/mouse-acceleration/ma4-host.log"
+  },
+  "runtime_exit": {
+    "status": 0,
+    "fault_required": 0,
+    "current": 8,
+    "switching": 0,
+    "irq_depth": 0,
+    "os_owner": 255
+  },
+  "tested_from_extracted_archive": "build/desktop/mouse-acceleration-demo/distribution/exec816-demo",
+  "filesystem_writes": true,
+  "scroll_break": {
+    "parent_scope": 148824,
+    "foreground_scope": 234152,
+    "write": 234328,
+    "dirty_rows": 2
+  },
+  "source_inputs": {
+    "tools/build_demo.py": "dc5f21df27f1e85c49e79e71baadf61b7b93f40157d39cf6d60ed467552f4b8d",
+    "tools/package_demo.py": "b68d1a6083fe39a45d30f3a5a256564c0b1c48af0f5cdd0d3b08147e3b7221ab",
+    "tools/test_demo.py": "451d620298c2a705dd8f0537e51ff98bed89018f0be6a1b6e9d8c6f1928c2cdd",
+    "tools/desktop_mouse.py": "3a9150c744e53f65329aaf658f78a9de2db61e53e4c69bb2c835f76aa730620e",
+    "docs/desktop-distribution.txt": "400b13bc79051a6afa6cb1e81f7349ce005516c14e194b4a8d5ed064f2c4e736",
+    "config/mouse.json": "a0d9537abb07efa0e5e4ad3721dd487b64638d345283d2baad775247d851b849"
+  },
+  "limits": [
+    "Pinned PAL ST/VBXE emulator development walkthrough; no full hosted/hardware qualification",
+    "Two pre-existing eight-pixel caret artifacts remain reproducible in frozen PI3 controls",
+    "Standard shell/prime selection and package host checks retained; this runtime walkthrough is the desktop variant",
+    "No PI4/HY4 latency closure claim"
+  ]
+}

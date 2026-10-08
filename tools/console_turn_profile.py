@@ -107,6 +107,7 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
     segments = []
     previous = events[0][0]
     active = {}
+    entry_stacks = {}
     spans = []
     previous_cpu = None
     repeated_entries = 0
@@ -146,7 +147,10 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
             if entry:
                 require(name not in active, 'Nested worker span '+name)
                 active[name] = tick
+                entry_stacks[name] = int(e[8], 16)
             elif name in active:
+                if definitions[name].get('match_return_stack') and int(e[8], 16) != entry_stacks[name]:
+                    continue
                 spans.append(dict(kind=name, start=active.pop(name), end=tick,
                                   return_a=int(e[5], 16), return_x=int(e[6], 16)))
     require(not active and not interrupts, 'Incomplete worker/interrupt trace')

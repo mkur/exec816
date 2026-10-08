@@ -29,7 +29,7 @@ UWORD InputRelease(struct InputLease *lease);
 
 
 def validate(abi):
-    if abi['version'] != 2 or abi['alignment'] != 2:
+    if abi['version'] != 4 or abi['alignment'] != 2:
         raise ValueError('Unsupported input record version/alignment')
     for name, record in abi['records'].items():
         end = 0

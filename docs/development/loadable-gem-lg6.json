@@ -1,0 +1,737 @@
+{
+  "slice": "LG6",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "compiler": {
+    "pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "host_profile": "CARGO_PROFILE_DEV_OPT_LEVEL=2 CARGO_PROFILE_DEV_DEBUG=0"
+  },
+  "distribution": {
+    "path": "build/loadable-gem/distribution/exec816-demo.zip",
+    "sha256": "ca6f47a72a64951e16e7376431a808d8dac04b646f7868f3c002f8cdd1456450",
+    "files": {
+      "ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "EXEC816-LICENSING.md": "ba494a0ace8fe67dea007b90771de20ba2d98341f6a8e3618846258f7cbff46f",
+      "EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "Exec-of816.xex": "4e3dd13860c7ba94e1ba65ce7777baf4d6499ca9c1caf638244f5c5e97b05894",
+      "GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "README.txt": "5a63683e0ffd931e54e361d262d55727c28c8f21c1b38cbee9696cb517b0bdf0",
+      "SHA256SUMS": "f03daefea94cf333577510137123f79ba56123ab4eb29d13fd20180150bb088f",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "system.atr": "5878b95f5d48a987f5bb5920f903994c8cffff2283076a1b4010f889017ef751",
+      "work.atr": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a",
+      "cartridge/Exec-of816-atarimax-8mbit.bin": "706a5217a4f05b9ffc11663e4b9bb4cfe93810a72597d649e997bc0bebead1bb",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car": "82e51e8472997b25919d1764c7d02ff9efc16b1ebd3bc93749ccebdf24ee7c63",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car": "978baf82d71ea9336e7ce534e28cb50cde2051a73a5bb81a01c4c3b1a683a9cc",
+      "cartridge/README.txt": "da31370ef2fe113bb7e693ab7b9fe473f7fec394b11f8072922ee027cf4e6986"
+    },
+    "source_zip_sha256": "27384bbc6e7ddbe2f777e1c1d3a060f05d7238629702118483b8d157c0de9e99",
+    "development_files_in_zip": false,
+    "all_checksums_verified": true
+  },
+  "capacity": {
+    "program.xex": {
+      "bytes": 950773,
+      "headroom": 81418
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 975747,
+      "headroom": 56444
+    }
+  },
+  "shared_component_bytes": 149030,
+  "shared_application_bodies_and_models": "absent; builder checks symbols and links no application Task entries",
+  "applications": {
+    "panel": {
+      "bytes": 6389,
+      "sha256": "119a506d6116a59f712d03f7b5ede5a657fb2ba74d60967bb51d989c846bfa96",
+      "span": 66213,
+      "entry": 4347,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "backing_request_bytes": 131748,
+      "backing_rounded_bytes": 131752,
+      "image_metadata_bytes": 42
+    },
+    "counter": {
+      "bytes": 4336,
+      "sha256": "c1fc9c197c89ac502095f470d78473d1d7cba23a3a2b2f84332afe7a0a84d21b",
+      "span": 65776,
+      "entry": 2893,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "backing_request_bytes": 131311,
+      "backing_rounded_bytes": 131312,
+      "image_metadata_bytes": 42
+    },
+    "files": {
+      "bytes": 8630,
+      "sha256": "65d07c86eeab14d1529f7fed12003ebb786447b5bef96b3961d7ac297fc07b6a",
+      "span": 67710,
+      "entry": 6146,
+      "verified_banks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "backing_request_bytes": 133245,
+      "backing_rounded_bytes": 133248,
+      "image_metadata_bytes": 42
+    }
+  },
+  "cartridge_boots": {
+    "old": {
+      "path": "build/loadable-gem/lg6-cart-old/results.json",
+      "sha256": "bf07e68681212b4b8bf505f07d198f6190583ce3175d15047eea7cc1b2c58fe1",
+      "status": "pass",
+      "autoboot_frames": 249,
+      "os_restored_at_handoff": true,
+      "of816_guards": "intact",
+      "cartridge_sha256": "82e51e8472997b25919d1764c7d02ff9efc16b1ebd3bc93749ccebdf24ee7c63",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c4cc86d5fb8796b1",
+        "actual_kernel_id": "$c4cc86d5fb8796b1",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/loadable-gem/distribution/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "startup_frames": 6658,
+      "desktop_ready_frames": 6865,
+      "integration": {
+        "profile": "gem-desktop",
+        "panel_toggle": true,
+        "panel_keyboard": true,
+        "panel_drag": true,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "exit_with_gui_child_and_popup": true
+      },
+      "browser": {
+        "resource": true,
+        "navigation": true,
+        "popup_keyboard": true,
+        "popup_mouse": true,
+        "launch": "HELLO",
+        "cancel": "TICK",
+        "gem_launch": "PANEL.APP",
+        "gem_stop": true,
+        "idle_collection": true,
+        "invalid_executable": true,
+        "close_during_popup_with_child": true
+      },
+      "guards": "intact",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 580,
+          "remaining_above_floor": 700
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 346,
+          "remaining_above_floor": 422
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 174,
+          "remaining_above_floor": 594
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 709,
+          "remaining_above_floor": 59
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 657,
+          "remaining_above_floor": 111
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 714,
+          "remaining_above_floor": 54
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 708,
+          "remaining_above_floor": 1596
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 361,
+          "remaining_above_floor": 1943
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 299,
+          "remaining_above_floor": 981
+        }
+      },
+      "feedback": {
+        "initial": {
+          "model_address": 327957,
+          "samples_ms": [
+            120.25334835116348,
+            100.28828031278061,
+            140.1981169445388,
+            100.29561066792222,
+            120.24489024907702,
+            100.03622887060372
+          ],
+          "median_ms": 110.27025045849962,
+          "max_ms": 140.1981169445388,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        },
+        "reloaded": {
+          "model_address": 721173,
+          "samples_ms": [
+            120.49806943819877,
+            100.28940805972549,
+            120.4969416912539,
+            100.28884418625304,
+            120.24432637560457,
+            100.28828031278061
+          ],
+          "median_ms": 110.26686721766504,
+          "max_ms": 120.49806943819877,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        }
+      }
+    },
+    "new": {
+      "path": "build/loadable-gem/lg6-cart-new/results.json",
+      "sha256": "6cf9e2652a854621d273ff057b51417565961040ec4436926a0f42478b831b8a",
+      "status": "pass",
+      "autoboot_frames": 249,
+      "os_restored_at_handoff": true,
+      "of816_guards": "intact",
+      "cartridge_sha256": "978baf82d71ea9336e7ce534e28cb50cde2051a73a5bb81a01c4c3b1a683a9cc",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c4cc86d5fb8796b1",
+        "actual_kernel_id": "$c4cc86d5fb8796b1",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/loadable-gem/distribution/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "startup_frames": 6658,
+      "desktop_ready_frames": 6865,
+      "integration": {
+        "profile": "gem-desktop",
+        "panel_toggle": true,
+        "panel_keyboard": true,
+        "panel_drag": true,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "exit_with_gui_child_and_popup": true
+      },
+      "browser": {
+        "resource": true,
+        "navigation": true,
+        "popup_keyboard": true,
+        "popup_mouse": true,
+        "launch": "HELLO",
+        "cancel": "TICK",
+        "gem_launch": "PANEL.APP",
+        "gem_stop": true,
+        "idle_collection": true,
+        "invalid_executable": true,
+        "close_during_popup_with_child": true
+      },
+      "guards": "intact",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 580,
+          "remaining_above_floor": 700
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 346,
+          "remaining_above_floor": 422
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 174,
+          "remaining_above_floor": 594
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 709,
+          "remaining_above_floor": 59
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 657,
+          "remaining_above_floor": 111
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 714,
+          "remaining_above_floor": 54
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 708,
+          "remaining_above_floor": 1596
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 361,
+          "remaining_above_floor": 1943
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 299,
+          "remaining_above_floor": 981
+        }
+      },
+      "feedback": {
+        "initial": {
+          "model_address": 327957,
+          "samples_ms": [
+            120.25334835116348,
+            100.28828031278061,
+            140.1981169445388,
+            100.29561066792222,
+            120.24489024907702,
+            100.03622887060372
+          ],
+          "median_ms": 110.27025045849962,
+          "max_ms": 140.1981169445388,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        },
+        "reloaded": {
+          "model_address": 721173,
+          "samples_ms": [
+            120.49806943819877,
+            100.28940805972549,
+            120.4969416912539,
+            100.28884418625304,
+            120.24432637560457,
+            100.28828031278061
+          ],
+          "median_ms": 110.26686721766504,
+          "max_ms": 120.49806943819877,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        }
+      }
+    }
+  },
+  "native_cartridge_build": {
+    "path": "build/loadable-gem/lg6-native-cartridge/cartridge.json",
+    "sha256": "4a43fe6432c6295dbe8717e8ef3710b8af9516bb3527f7c10736fe6e8caf90aa"
+  },
+  "default_profile": {
+    "path": "build/loadable-gem/lg6-default/demo-results.json",
+    "sha256": "426986b9fe472527c8fd31ce4457f9ef1ef7ec1dac3e541f7f889adbbab7f0d0",
+    "status": "pass",
+    "scope": "Shell boot, disk HELLO, CAT/WC pipeline and EXIT",
+    "autoboot_frames": 249,
+    "startup_frames": 543,
+    "of816_xex_bytes": 946537,
+    "cartridge_build": {
+      "path": "build/loadable-gem/lg6-default-cartridge/cartridge.json",
+      "sha256": "97a52690d31a06cae5663cc7ecd8b7b373afad721e19a2eebcc601659c11f533"
+    },
+    "cartridge_boot_tested": false
+  },
+  "feedback_baseline": {
+    "path": "build/loadable-gem/lg6-feedback-baseline.json",
+    "sha256": "2e3ec932780e4dd958c75a679580c4a3cae73426f221bec9c041110246231d93",
+    "status": "pass",
+    "feedback": {
+      "resident-lg4": {
+        "model_address": 858401,
+        "samples_ms": [
+          120.2522206042186,
+          120.49750556472632,
+          140.4535516275503,
+          120.24545412254945,
+          120.25447609810834,
+          120.49750556472632
+        ],
+        "median_ms": 120.37599083141734,
+        "max_ms": 140.4535516275503,
+        "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+      }
+    },
+    "boot_xex_sha256": "297bd1982b237c63f990e0f29b451f41be955903e6f62c62e451d2aee29974ce",
+    "historical_observer": "dc58e2c:tools/test_demo.py",
+    "historical_observer_sha256": "08ec6655d80ee918f4819b2e7f2197357827d83d03349323cb13cf5ccbc8094c",
+    "script_source": "import importlib.util,json,sys,zipfile\nfrom pathlib import Path\nsys.path.insert(0,str(Path('tools').resolve()))\nfrom native_program import sha256\nfrom desktop_mouse import schedule\nfrom loadable_gem_feedback import measure\nobserver=Path('build/loadable-gem/lg4_demo_observer.py').resolve()\nspec=importlib.util.spec_from_file_location('lg4_demo_observer',observer)\nmodule=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\nclass Baseline:\n def exercise(self,s):\n  symbols=json.loads((s.p['output']/'bitmap-console/c-image.json').read_text())['symbols']\n  panel=symbols['GEMPanel'];position=[320,120]\n  def move(x,y):\n   nonlocal position\n   position=schedule(s.b,s.p,position,(x,y));s.saved['pointer']=position\n   at=lambda n:next(d['address'] for d in s.p['image']['data'] if '_DESKINPUT_'+n.upper()+'_' in d['name'])\n   s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)'%(at('cursorX'),position[0],at('cursorY'),position[1]));s.frames(3)\n  def click(x,y):\n   move(x,y);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(35)\n   s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(60)\n  s.rendezvous('dw($%x)=1'%(panel+8));s.frames(270)\n  click(458,56);click(456,104);measure(s,panel,move,'resident-lg4')\n  self.feedback=s.saved['loaded_panel_feedback']\n  click(96,32);s.save_screen(s.p['output']/'boot-smoke.png')\n  for char in 'EXIT':s.press(char)\n  s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()\nout=Path('build/loadable-gem/lg4-demo').resolve()\nwith zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')\nbaseline=Baseline()\nr=module.run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=baseline,profile_commands=False)\nr.update(feedback=baseline.feedback,scope='Six physical presses on the frozen LG4 resident panel with Files/counter and shell idle; matching scanout and clean EXIT.',historical_observer_sha256=sha256(observer),feedback_observer_sha256=sha256(Path('tools/loadable_gem_feedback.py')))\nPath('build/loadable-gem/lg6-feedback-baseline.json').write_text(json.dumps(r,indent=2)+'\\n')\n",
+    "script_sha256": "a431982f7410b52dce767d0efae7866e589295cfb7eda59cc6aa578f37a20f8d"
+  },
+  "interpretation": [
+    "Resident median 120.38 ms versus loaded initial 110.27 ms and reloaded 110.27 ms. Six samples each with frame-granular scanout polling; no obvious added loading penalty, not a statistically established speedup.",
+    "Native-entry to first shell read is 6658 PAL frames (133.16 s); all three application-ready flags are observed at 6865 frames (137.3 s), before the separate settling delay. OF816 adds its five-second countdown.",
+    "Physical mouse positioning now waits for all scheduled packets before pressing; earlier drag failures were observer timing, not changes to target code."
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true
+  },
+  "upper_memory": {
+    "global_arena_bytes": 4608,
+    "global_arena_delta_from_plan_start": 512,
+    "dos_context_bytes": 106,
+    "context_delta_from_plan_start": 8,
+    "combined_app_backings_rounded_bytes": 396312,
+    "extra_reaper_tasks": 0,
+    "extra_polling_timers": 0,
+    "extra_completion_signals": 0,
+    "process_record_bytes_existing": 128,
+    "shared_component_read_chunk_limit": 4096,
+    "shared_component_separate_payload_staging_bytes": 0,
+    "max_initial_app_file_staging_bytes": 8630,
+    "max_initial_app_file_staging_rounded_bytes": 8632,
+    "app_file_staging_lifetime": "One complete file during PROGRAMFILE.Load; freed before Process startup. Reads are capped at 4096 bytes."
+  },
+  "current_abi_loading_boundary_record": "docs/development/loadable-gem-lg5.json",
+  "host_tests": {
+    "status": "pass",
+    "tests": 414,
+    "skipped": 4
+  },
+  "generators": [
+    "generate_c_program.py --check",
+    "generate_process.py --check",
+    "generate_exec_abi.py --check"
+  ],
+  "limits": [
+    "Development-tier checks only; no hardware/release qualification or closure of HY4/PI4.",
+    "The narrowest public-Task stack margin is 54 bytes above the 256-byte interrupt reserve. C routines lack per-routine stack checks; arbitrary application depth is not qualified.",
+    "One owned Process per loaded image, cooperative close, fixed Task/layer limits, no Atari ST/G4A binary compatibility.",
+    "Native and default-profile cartridge wrappers were built; the exact GUI OF816 old/new variants were cold-boot tested. The default profile was booted as its packaged OF816 XEX."
+  ],
+  "shared_component": {
+    "file": "GEMSYS.BIN",
+    "bytes": 149030,
+    "sha256": "01ee1a3f560054a3048aa9b7f1835a32f0f952b24048503aced134750b7ebbdb",
+    "identity": "19de3fc5582049ef6e2728c93f0e44fa",
+    "crc16": 19032,
+    "segments": [
+      [
+        786432,
+        65536
+      ],
+      [
+        917504,
+        42589
+      ],
+      [
+        983040,
+        37132
+      ],
+      [
+        851968,
+        3741
+      ]
+    ],
+    "zero_fill": [
+      {
+        "address": 855710,
+        "size": 12603,
+        "writable": true
+      }
+    ],
+    "linked_occupied_bytes": 161601
+  }
+}

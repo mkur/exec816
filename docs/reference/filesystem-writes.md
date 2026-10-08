@@ -123,7 +123,8 @@ allows two seconds for that mechanical operation, including motor startup,
 seek and verification. Cold-motor writes and the accurate-media binary COPY
 now pass focused development checks. Explicit smaller deadlines and uncertain
 completion/offline behavior remain unchanged; these checks do not replace
-release or physical-drive qualification.
+release or physical-drive qualification. Generic 57600 also permits two
+seconds for reads, retaining upstream's allowance for motor startup and seek.
 The current SDFS demo uses 720 KiB WORK media with 256-byte sectors; its buffered
 Write checks and emulator measurements are recorded in the
 [SpartaDOS buffering record](../history/spartados-write-buffering.md).

@@ -66,7 +66,7 @@ PUBLIC LONGINT FUNC Delay(LONGCARD ticks)
         clock.ticks_lo=low
         client.timer.io_Command=TIMER.TD_WAITUNTIL
         client.timer.io_Flags=0
-        error=DOSCANCEL.Transfer(client.timer,scope)
+        error=DOSCANCEL.Transfer(client.timer,scope,client)
       FI
     END
   FI

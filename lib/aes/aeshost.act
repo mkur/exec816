@@ -1,12 +1,15 @@
 ; Presenter-owned hooks. Failed optional AES setup leaves native GUI available.
 MODULE AESHOST
 USE EXEC
+USE DISPLAY
 USE EXECLISTS
 USE AESSTATE
 USE AESTYPES
 USE AESCORE
 USE HEAPCORE
 USE AESLOCKS
+USE AESMOUSE
+USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKDRAG
 USE CONSOLEBITMAP
@@ -94,18 +97,26 @@ RETURN(AESCORE.Idle(service))
 PUBLIC PROC Settle()
 
   LET service=AESSTATE.Get()
-  IF service=NULL OR service.live=0 OR service.lockCount=0 THEN
+  IF service=NULL OR service.live=0 THEN
+    RETURN
+  FI
+
+  AESWINDOWSTATE.Sync()
+  AESMOUSE.Refresh()
+  IF service.lockCount=0 AND service.windowPending=0 THEN
     RETURN
   FI
 
   LET desktop=DESKSTATE.Get()
-  IF desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0 THEN
+  IF desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
     ; Abandon gathered pixel reuse while retaining the model and I/O request.
     CONSOLEDISPLAY.DiscardBatch()
     DESKDRAG.Suspend()
   FI
 
+  AESCORE.Settle(service)
   AESLOCKS.Wake(service)
+  AESMOUSE.Refresh()
 
 RETURN
 

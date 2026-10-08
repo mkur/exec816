@@ -101,6 +101,7 @@ def run(out, program, unobserved=False, integrated=False, trace_calls=False):
                     reads=read('DESKTEST','reads')
                     b.poke16(sy['AESCommand'],command)
                     reach('dw($%x)=2'%sy['AESPhase'])
+                    held_from=clock()
                     print('Lock granted; timer armed',flush=True)
                     require(get(busy,1)==0,'Layers token survived lock grant')
                     frames(30)
@@ -121,6 +122,7 @@ def run(out, program, unobserved=False, integrated=False, trace_calls=False):
                     b.poke16(at('DESKTEST','mode'),2)
                     reach('dw($%x)=2'%at('DESKTEST','runningMode'))
                     writes=read('DESKTEST','writes');frames(12)
+                    write_from=clock()
                     begin=clock();frames(20);finish=clock()
                     require(c('AESPhase')==2,'Lock hold too short for observation')
                     require(scan((left+8,top+24,left+176,top+136))==panel_before,'Panel pixels changed under mouse lock')
@@ -133,6 +135,10 @@ def run(out, program, unobserved=False, integrated=False, trace_calls=False):
                         # A clipped 512-byte write can exceed this short pixel
                         # observation window; require completion before unlock.
                         reach('(dw($%x)>%d)|(dw($%x)=3)'%(at('DESKTEST','writes'),writes,sy['AESPhase']))
+                        from sio_transaction_trace import BASE_HZ
+                        report['mouse_hold_progress']=dict(writes_before=writes,writes_after=read('DESKTEST','writes'),
+                            phase=c('AESPhase'),hold_elapsed_ms=((clock()-held_from)&0xffffffff)/BASE_HZ*1000,
+                            write_elapsed_ms=((clock()-write_from)&0xffffffff)/BASE_HZ*1000)
                         require(read('DESKTEST','writes')>writes and c('AESPhase')==2,
                             'Explicit mouse hold blocked console paint')
                     print('Frozen pixels/independent work checked',flush=True)

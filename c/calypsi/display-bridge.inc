@@ -71,6 +71,34 @@ LONGCARD FUNC CBlitterMask(LONGCARD value)
 
 RETURN(BLITTER.Mask(DISPLAY.Lease POINTER(ADDRESS(value))))
 
+CARD FUNC CDisplayDelegate(LONGCARD value)
+
+RETURN(DISPLAY.Delegate(DISPLAY.Grant POINTER(ADDRESS(value))))
+
+CARD FUNC CDisplayRevoke(LONGCARD value)
+
+RETURN(DISPLAY.Revoke(DISPLAY.Grant POINTER(ADDRESS(value))))
+
+CARD FUNC CDisplayGrantClose(LONGCARD value)
+
+RETURN(DISPLAY.GrantClose(DISPLAY.Grant POINTER(ADDRESS(value))))
+
+CARD FUNC CDisplayEnter(LONGCARD value)
+
+RETURN(DISPLAY.Enter(DISPLAY.Grant POINTER(ADDRESS(value))))
+
+CARD FUNC CDisplayLeave(LONGCARD value)
+
+RETURN(DISPLAY.Leave(DISPLAY.Grant POINTER(ADDRESS(value))))
+
+CARD FUNC CDisplayOwnerEnd(LONGCARD unused CARD dma)
+
+RETURN(DISPLAY.OwnerEnd(dma))
+
+CARD FUNC CDisplayAccessFault(LONGCARD unused CARD unquiesced)
+
+RETURN(DISPLAY.AccessFault(unquiesced))
+
 ; The table is private upper data in the checked C image, never a ROM vector.
 PROC BindDisplay()
 
@@ -90,5 +118,16 @@ PROC BindDisplay()
   entries(12)=ADDRESS(@BLITTERADAPTER.Arm)
   entries(13)=ADDRESS(@BLITTERADAPTER.State)
   entries(14)=ADDRESS(@BLITTERADAPTER.Reset)
+  entries(15)=ADDRESS(@CDisplayDelegate)
+  entries(16)=ADDRESS(@CDisplayRevoke)
+  entries(17)=ADDRESS(@CDisplayGrantClose)
+  entries(18)=ADDRESS(@CDisplayEnter)
+  entries(19)=ADDRESS(@CDisplayLeave)
+  entries(20)=ADDRESS(@DISPLAY.OwnerEnter)
+  entries(21)=ADDRESS(@CDisplayOwnerEnd)
+  entries(22)=ADDRESS(@DISPLAY.OwnerWake)
+  entries(23)=ADDRESS(@CDisplayAccessFault)
+  entries(24)=ADDRESS(@DISPLAY.Delegated)
+
 
 RETURN

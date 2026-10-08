@@ -4,8 +4,9 @@
 
 `DISPLAY` is an ordinary native library, shared by the console and the VBXE
 adapter. It allocates no kernel selector. This follows Exec resource ownership:
-one retained Task has exclusive access until it has stopped hardware and restored
-presentation. Display acquisition never waits for another owner.
+one retained Task owns display lifetime until it has stopped hardware and restored
+presentation. That owner can delegate serialized drawing units to other Tasks.
+Physical display acquisition never waits for another lifetime owner.
 
 The caller supplies a zeroed, address-stable 20-byte `DISPLAY.Lease` in writable
 upper RAM. Keep it alive until release. Its address, generation and retained Task
@@ -24,8 +25,8 @@ BAD_ARGUMENT. Caller memory validity is a shared-address-space obligation.
 The text console holds a TEXT lease from before its first display mutation until
 input production and presentation have stopped and its snapshot is restored.
 The optional [bitmap console](console.md) instead holds a VBXE lease through
-its shared drawing library; its existing worker owns every hardware call and
-fence. These are mutually exclusive startup selections. The 80×30 bitmap preview
+its shared drawing library; its existing worker owns lifetime and asynchronous
+DMA retirement. These are mutually exclusive startup selections. The 80×30 bitmap preview
 does not promise atomic scanout or the design's unachieved responsiveness targets.
 
 Starting the text console while another Task owns graphics returns
@@ -36,8 +37,8 @@ provides a signal-based retirement acknowledgment without polling Task records;
 it refuses live endpoints. Reopen by calling `CONSOLEDRIVER.Start()` after graphics
 release. A lease is never stolen from a live worker.
 
-The checked C bridge exposes the same library through ordinary native calls.
-It validates huge pointers before narrowing and aligns the native call frame
+The C bridge exposes the same library through ordinary native calls.
+The lease bridge validates huge pointers before narrowing and aligns the native call frame
 without changing the caller's D. `VbxeOpen`, `VbxeFence`, VRAM transfer, blit and
 presentation operations, and `VbxeClose` belong to the AltirraOS adapter. They
 check the lease and fence before reading/reusing VRAM or releasing ownership.
@@ -84,6 +85,61 @@ disable XDL and mappings, restore changed OS state, and release the lease with
 DEVICE_FAULT. If idle cannot be established, keep FAULTED ownership and storage
 and enter the platform's interrupt-disabled reset-required park (`$FF93`). This
 does not acknowledge normal completion or return hardware/storage to the OS.
+
+## Delegated renderer access
+
+The lifetime owner installs its allocated wake mask with `OwnerWake(mask)`.
+`Delegate(grant)` admits a zeroed, address-stable 32-byte upper-memory grant:
+the borrower supplies its Task and an allocated nonzero signal mask. Admission
+retains that Task and records the current display generation. At most eight
+grants exist; exhaustion returns NO_MEMORY. This uses ordinary Exec signals and
+Task leases, with no kernel selector or additional Task.
+
+The borrower calls `Enter(grant)` before using the shared renderer and
+`Leave(grant)` after its final fence. Enter waits in a bounded FIFO behind the
+current unit; borrower access is not recursive. Ownership is published before signaling; the caller rechecks its
+state around Wait. A signal is a hint, and a coalesced or early signal cannot
+lose admission. IRQ/NMI code does not inspect the access queue. Short Forbid
+sections protect Task-side state; rendering and device fences execute outside
+them with normal preemption and interrupts.
+When no grants exist, owner entry/exit need no queue guard: only the lifetime
+owner can publish a new grant. Correct grant pointers are an admission/caller
+obligation rather than a repeated bridge validation on each drawing unit.
+
+The owner uses nonblocking `OwnerEnter()`, which returns BUSY and reserves one
+queue position when a borrower owns access. Nested owner calls share the current
+reservation. `OwnerEnd(dma)` retires one nesting level and records whether DMA
+still pins access. The native `OwnerDrop()` retires a surrounding presenter turn
+without changing that DMA pin. Correct matching calls and live grant storage are
+caller obligations. The presenter holds one bounded service turn, drops it before
+Yield/Wait, and continues message/input service when admission fails. Queued
+borrowers precede a subsequent owner turn. An asynchronous native operation keeps
+physical access until the presenter polls and retires its hardware completion.
+
+Every shared GEM drawing entry, including pointer, caret, outline, staging and
+snapshot work, uses this arbiter. The adapter's trusted `GemDrawingBorrow` helper
+runs one synchronous callback over an admitted rectangle of at most sixteen rows,
+restores intersecting overlays, fences and releases. It is an internal renderer
+callback, not an application callback API. A borrower must not issue AES RPC,
+wait for an event or retain caller buffers within the unit. The [application VDI layer](gem-vdi.md#resident-application-workstations)
+uses this helper with private workstation state and the published visible work
+region. The helper grants no permission to draw arbitrary desktop pixels.
+
+`Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
+its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.
+The borrower acknowledges with `GrantClose`, which releases the retained Task.
+Collection signals the owner's wake mask so a refused teardown can retry.
+Voluntary close of an idle grant follows the same collection path. Owner release
+and physical close refuse all live grants, including revoked ones not yet
+collected. Storage and its signal remain live until collection succeeds.
+
+A quiescent hardware timeout closes borrower admission, revokes idle/queued
+grants and wakes their Tasks. An active borrower retains access until its final
+return/release. The owner remains eligible for admission to finish cleanup after
+all grants are collected; hardware restoration never runs as the borrowing Task.
+With no grants the original immediate owner recovery applies. An unquiesced
+timeout retains ownership and grants and enters reset-required park. No normal
+completion, collection or restoration is claimed in that state.
 
 ## Software pointer
 

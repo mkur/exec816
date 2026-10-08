@@ -198,8 +198,10 @@ Route changes, source reacquisition and holding the button during shutdown must
 not rearm a stale gesture. Recheck the relevant sample-gap and SIO cases if DT3
 changes IRQ code or timer policy; document any changed envelope explicitly.
 
-The current protocol has no acceleration. Sensitivity/acceleration is a later
-Task-context policy decision; it must not hide missing electrical transitions.
+The DT3 baseline had no acceleration. The later
+[mouse acceleration slices](mouse-acceleration-implementation-plan.md) add
+Task-context sensitivity policy over timed relative capture, preserving
+electrical-transition and loss checks.
 Amiga mouse support, right-button support and hardware qualification are separate
 work. Additions to the pointer protocol require their own admission and tests.
 

@@ -1,0 +1,57 @@
+MODULE MENUINSTANCES
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROCESS
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD ready,mode,checks
+LONGCARD one,two
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc70+checks)
+  FI
+  checks==+1
+
+RETURN
+
+LONGCARD FUNC Launch()
+
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:C/FILES.APP"))
+  Require(image<>NULL)
+  LET identity=PROCESS.StartLoaded(BYTE POINTER(image),NULL,0,0)
+  PROGRAM.Unload(image)
+  Require(identity<>0)
+
+RETURN(identity)
+
+PROC Main()
+  PROCESS.Result result
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  one=Launch()
+  two=Launch()
+  ready=1
+  WHILE mode<>9 DO
+    EXEC.Yield()
+  OD
+  Require(PROCESS.Wait(two,@result)<>0 AND result.primary=0)
+  Require(PROCESS.Wait(one,@result)<>0 AND result.primary=0)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE

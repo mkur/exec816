@@ -1,0 +1,164 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "AM4",
+  "baseline": "105f30d",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "checks": {
+    "menus": {
+      "status": "pass",
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "menu_pixels": [
+        {
+          "phase": 1,
+          "pixels": 10240
+        },
+        {
+          "phase": 2,
+          "pixels": 13824
+        },
+        {
+          "phase": 3,
+          "pixels": 13824
+        },
+        {
+          "phase": 4,
+          "pixels": 10240
+        },
+        {
+          "phase": 5,
+          "pixels": 10240
+        },
+        {
+          "phase": 6,
+          "pixels": 17920
+        },
+        {
+          "phase": 7,
+          "pixels": 10240
+        }
+      ],
+      "physical_menus": {
+        "pointer": true,
+        "keyboard": true,
+        "commands": [
+          5,
+          2
+        ],
+        "identical_titles": true,
+        "disabled": true,
+        "held_replacement": true,
+        "held_disable": true,
+        "cancel": true,
+        "heading_switch": true,
+        "hidden": true,
+        "multiple_titles": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 573,
+          "remaining_above_floor": 707
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 253,
+          "remaining_above_floor": 515
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 150,
+          "remaining_above_floor": 618
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 463,
+          "remaining_above_floor": 305
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 837,
+          "remaining_above_floor": 1467
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "report_sha256": "1062c9edbe17e6c4473cbb0d063efff6399fe8e1aacfb6d4d0c5438687ce08c8"
+    },
+    "context-raw": {
+      "status": "pass",
+      "client_checks": [
+        1049,
+        1049
+      ],
+      "report_sha256": "6ec8c6264ce821777df90c718686a9dbd31dec07d383bc9fdfd4c54c34099171"
+    },
+    "context-opt": {
+      "status": "pass",
+      "client_checks": [
+        1049,
+        1049
+      ],
+      "report_sha256": "2fc851290a66f3badc9cebfb16e7c5fef4d2a3dbfc9e5c2e339c09e1e58a7b6b"
+    }
+  },
+  "host": {
+    "tests": 417,
+    "skips": 4
+  },
+  "c_import_abi": 5,
+  "upper_pending_choice_bytes": 18,
+  "notes": [
+    "Raw/optimized public local-helper and identity rejection probes; optimized public AESPB registration and pointer packing.",
+    "Physical right-arrow title navigation wraps; the pinned bridge does not name the Atari plus/left-arrow key.",
+    "Production link roots contain no fixture selection injection."
+  ]
+}

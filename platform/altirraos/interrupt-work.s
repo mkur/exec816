@@ -369,6 +369,20 @@ native_intercept_candidate:
     jcs native_intercept_leave
     brl native_intercept_frame
 native_intercept_near:
+    ; IRQ/NMI restore can surround a private Task adapter entry which still
+    ; owns SWITCHING (for example sio_start). Its valid stack/DP and I=0 do
+    ; not authorize a scheduling trampoline. Only the COP's own classified
+    ; restore may finish its transition with that guard still held.
+    lda f:E816_SWITCHING
+    and #$ff
+    beq native_intercept_unlocked
+    lda f:T_FRAME_PC,x
+    cmp #restore_commit
+    jcc native_intercept_leave
+    cmp #restore_end
+    jcs native_intercept_leave
+    bra native_intercept_cop
+native_intercept_unlocked:
     lda f:T_FRAME_PC,x
     cmp #interrupt_quiet_tail
     bcc :+

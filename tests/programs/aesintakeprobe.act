@@ -1,11 +1,38 @@
 ; Fixture-only observation and a deliberate arrival after the final empty check.
 MODULE AESINTAKEPROBE
 USE EXEC
+USE INPUT
+USE AESINPUT
+USE HEAPCORE
 
 PUBLIC EXEC.Task POINTER parent
 PUBLIC LONGCARD mask
 PUBLIC BYTE arm,enabled,count,turn,completed,maximum,perTurn,lateCount
-PUBLIC BYTE ARRAY ports(64),turns(64)
+PUBLIC BYTE injected,consumed,deferred
+PUBLIC BYTE ARRAY ports(128),turns(128)
+INPUT.Event sample
+
+; A copied sample reaches the real presenter input path without a new edge.
+PUBLIC PROC Inject()
+
+  IF injected<>consumed THEN
+    HEAPCORE.Abort($fcbf)
+  FI
+
+  sample.kind=INPUT.EVENT_POINTER
+  sample.x=1
+  sample.y=1
+  sample.buttons=0
+  AESINPUT.Push(@sample)
+  injected==+1
+
+RETURN
+
+PUBLIC PROC ObserveInput()
+
+  consumed==+1
+
+RETURN
 
 PUBLIC PROC StartTurn()
 
@@ -19,8 +46,9 @@ RETURN
 PUBLIC PROC Admission(BYTE port BYTE admitted)
 
   IF enabled<>0 AND admitted<>0 THEN
+    Inject()
     perTurn==+admitted
-    IF count<64 THEN
+    IF count<128 THEN
       ports(count)=port
       turns(count)=turn
       count==+1
@@ -32,6 +60,10 @@ RETURN
 PUBLIC PROC FinishTurn()
 
   IF enabled<>0 THEN
+    IF injected<>consumed THEN
+      HEAPCORE.Abort($fcbe)
+    FI
+
     completed=turn
     IF perTurn>maximum THEN
       maximum=perTurn

@@ -40,6 +40,30 @@ function addresses are not automatically admitted as Task entries.
 
 ## Supported interface
 
+For an independently loadable GEM application, provide ordinary `int main(void)`
+and use the existing GEM/Exec headers. Build its translation units together:
+
+```sh
+python3 tools/build_c_program.py --source examples/gem-panel/main.c \
+  --source examples/gem-panel/panel.c --output build/panel-app
+python3 tools/build_demo.py --gem-desktop --output build/gem-desktop
+```
+
+The first command produces `program.app` and a development manifest; rename the
+APP to `PANEL.APP` when placing it on a system disk. The desktop builder packages
+the panel, counter, Files and calculator applications and their resources
+automatically. The shared GUI stays in the compressed boot image. Close the initial Files window, then use
+`RUN C:FILES.APP` to load another instance. Files itself can launch native commands
+and APPs, with one owned child at a time.
+
+The shared wrapper registers AES before `main` and completes AES/resource cleanup
+on return. Handle `WM_CLOSED`, collect owned children, and return from `main`;
+do not force-remove the Task or call `ExecDOSDetach` from a loaded application.
+Imports bind once at loading, so normal AES/VDI calls retain caller-local execution.
+The [C image contract](../reference/c-program-loading.md) defines relocation,
+ownership, stack limits and the supported subset. Rebuild APPs after import ABI
+changes. This does not load existing Atari ST binaries or arbitrary XEX files.
+
 Include `<exec/types.h>`, `<exec/tasks.h>`, `<exec/ports.h>`, `<exec/memory.h>`
 as needed, and `<proto/exec.h>` for the function declarations.
 
@@ -53,7 +77,8 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
-| DOS output (`<proto/dos.h>`) | `Output`, `Write` |
+| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `IoErr`, `ExecDOSDetach` |
+| Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
 The standard launcher binds both DOS and caller-context device I/O. Include
@@ -123,8 +148,8 @@ scheduling and message policy remains in the existing kernel. Caller-context
 helpers handle memory clearing and port allocation, as the Action! binding does.
 No Action! function is called using a C argument convention.
 
-The DOS binding uses a separate, ordinary-call bridge. The launcher installs two
-native entry addresses in six bytes of upper-bank storage, selects its open
+The DOS binding uses a separate, ordinary-call bridge. The launcher installs sixteen
+native entry addresses in 48 bytes of upper-bank storage, selects its open
 console as standard output, and restores the previous selection after C returns.
 `Output()` looks up the calling Task's current selection; the binding does not
 cache a global console handle. Treat `BPTR` as an opaque 32-bit handle: Exec816
@@ -182,8 +207,8 @@ The Calypsi linker selects referenced shim/runtime routines for this executable.
 
 ## Current limits and development checks
 
-This binding does not provide C disk commands/o65, DOS calls beyond
-`Output`/`Write`, `stdio`, `malloc`, arbitrary CRT initialization or
+This binding does not provide C disk commands/o65, the full DOS API,
+`stdio`, `malloc`, arbitrary CRT initialization or
 general Action!/C callbacks.
 Initialized globals and BSS are handled by the hosted loader. Pure compiler
 arithmetic helpers can be linked; a general-purpose C library port is separate.
@@ -250,3 +275,35 @@ library bridge and `<hardware/vbxe.h>` for the pinned G3 adapter. Its launcher
 must bind the entry table and establish the cold-boot graphics baseline. The
 standard C message example and text demo do not enable graphics. The selected
 GEM renderer is integrated by the [G4 service backend](../../ports/gem4xe/adapter/README.md).
+
+
+A [small emitted-code reproducer](../../tests/programs/calypsi_array_copy.c)
+records a Calypsi 5.18 local-array indexing defect in both `-O0` and `-O2`:
+`box[2]=box[0]+127` reads the old destination slot in the generated code.
+The [AI6 record](../history/aes-application-input.md#ai6--ordinary-interactive-gem-application)
+has actual results and the diagnostic runner. The interactive example computes
+each endpoint directly from its origin. This remains an external compiler issue;
+the limited C binding checks do not qualify all C expressions.
+
+
+## Desktop file and launcher calls
+
+The GEM desktop adds ordinary file/directory bindings over the same native call
+bridge. DateStamp and FileInfoBlock come from the machine-readable DOS ABI;
+Calypsi layout probes check their 12/260-byte sizes and every field offset.
+Read accepts upper-RAM buffers and native stack buffers on MyDOS and SDFS.
+Each caller retains its handles and locks until Close/UnLock. After retiring
+all DOS resources, call ExecDOSDetach before removing a raw Task.
+
+ExecStartProgram loads a native disk command or a supported C application with an empty
+argument tail, NIL input and RAW shell output. It returns a parent-owned Process
+identity, or zero on failure with IoErr. ExecCollectProgram returns zero while
+pending and nonzero after copying primary/secondary results and collecting it.
+ExecBreakProgram requests native BREAK or a GEM window close;
+ExecWaitProgram waits and collects.
+The owner must collect before retiring. These are Exec816 extensions built from
+the existing Program/Process calls, without new kernel operations.
+See the [C loading contract](../reference/c-program-loading.md) for the build
+command, ordinary `int main(void)` entry, argument access and Process-owned
+AES/DOS cleanup. The [Files example](../../examples/gem-browser/browser.c)
+shows the bounded event-loop and shutdown use.

@@ -19,6 +19,18 @@ BITMAP_FILES = ('Exec-bitmap-console.xex', 'system.atr', 'README.txt',
                 'GEM-COPYING.txt', 'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md',
                 'GEM-FONT-NOTICE.txt')
 GEM_NOTICES = BITMAP_FILES[3:]
+CALCULATOR_NOTICES = ('CALCULATOR-COPYING.txt','CALCULATOR-COPYING.LIB.txt',
+                      'CALCULATOR-LICENSING.md','CALCULATOR-PROVENANCE.txt')
+
+
+def pointer_description(profile):
+    return {
+        'mild': 'The pointer uses mild acceleration: slow movement gives one screen pixel\n'
+                'per ST step, and fast movement reaches up to four. The same curve applies\n'
+                'while dragging. Moving back from an edge responds immediately.',
+        'off': 'The pointer moves two screen pixels per ST mouse step, with fixed sensitivity\n'
+               'and no acceleration. Moving back from an edge responds immediately.',
+    }[profile]
 
 
 def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text_shell=None):
@@ -72,12 +84,18 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError('Expected a shell-only bitmap build')
         if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
             raise ValueError('OF816 does not wrap this bitmap shell')
-        for name in GEM_NOTICES:
+        for name in GEM_NOTICES + (CALCULATOR_NOTICES if demo.get('gem_desktop') else ()):
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
             files[name] = content
-        guide = (ROOT/('docs/desktop-distribution.txt' if demo.get('desktop') else 'docs/bitmap-shell-distribution.txt')).read_text()
+        guide = (ROOT/('docs/gem-desktop-distribution.txt' if demo.get('gem_desktop') else
+                       'docs/aes-input-distribution.txt' if demo.get('aes_input') else
+                       'docs/aes-counter-distribution.txt' if demo.get('aes_counters') else
+                       'docs/desktop-distribution.txt' if demo.get('desktop') else
+                       'docs/bitmap-shell-distribution.txt')).read_text()
+        if demo.get('desktop'):
+            guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     guide = guide.replace('@SYSTEM_DISK@', media['name'])
     guide = guide.replace('@SYSTEM_DRIVE@', str(record['boot_config']['system_drive']))
     if graphics is not None:

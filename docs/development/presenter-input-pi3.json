@@ -1,0 +1,3060 @@
+{
+  "slice": "PI3",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "hy4_closed": false,
+  "performance_acceptance": "Open: much shorter loaded text steps and scrolling feedback; idle button pixels unchanged, disk combined feedback slower, and full repairs cost more. The steady CPU-gap target is still exceeded by atomic UPDATE_WIDGETS.",
+  "baseline": "391cdc3",
+  "interrupt_prerequisite_commit": "93bc2fd",
+  "scope": "PI3 console, frame/title, exposure and retained-text continuations. PI4, shorter scene-token lifetimes and atomic model continuations remain pending. Production baseline comparison includes the separately regressed guarded interrupt-return fix.",
+  "policy": {
+    "bitmap_logical_glyphs_per_dirty_segment": 32,
+    "full_height_glyphs_per_text_step": 32,
+    "vertically_clipped_glyphs_per_text_step": 16,
+    "visible_fragments_per_private_step": 1,
+    "commands_examined_per_retained_step": 4,
+    "maximum_paint_steps_per_turn": 4,
+    "text_mode_rows_and_cells": [
+      4,
+      160
+    ],
+    "blitter_record_limit": 64,
+    "blitter_work_limit": 8192,
+    "scene_token": "Retained through the complete repaint or ordinary row-segment fragment sequence; no source or view pointer survives a worker borrow. Public draws synchronously drain the same traversal.",
+    "completion": "A held short write finishes its active fragment sequence before reply. Dirty endpoints acknowledge complete segments only; further visible edits wait for prior repair. Cancellation/fault preserve accepted bytes.",
+    "mouse_sampling": "Unchanged approximately 4 kHz ST capture; no new Task, timer, priority, Yield boundary or repeated geometry validation."
+  },
+  "matched": {
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_binary_sha256": "2e74c48d8ad6e0cfe4546d38bfd2c56ff1191465bc0e15bb2e4b3fd5868a2034",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "compiler_override": false,
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "foreign_elf_identical": true,
+    "foreign_elf_sha256": "9ab0678a3c8893a7aae7434772ff7343129a789d4d90a37d71f1f8fbcc6dad65",
+    "memory_profile_identical": true,
+    "image_bank_reservation_identical": false,
+    "memory_profile_sha256": "789519eb8a838f5301b14ae751ace482c50b17ba08aec785a3ad1fd857eb6c06",
+    "images": {
+      "before": {
+        "xex_sha256": "c0eee62b4011182c0a35b0ea6e24c83e6a3f7556a44a04ef477ccd441b63ab9f",
+        "build": {
+          "path": "build/presenter-input/pi2/candidate/program/build.json",
+          "sha256": "921c63ac2e1b541eaa696927ead7f7e34598569ec9044b60b0803dfe05ebe3cd"
+        },
+        "image": {
+          "path": "build/presenter-input/pi2/candidate/program/program.a816.json",
+          "sha256": "2498cb9a3c15926ce1a04f22e8c9fb631c5e21c1ba0a4e77cd4e922826a087a8"
+        },
+        "trace_sha256": "c6e42722dec26eda6a6e5946d41d0899195fea7271e0478796fd4e7f9cb9513c",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        },
+        "ownership": "restored"
+      },
+      "after": {
+        "xex_sha256": "0895449b3727974c0add216bda2d0d8a8355eeb82b3eb41b0f752138ef53d702",
+        "build": {
+          "path": "build/presenter-input/pi3/verified-candidate/program/build.json",
+          "sha256": "6ec8fb87810a0631f827de0a581dda2e56b797e83e950a14a7755858747d90a5"
+        },
+        "image": {
+          "path": "build/presenter-input/pi3/verified-candidate/program/program.a816.json",
+          "sha256": "a01475f807b50ed9399264f07fadab5d02dc26d8d982ae62d13bf06bbe0cfd6e"
+        },
+        "trace_sha256": "e1ca7a70fddd51c01dbda6142e7cf1201c153c458b882392f5af0066d29e9486",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        },
+        "ownership": "restored"
+      }
+    }
+  },
+  "original_cohorts": {
+    "gestures_per_load": 10,
+    "edges_per_load": 20,
+    "aes_workload": "Unchanged continuous request/reply loop with a 100 ms caller timer after each exchange; completed counts are measured over each gesture cohort, not fixed offered throughput.",
+    "observer_scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+    "idle": {
+      "before": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 5.739315654960183,
+            "p95_ms": 20.387550237602184,
+            "max_ms": 23.42767406421673
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 16.78538552734152,
+            "p95_ms": 28.978937916121,
+            "max_ms": 31.46223668870942
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 118.91555853781969,
+            "p95_ms": 139.12379701118866,
+            "max_ms": 139.12407894792486
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 198.9944726302865,
+            "p95_ms": 279.5796041326287,
+            "max_ms": 279.5796041326287
+          }
+        },
+        "maximum_cpu_ms": {
+          "pump": 17.095163516258587,
+          "paint": 16.36931738887111,
+          "deskhost_controls": 28.969493035457774,
+          "commit": 8.049646239880232,
+          "deskinput_service": 7.600591503272581,
+          "deskinput_advance": 8.712479506723486,
+          "deskhost_cache": 6.6677333273186825,
+          "consolebitmap_run": 4.651180821535456,
+          "deskcore_pump": 23.683954557436856,
+          "deskcore_dispatch": 22.280191547818582,
+          "deskhost_inputboundary": 4.508732285562442,
+          "deskwidgetinput_advance": 8.623951371551737,
+          "deskpaint_paintstrip": 16.56371276849188
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 65.32093563525281,
+          "charged_cpu_ms": 29.939496376408098,
+          "interrupt_ms": 6.057199325043453,
+          "off_cpu_ms": 29.324239933801252
+        },
+        "gap_exclusive_cpu_ms": {
+          "model_call": 16.64681362149147,
+          "deskcore_dispatch": 5.633377926327111,
+          "other_worker": 2.6291305493960206,
+          "deskcore_pump": 1.4037630096182716,
+          "consolebitmap_run": 1.177508778805124,
+          "DisplayCheck": 0.6804543128567381,
+          "consoledriver_collect": 0.5947455450471469,
+          "deskinput_service": 0.3675750198412978,
+          "VbxeOwnerSubmit": 0.23957574159934253,
+          "deskinput_present": 0.18036902699403282,
+          "VbxeOwnerFence": 0.12870412008249468,
+          "deskhost_controls": 0.10495095005631686,
+          "consolebitmap_cursor": 0.041444700223716796,
+          "deskhost_events": 0.03164739864021912,
+          "consoledriver_arrival": 0.02452849605077117,
+          "deskhost_inputboundary": 0.016845719988891693,
+          "deskhost_nativeadmission": 0.013251026602140746,
+          "deskcache_pump": 0.010361175055929199,
+          "deskmove_pump": 0.005850187276477031,
+          "consoledisplay_poll": 0.0048634086997218695,
+          "deskhost_afterpaint": 0.0037356617548588273
+        },
+        "work": {
+          "paint_quanta": 134,
+          "paint_cpu_ms": 944.2284730729272,
+          "max_quantum_cpu_ms": 16.36931738887111,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 427,
+            "VbxeOwnerSubmit": 427,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 0,
+          "reads": 0
+        },
+        "aes_progress": {
+          "AESMessages": 88,
+          "AESTimers": 44
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 253,
+            "mean": 3.0513833992094863,
+            "median": 4,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 60,
+              "3": 60,
+              "4": 133
+            }
+          },
+          "widget_drawing": {
+            "lists": 174,
+            "mean": 9.82183908045977,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 81,
+              "9": 4,
+              "10": 4,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 3934,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 100,
+            "2": 67
+          },
+          "consecutive_steps_with_input": 67
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 1008,
+            "total_cpu_ms": 54.388415783382364,
+            "max_cpu_ms": 1.7984744403203365
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 427,
+            "total_cpu_ms": 216.89033647739782,
+            "max_cpu_ms": 2.9571639419830587
+          },
+          "consolebitmap_cursor": {
+            "calls": 238,
+            "total_cpu_ms": 566.4823035359095,
+            "max_cpu_ms": 4.692625521759172
+          },
+          "consolebitmap_run": {
+            "calls": 278,
+            "total_cpu_ms": 659.7366147010273,
+            "max_cpu_ms": 4.651180821535456
+          },
+          "consoledisplay_poll": {
+            "calls": 168,
+            "total_cpu_ms": 37.710730089275266,
+            "max_cpu_ms": 2.7416937913301638
+          },
+          "deskpaint_paintstrip": {
+            "calls": 134,
+            "total_cpu_ms": 992.4053291681879,
+            "max_cpu_ms": 16.56371276849188
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 10,
+            "maximum_cpu_ms": 1.9958301556713691
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 23.683954557436856
+          }
+        }
+      },
+      "after": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 7.002039812286521,
+            "p95_ms": 23.17421293835876,
+            "max_ms": 26.459621725481018
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 20.956991960573966,
+            "p95_ms": 34.13161370720024,
+            "max_ms": 46.49658363159891
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 118.91499466434726,
+            "p95_ms": 139.12407894792486,
+            "max_ms": 139.12457233721327
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 199.2423655056042,
+            "p95_ms": 279.3264249435069,
+            "max_ms": 279.5784763856838
+          }
+        },
+        "maximum_cpu_ms": {
+          "pump": 16.998952605024957,
+          "paint": 15.753426588607782,
+          "deskhost_controls": 28.633072024968317,
+          "commit": 8.057329015942113,
+          "deskinput_service": 7.7008200129972835,
+          "deskinput_advance": 8.723193102699684,
+          "deskhost_cache": 7.37053112652052,
+          "consolebitmap_run": 5.020306493425941,
+          "deskcore_pump": 23.653998779213932,
+          "deskcore_dispatch": 22.250799643068092,
+          "deskhost_inputboundary": 4.245967247409354,
+          "deskwidgetinput_advance": 8.630717853220915,
+          "deskpaint_paintstrip": 15.95176908253557
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 66.60290197482587,
+          "charged_cpu_ms": 29.909963503289497,
+          "interrupt_ms": 6.095895142089066,
+          "off_cpu_ms": 30.597043329447303
+        },
+        "gap_exclusive_cpu_ms": {
+          "model_call": 17.672147046924145,
+          "deskcore_dispatch": 4.578652596143951,
+          "other_worker": 2.628284739187374,
+          "deskcore_pump": 1.40319913614584,
+          "consolebitmap_run": 1.17743829462107,
+          "DisplayCheck": 0.6803133444886302,
+          "consoledriver_collect": 0.5950979659674166,
+          "deskinput_service": 0.3679274407615675,
+          "VbxeOwnerSubmit": 0.23922332067907282,
+          "deskinput_present": 0.18065096373024858,
+          "VbxeOwnerFence": 0.1292679935549262,
+          "deskhost_controls": 0.11108307406900965,
+          "consolebitmap_cursor": 0.041162763487501045,
+          "deskhost_events": 0.03157691445616518,
+          "consoledriver_arrival": 0.024458011866717227,
+          "deskhost_inputboundary": 0.017198140909161393,
+          "deskhost_nativeadmission": 0.013251026602140746,
+          "deskmove_pump": 0.006061639828638852,
+          "consoledisplay_poll": 0.0048634086997218695,
+          "deskcache_pump": 0.004370019411344289,
+          "deskhost_afterpaint": 0.0037356617548588273
+        },
+        "work": {
+          "paint_quanta": 134,
+          "paint_cpu_ms": 946.4737467559654,
+          "max_quantum_cpu_ms": 15.753426588607782,
+          "primitive_entries": {
+            "GemWidgetFill": 505,
+            "GemWidgetText": 67,
+            "start": 431,
+            "VbxeOwnerSubmit": 431,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47650,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 0,
+          "reads": 0
+        },
+        "aes_progress": {
+          "AESMessages": 88,
+          "AESTimers": 44
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 257,
+            "mean": 3.066147859922179,
+            "median": 4,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 60,
+              "3": 60,
+              "4": 137
+            }
+          },
+          "widget_drawing": {
+            "lists": 174,
+            "mean": 9.82183908045977,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 81,
+              "9": 4,
+              "10": 4,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 3934,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 98,
+            "2": 67
+          },
+          "consecutive_steps_with_input": 67
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 1016,
+            "total_cpu_ms": 57.23907812325992,
+            "max_cpu_ms": 1.1815263772961984
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 431,
+            "total_cpu_ms": 222.23550457512837,
+            "max_cpu_ms": 3.122449353589548
+          },
+          "consolebitmap_cursor": {
+            "calls": 242,
+            "total_cpu_ms": 578.3579722546058,
+            "max_cpu_ms": 4.73928605160288
+          },
+          "consolebitmap_run": {
+            "calls": 282,
+            "total_cpu_ms": 670.938736556904,
+            "max_cpu_ms": 5.020306493425941
+          },
+          "consoledisplay_poll": {
+            "calls": 166,
+            "total_cpu_ms": 36.59827821235193,
+            "max_cpu_ms": 2.7365484458942255
+          },
+          "deskpaint_paintstrip": {
+            "calls": 134,
+            "total_cpu_ms": 995.9783839104343,
+            "max_cpu_ms": 15.95176908253557
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 10,
+            "maximum_cpu_ms": 1.6213476857927849
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 23.653998779213932
+          }
+        }
+      }
+    },
+    "scroll": {
+      "before": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 27.9735515147756,
+            "p95_ms": 54.49935788908327,
+            "max_ms": 66.8746185043538
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 46.479808395794066,
+            "p95_ms": 78.81943220760694,
+            "max_ms": 79.49410681737125
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 138.87301428432474,
+            "p95_ms": 179.03581865265252,
+            "max_ms": 179.03814463072632
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 179.29075994637563,
+            "p95_ms": 259.3698150072105,
+            "max_ms": 279.3264249435069
+          }
+        },
+        "maximum_cpu_ms": {
+          "consoledisplay_present": 49.675138395695384,
+          "consoledisplay_cells": 49.38044402216587,
+          "consolebitmap_text": 20.801644818919083,
+          "consolebitmap_clippedtext": 19.134059508386915,
+          "pump": 16.30207547728365,
+          "paint": 15.576581770816446,
+          "deskhost_controls": 26.4905642822807,
+          "commit": 7.5200280808989275,
+          "deskinput_service": 5.643668617198986,
+          "deskinput_advance": 8.181522148245156,
+          "consoledriver_writequantum": 5.983120447602762,
+          "consolebitmap_run": 19.05730223195217,
+          "deskcore_pump": 23.863125353301974,
+          "deskcore_dispatch": 22.351028152792793,
+          "deskhost_inputboundary": 5.921587754923673,
+          "deskwidgetinput_advance": 8.08643898395639,
+          "deskpaint_paintstrip": 15.770695213701
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 94.30219952944759,
+          "charged_cpu_ms": 57.0213524787173,
+          "interrupt_ms": 12.301322706197956,
+          "off_cpu_ms": 24.97952434453233
+        },
+        "gap_exclusive_cpu_ms": {
+          "GemBitmapTextClip": 16.317793450327663,
+          "glyph_record": 8.801501031183614,
+          "VbxeOwnerSubmit": 6.00687361762894,
+          "consolebitmap_desktopdraw": 4.815338486197082,
+          "DisplayCheck": 3.9660040683471034,
+          "blit_glyph": 3.6546049431967904,
+          "consolebitmap_run": 3.4927027724248956,
+          "VbxeOwnerFence": 1.9956187031192072,
+          "consoledisplay_presentbatch": 1.3590760369280737,
+          "pump": 1.2720280696214576,
+          "deskinput_service": 1.1258438718935857,
+          "consoledisplay_cells": 1.0709366925155663,
+          "consume": 0.6767186511018792,
+          "deskwidgetinput_advance": 0.566340418873409,
+          "other_worker": 0.48894878478218273,
+          "commit": 0.2608619651836324,
+          "consolebitmap_clippedtext": 0.23104715532881576,
+          "consolebitmap_text": 0.19453634798887479,
+          "deskinput_present": 0.16810477896864723,
+          "model_call": 0.15992861361839017,
+          "GemDrawingTextClip": 0.13293317112573108,
+          "deskinput_advance": 0.0944488066322798,
+          "consolebitmap_cursor": 0.04123324767155498,
+          "consoledisplay_present": 0.03918920633399072,
+          "consoledriver_arrival": 0.03030819914319426,
+          "consoledriver_writequantum": 0.028405126173737874,
+          "deskhost_inputboundary": 0.01677523580483775,
+          "consoledriver_readquantum": 0.009515364847281918,
+          "deskhost_afterpaint": 0.0037356617548588273
+        },
+        "work": {
+          "paint_quanta": 136,
+          "paint_cpu_ms": 918.5598953450835,
+          "max_quantum_cpu_ms": 15.576581770816446,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 519,
+            "VbxeOwnerSubmit": 441,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 2,
+          "reads": 0
+        },
+        "aes_progress": {
+          "AESMessages": 102,
+          "AESTimers": 51
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 1,
+          "invalid_frames": 1,
+          "max_invalid_pixels": 1
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 167,
+            "mean": 3.0419161676646707,
+            "median": 4,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 40,
+              "3": 40,
+              "4": 87
+            }
+          },
+          "console_drawing": {
+            "lists": 98,
+            "mean": 41.62244897959184,
+            "median": 50.0,
+            "p95": 50,
+            "maximum": 50,
+            "histogram": {
+              "1": 5,
+              "18": 18,
+              "50": 75
+            }
+          },
+          "widget_drawing": {
+            "lists": 176,
+            "mean": 9.795454545454545,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 82,
+              "9": 4,
+              "10": 5,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 7840,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 43,
+            "2": 67
+          },
+          "consecutive_steps_with_input": 67
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 1170,
+            "total_cpu_ms": 92.08610629860766,
+            "max_cpu_ms": 1.1038528064687565
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 441,
+            "total_cpu_ms": 418.6437715241077,
+            "max_cpu_ms": 4.301085879339535
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 152,
+            "total_cpu_ms": 1662.2524066824644,
+            "max_cpu_ms": 19.134059508386915
+          },
+          "consolebitmap_cursor": {
+            "calls": 179,
+            "total_cpu_ms": 396.50567609134185,
+            "max_cpu_ms": 4.066162093887752
+          },
+          "consolebitmap_desktopdraw": {
+            "calls": 152,
+            "total_cpu_ms": 1921.3342937978148,
+            "max_cpu_ms": 20.73877292674297
+          },
+          "consolebitmap_run": {
+            "calls": 331,
+            "total_cpu_ms": 2039.4094694091593,
+            "max_cpu_ms": 19.05730223195217
+          },
+          "consolebitmap_text": {
+            "calls": 152,
+            "total_cpu_ms": 1931.7542526632449,
+            "max_cpu_ms": 20.801644818919083
+          },
+          "consoledisplay_cells": {
+            "calls": 57,
+            "total_cpu_ms": 1987.1161255125962,
+            "max_cpu_ms": 49.38044402216587
+          },
+          "consoledisplay_cursor": {
+            "calls": 15,
+            "total_cpu_ms": 0.16183168658784655,
+            "max_cpu_ms": 0.011066016896468602
+          },
+          "consoledisplay_flushbatch": {
+            "calls": 6,
+            "total_cpu_ms": 12.50995589099762,
+            "max_cpu_ms": 3.1305550347557514
+          },
+          "consoledisplay_poll": {
+            "calls": 111,
+            "total_cpu_ms": 0.5866398638809438,
+            "max_cpu_ms": 0.01078408016025284
+          },
+          "consoledisplay_present": {
+            "calls": 62,
+            "total_cpu_ms": 1996.752793640635,
+            "max_cpu_ms": 49.675138395695384
+          },
+          "consoledisplay_presentbatch": {
+            "calls": 47,
+            "total_cpu_ms": 1793.7932332363941,
+            "max_cpu_ms": 49.6359491893614
+          },
+          "consoledisplay_removecursor": {
+            "calls": 16,
+            "total_cpu_ms": 0.25543468301147904,
+            "max_cpu_ms": 0.016281846516460172
+          },
+          "deskpaint_paintstrip": {
+            "calls": 136,
+            "total_cpu_ms": 965.2339581521303,
+            "max_cpu_ms": 15.770695213701
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 9,
+            "maximum_cpu_ms": 0.43136320641011366
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 23.863125353301974
+          }
+        }
+      },
+      "after": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 7.7641148102777215,
+            "p95_ms": 12.311190491965508,
+            "max_ms": 25.196192726314145
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 19.612083244640733,
+            "p95_ms": 37.359859821054755,
+            "max_ms": 53.72212879152047
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 98.95937150662763,
+            "p95_ms": 139.12407894792486,
+            "max_ms": 139.12492475813352
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 179.03666446286118,
+            "p95_ms": 259.6215845126512,
+            "max_ms": 259.6229941963323
+          }
+        },
+        "maximum_cpu_ms": {
+          "consoledisplay_present": 7.471746414821978,
+          "consoledisplay_cells": 7.3295798155851815,
+          "consolebitmap_clippedtext": 4.81244863465087,
+          "pump": 17.62506361197611,
+          "paint": 15.546132603305145,
+          "deskhost_controls": 26.35713772186659,
+          "commit": 7.687357533842981,
+          "deskinput_service": 7.771797586339601,
+          "deskinput_advance": 8.348287727716777,
+          "consoledriver_writequantum": 3.4304652379052665,
+          "consolebitmap_run": 4.741259608756391,
+          "deskcore_pump": 23.620095886683988,
+          "deskcore_dispatch": 22.224156621495705,
+          "deskhost_inputboundary": 10.232611904214814,
+          "deskwidgetinput_advance": 8.253134079243958,
+          "deskpaint_paintstrip": 15.74426364468077,
+          "consolebitmap_desktoppart": 6.470307127783597,
+          "consolebitmap_textstep": 6.533672409248089
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 60.58277733059479,
+          "charged_cpu_ms": 26.56083701378248,
+          "interrupt_ms": 5.612091702742822,
+          "off_cpu_ms": 28.40984861406949
+        },
+        "gap_exclusive_cpu_ms": {
+          "model_call": 17.63993577481149,
+          "deskcore_dispatch": 4.584220846684212,
+          "other_worker": 1.6275502939895317,
+          "deskcore_pump": 1.3959392651882843,
+          "consoledriver_collect": 0.594604576679039,
+          "deskinput_service": 0.36827986168183724,
+          "deskhost_controls": 0.17917079586511583,
+          "deskinput_present": 0.08140923258230086,
+          "deskhost_events": 0.037709038468857974,
+          "deskhost_inputboundary": 0.023330264921854187,
+          "deskhost_nativeadmission": 0.013251026602140746,
+          "deskmove_pump": 0.006061639828638852,
+          "consoledisplay_poll": 0.00500437706782975,
+          "deskcache_pump": 0.004370019411344289
+        },
+        "work": {
+          "paint_quanta": 136,
+          "paint_cpu_ms": 924.6144162711329,
+          "max_quantum_cpu_ms": 15.546132603305145,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 550,
+            "VbxeOwnerSubmit": 421,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 1,
+          "reads": 0
+        },
+        "aes_progress": {
+          "AESMessages": 92,
+          "AESTimers": 46
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 0,
+          "invalid_frames": 0,
+          "max_invalid_pixels": 0
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 245,
+            "mean": 3.3469387755102042,
+            "median": 4,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 40,
+              "3": 40,
+              "4": 165
+            }
+          },
+          "widget_drawing": {
+            "lists": 176,
+            "mean": 9.795454545454545,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 82,
+              "9": 4,
+              "10": 5,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 3934,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 111,
+            "2": 68
+          },
+          "consecutive_steps_with_input": 68
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 1107,
+            "total_cpu_ms": 52.38744028227506,
+            "max_cpu_ms": 0.2960335730265486
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 421,
+            "total_cpu_ms": 207.4244515273218,
+            "max_cpu_ms": 2.6662757143924476
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 129,
+            "total_cpu_ms": 404.2828304756696,
+            "max_cpu_ms": 4.81244863465087
+          },
+          "consolebitmap_cursor": {
+            "calls": 294,
+            "total_cpu_ms": 656.3646513358867,
+            "max_cpu_ms": 4.508802769746497
+          },
+          "consolebitmap_desktoppart": {
+            "calls": 129,
+            "total_cpu_ms": 630.7462583470895,
+            "max_cpu_ms": 6.470307127783597
+          },
+          "consolebitmap_run": {
+            "calls": 423,
+            "total_cpu_ms": 1038.583253803679,
+            "max_cpu_ms": 4.741259608756391
+          },
+          "consolebitmap_textstep": {
+            "calls": 129,
+            "total_cpu_ms": 639.1161142351268,
+            "max_cpu_ms": 6.533672409248089
+          },
+          "consoledisplay_cells": {
+            "calls": 128,
+            "total_cpu_ms": 735.0265513921331,
+            "max_cpu_ms": 7.3295798155851815
+          },
+          "consoledisplay_cursor": {
+            "calls": 23,
+            "total_cpu_ms": 0.2658663422514622,
+            "max_cpu_ms": 0.016986688356999576
+          },
+          "consoledisplay_flushbatch": {
+            "calls": 3,
+            "total_cpu_ms": 6.203735943691595,
+            "max_cpu_ms": 2.452849605077117
+          },
+          "consoledisplay_poll": {
+            "calls": 180,
+            "total_cpu_ms": 0.9303912295120098,
+            "max_cpu_ms": 0.010925048528360721
+          },
+          "consoledisplay_present": {
+            "calls": 131,
+            "total_cpu_ms": 753.9578279029969,
+            "max_cpu_ms": 7.471746414821978
+          },
+          "consoledisplay_presentbatch": {
+            "calls": 108,
+            "total_cpu_ms": 630.3255382524716,
+            "max_cpu_ms": 7.426213631923133
+          },
+          "consoledisplay_removecursor": {
+            "calls": 24,
+            "total_cpu_ms": 0.3998567761380024,
+            "max_cpu_ms": 0.021709128688613563
+          },
+          "deskpaint_paintstrip": {
+            "calls": 136,
+            "total_cpu_ms": 970.8555652197203,
+            "max_cpu_ms": 15.74426364468077
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 10,
+            "maximum_cpu_ms": 0.4371429095025367
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 23.620095886683988
+          }
+        }
+      }
+    },
+    "disk": {
+      "before": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 11.797783695316607,
+            "p95_ms": 46.40587048672148,
+            "max_ms": 78.48724024816072
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 30.13826177544021,
+            "p95_ms": 68.9833643228796,
+            "max_ms": 91.48889380711863
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 119.15872897280579,
+            "p95_ms": 179.04885822670252,
+            "max_ms": 199.23792500200878
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 199.23792500200878,
+            "p95_ms": 299.4947693687013,
+            "max_ms": 339.555512638519
+          }
+        },
+        "maximum_cpu_ms": {
+          "consoledisplay_present": 49.16828662816351,
+          "consoledisplay_cells": 49.02619051311077,
+          "consolebitmap_text": 21.500918408918224,
+          "consolebitmap_clippedtext": 19.826425648348767,
+          "pump": 17.12244089548746,
+          "paint": 16.39631283136377,
+          "deskhost_controls": 28.138907410566144,
+          "commit": 7.805700478869546,
+          "deskinput_service": 6.839150862937866,
+          "deskinput_advance": 8.495599672389513,
+          "consoledriver_writequantum": 0.03453725018643067,
+          "deskhost_cache": 7.166902318788686,
+          "consolebitmap_run": 19.75530710663834,
+          "deskcore_pump": 25.38501985539465,
+          "deskcore_dispatch": 23.981750235064755,
+          "deskhost_inputboundary": 9.233780531986428,
+          "deskwidgetinput_advance": 8.407071537217764,
+          "deskpaint_paintstrip": 16.584646571155897
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 73.97441987992315,
+          "charged_cpu_ms": 57.777083900143644,
+          "interrupt_ms": 13.931480914997483,
+          "off_cpu_ms": 2.2658550647820137
+        },
+        "gap_exclusive_cpu_ms": {
+          "GemBitmapTextClip": 15.779999125996108,
+          "glyph_record": 12.127297255768774,
+          "VbxeOwnerSubmit": 5.4478635538971405,
+          "consolebitmap_desktopdraw": 4.83176130108165,
+          "blit_glyph": 3.6490366926565283,
+          "consolebitmap_run": 3.4846675754427463,
+          "DisplayCheck": 2.73196697393072,
+          "deskinput_service": 1.876429947883994,
+          "VbxeOwnerFence": 1.5546696476777573,
+          "consume": 1.3604152364250988,
+          "pump": 1.2723804905417273,
+          "consoledisplay_cells": 1.0781260792890683,
+          "deskwidgetinput_advance": 0.5712743117571848,
+          "other_worker": 0.49226154143271794,
+          "commit": 0.26036857589525486,
+          "consolebitmap_clippedtext": 0.21920581240775386,
+          "consolebitmap_text": 0.1943953796207669,
+          "deskinput_present": 0.1733910927726927,
+          "model_call": 0.15985812943433625,
+          "GemDrawingTextClip": 0.14942647019435307,
+          "consoledisplay_presentbatch": 0.09705672144227556,
+          "deskinput_advance": 0.09451929081633373,
+          "consolebitmap_cursor": 0.04172663695993256,
+          "consoledisplay_present": 0.0393301747020986,
+          "consoledriver_writequantum": 0.03453725018643067,
+          "consoledriver_arrival": 0.02452849605077117,
+          "deskhost_inputboundary": 0.01712765672510745,
+          "consoledriver_readquantum": 0.009585849031335858,
+          "deskhost_afterpaint": 0.003876630122966708
+        },
+        "work": {
+          "paint_quanta": 136,
+          "paint_cpu_ms": 929.3615965513499,
+          "max_quantum_cpu_ms": 16.39631283136377,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 416,
+            "VbxeOwnerSubmit": 411,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 0,
+          "reads": 21
+        },
+        "aes_progress": {
+          "AESMessages": 94,
+          "AESTimers": 46
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 1,
+          "invalid_frames": 5,
+          "max_invalid_pixels": 4
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 220,
+            "mean": 2.9318181818181817,
+            "median": 3.0,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 59,
+              "3": 58,
+              "4": 103
+            }
+          },
+          "console_drawing": {
+            "lists": 15,
+            "mean": 40.333333333333336,
+            "median": 50,
+            "p95": 50,
+            "maximum": 50,
+            "histogram": {
+              "1": 1,
+              "18": 3,
+              "50": 11
+            }
+          },
+          "widget_drawing": {
+            "lists": 176,
+            "mean": 9.795454545454545,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 82,
+              "9": 4,
+              "10": 5,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 7840,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 77,
+            "2": 68
+          },
+          "consecutive_steps_with_input": 68
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 996,
+            "total_cpu_ms": 54.72878390817884,
+            "max_cpu_ms": 1.3365210980308129
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 411,
+            "total_cpu_ms": 230.50555485854528,
+            "max_cpu_ms": 3.842233841148385
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 19,
+            "total_cpu_ms": 240.69834319876963,
+            "max_cpu_ms": 19.826425648348767
+          },
+          "consolebitmap_cursor": {
+            "calls": 208,
+            "total_cpu_ms": 481.0956484474449,
+            "max_cpu_ms": 4.204522547185637
+          },
+          "consolebitmap_desktopdraw": {
+            "calls": 18,
+            "total_cpu_ms": 267.3155675597953,
+            "max_cpu_ms": 21.437976032558055
+          },
+          "consolebitmap_run": {
+            "calls": 265,
+            "total_cpu_ms": 806.6527906802993,
+            "max_cpu_ms": 19.75530710663834
+          },
+          "consolebitmap_text": {
+            "calls": 18,
+            "total_cpu_ms": 268.47136720991176,
+            "max_cpu_ms": 21.500918408918224
+          },
+          "consoledisplay_cells": {
+            "calls": 6,
+            "total_cpu_ms": 275.77000446869727,
+            "max_cpu_ms": 49.02619051311077
+          },
+          "consoledisplay_cursor": {
+            "calls": 1,
+            "total_cpu_ms": 0.0107135959761989,
+            "max_cpu_ms": 0.0107135959761989
+          },
+          "consoledisplay_poll": {
+            "calls": 146,
+            "total_cpu_ms": 32.84210555993341,
+            "max_cpu_ms": 2.4129555569025865
+          },
+          "consoledisplay_present": {
+            "calls": 6,
+            "total_cpu_ms": 276.6419643096286,
+            "max_cpu_ms": 49.16828662816351
+          },
+          "consoledisplay_presentbatch": {
+            "calls": 6,
+            "total_cpu_ms": 276.40541938794354,
+            "max_cpu_ms": 49.12853354835708
+          },
+          "deskpaint_paintstrip": {
+            "calls": 136,
+            "total_cpu_ms": 977.991031592421,
+            "max_cpu_ms": 16.584646571155897
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 10,
+            "maximum_cpu_ms": 0.4373543620546985
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 25.38501985539465
+          }
+        }
+      },
+      "after": {
+        "latency": {
+          "capture_to_button_consumed_ms": {
+            "count": 20,
+            "median_ms": 9.022962337481092,
+            "p95_ms": 28.553424896987362,
+            "max_ms": 50.94469951887496
+          },
+          "capture_to_commit_ms": {
+            "count": 20,
+            "median_ms": 30.366137142486597,
+            "p95_ms": 58.310155784143596,
+            "max_ms": 70.95931793864776
+          },
+          "capture_to_button_pixels_ms": {
+            "count": 20,
+            "median_ms": 119.15936333046227,
+            "p95_ms": 179.11201205561483,
+            "max_ms": 179.34348211604797
+          },
+          "capture_to_visible_ms": {
+            "count": 20,
+            "median_ms": 219.17240290451227,
+            "p95_ms": 319.6061625731802,
+            "max_ms": 339.7105778434377
+          }
+        },
+        "maximum_cpu_ms": {
+          "consoledisplay_present": 7.928977316779887,
+          "consoledisplay_cells": 7.786669749174983,
+          "consolebitmap_clippedtext": 4.985487306503294,
+          "pump": 16.473140591982563,
+          "paint": 15.31367576429525,
+          "deskhost_controls": 26.47181548932235,
+          "commit": 7.789207179800925,
+          "deskinput_service": 7.1663384453162555,
+          "deskinput_advance": 8.484322202940882,
+          "consoledriver_writequantum": 0.034678218554538544,
+          "deskhost_cache": 7.128629406847398,
+          "consolebitmap_run": 4.908377609148284,
+          "deskcore_pump": 23.73498510669191,
+          "deskcore_dispatch": 22.33305468585904,
+          "deskhost_inputboundary": 9.722517864216448,
+          "deskwidgetinput_advance": 8.389732427940494,
+          "deskpaint_paintstrip": 15.511242932198444,
+          "consolebitmap_desktoppart": 6.639680622065215,
+          "consolebitmap_textstep": 6.703045903529707
+        },
+        "maximum_cpu_gap": {
+          "elapsed_ms": 93.31725354147783,
+          "charged_cpu_ms": 30.131424809586978,
+          "interrupt_ms": 10.788591148032292,
+          "off_cpu_ms": 52.397237583858555
+        },
+        "gap_exclusive_cpu_ms": {
+          "model_call": 16.80166737385798,
+          "deskcore_dispatch": 5.485502108181945,
+          "other_worker": 2.845657962809725,
+          "deskcore_pump": 1.402494294305301,
+          "consolebitmap_run": 1.182231219136738,
+          "DisplayCheck": 0.6859520792129454,
+          "consoledriver_collect": 0.5953094185195784,
+          "deskinput_service": 0.36193628511698256,
+          "VbxeOwnerSubmit": 0.23936428904718068,
+          "deskinput_present": 0.18050999536214068,
+          "deskhost_controls": 0.11094210570090177,
+          "VbxeOwnerFence": 0.09318009131930886,
+          "consolebitmap_cursor": 0.0414447002237168,
+          "deskhost_events": 0.03171788282427306,
+          "consoledriver_arrival": 0.024458011866717227,
+          "deskhost_inputboundary": 0.017057172541053513,
+          "deskhost_nativeadmission": 0.012969089865924986,
+          "deskmove_pump": 0.005850187276477031,
+          "consoledisplay_poll": 0.0048634086997218695,
+          "deskcache_pump": 0.004440503595398229,
+          "deskhost_afterpaint": 0.003876630122966708
+        },
+        "work": {
+          "paint_quanta": 136,
+          "paint_cpu_ms": 935.1334758993429,
+          "max_quantum_cpu_ms": 15.31367576429525,
+          "primitive_entries": {
+            "GemWidgetFill": 507,
+            "GemWidgetText": 68,
+            "start": 444,
+            "VbxeOwnerSubmit": 406,
+            "vram_win": 0
+          },
+          "logical_requested_damage_pixels": 47716,
+          "damage_scope": "Independent sum of disjoint button bounds, previous focus underline and 160x8 status; new focus is contained by the pressed button. Excludes Layers exposure and physical overdraw."
+        },
+        "progress": {
+          "writes": 0,
+          "reads": 24
+        },
+        "aes_progress": {
+          "AESMessages": 96,
+          "AESTimers": 47
+        },
+        "feedback": {
+          "scope": "Completed scanouts after model/application observation until the first exact button match; pointer footprint excluded. A pixel must match its pre-edge or final colour. This is not a continuous scanout or whole-gesture flicker proof.",
+          "edges": 20,
+          "edges_with_invalid_pixels": 1,
+          "invalid_frames": 6,
+          "max_invalid_pixels": 4
+        },
+        "prepared_lists": {
+          "cursor": {
+            "lists": 230,
+            "mean": 3.0782608695652174,
+            "median": 4.0,
+            "p95": 4,
+            "maximum": 4,
+            "histogram": {
+              "1": 53,
+              "3": 53,
+              "4": 124
+            }
+          },
+          "widget_drawing": {
+            "lists": 176,
+            "mean": 9.795454545454545,
+            "median": 5.0,
+            "p95": 30,
+            "maximum": 35,
+            "histogram": {
+              "1": 26,
+              "5": 82,
+              "9": 4,
+              "10": 5,
+              "11": 4,
+              "12": 11,
+              "13": 8,
+              "16": 4,
+              "20": 2,
+              "21": 2,
+              "24": 10,
+              "25": 6,
+              "29": 2,
+              "30": 2,
+              "32": 2,
+              "33": 2,
+              "34": 2,
+              "35": 2
+            }
+          }
+        },
+        "maximum_queued_work": 3934,
+        "paint_steps_per_turn": {
+          "maximum": 2,
+          "histogram": {
+            "0": 78,
+            "2": 68
+          },
+          "consecutive_steps_with_input": 68
+        },
+        "selected_routines": {
+          "VbxeOwnerFence": {
+            "calls": 999,
+            "total_cpu_ms": 49.43224989744551,
+            "max_cpu_ms": 1.105544426886051
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 406,
+            "total_cpu_ms": 205.04687903081427,
+            "max_cpu_ms": 2.944547273037403
+          },
+          "consolebitmap_clippedtext": {
+            "calls": 37,
+            "total_cpu_ms": 119.02248304502953,
+            "max_cpu_ms": 4.985487306503294
+          },
+          "consolebitmap_cursor": {
+            "calls": 228,
+            "total_cpu_ms": 525.9966111204307,
+            "max_cpu_ms": 4.031201938596999
+          },
+          "consolebitmap_desktoppart": {
+            "calls": 37,
+            "total_cpu_ms": 183.46243686379214,
+            "max_cpu_ms": 6.639680622065215
+          },
+          "consolebitmap_run": {
+            "calls": 291,
+            "total_cpu_ms": 700.8292464253946,
+            "max_cpu_ms": 4.908377609148284
+          },
+          "consolebitmap_textstep": {
+            "calls": 37,
+            "total_cpu_ms": 185.85389474455826,
+            "max_cpu_ms": 6.703045903529707
+          },
+          "consoledisplay_cells": {
+            "calls": 37,
+            "total_cpu_ms": 217.1857356927679,
+            "max_cpu_ms": 7.786669749174983
+          },
+          "consoledisplay_cursor": {
+            "calls": 1,
+            "total_cpu_ms": 0.0107135959761989,
+            "max_cpu_ms": 0.0107135959761989
+          },
+          "consoledisplay_poll": {
+            "calls": 147,
+            "total_cpu_ms": 21.946801357243448,
+            "max_cpu_ms": 1.7170652077380355
+          },
+          "consoledisplay_present": {
+            "calls": 37,
+            "total_cpu_ms": 222.42820833433186,
+            "max_cpu_ms": 7.928977316779887
+          },
+          "consoledisplay_presentbatch": {
+            "calls": 37,
+            "total_cpu_ms": 220.91244595625187,
+            "max_cpu_ms": 7.883303565512935
+          },
+          "deskpaint_paintstrip": {
+            "calls": 136,
+            "total_cpu_ms": 983.6031232951638,
+            "max_cpu_ms": 15.511242932198444
+          }
+        },
+        "native_admissions": {
+          "NEXT_EVENT": {
+            "calls": 10,
+            "maximum_cpu_ms": 0.454482018779806
+          },
+          "UPDATE_WIDGETS": {
+            "calls": 20,
+            "maximum_cpu_ms": 23.73498510669191
+          }
+        }
+      }
+    }
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "bank_zero_scope": "Includes guards, alignment and unused reserved capacity. Existing Task/DP/kernel/idle stack reservations unchanged.",
+    "live_upper_native_data_delta": 11,
+    "continuation_bytes": {
+      "retained_glyph_offset": 2,
+      "console_token_region_glyph_dirty_flag": 9
+    },
+    "native_data_payload": {
+      "before": 10118,
+      "after": 10129
+    },
+    "linked_executable_segment_bytes": {
+      "before": 738412,
+      "after": 742364,
+      "delta": 3952
+    },
+    "additional_upper_image_bank": "$1A",
+    "additional_upper_image_reserved_bytes": 65536,
+    "image_data_arena_reserved_bytes": 8192,
+    "vram_reservation_delta": 0,
+    "test_only": "Batch-lifetime fixture native data arena raised from 2 KiB to 4 KiB; production demo arena unchanged.",
+    "stack_usage_before": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 386,
+        "remaining_above_floor": 894
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 196,
+        "remaining_above_floor": 572
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 513,
+        "remaining_above_floor": 255
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 513,
+        "remaining_above_floor": 255
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 301,
+        "remaining_above_floor": 467
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 189,
+        "remaining_above_floor": 579
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 779,
+        "remaining_above_floor": 1525
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 127,
+        "remaining_above_floor": 129
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    },
+    "stack_usage_after": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 406,
+        "remaining_above_floor": 874
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 181,
+        "remaining_above_floor": 587
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 505,
+        "remaining_above_floor": 263
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 501,
+        "remaining_above_floor": 267
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 263,
+        "remaining_above_floor": 505
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 179,
+        "remaining_above_floor": 589
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 796,
+        "remaining_above_floor": 1508
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 127,
+        "remaining_above_floor": 129
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    },
+    "demo_refreshed": false
+  },
+  "development_checks": {
+    "host": {
+      "tests": 396,
+      "skipped": 4,
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+      "log": {
+        "path": "/tmp/exec816-pi3-host-verified.log",
+        "sha256": "38978ae645f4897a23481bde834e650e5d9ec4f6cbf073675af8a5cc554277bf"
+      }
+    },
+    "cases": [
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/verified-presentation/normal-presentation-results.json",
+          "sha256": "7f158d46a9cc89fa781dfc7fbf07d7e5450ad1a722d018f08ad2320f935f6771"
+        },
+        "status": "pass",
+        "scope": "Final production image: 19 exact pixel scenes, bottom-row progress and DMA/move lifetimes, cancellation/hide/show during a partial fragment, accepted 64-byte prefix survives caller-buffer overwrite.",
+        "xex_sha256": "10a154a8a6e5f1f0aebc2c01950c6ef9cb4f9f50587515bf1214f92f837f1364",
+        "checks": 117,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        },
+        "accepted_prefix": 64
+      },
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/verified-presentation/presentation-results.json",
+          "sha256": "eefc52a1a0a7315f733ace8f51107ed61e6f7db0a16f7d540adb4cb2a2bff0d0"
+        },
+        "status": "pass",
+        "scope": "Same final image, fault replay: 18 exact scenes plus quiesced drawing failure between fragments. Token releases and exactly 64 accepted bytes survive; no final pixel claim after drawing failure.",
+        "xex_sha256": "10a154a8a6e5f1f0aebc2c01950c6ef9cb4f9f50587515bf1214f92f837f1364",
+        "checks": 111,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        },
+        "accepted_prefix": 64
+      },
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/verified-background/background-results.json",
+          "sha256": "ca1be267d2cf39217551e79d778a961aacf82b5fb79e7d7dfa540408e5595f58"
+        },
+        "status": "pass",
+        "scope": "Final production image: 12 exact retained/frame/background scenes including long title, 70 glyph command with later overlapping fill, and partial-height repair. Input between paint steps; long-text steps below 20 ms.",
+        "xex_sha256": "ca432c0be8bb203f1b1d73a1e8b761c2e0f93ec8c5b88053873026ab6fbe9415",
+        "checks": 41,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        }
+      },
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/fairness/results.json",
+          "sha256": "418c878158922bd11b5260c283644b5255ab0395cb2996972f87e73580ae5d10"
+        },
+        "status": "pass",
+        "scope": "Earlier PI3 32-glyph ordinary bitmap policy; non-desktop path unchanged by later fragment continuation. Eight Tasks, 27 flood writes, eight short writes, two disk reads, cooked input/BREAK and ownership/guards.",
+        "xex_sha256": "8737e2d46d8ed0e611bcf110f2568642d9b45b64f1648ee86af50efc2b114b3d",
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "switching": 0,
+          "irq_depth": 0,
+          "live_tasks": 0
+        }
+      },
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/fault/results.json",
+          "sha256": "56bb2c68d7cedb5f7c82365bb21c10ed43d067b2330c5d26b1f6badaf9082522"
+        },
+        "status": "pass",
+        "scope": "Earlier PI3 ordinary bitmap policy; eight quiesced/reset-required fault cases. Non-desktop path unchanged by later fragment continuation.",
+        "xex_sha256": "75988079797a20992c4fc4baf9db4d94573907cfdf8e3a9f8ecb14acd0a7ce34",
+        "case_count": 8
+      },
+      {
+        "artifact": {
+          "path": "build/presenter-input/pi3/partial-final/results.json",
+          "sha256": "585a7bbb1813571671a035fc634d3f8af2f66e1e1a72efbf8d1139c3a3ca27a4"
+        },
+        "status": "pass",
+        "scope": "Six new phase-5 partial-row batch cases: abort, hide/show, stale view, focus, close/stop and retire/reuse. Non-desktop path unchanged by later fragment continuation.",
+        "xex_sha256": "4f08a11909ba910472e456f734aee63f1657ea7c8041e07504c24353189a448a",
+        "case_count": 6
+      }
+    ],
+    "old_batch_phases": {
+      "scope": "24 individual passing phase files; the abandoned aggregate file is not used. Same ordinary bitmap policy as final PI3.",
+      "cases": [
+        {
+          "phase": 1,
+          "action": 0,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-0.json",
+            "sha256": "ba221a6470586a82d2effa455b00492a001d33c2191e1e42ebc08b149e93d8f7"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 1,
+          "action": 1,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-1.json",
+            "sha256": "ff57c2122499a9ac6f21b7f31cc27bd73d461286f9e311288e0aa592a1229b66"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 1,
+          "action": 2,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-2.json",
+            "sha256": "2c8489952f4695b8372ccc5afc695545534e9f193e78e8821a0fb6d8804c4347"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 1,
+          "action": 3,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-3.json",
+            "sha256": "2390d80a7d29d0f896b4de7ef747ee40ed64d71a8c7c7aaede339d481f60bc83"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 1,
+          "action": 4,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-4.json",
+            "sha256": "c10b8b7b6267a62da25ad789d408e864d4a89d7136788e2e7876060c9c5fe1b6"
+          },
+          "checks": [
+            46
+          ]
+        },
+        {
+          "phase": 1,
+          "action": 5,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-1-action-5.json",
+            "sha256": "5295798cb312ee580704fd3fcc7326f3476d86dfccf95ce67a58197be2e97a6d"
+          },
+          "checks": [
+            51
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 0,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-0.json",
+            "sha256": "75f9138665cc5673fff15e08e9b26147c9319f3bfb325c92522c90ec284c8e9c"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 1,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-1.json",
+            "sha256": "25bd3c63fe65b25a2d1f3d9e65cd7718e40e87a4e94230cf5327aef6bdf456eb"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 2,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-2.json",
+            "sha256": "2845153c90209fc6900c4786cf117945be1505a35373b0e31ac07ef34250ce90"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 3,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-3.json",
+            "sha256": "460f937365c247de081a9c00635fd022576ccf08a953129b10ca9487907e781d"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 4,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-4.json",
+            "sha256": "d62a2c41f1fdd8ee7ecab2e16d28f4acbe60d99a3ff237943809f0f6cf334bf7"
+          },
+          "checks": [
+            46
+          ]
+        },
+        {
+          "phase": 2,
+          "action": 5,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-2-action-5.json",
+            "sha256": "4fed9ab51d584b0b76531b552dab67607bd8d24cef3f6b8ec78d1957fd5fccf3"
+          },
+          "checks": [
+            51
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 0,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-0.json",
+            "sha256": "a553b2355621010bb74131e0853e6292217c1fd4e96e2893d2f38005bea84d87"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 1,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-1.json",
+            "sha256": "7244f230c4c9a6090aa1e2f4fe581d0cc9fc9f3888a87e7e61e8c4862723e556"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 2,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-2.json",
+            "sha256": "5ccd9890b2415c07e3dacdbc21cfa9db904b7dac9dd98e02c70c67f9cbde3036"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 3,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-3.json",
+            "sha256": "4dd8a8e6e97fe550a5febe1a7122b9bfeeece5458b5e91505c9e468ec5a5417e"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 4,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-4.json",
+            "sha256": "8be55a2823b673ae808ec11fd25d9053de78f3d156d0557f868e08acc2d4014a"
+          },
+          "checks": [
+            46
+          ]
+        },
+        {
+          "phase": 3,
+          "action": 5,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-3-action-5.json",
+            "sha256": "01c08c3542019389494c29b2d65d2e6d90f9585e1ed79d8ef3c0568410a8869d"
+          },
+          "checks": [
+            51
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 0,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-0.json",
+            "sha256": "e071d75ccc15ffd55a6b68e71f87dd475e9375a563f8dd579330ca536bba8446"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 1,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-1.json",
+            "sha256": "14251814ebedfbf9490e5fc8e132a2fc3cce438ae9051ec622dcd4b3265a25a8"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 2,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-2.json",
+            "sha256": "f473e9f53b91aacb66cd9f4100215b54ca66a8bfe760d36c3edff85aec43c319"
+          },
+          "checks": [
+            49
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 3,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-3.json",
+            "sha256": "3daef2b654d32b676d0b8a821e7382714a6c36cf4d907b9092b84456fdb7cc56"
+          },
+          "checks": [
+            50
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 4,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-4.json",
+            "sha256": "e784b903ef351d41a6cd42dc93378924420d9e7595b2d9a9121f5eebd10e1b43"
+          },
+          "checks": [
+            46
+          ]
+        },
+        {
+          "phase": 4,
+          "action": 5,
+          "status": "pass",
+          "artifact": {
+            "path": "build/presenter-input/pi3/final-batch/phase-4-action-5.json",
+            "sha256": "42b93c20edf80223fa274ceabf87ac264de82bceac81c4ae4d2cf9d4134c765e"
+          },
+          "checks": [
+            51
+          ]
+        }
+      ]
+    },
+    "interrupt_prerequisite": {
+      "path": "docs/development/interrupt-guarded-return.json",
+      "sha256": "05e8dcb3c24e5e5c498029bb986d6c47af2a2106708f17154aa932e09f4178ff"
+    }
+  },
+  "remaining": [
+    "Steady CPU gaps: idle 29.910, scroll 26.561, disk 30.131 ms; target 20 ms remains open.",
+    "Atomic UPDATE_WIDGETS takes up to 23.735 ms in steady cohorts; SET_TREE reaches 72.526 ms over the whole run.",
+    "Full scene-token ownership still delays model commits, and extra text steps increase some full-repair times.",
+    "Fixed-offer diagnostic has no pixel observer and is phase-sensitive; it does not qualify HY4.",
+    "Disk feedback observer finds six invalid sampled frames, at most four pixels; no whole-gesture flicker claim.",
+    "Full HY4 raw-pointer/outline acceptance and release qualification not run."
+  ],
+  "source_inputs": {
+    "lib/console/consoledisplay.act": "29d38858b1f266ab842e6e4c4988adf82b0dc1ba99064abffae737c3b73e45d6",
+    "lib/console/console-bitmap-display.inc": "c3e5099d7e3cd22d33045d79caa6b788f0169c1116dfbd2bc087900bae4a8a01",
+    "lib/console/console-batch-display.inc": "faa804a571a0445aae41aab647a153fcff0e5f2ae0238458b74a6314baf2d45e",
+    "lib/console/consoledriver.act": "0d21aa6c942499dd4951eb204ac35ae22a41f2dedae042a707422fdf0dde39b9",
+    "lib/console/consolebitmap.act": "e57b80295a53931266dde3b9f8fe44134877144f2f69eaae6a55538af2b40088",
+    "lib/console/console-desktop-drawing.inc": "01a1dca2205b15812ab73df53c929a1f3e4627bdd393191ac67ccded6e986f90",
+    "lib/desktop/deskpaint.act": "ca8e9a656df6df769aed6bd5b0df76b9e0083be671788a31973f14e59e0a02ae",
+    "platform/altirraos/interrupt-work.s": "426714e6b7a8eea284520096563f3680dc29d3e1ab250ca132c1cde331240dec",
+    "tools/profile_vbxe_builder.py": "1a131ef60397f52730ec8617f236d9a143e3dd37127b1befb8d50c174b426ae3",
+    "tools/analyze_vbxe_builder.py": "90a81fff8e8c503e2933913b53e9f963c396cb74efc237d1c1fefa149bfb3e79",
+    "tools/test_desktop_presentation.py": "faf6fb5b97a12a70606fbb811072c895e94e36fd2758b2667af5030a3a727111",
+    "tools/test_desktop_background.py": "089f9bc3e5f329bf32dc92867a14e10f5d50e956ea51b81d3e5dbd5a3fd719df",
+    "tools/test_console_batch_lifetime.py": "835d73fdd342e8b45daf35683daf43d4755d943826c8104d6ca68c56c92e3134",
+    "tools/test_console_bitmap_scroll.py": "ae7bbb2674673c1b78594f597c59e731a6f6cc4f11f1423c6ee956b4d5cd513d",
+    "tools/bitmap_console_oracle.py": "449478c06c17bafddb8eea16f83ea952890065528f4a333183a375bc810bc7e4",
+    "tests/programs/desktop_presentation.act": "e2b9ff869f96c03d96b03810bba01ab8954b5aec7413a721334c3381e469e865",
+    "tests/programs/desktop_background.act": "3425b37fdbbdd8f53f7a36197aac506056e8dcd0a2009840581ff9b5a2132ab5",
+    "tests/programs/scrollprobe.act": "0f9071b89f16edde5a9dfa12f50977e769222e56087dbeaafa1242a3b2b3464e",
+    "tests/programs/batchprobe.act": "e21b953c590c5a0e6aa3ba448d712b84abbab2627c5cee52dbc4434c1ca5195e",
+    "tests/programs/console_batch_bitmap.act": "178668dec4fa256e32acd8a3ebe9a530ec90a4920cb1c12356a7c961cd65b1e7"
+  },
+  "whole_run": {
+    "before": {
+      "maximum_cpu_gap": {
+        "elapsed_ms": 121.23956305444621,
+        "charged_cpu_ms": 75.83893800070202,
+        "interrupt_ms": 15.75208738911076,
+        "off_cpu_ms": 29.648537664633434
+      },
+      "maximum_cpu_ms": {
+        "consoledisplay_present": 49.675138395695384,
+        "consoledisplay_cells": 49.38044402216587,
+        "consolebitmap_text": 21.500918408918224,
+        "consolebitmap_clippedtext": 19.826425648348767,
+        "pump": 17.83256904983091,
+        "paint": 16.39631283136377,
+        "deskhost_controls": 78.78574076762915,
+        "commit": 8.049646239880232,
+        "deskinput_service": 9.565972491432648,
+        "deskinput_advance": 10.130691774072815,
+        "consoledriver_writequantum": 6.543117289911317,
+        "deskhost_cache": 7.83403512085923,
+        "consolebitmap_run": 28.861370297119027,
+        "deskcore_pump": 73.02429307887604,
+        "deskcore_dispatch": 71.50683908037875,
+        "deskhost_inputboundary": 9.391735588451306,
+        "deskwidgetinput_advance": 10.042022670532958,
+        "deskpaint_paintstrip": 17.481346360690125,
+        "frame_background": 7.290672545987406
+      },
+      "native_admissions": {
+        "CANCEL_EVENT": {
+          "calls": 7,
+          "maximum_cpu_ms": 2.8984506166661266
+        },
+        "CLOSE": {
+          "calls": 4,
+          "maximum_cpu_ms": 10.425879536890717
+        },
+        "FOCUS": {
+          "calls": 3,
+          "maximum_cpu_ms": 8.001787478907607
+        },
+        "HIDE": {
+          "calls": 2,
+          "maximum_cpu_ms": 12.466467149436339
+        },
+        "NEXT_EVENT": {
+          "calls": 78,
+          "maximum_cpu_ms": 1.9958301556713691
+        },
+        "OPEN": {
+          "calls": 4,
+          "maximum_cpu_ms": 3.532526336415372
+        },
+        "RAISE": {
+          "calls": 1,
+          "maximum_cpu_ms": 2.573800464913678
+        },
+        "READ_WIDGET_STATE": {
+          "calls": 3,
+          "maximum_cpu_ms": 7.769542092449875
+        },
+        "REGISTER": {
+          "calls": 2,
+          "maximum_cpu_ms": 4.715955786681027
+        },
+        "SET_TREE": {
+          "calls": 3,
+          "maximum_cpu_ms": 73.02429307887604
+        },
+        "SHOW": {
+          "calls": 4,
+          "maximum_cpu_ms": 15.297252949410682
+        },
+        "UNREGISTER": {
+          "calls": 3,
+          "maximum_cpu_ms": 6.218044233054545
+        },
+        "UPDATE_WIDGETS": {
+          "calls": 78,
+          "maximum_cpu_ms": 25.38501985539465
+        }
+      },
+      "maximum_queued_work": 7920
+    },
+    "after": {
+      "maximum_cpu_gap": {
+        "elapsed_ms": 100.82882352029029,
+        "charged_cpu_ms": 74.18432178003579,
+        "interrupt_ms": 15.204989152484075,
+        "off_cpu_ms": 11.43951258777043
+      },
+      "maximum_cpu_ms": {
+        "consoledisplay_present": 9.740279878598042,
+        "consoledisplay_cells": 9.627011794823359,
+        "consolebitmap_clippedtext": 4.988377158049506,
+        "pump": 17.62506361197611,
+        "paint": 16.80737659276635,
+        "deskhost_controls": 91.7040820210353,
+        "commit": 8.057329015942113,
+        "deskinput_service": 7.771797586339601,
+        "deskinput_advance": 11.22467679477402,
+        "consoledriver_writequantum": 5.98932305579951,
+        "deskhost_cache": 7.37053112652052,
+        "consolebitmap_run": 28.882374583967103,
+        "deskcore_pump": 72.52582892924657,
+        "deskcore_dispatch": 71.01154671903171,
+        "deskhost_inputboundary": 10.232611904214814,
+        "deskwidgetinput_advance": 11.124518769233372,
+        "deskpaint_paintstrip": 16.999586962681445,
+        "frame_background": 6.761688744662585,
+        "consolebitmap_desktoppart": 6.639680622065215,
+        "consolebitmap_textstep": 6.703045903529707,
+        "deskpaint_textstep": 5.077962555982063
+      },
+      "native_admissions": {
+        "CANCEL_EVENT": {
+          "calls": 7,
+          "maximum_cpu_ms": 2.900917563108014
+        },
+        "CLOSE": {
+          "calls": 4,
+          "maximum_cpu_ms": 9.760015450133144
+        },
+        "FOCUS": {
+          "calls": 4,
+          "maximum_cpu_ms": 6.5052672830743505
+        },
+        "HIDE": {
+          "calls": 2,
+          "maximum_cpu_ms": 12.465903275963907
+        },
+        "NEXT_EVENT": {
+          "calls": 71,
+          "maximum_cpu_ms": 1.6213476857927849
+        },
+        "OPEN": {
+          "calls": 4,
+          "maximum_cpu_ms": 4.078355857729084
+        },
+        "RAISE": {
+          "calls": 2,
+          "maximum_cpu_ms": 1.962561620797909
+        },
+        "READ_WIDGET_STATE": {
+          "calls": 3,
+          "maximum_cpu_ms": 7.6581770816446495
+        },
+        "REGISTER": {
+          "calls": 2,
+          "maximum_cpu_ms": 4.790739505962257
+        },
+        "SET_TREE": {
+          "calls": 3,
+          "maximum_cpu_ms": 72.52582892924657
+        },
+        "SHOW": {
+          "calls": 3,
+          "maximum_cpu_ms": 14.8441101301279
+        },
+        "UNREGISTER": {
+          "calls": 3,
+          "maximum_cpu_ms": 6.103930339071216
+        },
+        "UPDATE_WIDGETS": {
+          "calls": 78,
+          "maximum_cpu_ms": 23.73498510669191
+        }
+      },
+      "maximum_queued_work": 7920
+    }
+  },
+  "fixed_offer_diagnostic": {
+    "artifact": {
+      "path": "build/presenter-input/pi3/verified-fixed-comparison.json",
+      "sha256": "62ae8932352d3ec92f58dc3063e691259c0a91c56adab05030a3f848f2419d21"
+    },
+    "status": "pass",
+    "scope": "Identical external offer and button-edge schedules on the same recorded machine. Backlog and boundary-crossing calls remain visible. These distributions do not replace continuous-workload or scanout acceptance.",
+    "schedule": {
+      "frames": 400,
+      "period_frames": 20,
+      "offers": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100,
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        360,
+        380
+      ],
+      "edges": [
+        [
+          12,
+          1
+        ],
+        [
+          37,
+          0
+        ],
+        [
+          62,
+          1
+        ],
+        [
+          87,
+          0
+        ],
+        [
+          112,
+          1
+        ],
+        [
+          137,
+          0
+        ],
+        [
+          162,
+          1
+        ],
+        [
+          187,
+          0
+        ],
+        [
+          212,
+          1
+        ],
+        [
+          237,
+          0
+        ],
+        [
+          262,
+          1
+        ],
+        [
+          287,
+          0
+        ],
+        [
+          312,
+          1
+        ],
+        [
+          337,
+          0
+        ],
+        [
+          362,
+          1
+        ],
+        [
+          387,
+          0
+        ]
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    "before": {
+      "load": "idle",
+      "xex_sha256": "95ac65dc3576c1190a3868ed0a68bc64f0c662d4f7b9981784126721d17eccbf",
+      "offered": 20,
+      "started": 20,
+      "completed": 20,
+      "pending": 0,
+      "calls": 99,
+      "native_progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "input": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.6023578369249724,
+          "p95_ms": 0.6669918337024355,
+          "max_ms": 0.6669918337024355
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.490992826119747,
+          "p95_ms": 1.4766436559300458,
+          "max_ms": 1.4766436559300458
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 1.721294258781272,
+          "p95_ms": 58.277239670190404,
+          "max_ms": 58.277239670190404
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.4914862154081246,
+          "p95_ms": 2.7934291824257556,
+          "max_ms": 2.7934291824257556
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.6023578369249724,
+          "p95_ms": 0.6669918337024355,
+          "max_ms": 0.6669918337024355
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 1.4322386199760635,
+          "p95_ms": 46.098136539141976,
+          "max_ms": 46.098136539141976
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 2.817746225924365,
+          "p95_ms": 58.277239670190404,
+          "max_ms": 58.277239670190404
+        }
+      },
+      "caller_cpu_ms": 360.80677606751823,
+      "caller_costs": {
+        "24": {
+          "device_io": {
+            "count": 20,
+            "median_ms": 1.0459852913604717,
+            "p95_ms": 1.0744609017182636,
+            "max_ms": 2.4356514641679556
+          },
+          "clock": {
+            "count": 20,
+            "median_ms": 0.03658129152399493,
+            "p95_ms": 0.04200857369614832,
+            "max_ms": 0.04764730842046353
+          },
+          "other": {
+            "count": 20,
+            "median_ms": 0.08049293818959963,
+            "p95_ms": 0.08627264128202272,
+            "max_ms": 0.08627264128202272
+          },
+          "deadline": {
+            "count": 20,
+            "median_ms": 0.23457136453151275,
+            "p95_ms": 0.24042155180798983,
+            "max_ms": 0.24063300436015161
+          },
+          "message": {
+            "count": 20,
+            "median_ms": 0.2044041337564264,
+            "p95_ms": 0.2099019001126337,
+            "max_ms": 0.21060674195317314
+          },
+          "binding": {
+            "count": 20,
+            "median_ms": 1.7502632584274416,
+            "p95_ms": 2.029380627281044,
+            "max_ms": 2.0297330482013143
+          },
+          "alarm_submit": {
+            "count": 20,
+            "median_ms": 0.040951310935339214,
+            "p95_ms": 0.046308108923438666,
+            "max_ms": 0.046308108923438666
+          },
+          "alarm_retire": {
+            "count": 20,
+            "median_ms": 0.05779703092423091,
+            "p95_ms": 0.06364721820070793,
+            "max_ms": 0.06371770238476188
+          },
+          "wait": {
+            "count": 20,
+            "median_ms": 0.6280845641046605,
+            "p95_ms": 0.933633501978491,
+            "max_ms": 0.9450519397952293
+          }
+        },
+        "25": {
+          "device_io": {
+            "count": 39,
+            "median_ms": 2.608760620204432,
+            "p95_ms": 2.6269455396903485,
+            "max_ms": 4.689030828372422
+          },
+          "clock": {
+            "count": 39,
+            "median_ms": 0.07266919375961228,
+            "p95_ms": 0.07851938103608931,
+            "max_ms": 8.154738158304658
+          },
+          "other": {
+            "count": 39,
+            "median_ms": 0.5721906061498859,
+            "p95_ms": 0.5896706837952631,
+            "max_ms": 1.523515638325916
+          },
+          "deadline": {
+            "count": 39,
+            "median_ms": 0.23626298494880732,
+            "p95_ms": 0.24183123548906862,
+            "max_ms": 0.24302946661798558
+          },
+          "message": {
+            "count": 39,
+            "median_ms": 0.35672045549699105,
+            "p95_ms": 1.7599900758268852,
+            "max_ms": 1.7649239687106608
+          },
+          "binding": {
+            "count": 39,
+            "median_ms": 0.9945318370010954,
+            "p95_ms": 1.0189898488678124,
+            "max_ms": 1.0189898488678124
+          },
+          "alarm_submit": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 0.04701295076397807,
+            "max_ms": 0.04715391913208594
+          },
+          "alarm_retire": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 0.06315382891233037,
+            "max_ms": 0.06315382891233037
+          },
+          "wait": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 1.2689267655230843,
+            "max_ms": 1.2706888701244328
+          }
+        },
+        "12": {
+          "binding": {
+            "count": 40,
+            "median_ms": 0.9432898351938809,
+            "p95_ms": 0.9512545479919761,
+            "max_ms": 0.9512545479919761
+          },
+          "other": {
+            "count": 40,
+            "median_ms": 0.13497721246329536,
+            "p95_ms": 0.13582302267194263,
+            "max_ms": 0.14153224158031177
+          },
+          "message": {
+            "count": 40,
+            "median_ms": 1.590405128993105,
+            "p95_ms": 1.5983698417912007,
+            "max_ms": 1.602951313754707
+          }
+        }
+      }
+    },
+    "after": {
+      "load": "idle",
+      "xex_sha256": "9a038ef976fe0aca4990f943239efa76676edfe9c5593d70612302ed10bb1f54",
+      "offered": 20,
+      "started": 20,
+      "completed": 20,
+      "pending": 0,
+      "calls": 99,
+      "native_progress": {
+        "reads": 0,
+        "writes": 0
+      },
+      "input": {
+        "capture_to_ready_ms": {
+          "count": 16,
+          "median_ms": 0.6023578369249724,
+          "p95_ms": 0.6898287093359121,
+          "max_ms": 0.6898287093359121
+        },
+        "ready_to_selected_ms": {
+          "count": 16,
+          "median_ms": 0.49049943683136943,
+          "p95_ms": 0.4928254149051494,
+          "max_ms": 0.4928254149051494
+        },
+        "selected_to_consume_ms": {
+          "count": 16,
+          "median_ms": 1.7218581322537037,
+          "p95_ms": 5.131178114942788,
+          "max_ms": 5.131178114942788
+        },
+        "runnable_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.49049943683136943,
+          "p95_ms": 0.4928254149051494,
+          "max_ms": 0.4928254149051494
+        },
+        "blocked_off_cpu_ms": {
+          "count": 16,
+          "median_ms": 0.6023578369249724,
+          "p95_ms": 0.6898287093359121,
+          "max_ms": 0.6898287093359121
+        },
+        "charged_cpu_ms": {
+          "count": 16,
+          "median_ms": 1.4318861990557938,
+          "p95_ms": 4.274301889399037,
+          "max_ms": 4.274301889399037
+        },
+        "elapsed_ms": {
+          "count": 16,
+          "median_ms": 2.7951912870271043,
+          "p95_ms": 5.131178114942788,
+          "max_ms": 5.131178114942788
+        }
+      },
+      "caller_cpu_ms": 355.35172312684756,
+      "caller_costs": {
+        "24": {
+          "wait": {
+            "count": 20,
+            "median_ms": 0.6579698581435311,
+            "p95_ms": 0.9452633923473911,
+            "max_ms": 0.9586553873176398
+          },
+          "alarm_retire": {
+            "count": 20,
+            "median_ms": 0.05765606255612303,
+            "p95_ms": 0.06357673401665401,
+            "max_ms": 0.0692154687409692
+          },
+          "clock": {
+            "count": 20,
+            "median_ms": 0.03658129152399493,
+            "p95_ms": 0.036722259892102815,
+            "max_ms": 0.04306583645695742
+          },
+          "binding": {
+            "count": 20,
+            "median_ms": 0.9203119911922963,
+            "p95_ms": 2.0297330482013143,
+            "max_ms": 2.0297330482013143
+          },
+          "device_io": {
+            "count": 20,
+            "median_ms": 1.0391483255072393,
+            "p95_ms": 1.0742494491661017,
+            "max_ms": 1.0743199333501556
+          },
+          "message": {
+            "count": 20,
+            "median_ms": 0.2044041337564264,
+            "p95_ms": 0.2099019001126337,
+            "max_ms": 0.21032480521695734
+          },
+          "alarm_submit": {
+            "count": 20,
+            "median_ms": 0.04095131093533922,
+            "p95_ms": 0.04130373185560891,
+            "max_ms": 0.046308108923438666
+          },
+          "other": {
+            "count": 20,
+            "median_ms": 0.08028148563743781,
+            "p95_ms": 0.08648409383418454,
+            "max_ms": 0.08683651475445424
+          },
+          "deadline": {
+            "count": 20,
+            "median_ms": 0.23457136453151275,
+            "p95_ms": 0.24042155180798983,
+            "max_ms": 0.24070348854420556
+          }
+        },
+        "25": {
+          "wait": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 1.2689972497071382,
+            "max_ms": 1.2705479017563248
+          },
+          "alarm_retire": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 0.06315382891233037,
+            "max_ms": 0.06343576564854612
+          },
+          "clock": {
+            "count": 39,
+            "median_ms": 0.07259870957555833,
+            "p95_ms": 0.08408763157635059,
+            "max_ms": 8.171442909925444
+          },
+          "binding": {
+            "count": 39,
+            "median_ms": 0.9945318370010954,
+            "p95_ms": 1.0189898488678124,
+            "max_ms": 2.046578768190206
+          },
+          "device_io": {
+            "count": 39,
+            "median_ms": 2.6111570824622663,
+            "p95_ms": 2.7464867158458315,
+            "max_ms": 4.720114353540209
+          },
+          "message": {
+            "count": 39,
+            "median_ms": 0.34516104931214486,
+            "p95_ms": 0.3644737157429244,
+            "max_ms": 1.4029876835936783
+          },
+          "alarm_submit": {
+            "count": 39,
+            "median_ms": 0,
+            "p95_ms": 0.04673101402776231,
+            "max_ms": 0.04701295076397807
+          },
+          "other": {
+            "count": 39,
+            "median_ms": 0.5728249638063715,
+            "p95_ms": 1.523656606694024,
+            "max_ms": 1.523656606694024
+          },
+          "deadline": {
+            "count": 39,
+            "median_ms": 0.23626298494880732,
+            "p95_ms": 0.24183123548906862,
+            "max_ms": 0.2419722038571765
+          }
+        },
+        "12": {
+          "message": {
+            "count": 40,
+            "median_ms": 1.590334644809051,
+            "p95_ms": 1.5990041994476858,
+            "max_ms": 1.6032332504909224
+          },
+          "other": {
+            "count": 40,
+            "median_ms": 0.13476575991113351,
+            "p95_ms": 0.13582302267194263,
+            "max_ms": 0.14132078902814998
+          },
+          "binding": {
+            "count": 40,
+            "median_ms": 0.9431488668257729,
+            "p95_ms": 0.9502677694152208,
+            "max_ms": 0.9512545479919761
+          }
+        }
+      }
+    },
+    "pixel_observer": false
+  },
+  "retained_text_fixture": {
+    "comparison_scope": "Same expanded twelve-scene fixture; before overrides only deskpaint.act with PI2 source from 391cdc3. Exact pixels pass on both. Repair elapsed includes two PAL settling frames.",
+    "before": {
+      "artifact": {
+        "path": "build/presenter-input/pi3/background-before/background-results.json",
+        "sha256": "a52595db1eb5857f83f66a1fd039678e2caa6bb444f66f86cad83a5b1bd9f792"
+      },
+      "xex_sha256": "dfb2f98eb56958de51a02503768c8ab993fc7e2a642e0b4cf33129d364485593",
+      "checks": 41,
+      "scenes": [
+        {
+          "stage": 10,
+          "name": "long retained text and title",
+          "settled_ms": 240.66965613585967,
+          "painter_calls": 5,
+          "painter_cpu_ms": 81.9484365903135,
+          "painter_max_cpu_ms": 25.97264649785235,
+          "pixels": "dc4f9cb2b2639c0798b17515bb4fc9c0b433dfcd463b43f193caecd70ce63e8e"
+        },
+        {
+          "stage": 11,
+          "name": "vertically clipped long repair",
+          "settled_ms": 120.33511000466605,
+          "painter_calls": 1,
+          "painter_cpu_ms": 49.147705246419754,
+          "painter_max_cpu_ms": 49.147705246419754,
+          "pixels": "dc4f9cb2b2639c0798b17515bb4fc9c0b433dfcd463b43f193caecd70ce63e8e"
+        },
+        {
+          "stage": 12,
+          "name": "closed after text continuation",
+          "settled_ms": 120.33511000466605,
+          "painter_calls": 5,
+          "painter_cpu_ms": 19.43404019572048,
+          "painter_max_cpu_ms": 4.2988303854498096,
+          "pixels": "0d09af59892dd5ace28d7f9dc1ded37b2ff3f3ea12b645fc282768a2e19f7c09"
+        }
+      ]
+    },
+    "after": {
+      "artifact": {
+        "path": "build/presenter-input/pi3/verified-background/background-results.json",
+        "sha256": "ca1be267d2cf39217551e79d778a961aacf82b5fb79e7d7dfa540408e5595f58"
+      },
+      "xex_sha256": "ca432c0be8bb203f1b1d73a1e8b761c2e0f93ec8c5b88053873026ab6fbe9415",
+      "checks": 41,
+      "scenes": [
+        {
+          "stage": 10,
+          "name": "long retained text and title",
+          "settled_ms": 280.7819233442208,
+          "painter_calls": 15,
+          "painter_cpu_ms": 86.67806630870099,
+          "painter_max_cpu_ms": 11.12021923400608,
+          "pixels": "dc4f9cb2b2639c0798b17515bb4fc9c0b433dfcd463b43f193caecd70ce63e8e"
+        },
+        {
+          "stage": 11,
+          "name": "vertically clipped long repair",
+          "settled_ms": 160.44681333955475,
+          "painter_calls": 6,
+          "painter_cpu_ms": 60.0517494879324,
+          "painter_max_cpu_ms": 15.368230522752999,
+          "pixels": "dc4f9cb2b2639c0798b17515bb4fc9c0b433dfcd463b43f193caecd70ce63e8e"
+        },
+        {
+          "stage": 12,
+          "name": "closed after text continuation",
+          "settled_ms": 120.33511000466605,
+          "painter_calls": 5,
+          "painter_cpu_ms": 20.126617788234498,
+          "painter_max_cpu_ms": 4.471234699645747,
+          "pixels": "0d09af59892dd5ace28d7f9dc1ded37b2ff3f3ea12b645fc282768a2e19f7c09"
+        }
+      ]
+    }
+  },
+  "fragment_fixture": {
+    "comparison_scope": "Intermediate PI3 with 32 logical glyphs but synchronous fragments versus final PI3 with fragment continuation. This is not the PI2 whole-image baseline.",
+    "intermediate": {
+      "artifact": {
+        "path": "build/presenter-input/pi3/presentation/presentation-results.json",
+        "sha256": "66486713e5f2c4de310fee0728c30a7f70d6fccfba110b8ca3eb0d1bd39e7959"
+      },
+      "xex_sha256": "17f2ce49fc6e68ea95b5e3734585c274019f7465e5ec606be3b53467b97d596f",
+      "checks": 96,
+      "scenes": [
+        {
+          "stage": 16,
+          "stimulus_to_settled_ms": 6939.327197260476,
+          "text_work": {
+            "cells": {
+              "calls": 313,
+              "total_cpu_ms": 3037.98639373311,
+              "max_cpu_ms": 42.59020918296144
+            },
+            "desktop_draw": {
+              "calls": 343,
+              "total_cpu_ms": 2797.2276455886063,
+              "max_cpu_ms": 41.75884823204521
+            },
+            "paint_strip": {
+              "calls": 25,
+              "total_cpu_ms": 138.99967436306966,
+              "max_cpu_ms": 13.027309801953539
+            }
+          },
+          "pixels": "a536b8ea56763ed286d15fe171c24a1bc0f599aee7b40dbfda896884d19a51ed"
+        },
+        {
+          "stage": 17,
+          "stimulus_to_settled_ms": 10589.492102103983,
+          "text_work": {
+            "cells": {
+              "calls": 561,
+              "total_cpu_ms": 5081.186784497427,
+              "max_cpu_ms": 42.64271990008162
+            },
+            "desktop_draw": {
+              "calls": 591,
+              "total_cpu_ms": 4728.613688874353,
+              "max_cpu_ms": 41.812345727742155
+            },
+            "paint_strip": {
+              "calls": 0,
+              "total_cpu_ms": 0,
+              "max_cpu_ms": 0
+            }
+          },
+          "pixels": "99466ebea5424875e7ac3e3d70486ec77402a354fe0e7d60f1af211ff4c54c94"
+        },
+        {
+          "stage": 18,
+          "stimulus_to_settled_ms": 320.8937171508368,
+          "text_work": {
+            "cells": {
+              "calls": 1,
+              "total_cpu_ms": 0.005991155644584912,
+              "max_cpu_ms": 0.005991155644584912
+            },
+            "desktop_draw": {
+              "calls": 1,
+              "total_cpu_ms": 3.4395576976482247,
+              "max_cpu_ms": 3.4395576976482247
+            },
+            "paint_strip": {
+              "calls": 20,
+              "total_cpu_ms": 104.93170787407014,
+              "max_cpu_ms": 10.602160481209621
+            }
+          },
+          "pixels": "f28c297f79d0585a6a63a4e107f7f9776fd80f6726f75aeefeab7a5e74ae62bb"
+        }
+      ],
+      "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration"
+    },
+    "final": {
+      "artifact": {
+        "path": "build/presenter-input/pi3/verified-presentation/normal-presentation-results.json",
+        "sha256": "7f158d46a9cc89fa781dfc7fbf07d7e5450ad1a722d018f08ad2320f935f6771"
+      },
+      "xex_sha256": "10a154a8a6e5f1f0aebc2c01950c6ef9cb4f9f50587515bf1214f92f837f1364",
+      "checks": 117,
+      "scenes": [
+        {
+          "stage": 16,
+          "stimulus_to_settled_ms": 7922.0630782876515,
+          "text_work": {
+            "cells": {
+              "calls": 433,
+              "total_cpu_ms": 3215.19152667333,
+              "max_cpu_ms": 15.425886585309122
+            },
+            "desktop_draw": {
+              "calls": 30,
+              "total_cpu_ms": 114.89535213193511,
+              "max_cpu_ms": 4.246319668329623
+            },
+            "paint_strip": {
+              "calls": 25,
+              "total_cpu_ms": 139.13303043929972,
+              "max_cpu_ms": 12.998763707411694
+            }
+          },
+          "pixels": "a536b8ea56763ed286d15fe171c24a1bc0f599aee7b40dbfda896884d19a51ed"
+        },
+        {
+          "stage": 17,
+          "stimulus_to_settled_ms": 10970.553955094232,
+          "text_work": {
+            "cells": {
+              "calls": 709,
+              "total_cpu_ms": 4619.109671980705,
+              "max_cpu_ms": 13.594777967771812
+            },
+            "desktop_draw": {
+              "calls": 26,
+              "total_cpu_ms": 100.8459511770154,
+              "max_cpu_ms": 4.384116248155077
+            },
+            "paint_strip": {
+              "calls": 0,
+              "total_cpu_ms": 0,
+              "max_cpu_ms": 0
+            }
+          },
+          "pixels": "99466ebea5424875e7ac3e3d70486ec77402a354fe0e7d60f1af211ff4c54c94"
+        },
+        {
+          "stage": 18,
+          "stimulus_to_settled_ms": 320.89428102446817,
+          "text_work": {
+            "cells": {
+              "calls": 1,
+              "total_cpu_ms": 0.005991155644584912,
+              "max_cpu_ms": 0.005991155644584912
+            },
+            "desktop_draw": {
+              "calls": 1,
+              "total_cpu_ms": 4.114373275780648,
+              "max_cpu_ms": 4.114373275780648
+            },
+            "paint_strip": {
+              "calls": 21,
+              "total_cpu_ms": 107.16577457184383,
+              "max_cpu_ms": 10.634442237506326
+            }
+          },
+          "pixels": "f28c297f79d0585a6a63a4e107f7f9776fd80f6726f75aeefeab7a5e74ae62bb"
+        },
+        {
+          "stage": 19,
+          "stimulus_to_settled_ms": 2366.5906001137896,
+          "text_work": {
+            "cells": {
+              "calls": 8,
+              "total_cpu_ms": 50.71139686965642,
+              "max_cpu_ms": 13.659341480365221
+            },
+            "desktop_draw": {
+              "calls": 15,
+              "total_cpu_ms": 58.70070864798648,
+              "max_cpu_ms": 4.718634185675076
+            },
+            "paint_strip": {
+              "calls": 177,
+              "total_cpu_ms": 783.2213104701436,
+              "max_cpu_ms": 11.904073844869949
+            }
+          },
+          "pixels": "b3ec3e9d8fca8f0370fe414f523f41c0451bf671ff3c6a726ac3a15ca66836e6"
+        }
+      ],
+      "timing_scope": "Includes request, all repair, caret and two PAL settling frames; not DMA duration"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "build/presenter-input/pi3/baseline/results.json",
+      "sha256": "e44ddee0a8ad52bed286f5eb429afbf7537b8c9ed42f5989ff1d8c8b8b09baeb"
+    },
+    {
+      "path": "build/presenter-input/pi3/baseline/work-unit-analysis.json",
+      "sha256": "62f430d75d2796e3f2a17785a2b7d71e5b89af69447da7cd2be7f8f3fe43bb8c"
+    },
+    {
+      "path": "build/presenter-input/pi3/verified-panel/results.json",
+      "sha256": "07271ee08ade81b546de32abfd4ce146f0bb9ca5f0d2824cbcf21fdc518ff73e"
+    },
+    {
+      "path": "build/presenter-input/pi3/verified-panel/work-unit-analysis.json",
+      "sha256": "46d68a3cdc0abdb110d56552011e820a670e17241423683a9c7c49ebfdadaa58"
+    },
+    {
+      "path": "build/presenter-input/pi3/verified-panel/presenter-definition.json",
+      "sha256": "d0459d23fb2a16e88d51c71eecd879e968fda268abd8a3b19fd124875ae89cb0"
+    },
+    {
+      "path": "build/presenter-input/pi3/verified-fixed/results.json",
+      "sha256": "198cf22ee6e26aefb49b20ce6d5631360ad5fe21889179ee5e08a554a89c5820"
+    }
+  ]
+}

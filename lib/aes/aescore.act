@@ -1,5 +1,6 @@
 ; Ordinary-message admission. Only the existing presenter executes policy.
 MODULE AESCORE
+USE DISPLAY
 USE EXEC
 USE EXECLISTS
 USE AESTYPES
@@ -8,6 +9,11 @@ USE TASKMEMORY
 USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
+USE AESGUI
+USE AESMENU
+USE AESWINDOW
+USE AESINBOX
+USE DESKMOUSE
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -27,6 +33,9 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.error=AESTYPES.OK
   service.nextClient=1
   service.nextGem=1
+  service.nextMenuEpoch=1
+  service.nextGuiEpoch=1
+  service.nextWindow=1
   service.started=1
   ; AESHOST publishes after endpoint initialization has settled.
 
@@ -79,7 +88,7 @@ CARD FUNC Register(AESSTATE.Service POINTER service
           EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.receiving),EXEC.MSGPORT_SIZE)=0
       OR Storage(BYTE POINTER(request.records),
-          AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH)=0 THEN
+          AESTYPES.REGISTRATIONSTORAGE_SIZE)=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -175,6 +184,16 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   endpoint.records=request.records
   endpoint.holds=0
   endpoint.freeRecords=$ffff
+  endpoint.gui=AESTYPES.GuiDelivery POINTER(
+      ADDRESS(request.records)+SIZE(AESTYPES.DELIVERY_SIZE*AESTYPES.QUEUE_DEPTH))
+  endpoint.guiFree=1
+  endpoint.guiWaiting=0
+  endpoint.guiEpoch=0
+  endpoint.menuEpoch=0
+  endpoint.menuConsumed=1
+  endpoint.menuNormal=1
+  endpoint.input=AESTYPES.InputInbox POINTER(ADDRESS(request.records)
+      +SIZE(AESTYPES.REGISTRATIONSTORAGE_OFFSET_INPUT))
   endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
   request.directory=@service.directory
   EXEC.Permit()
@@ -193,6 +212,10 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   LET endpoint=client.endpoint
   EXEC.Forbid()
   endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESINBOX.Close(client)
+  endpoint.guiEpoch=0
+  endpoint.guiWaiting=0
+  client.gui.count=0
   IF endpoint.holds<>0 THEN
     client.pending=request
     EXEC.Permit()
@@ -200,6 +223,21 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   EXEC.Permit()
+  IF AESMENU.Retire(service,client)=0 OR AESWINDOW.Retire(service,client)=0 THEN
+    client.pending=request
+    IF client.windowWaiting=0 THEN
+      client.windowWaiting=1
+      service.windowPending==+1
+    FI
+
+    RETURN
+  FI
+
+  IF client.windowWaiting<>0 THEN
+    client.windowWaiting=0
+    service.windowPending==-1
+  FI
+
   ; Admission is closed and every publisher has finished using the pool.
   WHILE EXEC.GetMsg(endpoint.port)<>NULL DO
   OD
@@ -208,6 +246,8 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.state=AESTYPES.ENDPOINT_RETIRED
   endpoint.port=NULL
   endpoint.records=NULL
+  endpoint.gui=NULL
+  endpoint.input=NULL
   endpoint.owner=NULL
   EXEC.Permit()
   AESLOCKS.Retire(service,client)
@@ -242,7 +282,7 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     request.intout(index)=0
   OD
 
-  IF request.operation=AESTYPES.OP_INIT THEN
+  IF request.operation=AESTYPES.OP_INIT OR request.operation=AESTYPES.OP_CREATE THEN
     request.intout(0)=-1
   FI
 
@@ -315,9 +355,69 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     IF status<>AESTYPES.PENDING THEN
       AESSTATE.Reply(request,status)
     FI
+  ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
+    request.intout(0)=DESKMOUSE.Profile(request.intin(0))
+    AESSTATE.Reply(request,AESTYPES.OK)
+  ELSEIF request.operation=AESTYPES.OP_DISPLAY THEN
+    BEGIN
+      LET grant=DISPLAY.Grant POINTER(request.displayGrant)
+      IF grant.task<>request.owner THEN
+        status=AESTYPES.IDENTITY
+      ELSE
+        status=DISPLAY.Delegate(grant)
+        status=IF status=DISPLAY.OK THEN AESTYPES.OK
+            ELSEIF status=DISPLAY.NO_MEMORY THEN AESTYPES.RESOURCE
+            ELSE AESTYPES.DISPLAY_ERROR FI
+      FI
+
+      request.intout(0)=INT(status=AESTYPES.OK)
+      AESSTATE.Reply(request,status)
+    END
   ELSE
-    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
+    status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
+        ELSE AESWINDOW.Request(service,client,request) FI
+    IF status=AESTYPES.PENDING THEN
+      client.pending=request
+      client.windowWaiting=1
+      service.windowPending==+1
+    ELSE
+      AESSTATE.Reply(request,status)
+    FI
   FI
+
+RETURN
+
+; Retry only admitted mutations, after the current frame/hardware unit retires.
+PUBLIC PROC Settle(AESSTATE.Service POINTER service)
+  BYTE index
+  CARD status
+
+  IF service.windowPending=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.windowWaiting<>0 THEN
+        BEGIN
+          LET request=client.pending
+          IF request.operation=AESTYPES.OP_EXIT THEN
+            Retire(service,client,request)
+          ELSE
+            status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
+        ELSE AESWINDOW.Request(service,client,request) FI
+            IF status<>AESTYPES.PENDING THEN
+              client.pending=NULL
+              client.windowWaiting=0
+              service.windowPending==-1
+              AESSTATE.Reply(request,status)
+            FI
+          FI
+        END
+      FI
+    END
+  OD
 
 RETURN
 
@@ -335,6 +435,8 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
           AND endpoint.holds=0 THEN
         Retire(service,client,client.pending)
+      ELSEIF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
+        AESGUI.Publish(service,client)
       FI
     END
   OD

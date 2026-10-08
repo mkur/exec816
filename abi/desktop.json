@@ -1,12 +1,12 @@
 {
-  "version": 6,
+  "version": 8,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
     "EVENTS": 16,
     "COMMANDS": 32,
     "TEXT_BYTES": 256,
-    "TITLE_BYTES": 32,
+    "TITLE_BYTES": 65,
     "OK": 0,
     "BAD_ARGUMENT": 1,
     "FULL": 2,
@@ -45,7 +45,6 @@
     "LANE_CANCEL": 8,
     "EVENT_CANCEL": 7,
     "TICK_VALID": 1,
-    "POINTER_PIXELS_PER_STEP": 2,
     "CONTENT_WIDGETS": 3,
     "SET_TREE": 13,
     "UPDATE_WIDGETS": 14,
@@ -57,7 +56,22 @@
     "SNAPSHOTS": 2,
     "CACHE_MISS": 0,
     "CACHE_PENDING": 1,
-    "CACHE_FAILED": 2
+    "CACHE_FAILED": 2,
+    "CONTENT_AES": 4,
+    "WORK_LEFT": 8,
+    "WORK_TOP": 16,
+    "WORK_RIGHT": 8,
+    "WORK_BOTTOM": 8,
+    "FRAME_EDGE": 1,
+    "TITLE_HEIGHT": 16,
+    "TITLE_TEXT_Y": 4,
+    "TITLE_PAD": 2,
+    "CLOSE_LEFT": 1,
+    "CLOSE_TOP": 1,
+    "CLOSE_RIGHT": 15,
+    "CLOSE_BOTTOM": 15,
+    "CLOSE_TEXT_X": 4,
+    "CLOSE_GLYPH": 5
   },
   "records": {
     "Event": [

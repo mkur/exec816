@@ -1,0 +1,91 @@
+Exec816 GEM desktop
+==========================
+
+A GEM Control Panel, counter, Files browser and native shell.
+No prime task is started.
+
+Boot in AltirraSDL
+-----------------
+
+Requires AltirraSDL: https://github.com/ilmenit/AltirraSDL
+Upstream Altirra will not run this build.
+
+Extract this ZIP into one folder. In System > Configure System, select:
+
+  Atari 800XL, PAL; 65C816 at 14.28MHz (8x).
+  Shadow ROMs in fast RAM enabled.
+  Memory: 64K base plus 4032K high memory (63 banks), giving 4MB total.
+  Firmware: the included altirraos-816.rom, registered as XL/XE OS.
+  Internal BASIC disabled.
+  VBXE FX 1.26 at $D600, with private 512K VRAM.
+  Input: ST mouse on joystick port 1; left button.
+  SIO Patch and D: burst I/O disabled.
+  "Unload disks when booting new image" disabled.
+
+1. Mount @SYSTEM_DISK@ in D1: with "Generic + 57600 baud" emulation.
+   Mount a disposable copy of work.atr in D8: with writes enabled.
+2. Boot Exec-of816.xex and leave the keyboard alone for the five-second countdown.
+3. Wait for the compressed boot image to load, then for SYS: ready,
+   the shell prompt and the three GEM windows.
+
+Both disks are required at startup. Keep these matching disks mounted throughout
+the session. Press a key during the countdown to enter OF816 instead; EXEC816
+continues into this desktop. The shared GUI is included in the compressed boot
+image. The matching system disk supplies commands, applications and resources.
+
+Use the desktop
+---------------
+
+Click a window to bring it forward. Drag application titles to any on-screen pixel
+position below the menu bar; shell moves use its character grid. Escape cancels
+a title drag. The top-left menu belongs to the active application. Files offers
+Open, Refresh, Stop and Quit. Windows lists every open window, including covered
+ones and the shell, with Next window and Close below when Files is active.
+Other windows offer Next window and Close in the top-left menu.
+Ctrl-Tab / Ctrl-Shift-Tab cycle windows. Ctrl-Escape opens Windows; Tab or arrow
+keys and Return select an entry. Ctrl-Shift-Escape enters an application menu;
+Left/Right changes headings, Tab/Shift-Tab or Up/Down changes entries, and Return
+selects. Click a title then an entry, or drag and release on an entry. Escape or
+a click outside cancels the menu. Disabled actions cannot be selected.
+Click the boxed closer at the left of the title or use Close to close an application. Focus returns to the frontmost
+remaining window. Close is disabled for the shell; use EXIT to end the session.
+The panel controls mouse acceleration through its own GEM object tree.
+Off gives fixed 2x movement; Mild gives slow precision and faster travel.
+Select a radio button, then Apply; Defaults stages Mild. Cancel discards pending
+edits and restores the active session choice. Closing discards pending edits;
+reopening reads the active choice. Settings last until the desktop restarts.
+Tab/Shift-Tab move focus, Space activates focus and Return activates Apply. Escape/BREAK cancels a held press. Release
+outside a button to cancel it. The counter continues independently.
+@POINTER_DESCRIPTION@
+
+Files loads its interface from DESKTOP.RSC on the system disk. Select a row and
+press Return to enter a folder or launch an Exec command. Up returns to the parent;
+Next pages through eight entries. The top Files menu offers Open/Refresh/Stop/Quit.
+File inside the window (or F) retains the Open/Refresh/Stop/Cancel popup.
+Use Tab or Up/Down and Return in that popup; Escape cancels. Launched commands
+have no arguments or keyboard input; their output appears in the shell. Stop
+requests native BREAK or a GEM window close. Try opening C and launching HELLO
+or TICK. TICK prints periodically until Stop. PANEL.APP, COUNTER.APP and
+FILES.APP are independently loadable GEM applications.
+CALC.APP is the GEM4XE integer calculator. Close Panel, then open C in Files
+and launch CALC.APP, or type RUN C:CALC.APP in the shell. Keep SYS:CALC.RSC
+on the system disk. Digits, +, -, *, /, = and C work from the keyboard;
+Tab/Shift-Tab move focus, Space activates it and Return is equals.
+Use +/- to change sign. Division truncates toward zero. Values range from
+-2147483647 to 2147483647; excess entry, overflow and division by zero leave
+the displayed operand unchanged. Quit or X closes it; Files' Stop does too.
+PRIMES needs tiled-console mode and cannot run in this desktop. Closing Files stops
+and collects its running child. Close an existing GEM window before launching
+another GUI app when all four desktop windows are occupied.
+
+With all three GEM windows open, one Task slot remains for a disk command.
+Close one GEM window before running a two-command shell pipeline.
+Click the shell title before typing. Try TASKS, DIR, CAT STORY.TXT | WC, or
+CAT LONG.TXT. BREAK cancels a running command. SYS: is read-only; WORK: is a
+disposable writable disk. EXIT closes all GEM applications and returns to the OS.
+The shell collects closed initial applications while waiting at the prompt.
+After closing Files, type RUN C:FILES.APP to start it again. The same RUN command
+can launch PANEL.APP or COUNTER.APP; the shell supports one background job.
+
+This is a desktop development preview with fixed-size windows and application
+menu bars. Resizing, cascading menus and file-manager icons remain future work.

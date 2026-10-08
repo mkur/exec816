@@ -6,7 +6,7 @@ static uint16_t orderCount;
 
 const char *WidgetSpec(uint32_t offset)
 {
-    return WidgetCurrent->text+(uint16_t)offset;
+    return WidgetCurrent ? WidgetCurrent->text+(uint16_t)offset : (const char *)offset;
 }
 
 static void remember(OBJECT *tree,WORD index,WORD x,WORD y)

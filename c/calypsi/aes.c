@@ -1,4 +1,5 @@
 #include "aes-private.h"
+#include "vdi-private.h"
 #include <proto/exec.h>
 #include <gem.h>
 
@@ -102,13 +103,13 @@ UWORD ExecAESDiagnostic(void)
 
 /* One caller, one packet, one outstanding call. A signal is only a hint: the
  * queue is checked first, including when the reply preceded PutMsg's return. */
-static WORD submit(struct ExecAESContext *c, UWORD operation)
+WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
 {
     struct AESRequest *r = &c->request;
     struct Message *reply;
     ULONG sequence;
     UWORD i;
-    WORD failure = operation == AES_OP_INIT ? -1 : 0;
+    WORD failure = (operation == AES_OP_INIT || operation == AES_OP_CREATE) ? -1 : 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return failure; }
     if (c->identity == 0 && operation != AES_OP_INIT) {
         c->diagnostic = AES_IDENTITY; return failure;
@@ -164,6 +165,17 @@ static WORD submit(struct ExecAESContext *c, UWORD operation)
     return c->diagnostic == AES_OK ? r->intout[0] : failure;
 }
 
+/* This infrequent desktop preference is serialized by the input owner. */
+WORD ExecAESMouseProfile(WORD profile)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return -1;
+    if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
+    c->request.intin[0] = profile;
+    ExecAESSubmit(c, AES_OP_MOUSE_PROFILE);
+    return c->diagnostic == AES_OK ? c->request.intout[0] : -1;
+}
+
 WORD appl_init(void)
 {
     struct ExecAESContext *c = ExecAESContext();
@@ -172,17 +184,17 @@ WORD appl_init(void)
     if (c->identity != 0) { c->diagnostic = AES_OK; return c->gemId; }
     c->busy = 1;
     c->receiving = CreateMsgPort();
-    c->records = AllocMem(AES_QUEUE_DEPTH * sizeof(*c->records), MEMF_PUBLIC | MEMF_CLEAR);
+    c->records = AllocMem(AES_REGISTRATIONSTORAGE_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
     c->busy = 0;
     if (c->receiving == NULL || c->records == NULL) {
         c->diagnostic = AES_RESOURCE;
     } else {
         c->request.receiving = c->receiving;
         c->request.records = c->records;
-        if (submit(c, AES_OP_INIT) > 0)
+        if (ExecAESSubmit(c, AES_OP_INIT) > 0)
             return c->gemId;
     }
-    if (c->records != NULL) FreeMem(c->records, AES_QUEUE_DEPTH * sizeof(*c->records));
+    if (c->records != NULL) FreeMem(c->records, AES_REGISTRATIONSTORAGE_SIZE);
     if (c->receiving != NULL) DeleteMsgPort(c->receiving);
     c->records = NULL;
     c->receiving = NULL;
@@ -198,17 +210,27 @@ WORD appl_exit(void)
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->busy = 1;
+    if (!ExecVDIClose(c)) {
+        c->busy = 0;
+        return 0;
+    }
     if (!ExecAESTimerClose(c)) {
         c->diagnostic = AES_TIMER_ERROR;
         c->busy = 0;
         return 0;
     }
     c->busy = 0;
-    result = submit(c, AES_OP_EXIT);
+    result = ExecAESSubmit(c, AES_OP_EXIT);
     if (result) {
         c->busy = 1;
+        ExecAESResourceFree(c);
+        c->messagePending=0;
+        c->menuTree=0;
+        if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
+        c->view = NULL;
+        c->request.view = NULL;
         DeleteMsgPort(c->receiving);
-        FreeMem(c->records, AES_QUEUE_DEPTH * sizeof(*c->records));
+        FreeMem(c->records, AES_REGISTRATIONSTORAGE_SIZE);
         c->receiving = NULL;
         c->records = NULL;
         c->directory = NULL;
@@ -250,6 +272,36 @@ WORD evnt_mesag(WORD *message)
     return ExecAESEvents(c, MU_MESAG, 0, message) != 0;
 }
 
+WORD evnt_keybd(void)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return 0;
+    return ExecAESEvents(c, MU_KEYBD, 0, NULL) ? c->intout[5] : 0;
+}
+
+static WORD button(struct ExecAESContext *c, WORD clicks, WORD mask, WORD state)
+{
+    c->intin[1] = clicks; c->intin[2] = mask; c->intin[3] = state;
+    return ExecAESEvents(c, MU_BUTTON, 0, NULL) != 0;
+}
+
+WORD evnt_button(WORD clicks, WORD mask, WORD state,
+                 WORD *x, WORD *y, WORD *buttons, WORD *qualifiers)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    WORD result;
+    if (c == NULL) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!ExecAESPointer(x, 2) || !ExecAESPointer(y, 2) ||
+        !ExecAESPointer(buttons, 2) || !ExecAESPointer(qualifiers, 2)) {
+        c->diagnostic = AES_MALFORMED; return 0;
+    }
+    result = button(c, clicks, mask, state);
+    *x = c->intout[1]; *y = c->intout[2];
+    *buttons = c->intout[3]; *qualifiers = c->intout[4];
+    return result;
+}
+
 WORD evnt_timer(UWORD lo, UWORD hi)
 {
     struct ExecAESContext *c = ExecAESContext();
@@ -263,7 +315,7 @@ WORD wind_update(WORD code)
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0] = code;
-    return submit(c, AES_OP_UPDATE);
+    return ExecAESSubmit(c, AES_OP_UPDATE);
 }
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
@@ -293,7 +345,8 @@ WORD evnt_multi(WORD flags, WORD bclk, WORD bmsk, WORD bst,
     in[9] = m2flags; in[10] = m2x; in[11] = m2y; in[12] = m2w; in[13] = m2h;
     in[14] = tlo; in[15] = thi;
     result = multi(c, msg);
-    *mx = *my = *mb = *ks = *kr = *br = 0;
+    *mx = c->intout[1]; *my = c->intout[2]; *mb = c->intout[3];
+    *ks = c->intout[4]; *kr = c->intout[5]; *br = c->intout[6];
     return result;
 }
 
@@ -321,15 +374,26 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
+    if (ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
+    if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }
     if (op == AES_OP_TIMER) inputs = 2;
     if (op == AES_OP_UPDATE) inputs = 1;
     if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
-    if (op == AES_OP_INIT) result = -1;
+    if (op == AES_OP_CREATE || op == AES_OP_OPEN) inputs = 5;
+    if (op == AES_OP_CLOSE || op == AES_OP_DELETE) inputs = 1;
+    if (op == AES_OP_GET) { inputs = 2; outputs = 5; }
+    if (op == AES_OP_SET) inputs = 6;
+    if (op == AES_OP_CALC) { inputs = 6; outputs = 5; }
+    if (op == AES_OP_GRAF_HANDLE) outputs = 5;
+    if (op == AES_OP_INIT || op == AES_OP_CREATE) result = -1;
     if (op != AES_OP_INIT && op != AES_OP_EXIT && op != AES_OP_WRITE &&
-        op != AES_OP_MESAG && op != AES_OP_TIMER && op != AES_OP_MULTI &&
-        op != AES_OP_UPDATE) {
+        op != AES_OP_MESAG && op != AES_OP_KEYBD && op != AES_OP_BUTTON &&
+        op != AES_OP_TIMER && op != AES_OP_MULTI &&
+        op != AES_OP_UPDATE && op != AES_OP_CREATE && op != AES_OP_OPEN &&
+        op != AES_OP_CLOSE && op != AES_OP_DELETE && op != AES_OP_GET &&
+        op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_GRAF_HANDLE) {
         c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
     }
     if (pb->control[1] != inputs || pb->control[2] != outputs ||
@@ -342,21 +406,48 @@ void EXEC_CALL aes_call(AESPB *pb)
     switch (op) {
     case AES_OP_INIT: result = appl_init(); break;
     case AES_OP_EXIT: result = appl_exit(); break;
+    case AES_OP_GRAF_HANDLE:
+        result = graf_handle(&pb->int_out[1], &pb->int_out[2],
+                             &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_WRITE:
         result = appl_write(pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
     case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
+    case AES_OP_KEYBD: result = evnt_keybd(); break;
+    case AES_OP_BUTTON:
+        result = button(c, pb->int_in[0], pb->int_in[1], pb->int_in[2]);
+        for (i = 1; i < 5; ++i) pb->int_out[i] = c->intout[i];
+        break;
     case AES_OP_TIMER:
         result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
     case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
+    case AES_OP_CREATE:
+        result = wind_create(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4]); break;
+    case AES_OP_OPEN:
+        result = wind_open(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4]); break;
+    case AES_OP_CLOSE: result = wind_close(pb->int_in[0]); break;
+    case AES_OP_DELETE: result = wind_delete(pb->int_in[0]); break;
+    case AES_OP_GET:
+        result = wind_get(pb->int_in[0], pb->int_in[1], &pb->int_out[1],
+            &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
+    case AES_OP_SET:
+        result = wind_set(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4], pb->int_in[5]); break;
+    case AES_OP_CALC:
+        result = wind_calc(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+            pb->int_in[3], pb->int_in[4], pb->int_in[5], &pb->int_out[1],
+            &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_MULTI:
         if (c->busy) { c->diagnostic = AES_BUSY; break; }
         for (i = 0; i < 16; ++i) c->intin[i] = pb->int_in[i];
         result = multi(c, (WORD *)(ULONG)pb->addr_in[0]);
-        for (i = 1; i < 7; ++i) pb->int_out[i] = 0;
+        for (i = 1; i < 7; ++i) pb->int_out[i] = c->intout[i];
         break;
     default:
         c->diagnostic = AES_UNSUPPORTED;
     }
     pb->int_out[0] = result;
+globals:
     for (i = 0; i < AES_GLOBAL_WORDS; ++i) pb->global[i] = c->request.global[i];
 }

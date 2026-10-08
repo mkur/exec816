@@ -11,6 +11,7 @@ USE DESKSTATE
 USE DESKTYPES
 USE DESKPAINT
 USE DESKCORE
+USE DESKINPUT
 USE LAYERS
 USE LAYERTYPES
 USE HEAPCORE
@@ -196,6 +197,42 @@ PROC Main()
   OD
 
   Require(EXEC.GetMsg(replies)=NULL AND AESHOST.Idle()<>0)
+  ; Native-only traffic exercises the empty AES endpoint's fallback too.
+  ; Layout requests encountered during painting must be deferred and later
+  ; re-admitted, with input consumed at both boundaries.
+  FOR index=0 TO REQUESTS-1 DO
+    Prepare(index)
+    native(index).operation=DESKTYPES.FOCUS
+  OD
+
+  WHILE desktop.scene.busy<>0 OR DESKPAINT.Runnable()<>0 DO
+    EXEC.Yield()
+  OD
+
+  EXEC.Forbid()
+  BEGIN
+    LET window=DESKCORE.Find(desktop,desktop.consoleWindow)
+    LET layer=DESKCORE.Layer(desktop,window)
+    Require(LAYERS.Invalidate(@desktop.scene,layer.id,@layer.bounds)=LAYERTYPES.OK)
+  END
+  AESINTAKEPROBE.enabled=1
+  FOR index=0 TO REQUESTS-1 DO
+    EXEC.PutMsg(@desktop.port,@native(index).message)
+  OD
+
+  EXEC.Permit()
+  FOR index=0 TO REQUESTS-1 DO
+    Require(Collect()<>NULL)
+  OD
+
+  WHILE AESINTAKEPROBE.completed<>AESINTAKEPROBE.turn DO
+    EXEC.Yield()
+  OD
+
+  AESINTAKEPROBE.enabled=0
+  Require(AESINTAKEPROBE.deferred<>0 AND AESINTAKEPROBE.maximum=4)
+  Require(AESINTAKEPROBE.injected=AESINTAKEPROBE.consumed)
+  Require(EXEC.GetMsg(replies)=NULL)
   bit=EXEC.AllocSignal(-1)
   Require(bit<>$ff)
   AESINTAKEPROBE.parent=EXEC.FindTask(NULL)
@@ -204,6 +241,12 @@ PROC Main()
   EXEC.Signal(service.owner,service.mask)
   bits=EXEC.Wait(AESINTAKEPROBE.mask)
   Require(AESINTAKEPROBE.arm=0)
+  AESINTAKEPROBE.Inject()
+  EXEC.Signal(service.owner,DESKINPUT.Mask())
+  WHILE AESINTAKEPROBE.injected<>AESINTAKEPROBE.consumed DO
+    EXEC.Yield()
+  OD
+
   Prepare(0)
   EXEC.PutMsg(@service.port,@aes(0).message)
   Require(Collect()=@aes(0).message)

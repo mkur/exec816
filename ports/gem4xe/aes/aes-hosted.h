@@ -50,6 +50,7 @@ void gr_box(WORD,WORD,WORD,WORD,WORD);
 void gr_rect(WORD,WORD,const GRECT *);
 void gr_crack(UWORD,WORD *,WORD *,WORD *,WORD *,WORD *);
 WORD expand_string(WORD *,const char *);
+WORD gr_just(WORD,WORD,const char *,WORD,WORD,GRECT *);
 void gsx_moff(void);
 void gsx_mon(void);
 void gsx_box(const GRECT *);

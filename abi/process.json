@@ -248,10 +248,22 @@
         4
       ],
       "result_bytes": 1
+    },
+    "RequestStop": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 1
+    },
+    "CompletionMask": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 4
     }
   },
   "dos_storage": {
-    "client_allocation_bytes": 98,
+    "client_allocation_bytes": 106,
     "client_suspended_offset": 86,
     "client_foreground_loan_offset": 87,
     "file_object_bytes": 116,

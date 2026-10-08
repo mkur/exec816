@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "alignment": 2,
   "constants": {
     "SOURCE_KEYBOARD": 2,
@@ -38,7 +38,13 @@
     "RAW_SLOTS": 64,
     "SOURCE_POINTER": 3,
     "POINTER_ST": 1,
-    "POINTER_RAW_SLOTS": 32
+    "POINTER_RAW_SLOTS": 64,
+    "POINTER_RELATIVE": 2,
+    "RELATIVE": 4,
+    "MOTION_CLASS_MASK": 31,
+    "MOTION_RESET": 16,
+    "MOTION_DIAGONAL": 32,
+    "ROUTE_UNFILTERED": 1
   },
   "records": {
     "Lease": {
@@ -225,7 +231,7 @@
           20
         ],
         [
-          "reserved",
+          "motionInfo",
           "u16",
           22
         ]

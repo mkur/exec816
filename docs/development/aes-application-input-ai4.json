@@ -1,0 +1,620 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-07",
+  "slice": "AI4",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "source_base": "7b7a75a50ae2f5a684478c948a9c5f6447a84409",
+  "scope": "Presenter content gesture routing, lock progress and source-loss recovery; public input waits remain unsupported.",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_override": false,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes": "guards, alignment and unused capacity"
+  },
+  "upper_memory": {
+    "new_shared_payload": 27,
+    "maximum_new_alignment": 1,
+    "per_registration_reserved_delta": 0,
+    "fixed_bank_reservation_delta": 0,
+    "new_tasks": 0,
+    "new_signal_bits": 0
+  },
+  "code_growth": {
+    "routines": {
+      "M_AESINBOX_SNAPSHOT_679CDD42": 15,
+      "M_AESMOUSE_RESET_88039AD0": 73,
+      "M_AESMOUSE_LOCKREADY_FAADB539": 172,
+      "M_AESMOUSE_CANCEL_26011919": 129,
+      "M_AESMOUSE_NATIVEGESTURE_0037DC49": 100,
+      "M_AESMOUSE_RETAINED_B2A3927B": 93,
+      "M_AESMOUSE_REFRESH_AC71DC84": 1192,
+      "M_AESMOUSE_LOST_F3497975": 515,
+      "M_AESMOUSE_PUBLISH_1160598E": 288,
+      "M_AESMOUSE_ROUTE_14DD0B78": 2544,
+      "M_AESLOCKS_ELIGIBLE_C89E1C77": 95,
+      "M_AESLOCKS_ACQUIRE_944D524C": 44,
+      "M_AESLOCKS_REQUEST_4FF91DBB": 44,
+      "M_DESKCORE_FOCUS_EB58916D": 44,
+      "M_DESKDRAG_ESCAPE_F161A6CB": 66,
+      "M_DESKINPUT_START_323CD57C": 44,
+      "M_DESKINPUT_CONSUME_542258AC": 36,
+      "M_DESKINPUT_FRESH_B2877D8E": 386,
+      "M_DESKINPUT_SERVICE_30C6A69B": -127,
+      "M_AESWINDOW_CLOSE_52A08E7C": 69,
+      "M_AESWINDOW_DELETE_AB3FD6CB": 69,
+      "M_AESHOST_SETTLE_CC568225": 89
+    },
+    "bytes": 5980,
+    "baseline": "build/aes-input/ai3/keyboard-final-opt/program/program.a816.json",
+    "scope": "Changed production routines plus AESMOUSE; optimized native code, excludes fixture injection."
+  },
+  "host_tests": {
+    "tests": 408,
+    "expected_historical_skips": 4
+  },
+  "cases": [
+    {
+      "name": "pointer-final-opt",
+      "results": {
+        "path": "build/aes-input/ai4/pointer-final-opt/results.json",
+        "sha256": "dd8d7cf1c97f8c23d70e233ce7454830f077efcd44b0056c71a5421aa0e7fb29"
+      },
+      "status": "pass",
+      "checks": 131,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 355,
+          "remaining_above_floor": 925
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 177,
+          "remaining_above_floor": 591
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 660,
+          "remaining_above_floor": 1644
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    {
+      "name": "windows-opt",
+      "results": {
+        "path": "build/aes-input/ai4/windows-opt/results.json",
+        "sha256": "b15a1089f3bf38f496205ab5faa47bc3210c03f920f937f8163661c2bfb0d486"
+      },
+      "status": "pass",
+      "checks": 176,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 519,
+          "remaining_above_floor": 761
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 187,
+          "remaining_above_floor": 581
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 179,
+          "remaining_above_floor": 589
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 155,
+          "remaining_above_floor": 613
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    {
+      "name": "inbox-opt",
+      "results": {
+        "path": "build/aes-input/ai4/inbox-opt/results.json",
+        "sha256": "106332b123dadea7cfb02ec9dadf43f5531dce4e50c9048c28747e7de7d02078"
+      },
+      "status": "pass",
+      "checks": 252,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 370,
+          "remaining_above_floor": 910
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 657,
+          "remaining_above_floor": 1647
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    {
+      "name": "locks-final-opt",
+      "results": {
+        "path": "build/aes-input/ai4/locks-final-opt/results.json",
+        "sha256": "aa1de05a3d126013306c54cb3f1eace2d967e277a012ab49083cf7e7805378a4"
+      },
+      "status": "pass",
+      "checks": 138,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 439,
+          "remaining_above_floor": 841
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 343,
+          "remaining_above_floor": 425
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 336,
+          "remaining_above_floor": 432
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 347,
+          "remaining_above_floor": 421
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    {
+      "name": "widgets-opt",
+      "results": {
+        "path": "build/aes-input/ai4/widgets-opt/interaction-results.json",
+        "sha256": "edaebbc231000a3b7ec26ad2eb7c401cd22c5242c650d4c97f6a1b8bffcd1c25"
+      },
+      "status": "pass",
+      "checks": 122,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 368,
+          "remaining_above_floor": 912
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 688,
+          "remaining_above_floor": 1616
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    }
+  ],
+  "source_sha256": {
+    "lib/aes/aeshost.act": "30ced6ce753f4acf00fd1a8c89790001fc4fb4f327d9f2e50f0bf5d8eb202a14",
+    "lib/aes/aesinbox.act": "99c54e3c48796e3027ba8a680b0403bb89f04dd836346e96b90274e090a08dcd",
+    "lib/aes/aeslocks.act": "d9721a193f41d90ac9a5162652764acc500e8995911fdeb6848c78b261faf2f9",
+    "lib/aes/aeswindow.act": "10d862e0db143591ea43a58835a8e0364fff0129474a166d2f82a600de9924f4",
+    "lib/desktop/deskcore.act": "a7fa1b737f3bf61f1ee67ce8d770f8f7d63614ec32f761e1741e1c56bfbc4269",
+    "lib/desktop/deskdrag.act": "ec4326a0b72db1eae6f7ae40f1f14a184b4699b7d2889cd1524b66e9a32df247",
+    "lib/desktop/deskinput.act": "11369e96789f50e44b9621f23328d86dcd15fa7c6ed7e8d8e55e2a0906a62fa4",
+    "tools/test_aes_inbox.py": "a32af2439b5bc4f2ca15e9ac0317b628efff46390f97da7376baa848344fbbb3",
+    "tools/test_aes_server.py": "6bb65cc091085914efb9263ec02162756d8200ba2038870c5d20d80aec76f4c8",
+    "tools/test_widget_interaction.py": "00161b9a0bcb7f1e23cb7be58c01ffbb568b75cd5ffd146ff97979e712c310ab",
+    "lib/aes/aesmouse.act": "c39fb59c3b9d78796ab93c311ca39d1fc2337b8c1088b3e0dac02a25ca34aabd",
+    "tests/programs/aes_pointer.c": "5081f410f7cbdef2c6ecdc0ebad6cdfdfa3b2c9aa48733f8ac95ba72735bb29b",
+    "tools/test_aes_pointer.py": "b822ff0fb59f3a6b483e5239f8ceb83bba6e1a8b069d2aed0e602015d874c101"
+  }
+}

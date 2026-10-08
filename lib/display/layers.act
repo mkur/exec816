@@ -124,7 +124,8 @@ PROC DamageAll(LAYERTYPES.Scene POINTER scene LAYERTYPES.Rect POINTER rect)
 
 RETURN
 
-; Four occluders partition at most a 9 by 9 endpoint grid, below MAX_RECTS.
+; Six occluders have at most 13 horizontal endpoint bands and seven free
+; intervals per band. At most 91 disjoint pieces fit below MAX_RECTS (96).
 ; Rebuild only for actual layout changes, never for drawing or hit testing.
 BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
   LAYERTYPES.Layer POINTER layer,above
@@ -233,6 +234,28 @@ PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
   scene.order(0)=slot
   scene.count==+1
   id^=layer.id
+
+RETURN(LAYERTYPES.OK)
+
+; Select the content contract while hidden, before publishing a window.
+PUBLIC BYTE FUNC SetExternal(LAYERTYPES.Scene POINTER scene LONGCARD id)
+  BYTE status
+
+  status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  LET layer=Find(scene,id)
+  IF id=0 OR layer=NULL THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+  IF layer.shown<>0 THEN
+    RETURN(LAYERTYPES.BUSY)
+  FI
+
+  layer.externalPaint=1
 
 RETURN(LAYERTYPES.OK)
 

@@ -3,10 +3,16 @@
 #include "gem-drawing.h"
 struct ConsoleBitmapPacket ConsoleBitmapPacket __attribute__((aligned(2)));
 static WORD workout[57];
+extern UWORD DesktopMenuRow(struct ConsoleBitmapPacket *);
+extern UWORD DesktopBackground(struct ConsoleBitmapPacket *);
+extern UWORD DesktopFrame(struct ConsoleBitmapPacket *);
 void ConsoleBitmapEntry(void)
 {
     struct ConsoleBitmapPacket *p=&ConsoleBitmapPacket;
     switch (p->operation) {
+    case CON_BITMAP_MENU_ROW: p->status=DesktopMenuRow(p); break;
+    case CON_BITMAP_DESKTOP: p->status=DesktopBackground(p); break;
+    case CON_BITMAP_FRAME: p->status=DesktopFrame(p); break;
     case CON_BITMAP_OUTLINE:
         p->status=GemDrawingOutline(p->x,p->y,p->x+p->width,p->y+p->height,p->foreground); break;
     case CON_BITMAP_POINTER:

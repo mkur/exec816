@@ -1,0 +1,92 @@
+; Bounded host-driven load around unchanged resident GEM application bodies.
+MODULE INPUTLOAD
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE AESBOOT
+USE AESSTATE
+USE AESCORE
+USE DESKAPP
+USE HEAPCORE
+
+CONST WITH_PANEL=0
+CARD checks,ready,mode,runningMode,reads,writes
+LONGCARD available,retiredAvailable
+BYTE ARRAY buffer(128),text(512)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc90+(checks & 31))
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index,ignored
+  LONGCARD position
+  LONGINT got
+
+  LET output=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(output<>NULL)
+  LET file=DOS.Open(BYTE POINTER(c"D1:DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,buffer,128)=128)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)>=0)
+  position=0
+  FOR index=0 TO 511 DO
+    text(index)=IF (index & 63)=63 THEN 10 ELSE BYTE(65+(index & 15)) FI
+  OD
+
+  ; Warm the root console handle before the application ownership baseline.
+  Require(DOS.Write(output,text,512)=512)
+  available=EXEC.AvailMem(0)
+  Require(InputsStart()<>0)
+  IF WITH_PANEL<>0 THEN
+    Require(DESKAPP.Start()<>0)
+  FI
+
+  ready=1
+  WHILE mode<>9 DO
+    runningMode=mode
+    IF mode=2 THEN
+      Require(DOS.Write(output,text,512)=512)
+      writes==+1
+    ELSEIF mode=3 THEN
+      got=DOS.Read(file,buffer,128)
+      Require(got>=0)
+      IF got=0 THEN
+        Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)>=0)
+        position=0
+      ELSE
+        FOR index=0 TO CARD(got)-1 DO
+          Require(buffer(index)=BYTE(position+index))
+        OD
+
+        position==+LONGCARD(got)
+        reads==+1
+      FI
+    ELSE
+      ignored=EXECTASKS.Sleep(1)
+    FI
+  OD
+
+  IF WITH_PANEL<>0 THEN
+    DESKAPP.Stop()
+  FI
+
+  Require(InputsStop()<>0)
+  retiredAvailable=EXEC.AvailMem(0)
+  Require(retiredAvailable=available)
+  LET service=AESSTATE.Get()
+  Require(service.count=0)
+  Require(AESCORE.Idle(service)<>0)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+  ready=2
+
+RETURN
+ENDMODULE

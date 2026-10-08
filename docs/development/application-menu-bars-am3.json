@@ -1,0 +1,310 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "AM3",
+  "baseline": "e1880fd",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "checks": {
+    "context-raw": {
+      "status": "pass",
+      "client_checks": [
+        1045,
+        1045
+      ],
+      "report_sha256": "6db97bcdfd2692f6f7dd96541f09c67260a96301de207fe1bced8b91e328d064"
+    },
+    "context-opt": {
+      "status": "pass",
+      "client_checks": [
+        1045,
+        1045
+      ],
+      "report_sha256": "6d458dfd1b6091f52a9a2050608b0c5d34eb67749b8d2f2e18f772df0421e2f8"
+    },
+    "menus": {
+      "status": "pass",
+      "AESChecks": 244,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 517,
+          "remaining_above_floor": 763
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 255,
+          "remaining_above_floor": 513
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 151,
+          "remaining_above_floor": 617
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 421,
+          "remaining_above_floor": 347
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 754,
+          "remaining_above_floor": 1550
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "menu_pixels": [
+        {
+          "phase": 1,
+          "pixels": 10240
+        },
+        {
+          "phase": 2,
+          "pixels": 13824
+        },
+        {
+          "phase": 3,
+          "pixels": 13824
+        },
+        {
+          "phase": 4,
+          "pixels": 10240
+        },
+        {
+          "phase": 5,
+          "pixels": 10240
+        },
+        {
+          "phase": 6,
+          "pixels": 17920
+        },
+        {
+          "phase": 7,
+          "pixels": 10240
+        }
+      ],
+      "report_sha256": "f764c6d9c764c5adc983091a525ef042231f1f27f69c402f8abeb4b8f24aa2fe"
+    },
+    "windows": {
+      "status": "pass",
+      "AESChecks": 176,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 518,
+          "remaining_above_floor": 762
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 162,
+          "remaining_above_floor": 606
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 179,
+          "remaining_above_floor": 589
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 154,
+          "remaining_above_floor": 614
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 700,
+          "remaining_above_floor": 1604
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "report_sha256": "71461704b6723f0f51fc4822a9d9ab781da86ad097598fb0a54b72d9765d2c43"
+    },
+    "objects": {
+      "status": "pass",
+      "AESChecks": 41,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 692,
+          "remaining_above_floor": 588
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 696,
+          "remaining_above_floor": 1608
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "report_sha256": "b2edc381a6ad26745fa52e4776fcc499993a6af1fe2648f2114979fd9a22088f"
+    },
+    "native-desktop": {
+      "status": "pass",
+      "checks": 328,
+      "report_sha256": "4fcd0aa2f30d29900608555f8706cdac1a83ddc40e9db0ecaea2f4588d98d2eb"
+    }
+  },
+  "host_checks": {
+    "tests": 417,
+    "historical_skips": 4
+  },
+  "upper_memory": {
+    "menu_record": 340,
+    "menu_allocation": 344,
+    "global_reserved": 5120,
+    "global_used": 4910,
+    "global_reservation_delta": 256
+  },
+  "early_capacity_build": {
+    "manifest_extents": 64,
+    "cartridge": {
+      "program.xex": {
+        "bytes": 993218,
+        "headroom": 38973
+      },
+      "of816/Exec-of816.xex": {
+        "bytes": 1018192,
+        "headroom": 13999
+      }
+    },
+    "zip_sha256": "c5adaf06dbde57a5c6af3f81368b7b74a2536052f7b4e30fd992ea93719a3f2c",
+    "size_is_informational": "User requested ignoring cartridge size; compression is separate future work."
+  },
+  "source_sha256": {
+    "lib/desktop/deskappmenu.act": "f3c3a707a068b72ba7c0f39597e4f755797029ab67cae3aee39410d69bc5e331",
+    "lib/desktop/deskmenu.act": "584e0291147c16bbc8b5d448f4b21fa8f156649965a2f7c427555533a9a16470",
+    "ports/gem4xe/aes/menu-render.c": "130817676b9f0a92903a756c9722cef79e706faedbc49ea9117663cd49dce11e",
+    "tools/application_menu_oracle.py": "b73ec67a3be70fc810fef025a6cc60fbdfb873ca17a06270919e3eeaf3257e5b"
+  }
+}

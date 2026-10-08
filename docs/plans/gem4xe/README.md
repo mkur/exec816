@@ -2,6 +2,24 @@
 
 [Implementation plans](../README.md)
 
+The [classic GEM appearance design](classic-gem-appearance-design.md)
+sets flat window decorations, a left closer, centered patterned titles,
+consistent menus/controls and a patterned desktop. The
+[GA1–GA4 implementation plan](classic-gem-appearance-implementation-plan.md)
+orders frames and shared geometry, menu/control consistency, background repair
+and the tested OF816 package before the resizing milestone. Current work-area
+insets and the existing Atari ST font are retained for this first appearance
+step. GA1–GA4 pass development checks, including the exact OF816 package; see the
+[execution record](../../history/classic-gem-appearance.md).
+
+The [application menu-bar design](application-menu-bar-design.md)
+extends the implemented desktop menu with registered application-owned OBJECT
+trees, focus-selected menus and durable `MN_SELECTED` delivery. Files is the
+first consumer; no new Task or event-wait mechanism is proposed. The
+[AM1–AM6 implementation plan](application-menu-bar-implementation-plan.md) orders
+registration and command delivery before rendering/input, Files integration and
+the packaged desktop checks. AM1–AM6 pass development checks. See the [execution record](../../history/application-menu-bars.md).
+
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).
 The [XaAES study](xaaes-study.md) examines how to reach the confirmed target:
@@ -46,6 +64,49 @@ are implemented; HY4's integrated functional proof and demo refresh are recorded
 in the [hybrid history](../../history/aes-hybrid.md). Its native GUI latency
 acceptance remains open.
 
+The implemented [AES window application design](aes-window-app-design.md) adds
+a resident GEM counter window with ordinary window calls, durable redraw/control messages and a private VDI workstation.
+The [WA1–WA6 implementation plan](aes-window-app-implementation-plan.md) separates
+message delivery, window/damage ownership, delegated display access, direct VDI,
+the application loop and a two-instance/native-shell OF816 proof. It retains
+existing Task/layer capacity with zero bank-zero growth.
+[WA1–WA6](../../history/aes-windows.md) pass development checks through two
+independent counters, matched native coexistence and the extracted OF816 ZIP.
+Menus, resources, resizing and broader GEM compatibility follow; PI4/HY4 remain open.
+
+The implemented [AES application input design](aes-application-input-design.md)
+adds `MU_KEYBD` and single-button `MU_BUTTON` waits, with presenter-owned routing
+and caller-local matching on existing Exec signals and timers. It defines
+focus, gesture capture, bounded inboxes, GUI-lock interaction and console
+cancellation coexistence. The [AI1–AI7 implementation plan](aes-application-input-implementation-plan.md)
+orders capture, inboxes, keyboard/gesture routing, public waits and a
+two-application OF816 demo, with a commit after each passing slice.
+AI1–AI7 pass development checks, including public input waits, an interactive
+GEM application and the extracted two-app OF816 demo. The
+[execution record](../../history/aes-application-input.md) includes per-edge
+timing and unobserved replay; PI4/HY4 remain open. Rectangle events,
+multiple clicks and public form/object calls remain later extensions.
+
+The completed [VBXE command builder refactor](vbxe-builder-refactor-plan.md)
+trusts renderer geometry, uses generated chunk/work tables and sequential
+record pointers, and reserves full widget glyph runs once. BR1–BR4 retain list
+limits and pass development checks. The [integrated comparison](../../history/aes-hybrid.md#integrated-builder-results)
+records lower construction CPU and panel latency, plus the remaining input
+latency caveat. Tables occupy 37,132 bytes of one additional 64 KiB upper RAM
+bank, with no bank-zero/VRAM growth. HY4 acceptance remains separate.
+
+The [presenter input latency plan](presenter-input-latency-plan.md)
+follows that refactor with input boundaries between native admissions, smaller
+widget steps and bounded text presentation. PI1,
+[PI2](../../history/aes-hybrid.md#widget-paint-input-steps) and
+[PI3](../../history/aes-hybrid.md#bounded-presenter-text) pass development checks.
+PI3 reduces loaded CPU gaps and scrolling button latency; idle pixels stay
+unchanged, disk combined feedback regresses and full text repairs cost more.
+PI1 is retained after a matched comparison. PI4, the 20 ms CPU-gap target and
+HY4 remain pending. The matched PI3 image adds one upper code bank, with no
+bank-zero or VRAM reservation growth. Scene
+ownership and complete strip publication are preserved; BR4 supplies the original baseline.
+
 The completed [minimal hosted VDI plan](minimal-vdi-implementation-plan.md)
 builds on the larger Task stacks. Its [current contract](../../reference/gem-vdi.md)
 defines the packet, display ownership and supported source boundary. The
@@ -84,7 +145,18 @@ implemented through MP4: about 4 kHz capture with preserved fine SIO timing,
 one blitter list per pointer move, combined measurements and a refreshed OF816
 preview. The [execution record](../../history/mouse-performance.md) separates
 the measured savings from open pointer, outline and move-repair timing targets.
-The current 2× pointer travel and memory reservations remain unchanged.
+That slice kept 2× pointer travel and memory reservations unchanged.
+
+The implemented [mouse acceleration design](mouse-acceleration-design.md) adds fine
+slow motion and faster desktop travel, with a fixed 2× off option. Timed relative
+runs preserve capture timing across coalescing; the desktop applies the profile
+once before cursor, hit-test and application delivery. The
+[MA1–MA4 implementation plan](mouse-acceleration-implementation-plan.md) is
+complete at the development tier: mild is the default, with loaded checks and
+a passing extracted OF816 demo. Bank zero is unchanged; the capture reservation
+grows by a net 512 upper bytes. Sampling cadence is unchanged. PI3 is the
+accepted usability baseline; broader presenter optimization is deferred while
+the desktop gains functionality. PI4/HY4 acceptance remains open.
 
 The [AES widget library plan](aes-widgets-implementation-plan.md) is implemented
 through AW6 at the development tier: selected object/drawing/form code runs in

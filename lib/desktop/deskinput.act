@@ -1,14 +1,22 @@
 ; One presenter consumes captured input. IRQ code follows no window pointers.
 MODULE DESKINPUT
+USE DISPLAY
 USE EXEC
 USE AESLOCKS
+USE AESTYPES
+USE AESWINDOWSTATE
 USE AESINPUT
+USE AESKEYS
+USE AESMOUSE
 USE INPUT
+USE DESKMOUSE
+USE DESKMOUSECONFIG
 USE A816MEMORY
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
 USE DESKDRAG
+USE DESKMENU
 USE DESKWIDGETINPUT
 USE DESKEVENTS
 USE LAYERS
@@ -19,6 +27,7 @@ INPUT.Lease lease
 INPUT.Config config
 INPUT.Event sample
 DESKTYPES.Event event
+AESTYPES.InputRecord keySample
 LONGCARD wakeMask,route,focusPending
 INT cursorX,cursorY
 CARD buttons
@@ -43,14 +52,7 @@ PUBLIC BYTE FUNC Start()
   config.wakeMask=wakeMask
   config.pointerProtocol=INPUT.POINTER_ST
   config.pointerPort=1
-  ; Input owns bounded controller coordinates; screen scaling is desktop
-  ; policy. Reduced bounds discard overshoot before reversal at an edge.
-  config.initialX=320/DESKTYPES.POINTER_PIXELS_PER_STEP
-  config.initialY=120/DESKTYPES.POINTER_PIXELS_PER_STEP
-  config.maxX=(639+DESKTYPES.POINTER_PIXELS_PER_STEP-1)
-      /DESKTYPES.POINTER_PIXELS_PER_STEP
-  config.maxY=(239+DESKTYPES.POINTER_PIXELS_PER_STEP-1)
-      /DESKTYPES.POINTER_PIXELS_PER_STEP
+  config.flags=INPUT.POINTER_RELATIVE
   status=INPUT.Acquire(@lease,@config)
   IF status=INPUT.OK THEN
     status=INPUT.CreateRoute(@lease,0,@route)
@@ -63,8 +65,10 @@ PUBLIC BYTE FUNC Start()
     ELSE
       acquired=1
       DESKDRAG.Reset()
+      AESMOUSE.Reset()
       cursorX=320
       cursorY=120
+      DESKMOUSE.Start(cursorX,cursorY,DESKMOUSECONFIG.DEFAULT)
       buttons=0
       released=0
       pending=1
@@ -129,6 +133,10 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     RETURN(0)
   FI
 
+  IF DESKMENU.Key(captured,buttons)<>0 THEN
+    RETURN(1)
+  FI
+
   IF DESKDRAG.Escape(captured)<>0 THEN
     RETURN(1)
   FI
@@ -137,6 +145,17 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
+        IF window.kind=DESKTYPES.CONTENT_AES THEN
+          BEGIN
+            LET client=AESWINDOWSTATE.Find(window.id)
+            keySample.x=cursorX
+            keySample.y=cursorY
+            keySample.buttons=buttons
+            AESKEYS.Key(client,captured,@keySample)
+          END
+          RETURN(1)
+        FI
+
         Copy(captured)
         event.window=window.id
         event.kind=DESKTYPES.EVENT_KEY
@@ -156,12 +175,6 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
 
 RETURN(0)
 
-INT FUNC ScreenCoordinate(INT value,maximum)
-
-  value=value*DESKTYPES.POINTER_PIXELS_PER_STEP
-
-RETURN(IF value>maximum THEN maximum ELSE value FI)
-
 PROC Consume()
   BYTE slot
   LONGCARD layerId
@@ -169,6 +182,8 @@ PROC Consume()
   LET service=DESKSTATE.Get()
   Copy(@sample)
   IF sample.kind=INPUT.EVENT_LOSS THEN
+    AESMOUSE.Lost()
+    DESKMENU.Cancel()
     released=0
     DESKWIDGETINPUT.Lost()
     focusWanted=0
@@ -183,9 +198,13 @@ PROC Consume()
     RETURN
   FI
 
-  buttons=sample.buttons
   IF sample.buttons=0 THEN
     released=1
+  FI
+
+  IF DESKMENU.Active()<>0 AND DESKMENU.Mouse(@sample)<>0 THEN
+    focusWanted=0
+    RETURN
   FI
 
   event.kind=DESKTYPES.EVENT_MOTION
@@ -202,11 +221,25 @@ PROC Consume()
     RETURN
   FI
 
+  IF DESKMENU.Mouse(@sample)<>0 THEN
+    focusWanted=0
+    RETURN
+  FI
+
   layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(slot)
       IF window.id<>0 AND window.layer=layerId THEN
+        IF window.kind=DESKTYPES.CONTENT_AES THEN
+          IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
+              AND released<>0 AND service.focus<>window.id THEN
+            AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
+          FI
+
+          RETURN
+        FI
+
         event.window=window.id
         event.kind=DESKTYPES.EVENT_MOTION
         IF sample.kind=INPUT.EVENT_BUTTON THEN
@@ -226,6 +259,28 @@ PROC Consume()
       FI
     END
   OD
+
+RETURN
+
+; Classify fresh absolute capture once, before any deferred native replay.
+PROC Fresh()
+
+  ; Observe the latest cursor separately from retained gesture events.
+  IF sample.kind<>INPUT.EVENT_LOSS THEN
+    buttons=sample.buttons
+    cursorX=sample.x
+    cursorY=sample.y
+    dirty=1
+  FI
+
+  IF AESMOUSE.Route(@sample)=0 THEN
+    IF AESLOCKS.MouseBlocked()<>0 THEN
+      AESMOUSE.Retained()
+      AESINPUT.Push(@sample)
+    ELSE
+      Consume()
+    FI
+  FI
 
 RETURN
 
@@ -260,24 +315,15 @@ PUBLIC PROC Service(LONGCARD bits)
         HEAPCORE.Abort($faeb)
       FI
 
-      ; Observe the latest cursor separately from retained gesture events.
-      IF sample.kind<>INPUT.EVENT_LOSS THEN
-        sample.x=ScreenCoordinate(sample.x,639)
-        sample.y=ScreenCoordinate(sample.y,239)
-        cursorX=sample.x
-        cursorY=sample.y
-        dirty=1
-      FI
-
-      IF AESLOCKS.MouseBlocked()<>0 THEN
-        AESINPUT.Push(@sample)
-      ELSE
-        Consume()
-      FI
+      ; Transform fresh capture once; replayed AES input is already absolute.
+      DESKMOUSE.Apply(@sample)
+      Fresh()
     FI
 
     count==+1
   OD
+
+  AESMOUSE.Refresh()
 
 RETURN
 
@@ -291,6 +337,7 @@ PUBLIC PROC Advance()
 
   DESKWIDGETINPUT.Advance()
   DESKDRAG.Advance()
+  DESKMENU.Advance()
   LET service=DESKSTATE.Get()
   IF focusWanted<>0 AND service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
     BEGIN
@@ -314,7 +361,7 @@ RETURN
 PUBLIC PROC Present()
   BYTE drawn
 
-  IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+  IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
     IF AESLOCKS.MouseBlocked()<>0 THEN
       DESKDRAG.Suspend()
     ELSE
@@ -323,7 +370,9 @@ PUBLIC PROC Present()
 
     IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 THEN
       drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),1)
-      dirty=0
+      IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
+        dirty=0
+      FI
     FI
   FI
 
@@ -337,8 +386,8 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(pending<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (AESLOCKS.MouseBlocked()=0 AND (AESINPUT.Pending()<>0
+RETURN(pending<>0 OR DESKMENU.Runnable()<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (AESLOCKS.MouseBlocked()=0 AND (AESINPUT.Pending()<>0
     OR (focusWanted<>0 AND service.scene.busy=0)))
-    OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0))
+    OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0))
 
 ENDMODULE

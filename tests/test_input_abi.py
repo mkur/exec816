@@ -50,7 +50,9 @@ class InputAbiTests(unittest.TestCase):
         from generate_memory import layout
         import tempfile
         values, source = native.definitions()
-        self.assertEqual(values['STATE_SIZE'],144)
+        self.assertEqual(values['STATE_SIZE'],160)
+        self.assertEqual(values['STATE_ROUTEFLAGS'],144)
+        self.assertEqual(values['CAPTURE_ROUTEFLAGS'],41)
         self.assertEqual(values['CAPTURE_SIZE'],560)
         self.assertEqual(values['RAWEVENT_SIZE'],8)
         self.assertEqual((native.ROOT/'lib/input/inputnative.act').read_text(),source)
@@ -59,7 +61,7 @@ class InputAbiTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as output:
             native.generate(output,memory)
         self.assertEqual(memory['runtime_reservations'],before)
-        self.assertLessEqual(memory['input_storage']['STATE']+144,memory['input_storage']['CAPTURE'])
+        self.assertLessEqual(memory['input_storage']['STATE']+values['STATE_SIZE'],memory['input_storage']['CAPTURE'])
 
     def test_pointer_storage_is_disjoint_and_guarded(self):
         import generate_input_native as native
@@ -73,9 +75,9 @@ class InputAbiTests(unittest.TestCase):
         from generate_sio_adapter import ABI as sio
         from generate_program import ABI as program
         self.assertLessEqual(sio['native_offset']+sio['native_reserved_bytes'], program['provider_offset'])
-        self.assertEqual(values['POINTERSAMPLE_SIZE'], 24)
+        self.assertEqual(values['POINTERSAMPLE_SIZE'], 28)
         self.assertEqual(values['POINTERCAPTURE_EVENTS'], 128)
-        self.assertEqual(storage['POINTER_RESERVED_BYTES'], 1536)
-        self.assertLessEqual(storage['POINTER_STATE']+144, storage['POINTER_RESERVE'])
+        self.assertEqual(storage['POINTER_RESERVED_BYTES'], 2560)
+        self.assertLessEqual(storage['POINTER_STATE']+values['STATE_SIZE'], storage['POINTER_RESERVE'])
         self.assertEqual(storage['POINTER_CAPTURE']-storage['POINTER_RESERVE'], 16)
         self.assertEqual(storage['POINTER_RESERVED_BYTES']-storage['POINTER_CAPTURE_BYTES']-32, 224)

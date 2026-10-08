@@ -25,6 +25,9 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
     boot = json.loads((demo_build/'of816/of816.json').read_text())
     demo = json.loads((demo_build/'demo-manifest.json').read_text())
     shell_only = demo.get('shell_only', False)
+    if integration is None and demo.get('gem_desktop'):
+        from test_gem_desktop_boot import DesktopBoot
+        integration = DesktopBoot()
     require(cart['input_xex_sha256'] == boot['xex_sha256'], 'Cartridge and demo differ')
     filename = f'Exec-of816-atarimax-8mbit-{variant}.car'
     image = distribution_root/'cartridge'/filename if distribution_root else cartridge_build/filename
@@ -39,7 +42,7 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
                 exec_revision=subprocess.check_output(
                     ['git','-C',str(exec_source),'rev-parse','HEAD'], text=True).strip())
     case['walkthrough_observer'] = dict(source_sha256=sha256(exec_source/'tools/test_demo.py'),
-                                      scope='boot-smoke' if shell_only else 'showcase',
+                                      scope='gem-desktop' if demo.get('gem_desktop') else 'boot-smoke' if shell_only else 'showcase',
                                       bootstrap='Public callback; original walkthrough assertions unchanged.')
 
     def bootstrap(b, program):
@@ -131,8 +134,10 @@ if __name__ == '__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--variant',choices=('old','new'),required=True)
     parser.add_argument('--manual',action='store_true')
+    parser.add_argument('--distribution-root',type=Path,help='Extracted cartridge demo ZIP')
     parser.add_argument('--rom-override',type=Path,help='Explicit diagnostic firmware override; does not qualify a platform')
     args = parser.parse_args()
     run(args.cartridge_build.resolve(),args.demo_build.resolve(),args.exec_source.resolve(),
-        args.output.resolve(),args.variant,args.manual,args.rom_override)
+        args.output.resolve(),args.variant,args.manual,args.rom_override,
+        distribution_root=args.distribution_root.resolve() if args.distribution_root else None)
     print('Cartridge boot, OF816, disk commands, guards and EXIT passed:',args.variant,flush=True)

@@ -1,0 +1,191 @@
+{
+  "slice": "CAL1",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "checks": {
+    "layout_raw": {
+      "path": "build/calculator/cal1/layout-raw/results.json",
+      "sha256": "f6d313a92220532a1b2d61a3fb826358b500773e063d79de8c4bbba25281e5cc",
+      "status": "pass"
+    },
+    "layout_opt": {
+      "path": "build/calculator/cal1/layout-opt/results.json",
+      "sha256": "da0f74286e053de4d368a7c3abae7fceb11678757a374843e84402aadc674ff3",
+      "status": "pass"
+    },
+    "objects": {
+      "path": "build/calculator/cal1/objects/results.json",
+      "sha256": "022e7e18da9a70d0508d433ff406f6e05dd93dc52120237570f50c1d42eb9de7",
+      "status": "pass",
+      "AESChecks": 41,
+      "AESFailures": 0,
+      "tedinfo_pixels": [
+        {
+          "phase": 1,
+          "pixels": 14080
+        },
+        {
+          "phase": 2,
+          "pixels": 14080
+        },
+        {
+          "phase": 3,
+          "pixels": 14080
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 690,
+          "remaining_above_floor": 590
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 660,
+          "remaining_above_floor": 1644
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "retained": {
+      "path": "build/calculator/cal1/retained/pixel-results.json",
+      "sha256": "3c86ffb78600a612e9e1931f2d2a4e82890ab0f1ee211ae7eaec2684d2660fdd",
+      "status": "pass",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 127,
+          "remaining_above_floor": 1153
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 666,
+          "remaining_above_floor": 1638
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 260,
+          "remaining_above_floor": 1020
+        }
+      },
+      "pixel_stages": 22
+    }
+  },
+  "host": {
+    "tests": 414,
+    "skipped": 4
+  },
+  "notes": [
+    "Calypsi 5.18 optimized signed-division truth test returned zero text count despite correct dimensions. The nonnegative cell-fit comparison needs no division; raw/optimized emitted measurement probes pass.",
+    "Updated stale retained-pixel assertion: odd outline edges are already supported. All 22 stages pass."
+  ]
+}

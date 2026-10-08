@@ -17,12 +17,37 @@
 #define DISPLAY_FAULTED 4
 #define DISPLAY_TEXT 1
 #define DISPLAY_VBXE 2
+#define DISPLAY_GRANT_BYTES 32
+#define DISPLAY_GRANTS 8
+#define DISPLAY_GRANT_FREE 0
+#define DISPLAY_GRANT_READY 1
+#define DISPLAY_GRANT_QUEUED 2
+#define DISPLAY_GRANT_OWNED 3
+#define DISPLAY_GRANT_REVOKED 4
 struct DisplayLease {
     struct TaskLease owner;
     ULONG generation;
     UBYTE kind, state;
     UWORD reserved;
 };
+struct DisplayGrant {
+    struct Task *task;
+    ULONG mask;
+    struct TaskLease owner;
+    ULONG generation;
+    UWORD state, slot;
+    ULONG reserved;
+};
+UWORD DisplayDelegate(struct DisplayGrant *grant);
+UWORD DisplayRevoke(struct DisplayGrant *grant);
+UWORD DisplayGrantClose(struct DisplayGrant *grant);
+UWORD DisplayEnter(struct DisplayGrant *grant);
+UWORD DisplayLeave(struct DisplayGrant *grant);
+UWORD DisplayOwnerEnter(void);
+UWORD DisplayOwnerEnd(UWORD dma);
+UWORD DisplayOwnerWake(ULONG mask);
+UWORD DisplayAccessFault(UWORD unquiesced);
+UWORD DisplayDelegated(void);
 UWORD DisplayAcquire(struct DisplayLease *lease, UWORD kind);
 UWORD DisplayActivate(struct DisplayLease *lease);
 UWORD DisplayCheck(struct DisplayLease *lease);

@@ -1,0 +1,325 @@
+--- a/src/apps/calc.c
++++ b/src/apps/calc.c
+@@ -1,29 +1,13 @@
+-/* calc.c -- a calculator for gem4xe, whole.
+- *
+- * The second program written to gem4xe's application ABI and the first
+- * that is not a test: it links against nothing of the system's, reaches
+- * the AES, the VDI and GEMDOS through the three call gates, and is
+- * launched from the desktop like any other .g4a.
+- *
+- * The whole of it is a form_do loop.  Every key of the panel is a
+- * SELECTABLE|EXIT button, so form_do returns the object that was
+- * pressed; this program works out what that means, writes the display
+- * and goes back in.  The panel is CALC.RSC (tools/calcrsc.py) and every
+- * word a person reads is in there, none of it here.
+- *
+- * IT COUNTS IN WHOLE NUMBERS, on purpose.  There is no floating point
+- * anywhere in gem4xe -- no FPU on this machine and no libc linked into
+- * an application -- so a division truncates towards zero and says so by
+- * showing the remainder in place of the quotient when a key is pressed
+- * after it.  A calculator that quietly rounded would be worse than one
+- * that is honest about being exact.
+- *
+- * The accumulator is a LONG.  Ten places hold 2,147,483,647, so entry
+- * stops at ten digits and an operation that would pass it leaves the
+- * display alone rather than wrapping.
++/* GEM4XE integer calculator, adapted to Exec's windowed AES subset.
++ * Arithmetic/display routines and resource IDs retain the pinned donor source.
++ * Whole-number division truncates toward zero; there is no remainder mode.
++ * Original source and notices are preserved by prepare_calculator.py.
+  */
+-#include "gem.h"
++#include "calculator.h"
+ #include "calcrsc.h"
++#include <exec816/aes.h>
++
++struct Calculator Calculator;
+ 
+ #define MAXVAL  2147483647L                 /* what a LONG holds */
+ 
+@@ -52,7 +36,7 @@
+  * (uint16_t) casts fixed in src/desk/ the same afternoon. */
+ static char *disp_text(void)
+ {
+-    TEDINFO *ted = (TEDINFO *)(uint32_t)tree[CDISP].ob_spec.index;
++    TEDINFO *ted = (TEDINFO *)(uint32_t)tree[CDISP].ob_spec;
+ 
+     return (char *)(uint32_t)ted->te_ptext;
+ }
+@@ -164,9 +148,9 @@
+  * chooses it from the Desk menu (src/apps/calcacc.c). */
+ WORD calc_start(void)
+ {
+-    if (!rsrc_load("CALC.RSC"))
++    if (!rsrc_load("SYS:CALC.RSC"))
+         return FALSE;
+-    rsrc_gaddr(R_TREE, ADCALC, (void **)&tree);
++    if (!rsrc_gaddr(R_TREE, ADCALC, (void **)&tree)) return FALSE;
+     clear();
+     return TRUE;
+ }
+@@ -184,55 +168,168 @@
+     if (!handle)
+         return 0;
+     v_opnvwk(work_in, &handle, work_out);
++    Calculator.vdi=handle;
+     return handle;
+ }
+ 
+-/* The panel, and the form_do loop that is the whole of this program.
+- * Returns when Quit is pressed and the screen has been given back. */
+-void calc_panel(void)
+-{
+-    WORD x, y, w, h, obj, done = FALSE;
+-
+-    form_center(tree, &x, &y, &w, &h);
+-    form_dial(FMD_START, 0, 0, 0, 0, x, y, w, h);
+-    form_dial(FMD_GROW, 0, 0, 0, 0, x, y, w, h);
+-    objc_draw(tree, ROOT, MAX_DEPTH, x, y, w, h);
+-
+-    while (!done) {
+-        obj = form_do(tree, 0);
+-        tree[obj].ob_state = (UWORD)(tree[obj].ob_state & ~SELECTED);
+-        objc_draw(tree, obj, 1, x, y, w, h);
+-        switch (obj) {
+-        case CQUIT:
+-            done = TRUE;
+-            break;
+-        case CCLR:
+-            clear();
+-            break;
+-        case CSIGN:
+-            show(-shown);
+-            fresh = FALSE;
+-            break;
+-        case CADD:
+-        case CSUB:
+-        case CMUL:
+-        case CDIV:
+-            apply();
+-            pending = obj;
+-            fresh = TRUE;
+-            break;
+-        case CEQ:
+-            apply();
+-            pending = 0;
+-            fresh = TRUE;
+-            break;
+-        default:
+-            digit(key_digit(obj));
+-            break;
++/* Windowed Exec adaptation: the arithmetic and resource remain the donor's. */
++static WORD paint(WORD object,const WORD *damage)
++{
++    WORD okay,x,y,clip[4],mark[4];
++    if (!wind_update(BEG_UPDATE)) return FALSE;
++    okay=wind_get(Calculator.window,WF_WXYWH,&Calculator.work[0],&Calculator.work[1],
++                  &Calculator.work[2],&Calculator.work[3]);
++    tree[ROOT].ob_x=Calculator.work[0];tree[ROOT].ob_y=Calculator.work[1];
++    if (okay) okay=objc_draw(tree,object,object ? 0:MAX_DEPTH,
++                           damage[0],damage[1],damage[2],damage[3]);
++    if (okay && (object==ROOT || object==Calculator.focus)) {
++        objc_offset(tree,Calculator.focus,&x,&y);
++        clip[0]=damage[0];clip[1]=damage[1];
++        clip[2]=damage[0]+damage[2]-1;clip[3]=damage[1]+damage[3]-1;
++        vs_clip(Calculator.vdi,1,clip);
++        vsf_color(Calculator.vdi,tree[Calculator.focus].ob_state&SELECTED ? 0:1);
++        mark[0]=x+3;mark[1]=y+tree[Calculator.focus].ob_height-3;
++        mark[2]=x+tree[Calculator.focus].ob_width-4;mark[3]=mark[1];
++        v_bar(Calculator.vdi,mark);
++    }
++    if (!wind_update(END_UPDATE)) okay=FALSE;
++    return okay;
++}
++
++static WORD repaint(WORD object)
++{
++    WORD x,y,damage[4],border=object==CDISP ? 1:2+!!(tree[object].ob_flags&DEFAULT);
++    objc_offset(tree,object,&x,&y);
++    damage[0]=x-border;damage[1]=y-border;
++    damage[2]=tree[object].ob_width+2*border;
++    damage[3]=tree[object].ob_height+2*border;
++    return paint(object,damage);
++}
++
++static WORD cancel(void)
++{
++    WORD obj=Calculator.armed;
++    if (obj<0) return TRUE;
++    tree[obj].ob_state=Calculator.saved;Calculator.armed=-1;
++    return repaint(obj);
++}
++
++/* Every accepted key reaches this donor operation switch exactly once. */
++static WORD action(WORD obj)
++{
++    LONG before=shown;
++    ++Calculator.actions;
++    switch (obj) {
++    case CQUIT: return TRUE;
++    case CCLR: clear(); break;
++    case CSIGN: show(-shown);fresh=FALSE;break;
++    case CADD:
++    case CSUB:
++    case CMUL:
++    case CDIV:
++        apply();pending=obj;fresh=TRUE;break;
++    case CEQ:
++        apply();pending=0;fresh=TRUE;break;
++    default: digit(key_digit(obj));break;
++    }
++    if (shown!=before && !repaint(CDISP)) Calculator.result=2;
++    return FALSE;
++}
++
++static WORD shortcut(WORD key)
++{
++    static const WORD digits[10]={C0,C1,C2,C3,C4,C5,C6,C7,C8,C9};
++    key&=255;
++    if (key>='0' && key<='9') return digits[key-'0'];
++    switch (key) {
++    case '+': return CADD;
++    case '-': return CSUB;
++    case '*': return CMUL;
++    case '/': return CDIV;
++    case '=': return CEQ;
++    case 'c': case 'C': return CCLR;
++    default: return NIL;
++    }
++}
++
++WORD calc_panel(void)
++{
++    WORD x,y,w,h,events,mx,my,mb,ks,kr,br,hit,next,unused,previous,quit=FALSE;
++    Calculator.window=-1;Calculator.focus=C7;Calculator.armed=-1;
++    Calculator.result=1;
++    if (!wind_calc(WC_BORDER,NAME|CLOSER|MOVER,424,48,tree[ROOT].ob_width,
++                   tree[ROOT].ob_height,&x,&y,&w,&h)) return 1;
++    Calculator.window=wind_create(NAME|CLOSER|MOVER,x,y,w,h);
++    if (Calculator.window<0 || !wind_set_str(Calculator.window,WF_NAME,"Calculator")) goto finish;
++    if (!wind_open(Calculator.window,x,y,w,h)) goto finish;
++    Calculator.opened=1;
++    if (!wind_get(Calculator.window,WF_WXYWH,&Calculator.work[0],&Calculator.work[1],
++                  &Calculator.work[2],&Calculator.work[3])) goto finish;
++    tree[ROOT].ob_x=Calculator.work[0];tree[ROOT].ob_y=Calculator.work[1];
++    Calculator.ready=1;Calculator.result=0;
++    while (!quit && !Calculator.result) {
++        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG,1,1,Calculator.down ? 0:1,
++            0,0,0,0,0,0,0,0,0,0,Calculator.message,0,0,&mx,&my,&mb,&ks,&kr,&br);
++        if (!events) {
++            if (ExecAESDiagnostic()!=AES_INPUT_LOST || !cancel()) { Calculator.result=2;break; }
++            Calculator.down=1;continue;
+         }
+-        objc_draw(tree, CDISP, 0, x, y, w, h);
+-    }
+-
+-    form_dial(FMD_SHRINK, 0, 0, 0, 0, x, y, w, h);
+-    form_dial(FMD_FINISH, 0, 0, 0, 0, x, y, w, h);
+-}
++        if ((events&MU_MESAG) && Calculator.message[3]==Calculator.window) {
++            switch (Calculator.message[0]) {
++            case WM_CLOSED: quit=TRUE;break;
++            case WM_TOPPED:
++                if (!wind_set(Calculator.window,WF_TOP,0,0,0,0)) Calculator.result=2;
++                break;
++            case WM_MOVED:
++                if (!cancel() || !wind_set(Calculator.window,WF_CXYWH,
++                    Calculator.message[4],Calculator.message[5],Calculator.message[6],Calculator.message[7]))
++                    Calculator.result=2;
++                break;
++            case WM_REDRAW:
++                if (!paint(ROOT,&Calculator.message[4])) Calculator.result=2;
++                break;
++            }
++        }
++        if (quit || Calculator.result) break;
++        if (events&MU_BUTTON) {
++            hit=objc_find(tree,ROOT,MAX_DEPTH,mx,my);
++            if (mb&1) {
++                Calculator.down=1;
++                if (hit>=C7 && hit<=CQUIT) {
++                    previous=Calculator.focus;Calculator.focus=hit;
++                    Calculator.armed=hit;Calculator.saved=tree[hit].ob_state;
++                    tree[hit].ob_state|=SELECTED;
++                    if (!repaint(hit) || (previous!=hit && !repaint(previous))) Calculator.result=2;
++                }
++            } else {
++                next=Calculator.armed;Calculator.down=0;
++                if (next>=0 && hit==next) {
++                    tree[hit].ob_state=Calculator.saved;Calculator.armed=-1;
++                    form_button(tree,hit,1,&next);
++                    if (!repaint(hit)) Calculator.result=2;
++                    if (!Calculator.result) quit=action(hit);
++                } else if (!cancel()) Calculator.result=2;
++            }
++        }
++        if ((events&MU_KEYBD) && !quit && !Calculator.result) {
++            if (!cancel()) { Calculator.result=2;break; }
++            previous=Calculator.focus;hit=shortcut(kr);
++            if (hit>=0) {
++                Calculator.focus=hit;form_button(tree,hit,1,&next);
++                quit=action(hit);
++            } else if ((kr&255)!=27) {
++                if ((kr&255)==9 && (ks&3)) kr=0x0f00;
++                form_keybd(tree,Calculator.focus,Calculator.focus,kr,&next,&unused);
++                Calculator.focus=next;
++                if (!unused && ((kr&255)==13 || (kr&255)==32)) quit=action(next);
++            }
++            if (!quit && Calculator.focus!=previous &&
++                (!repaint(previous) || !repaint(Calculator.focus))) Calculator.result=2;
++        }
++    }
++finish:
++    Calculator.ready=0;
++    if (Calculator.opened && wind_close(Calculator.window)) Calculator.opened=0;
++    if (Calculator.window>0 && !Calculator.opened && wind_delete(Calculator.window)) Calculator.window=-1;
++    return Calculator.result;
++}
+--- a/src/apps/calcapp.c
++++ b/src/apps/calcapp.c
+@@ -1,35 +1,14 @@
+-/* calcapp.c -- the calculator as a PROGRAM (APPS\\CALC.PRG).
+- *
+- * The same src/apps/calc.c the accessory is built from, with the main()
+- * a launched program wants: take everything, run the one panel, give it
+- * all back and return to the desktop.  src/apps/calcacc.c is the other
+- * main(), and the difference between them is the whole difference
+- * between a program and an accessory.
+- *
+- * The order is the one it has always had -- appl_init, graf_handle,
+- * v_opnvwk, then the resource -- because test-m22 runs this from the
+- * desktop and a gate that counts calls should not be made to re-learn
+- * them for a refactor.
+- */
+-#include "gem.h"
+-
+-WORD calc_start(void);
+-WORD calc_ws(void);
+-void calc_panel(void);
++/* GEM4XE calculator Process entry, adapted for Exec816. GPL-2.0-or-later. */
++#include "calculator.h"
+ 
+ int main(void)
+ {
+-    WORD handle;
+-
+-    appl_init();
+-    handle = calc_ws();
+-    if (!handle || !calc_start()) {
+-        appl_exit();
+-        return 1;
+-    }
+-    calc_panel();
++    WORD handle=0,result=1;
++    if (appl_init()<0) return 1;
++    handle=calc_ws();
++    if (handle && calc_start()) result=calc_panel();
+     rsrc_free();
+-    v_clsvwk(handle);
+-    appl_exit();
+-    return 0;
++    if (handle) v_clsvwk(handle);
++    if (!appl_exit()) result=2;
++    return result;
+ }

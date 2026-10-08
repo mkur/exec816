@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Physical 2x ST movement, clamping and reversal through the native desktop."""
+"""Physical ST profiles, fine/fast movement, clamping and edge reversal."""
 import argparse
 import json
 import os
@@ -17,7 +17,8 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 def run(out, program):
     out.mkdir(parents=True, exist_ok=True)
     p = read_build(program)
-    require(p['build']['desktop_pointer_pixels_per_step'] == 2, 'Expected the 2x desktop')
+    profile=p['build']['desktop_mouse']['profile']
+    require(profile in ('off','mild'), 'Unknown desktop pointer profile')
     require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
             'Mouse emulator pin changed')
     offsets, _ = definitions()
@@ -53,18 +54,24 @@ def run(out, program):
                 require(point() == [320, 120], 'Initial screen position changed')
                 counts = [0, 0]
                 # Expectations are screen pixels, independent of the scale helper.
-                for dx, dy, expected in (
+                cases=[(dx,dy,expected,8,85000) for dx,dy,expected in (
                     (5, -3, [330, 114]), (40, 20, [410, 154]),
-                    (400, 200, [639, 239]), (-1, -1, [638, 238]),
-                    (-4, -3, [630, 232]), (-500, -250, [0, 0]),
+                    (400, 200, [639, 239]), (-1, -1, [637, 237]),
+                    (-4, -3, [629, 231]), (-500, -250, [0, 0]),
                     (1, 1, [2, 2]),
-                ):
+                )]
+                if profile=='mild':
+                    cases=[(5,-3,[325,117],1,36000),
+                        (400,200,[639,239],2,130000),(-1,-1,[638,238],1,36000),
+                        (-4,-3,[634,235],1,36000),(-650,-250,[0,0],2,130000),
+                        (1,1,[1,1],1,36000)]
+                for dx,dy,expected,packet,spacing in cases:
                     counts = [counts[0]+dx, counts[1]+dy]
                     item = dict(controller_steps=[dx, dy], expected=expected, commands=[])
                     index = 0
                     while dx or dy:
-                        sx, sy = max(-8, min(8, dx)), max(-8, min(8, dy))
-                        command = f'MOUSE AT {2000+index*85000} {sx*16} {sy*16} -1'
+                        sx, sy = max(-packet, min(packet, dx)), max(-packet, min(packet, dy))
+                        command = f'MOUSE AT {70000+index*spacing} {sx*16} {sy*16} -1'
                         b._cmd_ok(command)
                         item['commands'].append(command)
                         dx -= sx
@@ -72,7 +79,7 @@ def run(out, program):
                         index += 1
                     # Finish every controller phase, including discarded overshoot,
                     # before checking immediate reversal. PAL has 35,568 base cycles/frame.
-                    frames((index*85000+35567)//35568+20)
+                    frames((70000+index*spacing+35567)//35568+20)
                     item['position'] = point()
                     item['capture_counts'] = [int.from_bytes(b.memdump(
                         capture+offsets['POINTERCAPTURE_'+axis+'COUNT'], 4), 'little', signed=True)

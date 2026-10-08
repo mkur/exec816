@@ -1,0 +1,19 @@
+{
+  "abi": "exec816.vdi-client",
+  "version": 1,
+  "constants": {"PHYSICAL": 1, "VIRTUAL": 2, "WIDTH": 640, "HEIGHT": 240, "FONT_WIDTH": 8, "FONT_HEIGHT": 8, "FONT_TOP": 6, "TEXT_CHUNK": 32, "STRIP_ROWS": 16},
+  "unit": [
+    ["operation", "UWORD"], ["textColor", "UWORD"], ["fillColor", "UWORD"],
+    ["left", "UWORD"], ["top", "UWORD"], ["right", "UWORD"], ["bottom", "UWORD"],
+    ["x", "WORD"], ["y", "WORD"], ["count", "UWORD"], ["glyphs", "const WORD *"]
+  ],
+  "workstation": [
+    ["grant", "struct DisplayGrant"], ["signal", "BYTE"], ["clipped", "UBYTE"],
+    ["handle", "WORD"], ["fillColor", "WORD"], ["textColor", "WORD"],
+    ["clip", "WORD", 4], ["control", "WORD", 12], ["intin", "WORD", 32],
+    ["ptsin", "WORD", 4], ["intout", "WORD", 45], ["ptsout", "WORD", 12],
+    ["unit", "struct ExecVDIUnit"]
+  ],
+  "workout_ints": [639,239,0,372,372,1,0,0,0,0,1,0,0,16,1,1,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,1,0,0,0,16,0,0,0,0,0],
+  "workout_points": [8,8,8,8,0,0,0,0,0,0,0,0]
+}

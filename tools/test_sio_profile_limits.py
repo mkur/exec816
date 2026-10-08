@@ -21,7 +21,7 @@ def run(t,out,optimize,replay=False):
         machine=verify_machine(b,ROM,PIN)
         scenarios = [('stock-default',495), ('stock-explicit',495),
                      ('verified-default',495), ('verified-explicit',495),
-                     ('generic-read-default',248), ('verified-short',5)]
+                     ('generic-read-default',495), ('verified-short',5)]
         for variant,(name,ticks) in enumerate(scenarios):
             if variant:b.state_load(slot='loaded')
             offset=[0]

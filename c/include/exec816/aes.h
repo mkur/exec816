@@ -9,6 +9,7 @@ struct ExecAESTimer {
     UBYTE state, opened;
     UWORD error;
 };
+struct ExecVDIWorkstation;
 
 /* Runtime hooks, separate from GEM application entry points. The startup
  * controller retains the service until every attached Task has detached. */
@@ -28,11 +29,24 @@ struct ExecAESContext {
     ULONG identity, sequence;
     WORD gemId;
     struct ExecAESTimer timer;
+    struct AESWindowView *view;
+    UWORD visibleIndex;
+    ULONG visibleRevision;
+    struct ExecVDIWorkstation *workstation;
+    struct ExecAESResource *resource;
+    WORD deferredMessage[8];
+    UBYTE messagePending;
+    ULONG menuTree;
+    ULONG messageEpoch, messageMenuEpoch;
+    ULONG deferredEpoch, deferredMenuEpoch;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);
 BOOL ExecAESDetach(void);
 struct ExecAESContext *ExecAESContext(void);
 UWORD ExecAESDiagnostic(void);
+/* Session preference: AES_MOUSE_QUERY, AES_MOUSE_OFF or AES_MOUSE_MILD.
+ * Returns the chosen profile, or -1 on failure. Held gestures finish first. */
+WORD ExecAESMouseProfile(WORD profile);
 BOOL ExecAESPointer(const void *pointer, ULONG bytes);
 #endif

@@ -75,7 +75,7 @@ RETURN
 ENDMODULE
 ''')
     s=read_source(ROOT/'lib/dos/doscooked.act').replace('USE EXEC','USE EXEC\nUSE SHELLEDITPROBE',1)
-    s=s.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)','  IF reading=0 THEN SHELLEDITPROBE.Capture(buffer,length) FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)')
+    s=s.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)','  IF reading=0 THEN SHELLEDITPROBE.Capture(buffer,length) FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)')
     s=s.replace('        state.drawn=0\n      FI','        state.drawn=0\n      FI\n      SHELLEDITPROBE.Key(0)')
     (out/'doscooked.act').write_text(s)
 

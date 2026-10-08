@@ -1,0 +1,43 @@
+MODULE MOUSECURVE
+USE EXEC
+USE INPUT
+USE DESKMOUSE
+USE HEAPCORE
+
+TYPE Case=[
+  BYTE reset,profile
+  INT initialX,initialY,dx,dy
+  CARD info,kind
+  INT expectedX,expectedY
+]
+INPUT.Event event
+CARD checks,index
+
+PROC Main()
+
+  LET count=CARD POINTER($2d0000)
+  LET rows=Case POINTER($2d0002)
+  FOR index=0 TO count^-1 DO
+    BEGIN
+      LET item=@rows(index)
+      IF item.reset<>0 THEN
+        DESKMOUSE.Start(item.initialX,item.initialY,item.profile)
+      FI
+      event.kind=BYTE(item.kind)
+      event.flags=INPUT.TICK_VALID OR INPUT.RELATIVE
+      event.x=item.dx
+      event.y=item.dy
+      event.motionInfo=item.info
+      event.buttons=1
+      DESKMOUSE.Apply(@event)
+      IF event.x<>item.expectedX OR event.y<>item.expectedY
+          OR event.motionInfo<>0 OR event.flags<>INPUT.TICK_VALID
+          OR event.buttons<>1 OR event.kind<>BYTE(item.kind) THEN
+        HEAPCORE.Abort($fbea)
+      FI
+      checks==+1
+    END
+  OD
+
+RETURN
+ENDMODULE

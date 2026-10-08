@@ -1,4 +1,4 @@
-; One owned Process, collected only at complete-command boundaries.
+; One owned Process; collection changes job state before later reporting.
 PROC ShellJobNumber(DOS.FileHandle POINTER handle LONGCARD number)
 
   LET buffer=ShellDrawBuffer()
@@ -141,7 +141,7 @@ PROC ShellBreakJob()
     RETURN
   FI
 
-  IF PROCESS.RequestBreak(job.identity)=0 THEN
+  IF PROCESS.RequestStop(job.identity)=0 THEN
     ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
   ELSE
     job.state=JOB_STOPPING
@@ -156,7 +156,7 @@ BYTE FUNC ShellStopJob()
     RETURN(1)
   FI
 
-  IF PROCESS.RequestBreak(job.identity)=0
+  IF PROCESS.RequestStop(job.identity)=0
       OR PROCESS.Wait(job.identity,@job.outcome)=0 THEN
     ShellFail(PROCESS.RETURN_FAIL,DOS.IoErr())
     RETURN(0)

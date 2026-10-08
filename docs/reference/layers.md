@@ -3,7 +3,7 @@
 [Reference](README.md) · [Desktop design](../plans/gem4xe/desktop-design.md) ·
 [Implementation plan](../plans/layers-implementation-plan.md)
 
-`LAYERS` is an ordinary Action! library for up to four opaque rectangular layers
+`LAYERS` is an ordinary Action! library for up to six opaque rectangular layers
 and a permanent background. It maintains stacking, cached visibility, damage and
 one drawing transaction per scene. It does not draw pixels, acquire the display,
 route input or create Tasks. The desktop and its bitmap console consume these transactions.
@@ -40,10 +40,10 @@ IDs and update tokens never repeat within that lifetime.
 | Call | Behavior |
 | --- | --- |
 | `Init(scene,width,height)` | Positive dimensions through 32767. Establish a background at `[0,width) × [0,height)`, initially dirty. No allocation. |
-| `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at four live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
+| `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at six live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
 | `Show(scene,id,shown)` | Show with 1 or hide with 0. Retain content identity while hidden. |
 | `Move(scene,id,left,top)` | Preserve dimensions; reject positions outside the screen without overflow. Mark old/new areas for repair. |
-| `BeginMove(scene,id,left,top,tokenOut)` | Admit a clean, shown, fully visible front layer for a copied move; retain old/new bounds until Finish. EMPTY for unchanged placement, REDRAW for a nonclean/covered/nonfront source. |
+| `BeginMove(scene,id,left,top,tokenOut)` | Admit a clean, shown, fully visible layer whose destination misses every shown layer above it for a copied move; retain old/new bounds until Finish. EMPTY for unchanged placement, REDRAW for a nonclean/covered source or occluded destination. |
 | `Order(scene,id,front)` | Move to front with 1 or back with 0. Background always remains below ordinary layers. |
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
@@ -140,9 +140,9 @@ rejected before writing. Valid empty inputs succeed with an empty result.
 Each region has room for 96 rectangles. Subtraction counts before emitting and
 returns FULL with all destination bytes unchanged on overflow; malformed bounds
 or an excessive input count return BAD_ARGUMENT. Clipping cannot increase the
-rectangle count. Four scene occluders introduce at most nine intervals on each
-axis, so their subdivision fits within 81 cells and cannot exhaust this region
-capacity. Generic repeated subtraction remains subject to FULL.
+rectangle count. Six scene occluders introduce at most thirteen horizontal endpoint bands,
+each with at most seven free intervals. The resulting subdivision has at most
+91 pieces and cannot exhaust this region capacity. Generic repeated subtraction remains subject to FULL.
 
 ## Memory and supported scope
 
@@ -151,8 +151,8 @@ capacity. Generic repeated subtraction remains subject to FULL.
 | Rect | 8 |
 | Region with 96 rectangle slots | 770 |
 | Eight-entry Damage record | 66 |
-| Layer including visibility and damage | 850 |
-| Scene with four layers, background, scratch region and transaction state | 5,074 |
+| Layer including visibility and damage | 852 |
+| Scene with six layers, background, scratch region and transaction state | 6,790 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:
@@ -174,3 +174,23 @@ retirement. `UPDATE_READ` completion never acknowledges paint and a failed read
 does not mark clean framebuffer pixels dirty merely because its destination
 failed. The saved source rectangle is owned by the scene. The existing copy,
 move and paint operations remain mutually exclusive with a read.
+
+## External application painting
+
+`SetExternal(scene,id)` marks a newly created hidden layer as application-painted.
+`BeginPaint` then admits `UPDATE_HANDOFF`: the manager paints frame pixels and
+accumulates work-area damage for the application. `PaintRegion` and `AdvancePaint`
+retain their usual traversal. After exhaustion and durable damage delivery,
+`FinishHandoff(scene,token)` retires manager damage and releases the transaction.
+Ordinary `Finish(...,1)` rejects this transaction; `Finish(...,0)` aborts it while
+preserving damage for retry. No token remains live while waiting for the app.
+
+The external flag persists across handoff, exposure and moves. `BeginCopy`,
+`BeginMove` and `BeginRead` return REDRAW for these layers, even when manager
+damage is empty. Handoff is not evidence that application pixels are valid.
+Deleting and recreating a layer resets the flag.
+
+The [resident counter example](../guides/aes-applications.md#counter-example)
+uses this external-paint path. Shell plus two counters consume three layers;
+adding the native panel fills the fourth. Neither delayed redraw delivery nor
+fully covered timer updates make an external layer copy/cache eligible.

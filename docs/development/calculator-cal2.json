@@ -1,0 +1,209 @@
+{
+  "slice": "CAL2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "resource": {
+    "revision": "fbfea9b0b1233a5d659d5ec583c63f863cceadfa",
+    "inputs": {
+      "src/apps/calc.c": "1363925792468664f6de42dd61b0b1ab647870ebaa2aa6de4a0ec37c1d1218fe",
+      "src/apps/calcapp.c": "96a30fbf5ce3f11e3cf6cc8f2f39ae8d4cc70b85a8b9bd5ff0ac6e469ce0b141",
+      "tools/calcrsc.py": "d64f3bf7b2b3f3490830f822d4dd4bb4d9b7d7d93d25ea8f34892109ed06d3c6",
+      "tools/rsc.py": "06ce646a65b874dd4dc8c3beb890ea39f5040a61532c4806c5bfa6f64fbd940b",
+      "tools/aesref.py": "532de9b7edfa28f1ec35be94f8898bcfe1293f395db58dfa9c930b89d14b18f4",
+      "tools/vdiref.py": "d8c03d1879789973bc4132a5fcc076e782b52280bdfc89a44054051da6383c35",
+      "tools/fontref.py": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+      "tools/devref.py": "9aaf42d76a1d16d06ab7a52d7c2fb1c80a6fa46c55afad1560622201cafc62de",
+      "tools/gemdata.py": "408f051d865d07b88cede092d8b4fbf39e0da154c1954085ae3a18d410f0eb87",
+      "tools/vbxeref.py": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+      "tools/anticref.py": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+      "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+      "src/vdi/font6x6.c": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+      "src/vdi/sintbl.c": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+      "src/vdi/fillpat.c": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+      "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+      "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+    },
+    "patches": {
+      "0001-flat-resource.patch": "884be063af8500ed7b93a6f7089f608c91392c1db9eb84c7eafd9b25b5a2766f"
+    },
+    "outputs": {
+      "CALC.RSC": "6047068d5b03cc21fd187f2b5bd4672fbc298a392038114969f0226b27a65eac",
+      "calcrsc.h": "f220a9c6a1bb56e5df1d9f729203399b8af755637a5c7fa5e0c14d1af2356ec3"
+    },
+    "resource_bytes": 650
+  },
+  "resource_heap_bytes": {
+    "file": 650,
+    "metadata": 16,
+    "requested": 666,
+    "rounded": 672
+  },
+  "checks": {
+    "sdfs": {
+      "path": "build/calculator/cal2/sdfs/results.json",
+      "sha256": "ba58ea55f199a98d7f46849e4f351003ecff7266713dc71f5f7641073112a577",
+      "checks": 73,
+      "failures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 530,
+          "remaining_above_floor": 750
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 295,
+          "remaining_above_floor": 473
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 150,
+          "remaining_above_floor": 618
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 62,
+          "remaining_above_floor": 194
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "mydos": {
+      "path": "build/calculator/cal2/mydos/results.json",
+      "sha256": "f70fe6989e1028f154faa979fb72049050663b7984136ab94113f88fe10064b0",
+      "checks": 73,
+      "failures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 530,
+          "remaining_above_floor": 750
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 245,
+          "remaining_above_floor": 523
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 151,
+          "remaining_above_floor": 617
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 658,
+          "remaining_above_floor": 1646
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 58,
+          "remaining_above_floor": 198
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    }
+  },
+  "host": {
+    "tests": 415,
+    "skipped": 4
+  },
+  "coverage": [
+    "load/fix/draw CALC.RSC",
+    "upper TEDINFO and text pointers",
+    "normalized zero lengths",
+    "invalid TED offset/table/string leaves old resource intact",
+    "shared TED fixed once",
+    "three load/free cycles",
+    "appl_exit releases retained resource"
+  ]
+}

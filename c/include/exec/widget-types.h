@@ -39,6 +39,7 @@
 #define WIDGET_STATE_SELECTED 1
 #define WIDGET_STATE_DISABLED 8
 #define WIDGET_DAMAGE_RECTS 8
+#define WIDGET_OP_MENU_DRAW 9
 struct WidgetObject {
     int16_t next;
     int16_t head;

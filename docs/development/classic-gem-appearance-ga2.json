@@ -1,0 +1,378 @@
+{
+  "status": "pass",
+  "slice": "GA2",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "aa4c60b",
+  "packet_version": 11,
+  "packet_bytes": 78,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_native_bytes_delta": 2,
+  "additional_c_scratch": 0,
+  "additional_vram_bytes": 0,
+  "host": {
+    "tests": 417,
+    "skips": 4
+  },
+  "checks": {
+    "menus": {
+      "report": "build/classic-gem/ga2/menus/results.json",
+      "sha256": "eaa77619de7e2fe37c6ca7f80a977a5ff74818fe843557070371ff609767d29d",
+      "status": "pass",
+      "AESChecks": 285,
+      "AESFailures": 0,
+      "native_checks": 4,
+      "native_popup": {
+        "pixels": "exact",
+        "border_hits": "excluded"
+      },
+      "physical_menus": {
+        "pointer": true,
+        "keyboard": true,
+        "commands": [
+          5,
+          2
+        ],
+        "identical_titles": true,
+        "disabled": true,
+        "held_replacement": true,
+        "held_disable": true,
+        "cancel": true,
+        "heading_switch": true,
+        "hidden": true,
+        "multiple_titles": true
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 575,
+          "remaining_above_floor": 705
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 273,
+          "remaining_above_floor": 495
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 150,
+          "remaining_above_floor": 618
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 463,
+          "remaining_above_floor": 305
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 834,
+          "remaining_above_floor": 1470
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "instances": {
+      "report": "build/classic-gem/ga2/instances/checks/results.json",
+      "sha256": "9a9064e294cec0f6b2dabec6d10d294f047e70123bb21c1c2c3a71530ac55ba9",
+      "status": "pass",
+      "commands": [
+        "pointer Refresh",
+        "keyboard Open",
+        "disabled Open",
+        "keyboard Quit",
+        "pointer Quit"
+      ],
+      "focus_restoration": true,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 432,
+          "remaining_above_floor": 848
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 323,
+          "remaining_above_floor": 445
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 151,
+          "remaining_above_floor": 617
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 620,
+          "remaining_above_floor": 148
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 606,
+          "remaining_above_floor": 162
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 753,
+          "remaining_above_floor": 1551
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 62,
+          "remaining_above_floor": 194
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "controls": {
+      "report": "build/classic-gem/ga2/controls/checks/results.json",
+      "sha256": "85f5a9b493ca9910730aaaeb1f9693998a996738d2ae3c50de30650fbaa87180",
+      "status": "pass",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 547,
+          "remaining_above_floor": 733
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 297,
+          "remaining_above_floor": 471
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 155,
+          "remaining_above_floor": 613
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 676,
+          "remaining_above_floor": 92
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 631,
+          "remaining_above_floor": 137
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 696,
+          "remaining_above_floor": 1608
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 62,
+          "remaining_above_floor": 194
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "cases": [
+        {
+          "name": "initial",
+          "actions": 0,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "ab872240657a5427d5d5d328ad5e3753115ac289563f7722f99f9188e85336df"
+        },
+        {
+          "name": "pending-off",
+          "actions": 1,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "6819b63175646f746f651dd54bb546dbf81427129c8cae7cae417949dd5b7e96"
+        },
+        {
+          "name": "applied-off",
+          "actions": 2,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "9f2af317ac9c65d8d2094aca53f67a227f00bdff42b3f94c3fea8178ff414a26"
+        },
+        {
+          "name": "defaults",
+          "actions": 3,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "d04cbe0533ba5d5d20f35dcd3abd5847afaed7aef1cd1b824fa5a23e89ce1169"
+        },
+        {
+          "name": "keyboard",
+          "actions": 6,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "d49d579ee67eddbd7884be87d8483fd319b2cf2d7d1fbf09064d1b70448dc2b8"
+        },
+        {
+          "name": "cancel",
+          "actions": 6,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "44e685f5190b3c292bd20125be251265f21e67bc660de56a1c9f45ba66dcccc6"
+        },
+        {
+          "name": "focus-repair",
+          "actions": 6,
+          "states": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pixels": "match donor oracle",
+          "sha256": "b09be91c98ef872e0f9d96b0b1e5a00b3383e0fc1273df16b3a8959e6c0a049a"
+        }
+      ]
+    }
+  }
+}

@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,pointer_description
 from library_paths import read_source
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
@@ -18,7 +18,10 @@ WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,text_shell_only=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False):
+    require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
+    if aes_counters or aes_input or gem_desktop:
+        desktop=True
     if desktop:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
@@ -37,8 +40,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     media=output/'media';media.mkdir(exist_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES'):
-        commands[name]=compile_command(toolchain,ROOT/f'examples/commands/{name.lower()}.act',command_dir/name)
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES')+(('TICK',) if gem_desktop else ()):
+        command_source=ROOT/'examples/gem-browser/tick.act' if name=='TICK' else ROOT/f'examples/commands/{name.lower()}.act'
+        commands[name]=compile_command(toolchain,command_source,command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
         (command_dir/(name+'.profile.json')).rename(output/(name+'.profile.json'))
     binary_names={f'C/{name}' for name in commands}
@@ -58,13 +62,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'BREAK identity stops it. PRIMES PASSES 1 runs one foreground pass.\n'
             'EXIT returns to the OS.\n',encoding='ascii')
     if desktop:
-        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
-    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+        (media/'README.TXT').write_text('Exec816 desktop preview\n\nA 64 by 20 shell and an independent application.\nST mouse, port 1, left button.\nPointer profile: @POINTER_PROFILE@.\nDrag titles; Escape cancels a drag.\nControl Panel: Toggle, Small/Large, Apply and Cancel.\nTab/Shift-Tab: focus; Space: activate; Return: Apply.\nEscape/BREAK: cancel. Locked is disabled.\nIts X gadget closes only that app.\nClick the shell to type. EXIT closes the desktop.\nNo primes. SYS: is read-only; WORK: in D8 is writable.\n'.replace('@POINTER_PROFILE@', __import__('generate_mouse_acceleration').metadata(mouse_profile)['profile']),encoding='ascii')
+    if aes_counters:
+        (media/'README.TXT').write_text('Exec816 GEM counters\n\nTwo independent counter windows beside the shell.\nST mouse, port 1; drag titles, click a window to top it.\nCounters update once per second, including while covered.\nX closes one counter. Click the shell to type.\nTry TASKS, CAT STORY.TXT | WC, or CAT LONG.TXT.\nBREAK cancels a command; EXIT closes the desktop.\nSYS: is read-only; mount WORK: in D8 for writes.\n',encoding='ascii')
+    if aes_input:
+        (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+    if gem_desktop:
+        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nWindows in the top bar reaches covered windows.\nCtrl-Tab cycles; Ctrl-Escape opens the Windows menu.\nFiles: top menu offers Open, Refresh, Stop and Quit.\nCtrl-Shift-Escape enters it; Tab/arrows and Return select.\nWindows also offers Next window and Close for Files.\nOther active-window menus offer Next window and Close.\nClosing restores focus to the frontmost remaining window.\nPanel: choose Off/Mild mouse acceleration, then Apply.\nDefaults stages Mild; Cancel discards pending edits.\nSettings last for this desktop session.\nTab/Shift-Tab, Space and Return operate the controls.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        from build_gem_resource import resource
+        (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
-    try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
-                   sector_bytes=sector_bytes,sectors=system_sectors)
-    except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
@@ -82,20 +90,32 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
-    entry=ROOT/('examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
+    entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
-    # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
+    # Desktop menu state adds 512 bytes of upper capacity.
+    # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(512 if desktop else 0)
     memory_profile=output/'demo-memory.json'
     memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        program=build_bitmap(source,output/'bitmap-console',program_output=output,
-            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,
+        if gem_desktop:
+            from build_gem_desktop import build_desktop
+            from functools import partial
+            builder=partial(build_desktop,files=True)
+        elif aes_input:
+            from build_gem_input import build_inputs
+            builder=build_inputs
+        elif aes_counters:
+            from build_aes_desktop import build_counters
+            builder=build_counters
+        else:builder=build_bitmap
+        program=builder(source=source,out=output/'bitmap-console',program_output=output,
+            compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
         copy_notices(output/'bitmap-console/selected',output)
         pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
@@ -103,6 +123,25 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
+    if gem_desktop:
+        for name in ('panel','counter','files','calc'):
+            shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
+            binary_names.add('C/'+name.upper()+'.APP')
+        calculator=output/'bitmap-console/apps/calc'
+        shutil.copyfile(calculator/'CALC.RSC',media/'CALC.RSC');binary_names.add('CALC.RSC')
+        for name,source in zip(CALCULATOR_NOTICES,('COPYING','COPYING.LIB','docs/licence.md')):
+            shutil.copyfile(calculator/'source'/source,output/name)
+        provenance=json.loads((calculator/'calculator.json').read_text())
+        (output/'CALCULATOR-PROVENANCE.txt').write_text(
+            'GEM4XE calculator for Exec816\nSource: https://github.com/slaapliedje/gem4xe\n'
+            'Revision: '+provenance['revision']+'\n'
+            'Adaptations: flat resource; Exec window/input and Process lifetime.\n'
+            'Source, pinned inputs and patches: ports/gem4xe/apps/calculator/ in Exec816.\n'
+            'Application licence: GPL-2.0-or-later.\n')
+    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+    try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
+                   sector_bytes=sector_bytes,sectors=system_sectors)
+    except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/')
     system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
     default_geometry=('The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB\n'
@@ -122,6 +161,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=(ROOT/'docs/text-shell-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
     if desktop:
         guide=(ROOT/'docs/desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name).replace('@SYSTEM_DRIVE@','1')
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if aes_counters:
+        guide=(ROOT/'docs/aes-counter-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if aes_input:
+        guide=(ROOT/'docs/aes-input-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+    if gem_desktop:
+        guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
+        guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     (output/'README.md').write_text(guide)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
     (output/'images').mkdir(exist_ok=True)
@@ -166,6 +215,28 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if desktop:
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/desktop-distribution.txt',*sorted((ROOT/'lib/desktop').glob('*.act')))})
+    if aes_counters:
+        record.update(aes_counters=True,expected_peak_tasks=8)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/aes-counter-distribution.txt',ROOT/'tools/build_aes_desktop.py',
+            *sorted((ROOT/'examples/gem-counter').glob('*')))})
+    if aes_input:
+        record.update(aes_input=True,expected_peak_tasks=8)
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/aes-input-distribution.txt',ROOT/'tools/build_gem_input.py',
+            *sorted((ROOT/'examples/gem-input').glob('*')))})
+    if gem_desktop:
+        record.update(gem_desktop=True,expected_peak_tasks=8)
+        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES})
+        record['calculator']=provenance
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
+            *sorted((ROOT/'examples/gem-panel').glob('*')),
+            *sorted((ROOT/'examples/gem-counter').glob('*')),
+            *sorted((ROOT/'examples/gem-desktop').glob('*')),
+            *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
+            ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
+            *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics
@@ -180,6 +251,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    if gem_desktop:
+        from build_cartridge import segments, BANK_BYTES
+        capacity={}
+        for name in ('program.xex','of816/Exec-of816.xex'):
+            raw=(output/name).read_bytes()
+            segments(raw)
+            capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
+        (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
@@ -199,12 +278,16 @@ def refresh_monitor(output):
             'Changed native demo artifacts')
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
-        guide=ROOT/('docs/desktop-distribution.txt' if record.get('desktop') else
+        guide=ROOT/('docs/gem-desktop-distribution.txt' if record.get('gem_desktop') else 'docs/aes-input-distribution.txt' if record.get('aes_input') else
+                    'docs/aes-counter-distribution.txt' if record.get('aes_counters') else
+                    'docs/desktop-distribution.txt' if record.get('desktop') else
                     'docs/bitmap-shell-distribution.txt' if record.get('bitmap') else
                     'docs/text-shell-distribution.txt')
         drive=program['build']['memory']['boot_config']['system_drive']
-        (output/'README.md').write_text(guide.read_text().replace('@SYSTEM_DISK@',record['media'])
-                                       .replace('@SYSTEM_DRIVE@',str(drive)))
+        content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
+        if record.get('desktop'):
+            content=content.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+        (output/'README.md').write_text(content)
         record['artifacts']['README.md']=sha256(output/'README.md')
         guides.append(guide)
     record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
@@ -278,7 +361,11 @@ if __name__=='__main__':
                         help='Nominal system disk capacity; WORK is always 720 KiB with 256-byte sectors')
     parser.add_argument('--gem-vdi',action='store_true',help='Include the separately selected VBXE graphics workload')
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
+    parser.add_argument('--gem-desktop',action='store_true',help='GEM Control Panel and counter beside the shell')
+    parser.add_argument('--aes-input',action='store_true',help='Autoboot two interactive GEM input apps beside the native shell')
+    parser.add_argument('--aes-counters',action='store_true',help='Autoboot the optional two-counter GEM desktop beside the native shell')
     parser.add_argument('--desktop',action='store_true',help='Autoboot a framed shell and independent graphical application with ST mouse input')
+    parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
@@ -302,5 +389,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,text_shell_only=args.text_shell_only)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

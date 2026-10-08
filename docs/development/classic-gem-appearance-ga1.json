@@ -1,0 +1,278 @@
+{
+  "slice": "GA1",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "5ca3219",
+  "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "packet_version": 10,
+  "packet_bytes": 78,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_memory": {
+    "native_arena_reserved": 5120,
+    "native_arena_used": 4928,
+    "added_c_scratch": 36,
+    "manifest_extents": 63,
+    "manifest_limit": 64
+  },
+  "additional_vram_bytes": 0,
+  "checks": {
+    "presentation": {
+      "status": "pass",
+      "report": "build/classic-gem/ga1/presentation/presentation-results.json",
+      "sha256": "dac5fd68522bfadce50e325cb3d0a6b4d051bf6b22b834280ef8f02ad2139c88",
+      "checks": 117,
+      "native_checks": null,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 381,
+          "remaining_above_floor": 899
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 787,
+          "remaining_above_floor": 1517
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 51,
+          "remaining_above_floor": 205
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    "windows": {
+      "status": "pass",
+      "report": "build/classic-gem/ga1/windows/results.json",
+      "sha256": "85c48e731e1b7a5daec6f453e418ccebd9bc07d4d47cb3a5756488c9e5711c00",
+      "checks": 176,
+      "native_checks": 4,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 519,
+          "remaining_above_floor": 761
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 175,
+          "remaining_above_floor": 593
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 155,
+          "remaining_above_floor": 613
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 154,
+          "remaining_above_floor": 614
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 698,
+          "remaining_above_floor": 1606
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 117,
+          "remaining_above_floor": 139
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "background": {
+      "status": "pass",
+      "report": "build/classic-gem/ga1/background/background-control.json",
+      "sha256": "5636f5656477c54ca096f60766206527a9481f9d8211ea2135aa395defe97fe1",
+      "checks": 57,
+      "native_checks": null,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 195,
+          "remaining_above_floor": 1085
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 694,
+          "remaining_above_floor": 1610
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 49,
+          "remaining_above_floor": 207
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 275,
+          "remaining_above_floor": 1005
+        }
+      }
+    },
+    "drag": {
+      "status": "pass",
+      "sha256": "c77ac0ec2b4c7dae1a6c5a2f4fb976b15e643d0746b4d932a1db35d3e723be44",
+      "report": "build/classic-gem/ga1/drag/results.json",
+      "samples": 15,
+      "cancellations": [
+        "escape",
+        "independent_app_close",
+        "event_queue_loss",
+        "cooperative_close_refused",
+        "hide",
+        "retirement_while_held"
+      ],
+      "timing": {
+        "idle": {
+          "count": 3,
+          "median_ms": 279.3180373256045,
+          "p95_ms": 399.8152609535946,
+          "max_ms": 399.8152609535946
+        }
+      },
+      "repair_target_pass": false,
+      "scope": "Three idle releases plus outlines, clamps and cancellations; correctness check, not a p95 benchmark. Matched cost comparison follows in GA4."
+    }
+  },
+  "host": {
+    "tests": 417,
+    "skips": 4
+  },
+  "integrated_build": {
+    "status": "pass",
+    "zip_sha256": "69af4fbe6bbbf8cd5a7c5c9482284853b9c56f46c5d004627a0ca92ec87fd1f0",
+    "note": "Early capacity check; exact distribution walkthrough is GA4."
+  },
+  "limits": [
+    "No new platform qualification.",
+    "HY4/PI4 remain open; this is appearance work."
+  ],
+  "status": "pass"
+}

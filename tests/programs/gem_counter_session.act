@@ -1,0 +1,47 @@
+MODULE COUNTERTEST
+USE EXEC
+USE AESBOOT
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,ready,mode,restarts
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc70+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LONGCARD available
+
+  available=EXEC.AvailMem(0)
+  Require(CounterCapacity()<>0)
+  Require(CountersStart()<>0)
+  ready=1
+  WHILE mode<>9 DO
+    Require(CounterPost()<>0)
+    IF mode=1 THEN
+      Require(CountersStop()<>0)
+      Require(EXEC.AvailMem(0)=available)
+      Require(CountersStart()<>0)
+      restarts==+1
+      mode=0
+    FI
+
+    EXEC.Yield()
+  OD
+
+  Require(CountersStop()<>0)
+  Require(EXEC.AvailMem(0)=available)
+  LET service=AESSTATE.Get()
+  Require(service.count=0)
+  Require(AESCORE.Idle(service)<>0)
+
+RETURN
+ENDMODULE

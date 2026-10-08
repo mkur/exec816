@@ -61,6 +61,25 @@ Damage is retained separately for each changed row, so distant edits do not
 force the rows between them to redraw. A bounded presentation cannot discard a
 newer edit when it acknowledges completed work.
 
+Bitmap presentation starts a segment of at most 32 glyphs from one dirty row.
+Desktop clipping resumes one visible fragment per pass, with at most 16 glyphs
+when the fragment cuts through the glyph height. The scene token freezes the
+model and geometry until all fragments of that segment retire; no borrowed
+view or source pointer survives a worker return. The dirty endpoint advances
+only after that segment completes; a batch keeps
+its paint phase and withholds the caret until all of its damage is repaired.
+Visible pending damage drains before further writes or scrolling can restart
+the repair. Cancellation and clear can abandon that repair. Ready segments
+resume on fresh worker turns, with input, control admission and instance
+rotation between them, without a voluntary Task handoff per segment. A short
+WRITE's presentation pass completes its active fragment sequence before reply.
+Cancellation preserves the accepted prefix; a quiesced drawing failure retires
+the token without acknowledging partially drawn damage. A queued AES update lock
+still permits the existing unit-zero text continuation to finish and release
+its scene token. Other views cannot replace its frozen source. A scene exposure
+acknowledges all dirty console rows only if it repainted the full window;
+partial exposure preserves model damage outside the painted rectangle.
+
 The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
 background. A synchronized visible instance scrolls with one asynchronous opaque
@@ -87,7 +106,9 @@ retains the request or source after reply.
 See the [batching measurements](../history/console-output-batching.md): cached
 CAT improves by 1.66× on the pinned demo; broader latency targets remain open.
 
-The worker is the sole drawing owner, with one list in flight. A retained VBXE
+The worker owns console drawing and the physical display lifetime, with one
+list in flight. [Delegated VDI drawing](display.md#delegated-renderer-access)
+shares its renderer through the common physical arbiter. A retained VBXE
 completion signal wakes it; an independent sixteen-VBI-tick watchdog wakes it
 if that interrupt is lost. It queries completion on a notification, continues
 bounded input and READ service, and waits when no actionable work remains.
@@ -109,11 +130,13 @@ An opaque bitmap text span also erases an old caret inside the cells it actually
 draws, avoiding a separate glyph restore. A caret outside that span still needs
 restoring, including cursor-only moves and cells deferred by clipping or the
 presentation budget.
-When the last dirty span completes the presentation, the bitmap renderer can
+When the last dirty span completes full-screen bitmap presentation, the renderer can
 append the new caret to that text operation. This requires a focused, settled
 view and an old caret already absent or covered by the span. Text and caret
 then share one owner check and the final blitter list and fence. Cursor-only
 moves and incomplete presentations retain separate operations.
+Desktop presentation finishes every clipped text fragment before its separate
+caret operation.
 The native/C packet is version 6, 78 bytes, including the trailing fill and clipping geometry
 and driver-owned completion mask returned at open. Rebuild both sides together.
 The worker reserves its request/input/stop bits before display initialization

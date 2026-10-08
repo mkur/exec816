@@ -20,7 +20,7 @@ static volatile UBYTE retireAllowed[2];
 static ULONG held_bytes(struct ExecAESContext *c)
 {
     ULONG bytes = ((sizeof(*c)+7UL) & ~7UL) + 2*((sizeof(struct MsgPort)+7UL) & ~7UL)
-        + AES_QUEUE_DEPTH * sizeof(struct AESDelivery);
+        + ((AES_REGISTRATIONSTORAGE_SIZE + 7UL) & ~7UL);
     if (c->timer.port) bytes += (sizeof(struct MsgPort)+7UL) & ~7UL;
     if (c->timer.query) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;
     if (c->timer.alarm) bytes += (sizeof(struct TimerClockRequest)+7UL) & ~7UL;
@@ -62,7 +62,10 @@ static void holder(UWORD command)
     CHECK(event == MU_MESAG && words[0] == 765 && words[1] == ids[1]);
     ++AESMessages;
     AESPhase=2;
-    CHECK(evnt_timer(6000, 0) == 1);
+    /* Physical gesture setup consumes over four seconds in the integration
+     * fixture. Leave a bounded drawing window before automatic unlock. This
+     * hold tests independent progress, not an input-latency acceptance limit. */
+    CHECK(evnt_timer(8000, 0) == 1);
     ++AESTimers;
     CHECK(wind_update(code == BEG_UPDATE ? END_UPDATE : END_MCTRL) == 1);
 }

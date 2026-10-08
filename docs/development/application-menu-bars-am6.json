@@ -1,0 +1,478 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "AM6",
+  "baseline": "6397fec",
+  "artifact_build": "6397fec-dirty",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "changes": []
+  },
+  "c_tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "machine_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "d692a0255ebe0c14d2ddf150f2fc20514acc83a4a273b97bfd4cba26b693b431"
+  },
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "bank_zero_note": "Slice delta against the preceding desktop profile. Existing larger Tasks 6/7 are included in unchanged reservations.",
+  "memory": {
+    "global_arena_reserved": 5120,
+    "global_arena_used_including_alignment": 4930,
+    "menu_record": 340,
+    "menu_heap_allocation": 344,
+    "browser_model": 2272,
+    "owned_banks": [
+      1,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      63
+    ],
+    "owned_bank_bytes": 1376256,
+    "boot_executable_banks": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      63
+    ],
+    "manifest_extents": 63,
+    "manifest_limit": 64
+  },
+  "cartridge_capacity": {
+    "program.xex": {
+      "bytes": 999853,
+      "headroom": 32338
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 1024827,
+      "headroom": 7364
+    }
+  },
+  "size_policy": "Cartridge size informational; compression is separate future work. Loadability and manifest bounds retained.",
+  "artifacts": {
+    "exec816-demo.zip": {
+      "bytes": 447724,
+      "sha256": "767038b7635c38772dd720e8b98da810c4549d891e9a50cf5f95f4e14d9746c3"
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 1024827,
+      "sha256": "357ee9f6d3177166719b4bf21e92edb2841e494487b23721276b75ea887d765a"
+    },
+    "system.atr": {
+      "bytes": 736912,
+      "sha256": "d8eeb3b148002e6a2ff6f73340042bc5bd63e662a5bb4012aab13d4597ff0839"
+    },
+    "work.atr": {
+      "bytes": 736912,
+      "sha256": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a"
+    },
+    "build.json": {
+      "bytes": 108832,
+      "sha256": "6fdc586d781fb49334b916eb9a70cec5b403c4c7b3c8bdd53d55dc32165778f6"
+    },
+    "memory.json": {
+      "bytes": 23360,
+      "sha256": "8d52c5d132d6943f8fc1beddf45990907899f1af083b488d993f9e108574d11b"
+    }
+  },
+  "applications": {
+    "panel": {
+      "bytes": 7188,
+      "span": 66206,
+      "sha256": "730f3e3af98f3d2674ccd0484d17e585c1545f4df3ad6612e8e519927a96d27f"
+    },
+    "counter": {
+      "bytes": 4360,
+      "span": 65776,
+      "sha256": "a75dcc4c63575e4ed7d24bf33627a42c693127c9e49eb6d6ddfd167d42c55ed4"
+    },
+    "files": {
+      "bytes": 10282,
+      "span": 68253,
+      "sha256": "b62e14db3559af0c1738226a5708c863d18fcffeea424963bede0c32944e3c36"
+    },
+    "calc": {
+      "bytes": 6715,
+      "span": 65778,
+      "sha256": "c3247919ebd830d201e61957cb836a72e4b4edddfcd2279fc0360bb86138bf71"
+    }
+  },
+  "checks": {
+    "desktop": {
+      "status": "pass",
+      "report_sha256": "c61d6d9d3b055bfda5232499cab9a74755516096fdae801593f141805ec6a734",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "gem-desktop",
+        "desktop_menu": {
+          "windows": 4,
+          "covered_counter": true,
+          "pointer": true,
+          "keyboard_cycle": 8,
+          "keyboard_menu": true,
+          "outside_cancel": true,
+          "escape": true,
+          "disabled_close": true,
+          "next_window": true,
+          "independent_pixels": 5,
+          "counter_during_menu": true,
+          "held_escape": true,
+          "gesture_ownership": true,
+          "drag_limit": true,
+          "focus_restoration": true,
+          "window_reuse": true
+        },
+        "panel_settings": {
+          "staging": true,
+          "cancel": true,
+          "defaults": true,
+          "keyboard": true,
+          "outside_release": true,
+          "escape": true,
+          "held_profile_deferral": true,
+          "physical_off_step": 2,
+          "physical_mild_step": 1,
+          "repeated_applies": 6,
+          "independent_pixels": 6,
+          "shell_output": true,
+          "counter_progress": true,
+          "reopen_profile": 0,
+          "reopen_verified": true
+        },
+        "panel_keyboard": true,
+        "panel_drag": true,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "menu_quit_with_child": true,
+        "exit_with_gui_child_and_popup": true
+      },
+      "browser": {
+        "application_menu": true,
+        "menu_keyboard": true,
+        "menu_open": true,
+        "menu_stop": true,
+        "menu_disabled": true,
+        "resource": true,
+        "navigation": true,
+        "popup_keyboard": true,
+        "popup_mouse": true,
+        "launch": "HELLO",
+        "cancel": "TICK",
+        "gem_launch": "PANEL.APP",
+        "gem_stop": true,
+        "idle_collection": true,
+        "invalid_executable": true,
+        "close_during_popup_with_child": true
+      },
+      "loaded_panel_feedback": {
+        "initial": {
+          "model_address": 327946,
+          "samples_ms": [
+            100.28771643930818,
+            100.28884418625304,
+            120.24376250213214,
+            100.28771643930818,
+            100.28884418625304,
+            100.29279130056007
+          ],
+          "median_ms": 100.28884418625304,
+          "max_ms": 120.24376250213214,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        },
+        "reloaded": {
+          "model_address": 721162,
+          "samples_ms": [
+            120.24489024907702,
+            120.24489024907702,
+            120.51216627500955,
+            120.24376250213214,
+            120.25052898380133,
+            120.50427204639551
+          ],
+          "median_ms": 120.24770961643918,
+          "max_ms": 120.51216627500955,
+          "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "os_busy": 0,
+        "irq_depth": 0,
+        "switching": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 596,
+            "untouched_above_floor": 684
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 323,
+            "untouched_above_floor": 445
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 174,
+            "untouched_above_floor": 594
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 735,
+            "untouched_above_floor": 33
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 639,
+            "untouched_above_floor": 129
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 685,
+            "untouched_above_floor": 83
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 758,
+            "untouched_above_floor": 1546
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 357,
+            "untouched_above_floor": 1947
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 305,
+          "untouched_from_base": 1231,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    },
+    "calculator": {
+      "status": "pass",
+      "report_sha256": "49135341914746a4d0a196001e0a4d0c30d759df455d589bbdad9e80240f0842",
+      "autoboot_frames": 249,
+      "integration": {
+        "profile": "calculator",
+        "no_window_cleanup": true,
+        "files_launch": true,
+        "stop": true,
+        "relaunch": true,
+        "counter": true,
+        "shell": true,
+        "independent_instances": 2,
+        "resource_isolation": true,
+        "idle_run_collection": true,
+        "heap_restored": true,
+        "exit_with_calculator_and_popup": true,
+        "feedback": [
+          180.3673353736155,
+          140.45467937449516,
+          140.200936311901,
+          180.61995068926484,
+          140.45298775407787,
+          140.45467937449516
+        ]
+      },
+      "browser": {},
+      "loaded_panel_feedback": null,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "fault_required": 0,
+        "os_busy": 0,
+        "irq_depth": 0,
+        "switching": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 596,
+            "untouched_above_floor": 684
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1024,
+            "touched_bytes": 315,
+            "untouched_above_floor": 453
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1024,
+            "touched_bytes": 187,
+            "untouched_above_floor": 581
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1024,
+            "touched_bytes": 681,
+            "untouched_above_floor": 87
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1024,
+            "touched_bytes": 688,
+            "untouched_above_floor": 80
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1024,
+            "touched_bytes": 688,
+            "untouched_above_floor": 80
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 756,
+            "untouched_above_floor": 1548
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 583,
+            "untouched_above_floor": 1721
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 303,
+          "untouched_from_base": 1233,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  },
+  "host": {
+    "tests": 417,
+    "skips": 4
+  },
+  "package": {
+    "payload_checksums": 18,
+    "development_files_in_zip": false,
+    "of816": true
+  },
+  "source_sha256": {
+    "abi/aes-server.json": "1e0202c98487fcff94bf006d4ea80354db103a07efad20a26ac4477d13cfd80a",
+    "abi/c-program.json": "a800354003e32d118fcd5ed4c4f417acaa163fed42e89563be145698392d6f04",
+    "abi/widgets.json": "ad9accb9620cf353b4c2056b9741ccd55008c4af0edf6d92e90521477ef46979",
+    "lib/aes/aesstate.act": "8e86484eee1d94b877f22011d3f9ff71b585fbd22fee865c8eca3db4c734034d",
+    "lib/aes/aesmenu.act": "634be3e33030c8fbe4701b7ffa0cbcfc8e522227b38fa640b43c632624799cb9",
+    "lib/aes/aesgui.act": "54fb83fb058a68d2705df01659f2c7f84ddced57c862e41df516e34005b22f75",
+    "lib/aes/aescore.act": "eebe744483ecc7afd09013a4875e3f5526eb37ab21f2426b7d6b5e8b402f85ba",
+    "lib/aes/aeswindow.act": "305193bc1c7d75bd368abc8089963b4260b21c64610c1fb71ca7bf2f4ac133b6",
+    "lib/desktop/deskappmenu.act": "afecbae8bfc70d1dff30d908dc43a107e5aad8c29ba6757bbd7ddc6d4d9e406d",
+    "lib/desktop/deskmenu.act": "c205955d00037538b7b2aa451da0554404074e1cdadafc634fd373ea7fa8505c",
+    "lib/desktop/deskmenupaint.act": "20ffc60a2cec84fe4672e74f7a9bf13bc6beec233b31289969c69865e3901499",
+    "ports/gem4xe/aes/menu-render.c": "130817676b9f0a92903a756c9722cef79e706faedbc49ea9117663cd49dce11e",
+    "ports/gem4xe/aes/widgets-entry.c": "11f98fdb6fd7fca09493207b2babe56d2b3ae2ff87963a3fac124eafd903ed43",
+    "ports/gem4xe/aes/widgets-model.c": "1e51955d34f7d179626bbf7c05a51d3a63c52e1aadeb31ef3d180936a8067bd0",
+    "c/calypsi/aes-menu.c": "726f3c948182a654491f40359cadb11f2268b08a955017a9fc092d7f829e79db",
+    "c/calypsi/aes-messages.c": "788ca99d042ad4416392030558189cd9409491bf33d3b18edd840fc47f2ba003",
+    "c/calypsi/aes-events.c": "97b6ceeb510ee457123b18ea6a2276f5d4a2937c8f9543593f4c96a48d4405a6",
+    "examples/gem-browser/browser.c": "3ab2976beba344abc47441075fc801080a1d7880c25a2d93a374db613f91e35a",
+    "examples/gem-browser/browser.h": "b4aa2ce8517e93903a82a12211a4c7ae7c03225e691644fadac44e543a783a8b",
+    "tools/build_demo.py": "9bf0eee3a3de013e4aee654b681753a9791d847a58259126f0cdc7318cd2c147",
+    "tools/build_gem_desktop.py": "3914fe1a843c42e6da5da5d21be1414b4547928a5bfdba56aa634fc481cf6ba4",
+    "tools/desktop_menu_check.py": "126351646d6122ee3058a9e3207bc6c6970acc98695e5352f06f6ae2e531a14e",
+    "tools/test_gem_files.py": "de95528c7b9fa89f72d5348579511377d4e0f66b89fb6c0f8d55684eac629246",
+    "tools/test_gem_desktop_boot.py": "e0c5904ec80c13ed33cb5a16a4d596ee0a9ecc16f562ab40945ab9ce35043939",
+    "tools/test_calculator_desktop.py": "6b58e23b34df7bef63c4f92014512229ca5ea384f7f37dbef939c436d3ede2b0",
+    "tools/desktop_oracle.py": "a203a8fa9130543478acbe6ccbdce20fa49dbd1be7b4598ffd1b087befb0d9f4",
+    "tools/application_menu_oracle.py": "b73ec67a3be70fc810fef025a6cc60fbdfb873ca17a06270919e3eeaf3257e5b",
+    "docs/gem-desktop-distribution.txt": "be250865e586eef173b8eefe14059eadd24bc0298e8df58d5a6b85e828fa0316"
+  },
+  "integration_fix": "Execute native window commands before selecting the active menu and publishing focusSeen, so a fresh menu click is not cancelled during a delayed owner refresh.",
+  "limits": [
+    "Development emulator coverage only; no new hosted/hardware qualification.",
+    "HY4/PI4 remain open; feedback samples are frame-granular smoke observations.",
+    "Minimum observed public stack margin remains 33 bytes above the interrupt reserve."
+  ]
+}

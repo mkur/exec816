@@ -16,3 +16,9 @@ class ForeignPlacement(unittest.TestCase):
         memory={'profile':{'code_origin':0x13000},'usable_banks':list(range(1,14))}
         with self.assertRaisesRegex(RuntimeError,'No native code bank'):
             place_after_foreign(memory,{'segments':[],'zero_fill':[{'address':0xd0000,'size':65536}]})
+
+    def test_tables_reserve_the_whole_bank_before_native_code(self):
+        memory={'profile':{'code_origin':0x13000},'usable_banks':list(range(1,64))}
+        foreign={'segments':[{'address':0xf0000,'bytes':bytes(35082)}], 'zero_fill':[]}
+        place_after_foreign(memory,foreign)
+        self.assertEqual(memory['profile']['code_origin'],0x100000)

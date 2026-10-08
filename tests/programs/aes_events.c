@@ -70,7 +70,9 @@ static WORD event(UWORD flags, ULONG ms, WORD *message)
     WORD x=-1, y=-1, b=-1, s=-1, k=-1, n=-1;
     WORD result=evnt_multi(flags, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         message, (WORD)ms, (WORD)(ms >> 16), &x, &y, &b, &s, &k, &n);
-    CHECK(x == 0 && y == 0 && b == 0 && s == 0 && k == 0 && n == 0);
+    CHECK((result ? (x == ExecAESContext()->endpoint->input->latest.x &&
+                     y == ExecAESContext()->endpoint->input->latest.y) : (x == 0 && y == 0)) &&
+          b == 0 && s == 0 && k == 0 && n == 0);
     return result;
 }
 
@@ -143,7 +145,9 @@ UWORD AESRun(void)
         CHECK(appl_write(id,16,words) == 1);
         aes_call(&pb);
         CHECK(out[0] == (MU_MESAG | MU_TIMER) && global[2] == id);
-        for (i=1; i<7; ++i) CHECK(out[i] == 0);
+        CHECK(out[1] == c->endpoint->input->latest.x);
+        CHECK(out[2] == c->endpoint->input->latest.y);
+        for (i=3; i<7; ++i) CHECK(out[i] == 0);
     }
     /* The message signal is already set, but timer-only Wait must sleep. */
     CHECK(appl_write(id,16,words) == 1);

@@ -61,6 +61,38 @@ relocated call operands. Missing evidence fails analysis instead of becoming a
 zero-duration observation. First selection and CPU charges retain the existing
 profiler's conservative treatment of kernel/interrupt return tails.
 
+## Presenter work units
+
+The builder/presenter wrapper retains the original panel workload and adds
+passive internal boundaries:
+
+```sh
+python3 tools/profile_vbxe_builder.py BUILD/program OUTPUT --idle-only
+python3 tools/analyze_vbxe_builder.py OUTPUT
+```
+
+Omit `--idle-only` for all three original load cohorts. The analysis separates
+charged CPU, native interrupts and off-Task time, and decomposes the most
+expensive input-service gaps. A reported gap is selected by maximum charged
+CPU; its elapsed time need not be the largest elapsed gap.
+
+`native_admissions` groups each successful `DESKCORE.Pump(service,1)` by
+operation, including requests deferred by scene ownership. Opcode markers
+observe the existing byte loads from `request.operation`; they add no guest
+instructions. Requests rejected before any opcode read are explicitly
+`unobserved`. Per-admission CPU excludes the following input boundary. The
+full-trace summary includes setup and retirement, while the per-load summaries
+cover only complete admissions inside their gesture windows. Costs are
+inclusive and must not be added to their containing control-pass costs.
+
+`paint_steps_per_turn` counts successful paint steps between actual worker
+turns; widget continuations can share a turn without renewing control budgets.
+Frame-background and full strip-step maxima are also recorded. The emitted
+widget pixel fixture separately reports complete `WidgetPaint` CPU for each
+scene. Its C return markers match the entry stack because Calypsi can share
+an RTL with nested drawing primitives; an unfiltered shared RTL truncates the
+sample before publication and fencing.
+
 ## Device I/O costs
 
 Use `--io-breakdown` in place of `--breakdown` on `measure_aes_calls.py` to

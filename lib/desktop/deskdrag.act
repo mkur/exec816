@@ -1,13 +1,19 @@
 ; Presenter-owned gesture state. No nested input loop and no borrowed client
 ; pointer survives a turn; identities resolve against the current scene.
 MODULE DESKDRAG
+USE DISPLAY
 USE EXEC
 USE AESLOCKS
+USE AESMOUSE
+USE AESTYPES
+USE AESWINDOWSTATE
 USE INPUT
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKGEOMETRY
 USE DESKMOVE
+USE DESKMENU
 USE DESKEVENTS
 USE LAYERTYPES
 USE LAYERS
@@ -18,7 +24,7 @@ USE HEAPCORE
 LONGCARD windowId,lossEpoch
 LAYERTYPES.Rect origin,target
 INT pressX,pressY
-BYTE phase,blocked,dirty,focusWanted,escapePending
+BYTE phase,blocked,dirty,focusWanted,escapePending,pixelMotion
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
 CONST CLOSING=3
@@ -52,8 +58,10 @@ RETURN
 
 PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
 
-  IF phase<>0 AND sample.kind=INPUT.EVENT_KEY
-      AND (sample.code & 63)=ESC_SCAN THEN
+  IF (phase<>0 OR AESMOUSE.NativeGesture()<>0)
+      AND ((sample.kind=INPUT.EVENT_KEY
+      AND (sample.code & 63)=ESC_SCAN) OR (sample.kind=INPUT.EVENT_CANCEL
+      AND sample.code=INPUT.CANCEL_BREAK)) THEN
     IF AESLOCKS.MouseBlocked()<>0 THEN
       escapePending=1
     ELSE
@@ -69,8 +77,7 @@ BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer INT x,y)
 
 RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
-    AND x>=layer.bounds.right-14 AND x<layer.bounds.right-2
-    AND y>=layer.bounds.top+2 AND y<layer.bounds.top+14)
+    AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
 
 PROC Position(INT x,y)
   INT left,top,width,height,limit
@@ -83,18 +90,27 @@ PROC Position(INT x,y)
     left=0
   FI
 
-  IF top<0 THEN
-    top=0
+  IF top<DESKMENU.BAR_HEIGHT THEN
+    top=DESKMENU.BAR_HEIGHT
   FI
 
-  left=(left+4) & $fff8
-  top=(top+4) & $fff8
-  limit=(640-width) & $fff8
+  IF pixelMotion=0 THEN
+    left=(left+4) & $fff8
+    top=(top+4) & $fff8
+  FI
+
+  limit=640-width
+  IF pixelMotion=0 THEN
+    limit=limit & $fff8
+  FI
   IF left>limit THEN
     left=limit
   FI
 
-  limit=(240-height) & $fff8
+  limit=240-height
+  IF pixelMotion=0 THEN
+    limit=limit & $fff8
+  FI
   IF top>limit THEN
     top=limit
   FI
@@ -172,14 +188,28 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       IF window.id<>0 AND window.layer=layerId THEN
         BEGIN
           LET layer=DESKCORE.Layer(service,window)
-          IF sample.y<layer.bounds.top+2 OR sample.y>=layer.bounds.top+14 THEN
+          IF DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)=0 THEN
             RETURN(0)
           FI
 
+          IF window.kind=DESKTYPES.CONTENT_AES AND service.focus<>window.id THEN
+            AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
+            blocked=1
+            RETURN(1)
+          FI
+
           windowId=window.id
-          focusWanted=1
+          pixelMotion=window.kind=DESKTYPES.CONTENT_AES
+          focusWanted=window.kind<>DESKTYPES.CONTENT_AES
           IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
             phase=CLOSING
+            RETURN(1)
+          FI
+
+          IF window.kind<>DESKTYPES.CONTENT_CONSOLE
+              AND sample.x<layer.bounds.left+DESKTYPES.TITLE_HEIGHT THEN
+            phase=0
+            windowId=0
             RETURN(1)
           FI
 
@@ -200,6 +230,10 @@ RETURN(0)
 
 PUBLIC PROC Advance()
   BYTE status,slot,drawn
+
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
 
   IF AESLOCKS.MouseBlocked()<>0 THEN
     RETURN
@@ -253,7 +287,13 @@ PUBLIC PROC Advance()
   IF phase=MOVE_PENDING THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     DESKSTATE.outlineVisible=0
-    status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    IF window.kind=DESKTYPES.CONTENT_AES THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_MOVED,target.left,target.top,
+          target.right-target.left,target.bottom-target.top)
+      status=DESKTYPES.OK
+    ELSE
+      status=BYTE(DESKMOVE.Start(service,window,target.left,target.top,NULL))
+    FI
     IF status<>DESKTYPES.OK AND status<>DESKTYPES.PENDING THEN
       HEAPCORE.Abort($faed)
     FI
@@ -262,6 +302,13 @@ PUBLIC PROC Advance()
     windowId=0
     dirty=0
   ELSEIF phase=CLOSE_PENDING THEN
+    IF window.kind=DESKTYPES.CONTENT_AES THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_CLOSED,0,0,0,0)
+      phase=0
+      windowId=0
+      RETURN
+    FI
+
     FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
       IF @service.windows(slot)=window THEN
         BEGIN
@@ -282,6 +329,10 @@ RETURN
 PUBLIC PROC Suspend()
   BYTE drawn
 
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
+
   IF DESKSTATE.outlineVisible<>0 AND CONSOLEBITMAP.Pending()=0 THEN
     drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
     IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
@@ -294,6 +345,10 @@ RETURN
 
 PUBLIC PROC Present()
   BYTE drawn
+
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
 
   IF lossEpoch<>DESKSTATE.LossEpoch() THEN
     Cancel()
@@ -315,6 +370,10 @@ PUBLIC PROC Present()
 RETURN
 
 PUBLIC BYTE FUNC Runnable()
+
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
 
   IF AESLOCKS.MouseBlocked()<>0 THEN
     RETURN(0)

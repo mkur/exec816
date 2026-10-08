@@ -3,8 +3,35 @@ MODULE AESSTATE
 USE EXEC
 USE AESTYPES
 USE INPUT
+USE DESKTYPES
+USE LAYERTYPES
 
 PUBLIC CONST POINTER_EVENTS=16
+
+; One pending item per kind, independent of the immutable delivered record.
+PUBLIC TYPE GuiNotice=[
+  INT x,y,width,height
+]
+
+PUBLIC TYPE GuiPending=[
+  INT window
+  BYTE count
+  BYTE ARRAY order(AESTYPES.GUI_KINDS)
+  GuiNotice ARRAY notices(AESTYPES.GUI_KINDS)
+]
+
+; Owned association storage; only the caller's tree and strings are borrowed.
+PUBLIC TYPE Menu=[
+  AESTYPES.MenuObject POINTER tree
+  LONGCARD generation,damage
+  BYTE count,titles
+  INT selectedTitle,selectedItem,selectedBox
+  INT ARRAY parent(AESTYPES.MENU_OBJECTS)
+  INT ARRAY x(AESTYPES.MENU_OBJECTS)
+  INT ARRAY y(AESTYPES.MENU_OBJECTS)
+  INT ARRAY title(AESTYPES.MENU_OBJECTS)
+  INT ARRAY box(AESTYPES.MENU_OBJECTS)
+]
 
 PUBLIC TYPE Client=[
   LONGCARD id
@@ -15,6 +42,12 @@ PUBLIC TYPE Client=[
   EXEC.MsgPort POINTER replies
   AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER pending
+  Menu POINTER menu
+  GuiPending gui
+  AESTYPES.WindowView POINTER view
+  DESKTYPES.Window POINTER window
+  LAYERTYPES.Rect paintDamage
+  BYTE paintDirty,windowWaiting,closeRequested
 ]
 
 PUBLIC TYPE Service=[
@@ -27,6 +60,11 @@ PUBLIC TYPE Service=[
   BYTE started
   LONGCARD nextClient
   CARD nextGem
+  LONGCARD nextMenuEpoch,menuRevision
+  LONGCARD nextGuiEpoch
+  CARD nextWindow
+  BYTE windowPending
+  LONGCARD windowRevision,windowFocus
   AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
   BYTE count
