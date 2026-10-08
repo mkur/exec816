@@ -78,7 +78,8 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
         cfg['max_banks'] = max_banks
     cfg['kernel_bank'] = cfg.get('kernel_bank',1) if kernel_bank is None else kernel_bank
     count = integer(cfg['max_banks'], 1, 256, 'MAX_BANKS')
-    integer(cfg['max_extents'], 1, 64, 'extent capacity')
+    # Loader indexes are byte-sized; the reserved manifest region bounds storage.
+    integer(cfg['max_extents'], 1, 255, 'extent capacity')
     integer(cfg['staging_bytes'], 1, 1024, 'staging capacity')
     regions = {}
     spans = []

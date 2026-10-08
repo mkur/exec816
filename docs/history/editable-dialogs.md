@@ -31,3 +31,10 @@ including alignment, guards and unused capacity. No VRAM allocation changes.
 The editing contract is bounded to ASCII, single-line text, 128-byte storage
 including NUL and 63-character templates/visible runs. Screen-modal form_do,
 selection ranges, clipboard and multiline editing remain unsupported.
+
+The integrated desktop needs 65 boot manifest extents. The configured limit is
+now 96 inside the existing $6000–$67FF reservation; no bank-zero storage grows.
+A 96-extent host wire round trip and exact-package cold startup beyond the old
+64-descriptor limit pass. The loader's byte index and reserved-space bounds
+remain enforced. Uncompressed cartridge capacity is informational for XEX demos;
+OF816 exceeds that cartridge limit, and compression remains separate work.

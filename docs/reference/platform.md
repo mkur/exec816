@@ -154,7 +154,12 @@ has 512 bytes. Every stack retains checked bounds and an internal 256-byte
 interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
 Temporary staging occupies `$5BF0–$5FFF`, the manifest `$6000–$67FF`, and the
-loader `$6800–$7BFF`. They form one boot arena clear of every persistent pool.
+loader `$6800–$7BFF`. The manifest permits 96 extents within its existing
+2,048-byte reservation (1,056 bytes at the 64-bank profile). The loader
+retains byte-sized extent indexes; build checks also bound manifest storage.
+This capacity increase adds **0 fixed, 0 per-Task and 0 private-idle** reserved
+bank-zero bytes, including unused space. These temporary regions form one boot
+arena clear of every persistent pool.
 `phase_reservations` records loading, initialization and runtime ownership;
 `runtime_free_ranges` records the complement after startup. Initialization
 retains the manifest after retiring loader/staging. The full free range becomes

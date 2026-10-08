@@ -87,6 +87,19 @@ class BankedPackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Entry outside executable'):
             manifest(image,self.memory)
 
+    def test_manifest_uses_existing_reservation_beyond_64_extents(self):
+        image={'entry':0x10000,'segments':[
+            dict(address=0x10000+i*2,bytes=[i],executable=True) for i in range(96)],
+            'zero_fill':[]}
+        blob,head,spans=self.make(image)
+        self.assertEqual(len(spans),96)
+        self.assertEqual(self.memory['regions']['manifest'],[0x6000,0x6800])
+        self.assertLessEqual(len(head),2048)
+        ram=model(blob,self.memory,head)
+        self.assertEqual([ram[0x10000+i*2] for i in range(96)],list(range(96)))
+        image['segments'].append(dict(address=0x10200,bytes=[0],executable=True))
+        with self.assertRaisesRegex(ValueError,'extent capacity'):extents(image,self.memory)
+
     def test_adjacent_routines_share_extents_without_merging_gaps_or_data(self):
         image = {'segments':[
             {'address':0x10000+i, 'bytes':[i], 'executable':True} for i in range(80)],

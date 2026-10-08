@@ -1,6 +1,6 @@
 {
   "max_banks": 64,
-  "max_extents": 64,
+  "max_extents": 96,
   "staging_bytes": 1024,
   "kernel_bank": 1,
   "console": false,
