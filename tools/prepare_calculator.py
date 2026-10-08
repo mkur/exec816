@@ -23,13 +23,15 @@ def prepare(output,cache=CACHE):
         target.write_bytes(original.read_bytes())
     patches=sorted((PORT/'patches').glob('*.patch'))
     for patch in patches:command(['patch','-p1','-F','0','-t','-i',patch],cwd=source)
+    (source/'src/apps/calculator.h').write_bytes((PORT/'calculator.h').read_bytes())
     resource=output/'CALC.RSC';header=source/'src/apps/calcrsc.h'
     command([sys.executable,source/'tools/calcrsc.py',resource,header],
             env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
     record=dict(revision=pin['revision'],inputs=pin['files'],
                 patches={p.name:sha256(p) for p in patches},
                 outputs={'CALC.RSC':sha256(resource),'calcrsc.h':sha256(header)},
-                resource_bytes=resource.stat().st_size)
+                resource_bytes=resource.stat().st_size,
+                adapter_inputs={'calculator.h':sha256(PORT/'calculator.h')})
     (output/'calculator.json').write_text(json.dumps(record,indent=2)+'\n')
     return record
 

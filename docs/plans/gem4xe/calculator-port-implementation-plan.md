@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Loadable GEM applications](loadable-gem-applications-implementation-plan.md) ·
 [AES contract](../../reference/aes.md) · [C application profile](../../reference/c-program-loading.md)
 
-Status: CAL1–CAL2 implemented and checked at the development tier; CAL3–CAL4 pending.
+Status: CAL1–CAL3 implemented and checked at the development tier; CAL4 pending.
 Commit each passing executable slice. Reuse the established LG6 baseline; no separate
 baseline slice is needed.
 
@@ -16,6 +16,12 @@ Fixed, per-public-Task and private-idle bank-zero deltas are all zero.
 resource is 650 bytes and takes 672 rounded upper-heap bytes with metadata.
 SDFS/MyDOS load, fixup, drawing, failure replacement and cleanup checks pass;
 415 host tests run with four historical-source skips. Bank-zero deltas remain zero.
+
+[CAL3 evidence](../../development/calculator-cal3.json): the 6,691-byte private
+APP relocates at all 62 legal bases. Physical arithmetic/input, six display pixel
+checks, drag/exposure, repeat lifetimes and heap cleanup pass beside Counter.
+The narrowest measured public-Task margin is 81 bytes above the interrupt reserve.
+Fixed, per-public-Task and private-idle bank-zero deltas are zero.
 
 ## Outcome
 

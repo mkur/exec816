@@ -11,12 +11,12 @@ from c_program import ABI, fixups, import_assembly, pack, shape, verify
 from native_program import ROOT, command, sha256
 
 
-def build(output,sources,optimize=True):
+def build(output,sources,optimize=True,probes=()):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     assembly=output/'imports.s'
     assembly.write_text(import_assembly())
-    image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s'],(),optimize=optimize)
+    image=emit(output,sources,[assembly,ROOT/'c/calypsi/image-info.s'],(),optimize=optimize,probes=probes)
     original=(ROOT/'c/calypsi/layout.scm').read_text()
     span=max(s['offset']+s['size'] for s in shape(image,ABI['link_bank']))
     last=ABI['max_banks']-(span+65535)//65536
