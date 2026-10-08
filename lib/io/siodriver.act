@@ -112,7 +112,8 @@ BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
   FI
 
   IF sio.sio_TimeoutUS>1000000 THEN
-    IF sio.sio_Profile<>EXEC.SIO_PROFILE_STOCK810 OR sio.sio_TimeoutUS>2000000 THEN
+    IF (sio.sio_Profile<>EXEC.SIO_PROFILE_STOCK810 AND
+        sio.sio_Profile<>EXEC.SIO_PROFILE_GENERIC57600) OR sio.sio_TimeoutUS>2000000 THEN
       RETURN(BYTE(EXEC.IOERR_BADLENGTH))
     FI
   FI
@@ -146,9 +147,9 @@ PUBLIC CARD FUNC DeadlineTicks(LONGCARD microseconds CARD profile)
 
   IF microseconds=0 THEN
     microseconds=1000000
-    ; A cold 810 seek/rotation plus a stock-speed sector can exceed one
-    ; second. This changes its device-operation budget, never byte timing.
-    IF profile=EXEC.SIO_PROFILE_STOCK810 THEN
+    ; Motor spin-up, seek and rotation can exceed one second even at 57.6k:
+    ; the serial rate does not shorten a drive's mechanical delays.
+    IF profile=EXEC.SIO_PROFILE_STOCK810 OR profile=EXEC.SIO_PROFILE_GENERIC57600 THEN
       microseconds=2000000
     FI
   FI

@@ -12,8 +12,11 @@ def extents(image, memory):
     for segment in image['segments']:
         integer(segment['address'], 0, 0xffffff, 'image address')
         require(len(segment['bytes']) > 0, 'Empty image segment')
-        result.append((segment['address'], bytes(segment['bytes']), len(segment['bytes']),
-                       2 if segment['executable'] else 0, 2))
+        # A fixed disk component keeps its banks reserved and cleared during
+        # boot. Its native bootstrap publishes code only after a complete load.
+        deferred = segment.get('deferred', False)
+        result.append((segment['address'], b'' if deferred else bytes(segment['bytes']), len(segment['bytes']),
+                       1 if deferred else 2 if segment['executable'] else 0, 2))
     for zero in image['zero_fill']:
         integer(zero['address'], 0, 0xffffff, 'image address')
         integer(zero['size'], 1, 0x1000000, 'image size')

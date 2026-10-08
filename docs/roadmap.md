@@ -208,8 +208,9 @@ provides seven executable slices through a two-application OF816 demo, committin
 after each passing slice. AI1–AI7 pass development checks: public input waits, independent
 interactive apps, native coexistence and the extracted OF816 ZIP.
 [Cost measurements](history/aes-application-input.md#ai7--coexistence-measurements-and-packaged-demo)
-show that redraw/presentation dominates button feedback; PI4/HY4 remain open. Public widgets/forms,
-rectangle events, multiple clicks and resource loading follow separately.
+show that redraw/presentation dominates button feedback; PI4/HY4 remain open.
+Rectangle events and multiple clicks remain follow-on work; public widgets/forms
+and resource loading are covered by the desktop application milestone below.
 
 The [desktop rendering design](plans/gem4xe/desktop-rendering-design.md)
 is implemented through the
@@ -229,8 +230,21 @@ Control Panel; [interaction measurements and the packaged walkthrough](history/a
 pass correctness checks while widget-feedback latency remains open. Long
 clipped drawing calls and scene-token waits need focused follow-up. Existing
 Task/stack pools and window layers are reused. The library can later support a task bar; desktop work-area,
-window-switching and launcher policy are separate work. Editable fields,
-resource-file loading, menus and full AES compatibility remain deferred.
+window-switching and launcher policy are separate work. Editable fields and
+full AES compatibility remain deferred.
+
+The [desktop application milestone](plans/gem4xe/desktop-facilities-implementation-plan.md)
+now provides application-owned widgets/forms, a GEM Control Panel, classic
+resources, windowed popup menus and a Files browser beside the counter and shell.
+These applications are still linked into the shared C image; Files launches
+native commands. The next priority is
+[loadable GEM applications](plans/gem4xe/loadable-gem-applications-implementation-plan.md).
+LG1 now loads the shared GUI payload from the system disk; its
+[development checks](development/loadable-gem-lg1.json) pass and the OF816 XEX
+has 69,703 bytes of cartridge headroom. LG2–LG6 add a bounded
+C image/import ABI, reuse Program/Process lifetime, migrate the applications and
+test close/relaunch from the final cartridge/disk package. The plan preserves
+caller-local AES/VDI execution and targets zero bank-zero growth.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its

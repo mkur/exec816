@@ -172,7 +172,10 @@ def image_regions(image, labels, imports, memory=None, image_version=None, stack
         validate(image['routines'])
     regions, executable = [], []
     for segment in image["segments"]:
-        require(set(segment) == {"address", "bytes", "writable", "executable"}, "Invalid segment fields")
+        fields = {"address", "bytes", "writable", "executable"}
+        require(set(segment) in (fields, fields | {'deferred'}), "Invalid segment fields")
+        require(type(segment.get('deferred', False)) is bool and
+                (not segment.get('deferred') or memory is not None), 'Invalid deferred component')
         raw = segment["bytes"]
         require(isinstance(raw, list) and len(raw) <= (0x1000000 if memory else APP_LIMIT-APP_BASE), "Invalid payload size")
         require(all(type(byte) is int and 0 <= byte <= 255 for byte in raw), "Invalid payload bytes")
@@ -181,7 +184,7 @@ def image_regions(image, labels, imports, memory=None, image_version=None, stack
         require(not (segment["writable"] and segment["executable"]), "Writable code is unsupported")
         address = integer(segment["address"], "segment address")
         regions.append((address, bytes(raw)))
-        if segment["executable"]:
+        if segment["executable"] and not segment.get('deferred'):
             executable.append((address, address+len(raw)))
     for zero in image["zero_fill"]:
         require(set(zero) == {"address", "size", "writable"}, "Invalid zero-fill fields")

@@ -12,11 +12,21 @@ def exercise(s,sy,click,move):
         raw=b.memdump(base+306,8*108)
         return [raw[i*108:(i+1)*108].split(b'\0')[0].decode('ascii') for i in range(num(1962))]
     def row(name):
+        observed=[]
         for page in range(12):
             listing=names()
+            observed.append(dict(page=num(1964),names=listing,count=num(1962),
+                path=string(178),status=string(1386),selected=num(1966),down=num(1968),armed=num(1970)))
+            if string(1386)=='Directory unavailable':
+                observed[-1]['dos_storage']=s.b.memdump(s.p['build']['memory']['dos_storage']['BASE'],128).hex()
+                observed[-1]['sio']=s.b.memdump(s.p['labels']['SIO_STATE'],128).hex()
+                observed[-1]['timer']=s.b.memdump(s.p['build']['task_storage']['BASE']+0xf30,20).hex()
+                break
             if name in listing:
                 click(80,108+listing.index(name)*12);return
             click(204,88);s.frames(100)
+        import json
+        (s.p['output']/'browser-navigation-failure.json').write_text(json.dumps(observed,indent=2)+'\n')
         raise RuntimeError('Missing browser row '+name)
     s.rendezvous('dw($%x)=1'%(base+8));s.frames(180)
     require(string(178)=='SYS:','Browser initial directory')

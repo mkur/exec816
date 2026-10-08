@@ -25,11 +25,14 @@ Extract this ZIP into one folder. In System > Configure System, select:
 1. Mount @SYSTEM_DISK@ in D1: with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8: with writes enabled.
 2. Boot Exec-of816.xex and leave the keyboard alone for the five-second countdown.
-3. Wait for SYS: ready, the shell prompt and the three GEM windows.
+3. Wait while the native loader reads GEMSYS.BIN from the system disk, then
+   for SYS: ready, the shell prompt and the three GEM windows.
 
 Both disks are required at startup. Keep these matching disks mounted throughout
 the session. Press a key during the countdown to enter OF816 instead; EXEC816
-continues into this desktop.
+continues into this desktop. The shared GUI loads once before the graphical
+console starts; drawing does not reread it from disk. Use the matching system
+disk: a missing or mismatched GEMSYS.BIN prevents desktop startup.
 
 Use the desktop
 ---------------

@@ -71,12 +71,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO or TICK; File > Stop cancels TICK.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
         from build_gem_resource import resource
         (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
-    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
-    try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
-                   sector_bytes=sector_bytes,sectors=system_sectors)
-    except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
     mount_config=json.loads(config.read_text())
     mounts=mount_config['mounts']
@@ -97,10 +93,12 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
     # Shared fault strings and the composed shell/client globals need 4 KiB.
-    # All demo variants use the same explicit upper-RAM arena; bank zero is unchanged.
+    # The disk-loaded GEM profile extends that upper arena below.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
+    # The disk GUI bootstrap adds its CRC table and fixed load descriptors.
+    # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(512 if gem_desktop else 0)
     memory_profile=output/'demo-memory.json'
     memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:
@@ -109,7 +107,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         if gem_desktop:
             from build_gem_desktop import build_desktop
             from functools import partial
-            builder=partial(build_desktop,files=True)
+            builder=partial(build_desktop,files=True,disk_component=True)
         elif aes_input:
             from build_gem_input import build_inputs
             builder=build_inputs
@@ -126,6 +124,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
+    if gem_desktop:
+        shutil.copyfile(output/'bitmap-console/GEMSYS.BIN',media/'GEMSYS.BIN')
+        binary_names.add('GEMSYS.BIN')
+    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+    try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
+                   sector_bytes=sector_bytes,sectors=system_sectors)
+    except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/')
     system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
     default_geometry=('The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB\n'
@@ -229,6 +234,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    if gem_desktop:
+        from build_cartridge import segments, BANK_BYTES
+        capacity={}
+        for name in ('program.xex','of816/Exec-of816.xex'):
+            raw=(output/name).read_bytes()
+            segments(raw)
+            capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
+        (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)

@@ -1,0 +1,113 @@
+MODULE GEMCOMPONENT
+USE DOS
+USE DOSCLIENT
+INCLUDE "gem-component.inc"
+
+PUBLIC BYTE ready
+PUBLIC LONGINT error
+
+; Complete bounded reads through the ordinary native DOS/filesystem path.
+BYTE FUNC Read(DOS.FileHandle POINTER file BYTE POINTER bytes LONGCARD length)
+  LONGINT count
+
+  WHILE length<>0 DO
+    count=LONGINT(length)
+    IF count>4096 THEN
+      count=4096
+    FI
+
+    count=DOS.Read(file,bytes,count)
+    IF count<0 THEN
+      error=DOS.IoErr()
+      RETURN(0)
+    FI
+
+    IF count=0 THEN
+      error=DOS.ERROR_OBJECT_WRONG_TYPE
+      RETURN(0)
+    FI
+
+    bytes==+SIZE(count)
+    length==-LONGCARD(count)
+  OD
+
+RETURN(1)
+
+; Load before binding any C entry. Boot adoption already owns and clears its
+; banks; the file supplies bytes only, never destinations or executable roots.
+PUBLIC BYTE FUNC Load()
+  BYTE ARRAY header(32)
+  BYTE segment,index,okay
+  BYTE POINTER bytes
+  LONGCARD remaining
+  CARD crc
+
+  IF ready<>0 THEN
+    RETURN(1)
+  FI
+
+  error=0
+  LET file=DOS.Open(BYTE POINTER(c"SYS:GEMSYS.BIN"),DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    error=DOS.IoErr()
+    RETURN(0)
+  FI
+
+  okay=Read(file,header,SIZEOF(header))
+  IF okay<>0 THEN
+    FOR index=0 TO 31 DO
+      IF header(index)<>componentHeader(index) THEN
+        error=DOS.ERROR_OBJECT_WRONG_TYPE
+        okay=0
+      FI
+    OD
+  FI
+
+  crc=$ffff
+  segment=0
+  WHILE okay<>0 AND segment<SEGMENTS DO
+    bytes=BYTE POINTER(destinations(segment))
+    remaining=lengths(segment)
+    okay=Read(file,bytes,remaining)
+    IF okay<>0 THEN
+      WHILE remaining<>0 DO
+        index=BYTE(crc RSH 8) XOR bytes^
+        crc=(crc LSH 8) XOR crcTable(index)
+        bytes==+1
+        remaining==-1
+      OD
+    FI
+
+    segment==+1
+  OD
+
+  IF okay<>0 THEN
+    BEGIN
+      LET tail=DOS.Read(file,header,1)
+      IF tail<0 THEN
+        error=DOS.IoErr()
+        okay=0
+      ELSEIF tail<>0 OR crc<>CHECKSUM THEN
+        error=DOS.ERROR_OBJECT_WRONG_TYPE
+        okay=0
+      FI
+    END
+  FI
+
+  IF DOS.Close(file)=0 AND okay<>0 THEN
+    error=DOS.IoErr()
+    okay=0
+  FI
+
+  ; This bootstrap creates no streams/locks. The shell creates its own context.
+  IF DOS.ReleaseContext()=0 AND okay<>0 THEN
+    error=DOS.IoErr()
+    okay=0
+  FI
+
+  ready=okay
+  DOSCLIENT.SetError(error)
+
+RETURN(okay)
+
+ENDMODULE

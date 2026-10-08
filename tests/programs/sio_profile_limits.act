@@ -61,11 +61,16 @@ PROC Main()
   Rejected(EXEC.SIO_PROFILE_HAPPY1050,1000001)
   Rejected(EXEC.SIO_PROFILE_STOCK810,2000001)
   Rejected(EXEC.SIO_PROFILE_STOCK810,4040)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,2000001)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,4040)
   request.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  IF explicit>=2 THEN
+    request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600
+  FI
   request.sio_TimeoutUS=0
   request.sio_Direction=EXEC.SIODIR_READ
   request.io_Length=128
-  IF explicit<>0 THEN
+  IF (explicit & 1)<>0 THEN
     request.sio_TimeoutUS=2000000
   FI
 

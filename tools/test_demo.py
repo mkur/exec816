@@ -86,6 +86,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             bridge.bp_clear_all()
             bridge.bp_set(native['labels']['start'])
             run_to(bridge,native['labels']['start'],3000,90)
+            saved['exec_start_frame']=bridge.eval_expr('@frame')
             bridge.bp_clear_all()
     console=console_constants()
     media=manifest.get('media',next(name for name in manifest['artifacts'] if name.endswith('.atr')))
@@ -554,6 +555,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved['top']=pointer(row+console['WINDOW_INSTANCE'])
             saved['topView']=pointer(row+console['WINDOW_VIEW'])
             rendezvous(f'db(${saved["top"]+51:x})=2')
+            if 'exec_start_frame' in saved:
+                saved['startup_frames']=b.eval_expr('@frame')-saved['exec_start_frame']
             if not shell_only and not disk_failure:
                 rendezvous(f'dw(${windows+console["WINDOWS_PANE"]:x})!=0')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
@@ -983,7 +986,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         rom=dict(path=str(rom),sha256=sha256(rom),pinned_sha256=pin['rom']['sha256'],override=rom_override is not None),
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
-        autoboot_frames=saved.get('autoboot_frames'),distribution_root=str(distribution_root) if distribution_root else None,
+        autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),distribution_root=str(distribution_root) if distribution_root else None,
         disk_boot=disk_boot,integration=saved.get('integration'),browser=saved.get('browser'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),

@@ -1,0 +1,47 @@
+{
+  "status": "inspected-existing-artifacts",
+  "date": "2026-10-08",
+  "kind": "capacity-analysis",
+  "qualification": false,
+  "scope": "Read-only inspection of existing desktop XEXs and Calypsi link map; no rebuild or emulator run.",
+  "related_execution_record": "docs/development/gem-desktop-facilities.json",
+  "provenance_note": "The OF816 XEX hash matches the prior desktop development record. That build predates the final desktop-facilities commit and carries a dirty build banner; this analysis does not claim a clean HEAD rebuild.",
+  "cartridge": {
+    "builder": "tools/build_cartridge.py",
+    "format": "Atarimax 8 Mbit",
+    "rom_bytes": 1048576,
+    "boot_banks": 2,
+    "xex_payload_limit_bytes": 1032191
+  },
+  "artifacts": [
+    {
+      "path": "build/gem-desktop/demo/program.xex",
+      "bytes": 1090409,
+      "sha256": "79646f221776d9ffe395656dc97b0319c564d19481b13de9277d9947ec7c29b4",
+      "over_limit_bytes": 58218
+    },
+    {
+      "path": "build/gem-desktop/demo/of816/Exec-of816.xex",
+      "bytes": 1115383,
+      "sha256": "a6a0d37c308c63169ff93e1fb7df840e2d35af40501ce7cab9d5561de03d0d53",
+      "over_limit_bytes": 83192
+    }
+  ],
+  "foreign_payload": {
+    "path": "build/gem-desktop/demo/bitmap-console/c-image.json",
+    "serialized_bytes": 156120,
+    "excludes_bss_and_unused_reserved_capacity": true
+  },
+  "linker_attribution": {
+    "path": "build/gem-desktop/demo/bitmap-console/drawing/link.lst",
+    "sha256": "79a163ed03194b4a975772cc862266bf9e8184c64b6f2d80377e94721b60ba97",
+    "application_payload_bytes": {
+      "22-panel.o": 4147,
+      "24-counter.o": 2677,
+      "25-browser.o": 5879
+    },
+    "application_payload_total_bytes": 12703,
+    "note": "Linked unit attribution, not predicted savings from a new link. Shared dependencies, controller, BSS and future loader costs are separate."
+  },
+  "conclusion": "Moving only application bodies to disk cannot recover the current cartridge excess. Move the shared C GUI payload off the cartridge as well; measure final loader and binding costs before accepting cartridge fit."
+}

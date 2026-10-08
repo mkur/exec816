@@ -119,10 +119,12 @@ WRITE completion does not establish power-loss durability.
 The earlier [write-performance development record](../history/write-performance.md)
 includes a repeatable Generic 57600 timeout when a 16 KiB COPY writes to
 accurately timed 256-byte MyDOS media. The verified write transmits its payload
-but exceeds the existing one-second transport deadline, leaving the bus offline
+but exceeds that revision's one-second transport deadline, leaving the bus offline
 and requiring reset. This occurs with the frozen filesystem too. Fast-media
 binary checks and that record's bundled 128-byte WORK disk pass; they do not qualify that
-accurate 256-byte timing case. This slice leaves transport deadlines unchanged.
+accurate 256-byte timing case. Generic 57600 now permits two seconds, including
+motor spin-up and seek; the loadable-GUI work exercises its large-read case.
+The earlier COPY timing case has not been requalified by that read test.
 The current SDFS demo uses 720 KiB WORK media with 256-byte sectors; its buffered
 Write checks and emulator measurements are recorded in the
 [SpartaDOS buffering record](../history/spartados-write-buffering.md).

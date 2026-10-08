@@ -70,6 +70,23 @@ def model(blob, memory, expected, every=False):
 
 
 class BankedPackageTests(unittest.TestCase):
+    def test_disk_component_is_reserved_and_cleared_without_cartridge_payload(self):
+        image = {'entry':0x10000, 'segments':[
+            {'address':0x10000,'bytes':[0x6b],'executable':True},
+            {'address':0xc0000,'bytes':[0xa7]*65536,'executable':True,'deferred':True},
+            {'address':0xd0000,'bytes':[0x59]*200,'executable':False,'deferred':True}],
+            'zero_fill':[{'address':0xd00c8,'size':80}]}
+        blob, head, spans = self.make(image)
+        ram = model(blob,self.memory,head)
+        self.assertEqual(bytes(ram[0xc0000+i] for i in range(65536+280)),bytes(65536+280))
+        self.assertLess(len(blob),4096)
+        for bank in (12,13):
+            self.assertEqual(head[32+bank*4:36+bank*4],bytes([2,0,2,0]))
+        self.assertEqual(image['segments'][1]['bytes'][0],0xa7)
+        image['entry']=0xc0000
+        with self.assertRaisesRegex(ValueError,'Entry outside executable'):
+            manifest(image,self.memory)
+
     def test_adjacent_routines_share_extents_without_merging_gaps_or_data(self):
         image = {'segments':[
             {'address':0x10000+i, 'bytes':[i], 'executable':True} for i in range(80)],

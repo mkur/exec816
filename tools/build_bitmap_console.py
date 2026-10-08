@@ -183,6 +183,11 @@ RETURN
             '  BEGIN\n    LET stopped=AESBOOT.StopAdmission()\n  END\n\n  IF DESKBOOT.StopAdmission()=0 THEN')
         binding=binding.replace('  DESKBOOT.Disable()\n\nRETURN',
             '  AESBOOT.Disable()\n  DESKBOOT.Disable()\n\nRETURN')
+    if foreign['provenance'].get('disk_component'):
+        # DOS mounts lazily through native code; no C or console call may precede
+        # this gate. Ordinary root retirement shuts down native workers on error.
+        text=text.replace('USE EXEC\n','USE EXEC\nUSE GEMCOMPONENT\n',1)
+        binding=binding.replace('PROC Main()\n','PROC Main()\n\n  IF GEMCOMPONENT.Load()=0 THEN\n    HEAPCORE.Abort($fc90)\n  FI\n',1)
     text=text.replace('ENDMODULE',binding+'\nENDMODULE')
     path=out/'launcher.act';path.write_text(text);return path
 

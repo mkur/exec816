@@ -91,6 +91,9 @@ PROC Rejected()
   Require(error=EXEC.IOERR_BADLENGTH)
   request.io_Length=128
   request.sio_TimeoutUS=1000001
+  IF profile=EXEC.SIO_PROFILE_GENERIC57600 THEN
+    request.sio_TimeoutUS=2000001
+  FI
   error=EXEC.DoIO(EXEC.IORequest POINTER(request))
   Require(error=EXEC.IOERR_BADLENGTH)
   request.sio_TimeoutUS=4040

@@ -1,0 +1,315 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-08",
+  "scope": "LG1: fixed shared GUI component loaded before console; exact OF816 desktop walkthrough; six rejection/read-failure paths; bounded Generic57600 deadline in raw and optimized emitted code.",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "pin": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$fbda5be12506afda",
+    "actual_kernel_id": "$fbda5be12506afda",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "xex_sha256": "f3e277e75cbd9be470b21586ba44b6972daf45290b40e546e76a468286aa6d6f",
+  "boot_xex_sha256": "c8873a4b23f771d8fa85d447c2724eef85f4fa41eac7ed93a76c58c4585fdb0c",
+  "media_sha256": "771976ac95d2d5086aabf07fc961af063f8e898d525d9fefdbd770fd6a7fd96f",
+  "capacity": {
+    "program.xex": {
+      "bytes": 937514,
+      "headroom": 94677
+    },
+    "of816/Exec-of816.xex": {
+      "bytes": 962488,
+      "headroom": 69703
+    }
+  },
+  "of816_bytes_saved": 152895,
+  "component": {
+    "file": "GEMSYS.BIN",
+    "bytes": 156152,
+    "sha256": "816840dfec8250e31c25e491f2b47d9d3da61decd73ef7e75b041d2633fa51ea",
+    "identity": "f1ed179138c8206951f821e36736db7c",
+    "crc16": 25673,
+    "segments": [
+      [
+        786432,
+        65536
+      ],
+      [
+        917504,
+        49250
+      ],
+      [
+        983040,
+        37132
+      ],
+      [
+        851968,
+        4202
+      ]
+    ],
+    "zero_fill": [
+      {
+        "address": 856170,
+        "size": 15203,
+        "writable": true
+      }
+    ]
+  },
+  "startup": {
+    "frames": 6403,
+    "pal_seconds": 128.06,
+    "autoboot_frames": 249,
+    "scope": "Exec entry to first ready shell; excludes OF816 loading/countdown; includes component loading and desktop startup",
+    "logical_component_file_bytes": 156152
+  },
+  "desktop": {
+    "browser": {
+      "resource": true,
+      "navigation": true,
+      "popup_keyboard": true,
+      "popup_mouse": true,
+      "launch": "HELLO",
+      "cancel": "TICK",
+      "invalid_executable": true,
+      "close_during_popup_with_child": true
+    },
+    "integration": {
+      "profile": "gem-desktop",
+      "panel_toggle": true,
+      "counter": true,
+      "shell": true
+    },
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 571,
+        "untouched_above_floor": 709
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1024,
+        "touched_bytes": 323,
+        "untouched_above_floor": 445
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1024,
+        "touched_bytes": 187,
+        "untouched_above_floor": 581
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1024,
+        "touched_bytes": 516,
+        "untouched_above_floor": 252
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1024,
+        "touched_bytes": 511,
+        "untouched_above_floor": 257
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1024,
+        "touched_bytes": 581,
+        "untouched_above_floor": 187
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 717,
+        "untouched_above_floor": 1587
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 353,
+        "untouched_above_floor": 1951
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 129,
+        "untouched_above_floor": 127
+      }
+    ],
+    "guards": "intact"
+  },
+  "failures": [
+    {
+      "name": "missing",
+      "error": 205,
+      "status": 64656,
+      "guards": "intact"
+    },
+    {
+      "name": "wrong-build",
+      "error": 212,
+      "status": 64656,
+      "guards": "intact"
+    },
+    {
+      "name": "truncated",
+      "error": 212,
+      "status": 64656,
+      "guards": "intact"
+    },
+    {
+      "name": "bad-checksum",
+      "error": 212,
+      "status": 64656,
+      "guards": "intact"
+    },
+    {
+      "name": "trailing-data",
+      "error": 212,
+      "status": 64656,
+      "guards": "intact"
+    },
+    {
+      "name": "read-error",
+      "error": 213,
+      "status": 64656,
+      "guards": "intact"
+    }
+  ],
+  "timeout_profiles": [
+    {
+      "mode": "raw",
+      "xex_sha256": "6cabe203b1c2cc78d8fc3e9f1ef3d2a82db6756b486e45114eebdd3db1d06dba",
+      "cases": [
+        {
+          "name": "default",
+          "profile": "stock810",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 62.37850288773702
+        },
+        {
+          "name": "explicit",
+          "profile": "stock810",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 60.686882470442455
+        },
+        {
+          "name": "default",
+          "profile": "generic57600",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 64.6339967774631
+        },
+        {
+          "name": "explicit",
+          "profile": "generic57600",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 47.15391913208595
+        }
+      ]
+    },
+    {
+      "mode": "opt",
+      "xex_sha256": "5c726f111ac83d14f91b2e86215fbf6082790dee217d9d219ea8c0ad317d5f7b",
+      "cases": [
+        {
+          "name": "default",
+          "profile": "stock810",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 24.598980234825106
+        },
+        {
+          "name": "explicit",
+          "profile": "stock810",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 16.28184651646017
+        },
+        {
+          "name": "default",
+          "profile": "generic57600",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 19.524118982941417
+        },
+        {
+          "name": "explicit",
+          "profile": "generic57600",
+          "status": "pass",
+          "deadline_us": 2000713.299942626,
+          "lateness_us": 24.035106762393585
+        }
+      ]
+    }
+  ],
+  "host_tests": {
+    "tests": 410,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true
+  },
+  "upper_global_arena": {
+    "before": 4096,
+    "after": 4608,
+    "delta": 512
+  },
+  "limits": [
+    "Applications remain resident in the shared disk image until LG4/LG5.",
+    "No cartridge cold boot yet (LG6).",
+    "No latency gate or hardware/release qualification claim.",
+    "Earlier accurate MyDOS verified-write timeout workload was not rerun."
+  ]
+}

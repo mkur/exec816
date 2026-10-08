@@ -287,3 +287,6 @@ assuming work is pending. Current behavior belongs in the
   [implementation](gem4xe/gem-control-panel-implementation-plan.md): ordinary object-tree app beside the counter and shell.
 - [Small desktop facilities](gem4xe/desktop-facilities-design.md) and
   [implementation](gem4xe/desktop-facilities-implementation-plan.md): windowed menus, classic resources and a file browser/Exec launcher.
+- [Loadable GEM applications](gem4xe/loadable-gem-applications-implementation-plan.md):
+  LG1 passes development checks: the shared GUI loads from disk and both XEXs fit
+  the cartridge. LG2–LG6 add C loading through Program/Process and relaunch.
