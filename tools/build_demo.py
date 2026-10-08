@@ -18,6 +18,17 @@ WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 
 
+def record_cartridge_capacity(output):
+    """Report uncompressed capacity without blocking the XEX/disk distribution."""
+    from build_cartridge import BANK_BYTES
+    capacity={}
+    for name in ('program.xex','of816/Exec-of816.xex'):
+        size=(output/name).stat().st_size
+        headroom=126*BANK_BYTES-1-size
+        capacity[name]=dict(bytes=size,headroom=headroom,fits_uncompressed=headroom>=0)
+    (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+
+
 def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False):
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
@@ -256,13 +267,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
     if gem_desktop:
-        from build_cartridge import segments, BANK_BYTES
-        capacity={}
-        for name in ('program.xex','of816/Exec-of816.xex'):
-            raw=(output/name).read_bytes()
-            segments(raw)
-            capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
-        (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+        record_cartridge_capacity(output)
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
@@ -300,6 +305,8 @@ def refresh_monitor(output):
                        [Path(__file__),ROOT/'tools/build_of816.py',ROOT/'tools/banked_image.py',*guides]})
     path.write_text(json.dumps(record,indent=2)+'\n')
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    if record.get('gem_desktop'):
+        record_cartridge_capacity(output)
     package(output/'of816',output/record['distribution'],
             output/'gem-vdi' if record.get('graphics') else None,
             output/'bitmap-console' if record.get('bitmap_console') else None,

@@ -65,6 +65,22 @@ class CartridgePackageTests(unittest.TestCase):
             with self.subTest(data=bad[:12]):
                 with self.assertRaises(ValueError):cart.segments(bad)
 
+    def test_xex_demo_reports_oversize_without_rejecting_distribution(self):
+        from build_demo import record_cartridge_capacity
+        from tempfile import TemporaryDirectory
+        import json
+        raw=b'\xff\xff'+segment(0x2000,b'x'*4096)*256+segment(0x02e0,b'\x00\x20')
+        with TemporaryDirectory() as directory:
+            out=Path(directory);(out/'of816').mkdir()
+            (out/'program.xex').write_bytes(raw)
+            (out/'of816/Exec-of816.xex').write_bytes(raw)
+            record_cartridge_capacity(out)
+            report=json.loads((out/'cartridge-capacity.json').read_text())
+            self.assertFalse(report['program.xex']['fits_uncompressed'])
+            self.assertLess(report['program.xex']['headroom'],0)
+            with self.assertRaisesRegex(ValueError,'does not fit'):
+                cart.segments(raw)
+
     def test_demo_preserves_all_released_files_and_whitelists_outputs(self):
         original = {'Exec-of816.xex':self.raw, 'system.atr':b'unchanged disk',
                     'altirraos-816.rom':b'unchanged firmware', 'README.txt':b'original guide'}
