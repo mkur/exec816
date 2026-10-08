@@ -114,3 +114,61 @@ compiler pin, host-binary hash, paced emulator/ROM inputs, selected development
 checks and artifact hashes. The compiler host binary uses dev `opt-level=1` and
 `debug=0`; compiler source and ABI have no override. No demo ZIP, release matrix
 or physical-hardware qualification is included.
+
+## Bounded wildcard operations
+
+COPY sources and DELETE operands now accept LIST-style, case-insensitive `*`
+and `?` in the final filename component. The [guide](../guides/toolbox.md#writable-files)
+defines matching, limits and error behavior. COPY selects regular files into an
+existing directory; DELETE includes empty-directory candidates. Neither recurses.
+
+The shared `command-selection.inc` collects up to eight entries before mutation.
+Each record borrows the immutable argument's path prefix and copies its 8.3 leaf
+name; exact DELETE arguments are borrowed whole. All enumeration locks close
+before execution, so same-volume writes/deletions cannot invalidate the command's
+remaining ExNext calls. A ninth selection, unmatched pattern, enumeration error,
+BREAK or source-path overflow leaves files unchanged. COPY also checks every
+constructed destination's capacity before opening output. Cleanup retains the
+original enumeration error. Execution uses ordinary DOS operations and stops
+on the first failure; earlier changes remain. These are names, not retained
+file identities or a transaction against concurrent namespace changes.
+
+Ordinary exact COPY still tries output Open before directory inspection, avoiding
+an extra MyDOS file scan. Its 16 KiB transfer buffer is unchanged. No filesystem,
+resident provider, shell parser or ABI change is needed.
+
+The selection storage occupies 418 upper-RAM BSS bytes: eight aligned 20-byte
+records, a two-byte count and a 256-byte path buffer. DELETE additionally needs
+a 260-byte FileInfoBlock and one alignment byte. Measured optimized costs are:
+
+| Command | Serialized o65 bytes | Text including literals | BSS bytes | BSS increase |
+| --- | ---: | ---: | ---: | ---: |
+| COPY | 13,352 | 11,535 | 17,644 | 418 |
+| DELETE | 6,877 | 5,919 | 998 | 679 |
+
+Text grows by 5,519 bytes for COPY and 4,554 bytes for DELETE against the preceding
+exact-name commands on the same compiler pin. Storage belongs to each loaded
+image and is released with it. COPY's Main frame remains 32 bytes; DELETE's Main
+frame is 30 bytes. Individual selection helpers have frames of at most 20 bytes;
+these are local frame sizes, not whole-call-chain bounds. Reserved bank-zero
+change is **0 fixed bytes and 0 bytes per Task**, including guards, alignment
+and unused reserved capacity.
+
+Development checks pass: 64 optimized controlled COPY cases and 27 DELETE cases,
+covering eight/nine entries, exact-plus-pattern bounds, no matches, case folding,
+directory filtering, path overflow, invalid parent/target patterns, APPEND,
+enumeration/cleanup errors, BREAK and failure stops alongside existing transfer
+regressions. A physical-keyboard session loads both commands from SYS:C on RAM,
+128-byte MyDOS and SpartaDOS, checks same-volume mutations, assigns, destination
+`.`, invalid destinations and no-change overflow/no-match behavior.
+Independent disk audits verify every saved byte and allocation, including
+unchanged pre-existing files. Native stack/domain guards, OS restoration, exact
+console output and final heap ownership pass. The physical cases use Generic
+57.6k with fast media for functionality, not disk timing. The host suite passes
+397 tests; four focused TEE/RENAME/MAKEDIR cases check the shared fixture.
+
+The [evidence record](../development/wildcard-commands.json) pins the clean
+compiler source/ABI, host binary, ROM, paced emulator, generated command profiles
+and selected results. It uses the same dev `opt-level=1`, `debug=0` compiler host
+binary as the directory-destination slice. No demo rebuild or release/physical
+hardware qualification is included.

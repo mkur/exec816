@@ -2,6 +2,8 @@ MODULE COPY
 
 USE CSTRING AS STR
 INCLUDE "command-transfer.inc"
+INCLUDE "command-pattern.inc"
+INCLUDE "command-selection.inc"
 
 CONST TRANSFER_BYTES=16384
 BYTE ARRAY transferBuffer(TRANSFER_BYTES)
@@ -10,15 +12,13 @@ BYTE ARRAY targetPath(256)
 ADDRESS ARRAY values(3)
 COMMAND.FileInfoBlock destinationInfo
 
-; After output Open rejects a directory, retain the source leaf name. Release
-; the inspection lock before retrying Open with the constructed filename.
-CSTRING FUNC CopyDestination(CSTRING source,target)
+; Inspect only a required directory, never an ordinary exact output filename.
+BYTE FUNC CopyDirectory(CSTRING target)
   LONGINT cause
-  CARD index,first,used
 
   LET lock=COMMAND.Lock(BYTE POINTER(target),COMMAND.SHARED_LOCK)
   IF lock=NULL THEN
-    RETURN(NULL)
+    RETURN(0)
   FI
 
   LET examined=COMMAND.Examine(lock,BYTE POINTER(@destinationInfo))
@@ -35,13 +35,19 @@ CSTRING FUNC CopyDestination(CSTRING source,target)
 
   COMMAND.SetIoErr(cause)
   IF cause<>0 THEN
-    RETURN(NULL)
+    RETURN(0)
   FI
 
   IF destinationInfo.fib_DirEntryType<=0 THEN
     COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_WRONG_TYPE)
-    RETURN(NULL)
+    RETURN(0)
   FI
+
+RETURN(1)
+
+; Preserve the source's final filename beneath an already checked directory.
+CSTRING FUNC CopyDestination(CSTRING source,target)
+  CARD index,first,used
 
   index=0
   first=0
@@ -84,10 +90,39 @@ RETURN(CSTRING(targetPath))
 
 ; Keep the source open before destructive output admission. Filesystem sharing
 ; rejects a target referring to that source, including through another alias.
-LONGINT FUNC Main()
+LONGINT FUNC CopyOne(CSTRING source,target BYTE append,allowDirectory)
   LONGINT status
   BYTE POINTER output
+
+  LET input=CommandInput(ADDRESS(source))
+  IF input=NULL THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  output=CommandOutput(ADDRESS(target),append)
+  IF allowDirectory<>0 AND output=NULL
+      AND COMMAND.IoErr()=COMMAND.ERROR_OBJECT_WRONG_TYPE THEN
+    IF CopyDirectory(target)<>0 THEN
+      target=CopyDestination(source,target)
+      IF target<>NULL THEN
+        output=CommandOutput(ADDRESS(target),append)
+      FI
+    FI
+  FI
+
+  status=COMMAND.RETURN_ERROR
+  IF output<>NULL THEN
+    status=CommandTransfer(input,output,NULL,transferBuffer,TRANSFER_BYTES)
+    status=CommandFinish(output,1,status)
+  FI
+
+RETURN(CommandFinish(input,1,status))
+
+; Snapshot every pattern match before opening output; a pattern always needs
+; a directory target, even when it selects only one regular file.
+LONGINT FUNC Main()
   CSTRING target
+  CARD index
 
   LET parsed=COMMAND.ReadArgsOrHelp(c"FROM/A,TO/A,APPEND/S",
       values,3,arguments,SIZEOF(arguments))
@@ -100,30 +135,61 @@ LONGINT FUNC Main()
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  LET input=CommandInput(values(0))
-  IF input=NULL THEN
+  LET source=CSTRING(BYTE POINTER(values(0)))
+  target=CSTRING(BYTE POINTER(values(1)))
+  LET prefix=CommandPattern(source)
+  IF prefix=SELECTION_INVALID THEN
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  target=CSTRING(BYTE POINTER(values(1)))
+  IF CommandPattern(target)<>SELECTION_EXACT THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BAD_ARGUMENTS)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
   IF target(0)='. AND target(1)=ASCII.NUL THEN
     target=c""
   FI
 
-  output=CommandOutput(ADDRESS(target),BYTE(values(2)<>0))
-  IF output=NULL AND COMMAND.IoErr()=COMMAND.ERROR_OBJECT_WRONG_TYPE THEN
-    target=CopyDestination(CSTRING(BYTE POINTER(values(0))),target)
-    IF target<>NULL THEN
-      output=CommandOutput(ADDRESS(target),BYTE(values(2)<>0))
+  LET append=BYTE(values(2)<>0)
+  IF prefix=SELECTION_EXACT THEN
+    RETURN(CopyOne(source,target,append,1))
+  FI
+
+  selectionCount=0
+  IF CommandSelect(source,prefix,1,@destinationInfo)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF CopyDirectory(target)=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  ; Check destination capacity for every name before creating any output.
+  FOR index=0 TO selectionCount-1 DO
+    IF CopyDestination(CommandSelected(index),target)=NULL THEN
+      RETURN(COMMAND.RETURN_ERROR)
     FI
-  FI
+  OD
 
-  status=COMMAND.RETURN_ERROR
-  IF output<>NULL THEN
-    status=CommandTransfer(input,output,NULL,transferBuffer,TRANSFER_BYTES)
-    status=CommandFinish(output,1,status)
-  FI
+  FOR index=0 TO selectionCount-1 DO
+    BEGIN
+      LET path=CommandSelected(index)
+      IF path=NULL THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
 
-RETURN(CommandFinish(input,1,status))
+      LET destination=CopyDestination(path,target)
+      IF destination=NULL THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF CopyOne(path,destination,append,0)<>COMMAND.RETURN_OK THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    END
+  OD
+
+RETURN(COMMAND.RETURN_OK)
 
 ENDMODULE

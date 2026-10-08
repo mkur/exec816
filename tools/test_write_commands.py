@@ -12,8 +12,8 @@ from test_cooperative import data
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 TEMPLATES={'copy':'FROM/A,TO/A,APPEND/S','tee':'FILE/A,APPEND/S',
            'delete':'FILE/M/A','rename':'FROM/A,TO/A','makedir':'NAME/A'}
-PARAMS='length breakAt readChunk writeChunk readFail prefixError closeError openError seekError mutationError unlockError failTarget failAt writeError writePrefixError zeroTarget oversizedRead same interactive patternBytes destinationKind lockError examineError'.split()
-FIELDS='error position fileCursor fileLength fileHash outputLength outputHash inputLive fileLive consoleLive lockLive opens closes reads fileWrites outputWrites seeks operation mode badOwner consoleUsed lockCalls examines targetUsed'.split()
+PARAMS='length breakAt readChunk writeChunk readFail prefixError closeError openError seekError mutationError unlockError failTarget failAt writeError writePrefixError zeroTarget oversizedRead same interactive patternBytes destinationKind lockError examineError enumerate enumCount enumErrorAt enumDirMask enumBreakAt'.split()
+FIELDS='error position fileCursor fileLength fileHash outputLength outputHash inputLive fileLive consoleLive lockLive opens closes reads fileWrites outputWrites seeks operation mode badOwner consoleUsed lockCalls examines targetUsed enumCalls enumCursor enumLock'.split()
 SCENARIO_BYTES=4*len(PARAMS)+1024
 STATE_BYTES=4*len(FIELDS)+2560
 ROW_BYTES=4+STATE_BYTES
@@ -113,6 +113,66 @@ def vectors(command):
     message=('Arguments: '+TEMPLATES[command]+'\n').encode()
     common.extend([c('help',args=b'?',interactive=1,opens=1,operation=0,file=b'old',console=message,noReads=True),
                    c('help-no-console',args=b'?',interactive=0,error=212,opens=0,operation=0,file=b'old',noReads=True)])
+    if command in ('copy', 'delete'):
+        def glob(name, **changes):
+            item = c(name, b'abc' if command == 'copy' else b'',
+                     args=b'S:a?.t*t B' if command == 'copy' else b'S:a?.t*t',
+                     enumerate=1, enumCount=3, destinationKind=2,
+                     opens=8 if command == 'copy' else 1,
+                     operation=0 if command == 'copy' else 3,
+                     lockCalls=2 if command == 'copy' else 1,
+                     examines=2 if command == 'copy' else 1, enumCalls=4)
+            item.update(changes)
+            return item
+        def rejected(name, error, **changes):
+            item = dict(error=error, file=b'old', opens=1, operation=0,
+                        lockCalls=1, examines=1)
+            item.update(changes)
+            return glob(name, **item)
+        result.extend([
+            glob('glob-three', target=b'B/A2.TXT' if command == 'copy' else b''),
+            glob('glob-eight', enumCount=8, enumCalls=9,
+                 opens=18 if command == 'copy' else 1,
+                 operation=0 if command == 'copy' else 8),
+            rejected('glob-nine', 118, enumCount=9, enumCalls=9),
+            rejected('glob-empty', 205, enumCount=0, enumCalls=1),
+            rejected('glob-no-match', 205, enumCalls=4,
+                     args=b'S:*.BIN B' if command == 'copy' else b'S:*.BIN'),
+            rejected('glob-enumeration-error', 226, enumErrorAt=3, enumCalls=3),
+            rejected('glob-break', 304, enumBreakAt=2, enumCalls=2),
+            rejected('glob-unlock-error', 202, unlockError=202, enumCalls=4),
+            rejected('glob-error-before-unlock', 226, enumErrorAt=3,
+                     unlockError=202, enumCalls=3),
+            rejected('glob-source-too-long', 120, enumCalls=1,
+                     args=b'S:'+b'X'*248+b'/*'+(b' B' if command == 'copy' else b'')),
+            c('glob-parent-pattern', args=b'S:*/A B' if command == 'copy' else b'S:*/A',
+              error=311, file=b'old', opens=0, operation=0,
+              lockCalls=0, examines=0, enumCalls=0),
+        ])
+        if command == 'copy':
+            result.extend([
+                glob('glob-skips-directories', enumDirMask=2, opens=6),
+                glob('glob-append', args=b'S:*.TXT B APPEND', file=b'oldabc',
+                     seeks=3, mode=1004),
+                rejected('glob-regular-target', 212, destinationKind=1,
+                         lockCalls=2, examines=2, opens=2, enumCalls=4),
+                c('glob-destination-pattern', args=b'A B*', error=311,
+                  file=b'old', opens=0, operation=0, lockCalls=0, examines=0),
+                rejected('glob-destination-too-long', 120,
+                         args=b'S:* '+b'B'*251, opens=2,
+                         lockCalls=2, examines=2, enumCalls=4),
+            ])
+        else:
+            result.extend([
+                glob('glob-includes-directories', enumDirMask=2),
+                rejected('glob-later-no-match', 205,
+                         args=b'EXACT S:*.TXT S:*.BIN', opens=2,
+                         lockCalls=2, examines=2, enumCalls=8),
+                rejected('glob-combined-overflow', 118,
+                         args=b'EXACT S:*.TXT', enumCount=8, enumCalls=8),
+                glob('glob-delete-second-error', mutationError=216, failAt=2,
+                     error=216, operation=2),
+            ])
     return result+common
 
 
@@ -136,7 +196,8 @@ ENDMODULE
     (out/'dosbreak.act').write_text('''MODULE DOSBREAK
 USE WRITECOMMANDSTATE AS T
 PUBLIC LONGINT FUNC Pending()
-RETURN(LONGINT(T.state.position>=T.scenario.breakAt))
+RETURN(LONGINT(T.state.position>=T.scenario.breakAt OR
+    (T.scenario.enumBreakAt<>0 AND T.state.enumCalls>=T.scenario.enumBreakAt)))
 ENDMODULE
 ''')
     api=read_source(ROOT/'lib/dos/programapi.act').replace('MODULE PROGRAMAPI','MODULE COMMAND').replace('USE EXEC\n','').replace('USE PROCESS\n','USE WRITECOMMANDSTATE AS T\n')
@@ -148,7 +209,8 @@ ENDMODULE
     api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
     api=api.replace('USE DOSCOMMAND\n','USE DOSCOMMAND\n'+declarations)
     (out/'command.act').write_text(api)
-    includes={n:out/n for n in ('command-files.inc','command-write.inc','command-transfer.inc')}
+    includes={n:out/n for n in ('command-files.inc','command-write.inc','command-transfer.inc',
+                              'command-pattern.inc','command-selection.inc')}
     for name in includes:
         (out/name).write_text(read_source(ROOT/'examples/commands'/name,includes).replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR'))
     source=read_source(ROOT/f'examples/commands/{command}.act',includes).replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','').replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR')
@@ -252,8 +314,11 @@ def run(out,mode,names,selected=None,compiler_bin=None):
                     examined=bool(probed and c.get('destinationKind') in (1,2)
                                   and not c.get('lockError'))
                     require((state['lockCalls'],state['examines'])==
-                            (int(probed),int(examined)),
+                            (c.get('lockCalls', int(probed)),c.get('examines', int(examined))),
                             f'{name}/{c["name"]}: unexpected directory inspection')
+                if 'enumCalls' in c:
+                    require(state['enumCalls']==c['enumCalls'],
+                            f'{name}/{c["name"]}: unexpected enumeration count')
                 if c.get('noReads'):require(state['reads']==0,name+' help read Input')
                 if 'reads' in c:require(state['reads']==c['reads'],name+' chunk count')
                 require(state['seeks']==c.get('seeks',0),name+' unexpected seek')
@@ -266,7 +331,7 @@ def run(out,mode,names,selected=None,compiler_bin=None):
         print(name,mode,len(cases),'passed',flush=True)
     return dict(status='pass',tier='development',mode=mode,commands=records,bank_zero_delta=dict(fixed=0,per_task=0),
                 source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [Path(__file__),ROOT/'tests/programs/write_commands_calls.act',ROOT/'tests/programs/write_commands_state.act',
-                    *(ROOT/'examples/commands'/n for n in ('command-files.inc','command-write.inc','command-transfer.inc')),
+                    *(ROOT/'examples/commands'/n for n in ('command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc','command-selection.inc')),
                     *(ROOT/f'examples/commands/{n}.act' for n in names)]})
 
 

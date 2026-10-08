@@ -116,7 +116,12 @@ The examples' `command-files.inc` shares owned-handle cleanup and optional input
 opening. `command-common.inc` adds text presentation; `command-write.inc` checks
 names and BREAK; `command-transfer.inc` implements COPY/TEE's counted transfer
 policy. Keeping those helpers separate avoids loading text formatting into
-filesystem mutation commands. Open modes and `OFFSET_BEGINNING`, `OFFSET_CURRENT`
+filesystem mutation commands. `command-pattern.inc` shares LIST-style matching;
+`command-selection.inc` collects up to eight COPY/DELETE names before mutation,
+borrowing argument prefixes and copying only 8.3 leaf names. It releases all
+enumeration locks before opening outputs or deleting entries, avoiding the
+mount-wide ExNext invalidation caused by these operations.
+Open modes and `OFFSET_BEGINNING`, `OFFSET_CURRENT`
 and `OFFSET_END` come from the generated COMMAND constants. CreateDir, DeleteFile
 and Rename use the existing filesystem imports. The argument parser, buffered I/O and numeric formatting themselves remain
 single resident implementations. New interfaces are generated from

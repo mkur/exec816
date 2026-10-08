@@ -6,6 +6,7 @@ PUBLIC TYPE TestCase=[
   LONGINT seekError,mutationError,unlockError,failTarget,failAt,writeError
   LONGINT writePrefixError,zeroTarget,oversizedRead,same,interactive,patternBytes
   LONGINT destinationKind,lockError,examineError
+  LONGINT enumerate,enumCount,enumErrorAt,enumDirMask,enumBreakAt
   BYTE ARRAY arguments(256)
   BYTE ARRAY data(768)
 ]
@@ -16,6 +17,7 @@ PUBLIC TYPE CaptureState=[
   LONGCARD inputLive,fileLive,consoleLive,lockLive,opens,closes,reads
   LONGCARD fileWrites,outputWrites,seeks,operation,mode,badOwner,consoleUsed
   LONGCARD lockCalls,examines,targetUsed
+  LONGCARD enumCalls,enumCursor,enumLock
   BYTE ARRAY file(1024)
   BYTE ARRAY output(1024)
   BYTE ARRAY console(256)

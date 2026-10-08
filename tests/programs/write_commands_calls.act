@@ -27,6 +27,13 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
   FI
 
   IF mode=1005 THEN
+    IF T.scenario.enumerate<>0 THEN
+      T.state.position=0
+      IF T.state.lockLive<>0 THEN
+        T.state.badOwner=1
+      FI
+    FI
+
     T.state.inputLive=1
     T.state.opens==+1
     RETURN(BYTE POINTER(1))
@@ -54,6 +61,14 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
   T.state.fileLive=1
   T.state.mode=LONGCARD(mode)
   T.state.fileCursor=0
+  IF T.scenario.enumerate<>0 AND mode=1004 THEN
+    T.state.fileLength=3
+    T.state.fileHash=124543
+    T.state.file(0)='o
+    T.state.file(1)='l
+    T.state.file(2)='d
+  FI
+
   IF mode=1006 THEN
     T.state.fileLength=0
     T.state.fileHash=0
@@ -226,6 +241,10 @@ RETURN(BYTE POINTER(4))
 
 PUBLIC LONGINT FUNC DeleteFile(BYTE POINTER name)
 
+  IF T.state.lockLive<>0 THEN
+    T.state.badOwner=1
+  FI
+
   T.state.operation==+1
   T.state.position==+1
   T.state.mode=T.state.mode*33+LONGCARD(name(0))
@@ -267,16 +286,18 @@ PUBLIC PROC UnLock(BYTE POINTER lock)
   FI
 
   T.state.lockLive=0
+  T.state.enumLock=0
   T.state.closes==+1
   T.state.error=T.scenario.unlockError
 
 RETURN
 
-; COPY inspects a rejected directory only while its source remains open.
+; Exact COPY inspects targets with a live source; pattern enumeration and its
+; target inspection happen before sources open and before any mutation.
 PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
 
   T.state.lockCalls==+1
-  IF mode<>SHARED_LOCK OR T.state.inputLive=0 THEN
+  IF mode<>SHARED_LOCK OR (T.state.inputLive=0 AND T.scenario.enumerate=0) THEN
     T.state.badOwner=1
   FI
 
@@ -285,7 +306,12 @@ PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
     RETURN(NULL)
   FI
 
-  IF T.scenario.destinationKind=0 THEN
+  T.state.enumLock=LONGCARD(T.scenario.enumerate<>0 AND (name(0)='S OR name(0)=0))
+  IF T.state.enumLock<>0 THEN
+    IF T.state.operation<>0 OR T.state.fileWrites<>0 THEN
+      T.state.badOwner=1
+    FI
+  ELSEIF T.scenario.destinationKind=0 THEN
     T.state.error=ERROR_OBJECT_NOT_FOUND
     RETURN(NULL)
   ELSEIF T.scenario.destinationKind=3 THEN
@@ -299,19 +325,56 @@ PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
 RETURN(BYTE POINTER(5))
 
 PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
+  CARD index
 
-  T.state.examines==+1
-  IF lock<>BYTE POINTER(5) OR T.state.lockLive=0 OR action<>23 THEN
+  IF lock<>BYTE POINTER(5) OR T.state.lockLive=0 THEN
     T.state.badOwner=1
   FI
 
+  LET info=FileInfoBlock POINTER(buffer)
+  IF action=24 THEN
+    T.state.enumCalls==+1
+    T.state.error=0
+    IF T.state.enumLock=0 THEN
+      T.state.badOwner=1
+    FI
+
+    IF T.state.enumCalls=T.scenario.enumErrorAt THEN
+      T.state.error=226
+      RETURN(0)
+    FI
+
+    IF T.state.enumCursor=T.scenario.enumCount THEN
+      T.state.error=ERROR_NO_MORE_ENTRIES
+      RETURN(0)
+    FI
+
+    index=CARD(T.state.enumCursor)
+    info.fib_FileName(0)='A
+    info.fib_FileName(1)='0+BYTE(index)
+    info.fib_FileName(2)='.
+    info.fib_FileName(3)='T
+    info.fib_FileName(4)='X
+    info.fib_FileName(5)='T
+    info.fib_FileName(6)=0
+    info.fib_DirEntryType=IF (T.scenario.enumDirMask & (1 LSH index))<>0 THEN
+        LONGINT(ST_USERDIR) ELSE LONGINT(ST_FILE) FI
+    T.state.enumCursor==+1
+    RETURN(DOSTRUE)
+  FI
+
+  T.state.examines==+1
+  IF action<>23 THEN
+    T.state.badOwner=1
+  FI
+
+  T.state.enumCursor=0
   T.state.error=T.scenario.examineError
   IF T.state.error<>0 THEN
     RETURN(0)
   FI
 
-  LET info=FileInfoBlock POINTER(buffer)
-  info.fib_DirEntryType=IF T.scenario.destinationKind=2 THEN
+  info.fib_DirEntryType=IF T.state.enumLock<>0 OR T.scenario.destinationKind=2 THEN
       LONGINT(ST_USERDIR) ELSE LONGINT(ST_FILE) FI
 
 RETURN(DOSTRUE)

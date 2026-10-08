@@ -18,9 +18,9 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | LIST | `[DIR or PATTERN] [NAMES]` | Enumerate a directory in disk order or match `*`/`?` in the final path component. Default output has directory markers and exact file sizes. NAMES emits bare names. |
 | FIND | `[DIR] [PATTERN pattern]` | Walk directory contents recursively in filesystem order and print matching paths. Default pattern is `*`; directories get a trailing `/`. |
 | MORE | `[FILE]` | Forward-only pager. Space advances a page, Return one displayed row, Q finishes, and BREAK cancels. |
-| COPY | `FROM TO [APPEND]` | Copy one named input to a filename or existing directory. A directory retains the source filename. Create/truncate by default; APPEND opens or creates, then seeks to EOF. |
+| COPY | `FROM TO [APPEND]` | Copy a named input to a filename or existing directory, or up to eight pattern matches to an existing directory. Preserve filenames for directory targets. Create/truncate by default; APPEND seeks to EOF. |
 | TEE | `FILE [APPEND]` | Copy Input to the named file and Output. Create/truncate by default; APPEND preserves existing content. |
-| DELETE | `FILE ...` | Remove one to eight exact files or empty directories in order. |
+| DELETE | `FILE ...` | Remove up to eight files or empty directories, selected by exact names or patterns. |
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
 | MAKEDIR | `NAME` | Create one directory under an existing parent. |
 | ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
@@ -32,8 +32,8 @@ current directory. Files opened by the command are closed on every exit;
 inherited streams remain owned by the Process. LIST matches ASCII letters
 without case: `*` matches zero or more bytes and `?` one byte. Its parent path
 must be exact. An unmatched pattern reports Object not found; an exact empty
-directory succeeds. The shell does not expand patterns, and CAT and DELETE use
-exact names. There is no regex or directory sorting. FIND adds recursive
+directory succeeds. The shell does not expand patterns; COPY and DELETE handle
+their own patterns, while CAT uses exact names. There is no regex or directory sorting. FIND adds recursive
 filename traversal; GREP searches file contents.
 
 FIND starts in DIR, or the current directory when omitted. It prints descendants
@@ -125,7 +125,7 @@ RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
 CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
 HELLO | TEE WORK:LOG.TXT
 HELLO | TEE WORK:LOG.TXT APPEND
-DELETE WORK:NOTES/TWO.TXT WORK:LOG.TXT
+DELETE WORK:NOTES/*.TXT WORK:LOG.TXT
 DELETE WORK:NOTES
 ```
 
@@ -146,6 +146,31 @@ a final filename when copying to a directory. Constructed paths are bounded to
 APPEND is an update open followed by an EOF seek; it also creates a missing file.
 It applies to the resolved filename for directory targets as well.
 
+COPY sources and DELETE operands support the same case-insensitive final-component
+`*`/`?` patterns as LIST. Their parent paths must be exact. For example:
+
+```text
+COPY SYS:*.TXT RAM:
+COPY SYS:*.TXT WORK:NOTES APPEND
+DELETE RAM:*.TXT
+```
+
+Both commands collect every selected name and release enumeration locks before
+changing any files. At most eight entries may be selected per invocation; exact
+DELETE operands count toward the same limit. A ninth entry fails with Too many
+arguments (118) before any copy or deletion. An unmatched pattern fails with
+Object not found (205), also before changes. COPY skips directories and requires
+an existing directory target for a pattern, even with one match; its target
+cannot contain wildcards. Directory assigns, volume roots and destination `.`
+work as for exact copies. Patterns do not recurse or sort matches. DELETE follows
+operand order, then enumeration order, includes directories, and removes only
+empty ones. Overlapping operands are not deduplicated; repeated entries count
+toward the bound and a second deletion can fail.
+
+The collected names are not a filesystem transaction. Another Task can change
+them before execution, producing ordinary filesystem errors. Execution stops
+on the first error or BREAK; earlier copies or deletions remain.
+
 TEE writes each chunk to its file before forwarding it to Output. If either
 write fails, it stops; the two destinations can contain different prefixes.
 Both transfer commands honor BREAK and retain the first read, write or cleanup
@@ -154,7 +179,7 @@ failure, and an earlier truncation is not undone.
 
 DELETE validates every filename before its first deletion, then stops at the
 first error or BREAK; earlier deletions remain. A quoted empty filename is an
-error, and `*`/`?` are not expanded for mutations. MAKEDIR does not create
+error. MAKEDIR does not create
 missing parents. DELETE does not recurse. RENAME does
 not move entries between directories or volumes, or replace a destination.
 These commands do not preserve copied metadata or provide atomic replacement.

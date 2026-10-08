@@ -1,11 +1,15 @@
 MODULE DELETE
 
+USE CSTRING AS STR
 INCLUDE "command-write.inc"
+INCLUDE "command-pattern.inc"
+INCLUDE "command-selection.inc"
 
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
 ADDRESS ARRAY values(1)
+COMMAND.FileInfoBlock info
 
-; Validate all exact names before the first mutation, then delete in order.
+; Validate and collect the whole bounded name list before the first deletion.
 LONGINT FUNC Main()
   ADDRESS POINTER files
   CARD index
@@ -18,24 +22,40 @@ LONGINT FUNC Main()
   FI
 
   files=ADDRESS POINTER(values(0))
+  selectionCount=0
   index=0
   WHILE files(index)<>0 DO
     IF CommandName(files(index))=0 THEN
       RETURN(COMMAND.RETURN_ERROR)
     FI
 
+    BEGIN
+      LET path=CSTRING(BYTE POINTER(files(index)))
+      LET prefix=CommandPattern(path)
+      IF CommandSelect(path,prefix,0,@info)=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    END
+
     index==+1
   OD
 
   index=0
-  WHILE files(index)<>0 DO
+  WHILE index<selectionCount DO
     IF CommandReady()=0 THEN
       RETURN(COMMAND.RETURN_ERROR)
     FI
 
-    IF COMMAND.DeleteFile(BYTE POINTER(files(index)))=0 THEN
-      RETURN(COMMAND.RETURN_ERROR)
-    FI
+    BEGIN
+      LET path=CommandSelected(index)
+      IF path=NULL THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF COMMAND.DeleteFile(BYTE POINTER(path))=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    END
 
     index==+1
   OD

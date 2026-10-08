@@ -69,15 +69,17 @@ The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
 is implemented with exact CAT/DELETE names and read-only LIST filtering. The
 [COPY directory destination follow-up](history/write-commands.md#directory-destinations)
 adds existing directories, volume roots, assigns and `.` while retaining the
-source filename and ordinary replacement/APPEND policy. Wildcards and recursive
-COPY remain separate work. The
+source filename and ordinary replacement/APPEND policy. The
+[bounded wildcard follow-up](history/write-commands.md#bounded-wildcard-operations)
+adds final-component COPY/DELETE patterns with eight selected names collected
+before mutation. Recursive COPY remains separate work. The
 [ASSIGN slice](history/assign.md) adds four bounded logical directory names.
 The [shell alias slice](history/shell-aliases.md) adds eight session-local
 command shortcuts without changing DOS lookup.
 The [system command directory slice](history/system-command-directory.md)
 stores external commands in SYS:C, assigns C: there at startup and defaults
 PATH to CurrentDir followed by C:.
-Before allowing patterns in mutating commands, account for the
+The mutation commands release enumeration locks before execution to respect the
 [mount-wide enumeration epoch](reference/filesystem-writes.md) that invalidates
 ExNext after a mutation. The three bounded command/shell utility steps above
 are implemented. The [startup script slice](history/shell-startup.md) now assigns

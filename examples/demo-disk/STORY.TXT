@@ -33,9 +33,10 @@ DIR lists a directory. LIST also accepts
 simple * and ? filename patterns:
   LS SYS:*.TXT NAMES
 LS is a preset alias for LIST. Patterns
-are supported by LIST, not expanded by
-the shell. CAT and DELETE use exact
-names and accept up to eight files.
+are handled by commands, not expanded
+by the shell. CAT accepts up to eight
+exact files. COPY and DELETE also accept
+patterns with up to eight selections.
 
 HEAD selects the start of a file; GREP
 finds literal text, with optional case
@@ -68,6 +69,14 @@ or existing folder as its destination:
   CP SYS:STORY.TXT WORK:NOTES/ONE.TXT
 COPY SYS:STORY.TXT . copies to the
 current folder, keeping STORY.TXT.
+Copy several files to a folder:
+  CP SYS:*.TXT RAM:
+  DELETE RAM:*.TXT
+COPY skips folders when matching. A
+pattern needs an existing target folder.
+COPY and DELETE collect names first;
+a ninth match or no matches fails before
+any changes. Patterns stay in one folder.
 
 ASSIGN gives a directory a logical name:
   ASSIGN DATA: WORK:NOTES
