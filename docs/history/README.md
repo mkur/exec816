@@ -93,6 +93,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Platform and boot
 
+- [Boot image compression experiment](boot-compression.md): bank-bounded LZ4,
+  LZ4-HC and DEFLATE measurements, exact-byte round trips and modeled XEX sizes.
 - [OF816 before kernel loading](of816-first-boot.md): returning INITAD monitor,
   preserved settings/text, small progress output and the bitmap/cartridge preview.
 - [XLOS boot diagnostics](../development/xlos-boot.json): cartridge interlock
