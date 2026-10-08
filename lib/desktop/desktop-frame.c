@@ -42,6 +42,18 @@ static UWORD fragment(void)
     UWORD span=nameRight-nameLeft;
     UWORD length=0,limit=(span-2*DESKTOP_TITLE_PAD)>>3;
     UWORD first,n;
+    /* Side/bottom fragments are admitted inside the outer bounds. They need
+     * only paper and the intersecting outline, never a title scan or glyphs. */
+    if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
+        GemWidgetFill(1,1,0,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+        if (p->clipLeft==l)
+            GemWidgetFill(1,1,1,l,p->clipTop,l+1,p->clipBottom);
+        if (p->clipRight==r)
+            GemWidgetFill(1,1,1,r-1,p->clipTop,r,p->clipBottom);
+        if (p->clipBottom==b)
+            GemWidgetFill(1,1,1,p->clipLeft,b-1,p->clipRight,b);
+        return 1;
+    }
     while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
     x=nameLeft+((nameRight-nameLeft-(length<<3))>>1);
     if (!p->fillX) {

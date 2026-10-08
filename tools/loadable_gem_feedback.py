@@ -7,7 +7,7 @@ from sio_transaction_trace import BASE_HZ
 from test_gem_cursor import overlay
 
 
-def measure(s, panel, move, label):
+def measure(s, panel, move, label, count=6):
     b=s.b
     font=font_bytes(s.p['output']/s.manifest['font_source'])
     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
@@ -27,7 +27,7 @@ def measure(s, panel, move, label):
                         for yy in range(region[1],region[3]) for xx in range(region[0],region[2]))
         return actual==want
     samples=[]
-    for _ in range(6):
+    for _ in range(count):
         target=1-s.number(panel+178+2*24+10,2)
         start=b.eval_expr('@clk')&0xffffffff
         b._cmd_ok('MOUSE AT 2000 0 0 1')
@@ -41,6 +41,10 @@ def measure(s, panel, move, label):
         samples.append(elapsed)
         s.frames(1);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(15)
     record=dict(model_address=panel,samples_ms=samples,median_ms=median(samples),max_ms=max(samples),
-                scope='Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark.')
+                scope=f'{count} press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark.')
+    if count>=30:
+        from measure_desktop import distribution
+        record.update(distribution(samples))
+        record['scope']=f'{count} press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.'
     s.saved.setdefault('loaded_panel_feedback',{})[label]=record
     print('Loaded panel feedback:',label,record['median_ms'],record['max_ms'],flush=True)

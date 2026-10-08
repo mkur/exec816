@@ -3,7 +3,8 @@
 [Design note](classic-gem-appearance-design.md) · [GEM integration](README.md) ·
 [Roadmap](../../roadmap.md#next-desktop-milestones)
 
-Status: GA1–GA3 implemented and passing development checks; GA4 integrated checks follow.
+Status: GA1–GA4 implemented and passing development checks, including the exact
+OF816 package. See the [execution record](../../history/classic-gem-appearance.md).
 
 Implement the design in four executable slices, committing after each passing
 slice. The current runtime baseline is the completed

@@ -130,8 +130,11 @@ operations; use window controls for desktop placement and visual focus.
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One
 update token spans the repaint. Painting uses sixteen-scanline strips and up
-to four ready steps of the same strip per worker turn. Frame background, title
-and close mark have separate stages. Console exposure and retained text paint
+to four ready steps of the same strip per worker turn. Title fragments compose
+their background, pattern, closer and at most sixteen glyphs per callback in
+scratch; publication waits for the complete fragment. Flat side/bottom strips
+skip title processing, and the two narrow side borders share a paint step.
+Console exposure and retained text paint
 at most 32 glyphs from one row or command per step, reduced to 16 for vertically
 clipped glyphs on the slower raster path; a scalar offset resumes the
 unfinished text before advancing to another row or command. Command scanning

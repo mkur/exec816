@@ -99,3 +99,97 @@ each under idle, scrolling and disk load pass, as do both screen clamps, Escape,
 event loss, cooperative close, hiding and retirement while held. These small
 move samples do not close the older 250 ms repair target. Host checks pass
 417 tests with four existing skips. See [GA3 evidence](../development/classic-gem-appearance-ga3.json).
+
+## GA4 — Integrated package and appearance cost
+
+Status: implemented; focused optimized development checks pass. This is not
+hosted release qualification.
+
+Both walkthroughs boot the exact extracted OF816 ZIP: first Shell, Files,
+Counter and Control Panel, then the calculator alongside the other applications.
+They cover pointer/keyboard menus, covered-window access, focus restoration,
+left closers, title dragging, settings/radio/default controls, shell/disk output,
+Files launch/Stop/reload, two private calculator resources, and session shutdown.
+Heap and ownership return, stack guards and register/OS restoration pass. The
+monitor delay remains 249 PAL frames; the default shell/prime profile is
+unchanged. Walkthroughs now use the Windows menu to reach Files: their former
+left-title focus click became the closer in GA1.
+
+The first matched comparison exposed extra focus repaint cost. Plain side and
+bottom fragments now skip title scanning and glyph preparation. Both narrow
+side fragments share a bounded paint step, each still composed and published
+through the existing scratch strip. The focused raster fixture passes 66 checks
+and observes a 15.37 ms maximum paint unit, within its 20 ms CPU bound.
+No state, reservation or public interface is added by this refinement.
+
+Thirty Ctrl-Tab changes and thirty physical panel presses use the same input
+sequence and four-application load as the exact AM6 package. Focus measures
+submission to matching title scanout; button measures submission to matching
+button scanout. Polling is PAL-frame granular. These are limited appearance
+observations, not the HY4/PI4 workload matrix or isolated AES-call costs.
+
+| Observation | AM6 package | Classic GEM package |
+| --- | ---: | ---: |
+| Focus median | 441.1 ms | 441.3 ms |
+| Focus p95 | 1424.0 ms | 1343.9 ms |
+| Button median | 100.3 ms | 100.3 ms |
+| Button p95 | 160.4 ms | 160.4 ms |
+| Largest paint unit, CPU | 8.13 ms | 13.52 ms |
+| Largest paint unit, elapsed | 21.15 ms | 23.58 ms |
+
+Decorated title composition costs more per unit than the old solid frame. The
+plain-edge path and paired side fragments recover that extra focus delay while
+retaining input service between bounded paint steps. CPU charges exclude native
+interrupt bodies and time assigned to another Task; elapsed time includes both.
+The pre-refinement focus observations were 501.2 ms
+median and 1,544.2 ms p95. The evidence retains that run as well as the final
+comparison. HY4/PI4 and the older 250 ms native move-repair target remain open.
+
+Frame-sampled focus captures show complete title fragments. Source inspection
+also confirms that desktop fill and stipple stay offscreen until publication.
+This does not qualify sub-frame tearing or establish a flicker-free desktop.
+Independent settled scenes pass for both menu paths, repaired overlaps and
+application controls. Captures are available in native 640×240 pixels and a
+640×480 display-aspect view with duplicated scanlines:
+
+| Scene | Native pixels | Display aspect |
+| --- | --- | --- |
+| Desktop | [PNG](../../build/classic-gem/screenshots/desktop-native.png) | [PNG](../../build/classic-gem/screenshots/desktop-display.png) |
+| Control Panel | [PNG](../../build/classic-gem/screenshots/control-panel-native.png) | [PNG](../../build/classic-gem/screenshots/control-panel-display.png) |
+| Windows menu | [PNG](../../build/classic-gem/screenshots/windows-menu-native.png) | [PNG](../../build/classic-gem/screenshots/windows-menu-display.png) |
+| Files menu | [PNG](../../build/classic-gem/screenshots/files-menu-native.png) | [PNG](../../build/classic-gem/screenshots/files-menu-display.png) |
+| Two calculators | [PNG](../../build/classic-gem/screenshots/two-calculators-native.png) | [PNG](../../build/classic-gem/screenshots/two-calculators-display.png) |
+
+Reserved bank-zero delta is **0 fixed, 0 per public Task and 0 private idle**,
+including guards, alignment and unused capacity. The native global arena uses
+4,931/5,120 bytes, one byte more than AM6 after the two-byte menu continuation
+and literal/layout changes. C declares 36 additional scratch bytes. Upper-bank
+and VRAM reservations are unchanged; the manifest uses 63/64 extents. The smallest
+observed public-Task stack margin is 38 bytes above its floor; the presenter
+retains at least 1,530 bytes. Heap allocations are unchanged by the appearance work.
+Cartridge compression remains separate; no uncompressed size gate was applied.
+
+The host suite runs 417 tests with four existing skips. Generated definitions,
+Python syntax, whitespace and documentation links pass. No raw system matrix is
+repeated: the private packet remains 78 bytes, with unchanged native/C calling
+conventions. See [GA4 evidence](../development/classic-gem-appearance-ga4.json)
+for exact pins, hashes, stack observations and the matched samples.
+
+The [tested OF816 demo ZIP](../../build/classic-gem/final/exec816-demo.zip)
+contains boot files, ROM, matching disks, the short guide, notices and eighteen
+verified checksums. Its SHA-256 is
+`c64e2ab42d1f10ca89fbda360a2477dfa9996277b85664f9cea312f856159b27`.
+Build intermediates, traces and screenshots stay outside the ZIP.
+
+Reproduce the final checks with:
+
+```sh
+python3 tools/build_demo.py --gem-desktop --output build/classic-gem/final
+python3 tools/test_gem_desktop_boot.py --bundle build/classic-gem/final
+python3 tools/test_calculator_desktop.py --bundle build/classic-gem/final
+python3 tools/measure_classic_gem.py --bundle build/classic-gem/final \
+  --output build/classic-gem/comparison/final
+```
+
+Run these sequentially when sharing a bundle directory; the recorded parallel
+runs used independent development copies containing identical ZIP bytes.

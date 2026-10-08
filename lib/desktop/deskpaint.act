@@ -103,7 +103,8 @@ RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
     CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
 
 ; Each fragment is disjoint from the client. Its complete frame pixels are
-; composed in shared scratch before publication; one fragment advances per step.
+; composed in shared scratch before publication. The two narrow side fragments
+; share a step; title and bottom fragments retain their own input boundary.
 BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER client)
   LAYERTYPES.Rect area
@@ -139,10 +140,12 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
       FI
 
       commandIndex==+1
-      RETURN(2)
+      IF commandIndex<>3 THEN
+        RETURN(2)
+      FI
+    ELSE
+      commandIndex==+1
     FI
-
-    commandIndex==+1
   OD
 
   commandIndex=0

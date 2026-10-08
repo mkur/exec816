@@ -9,7 +9,7 @@ consistent menus/controls and a patterned desktop. The
 orders frames and shared geometry, menu/control consistency, background repair
 and the tested OF816 package before the resizing milestone. Current work-area
 insets and the existing Atari ST font are retained for this first appearance
-step. GA1 implements the frames and shared geometry; see the
+step. GA1–GA4 pass development checks, including the exact OF816 package; see the
 [execution record](../../history/classic-gem-appearance.md).
 
 The [application menu-bar design](application-menu-bar-design.md)

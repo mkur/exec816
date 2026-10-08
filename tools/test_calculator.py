@@ -156,7 +156,7 @@ def run(out,reuse=False):
                 # Close the reloaded window while a digit is armed.
                 x,y,w,h=obj(3);move(x+w//2,y+h//2);edge(1);key('ESC');edge(0)
                 x,y,w,h=[get(model+22+i*2) for i in range(4)]
-                click(x+w+2,y-8)
+                click(x,y-8)
                 b.bp_clear_all()
             runtime,_=execute(b,p,before_run=before,timeout=600,frame_limit=30000)
             ownership(b,p,p['output'])

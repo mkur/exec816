@@ -5,6 +5,7 @@ from pathlib import Path
 from native_program import require
 from desktop_mouse import schedule
 from gem_applications import symbols
+from desktop_menu_check import Menus
 from test_demo import run
 
 
@@ -46,7 +47,7 @@ class CalculatorDesktop:
                 click(204,88);s.frames(100)
             raise RuntimeError('Missing Files row '+name)
         def load():
-            click(24,64);row('CALC.APP');old=s.number(browser+1972,4);key('RETURN')
+            menus.select('Files');row('CALC.APP');old=s.number(browser+1972,4);key('RETURN')
             s.rendezvous('dw($%x)=%d'%(browser+1972,old+1))
         def current(identity):
             sy=symbols(b,s.p,directory,'calc',identity)
@@ -54,7 +55,7 @@ class CalculatorDesktop:
             require(s.number(sy['shown'])==0,'Calculator did not start fresh')
             return sy
         def stop():
-            click(24,64);key('F');key('TAB');key('TAB');key('RETURN')
+            menus.select('Files');key('F');key('TAB');key('TAB');key('RETURN')
             s.rendezvous('dw($%x)=0'%(browser+1980));s.frames(90)
             require(s.number(browser+1984,4)==0,'Calculator Stop result')
         def memory():
@@ -65,7 +66,8 @@ class CalculatorDesktop:
             tree=s.number(sy['tree']);x,y,_,_=work(sy)
             ox,oy,w,h=[s.number(tree+index*24+16+i*2,2) for i in range(4)]
             click(x+ox+w//2,y+oy+h//2)
-        click(24,64);row('C');key('RETURN')
+        menus=Menus(s,click,move)
+        menus.select('Files');row('C');key('RETURN')
         baseline=memory();owners=s.ledger()
         load();s.rendezvous('dw($%x)=0'%(browser+1980));s.frames(100)
         require(s.number(browser+1984,4)==1,'Full desktop must reject a fifth window')
@@ -97,7 +99,7 @@ class CalculatorDesktop:
         # MEM tops the shell and completely covers Counter's title. Move the
         # shell down four text rows to expose it, then restore the shell.
         move(96,32);edge(1);move(96,64);edge(0);s.frames(100)
-        click(380,40);click(394,40);s.rendezvous('dw($%x)=0'%(children+4))
+        click(380,40);click(200,40);s.rendezvous('dw($%x)=0'%(children+4))
         move(96,64);edge(1);move(96,32);edge(0);s.frames(100)
         click(96,32);s.command('C:HELLO',b'Hello from disk!')
         baseline=memory();owners=s.ledger()
@@ -111,13 +113,13 @@ class CalculatorDesktop:
         roots=[s.number(item['tree']) for item in (first,second)]
         require(roots[0]!=roots[1] and s.number(roots[0]+2*24+12)!=s.number(roots[1]+2*24+12),'Calculator resources are shared')
         s.cells('two-calculators')
-        x,y,w,h=work(second);click(x+w+2,y-8)
+        x,y,w,h=work(second);click(x,y-8)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         require(s.number(browser+1980,4)!=0,'Closing shell calculator stopped Files child')
         stop();require(memory()==baseline and s.ledger()==owners,'Two calculator images retained heap/ownership')
         print('Independent calculator instances and idle RUN collection pass',flush=True)
         # Owner exit must collect a still-live calculator, including popup wait.
-        load();first=current(s.number(browser+1980,4));click(24,64);key('F')
+        load();first=current(s.number(browser+1980,4));menus.select('Files');key('F')
         click(96,32);s.save_screen(s.p['output']/'boot-smoke.png')
         from stack_budget import stack_usage
         s.saved['gem_stacks']=stack_usage(b,s.p['build']['memory'])

@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Implementation plan](classic-gem-appearance-implementation-plan.md) ·
 [Desktop contract](../../reference/desktop.md) · [Roadmap](../../roadmap.md#next-desktop-milestones)
 
-Status: adopted; GA1 is implemented. See the [execution record](../../history/classic-gem-appearance.md).
+Status: adopted and implemented through GA4. See the [execution record](../../history/classic-gem-appearance.md).
 
 Make the desktop recognizable as classic flat Atari GEM: outlined windows,
 centered titles, patterned active title bars, a boxed closer on the left,

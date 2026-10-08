@@ -88,14 +88,12 @@ With [application menus and window switching](history/application-menu-bars.md)
 implemented, the next sequence focuses on window usability and reusable GEM
 application facilities:
 
-First establish the [classic GEM appearance](plans/gem4xe/classic-gem-appearance-design.md)
-through the [GA1–GA4 slices](plans/gem4xe/classic-gem-appearance-implementation-plan.md):
-flat outlined frames, left closers, centered patterned titles, consistent
-menus/controls and a patterned desktop. This first pass keeps current work-area
-insets and font metrics, and shares frame geometry between painting and input.
-GA1 is implemented; menu/background consistency and integrated checks follow.
-The resizing milestone below extends that geometry with working gadgets and
-revisits the actual client insets.
+The [classic GEM appearance](history/classic-gem-appearance.md) is implemented
+through GA1–GA4: flat outlined frames, left closers, centered patterned titles,
+consistent menus/controls and a patterned desktop. The exact OF816 package
+passes development walkthroughs. Current work-area insets and font metrics are
+retained; painting and input share frame geometry. The resizing milestone below
+extends that geometry with working gadgets and revisits the actual client insets.
 
 1. **Resizable windows and vertical scrolling.** Add the GEM size gadget,
    vertical scrollbar and arrows, with `WM_SIZED`, `WM_VSLID`, `WM_ARROWED`

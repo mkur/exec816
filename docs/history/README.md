@@ -3,7 +3,7 @@
 [Documentation home](../README.md)
 
 - [Classic GEM appearance](classic-gem-appearance.md): frame, menu and desktop
-  appearance work; executable slice results are recorded as they complete.
+  appearance implemented through GA4, with matched costs and a tested OF816 ZIP.
 
 These pages preserve earlier designs, completed implementation slices and
 revision-specific measurements. Some use the future tense because they were
