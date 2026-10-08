@@ -1,0 +1,62 @@
+--- a/aes-objects.c
++++ b/aes-objects.c
+@@ -134,6 +134,10 @@
+     case G_TITLE:
+         th = 1;
+         break;
++    case G_TEXT:
++    case G_BOXTEXT:
++        th = ((const TEDINFO FAR *)SPEC_PTR(spec))->te_thickness;
++        break;
+     case G_BOX:
+     case G_BOXCHAR:
+     case G_IBOX: {
+@@ -170,6 +174,7 @@
+     uint32_t spec;
+     char ch;
+     GRECT t, c;
++    const TEDINFO FAR *ted = NULL;
+ 
+     ch = ob_sst(tree, obj, &spec, &state, &type, &flags, &t, &th);
+ 
+@@ -198,6 +203,10 @@
+ 
+     if (type != G_STRING) {
+         tmpth = (WORD)((th < 0) ? 0 : th);
++        if (type == G_TEXT || type == G_BOXTEXT) {
++            ted = (const TEDINFO FAR *)SPEC_PTR(spec);
++            gr_crack((UWORD)ted->te_color, &bcol, &tcol, &ipat, &icol, &tmode);
++        }
+ 
+         /* the box types: crack the colour if not a ted, then draw the
+          * border and the filled box */
+@@ -214,6 +223,7 @@
+                 icol = WHITE;
+             }
+             /* fall through */
++        case G_BOXTEXT:
+             if (th != 0) {
+                 gsx_attr(0, MD_REPLACE, bcol);
+                 gr_box(t.g_x, t.g_y, t.g_w, t.g_h, th);
+@@ -229,7 +239,20 @@
+         }
+ 
+         gsx_attr(1, tmode, tcol);
+-
++        if (ted) {
++            c = t;
++            gr_inside(&c, tmpth);
++            len = gr_just(ted->te_just, ted->te_font,
++                          (const char FAR *)SPEC_PTR(ted->te_ptext), c.g_w, c.g_h, &c);
++            if (len > 0) {
++                if (tmode == MD_REPLACE) {
++                    c.g_w = (WORD)(len * gl_wchar);
++                    c.g_h = gl_hchar;
++                    gr_rect(WHITE, IP_SOLID, &c);
++                }
++                gsx_tblt(ted->te_font, c.g_x, c.g_y, len);
++            }
++        }
+ 
+     }
+ 

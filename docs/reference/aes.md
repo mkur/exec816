@@ -313,13 +313,20 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 
 ## Application object trees and forms
 
-`gem.h` now declares the standard 24-byte `OBJECT` and 8-byte `GRECT` layouts.
-Application-owned trees support `G_BOX`, `G_IBOX`, `G_STRING`, `G_TITLE` and
-`G_BUTTON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/RBUTTON/LASTOB/
+`gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
+`TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
+`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT` and `G_BOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/RBUTTON/LASTOB/
 HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
 with at most 32 objects, eight levels and 63 characters per label. Coordinates
 are pixels. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
+
+`G_TEXT` and `G_BOXTEXT` use a TEDINFO addressed by `ob_spec`, with full
+32-bit text/template/validation addresses. Noneditable text supports the IBM
+system font, left/right/center justification, the GEM color word and signed
+border thickness. A negative thickness draws the box border outward; drawing
+includes that extent in its clip. The caller owns the NUL-terminated text and
+repaints after updating it. Formatted/editable text is not supported.
 
 `objc_draw`, `objc_find`, `objc_offset`, `objc_change`, `form_center`,
 `form_keybd` and `form_button` have named and AESPB bindings with their GEM

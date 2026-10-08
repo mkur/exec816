@@ -119,7 +119,8 @@ void WidgetPixelProbe(void)
         else if (stage==16) BuilderRunTests();
         else if (stage==13) check(GemDrawingOutline(0,0,640,240,1)==DISPLAY_OK);
         else if (stage==14) {
-            check(GemDrawingOutline(1,0,640,240,1)==DISPLAY_BAD_ARGUMENT);
+            /* Odd pixel edges are supported by the nibble-aware outline path. */
+            check(GemDrawingOutline(1,0,640,240,1)==DISPLAY_OK);
             check(GemDrawingOutline(608,208,640,240,1)==DISPLAY_OK);
         }
         else if (stage==15) check(GemDrawingOutline(0,0,0,0,0)==DISPLAY_OK);

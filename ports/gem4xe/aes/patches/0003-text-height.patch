@@ -1,0 +1,12 @@
+--- a/aes-graf.c
++++ b/aes-graf.c
+@@ -89,7 +89,8 @@
+         *pw = (WORD)(n * wc);
+     if (hc < *ph)
+         *ph = hc;
+-    if (*ph / hc)
++    /* A full character row must fit; no quotient is needed for this test. */
++    if (*ph >= hc)
+         return (n < *pw / wc) ? n : (WORD)(*pw / wc);
+     return 0;
+ }

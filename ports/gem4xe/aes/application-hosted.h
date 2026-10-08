@@ -21,6 +21,7 @@
 #define gr_rect App_gr_rect
 #define gr_crack App_gr_crack
 #define expand_string App_expand_string
+#define gr_just App_gr_just
 #define gl_clip App_gl_clip
 #define gl_wchar App_gl_wchar
 #define gl_hchar App_gl_hchar
@@ -75,6 +76,7 @@ void gr_box(WORD,WORD,WORD,WORD,WORD);
 void gr_rect(WORD,WORD,const GRECT *);
 void gr_crack(UWORD,WORD *,WORD *,WORD *,WORD *,WORD *);
 WORD expand_string(WORD *,const char *);
+WORD gr_just(WORD,WORD,const char *,WORD,WORD,GRECT *);
 void gsx_moff(void);
 void gsx_mon(void);
 void gsx_box(const GRECT *);

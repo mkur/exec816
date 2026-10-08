@@ -9,8 +9,19 @@ typedef struct {
     ULONG ob_spec;
     WORD ob_x,ob_y,ob_width,ob_height;
 } OBJECT;
+typedef struct {
+    ULONG te_ptext,te_ptmplt,te_pvalid;
+    WORD te_font,te_fontid,te_just,te_color,te_fontsize,te_thickness;
+    WORD te_txtlen,te_tmplen;
+} TEDINFO;
 #pragma pack(pop)
 #define G_BOX 20
+#define G_TEXT 21
+#define G_BOXTEXT 22
+#define TE_LEFT 0
+#define TE_RIGHT 1
+#define TE_CNTR 2
+#define IBM 3
 #define G_IBOX 25
 #define G_BUTTON 26
 #define G_STRING 28

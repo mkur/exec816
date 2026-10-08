@@ -361,6 +361,9 @@ ENDMODULE
                 if borrowed:
                     from test_display_borrow import physical
                     before = lambda b: physical(b, program, foreign, report)
+                if suite=='objects':
+                    from test_tedinfo import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if vdi:
                     from test_vdi_client import physical
                     before = lambda b: physical(b, program, foreign, report)

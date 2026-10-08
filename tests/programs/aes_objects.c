@@ -2,6 +2,8 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
+#include <string.h>
+#include <stddef.h>
 
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure;
@@ -17,6 +19,45 @@ static OBJECT tree[]={
     {4,-1,-1,G_BUTTON,SELECTABLE|EXIT|DEFAULT,0,0,8,40,64,16},
     {0,-1,-1,G_BUTTON,SELECTABLE|LASTOB,DISABLED,0,80,40,64,16}
 };
+volatile UWORD TEDPhase,TEDGo;
+static TEDINFO ted[3];
+static OBJECT textTree[]={
+    {-1,1,3,G_BOX,0,0,0x1170,48,44,160,88},
+    {2,-1,-1,G_BOXTEXT,0,0,0,8,8,128,8},
+    {3,-1,-1,G_BOXTEXT,0,0,0,8,32,128,8},
+    {0,-1,-1,G_TEXT,LASTOB,0,0,8,56,128,8}
+};
+static void text_probe(void)
+{
+    UBYTE *storage=AllocMem(131088UL,MEMF_PUBLIC|MEMF_LINEAR);
+    char *text;
+    WORD i;
+    CHECK(storage!=NULL);
+    if (!storage) return;
+    text=(char *)((((ULONG)storage+65535UL)&0xffff0000UL)+65532UL);
+    CHECK((ULONG)text>65535UL && ((ULONG)text&65535UL)==65532UL);
+    strcpy(text,"-2147483647");
+    for (i=0;i<3;++i) {
+        ted[i].te_ptext=(ULONG)text;ted[i].te_font=IBM;ted[i].te_just=i;
+        ted[i].te_color=0x1180;ted[i].te_thickness=-1;ted[i].te_txtlen=12;
+        textTree[i+1].ob_spec=(ULONG)&ted[i];
+    }
+    CHECK(sizeof(TEDINFO)==28 && offsetof(TEDINFO,te_thickness)==22);
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(objc_draw(textTree,0,8,0,0,640,240));
+    CHECK(wind_update(END_UPDATE));
+    TEDPhase=1;while (TEDGo<1) ExecYield();
+    strcpy(text,"          7");
+    CHECK(wind_update(BEG_UPDATE));
+    for (i=1;i<=3;++i) CHECK(objc_draw(textTree,i,0,0,0,640,240));
+    CHECK(wind_update(END_UPDATE));
+    TEDPhase=2;while (TEDGo<2) ExecYield();
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(objc_draw(textTree,0,8,53,49,57,18));
+    CHECK(wind_update(END_UPDATE));
+    TEDPhase=3;while (TEDGo<3) ExecYield();
+    FreeMem(storage,131088UL);
+}
 void AESClientOne(void) { }
 void AESClientTwo(void) { }
 UWORD AESRun(void)
@@ -51,6 +92,7 @@ UWORD AESRun(void)
     CHECK(objc_draw(tree,0,8,45,48,100,31));
     CHECK(objc_change(tree,2,0,0,0,640,240,0,1));
     CHECK(wind_update(END_UPDATE));
+    text_probe();
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(handle); CHECK(appl_exit()); CHECK(ExecAESDetach());
     CHECK(AvailMem(0)==available);

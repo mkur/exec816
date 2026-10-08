@@ -30,6 +30,8 @@ def extract(output, upstream=None):
     for patch in patches:command(['patch','-p1','-F','0','-t','-i',patch],cwd=output)
     source=(upstream/'src/aes/aes.h').read_text()
     header=source[source.index('typedef struct {'):source.index('/* evnt_multi')]
+    header += source[source.index('/* TEDINFO,'):source.index('/* BITBLK,')]
+    header += '\n#define TE_LEFT 0\n#define TE_RIGHT 1\n#define TE_CNTR 2\n'
     (output/'aes-objects.h').write_text('#ifndef HOSTED_AES_OBJECTS_H\n#define HOSTED_AES_OBJECTS_H\n'+header+'\n#endif\n')
     for name in ('COPYING','COPYING.LIB'):(output/name).write_bytes((upstream/name).read_bytes())
     record=dict(revision=pin['revision'],inputs=pin['files'],selected=selected,

@@ -53,6 +53,10 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
             p.object=obj; ob_offset(tree,obj,&p.x,&p.y);
             border=tree[obj].ob_type==G_BUTTON ?
                 1+!!(tree[obj].ob_flags&EXIT)+!!(tree[obj].ob_flags&DEFAULT):0;
+            if (tree[obj].ob_type==G_BOXTEXT || tree[obj].ob_type==G_TEXT) {
+                border=((const TEDINFO *)(ULONG)tree[obj].ob_spec)->te_thickness;
+                border=border<0 ? -border:0;
+            }
             l=p.x-border; t=p.y-border;
             r=p.x+tree[obj].ob_width+border; b=p.y+tree[obj].ob_height+border;
             if (l<x) l=x;
