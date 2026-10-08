@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Program loading](../../reference/program-loading.md) ·
 [C bindings](../../guides/calypsi-c.md) · [AES](../../reference/aes.md)
 
-Status: LG1 implemented at the development tier; LG2–LG6 in progress.
+Status: LG1/LG2 implemented at the development tier; LG3–LG6 in progress.
 Commit each passing executable slice.
 The immediate priority is cartridge capacity, followed by independently
 loadable, closable and restartable GEM applications.
@@ -16,6 +16,13 @@ in addition to the five-second OF816 countdown. The desktop walkthrough, six
 component failure cases and raw/optimized two-second deadline cases pass.
 Bank-zero change: fixed 0, per-public-Task 0, private-idle 0 bytes, including
 guards and unused capacity. The upper global arena grows by 512 bytes.
+
+[LG2 evidence](../../development/loadable-gem-lg2.json): raw and optimized
+C/native probes pass with concurrent private copies in banks 3 and 5, IRQ/NMI,
+retained-state reuse and heap restoration. Each C build is independently
+verified at all 62 permitted bases. The [C file profile and entry bridge](../../reference/c-program-loading.md)
+are now defined; Program/Process dispatch remains LG3. Fixed, per-public-Task
+and private-idle bank-zero deltas are all 0 bytes.
 
 ## Starting point and scope
 

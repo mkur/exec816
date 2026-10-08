@@ -499,6 +499,10 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             label='console_probe_'+operation.lower()
             result='Some(NativeResult(A16))' if operation=='Take' else 'None'
             peak=5
+        elif tasks and name=='CALYPSICALL.Invoke':
+            label,result,peak='calypsi_invoke','Some(NativeResult(A16X16))',40
+            arguments=[dict(alignment=2,offset=0,size=3),dict(alignment=2,offset=4,size=4)]
+            outgoing=9
         elif tasks and name=='CONSOLEBITMAP.Call':
             require(console_native,'Bitmap call requires console support')
             label,result,peak='console_bitmap_call','None',36
@@ -974,6 +978,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'platform/altirraos/heap.s','platform/altirraos/heap-probe.s','lib/exec/task-memory.inc','lib/exec/heap-call-types.inc',
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
+                'lib/exec/calypsicall.act','platform/altirraos/calypsi-call.s',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
                 'lib/display/display-types.inc','lib/display/display-access.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},

@@ -61,7 +61,8 @@ def emit(output, sources, assembly, task_entries, optimize=True, roots=(),
         'platform/altirraos/vbxe-internal.h': sha256(ROOT/'platform/altirraos/vbxe-internal.h')}
     foreign['provenance'].update(tools=tools, linker_layout_sha256=sha256(ROOT/'c/calypsi/layout.scm'), runtime=dict(path=str(runtime), sha256=sha256(runtime)),
                                  compiler_flags=flags, source_options=definitions or {},
-                                 source_optimization=source_optimization or {}, checked_layout=checked)
+                                 source_optimization=source_optimization or {}, checked_layout=checked,
+                                 link_objects=[str(p) for p in objects])
     if ROOT/'platform/altirraos/vbxe-map.s' in assembly:
         foreign['provenance']['upload_inputs']={str(p.relative_to(ROOT)):sha256(p) for p in (
             ROOT/'c/include/hardware/vbxe-upload.h',ROOT/'c/calypsi/vbxe-upload-layout.c',

@@ -1,0 +1,183 @@
+MODULE CPROGRAM
+USE EXEC
+USE DOSCLIENT
+USE O65TYPES
+USE O65MEMORY
+USE O65READ
+USE A816MEMORY
+USE PROGRAMIMAGE
+USE CPROGRAMBIND
+
+INCLUDE "c-program-abi.inc"
+
+TYPE Segment=[
+  LONGCARD offset,stored,bytes,flags,source
+]
+
+CARD FUNC Word(BYTE POINTER bytes SIZE offset)
+
+RETURN(CARD POINTER(bytes+offset)^)
+
+LONGCARD FUNC Long(BYTE POINTER bytes SIZE offset)
+
+RETURN(LONGCARD POINTER(bytes+offset)^)
+
+; Fixups and imports may touch serialized bytes only, never holes or BSS.
+BYTE FUNC Contains(Segment POINTER segments CARD count LONGCARD offset,bytes
+    BYTE executable)
+  CARD index
+
+  FOR index=0 TO count-1 DO
+    IF offset>=segments(index).offset AND
+        O65READ.Extent(offset-segments(index).offset,bytes,
+          segments(index).stored)<>0 THEN
+      RETURN(executable=0 OR segments(index).flags=1)
+    FI
+  OD
+
+RETURN(0)
+
+; Validate the file once, then copy, relocate and bind without published owners.
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
+  Segment ARRAY segments(SEGMENT_LIMIT)
+  PROGRAMIMAGE.Image POINTER image
+  BYTE POINTER target
+  ADDRESS POINTER entry
+  LONGCARD span,entryAt,relocations,importsAt,fixupsAt,payload,offset,previous
+  LONGCARD base,index
+  CARD count,imports,ordinal,part
+  BYTE delta
+  LONGINT error
+
+  error=LONGINT(O65TYPES.ERROR_BAD_FORMAT)
+  image=NULL
+  IF length<HEADER_BYTES OR length>FILE_LIMIT THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+
+  count=Word(bytes,10)
+  span=Long(bytes,12)
+  entryAt=Long(bytes,16)
+  relocations=Long(bytes,20)
+  imports=Word(bytes,24)
+  IF Long(bytes,0)<>FILE_MAGIC OR Word(bytes,4)<>1 OR
+      Word(bytes,6)<>VERSION OR bytes(8)<>LINK_BANK OR bytes(9)<>BANK_LIMIT OR
+      count=0 OR count>SEGMENT_LIMIT OR span=0 OR span>SPAN_LIMIT OR
+      (Word(bytes,26)<>20 AND Word(bytes,26)<>23) OR
+      Long(bytes,28)<>length OR relocations>FILE_LIMIT/4 THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+
+  importsAt=HEADER_BYTES+LONGCARD(count)*16
+  fixupsAt=importsAt+LONGCARD(imports)*8
+  payload=fixupsAt+relocations*4
+  IF payload>length THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+
+  previous=0
+  FOR part=0 TO count-1 DO
+    offset=HEADER_BYTES+LONGCARD(part)*16
+    segments(part).offset=Long(bytes,SIZE(offset))
+    segments(part).stored=Long(bytes,SIZE(offset+4))
+    segments(part).bytes=Long(bytes,SIZE(offset+8))
+    segments(part).flags=Long(bytes,SIZE(offset+12))
+    segments(part).source=payload
+    IF segments(part).offset<previous OR segments(part).bytes=0 OR
+        segments(part).stored>segments(part).bytes OR
+        O65READ.Extent(segments(part).offset,segments(part).bytes,span)=0 OR
+        O65READ.Extent(payload,segments(part).stored,length)=0 OR
+        segments(part).flags>2 THEN
+      DOSCLIENT.SetError(error)
+      RETURN(NULL)
+    FI
+
+    previous=segments(part).offset+segments(part).bytes
+    payload==+segments(part).stored
+  OD
+
+  IF payload<>length OR Contains(segments,count,entryAt,1,1)=0 THEN
+    DOSCLIENT.SetError(error)
+    RETURN(NULL)
+  FI
+
+  previous=0
+  index=0
+  WHILE index<relocations DO
+    offset=Long(bytes,SIZE(fixupsAt+index*4))
+    IF (index<>0 AND offset<=previous) OR Contains(segments,count,offset,1,0)=0 THEN
+      DOSCLIENT.SetError(error)
+      RETURN(NULL)
+    FI
+
+    previous=offset
+    index==+1
+  OD
+
+  index=0
+  WHILE index<imports DO
+    ordinal=Word(bytes,SIZE(importsAt+index*8))
+    offset=Long(bytes,SIZE(importsAt+index*8+4))
+    IF Word(bytes,SIZE(importsAt+index*8+2))<>0 OR offset=0 OR
+        Contains(segments,count,offset-1,4,1)=0 OR CPROGRAMBIND.Import(ordinal)=0 THEN
+      DOSCLIENT.SetError(LONGINT(O65TYPES.ERROR_BAD_PROVIDER))
+      RETURN(NULL)
+    FI
+
+    index==+1
+  OD
+
+  error=LONGINT(O65TYPES.ERROR_NO_FREE_STORE)
+  image=PROGRAMIMAGE.Image POINTER(O65MEMORY.Allocate(SIZEOF(PROGRAMIMAGE.Image)))
+  IF image<>NULL THEN
+    image.backingBytes=span+$ffff
+    image.backing=O65MEMORY.Allocate(SIZE(image.backingBytes))
+    IF image.backing<>NULL THEN
+      base=(LONGCARD(ADDRESS(image.backing))+$ffff) & LONGCARD($ffff0000)
+      IF base+span<=LONGCARD(BANK_LIMIT)*$10000 THEN
+        image.text=ADDRESS(base)
+        image.textBytes=span
+        delta=BYTE(base RSH 16)-LINK_BANK
+        FOR part=0 TO count-1 DO
+          A816MEMORY.Move(BYTE POINTER(ADDRESS(base+segments(part).offset)),
+              bytes+SIZE(segments(part).source),SIZE(segments(part).stored))
+        OD
+
+        index=0
+        WHILE index<relocations DO
+          offset=Long(bytes,SIZE(fixupsAt+index*4))
+          target=BYTE POINTER(ADDRESS(base+offset))
+          target^==+delta
+          index==+1
+        OD
+
+        index=0
+        WHILE index<imports DO
+          ordinal=Word(bytes,SIZE(importsAt+index*8))
+          offset=Long(bytes,SIZE(importsAt+index*8+4))
+          entry=ADDRESS POINTER(ADDRESS(base+offset))
+          entry^=CPROGRAMBIND.Import(ordinal)
+          index==+1
+        OD
+
+        entry=ADDRESS POINTER(@image.entry)
+        entry^=ADDRESS(base+entryAt)
+        image.references=1
+        image.ownerHeld=1
+        image.magic=PROGRAMIMAGE.MAGIC
+        DOSCLIENT.SetError(0)
+        RETURN(image)
+      FI
+    FI
+
+    PROGRAMIMAGE.Free(image)
+  FI
+
+  DOSCLIENT.SetError(error)
+
+RETURN(NULL)
+
+ENDMODULE

@@ -14,7 +14,7 @@ rebuild programs when the ABI changes.
 | Files and streams | [DOS](dos.md), [console/NIL streams](streams.md), [pipes](pipes.md), [MyDOS](mydos.md), [SpartaDOS](spartados.md), [filesystem writes](filesystem-writes.md), [SYS:](sys-volume.md), [ASSIGN](assigns.md) |
 | Console | [Device](console.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
 | Graphics | [Desktop client service](desktop.md), [AES applications](aes.md), [AES widgets](widgets.md), [Layers and regions](layers.md), [minimal GEM/VDI hosting](gem-vdi.md) |
-| Programs | [Processes](process.md), [loading and imports](program-loading.md), [arguments](command-arguments.md), [C strings](cstrings.md) |
+| Programs | [Processes](process.md), [native loading](program-loading.md), [C image profile](c-program-loading.md), [arguments](command-arguments.md), [C strings](cstrings.md) |
 | Filesystem internals | [Block adapter](block-io.md) |
 | Machine boundary | [Platform contract](platform.md), [display ownership](display.md) |
 

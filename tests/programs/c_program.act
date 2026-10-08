@@ -1,0 +1,88 @@
+MODULE CPROGRAMTEST
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE CPROGRAM
+USE PROGRAMIMAGE
+USE CALYPSICALL
+USE HEAPCORE
+USE DOSCLIENT
+INCLUDE "app.inc"
+
+PROGRAMIMAGE.Image POINTER first,second
+EXEC.Task workerA,workerB
+CARD completed,checks
+LONGCARD before
+LONGINT resultA,resultB
+PROC POINTER absent()
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC EntryA()
+  ADDRESS POINTER entry
+
+  entry=ADDRESS POINTER(@first.entry)
+  resultA=CALYPSICALL.Invoke(entry^,70000)
+  completed==+1
+
+RETURN
+
+PROC EntryB()
+  ADDRESS POINTER entry
+
+  entry=ADDRESS POINTER(@second.entry)
+  resultB=CALYPSICALL.Invoke(entry^,90000)
+  completed==+1
+
+RETURN
+
+PROC Prepare(EXEC.Task POINTER worker BYTE slot)
+
+  worker.tc_Node.ln_Type=EXEC.NT_TASK
+  worker.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  worker.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  worker.tc_SPReg=worker.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@worker.tc_MemEntry)
+
+RETURN
+
+PROC Main()
+  ADDRESS POINTER entry
+  LONGINT result
+
+  LET client=DOSCLIENT.Ensure()
+  Require(client<>NULL)
+  before=EXEC.AvailMem(0)
+  first=CPROGRAM.Load(wire,LONGCARD(WIRE_BYTES))
+  second=CPROGRAM.Load(wire,LONGCARD(WIRE_BYTES))
+  Require(first<>NULL AND second<>NULL)
+  Require(first.text<>second.text AND first.text<>ADDRESS($c0000)
+      AND second.text<>ADDRESS($c0000))
+  Prepare(@workerA,1)
+  Prepare(@workerB,2)
+  Require(EXEC.AddTask(@workerA,@EntryA,absent)<>NULL)
+  Require(EXEC.AddTask(@workerB,@EntryB,absent)<>NULL)
+  WHILE workerA.tc_State<>EXEC.TS_REMOVED OR workerB.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Require(completed=2 AND resultA=-70001 AND resultB=-90001)
+  entry=ADDRESS POINTER(@first.entry)
+  result=CALYPSICALL.Invoke(entry^,100000)
+  Require(result=-100002)
+  PROGRAMIMAGE.DropOwner(first)
+  PROGRAMIMAGE.DropOwner(second)
+  Require(EXEC.AvailMem(0)=before)
+  Require(DOSCLIENT.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE
