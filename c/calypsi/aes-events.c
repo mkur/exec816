@@ -195,6 +195,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         mask |= 1UL << c->timer.port->mp_SigBit;
         timerReady = milliseconds == 0;
     }
+decide:
     for (;;) {
         ready = ExecAESInputSelect(c, inputFlags);
         if (c->diagnostic != AES_OK) { status = c->diagnostic; goto done; }
@@ -221,7 +222,7 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         if (status != AES_OK) { Permit(); goto done; }
         if (!ExecAESInputStable(c, inputFlags) ||
             ((flags & AES_MU_MESAG) &&
-             ((c->messagePending || port_ready(c->receiving)) != ((ready & AES_MU_MESAG) != 0)))) {
+             (ExecAESMessageReady(c) != ((ready & AES_MU_MESAG) != 0)))) {
             Permit();
             continue;
         }
@@ -233,6 +234,8 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
             continue; /* Newly eligible level also needs the clock decision. */
         }
         if (ready) {
+            record = (ready & AES_MU_MESAG) && !c->messagePending ?
+                (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head : NULL;
             ExecAESInputResult(c, ready);
             Permit();
             break;
@@ -251,7 +254,16 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         status = AES_TIMER_ERROR;
         goto done;
     }
+    submitted = FALSE;
     Forbid();
+    /* Withdrawal may have completed during timer retirement. Do not commit a
+       stale command; take a new event decision against the same deadline. */
+    if ((ready & AES_MU_MESAG) && (!ExecAESMessageReady(c) ||
+        (record ? record != (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head :
+                  !c->messagePending))) {
+        Permit();
+        goto decide;
+    }
     status = ExecAESInputCommitState(c, inputFlags);
     if (status == AES_OK) {
         if ((ready & AES_MU_MESAG) && !c->messagePending) {
@@ -268,9 +280,16 @@ WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     if (ready & AES_MU_MESAG) {
         if (c->messagePending) {
             for (i=0;i<AES_MESSAGE_WORDS;++i) message[i]=c->deferredMessage[i];
+            c->messageEpoch=c->deferredEpoch;
+            c->messageMenuEpoch=c->deferredMenuEpoch;
             c->messagePending=0;
         } else {
             if (record == NULL) { status = AES_MALFORMED; goto done; }
+            c->messageEpoch=c->messageMenuEpoch=0;
+            if (record == &c->endpoint->gui->delivery) {
+                c->messageEpoch=c->endpoint->gui->epoch;
+                c->messageMenuEpoch=c->endpoint->gui->menuEpoch;
+            }
             for (i = 0; i < AES_MESSAGE_WORDS; ++i) message[i] = record->words[i];
             ExecAESRecycle(c, record);
         }

@@ -43,11 +43,11 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   BYTE kind,index
 
   LET endpoint=client.endpoint
+  EXEC.Forbid()
   IF client.gui.count=0 OR endpoint.guiEpoch=0 THEN
+    EXEC.Permit()
     RETURN
   FI
-
-  EXEC.Forbid()
   IF endpoint.guiFree=0 THEN
     endpoint.guiWaiting=1
     EXEC.Permit()
@@ -56,7 +56,6 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
 
   endpoint.guiFree=0
   endpoint.holds==+1
-  EXEC.Permit()
 
   kind=client.gui.order(0)
   client.gui.count==-1
@@ -69,6 +68,7 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   LET delivery=endpoint.gui
   LET notice=@client.gui.notices(kind)
   delivery.epoch=endpoint.guiEpoch
+  delivery.menuEpoch=0
   delivery.delivery.message.mn_ReplyPort=NULL
   delivery.delivery.message.mn_Length=AESTYPES.GUIDELIVERY_SIZE
   delivery.delivery.words(0)=AESTYPES.WM_REDRAW
@@ -87,7 +87,15 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   delivery.delivery.words(5)=notice.y
   delivery.delivery.words(6)=notice.width
   delivery.delivery.words(7)=notice.height
-  EXEC.Forbid()
+  IF kind=AESTYPES.GUI_MENU THEN
+    delivery.menuEpoch=endpoint.menuEpoch
+    delivery.delivery.words(0)=AESTYPES.MN_SELECTED
+    delivery.delivery.words(3)=client.menu.selectedTitle
+    delivery.delivery.words(4)=client.menu.selectedItem
+    delivery.delivery.words(5)=INT(LONGCARD(ADDRESS(client.menu.tree)) RSH 16)
+    delivery.delivery.words(6)=INT(ADDRESS(client.menu.tree))
+    delivery.delivery.words(7)=client.menu.selectedBox
+  FI
   endpoint.guiWaiting=client.gui.count<>0
   EXEC.Permit()
   EXEC.PutMsg(endpoint.port,@delivery.delivery.message)
@@ -109,7 +117,9 @@ PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   BYTE index
   INT right,bottom
 
+  EXEC.Forbid()
   IF client.endpoint.guiEpoch=0 THEN
+    EXEC.Permit()
     RETURN
   FI
 
@@ -151,8 +161,44 @@ PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     FI
   FI
 
+  EXEC.Permit()
   Publish(service,client)
 
 RETURN
+
+; Called only by the presenter after paint retirement. Reserve before accepting
+; a click; delayed clients cannot lose a command to a newer selection.
+PUBLIC BYTE FUNC Select(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client INT title,item,box)
+
+  LET menu=client.menu
+  IF menu=NULL THEN
+    RETURN(0)
+  FI
+  LET heading=AESTYPES.MenuObject POINTER(ADDRESS(menu.tree)
+      +SIZE(CARD(title))*SIZE(AESTYPES.MENUOBJECT_SIZE))
+  LET entry=AESTYPES.MenuObject POINTER(ADDRESS(menu.tree)
+      +SIZE(CARD(item))*SIZE(AESTYPES.MENUOBJECT_SIZE))
+  IF (heading.state & 8)<>0 OR (entry.state & 8)<>0
+      OR (heading.flags & 128)<>0 OR (entry.flags & 128)<>0 THEN
+    RETURN(0)
+  FI
+  EXEC.Forbid()
+  IF client.endpoint.guiEpoch=0 OR client.endpoint.menuConsumed=0
+      OR client.endpoint.menuNormal=0 THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  client.endpoint.menuConsumed=0
+  client.endpoint.menuNormal=0
+  menu.selectedTitle=title
+  menu.selectedItem=item
+  menu.selectedBox=box
+  heading.state=heading.state OR 1
+  EXEC.Permit()
+  service.menuRevision==+1
+  Post(service,client,AESTYPES.GUI_MENU,0,0,0,0)
+
+RETURN(1)
 
 ENDMODULE

@@ -93,6 +93,8 @@ WORD menu_popup(const MENU *menu,WORD x,WORD y,MENU *result)
             } else {
                 /* Preserve manager requests for the application's event loop. */
                 for (i=0;i<8;++i) c->deferredMessage[i]=p->message[i];
+                c->deferredEpoch=c->messageEpoch;
+                c->deferredMenuEpoch=c->messageMenuEpoch;
                 c->messagePending=1;break;
             }
         }

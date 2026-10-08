@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 4,
+    "GUI_KINDS": 5,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -87,7 +87,8 @@
     "MOUSE_MILD": 1,
     "OP_MENU": 202,
     "MENU_OBJECTS": 32,
-    "MN_SELECTED": 10
+    "MN_SELECTED": 10,
+    "GUI_MENU": 4
   },
   "records": {
     "MenuObject": [

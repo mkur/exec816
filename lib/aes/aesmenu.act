@@ -117,6 +117,7 @@ RETURN(menu.titles<>0 AND title=active AND box=boxes)
 ; Retiring a window invalidates its command, but keeps the installed tree.
 ; The caller has already reached a boundary with no live paint reference.
 PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER client)
+  BYTE source,target
 
   LET menu=client.menu
   IF menu<>NULL THEN
@@ -128,6 +129,19 @@ PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER clien
     FI
     menu.selectedTitle=-1
     EXEC.Forbid()
+    ; Remove only the undelivered menu kind. Published records stay immutable
+    ; and are rejected by their window/menu lifetime at the consumer.
+    target=0
+    source=0
+    WHILE source<client.gui.count DO
+      IF client.gui.order(source)<>AESTYPES.GUI_MENU THEN
+        client.gui.order(target)=client.gui.order(source)
+        target==+1
+      FI
+      source==+1
+    OD
+    client.gui.count=target
+    client.endpoint.guiWaiting=target<>0
     client.endpoint.menuConsumed=1
     client.endpoint.menuNormal=1
     EXEC.Permit()

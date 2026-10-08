@@ -52,6 +52,10 @@ void ExecAESRecycle(struct ExecAESContext *c, struct AESDelivery *record)
     struct AESEndpoint *endpoint = c->endpoint;
     Forbid();
     if (record == &endpoint->gui->delivery) {
+        if (endpoint->gui->menuEpoch &&
+            endpoint->gui->menuEpoch == endpoint->menuEpoch &&
+            endpoint->gui->epoch == endpoint->guiEpoch)
+            endpoint->menuConsumed = 1;
         endpoint->guiFree = 1;
         if (endpoint->guiWaiting) {
             c->directory->changed = 1;
@@ -71,7 +75,15 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
 {
     struct AESDelivery *record;
     BOOL stale;
-    if (c->messagePending) return TRUE;
+    if (c->messagePending) {
+        Forbid();
+        stale = c->deferredEpoch &&
+            (c->deferredEpoch != c->endpoint->guiEpoch ||
+             (c->deferredMenuEpoch && c->deferredMenuEpoch != c->endpoint->menuEpoch));
+        if (stale) c->messagePending=0;
+        Permit();
+        if (!stale) return TRUE;
+    }
     for (;;) {
         Forbid();
         record = (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head;
@@ -81,7 +93,9 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
         }
         stale = record == &c->endpoint->gui->delivery &&
             (c->endpoint->guiEpoch == 0 ||
-             c->endpoint->gui->epoch != c->endpoint->guiEpoch);
+             c->endpoint->gui->epoch != c->endpoint->guiEpoch ||
+             (c->endpoint->gui->menuEpoch &&
+              c->endpoint->gui->menuEpoch != c->endpoint->menuEpoch));
         Permit();
         if (!stale) return TRUE;
         record = (struct AESDelivery *)GetMsg(c->receiving);

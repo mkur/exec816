@@ -253,6 +253,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if borrowed:
             from test_display_borrow import producer
             producer(out, sy)
+        if suite == 'menus':
+            from test_aes_menus import producer
+            producer(out, sy)
         if gui:
             from test_aes_gui import producer
             producer(out, sy)

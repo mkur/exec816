@@ -39,7 +39,7 @@
 #define AES_ENDPOINT_RETIRED 3
 #define AES_RPC_INTIN_WORDS 6
 #define AES_RPC_INTOUT_WORDS 5
-#define AES_GUI_KINDS 4
+#define AES_GUI_KINDS 5
 #define AES_GUI_REDRAW 0
 #define AES_GUI_TOPPED 1
 #define AES_GUI_MOVED 2
@@ -89,6 +89,7 @@
 #define AES_OP_MENU 202
 #define AES_MENU_OBJECTS 32
 #define AES_MN_SELECTED 10
+#define AES_GUI_MENU 4
 struct AESMenuObject {
     WORD next;
     WORD head;

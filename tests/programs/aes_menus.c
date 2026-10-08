@@ -6,13 +6,15 @@
 #include "../../c/calypsi/aes-private.h"
 
 ULONG AESService,AESMenuNext;
+volatile ULONG AESMenuClient;
+volatile UWORD AESMenuCommand,AESMenuResult;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure;
-static void check(WORD okay)
+static void check(WORD okay,WORD line)
 {
     ++AESChecks;
-    if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure=AESChecks; }
+    if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure=line; }
 }
-#define CHECK(x) check((x)!=0)
+#define CHECK(x) check((x)!=0,__LINE__)
 static const OBJECT source[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
     {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
@@ -23,6 +25,86 @@ static const OBJECT source[] = {
     {7,-1,-1,G_STRING,0,0,(ULONG)"Open",0,0,112,16},
     {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit",0,16,112,16}
 };
+static WORD produce(WORD command)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    AESMenuClient=c->identity;AESMenuCommand=command;
+    Signal(c->directory->owner,c->directory->mask);
+    while (AESMenuCommand) Wait(1UL<<c->receiving->mp_SigBit);
+    return AESMenuResult;
+}
+static WORD poll(WORD *words)
+{
+    WORD mx,my,mb,ks,kr,br;
+    return evnt_multi(MU_MESAG|MU_TIMER,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        words,0,0,&mx,&my,&mb,&ks,&kr,&br)&MU_MESAG;
+}
+static void receive(WORD *words,WORD kind)
+{
+    for (;;) {
+        CHECK(evnt_mesag(words));
+        if (words[0]==kind) return;
+        CHECK(words[0]==WM_REDRAW);
+        if (words[0]!=WM_REDRAW) return;
+    }
+}
+static void command(OBJECT *tree)
+{
+    WORD words[8],i;
+    struct ExecAESContext *c=ExecAESContext();
+    while (poll(words)) {}
+    CHECK(produce(1));
+    CHECK(!produce(1));
+    CHECK(c->endpoint->menuConsumed==0);
+    CHECK(ExecAESMenu(tree,33,3,1)); /* Normalize before consumption. */
+    CHECK(!produce(1));
+    receive(words,MN_SELECTED);
+    CHECK(words[0]==MN_SELECTED && words[1]==0 && words[2]==0);
+    CHECK(words[3]==3 && words[4]==6 && words[7]==5);
+    CHECK((((ULONG)(UWORD)words[5]<<16)|(UWORD)words[6])==(ULONG)tree);
+    CHECK(c->endpoint->menuConsumed && c->endpoint->menuNormal);
+    CHECK(produce(1));
+    receive(words,MN_SELECTED); /* Consume before normalization. */
+    CHECK(words[0]==MN_SELECTED);
+    CHECK(c->endpoint->menuConsumed);
+    CHECK(!produce(1));
+    CHECK(ExecAESMenu(tree,33,3,1));
+    CHECK(c->endpoint->menuNormal);
+    CHECK(produce(1));
+    /* Replacement invalidates the immutable published record. */
+    CHECK(ExecAESMenu(tree,30,1,0));
+    CHECK(!poll(words));
+    CHECK(c->endpoint->guiFree);
+    CHECK(produce(1));
+    CHECK(ExecAESMenu(tree,30,1,0));
+    CHECK(produce(1)); /* Old GUI record still occupies the destination slot. */
+    (void)ExecAESMessageReady(c);
+    CHECK(!c->endpoint->menuConsumed); /* Recycling old cannot ack new. */
+    receive(words,MN_SELECTED);
+    CHECK(ExecAESMenu(tree,33,3,1));
+    for (i=0;i<16;++i) { words[0]=i;CHECK(appl_write(c->gemId,16,words)); }
+    CHECK(produce(1));
+    CHECK(!appl_write(c->gemId,16,words));
+    CHECK(c->endpoint->freeRecords==0);
+    produce(2);
+    for (i=0;i<16;++i) { CHECK(evnt_mesag(words));CHECK(words[0]==i); }
+    receive(words,MN_SELECTED);
+    receive(words,WM_CLOSED);
+    CHECK(ExecAESMenu(tree,33,3,1));
+    CHECK(produce(1));
+    receive(words,MN_SELECTED);
+    for (i=0;i<8;++i) c->deferredMessage[i]=words[i];
+    c->deferredEpoch=c->messageEpoch;c->deferredMenuEpoch=c->messageMenuEpoch;
+    c->messagePending=1;
+    CHECK(ExecAESMenu(tree,30,1,0));
+    CHECK(!poll(words) && !c->messagePending);
+    /* Same public words in an ordinary message are deliberately opaque. */
+    CHECK(appl_write(c->gemId,16,words));
+    CHECK(ExecAESMenu(tree,30,1,0));
+    CHECK(evnt_mesag(words) && words[0]==MN_SELECTED);
+    CHECK(c->messageEpoch==0 && c->messageMenuEpoch==0);
+    CHECK(produce(1)); /* Caller will close with this record still queued. */
+}
 static const char launchLabel[]="Launch";
 static struct Task *controller,*peer;
 static ULONG wake,peerWake,peerGeneration;
@@ -54,7 +136,7 @@ UWORD AESRun(void)
     ULONG available=AvailMem(0),generation;
     struct ExecAESContext *c;
     OBJECT *tree=AllocMem(sizeof(source),MEMF_PUBLIC);
-    WORD i,round,window;
+    WORD i,round,window,words[8];
     BYTE bit=AllocSignal(-1);
     OBJECT *candidate=AllocMem(sizeof(source),MEMF_PUBLIC);
     controller=FindTask(NULL);wake=1UL<<bit;
@@ -100,9 +182,11 @@ UWORD AESRun(void)
         window=wind_create(NAME|CLOSER|MOVER,16,32,160,96);
         CHECK(window>0);
         CHECK(wind_open(window,16,32,160,96));
+        if (!round) { command(tree);generation=c->endpoint->menuEpoch; }
         CHECK(wind_close(window));
         CHECK(c->endpoint->menuEpoch==generation);
         CHECK(wind_open(window,16,32,160,96));
+        if (!round) while (poll(words)) CHECK(words[0]!=MN_SELECTED);
         CHECK(wind_close(window));
         CHECK(wind_delete(window));
         *(ULONG *)AESMenuNext=0;

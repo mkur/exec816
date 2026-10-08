@@ -29,3 +29,30 @@ the interrupt reserve. No complete desktop/package or hardware claim yet.
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. This
 includes guards, alignment and spare reservation. Further integrated code/data,
 manifest and cartridge accounting belongs to AM3/AM6.
+
+## AM2 — Durable commands
+
+The existing GUI record carries `MN_SELECTED` and a separate menu generation.
+One accepted command remains reserved until consumption and title normalization,
+in either order. The sixteen ordinary records remain available. Window notices
+and menu selections share the existing bounded pending-kind order. Queue edits
+and record reservation/population are short Task-side guarded transitions;
+publication still transfers immutable storage through the receiving port.
+
+Trusted GUI and popup-deferred messages are filtered by window/menu lifetime.
+Ordinary messages with identical public words remain opaque. The event decision
+keeps its selected queue head across timer retirement; stale withdrawal triggers
+a fresh decision at the same deadline. Retired records cannot acknowledge a new
+menu command.
+
+Development evidence: 229 menu, 101 existing GUI and 371 event/timer assertions;
+417 host tests with four historical skips. Tests include both acknowledgment
+orders, delayed/duplicate selections, interleaved redraw, full ordinary pools,
+replacement, stale recycling, deferred selection and close/reopen. Selection
+injection is generated only into the fixture's presenter module.
+[Evidence](../development/application-menu-bars-am2.json).
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. The
+fifth pending GUI kind adds 8 upper bytes per client (32 per AES Service).
+Wire/context sizes remain as recorded in AM1. Physical interaction and the
+packaged coexistence walkthrough remain AM3–AM6 work.
