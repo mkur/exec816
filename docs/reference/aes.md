@@ -382,8 +382,8 @@ its previous resource intact. Explicit free or successful appl_exit releases it;
 borrowed tree/string pointers then expire. Application strings assigned to an
 object remain application-owned.
 
-`menu_popup`, `menu_ienable`, `menu_tnormal` and `menu_text` have named and AESPB
-bindings (36/32/33/34). Popup menus have one level of direct children, no scrolling
+`menu_bar`, `menu_popup`, `menu_ienable`, `menu_tnormal` and `menu_text` have named
+and AESPB bindings (30/36/32/33/34). Popup menus have one level of direct children, no scrolling
 or cascades, and must fit their owning window's work area. The caller supplies a
 valid MENU/tree and keeps strings alive; enter without an UPDATE lock. Button release, Tab/Up/Down, Return and
 Escape select or cancel. The popup acquires UPDATE only while painting and uses
@@ -391,12 +391,43 @@ ordinary caller-local evnt_multi waits. On return it restores tree positions and
 states; the application repaints the underlying content. Non-redraw window
 messages cancel the popup and are preserved in one deferred caller-local slot,
 consumed by the next message wait. This adds no kernel signal or service queue.
-The [desktop-owned menu bar](desktop.md#desktop-menus-and-window-switching)
-provides active-window commands and a Windows list. Application-defined
-`menu_bar`/`MN_SELECTED` menus and the accessory protocol remain unsupported.
+`menu_bar(tree,1)` installs one borrowed application tree; `menu_bar(tree,0)`
+withdraws it. Other modes fail. Installation does not focus the application and
+may precede its window. The focused shown window selects the visible bar; no
+installed menu uses the desktop fallback. Windows remains available at x=432.
+`wind_get(0,WF_WXYWH)` returns `(0,16,640,224)`.
 
-The private C context is now 288 bytes: the resource pointer and deferred message
-add 21 upper-RAM bytes per attached caller. Rebuild bindings and applications.
+The supported tree has root children for the bar and dropdown container. The
+bar's active container holds G_TITLE siblings paired in order with G_BOX
+siblings under the dropdown container. Items are direct G_STRING children.
+G_IBOX containers, selected/disabled/hidden states, 32 objects, depth eight and
+63-byte labels are supported. Titles fit x=0..431; dropdowns fit 640×224 and
+are repositioned on screen without changing their dimensions. Font is 8×8.
+Cascades, scrolling bars, accessories, icons, check marks and editable menu
+objects are unsupported. Valid pointers, links and indices remain caller-owned.
+
+Installed-tree enable, title-state and text setters execute at a presenter paint
+boundary, including while the caller owns UPDATE/MCTRL. Uninstalled helpers act
+locally. `menu_text` replaces a borrowed string pointer within unchanged object
+geometry. Withdraw before freeing/replacing tree or string storage or its RSC;
+`appl_exit` withdraws before automatic resource cleanup. Window close retains the
+installation for reopen but invalidates its commands.
+
+A selection returns `MN_SELECTED` through `evnt_mesag`/`evnt_multi`:
+`[10,0,0,title,item,tree_hi,tree_lo,box]`. The command belongs to the original
+application even if focus changes. One command can await consumption and
+`menu_tnormal(tree,title,1)` acknowledgment; both are required before another
+selection. No ordinary `appl_write` record is consumed by menu delivery.
+
+Click a title then an item, or drag from title to item and release. Crossing
+headings switches menus. Disabled/hidden entries cannot activate. Outside click,
+Escape, BREAK and input loss cancel without passing the click to a window.
+Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
+Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
+Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
+
+The private C context is 308 bytes. Rebuild bindings and applications with
+C import ABI version 5.
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
 
 ## Small GEM desktop

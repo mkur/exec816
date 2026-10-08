@@ -29,7 +29,7 @@ def context_program(out, optimize):
                       'AESChecks', 'AESFailures'],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout()),
                        (ROOT/'c/calypsi/display-layout.c', display_layout())],
-        client_optimization={n: optimize for n in ('display.c', 'aes.c', 'aes-events.c', 'aes_context.c', 'menu-render.c')})
+        client_optimization={n: optimize for n in ('display.c', 'aes.c', 'aes-events.c', 'aes_context.c', 'aes-menu.c', 'menu-render.c')})
     sy = foreign['symbols']
     checks = []
     for name, fields in ABI['records'].items():
@@ -148,7 +148,7 @@ def run(out, mode, replay=False):
             require((report['packet_address'] & 65535)+layout()['Request']['size'] > 65536,
                     'Wire probe did not cross a bank boundary')
             report['client_checks'] = [int.from_bytes(bridge.memdump(sy['AESChecks']+i*2, 2), 'little') for i in range(2)]
-            require(all(n == 1045 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
+            require(all(n == 1049 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
             require(bridge.memdump(sy['AESFailures'], 4) == bytes(4), 'C context corruption')
             raw = bridge.memdump(sy['ConsoleProbeResults'], 80)
             report['bridge_words'] = [int.from_bytes(raw[i:i+2], 'little') for i in range(0, 80, 2)]

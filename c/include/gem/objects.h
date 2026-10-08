@@ -56,6 +56,7 @@ typedef struct {
     LONG mn_tree; /* GEM4XE 32-bit address representation. */
     WORD mn_menu,mn_item,mn_scroll,mn_keystate;
 } MENU;
+WORD menu_bar(OBJECT *,WORD);
 WORD menu_popup(const MENU *,WORD,WORD,MENU *);
 WORD menu_ienable(OBJECT *,WORD,WORD);
 WORD menu_tnormal(OBJECT *,WORD,WORD);

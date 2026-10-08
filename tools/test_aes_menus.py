@@ -68,10 +68,38 @@ def physical(b,p,foreign,report):
     font=font_bytes(out/'selected/src/vdi/font8x8.c')
     rgb=bytes((v&254)+(v>>7) for v in PALETTE);hardware=[None]*16
     for pen,hw in enumerate(PENS):hardware[hw]=rgb[pen*3:pen*3+3][::-1]
+    from desktop_mouse import schedule
+    at=lambda mod,n: next(d['address'] for d in p['image']['data'] if '_'+mod+'_'+n.upper()+'_' in d['name'])
+    get=lambda address,size=2:int.from_bytes(b.memdump(address,size),'little')
+    def frames(n=75):reach('@frame>=%d'%(b.eval_expr('@frame')+n))
+    position=[320,120]
+    def move(x,y):
+        nonlocal position
+        position=schedule(b,p,position,(x,y))
+        reach('(dw($%x)=%d)&(dw($%x)=%d)'%(at('DESKINPUT','cursorX'),position[0],at('DESKINPUT','cursorY'),position[1]))
+    def edge(down):
+        b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));frames(25)
+    def click(x,y):move(x,y);edge(1);edge(0);frames()
+    def key(name,ctrl=False,shift=False):
+        if ctrl:b._cmd_ok('KEY CTRL down')
+        if shift:b._cmd_ok('KEY SHIFT down')
+        b._cmd_ok('KEY '+name+' down');frames(3);b._cmd_ok('KEY '+name+' up')
+        if shift:b._cmd_ok('KEY SHIFT up')
+        if ctrl:b._cmd_ok('KEY CTRL up')
+        frames()
+    def mutation(value):
+        b.poke16(sy['AESMenuMutation'],value)
+        reach('dw($%x)=0'%sy['AESMenuMutation']);frames()
+    def actions(who,count,item=None):
+        frames()
+        require(get(sy['AESMenuActions']+who*2)==count,'Physical command count/recipient mismatch: '+str((who,count,get(sy['AESMenuActions']+who*2))))
+        if item is not None:require(get(sy['AESMenuItem']+who*2)==item,'Wrong menu item')
+    b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
     report['menu_pixels']=[]
     for phase in range(1,8):
         print('Menu pixels phase',phase,flush=True)
         reach('dw($%x)=%d'%(sy['AESMenuPhase'],phase))
+        move(632,232)
         reach('@frame>=%d'%(b.eval_expr('@frame')+80))
         model=Raster(font);rectangle(model,(0,0,640,16),0)
         tree=int.from_bytes(b.memdump(sy['AESMenuPeerTree' if phase in (5,6) else 'AESMenuTree'],4),'little')
@@ -84,10 +112,36 @@ def physical(b,p,foreign,report):
         for left,top,right,bottom in areas:
             for y in range(top,bottom):
                 for x in range(left,right):
-                    at=y*frame.stride+(x+16)*4
-                    require(raw[at:at+3]==hardware[model.pixels[y*640+x]],
+                    pixel=y*frame.stride+(x+16)*4
+                    require(raw[pixel:pixel+3]==hardware[model.pixels[y*640+x]],
                             'Menu pixels phase %d at %d,%d: %s != %s'%(phase,x,y,
-                                raw[at:at+3].hex(),hardware[model.pixels[y*640+x]].hex()))
+                                raw[pixel:pixel+3].hex(),hardware[model.pixels[y*640+x]].hex()))
         report['menu_pixels'].append(dict(phase=phase,pixels=sum((r-l)*(bt-t) for l,t,r,bt in areas)))
+        if phase==1:
+            print('Public menu pointer/keyboard checks',flush=True)
+            click(24,8);click(32,24);actions(0,1,6)
+            key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)
+            require(get(at('DESKAPPMENU','heading'))==1,'Right did not switch application title')
+            key('ASTERISK',ctrl=True);require(get(at('DESKAPPMENU','heading'))==0,'Title navigation did not wrap')
+            key('TAB');key('TAB');key('RETURN');actions(0,2,7)
+            click(24,8);click(600,220);actions(0,2)
+            click(24,8);move(32,24);edge(1);key('ESC');edge(0);actions(0,2)
+            move(24,8);edge(1);move(32,24);edge(0);actions(0,3,6)
+            click(24,8);move(472,8);frames()
+            require(get(at('DESKMENU','menu'),1)==2,'Heading switch to Windows failed')
+            move(24,8);frames();click(32,40);actions(0,4,7)
+            click(24,8);move(32,24);edge(1);mutation(1);edge(0);actions(0,4)
+            key('ESC');mutation(2)
+            click(24,8);move(32,24);edge(1);mutation(3);edge(0);actions(0,4)
+            mutation(4);key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,4)
+            key('ESC');mutation(5)
+            actions(1,0)
+        elif phase==3:
+            click(32,24);actions(0,4)
+            key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,5,7)
+        elif phase==5:
+            click(168,8);click(176,24);actions(1,1,6);actions(0,5)
+            key('ESC',ctrl=True,shift=True);key('TAB');key('TAB');key('TAB');key('RETURN');actions(1,2,6)
         b.poke16(sy['AESMenuGo'],phase)
+    report['physical_menus']=dict(pointer=True,keyboard=True,commands=[5,2],identical_titles=True,disabled=True,held_replacement=True,held_disable=True,cancel=True,heading_switch=True,hidden=True,multiple_titles=True)
     b.bp_clear_all()

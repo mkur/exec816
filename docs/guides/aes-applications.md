@@ -273,8 +273,8 @@ This profile uses four application-window slots, two private menu layers, three
 AES registrations and seven idle Tasks. The desktop bar follows the active
 window and supplies Next window, Close and the Windows list. Ctrl+Tab cycles;
 Ctrl+Escape opens Windows, then Tab/arrows and Return select, or Escape cancels.
-Application-defined GEM menu bars and Atari ST binary compatibility remain
-unsupported. See the [current AES contract](../reference/aes.md)
+Applications can install bounded GEM menu bars (see below). Atari ST binaries
+remain unsupported. See the [current AES contract](../reference/aes.md)
 and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).
 
 ## GEM4XE calculator
@@ -319,3 +319,19 @@ The application uses standard GEM object/form/redraw calls and the small
 [`ExecAESMouseProfile` extension](../reference/aes.md#session-mouse-preference)
 for the desktop preference. An Apply during a held mouse gesture takes effect
 after release. The counter and shell continue independently.
+
+## Application menu bars
+
+Keep a compiled or resource-loaded menu tree alive for the application's menu
+registration. Install it with `menu_bar(tree,1)` before or after opening the
+window. Background installation does not take focus. In the existing message
+loop, dispatch `MN_SELECTED` using `message[4]`, then call
+`menu_tnormal(tree,message[3],1)`. The two tree-address words identify the
+application-owned tree; the presenter does not copy the tree or its strings.
+
+Use `menu_ienable` for command availability and `menu_text` to replace a label
+pointer without changing geometry. These calls safely patch an installed menu;
+do not edit a live installed tree directly. Withdraw with `menu_bar(tree,0)`
+before freeing its storage or resource. `appl_exit` also withdraws it.
+See the [bounded menu contract](../reference/aes.md) for supported objects,
+counts and keyboard interaction. Rebuild APPs against C import ABI 5.

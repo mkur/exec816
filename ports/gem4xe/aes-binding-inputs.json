@@ -294,6 +294,15 @@
         2,
         0
       ]
+    },
+    "menu_bar": {
+      "opcode": 30,
+      "control_counts": [
+        1,
+        1,
+        1,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",

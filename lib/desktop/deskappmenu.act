@@ -3,6 +3,7 @@ MODULE DESKAPPMENU
 USE AESSTATE
 USE AESTYPES
 USE AESMENU
+USE AESGUI
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKWIDGETS
@@ -17,6 +18,12 @@ PUBLIC AESSTATE.Client POINTER owner
 PUBLIC INT heading,selected,paintHeading,paintSelected
 LONGCARD generation,revision
 CARD paintIndex
+TYPE PendingSelection=[
+  AESSTATE.Client POINTER client
+  LONGCARD menuEpoch,windowEpoch
+  INT title,item,box
+]
+PendingSelection choice
 
 PUBLIC BYTE FUNC Changed()
 
@@ -84,6 +91,94 @@ PUBLIC BYTE FUNC Enabled(INT index)
 
 RETURN(1)
 
+PUBLIC BYTE FUNC Pending()
+
+RETURN(choice.client<>NULL)
+
+PUBLIC BYTE FUNC VisualChanged()
+
+RETURN(Current()<>0 AND (paintHeading<>heading OR paintSelected<>selected))
+
+PUBLIC BYTE FUNC Available()
+
+RETURN(Current()<>0 AND owner.endpoint.menuConsumed<>0
+    AND owner.endpoint.menuNormal<>0 AND choice.client=NULL)
+
+PUBLIC INT FUNC NextTitle(INT cursorIndex BYTE reverse)
+  BYTE attempt
+
+  IF Available()=0 THEN
+    RETURN(-1)
+  FI
+  LET menu=owner.menu
+  FOR attempt=0 TO menu.titles-1 DO
+    IF reverse<>0 THEN
+      cursorIndex=IF cursorIndex<=0 THEN INT(menu.titles)-1 ELSE cursorIndex-1 FI
+    ELSE
+      cursorIndex=IF cursorIndex>=INT(menu.titles)-1 THEN INT(0) ELSE cursorIndex+1 FI
+    FI
+    IF Enabled(menu.title(cursorIndex))<>0 THEN
+      RETURN(cursorIndex)
+    FI
+  OD
+
+RETURN(-1)
+
+PUBLIC INT FUNC TitleAt(INT x)
+  BYTE index
+
+  IF Available()=0 THEN
+    RETURN(-1)
+  FI
+  LET menu=owner.menu
+  FOR index=0 TO menu.titles-1 DO
+    BEGIN
+      LET title=menu.title(index)
+      LET object=AESMENU.Object(menu,title)
+      IF x>=menu.x(title) AND x<menu.x(title)+object.width
+          AND Enabled(title)<>0 THEN
+        RETURN(INT(index))
+      FI
+    END
+  OD
+
+RETURN(-1)
+
+; Input retains identity only. Source state changes after the paint token retires.
+PUBLIC PROC Queue(INT item)
+
+  IF item<0 OR Available()=0 THEN
+    RETURN
+  FI
+  LET menu=owner.menu
+  IF Enabled(item)=0 OR Enabled(menu.title(heading))=0 THEN
+    RETURN
+  FI
+  choice.client=owner
+  choice.menuEpoch=generation
+  choice.windowEpoch=owner.endpoint.guiEpoch
+  choice.title=menu.title(heading)
+  choice.box=menu.box(heading)
+  choice.item=item
+
+RETURN
+
+PUBLIC PROC Finish()
+  BYTE accepted
+
+  LET client=choice.client
+  IF client=NULL THEN
+    RETURN
+  FI
+  IF client.menu<>NULL AND client.menu.generation=choice.menuEpoch
+      AND client.endpoint.guiEpoch=choice.windowEpoch THEN
+    accepted=AESGUI.Select(AESSTATE.Get(),client,
+        choice.title,choice.item,choice.box)
+  FI
+  choice.client=NULL
+
+RETURN
+
 PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
   INT left,top,box
 
@@ -99,6 +194,71 @@ PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
   REGIONS.Assign(bounds,left,top,left+object.width,top+object.height)
 
 RETURN
+
+PUBLIC INT FUNC EntryAt(INT x,y)
+  INT index
+  LAYERTYPES.Rect drop
+
+  IF Current()=0 THEN
+    RETURN(-1)
+  FI
+  LET menu=owner.menu
+  LET box=menu.box(heading)
+  LET object=AESMENU.Object(menu,box)
+  PopupBounds(@drop)
+  x=x-drop.left+menu.x(box)
+  y=y-drop.top+menu.y(box)
+  index=object.head
+  WHILE index>=0 AND index<>box DO
+    BEGIN
+      LET entry=AESMENU.Object(menu,index)
+      IF x>=menu.x(index) AND x<menu.x(index)+entry.width
+          AND y>=menu.y(index) AND y<menu.y(index)+entry.height
+          AND Enabled(index)<>0 THEN
+        RETURN(index)
+      FI
+      index=entry.next
+    END
+  OD
+
+RETURN(-1)
+
+PUBLIC INT FUNC NextEntry(INT cursorIndex BYTE reverse)
+  INT index,first,last,previous,next
+
+  IF Current()=0 THEN
+    RETURN(-1)
+  FI
+  LET menu=owner.menu
+  LET box=menu.box(heading)
+  LET object=AESMENU.Object(menu,box)
+  first=-1
+  last=-1
+  previous=-1
+  next=-1
+  index=object.head
+  WHILE index>=0 AND index<>box DO
+    IF Enabled(index)<>0 THEN
+      IF first<0 THEN
+        first=index
+      FI
+      IF index=cursorIndex THEN
+        previous=last
+      ELSEIF last=cursorIndex THEN
+        next=index
+      FI
+      last=index
+    FI
+    BEGIN
+      LET entry=AESMENU.Object(menu,index)
+      index=entry.next
+    END
+  OD
+  IF reverse<>0 THEN
+    RETURN(IF previous>=0 THEN previous ELSE last FI)
+  FI
+
+RETURN(IF next>=0 THEN next ELSE first FI)
 
 PROC DamageObject(INT index BYTE popup)
   INT box,active

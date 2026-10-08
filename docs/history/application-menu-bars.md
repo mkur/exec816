@@ -89,3 +89,26 @@ XEX. Its 13,999-byte uncompressed cartridge headroom is informational: the user
 has explicitly removed cartridge size as a gate and plans compression separately.
 The loading/manifest limits still apply. Full packaged runtime testing remains
 AM6 work.
+
+## AM4 — Public calls and input
+
+`menu_bar` is public through its named function and AESPB opcode 30. Installed
+setters synchronize through the presenter; uninstalled helpers remain local.
+C import ABI 5 requires rebuilt APPs. Pointer selection, drag release, heading
+switches, keyboard entry/navigation, and cancellation now reach the durable
+command path. A small presenter-owned pending selection retains the original
+owner and both lifetimes until the next paint boundary.
+
+Development checks: 285 menu assertions, seven independent pixel phases and
+physical input across two owners with equal title text/object indices. Coverage
+includes multiple headings, hidden/disabled entries, all-disabled navigation,
+held-item disable and menu replacement, outside/Escape cancellation, exact
+recipient/message words and RSC cleanup. Both raw and optimized context/binding
+probes passed 1049 assertions per client; host suite passed 417 tests with four
+historical skips. The physical bridge names Right but not Atari Plus/Left;
+rightward title switching and wrap were exercised. [Evidence](../development/application-menu-bars-am4.json).
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. The
+pending choice adds 18 upper global bytes. The fixture presenter used 837 bytes
+of stack, with 1467 bytes above the interrupt reserve. Full composed APP/package
+checks follow in AM5/AM6; these are development results.

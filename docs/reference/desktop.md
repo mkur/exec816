@@ -221,7 +221,8 @@ its normal EXIT path controls retirement.
 ### Desktop menus and window switching
 
 The presenter owns a persistent 16-pixel menu bar. Its left menu follows the
-focused window and offers Next window and Close. Close is disabled for the shell.
+focused window. An installed GEM tree supplies its application titles; otherwise
+it offers Next window and Close. Close is disabled for the shell.
 Windows lists all shown application windows in stable slot order, including
 covered windows and the shell. Selecting an AES entry sends `WM_TOPPED`; the
 application raises itself with `WF_TOP`. Close sends `WM_CLOSED`. Native windows
@@ -240,14 +241,17 @@ it. The target is the frontmost remaining shown window with a live input route;
 a retired AES input epoch is ineligible. Closing a background window leaves
 focus unchanged. No remaining owner means focus and the published route are zero.
 
-The bar and bounded four-row popup occupy two private Layers; all four application
+The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
 and repaint, with no saved-under framebuffer. Labels and window IDs are copied
 into upper-memory state. A scene/focus change dismisses an open menu, preventing
 selection of stale labels after window retirement or slot reuse. No extra Task,
-timer, signal or bank-zero reservation is needed. This desktop-owned menu does
-not yet expose application-defined GEM `menu_bar`/`MN_SELECTED` menus, accessories
-or submenus. Existing application `menu_popup` remains window-scoped.
+timer, signal or bank-zero reservation is needed. Installed application trees
+are borrowed at paint boundaries; the [AES contract](aes.md) defines their
+bounded shape, lifetime and `MN_SELECTED` delivery. Windows adds Next/Close below
+its window list when application titles occupy the left bar. Ctrl+Shift+Escape
+enters an application menu. Accessories and submenus remain unsupported.
+Existing application `menu_popup` remains window-scoped.
 
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.

@@ -187,6 +187,11 @@ RETURN
 
 PROC Choose(INT row)
 
+  IF menu=GEM_MENU THEN
+    DESKAPPMENU.Queue(row)
+    Cancel()
+    RETURN
+  FI
   IF row<0 OR row>=INT(count) OR items(row).enabled=0 THEN
     RETURN
   FI
@@ -215,6 +220,11 @@ RETURN
 
 PROC Highlight(INT row)
 
+  IF menu=GEM_MENU THEN
+    DESKAPPMENU.selected=row
+    selected=row
+    RETURN
+  FI
   IF row>=0 AND items(row).enabled=0 THEN
     row=NO_ROW
   FI
@@ -228,6 +238,9 @@ RETURN
 INT FUNC Hit(INT x,y)
   INT left,row
 
+  IF menu=GEM_MENU THEN
+    RETURN(DESKAPPMENU.EntryAt(x,y))
+  FI
   left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI
   IF x<left OR x>=left+208 OR y<BAR_HEIGHT
       OR y>=BAR_HEIGHT+INT(count)*ROW_HEIGHT THEN
@@ -236,6 +249,25 @@ INT FUNC Hit(INT x,y)
   row=(y-BAR_HEIGHT) RSH 4
 
 RETURN(row)
+
+PROC Heading(INT x)
+  INT hit
+
+  IF x>=WINDOWS_LEFT THEN
+    IF menu<>WINDOWS_MENU THEN
+      pendingMenu=WINDOWS_MENU
+    FI
+  ELSEIF DESKAPPMENU.Current()<>0 THEN
+    hit=DESKAPPMENU.TitleAt(x)
+    IF hit>=0 AND (menu<>GEM_MENU OR hit<>DESKAPPMENU.heading) THEN
+      pendingHeading=hit
+      pendingMenu=GEM_MENU
+    FI
+  ELSEIF menu<>APP_MENU THEN
+    pendingMenu=APP_MENU
+  FI
+
+RETURN
 
 ; Fresh or deferred native events only. AESMOUSE keeps the physical baseline
 ; and never transfers a held application gesture into this path.
@@ -246,6 +278,9 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
     RETURN(0)
   FI
 
+  IF menu=GEM_MENU AND DESKAPPMENU.Current()=0 THEN
+    Cancel()
+  FI
   IF blocked<>0 THEN
     IF sample.buttons=0 THEN
       blocked=0
@@ -259,7 +294,7 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
       RETURN(0)
     FI
     IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0 THEN
-      pendingMenu=IF sample.x>=WINDOWS_LEFT THEN WINDOWS_MENU ELSE APP_MENU FI
+      Heading(sample.x)
       down=1
       DESKSTATE.menuActive=1
       opening=1
@@ -270,11 +305,15 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
 
   IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
       AND sample.y<BAR_HEIGHT THEN
-    pendingMenu=IF sample.x>=WINDOWS_LEFT THEN WINDOWS_MENU ELSE APP_MENU FI
+    Heading(sample.x)
     down=1
     opening=1
     armed=NO_ROW
     RETURN(1)
+  FI
+
+  IF sample.y<BAR_HEIGHT THEN
+    Heading(sample.x)
   FI
 
   row=IF menu<>0 THEN Hit(sample.x,sample.y) ELSE NO_ROW FI
@@ -305,6 +344,8 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
       armed=NO_ROW
     FI
   FI
+
+  DESKSTATE.menuActive=Active()
 
 RETURN(1)
 
@@ -337,8 +378,16 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
       RETURN(1)
     ELSEIF (sample.code & 63)=28 THEN
       Cancel()
-      pendingMenu=WINDOWS_MENU
-      DESKSTATE.menuActive=1
+      IF (sample.qualifiers & INPUT.SHIFT)<>0 THEN
+        row=DESKAPPMENU.NextTitle(-1,0)
+        IF row>=0 THEN
+          pendingHeading=row
+          pendingMenu=GEM_MENU
+        FI
+      ELSE
+        pendingMenu=WINDOWS_MENU
+      FI
+      DESKSTATE.menuActive=Active()
       RETURN(1)
     FI
   FI
@@ -354,6 +403,15 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
     Cancel()
   ELSEIF key=$1c0d AND buttons=0 THEN
     Choose(selected)
+  ELSEIF menu=GEM_MENU AND (key=$4b00 OR key=$4d00) THEN
+    row=DESKAPPMENU.NextTitle(DESKAPPMENU.heading,key=$4b00)
+    IF row>=0 THEN
+      pendingHeading=row
+      pendingMenu=GEM_MENU
+    FI
+  ELSEIF menu=GEM_MENU AND (key=$4800 OR key=$5000 OR key=$0f09) THEN
+    Highlight(DESKAPPMENU.NextEntry(selected,
+        key=$4800 OR (key=$0f09 AND (sample.qualifiers & INPUT.SHIFT)<>0)))
   ELSEIF key=$4800 OR key=$5000 OR key=$0f09 THEN
     row=selected
     FOR attempts=0 TO ROWS-1 DO
@@ -408,10 +466,11 @@ PROC Open(BYTE kind)
   count=0
   A816MEMORY.Clear(BYTE POINTER(@items(0)),SIZEOF(items))
   IF menu=GEM_MENU THEN
-    IF DESKAPPMENU.Current()=0 THEN
+    IF DESKAPPMENU.Available()=0 THEN
       Cancel()
       RETURN
     FI
+    selected=NO_ROW
     DESKAPPMENU.heading=pendingHeading
     DESKAPPMENU.selected=-1
     DESKAPPMENU.PopupBounds(@bounds)
@@ -518,7 +577,8 @@ PUBLIC PROC Advance()
   FI
   IF pendingAction=0 AND pendingMenu=0 AND dirty=0
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
-      AND DESKAPPMENU.Changed()=0 THEN
+      AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
+      AND DESKAPPMENU.VisualChanged()=0 THEN
     RETURN
   FI
   IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
@@ -526,6 +586,7 @@ PUBLIC PROC Advance()
     RETURN
   FI
 
+  DESKAPPMENU.Finish()
   changed=DESKAPPMENU.Refresh()
   IF changed=1 THEN
     Cancel()
@@ -589,7 +650,8 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
     OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
-    OR DESKAPPMENU.Changed()<>0)
+    OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0
+    OR DESKAPPMENU.VisualChanged()<>0)
     AND AESLOCKS.NativeReady()<>0 AND AESLOCKS.MouseBlocked()=0
     AND AESLOCKS.PaintBlocked()=0)
 

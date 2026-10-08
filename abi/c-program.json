@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 4,
+  "version": 5,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -78,6 +78,7 @@
     "menu_text",
     "ExecGetArgStr",
     "ExecProgramMask",
-    "ExecAESMouseProfile"
+    "ExecAESMouseProfile",
+    "menu_bar"
   ]
 }

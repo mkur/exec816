@@ -16,6 +16,7 @@ static struct ExecAESContext *published[2];
 static void client(UWORD who)
 {
     UWORD i, j;
+    OBJECT menu={-1,-1,-1,G_STRING,LASTOB,0,(ULONG)"Local",0,0,80,16};
     struct ExecAESContext *context;
     CHECK(ExecAESContext() == NULL);
     CHECK(!ExecAESAttach((struct MsgPort *)0x01000000UL));
@@ -30,6 +31,10 @@ static void client(UWORD who)
         CHECK(context->request.binding == (UBYTE *)context);
         CHECK(context->request.message.mn_ReplyPort == context->replies);
         CHECK(context->request.bytes == AES_REQUEST_SIZE);
+        CHECK(!menu_bar(&menu,1) && ExecAESDiagnostic()==AES_IDENTITY);
+        CHECK(menu_ienable(&menu,0,0) && menu.ob_state==DISABLED);
+        CHECK(menu_tnormal(&menu,0,0) && menu.ob_state==(DISABLED|SELECTED));
+        CHECK(menu_text(&menu,0,"Changed") && ((const char *)menu.ob_spec)[0]=='C');
         CHECK(ExecAESTimerRead(context));
         CHECK(context->timer.query->ticks_per_second == 50 || context->timer.query->ticks_per_second == 60);
         ExecAESTimerSend(context, 0, 0);
