@@ -72,7 +72,10 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
             and [abi['manifest'][k] for k in ('copy','zero','executable')] == [0,1,2]
             and abi['states'] == {'UNAVAILABLE':0,'FREE':1,'RESERVED':2,'OWNED':3}
             and abi['owners'] == {'SYSTEM':1,'IMAGE':2,'CLIENT_A':3,'CLIENT_B':4,'HEAP':5}
-            and abi['record'] == {'size':8,'extent':0,'offset':2,'count':4,'kind':6,'reserved':7},
+            and abi['record'] == {'size':8,'extent':0,'offset':2,'count':4,'kind':6,'encoding':7}
+            and abi['compression'] == {'block_bytes':32768,'header_size':4,
+                'header_fields':{'output':0,'input':2},
+                'encodings':{'RAW':0,'LZ4_BEGIN':1,'LZ4_CONTINUE':2}},
             'Unsupported memory wire layout')
     if max_banks is not None:
         cfg['max_banks'] = max_banks
@@ -146,6 +149,10 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
         c.update({f'{prefix}_{k}':v for k,v in abi[group].items()})
     c.update({'HEADER_BYTES':abi['manifest']['header_size'],
               'EXTENT_BYTES':abi['manifest']['extent_size'], 'RECORD_BYTES':abi['record']['size']})
+    c.update(LZ4_BLOCK_BYTES=abi['compression']['block_bytes'],
+             LZ4_HEADER_BYTES=abi['compression']['header_size'])
+    c.update({f'ENCODING_{key}':value for key,value in abi['compression']['encodings'].items()})
+    c.update({f'LZ4_HEADER_{key.upper()}':value for key,value in abi['compression']['header_fields'].items()})
     for fields, prefix in [(abi['record'], 'RECORD'), (abi['manifest']['fields'], 'HEADER'),
                            (abi['manifest']['extent_fields'], 'EXTENT')]:
         c.update({f'{prefix}_{k.upper()}':v for k,v in fields.items() if k != 'size' or prefix != 'RECORD'})

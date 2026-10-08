@@ -241,11 +241,12 @@ def check_feedback(out,record,program,name,size,zero=False,failure=None):
     memory=program['build']['memory'];c=memory['constants']
     for include in ('memory.inc','boot-config.inc'):
         shutil.copyfile(program['output']/include,folder/include)
+    finish_address=c['LOADER']+c['LOADER_BYTES']
     finish=assemble_probe(folder/'finish','''.setcpu "65816"
 .segment "CODE"
 .export start
 start: jmp start
-''',0x7800)['start']
+''',finish_address)['start']
     bank=next(b for b in memory['usable_banks'] if b not in reserved_banks(memory))
     address=bank<<16
     data=bytes((i*29+7)&255 for i in range(size))
@@ -255,12 +256,17 @@ start: jmp start
     (folder/'hosted.bin').write_bytes(b'\xea')
     raw,labels=emit(folder,image,memory,dict(start=finish))
     segments=list(xex_segments(raw))
-    segments.insert(1,(0x7800,(folder/'finish/probe.bin').read_bytes()))
+    segments.insert(1,(finish_address,(folder/'finish/probe.bin').read_bytes()))
     if failure=='record':
         at=next(i for i,(a,d) in enumerate(segments) if a==c['STAGE'] and len(d)>8)
-        a,d=segments[at];segments[at]=(a,d[:7]+b'\1'+d[8:])
+        a,d=segments[at];segments[at]=(a,d[:7]+b'\xff'+d[8:])
     elif failure=='incomplete':
         at=next(i for i,(a,d) in enumerate(segments) if a==c['STAGE'] and len(d)>8)
+        # A compressed first record may contain the entire fixture. Cut its
+        # last input byte while retaining the declared full block length.
+        a,d=segments[at]
+        count=int.from_bytes(d[4:6],'little')-1
+        segments[at]=(a,d[:4]+struct.pack('<H',count)+d[6:-1])
         segments=segments[:at+2]
     path=folder/'feedback.xex'
     path.write_bytes(b'\xff\xff'+b''.join(xex_segment(a,d) for a,d in segments))
@@ -269,7 +275,7 @@ start: jmp start
         b.boot(str(path))
         if failure=='bounds':
             b.bp_set(labels['loader_init']);run_to(b,labels['loader_init'],1000,30)
-            b.poke16(0x2e7,0x0801);b.bp_clear_all()
+            b.poke16(0x2e7,c['MEMLO_LIMIT']+1);b.bp_clear_all()
         target=labels['loader_done'] if failure else finish
         b.bp_set(labels['loader_start']);run_to(b,labels['loader_start'],3000,90)
         b.bp_clear_all()
@@ -311,7 +317,8 @@ def run(bundle,out,case='all'):
             report['cases'].append(check_image(out,record,program))
         if case in ('all','feedback'):
             for name,size,zero,failure in [('small',1,False,None),('exact',16384,False,None),
-                                         ('remainder',16385,False,None),('zero',16384,True,None),
+                                         ('remainder',16385,False,None),('block',32768,False,None),
+                                         ('zero',16384,True,None),
                                          ('bad-record',1024,False,'record'),
                                          ('incomplete',2048,False,'incomplete'),
                                          ('bounds',1,False,'bounds')]:

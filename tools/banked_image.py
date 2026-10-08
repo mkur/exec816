@@ -102,12 +102,28 @@ def manifest(image, memory):
     return header + identity + seed + descriptors, spans
 
 
-def records(spans, memory):
+def records(spans, memory, codec=None):
+    from lz4_block import LZ4
+    lz4 = codec or LZ4()
+    c = memory['constants']
+    chunk = c['CHUNK']
+    maximum = c['LZ4_BLOCK_BYTES']
     for index, (_, payload, size, flags, _) in enumerate(spans):
-        for offset in range(0, size, memory['constants']['CHUNK']):
-            count = min(size-offset, memory['constants']['CHUNK'])
-            yield struct.pack('<HHHBB', index, offset, count, flags, 0) + (
-                payload[offset:offset+count] if flags != 1 else b'')
+        for offset in range(0, size, maximum):
+            count = min(size-offset, maximum)
+            block = payload[offset:offset+count]
+            encoded = lz4.compress(block) if flags != 1 else b''
+            if flags != 1 and len(encoded)+c['LZ4_HEADER_BYTES'] < len(block):
+                wire = struct.pack('<HH', count, len(encoded)) + encoded
+                for at in range(0, len(wire), chunk):
+                    part = wire[at:at+chunk]
+                    yield struct.pack('<HHHBB', index, offset, len(part), flags,
+                                      c['ENCODING_LZ4_BEGIN'] if at == 0 else c['ENCODING_LZ4_CONTINUE']) + part
+            else:
+                for at in range(0, count, chunk):
+                    n = min(count-at, chunk)
+                    yield struct.pack('<HHHBB', index, offset+at, n, flags, c['ENCODING_RAW']) + (
+                        block[at:at+n] if flags != 1 else b'')
 
 
 def package(loader, manifest_bytes, spans, memory, labels, resident):
@@ -146,8 +162,10 @@ def split_setup(segments, memory, labels):
         address, record = payload[index]
         require(address == c['STAGE'] and len(record) >= 8 and payload[index+1] == init,
                 'Unexpected native payload destination/callback')
-        _, _, count, kind, reserved = struct.unpack('<HHHBB', record[:8])
-        require(0 < count <= c['CHUNK'] and kind in (0, 1, 2) and reserved == 0
+        _, _, count, kind, encoding = struct.unpack('<HHHBB', record[:8])
+        require(0 < count <= c['CHUNK'] and kind in (0, 1, 2)
+                and encoding in (c['ENCODING_RAW'],c['ENCODING_LZ4_BEGIN'],c['ENCODING_LZ4_CONTINUE'])
+                and (kind != 1 or encoding == c['ENCODING_RAW'])
                 and len(record) == (8 if kind == 1 else 8+count),
                 'Invalid native payload record')
     return prefix, payload
@@ -164,7 +182,7 @@ def emit(output, image, memory, labels, probe=False):
     (output / 'loader.cfg').write_text(
         f'MEMORY {{ RAM: start=${c["LOADER"]:x}, size=${c["LOADER_BYTES"]:x}, file=%O; }} '
         'SEGMENTS { LOADER: load=RAM, type=ro; }\n')
-    command(['ca65', '-I', output, '--bin-include-dir', output, '-D', f'LOADER_PROBE={int(probe)}',
+    command(['ca65', '-I', output, '-I', ROOT/'platform/altirraos', '--bin-include-dir', output, '-D', f'LOADER_PROBE={int(probe)}',
              '-l', output/'loader.lst', '-o', output/'loader.o', ROOT/'platform/altirraos/loader.s'])
     command(['ld65', '-C', output/'loader.cfg', '-o', output/'loader.bin',
              '-Ln', output/'loader.lbl', output/'loader.o'])
@@ -172,4 +190,18 @@ def emit(output, image, memory, labels, probe=False):
                      for line in (output/'loader.lbl').read_text().splitlines()}
     payload = package((output/'loader.bin').read_bytes(), manifest_bytes, spans, memory,
                       loader_labels, (output/'hosted.bin').read_bytes())
+    from lz4_block import LZ4
+    codec = LZ4()
+    wire = list(records(spans, memory, codec))
+    compression = dict(codec='LZ4-HC12', library_version=codec.version,
+        maximum_output_block_bytes=c['LZ4_BLOCK_BYTES'], streaming_input_bytes=c['CHUNK'],
+        input_scratch_upper_bytes=0, bank_zero_delta=dict(fixed=0,per_task=0),
+        expanded_payload_bytes=sum(len(p) for _,p,_,_,_ in spans),
+        compressed_output_bytes=sum(int.from_bytes(r[8:10],'little') for r in wire
+                                    if r[7] == c['ENCODING_LZ4_BEGIN']),
+        stored_payload_bytes=sum(len(r)-8 for r in wire), records=len(wire),
+        compressed_blocks=sum(r[7] == c['ENCODING_LZ4_BEGIN'] for r in wire),
+        loader_bytes=(output/'loader.bin').stat().st_size,
+        loader_capacity_bytes=c['LOADER_BYTES'])
+    (output/'boot-compression.json').write_text(json.dumps(compression,indent=2)+'\n')
     return payload, loader_labels

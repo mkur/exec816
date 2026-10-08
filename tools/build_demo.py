@@ -221,6 +221,53 @@ def refresh_monitor(output):
     return record
 
 
+def refresh_loader(output):
+    """Repack an unchanged native image with the current bootstrap and OF816."""
+    from banked_image import emit
+    from generate_memory import ABI, generate
+    output=output.resolve()
+    program=read_build(output)
+    record=json.loads((output/'demo-manifest.json').read_text())
+    require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
+            'Changed native demo artifacts')
+    require(sha256(output/'program.a816.json')==program['build']['image_sha256'],
+            'Changed resident image')
+    abi=json.loads(ABI.read_text())
+    memory=program['build']['memory']
+    # Only boot transport is changing. Reject a runtime ABI migration here.
+    require(all(memory['abi'][key]==value for key,value in abi.items()
+                if key not in ('record','compression')), 'Rebuild for changed runtime memory ABI')
+    memory['abi']=abi
+    c=memory['constants']
+    c.pop('RECORD_RESERVED',None)
+    c['RECORD_ENCODING']=abi['record']['encoding']
+    c.update(LZ4_BLOCK_BYTES=abi['compression']['block_bytes'],
+             LZ4_HEADER_BYTES=abi['compression']['header_size'])
+    c.update({f'ENCODING_{key}':value for key,value in abi['compression']['encodings'].items()})
+    c.update({f'LZ4_HEADER_{key.upper()}':value for key,value in abi['compression']['header_fields'].items()})
+    memory_hash=generate(output,memory)
+    payload,_=emit(output,program['image'],memory,program['labels'])
+    (output/'program.xex').write_bytes(payload)
+    native=program['build']
+    native.update(memory_sha256=memory_hash,xex_sha256=sha256(output/'program.xex'),
+        manifest_sha256=sha256(output/'manifest.bin'),
+        boot_compression=json.loads((output/'boot-compression.json').read_text()))
+    native['banked_inputs']={name:sha256(ROOT/name) for name in (
+        *native['banked_inputs'],'platform/altirraos/lz4.s','tools/lz4_block.py')}
+    native['generated_sha256']={name:sha256(output/name) for name in (
+        *native['generated_sha256'],'boot-compression.json')}
+    (output/'build.json').write_text(json.dumps(native,indent=2)+'\n')
+    record['kernel']=native
+    record['artifacts']['program.xex']=native['xex_sha256']
+    record['loader_refresh']=dict(native_image_sha256=native['image_sha256'],
+        compiler_revision=native['revision'],native_recompiled=False,
+        source_inputs={name:sha256(ROOT/name) for name in (
+            'tools/build_demo.py','tools/banked_image.py','tools/lz4_block.py',
+            'platform/altirraos/loader.s','platform/altirraos/lz4.s','abi/memory-v1.json')})
+    (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+    return refresh_monitor(output)
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
@@ -235,10 +282,15 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
     parser.add_argument('--text-shell-only',action='store_true',help='Autoboot OF816 into a full-screen standard shell without primes')
     parser.add_argument('--refresh-monitor',action='store_true',help='Refresh OF816 and the ZIP around an existing verified native demo')
+    parser.add_argument('--refresh-loader',action='store_true',help='Repack unchanged native code with the current loader, OF816 and ZIP')
     parser.add_argument('--cartridge-from',type=Path,help='Add Atarimax boot images to an existing demo ZIP without rebuilding its XEX')
     parser.add_argument('--cartridge-source-sha256',help='Required checksum of the existing demo ZIP')
     args=parser.parse_args()
-    if args.refresh_monitor:
+    if args.refresh_loader:
+        if args.refresh_monitor or args.cartridge_from or args.cartridge_source_sha256:
+            parser.error('--refresh-loader cannot be combined with other refresh modes')
+        refresh_loader(args.output)
+    elif args.refresh_monitor:
         if args.cartridge_from or args.cartridge_source_sha256:
             parser.error('--refresh-monitor cannot be combined with --cartridge-from')
         refresh_monitor(args.output)

@@ -1,0 +1,1354 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "branch": "experiment/boot-compression",
+  "kernel_revision": "e74c2b041ec7b57dd6573a633b90d957baddbb73",
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "native_recompiled": false,
+  "compiler_override": null,
+  "transport": {
+    "codec": "LZ4-HC12",
+    "maximum_output_block_bytes": 32768,
+    "staging_bytes": 1024,
+    "upper_input_scratch_bytes": 0,
+    "decoder_mode": "E=1, A8, I8",
+    "irq_nmi_masking": false
+  },
+  "library": {
+    "version": "1.10.0",
+    "path": "/opt/homebrew/Cellar/lz4/1.10.0/lib/liblz4.1.10.0.dylib",
+    "sha256": "89e0661526f0fe42f9de908701278015f9132722bc923c5b351434a0cc6b6e01"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "runtime_payload_ram_delta": 0,
+  "loader_code_bytes_delta": 1028,
+  "loader_capacity_bytes": 4608,
+  "qualification": "Development checks only; no full release matrix, physical hardware or physical SIO boot timing.",
+  "sources": {
+    "abi/memory-v1.json": "171d5f4e9968d641554ac4b69108afc0a0e6830d24104926e93f84b409b7bd20",
+    "platform/altirraos/loader.s": "75699d3b503dd6de73f47cef07e980c7d37b23f287a9c6bfa410f8af766df13c",
+    "platform/altirraos/lz4.s": "9b60c11f69bf9d5aa9fe8d8cd9a311c4b923756e79b3e59bdc070ee5953243da",
+    "tools/banked_image.py": "077095041884acb338114347ccacc48c8532dbcaaf95613a7ed7c054ea505d1e",
+    "tools/build_demo.py": "5c223c9e8d35f97b9df9ca85645c5ab7740a1ea2eb20f1c7ecd5cbc3a5ce3642",
+    "tools/generate_memory.py": "4c1c794d74ae8f661d3e21aa396c4bcf6da111e6d7fe7f9b9eb15997a9204c0b",
+    "tools/lz4_block.py": "8e5dee1d46ead94a366a6835e5b83edb4c517274172c91e8bfe319d4158d8ddf",
+    "tools/measure_loader_compression.py": "536f0019adb3e99cd5228168e627d4175c46b353f51feb8ce371fe6dfe64c9cf",
+    "tools/native_program.py": "30293b9c245941f02286eef79fd659ce8398a7076649d8699ecaea4a4add23cd",
+    "tools/test_loader_compression.py": "2385b201aec8a5820ef8b3634514f3aeb297606d268818a67a6b5ad12620b080",
+    "tools/test_of816_loading.py": "4a247e583d57ec2d3dc30159ca474e7b2ebe9ac920c6161d1be97d4457ac1cae",
+    "tools/test_demo.py": "4e0e3858913d874bb4d8caac59e07115a7770d702c0b0d2ca442a86b9bd4f4f5"
+  },
+  "host": {
+    "status": "pass",
+    "tests": 400,
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "log": "build/compressed-loader/host-checks.log",
+    "log_sha256": "bb418be80cb89bf4ad84488f35566fceebb9bc056d44f7e31899af6a980a83e0"
+  },
+  "images": [
+    {
+      "variant": "standard",
+      "build_path": "build/compressed-loader/standard",
+      "native_image_sha256": "ca0d7019de1c2983b5fb357bb1146ef02e46d7fe89f55aa96e5e8660acf799da",
+      "original_xex_bytes": 903505,
+      "original_xex_sha256": "8d5b0f956508bcd7333fdfdc6945415843f3ab44960725a9f1ec01c6e623a36d",
+      "original_loader_bytes": 1674,
+      "compression": {
+        "codec": "LZ4-HC12",
+        "library_version": "1.10.0",
+        "maximum_output_block_bytes": 32768,
+        "streaming_input_bytes": 1024,
+        "input_scratch_upper_bytes": 0,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "expanded_payload_bytes": 856575,
+        "compressed_output_bytes": 856479,
+        "stored_payload_bytes": 276107,
+        "records": 307,
+        "compressed_blocks": 40,
+        "loader_bytes": 2702,
+        "loader_capacity_bytes": 4608
+      },
+      "measurements": [
+        {
+          "result_path": "build/compressed-loader/standard-timing/8x/results.json",
+          "result_sha256": "2185ae5f07475cf5c6aa595a4fb392516b0ec6e7b1266d974b6ba703b11c2c4f",
+          "trace_sha256": "e8ae4718467ca95677ffe1ecffb68da6cbf955587b224f708c86e5583fb89c13",
+          "status": "pass",
+          "tier": "development",
+          "clock_multiplier": 8,
+          "nominal_cpu_hz": 14187580.0,
+          "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true
+          },
+          "image_sha256": "ca0d7019de1c2983b5fb357bb1146ef02e46d7fe89f55aa96e5e8660acf799da",
+          "xex_sha256": "475eb111e13a2c347aafc0aa8ba70e8e28d617a696e4f2343b101dc1450d0dbd",
+          "xex_bytes": 314057,
+          "loader_sha256": "838adca587b69aac01b3300bdf4220261525a2938417bbcbbcfeab06051a5626",
+          "compression": {
+            "codec": "LZ4-HC12",
+            "library_version": "1.10.0",
+            "maximum_output_block_bytes": 32768,
+            "streaming_input_bytes": 1024,
+            "input_scratch_upper_bytes": 0,
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            },
+            "expanded_payload_bytes": 856575,
+            "compressed_output_bytes": 856479,
+            "stored_payload_bytes": 276107,
+            "records": 307,
+            "compressed_blocks": 40,
+            "loader_bytes": 2702,
+            "loader_capacity_bytes": 4608
+          },
+          "verification": {
+            "extents": [
+              {
+                "address": 70400,
+                "bytes": 6,
+                "kind": 1,
+                "sha256": "b0f66adc83641586656866813fd9dd0b8ebb63796075661ba45d1aa8089e1d44"
+              },
+              {
+                "address": 70406,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "6e5e53fd61ebabb12db9be1279a4c22463ae38374b59e30806ca78860c84ec29"
+              },
+              {
+                "address": 70428,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "3b1765ae7825547ab9491611e580849095467590ec3be2a82b461b05571edb8d"
+              },
+              {
+                "address": 70450,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "359c056b13d87a58f4347663f4e5f945218b8eef4a0b7966ecb8e0113550d427"
+              },
+              {
+                "address": 70471,
+                "bytes": 6,
+                "kind": 1,
+                "sha256": "b0f66adc83641586656866813fd9dd0b8ebb63796075661ba45d1aa8089e1d44"
+              },
+              {
+                "address": 70478,
+                "bytes": 19,
+                "kind": 1,
+                "sha256": "d6fd62f5ce537d90ea3ea45841b17f34d727bcbc4128748cba14fb87c0ffd9d1"
+              },
+              {
+                "address": 70498,
+                "bytes": 109,
+                "kind": 1,
+                "sha256": "b58a85e1f384420431f8db86e05ec571dfc7870195ea1b05b8a5fe1b8143f634"
+              },
+              {
+                "address": 70608,
+                "bytes": 39,
+                "kind": 1,
+                "sha256": "94c11ed3c3c73016adb92416352678e169cbe47bb48bc27e5e9d466115b06252"
+              },
+              {
+                "address": 70648,
+                "bytes": 19,
+                "kind": 0,
+                "sha256": "25bf89dc45e538dda0827bcd8bfad0dc6aea9fe13687dd4070ae85de77493d57"
+              },
+              {
+                "address": 70668,
+                "bytes": 19,
+                "kind": 0,
+                "sha256": "7d098b5f765a38959d0b4fca85727cd54c1f8147f70dce2d060850b7ad49da4d"
+              },
+              {
+                "address": 70688,
+                "bytes": 356,
+                "kind": 1,
+                "sha256": "0b449271fd1144706bf5906e35493614c6a9bacc6c4ac786e1ab8f8268f9ea0c"
+              },
+              {
+                "address": 71044,
+                "bytes": 549,
+                "kind": 0,
+                "sha256": "ec69fc417966b5a99ddace4ced965dcb2b383b5aa5a976a428958d664ed77b29"
+              },
+              {
+                "address": 71594,
+                "bytes": 24,
+                "kind": 1,
+                "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+              },
+              {
+                "address": 71618,
+                "bytes": 16,
+                "kind": 0,
+                "sha256": "2522c3a13156c4b185f0c0d26cba340f36deb980101ba12c8790e24d5bdce358"
+              },
+              {
+                "address": 71634,
+                "bytes": 4,
+                "kind": 1,
+                "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+              },
+              {
+                "address": 71638,
+                "bytes": 2121,
+                "kind": 0,
+                "sha256": "e548440a3712825e2035c10aebf257115e178826f6d77edf0c232ad2653392f4"
+              },
+              {
+                "address": 74496,
+                "bytes": 56402,
+                "kind": 2,
+                "sha256": "4fff7a4c571bacd36463bd5cae6927332ee6d2546d99bc0359e5925165e27f69"
+              },
+              {
+                "address": 131072,
+                "bytes": 65465,
+                "kind": 2,
+                "sha256": "98dd0e3f8b7720be6c6ce8bcc412c0dd9c1f9cac18fa28fe754a93ff5fb1454f"
+              },
+              {
+                "address": 196608,
+                "bytes": 64470,
+                "kind": 2,
+                "sha256": "8852ff8161b4bc4f9b809f2e61f0404a3a816049c08bec8d04b6f34e7e0ea346"
+              },
+              {
+                "address": 262144,
+                "bytes": 65220,
+                "kind": 2,
+                "sha256": "06e427389f51b20c1d8e270903b8097a8ed22e83bd27674a79f6187a3fcb6552"
+              },
+              {
+                "address": 327680,
+                "bytes": 65076,
+                "kind": 2,
+                "sha256": "8a43b5877970f2c6d1af033b3cff9fffc9071ba152f623aaf321c5711843eb97"
+              },
+              {
+                "address": 393216,
+                "bytes": 64286,
+                "kind": 2,
+                "sha256": "9f043ae02bf1b534328397f6be9547fda0bec8e1de2c839ef23d0d546b932bac"
+              },
+              {
+                "address": 458752,
+                "bytes": 64679,
+                "kind": 2,
+                "sha256": "21a60ab075e524a459f9407e3c7656960b953ee8cd66a3416d2e69084e839d2d"
+              },
+              {
+                "address": 524288,
+                "bytes": 65140,
+                "kind": 2,
+                "sha256": "1f3a300f4ee2bc583a128180fca83b5e13b51eeec0cb1a91a07d808635103a1f"
+              },
+              {
+                "address": 589824,
+                "bytes": 64974,
+                "kind": 2,
+                "sha256": "469e79e789bee5d5c29bf18fc42dc51be744c806a875f52f85796db8ffb84bca"
+              },
+              {
+                "address": 655360,
+                "bytes": 64851,
+                "kind": 2,
+                "sha256": "8b8832128f51c566fc95d7a4a2399a583d3c6cbb4a6459b6f406d76fb7a0d925"
+              },
+              {
+                "address": 720896,
+                "bytes": 65477,
+                "kind": 2,
+                "sha256": "61db23a807211105d2ca194bde1b558ac21ae777c69117aa4d983bd4d2bba074"
+              },
+              {
+                "address": 786432,
+                "bytes": 65281,
+                "kind": 2,
+                "sha256": "0461feee46b67ef0190c354f933a710e076667e9b6caebc3bf6d62ba984f1404"
+              },
+              {
+                "address": 851968,
+                "bytes": 60686,
+                "kind": 2,
+                "sha256": "1270bb98b330a83d2b1101b7973aa75e2606c10b69b1c4600009f4199ceaf0b8"
+              },
+              {
+                "address": 4128768,
+                "bytes": 1280,
+                "kind": 0,
+                "sha256": "1615c57d2759c509159075a404eca4cc5e33489274bbada25f0418a64d094939"
+              },
+              {
+                "address": 4130816,
+                "bytes": 394,
+                "kind": 0,
+                "sha256": "b1b57c9d4226077f98d138ced0a69fea82aef2e0ee95e19d37dfa7dc1c3610b3"
+              },
+              {
+                "address": 4132400,
+                "bytes": 292,
+                "kind": 0,
+                "sha256": "11f7278ae47e15fc917f3a6c0c15941c859ecb1325baa5a5b2882338db37755b"
+              },
+              {
+                "address": 4132864,
+                "bytes": 12012,
+                "kind": 2,
+                "sha256": "9e17703d959fe17353afc8708f1d84f6c134a133f4e336ef9074f3c0c9ac64dd"
+              },
+              {
+                "address": 4145152,
+                "bytes": 1521,
+                "kind": 0,
+                "sha256": "991b5f18fb18b217cdc0ed5c50ea2cac4ad629a5256ebe34a276481d8495b768"
+              },
+              {
+                "address": 4146816,
+                "bytes": 144,
+                "kind": 0,
+                "sha256": "81c611f35bff79491538b2f7cf201c7597a661a5c549633541c62bdc8af1613f"
+              },
+              {
+                "address": 4147200,
+                "bytes": 1536,
+                "kind": 0,
+                "sha256": "4db6fb3464177c6c06db1792671edc2bf9e30df056ca6a713265c45ac710aac3"
+              },
+              {
+                "address": 4149248,
+                "bytes": 619,
+                "kind": 2,
+                "sha256": "d877db81439ca5120e2139ee1e529c8976dd39d8edde52b61432efa1130a6ab8"
+              },
+              {
+                "address": 4151296,
+                "bytes": 768,
+                "kind": 0,
+                "sha256": "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8"
+              },
+              {
+                "address": 4153344,
+                "bytes": 2999,
+                "kind": 2,
+                "sha256": "2e799825555ecf6fa852508c77eec06cf35dd23b377c64929fc98fcb5c9e78a5"
+              },
+              {
+                "address": 4156344,
+                "bytes": 216,
+                "kind": 0,
+                "sha256": "c3039a7fc749a8b3f08bc5171dac17fc0284d7c59d6a57bb1b200e874cc4bd76"
+              }
+            ],
+            "bytes": 857138,
+            "diagnostic_scratch": {
+              "loader_bytes": 512,
+              "staging_bytes": 1024,
+              "restored": true,
+              "extra_reservations": 0
+            }
+          },
+          "timing": {
+            "decoder_calls": 294,
+            "decoder_ms": 4382.309456581038,
+            "native_loading_phase_ms": 4403.361813642638,
+            "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+            "payload_kib_per_second": 190.85947300719408
+          }
+        },
+        {
+          "result_path": "build/compressed-loader/standard-timing/1x/results.json",
+          "result_sha256": "e7ae39d77078ebb4158186d4c1efa3b931e5478806675a42fb0249b5a4d49692",
+          "trace_sha256": "5c7455bf7fb566e2c6d8278f2dab3e5e884b97230da88d96db6199bfbdde6828",
+          "status": "pass",
+          "tier": "development",
+          "clock_multiplier": 1,
+          "nominal_cpu_hz": 1773447.5,
+          "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 1,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true
+          },
+          "image_sha256": "ca0d7019de1c2983b5fb357bb1146ef02e46d7fe89f55aa96e5e8660acf799da",
+          "xex_sha256": "475eb111e13a2c347aafc0aa8ba70e8e28d617a696e4f2343b101dc1450d0dbd",
+          "xex_bytes": 314057,
+          "loader_sha256": "838adca587b69aac01b3300bdf4220261525a2938417bbcbbcfeab06051a5626",
+          "compression": {
+            "codec": "LZ4-HC12",
+            "library_version": "1.10.0",
+            "maximum_output_block_bytes": 32768,
+            "streaming_input_bytes": 1024,
+            "input_scratch_upper_bytes": 0,
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            },
+            "expanded_payload_bytes": 856575,
+            "compressed_output_bytes": 856479,
+            "stored_payload_bytes": 276107,
+            "records": 307,
+            "compressed_blocks": 40,
+            "loader_bytes": 2702,
+            "loader_capacity_bytes": 4608
+          },
+          "verification": {
+            "scope": "No repeated snapshot"
+          },
+          "timing": {
+            "decoder_calls": 294,
+            "decoder_ms": 50726.281437708196,
+            "native_loading_phase_ms": 50965.2115441816,
+            "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+            "payload_kib_per_second": 16.488598212439534
+          }
+        }
+      ],
+      "xex_smoke": {
+        "result_path": "build/compressed-loader/standard/demo-results.json",
+        "result_sha256": "1600d0e2d073dd81c262317fae0e60b74f2bbcbf091d09142032790ff3cb5ec1",
+        "status": "pass",
+        "tier": "development",
+        "boot_xex_sha256": "4ee9176cddfbdc1f49c672b10f2122d82256ad3b0979bd770fdf9e292c7bb44a",
+        "native_xex_sha256": "c1a6ded6bd06b4d46e039e93fc21d270f547ca7dc657d2f6b0a008d11d75fba3",
+        "autoboot_frames": 249,
+        "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+        "rom": {
+          "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "override": false
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "os_exit_status": 0,
+        "runtime_guards": "intact",
+        "live_tasks_on_exit": 0,
+        "retired_manifest_intact": false,
+        "aperture_intact": false,
+        "runner_sha256": "4e0e3858913d874bb4d8caac59e07115a7770d702c0b0d2ca442a86b9bd4f4f5"
+      },
+      "cartridge": {
+        "result_path": "build/compressed-loader/standard-cart-check/results.json",
+        "result_sha256": "7acd089502b24c7bc1603164a33918eedd277ef2d84ea9da92b2b427d4c1b808",
+        "status": "pass",
+        "variant": "old",
+        "route": "autoboot",
+        "cartridge_sha256": "89476daaf68aee873a8a08e04a6a320d96750dbb308d6c5aaa8c6e9fd7b68bde",
+        "input_xex_sha256": "475eb111e13a2c347aafc0aa8ba70e8e28d617a696e4f2343b101dc1450d0dbd",
+        "xex_bytes": 314057,
+        "loader_callbacks": 396,
+        "autoboot_frames": 249,
+        "of816_guards": "intact",
+        "os_restored_at_handoff": true,
+        "os_exit_status": 0,
+        "runtime_guards": "intact",
+        "live_tasks_on_exit": 0
+      },
+      "tested_distribution": {
+        "path": "build/compressed-loader/standard-cartridge/exec816-demo.zip",
+        "sha256": "49f2902c6ff17469cd09d69f06e41b02e0edc02ff2d7eb43a0c4261faec8ffad",
+        "bytes": 1069960
+      }
+    },
+    {
+      "variant": "vbxe",
+      "build_path": "build/compressed-loader/vbxe",
+      "native_image_sha256": "11726bfcca603c7af1369e83c372da00ecadf8757c33946156d947a31dc5509e",
+      "original_xex_bytes": 947374,
+      "original_xex_sha256": "12c62e4ed9dc6439eacd06afa33cb66850dd6931b1a6e677002860dd6c0a786c",
+      "original_loader_bytes": 1706,
+      "compression": {
+        "codec": "LZ4-HC12",
+        "library_version": "1.10.0",
+        "maximum_output_block_bytes": 32768,
+        "streaming_input_bytes": 1024,
+        "input_scratch_upper_bytes": 0,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "expanded_payload_bytes": 899390,
+        "compressed_output_bytes": 899276,
+        "stored_payload_bytes": 300788,
+        "records": 342,
+        "compressed_blocks": 43,
+        "loader_bytes": 2734,
+        "loader_capacity_bytes": 4608
+      },
+      "measurements": [
+        {
+          "result_path": "build/compressed-loader/vbxe-timing/8x/results.json",
+          "result_sha256": "ec9f6312808332215d425bec4c84a677823dc8e72bc54822e34f1666019965c5",
+          "trace_sha256": "13b60a237ff9cbe464bc48ce251856d3498c02a6646a4afcda8c68695c2c198b",
+          "status": "pass",
+          "tier": "development",
+          "clock_multiplier": 8,
+          "nominal_cpu_hz": 14187580.0,
+          "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 8,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "image_sha256": "11726bfcca603c7af1369e83c372da00ecadf8757c33946156d947a31dc5509e",
+          "xex_sha256": "ad7c0580e4bcada27dc991bdf444a987fb48c5cae30ffc55314b9cd0643d7a27",
+          "xex_bytes": 339432,
+          "loader_sha256": "491e66607bbc00a0b44ede66e50e90b068d9b36a080d7f844c847725b228f4ac",
+          "compression": {
+            "codec": "LZ4-HC12",
+            "library_version": "1.10.0",
+            "maximum_output_block_bytes": 32768,
+            "streaming_input_bytes": 1024,
+            "input_scratch_upper_bytes": 0,
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            },
+            "expanded_payload_bytes": 899390,
+            "compressed_output_bytes": 899276,
+            "stored_payload_bytes": 300788,
+            "records": 342,
+            "compressed_blocks": 43,
+            "loader_bytes": 2734,
+            "loader_capacity_bytes": 4608
+          },
+          "verification": {
+            "extents": [
+              {
+                "address": 70400,
+                "bytes": 6,
+                "kind": 1,
+                "sha256": "b0f66adc83641586656866813fd9dd0b8ebb63796075661ba45d1aa8089e1d44"
+              },
+              {
+                "address": 70406,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "6e5e53fd61ebabb12db9be1279a4c22463ae38374b59e30806ca78860c84ec29"
+              },
+              {
+                "address": 70428,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "3b1765ae7825547ab9491611e580849095467590ec3be2a82b461b05571edb8d"
+              },
+              {
+                "address": 70450,
+                "bytes": 21,
+                "kind": 0,
+                "sha256": "359c056b13d87a58f4347663f4e5f945218b8eef4a0b7966ecb8e0113550d427"
+              },
+              {
+                "address": 70472,
+                "bytes": 19,
+                "kind": 0,
+                "sha256": "45fc7843ed7ea592f0f27a234ba0e87c514e2c64d40be13c2cf73c7b0518f52e"
+              },
+              {
+                "address": 70492,
+                "bytes": 19,
+                "kind": 0,
+                "sha256": "7ae83e2b3975c583186cbaa016aca398bce85f162fb03f34ae28fdffe0c45c1e"
+              },
+              {
+                "address": 70511,
+                "bytes": 28,
+                "kind": 1,
+                "sha256": "3addfb141cd7c9c4c6543a82191a3707ac29c7a041217782e61d4d91c691aee8"
+              },
+              {
+                "address": 70540,
+                "bytes": 109,
+                "kind": 1,
+                "sha256": "b58a85e1f384420431f8db86e05ec571dfc7870195ea1b05b8a5fe1b8143f634"
+              },
+              {
+                "address": 70650,
+                "bytes": 39,
+                "kind": 1,
+                "sha256": "94c11ed3c3c73016adb92416352678e169cbe47bb48bc27e5e9d466115b06252"
+              },
+              {
+                "address": 70690,
+                "bytes": 277,
+                "kind": 1,
+                "sha256": "5cdcd733b8b630509bac08589db291ddbde33d79f64664cb9582e66589555257"
+              },
+              {
+                "address": 70968,
+                "bytes": 85,
+                "kind": 1,
+                "sha256": "6a3a9301bb8dd782bb5c170bedfa73e9e7c60235e6e1840f14bd14b812127ef2"
+              },
+              {
+                "address": 71053,
+                "bytes": 18,
+                "kind": 0,
+                "sha256": "8501f17d46132d1417e6613709a9fe7cf649198625ad155090d2c9ac82cfb9f5"
+              },
+              {
+                "address": 71072,
+                "bytes": 531,
+                "kind": 0,
+                "sha256": "2758d0a5acac1c0d3afe88e8a10b9176a348dba956a933de59be3f27017cef34"
+              },
+              {
+                "address": 71604,
+                "bytes": 24,
+                "kind": 1,
+                "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+              },
+              {
+                "address": 71628,
+                "bytes": 16,
+                "kind": 0,
+                "sha256": "2522c3a13156c4b185f0c0d26cba340f36deb980101ba12c8790e24d5bdce358"
+              },
+              {
+                "address": 71644,
+                "bytes": 4,
+                "kind": 1,
+                "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+              },
+              {
+                "address": 71648,
+                "bytes": 2121,
+                "kind": 0,
+                "sha256": "e548440a3712825e2035c10aebf257115e178826f6d77edf0c232ad2653392f4"
+              },
+              {
+                "address": 786432,
+                "bytes": 35123,
+                "kind": 2,
+                "sha256": "a00414abd0ff578f90376e2b33269a85109ad8111dd402b097e40a4fc7b88ebc"
+              },
+              {
+                "address": 851968,
+                "bytes": 3341,
+                "kind": 0,
+                "sha256": "c4bb83b0b501a4cc5e75a30ffad7999ea4309253708a12ec89ea383110a145b5"
+              },
+              {
+                "address": 855310,
+                "bytes": 9743,
+                "kind": 1,
+                "sha256": "be1384dcd0e45628d9b0cac0d5f97061191cdf8c111cae25c98ed23ef5ccc734"
+              },
+              {
+                "address": 917504,
+                "bytes": 65069,
+                "kind": 2,
+                "sha256": "b290d0394c1b288721af900e5996c8961118e59b6179fde0365eb690a72443ee"
+              },
+              {
+                "address": 983040,
+                "bytes": 64568,
+                "kind": 2,
+                "sha256": "81fa0f6086c57858477a2f06f60beb35a3d8a90c1f2be8800c7052638ef4ee5e"
+              },
+              {
+                "address": 1048576,
+                "bytes": 65497,
+                "kind": 2,
+                "sha256": "357bc341236ce01937f351296a676665bcf17319488d1459263e5c63dad13540"
+              },
+              {
+                "address": 1114112,
+                "bytes": 64717,
+                "kind": 2,
+                "sha256": "a16c380c0ab2ecf3aada21de4dccffe80d5e790cc79f7709c57ba9c7233b5378"
+              },
+              {
+                "address": 1179648,
+                "bytes": 59488,
+                "kind": 2,
+                "sha256": "74d637f62c8a69fed2c0c1dc8518f8ebdb96e53a33cc9c8dc94b999a8f750a82"
+              },
+              {
+                "address": 1245184,
+                "bytes": 65112,
+                "kind": 2,
+                "sha256": "85d3be4e56ef58ca7c5cf3c476b2f3d7385b9aec651c0d86c0b7f4570e5df671"
+              },
+              {
+                "address": 1310720,
+                "bytes": 65133,
+                "kind": 2,
+                "sha256": "4db47d23ce8ae3e6693609d4737919194a5a95397e393f3702294138cb62c603"
+              },
+              {
+                "address": 1376256,
+                "bytes": 65207,
+                "kind": 2,
+                "sha256": "e03f05e2e9cef17171c519a097d4d80bf72705438a66fd53d4a07509ba220923"
+              },
+              {
+                "address": 1441792,
+                "bytes": 64605,
+                "kind": 2,
+                "sha256": "444283c8fa3bc27450411f5c967052e19f63645a15bc948854c759fe5d798dda"
+              },
+              {
+                "address": 1507328,
+                "bytes": 65115,
+                "kind": 2,
+                "sha256": "10ad0ef2995ad51eda3a4269f4e518293744eb592314b250ec47f5e37e506c84"
+              },
+              {
+                "address": 1572864,
+                "bytes": 65512,
+                "kind": 2,
+                "sha256": "b21d2545c7e9aeb0f847341feae5c079d22fa3fcef2f0db554e8c8b818b8be74"
+              },
+              {
+                "address": 1638400,
+                "bytes": 65399,
+                "kind": 2,
+                "sha256": "f4b0e523863506802468f5153284191a9cd6419ee5771bf34a640f72475bd361"
+              },
+              {
+                "address": 1703936,
+                "bytes": 60912,
+                "kind": 2,
+                "sha256": "e191803d2e37772b65cf3dddcc5ee3c83fc77019a7c4451a0ace0a5a06a435cf"
+              },
+              {
+                "address": 4128768,
+                "bytes": 1280,
+                "kind": 0,
+                "sha256": "fdaaebb1286c6d202116f63c86da2d6cf3be1950230c9d9a15d67fa47eb551dc"
+              },
+              {
+                "address": 4130816,
+                "bytes": 394,
+                "kind": 0,
+                "sha256": "2461110ad32ad7011fa6f981276a7b9f1ff0736d548cf97a8b78f33b36693820"
+              },
+              {
+                "address": 4132400,
+                "bytes": 292,
+                "kind": 0,
+                "sha256": "11f7278ae47e15fc917f3a6c0c15941c859ecb1325baa5a5b2882338db37755b"
+              },
+              {
+                "address": 4132864,
+                "bytes": 12012,
+                "kind": 2,
+                "sha256": "227d617e653d152932d8a90d8313b6db9f11a52f3c72c3004404326b2c48669e"
+              },
+              {
+                "address": 4145152,
+                "bytes": 1521,
+                "kind": 0,
+                "sha256": "a073f6191a67dd0ab1462c83c7954d555bfe56299a9aa7b6f27a2274781f19bf"
+              },
+              {
+                "address": 4146816,
+                "bytes": 144,
+                "kind": 0,
+                "sha256": "81c611f35bff79491538b2f7cf201c7597a661a5c549633541c62bdc8af1613f"
+              },
+              {
+                "address": 4147200,
+                "bytes": 1536,
+                "kind": 0,
+                "sha256": "4db6fb3464177c6c06db1792671edc2bf9e30df056ca6a713265c45ac710aac3"
+              },
+              {
+                "address": 4149248,
+                "bytes": 619,
+                "kind": 2,
+                "sha256": "d877db81439ca5120e2139ee1e529c8976dd39d8edde52b61432efa1130a6ab8"
+              },
+              {
+                "address": 4151296,
+                "bytes": 768,
+                "kind": 0,
+                "sha256": "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8"
+              },
+              {
+                "address": 4153344,
+                "bytes": 2999,
+                "kind": 2,
+                "sha256": "2e799825555ecf6fa852508c77eec06cf35dd23b377c64929fc98fcb5c9e78a5"
+              },
+              {
+                "address": 4156344,
+                "bytes": 240,
+                "kind": 0,
+                "sha256": "58499e25ecc266f02b354b108bb1846a8d48f08e38c7ae45997e41030d4964f5"
+              }
+            ],
+            "bytes": 909705,
+            "diagnostic_scratch": {
+              "loader_bytes": 512,
+              "staging_bytes": 1024,
+              "restored": true,
+              "extra_reservations": 0
+            }
+          },
+          "timing": {
+            "decoder_calls": 318,
+            "decoder_ms": 4678.5850722956275,
+            "native_loading_phase_ms": 4751.642704393561,
+            "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+            "payload_kib_per_second": 187.70615585260623
+          }
+        },
+        {
+          "result_path": "build/compressed-loader/vbxe-timing/1x/results.json",
+          "result_sha256": "48a0cd7a7d99dfef33d39f4ff8e4e7d11b84143a50e61261e71783ad59e38e62",
+          "trace_sha256": "b4468e6248ee58457dac09a228c071a4e738e048dfd8a1186bec9598673f9463",
+          "status": "pass",
+          "tier": "development",
+          "clock_multiplier": 1,
+          "nominal_cpu_hz": 1773447.5,
+          "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "machine": {
+            "model": "800XL",
+            "cpu": "65C816",
+            "clock_multiplier": 1,
+            "memory": "64K",
+            "high_banks": 63,
+            "video": "PAL",
+            "basic": false,
+            "dli": false,
+            "shadow_rom": true,
+            "addons": "custom"
+          },
+          "image_sha256": "11726bfcca603c7af1369e83c372da00ecadf8757c33946156d947a31dc5509e",
+          "xex_sha256": "ad7c0580e4bcada27dc991bdf444a987fb48c5cae30ffc55314b9cd0643d7a27",
+          "xex_bytes": 339432,
+          "loader_sha256": "491e66607bbc00a0b44ede66e50e90b068d9b36a080d7f844c847725b228f4ac",
+          "compression": {
+            "codec": "LZ4-HC12",
+            "library_version": "1.10.0",
+            "maximum_output_block_bytes": 32768,
+            "streaming_input_bytes": 1024,
+            "input_scratch_upper_bytes": 0,
+            "bank_zero_delta": {
+              "fixed": 0,
+              "per_task": 0
+            },
+            "expanded_payload_bytes": 899390,
+            "compressed_output_bytes": 899276,
+            "stored_payload_bytes": 300788,
+            "records": 342,
+            "compressed_blocks": 43,
+            "loader_bytes": 2734,
+            "loader_capacity_bytes": 4608
+          },
+          "verification": {
+            "scope": "No repeated snapshot"
+          },
+          "timing": {
+            "decoder_calls": 318,
+            "decoder_ms": 54143.10714018881,
+            "native_loading_phase_ms": 54995.07541102851,
+            "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+            "payload_kib_per_second": 16.21996344753807
+          }
+        }
+      ],
+      "xex_smoke": {
+        "result_path": "build/compressed-loader/vbxe/demo-results.json",
+        "result_sha256": "500c0620f88caac9097bea496887b5010eb6be3237d914989f0d8b493ffcefca",
+        "status": "pass",
+        "tier": "development",
+        "boot_xex_sha256": "ad7c0580e4bcada27dc991bdf444a987fb48c5cae30ffc55314b9cd0643d7a27",
+        "native_xex_sha256": "ff055bdeaf02a9da4537c88b75da93e8946e330d2740f831d5f60808a98fae82",
+        "autoboot_frames": 249,
+        "scope": "Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT",
+        "rom": {
+          "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "override": false
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "os_exit_status": 0,
+        "runtime_guards": "intact",
+        "live_tasks_on_exit": 0,
+        "retired_manifest_intact": false,
+        "aperture_intact": false,
+        "runner_sha256": "4e0e3858913d874bb4d8caac59e07115a7770d702c0b0d2ca442a86b9bd4f4f5"
+      },
+      "cartridge": {
+        "result_path": "build/compressed-loader/vbxe-cart-check/results.json",
+        "result_sha256": "175fe6fda99e3fa42e84a763e36841680ac720a753271053b628fc23f1c98292",
+        "status": "pass",
+        "variant": "new",
+        "route": "autoboot",
+        "cartridge_sha256": "70f2d4b74d20b6f6a68a3e508a95b02a84bbab61f10ffe51b95b4905a45fa56b",
+        "input_xex_sha256": "ad7c0580e4bcada27dc991bdf444a987fb48c5cae30ffc55314b9cd0643d7a27",
+        "xex_bytes": 339432,
+        "loader_callbacks": 431,
+        "autoboot_frames": 249,
+        "of816_guards": "intact",
+        "os_restored_at_handoff": true,
+        "os_exit_status": 0,
+        "runtime_guards": "intact",
+        "live_tasks_on_exit": 0
+      },
+      "tested_distribution": {
+        "path": "build/compressed-loader/vbxe-cartridge/exec816-demo.zip",
+        "sha256": "e616790cf160837d2d332198a1b654dfbc3c8e9df9507437a16de4bd50b2b07d",
+        "bytes": 1178853
+      }
+    }
+  ],
+  "native_checks": [
+    {
+      "path": "build/compressed-loader/native-cases/results.json",
+      "sha256": "520660a1b37b5746613580b5018c20c591e346d2b84bb931ba8522c34693b988",
+      "observer_sha256": "2385b201aec8a5820ef8b3634514f3aeb297606d268818a67a6b5ad12620b080",
+      "cases": [
+        {
+          "name": "maximum",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 32768,
+          "xex_sha256": "f6a394af92cc1f4c9fcef38b7968ecb066c36e3d2291c36b8504b2836718e4a1",
+          "guards": "intact"
+        },
+        {
+          "name": "continuations",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 24576,
+          "xex_sha256": "b599e2c02ead75233cb2c854db73e6f1a9b5b5fb8b611c5eff07ca0031ec2b47",
+          "guards": "intact"
+        },
+        {
+          "name": "byte-fragments",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 2284,
+          "xex_sha256": "ea127c0252fb92bf29a7c6823a467c7866bc816ac72b6deaaba25cafe3f42c0d",
+          "guards": "intact"
+        },
+        {
+          "name": "bank-boundary",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 12288,
+          "xex_sha256": "d6eb34a0ff0de407278327e4fa55fb49c8c07cb3934cc76a5999836bbdfbd54c",
+          "guards": "intact"
+        },
+        {
+          "name": "raw-fallback",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 64,
+          "xex_sha256": "298c153738590fd2b7587813cc055c135ae58f41bf425399b8b089008386f263",
+          "guards": "intact"
+        },
+        {
+          "name": "zero-offset",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "511ba606bac5dae775e0a85e719afbce85092ad7a629a34440448a8c75983345",
+          "guards": "intact"
+        },
+        {
+          "name": "offset-before-output",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "0344180bb5dad70a91bda449c8aaa64e2429dbc0882c3980e973b41f26d6719e",
+          "guards": "intact"
+        },
+        {
+          "name": "output-overrun",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "22e4f88070230901713b665a895473a3ba013590022ab92e06e1b4ef6a802c0a",
+          "guards": "intact"
+        },
+        {
+          "name": "length-overflow",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "e0d8d54f33fbe896bf91e23ead967779fdaec511befe7a3c4608a02b4a8a352b",
+          "guards": "intact"
+        },
+        {
+          "name": "missing-final-literals",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "14e0bc34eade3c5fc7250245d41ed3d52b0bfeb52f121888ee7f523bb799c6c8",
+          "guards": "intact"
+        },
+        {
+          "name": "orphan-continuation",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "4295a6f6f183d79e2f09a76f81950b31e8cd5d1c100f8fc1bc1878a73387d4e5",
+          "guards": "intact"
+        },
+        {
+          "name": "context",
+          "status": "pass",
+          "context": "a9be3567ab3412f939",
+          "vbi_during_callback": true,
+          "xex_sha256": "1c6712248519250436543e8f82e3124a95765e8507ccae452326319dd4051b87"
+        }
+      ],
+      "status": "pass",
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      }
+    },
+    {
+      "path": "build/compressed-loader/of816-return/results.json",
+      "sha256": "9920f72e508745e9735aa5517f35c8d7bb6cd22cb77e38662c808a10ad4b9d86",
+      "observer_sha256": "bd2017f8597130e716b96369d0748cdbbc59d75d5d672598db6b1ea1094ba8de",
+      "cases": [
+        {
+          "case": "return-d0-auto",
+          "status": "pass",
+          "xex_sha256": "856c982057dafb5a987f93d65f35526d3ad8af98e9b1c277c52bf476aa25cd19",
+          "caller_context": "3412ab6735bea9b9d0",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        },
+        {
+          "case": "return-b0-auto",
+          "status": "pass",
+          "xex_sha256": "03f0f4e61fb27dc2556f11e45ee45f680a441e91705ca8f122a4a3526609aef4",
+          "caller_context": "3412ab6735bea9b9b0",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        },
+        {
+          "case": "return-b0-manual",
+          "status": "pass",
+          "xex_sha256": "03f0f4e61fb27dc2556f11e45ee45f680a441e91705ca8f122a4a3526609aef4",
+          "caller_context": "3412ab6735bea9b9b0",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        },
+        {
+          "case": "return-d0-masked",
+          "status": "pass",
+          "xex_sha256": "73f152b5f6f8e5a2571bd2de8251f5d068dbd3d0218f8cddcb771f928260992d",
+          "caller_context": "3412ab6735bea9bdd0",
+          "caller_frame": "intact",
+          "vbi": true,
+          "diagnostic_scratch": {
+            "loader_bytes": 93,
+            "extra_reservations": 0
+          }
+        }
+      ],
+      "status": "pass",
+      "pin": null
+    },
+    {
+      "path": "build/compressed-loader/of816-feedback/results.json",
+      "sha256": "56860a8e0382825fc897c31618db70e28a751c9f8935a98c816e8b262a9bb969",
+      "observer_sha256": "4a247e583d57ec2d3dc30159ca474e7b2ebe9ac920c6161d1be97d4457ac1cae",
+      "cases": [
+        {
+          "case": "small",
+          "status": "pass",
+          "bytes": 1,
+          "dots": 1,
+          "zero_fill": false,
+          "rejected": null,
+          "xex_sha256": "968dbc56583d07d51b5acc1bd5ed83118f13b1a4d68ca4afb87eaef3e6722e26"
+        },
+        {
+          "case": "exact",
+          "status": "pass",
+          "bytes": 16384,
+          "dots": 1,
+          "zero_fill": false,
+          "rejected": null,
+          "xex_sha256": "83bb7434c2c2b25f7940acdd39f35af441a2182f5b32f906fc4d168bbf637cfe"
+        },
+        {
+          "case": "remainder",
+          "status": "pass",
+          "bytes": 16385,
+          "dots": 2,
+          "zero_fill": false,
+          "rejected": null,
+          "xex_sha256": "cbed607c897ad5ca9d78fec4f19e6c48a91a32aac6ba9af13f1ec2547621bcb7"
+        },
+        {
+          "case": "block",
+          "status": "pass",
+          "bytes": 32768,
+          "dots": 2,
+          "zero_fill": false,
+          "rejected": null,
+          "xex_sha256": "f87510c46dd4da4d2af6155cd67cf10c172594c57c6acf1e6916cd192eef8014"
+        },
+        {
+          "case": "zero",
+          "status": "pass",
+          "bytes": 16384,
+          "dots": 1,
+          "zero_fill": true,
+          "rejected": null,
+          "xex_sha256": "1a976cce23c226a35cb8874227a384a595561ffb219e6a179b14e850ff39089b"
+        },
+        {
+          "case": "bad-record",
+          "status": "pass",
+          "bytes": 1024,
+          "dots": 0,
+          "zero_fill": false,
+          "rejected": "record",
+          "xex_sha256": "1705d86b7c60d45bc11b5245c6d1bcd57ba8173e115f78a7a5b1701cef1c7b61"
+        },
+        {
+          "case": "incomplete",
+          "status": "pass",
+          "bytes": 2048,
+          "dots": 0,
+          "zero_fill": false,
+          "rejected": "incomplete",
+          "xex_sha256": "d6f7001b3f7aa4bf5c9fa397f965b9b017f9dd3f7760f79295d4a5ab8f5808d5"
+        },
+        {
+          "case": "bounds",
+          "status": "pass",
+          "bytes": 1,
+          "dots": 0,
+          "zero_fill": false,
+          "rejected": "bounds",
+          "xex_sha256": "968dbc56583d07d51b5acc1bd5ed83118f13b1a4d68ca4afb87eaef3e6722e26"
+        }
+      ],
+      "status": "pass",
+      "pin": null
+    }
+  ]
+}

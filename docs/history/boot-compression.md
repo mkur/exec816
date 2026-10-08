@@ -2,6 +2,11 @@
 
 [Historical records](README.md) · [Current loading contract](../reference/platform.md#bank-zero-memory-budget)
 
+This preserves the initial host-only experiment at `ecb2a59`. The subsequent
+[compressed-loader implementation](loader-compression.md) records real bootable
+images and emitted-code speed; today's [loading contract](../reference/boot-loading.md)
+uses streaming input rather than an upper-RAM scratch area.
+
 LZ4-HC level 12 with independent 32 KiB output blocks reduces the current
 standard resident payload by **67.71%**, and VBXE by **66.50%**. This is enough
 to justify a small native decompressor experiment before changing the loaders.

@@ -525,8 +525,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         'Wrong system-volume startup mapping')
                 for mount in manifest['mounts']:
                     if mount['alias'].upper() != p['build']['system_mount'].upper():
-                        access='read-write' if mount.get('access','readonly')=='readwrite' else 'read-only'
-                        status=f"{mount['alias']}: -> D{mount['unit']-48}: ready, {access}".encode()
+                        from filesystem_formats import RAM
+                        if mount.get('format') == RAM:
+                            status=f"{mount['alias']}: ready, read-write (volatile)".encode()
+                        else:
+                            access='read-write' if mount.get('access','readonly')=='readwrite' else 'read-only'
+                            status=f"{mount['alias']}: -> D{mount['unit']-48}: ready, {access}".encode()
                         require(status in startup[:shell_cells], 'Missing companion-volume startup status')
                 if measurement_commands is not None:
                     saved['measurements']=[]
@@ -580,7 +584,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         command('CD ..')
                         command('CD',b'WORK:')
                         command('CD SMOKEDIR')
-                        command('COPY SYS:STORY.TXT .',error=210)
+                        command('COPY SYS:STORY.TXT .')
+                        command('CMP SYS:STORY.TXT STORY.TXT')
+                        command('DELETE STORY.TXT')
                         command('cp SYS:STORY.TXT SMOKE.TXT')
                         command('CMP SYS:STORY.TXT SMOKE.TXT')
                         command('DIR',b'SMOKE.TXT')

@@ -10,6 +10,7 @@
 .i8
 .export loader_start, loader_init, loader_done, loader_error, loader_copy
 .export loader_initialized, expected_manifest
+.export loader_return, loader_payload_begin
 .export loader_of_begin, loader_progress_add, loader_progress_finish
 .export loader_progress_bytes, loader_progress_stage
 
@@ -38,6 +39,8 @@ loader_start:
     bne incomplete
     lda M_OFFSET
     ora M_OFFSET+1
+    bne incomplete
+    lda lz4_active
     bne incomplete
     lda #1
     sta M_ENTERED
@@ -84,6 +87,7 @@ consume:
     jsr progress_exec_begin
     jsr copy_record
 return_host:
+loader_return:
     lda loader_error
     beq :+
     jsr progress_failed
@@ -214,7 +218,9 @@ bad_record:
     rts
 
 copy_record:
-    ; All checks precede writes, including checks of index, offset and end.
+loader_payload_begin:
+    ; Admit the record/descriptor before writes. Malformed compressed input
+    ; may leave partial output inside its admitted block, but cannot enter Exec.
     lda M_NEXT+1
     jne bad_record
     lda M_NEXT
@@ -223,8 +229,10 @@ copy_record:
     cmp M_STAGE
     jne bad_record
     lda M_STAGE+M_RECORD_EXTENT+1
-    ora M_STAGE+M_RECORD_RESERVED
     jne bad_record
+    lda M_STAGE+M_RECORD_ENCODING
+    cmp #M_ENCODING_LZ4_CONTINUE+1
+    jcs bad_record
     lda M_OFFSET
     cmp M_STAGE+M_RECORD_OFFSET
     jne bad_record
@@ -260,6 +268,20 @@ count_ok:
     jsr descriptor
     cmp M_STAGE+M_RECORD_KIND
     jne bad_record
+.if LOADER_PROBE
+    lda $14
+    sta M_WORK+8
+wait_tick:
+    wai
+    lda $14
+    cmp M_WORK+8
+    beq wait_tick
+    inc M_WORK+9
+.endif
+    lda M_STAGE+M_RECORD_ENCODING
+    jne lz4_record
+    lda lz4_active
+    jne bad_record
     clc
     lda M_OFFSET
     adc M_STAGE+M_RECORD_COUNT
@@ -278,6 +300,66 @@ count_ok:
     cmp M_WORK+2
     jcc record_error
 end_ok:
+    jsr prepare_destination
+    lda M_STAGE+M_RECORD_COUNT
+    sta M_LEFT
+    lda M_STAGE+M_RECORD_COUNT+1
+    sta M_LEFT+1
+loader_copy:
+    lda M_STAGE+M_RECORD_KIND
+    cmp #1
+    beq zero_byte
+source:
+    lda f:M_PAYLOAD
+    bra store_byte
+zero_byte:
+    lda #0
+store_byte:
+destination:
+    sta f:$000000
+    increment source
+    increment destination
+    jsr decrement_left
+    bne loader_copy
+record_committed:
+    lda M_WORK+2
+    sta M_OFFSET
+    lda M_WORK+3
+    sta M_OFFSET+1
+    ldx #4
+    jsr descriptor
+    cmp M_OFFSET
+    bne consumed
+    inx
+    jsr descriptor
+    cmp M_OFFSET+1
+    bne consumed
+    stz M_OFFSET
+    stz M_OFFSET+1
+    inc M_NEXT
+consumed:
+    lda M_STAGE+M_RECORD_ENCODING
+    beq @raw
+    lda lz4_output_size
+    ldx lz4_output_size+1
+    bra @progress
+@raw:
+    lda M_STAGE+M_RECORD_COUNT
+    ldx M_STAGE+M_RECORD_COUNT+1
+@progress:
+    jsr loader_progress_add
+record_pending:
+    stz M_STAGE+M_RECORD_COUNT
+    stz M_STAGE+M_RECORD_COUNT+1
+    rts
+record_error:
+    jmp bad_record
+descriptor:
+descriptor_read:
+    lda f:$000000,x
+    rts
+
+prepare_destination:
     ldx #0
     jsr descriptor
     clc
@@ -295,65 +377,9 @@ end_ok:
     sta source+1
     lda #>M_PAYLOAD
     sta source+2
-    lda M_STAGE+M_RECORD_COUNT
-    sta M_LEFT
-    lda M_STAGE+M_RECORD_COUNT+1
-    sta M_LEFT+1
-.if LOADER_PROBE
-    ; Qualification only: a real VBI while this callback owns a live OS stack.
-    lda $14
-    sta M_WORK+8
-wait_tick:
-    wai
-    lda $14
-    cmp M_WORK+8
-    beq wait_tick
-    inc M_WORK+9
-.endif
-loader_copy:
-    lda M_STAGE+M_RECORD_KIND
-    cmp #1
-    beq zero_byte
-source:
-    lda f:M_PAYLOAD
-    bra store_byte
-zero_byte:
-    lda #0
-store_byte:
-destination:
-    sta f:$000000
-    increment source
-    increment destination
-    jsr decrement_left
-    bne loader_copy
-    lda M_WORK+2
-    sta M_OFFSET
-    lda M_WORK+3
-    sta M_OFFSET+1
-    ldx #4
-    jsr descriptor
-    cmp M_OFFSET
-    bne consumed
-    inx
-    jsr descriptor
-    cmp M_OFFSET+1
-    bne consumed
-    stz M_OFFSET
-    stz M_OFFSET+1
-    inc M_NEXT
-consumed:
-    lda M_STAGE+M_RECORD_COUNT
-    ldx M_STAGE+M_RECORD_COUNT+1
-    jsr loader_progress_add
-    stz M_STAGE+M_RECORD_COUNT
-    stz M_STAGE+M_RECORD_COUNT+1
     rts
-record_error:
-    jmp bad_record
-descriptor:
-descriptor_read:
-    lda f:$000000,x
-    rts
+
+.include "lz4.s"
 
 ; Boot-only E: output. Each public callback preserves the host context; the
 ; character helper also preserves hidden B, D and the whole borrowed IOCB0.
@@ -399,7 +425,7 @@ progress_exec_begin:
 @done:
     rts
 
-; A/X contain the low/high byte count, at most one staging record or OF page.
+; A/X contain the low/high byte count, at most one 32 KiB output block.
 loader_progress_add:
     progress_save
     clc
@@ -408,12 +434,15 @@ loader_progress_add:
     txa
     adc loader_progress_bytes+1
     sta loader_progress_bytes+1
+@dots:
     cmp #$40
     bcc @done
     sbc #$40
     sta loader_progress_bytes+1
     lda #'.'
     jsr progress_putchar
+    lda loader_progress_bytes+1
+    bra @dots
 @done:
     progress_return
 

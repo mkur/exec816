@@ -1003,15 +1003,17 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     if tasks and (dos_test or dos_system):provenance['task_generated']['task-kernel/dos.act']=sha256(output/'task-kernel/dos.act')
     if banked:
         provenance.update(banked=True, memory=memory, memory_sha256=memory_hash,
+                          boot_compression=json.loads((output/'boot-compression.json').read_text()),
                           manifest_sha256=sha256(output/'manifest.bin'), kernel_init=kernel_init,
                           banked_inputs={name:sha256(ROOT/name) for name in (
                               'abi/memory-v1.json', 'abi/boot-v1.json', 'tools/boot_config.py',
                               'lib/exec/bootconfig.act', 'lib/exec/execmemory.act', 'platform/altirraos/loader.s',
+                              'platform/altirraos/lz4.s', 'tools/lz4_block.py',
                               'tools/generate_memory.py', 'tools/task_capacity.py', 'tools/banked_image.py', 'tools/native_program.py')},
                           generated_sha256={name:sha256(output/name) for name in (
                               'memory.inc','memory-action.inc','memory.json','boot-config.inc',
                               'boot-config-action.inc','bootconfig.act','loader-image.inc',
-                              'loader.cfg','loader.bin')})
+                              'loader.cfg','loader.bin','boot-compression.json')})
     (output / "build.json").write_text(json.dumps(provenance, indent=2)+"\n")
     return {"xex": xex, "labels": labels, "image": image, "build": provenance, "output": output}
 

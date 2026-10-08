@@ -150,6 +150,12 @@ loader `$6A00–$7BFF`. They form one boot arena clear of every persistent pool.
 retains the manifest after retiring loader/staging. The full free range becomes
 reusable only at `startup_complete`; it is not registered with the general heap.
 
+[Compressed boot loading](boot-loading.md) streams independent LZ4 blocks
+through the same staging area after OF816 returns. Decoder code/state fit the
+existing loader capacity, with **0 fixed and 0 per-Task reserved bank-zero
+bytes added**, including guards, alignment and unused capacity. Expanded kernel
+storage and startup ownership phases are unchanged.
+
 Moving the start from `$0800` to `$0A00` protects 512 additional low bytes.
 Fixed Exec runtime reservations and every per-Task reservation change by **0**;
 the OS/loader reservation grows by **512**. The temporary loader capacity

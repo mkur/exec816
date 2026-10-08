@@ -6,7 +6,11 @@ Building from source is optional. To run the prebuilt distribution, follow the
 [ZIP installation guide](../../README.md#installation).
 
 Run commands from the repository root. The hosted build uses Python 3, Rust/Cargo,
-and ca65/ld65 from cc65. It also needs the pinned AltirraSDL bridge and 65816 ROM;
+ca65/ld65 from cc65, and a shared liblz4 library for HC12 boot compression.
+The builder discovers liblz4 through the system library search or the installed
+`lz4` executable's library directory. Set `EXEC816_LZ4_LIBRARY` to its full path
+when automatic discovery is unavailable. Build reports record its version.
+The build also needs the pinned AltirraSDL bridge and 65816 ROM;
 the demo builder verifies their hashes before compiling.
 
 ## Pinned inputs
@@ -87,6 +91,20 @@ recompiling them. The native build must already contain the current loader's
 progress callbacks; rebuild it first when the loader or kernel changes. OF816
 runs from INITAD before the main payload, then returns to the reader with RTS.
 The XEX and cartridge routes retain their guarded final kernel entry.
+
+To rebuild the bootstrap and compression transport around an existing verified
+native demo without recompiling the kernel, use:
+
+```sh
+python3 tools/build_demo.py --refresh-loader --output build/demo-bitmap-shell
+```
+
+This verifies the existing native artifacts and requires an unchanged runtime
+memory ABI. It preserves the native image and compiler revision, regenerates
+loading definitions, repackages compressed records, then refreshes OF816 and the
+distribution ZIP. Rebuild the whole demo for kernel/runtime ABI changes.
+See the [boot-loading contract](../reference/boot-loading.md) for encoding,
+context and memory limits.
 
 To add Atarimax 8 Mbit cartridge images to an existing demo, preserving its
 exact XEX, disk and firmware, use a separate output directory:

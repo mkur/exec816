@@ -105,7 +105,8 @@ class OF816PackageTests(unittest.TestCase):
     def native_records(self):
         memory=self.program['build']['memory']
         memory['regions']['resident']=[0x1600,0x2600]
-        memory['constants'].update(LOADER=0x6a00,LOADER_BYTES=4608,MANIFEST=0x6200,CHUNK=1024)
+        memory['constants'].update(LOADER=0x6a00,LOADER_BYTES=4608,MANIFEST=0x6200,CHUNK=1024,
+                                   ENCODING_RAW=0,ENCODING_LZ4_BEGIN=1,ENCODING_LZ4_CONTINUE=2)
         return [(0x6a00,b'\xea'),(0x2e0,struct.pack('<H',0x6a00)),(0x1600,b'\xea'),
                 (0x6200,b'EBM1'),(0x5df0,bytes(8)),(0x2e2,struct.pack('<H',0x6a30)),
                 (0x5df0,struct.pack('<HHHBB',0,0,1,2,0)+b'\x6b'),

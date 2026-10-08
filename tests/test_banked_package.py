@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import struct
 import sys
+import random
 import tempfile
 import unittest
 
@@ -33,6 +34,7 @@ def model(blob, memory, expected, every=False):
     c = memory['constants']
     ram = {}
     index, offset, initialized, init = 0, 0, False, False
+    active = None
     count = int.from_bytes(expected[8:10], 'little')
     descriptors = expected[32+c['TABLE_BYTES']:]
     def read(at, n):
@@ -47,29 +49,87 @@ def model(blob, memory, expected, every=False):
             if read(c['MANIFEST'], len(expected)) != expected:
                 raise ValueError('Manifest mismatch')
             initialized = True
-        k, pos, n, flags, reserved = struct.unpack('<HHHBB', read(c['STAGE'], 8))
+        k, pos, n, flags, encoding = struct.unpack('<HHHBB', read(c['STAGE'], 8))
         if not n:
             continue
-        if k != index or pos != offset or k >= count or reserved or n > c['CHUNK']:
+        if k != index or pos != offset or k >= count or encoding not in (0,1,2) or n > c['CHUNK']:
             raise ValueError('Bad staging sequence')
         entry = descriptors[k*8:k*8+8]
         base = int.from_bytes(entry[:3], 'little')
         length = int.from_bytes(entry[4:6], 'little')
-        if flags != entry[3] or pos + n > length:
+        if flags != entry[3]:
             raise ValueError('Bad staging extent')
         payload = bytes(n) if flags == 1 else read(c['PAYLOAD'], n)
+        if encoding:
+            if flags == 1:
+                raise ValueError('Compressed zero fill')
+            if encoding == 1:
+                if active or n < 5:
+                    raise ValueError('Bad compression start')
+                output, stored = struct.unpack('<HH',payload[:4])
+                if not 0 < stored < output <= c['LZ4_BLOCK_BYTES'] or pos+output > length:
+                    raise ValueError('Bad compressed block lengths')
+                active = [output,stored,bytearray()]
+                payload = payload[4:]
+            elif active is None:
+                raise ValueError('Orphan compressed continuation')
+            active[2] += payload
+            if len(active[2]) > active[1]:
+                raise ValueError('Compressed input overflow')
+            ram[c['STAGE']+4] = ram[c['STAGE']+5] = 0
+            if len(active[2]) < active[1]:
+                continue
+            from lz4_block import LZ4
+            n = active[0]
+            payload = LZ4().decompress(bytes(active[2]),n)
+            active = None
+        elif active:
+            raise ValueError('Raw record inside compressed block')
+        if pos+n > length:
+            raise ValueError('Bad staging extent')
         ram.update((base+pos+i, byte) for i,byte in enumerate(payload))
         offset += n
         if offset == length:
             index += 1
             offset = 0
         ram[c['STAGE']+4] = ram[c['STAGE']+5] = 0
-    if not initialized or index != count or offset:
+    if not initialized or index != count or offset or active:
         raise ValueError('Incomplete image')
     return ram
 
 
 class BankedPackageTests(unittest.TestCase):
+    def test_compressed_continuations_preserve_banks_offsets_and_raw_fallback(self):
+        seed=random.Random(816).randbytes(4096)
+        data=seed*17
+        image={'entry':0x1f000,'segments':[
+            {'address':0x1f000,'bytes':list(data),'executable':True},
+            {'address':0x40000,'bytes':list(seed[:64]),'executable':False}],
+            'zero_fill':[{'address':0x40100,'size':32}]}
+        blob,head,spans=self.make(image)
+        records=[d for a,d in segments(blob) if a==self.memory['constants']['STAGE'] and len(d)>8]
+        self.assertTrue(any(r[7]==1 for r in records))
+        self.assertTrue(any(r[7]==2 for r in records))
+        self.assertTrue(any(r[7]==0 for r in records))
+        for every in (False,True):
+            ram=model(blob,self.memory,head,every)
+            for address,payload,size,kind,_ in spans:
+                actual=bytes(ram[address+i] for i in range(size))
+                self.assertEqual(actual,bytes(size) if kind==1 else payload)
+
+    def test_compressed_stream_cannot_start_with_a_continuation(self):
+        image={'entry':0x10000,'segments':[
+            {'address':0x10000,'bytes':list(b'A'*32768),'executable':True}],'zero_fill':[]}
+        blob,head,_=self.make(image)
+        wire=list(segments(blob))
+        index=next(i for i,(a,d) in enumerate(wire)
+                   if a==self.memory['constants']['STAGE'] and len(d)>8)
+        a,d=wire[index];wire[index]=(a,d[:7]+b'\2'+d[8:])
+        from native_program import xex_segment
+        bad=b'\xff\xff'+b''.join(xex_segment(a,d) for a,d in wire)
+        with self.assertRaisesRegex(ValueError,'Orphan'):
+            model(bad,self.memory,head)
+
     def test_adjacent_routines_share_extents_without_merging_gaps_or_data(self):
         image = {'segments':[
             {'address':0x10000+i, 'bytes':[i], 'executable':True} for i in range(80)],
@@ -245,7 +305,7 @@ class BankedPackageTests(unittest.TestCase):
         blob, head, _ = self.make()
         segs = list(segments(blob))
         first = next(i for i,(a,d) in enumerate(segs) if a == self.memory['constants']['STAGE'] and len(d)>8)
-        for mutation in ('index','offset','count','kind','reserved','replay','missing','manifest'):
+        for mutation in ('index','offset','count','kind','encoding','replay','missing','manifest'):
             changed = list(segs)
             if mutation == 'replay':
                 changed[first+2:first+2] = changed[first:first+2]
@@ -256,7 +316,7 @@ class BankedPackageTests(unittest.TestCase):
                 a,d = changed[i]; changed[i] = (a, bytes([d[0]^1])+d[1:])
             else:
                 a,d = changed[first]; d = bytearray(d)
-                pos = {'index':0,'offset':2,'count':5,'kind':6,'reserved':7}[mutation]
+                pos = {'index':0,'offset':2,'count':5,'kind':6,'encoding':7}[mutation]
                 d[pos] = 255
                 changed[first] = (a,bytes(d))
             damaged = b'\xff\xff' + b''.join(xex_segment(a,d) for a,d in changed)
