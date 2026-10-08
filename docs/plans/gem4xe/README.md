@@ -1,5 +1,17 @@
 # GEM as a client of an Exec-like kernel
 
+The [editable dialogs design](editable-dialogs-design.md) and
+[implementation plan](editable-dialogs-implementation-plan.md) add
+caller-owned text editing and Files path/folder/rename dialogs.
+
+The [Files scrolling design](files-scrolling-design.md) and
+[implementation plan](files-scrolling-implementation-plan.md) cover
+the adaptive directory list and preserved selection.
+
+The [window gadgets design](window-gadgets-design.md) and
+[implementation plan](window-gadgets-implementation-plan.md) add
+application-acknowledged resizing and vertical scrolling.
+
 [Implementation plans](../README.md)
 
 The [classic GEM appearance design](classic-gem-appearance-design.md)

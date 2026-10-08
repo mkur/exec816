@@ -1,5 +1,17 @@
 # Implementation plans
 
+The [editable dialogs design](gem4xe/editable-dialogs-design.md) and
+[implementation plan](gem4xe/editable-dialogs-implementation-plan.md) add
+caller-owned text editing and Files path/folder/rename dialogs.
+
+The [Files scrolling design](gem4xe/files-scrolling-design.md) and
+[implementation plan](gem4xe/files-scrolling-implementation-plan.md) cover
+the adaptive directory list and preserved selection.
+
+The [window gadgets design](gem4xe/window-gadgets-design.md) and
+[implementation plan](gem4xe/window-gadgets-implementation-plan.md) add
+application-acknowledged resizing and vertical scrolling.
+
 [Documentation home](../README.md) · [Open roadmap](../roadmap.md)
 
 Plans describe bounded implementation slices. This index includes completed
