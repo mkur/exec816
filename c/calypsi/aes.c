@@ -226,6 +226,7 @@ WORD appl_exit(void)
         ExecAESResourceFree(c);
         c->messagePending=0;
         c->menuTree=0;
+        c->editTree=0;
         if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
         c->view = NULL;
         c->request.view = NULL;

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 5,
+  "version": 6,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -79,6 +79,9 @@
     "ExecGetArgStr",
     "ExecProgramMask",
     "ExecAESMouseProfile",
-    "menu_bar"
+    "menu_bar",
+    "objc_edit",
+    "CreateDir",
+    "Rename"
   ]
 }

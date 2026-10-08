@@ -1,5 +1,6 @@
 # Historical records
 
+- [Editable dialogs](editable-dialogs.md): caller-local TEDINFO and Files dialogs.
 - [Files scrolling](files-scrolling.md): cached directory rows and adaptive layout.
 - [Window gadgets](window-gadgets.md): resizing and vertical scrolling.
 

@@ -52,6 +52,28 @@ static void text_resource(void)
     /* Deliberately leave the final resource to ordinary appl_exit cleanup. */
     CHECK(rsrc_load("D1:CALC.RSC"));
 }
+static void editable_resource(void)
+{
+    OBJECT *tree,*again;
+    TEDINFO *ted;
+    WORD i,index,handle=1,window;
+    const char *bad[]={"D1:EDCAP.RSC","D1:EDEXT.RSC","D1:EDNUL.RSC","D1:EDTYPE.RSC"};
+    CHECK(rsrc_load("D1:EDIT.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    ted=(TEDINFO *)(ULONG)tree[1].ob_spec;
+    CHECK(tree[1].ob_type==G_FBOXTEXT && (tree[1].ob_flags&EDITABLE));
+    CHECK(ted->te_txtlen==12 && ted->te_tmplen==6 && !strcmp((char *)ted->te_ptext,"2B"));
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,184,104);CHECK(window>0);
+    CHECK(wind_open(window,312,24,184,104));tree[0].ob_x=320;tree[0].ob_y=40;
+    CHECK(objc_edit(tree,1,0,&index,ED_INIT) && index==2);
+    CHECK(objc_edit(tree,1,'c',&index,ED_CHAR) && !strcmp((char *)ted->te_ptext,"2BC"));
+    CHECK(objc_edit(tree,1,0,&index,ED_END));
+    for (i=0;i<4;++i) {
+        CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
+        CHECK(!strcmp((char *)ted->te_ptext,"2BC") && ted->te_txtlen==12);
+    }
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+}
 UWORD AESRun(void)
 {
     OBJECT *tree,*again,*popup;
@@ -93,7 +115,7 @@ UWORD AESRun(void)
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);CHECK(file!=0);
     CHECK(Seek(file,36,OFFSET_BEGINNING)==0);CHECK(Seek(file,0,OFFSET_CURRENT)==36);
     CHECK(Close(file));
-    text_resource();
+    text_resource();editable_resource();
 cleanup:
     CHECK(appl_exit());CHECK(ExecAESDetach());CHECK(ExecDOSDetach());
     CHECK(AvailMem(0)==memory);

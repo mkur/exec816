@@ -337,8 +337,9 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 
 `gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
 `TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
-`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT` and `G_BOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/RBUTTON/LASTOB/
-HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
+`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT` and
+`G_FBOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
+RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
 with at most 32 objects, eight levels and 63 characters per label. Coordinates
 are pixels. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
@@ -348,7 +349,29 @@ outside this caller contract.
 system font, left/right/center justification, the GEM color word and signed
 border thickness. A negative thickness draws the box border outward; drawing
 includes that extent in its clip. The caller owns the NUL-terminated text and
-repaints after updating it. Formatted/editable text is not supported.
+repaints after updating it.
+
+`objc_edit(tree, object, key, &index, kind)` provides caller-local single-line
+editing, also through AESPB opcode 46 (4/2/1/0). ED_START is a no-op; ED_INIT
+places the caret at the end; ED_CHAR edits; ED_END removes the caret. Text
+capacity `te_txtlen` includes NUL and is 1–128 bytes. Templates and validation
+strings are at most 63 characters. Formatted types replace underscore slots
+with text, bounded by both the slot count and capacity. Full fields reject
+additional insertion. Ordinary fields scroll horizontally to show the caret.
+The IBM 8×8 renderer shows at most 63 characters per field.
+
+Support includes insertion, Backspace, Delete (both $5300 and GEM $537F),
+left/right, Home/End and Escape-to-clear. ASCII validation classes 9/A/a/N/n,
+F/f/P/p and X/x follow GEM case folding; a short validation string repeats its
+last class. X preserves case; x folds to uppercase. The path classes also
+accept `/` for Exec paths. Extended-character classes, selection ranges,
+clipboard and multiline editing are unsupported.
+
+One edit association/index/viewport is retained per caller in upper memory;
+ordinary `objc_draw` repairs its steady caret. There is no caret timer.
+`objc_edit` takes and releases UPDATE around its complete clipped field redraw;
+recursive UPDATE ownership is supported. End editing before replacing/freeing
+the tree. Normal application teardown clears the association.
 
 `objc_draw`, `objc_find`, `objc_offset`, `objc_change`, `form_center`,
 `form_keybd` and `form_button` have named and AESPB bindings with their GEM
@@ -361,12 +384,14 @@ centers within the caller's work area.
 The form subset is windowed and event-driven: `form_button` commits an accepted
 release/keyboard action without waiting or drawing. It toggles selectable
 buttons, selects radio peers exclusively, and returns zero for a momentary EXIT
-button. `form_keybd` navigates selectable controls with Tab/Shift-Tab, activates
-focus with Space and DEFAULT with Return; it reports the next object and
+button. `form_keybd` navigates selectable and editable controls with Tab/Shift-Tab,
+activates button focus with Space and DEFAULT with Return; Space remains an
+unconsumed editing key on a field. `form_button` focuses EDITABLE without
+toggling SELECTED; it reports the next object and
 unconsumed key. These are deliberate departures from modal GEM form handling.
 The application tracks press/cancel and redraws changed objects. It continues
-handling WM_* messages in `evnt_multi`. `form_do`, text editing and modal screen
-ownership are not implemented.
+handling WM_* messages in `evnt_multi`. `form_do` and modal screen ownership
+are not implemented.
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget
@@ -379,12 +404,13 @@ binding remains presenter-owned. No additional bank-zero reservation is needed.
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
 big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
 trees, using the object/string subset above. Each tree ends with LASTOB within
-32 objects. Up to 256 TEDINFO records support noneditable G_TEXT/G_BOXTEXT.
-Each record's three string offsets must identify bounded NUL-terminated strings
-of at most 63 characters. Load fixes full upper-memory addresses and normalizes
-text/template lengths to string length plus NUL, including files with zero
-length fields. Shared TEDINFO records are fixed once. Text remains writable
-within the buffer supplied by the resource; text editing is not implemented.
+32 objects. Up to 256 TEDINFO records support the text types above. Templates
+and validation strings are NUL-terminated, at most 63 characters. Load fixes full
+upper-memory addresses. Noneditable records normalize text/template lengths to
+string length plus NUL, including files with zero length fields. EDITABLE records
+preserve their declared 1–128-byte text capacity; the complete writable extent
+and its initial NUL must be present in the file. Shared TEDINFO records are fixed
+once. Text remains writable within the resource's supplied buffer.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
 Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.

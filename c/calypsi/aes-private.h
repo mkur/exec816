@@ -7,6 +7,7 @@ BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
+void ExecAESDrawEdit(struct ExecAESContext *,OBJECT *,WORD,WORD,WORD);
 
 /* A reservation pins the destination until publication.
  * These helpers require an admitted caller; they do not enter GEM recursively. */

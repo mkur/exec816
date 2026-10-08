@@ -40,7 +40,6 @@
 #define G_ICON 31
 #define G_CICON 33
 #define G_USERDEF 24
-#define EDITABLE 8
 #define OUTLINED 16
 #define WHITE 0
 #define BLACK 1

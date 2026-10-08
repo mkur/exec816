@@ -111,6 +111,14 @@ LONGCARD FUNC CProgramMask(LONGCARD identity,unused,unused2)
 
 RETURN(PROCESS.CompletionMask(identity))
 
+LONGCARD FUNC CCreateDir(LONGCARD name,unused,unused2)
+
+RETURN(LONGCARD(ADDRESS(DOS.CreateDir(BYTE POINTER(ADDRESS(name))))))
+
+LONGINT FUNC CRename(LONGCARD oldName,newName,unused)
+
+RETURN(DOS.Rename(BYTE POINTER(ADDRESS(oldName)),BYTE POINTER(ADDRESS(newName))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -133,5 +141,7 @@ PROC BindDos(BYTE unused)
   entries(15)=ADDRESS(@CWaitProgram)
   entries(16)=ADDRESS(@CGetArgStr)
   entries(17)=ADDRESS(@CProgramMask)
+  entries(18)=ADDRESS(@CCreateDir)
+  entries(19)=ADDRESS(@CRename)
 
 RETURN

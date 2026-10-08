@@ -39,6 +39,8 @@ struct ExecAESContext {
     ULONG menuTree;
     ULONG messageEpoch, messageMenuEpoch;
     ULONG deferredEpoch, deferredMenuEpoch;
+    ULONG editTree;
+    WORD editObject, editIndex, editScroll;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

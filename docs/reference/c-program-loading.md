@@ -42,7 +42,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 5 |
+| 6 | 2 | Import ABI version, 6 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

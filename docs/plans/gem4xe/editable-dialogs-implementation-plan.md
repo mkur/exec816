@@ -2,7 +2,7 @@
 
 [Design note](editable-dialogs-design.md) · [GEM integration](README.md)
 
-Status: planned; follows the window gadgets and Files scrolling milestones.
+Status: ED1 editor/resource development gates pass; ED2/ED3 integration running.
 
 | Slice | Implementation | Development gate |
 | --- | --- | --- |

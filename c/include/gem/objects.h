@@ -25,10 +25,13 @@ typedef struct {
 #define G_IBOX 25
 #define G_BUTTON 26
 #define G_STRING 28
+#define G_FTEXT 29
+#define G_FBOXTEXT 30
 #define G_TITLE 32
 #define SELECTABLE 1
 #define DEFAULT 2
 #define EXIT 4
+#define EDITABLE 8
 #define RBUTTON 16
 #define LASTOB 32
 #define HIDETREE 128
@@ -43,6 +46,11 @@ WORD objc_draw(OBJECT *,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD objc_find(OBJECT *,WORD,WORD,WORD,WORD);
 WORD objc_offset(OBJECT *,WORD,WORD *,WORD *);
 WORD objc_change(OBJECT *,WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD);
+#define ED_START 0
+#define ED_INIT 1
+#define ED_CHAR 2
+#define ED_END 3
+WORD objc_edit(OBJECT *,WORD,WORD,WORD *,WORD);
 WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 /* Windowed subset: commit an accepted activation, no input wait or drawing. */
 WORD form_button(OBJECT *,WORD,WORD,WORD *);

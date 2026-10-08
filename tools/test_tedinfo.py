@@ -35,6 +35,24 @@ def physical(b,p,foreign,report):
                         'TEDINFO pixels phase %d at %d,%d'%(phase,x,y))
         report['tedinfo_pixels'].append(dict(phase=phase,pixels=160*88))
         b.poke16(sy['TEDGo'],phase)
+    report['edit_pixels']=[]
+    for phase in range(1,5):
+        reach('dw($%x)=%d'%(sy['EditPhase'],phase))
+        reach('@frame>=%d'%(b.eval_expr('@frame')+40))
+        model=Raster(font)
+        rectangle(model,(55,51,121,69),1)
+        rectangle(model,(56,52,120,68),0)
+        text={1:b'2B-Cd',2:b'56789ab',3:b'01234567',4:b'01234567'}[phase]
+        model.apply(8,(56,62),text)
+        if phase in (1,2):rectangle(model,(96 if phase==1 else 112,56,97 if phase==1 else 113,64),1)
+        path=out/('edit-%d.bgra'%phase);frame=b.rawscreen(str(path));raw=path.read_bytes()
+        for y in range(50,70):
+            for x in range(54,122):
+                at=y*frame.stride+(x+16)*4
+                require(raw[at:at+3]==hardware[model.pixels[y*640+x]],
+                        'Editable pixels phase %d at %d,%d'%(phase,x,y))
+        report['edit_pixels'].append(dict(phase=phase,pixels=68*20))
+        b.poke16(sy['EditGo'],phase)
     b.bp_clear_all()
 
 

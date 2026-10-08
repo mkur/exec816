@@ -3,7 +3,7 @@
 #include <exec816/program.h>
 
 /* The launcher installs these native entry addresses before entering C. */
-void EXEC_PTR *ExecDosEntries[18];
+void EXEC_PTR *ExecDosEntries[20];
 
 ULONG EXEC_CALL _DosCall(UWORD entry, const struct ExecDosWriteArgs *args);
 
@@ -39,3 +39,5 @@ LONG EXEC_CALL ExecBreakProgram(ULONG id) { return call(14,id,0,0); }
 LONG EXEC_CALL ExecWaitProgram(ULONG id,struct ExecProgramResult *result) { return call(15,id,(ULONG)result,0); }
 CONST_STRPTR EXEC_CALL ExecGetArgStr(void) { return (CONST_STRPTR)call(16,0,0,0); }
 ULONG EXEC_CALL ExecProgramMask(ULONG id) { return call(17,id,0,0); }
+BPTR EXEC_CALL CreateDir(CONST_STRPTR name) { return call(18,(ULONG)name,0,0); }
+LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName) { return call(19,(ULONG)oldName,(ULONG)newName,0); }

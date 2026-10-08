@@ -148,7 +148,7 @@ def run(out, mode, replay=False):
             require((report['packet_address'] & 65535)+layout()['Request']['size'] > 65536,
                     'Wire probe did not cross a bank boundary')
             report['client_checks'] = [int.from_bytes(bridge.memdump(sy['AESChecks']+i*2, 2), 'little') for i in range(2)]
-            require(all(n == 1049 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
+            require(all(n == 1081 for n in report['client_checks']), 'Incomplete C contexts: '+str(report['client_checks']))
             require(bridge.memdump(sy['AESFailures'], 4) == bytes(4), 'C context corruption')
             raw = bridge.memdump(sy['ConsoleProbeResults'], 80)
             report['bridge_words'] = [int.from_bytes(raw[i:i+2], 'little') for i in range(0, 80, 2)]
@@ -251,7 +251,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
                 client_entries=entries,
                 client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else []),
                 client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
-                client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', 'aes-resource.c', 'dos.c', f'aes_{suite}.c')})
+                client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', 'aes-edit.c', 'aes-resource.c', 'dos.c', f'aes_{suite}.c')})
         finally:
             bitmap_builder.extract=original_extract
         sy = foreign['symbols']
@@ -372,6 +372,8 @@ ENDMODULE
                 (media/'BAD.RSC').write_bytes(bad);(media/'SHORT.RSC').write_bytes(payload[:35])
                 from prepare_calculator import resource_cases
                 cases=resource_cases(out/'calculator')
+                from test_editable_resources import cases as editable_cases
+                cases.update(editable_cases())
                 for name,payload in cases.items():(media/name).write_bytes(payload)
                 make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC',*cases},filesystem=filesystem,sector_bytes=128,sectors=720)
                 bridge.mount(0,str(out/'resources.atr'))

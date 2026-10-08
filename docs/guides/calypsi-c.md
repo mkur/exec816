@@ -77,7 +77,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
-| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `IoErr`, `ExecDOSDetach` |
+| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `CreateDir`, `Rename`, `IoErr`, `ExecDOSDetach` |
 | Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
