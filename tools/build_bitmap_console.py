@@ -16,7 +16,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     extraction=extract(out/'selected');src=out/'selected/src';ad=PORT/'adapter'
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',ROOT/'platform/altirraos/vbxe.c',
              src/'vdi/vdi.c',src/'vdi/font.c',src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',
-             ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c']
+             ad/'gem-vbxe.c',ROOT/'lib/console/console-bitmap.c',ROOT/'lib/desktop/desktop-frame.c']
     extra_roots=[];extra_includes=[];extra_probes=[]
     if widgets or widget_probe:
         from extract_gem_aes import extract as aes_extract,PORT as aes

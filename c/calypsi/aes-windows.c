@@ -1,6 +1,7 @@
 #include "aes-private.h"
 #include <proto/exec.h>
 #include <gem.h>
+#include <exec816/desktop-geometry.h>
 
 static WORD window_call(UWORD op, WORD a, WORD b, WORD d, WORD e, WORD f, WORD g)
 {
@@ -102,8 +103,12 @@ WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->diagnostic = AES_UNSUPPORTED;
     if (kind != AES_WINDOW_KIND || (type != WC_BORDER && type != WC_WORK)) return 0;
-    if (type == WC_BORDER) { left -= 8; top -= 16; width += 16; height += 24; }
-    else { left += 8; top += 16; width -= 16; height -= 24; }
+    if (type == WC_BORDER) { left -= DESKTOP_WORK_LEFT; top -= DESKTOP_WORK_TOP;
+        width += DESKTOP_WORK_LEFT+DESKTOP_WORK_RIGHT;
+        height += DESKTOP_WORK_TOP+DESKTOP_WORK_BOTTOM; }
+    else { left += DESKTOP_WORK_LEFT; top += DESKTOP_WORK_TOP;
+        width -= DESKTOP_WORK_LEFT+DESKTOP_WORK_RIGHT;
+        height -= DESKTOP_WORK_TOP+DESKTOP_WORK_BOTTOM; }
     c->diagnostic = AES_MALFORMED;
     if (w <= 0 || h <= 0 || left < -32768L || left > 32767 ||
         top < -32768L || top > 32767 || width <= 0 || width > 32767 ||

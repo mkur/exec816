@@ -83,7 +83,7 @@ def exercise(s,sy,click,move):
         require(s.number(sy['GEMPanel']+400,2)==1 and s.number(sy['GEMPanel']+402,2)==0,
                 'Close-with-pending-edit setup')
     if hasattr(s,'menus'):s.menus.close()
-    else:click(618,56)
+    else:click(424,56)
     s.rendezvous('dw($%x)=0'%sy['GEMDesktopChildren'])
     click(24,64);row('C');key('RETURN');row('PANEL.APP');key('RETURN')
     s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(base+1980,base+1386))

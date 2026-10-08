@@ -57,7 +57,21 @@
     "CACHE_MISS": 0,
     "CACHE_PENDING": 1,
     "CACHE_FAILED": 2,
-    "CONTENT_AES": 4
+    "CONTENT_AES": 4,
+    "WORK_LEFT": 8,
+    "WORK_TOP": 16,
+    "WORK_RIGHT": 8,
+    "WORK_BOTTOM": 8,
+    "FRAME_EDGE": 1,
+    "TITLE_HEIGHT": 16,
+    "TITLE_TEXT_Y": 4,
+    "TITLE_PAD": 2,
+    "CLOSE_LEFT": 1,
+    "CLOSE_TOP": 1,
+    "CLOSE_RIGHT": 15,
+    "CLOSE_BOTTOM": 15,
+    "CLOSE_TEXT_X": 4,
+    "CLOSE_GLYPH": 5
   },
   "records": {
     "Event": [

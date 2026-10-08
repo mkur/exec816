@@ -22,7 +22,7 @@ from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from sio_transaction_trace import BASE_HZ, read_events
 from stack_budget import stack_usage
-from test_desktop_presentation import rectangle, frame, text
+from test_desktop_presentation import rectangle, frame, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from test_gem_interactive import pixels
@@ -37,7 +37,8 @@ NAMES = ('empty desktop', 'first empty client', 'five retained commands',
          'shortened label', 'focus title', 'overlapping sparse damage',
          'full repaint', 'short title and empty black client', 'closed',
          'long retained text and title', 'vertically clipped long repair',
-         'closed after text continuation')
+         'closed after text continuation', 'minimum-width long title',
+         'minimum-width empty title', 'closed minimum window')
 
 
 def scene(stage, font):
@@ -57,6 +58,10 @@ def scene(stage, font):
               False, 3, close=True)
         text(raster, 28, 38, bytes(65+i % 26 for i in range(70)), bg=3)
         rectangle(raster, (575, 39, 604, 45), 5)
+    if stage in (13,14):
+        frame(raster,(575,193,607,225),b'Minimum title' if stage==13 else b'',True,close=True)
+    menu_bar(raster, b'Background' if 5 <= stage <= 7 else
+             b'Minimum title' if stage==13 else b'' if stage==14 else b'Desktop')
     return overlay(raster, (320, 120))
 
 

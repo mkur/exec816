@@ -123,7 +123,7 @@ def run(out,program):
                 for _ in range(3):message(0,'WM_REDRAW',(0,0,640,240))
                 resume(0);frames(160);pause(0);snapshot('repeated-redraw')
                 # Close B with its physical closer while A remains live.
-                resume(1);move(241+198,97+6);edge(1);edge(0)
+                resume(1);move(241+8,97+6);edge(1);edge(0)
                 until(sy['GEMCountersDone'],1,'>=');move(620,232);resume(0);frames(100);pause(0)
                 snapshot('physical-close',focused=False)
                 for iteration in range(2):

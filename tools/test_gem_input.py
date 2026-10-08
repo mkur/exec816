@@ -135,7 +135,7 @@ def run(out,program):
                 resume(1);old_tick=model(1)['tick'];frames(75);pause(1)
                 require(c('InputEvents',1)>0,'Timer/message progress stopped')
                 # Physical closer retires one owner; repeated startup returns heap.
-                resume(0);move(ax+206,ay-10);edge(1);edge(0)
+                resume(0);move(ax,ay-10);edge(1);edge(0)
                 until(sy['GEMInputsDone'],1,'>=');move(620,232)
                 resume(1);frames(80);pause(1)
                 snapshot('physical-close',focused=False)

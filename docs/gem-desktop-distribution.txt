@@ -48,7 +48,7 @@ keys and Return select an entry. Ctrl-Shift-Escape enters an application menu;
 Left/Right changes headings, Tab/Shift-Tab or Up/Down changes entries, and Return
 selects. Click a title then an entry, or drag and release on an entry. Escape or
 a click outside cancels the menu. Disabled actions cannot be selected.
-Click X or use Close to close an application. Focus returns to the frontmost
+Click the boxed closer at the left of the title or use Close to close an application. Focus returns to the frontmost
 remaining window. Close is disabled for the shell; use EXIT to end the session.
 The panel controls mouse acceleration through its own GEM object tree.
 Off gives fixed 2x movement; Mild gives slow precision and faster travel.

@@ -5,6 +5,7 @@ USE DESKTYPES
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
+USE DESKGEOMETRY
 USE CONSOLEBITMAP
 USE HEAPCORE
 
@@ -20,8 +21,7 @@ RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
 
 PUBLIC PROC ClientBounds(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
-  REGIONS.Assign(area,layer.bounds.left+8,layer.bounds.top+16,
-      layer.bounds.right-8,layer.bounds.bottom-8)
+  DESKGEOMETRY.Work(@layer.bounds,area)
 
 RETURN
 

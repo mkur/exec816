@@ -111,8 +111,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         window, content_address = windows[ident]
         left, top, right, bottom = bounds
         kind = window[wf['kind']]
-        title = window[wf['title']:wf['title']+32].split(b'\0')[0]
-        title = title[:(right-left-(32 if kind != 1 else 16))//8]
+        title = window[wf['title']:wf['title']+64].split(b'\0')[0]
         cf = types['Content']['fields']
         content = bytearray(types['Content']['size'])
         if kind == 2:

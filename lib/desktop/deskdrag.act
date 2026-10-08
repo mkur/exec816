@@ -11,6 +11,7 @@ USE INPUT
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKGEOMETRY
 USE DESKMOVE
 USE DESKMENU
 USE DESKEVENTS
@@ -76,8 +77,7 @@ BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer INT x,y)
 
 RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
-    AND x>=layer.bounds.right-14 AND x<layer.bounds.right-2
-    AND y>=layer.bounds.top+2 AND y<layer.bounds.top+14)
+    AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
 
 PROC Position(INT x,y)
   INT left,top,width,height,limit
@@ -188,7 +188,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       IF window.id<>0 AND window.layer=layerId THEN
         BEGIN
           LET layer=DESKCORE.Layer(service,window)
-          IF sample.y<layer.bounds.top+2 OR sample.y>=layer.bounds.top+14 THEN
+          IF DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)=0 THEN
             RETURN(0)
           FI
 
@@ -203,6 +203,13 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           focusWanted=window.kind<>DESKTYPES.CONTENT_AES
           IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
             phase=CLOSING
+            RETURN(1)
+          FI
+
+          IF window.kind<>DESKTYPES.CONTENT_CONSOLE
+              AND sample.x<layer.bounds.left+DESKTYPES.TITLE_HEIGHT THEN
+            phase=0
+            windowId=0
             RETURN(1)
           FI
 

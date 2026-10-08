@@ -40,13 +40,36 @@ def text(raster, x, y, value, fg=1, bg=0):
 
 def frame(raster, bounds, title, focused, background=0, close=False):
     x, y, right, bottom = bounds
-    rectangle(raster, bounds, 8)
-    rectangle(raster, (x+2, y+2, right-2, y+14), 2 if focused else 7)
-    text(raster, x+8, y+4, title, bg=2 if focused else 7)
+    rectangle(raster, bounds, 0)
+    def box(l,t,r,b):
+        rectangle(raster,(l,t,r,t+1),1)
+        rectangle(raster,(l,b-1,r,b),1)
+        rectangle(raster,(l,t+1,l+1,b-1),1)
+        rectangle(raster,(r-1,t+1,r,b-1),1)
+    box(x,y,right,bottom)
+    rectangle(raster,(x,y+15,right,y+16),1)
+    name_left=x+(16 if close else 1)
+    name_right=right-1
+    title=title[:min(64,(name_right-name_left-4)//8)]
+    tx=name_left+(name_right-name_left-len(title)*8)//2
+    if focused:
+        for py in range(y+1,y+15):
+            for px in range(name_left,name_right):
+                if (px-x)&1 and (py-y)&1: raster.pixel(px,py,1)
+    if title:
+        rectangle(raster,(tx-2,y+1,tx+len(title)*8+2,y+15),0)
+        text(raster,tx,y+4,title)
     if close:
-        rectangle(raster, (right-14, y+2, right-2, y+14), 8)
-        text(raster, right-12, y+4, b'X', bg=8)
-    rectangle(raster, (x+8, y+16, right-8, bottom-8), background)
+        box(x+1,y+1,x+15,y+15)
+        text(raster,x+4,y+4,bytes([5]))
+    rectangle(raster,(x+8,y+16,right-8,bottom-8),background)
+
+
+def menu_bar(raster, title=b'Exec816 Shell'):
+    rectangle(raster,(0,0,640,16),0)
+    text(raster,8,4,title[:32])
+    text(raster,440,4,b'Windows')
+    rectangle(raster,(0,15,640,16),1)
 
 
 def scenes(font, accepted=None):
@@ -87,6 +110,7 @@ def scenes(font, accepted=None):
         if stage in (16, 17, 19):
             frame(raster, (377, 0, 537, 173), b'Clip', False, 3, close=True)
             text(raster, 388, 19, b'XYZ', bg=3)
+        menu_bar(raster)
         yield overlay(raster, (320, 120))
 
 

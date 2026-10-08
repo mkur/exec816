@@ -76,9 +76,9 @@ PUBLIC PROC Damage(DESKTYPES.Service POINTER service
   FOR index=0 TO packet.damageCount-1 DO
     BEGIN
       LET rect=@packet.damage(index)
-      REGIONS.Assign(@bounds,layer.bounds.left+8+rect.left,
-          layer.bounds.top+16+rect.top,layer.bounds.left+8+rect.right,
-          layer.bounds.top+16+rect.bottom)
+      REGIONS.Assign(@bounds,layer.bounds.left+DESKTYPES.WORK_LEFT+rect.left,
+          layer.bounds.top+DESKTYPES.WORK_TOP+rect.top,layer.bounds.left+DESKTYPES.WORK_LEFT+rect.right,
+          layer.bounds.top+DESKTYPES.WORK_TOP+rect.bottom)
       IF LAYERS.Invalidate(@service.scene,window.layer,@bounds)<>LAYERTYPES.OK THEN
         HEAPCORE.Abort($fab0)
       FI
@@ -151,8 +151,8 @@ PUBLIC PROC Input(DESKTYPES.Service POINTER service
 
   LET layer=LAYERS.Find(@service.scene,window.layer)
   packet.context=LONGCARD(ADDRESS(window.widgets))
-  packet.x=event.x-layer.bounds.left-8
-  packet.y=event.y-layer.bounds.top-16
+  packet.x=event.x-layer.bounds.left-DESKTYPES.WORK_LEFT
+  packet.y=event.y-layer.bounds.top-DESKTYPES.WORK_TOP
   packet.code=event.code
   packet.buttons=event.buttons
   packet.qualifiers=event.qualifiers
@@ -227,8 +227,10 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
   packet.context=LONGCARD(ADDRESS(window.widgets))
   packet.payload=LONGCARD(ADDRESS(request.payload))
   packet.bytes=size
-  packet.width=CARD(layer.bounds.right-layer.bounds.left)-16
-  packet.height=CARD(layer.bounds.bottom-layer.bounds.top)-24
+  packet.width=CARD(layer.bounds.right-layer.bounds.left)
+      -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
+  packet.height=CARD(layer.bounds.bottom-layer.bounds.top)
+      -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
   Run(operation)
   status=packet.status
   IF status=WIDGETTYPES.OK THEN

@@ -43,8 +43,8 @@ PROC Rebase(LAYERTYPES.Layer POINTER layer)
   FI
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-  view.left=CARD(layer.bounds.left+8) RSH 3
-  view.top=CARD(layer.bounds.top+16) RSH 3
+  view.left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
+  view.top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
   view.cursorOn=0
   view.index=$ffff
   view.generation==+1

@@ -81,7 +81,7 @@ class CalculatorDesktop:
         require(s.number(browser+1984,4)==1,'Repeated no-window result')
         require(memory()==baseline and s.ledger()==owners,'Repeated no-window failure leaked resources')
         print('Calculator no-window cleanup pass',flush=True)
-        click(592,56);click(618,56);s.rendezvous('dw($%x)=0'%children)
+        click(592,56);click(424,56);s.rendezvous('dw($%x)=0'%children)
         baseline=memory();owners=s.ledger()
         load();first=current(s.number(browser+1980,4))
         for index in (3,10,9,19):button(first,index)

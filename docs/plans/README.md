@@ -8,6 +8,10 @@ assuming work is pending. Current behavior belongs in the
 [reference](../reference/README.md), and implementation results in
 [history](../history/README.md).
 
+- [Classic GEM appearance design](gem4xe/classic-gem-appearance-design.md) and
+  [GA1–GA4 implementation plan](gem4xe/classic-gem-appearance-implementation-plan.md):
+  GA1 implements flat frames, a left closer and centered patterned titles; consistent
+  menus/controls and patterned desktop, before window resizing.
 - [Application menu-bar design](gem4xe/application-menu-bar-design.md) and
   [AM1–AM6 implementation plan](gem4xe/application-menu-bar-implementation-plan.md):
   application-owned GEM menus, durable selections, presenter interaction and

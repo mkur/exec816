@@ -1,0 +1,92 @@
+/* Presenter-owned frame fragments. Compose in the existing widget strip, then
+ * publish only complete pixels. Work rectangles are never part of a fragment.
+ * The packet/title borrow ends at return; only a scalar glyph offset survives. */
+#include <hardware/console-bitmap.h>
+#include <exec816/desktop-geometry.h>
+#include "gem-drawing.h"
+
+extern void GemWidgetFill(UWORD,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
+extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
+static struct ConsoleBitmapPacket *paint;
+static WORD glyphs[16];
+
+static void fill(WORD l,WORD t,WORD r,WORD b,UWORD pen)
+{
+    if (l<paint->clipLeft) l=paint->clipLeft;
+    if (t<paint->clipTop) t=paint->clipTop;
+    if (r>paint->clipRight) r=paint->clipRight;
+    if (b>paint->clipBottom) b=paint->clipBottom;
+    if (l<r && t<b) GemWidgetFill(1,1,pen,l,t,r,b);
+}
+
+static void box(WORD l,WORD t,WORD r,WORD b)
+{
+    fill(l,t,r,t+1,1); fill(l,b-1,r,b,1);
+    fill(l,t+1,l+1,b-1,1); fill(r-1,t+1,r,b-1,1);
+}
+
+static void text(WORD x,WORD y,UWORD count)
+{
+    GemWidgetText(x,y,glyphs,count,1,paint->clipLeft,paint->clipTop,
+                  paint->clipRight,paint->clipBottom);
+}
+
+static UWORD fragment(void)
+{
+    struct ConsoleBitmapPacket *p=paint;
+    const UBYTE *title=(const UBYTE *)p->text;
+    WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
+    WORD nameLeft=l+(p->background ? DESKTOP_TITLE_HEIGHT:DESKTOP_FRAME_EDGE);
+    WORD nameRight=r-DESKTOP_FRAME_EDGE,x,y=t+DESKTOP_TITLE_TEXT_Y;
+    WORD pl,pt,pr,pb;
+    UWORD span=nameRight-nameLeft;
+    UWORD length=0,limit=(span-2*DESKTOP_TITLE_PAD)>>3;
+    UWORD first,n;
+    while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
+    x=nameLeft+((nameRight-nameLeft-(length<<3))>>1);
+    if (!p->fillX) {
+        fill(l,t,r,b,0);
+        box(l,t,r,b);
+        fill(l,t+DESKTOP_TITLE_HEIGHT-1,r,t+DESKTOP_TITLE_HEIGHT,1);
+        if (p->foreground) {
+            pl=nameLeft>p->clipLeft ? nameLeft:p->clipLeft;
+            pt=t+1>p->clipTop ? t+1:p->clipTop;
+            pr=nameRight<p->clipRight ? nameRight:p->clipRight;
+            pb=t+DESKTOP_TITLE_HEIGHT-1<p->clipBottom ?
+               t+DESKTOP_TITLE_HEIGHT-1:p->clipBottom;
+            if (pl<pr && pt<pb) GemFramePattern(pl,pt,pr,pb,l,t);
+        }
+        if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
+                         t+DESKTOP_TITLE_HEIGHT-1,0);
+        if (p->background) {
+            box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
+                l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
+            glyphs[0]=DESKTOP_CLOSE_GLYPH;
+            text(l+DESKTOP_CLOSE_TEXT_X,y,1);
+        }
+    }
+    first=p->fillX;
+    if (p->clipLeft>x && first<((p->clipLeft-x)>>3)) first=(p->clipLeft-x)>>3;
+    if (y>=p->clipBottom || y+8<=p->clipTop || x+(first<<3)>=p->clipRight)
+        first=length;
+    n=length>first ? length-first:0;
+    if (n>16) n=16;
+    if (n) {
+        UWORD i;
+        for (i=0;i<n;++i) glyphs[i]=title[first+i];
+        text(x+(first<<3),y,n);
+    }
+    first+=n;
+    p->fillX=first<length && x+(first<<3)<p->clipRight ? first:0;
+    return !p->fillX;
+}
+
+UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
+{
+    UWORD status;
+    paint=p;
+    status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
+                                !p->fillX,fragment);
+    paint=0;
+    return status;
+}

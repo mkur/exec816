@@ -5,6 +5,7 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
+USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKWIDGETS
 USE DESKMENU
@@ -28,7 +29,7 @@ BYTE nextSlot,started
 CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
-CONST PAINT_TITLE=1, PAINT_CACHE=2, PAINT_CLOSE=3, PAINT_CLIENT=4, PAINT_CONTENT=5
+CONST PAINT_FRAME=1, PAINT_CACHE=2, PAINT_CLIENT=4, PAINT_CONTENT=5
 LAYERTYPES.Rect strip
 
 PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
@@ -68,8 +69,8 @@ PUBLIC PROC Sync()
   FI
 
   LET layer=DESKCORE.Layer(service,window)
-  left=CARD(layer.bounds.left+8) RSH 3
-  top=CARD(layer.bounds.top+16) RSH 3
+  left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
+  top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
   shown=layer.shown
   focused=service.focus=window.id
   IF view.left<>left OR view.top<>top OR view.visible<>shown OR view.focused<>focused THEN
@@ -101,44 +102,50 @@ BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
 RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
     CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
 
-; Paint the frame portion of this strip exactly once. The client background
-; is separate, so a wide client does not receive the full frame fill first.
-BYTE FUNC FrameBackground(LAYERTYPES.Rect POINTER client)
+; Each fragment is disjoint from the client. Its complete frame pixels are
+; composed in shared scratch before publication; one fragment advances per step.
+BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
+    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER client)
   LAYERTYPES.Rect area
+  BYTE result
 
-  REGIONS.Intersect(@strip,client,@area)
-  IF REGIONS.Empty(@area)<>0 THEN
-    RETURN(CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(strip.top),
-        CARD(strip.right-strip.left),CARD(strip.bottom-strip.top),8))
-  FI
+  LET service=DESKSTATE.Get()
+  WHILE commandIndex<4 DO
+    CASE commandIndex OF
+    WHEN 0 THEN
+      REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top,
+          layer.bounds.right,client.top)
 
-  IF strip.top<area.top THEN
-    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(strip.top),
-        CARD(strip.right-strip.left),CARD(area.top-strip.top),8)=0 THEN
-      RETURN(0)
+    WHEN 1 THEN
+      REGIONS.Assign(@area,layer.bounds.left,client.bottom,
+          layer.bounds.right,layer.bounds.bottom)
+
+    WHEN 2 THEN
+      REGIONS.Assign(@area,layer.bounds.left,client.top,
+          client.left,client.bottom)
+
+    ELSE
+      REGIONS.Assign(@area,client.right,client.top,
+          layer.bounds.right,client.bottom)
+    ESAC
+
+    REGIONS.Intersect(@area,@strip,@area)
+    IF REGIONS.Empty(@area)=0 THEN
+      result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
+          window.id=service.focus,window.kind<>DESKTYPES.CONTENT_CONSOLE,
+          @glyphOffset)
+      IF result<>1 THEN
+        RETURN(result)
+      FI
+
+      commandIndex==+1
+      RETURN(2)
     FI
-  FI
 
-  IF area.bottom<strip.bottom THEN
-    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(area.bottom),
-        CARD(strip.right-strip.left),CARD(strip.bottom-area.bottom),8)=0 THEN
-      RETURN(0)
-    FI
-  FI
+    commandIndex==+1
+  OD
 
-  IF strip.left<area.left THEN
-    IF CONSOLEBITMAP.RawFill(CARD(strip.left),CARD(area.top),
-        CARD(area.left-strip.left),CARD(area.bottom-area.top),8)=0 THEN
-      RETURN(0)
-    FI
-  FI
-
-  IF area.right<strip.right THEN
-    IF CONSOLEBITMAP.RawFill(CARD(area.right),CARD(area.top),
-        CARD(strip.right-area.right),CARD(area.bottom-area.top),8)=0 THEN
-      RETURN(0)
-    FI
-  FI
+  commandIndex=0
 
 RETURN(1)
 
@@ -199,8 +206,8 @@ RETURN(2)
 ; Frame, client and glyph coordinates are independently clipped in pixels.
 BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area,bounds
-  CARD row,last,first,count,index,titleLength,titleLimit
-  BYTE okay,cached,frameNeeded
+  CARD row,last,first,count,index
+  BYTE okay,cached
 
   LET service=DESKSTATE.Get()
   IF window=NULL THEN
@@ -210,8 +217,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     RETURN(Fill(@strip,@strip,8))
   FI
 
-  REGIONS.Assign(@client,layer.bounds.left+8,layer.bounds.top+16,
-      layer.bounds.right-8,layer.bounds.bottom-8)
+  DESKGEOMETRY.Work(@layer.bounds,@client)
   IF started=PAINT_CACHE THEN
     RETURN(DESKCACHE.Restored(service))
   FI
@@ -219,74 +225,20 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   IF started=0 THEN
     commandIndex=0
     glyphOffset=0
-    frameNeeded=strip.left<client.left OR strip.top<client.top
-        OR strip.right>client.right OR strip.bottom>client.bottom
     started=PAINT_CLIENT
-    IF frameNeeded<>0 THEN
-      okay=FrameBackground(@client)
-      REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
-          layer.bounds.right-2,layer.bounds.top+14)
-      IF okay<>0 THEN
-        okay=Fill(@bounds,@strip,IF window.id=service.focus THEN 2 ELSE 7 FI)
-      FI
-
-      IF okay=0 THEN
-        RETURN(0)
-      FI
-
-      started=PAINT_TITLE
-      RETURN(2)
+    IF strip.left<client.left OR strip.top<client.top
+        OR strip.right>client.right OR strip.bottom>client.bottom THEN
+      started=PAINT_FRAME
     FI
   FI
 
-  IF started=PAINT_TITLE THEN
-    REGIONS.Assign(@bounds,layer.bounds.left+2,layer.bounds.top+2,
-        layer.bounds.right-2,layer.bounds.top+14)
-    REGIONS.Intersect(@bounds,@strip,@area)
-    IF REGIONS.Empty(@area)=0 THEN
-      titleLength=0
-      WHILE titleLength<DESKTYPES.TITLE_BYTES AND window.title(titleLength)<>0 DO
-        titleLength==+1
-      OD
-
-      titleLimit=CARD((layer.bounds.right-layer.bounds.left-16) RSH 3)
-      IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
-        titleLimit=CARD((layer.bounds.right-layer.bounds.left-32) RSH 3)
-      FI
-
-      IF titleLength>titleLimit THEN
-        titleLength=titleLimit
-      FI
-
-      okay=TextStep(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
-          @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
-      IF okay<>1 THEN
-        RETURN(okay)
-      FI
-
-      started=PAINT_CLOSE
-      RETURN(2)
+  IF started=PAINT_FRAME THEN
+    okay=FrameStep(window,layer,@client)
+    IF okay<>1 THEN
+      RETURN(okay)
     FI
 
-    started=PAINT_CLOSE
-  FI
-
-  IF started=PAINT_CLOSE THEN
     started=PAINT_CLIENT
-    IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
-      REGIONS.Assign(@bounds,layer.bounds.right-14,layer.bounds.top+2,
-          layer.bounds.right-2,layer.bounds.top+14)
-      REGIONS.Intersect(@bounds,@strip,@area)
-      IF REGIONS.Empty(@area)=0 THEN
-        okay=Fill(@bounds,@strip,8)
-        IF okay<>0 THEN
-          okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
-              CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
-        FI
-
-        RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
-      FI
-    FI
   FI
 
   IF started=PAINT_CLIENT AND window.kind=DESKTYPES.CONTENT_AES THEN

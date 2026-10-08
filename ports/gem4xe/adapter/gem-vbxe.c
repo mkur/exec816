@@ -728,6 +728,30 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
     }
 }
 
+/* GEM's flat-title dither (0000/5555 rows), expressed as constant packed
+ * pixels. Scratch is already white. Each strided command covers every second
+ * row, including a preserved neighbour at odd clipped byte edges. */
+void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                     UWORD originX,UWORD originY)
+{
+    UWORD y=top+(((top-originY)&1)^1),lo=left>>1,hi=right>>1,rows;
+    UBYTE ink=map_col[1],value=(originX&1) ? ink<<4:ink;
+    ULONG base;
+    if (y>=bottom) return;
+    rows=(bottom-y+1)>>1;
+    base=GemScreenRows[y];
+    if (left&1) {
+        blit_and(base+lo,640,1,rows,0xf0);
+        blit_or(base+lo,640,1,rows,value&15);
+        ++lo;
+    }
+    if (hi>lo) blit_fill(base+lo,640,hi-lo,rows,value);
+    if (right&1) {
+        blit_and(base+hi,640,1,rows,0x0f);
+        blit_or(base+hi,640,1,rows,value&0xf0);
+    }
+}
+
 /* Native callers never block their service loop waiting for renderer access.
  * The presenter can nest these units within one bounded service turn; DMA
  * alone keeps the owner pin after the final return. */

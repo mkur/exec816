@@ -2,6 +2,16 @@
 
 [Implementation plans](../README.md)
 
+The [classic GEM appearance design](classic-gem-appearance-design.md)
+sets flat window decorations, a left closer, centered patterned titles,
+consistent menus/controls and a patterned desktop. The
+[GA1–GA4 implementation plan](classic-gem-appearance-implementation-plan.md)
+orders frames and shared geometry, menu/control consistency, background repair
+and the tested OF816 package before the resizing milestone. Current work-area
+insets and the existing Atari ST font are retained for this first appearance
+step. GA1 implements the frames and shared geometry; see the
+[execution record](../../history/classic-gem-appearance.md).
+
 The [application menu-bar design](application-menu-bar-design.md)
 extends the implemented desktop menu with registered application-owned OBJECT
 trees, focus-selected menus and durable `MN_SELECTED` delivery. Files is the

@@ -119,7 +119,7 @@ def run(out,program):
                 snapshot('cancel')
                 require(get(counter+14,4)>count,'Counter stalled')
                 click(200,40);frames(80);click(458,56);snapshot('focus-repair')
-                click(618,56);until(base+8,0)
+                click(424,56);until(base+8,0)
                 require(get(sy['GEMDesktopFailure'])==0,'Application failure')
                 b.poke16(at('DESKTOPTEST','mode'),9);b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=12000)

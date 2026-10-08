@@ -18,7 +18,7 @@ from generate_layers import layout as layer_layout
 from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
 from bitmap_console_oracle import Terminal
 from test_gem_cursor import overlay
-from test_desktop_presentation import frame, rectangle, text as paint_text
+from test_desktop_presentation import frame, rectangle, menu_bar, text as paint_text
 from sio_transaction_trace import BASE_HZ
 from measure_desktop import distribution
 from make_data_disk import make
@@ -95,8 +95,15 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
             app_behind_shell = False
             app_live = second_app
             def bounds(slot=0):
-                address = scene+layer_layout()['Scene']['fields']['items']+slot*layer_layout()['Layer']['size']+4
-                return [int.from_bytes(b.memdump(address+i*2, 2), 'little', signed=True) for i in range(4)]
+                types=desktop_layout()
+                window=service+types['Service']['fields']['windows']+slot*types['Window']['size']
+                ident=int.from_bytes(b.memdump(window+types['Window']['fields']['layer'],4),'little')
+                layers=layer_layout()
+                for index in range(6):
+                    address=scene+layers['Scene']['fields']['items']+index*layers['Layer']['size']
+                    if int.from_bytes(b.memdump(address,4),'little')==ident:
+                        return [int.from_bytes(b.memdump(address+4+i*2,2),'little',signed=True) for i in range(4)]
+                raise RuntimeError('Window layer was not found')
             def raster(outline=None):
                 model = Raster(font)
                 rectangle(model, (0, 0, 640, 240), 8)
@@ -123,6 +130,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     for y in range(t+1, bot-1):
                         model.pixels[y*640+l] ^= 15
                         model.pixels[y*640+r-1] ^= 15
+                menu_bar(model, {1:b'Exec816 Shell',2:b'Input',3:b'Control Panel'}.get(focused,b'Desktop'))
                 return overlay(model, position)
             colors = {hw: bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen, hw in enumerate(PENS)}
             def visible(outline=None, whole=True):
@@ -178,10 +186,10 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
             def target_at(origin, press, point):
                 width, height = origin[2]-origin[0], origin[3]-origin[1]
                 x = min((640-width) & ~7, (max(0, origin[0]+point[0]-press[0])+4) & ~7)
-                y = min((240-height) & ~7, (max(0, origin[1]+point[1]-press[1])+4) & ~7)
+                y = min((240-height) & ~7, (max(16, origin[1]+point[1]-press[1])+4) & ~7)
                 return [x, y, x+width, y+height]
             def before(bridge):
-                nonlocal service, scene, shell, panel, graphical, app_live
+                nonlocal service, scene, shell, panel, graphical, app_live, app_behind_shell
                 b.profile_start()
                 reach(f'dw(${at("DESKTEST", "ready"):x})=1')
                 service = read('DESKSTATE', 'service', 3)
@@ -215,7 +223,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                             reach(f'dw(${at("DESKMOVE", "moveToken"):x})=0', 'native_irq')
                             require(read('DESKMOVE', 'moveToken', 4)==0, 'Move token still active')
                         committed = clock()
-                        require(bounds() == outline, 'Release geometry differs from clamped/grid oracle')
+                        require(bounds() == outline, 'Release geometry differs from clamped/grid oracle: '+str((bounds(),outline)))
                         shell = outline
                         reach(f'dw(${at("DESKTEST", "runningMode"):x})=0')
                         frames(2)
@@ -261,7 +269,9 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     # The independent app completely covers the fixture's
                     # smaller Input panel. Retire it through its real close
                     # gadget before exercising that panel's slow consumer.
-                    move(616,87)
+                    move(600,87); button(True); button(False); frames(5)
+                    app_behind_shell=False
+                    move(440,87)
                     button(True)
                     frames(2)
                     button(False)
@@ -295,7 +305,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 require(bounds(1) == panel, 'Loss committed a move')
                 report['cancellations'].append(dict(kind='event_queue_loss', scene=visible()))
                 # The close gadget requests retirement; this fixture refuses.
-                move(panel[2]-8, panel[1]+7)
+                move(panel[0]+8, panel[1]+7)
                 button(True)
                 frames(2)
                 button(False)

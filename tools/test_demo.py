@@ -370,7 +370,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 x,y,w,h=work(1)
                 # Click its visible rightmost title after raising it, then close.
                 click(x+w-24,y-10);cells('counter-after-disk-exposure')
-                click(x+w-2,y-10)
+                click(x,y-10)
                 rendezvous(f'dw(${foreign["symbols"]["GEMCountersDone"]:x})=1')
                 frames(80);cells('counter-physical-close')
                 old=number(app(0,'count'));frames(100)
@@ -417,7 +417,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             if closing:
                 x,y,w,h=model(1)['work']
                 click(x+w-24,y-10);cells('input-after-disk-exposure')
-                click(x+w-2,y-10)
+                click(x,y-10)
                 rendezvous(f'dw(${foreign["symbols"]["GEMInputsDone"]:x})=1')
                 frames(80);cells('input-physical-close')
                 require(model(0)['ready'],'Closing B retired A')

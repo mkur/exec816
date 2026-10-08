@@ -7,6 +7,20 @@ asynchronous events and a worker-hosted bitmap presenter. DT4 connects one
 64×20 shell console and retained graphical windows to Layers. It is an ordinary library and message service above Exec; it
 adds no kernel gateway or resident Task by itself.
 
+## Window appearance
+
+Native and GEM windows use flat black outlines, white frame margins and
+centered titles in the existing 8×8 Atari ST font. The focused title carries
+a black-and-white pattern; inactive titles are plain. The boxed closer is on
+the left, and is absent from the shell. Its hit rectangle matches its painted
+box. Release outside, Escape and input loss cancel a close gesture. An inactive
+AES window still requires a topping gesture before its closer can activate.
+
+Work insets remain left 8, top 16, right 8 and bottom 8 pixels. Frame fragments
+are reconstructed in the existing offscreen strip and published only when
+complete, without clearing application-owned work pixels. The frame and local
+`wind_calc` geometry use constants generated from `abi/desktop.json`.
+
 ## Registration and lifetime
 
 `DESKTOP.Init(client, service)` creates a private reply port in the calling Task.

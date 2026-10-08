@@ -58,7 +58,7 @@ selection replaces the native panel; the default build still starts shell/prime.
 The selected pointer acceleration profile applies to both native and GEM windows.
 
 Click a title to focus/top, drag a counter to any on-screen pixel position, or
-click X to close it. Click the shell before typing `CAT STORY.TXT | WC` or
+click the boxed closer at the left of its title to close it. Click the shell before typing `CAT STORY.TXT | WC` or
 `CAT LONG.TXT`; BREAK cancels the command. `EXIT` first closes/detaches counters,
 then stops desktop admission and releases the shell/services. Cold-boot to
 restart this focused resident profile. The loadable desktop below includes Files.

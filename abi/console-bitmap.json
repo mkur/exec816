@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "packet_bytes": 78,
   "fields": {
     "operation": 0,
@@ -37,6 +37,7 @@
     "TEXT_CLIP": 10,
     "POINTER": 11,
     "OUTLINE": 12,
-    "COPY_START": 13
+    "COPY_START": 13,
+    "FRAME": 14
   }
 }

@@ -64,14 +64,22 @@ def physical(b, p, foreign, report):
     old_focus = get(service+df['focus'], 4)
     old_bounds = b.memdump(view+vf['bounds'], 8)
     # The inactive root title remains visible above the overlapping peer.
-    move(170, 20); edge(1); edge(0); phase(2)
+    move(17, 20); edge(1); edge(0); phase(2)
     require(get(service+df['focus'], 4) == old_focus, 'Top committed before WM_TOPPED acknowledgment')
     require(get(busy, 1) == 0, 'Scene token survives application wait')
     b.poke16(sy['AESPhysicalGo'], 2); phase(3); frames(100)
     require(get(service+df['focus'], 4) != old_focus, 'Top acknowledgment did not focus application')
-    move(60, 20); frames(); before_outline = scan()
-    edge(1); move(77, 31); edge(0); phase(4)
-    move(60, 20); frames()
+    # The left closer of an inactive window topped it without closing. Once
+    # focused, release outside and Escape must leave the waiter untouched.
+    move(17,20); edge(1); move(60,30); edge(0); frames(10)
+    require(get(sy['AESPhysical'])==3, 'Outside closer release delivered a command')
+    move(17,20); edge(1); b._cmd_ok('KEY ESC down'); frames(3)
+    b._cmd_ok('KEY ESC up'); edge(0); frames(10)
+    require(get(sy['AESPhysical'])==3, 'Escape closer cancellation delivered a command')
+    # The old right closer is now part of the draggable title.
+    move(201, 20); frames(); before_outline = scan()
+    edge(1); move(218, 31); edge(0); phase(4)
+    move(201, 20); frames()
     require(scan() == before_outline, 'Odd-coordinate outline did not restore exact pixels')
     require(b.memdump(view+vf['bounds'], 8) == old_bounds, 'Move committed before WM_MOVED acknowledgment')
     words = struct.unpack('<8h', b.memdump(sy['AESControl'], 16))
@@ -79,7 +87,7 @@ def physical(b, p, foreign, report):
     b.poke16(sy['AESPhysicalGo'], 4); phase(5); frames(100)
     require(struct.unpack('<4h', b.memdump(view+vf['bounds'], 8)) == (26, 20, 226, 140),
             'Move acknowledgment did not change geometry')
-    move(218, 26); edge(1); edge(0); phase(6)
+    move(34, 26); edge(1); edge(0); phase(6)
     require(get(view+vf['shown']) == 1, 'Close committed before WM_CLOSED acknowledgment')
     require(get(busy, 1) == 0, 'Close request retains scene token')
     b.poke16(sy['AESPhysicalGo'], 6); phase(7)

@@ -9,6 +9,7 @@ USE DESKSTATE
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
+USE DESKGEOMETRY
 USE A816MEMORY
 USE HEAPCORE
 
@@ -43,8 +44,7 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   LET view=client.view
-  REGIONS.Assign(@work,layer.bounds.left+8,layer.bounds.top+16,
-      layer.bounds.right-8,layer.bounds.bottom-8)
+  DESKGEOMETRY.Work(@layer.bounds,@work)
   status=REGIONS.Clip(@layer.visible,@work,
       LAYERTYPES.Region POINTER(@view.visibleCount))
   IF status<>LAYERTYPES.OK THEN

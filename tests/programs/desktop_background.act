@@ -228,6 +228,23 @@ PROC Main()
   Send(DESKTYPES.CLOSE,panel)
   Pause(12)
 
+  ; Minimum geometry must truncate a long name without touching the closer or
+  ; client. An empty active name must leave only the patterned title interior.
+  FOR index=0 TO 1 DO
+    DESKTOP.Prepare(@request,DESKTYPES.OPEN)
+    request.value=DESKTYPES.CONTENT_COMMANDS
+    request.payload=BYTE POINTER(c"Minimum title")
+    request.bytes=IF index=0 THEN CARD(13) ELSE CARD(0) FI
+    REGIONS.Assign(@request.bounds,575,193,607,225)
+    Send(DESKTYPES.OPEN,0)
+    panel=request.window
+    Send(DESKTYPES.SHOW,panel)
+    Send(DESKTYPES.FOCUS,panel)
+    Pause(13+index)
+    Send(DESKTYPES.CLOSE,panel)
+  OD
+  Pause(15)
+
 RETURN
 
 ENDMODULE

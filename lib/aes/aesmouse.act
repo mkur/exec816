@@ -8,6 +8,7 @@ USE AESKEYS
 USE AESWINDOWSTATE
 USE DESKSTATE
 USE DESKTYPES
+USE DESKGEOMETRY
 USE LAYERS
 
 CONST NATIVE=1, TITLE=2
@@ -241,8 +242,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
     LET layer=LAYERS.Find(@desktop.scene,
         LAYERS.Hit(@desktop.scene,sample.x,sample.y))
     IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0
-        AND sample.y>=layer.bounds.top+2
-        AND sample.y<layer.bounds.top+14 THEN
+        AND DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0 THEN
       manager=TITLE
     FI
   END

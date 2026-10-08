@@ -138,7 +138,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
           IF layer<>NULL THEN
             IF service.windows(index).kind<>DESKTYPES.CONTENT_CONSOLE THEN
               REGIONS.Copy(@layer.bounds,@frame)
-              frame.bottom=frame.top+16
+              frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
               IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
                 DESKWIDGETS.FocusDamage(service,@service.windows(index))
@@ -317,8 +317,10 @@ CARD FUNC Content(DESKTYPES.Service POINTER service
 
   LET source=DESKTYPES.Content POINTER(request.payload)
   LET layer=Layer(service,window)
-  width=CARD(layer.bounds.right-layer.bounds.left)-16
-  height=CARD(layer.bounds.bottom-layer.bounds.top)-24
+  width=CARD(layer.bounds.right-layer.bounds.left)
+      -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
+  height=CARD(layer.bounds.bottom-layer.bounds.top)
+      -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
   IF source.count>DESKTYPES.COMMANDS OR source.textBytes>DESKTYPES.TEXT_BYTES
       OR source.background>15 THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)

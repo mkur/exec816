@@ -90,6 +90,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                         panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
                               radio=5 if read('DESKAPP', 'updates') else 4,
                               focus=5 if read('DESKAPP', 'updates') else 2)
+                    menu_bar(raster, {1:b'Exec816 Shell',2:b'Control Panel'}.get(focused,b'Desktop'))
                     expected = overlay(raster, position)
                     golden = b''.join(colors[v >> 4]+colors[v & 15] for v in expected)
                     for n in range(1500):
@@ -148,7 +149,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                         panel_live = False
                         focused = 0
                     else:
-                        click(616, 87)
+                        click(448, 87)
                         reach(f'db(${at("DESKAPP", "finished"):x})=1')
                         panel_live = False
                         focused = 0

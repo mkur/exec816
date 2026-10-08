@@ -2,6 +2,9 @@
 
 [Documentation home](../README.md)
 
+- [Classic GEM appearance](classic-gem-appearance.md): frame, menu and desktop
+  appearance work; executable slice results are recorded as they complete.
+
 These pages preserve earlier designs, completed implementation slices and
 revision-specific measurements. Some use the future tense because they were
 written before implementation. Start with the [current architecture](../architecture/README.md)

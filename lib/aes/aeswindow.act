@@ -264,7 +264,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       A816MEMORY.Move(@window.title(0),title,length+1)
       DESKMENU.Renamed(window.id)
       REGIONS.Copy(@layer.bounds,@bounds)
-      bounds.bottom=bounds.top+16
+      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
       status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
     WHEN AESTYPES.WF_TOP THEN
       IF layer.shown=0 THEN
