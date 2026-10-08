@@ -1,3 +1,4 @@
+from browser_model import FIELDS as BF
 #!/usr/bin/env python3
 """Two private Files images use independent public menu trees and lifetimes."""
 import argparse,json
@@ -44,18 +45,18 @@ def run(program,out):
                 for base in models:s.rendezvous('dw($%x)=1'%(base+8))
                 s.frames(180);menus=Menus(s,click,move)
                 require(models[0]!=models[1],'Two Files instances share the model')
-                require(all(s.number(base+2268)==1 for base in models),'Missing installed Files menu')
+                require(all(s.number(base+BF['menuInstalled'])==1 for base in models),'Missing installed Files menu')
                 require(len([w for w in menus.windows() if w['title']=='Files'])==2,'Missing Files windows')
                 # Move the focused second instance; both title bars are reachable.
                 move(100,64);edge(1);move(348,64);edge(0);s.frames(130)
                 require(s.number(models[1]+26)==272,'Second Files window did not move')
                 click(32,64);s.frames()
-                require(s.number(models[0]+1966)==65535,'Unexpected initial selection')
+                require(s.number(models[0]+BF['selected'])==65535,'Unexpected initial selection')
                 click(80,108);s.frames()
-                require(s.number(models[0]+1966)==0 and s.number(models[1]+1966)==65535,'Selection crossed application instances')
-                require(s.number(models[0]+2028+6*24+10)==0 and s.number(models[1]+2028+6*24+10)==8,'Menu enable state crossed instances')
+                require(s.number(models[0]+BF['selected'])==0 and s.number(models[1]+BF['selected'])==65535,'Selection crossed application instances')
+                require(s.number(models[0]+BF['bar']+6*24+10)==0 and s.number(models[1]+BF['bar']+6*24+10)==8,'Menu enable state crossed instances')
                 click(24,8);click(32,40)
-                require(s.number(models[0]+1966)==65535,'Pointer menu Refresh failed')
+                require(s.number(models[0]+BF['selected'])==0,'Pointer menu Refresh lost selection')
                 click(80,108);menus.key('ESC',ctrl=True,shift=True);menus.key('TAB');menus.key('RETURN')
                 require(b.memdump(models[0]+178,128).split(b'\0')[0]==b'SYS:C','Keyboard menu Open failed')
                 first_focus=menus.focus();click(280,64);s.frames()
@@ -66,7 +67,7 @@ def run(program,out):
                 menus.key('ESC',ctrl=True,shift=True);menus.key('TAB');menus.key('TAB');menus.key('RETURN')
                 s.rendezvous('dw($%x)=0'%(models[1]+8));s.frames(100)
                 require(menus.focus()==first_focus,'Quit did not restore other Files menu')
-                require(s.number(models[0]+2268)==1 and not s.number(models[1]+2268),'Menu withdrawal crossed owners')
+                require(s.number(models[0]+BF['menuInstalled'])==1 and not s.number(models[1]+BF['menuInstalled']),'Menu withdrawal crossed owners')
                 click(24,8);click(32,72)
                 s.rendezvous('dw($%x)=0'%(models[0]+8))
                 report.update(private_models=models,commands=['pointer Refresh','keyboard Open','disabled Open','keyboard Quit','pointer Quit'],focus_restoration=True)

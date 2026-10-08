@@ -1,6 +1,7 @@
 """Physical browser/RSC/popup/launcher cases for the exact OF816 desktop."""
 from native_program import require
 from stack_budget import stack_usage
+from browser_model import FIELDS as F, listing, select
 
 
 def exercise(s,sy,click,move):
@@ -12,64 +13,65 @@ def exercise(s,sy,click,move):
     def bar(item,keyboard=False):
         if keyboard:
             s.menus.key('ESC',ctrl=True,shift=True)
-            enabled=[i for i in range(6,10) if not num(2028+i*24+10)&8]
+            enabled=[i for i in range(6,10) if not num(F['bar']+i*24+10)&8]
             for _ in range(enabled.index(item)+1):s.menus.key('TAB')
             s.menus.key('RETURN')
         else:
             click(24,8);click(32,24+(item-6)*16)
         s.frames(100)
-    def names():
-        raw=b.memdump(base+306,8*108)
-        return [raw[i*108:(i+1)*108].split(b'\0')[0].decode('ascii') for i in range(num(1962))]
-    def row(name):
-        observed=[]
-        for page in range(12):
-            listing=names()
-            observed.append(dict(page=num(1964),names=listing,count=num(1962),
-                path=string(178),status=string(1386),selected=num(1966),down=num(1968),armed=num(1970)))
-            if string(1386)=='Directory unavailable':
-                observed[-1]['dos_storage']=s.b.memdump(s.p['build']['memory']['dos_storage']['BASE'],128).hex()
-                observed[-1]['sio']=s.b.memdump(s.p['labels']['SIO_STATE'],128).hex()
-                observed[-1]['timer']=s.b.memdump(s.p['build']['task_storage']['BASE']+0xf30,20).hex()
-                break
-            if name in listing:
-                click(80,108+listing.index(name)*12);return
-            click(204,88);s.frames(100)
-        import json
-        (s.p['output']/'browser-navigation-failure.json').write_text(json.dumps(observed,indent=2)+'\n')
-        raise RuntimeError('Missing browser row '+name)
+    def names():return listing(s,base)
+    def row(name):select(s,base,name,click)
     s.rendezvous('dw($%x)=1'%(base+8));s.frames(180)
     require(string(178)=='SYS:','Browser initial directory')
     s.menus.select('Files');s.frames(80)
     s.cells('browser-front');s.save_screen(s.p['output']/'browser.png')
     initial=names();require('C' in initial,'Directory entries did not come from SYS')
-    require(num(2028+6*24+10)==8 and num(2028+8*24+10)==8,'Initial menu availability')
+    require(num(F['bar']+6*24+10)==8 and num(F['bar']+8*24+10)==8,'Initial menu availability')
     click(24,8);move(632,232);s.cells('files-menu-disabled');s.menus.key('ESC')
     row('C');bar(6,True);require(string(178)=='SYS:C','Menu Open directory')
     row('HELLO')
-    old=num(1972,4);bar(6)
-    s.rendezvous('dw($%x)=0'%(base+1980));s.frames(100)
-    require(num(1972,4)==old+1 and num(1984,4)==0,'HELLO launch/collection')
+    old=num(F['launches'],4);bar(6)
+    s.rendezvous('dw($%x)=0'%(base+F['child']));s.frames(100)
+    require(num(F['launches'],4)==old+1 and num(F['result'],4)==0,'HELLO launch/collection')
     print('Browser native HELLO launch pass',flush=True)
     # A resource-loaded popup handles keyboard cancel and selection.
     key('F');key('ESC');require(num(8)==1,'Popup Escape closed browser')
     key('F');key('TAB');key('RETURN');s.frames(100)
-    require(num(1966)==65535,'Popup Refresh did not reset selection')
+    require(num(F['selected'])>=0 and names()[num(F['selected'])]=='HELLO','Popup Refresh lost selection')
+    # Exercise actual scroll/resize gadgets with a selected filename retained.
+    selected_name=names()[num(F['selected'])]
+    old_visible=num(F['visible']);old_first=num(F['first'])
+    click(248,208);s.frames(90)
+    require(num(F['first'])==min(old_first+1,num(F['count'])-old_visible),'Files down arrow')
+    move(248,224);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+    move(248,176);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
+    require(num(F['visible'])==4,'Files height did not set visible rows')
+    require(names()[num(F['selected'])]==selected_name,'Shrink lost selected filename')
+    s.cells('files-shrunk')
+    move(248,176);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+    move(312,224);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
+    require(num(F['visible'])==8 and num(F['work']+4)==280,'Files grow layout')
+    s.cells('files-grown')
+    move(312,224);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+    move(248,224);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
+    require(num(F['work']+4)==216,'Files restore width')
+    s.saved['files_scrolling']=dict(snapshot_entries=num(F['count']),rows=[old_visible,4,8],
+        continuous_scroll=True,resize=True,preserved_selection=selected_name,pixel_repair=True)
     # Browser stays responsive while a command runs; close requests a break
     # and collects it before the browser Task can retire.
-    row('TICK');old=num(1972,4);key('RETURN')
-    s.rendezvous('dw($%x)=%d'%(base+1972,old+1));s.frames(50)
-    require(num(1972,4)==old+1 and num(1980,4)!=0,'TICK did not start')
+    row('TICK');old=num(F['launches'],4);key('RETURN')
+    s.rendezvous('dw($%x)=%d'%(base+F['launches'],old+1));s.frames(50)
+    require(num(F['launches'],4)==old+1 and num(F['child'],4)!=0,'TICK did not start')
     s.saved['desktop_peak_tasks']=s.ledger()['live']
     require(s.saved['desktop_peak_tasks']==8,'Launch did not use all eight Tasks')
-    require(num(2028+6*24+10)==8 and num(2028+8*24+10)==0,'Live-child menu availability')
+    require(num(F['bar']+6*24+10)==8 and num(F['bar']+8*24+10)==0,'Live-child menu availability')
     bar(8,True)
-    s.rendezvous('dw($%x)=0'%(base+1980));s.frames(100)
-    require(num(1984,4)!=0 or num(1988,4)==304,'Stopped command result')
+    s.rendezvous('dw($%x)=0'%(base+F['child']));s.frames(100)
+    require(num(F['result'],4)!=0 or num(F['result']+4,4)==304,'Stopped command result')
     print('Browser menu Stop/collection pass',flush=True)
     click(120,88);require(string(178)=='SYS:','Parent directory')
-    row('STORY.TXT');old=num(1972,4);key('RETURN')
-    require(num(1972,4)==old and not num(1980,4),'Text file accepted as executable')
+    row('STORY.TXT');old=num(F['launches'],4);key('RETURN')
+    require(num(F['launches'],4)==old and not num(F['child'],4),'Text file accepted as executable')
     # Explicit popup mouse cancel; same loaded object tree and public API.
     click(48,88);s.frames(80);click(80,160);s.frames(100)
     require(num(8)==1,'Popup mouse cancel closed browser')
@@ -86,8 +88,8 @@ def exercise(s,sy,click,move):
     else:click(424,56)
     s.rendezvous('dw($%x)=0'%sy['GEMDesktopChildren'])
     s.menus.select('Files');row('C');key('RETURN');row('PANEL.APP');key('RETURN')
-    s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(base+1980,base+1386))
-    child=num(1980,4);require(child!=0,'Files did not launch a GEM app')
+    s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(base+F['child'],base+F['status']))
+    child=num(F['child'],4);require(child!=0,'Files did not launch a GEM app')
     from gem_applications import symbols
     panel=symbols(b,s.p,s.p['output']/'bitmap-console','panel',child)['GEMPanel']
     s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
@@ -103,14 +105,14 @@ def exercise(s,sy,click,move):
     from loadable_gem_feedback import measure
     measure(s,panel,move,'reloaded')
     s.menus.select('Files');bar(8)
-    s.rendezvous('dw($%x)=0'%(base+1980));s.frames(100)
-    require(num(1984,4)==0,'GUI Stop did not return cleanly')
+    s.rendezvous('dw($%x)=0'%(base+F['child']));s.frames(100)
+    require(num(F['result'],4)==0,'GUI Stop did not return cleanly')
     print('Browser GEM launch/input/Stop pass',flush=True)
     # Close during a popup with a live child: defer WM_CLOSED, then BREAK/wait
     # before releasing the owning application. One launch slot remains.
     s.menus.select('Files');row('TICK')
-    old=num(1972,4);key('RETURN')
-    s.rendezvous('dw($%x)=%d'%(base+1972,old+1));key('F')
+    old=num(F['launches'],4);key('RETURN')
+    s.rendezvous('dw($%x)=%d'%(base+F['launches'],old+1));key('F')
     menu=num(174,4)
     require(s.number(menu+18,2)!=0,'Popup did not enter its wait')
     s.saved['browser_stacks']=stack_usage(b,s.p['build']['memory'])

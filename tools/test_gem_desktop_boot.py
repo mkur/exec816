@@ -79,17 +79,11 @@ class DesktopBoot:
         browser=launch_files()
         # Launch a GUI child and leave a popup active when EXIT closes Files.
         def key(name):s.b._cmd_ok('KEY '+name+' down');s.frames(3);s.b._cmd_ok('KEY '+name+' up');s.frames(70)
-        def row(name):
-            for _ in range(12):
-                raw=s.b.memdump(browser+306,8*108)
-                names=[raw[i*108:(i+1)*108].split(b'\0')[0].decode('ascii')
-                       for i in range(s.number(browser+1962,2))]
-                if name in names:click(80,108+names.index(name)*12);return
-                click(204,88);s.frames(100)
-            raise RuntimeError('Missing relaunched Files entry '+name)
+        from browser_model import FIELDS as BF, select as select_file
+        def row(name):select_file(s,browser,name,click)
         # Quit from the application menu follows the same child-stop/collect path.
         s.menus.select('Files');row('C');key('RETURN');row('TICK');key('RETURN')
-        s.rendezvous('dw($%x)!=0'%(browser+1980));s.frames(80)
+        s.rendezvous('dw($%x)!=0'%(browser+BF['child']));s.frames(80)
         click(24,8);click(32,72)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         require(s.ledger()==owners,'Menu Quit retained its native child')
@@ -97,8 +91,8 @@ class DesktopBoot:
         s.saved['menu_quit_with_child']=True
         browser=launch_files()
         s.menus.select('Files');row('C');key('RETURN');row('PANEL.APP');key('RETURN')
-        s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(browser+1980,browser+1386))
-        child=s.number(browser+1980,4);require(child!=0,'Relaunched Files lost its GUI child')
+        s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(browser+BF['child'],browser+BF['status']))
+        child=s.number(browser+BF['child'],4);require(child!=0,'Relaunched Files lost its GUI child')
         loaded_panel=symbols(s.b,s.p,s.p['output']/'bitmap-console','panel',child)['GEMPanel']
         s.rendezvous('dw($%x)=1'%(loaded_panel+8));s.menus.select('Files');key('F')
         click(96,32)

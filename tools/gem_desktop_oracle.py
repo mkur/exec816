@@ -35,14 +35,15 @@ def paint(bridge,symbols,r,title,bounds):
         r.clip=(0,0,639,239);return
     if title==b'Files':
         base=symbols['GEMBrowser'];tree=int.from_bytes(bridge.memdump(base+170,4),'little')
-        raw=bridge.memdump(tree,13*24)
-        objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(13)]
+        from browser_model import OBJECTS
+        raw=bridge.memdump(tree,OBJECTS*24)
+        objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(OBJECTS)]
         labels={}
         for i,obj in enumerate(objects):
             if obj[3] in (26,28,32):
                 labels[i]=bridge.memdump(obj[6],64).split(b'\0')[0].decode('ascii');obj[6]=i
         objects[0][7]=objects[0][8]=0
-        draw(r,objects,labels,(left+8,top+16,right-8,bottom-8))
+        draw(r,objects,labels,(left+8,top+16,right-16,bottom-16))
         return
     require(title==b'GEM Control Panel','Unknown GEM desktop app: '+repr(title))
     base=symbols['GEMPanel'];raw=bridge.memdump(base+178,192)

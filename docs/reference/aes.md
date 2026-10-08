@@ -449,8 +449,11 @@ The server wire record remains 112 bytes; all bank-zero reservations are unchang
 ## Small GEM desktop
 
 `tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
-the shell. Files loads `SYS:DESKTOP.RSC`, enumerates DOS directories eight entries
-at a time and launches native Exec commands or C/GEM APPs using Program/Process. Its
+the shell. Files loads `SYS:DESKTOP.RSC`, caches up to 256 directory entries and shows up to sixteen reusable rows,
+adapting the count and width to its work area. Arrows, page clicks and the vertical
+thumb scroll continuously; keyboard selection follows into view. Refresh preserves
+the selected filename. Directories above the limit report a truncated listing.
+Files launches native Exec commands or C/GEM APPs using Program/Process. Its
 application menu offers Open, Refresh, Stop and Quit; its window-scoped File
 popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
 and child availability, and menu Quit shares the ordinary close path. A launched command

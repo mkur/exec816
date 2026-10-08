@@ -71,7 +71,7 @@ UWORD AESRun(void)
     x=rsrc_load("D1:DESKTOP.RSC");ResourceStatus=ExecAESDiagnostic();ResourceError=IoErr();
     CHECK(x);if (!x) goto cleanup;
     CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
-    CHECK(tree[0].ob_width==224 && tree[0].ob_height==152);
+    CHECK(tree[0].ob_width==216 && tree[0].ob_height==144);
     CHECK(tree[1].ob_type==G_BUTTON && ((char *)tree[1].ob_spec)[0]=='F');
     CHECK(objc_offset(tree,4,&x,&y) && x==8 && y==32);
     CHECK(rsrc_gaddr(R_TREE,1,(void **)&popup) && popup[0].ob_width==112);

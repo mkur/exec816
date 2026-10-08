@@ -1,5 +1,6 @@
 # Historical records
 
+- [Files scrolling](files-scrolling.md): cached directory rows and adaptive layout.
 - [Window gadgets](window-gadgets.md): resizing and vertical scrolling.
 
 [Documentation home](../README.md)

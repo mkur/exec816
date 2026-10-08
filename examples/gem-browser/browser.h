@@ -4,19 +4,24 @@
 #include <gem.h>
 #include <proto/dos.h>
 #include <exec816/program.h>
+#define BROWSER_ENTRIES 256
+#define BROWSER_ROWS 16
+#define BROWSER_ROW_FIRST 4
+#define BROWSER_STATUS (BROWSER_ROW_FIRST+BROWSER_ROWS)
+struct BrowserEntry { char name[108]; LONG kind; };
 struct Browser {
     WORD id,vdi,window,opened;
     volatile WORD ready;
     WORD message[8],work[4],input[11],output[57];
     OBJECT *tree,*menu;
-    char path[128],names[8][108],labels[8][27],status[28],target[256];
-    LONG kinds[8];
+    char path[128],status[128],target[256],savedName[108];
+    char labels[BROWSER_ROWS][81];
+    struct BrowserEntry *entries;
     struct FileInfoBlock info;
-    WORD count,page,selected,down,armed;
+    WORD count,first,visible,selected,down,armed,truncated;
     volatile ULONG launches,paints;
     ULONG child;
     struct ExecProgramResult result;
-    /* Popup descriptors and event outputs outlive nested drawing calls. */
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
     OBJECT bar[10];

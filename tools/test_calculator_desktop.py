@@ -22,6 +22,9 @@ class DesktopColdBoot:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 
+from browser_model import FIELDS as BF, select as select_file
+
+
 class CalculatorDesktop:
     def exercise(self,s):
         b=s.b;directory=s.p['output']/'bitmap-console'
@@ -39,16 +42,10 @@ class CalculatorDesktop:
         def edge(down):b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));s.frames(20)
         def click(x,y):move(x,y);edge(1);edge(0);s.frames(60)
         def key(name):b._cmd_ok('KEY '+name+' down');s.frames(3);b._cmd_ok('KEY '+name+' up');s.frames(50)
-        def row(name):
-            for _ in range(12):
-                raw=b.memdump(browser+306,8*108)
-                names=[raw[i*108:(i+1)*108].split(b'\0')[0].decode('ascii') for i in range(s.number(browser+1962,2))]
-                if name in names:click(80,108+names.index(name)*12);return
-                click(204,88);s.frames(100)
-            raise RuntimeError('Missing Files row '+name)
+        def row(name):select_file(s,browser,name,click)
         def load():
-            menus.select('Files');row('CALC.APP');old=s.number(browser+1972,4);key('RETURN')
-            s.rendezvous('dw($%x)=%d'%(browser+1972,old+1))
+            menus.select('Files');row('CALC.APP');old=s.number(browser+BF['launches'],4);key('RETURN')
+            s.rendezvous('dw($%x)=%d'%(browser+BF['launches'],old+1))
         def current(identity):
             sy=symbols(b,s.p,directory,'calc',identity)
             s.rendezvous('dw($%x)=1'%(sy['Calculator']+4));s.frames(100)
@@ -56,8 +53,8 @@ class CalculatorDesktop:
             return sy
         def stop():
             menus.select('Files');key('F');key('TAB');key('TAB');key('RETURN')
-            s.rendezvous('dw($%x)=0'%(browser+1980));s.frames(90)
-            require(s.number(browser+1984,4)==0,'Calculator Stop result')
+            s.rendezvous('dw($%x)=0'%(browser+BF['child']));s.frames(90)
+            require(s.number(browser+BF['result'],4)==0,'Calculator Stop result')
         def memory():
             click(96,32);screen=s.command('MEM').decode('ascii')
             return [int(v) for v in re.findall(r'(?:ordinary|linear) (?:total|largest) +(\d+)',screen)][-4:]
@@ -69,8 +66,8 @@ class CalculatorDesktop:
         menus=Menus(s,click,move)
         menus.select('Files');row('C');key('RETURN')
         baseline=memory();owners=s.ledger()
-        load();s.rendezvous('dw($%x)=0'%(browser+1980));s.frames(100)
-        require(s.number(browser+1984,4)==1,'Full desktop must reject a fifth window')
+        load();s.rendezvous('dw($%x)=0'%(browser+BF['child']));s.frames(100)
+        require(s.number(browser+BF['result'],4)==1,'Full desktop must reject a fifth window')
         after=memory();after_owners=s.ledger()
         # Files first arms its existing child-collection timer: one 32-byte
         # port and two 40-byte requests, retained until Files exits.
@@ -79,20 +76,20 @@ class CalculatorDesktop:
         print('Files child-collection timer opened: 112 upper bytes',flush=True)
         require(after_owners==owners,'No-window failure retained ownership')
         baseline=after
-        load();s.rendezvous('dw($%x)=0'%(browser+1980));s.frames(100)
-        require(s.number(browser+1984,4)==1,'Repeated no-window result')
+        load();s.rendezvous('dw($%x)=0'%(browser+BF['child']));s.frames(100)
+        require(s.number(browser+BF['result'],4)==1,'Repeated no-window result')
         require(memory()==baseline and s.ledger()==owners,'Repeated no-window failure leaked resources')
         print('Calculator no-window cleanup pass',flush=True)
         click(592,56);click(424,56);s.rendezvous('dw($%x)=0'%children)
         baseline=memory();owners=s.ledger()
-        load();first=current(s.number(browser+1980,4))
+        load();first=current(s.number(browser+BF['child'],4))
         for index in (3,10,9,19):button(first,index)
         require(s.number(first['shown'])==42,'Packaged calculator arithmetic')
         self.feedback(s,first,move)
         require(s.number(counter+14,4)>count,'Counter stopped beside calculator')
         s.cells('calculator-forty-two');stop()
         require(memory()==baseline and s.ledger()==owners,'Calculator Stop leaked resources')
-        load();first=current(s.number(browser+1980,4));stop()
+        load();first=current(s.number(browser+BF['child'],4));stop()
         require(memory()==baseline and s.ledger()==owners,'Calculator relaunch leaked resources')
         print('Files calculator launch, Stop and relaunch pass',flush=True)
         # Retire Counter to fit two independent calculator windows in four layers.
@@ -103,7 +100,7 @@ class CalculatorDesktop:
         move(96,64);edge(1);move(96,32);edge(0);s.frames(100)
         click(96,32);s.command('C:HELLO',b'Hello from disk!')
         baseline=memory();owners=s.ledger()
-        load();first=current(s.number(browser+1980,4));button(first,3)
+        load();first=current(s.number(browser+BF['child'],4));button(first,3)
         click(96,32);previous=s.begin('RUN C:CALC.APP');s.ready(previous);s.result()
         second=current(s.number(job,4))
         x,y,w,h=work(second);move(x+80,y-8);edge(1);move(x-64,y-8);edge(0);s.frames(100)
@@ -115,11 +112,11 @@ class CalculatorDesktop:
         s.cells('two-calculators')
         x,y,w,h=work(second);click(x,y-8)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
-        require(s.number(browser+1980,4)!=0,'Closing shell calculator stopped Files child')
+        require(s.number(browser+BF['child'],4)!=0,'Closing shell calculator stopped Files child')
         stop();require(memory()==baseline and s.ledger()==owners,'Two calculator images retained heap/ownership')
         print('Independent calculator instances and idle RUN collection pass',flush=True)
         # Owner exit must collect a still-live calculator, including popup wait.
-        load();first=current(s.number(browser+1980,4));menus.select('Files');key('F')
+        load();first=current(s.number(browser+BF['child'],4));menus.select('Files');key('F')
         click(96,32);s.save_screen(s.p['output']/'boot-smoke.png')
         from stack_budget import stack_usage
         s.saved['gem_stacks']=stack_usage(b,s.p['build']['memory'])

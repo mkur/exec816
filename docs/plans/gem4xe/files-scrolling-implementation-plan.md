@@ -2,7 +2,7 @@
 
 [Design note](files-scrolling-design.md) · [GEM integration](README.md)
 
-Status: planned; follows WG1–WG2.
+Status: FS1 implemented; FS2 physical integration checks running.
 
 1. **FS1 — Snapshot and adaptive view.** Replace the eight-entry page state with
    a bounded directory snapshot, retained selection and sixteen reusable rows.
