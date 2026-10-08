@@ -107,6 +107,10 @@ LONGCARD FUNC CGetArgStr(LONGCARD unused,unused2,unused3)
 
 RETURN(LONGCARD(ADDRESS(PROCESS.GetArgStr())))
 
+LONGCARD FUNC CProgramMask(LONGCARD identity,unused,unused2)
+
+RETURN(PROCESS.CompletionMask(identity))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -128,5 +132,6 @@ PROC BindDos(BYTE unused)
   entries(14)=ADDRESS(@CBreakProgram)
   entries(15)=ADDRESS(@CWaitProgram)
   entries(16)=ADDRESS(@CGetArgStr)
+  entries(17)=ADDRESS(@CProgramMask)
 
 RETURN

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 2,
+  "version": 3,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -76,6 +76,7 @@
     "menu_ienable",
     "menu_tnormal",
     "menu_text",
-    "ExecGetArgStr"
+    "ExecGetArgStr",
+    "ExecProgramMask"
   ]
 }

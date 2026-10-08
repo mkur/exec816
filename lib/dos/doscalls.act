@@ -502,7 +502,7 @@ PUBLIC LONGINT FUNC Read(BYTE POINTER identity,buffer LONGINT length)
     FI
 
     error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
-        DOSBREAKTYPES.Scope POINTER(client.foreground))
+        DOSBREAKTYPES.Scope POINTER(client.foreground),client)
     RETURN(DOSRAW.Complete(client,DOSSTREAMS.Handle POINTER(header),error))
   FI
 
@@ -559,7 +559,7 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
     FI
 
     error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
-        DOSBREAKTYPES.Scope POINTER(client.foreground))
+        DOSBREAKTYPES.Scope POINTER(client.foreground),client)
     RETURN(DOSRAW.Complete(client,DOSSTREAMS.Handle POINTER(header),error))
   FI
 
@@ -624,7 +624,7 @@ PUBLIC LONGINT FUNC WriteAt(BYTE POINTER identity CARD column,row
   request.io_Offset=LONGCARD(column)
       OR (LONGCARD(row) LSH CONSOLETYPES.POSITION_ROW_SHIFT)
   error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),
-      DOSBREAKTYPES.Scope POINTER(client.foreground))
+      DOSBREAKTYPES.Scope POINTER(client.foreground),client)
 
 RETURN(DOSRAW.Complete(client,handle,error))
 

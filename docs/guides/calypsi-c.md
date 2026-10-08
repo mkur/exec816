@@ -40,6 +40,30 @@ function addresses are not automatically admitted as Task entries.
 
 ## Supported interface
 
+For an independently loadable GEM application, provide ordinary `int main(void)`
+and use the existing GEM/Exec headers. Build its translation units together:
+
+```sh
+python3 tools/build_c_program.py --source examples/gem-panel/main.c \
+  --source examples/gem-panel/panel.c --output build/panel-app
+python3 tools/build_demo.py --gem-desktop --output build/gem-desktop
+```
+
+The first command produces `program.app` and a development manifest; rename the
+APP to `PANEL.APP` when placing it on a system disk. The desktop builder packages
+the panel, counter and Files applications, `DESKTOP.RSC`, and the matching shared
+`GEMSYS.BIN` automatically. Close the initial Files window, then use
+`RUN C:FILES.APP` to load another instance. Files itself can launch native commands
+and APPs, with one owned child at a time.
+
+The shared wrapper registers AES before `main` and completes AES/resource cleanup
+on return. Handle `WM_CLOSED`, collect owned children, and return from `main`;
+do not force-remove the Task or call `ExecDOSDetach` from a loaded application.
+Imports bind once at loading, so normal AES/VDI calls retain caller-local execution.
+The [C image contract](../reference/c-program-loading.md) defines relocation,
+ownership, stack limits and the supported subset. Rebuild APPs after import ABI
+changes. This does not load existing Atari ST binaries or arbitrary XEX files.
+
 Include `<exec/types.h>`, `<exec/tasks.h>`, `<exec/ports.h>`, `<exec/memory.h>`
 as needed, and `<proto/exec.h>` for the function declarations.
 
@@ -54,7 +78,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
 | DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `IoErr`, `ExecDOSDetach` |
-| Native program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram` |
+| Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
 The standard launcher binds both DOS and caller-context device I/O. Include

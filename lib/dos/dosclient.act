@@ -19,9 +19,11 @@ PUBLIC TYPE ClientContext=[
   BYTE suspended,foregroundLoan
   BYTE POINTER assignPath,assignOther
   EXEC.IORequest POINTER timer
+  LONGCARD waitMask
+  LONGCARD FUNC POINTER waitService()
 ]
 
-PUBLIC CONST CLIENT_SIZE=98
+PUBLIC CONST CLIENT_SIZE=106
 
 ; Read this Task's detailed DOS error without allocating a client context.
 PUBLIC LONGINT FUNC IoErr()
@@ -51,8 +53,22 @@ PUBLIC PROC SetError(LONGINT error)
 
 RETURN
 
-; Acquire a private packet, reply port and lease for the caller's DOS
-; operations.
+; Optional caller-owned completion service, disabled by a zero mask. The
+; resident callback collects children without recursive DOS I/O on this context.
+PUBLIC PROC ServiceWait(ClientContext POINTER client LONGCARD bits)
+
+  IF (bits & client.waitMask)<>0 THEN
+    BEGIN
+      LET slot=DOSCORE.Current()
+      LET saved=slot.error
+      client.waitMask=client.waitService()
+      slot.error=saved
+    END
+  FI
+
+RETURN
+
+; Acquire a private packet, reply port and lease for the caller's DOS operations.
 ClientContext POINTER FUNC NewClient(DOSCORE.DosSlot POINTER slot)
   ClientContext POINTER client
   ; active is one byte. It protects partially published pointers and all
@@ -284,7 +300,8 @@ PUBLIC LONGINT FUNC Call(DOSCORE.DosSlot POINTER slot ClientContext POINTER clie
       FI
     FI
 
-    bits=EXEC.Wait(mask)
+    bits=EXEC.Wait(mask OR client.waitMask)
+    ServiceWait(client,bits)
   OD
 
   CheckReply(client,message)

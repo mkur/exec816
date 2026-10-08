@@ -68,7 +68,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
-        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO or TICK; File > Stop cancels TICK.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
         from build_gem_resource import resource
         (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
     disk_name='system.atr'
@@ -127,8 +127,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if gem_desktop:
         shutil.copyfile(output/'bitmap-console/GEMSYS.BIN',media/'GEMSYS.BIN')
         binary_names.add('GEMSYS.BIN')
-        shutil.copyfile(output/'bitmap-console/apps/counter/program.app',command_dir/'COUNTER.APP')
-        binary_names.add('C/COUNTER.APP')
+        for name in ('panel','counter','files'):
+            shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
+            binary_names.add('C/'+name.upper()+'.APP')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
@@ -221,6 +222,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
             *sorted((ROOT/'examples/gem-panel').glob('*')),
+            *sorted((ROOT/'examples/gem-counter').glob('*')),
+            *sorted((ROOT/'examples/gem-desktop').glob('*')),
             *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py')})
     graphics=None
     if gem_vdi:

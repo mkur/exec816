@@ -16,8 +16,8 @@ def run(out,optimize,bank,trace=False):
     # Count accepted physical keys, without replacing the public Read path.
     source=read_source(ROOT/'lib/dos/doscooked.act').replace('PUBLIC TYPE Handle=', 'PUBLIC CARD keyCount\nPUBLIC BYTE failEcho\nPUBLIC TYPE Handle=')
     source=source.replace('action=COOKEDLINE.Feed(state,state.key)','action=COOKEDLINE.Feed(state,state.key) keyCount==+1')
-    source=source.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)',
-        '  IF reading=0 AND failEcho<>0 THEN failEcho=0 request.io_Offset=1 FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)')
+    source=source.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)',
+        '  IF reading=0 AND failEcho<>0 THEN failEcho=0 request.io_Offset=1 FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)')
     (out/'doscooked.act').write_text(source)
     p=build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/dos_cooked.act',out,
             optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,

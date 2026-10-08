@@ -236,15 +236,13 @@ full AES compatibility remain deferred.
 The [desktop application milestone](plans/gem4xe/desktop-facilities-implementation-plan.md)
 now provides application-owned widgets/forms, a GEM Control Panel, classic
 resources, windowed popup menus and a Files browser beside the counter and shell.
-These applications are still linked into the shared C image; Files launches
-native commands. The next priority is
-[loadable GEM applications](plans/gem4xe/loadable-gem-applications-implementation-plan.md).
-LG1 now loads the shared GUI payload from the system disk; its
-[development checks](development/loadable-gem-lg1.json) pass and the OF816 XEX
-has 69,703 bytes of cartridge headroom. LG2–LG6 add a bounded
-C image/import ABI, reuse Program/Process lifetime, migrate the applications and
-test close/relaunch from the final cartridge/disk package. The plan preserves
-caller-local AES/VDI execution and targets zero bank-zero growth.
+The [loadable GEM applications](plans/gem4xe/loadable-gem-applications-implementation-plan.md)
+work moves the shared GUI payload to `GEMSYS.BIN` and the panel, counter and Files
+to separate APP files. Program/Process owns each private C image; Files can launch
+native commands or a GEM child, while the shell collects closed initial apps
+through existing completion signals. Caller-local AES/VDI execution and the
+bank-zero reservation remain unchanged. The final cartridge/package checks are
+recorded with the implementation plan.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its

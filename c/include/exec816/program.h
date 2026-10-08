@@ -11,4 +11,6 @@ LONG EXEC_CALL ExecBreakProgram(ULONG id);
 LONG EXEC_CALL ExecWaitProgram(ULONG id,struct ExecProgramResult *result);
 /* Borrowed, NUL-terminated Process argument text; NULL outside a Process. */
 CONST_STRPTR EXEC_CALL ExecGetArgStr(void);
+/* Borrowed completion signal; valid only until the owner collects this child. */
+ULONG EXEC_CALL ExecProgramMask(ULONG id);
 #endif

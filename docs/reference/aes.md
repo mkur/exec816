@@ -379,13 +379,17 @@ The version-8 server wire record and all bank-zero reservations are unchanged.
 
 `tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
 the shell. Files loads `SYS:DESKTOP.RSC`, enumerates DOS directories eight entries
-at a time and launches native Exec disk commands using Program/Process. Its
+at a time and launches native Exec commands or C/GEM APPs using Program/Process. Its
 window-scoped File menu offers Open, Refresh, Stop and Cancel. A launched command
 has an empty argument tail, NIL input and RAW output in the shell; closing Files
-requests BREAK and collects the child before Task retirement. Dynamic GEM/G4A
-loading remains unsupported. Current VDI rectangles and fixed-font text suffice.
+requests native BREAK or GEM close and collects the child before Task retirement.
+The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries
+and GEM4XE G4A files remain unsupported. Current VDI rectangles and fixed-font
+text suffice. Initial apps belong to the shell; Files owns its one launched
+child. Closed apps are collected at the idle prompt. `RUN C:FILES.APP` uses the
+shell background job to reopen Files.
 
-All four AES registrations and four desktop layers are used. Seven idle public
+Three AES registrations and all four desktop layers are used. Seven idle public
 Tasks leave one slot for a launched command. Close one GEM window before a
 shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
 PRIMES requires tiled-console mode and returns an error in desktop mode.

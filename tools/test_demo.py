@@ -135,11 +135,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         def counter_painter(r,title,bounds):
             if gem_desktop:
                 from gem_desktop_oracle import paint
-                symbols=dict(foreign['symbols'])
-                if title==b'Counter':
-                    from gem_applications import symbols as loaded_symbols
-                    symbols.update(loaded_symbols(b,p,out/'bitmap-console','counter',
-                        number(symbols['GEMDesktopCounter'])))
+                from gem_applications import scene_symbols
+                symbols=scene_symbols(b,p,out/'bitmap-console',title,bounds)
                 paint(b,symbols,r,title,bounds)
                 return
             if input_apps:
@@ -565,7 +562,16 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             if not shell_only and not disk_failure:
                 rendezvous(f'dw(${windows+console["WINDOWS_PANE"]:x})!=0')
             dos=p['build']['memory']['dos_storage']['BASE'];saved['scope']=pointer(pointer(dos)+83)
-            ready();cells('startup')
+            ready()
+            if gem_desktop:
+                from gem_applications import symbols,MODELS
+                shared=foreign['symbols']
+                for index,name in enumerate(('panel','counter','files')):
+                    model,offset,_=MODELS[name]
+                    sy=symbols(b,p,out/'bitmap-console',name,number(shared['GEMDesktopChildren']+index*4))
+                    rendezvous('dw($%x)=1'%(sy[model]+offset))
+                frames(120)
+            cells('startup')
             if integration is not None:
                 from types import SimpleNamespace
                 try:

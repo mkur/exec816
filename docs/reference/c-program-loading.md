@@ -42,7 +42,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 2 |
+| 6 | 2 | Import ABI version, 3 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -111,6 +111,21 @@ Fixed, per-public-Task and private-idle bank-zero reservation changes are all
 **0 bytes**, including guards, alignment and unused reserved capacity. The
 bridge and image use existing Task stacks and DPs; loader metadata and image
 backings live in upper RAM.
+
+The desktop ships `C:PANEL.APP`, `C:COUNTER.APP` and `C:FILES.APP`. Each has an
+application-owned model and a small `main` wrapper; their bodies are absent from
+the shared `GEMSYS.BIN`. The shell owns the three initial Processes. Files owns
+and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
+existing background job after the initial Files window closes.
+
+The shell includes owned child completion masks in its existing DOS waits.
+The optional DOS client callback occupies eight more upper-memory bytes per
+context (106 bytes before allocator rounding); it allocates no signal or Task.
+Its Task-local completion callback collects retired children and refreshes the
+mask, including while the prompt waits for input. It performs no recursive DOS
+I/O. Closing an initial application therefore restores its slot and image
+without a new keypress, service Task or polling timer. `CompletionMask` and
+`ExecProgramMask` borrow an owned child's signal only until collection.
 
 The [LG2 development record](../development/loadable-gem-lg2.json) covers raw
 and optimized native/C emission, two simultaneous copies at different bases,

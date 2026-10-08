@@ -204,8 +204,8 @@ RETURN
 ENDMODULE
 ''')
     cooked=read_source(ROOT/'lib/dos/doscooked.act').replace('USE EXEC','USE EXEC\nUSE SHELLEDITPROBE',1)
-    cooked=cooked.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)','  IF reading=0 THEN SHELLEDITPROBE.Capture(buffer,length) FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)')
-    cooked=cooked.replace('error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope)\n  secondary=LONGINT(error)','error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope) secondary=LONGINT(error)\n  IF reading<>0 THEN SHELLEDITPROBE.ReadCollected(0) FI')
+    cooked=cooked.replace('  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)','  IF reading=0 THEN SHELLEDITPROBE.Capture(buffer,length) FI\n  error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)')
+    cooked=cooked.replace('error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client)\n  secondary=LONGINT(error)','error=DOSCANCEL.Transfer(EXEC.IORequest POINTER(request),scope,client) secondary=LONGINT(error)\n  IF reading<>0 THEN SHELLEDITPROBE.ReadCollected(0) FI')
     cooked=cooked.replace('        state.drawn=0\n      FI','        state.drawn=0\n      FI\n      SHELLEDITPROBE.EditorWriteObserved(0)')
     (out/'doscooked.act').write_text(cooked)
     if size==256:

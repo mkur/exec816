@@ -412,6 +412,16 @@ PUBLIC LONGINT FUNC Collect(LONGCARD identity Result POINTER outcome)
 
 RETURN(-1)
 
+; Borrow the owned child's durable completion signal until collection.
+PUBLIC LONGCARD FUNC CompletionMask(LONGCARD identity)
+
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    RETURN(0)
+  FI
+
+RETURN(process.mask)
+
 ; Wait for a child to finish and return its collected command result.
 PUBLIC LONGINT FUNC Wait(LONGCARD identity Result POINTER outcome)
   PROCESSSTATE.Entry POINTER process

@@ -1,4 +1,4 @@
-# Resident GEM applications
+# GEM applications
 
 [Guides](README.md) · [AES contract](../reference/aes.md)
 
@@ -61,7 +61,7 @@ Click a title to focus/top, drag a counter to any on-screen pixel position, or
 click X to close it. Click the shell before typing `CAT STORY.TXT | WC` or
 `CAT LONG.TXT`; BREAK cancels the command. `EXIT` first closes/detaches counters,
 then stops desktop admission and releases the shell/services. Cold-boot to
-restart the resident applications. There is no application launcher yet.
+restart this focused resident profile. The loadable desktop below includes Files.
 
 The counter desktop uses six of eight Task slots at its prompt; a two-command
 pipeline uses all eight. Three of four desktop layers and three of four AES
@@ -240,8 +240,10 @@ The [panel](../../examples/gem-panel/panel.c) uses a compiled-in OBJECT tree,
 local form state changes and changed-object drawing. The
 [browser](../../examples/gem-browser/browser.c) loads its trees from a classic
 RSC generated from [resource.json](../../examples/gem-browser/resource.json).
-Both are ordinary GEM application bodies; the resident wrapper supplies Task
-startup and Exec attachment. They reuse the counter and native shell.
+The panel, counter and Files each supply a small `main` wrapper and a private
+model in a disk-loaded APP. Program/Process owns startup and Exec attachment.
+The shared GUI loads once from `GEMSYS.BIN`; ordinary drawing calls stay local
+to the application Task. See the [C loading contract](../reference/c-program-loading.md).
 
 ```sh
 CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --gem-desktop --output build/gem-desktop-demo
@@ -257,12 +259,16 @@ keyboard focus, Space activates it and Return activates Apply. Release outside
 or Escape cancels a press. In Files, select a directory/file and press Return;
 Up and Next navigate, and File or F opens the popup. Tab/Up/Down and Return select;
 Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
-arguments, NIL input and shell output; Stop requests cancellation. TICK prints periodically until Stop, without a private pane. PRIMES requires
+arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
 tiled-console mode and returns an error in this desktop. Close one GEM window
 before a two-child shell pipeline.
-Closing Files collects its child before retirement. EXIT closes the desktop.
+Files can also launch `PANEL.APP`, `COUNTER.APP` or `FILES.APP`. Close an existing
+GEM window first when all four layers are occupied. Closing Files stops and
+collects its child before retirement. The shell collects closed initial apps
+even at an idle prompt. Use `RUN C:FILES.APP` to reopen Files; this uses the
+shell's one background job. EXIT closes the desktop and any owned GUI child.
 
-This profile uses four layers, four AES registrations and seven idle Tasks.
+This profile uses four layers, three AES registrations and seven idle Tasks.
 It offers a bounded object/form, resource and window-popup subset, not a global
-menu bar or dynamic GEM executable loader. See the [current AES contract](../reference/aes.md)
+menu bar or Atari ST binary compatibility. See the [current AES contract](../reference/aes.md)
 and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).

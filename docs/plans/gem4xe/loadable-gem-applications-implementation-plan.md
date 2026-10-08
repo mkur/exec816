@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Program loading](../../reference/program-loading.md) ·
 [C bindings](../../guides/calypsi-c.md) · [AES](../../reference/aes.md)
 
-Status: LG1–LG4 implemented at the development tier; LG5/LG6 in progress.
+Status: LG1–LG5 implemented at the development tier; LG6 in progress.
 Commit each passing executable slice.
 The immediate priority is cartridge capacity, followed by independently
 loadable, closable and restartable GEM applications.
@@ -38,6 +38,16 @@ cooperative Stop, reload and Stop before entry, with heap restoration. The exact
 OF816 desktop ZIP passes the panel/Files/shell walkthrough; its XEX is 974,531
 bytes with 57,660 bytes of cartridge headroom. Counter code/model/Task entry are
 absent from the shared image. Bank-zero deltas remain 0 in all three categories.
+
+[LG5 evidence](../../development/loadable-gem-lg5.json): all three desktop apps
+load independently. Files launches and stops GEM children; idle shell collection,
+Files relaunch, restored heap, native commands/pipeline and EXIT with an active
+popup/GUI child pass. Current-ABI SDFS/MyDOS each pass 87 assertions and 12 cycles;
+raw/optimized completion callbacks pass during pending DOS I/O. The OF816 XEX
+is 975,747 bytes with 56,444 bytes of headroom. The DOS context gains eight
+upper-memory bytes; fixed, per-public-Task and private-idle bank-zero deltas
+remain 0. The narrowest measured public stack margin above its interrupt reserve
+is 56 bytes; arbitrary C stack depth remains unsupported.
 
 ## Starting point and scope
 
