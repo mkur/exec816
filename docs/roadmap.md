@@ -67,6 +67,10 @@ input. One background job and one pane keep this version bounded.
 
 The [multiple-file and LIST pattern slice](history/multiple-file-patterns.md)
 is implemented with exact CAT/DELETE names and read-only LIST filtering. The
+[COPY directory destination follow-up](history/write-commands.md#directory-destinations)
+adds existing directories, volume roots, assigns and `.` while retaining the
+source filename and ordinary replacement/APPEND policy. Wildcards and recursive
+COPY remain separate work. The
 [ASSIGN slice](history/assign.md) adds four bounded logical directory names.
 The [shell alias slice](history/shell-aliases.md) adds eight session-local
 command shortcuts without changing DOS lookup.

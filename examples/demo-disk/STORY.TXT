@@ -55,16 +55,19 @@ SYS: is read-only. WORK: is writable.
 RAM: holds temporary files in memory:
   ECHO a quick note >RAM:NOTE.TXT
   CAT RAM:NOTE.TXT
-  CP SYS:STORY.TXT RAM:STORY.TXT
+  CP SYS:STORY.TXT RAM:
 RAM: also supports folders, append,
 pipes and EXECUTE scripts. It grows as
 needed and loses its files on reboot.
 DELETE frees their memory.
 MKDIR and CP are preset aliases for
-MAKEDIR and COPY. Supply an exact name
-for the copy's destination:
+MAKEDIR and COPY. COPY accepts a filename
+or existing folder as its destination:
   MKDIR WORK:NOTES
+  CP SYS:STORY.TXT WORK:NOTES
   CP SYS:STORY.TXT WORK:NOTES/ONE.TXT
+COPY SYS:STORY.TXT . copies to the
+current folder, keeping STORY.TXT.
 
 ASSIGN gives a directory a logical name:
   ASSIGN DATA: WORK:NOTES
@@ -81,7 +84,8 @@ TEE copies Input to a file and Output:
 COPY and TEE create or truncate files;
 APPEND preserves their previous bytes.
 DELETE removes files or empty folders:
-  DELETE DATA:TWO.TXT WORK:LOG.TXT
+  DELETE DATA:TWO.TXT DATA:STORY.TXT
+  DELETE WORK:LOG.TXT
   ASSIGN DATA:
   DELETE WORK:NOTES
 
@@ -89,7 +93,8 @@ CD prints the current directory. CD ..
 or CD / moves to the parent; CD : goes
 to this volume's root. CD .. stays at
 root if there is no parent. Other paths
-do not support . or .. components.
+do not support . or .. components;
+COPY accepts . as its destination.
 
 ALIAS lists the current definitions.
 MKDIR, LS and CP leave five free slots.

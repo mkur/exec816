@@ -18,6 +18,7 @@ RETURN(BYTE POINTER(IF output<>0 THEN ADDRESS(3) ELSE ADDRESS(1) FI))
 ; Read admission precedes destructive output admission; a live source blocks
 ; the simulated same-object output just as the real filesystem lease does.
 PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
+  CARD index
 
   T.state.error=0
   IF name(0)='M THEN
@@ -29,6 +30,19 @@ PUBLIC BYTE POINTER FUNC Open(BYTE POINTER name LONGINT mode)
     T.state.inputLive=1
     T.state.opens==+1
     RETURN(BYTE POINTER(1))
+  FI
+
+  index=0
+  WHILE name(index)<>0 AND index<255 DO
+    T.state.target(index)=name(index)
+    index==+1
+  OD
+
+  T.state.targetUsed=LONGCARD(index)
+
+  IF T.scenario.destinationKind=2 AND T.state.lockCalls=0 THEN
+    T.state.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(NULL)
   FI
 
   IF T.scenario.openError<>0 OR T.scenario.same<>0 THEN
@@ -258,6 +272,50 @@ PUBLIC PROC UnLock(BYTE POINTER lock)
 
 RETURN
 
+; COPY inspects a rejected directory only while its source remains open.
+PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
+
+  T.state.lockCalls==+1
+  IF mode<>SHARED_LOCK OR T.state.inputLive=0 THEN
+    T.state.badOwner=1
+  FI
+
+  T.state.error=T.scenario.lockError
+  IF T.state.error<>0 THEN
+    RETURN(NULL)
+  FI
+
+  IF T.scenario.destinationKind=0 THEN
+    T.state.error=ERROR_OBJECT_NOT_FOUND
+    RETURN(NULL)
+  ELSEIF T.scenario.destinationKind=3 THEN
+    T.state.error=ERROR_OBJECT_WRONG_TYPE
+    RETURN(NULL)
+  FI
+
+  T.state.lockLive=1
+  T.state.opens==+1
+
+RETURN(BYTE POINTER(5))
+
+PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
+
+  T.state.examines==+1
+  IF lock<>BYTE POINTER(5) OR T.state.lockLive=0 OR action<>23 THEN
+    T.state.badOwner=1
+  FI
+
+  T.state.error=T.scenario.examineError
+  IF T.state.error<>0 THEN
+    RETURN(0)
+  FI
+
+  LET info=FileInfoBlock POINTER(buffer)
+  info.fib_DirEntryType=IF T.scenario.destinationKind=2 THEN
+      LONGINT(ST_USERDIR) ELSE LONGINT(ST_FILE) FI
+
+RETURN(DOSTRUE)
+
 ; These imports are present in PROGRAMAPI but outside this command batch.
 ; Treat any accidental call as an observer failure, not a successful stub.
 PUBLIC LONGINT FUNC Unsupported()
@@ -268,16 +326,6 @@ PUBLIC LONGINT FUNC Unsupported()
 RETURN(0)
 
 PUBLIC LONGINT FUNC Flush(BYTE POINTER handle)
-
-RETURN(Unsupported())
-
-PUBLIC BYTE POINTER FUNC Lock(BYTE POINTER name LONGINT mode)
-
-  Unsupported()
-
-RETURN(NULL)
-
-PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
 
 RETURN(Unsupported())
 

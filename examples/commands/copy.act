@@ -1,16 +1,93 @@
 MODULE COPY
 
+USE CSTRING AS STR
 INCLUDE "command-transfer.inc"
 
 CONST TRANSFER_BYTES=16384
 BYTE ARRAY transferBuffer(TRANSFER_BYTES)
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+BYTE ARRAY targetPath(256)
 ADDRESS ARRAY values(3)
+COMMAND.FileInfoBlock destinationInfo
+
+; After output Open rejects a directory, retain the source leaf name. Release
+; the inspection lock before retrying Open with the constructed filename.
+CSTRING FUNC CopyDestination(CSTRING source,target)
+  LONGINT cause
+  CARD index,first,used
+
+  LET lock=COMMAND.Lock(BYTE POINTER(target),COMMAND.SHARED_LOCK)
+  IF lock=NULL THEN
+    RETURN(NULL)
+  FI
+
+  LET examined=COMMAND.Examine(lock,BYTE POINTER(@destinationInfo))
+  cause=COMMAND.IoErr()
+  IF examined=0 AND cause=0 THEN
+    cause=COMMAND.ERROR_BAD_STREAM_NAME
+  FI
+
+  COMMAND.SetIoErr(0)
+  COMMAND.UnLock(lock)
+  IF cause=0 THEN
+    cause=COMMAND.IoErr()
+  FI
+
+  COMMAND.SetIoErr(cause)
+  IF cause<>0 THEN
+    RETURN(NULL)
+  FI
+
+  IF destinationInfo.fib_DirEntryType<=0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_OBJECT_WRONG_TYPE)
+    RETURN(NULL)
+  FI
+
+  index=0
+  first=0
+  WHILE source(index)<>ASCII.NUL DO
+    IF source(index)=': OR source(index)='/ THEN
+      first=index+1
+    FI
+
+    index==+1
+  OD
+
+  IF source(first)=ASCII.NUL THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_INVALID_COMPONENT_NAME)
+    RETURN(NULL)
+  FI
+
+  LET length=STR.strlcpy(targetPath,target,SIZEOF(targetPath))
+  IF length>=SIZEOF(targetPath) THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+    RETURN(NULL)
+  FI
+
+  used=CARD(length)
+  IF used<>0 THEN
+    IF targetPath(used-1)<>': AND targetPath(used-1)<>'/ THEN
+      IF STR.strlcat(targetPath,c"/",SIZEOF(targetPath))>=SIZEOF(targetPath) THEN
+        COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+        RETURN(NULL)
+      FI
+    FI
+  FI
+
+  IF STR.strlcat(targetPath,source+SIZE(first),SIZEOF(targetPath))
+      >=SIZEOF(targetPath) THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+    RETURN(NULL)
+  FI
+
+RETURN(CSTRING(targetPath))
 
 ; Keep the source open before destructive output admission. Filesystem sharing
 ; rejects a target referring to that source, including through another alias.
 LONGINT FUNC Main()
   LONGINT status
+  BYTE POINTER output
+  CSTRING target
 
   LET parsed=COMMAND.ReadArgsOrHelp(c"FROM/A,TO/A,APPEND/S",
       values,3,arguments,SIZEOF(arguments))
@@ -28,7 +105,19 @@ LONGINT FUNC Main()
     RETURN(COMMAND.RETURN_ERROR)
   FI
 
-  LET output=CommandOutput(values(1),BYTE(values(2)<>0))
+  target=CSTRING(BYTE POINTER(values(1)))
+  IF target(0)='. AND target(1)=ASCII.NUL THEN
+    target=c""
+  FI
+
+  output=CommandOutput(ADDRESS(target),BYTE(values(2)<>0))
+  IF output=NULL AND COMMAND.IoErr()=COMMAND.ERROR_OBJECT_WRONG_TYPE THEN
+    target=CopyDestination(CSTRING(BYTE POINTER(values(0))),target)
+    IF target<>NULL THEN
+      output=CommandOutput(ADDRESS(target),BYTE(values(2)<>0))
+    FI
+  FI
+
   status=COMMAND.RETURN_ERROR
   IF output<>NULL THEN
     status=CommandTransfer(input,output,NULL,transferBuffer,TRANSFER_BYTES)

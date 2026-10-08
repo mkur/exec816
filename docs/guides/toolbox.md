@@ -18,7 +18,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | LIST | `[DIR or PATTERN] [NAMES]` | Enumerate a directory in disk order or match `*`/`?` in the final path component. Default output has directory markers and exact file sizes. NAMES emits bare names. |
 | FIND | `[DIR] [PATTERN pattern]` | Walk directory contents recursively in filesystem order and print matching paths. Default pattern is `*`; directories get a trailing `/`. |
 | MORE | `[FILE]` | Forward-only pager. Space advances a page, Return one displayed row, Q finishes, and BREAK cancels. |
-| COPY | `FROM TO [APPEND]` | Copy one named input to an exact destination filename. Create/truncate by default; APPEND opens or creates, then seeks to EOF. |
+| COPY | `FROM TO [APPEND]` | Copy one named input to a filename or existing directory. A directory retains the source filename. Create/truncate by default; APPEND opens or creates, then seeks to EOF. |
 | TEE | `FILE [APPEND]` | Copy Input to the named file and Output. Create/truncate by default; APPEND preserves existing content. |
 | DELETE | `FILE ...` | Remove one to eight exact files or empty directories in order. |
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
@@ -119,6 +119,8 @@ read-only. For example:
 ```text
 MAKEDIR WORK:NOTES
 COPY SYS:STORY.TXT WORK:NOTES/ONE.TXT
+COPY SYS:STORY.TXT RAM:
+COPY SYS:STORY.TXT WORK:NOTES
 RENAME WORK:NOTES/ONE.TXT WORK:NOTES/TWO.TXT
 CMP SYS:STORY.TXT WORK:NOTES/TWO.TXT
 HELLO | TEE WORK:LOG.TXT
@@ -131,8 +133,18 @@ COPY and TEE preserve exact bytes, including NUL and ATASCII. COPY uses a
 16 KiB transfer buffer in the loaded command's upper-RAM BSS; TEE uses 512 bytes.
 COPY opens its source before its output;
 a missing source or a destination alias of the same open file cannot truncate
-that file. Directory targets are errors: supply the complete destination name.
+that file. An existing directory target retains the source's final filename:
+`COPY SYS:STORY.TXT RAM:` writes `RAM:STORY.TXT`, and
+`COPY SYS:STORY.TXT WORK:NOTES` writes `WORK:NOTES/STORY.TXT`.
+The destination `.` means the current directory, including after CD;
+`COPY SYS:STORY.TXT .` writes `STORY.TXT` there. Directory assigns work too.
+Missing targets remain exact filenames; COPY does not create directories or
+copy directory trees. Directory paths otherwise follow the ordinary DOS rules,
+without a trailing slash or embedded `.`/`..` components. The source must supply
+a final filename when copying to a directory. Constructed paths are bounded to
+255 bytes, with an error instead of truncation.
 APPEND is an update open followed by an EOF seek; it also creates a missing file.
+It applies to the resolved filename for directory targets as well.
 
 TEE writes each chunk to its file before forwarding it to Output. If either
 write fails, it stops; the two destinations can contain different prefixes.

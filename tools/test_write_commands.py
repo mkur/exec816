@@ -12,9 +12,10 @@ from test_cooperative import data
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 TEMPLATES={'copy':'FROM/A,TO/A,APPEND/S','tee':'FILE/A,APPEND/S',
            'delete':'FILE/M/A','rename':'FROM/A,TO/A','makedir':'NAME/A'}
-PARAMS='length breakAt readChunk writeChunk readFail prefixError closeError openError seekError mutationError unlockError failTarget failAt writeError writePrefixError zeroTarget oversizedRead same interactive patternBytes'.split()
-FIELDS='error position fileCursor fileLength fileHash outputLength outputHash inputLive fileLive consoleLive lockLive opens closes reads fileWrites outputWrites seeks operation mode badOwner consoleUsed'.split()
-STATE_BYTES=4*len(FIELDS)+2304
+PARAMS='length breakAt readChunk writeChunk readFail prefixError closeError openError seekError mutationError unlockError failTarget failAt writeError writePrefixError zeroTarget oversizedRead same interactive patternBytes destinationKind lockError examineError'.split()
+FIELDS='error position fileCursor fileLength fileHash outputLength outputHash inputLive fileLive consoleLive lockLive opens closes reads fileWrites outputWrites seeks operation mode badOwner consoleUsed lockCalls examines targetUsed'.split()
+SCENARIO_BYTES=4*len(PARAMS)+1024
+STATE_BYTES=4*len(FIELDS)+2560
 ROW_BYTES=4+STATE_BYTES
 
 
@@ -60,6 +61,39 @@ def vectors(command):
                             c('mirror-prefix-error',b'abc',failTarget=3,writeChunk=1,writePrefixError=310,error=310,output=b'a'),
                             c('prefix-before-mirror-error',b'abc',prefixError=226,failTarget=3,failAt=1,writeError=310,error=226,output=b'')])
         if command=='copy':
+            result.extend([
+                c('existing-file',b'abc',destinationKind=1,opens=2,target=b'B'),
+                c('wrong-type-file',b'abc',destinationKind=1,openError=212,
+                  opens=2,error=212,file=b'old',target=b'B'),
+                c('directory-root',b'abc',args=b'SYS:SUB/ONE.TXT RAM:',
+                  destinationKind=2,opens=3,target=b'RAM:ONE.TXT'),
+                c('directory-named',b'abc',args=b'SYS:ONE.TXT RAM:SUB',
+                  destinationKind=2,opens=3,target=b'RAM:SUB/ONE.TXT'),
+                c('directory-relative',b'abc',args=b'SUB/ONE.TXT DEST',
+                  destinationKind=2,opens=3,target=b'DEST/ONE.TXT'),
+                c('directory-current',b'abc',args=b'SYS:ONE.TXT .',
+                  destinationKind=2,opens=3,target=b'ONE.TXT'),
+                c('directory-append',b'abc',args=b'SYS:ONE.TXT RAM: APPEND',
+                  destinationKind=2,opens=3,target=b'RAM:ONE.TXT',
+                  file=b'oldabc',seeks=1,mode=1004),
+                c('directory-same-object',b'abc',args=b'SYS:ONE.TXT SYS:',
+                  destinationKind=2,same=1,opens=2,error=202,file=b'old',
+                  target=b'SYS:ONE.TXT'),
+                c('stream-target',b'abc',args=b'A NIL:',destinationKind=3,
+                  target=b'NIL:'),
+                c('stream-source-no-leaf',b'',args=b'NIL: RAM:',
+                  destinationKind=2,opens=2,error=210,file=b'old',target=b'RAM:'),
+                c('destination-lock-error',b'abc',destinationKind=2,
+                  lockError=213,error=213,opens=1,file=b'old',target=b'B'),
+                c('destination-examine-error',b'abc',destinationKind=2,
+                  examineError=226,error=226,opens=2,file=b'old',target=b'B'),
+                c('destination-unlock-error',b'abc',destinationKind=2,
+                  unlockError=202,error=202,opens=2,file=b'old',target=b'B'),
+                c('examine-before-unlock-error',b'abc',destinationKind=2,
+                  examineError=226,unlockError=202,error=226,opens=2,
+                  file=b'old',target=b'B'),
+                c('probe-before-source-close-error',b'abc',destinationKind=2,
+                  lockError=213,closeError=202,error=213,opens=1,file=b'old',target=b'B')])
             pattern=bytes(range(256))
             for length in (1,511,512,513,16383,16384,16385,49159):
                 expected=(pattern*((length+255)//256))[:length]
@@ -108,14 +142,16 @@ ENDMODULE
     api=read_source(ROOT/'lib/dos/programapi.act').replace('MODULE PROGRAMAPI','MODULE COMMAND').replace('USE EXEC\n','').replace('USE PROCESS\n','USE WRITECOMMANDSTATE AS T\n')
     api=api.replace('PROCESS.GetArgStr()','CSTRING(@T.scenario.arguments(0))').replace('  EXEC.Yield()','')
     declarations=read_source(ROOT/'lib/dos/command.act').split('PUBLIC EXTERNAL')[0].replace('MODULE COMMAND','')
-    api=api.replace('USE DOSFAULT\n','')
+    api=api.replace('USE DOSFAULT\n','').replace('USE DOSPANE\n','').replace('USE DOSDELAY\n','')
+    api=api[:api.index('PUBLIC LONGINT FUNC WriteAt(')]+api[api.index('PUBLIC LONGINT FUNC Seek('):]
+    api=api[:api.index('PUBLIC LONGINT FUNC Delay(')]+'ENDMODULE\n'
     api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
-    api=api.replace('USE DOSCOMMAND','USE DOSCOMMAND\n'+declarations)
+    api=api.replace('USE DOSCOMMAND\n','USE DOSCOMMAND\n'+declarations)
     (out/'command.act').write_text(api)
     includes={n:out/n for n in ('command-files.inc','command-write.inc','command-transfer.inc')}
     for name in includes:
         (out/name).write_text(read_source(ROOT/'examples/commands'/name,includes).replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR'))
-    source=read_source(ROOT/f'examples/commands/{command}.act',includes).replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','')
+    source=read_source(ROOT/f'examples/commands/{command}.act',includes).replace('LONGINT FUNC Main()','LONGINT FUNC CommandMain()').replace('ENDMODULE','').replace('USE CSTRING AS STR','USE CSTRING.IMPL AS STR')
     if command=='copy':
         # The resident probe has a 2 KiB data budget. Use a guarded diagnostic
         # extent crossing a bank; the loadable command's ordinary BSS is
@@ -164,12 +200,16 @@ ENDMODULE
         params=dict(length=len(c['payload']),breakAt=0xffffffff,readChunk=512,writeChunk=512,patternBytes=len(c['payload']))
         params.update({k:v for k,v in c.items() if k in PARAMS})
         require(len(c['payload'])<=768,'Fixture pattern too large')
-        blob+=struct.pack('<20I256s768s',*(params.get(k,0) for k in PARAMS),c['args'],c['payload'])
+        blob+=struct.pack('<'+str(len(PARAMS))+'I256s768s',
+                          *(params.get(k,0) for k in PARAMS),c['args'],c['payload'])
     return path,bytes(blob)
 
 
-def run(out,mode,names,selected=None):
+def run(out,mode,names,selected=None,compiler_bin=None):
     toolchain=compiler(ROOT/'build/actionc');records=[]
+    if compiler_bin:
+        toolchain['binary']=Path(compiler_bin).resolve()
+        toolchain['binary_sha256']=sha256(toolchain['binary'])
     for name in names:
         cases=[c for c in vectors(name) if selected is None or c['name'] in selected]
         require(cases,'No selected command cases')
@@ -184,21 +224,36 @@ def run(out,mode,names,selected=None):
             runtime,_=execute(b,p,timeout=240,frame_limit=12000)
             require(data(b,p['image'],'finished')==[1],name+' did not finish')
             require(data(b,p['image'],'rowBytes',True)==[ROW_BYTES],name+' result layout')
-            require(data(b,p['image'],'scenarioBytes',True)==[1104],name+' scenario layout')
+            require(data(b,p['image'],'scenarioBytes',True)==[SCENARIO_BYTES],name+' scenario layout')
             rows=b.memdump(0x200000,ROW_BYTES*len(cases))
             for index,c in enumerate(cases):
                 row=rows[index*ROW_BYTES:(index+1)*ROW_BYTES]
-                primary=struct.unpack('<i',row[:4])[0];state=dict(zip(FIELDS,struct.unpack('<21I',row[4:88])))
+                field_end=4+4*len(FIELDS)
+                primary=struct.unpack('<i',row[:4])[0];state=dict(zip(FIELDS,
+                    struct.unpack('<'+str(len(FIELDS))+'I',row[4:field_end])))
                 wanted=(10 if c.get('error') else 0,c.get('error',0))
                 require((primary,state['error'])==wanted,f'{name}/{c["name"]}: result {(primary,state["error"])} != {wanted}')
                 require(state['badOwner']==0 and all(state[f]==0 for f in ('inputLive','fileLive','consoleLive','lockLive')),f'{name}/{c["name"]}: retained/borrowed ownership')
                 require(state['opens']==state['closes']==c['opens'],f'{name}/{c["name"]}: closes {state}')
                 require(state['operation']==c['operation'],name+' unexpected namespace mutation')
-                for key,at in [('file',88),('output',1112)]:
+                for key,at in [('file',field_end),('output',field_end+1024)]:
                     expected=c[key]
                     require(state[key+'Length']==len(expected) and state[key+'Hash']==rolling(expected),f'{name}/{c["name"]}: {key} length/hash {state}')
                     require(row[at:at+min(1024,len(expected))]==expected[:1024],f'{name}/{c["name"]}: {key} prefix')
-                require(row[2136:2136+state['consoleUsed']]==c.get('console',b''),name+' help console')
+                console_at=field_end+2048
+                require(row[console_at:console_at+state['consoleUsed']]==c.get('console',b''),name+' help console')
+                if 'target' in c:
+                    target_at=console_at+256
+                    require(state['targetUsed']==len(c['target']) and
+                            row[target_at:target_at+state['targetUsed']]==c['target'],
+                            f'{name}/{c["name"]}: wrong destination')
+                if name=='copy':
+                    probed=c.get('destinationKind')==2 or c.get('openError')==212
+                    examined=bool(probed and c.get('destinationKind') in (1,2)
+                                  and not c.get('lockError'))
+                    require((state['lockCalls'],state['examines'])==
+                            (int(probed),int(examined)),
+                            f'{name}/{c["name"]}: unexpected directory inspection')
                 if c.get('noReads'):require(state['reads']==0,name+' help read Input')
                 if 'reads' in c:require(state['reads']==c['reads'],name+' chunk count')
                 require(state['seeks']==c.get('seeks',0),name+' unexpected seek')
@@ -220,11 +275,12 @@ if __name__=='__main__':
     parser.add_argument('--case',choices=('raw','opt'),required=True)
     parser.add_argument('--command',choices=TEMPLATES,action='append')
     parser.add_argument('--suite',help='Comma-separated focused case names')
+    parser.add_argument('--compiler-bin',type=Path)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')
     try:result=run(out,args.case,args.command or list(TEMPLATES),
-                   args.suite.split(',') if args.suite else None)
+                   args.suite.split(',') if args.suite else None,args.compiler_bin)
     except Exception as error:
         result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

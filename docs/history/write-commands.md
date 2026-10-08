@@ -66,3 +66,51 @@ boot XEX, system and work disks, pinned ROM, short guide, notices and checksums.
 Build intermediates, source manifests and test output remain outside the ZIP.
 Its source banner identifies the committed plan plus local implementation;
 source and artifact hashes in the record identify the exact tested build.
+
+## Directory destinations
+
+The follow-up lets COPY retain the source filename when its destination is an
+existing directory, volume root or directory assign. The exact destination `.`
+selects the current directory. The [current guide](../guides/toolbox.md#writable-files)
+describes these forms and their limits. Missing targets retain ordinary filename
+creation; APPEND applies after choosing the filename.
+
+Only the loadable command changes. It tries ordinary output Open first, then
+uses existing Lock/Examine/UnLock and resident CSTRING routines when Open reports
+a wrong type. Ordinary filename copies add no inspection calls; in particular,
+they avoid an extra MyDOS file-length scan. The source stays open during
+inspection and output admission, preserving self-copy rejection before
+truncation. Inspection locks are released before output Open, and the first
+inspection, transfer or cleanup error survives later cleanup. Filesystem policy,
+resident providers, argument syntax and ABI remain unchanged.
+
+The optimized COPY has 6,016 text bytes including literals and 17,226 BSS bytes.
+Against the preceding 16 KiB-buffer COPY, that adds 2,177 text bytes and 517 BSS
+bytes, including alignment. Its serialized o65 grows from 4,723 to 7,314 bytes.
+The new storage is a 256-byte path and a 260-byte FileInfoBlock plus one padding
+byte. It belongs to the loaded image and is released with it. The Main frame
+grows from 30 to 32 bytes; CopyDestination has a 32-byte frame. These local frame
+sizes are not whole-call-chain bounds. Reserved bank-zero change is **0 fixed
+bytes and 0 bytes per Task**, including guards, alignment and unused capacity.
+
+The optimized controlled fixture passes 48 COPY cases: exact files without
+inspection, directories, `.` and APPEND, exact destination spelling, self-copy,
+stream destinations, source/inspection/cleanup errors, short and partial
+transfers, BREAK, help, and 16 KiB/bank-crossing buffer boundaries. Five focused
+cases for TEE, DELETE, RENAME and MAKEDIR also pass after updating the shared
+fixture's captured layout and excluding unrelated pane/timer providers.
+The host suite passes 397 tests. One optimized physical-keyboard shell session
+loads COPY from SYS:C and exercises roots, qualified/relative directories,
+current-directory `.` targets, directory assigns, APPEND, replacement, CP,
+missing sources, self-copy through aliases, NIL: and read-only rejection on
+RAM, MyDOS and SpartaDOS. Independent audits check all saved disk bytes and
+allocation, including unchanged pre-existing files. Exact console writes,
+native stack/domain guards, OS restoration and final heap ownership pass.
+The selected disk cases use 128-byte sectors, Generic 57.6k and fast media;
+they establish functionality rather than disk timing.
+
+The [follow-up evidence](../development/copy-directories.json) records the clean
+compiler pin, host-binary hash, paced emulator/ROM inputs, selected development
+checks and artifact hashes. The compiler host binary uses dev `opt-level=1` and
+`debug=0`; compiler source and ABI have no override. No demo ZIP, release matrix
+or physical-hardware qualification is included.

@@ -193,7 +193,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 - [Commands for writable filesystems](write-commands.md): COPY, TEE, DELETE,
   RENAME and MAKEDIR; bounded binary transfers, cleanup, disk persistence and
-  the OF816 demo, with no additional bank-zero reservations.
+  the OF816 demo, plus COPY directory destinations, with no additional bank-zero
+  reservations.
 - [First command toolbox](command-toolbox.md): seven loadable commands, shared
   arguments/streams and foreground-console access; raw/optimized development
   checks and the refreshed OF816 distribution.
