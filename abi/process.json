@@ -248,6 +248,12 @@
         4
       ],
       "result_bytes": 1
+    },
+    "RequestStop": {
+      "sizes": [
+        4
+      ],
+      "result_bytes": 1
     }
   },
   "dos_storage": {

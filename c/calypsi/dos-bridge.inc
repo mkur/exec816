@@ -97,7 +97,7 @@ RETURN(PROCESS.Collect(identity,PROCESS.Result POINTER(ADDRESS(outcome))))
 
 LONGINT FUNC CBreakProgram(LONGCARD identity,unused,unused2)
 
-RETURN(LONGINT(PROCESS.RequestBreak(identity)))
+RETURN(LONGINT(PROCESS.RequestStop(identity)))
 
 LONGINT FUNC CWaitProgram(LONGCARD identity,outcome,unused)
 

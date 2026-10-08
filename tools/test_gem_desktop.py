@@ -23,7 +23,10 @@ def run(out,program):
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
-            base=sy['GEMPanel']; counter=sy['GEMCounter']
+            for key,value in PIN['configuration'].items():
+                b.config(key,str(value).lower() if isinstance(value,bool) else value)
+            b.mount(0,str(p['output'].parent/'system.atr'))
+            base=sy['GEMPanel']; counter=0
             def get(addr,n=2):return int.from_bytes(b.memdump(addr,n),'little')
             def panel(offset,n=2):return get(base+offset,n)
             def state(i):return panel(178+i*24+10)
@@ -81,8 +84,12 @@ def run(out,program):
                 report['cases'].append(dict(name=name,actions=panel(10,4),states=[state(i) for i in range(8)],pixels='match donor oracle',sha256=hashlib.sha256(actual).hexdigest()))
                 print(name,'pass',flush=True)
             def before(b):
+                nonlocal counter
                 b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
                 until(at('DESKTOPTEST','ready'));frames(180)
+                from gem_applications import symbols
+                counter=symbols(b,p,p['output'].parent,'counter',get(sy['GEMDesktopCounter'],4))['GEMCounter']
+                until(counter+12)
                 require(panel(8)==1 and get(counter+12)==1,'Applications not ready')
                 count=get(counter+14,4)
                 click(458,56) # top panel; startup order is intentionally independent

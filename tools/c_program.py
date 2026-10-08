@@ -93,10 +93,12 @@ def binding(image, output):
     table=' '.join(f'${symbols[name]:x}' for name in ABI['imports'])
     source=f'''MODULE CPROGRAMBIND
 USE AESBOOT
+USE AESPROCESS
 USE CALYPSICALL
+USE EXEC
 
 ADDRESS ARRAY entries=[{table}]
-TYPE Invocation=[LONGCARD entry,service]
+TYPE Invocation=[LONGCARD entry,service,stopFlags]
 
 PUBLIC ADDRESS FUNC Import(CARD ordinal)
 
@@ -114,14 +116,21 @@ PUBLIC ADDRESS FUNC Runner()
 
 RETURN(ADDRESS(${symbols['ExecProgramRun']:x}))
 
-PUBLIC LONGINT FUNC Run(ADDRESS entry)
+PUBLIC LONGINT FUNC Run(ADDRESS entry BYTE POINTER stopFlags)
   Invocation invocation
 
   invocation.entry=LONGCARD(entry)
   invocation.service=LONGCARD(ADDRESS(AESBOOT.Port()))
+  invocation.stopFlags=LONGCARD(ADDRESS(stopFlags))
 
 RETURN(CALYPSICALL.Invoke(ADDRESS(${symbols['ExecProgramRun']:x}),
     LONGCARD(ADDRESS(@invocation))))
+
+PUBLIC PROC Stop(EXEC.Task POINTER task)
+
+  AESPROCESS.RequestClose(task)
+
+RETURN
 
 ENDMODULE
 '''

@@ -1,0 +1,92 @@
+MODULE CCOUNTERTEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE HEAPCORE
+
+CARD checks,phase,stop,completed
+LONGCARD ARRAY bases(2)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb80+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Collect(LONGCARD child)
+  PROCESS.Result result
+
+  Require(PROCESS.Wait(child,@result)<>0)
+  Require(result.primary=0)
+  completed==+1
+
+RETURN
+
+PROC Main()
+  LONGCARD one,two,baseline
+  BYTE round
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  DOS.SelectInput(input)
+  DOS.SelectOutput(output)
+  FOR round=0 TO 1 DO
+    BEGIN
+      LET first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+      LET second=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+      Require(first<>NULL AND second<>NULL)
+      bases(0)=LONGCARD(first.text)
+      bases(1)=LONGCARD(second.text)
+      Require(bases(0)<>bases(1))
+      one=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0)
+      two=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),NULL,0)
+      Require(one<>0 AND two<>0)
+      PROGRAM.Unload(first)
+      PROGRAM.Unload(second)
+      stop=0
+      phase=CARD(round)+1
+      WHILE stop=0 DO
+        EXEC.Yield()
+      OD
+
+      Require(PROCESS.RequestStop(one)<>0)
+      Require(PROCESS.RequestStop(two)<>0)
+
+      Collect(one)
+      Collect(two)
+      IF round=0 THEN
+        baseline=EXEC.AvailMem(0)
+      ELSE
+        Require(EXEC.AvailMem(0)=baseline)
+      FI
+    END
+  OD
+
+  ; Stop before any C instruction executes must retire without opening a window.
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+  Require(image<>NULL)
+  EXEC.Forbid()
+  one=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+  Require(one<>0)
+  Require(PROCESS.RequestStop(one)<>0)
+  EXEC.Permit()
+  PROGRAM.Unload(image)
+  Collect(one)
+  Require(EXEC.AvailMem(0)=baseline)
+  DOS.SelectInput(NULL)
+  DOS.SelectOutput(NULL)
+  Require(DOS.Close(input)<>0)
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE

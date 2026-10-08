@@ -60,7 +60,7 @@ PUBLIC LONGINT FUNC ExecuteImage()
   IF image.kind=PROGRAMIMAGE.KIND_C THEN
     BEGIN
       LET entry=ADDRESS POINTER(@image.entry)
-      RETURN(CPROGRAMBIND.Run(entry^))
+      RETURN(CPROGRAMBIND.Run(entry^,@process.breakFlags))
     END
   FI
 
@@ -306,6 +306,33 @@ PUBLIC BYTE FUNC RequestBreak(LONGCARD identity)
   IF scope<>NULL THEN
     scope.pending=1
     EXEC.Signal(EXEC.Task POINTER(scope.owner),scope.mask)
+  FI
+
+  EXEC.Permit()
+  DOSCLIENT.SetError(0)
+
+RETURN(1)
+
+; Native commands use BREAK. C/GEM children receive a durable cooperative close;
+; no Task or image is forcibly removed. OP_FIND enforces parent ownership.
+PUBLIC BYTE FUNC RequestStop(LONGCARD identity)
+
+  EXEC.Forbid()
+  LET process=Control(PROCESSSTATE.OP_FIND,BYTE POINTER(@identity))
+  IF process=NULL THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+
+  LET image=PROGRAMIMAGE.Image POINTER(process.image)
+  IF image=NULL OR image.kind<>PROGRAMIMAGE.KIND_C THEN
+    EXEC.Permit()
+    RETURN(RequestBreak(identity))
+  FI
+
+  IF process.state<PROCESSSTATE.STATE_QUIESCING THEN
+    process.breakFlags=process.breakFlags OR PROCESSSTATE.BREAK_PENDING
+    CPROGRAMBIND.Stop(EXEC.Task POINTER(@process.task))
   FI
 
   EXEC.Permit()

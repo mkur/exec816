@@ -127,6 +127,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if gem_desktop:
         shutil.copyfile(output/'bitmap-console/GEMSYS.BIN',media/'GEMSYS.BIN')
         binary_names.add('GEMSYS.BIN')
+        shutil.copyfile(output/'bitmap-console/apps/counter/program.app',command_dir/'COUNTER.APP')
+        binary_names.add('C/COUNTER.APP')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)

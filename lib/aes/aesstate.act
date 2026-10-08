@@ -33,7 +33,7 @@ PUBLIC TYPE Client=[
   AESTYPES.WindowView POINTER view
   DESKTYPES.Window POINTER window
   LAYERTYPES.Rect paintDamage
-  BYTE paintDirty,windowWaiting
+  BYTE paintDirty,windowWaiting,closeRequested
 ]
 
 PUBLIC TYPE Service=[

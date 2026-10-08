@@ -7,7 +7,7 @@ struct CounterConfig {
     const char *title;
     WORD x,y,width,height,ink,paper;
 };
-/* The resident wrapper supplies upper-memory application storage. Keeping the
+/* The startup wrapper supplies upper-memory application storage. Keeping the
  * model and GEM arrays here leaves the small Task stack for call depth. */
 struct Counter {
     const struct CounterConfig *config;

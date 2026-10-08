@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Program loading](../../reference/program-loading.md) ·
 [C bindings](../../guides/calypsi-c.md) · [AES](../../reference/aes.md)
 
-Status: LG1–LG3 implemented at the development tier; LG4–LG6 in progress.
+Status: LG1–LG4 implemented at the development tier; LG5/LG6 in progress.
 Commit each passing executable slice.
 The immediate priority is cartridge capacity, followed by independently
 loadable, closable and restartable GEM applications.
@@ -31,6 +31,13 @@ teardown. Native HELLO still runs. Raw/optimized bridge regressions pass with
 IRQ/NMI; heap ownership and stack guards are restored. Import ABI 2 adds Process
 argument access. Fixed, per-public-Task and private-idle bank-zero deltas are
 all 0 bytes. Cooperative GUI Stop and desktop migration follow in LG4/LG5.
+
+[LG4 evidence](../../development/loadable-gem-lg4.json): `COUNTER.APP` is 4,324
+bytes and runs privately in banks 4 and 6. Five lifetimes cover physical close,
+cooperative Stop, reload and Stop before entry, with heap restoration. The exact
+OF816 desktop ZIP passes the panel/Files/shell walkthrough; its XEX is 974,531
+bytes with 57,660 bytes of cartridge headroom. Counter code/model/Task entry are
+absent from the shared image. Bank-zero deltas remain 0 in all three categories.
 
 ## Starting point and scope
 

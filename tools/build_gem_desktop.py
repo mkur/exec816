@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resident GEM Control Panel and counter, using ordinary application bindings."""
+"""Shared GEM runtime, resident panel/Files and a disk-loaded counter."""
 import argparse,json
 from pathlib import Path
 from build_bitmap_console import drawing,prepare
@@ -12,15 +12,27 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
     from library_paths import read_source
     from build_gem_input import input_bindings
     from c_program import ABI,binding
+    from build_c_program import build as application
     out.mkdir(parents=True,exist_ok=True)
     options.pop('desktop',None)
+    application(out/'apps/counter',[ROOT/'examples/gem-counter/main.c',ROOT/'examples/gem-counter/counter.c'])
+    if 'dos_mounts' not in options:
+        from make_data_disk import make
+        from build_gem_resource import resource
+        media=out/'media';(media/'C').mkdir(parents=True,exist_ok=True)
+        (media/'C/COUNTER.APP').write_bytes((out/'apps/counter/program.app').read_bytes())
+        (media/'DESKTOP.RSC').write_bytes(resource())
+        make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
+             binary_names={'C/COUNTER.APP','DESKTOP.RSC'})
+        options.update(system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
+                       sector_bytes=256,profile=4,format=2)])
     foreign=drawing(out,True,widgets=True,client_sources=[
         ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
         ROOT/'c/calypsi/program.c',
         ROOT/'examples/gem-panel/panel.c',ROOT/'examples/gem-panel/resident.c',
-        ROOT/'examples/gem-counter/counter.c',ROOT/'examples/gem-browser/browser.c'],
-        client_entries=['GEMPanelTask','GEMCounterTask','GEMBrowserTask'],
-        client_roots=['GEMDesktopStart','GEMDesktopStop','GEMDesktopService','GEMPanel','GEMCounter','GEMBrowser','GEMDesktopFiles','ExecProgramRun',*ABI['imports']],
+        ROOT/'examples/gem-browser/browser.c'],
+        client_entries=['GEMPanelTask','GEMBrowserTask'],
+        client_roots=['GEMDesktopStart','GEMDesktopStop','GEMDesktopService','GEMPanel','GEMDesktopCounter','GEMBrowser','GEMDesktopFiles','ExecProgramRun',*ABI['imports']],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),
             (ROOT/'tests/programs/gem_panel_layout.c',[
                 ('Panel size',400),('Panel ready',8),('Panel actions',10),('Panel paints',14),

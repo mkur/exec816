@@ -288,6 +288,6 @@ assuming work is pending. Current behavior belongs in the
 - [Small desktop facilities](gem4xe/desktop-facilities-design.md) and
   [implementation](gem4xe/desktop-facilities-implementation-plan.md): windowed menus, classic resources and a file browser/Exec launcher.
 - [Loadable GEM applications](gem4xe/loadable-gem-applications-implementation-plan.md):
-  LG1–LG3 pass development checks: disk-loaded shared GUI, cartridge headroom,
-  C relocation/import format, entry bridge and Process lifetime on both filesystems.
-  LG4–LG6 migrate applications and check the final cartridge package.
+  LG1–LG4 pass development checks: disk-loaded shared GUI, C image/Process lifetime
+  on both filesystems, and a loadable counter with cooperative GUI Stop.
+  LG5/LG6 migrate panel/Files and check the final cartridge package.

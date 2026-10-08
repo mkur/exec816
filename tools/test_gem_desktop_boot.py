@@ -9,6 +9,9 @@ from test_demo import run
 class DesktopBoot:
     def exercise(self,s):
         sy=json.loads((s.p['output']/'bitmap-console/c-image.json').read_text())['symbols']
+        from gem_applications import symbols
+        sy.update(symbols(s.b,s.p,s.p['output']/'bitmap-console','counter',
+                          s.number(sy['GEMDesktopCounter'],4)))
         panel=sy['GEMPanel'];counter=sy['GEMCounter']
         state={name:s.b.memdump(sy[name],178 if name=='GEMBrowser' else 24).hex() for name in ('GEMPanel','GEMCounter','GEMBrowser') if name in sy}
         state['failure']=s.number(sy['GEMDesktopFailure'],2)

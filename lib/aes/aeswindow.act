@@ -227,6 +227,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     status=LAYERS.Show(@desktop.scene,window.layer,1)
     status=LAYERS.Order(@desktop.scene,window.layer,1)
     DESKCORE.Focus(desktop,window.id)
+    IF client.closeRequested<>0 THEN
+      AESGUI.Post(service,client,AESTYPES.GUI_CLOSED,0,0,0,0)
+    FI
   ELSEIF request.operation=AESTYPES.OP_CLOSE THEN
     IF Close(client)=0 THEN
       RETURN(AESTYPES.PENDING)

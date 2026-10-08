@@ -1,6 +1,7 @@
 ; Non-GUI builds have no C service provider. The desktop builder generates
 ; this module from its linked symbols and abi/c-program.json.
 MODULE CPROGRAMBIND
+USE EXEC
 
 PUBLIC ADDRESS FUNC Import(CARD ordinal)
 
@@ -10,8 +11,12 @@ PUBLIC ADDRESS FUNC Runner()
 
 RETURN(ADDRESS(0))
 
-PUBLIC LONGINT FUNC Run(ADDRESS entry)
+PUBLIC LONGINT FUNC Run(ADDRESS entry BYTE POINTER stopFlags)
 
 RETURN(20)
+
+PUBLIC PROC Stop(EXEC.Task POINTER task)
+
+RETURN
 
 ENDMODULE

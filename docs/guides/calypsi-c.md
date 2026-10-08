@@ -275,7 +275,8 @@ ExecStartProgram loads a native disk command or a supported C application with a
 argument tail, NIL input and RAW shell output. It returns a parent-owned Process
 identity, or zero on failure with IoErr. ExecCollectProgram returns zero while
 pending and nonzero after copying primary/secondary results and collecting it.
-ExecBreakProgram requests cancellation; ExecWaitProgram waits and collects.
+ExecBreakProgram requests native BREAK or a GEM window close;
+ExecWaitProgram waits and collects.
 The owner must collect before retiring. These are Exec816 extensions built from
 the existing Program/Process calls, without new kernel operations.
 See the [C loading contract](../reference/c-program-loading.md) for the build

@@ -4,6 +4,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
+USE DOS
 
 CARD checks,ready,mode
 
@@ -19,7 +20,6 @@ RETURN
 
 PROC Main()
 
-  LET available=EXEC.AvailMem(0)
   Require(DesktopStart()<>0)
   ready=1
   WHILE mode<>9 DO
@@ -27,7 +27,7 @@ PROC Main()
   OD
 
   Require(DesktopStop()<>0)
-  Require(EXEC.AvailMem(0)=available)
+  Require(DOS.ReleaseContext()<>0)
   LET service=AESSTATE.Get()
   Require(service.count=0)
   Require(AESCORE.Idle(service)<>0)

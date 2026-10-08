@@ -1,0 +1,37 @@
+; Cooperative Process stop uses the existing AES registration and GUI inbox.
+MODULE AESPROCESS
+USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESGUI
+
+; The Process owner retains the child Task. Forbid excludes presenter mutation;
+; IRQ/NMI do not follow AES records. A close before wind_open remains pending.
+PUBLIC PROC RequestClose(EXEC.Task POINTER owner)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      IF client.id<>0 AND client.binding.owner=owner THEN
+        client.closeRequested=1
+        IF client.endpoint.guiEpoch<>0 THEN
+          AESGUI.Post(service,client,AESTYPES.GUI_CLOSED,0,0,0,0)
+        FI
+
+        EXIT
+      FI
+    END
+  OD
+
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE

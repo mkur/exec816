@@ -82,7 +82,7 @@ caller-owned. IRQ/NMI and scheduling stay enabled. Its own peak stack cost is
 40 bytes, in addition to the caller's outgoing arguments and the C call chain.
 A synthetic RTL target keeps the bank unchanged when the entry is at `$0000`.
 
-The shared Process wrapper attaches the Task's AES context, calls ordinary
+The shared Process wrapper attaches and registers the Task's AES context, calls ordinary
 `int main(void)` with its C ABI and sign-extends the 16-bit result to the native
 32-bit Process result. `ExecGetArgStr()` returns the borrowed, NUL-terminated
 Process argument string; it returns null outside a Process. There is no hosted
@@ -92,9 +92,16 @@ On return, the wrapper detaches AES, settling windows, drawing references,
 resources and timers before native DOS cleanup and Process retirement. An
 application can explicitly close its resources earlier. The Process owns DOS
 cleanup; an application must not also call `ExecDOSDetach`. If AES attachment
-fails, the Process returns 20. If teardown fails, it reports the failure to
+or registration fails, the Process returns 20. If teardown fails, it reports the failure to
 its output and parks with its Task and image retained. There is no forced
 unload. The parent must collect every child before it exits.
+
+`PROCESS.RequestStop` (also used by `ExecBreakProgram`) requests `WM_CLOSED`
+through the child's AES registration. A stop before entry skips `main` and
+returns zero; a stop before `wind_open` remains pending until the window opens.
+Native children retain ordinary Process BREAK behavior. Applications must
+handle the close event and return; a nonresponsive application remains alive.
+The sender uses retained Process/AES ownership, not application model pointers.
 
 Passing a C entry to native `LONGINT FUNC()` directly is unsupported.
 Calypsi routines have no Action! per-routine stack checks;
