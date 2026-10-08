@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute per-profile timeout admission and the full two-second stock deadline."""
+"""Execute timeout admission, operation defaults and bounded absent-drive expiry."""
 import argparse,json,os
 from pathlib import Path
 from native_program import ROOT,build,compiler,execute,require,sha256,verify_machine,read_build
@@ -19,28 +19,31 @@ def run(t,out,optimize,replay=False):
     with emulator(binary,ROM,out,pin=PIN) as b:
         for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
         machine=verify_machine(b,ROM,PIN)
-        for variant in (0,1):
+        scenarios = [('stock-default',495), ('stock-explicit',495),
+                     ('verified-default',495), ('verified-explicit',495),
+                     ('generic-read-default',248), ('verified-short',5)]
+        for variant,(name,ticks) in enumerate(scenarios):
             if variant:b.state_load(slot='loaded')
             offset=[0]
             def before(b):
                 if not variant:b.state_save(slot='loaded')
-                b.poke(next(d['address'] for d in p['image']['data'] if '_EXPLICIT_' in d['name']),variant)
+                b.poke(next(d['address'] for d in p['image']['data'] if '_SCENARIO_' in d['name']),variant)
                 b.profile_start();offset[0]=(out/'emulator.log').stat().st_size
             runtime,_=execute(b,p,before_run=before,preloaded=bool(variant),expected_status=0xff93,timeout=240,frame_limit=12000)
             b.profile_stop()
             hardware=far_read(b,p['build']['task_storage']['BASE']+0x800,128,out)
-            require(int.from_bytes(hardware[6:8],'little')==495 and hardware[45]==1,'Wrong profile deadline/offline state')
+            require(int.from_bytes(hardware[6:8],'little')==ticks and hardware[45]==1,'Wrong operation deadline/offline state')
             require(int.from_bytes(hardware[56:58],'little')==1,'Rejected request reached hardware')
-            require(data(b,p['image'],'checks',True)==[137],'Profile assertions incomplete')
+            require(data(b,p['image'],'checks',True)==[269],'Profile assertions incomplete')
             path=out/f'trace-{variant}.log'
             with (out/'emulator.log').open() as source:
                 source.seek(offset[0]);path.write_text(''.join(l for l in source if '[SIOPOC] ' in l or '[SIOTXN] ' in l))
             events=read_events(path)
             start=next(t for t,e in events if e[0]=='command' and e[2]=='1')
             terminal=next(t for t,e in events if e[0]=='cpu' and int(e[4],16)==marks['sio_terminal'])
-            late=(terminal-start-495*7168)/BASE_HZ*1e6
-            require(0<=late<=100,'Stock absolute deadline early/late')
-            cases.append(dict(name='explicit' if variant else 'default',status='pass',runtime=runtime,hardware=hardware.hex(),deadline_us=495*7168/BASE_HZ*1e6,lateness_us=late))
+            late=(terminal-start-ticks*7168)/BASE_HZ*1e6
+            require(0<=late<=100,'Absolute operation deadline early/late')
+            cases.append(dict(name=name,status='pass',runtime=runtime,hardware=hardware.hex(),deadline_us=ticks*7168/BASE_HZ*1e6,lateness_us=late))
     return dict(status='pass',build=p['build'],pin=PIN,machine=machine,cases=cases)
 
 if __name__=='__main__':

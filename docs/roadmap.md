@@ -13,10 +13,10 @@ the [earlier roadmap](history/roadmap-chronology.md) preserves the milestone log
   development records do not replace it.
 - Confirm the supported machine and disk profiles, document remaining limits,
   and verify the packaged OF816 boot XEX, system disk, ROM and notices together.
-- Investigate the verified-write deadline exposed by 16 KiB COPY on accurately
-  timed 256-byte MyDOS media before qualifying that case. The
-  [write-performance record](history/write-performance.md) preserves the
-  reproducible timeout and the passing bundled 128-byte WORK scope.
+- Include accurate 256-byte MyDOS COPY in release qualification. The
+  [verified-write deadline fix](history/mydos-write-timeout.md) passes focused
+  cold-motor, bounded-failure and loaded COPY development checks; the
+  [earlier record](history/write-performance.md) preserves the original timeout.
 
 ## Commands and CLI
 
@@ -34,7 +34,8 @@ implements a 16 KiB loadable COPY buffer, fewer physical writes during file
 extension, retained sequential cursors and bounded four-sector metadata groups.
 Matched buffer/filesystem measurements, confirmed-prefix errors, ownership,
 BREAK checkpoints and the bitmap/cartridge preview have development evidence.
-The accurate 256-byte MyDOS transport limit is recorded above.
+The accurate 256-byte MyDOS timeout is addressed by the
+[verified-write deadline fix](history/mydos-write-timeout.md).
 
 The [SpartaDOS write buffering slice](history/spartados-write-buffering.md)
 now coalesces bitmap, free-count, map and length updates within each Write,

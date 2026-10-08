@@ -4,7 +4,7 @@ USE EXECTASKS
 USE SIODRIVER
 USE HEAPCORE
 INCLUDE "io-names.inc"
-CARD checks,sectorBytes
+CARD checks,sectorBytes,profile
 BYTE expected,offline,cleanupReached,absent,nak
 EXEC.MsgPort POINTER port
 EXEC.IOSIOReq POINTER request,readback
@@ -48,7 +48,7 @@ PROC Main()
   FI
 
   request.sio_Direction=EXEC.SIODIR_WRITE
-  request.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  request.sio_Profile=profile
   IF absent<>0 THEN
     request.sio_TimeoutUS=20205
   FI
@@ -77,7 +77,7 @@ PROC Main()
   readback.sio_Command=$52
   readback.sio_Aux1=4
   readback.sio_Direction=EXEC.SIODIR_READ
-  readback.sio_Profile=EXEC.SIO_PROFILE_FASTEST125
+  readback.sio_Profile=profile
   error=EXEC.DoIO(EXEC.IORequest POINTER(readback))
   IF offline<>0 THEN
     Require(error=EXEC.SIOERR_BUSUNAVAILABLE AND SIODRIVER.Unavailable()<>0)

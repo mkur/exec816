@@ -105,6 +105,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Device I/O and SIO
 
+- [MyDOS verified-write timeout](mydos-write-timeout.md): a two-second mechanical
+  allowance for Generic verified WRITE, bounded failure checks and accurate
+  256-byte MyDOS COPY regression.
 - [Queued device I/O and SIO](device-io-sio-design.md)
 - [Queued device I/O and SIO implementation](device-io-sio-implementation.md)
 - [Shared serial IRQ adapter](serial-irq-adapter.md)

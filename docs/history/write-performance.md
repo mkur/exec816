@@ -91,6 +91,11 @@ offline and shutdown parks with `$FF93`, requiring reset. This is recorded as a
 transport timing limit, not a successful benchmark or hardware qualification.
 The plan leaves transport profiles, deadlines and retry policy unchanged.
 
+The later [verified-write deadline fix](mydos-write-timeout.md) provides a
+two-second mechanical budget for Generic verified WRITE and records a passing
+accurate-media MyDOS regression. The measurements and timeout above remain
+evidence for this earlier revision.
+
 An ordinary four-sector SDFS group uses eight writes instead of twenty-four.
 Map transitions need more; the primary benchmark observes at most nine writes
 per unit. With cache disabled and a split directory entry, a map-transition

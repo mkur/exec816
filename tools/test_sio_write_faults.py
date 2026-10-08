@@ -17,7 +17,8 @@ from banked_test_memory import read
 from test_filesystem_write import reuse
 
 
-def run(output, mode, size, from_build=None):
+def run(output, mode, size, from_build=None, profile=1, faults=None):
+    require(profile in (1,4), 'Unsupported fault-test profile')
     program=reuse(from_build) if from_build else build(
         compiler(ROOT/'build/actionc'),ROOT/'tests/programs/sio_write_faults.act',
         output,optimize=mode=='opt',tasks=True)
@@ -31,14 +32,17 @@ def run(output, mode, size, from_build=None):
     os.environ['EXEC816_LATENCY_TRACE']='1'
     cases=[]
     with emulator(binary,ROOT/'build/firmware/altirraos-816.rom',output,pin=pin) as bridge:
-        for key,value in {**pin['configuration'],'diskemu':'fastest'}.items():
+        for key,value in {**pin['configuration'],'diskemu':{1:'fastest',4:'generic56k'}[profile]}.items():
             bridge.config(key,str(value).lower() if isinstance(value,bool) else value)
         machine=verify_machine(bridge,ROOT/'build/firmware/altirraos-816.rom',pin)
         # This pinned model ACKs the damaged frame but never completes it.
         # Require timeout/offline and unchanged media; do not infer NAK recovery.
         # Absent must run before enabling D8: eject leaves a responding empty drive.
-        for index,(name,error,offline) in enumerate((('absent',1,1),('checksum',1,1),
-                                                    ('nak',2,0),('device',3,0),('protocol',7,1))):
+        selected=[row for row in (('absent',1,1),('checksum',1,1),
+                                  ('nak',2,0),('device',3,0),('protocol',7,1))
+                  if faults is None or row[0] in faults]
+        require(selected, 'No selected WRITE faults')
+        for index,(name,error,offline) in enumerate(selected):
             print('Physical WRITE fault',name,flush=True)
             case_out=output/name
             case_out.mkdir(exist_ok=True)
@@ -58,7 +62,7 @@ def run(output, mode, size, from_build=None):
                 bridge.mount(0,str(case_out/'good.atr'))
                 if name!='absent':
                     bridge.mount(7,str(case_out/'target.atr'))
-                for key,value,size_bytes in (('sectorBytes',size,2),('expected',error,1),
+                for key,value,size_bytes in (('sectorBytes',size,2),('profile',profile,2),('expected',error,1),
                                              ('offline',offline,1),('absent',int(name=='absent'),1),
                                              ('nak',int(name=='nak'),1)):
                     address=next(d['address'] for d in program['image']['data'] if '_SIOWRITEFAULTS_'+key.upper()+'_' in d['name'])
@@ -85,6 +89,8 @@ def run(output, mode, size, from_build=None):
             require(data(bridge,program['image'],'cleanupReached')==[1], 'Write request did not retire')
             state=read(bridge,program['build']['task_storage']['BASE']+0x800,128,case_out)
             require(state[12:15]==state[16:19]==bytes(3), 'Retained caller buffer')
+            if profile==4 and name=='checksum':
+                require(int.from_bytes(state[6:8],'little')==495, 'Wrong verified-write deadline')
             if not offline:
                 clean_ownership(bridge,program,output)
             time.sleep(3)
@@ -101,7 +107,7 @@ def run(output, mode, size, from_build=None):
                 require(transmitted[-size-1:]==list(payload)+[checksum^1], 'Wrong damaged wire frame')
             cases.append(dict(status='pass',name=name,error=error,offline=offline,runtime=runtime,
                               media_sha256=sha256(case_out/'target.atr'),hardware=state.hex()))
-    return dict(status='pass',build=program['build'],cases=cases,machine=machine,sector_bytes=size,
+    return dict(status='pass',build=program['build'],cases=cases,machine=machine,sector_bytes=size,profile=profile,
                 pin=pin,runner_sha256=sha256(Path(__file__)),scope='WRITE extension on the pinned sector fault responder; checksum stimulus flips '
                     'the adapter checksum after payload transmission. The model ACKs that malformed frame '
                     'but never completes it; timeout/offline is required. Command NAK uses an invalid sector. '
@@ -116,12 +122,14 @@ if __name__=='__main__':
     parser.add_argument('--size',type=int,choices=(128,256),default=256)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--from-build',type=Path)
+    parser.add_argument('--profile',type=int,choices=(1,4),default=1)
+    parser.add_argument('--fault',action='append',choices=('absent','checksum','nak','device','protocol'))
     args=parser.parse_args()
     output=args.output.resolve()
     output.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')
     try:
-        result=run(output,args.case,args.size,args.from_build.resolve() if args.from_build else None)
+        result=run(output,args.case,args.size,args.from_build.resolve() if args.from_build else None,args.profile,args.fault)
     except Exception as error:
         result.update(status='fail',error=str(error))
         raise

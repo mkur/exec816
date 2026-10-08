@@ -1,0 +1,82 @@
+MODULE SIOWRITEDEADLINE
+USE EXEC
+USE EXECTASKS
+USE HEAPCORE
+INCLUDE "io-names.inc"
+
+CARD checks,sectorBytes
+CARD ARRAY sectors=[720 360 4]
+EXEC.MsgPort POINTER port
+EXEC.IOSIOReq POINTER request
+BYTE POINTER buffer
+
+; Retain the first failed assertion while the host observes the wire independently.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Let the drive motor stop, then write/verify across distant payload/VTOC tracks.
+PROC Sector(CARD sector)
+  CARD index
+  INT error
+
+  LET slept=EXECTASKS.Sleep(200)
+  FOR index=0 TO sectorBytes-1 DO
+    buffer(index)=BYTE(index) XOR BYTE(sector) XOR $6d
+  OD
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(sectorBytes)
+  request.sio_Command=$57
+  request.sio_Aux1=BYTE(sector)
+  request.sio_Aux2=BYTE(sector RSH 8)
+  request.sio_Direction=EXEC.SIODIR_WRITE
+  request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600
+  request.sio_TimeoutUS=0
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(sectorBytes))
+  FOR index=0 TO sectorBytes-1 DO
+    Require(buffer(index)=(BYTE(index) XOR BYTE(sector) XOR $6d))
+    buffer(index)=$a5
+  OD
+
+  request.sio_Command=$52
+  request.sio_Direction=EXEC.SIODIR_READ
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(error=0 AND request.io_Actual=LONGCARD(sectorBytes))
+  FOR index=0 TO sectorBytes-1 DO
+    Require(buffer(index)=(BYTE(index) XOR BYTE(sector) XOR $6d))
+  OD
+
+RETURN
+
+; Use a guarded cross-bank buffer and retire every public I/O resource.
+PROC Main()
+  BYTE index
+
+  LET before=EXEC.AvailMem(0)
+  buffer=BYTE POINTER($0afff0)
+  port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSIOREQ_SIZE))
+  Require(request<>NULL)
+  Require(EXEC.OpenDevice(sioName,56,EXEC.IORequest POINTER(request),0)=0)
+  FOR index=0 TO 2 DO
+    Sector(sectors(index))
+  OD
+
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE

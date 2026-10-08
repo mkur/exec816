@@ -80,6 +80,18 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
 RETURN((sio.sio_Direction=EXEC.SIODIR_READ AND sio.sio_Command=$52)
     OR (sio.sio_Direction=EXEC.SIODIR_WRITE AND sio.sio_Command=$57))
 
+; Verified generic disk writes include motor startup, seek and another rotation.
+; Keep that mechanical allowance separate from serial byte/phase timing.
+LONGCARD FUNC TimeoutLimit(EXEC.IOSIOReq POINTER request)
+
+  IF request.sio_Profile=EXEC.SIO_PROFILE_STOCK810 OR
+      (request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600 AND
+      request.sio_Direction=EXEC.SIODIR_WRITE AND request.sio_Command=$57) THEN
+    RETURN(2000000)
+  FI
+
+RETURN(1000000)
+
 ; Reject unsupported request shapes before touching the serial hardware.
 BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
   EXEC.IOSIOReq POINTER sio
@@ -111,10 +123,8 @@ BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
     RETURN(BYTE(EXEC.IOERR_BADLENGTH))
   FI
 
-  IF sio.sio_TimeoutUS>1000000 THEN
-    IF sio.sio_Profile<>EXEC.SIO_PROFILE_STOCK810 OR sio.sio_TimeoutUS>2000000 THEN
-      RETURN(BYTE(EXEC.IOERR_BADLENGTH))
-    FI
+  IF sio.sio_TimeoutUS>TimeoutLimit(sio) THEN
+    RETURN(BYTE(EXEC.IOERR_BADLENGTH))
   FI
 
   IF sio.io_Offset<>0 OR sio.sio_Direction>2 THEN
@@ -180,6 +190,7 @@ PROC Prepare(EXEC.IOSIOReq POINTER request)
   Descriptor POINTER desc
   BYTE POINTER command
   CARD total,index
+  LONGCARD timeout
 
   desc=Descriptor POINTER(SIO_STATE)
   command=BYTE POINTER(SD_COMMAND)
@@ -197,7 +208,12 @@ PROC Prepare(EXEC.IOSIOReq POINTER request)
   FI
 
   ; 4041 is the floor of the real PAL period; rounding up cannot expire early.
-  desc.timeout=DeadlineTicks(request.sio_TimeoutUS,request.sio_Profile)
+  timeout=request.sio_TimeoutUS
+  IF timeout=0 THEN
+    timeout=TimeoutLimit(request)
+  FI
+
+  desc.timeout=DeadlineTicks(timeout,request.sio_Profile)
   command(0)=request.io_Unit^
   command(1)=request.sio_Command
   command(2)=request.sio_Aux1

@@ -2,7 +2,7 @@ MODULE SIOPROFILELIMITS
 USE EXEC
 USE EXECTASKS
 USE HEAPCORE
-BYTE explicit
+BYTE scenario
 CARD checks
 LONGCARD baseline
 EXEC.MsgPort POINTER port
@@ -22,13 +22,14 @@ PROC Require(BYTE okay)
 
 RETURN
 
-PROC Rejected(CARD profile LONGCARD timeout)
+PROC Rejected(CARD profile,command,direction,length LONGCARD timeout)
   INT error
 
   request.sio_Profile=profile
+  request.sio_Command=command
   request.sio_TimeoutUS=timeout
-  request.sio_Direction=EXEC.SIODIR_NONE
-  request.io_Length=0
+  request.sio_Direction=direction
+  request.io_Length=LONGCARD(length)
   error=EXEC.DoIO(EXEC.IORequest POINTER(request))
   Require(error=EXEC.IOERR_BADLENGTH AND request.io_Actual=0)
 
@@ -39,7 +40,7 @@ PROC Setup()
   baseline=EXEC.AvailMem(0)
   port=EXEC.CreateMsgPort()
   request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
-  buffer=EXEC.AllocMem(128,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
+  buffer=EXEC.AllocMem(256,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)
   Require(buffer<>BYTE POINTER(0))
   Require(EXEC.OpenDevice(sioName,56,EXEC.IORequest POINTER(request),0)=0)
   request.io_Command=EXEC.SIOCMD_TRANSACTION
@@ -51,40 +52,59 @@ PROC Setup()
 
 RETURN
 
-; Exercise rejection of requests outside supported serial profiles.
+; Admit the longer verified-write budget without extending reads or PUT/NONE.
 PROC Main()
   INT error
   CARD i,status
 
   Setup()
-  Rejected(EXEC.SIO_PROFILE_FASTEST125,1000001)
-  Rejected(EXEC.SIO_PROFILE_HAPPY1050,1000001)
-  Rejected(EXEC.SIO_PROFILE_STOCK810,2000001)
-  Rejected(EXEC.SIO_PROFILE_STOCK810,4040)
+  Rejected(EXEC.SIO_PROFILE_FASTEST125,$57,EXEC.SIODIR_WRITE,128,1000001)
+  Rejected(EXEC.SIO_PROFILE_HAPPY1050,$53,EXEC.SIODIR_NONE,0,1000001)
+  Rejected(EXEC.SIO_PROFILE_STOCK810,$52,EXEC.SIODIR_READ,128,2000001)
+  Rejected(EXEC.SIO_PROFILE_STOCK810,$52,EXEC.SIODIR_READ,128,4040)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,$52,EXEC.SIODIR_READ,256,1000001)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,$50,EXEC.SIODIR_WRITE,128,1000001)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,$57,EXEC.SIODIR_NONE,0,1000001)
+  Rejected(EXEC.SIO_PROFILE_GENERIC57600,$57,EXEC.SIODIR_WRITE,256,2000001)
   request.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  request.sio_Command=$52
   request.sio_TimeoutUS=0
   request.sio_Direction=EXEC.SIODIR_READ
   request.io_Length=128
-  IF explicit<>0 THEN
+  IF scenario>=2 THEN
+    request.sio_Profile=EXEC.SIO_PROFILE_GENERIC57600
+  FI
+
+  IF scenario=2 OR scenario=3 OR scenario=5 THEN
+    request.sio_Command=$57
+    request.sio_Direction=EXEC.SIODIR_WRITE
+    request.io_Length=256
+  FI
+
+  IF scenario=1 OR scenario=3 THEN
     request.sio_TimeoutUS=2000000
+  FI
+
+  IF scenario=5 THEN
+    request.sio_TimeoutUS=20205
   FI
 
   error=EXEC.DoIO(EXEC.IORequest POINTER(request))
   Require(error=EXEC.SIOERR_TIMEOUT)
   Require(request.io_Actual=0)
-  FOR i=0 TO 127 DO
+  FOR i=0 TO 255 DO
     buffer(i)=$a5
   OD
 
   status=EXECTASKS.Sleep(4)
-  FOR i=0 TO 127 DO
+  FOR i=0 TO 255 DO
     Require(buffer(i)=$a5)
   OD
 
   EXEC.CloseDevice(EXEC.IORequest POINTER(request))
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
   EXEC.DeleteMsgPort(port)
-  EXEC.FreeMem(buffer,128)
+  EXEC.FreeMem(buffer,256)
   Require(EXEC.AvailMem(0)=baseline)
 
 RETURN

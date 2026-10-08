@@ -117,12 +117,13 @@ leave incomplete entries, lost allocation or inconsistent counts. Verified SIO
 WRITE completion does not establish power-loss durability.
 
 The earlier [write-performance development record](../history/write-performance.md)
-includes a repeatable Generic 57600 timeout when a 16 KiB COPY writes to
-accurately timed 256-byte MyDOS media. The verified write transmits its payload
-but exceeds the existing one-second transport deadline, leaving the bus offline
-and requiring reset. This occurs with the frozen filesystem too. Fast-media
-binary checks and that record's bundled 128-byte WORK disk pass; they do not qualify that
-accurate 256-byte timing case. This slice leaves transport deadlines unchanged.
+preserves a Generic 57600 timeout during 16 KiB COPY to accurately timed
+256-byte MyDOS media. The [verified-write deadline fix](../history/mydos-write-timeout.md)
+allows two seconds for that mechanical operation, including motor startup,
+seek and verification. Cold-motor writes and the accurate-media binary COPY
+now pass focused development checks. Explicit smaller deadlines and uncertain
+completion/offline behavior remain unchanged; these checks do not replace
+release or physical-drive qualification.
 The current SDFS demo uses 720 KiB WORK media with 256-byte sectors; its buffered
 Write checks and emulator measurements are recorded in the
 [SpartaDOS buffering record](../history/spartados-write-buffering.md).
