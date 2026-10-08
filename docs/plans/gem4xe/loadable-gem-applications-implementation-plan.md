@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Program loading](../../reference/program-loading.md) ·
 [C bindings](../../guides/calypsi-c.md) · [AES](../../reference/aes.md)
 
-Status: LG1–LG5 implemented at the development tier; LG6 in progress.
+Status: LG1–LG6 implemented and checked at the development tier.
 Commit each passing executable slice.
 The immediate priority is cartridge capacity, followed by independently
 loadable, closable and restartable GEM applications.
@@ -49,9 +49,26 @@ upper-memory bytes; fixed, per-public-Task and private-idle bank-zero deltas
 remain 0. The narrowest measured public stack margin above its interrupt reserve
 is 56 bytes; arbitrary C stack depth remains unsupported.
 
+[LG6 evidence](../../development/loadable-gem-lg6.json): both exact OF816
+Atarimax variants pass cold boot, button/keyboard/drag input, Files launch/Stop,
+close/relaunch, heap restoration, popup/child shutdown, guards and OS return.
+The XEX remains 975,747 bytes, leaving **56,444 bytes** of cartridge headroom.
+The default shell/prime OF816 profile also passes its boot/disk smoke. Host checks
+run 414 tests with four historical-source skips; affected generators pass.
+Bank-zero deltas remain 0 in all three categories. The narrowest measured public
+stack margin above its interrupt reserve is 54 bytes.
+
+With accurate Generic 57600 disk timing, the shell is ready after 133.16 seconds
+and all three application-ready flags after 137.3 seconds from native entry,
+plus the five-second OF816 countdown. A bounded six-press comparison reports
+about 120 ms median for the frozen resident panel and 110 ms for initial/reloaded
+APPs. Frame-granular polling makes this a smoke comparison, not a new latency
+qualification or demonstrated speedup; HY4/PI4 remain open. The final boot-only
+package is `build/loadable-gem/distribution/exec816-demo.zip`.
+
 ## Starting point and scope
 
-The desktop currently links the counter, Control Panel and Files browser into
+At the start of this plan, the desktop linked the counter, Control Panel and Files browser into
 the boot image. Files can launch native o65 commands; it cannot load a C/GEM
 application. The existing Program/Process machinery already supplies disk
 loading, private image ownership, child results, cancellation and retirement.

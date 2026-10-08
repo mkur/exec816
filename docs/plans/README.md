@@ -288,6 +288,7 @@ assuming work is pending. Current behavior belongs in the
 - [Small desktop facilities](gem4xe/desktop-facilities-design.md) and
   [implementation](gem4xe/desktop-facilities-implementation-plan.md): windowed menus, classic resources and a file browser/Exec launcher.
 - [Loadable GEM applications](gem4xe/loadable-gem-applications-implementation-plan.md):
-  LG1–LG5 pass development checks: disk-loaded shared GUI, private C image/Process
+  LG1–LG6 pass development checks: disk-loaded shared GUI, private C image/Process
   lifetime on both filesystems, three loadable apps, cooperative Stop and idle
-  collection. LG6 checks the final cartridge package.
+  collection. Both final Atarimax variants pass; the OF816 XEX has 56,444 bytes
+  of headroom.

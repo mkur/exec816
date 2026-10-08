@@ -22,7 +22,12 @@ class DesktopBoot:
         position=[320,120]
         def move(x,y):
             nonlocal position
-            position=schedule(s.b,s.p,position,(x,y));s.saved["pointer"]=position;s.frames(15)
+            position=schedule(s.b,s.p,position,(x,y));s.saved["pointer"]=position
+            cursor=lambda name:next(d['address'] for d in s.p['image']['data']
+                if '_DESKINPUT_'+name.upper()+'_' in d['name'])
+            s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)'%
+                (cursor('cursorX'),position[0],cursor('cursorY'),position[1]))
+            s.frames(3)
         def click(x,y):
             move(x,y)
             s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(35)
@@ -30,6 +35,19 @@ class DesktopBoot:
         click(458,56);click(456,104)
         require(s.number(panel+178+2*24+10,2)==1,'Packaged panel toggle')
         require(s.number(counter+14,4)>0,'Packaged counter did not advance')
+        from loadable_gem_feedback import measure
+        measure(s,panel,move,'initial')
+        actions=s.number(panel+10,4)
+        s.b._cmd_ok('KEY RETURN down');s.frames(3)
+        s.b._cmd_ok('KEY RETURN up');s.frames(70)
+        require(s.number(panel+10,4)==actions+1,'Loaded panel keyboard activation')
+        origin=[s.number(panel+34+2*i,2) for i in range(2)]
+        for start,end,expected in [((480,56),(488,64),[v+8 for v in origin]),
+                                   ((488,64),(480,56),origin)]:
+            move(*start);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+            move(*end);s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(90)
+            actual=[s.number(panel+34+2*i,2) for i in range(2)]
+            require(actual==expected,'Loaded panel title drag: '+str((actual,expected)))
         if s.manifest.get('gem_desktop') and 'GEMBrowser' in sy:
             from test_gem_files import exercise
             exercise(s,sy,click,move)
@@ -71,7 +89,7 @@ class DesktopBoot:
         s.rendezvous('dw($%x)=1'%(loaded_panel+8));click(24,64);key('F')
         click(96,32)
         s.save_screen(s.p['output']/'boot-smoke.png')
-        s.saved['integration']=dict(profile='gem-desktop',panel_toggle=True,counter=True,shell=True,
+        s.saved['integration']=dict(profile='gem-desktop',panel_toggle=True,panel_keyboard=True,panel_drag=True,counter=True,shell=True,
             files_relaunch=True,idle_job_collection=True,heap_restored=True,exit_with_gui_child_and_popup=True)
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()

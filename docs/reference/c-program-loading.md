@@ -110,7 +110,10 @@ Task/domain guards remain and stack use must be measured for each application.
 Fixed, per-public-Task and private-idle bank-zero reservation changes are all
 **0 bytes**, including guards, alignment and unused reserved capacity. The
 bridge and image use existing Task stacks and DPs; loader metadata and image
-backings live in upper RAM.
+backings live in upper RAM. `PROGRAMFILE.Load` temporarily stages the complete
+APP in upper RAM using reads of at most 4 KiB, then frees that file buffer
+after validation/copying. The shared GUI component reads directly into its
+reserved extents and needs no separate payload buffer.
 
 The desktop ships `C:PANEL.APP`, `C:COUNTER.APP` and `C:FILES.APP`. Each has an
 application-owned model and a small `main` wrapper; their bodies are absent from
@@ -134,3 +137,9 @@ It does not qualify arbitrary C programs or a hosted desktop release.
 The [LG3 record](../development/loadable-gem-lg3.json) adds SDFS/MyDOS Process
 dispatch, signed `main` results, argument access, failure rollback and complete
 AES/image retirement over repeated cycles.
+
+The [LG6 record](../development/loadable-gem-lg6.json) covers the exact old/new
+Atarimax package, physical input, launch/relaunch and ownership restoration. It
+also records cold-start cost, application backing sizes and a bounded resident
+versus loaded button-scanout comparison. These are development checks, with
+unchanged bank-zero reservations and an unchanged compiler pin.

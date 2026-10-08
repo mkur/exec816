@@ -529,6 +529,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             press('\x03');ready(previous);result(304);cells('break-loading' if loading else 'break-pipeline')
             require(ledger()==saved['ledger'],'Ownership retained after BREAK')
         def before(bridge):
+            if bootstrap is not None:
+                saved.setdefault('exec_start_frame',b.eval_expr('@frame'))
             if measurement_commands is not None and profile_commands:b.profile_start('basicblock')
             if aperture_pattern is not None:
                 require(b.memdump(0x8000,4096)==aperture_pattern,'Boot changed the reserved VBXE aperture')
@@ -570,6 +572,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     model,offset,_=MODELS[name]
                     sy=symbols(b,p,out/'bitmap-console',name,number(shared['GEMDesktopChildren']+index*4))
                     rendezvous('dw($%x)=1'%(sy[model]+offset))
+                saved['desktop_ready_frames']=b.eval_expr('@frame')-saved['exec_start_frame']
                 frames(120)
             cells('startup')
             if integration is not None:
@@ -997,7 +1000,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         runner_sha256=sha256(Path(__file__)),runtime=runtime,machine=machine,observations=observations,
         rom=dict(path=str(rom),sha256=sha256(rom),pinned_sha256=pin['rom']['sha256'],override=rom_override is not None),
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
-        autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),distribution_root=str(distribution_root) if distribution_root else None,
+        autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),desktop_ready_frames=saved.get('desktop_ready_frames'),
+        loaded_panel_feedback=saved.get('loaded_panel_feedback'),distribution_root=str(distribution_root) if distribution_root else None,
         disk_boot=disk_boot,integration=saved.get('integration'),browser=saved.get('browser'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),

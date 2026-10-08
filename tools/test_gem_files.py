@@ -73,6 +73,8 @@ def exercise(s,sy,click,move):
     s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
     click(456,104)
     require(s.number(panel+178+2*24+10,2)==1,'Loaded child panel did not handle input')
+    from loadable_gem_feedback import measure
+    measure(s,panel,move,'reloaded')
     click(24,64);key('F');key('TAB');key('TAB');key('RETURN')
     s.rendezvous('dw($%x)=0'%(base+1980));s.frames(100)
     require(num(1984,4)==0,'GUI Stop did not return cleanly')

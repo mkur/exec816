@@ -242,7 +242,8 @@ to separate APP files. Program/Process owns each private C image; Files can laun
 native commands or a GEM child, while the shell collects closed initial apps
 through existing completion signals. Caller-local AES/VDI execution and the
 bank-zero reservation remain unchanged. The final cartridge/package checks are
-recorded with the implementation plan.
+recorded in the [LG6 development results](development/loadable-gem-lg6.json):
+both Atarimax variants pass, with 56,444 bytes of cartridge headroom.
 
 The [Layers library](reference/layers.md) now provides bounded regions, cached
 visibility, stacking, damage and drawing transactions. Its
