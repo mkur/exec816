@@ -112,3 +112,26 @@ Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. The
 pending choice adds 18 upper global bytes. The fixture presenter used 837 bytes
 of stack, with 1467 bytes above the interrupt reserve. Full composed APP/package
 checks follow in AM5/AM6; these are development results.
+
+## AM5 — Files application menu
+
+Files installs a private compiled OBJECT tree and handles Open, Refresh, Stop
+and Quit through its existing operations. Open/Stop setters run only when
+availability changes. Every accepted menu command normalizes its title. Quit
+shares child cancellation/collection with WM_CLOSED; withdrawal precedes model
+and resource retirement. The resource-backed window controls and File popup
+remain available.
+
+The smaller emitted fixture loaded two independent FILES.APP images. Pointer
+Refresh, keyboard Open, disabled Open, keyboard/pointer Quit, independent enable
+state and focus/menu restoration passed, followed by complete Process/AES/DOS
+retirement and ownership checks. All APPs were rebuilt against import ABI 5;
+C layout probes preserve prior Browser offsets. Native/GEM launch, Stop and
+Quit with live children are retained for the exact packaged AM6 walkthrough.
+[Evidence](../development/application-menu-bars-am5.json).
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. Each
+private Browser model grows by 244 upper bytes to 2272: a 240-byte menu tree and
+four state bytes. No C Task stack arrays are added. The two Files Tasks left
+143/156 bytes above their interrupt reserves in this fixture; presenter margin
+was 1550 bytes. This remains development coverage.

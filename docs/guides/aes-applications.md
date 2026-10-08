@@ -258,7 +258,8 @@ Use Off/Mild, Defaults, Apply and Cancel in the panel (see
 [mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes
 keyboard focus, Space activates it and Return activates Apply. Release outside
 or Escape cancels a press. In Files, select a directory/file and press Return;
-Up and Next navigate, and File or F opens the popup. Tab/Up/Down and Return select;
+Up and Next navigate. The top Files menu provides Open/Refresh/Stop/Quit;
+File inside the window or F opens the existing popup. Tab/Up/Down and Return select;
 Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
 arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
 tiled-console mode and returns an error in this desktop. Close one GEM window

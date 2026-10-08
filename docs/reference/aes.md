@@ -435,7 +435,9 @@ The server wire record remains 112 bytes; all bank-zero reservations are unchang
 `tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
 the shell. Files loads `SYS:DESKTOP.RSC`, enumerates DOS directories eight entries
 at a time and launches native Exec commands or C/GEM APPs using Program/Process. Its
-window-scoped File menu offers Open, Refresh, Stop and Cancel. A launched command
+application menu offers Open, Refresh, Stop and Quit; its window-scoped File
+popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
+and child availability, and menu Quit shares the ordinary close path. A launched command
 has an empty argument tail, NIL input and RAW output in the shell; closing Files
 requests native BREAK or GEM close and collects the child before Task retirement.
 The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries

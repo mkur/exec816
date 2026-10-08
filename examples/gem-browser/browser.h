@@ -19,6 +19,8 @@ struct Browser {
     /* Popup descriptors and event outputs outlive nested drawing calls. */
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
+    OBJECT bar[10];
+    WORD menuInstalled,menuEnabled;
 };
 WORD BrowserRun(struct Browser *);
 #endif
