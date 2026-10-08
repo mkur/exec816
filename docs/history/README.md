@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Application menu bars](application-menu-bars.md): registration, delivery,
+  presenter integration and Files menu implementation evidence.
+
 - [Desktop menu and window switching](desktop-menu-window-switching.md): active
   window menus, covered-window selection, keyboard cycling and focus restoration.
 

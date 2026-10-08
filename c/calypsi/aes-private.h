@@ -4,6 +4,7 @@
 #include <gem.h>
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
+WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 

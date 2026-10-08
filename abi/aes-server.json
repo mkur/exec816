@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 9,
+  "version": 10,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -84,9 +84,58 @@
     "OP_MOUSE_PROFILE": 201,
     "MOUSE_QUERY": -1,
     "MOUSE_OFF": 0,
-    "MOUSE_MILD": 1
+    "MOUSE_MILD": 1,
+    "OP_MENU": 202,
+    "MENU_OBJECTS": 32,
+    "MN_SELECTED": 10
   },
   "records": {
+    "MenuObject": [
+      [
+        "next",
+        "INT"
+      ],
+      [
+        "head",
+        "INT"
+      ],
+      [
+        "tail",
+        "INT"
+      ],
+      [
+        "kind",
+        "CARD"
+      ],
+      [
+        "flags",
+        "CARD"
+      ],
+      [
+        "state",
+        "CARD"
+      ],
+      [
+        "spec",
+        "LONGCARD"
+      ],
+      [
+        "x",
+        "INT"
+      ],
+      [
+        "y",
+        "INT"
+      ],
+      [
+        "width",
+        "INT"
+      ],
+      [
+        "height",
+        "INT"
+      ]
+    ],
     "Delivery": [
       [
         "message",
@@ -105,6 +154,10 @@
       ],
       [
         "epoch",
+        "LONGCARD"
+      ],
+      [
+        "menuEpoch",
         "LONGCARD"
       ]
     ],
@@ -317,6 +370,18 @@
       [
         "inputPad",
         "BYTE"
+      ],
+      [
+        "menuEpoch",
+        "LONGCARD"
+      ],
+      [
+        "menuConsumed",
+        "CARD"
+      ],
+      [
+        "menuNormal",
+        "CARD"
       ]
     ],
     "Directory": [
@@ -515,7 +580,8 @@
     "OP_DELETE",
     "OP_SET",
     "OP_DISPLAY",
-    "OP_MOUSE_PROFILE"
+    "OP_MOUSE_PROFILE",
+    "OP_MENU"
   ],
   "public_constants": [
     "NAME",
@@ -539,6 +605,7 @@
     "MU_M1",
     "MU_M2",
     "MU_MESAG",
-    "MU_TIMER"
+    "MU_TIMER",
+    "MN_SELECTED"
   ]
 }

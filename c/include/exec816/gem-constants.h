@@ -23,6 +23,7 @@
 #define MU_M2 8
 #define MU_MESAG 16
 #define MU_TIMER 32
+#define MN_SELECTED 10
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

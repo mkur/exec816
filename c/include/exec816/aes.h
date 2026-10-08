@@ -36,6 +36,9 @@ struct ExecAESContext {
     struct ExecAESResource *resource;
     WORD deferredMessage[8];
     UBYTE messagePending;
+    ULONG menuTree;
+    ULONG messageEpoch, messageMenuEpoch;
+    ULONG deferredEpoch, deferredMenuEpoch;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

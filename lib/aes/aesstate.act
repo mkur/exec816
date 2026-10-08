@@ -20,6 +20,19 @@ PUBLIC TYPE GuiPending=[
   GuiNotice ARRAY notices(AESTYPES.GUI_KINDS)
 ]
 
+; Owned association storage; only the caller's tree and strings are borrowed.
+PUBLIC TYPE Menu=[
+  AESTYPES.MenuObject POINTER tree
+  LONGCARD generation
+  BYTE count,titles
+  INT selectedTitle,selectedItem,selectedBox
+  INT ARRAY parent(AESTYPES.MENU_OBJECTS)
+  INT ARRAY x(AESTYPES.MENU_OBJECTS)
+  INT ARRAY y(AESTYPES.MENU_OBJECTS)
+  INT ARRAY title(AESTYPES.MENU_OBJECTS)
+  INT ARRAY box(AESTYPES.MENU_OBJECTS)
+]
+
 PUBLIC TYPE Client=[
   LONGCARD id
   LONGCARD sequence
@@ -29,6 +42,7 @@ PUBLIC TYPE Client=[
   EXEC.MsgPort POINTER replies
   AESTYPES.Endpoint POINTER endpoint
   AESTYPES.Request POINTER pending
+  Menu POINTER menu
   GuiPending gui
   AESTYPES.WindowView POINTER view
   DESKTYPES.Window POINTER window
@@ -46,6 +60,7 @@ PUBLIC TYPE Service=[
   BYTE started
   LONGCARD nextClient
   CARD nextGem
+  LONGCARD nextMenuEpoch,menuRevision
   LONGCARD nextGuiEpoch
   CARD nextWindow
   BYTE windowPending

@@ -1,6 +1,25 @@
 #include "aes-private.h"
 #include <proto/exec.h>
 
+/* Full C addresses are transported high word first in the fixed request. */
+WORD ExecAESMenu(OBJECT *tree,WORD operation,WORD item,ULONG value)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    WORD result;
+    if (!c) return 0;
+    if (c->busy) { c->diagnostic=AES_BUSY; return 0; }
+    if (!c->identity) { c->diagnostic=AES_IDENTITY; return 0; }
+    c->request.intin[0]=operation;
+    c->request.intin[1]=(WORD)((ULONG)tree>>16);
+    c->request.intin[2]=(WORD)(ULONG)tree;
+    c->request.intin[3]=item;
+    c->request.intin[4]=(WORD)(value>>16);
+    c->request.intin[5]=(WORD)value;
+    result=ExecAESSubmit(c,AES_OP_MENU);
+    if (result && operation==30) c->menuTree=item ? (ULONG)tree:0;
+    return result;
+}
+
 WORD menu_ienable(OBJECT *tree,WORD item,WORD enable)
 {
     if (enable) tree[item].ob_state&=~DISABLED;

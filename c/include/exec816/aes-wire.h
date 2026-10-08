@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 9
+#define AES_VERSION 10
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -86,6 +86,34 @@
 #define AES_MOUSE_QUERY -1
 #define AES_MOUSE_OFF 0
 #define AES_MOUSE_MILD 1
+#define AES_OP_MENU 202
+#define AES_MENU_OBJECTS 32
+#define AES_MN_SELECTED 10
+struct AESMenuObject {
+    WORD next;
+    WORD head;
+    WORD tail;
+    UWORD kind;
+    UWORD flags;
+    UWORD state;
+    ULONG spec;
+    WORD x;
+    WORD y;
+    WORD width;
+    WORD height;
+};
+#define AES_MENUOBJECT_SIZE 24
+#define AES_MENUOBJECT_OFFSET_NEXT 0
+#define AES_MENUOBJECT_OFFSET_HEAD 2
+#define AES_MENUOBJECT_OFFSET_TAIL 4
+#define AES_MENUOBJECT_OFFSET_KIND 6
+#define AES_MENUOBJECT_OFFSET_FLAGS 8
+#define AES_MENUOBJECT_OFFSET_STATE 10
+#define AES_MENUOBJECT_OFFSET_SPEC 12
+#define AES_MENUOBJECT_OFFSET_X 16
+#define AES_MENUOBJECT_OFFSET_Y 18
+#define AES_MENUOBJECT_OFFSET_WIDTH 20
+#define AES_MENUOBJECT_OFFSET_HEIGHT 22
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];
@@ -96,10 +124,12 @@ struct AESDelivery {
 struct AESGuiDelivery {
     struct AESDelivery delivery;
     ULONG epoch;
+    ULONG menuEpoch;
 };
-#define AES_GUIDELIVERY_SIZE 36
+#define AES_GUIDELIVERY_SIZE 40
 #define AES_GUIDELIVERY_OFFSET_DELIVERY 0
 #define AES_GUIDELIVERY_OFFSET_EPOCH 32
+#define AES_GUIDELIVERY_OFFSET_MENUEPOCH 36
 struct AESInputRecord {
     ULONG epoch;
     WORD x;
@@ -169,10 +199,10 @@ struct AESRegistrationStorage {
     struct AESGuiDelivery gui;
     struct AESInputInbox input;
 };
-#define AES_REGISTRATIONSTORAGE_SIZE 1142
+#define AES_REGISTRATIONSTORAGE_SIZE 1146
 #define AES_REGISTRATIONSTORAGE_OFFSET_RECORDS 0
 #define AES_REGISTRATIONSTORAGE_OFFSET_GUI 512
-#define AES_REGISTRATIONSTORAGE_OFFSET_INPUT 548
+#define AES_REGISTRATIONSTORAGE_OFFSET_INPUT 552
 struct AESEndpoint {
     ULONG id;
     WORD gemId;
@@ -192,8 +222,11 @@ struct AESEndpoint {
     UWORD guiWaiting;
     struct AESInputInbox EXEC_PTR * input;
     UBYTE inputPad;
+    ULONG menuEpoch;
+    UWORD menuConsumed;
+    UWORD menuNormal;
 };
-#define AES_ENDPOINT_SIZE 40
+#define AES_ENDPOINT_SIZE 48
 #define AES_ENDPOINT_OFFSET_ID 0
 #define AES_ENDPOINT_OFFSET_GEMID 4
 #define AES_ENDPOINT_OFFSET_STATE 6
@@ -212,6 +245,9 @@ struct AESEndpoint {
 #define AES_ENDPOINT_OFFSET_GUIWAITING 34
 #define AES_ENDPOINT_OFFSET_INPUT 36
 #define AES_ENDPOINT_OFFSET_INPUTPAD 39
+#define AES_ENDPOINT_OFFSET_MENUEPOCH 40
+#define AES_ENDPOINT_OFFSET_MENUCONSUMED 44
+#define AES_ENDPOINT_OFFSET_MENUNORMAL 46
 struct AESDirectory {
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
@@ -220,7 +256,7 @@ struct AESDirectory {
     WORD topWindow;
     struct AESEndpoint endpoints[AES_CLIENTS];
 };
-#define AES_DIRECTORY_SIZE 172
+#define AES_DIRECTORY_SIZE 204
 #define AES_DIRECTORY_OFFSET_OWNER 0
 #define AES_DIRECTORY_OFFSET_OWNERPAD 3
 #define AES_DIRECTORY_OFFSET_MASK 4
@@ -310,5 +346,5 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_VIEWPAD 107
 #define AES_REQUEST_OFFSET_DISPLAYGRANT 108
 #define AES_REQUEST_OFFSET_DISPLAYGRANTPAD 111
-#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE)
+#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE || (op)==AES_OP_MENU)
 #endif

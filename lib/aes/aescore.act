@@ -10,6 +10,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
 USE AESGUI
+USE AESMENU
 USE AESWINDOW
 USE AESINBOX
 USE DESKMOUSE
@@ -32,6 +33,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   service.error=AESTYPES.OK
   service.nextClient=1
   service.nextGem=1
+  service.nextMenuEpoch=1
   service.nextGuiEpoch=1
   service.nextWindow=1
   service.started=1
@@ -187,6 +189,9 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   endpoint.guiFree=1
   endpoint.guiWaiting=0
   endpoint.guiEpoch=0
+  endpoint.menuEpoch=0
+  endpoint.menuConsumed=1
+  endpoint.menuNormal=1
   endpoint.input=AESTYPES.InputInbox POINTER(ADDRESS(request.records)
       +SIZE(AESTYPES.REGISTRATIONSTORAGE_OFFSET_INPUT))
   endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
@@ -218,7 +223,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   EXEC.Permit()
-  IF AESWINDOW.Retire(service,client)=0 THEN
+  IF AESMENU.Retire(service,client)=0 OR AESWINDOW.Retire(service,client)=0 THEN
     client.pending=request
     IF client.windowWaiting=0 THEN
       client.windowWaiting=1
@@ -369,7 +374,8 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       AESSTATE.Reply(request,status)
     END
   ELSE
-    status=AESWINDOW.Request(service,client,request)
+    status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
+        ELSE AESWINDOW.Request(service,client,request) FI
     IF status=AESTYPES.PENDING THEN
       client.pending=request
       client.windowWaiting=1
@@ -399,7 +405,8 @@ PUBLIC PROC Settle(AESSTATE.Service POINTER service)
           IF request.operation=AESTYPES.OP_EXIT THEN
             Retire(service,client,request)
           ELSE
-            status=AESWINDOW.Request(service,client,request)
+            status=IF request.operation=AESTYPES.OP_MENU THEN AESMENU.Request(service,client,request)
+        ELSE AESWINDOW.Request(service,client,request) FI
             IF status<>AESTYPES.PENDING THEN
               client.pending=NULL
               client.windowWaiting=0

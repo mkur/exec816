@@ -32,7 +32,7 @@ def expected_layout():
     for name, record in layout().items():
         result += [(name+' size', record['size'])]
         result += [(name+' '+f, o) for f, o in record['fields'].items()]
-    result += [('C context size', 227 + layout()['Request']['size'] - 86 + 14 + 4 + 17), ('C context request', 0)]
+    result += [('C context size', 227 + layout()['Request']['size'] - 86 + 14 + 4 + 17 + 20), ('C context request', 0)]
     return result
 
 

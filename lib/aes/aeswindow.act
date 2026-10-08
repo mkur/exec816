@@ -7,6 +7,7 @@ USE A816MEMORY
 USE AESSTATE
 USE AESTYPES
 USE AESGUI
+USE AESMENU
 USE AESMOUSE
 USE AESLOCKS
 USE AESWINDOWSTATE
@@ -105,6 +106,7 @@ BYTE FUNC Close(AESSTATE.Client POINTER client)
 
   LET desktop=DESKSTATE.Get()
   AESMOUSE.Cancel(client.id)
+  AESMENU.Close(AESSTATE.Get(),client)
   AESGUI.Close(client)
   DESKCORE.RestoreFocus(desktop,client.window.id)
 
@@ -138,6 +140,7 @@ PROC Delete(AESSTATE.Client POINTER client)
 
   LET desktop=DESKSTATE.Get()
   AESMOUSE.Cancel(client.id)
+  AESMENU.Close(AESSTATE.Get(),client)
   AESGUI.Close(client)
   status=LAYERS.Delete(@desktop.scene,client.window.layer)
   IF status<>LAYERTYPES.OK THEN
