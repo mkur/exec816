@@ -1,0 +1,258 @@
+{
+  "status": "pass",
+  "slice": "GA3",
+  "tier": "development",
+  "qualification": false,
+  "baseline": "8e0ad72",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false
+  },
+  "machine_pin": "toolchain/altirra-gem-vdi.json",
+  "packet_version": 12,
+  "packet_bytes": 78,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_state_bytes_delta": 0,
+  "additional_vram_bytes": 0,
+  "host": {
+    "tests": 417,
+    "skips": 4
+  },
+  "checks": {
+    "presentation": {
+      "report": "build/classic-gem/ga3/presentation/presentation-results.json",
+      "sha256": "e4f3f9a5de94546b3491ba3d964d11b9b8ab73b08e1260ba9e6852f4dbe5dcc3",
+      "status": "pass",
+      "checks": 117,
+      "continuous_scroll": {
+        "feeds": 31,
+        "overtakes": 0,
+        "batches": 71,
+        "multirow": 2,
+        "maxRows": 2
+      },
+      "fragment_accepted_prefix": 64,
+      "guards": "intact",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 368,
+          "remaining_above_floor": 912
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 798,
+          "remaining_above_floor": 1506
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 49,
+          "remaining_above_floor": 207
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    },
+    "background": {
+      "report": "build/classic-gem/ga3/background/background-results.json",
+      "sha256": "2f8329cef0851f0a6b88b882bf53e8796bd1921898a68e94b50a713e0db1ff18",
+      "status": "pass",
+      "checks": 66,
+      "scenes": 15,
+      "max_painter_cpu_ms": 15.43906712772721,
+      "guards": "intact",
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 207,
+          "remaining_above_floor": 1073
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 700,
+          "remaining_above_floor": 1604
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 49,
+          "remaining_above_floor": 207
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 275,
+          "remaining_above_floor": 1005
+        }
+      },
+      "observer": "Display.OwnerEnter, correlated with passive drawing calls"
+    },
+    "drag": {
+      "report": "build/classic-gem/ga3/drag/results.json",
+      "sha256": "1882b9df88e589358a4d5685091c6c43807cf910d1c83618f0832180c4607b1b",
+      "status": "pass",
+      "loads": [
+        "idle",
+        "scroll",
+        "disk"
+      ],
+      "releases_per_load": 3,
+      "outline_samples": 36,
+      "cancellations": [
+        {
+          "kind": "escape",
+          "scene": {
+            "clock": 68159621,
+            "sha256": "8ff8dec1925b1cee673f54c49681d8e14db6dae9480a774194af164b0f9fac01",
+            "observations": 3
+          }
+        },
+        {
+          "kind": "event_queue_loss",
+          "scene": {
+            "clock": 78509764,
+            "sha256": "76816e7940bfcafe0f38df94fd32c7ecae079843c4e118b9927a9cbc0b40558a",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "cooperative_close_refused",
+          "scene": {
+            "clock": 81027785,
+            "sha256": "9776abe92c0a0c2c4b805d8c7818fd608dae131cb1f5651624057326fed4345b",
+            "observations": 1
+          }
+        },
+        {
+          "kind": "hide",
+          "scene": {
+            "clock": 85658950,
+            "sha256": "82cf1bd4850c7795916f7fd998faeb1ee21aa897deb701fbc1075fda22f5a436",
+            "observations": 38
+          }
+        },
+        {
+          "kind": "retirement_while_held"
+        }
+      ],
+      "guards": "intact",
+      "repair_target_pass": false,
+      "release_ms": {
+        "idle": {
+          "median_ms": 239.40397164280307,
+          "max_ms": 239.40460600045958
+        },
+        "scroll": {
+          "median_ms": 1222.073038530884,
+          "max_ms": 1462.8219893738044
+        },
+        "disk": {
+          "median_ms": 319.47421618063123,
+          "max_ms": 500.346288796257
+        }
+      },
+      "timing_scope": "Three releases per load: smoke median/max only, not a p95 claim. The historical 250 ms repair target remains open."
+    }
+  },
+  "fix": "Rebase the console origin when a redraw move commits; reset old gathers and dirty the existing model. Copied moves retain their existing rebase path. Normal worker ordering is unchanged.",
+  "fixture_changes": [
+    "Observe fills at Display.OwnerEnter instead of obsolete Display.Valid.",
+    "Use short bulk-output lines to exercise multirow gathering independently of the preceding VBI phase.",
+    "Pass the same D1 SDFS mount into the disk-drag build."
+  ],
+  "scope": "Focused optimized emitted-code development checks. No raw ABI probe: private packet operations/version changed, but its 78-byte layout and native/C calling convention did not."
+}

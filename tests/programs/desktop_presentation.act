@@ -192,9 +192,11 @@ PROC Main()
   OD
 
   Pause(16)
+  ; Short lines ensure multirow gathering within one VBI budget, regardless
+  ; of the earlier frame repaint phase. Keep the real four-row bound.
   FOR column=0 TO 511 DO
     bulk(column)=BYTE(65+(column MOD 26))
-    IF column MOD 31=30 THEN
+    IF column MOD 7=6 THEN
       bulk(column)=10
     FI
   OD

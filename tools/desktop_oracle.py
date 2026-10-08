@@ -2,7 +2,7 @@
 from generate_desktop import layout
 from generate_layers import layout as layers_layout
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text
 from test_gem_cursor import overlay
 from native_program import require
 
@@ -30,7 +30,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         if number(window, wf['id'], 4):
             windows[number(window, wf['layer'], 4)] = (window, start+wf['content'])
     result = Raster(font)
-    rectangle(result, (0, 0, 640, 240), 8)
+    desktop(result)
     chrome = {}
     if any('_DESKSTATE_BARLAYER_' in d['name'] for d in program['image']['data']):
         chrome = {name: number(bridge.memdump(symbol('DESKSTATE' if name in ('barLayer', 'popupLayer') else 'DESKMENU', name), size), 0, size)

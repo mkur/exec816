@@ -12,7 +12,7 @@ from os_boundary import emulator, run_to
 from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from test_cooperative import data
-from gem_render_oracle import Raster, font_bytes
+from gem_render_oracle import Raster, font_bytes, PENS
 from bitmap_console_oracle import Terminal
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
@@ -36,6 +36,13 @@ def text(raster, x, y, value, fg=1, bg=0):
             for col in range(8):
                 raster.pixel(x + index*8 + col, y + row,
                              fg if raster.font[row*256+char] & (128 >> col) else bg)
+
+
+def desktop(raster):
+    # The independent raster computes phase from absolute screen coordinates.
+    for y in range(240):
+        for x in range(640):
+            raster.pixels[y*640+x]=PENS[8 if (x+y)&1 else 0]
 
 
 def frame(raster, bounds, title, focused, background=0, close=False):
@@ -85,7 +92,7 @@ def scenes(font, accepted=None):
             for row in range(25):
                 terminal.feed(bytes(33+(row*11+col) % 90 for col in range(64)))
         if stage == 17:
-            terminal.feed(bytes(10 if col % 31 == 30 else 65+col % 26
+            terminal.feed(bytes(10 if col % 7 == 6 else 65+col % 26
                                 for col in range(512)))
         if stage == 19:
             if accepted is None:
@@ -94,7 +101,7 @@ def scenes(font, accepted=None):
             terminal.feed(b'\x0c'+b'\n'*13)
             terminal.feed(bytes(65+col % 26 for col in range(accepted)))
         raster = Raster(font)
-        rectangle(raster, (0, 0, 640, 240), 8)
+        desktop(raster)
         left, top = (32, 24) if stage < 3 else (80, 48)
         frame(raster, (left, top, left+528, top+184), b'Exec816 Shell', True)
         terminal.paint(raster, (left+8)//8, (top+16)//8, True)

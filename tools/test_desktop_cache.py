@@ -14,7 +14,7 @@ from library_paths import read_source
 from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from stack_budget import stack_usage
-from test_desktop_presentation import frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from test_gem_interactive import pixels
@@ -23,7 +23,7 @@ from test_mouse_observe import BRIDGE, PIN, ROM
 
 def scene(stage, font):
     raster = Raster(font)
-    rectangle(raster, (0, 0, 640, 240), 8)
+    desktop(raster)
     shell_focus = stage < 4 or stage == 12
     frame(raster, (32, 24, 560, 208), b'Exec816 Shell', shell_focus)
     terminal = Terminal(64, 20)

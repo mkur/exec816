@@ -67,3 +67,35 @@ Optimized menu, two-Files-instance and panel-control fixtures pass, including
 exact native-popup pixels, all four border hit edges, menu replacement/withdrawal,
 keyboard navigation, radio/default activation and press cancellation. Host checks
 pass 417 tests with four existing skips. See [GA2 evidence](../development/classic-gem-appearance-ga2.json).
+
+## GA3 — Patterned desktop
+
+Desktop exposure repair now composes grey fill and the existing white GEM
+stipple in the widget strip, then publishes the complete fragment. Both nibble
+edges and odd scanlines preserve absolute screen phase. Active-title phase
+remains relative to its window. Drawing uses strided blitter operations, not
+per-dot calls, and retains the presenter's sixteen-row/input-service boundaries.
+
+The private packet is version 12, still 78 bytes, adding DESKTOP. There is no
+new mutable state, table, framebuffer or reservation: upper scratch, VRAM and
+reserved bank-zero delta are **0**, including **0 fixed, 0 per public Task and
+0 private idle** with guards, alignment and spare capacity.
+
+The independent raster computes each background pixel from absolute coordinates.
+The sparse-repair fixture also checks half-open closer/title edges explicitly.
+Scrolling drags exposed an existing ordering hazard: a redraw move committed
+geometry after the console's origin had been synchronized for that turn.
+Output could then stamp an old-position caret into the new frame margin.
+The move helper now rebases the console immediately on a successful redraw
+move, using its existing copied-move rebase helper and discarding any old
+scroll gather. Normal worker ordering and batching remain unchanged.
+
+The fill observer now stops at Display.OwnerEnter, replacing its obsolete
+Display.Valid observation point. Presentation passes 117 checks, including
+zero producer overtakes and observed two-row batches. Background/repair passes
+66 checks across fifteen independent pixel scenes; the maximum observed paint
+unit is 15.44 ms CPU and long-text input boundaries pass. Three physical moves
+each under idle, scrolling and disk load pass, as do both screen clamps, Escape,
+event loss, cooperative close, hiding and retirement while held. These small
+move samples do not close the older 250 ms repair target. Host checks pass
+417 tests with four existing skips. See [GA3 evidence](../development/classic-gem-appearance-ga3.json).

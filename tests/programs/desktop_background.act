@@ -13,6 +13,7 @@ USE DESKTOP
 USE DESKTYPES
 USE DESKBOOT
 USE DESKSTATE
+USE DESKGEOMETRY
 USE DESKCORE
 USE DESKPAINT
 USE LAYERS
@@ -119,6 +120,18 @@ RETURN
 PROC Main()
   CARD index
   LAYERTYPES.Rect repair
+
+  ; Half-open painted geometry, including odd coordinates and non-hit edges.
+  REGIONS.Assign(@repair,31,29,191,109)
+  Require(DESKGEOMETRY.CloseHit(@repair,32,30)<>0)
+  Require(DESKGEOMETRY.CloseHit(@repair,45,43)<>0)
+  Require(DESKGEOMETRY.CloseHit(@repair,31,30)=0)
+  Require(DESKGEOMETRY.CloseHit(@repair,46,30)=0)
+  Require(DESKGEOMETRY.CloseHit(@repair,32,29)=0)
+  Require(DESKGEOMETRY.CloseHit(@repair,32,44)=0)
+  Require(DESKGEOMETRY.TitleHit(@repair,189,35)<>0)
+  Require(DESKGEOMETRY.TitleHit(@repair,190,35)=0)
+  Require(DESKGEOMETRY.TitleHit(@repair,48,44)=0)
 
   ; Hiding the console leaves the empty desktop as an independent starting scene.
   Send(DESKTYPES.HIDE,DESKBOOT.WindowId())

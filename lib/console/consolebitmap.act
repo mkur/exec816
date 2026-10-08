@@ -82,7 +82,8 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
-      OR operation=OP_TEXT_CLIP OR operation=OP_FRAME OR operation=OP_MENU_ROW
+      OR operation=OP_TEXT_CLIP OR operation=OP_FRAME
+      OR operation=OP_MENU_ROW OR operation=OP_DESKTOP
       OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
     drawingChanged=1
   FI
@@ -147,6 +148,16 @@ PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
   packet.background=pen
 
 RETURN(Run(OP_FILL))
+
+PUBLIC BYTE FUNC Background(LAYERTYPES.Rect POINTER clip)
+
+  LET packet=GetPacket()
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+
+RETURN(Run(OP_DESKTOP))
 
 PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
     BYTE POINTER title BYTE focused,closer CARD POINTER progress)

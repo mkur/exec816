@@ -214,7 +214,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     IF layer.id<>0 AND (layer.id=DESKSTATE.barLayer OR layer.id=DESKSTATE.popupLayer) THEN
       RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
     FI
-    RETURN(Fill(@strip,@strip,8))
+    RETURN(CONSOLEBITMAP.Background(@strip))
   FI
 
   DESKGEOMETRY.Work(@layer.bounds,@client)

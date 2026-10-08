@@ -9,7 +9,7 @@ from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,ROM,PIN
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import rectangle,frame
+from test_desktop_presentation import desktop, rectangle,frame
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from generate_aes_server import ABI
@@ -64,7 +64,7 @@ def run(out,program):
                 ids=[get(app(i,'window')) for i in range(2)]
                 order=[1,0] if top==ids[0] else [0,1]
                 r=Raster(font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'))
-                rectangle(r,(0,0,640,240),8);frame(r,(32,24,560,208),b'Exec816 Shell',focused and top==0)
+                desktop(r);frame(r,(32,24,560,208),b'Exec816 Shell',focused and top==0)
                 states=[]
                 for i in order:
                     if not get(app(i,'ready')):continue

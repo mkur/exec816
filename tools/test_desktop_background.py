@@ -22,7 +22,7 @@ from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from sio_transaction_trace import BASE_HZ, read_events
 from stack_budget import stack_usage
-from test_desktop_presentation import rectangle, frame, text, menu_bar
+from test_desktop_presentation import desktop, rectangle, frame, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from test_gem_interactive import pixels
@@ -43,7 +43,7 @@ NAMES = ('empty desktop', 'first empty client', 'five retained commands',
 
 def scene(stage, font):
     raster = Raster(font)
-    rectangle(raster, (0, 0, 640, 240), 8)
+    desktop(raster)
     if 2 <= stage <= 8:
         frame(raster, BOUNDS, b'X' if stage == 8 else b'Background',
               5 <= stage <= 7, 0 if stage == 8 else 3, close=True)
@@ -111,10 +111,10 @@ def run(out, replay=False, painter=None, observe=True):
               ('GemDrawingCopy', 'GemDrawingCopyStart', 'GemDrawingScrollStart')]
     points.update({f'copy_{i}': pc for i, pc in enumerate(copies)})
     # The bridge only sets bank-zero PC breakpoints. Observe the existing
-    # FindTask gateway called by Display.Valid while a drawing packet is live.
+    # FindTask gateway called by Display.OwnerEnter while a drawing packet is live.
     # A fill can validate ownership several times; correlate samples with the
     # passive drawing-call trace instead of counting gateway crossings as fills.
-    find_caller = call_marker(p, 'M_DISPLAY_VALID_', 'tasks_find_task', after=True)
+    find_caller = call_marker(p, 'M_DISPLAY_OWNERENTER_', 'tasks_find_task', after=True)
     # @s and REGS expose only S8; @ra uses the complete native S internally.
     # Reject an ambiguous low-word return before relying on that expression.
     needle = b'\x22'+p['labels']['tasks_find_task'].to_bytes(3, 'little')

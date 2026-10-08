@@ -21,6 +21,11 @@ are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
 `wind_calc` geometry use constants generated from `abi/desktop.json`.
 
+Exposed desktop regions use a light-grey/white stipple anchored to screen
+coordinates. Each damaged strip is composed offscreen before publication, so
+clipping, moves and popup dismissal preserve the same phase. There is no
+periodic background repaint or separate desktop framebuffer.
+
 ## Registration and lifetime
 
 `DESKTOP.Init(client, service)` creates a private reply port in the calling Task.

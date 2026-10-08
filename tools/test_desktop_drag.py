@@ -18,7 +18,7 @@ from generate_layers import layout as layer_layout
 from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
 from bitmap_console_oracle import Terminal
 from test_gem_cursor import overlay
-from test_desktop_presentation import frame, rectangle, menu_bar, text as paint_text
+from test_desktop_presentation import desktop, frame, rectangle, menu_bar, text as paint_text
 from sio_transaction_trace import BASE_HZ
 from measure_desktop import distribution
 from make_data_disk import make
@@ -106,7 +106,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                 raise RuntimeError('Window layer was not found')
             def raster(outline=None):
                 model = Raster(font)
-                rectangle(model, (0, 0, 640, 240), 8)
+                desktop(model)
                 focused = int.from_bytes(b.memdump(service+desktop_layout()['Service']['fields']['focus'], 4), 'little')
                 def application():
                     draw_panel(model, focused == 3)

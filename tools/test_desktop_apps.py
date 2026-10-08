@@ -15,7 +15,7 @@ from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from gem_render_oracle import Raster, font_bytes, PALETTE, PENS
 from bitmap_console_oracle import Terminal
-from test_desktop_presentation import rectangle, text, frame
+from test_desktop_presentation import desktop, rectangle, text, frame
 from test_gem_cursor import overlay
 from generate_desktop import layout
 from desktop_budget import delta
@@ -82,7 +82,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                 colors = {hw: bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen, hw in enumerate(PENS)}
                 def picture(label):
                     raster = Raster(font)
-                    rectangle(raster, (0, 0, 640, 240), 8)
+                    desktop(raster)
                     if shell_live:
                         frame(raster, (32, 24, 560, 208), b'Exec816 Shell', focused == 1)
                         terminal.paint(raster, 5, 5, focused == 1)

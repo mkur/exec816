@@ -132,3 +132,23 @@ UWORD DesktopMenuRow(struct ConsoleBitmapPacket *p)
     paint=0;
     return status;
 }
+
+/* The fixed desktop pattern is screen-anchored, unlike the active title.
+ * Fill/stipple stay offscreen until this complete <=16-row fragment is ready. */
+static UWORD background(void)
+{
+    struct ConsoleBitmapPacket *p=paint;
+    GemWidgetFill(1,1,8,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+    GemWidgetStipple(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+    return 1;
+}
+
+UWORD DesktopBackground(struct ConsoleBitmapPacket *p)
+{
+    UWORD status;
+    paint=p;
+    status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
+                                1,background);
+    paint=0;
+    return status;
+}

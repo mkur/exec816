@@ -11,6 +11,7 @@ USE CONSOLEDISPLAY
 USE CONSOLEWINDOWS
 USE CONSOLETYPES
 USE CONSOLEBATCH
+USE CONSOLECORE
 USE HEAPCORE
 
 LONGCARD moveToken
@@ -34,8 +35,9 @@ PUBLIC PROC HideCaret()
 
 RETURN
 
-; Rebase placement only: copied pixels still represent the same circular model.
-PROC Rebase(LAYERTYPES.Layer POINTER layer)
+; Commit the console origin with geometry, before the next output quantum.
+; Copied pixels preserve the model; redraw moves discard any gathered batch.
+PROC Rebase(LAYERTYPES.Layer POINTER layer BYTE copied)
 
   LET entry=CONSOLEWINDOWS.Find(0)
   IF entry=NULL THEN
@@ -43,6 +45,16 @@ PROC Rebase(LAYERTYPES.Layer POINTER layer)
   FI
 
   LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+  IF copied=0 THEN
+    BEGIN
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      CONSOLEBATCH.Reset()
+      view.scrollState=0
+      view.presentedGeneration=0
+      CONSOLECORE.Dirty(instance,0,instance.count)
+    END
+  FI
+
   view.left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
   view.top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
   view.cursorOn=0
@@ -66,7 +78,7 @@ PUBLIC PROC Pump()
   FI
 
   IF completed<>0 AND moving.kind=DESKTYPES.CONTENT_CONSOLE THEN
-    Rebase(LAYERS.Find(@service.scene,moving.layer))
+    Rebase(LAYERS.Find(@service.scene,moving.layer),1)
   FI
 
   moveToken=0
@@ -83,7 +95,7 @@ RETURN
 PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window INT left,top
     DESKTYPES.Request POINTER request)
-  BYTE status,drawn,eligible
+  BYTE status,drawn,eligible,changed
   LONGCARD token
 
   LET layer=LAYERS.Find(@service.scene,window.layer)
@@ -140,7 +152,12 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     FI
   FI
 
+  changed=layer.bounds.left<>left OR layer.bounds.top<>top
   status=LAYERS.Move(@service.scene,window.layer,left,top)
+  IF status=LAYERTYPES.OK AND changed<>0
+      AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    Rebase(layer,0)
+  FI
 
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
 
