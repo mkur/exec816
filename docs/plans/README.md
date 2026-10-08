@@ -1,5 +1,7 @@
 # Implementation plans
 
+- [RAM filesystem](ram-filesystem.md): volatile files using the shared DOS worker.
+
 [Documentation home](../README.md) · [Open roadmap](../roadmap.md)
 
 Plans describe bounded implementation slices. This index includes completed
