@@ -1,6 +1,7 @@
 ; Menu chrome is normal opaque scene content, painted in bounded row steps.
 MODULE DESKMENUPAINT
 USE DESKMENU
+USE DESKAPPMENU
 USE DESKSTATE
 USE LAYERTYPES
 USE REGIONS
@@ -34,6 +35,18 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   CARD foreground,background
   BYTE row,okay
 
+  IF DESKAPPMENU.Current()<>0 AND (layer.id=DESKSTATE.barLayer
+      OR DESKMENU.paintMenu=DESKMENU.GEM_MENU) THEN
+    IF layer.id<>DESKSTATE.barLayer OR phase^<2 THEN
+      okay=DESKAPPMENU.Paint(layer,clip,phase^=0,
+          DESKMENU.paintMenu=DESKMENU.GEM_MENU)
+      phase^=1
+      IF okay=0 OR okay=2 THEN RETURN(okay) FI
+      IF layer.id<>DESKSTATE.barLayer THEN RETURN(1) FI
+      phase^=2
+      RETURN(2)
+    FI
+  FI
   IF phase^=0 THEN
     phase^=1
     RETURN(IF Fill(clip,clip,0)<>0 THEN 2 ELSE 0 FI)
@@ -102,6 +115,6 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   phase^==+1
 
 RETURN(IF okay=0 THEN 0 ELSE
-    IF phase^>DESKMENU.ROWS THEN 1 ELSE 2 FI FI)
+    IF phase^>BYTE(CARD(layer.bounds.bottom-layer.bounds.top) RSH 4) THEN 1 ELSE 2 FI FI)
 
 ENDMODULE

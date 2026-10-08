@@ -22,7 +22,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
         from extract_gem_aes import extract as aes_extract,PORT as aes
         from generate_widgets import expected_layout as aes_layout
         aes_record=aes_extract(out/'aes-selected')
-        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',
+        sources += [aes/'widgets-model.c',aes/'widgets-graf.c',aes/'widgets-render.c',aes/'menu-render.c',
                     *(out/'aes-selected'/n for n in ('aes-objects.c','aes-graf.c','aes-form.c'))]
         extra_includes=[aes,out/'aes-selected']
         extra_probes=[(aes/'widget-layout.c',aes_layout())]

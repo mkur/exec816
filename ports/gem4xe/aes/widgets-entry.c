@@ -4,6 +4,7 @@ struct WidgetPacket WidgetPacket __attribute__((aligned(2)));
 extern uint16_t WidgetSet(struct WidgetContext *,const struct WidgetTree *,struct WidgetPacket *);
 extern uint16_t WidgetUpdate(struct WidgetContext *,const struct WidgetUpdate *,struct WidgetPacket *);
 extern uint16_t WidgetRead(const struct WidgetContext *,struct WidgetSnapshot *,uint16_t);
+extern uint16_t MenuPaint(struct WidgetPacket *);
 void WidgetEntry(void)
 {
     struct WidgetPacket *p=&WidgetPacket;
@@ -21,6 +22,8 @@ void WidgetEntry(void)
     case WIDGET_OP_KEY:
     case WIDGET_OP_CANCEL:
         p->status=WidgetInput(c,p);break;
+    case WIDGET_OP_MENU_DRAW:
+        p->status=MenuPaint(p);break;
     case WIDGET_OP_DRAW:
         p->status=WidgetPaint(p);break;
     case WIDGET_OP_FOCUS:

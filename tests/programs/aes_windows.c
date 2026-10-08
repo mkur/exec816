@@ -113,7 +113,7 @@ UWORD AESRun(void)
     in[2] = 9; in[3] = 9; in[4] = 200; in[5] = 120;
     aes_call(&pb);
     CHECK(out[0] == 1 && out[1] == 17 && out[2] == 25 && out[3] == 184 && out[4] == 96);
-    geometry(0, WF_WXYWH, 0, 0, 640, 240);
+    geometry(0, WF_WXYWH, 0, 16, 640, 224);
     CHECK(wind_create(0, 9, 9, 200, 120) == -1);
     CHECK(wind_create(AES_WINDOW_KIND, -1, 9, 200, 120) == -1);
     CHECK(wind_create(AES_WINDOW_KIND, 500, 9, 200, 120) == -1);

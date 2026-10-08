@@ -99,7 +99,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # Desktop menu state adds 256 bytes of upper capacity. The disk GUI
     # bootstrap adds its CRC table and fixed load descriptors.
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
-    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(256 if desktop else 0)+(512 if gem_desktop else 0)
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(512 if desktop else 0)+(512 if gem_desktop else 0)
     memory_profile=output/'demo-memory.json'
     memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:

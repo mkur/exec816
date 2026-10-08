@@ -23,7 +23,7 @@ PUBLIC TYPE GuiPending=[
 ; Owned association storage; only the caller's tree and strings are borrowed.
 PUBLIC TYPE Menu=[
   AESTYPES.MenuObject POINTER tree
-  LONGCARD generation
+  LONGCARD generation,damage
   BYTE count,titles
   INT selectedTitle,selectedItem,selectedBox
   INT ARRAY parent(AESTYPES.MENU_OBJECTS)

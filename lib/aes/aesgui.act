@@ -195,6 +195,7 @@ PUBLIC BYTE FUNC Select(AESSTATE.Service POINTER service
   menu.selectedItem=item
   menu.selectedBox=box
   heading.state=heading.state OR 1
+  menu.damage=menu.damage OR (LONGCARD(1) LSH CARD(title))
   EXEC.Permit()
   service.menuRevision==+1
   Post(service,client,AESTYPES.GUI_MENU,0,0,0,0)

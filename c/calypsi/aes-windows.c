@@ -60,7 +60,7 @@ WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
     if (c == NULL || !ExecAESEnter(c)) return 0;
     Forbid();
     v = c->view;
-    if (handle == 0 && field == WF_WXYWH) { *o3 = 640; *o4 = 240; }
+    if (handle == 0 && field == WF_WXYWH) { *o2 = 16; *o3 = 640; *o4 = 224; }
     else if (field == WF_TOP && (handle == 0 || (v != NULL && handle == v->handle)))
         *o1 = c->directory->topWindow;
     else if (v == NULL || handle <= 0 || handle != v->handle)

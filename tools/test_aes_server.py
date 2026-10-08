@@ -29,7 +29,7 @@ def context_program(out, optimize):
                       'AESChecks', 'AESFailures'],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout()),
                        (ROOT/'c/calypsi/display-layout.c', display_layout())],
-        client_optimization={n: optimize for n in ('display.c', 'aes.c', 'aes-events.c', 'aes_context.c')})
+        client_optimization={n: optimize for n in ('display.c', 'aes.c', 'aes-events.c', 'aes_context.c', 'menu-render.c')})
     sy = foreign['symbols']
     checks = []
     for name, fields in ABI['records'].items():
@@ -39,10 +39,15 @@ def context_program(out, optimize):
         for field, kind, *counts in fields:
             access = field+'(0)' if counts else field
             checks += [f'  Require(ADDRESS(@{variable}.{access})-ADDRESS(packet)={layout()[name]["fields"][field]})']
+    checks += ['  LET menu=AESSTATE.Menu POINTER(packet)',
+               '  Require(SIZEOF(AESSTATE.Menu)=340)',
+               '  Require(ADDRESS(@menu.x(0))-ADDRESS(@menu.parent(0))=64)',
+               '  Require(ADDRESS(@menu.y(0))-ADDRESS(@menu.parent(0))=128)']
     source = out/'context.act'
     source.write_text('''MODULE AESPROBE
 USE EXEC
 USE AESTYPES
+USE AESSTATE
 USE HEAPCORE
 USE CONSOLEBITMAP
 CARD checks,result
@@ -336,7 +341,7 @@ ENDMODULE
         program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
             tasks=True, task_capacity=8, foreign_image=foreign,
             console_deferred=True, memory_profile=memory,
-            **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite=='resources' else {}))
+            **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus') else {}))
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse'] = metadata(None)
     pin = json.loads(json.dumps(PIN))
@@ -351,6 +356,13 @@ ENDMODULE
     try:
         with emulator(BRIDGE, ROM, out, pin=pin) as bridge:
             report['machine'] = verify_machine(bridge, ROM, pin)
+            if suite=='menus':
+                from build_gem_resource import resource
+                from make_data_disk import make
+                media=out/'media';media.mkdir(exist_ok=True)
+                (media/'MENU.RSC').write_bytes(resource(ROOT/'tests/fixtures/application-menu.json'))
+                make(out/'menus.atr',media,binary_names={'MENU.RSC'},filesystem='sdfs',sector_bytes=128,sectors=720)
+                bridge.mount(0,str(out/'menus.atr'))
             if suite=='resources':
                 from build_gem_resource import resource
                 from make_data_disk import make
@@ -368,6 +380,9 @@ ENDMODULE
                 before = None
                 if borrowed:
                     from test_display_borrow import physical
+                    before = lambda b: physical(b, program, foreign, report)
+                if suite=='menus':
+                    from test_aes_menus import physical
                     before = lambda b: physical(b, program, foreign, report)
                 if suite=='objects':
                     from test_tedinfo import physical

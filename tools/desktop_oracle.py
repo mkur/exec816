@@ -7,7 +7,7 @@ from test_gem_cursor import overlay
 from native_program import require
 
 
-def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
+def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, menu_contexts=None):
     def symbol(module, name):
         return next(d['address'] for d in program['image']['data']
                     if '_'+module+'_'+name.upper()+'_' in d['name'])
@@ -43,6 +43,25 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
             shown.add(number(bridge.memdump(at, 4), 0, 4))
     active = next((w for w, _ in windows.values() if number(w, wf['id'], 4) == focused), None)
 
+    menu_source=0
+    if active is not None and active[wf['kind']]==4:
+        from pathlib import Path
+        import json
+        path=Path(program['output'])/'bitmap-console/c-image.json'
+        if menu_contexts is None and path.exists():
+            menu_contexts=json.loads(path.read_text())['symbols'].get('contexts')
+        if menu_contexts:
+            from application_menu_oracle import active_tree
+            layer_id=number(active,wf['layer'],4)
+            for slot in order:
+                at=scene+lf['items']+slot*layers_layout()['Layer']['size']
+                if number(bridge.memdump(at,4),0,4)==layer_id:
+                    menu_source=active_tree(bridge,menu_contexts,rect(bridge.memdump(at+4,8),0))
+                    break
+    menu_heading=number(bridge.memdump(symbol('DESKAPPMENU','paintHeading'),2),0) if menu_source else 0
+    menu_selected=number(bridge.memdump(symbol('DESKAPPMENU','paintSelected'),2),0) if menu_source else 65535
+    if menu_selected==65535:menu_selected=-1
+
     def menu_layer(ident, bounds):
         left, top, right, bottom = bounds
         rectangle(result, bounds, 0)
@@ -50,15 +69,26 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
             inverse = chrome['menu'] == 1
             rectangle(result, (0, 0, 320, 15), int(inverse))
             title = active[wf['title']:wf['title']+32].split(b'\0')[0] if active else b'Desktop'
-            text(result, 8, 4, title, int(not inverse), int(inverse))
+            if menu_source:
+                from application_menu_oracle import draw
+                draw(bridge,result,menu_source,heading=menu_heading,opened=chrome['menu']==3)
+            else:
+                text(result, 8, 4, title, int(not inverse), int(inverse))
             inverse = chrome['menu'] == 2
             rectangle(result, (432, 0, 640, 15), int(inverse))
             text(result, 440, 4, b'Windows', int(not inverse), int(inverse))
             rectangle(result, (0, 15, 640, 16), 1)
         else:
+            if chrome['menu']==3 and menu_source:
+                from application_menu_oracle import draw
+                expected=draw(bridge,result,menu_source,True,menu_heading,menu_selected)
+                require(expected==bounds,'Menu layer differs from source geometry')
+                return
             if chrome['menu'] == 2:
                 entries = [(w[wf['title']:wf['title']+24].split(b'\0')[0], True)
                            for ident, (w, _) in windows.items() if ident in shown]
+                if menu_source:
+                    entries += [(b'Next window', True), (b'Close', True)]
             else:
                 entries = [(b'Next window', True), (b'Close', active is not None and active[wf['kind']] != 1)]
             for row, (label, enabled) in enumerate(entries):

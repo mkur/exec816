@@ -1,0 +1,208 @@
+; The active AES owner's borrowed menu, read only between mutation boundaries.
+MODULE DESKAPPMENU
+USE AESSTATE
+USE AESTYPES
+USE AESMENU
+USE AESWINDOWSTATE
+USE DESKSTATE
+USE DESKWIDGETS
+USE WIDGETTYPES
+USE CONSOLEBITMAP
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE HEAPCORE
+
+PUBLIC AESSTATE.Client POINTER owner
+PUBLIC INT heading,selected,paintHeading,paintSelected
+LONGCARD generation,revision
+CARD paintIndex
+
+PUBLIC BYTE FUNC Changed()
+
+  LET service=AESSTATE.Get()
+
+RETURN(service<>NULL AND revision<>service.menuRevision)
+
+PUBLIC BYTE FUNC Current()
+
+RETURN(owner<>NULL AND owner.menu<>NULL AND owner.menu.generation=generation)
+
+; Return one for a new lifetime, two for source-state changes in the same menu.
+PUBLIC BYTE FUNC Refresh()
+  AESSTATE.Client POINTER candidate
+  LONGCARD nextGeneration
+  BYTE change
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+  LET desktop=DESKSTATE.Get()
+  candidate=AESWINDOWSTATE.Find(desktop.focus)
+  IF candidate<>NULL AND (candidate.menu=NULL OR candidate.view.shown=0) THEN
+    candidate=NULL
+  FI
+  nextGeneration=IF candidate=NULL THEN LONGCARD(0) ELSE candidate.menu.generation FI
+  change=0
+  IF candidate<>owner OR generation<>nextGeneration THEN
+    owner=candidate
+    generation=nextGeneration
+    heading=0
+    selected=-1
+    paintHeading=0
+    paintSelected=-1
+    change=1
+  ELSEIF revision<>service.menuRevision THEN
+    change=2
+  FI
+  revision=service.menuRevision
+
+RETURN(change)
+
+PUBLIC BYTE FUNC Enabled(INT index)
+  INT parent
+
+  IF Current()=0 THEN
+    RETURN(0)
+  FI
+  LET menu=owner.menu
+  LET object=AESMENU.Object(menu,index)
+  IF (object.state & 8)<>0 THEN
+    RETURN(0)
+  FI
+  parent=index
+  WHILE parent>=0 DO
+    BEGIN
+      LET ancestor=AESMENU.Object(menu,parent)
+      IF (ancestor.flags & 128)<>0 THEN
+        RETURN(0)
+      FI
+      parent=menu.parent(parent)
+    END
+  OD
+
+RETURN(1)
+
+PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
+  INT left,top,box
+
+  LET menu=owner.menu
+  box=menu.box(heading)
+  LET object=AESMENU.Object(menu,box)
+  left=menu.x(box)
+  top=menu.y(box)
+  IF left<0 THEN left=0 FI
+  IF left+object.width>640 THEN left=640-object.width FI
+  IF top<16 THEN top=16 FI
+  IF top+object.height>240 THEN top=240-object.height FI
+  REGIONS.Assign(bounds,left,top,left+object.width,top+object.height)
+
+RETURN
+
+PROC DamageObject(INT index BYTE popup)
+  INT box,active
+  LAYERTYPES.Rect bounds,drop
+  BYTE status
+
+  LET desktop=DESKSTATE.Get()
+  LET menu=owner.menu
+  LET object=AESMENU.Object(menu,index)
+  active=menu.parent(menu.title(0))
+  IF menu.parent(index)=active THEN
+    REGIONS.Assign(@bounds,menu.x(index),0,menu.x(index)+object.width,16)
+    status=LAYERS.Invalidate(@desktop.scene,DESKSTATE.barLayer,@bounds)
+  ELSEIF popup<>0 THEN
+    box=menu.box(heading)
+    PopupBounds(@drop)
+    REGIONS.Assign(@bounds,drop.left+menu.x(index)-menu.x(box),
+        drop.top+menu.y(index)-menu.y(box),0,0)
+    bounds.right=bounds.left+object.width
+    bounds.bottom=bounds.top+object.height
+    status=LAYERS.Invalidate(@desktop.scene,DESKSTATE.popupLayer,@bounds)
+  ELSE
+    RETURN
+  FI
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faee)
+  FI
+
+RETURN
+
+; Keep source changes and pointer highlights off the screen until paint retires.
+PUBLIC PROC Snapshot(BYTE popup)
+  BYTE index
+  LONGCARD mask
+
+  IF Current()=0 THEN
+    RETURN
+  FI
+  LET menu=owner.menu
+  IF paintHeading<>heading THEN
+    DamageObject(menu.title(paintHeading),0)
+    DamageObject(menu.title(heading),0)
+  FI
+  IF paintSelected<>selected THEN
+    IF paintSelected>=0 THEN DamageObject(paintSelected,popup) FI
+    IF selected>=0 THEN DamageObject(selected,popup) FI
+  FI
+  mask=1
+  FOR index=0 TO menu.count-1 DO
+    IF (menu.damage & mask)<>0 THEN
+      DamageObject(INT(index),popup)
+    FI
+    mask=mask LSH 1
+  OD
+  menu.damage=0
+  paintHeading=heading
+  paintSelected=selected
+
+RETURN
+
+; The source tree and geometry are frozen by the scene token. Native and
+; application renderers have distinct GSX scratch; the former also draws menus.
+PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
+    BYTE first,opened)
+  INT scope
+
+  IF Current()=0 THEN
+    RETURN(1)
+  FI
+  LET menu=owner.menu
+  LET packet=DESKWIDGETS.GetPacket()
+  IF first<>0 THEN paintIndex=0 FI
+  packet.context=LONGCARD(ADDRESS(menu.tree))
+  packet.payload=LONGCARD(ADDRESS(@menu.parent(0)))
+  packet.originX=0
+  packet.originY=0
+  packet.left=clip.left
+  packet.right=clip.right
+  packet.top=clip.top
+  packet.bottom=clip.bottom
+  packet.state=$ffff
+  packet.qualifiers=$ffff
+  IF layer.id=DESKSTATE.barLayer THEN
+    BEGIN
+      LET root=AESMENU.Object(menu,0)
+      scope=root.head
+      packet.originY=-menu.y(scope)
+      IF packet.right>432 THEN packet.right=432 FI
+      IF opened<>0 THEN packet.qualifiers=CARD(menu.title(paintHeading)) FI
+    END
+  ELSE
+    scope=menu.box(paintHeading)
+    packet.originX=layer.bounds.left-menu.x(scope)
+    packet.originY=layer.bounds.top-menu.y(scope)
+    packet.state=CARD(paintSelected)
+  FI
+  IF packet.left>=packet.right THEN RETURN(1) FI
+  packet.object=scope
+  packet.index=paintIndex
+  DESKWIDGETS.Run(WIDGETTYPES.OP_MENU_DRAW)
+  paintIndex=packet.index
+  IF packet.status<>WIDGETTYPES.OK THEN RETURN(0) FI
+  IF packet.changed<>0 THEN RETURN(2) FI
+
+RETURN(CONSOLEBITMAP.Drawn(packet.status))
+
+ENDMODULE

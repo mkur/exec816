@@ -33,6 +33,9 @@ def expected_layout():
         result += [(name+' size', record['size'])]
         result += [(name+' '+f, o) for f, o in record['fields'].items()]
     result += [('C context size', 227 + layout()['Request']['size'] - 86 + 14 + 4 + 17 + 20), ('C context request', 0)]
+    context_size = dict(result)['C context size']
+    result += [('C context '+field, context_size-20+index*4) for index,field in
+               enumerate(('menuTree','messageEpoch','messageMenuEpoch','deferredEpoch','deferredMenuEpoch'))]
     return result
 
 
@@ -89,7 +92,10 @@ def files():
             'const UWORD AESLayout[] = {',
             *['    '+e+',' for e in expressions],
             '    sizeof(struct ExecAESContext),',
-            '    offsetof(struct ExecAESContext, request),', '};', ''])}
+            '    offsetof(struct ExecAESContext, request),',
+            *['    offsetof(struct ExecAESContext, '+field+'),' for field in
+              ('menuTree','messageEpoch','messageMenuEpoch','deferredEpoch','deferredMenuEpoch')],
+            '};', ''])}
 
 
 if __name__ == '__main__':

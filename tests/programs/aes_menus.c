@@ -3,9 +3,11 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
+#include <proto/dos.h>
 #include "../../c/calypsi/aes-private.h"
 
-ULONG AESService,AESMenuNext;
+ULONG AESService,AESMenuNext,AESMenuTree,AESMenuPeerTree;
+volatile WORD AESMenuPhase,AESMenuGo;
 volatile ULONG AESMenuClient;
 volatile UWORD AESMenuCommand,AESMenuResult;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure;
@@ -47,6 +49,36 @@ static void receive(WORD *words,WORD kind)
         CHECK(words[0]==WM_REDRAW);
         if (words[0]!=WM_REDRAW) return;
     }
+}
+static struct Task *controller,*peer;
+static ULONG wake,peerWake,peerGeneration;
+static volatile WORD peerReady,peerDone;
+static void phase(WORD value)
+{
+    AESMenuPhase=value;
+    while (AESMenuGo<value) evnt_timer(20,0);
+}
+static void visual(OBJECT *tree)
+{
+    WORD i;
+    AESMenuTree=(ULONG)tree;
+    phase(1);
+    produce(3);phase(2);
+    CHECK(ExecAESMenu(tree,32,6,0));
+    CHECK(ExecAESMenu(tree,34,7,(ULONG)"Leave"));
+    phase(3);
+    CHECK(ExecAESMenu(tree,30,0,0));
+    for (i=0;i<8;++i) tree[i].ob_spec=0xffffffffUL;
+    phase(4);
+    Signal(peer,peerWake);
+    while (peerReady<2) Wait(wake);
+    phase(5);
+    produce(3);phase(6);
+    Signal(peer,peerWake);
+    while (!peerDone) Wait(wake);
+    phase(7);
+    for (i=0;i<8;++i) tree[i]=source[i];
+    CHECK(ExecAESMenu(tree,30,1,0));
 }
 static void command(OBJECT *tree)
 {
@@ -106,39 +138,48 @@ static void command(OBJECT *tree)
     CHECK(produce(1)); /* Caller will close with this record still queued. */
 }
 static const char launchLabel[]="Launch";
-static struct Task *controller,*peer;
-static ULONG wake,peerWake,peerGeneration;
-static volatile WORD peerReady,peerDone;
 void AESClientOne(void) {}
 void AESClientTwo(void)
 {
-    WORD i;
+    WORD window;
     BYTE bit=AllocSignal(-1);
-    OBJECT *tree=AllocMem(sizeof(source),MEMF_PUBLIC);
+    OBJECT *tree;
     peerWake=1UL<<bit;
-    for (i=0;i<8;++i) tree[i]=source[i];
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init()>0);
+    CHECK(rsrc_load("D1:MENU.RSC"));
+    CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    AESMenuPeerTree=(ULONG)tree;
     CHECK(ExecAESMenu(tree,30,1,0));
+    window=wind_create(NAME|CLOSER|MOVER,280,80,176,112);
+    CHECK(window>0 && wind_open(window,280,80,176,112));
     peerGeneration=ExecAESContext()->endpoint->menuEpoch;
     peerReady=1;Signal(controller,wake);
     Wait(peerWake);
-    /* Exit must withdraw even though this registration never had a window. */
+    CHECK(wind_set(window,WF_TOP,0,0,0,0));
+    peerReady=2;Signal(controller,wake);
+    Wait(peerWake);
+    CHECK(wind_close(window) && wind_delete(window));
+    CHECK(ExecAESMenu(tree,30,0,0));
+    CHECK(rsrc_free());
     CHECK(appl_exit());
-    for (i=0;i<8;++i) tree[i].ob_spec=0xffffffffUL;
-    FreeMem(tree,sizeof(source));
     CHECK(ExecAESDetach());
+    CHECK(ExecDOSDetach());
     FreeSignal(bit);
     Forbid();peerDone=1;Signal(controller,wake);RemTask(NULL);
 }
 UWORD AESRun(void)
 {
-    ULONG available=AvailMem(0),generation;
+    ULONG available,generation;
+    BPTR file=Open("D1:MENU.RSC",MODE_OLDFILE);
     struct ExecAESContext *c;
-    OBJECT *tree=AllocMem(sizeof(source),MEMF_PUBLIC);
+    OBJECT *tree;
     WORD i,round,window,words[8];
-    BYTE bit=AllocSignal(-1);
-    OBJECT *candidate=AllocMem(sizeof(source),MEMF_PUBLIC);
+    BYTE bit;
+    OBJECT *candidate;
+    CHECK(file && Close(file));CHECK(ExecDOSDetach());available=AvailMem(0);
+    tree=AllocMem(sizeof(source),MEMF_PUBLIC);
+    candidate=AllocMem(sizeof(source),MEMF_PUBLIC);bit=AllocSignal(-1);
     controller=FindTask(NULL);wake=1UL<<bit;
     peer=CreateTask("Menu peer",0,(APTR)AESClientTwo,1024UL);
     CHECK(peer!=0);
@@ -182,7 +223,7 @@ UWORD AESRun(void)
         window=wind_create(NAME|CLOSER|MOVER,16,32,160,96);
         CHECK(window>0);
         CHECK(wind_open(window,16,32,160,96));
-        if (!round) { command(tree);generation=c->endpoint->menuEpoch; }
+        if (!round) { visual(tree);command(tree);generation=c->endpoint->menuEpoch; }
         CHECK(wind_close(window));
         CHECK(c->endpoint->menuEpoch==generation);
         CHECK(wind_open(window,16,32,160,96));
@@ -204,8 +245,7 @@ UWORD AESRun(void)
         CHECK(appl_exit());
         CHECK(ExecAESDetach());
     }
-    Signal(peer,peerWake);
-    while (!peerDone) Wait(wake);
+    CHECK(peerDone);
     FreeSignal(bit);
     FreeMem(candidate,sizeof(source));
     FreeMem(tree,sizeof(source));

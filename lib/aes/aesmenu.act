@@ -128,6 +128,7 @@ PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER clien
       END
     FI
     menu.selectedTitle=-1
+    menu.damage=$ffffffff
     EXEC.Forbid()
     ; Remove only the undelivered menu kind. Published records stay immutable
     ; and are rejected by their window/menu lifetime at the consumer.
@@ -216,6 +217,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         Withdraw(service,client)
         candidate.generation=service.nextMenuEpoch
         candidate.selectedTitle=-1
+        candidate.damage=$ffffffff
         service.nextMenuEpoch==+1
         client.menu=candidate
         EXEC.Forbid()
@@ -257,6 +259,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       ELSE
         RETURN(AESTYPES.UNSUPPORTED)
       ESAC
+      client.menu.damage=client.menu.damage OR (LONGCARD(1) LSH CARD(item))
     END
   FI
   service.menuRevision==+1

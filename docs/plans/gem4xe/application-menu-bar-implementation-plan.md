@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Desktop menu baseline](../../history/desktop-menu-window-switching.md)
 
-Status: AM1–AM2 implemented; AM3–AM6 pending. See the
+Status: AM1–AM3 implemented; AM4–AM6 pending. See the
 [implementation record](../../history/application-menu-bars.md).
 
 Implement the design in six executable slices, with a commit after each passing
@@ -67,6 +67,10 @@ public API, selectable compatibility profile or production test switch.
   results in `docs/history/application-menu-bars.md` and compact evidence in
   `docs/development/application-menu-bars-amN.json`, linking the history index
   when those files are created. Keep traces, binaries and screenshots in `build/`.
+
+Cartridge size is informational following the user’s implementation-time
+direction; compression is separate future work. Preserve executable loading and
+manifest limits.
 
 The starting packaged build has 63 of 64 manifest extents, 33,758 bytes of OF816
 cartridge headroom and a 33-byte minimum observed margin above the interrupt

@@ -3,6 +3,7 @@
 MODULE DESKMENU
 USE INPUT
 USE AESKEYS
+USE DESKAPPMENU
 USE AESLOCKS
 USE AESMOUSE
 USE AESTYPES
@@ -17,11 +18,11 @@ USE REGIONS
 USE A816MEMORY
 USE HEAPCORE
 
-PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=4, LABEL_BYTES=25
-PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, WINDOWS_LEFT=432
+PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=6, LABEL_BYTES=25
+PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
-  BYTE enabled
+  BYTE enabled,action
   BYTE ARRAY label(LABEL_BYTES)
 ]
 PUBLIC LONGCARD activeWindow
@@ -33,7 +34,7 @@ PUBLIC INT selected
 PUBLIC INT paintSelection
 LONGCARD revision,focusSeen,pendingWindow,menuOwner
 BYTE pendingMenu,pendingAction,dirty,down,opening,blocked
-INT armed
+INT armed,pendingHeading
 CONST ACT_TOP=1, ACT_CLOSE=2, NO_ROW=-1
 
 PUBLIC BYTE FUNC Active()
@@ -76,7 +77,7 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
-  REGIONS.Assign(@bounds,0,BAR_HEIGHT,208,BAR_HEIGHT+ROWS*ROW_HEIGHT)
+  REGIONS.Assign(@bounds,0,BAR_HEIGHT,208,BAR_HEIGHT+4*ROW_HEIGHT)
   IF LAYERS.Create(@service.scene,@bounds,@DESKSTATE.popupLayer)<>LAYERTYPES.OK THEN
     Check(LAYERS.Delete(@service.scene,DESKSTATE.barLayer))
     DESKSTATE.barLayer=0
@@ -190,9 +191,14 @@ PROC Choose(INT row)
     RETURN
   FI
 
-  IF menu=WINDOWS_MENU THEN
+  IF menu=WINDOWS_MENU AND items(row).action=0 THEN
     pendingWindow=items(row).window
     pendingAction=ACT_TOP
+  ELSEIF menu=WINDOWS_MENU AND items(row).action=1 THEN
+    Cycle(0)
+  ELSEIF menu=WINDOWS_MENU THEN
+    pendingWindow=menuOwner
+    pendingAction=ACT_CLOSE
   ELSEIF row=0 THEN
     Cycle(0)
   ELSE
@@ -365,8 +371,35 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
 
 RETURN(1)
 
+; Internal presenter entry; public callers install through AES, never this hook.
+PUBLIC PROC Application(INT heading)
+
+  pendingHeading=heading
+  pendingMenu=GEM_MENU
+  DESKSTATE.menuActive=1
+
+RETURN
+
+PROC Popup(LAYERTYPES.Rect POINTER bounds)
+
+  LET service=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+  IF layer.bounds.right-layer.bounds.left<>bounds.right-bounds.left
+      OR layer.bounds.bottom-layer.bounds.top<>bounds.bottom-bounds.top THEN
+    Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
+    Check(LAYERS.Delete(@service.scene,DESKSTATE.popupLayer))
+    Check(LAYERS.Create(@service.scene,bounds,@DESKSTATE.popupLayer))
+  ELSE
+    Check(LAYERS.Move(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top))
+  FI
+  Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
+  DESKSTATE.TopChrome()
+
+RETURN
+
 PROC Open(BYTE kind)
   BYTE slot
+  LAYERTYPES.Rect bounds
 
   LET service=DESKSTATE.Get()
   menu=kind
@@ -374,6 +407,18 @@ PROC Open(BYTE kind)
   menuOwner=service.focus
   count=0
   A816MEMORY.Clear(BYTE POINTER(@items(0)),SIZEOF(items))
+  IF menu=GEM_MENU THEN
+    IF DESKAPPMENU.Current()=0 THEN
+      Cancel()
+      RETURN
+    FI
+    DESKAPPMENU.heading=pendingHeading
+    DESKAPPMENU.selected=-1
+    DESKAPPMENU.PopupBounds(@bounds)
+    Popup(@bounds)
+    dirty=1
+    RETURN
+  FI
   IF menu=WINDOWS_MENU THEN
     FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
       BEGIN
@@ -386,6 +431,16 @@ PROC Open(BYTE kind)
         FI
       END
     OD
+    IF DESKAPPMENU.Current()<>0 THEN
+      items(count).enabled=1
+      items(count).action=1
+      Label(@items(count).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
+      count==+1
+      items(count).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+      items(count).action=2
+      Label(@items(count).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
+      count==+1
+    FI
   ELSE
     count=2
     items(0).enabled=1
@@ -396,10 +451,11 @@ PROC Open(BYTE kind)
   FI
 
   selected=IF count<>0 THEN INT(0) ELSE NO_ROW FI
-  Check(LAYERS.Move(@service.scene,DESKSTATE.popupLayer,
-      IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI,BAR_HEIGHT))
-  Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
-  DESKSTATE.TopChrome()
+  REGIONS.Assign(@bounds,
+      IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI,BAR_HEIGHT,0,0)
+  bounds.right=bounds.left+208
+  bounds.bottom=BAR_HEIGHT+INT(IF count>4 THEN count ELSE 4 FI)*ROW_HEIGHT
+  Popup(@bounds)
   dirty=1
 
 RETURN
@@ -454,13 +510,15 @@ RETURN
 
 ; Paint and scene changes obey the same gates as existing native gestures.
 PUBLIC PROC Advance()
+  BYTE changed
 
   LET service=DESKSTATE.Get()
   IF DESKSTATE.barLayer=0 THEN
     RETURN
   FI
   IF pendingAction=0 AND pendingMenu=0 AND dirty=0
-      AND focusSeen=service.focus AND revision=service.scene.rebuilds THEN
+      AND focusSeen=service.focus AND revision=service.scene.rebuilds
+      AND DESKAPPMENU.Changed()=0 THEN
     RETURN
   FI
   IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
@@ -468,6 +526,11 @@ PUBLIC PROC Advance()
     RETURN
   FI
 
+  changed=DESKAPPMENU.Refresh()
+  IF changed=1 THEN
+    Cancel()
+    dirty=1
+  FI
   IF menu<>0 AND (focusSeen<>service.focus OR revision<>service.scene.rebuilds) THEN
     ; Do not select a stale label after its window closes, moves or is reused.
     Cancel()
@@ -496,6 +559,7 @@ PUBLIC PROC Advance()
     dirty=1
   FI
 
+  DESKAPPMENU.Snapshot(menu=GEM_MENU)
   IF dirty<>0 THEN
     ; Input may arrive between paint steps. Publish visual state only after
     ; the current scene token retires, alongside its matching damage.
@@ -524,7 +588,8 @@ PUBLIC BYTE FUNC Runnable()
   LET service=DESKSTATE.Get()
 
 RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
-    OR focusSeen<>service.focus OR revision<>service.scene.rebuilds)
+    OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
+    OR DESKAPPMENU.Changed()<>0)
     AND AESLOCKS.NativeReady()<>0 AND AESLOCKS.MouseBlocked()=0
     AND AESLOCKS.PaintBlocked()=0)
 
