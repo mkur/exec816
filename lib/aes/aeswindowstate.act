@@ -44,7 +44,7 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   LET view=client.view
-  DESKGEOMETRY.Work(@layer.bounds,@work)
+  DESKGEOMETRY.Work(client.window.frameKind,@layer.bounds,@work)
   status=REGIONS.Clip(@layer.visible,@work,
       LAYERTYPES.Region POINTER(@view.visibleCount))
   IF status<>LAYERTYPES.OK THEN

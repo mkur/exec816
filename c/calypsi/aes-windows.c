@@ -67,6 +67,8 @@ WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
     else if (v == NULL || handle <= 0 || handle != v->handle)
         c->diagnostic = AES_IDENTITY;
     else switch (field) {
+    case WF_VSLIDE: *o1 = v->vslide; break;
+    case WF_VSLSIZE: *o1 = v->vsize; break;
     case WF_KIND: *o1 = v->kind; break;
     case WF_WXYWH: rect = &v->work; break;
     case WF_CXYWH: rect = &v->bounds; break;
@@ -98,17 +100,20 @@ WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
 {
     struct ExecAESContext *c = ExecAESContext();
     LONG left = x, top = y, width = w, height = h;
+    WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_RIGHT;
+    WORD bottom = kind & SIZER ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_BOTTOM;
     *ox = *oy = *ow = *oh = 0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->diagnostic = AES_UNSUPPORTED;
-    if (kind != AES_WINDOW_KIND || (type != WC_BORDER && type != WC_WORK)) return 0;
+    if ((kind & AES_WINDOW_KIND) != AES_WINDOW_KIND || (kind & ~AES_WINDOW_SUPPORTED) ||
+        (type != WC_BORDER && type != WC_WORK)) return 0;
     if (type == WC_BORDER) { left -= DESKTOP_WORK_LEFT; top -= DESKTOP_WORK_TOP;
-        width += DESKTOP_WORK_LEFT+DESKTOP_WORK_RIGHT;
-        height += DESKTOP_WORK_TOP+DESKTOP_WORK_BOTTOM; }
+        width += DESKTOP_WORK_LEFT+right;
+        height += DESKTOP_WORK_TOP+bottom; }
     else { left += DESKTOP_WORK_LEFT; top += DESKTOP_WORK_TOP;
-        width -= DESKTOP_WORK_LEFT+DESKTOP_WORK_RIGHT;
-        height -= DESKTOP_WORK_TOP+DESKTOP_WORK_BOTTOM; }
+        width -= DESKTOP_WORK_LEFT+right;
+        height -= DESKTOP_WORK_TOP+bottom; }
     c->diagnostic = AES_MALFORMED;
     if (w <= 0 || h <= 0 || left < -32768L || left > 32767 ||
         top < -32768L || top > 32767 || width <= 0 || width > 32767 ||

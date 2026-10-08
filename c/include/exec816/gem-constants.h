@@ -24,6 +24,20 @@
 #define MU_MESAG 16
 #define MU_TIMER 32
 #define MN_SELECTED 10
+#define SIZER 32
+#define UPARROW 64
+#define DNARROW 128
+#define VSLIDE 256
+#define WF_VSLIDE 9
+#define WF_VSLSIZE 16
+#define WM_ARROWED 24
+#define WM_VSLID 26
+#define WM_SIZED 27
+#define WA_UPPAGE 0
+#define WA_DNPAGE 1
+#define WA_UPLINE 2
+#define WA_DNLINE 3
+#define WF_VSLSIZ 16
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

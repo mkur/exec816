@@ -76,6 +76,12 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
     delivery.delivery.words(0)=AESTYPES.WM_TOPPED
   ELSEIF kind=AESTYPES.GUI_MOVED THEN
     delivery.delivery.words(0)=AESTYPES.WM_MOVED
+  ELSEIF kind=AESTYPES.GUI_SIZED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_SIZED
+  ELSEIF kind=AESTYPES.GUI_VSLID THEN
+    delivery.delivery.words(0)=AESTYPES.WM_VSLID
+  ELSEIF kind=AESTYPES.GUI_ARROWED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_ARROWED
   ELSEIF kind=AESTYPES.GUI_CLOSED THEN
     delivery.delivery.words(0)=AESTYPES.WM_CLOSED
   FI

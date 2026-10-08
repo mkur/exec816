@@ -223,6 +223,40 @@ UWORD AESRun(void)
     replacement = wind_create(AES_WINDOW_KIND, 9, 9, 200, 120);
     CHECK(replacement > handle);
     CHECK(wind_open(replacement, 9, 9, 200, 120));
+    CHECK(wind_close(replacement));
+    CHECK(wind_delete(replacement));
+    /* The application accepts geometry and owns logical slider values. */
+    handle=wind_create(AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,32,32,240,160);
+    CHECK(handle>0);
+    CHECK(wind_open(handle,32,32,240,160));
+    geometry(handle,WF_WXYWH,40,48,216,128);
+    geometry(handle,WF_VSLIDE,0,0,0,0);
+    geometry(handle,WF_VSLSIZE,1000,0,0,0);
+    CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
+        32,32,240,160,&a,&b,&c,&d));
+    CHECK(a==40 && b==48 && c==216 && d==128);
+    CHECK(wind_calc(WC_BORDER,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
+        a,b,c,d,&a,&b,&c,&d));
+    CHECK(a==32 && b==32 && c==240 && d==160);
+    CHECK(wind_set(handle,WF_VSLSIZE,250,0,0,0));
+    CHECK(wind_set(handle,WF_VSLIDE,1000,0,0,0));
+    geometry(handle,WF_VSLSIZE,250,0,0,0);
+    geometry(handle,WF_VSLIDE,1000,0,0,0);
+    CHECK(!wind_set(handle,WF_VSLIDE,1001,0,0,0));
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(handle,WF_FIRSTXYWH,&a,&b,&c,&d));
+    CHECK(wind_set(handle,WF_CXYWH,32,32,320,192));
+    CHECK(!wind_get(handle,WF_NEXTXYWH,&a,&b,&c,&d));
+    geometry(handle,WF_WXYWH,40,48,296,160);
+    geometry(handle,WF_FIRSTXYWH,40,48,296,160);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_set(handle,WF_CXYWH,32,32,64,80));
+    geometry(handle,WF_WXYWH,40,48,40,48);
+    CHECK(!wind_set(handle,WF_CXYWH,32,32,63,80));
+    CHECK(!wind_set(handle,WF_CXYWH,32,32,64,79));
+    CHECK(wind_close(handle));
+    CHECK(wind_open(handle,32,32,240,160));
+    geometry(handle,WF_WXYWH,40,48,216,128);
     CHECK(ExecAESDetach());
     FreeSignal(bit);
     CHECK(AvailMem(0) == available);

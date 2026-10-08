@@ -1,5 +1,7 @@
 # Historical records
 
+- [Window gadgets](window-gadgets.md): resizing and vertical scrolling.
+
 [Documentation home](../README.md)
 
 - [Classic GEM appearance](classic-gem-appearance.md): frame, menu and desktop

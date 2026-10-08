@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 10
+#define AES_VERSION 11
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -39,7 +39,7 @@
 #define AES_ENDPOINT_RETIRED 3
 #define AES_RPC_INTIN_WORDS 6
 #define AES_RPC_INTOUT_WORDS 5
-#define AES_GUI_KINDS 5
+#define AES_GUI_KINDS 8
 #define AES_GUI_REDRAW 0
 #define AES_GUI_TOPPED 1
 #define AES_GUI_MOVED 2
@@ -90,6 +90,24 @@
 #define AES_MENU_OBJECTS 32
 #define AES_MN_SELECTED 10
 #define AES_GUI_MENU 4
+#define AES_SIZER 32
+#define AES_UPARROW 64
+#define AES_DNARROW 128
+#define AES_VSLIDE 256
+#define AES_WF_VSLIDE 9
+#define AES_WF_VSLSIZE 16
+#define AES_WM_ARROWED 24
+#define AES_WM_VSLID 26
+#define AES_WM_SIZED 27
+#define AES_WA_UPPAGE 0
+#define AES_WA_DNPAGE 1
+#define AES_WA_UPLINE 2
+#define AES_WA_DNLINE 3
+#define AES_GUI_SIZED 5
+#define AES_GUI_VSLID 6
+#define AES_GUI_ARROWED 7
+#define AES_WINDOW_SUPPORTED 491
+#define AES_WF_VSLSIZ 16
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -280,22 +298,26 @@ struct AESWindowView {
     WORD kind;
     UWORD shown;
     UWORD updates;
+    WORD vslide;
+    WORD vsize;
     ULONG revision;
     struct AESRect bounds;
     struct AESRect work;
     UWORD visibleCount;
     struct AESRect visible[AES_VISIBLE_RECTS];
 };
-#define AES_WINDOWVIEW_SIZE 798
+#define AES_WINDOWVIEW_SIZE 802
 #define AES_WINDOWVIEW_OFFSET_HANDLE 0
 #define AES_WINDOWVIEW_OFFSET_KIND 2
 #define AES_WINDOWVIEW_OFFSET_SHOWN 4
 #define AES_WINDOWVIEW_OFFSET_UPDATES 6
-#define AES_WINDOWVIEW_OFFSET_REVISION 8
-#define AES_WINDOWVIEW_OFFSET_BOUNDS 12
-#define AES_WINDOWVIEW_OFFSET_WORK 20
-#define AES_WINDOWVIEW_OFFSET_VISIBLECOUNT 28
-#define AES_WINDOWVIEW_OFFSET_VISIBLE 30
+#define AES_WINDOWVIEW_OFFSET_VSLIDE 8
+#define AES_WINDOWVIEW_OFFSET_VSIZE 10
+#define AES_WINDOWVIEW_OFFSET_REVISION 12
+#define AES_WINDOWVIEW_OFFSET_BOUNDS 16
+#define AES_WINDOWVIEW_OFFSET_WORK 24
+#define AES_WINDOWVIEW_OFFSET_VISIBLECOUNT 32
+#define AES_WINDOWVIEW_OFFSET_VISIBLE 34
 struct AESRequest {
     struct Message message;
     UWORD version;

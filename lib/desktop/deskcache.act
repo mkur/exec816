@@ -21,7 +21,7 @@ RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
 
 PUBLIC PROC ClientBounds(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
-  DESKGEOMETRY.Work(@layer.bounds,area)
+  DESKGEOMETRY.Work(0,@layer.bounds,area)
 
 RETURN
 

@@ -286,10 +286,10 @@ PUBLIC BYTE FUNC Show(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE shown)
 
 RETURN(Rebuild(scene))
 
-; Preserve dimensions. Subtraction-based bounds checks avoid signed overflow.
-PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
+; Change one admitted layer rectangle and repair both old and new exposure.
+PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
+    INT left,top,width,height)
   BYTE status
-  INT width,height
   LAYERTYPES.Layer POINTER layer
 
   status=Admit(scene)
@@ -302,14 +302,15 @@ PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
     RETURN(LAYERTYPES.BAD_ID)
   FI
 
-  width=layer.bounds.right-layer.bounds.left
-  height=layer.bounds.bottom-layer.bounds.top
-  IF left<0 OR top<0 OR left>scene.screen.right-width
+  IF width<=0 OR height<=0 OR left<0 OR top<0
+      OR left>scene.screen.right-width
       OR top>scene.screen.bottom-height THEN
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
-  IF left=layer.bounds.left AND top=layer.bounds.top THEN
+  IF left=layer.bounds.left AND top=layer.bounds.top
+      AND width=layer.bounds.right-layer.bounds.left
+      AND height=layer.bounds.bottom-layer.bounds.top THEN
     RETURN(LAYERTYPES.OK)
   FI
 
@@ -327,6 +328,17 @@ PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
+
+; Preserve dimensions for existing callers. Bounds owns the mutation.
+PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
+
+  LET layer=Find(scene,id)
+  IF layer=NULL THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+
+RETURN(Bounds(scene,id,left,top,layer.bounds.right-layer.bounds.left,
+    layer.bounds.bottom-layer.bounds.top))
 
 ; Move one layer to the front (1) or back (0); hidden entries keep their order.
 PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)

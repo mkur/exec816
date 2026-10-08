@@ -2,7 +2,7 @@
 
 [Design note](window-gadgets-design.md) · [GEM integration](README.md)
 
-Status: implementation in progress.
+Status: WG1 passes development checks; WG2 is in progress.
 
 | Slice | Change | Development gate |
 | --- | --- | --- |

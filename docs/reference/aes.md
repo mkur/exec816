@@ -167,22 +167,29 @@ keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
 Each registration can own one window; native and GEM windows share four desktop
-slots. The supported kind is `NAME | CLOSER | MOVER`. Create reserves a hidden
+slots. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
+`UPARROW`, `DNARROW` and `VSLIDE`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
 requires a closed window. Exit closes and deletes any remaining window. Handles
 are not reused during a service lifetime. The initial profile permits moves at
-individual pixel positions, fixed dimensions of at least 32 by 32, and bounds
-fully inside the 640 by 240 desktop. Resizing and off-screen bounds fail without
-mutation.
+individual pixel positions and bounds fully inside the 640 by 240 desktop.
+Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
+permits dimensions of at least 64 by 48; vertical gadgets require height 80.
+Off-screen bounds fail without mutation.
 
 `WF_NAME` copies at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
-the window and `WF_TOP` raises it. Work insets are left/right 8, top 16 and bottom
-8 pixels. `wind_calc` converts border/work rectangles locally; `wind_get`
+or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
+top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
+SIZER increases the bottom inset to 16. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries; a native top window is reported as zero.
+
+`WF_VSLIDE` and `WF_VSLSIZE` (`WF_VSLSIZ`) set/query 0..1000 position and
+size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
+height is eight pixels. Horizontal scrollbars are unsupported.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
 caller owns `BEG_UPDATE`. The presenter publishes the snapshot on acquisition;
@@ -250,7 +257,7 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 9 has a 112-byte request and permits init, exit, update,
+profile: version 11 has a 112-byte request and permits init, exit, update,
 window mutations, cold display delegation and session mouse preferences on the
 RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and

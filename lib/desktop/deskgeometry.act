@@ -4,11 +4,65 @@ USE DESKTYPES
 USE LAYERTYPES
 USE REGIONS
 
-PUBLIC PROC Work(LAYERTYPES.Rect POINTER bounds,work)
+PUBLIC INT FUNC Right(CARD kind)
+
+RETURN(IF (kind & DESKTYPES.FRAME_VERTICAL)<>0 THEN
+    DESKTYPES.FRAME_GADGET ELSE DESKTYPES.WORK_RIGHT FI)
+
+PUBLIC INT FUNC Bottom(CARD kind)
+
+RETURN(IF (kind & DESKTYPES.FRAME_SIZER)<>0 THEN
+    DESKTYPES.FRAME_GADGET ELSE DESKTYPES.WORK_BOTTOM FI)
+
+PUBLIC PROC Work(CARD kind
+    LAYERTYPES.Rect POINTER bounds,work)
 
   REGIONS.Assign(work,bounds.left+DESKTYPES.WORK_LEFT,
-      bounds.top+DESKTYPES.WORK_TOP,bounds.right-DESKTYPES.WORK_RIGHT,
-      bounds.bottom-DESKTYPES.WORK_BOTTOM)
+      bounds.top+DESKTYPES.WORK_TOP,bounds.right-Right(kind),
+      bounds.bottom-Bottom(kind))
+
+RETURN
+
+; Relative track coordinates are shared by cached thumb geometry and capture.
+PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds,track)
+
+  REGIONS.Assign(track,bounds.right-DESKTYPES.FRAME_GADGET,
+      bounds.top+DESKTYPES.TITLE_HEIGHT,bounds.right-1,
+      bounds.bottom-Bottom(window.frameKind))
+  IF (window.frameKind & DESKTYPES.FRAME_UPARROW)<>0 THEN
+    track.top==+DESKTYPES.FRAME_GADGET
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_DNARROW)<>0 THEN
+    track.bottom==-DESKTYPES.FRAME_GADGET
+  FI
+
+RETURN
+
+; Slider arithmetic runs only on mutations, never in each frame fragment.
+PUBLIC PROC Slider(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds INT position,size)
+  LAYERTYPES.Rect track
+  INT height,thumb
+
+  IF (window.frameKind & DESKTYPES.FRAME_VERTICAL)=0 THEN
+    window.sliderTop=0
+    window.sliderHeight=0
+    RETURN
+  FI
+
+  ScrollTrack(window,bounds,@track)
+  height=track.bottom-track.top
+  thumb=INT((LONGCARD(CARD(height))*LONGCARD(CARD(size)))/1000)
+  IF thumb<DESKTYPES.FRAME_THUMB_MIN THEN
+    thumb=DESKTYPES.FRAME_THUMB_MIN
+  FI
+  IF thumb>height THEN
+    thumb=height
+  FI
+  window.sliderHeight=thumb
+  window.sliderTop=track.top-bounds.top
+      +INT((LONGCARD(CARD(height-thumb))*LONGCARD(CARD(position)))/1000)
 
 RETURN
 
