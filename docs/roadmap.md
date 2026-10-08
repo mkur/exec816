@@ -82,6 +82,31 @@ kernel startup, and the existing screen text is preserved. The bitmap/no-primes
 preview includes both Atarimax forms. Remote image loading remains a later
 extension.
 
+## Next desktop milestones
+
+With [application menus and window switching](history/application-menu-bars.md)
+implemented, the next sequence focuses on window usability and reusable GEM
+application facilities:
+
+1. **Resizable windows and vertical scrolling.** Add the GEM size gadget,
+   vertical scrollbar and arrows, with `WM_SIZED`, `WM_VSLID`, `WM_ARROWED`
+   and corresponding slider fields. The presenter handles the gadgets;
+   applications own their content and scroll position.
+2. **Use resizing and scrolling in Files.** Replace the fixed eight-row,
+   page-based list with a list that adapts to the window's work area and supports
+   continuous scrolling. Preserve selection across redraws and refreshes.
+   Exercise geometry changes, overlapping windows and repaint correctness with
+   Files running beside the calculator, counter and shell.
+3. **Editable TEDINFO and dialogs.** Add text entry and keyboard editing,
+   then use them for path entry, New Folder and Rename. Keep the interfaces
+   compatible with GEM callers to support further application ports.
+
+Start milestones 1–2 with a short design note covering window geometry,
+clipping, damage and application messages, followed by an implementation plan
+in small executable slices. Keep application state caller-owned and validation
+minimal. Record reserved bank-zero changes for each slice. Cartridge size does
+not block these milestones; compression remains separate work.
+
 ## Follow-on capabilities
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
