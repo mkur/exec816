@@ -363,6 +363,8 @@ of at most 63 characters. Load fixes full upper-memory addresses and normalizes
 text/template lengths to string length plus NUL, including files with zero
 length fields. Shared TEDINFO records are fixed once. Text remains writable
 within the buffer supplied by the resource; text editing is not implemented.
+The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
+buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
 Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.
 Character coordinates use the fixed 8×8 cell. File extents and string offsets are
 checked once during loading; valid object links remain the caller's responsibility.

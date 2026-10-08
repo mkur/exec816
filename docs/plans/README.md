@@ -281,8 +281,8 @@ assuming work is pending. Current behavior belongs in the
 
 ## GEM desktop applications
 
-- [GEM4XE calculator port](gem4xe/calculator-port-implementation-plan.md): CAL1–CAL2 pass development
-  checks; CAL3–CAL4 remain. Slices for TEDINFO text drawing, classic resource loading, a windowed
+- [GEM4XE calculator port](gem4xe/calculator-port-implementation-plan.md): CAL1–CAL4 pass development
+  checks: TEDINFO text drawing, classic resource loading, a windowed
   `CALC.APP` and Files/shell launch with owned cleanup. Reuses the donor arithmetic
   and layout, stays disk-loaded and targets zero bank-zero growth.
 - [Application-owned widgets](gem4xe/application-widgets-design.md) and

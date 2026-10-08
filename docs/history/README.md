@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [GEM4XE calculator port](calculator-port.md): noneditable TEDINFO, classic
+  resources and a private windowed APP with Files/shell ownership and disk packaging.
+
 - [Background console panes and primes](background-pane-primes.md): foundation
   slices, loadable command, numeric drawing, resource costs and packaged preview.
 

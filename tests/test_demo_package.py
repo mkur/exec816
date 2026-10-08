@@ -240,6 +240,33 @@ class DemoPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
                 package_demo.package(self.bundle,self.archive,bitmap_shell=source)
 
+    def test_calculator_notices_and_desktop_guide(self):
+        source=self.root/'desktop';source.mkdir()
+        guide='docs/gem-desktop-distribution.txt'
+        (self.root/guide).write_bytes((ROOT/guide).read_bytes())
+        artifacts={'program.xex':'native-image-digest'}
+        for name in package_demo.GEM_NOTICES+package_demo.CALCULATOR_NOTICES:
+            payload=('notice '+name).encode();(source/name).write_bytes(payload)
+            artifacts[name]=hashlib.sha256(payload).hexdigest()
+        manifest=source/'demo-manifest.json'
+        manifest.write_text(json.dumps(dict(bitmap=True,shell_only=True,desktop=True,
+            gem_desktop=True,kernel={'desktop_mouse':{'profile':'mild'}},artifacts=artifacts)))
+        path=self.bundle/'of816.json';record=json.loads(path.read_text())
+        record['exec_xex_sha256']=artifacts['program.xex']
+        record['media']['manifest_sha256']=hashlib.sha256(manifest.read_bytes()).hexdigest()
+        path.write_text(json.dumps(record))
+        with patch.object(package_demo,'ROOT',self.root):
+            package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+            with zipfile.ZipFile(self.archive) as archive:
+                text=archive.read('exec816-demo/README.txt')
+                self.assertIn(b'CALC.APP',text);self.assertIn(b'SYS:CALC.RSC',text)
+                self.assertNotIn(b'@POINTER_',text)
+                for name in package_demo.CALCULATOR_NOTICES:
+                    self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
+            (source/package_demo.CALCULATOR_NOTICES[0]).write_text('changed')
+            with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):
+                package_demo.package(self.bundle,self.archive,bitmap_shell=source)
+
 
 if __name__ == '__main__':
     unittest.main()

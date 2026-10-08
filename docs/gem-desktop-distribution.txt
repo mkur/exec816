@@ -55,6 +55,13 @@ have no arguments or keyboard input; their output appears in the shell. Stop
 requests native BREAK or a GEM window close. Try opening C and launching HELLO
 or TICK. TICK prints periodically until Stop. PANEL.APP, COUNTER.APP and
 FILES.APP are independently loadable GEM applications.
+CALC.APP is the GEM4XE integer calculator. Close Panel, then open C in Files
+and launch CALC.APP, or type RUN C:CALC.APP in the shell. Keep SYS:CALC.RSC
+on the system disk. Digits, +, -, *, /, = and C work from the keyboard;
+Tab/Shift-Tab move focus, Space activates it and Return is equals.
+Use +/- to change sign. Division truncates toward zero. Values range from
+-2147483647 to 2147483647; excess entry, overflow and division by zero leave
+the displayed operand unchanged. Quit or X closes it; Files' Stop does too.
 PRIMES needs tiled-console mode and cannot run in this desktop. Closing Files stops
 and collects its running child. Close an existing GEM window before launching
 another GUI app when all four desktop windows are occupied.

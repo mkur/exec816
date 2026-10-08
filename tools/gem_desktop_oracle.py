@@ -7,6 +7,26 @@ from test_desktop_presentation import rectangle
 
 def paint(bridge,symbols,r,title,bounds):
     left,top,right,bottom=bounds
+    if title==b'Calculator':
+        base=symbols['Calculator'];tree=int.from_bytes(bridge.memdump(symbols['tree'],4),'little')
+        raw=bridge.memdump(tree,21*24)
+        objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(21)]
+        labels={}
+        for i,obj in enumerate(objects):
+            if obj[3] in (26,28):
+                labels[i]=bridge.memdump(obj[6],64).split(b'\0')[0].decode('ascii');obj[6]=i
+        ted=struct.unpack('<III8h',bridge.memdump(objects[2][6],28))
+        text=bridge.memdump(ted[0],12).split(b'\0')[0]
+        # The resource's fixed, right-aligned noneditable display is checked
+        # independently of the target TED renderer; button drawing reuses AES ref.
+        objects[2][3]=25;objects[2][6]=0
+        objects[0][7]=objects[0][8]=0
+        focus=int.from_bytes(bridge.memdump(base+6,2),'little')
+        draw(r,objects,labels,(left+8,top+16,right-8,bottom-8),focus)
+        obj=objects[2];x=left+8+obj[7];y=top+16+obj[8];w,h=obj[9:11]
+        rectangle(r,(x-1,y-1,x+w+1,y+h+1),1);rectangle(r,(x,y,x+w,y+h),0)
+        r.text=1;r.apply(8,(x+w-len(text)*8,y+6),text)
+        return
     if title==b'Counter':
         count=int.from_bytes(bridge.memdump(symbols['GEMCounter']+14,4),'little')
         r.clip=(left+8,top+16,right-9,bottom-9);r.text=4

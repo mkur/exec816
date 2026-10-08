@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Loadable GEM applications](loadable-gem-applications-implementation-plan.md) ·
 [AES contract](../../reference/aes.md) · [C application profile](../../reference/c-program-loading.md)
 
-Status: CAL1–CAL3 implemented and checked at the development tier; CAL4 pending.
+Status: CAL1–CAL4 implemented and checked at the development tier.
 Commit each passing executable slice. Reuse the established LG6 baseline; no separate
 baseline slice is needed.
 
@@ -22,6 +22,13 @@ APP relocates at all 62 legal bases. Physical arithmetic/input, six display pixe
 checks, drag/exposure, repeat lifetimes and heap cleanup pass beside Counter.
 The narrowest measured public-Task margin is 81 bytes above the interrupt reserve.
 Fixed, per-public-Task and private-idle bank-zero deltas are zero.
+
+[CAL4 evidence](../../development/calculator-cal4.json): Files and shell launch,
+Stop/reload, two private instances, startup failures and owner exit pass. Both
+packaged Atarimax variants and the default OF816 shell/prime smoke pass. The
+GUI cartridge retains 56,390 bytes of headroom; all bank-zero deltas are zero.
+See the [implementation record](../../history/calculator-port.md) for budgets,
+feedback samples, stack limits and actual validation scope.
 
 ## Outcome
 

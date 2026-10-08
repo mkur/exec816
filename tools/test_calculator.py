@@ -4,7 +4,6 @@ import argparse,json,struct,sys
 from pathlib import Path
 from native_program import ROOT,read_build,require,verify_machine,sha256
 from build_gem_desktop import build_desktop
-from build_calculator import build as calculator
 from make_data_disk import make
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
@@ -21,7 +20,6 @@ def run(out,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:p=read_build(out/'program')
     else:
-        calculator(out/'apps/calc')
         p=build_desktop(out,source=ROOT/'tests/programs/calculator_session.act',
             system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
                 sector_bytes=256,profile=4,format=2)])

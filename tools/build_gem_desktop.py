@@ -19,6 +19,8 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
         body='browser' if name=='files' else name
         applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/'main.c',
                                                        ROOT/'examples'/folder/(body+'.c')])
+    from build_calculator import build as calculator
+    applications['calc']=calculator(out/'apps/calc')
     if 'dos_mounts' not in options:
         from make_data_disk import make
         from build_gem_resource import resource
@@ -26,8 +28,9 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
         for name in applications:
             (media/'C'/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
         (media/'DESKTOP.RSC').write_bytes(resource())
+        (media/'CALC.RSC').write_bytes((out/'apps/calc/CALC.RSC').read_bytes())
         make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
-             binary_names={*(f'C/{name.upper()}.APP' for name in applications),'DESKTOP.RSC'})
+             binary_names={*(f'C/{name.upper()}.APP' for name in applications),'DESKTOP.RSC','CALC.RSC'})
         options.update(system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
                        sector_bytes=256,profile=4,format=2)])
     foreign=drawing(out,True,widgets=True,client_sources=[
@@ -49,7 +52,8 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     text=read_source(source or ROOT/'tests/programs/gem_desktop_session.act')
     sy=foreign['symbols']
-    require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser'} & sy.keys(),
+    require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser',
+                 'Calculator','calc_start','calc_ws','calc_panel'} & sy.keys(),
             'Application body or model retained in shared GUI image')
     service=''
     if '      ShellReadStep()' in text:

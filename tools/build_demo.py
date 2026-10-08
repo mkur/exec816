@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,pointer_description
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,pointer_description
 from library_paths import read_source
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
@@ -127,9 +127,20 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if gem_desktop:
         shutil.copyfile(output/'bitmap-console/GEMSYS.BIN',media/'GEMSYS.BIN')
         binary_names.add('GEMSYS.BIN')
-        for name in ('panel','counter','files'):
+        for name in ('panel','counter','files','calc'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
+        calculator=output/'bitmap-console/apps/calc'
+        shutil.copyfile(calculator/'CALC.RSC',media/'CALC.RSC');binary_names.add('CALC.RSC')
+        for name,source in zip(CALCULATOR_NOTICES,('COPYING','COPYING.LIB','docs/licence.md')):
+            shutil.copyfile(calculator/'source'/source,output/name)
+        provenance=json.loads((calculator/'calculator.json').read_text())
+        (output/'CALCULATOR-PROVENANCE.txt').write_text(
+            'GEM4XE calculator for Exec816\nSource: https://github.com/slaapliedje/gem4xe\n'
+            'Revision: '+provenance['revision']+'\n'
+            'Adaptations: flat resource; Exec window/input and Process lifetime.\n'
+            'Source, pinned inputs and patches: ports/gem4xe/apps/calculator/ in Exec816.\n'
+            'Application licence: GPL-2.0-or-later.\n')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
@@ -219,12 +230,16 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-input').glob('*')))})
     if gem_desktop:
         record.update(gem_desktop=True,expected_peak_tasks=8)
+        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES})
+        record['calculator']=provenance
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
             *sorted((ROOT/'examples/gem-panel').glob('*')),
             *sorted((ROOT/'examples/gem-counter').glob('*')),
             *sorted((ROOT/'examples/gem-desktop').glob('*')),
-            *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py')})
+            *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
+            ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
+            *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
     graphics=None
     if gem_vdi:
         from build_gem_artifact import build as build_graphics

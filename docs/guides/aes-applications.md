@@ -262,7 +262,7 @@ Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
 arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
 tiled-console mode and returns an error in this desktop. Close one GEM window
 before a two-child shell pipeline.
-Files can also launch `PANEL.APP`, `COUNTER.APP` or `FILES.APP`. Close an existing
+Files can also launch `PANEL.APP`, `COUNTER.APP`, `FILES.APP` or `CALC.APP`. Close an existing
 GEM window first when all four layers are occupied. Closing Files stops and
 collects its child before retirement. The shell collects closed initial apps
 even at an idle prompt. Use `RUN C:FILES.APP` to reopen Files; this uses the
@@ -272,3 +272,32 @@ This profile uses four layers, three AES registrations and seven idle Tasks.
 It offers a bounded object/form, resource and window-popup subset, not a global
 menu bar or Atari ST binary compatibility. See the [current AES contract](../reference/aes.md)
 and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).
+
+## GEM4XE calculator
+
+Close Panel, open C in Files, select CALC.APP and press Return. Alternatively,
+use `RUN C:CALC.APP` from the shell. Calculator loads `SYS:CALC.RSC` regardless
+of the launcher's current directory. It is an ordinary private loaded Process;
+Quit, X and Files' Stop release its window, resource and workstation.
+
+Click keys or type digits, `+`, `-`, `*`, `/`, `=` and `C`. Tab/Shift-Tab moves
+focus, Space activates it, and Return activates equals. Sign change uses the
+`+/-` button; Escape or releasing outside cancels a held press. Operations apply
+in entry order: `2 + 3 * 4 =` gives 20. Values are whole numbers in the symmetric
+range −2147483647 through 2147483647. Division truncates toward zero. Excess
+entry, overflow and division by zero leave the displayed operand unchanged.
+
+The [pinned donor inputs and patches](../../ports/gem4xe/apps/calculator/README.md)
+retain its arithmetic and keypad/resource IDs. The adaptation replaces the
+modal dialog with the existing windowed event loop and repaints changed objects.
+The display uses noneditable TEDINFO; no text editing API is added.
+
+```sh
+python3 tools/build_calculator.py --output build/calculator/app
+python3 tools/test_calculator_desktop.py --bundle build/gem-desktop-demo
+```
+
+The first command builds APP/RSC inputs; the matching desktop build above ships
+them together with the shared GUI, OF816 and the calculator's upstream notices.
+See the [implementation record](../history/calculator-port.md) for costs and
+the exact development checks.

@@ -115,11 +115,15 @@ APP in upper RAM using reads of at most 4 KiB, then frees that file buffer
 after validation/copying. The shared GUI component reads directly into its
 reserved extents and needs no separate payload buffer.
 
-The desktop ships `C:PANEL.APP`, `C:COUNTER.APP` and `C:FILES.APP`. Each has an
+The desktop ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP` and `C:CALC.APP`. Each has an
 application-owned model and a small `main` wrapper; their bodies are absent from
 the shared `GEMSYS.BIN`. The shell owns the three initial Processes. Files owns
 and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
 existing background job after the initial Files window closes.
+Calculator is launched on demand with `SYS:CALC.RSC`; it does not add a startup
+Process or enlarge the fixed pools. Close an existing GEM window before launch
+when the shell and three initial apps occupy all four layers. The
+[calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes its input.
 
 The shell includes owned child completion masks in its existing DOS waits.
 The optional DOS client callback occupies eight more upper-memory bytes per
