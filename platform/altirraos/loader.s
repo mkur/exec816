@@ -425,7 +425,7 @@ progress_exec_begin:
 @done:
     rts
 
-; A/X contain the low/high byte count, at most one 32 KiB output block.
+; A/X contain a 16-bit byte count; the retained remainder is below 16 KiB.
 loader_progress_add:
     progress_save
     clc
@@ -434,6 +434,15 @@ loader_progress_add:
     txa
     adc loader_progress_bytes+1
     sta loader_progress_bytes+1
+    bcc @dots
+    ; A carry represents 64 KiB beyond the stored sum: four progress dots.
+    ldx #4
+@carry_dots:
+    lda #'.'
+    jsr progress_putchar
+    dex
+    bne @carry_dots
+    lda loader_progress_bytes+1
 @dots:
     cmp #$40
     bcc @done

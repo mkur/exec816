@@ -101,7 +101,7 @@ def model(blob, memory, expected, every=False):
 class BankedPackageTests(unittest.TestCase):
     def test_compressed_continuations_preserve_banks_offsets_and_raw_fallback(self):
         seed=random.Random(816).randbytes(4096)
-        data=seed*17
+        data=seed*33
         image={'entry':0x1f000,'segments':[
             {'address':0x1f000,'bytes':list(data),'executable':True},
             {'address':0x40000,'bytes':list(seed[:64]),'executable':False}],
@@ -109,6 +109,7 @@ class BankedPackageTests(unittest.TestCase):
         blob,head,spans=self.make(image)
         records=[d for a,d in segments(blob) if a==self.memory['constants']['STAGE'] and len(d)>8]
         self.assertTrue(any(r[7]==1 for r in records))
+        self.assertEqual(max(int.from_bytes(r[8:10],'little') for r in records if r[7]==1),65535)
         self.assertTrue(any(r[7]==2 for r in records))
         self.assertTrue(any(r[7]==0 for r in records))
         for every in (False,True):

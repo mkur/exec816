@@ -2,6 +2,9 @@
 
 [Historical records](README.md) · [Current loading contract](../reference/boot-loading.md)
 
+The initial measurements below describe 32 KiB blocks at `53e1f63`. The
+[64 KiB follow-up](#64-kib-follow-up) switches the current default to 65,535 bytes.
+
 The streaming LZ4 loader reduces the full standard OF816 XEX from **903,505 to
 314,057 bytes**, and VBXE from **947,374 to 339,432 bytes**. The actual emitted
 decoder takes **4.38/4.68 seconds** respectively on the pinned 8x PAL machine
@@ -122,3 +125,53 @@ changes. The first selection verifies the full image, after timing. Keep logs,
 manifests and results in the development directory. Demo ZIPs contain only boot
 files, disks, guides, licenses and checksums; add cartridge files using the
 [normal packaging command](../contributing/building.md#build-the-demo).
+Check out `53e1f63` to reproduce the original 32 KiB default; current builds use
+the larger block limit below.
+
+## 64 KiB follow-up
+
+The commands branch now uses up to **65,535 output bytes** per block. This is
+the largest nonzero 16-bit length, retaining the existing wire header and
+bank-bounded extents. A full 65,536-byte extent still splits into 65,535 plus
+one byte. Staging remains 1 KiB, with no upper input scratch or new fixed/per-Task
+bank-zero reservation. Removing the earlier 32 KiB admission check more than
+pays for progress-carry handling: the loader is **five bytes smaller**.
+
+| Image | 32 KiB XEX | 64 KiB XEX | Further saving | Decoder before → after, 14.18758 MHz |
+| --- | ---: | ---: | ---: | ---: |
+| Standard | 314,057 | 290,008 | 24,049 bytes | 4,382.3 → 4,274.1 ms |
+| VBXE | 339,432 | 315,240 | 24,192 bytes | 4,678.6 → 4,579.5 ms |
+
+Stored payload including block headers falls from 276,107 to 252,603 bytes
+for standard (**8.51%**) and 300,788 to 277,123 for VBXE (**7.87%**).
+Decoder time improves by **2.47%/2.12%**. Its observation scope and emulator/ROM
+pins are the same as the original accelerated measurements. The expanded
+native images and compiler pin are unchanged. The base 1x clock and physical
+SIO boot were not remeasured in this follow-up.
+
+Progress accumulation handles the seventeenth carry bit by emitting four dots
+for its 64 KiB contribution, then retaining the ordinary remainder. Two emitted
+cases cover exactly 65,536 total bytes and a nonzero remainder after carry.
+The thirteen decoder cases include maximum output and a 33,000-byte match
+offset; all pass with destination guards and the live caller/VBI checks intact.
+All ten feedback/failure cases and 400 host tests pass. Full-image checks after
+OF816 return verify 857,138/909,705 bytes, including zero-fill. Generated memory
+definitions and distribution checksums match.
+
+This remains development-tier evidence. No compiler-facing behavior changed,
+and no raw-NIR, full release, shell-command or cartridge matrix was repeated.
+Exact source, input, artifact and result hashes are in
+[loader-compression-64k.json](../development/loader-compression-64k.json).
+
+The follow-up artifacts are under `build/compressed-loader-64k`. Reproduce the
+decoder and accelerated measurements with:
+
+```sh
+python3 tools/test_loader_compression.py --output build/compressed-loader-64k/native-cases
+python3 tools/test_of816_loading.py --bundle build/compressed-loader-64k/standard \
+  --output build/compressed-loader-64k/feedback --case feedback
+python3 tools/measure_loader_compression.py --bundle build/compressed-loader-64k/standard \
+  --output build/compressed-loader-64k/standard-timing --multiplier 8
+python3 tools/measure_loader_compression.py --bundle build/compressed-loader-64k/vbxe \
+  --output build/compressed-loader-64k/vbxe-timing --multiplier 8
+```

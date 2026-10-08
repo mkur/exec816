@@ -5,6 +5,7 @@
 ; against the current descriptor before copying. State is boot-only loader data.
 .export lz4_record, lz4_decode, lz4_yield, lz4_active
 .export lz4_decode_begin, lz4_decode_end
+.assert M_LZ4_BLOCK_BYTES = $ffff, error, "LZ4 block limit must fit the full 16-bit length"
 
 lz4_record:
     lda M_STAGE+M_RECORD_KIND
@@ -27,12 +28,8 @@ lz4_record:
     lda M_PAYLOAD+M_LZ4_HEADER_OUTPUT+1
     sta lz4_output_size+1
     sta lz4_output_left+1
-    cmp #>M_LZ4_BLOCK_BYTES
-    jcc @size
-    jne bad_record
-    lda lz4_output_size
-    jne bad_record
-@size:
+    ; Every nonzero 16-bit output length fits the block limit. Descriptor
+    ; admission below still bounds the block to its bank and extent.
     lda lz4_output_size
     ora lz4_output_size+1
     jeq bad_record

@@ -1,0 +1,448 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "date": "2026-10-09",
+  "branch": "feature/exec-commands",
+  "base_commit": "53e1f63",
+  "default_output_block_bytes": 65535,
+  "wire_lengths_bits": 16,
+  "streaming_input_bytes": 1024,
+  "upper_input_scratch_bytes": 0,
+  "loader_capacity_bytes": 4608,
+  "loader_code_delta_from_32k": -5,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "runtime_payload_ram_delta": 0,
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "native_recompiled": false,
+  "compiler_override": null,
+  "host_library": {
+    "version": "1.10.0",
+    "path": "/opt/homebrew/Cellar/lz4/1.10.0/lib/liblz4.1.10.0.dylib",
+    "sha256": "89e0661526f0fe42f9de908701278015f9132722bc923c5b351434a0cc6b6e01"
+  },
+  "qualification": "Development only. No repeated base-clock, raw-NIR, full-release, shell-command, cartridge or physical-hardware matrix.",
+  "sources": {
+    "abi/memory-v1.json": "d61ab01fe1c7ef48ca3d29f6283f9beadcbc90fe68ba5f840d36911e22936d9f",
+    "platform/altirraos/loader.s": "82d8fcb5a6c0d0b163514360f5ce0ce5e9ce06c23cee4f0af4cd875e30d3d2a7",
+    "platform/altirraos/lz4.s": "58f683a456bd71482fdf4cf22bab115dad89576e10ffb8cfc5a21a51d2aa6f0c",
+    "tools/banked_image.py": "077095041884acb338114347ccacc48c8532dbcaaf95613a7ed7c054ea505d1e",
+    "tools/build_demo.py": "5c223c9e8d35f97b9df9ca85645c5ab7740a1ea2eb20f1c7ecd5cbc3a5ce3642",
+    "tools/generate_memory.py": "6624eafa1c5d1ca6dc89064a4225d54c88896b1c3a7d1a0d9add172111f3e447",
+    "tools/test_loader_compression.py": "9bae25d649bb95af2dbaf52ca3c183bb640a5b4f4d573f50df72d3098e79043c",
+    "tools/test_of816_loading.py": "838beb69737c59479782f0f86715fcf833a55c17ceefbe89b238f2e55c84a0cc",
+    "tools/measure_loader_compression.py": "536f0019adb3e99cd5228168e627d4175c46b353f51feb8ce371fe6dfe64c9cf",
+    "tests/test_banked_package.py": "54052ba2f9cc567e805678f853dc00cdc5613c86ef06fc5ed795e48bd9c3fa0f"
+  },
+  "host": {
+    "status": "pass",
+    "tests": 400,
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "log": "build/compressed-loader/host-checks-64k.log",
+    "log_sha256": "d484ce2a0fa6a67b584bab64c87b29a124fe8d79ac3d426559819a9c0ac695a7"
+  },
+  "generated_definitions_and_zip_checksums": "pass",
+  "native_checks": [
+    {
+      "path": "build/compressed-loader-64k/native-cases/results.json",
+      "sha256": "8f354ab86ffe3aaadc6a8f790dfb9a515ed245330f0f9369fc8344446e1671c7",
+      "status": "pass",
+      "observer_sha256": "9bae25d649bb95af2dbaf52ca3c183bb640a5b4f4d573f50df72d3098e79043c",
+      "cases": [
+        {
+          "name": "maximum",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 65535,
+          "xex_sha256": "cce0c8562c1ebdba4777cfdcf70ce0b991da6e578134b0a155aa6d239dda91f0",
+          "guards": "intact"
+        },
+        {
+          "name": "long-offset",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 65535,
+          "xex_sha256": "92d2387443afa9b1e9d93f568c3be197ed3c3f48a0d546f244fa108e85ac9599",
+          "guards": "intact"
+        },
+        {
+          "name": "continuations",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 24576,
+          "xex_sha256": "6178fb0e392643794d1b70bb0acd2a5ad53bc6b1d3792ef785abcbdaf3bb722c",
+          "guards": "intact"
+        },
+        {
+          "name": "byte-fragments",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 2284,
+          "xex_sha256": "ea43e6b7edd68bc05fc644faf602158b6097c7cec911bfcb6bdf8d75047b488e",
+          "guards": "intact"
+        },
+        {
+          "name": "bank-boundary",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 12288,
+          "xex_sha256": "155d8f22e3fe88740b08c346c7634dd868c39574c5906d44caee01704bc6fa22",
+          "guards": "intact"
+        },
+        {
+          "name": "raw-fallback",
+          "status": "pass",
+          "expected_error": 0,
+          "bytes": 64,
+          "xex_sha256": "5af65f2a3a7f800b6715b3c3470c9033be1f09987f8bce612cf3487e475fb9e8",
+          "guards": "intact"
+        },
+        {
+          "name": "zero-offset",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "6716f76d4fd4ca7343686b8f61f7b9462466c2d25e12aa5ddc8f1c53cc622381",
+          "guards": "intact"
+        },
+        {
+          "name": "offset-before-output",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "97cf7af0aa953a4090ff7a1daa3d5ee7c70fdf85c78f6f6573cb538fa1886d51",
+          "guards": "intact"
+        },
+        {
+          "name": "output-overrun",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "cdf02cd918c9d9c7490886e395acc568201b861d88bae5f021ce351578272eab",
+          "guards": "intact"
+        },
+        {
+          "name": "length-overflow",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "196b294f68622e2d2a3e60597d0750d102aa438c86a95d3fb0944810267d1076",
+          "guards": "intact"
+        },
+        {
+          "name": "missing-final-literals",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "adf66714e15c58d8d8a84b9bc8b70967420f131f9cacfaee9e2344475756f923",
+          "guards": "intact"
+        },
+        {
+          "name": "orphan-continuation",
+          "status": "pass",
+          "expected_error": 3,
+          "bytes": 1024,
+          "xex_sha256": "9d5e11722653f6960de1165c6879c66371520070112e0e3c7bb40737d312096c",
+          "guards": "intact"
+        },
+        {
+          "name": "context",
+          "status": "pass",
+          "context": "a9be3567ab3412f939",
+          "vbi_during_callback": true,
+          "xex_sha256": "2ac8e8d65cb27194bca9059c6e496ed67b673a6db38d6c242f3513d4aa3f6985"
+        }
+      ]
+    },
+    {
+      "path": "build/compressed-loader-64k/feedback/results.json",
+      "sha256": "e2894273122bccd2252ede04411a764503652a453f396ad99eee36005b1d8f3b",
+      "status": "pass",
+      "observer_sha256": "838beb69737c59479782f0f86715fcf833a55c17ceefbe89b238f2e55c84a0cc",
+      "cases": [
+        {
+          "case": "small",
+          "status": "pass",
+          "bytes": 1,
+          "dots": 1,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": null,
+          "xex_sha256": "62f34b3423ebb44e61cc8c11f56bceb6f3b68f5dfb091bff9c0cec7c093e2f69"
+        },
+        {
+          "case": "exact",
+          "status": "pass",
+          "bytes": 16384,
+          "dots": 1,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": null,
+          "xex_sha256": "bb6c5f0b23b40d80fb5b1d58beee38c08869b745b49ccc5708bcd47a7a54de30"
+        },
+        {
+          "case": "remainder",
+          "status": "pass",
+          "bytes": 16385,
+          "dots": 2,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": null,
+          "xex_sha256": "4df7687ed657cde483987a69cbb88b1dc7ac6ea247156b3b0e9e43cf1fd69647"
+        },
+        {
+          "case": "block",
+          "status": "pass",
+          "bytes": 65535,
+          "dots": 4,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": null,
+          "xex_sha256": "21438f3cf20f9cea240a994e5749f99674fb8015ba5e1cadc779b979a0ff7daa"
+        },
+        {
+          "case": "carry-exact",
+          "status": "pass",
+          "bytes": 65536,
+          "dots": 4,
+          "zero_fill": false,
+          "prefix_bytes": 1,
+          "rejected": null,
+          "xex_sha256": "527c36e89d4a3262cf4aecaa319ee0cbcc3b04e0c3847422e78388215108f8ca"
+        },
+        {
+          "case": "carry-remainder",
+          "status": "pass",
+          "bytes": 81918,
+          "dots": 5,
+          "zero_fill": false,
+          "prefix_bytes": 16383,
+          "rejected": null,
+          "xex_sha256": "f67753e46a4a61c31641c74afa72c01d3b19a05bb0f4c80069653f59a4cec367"
+        },
+        {
+          "case": "zero",
+          "status": "pass",
+          "bytes": 16384,
+          "dots": 1,
+          "zero_fill": true,
+          "prefix_bytes": 0,
+          "rejected": null,
+          "xex_sha256": "c27d9ac377352b474755528487581c7cc2a580efd52fd9da9c31e37a97ec7014"
+        },
+        {
+          "case": "bad-record",
+          "status": "pass",
+          "bytes": 1024,
+          "dots": 0,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": "record",
+          "xex_sha256": "5c73488bfae0f220feb72ba321119b0304000c1159dfdd3eb0c9ff5229b97867"
+        },
+        {
+          "case": "incomplete",
+          "status": "pass",
+          "bytes": 2048,
+          "dots": 0,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": "incomplete",
+          "xex_sha256": "b57d9c31a86c7953dc53a2e7b395679a7dc5451ca42b45aacf8572761a08249d"
+        },
+        {
+          "case": "bounds",
+          "status": "pass",
+          "bytes": 1,
+          "dots": 0,
+          "zero_fill": false,
+          "prefix_bytes": 0,
+          "rejected": "bounds",
+          "xex_sha256": "62f34b3423ebb44e61cc8c11f56bceb6f3b68f5dfb091bff9c0cec7c093e2f69"
+        }
+      ]
+    }
+  ],
+  "images": [
+    {
+      "variant": "standard",
+      "build_path": "build/compressed-loader-64k/standard",
+      "kernel_revision": "e74c2b041ec7b57dd6573a633b90d957baddbb73",
+      "native_image_sha256": "ca0d7019de1c2983b5fb357bb1146ef02e46d7fe89f55aa96e5e8660acf799da",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "nominal_cpu_hz": 14187580.0,
+      "measured_xex_sha256": "8c287133b59bfbd29a93969252d449f3a7d3b2277f28028982dccfd6ee6563ae",
+      "loader_sha256": "5c385e617d5ad92d220a5ecb2694aad86c67a24d0dd9ad4dd21915c0dff7e161",
+      "xex_bytes_before": 314057,
+      "xex_bytes_after": 290008,
+      "xex_bytes_saved": 24049,
+      "compression": {
+        "codec": "LZ4-HC12",
+        "library_version": "1.10.0",
+        "maximum_output_block_bytes": 65535,
+        "streaming_input_bytes": 1024,
+        "input_scratch_upper_bytes": 0,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "expanded_payload_bytes": 856575,
+        "compressed_output_bytes": 856479,
+        "stored_payload_bytes": 252603,
+        "records": 277,
+        "compressed_blocks": 27,
+        "loader_bytes": 2697,
+        "loader_capacity_bytes": 4608
+      },
+      "stored_payload_bytes_before": 276107,
+      "payload_reduction_percent": 8.512641838127976,
+      "loader_bytes_before": 2702,
+      "timing_before": {
+        "decoder_calls": 294,
+        "decoder_ms": 4382.309456581038,
+        "native_loading_phase_ms": 4403.361813642638,
+        "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+        "payload_kib_per_second": 190.85947300719408
+      },
+      "timing_after": {
+        "decoder_calls": 264,
+        "decoder_ms": 4274.12180230878,
+        "native_loading_phase_ms": 4293.697445230265,
+        "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+        "payload_kib_per_second": 195.6905563584298
+      },
+      "decoder_improvement_percent": 2.468736070424904,
+      "verification": {
+        "status": "pass",
+        "bytes": 857138,
+        "extents": 40,
+        "diagnostic_scratch": {
+          "loader_bytes": 512,
+          "staging_bytes": 1024,
+          "restored": true,
+          "extra_reservations": 0
+        }
+      },
+      "result_path": "build/compressed-loader-64k/standard-timing/8x/results.json",
+      "result_sha256": "f6c0d29eedaa9b21a4ff0380f1492590e18e93a51c3bb0e8addcaef1202c2173",
+      "trace_sha256": "d64c8cdb76512c1f8101f96123affc4f3c5fdc9eccbb7d34bac458ab9eee28cf",
+      "distribution": {
+        "path": "build/compressed-loader-64k/standard/exec816-demo.zip",
+        "sha256": "642a7ca8da57291b288a5afd5548d4422322e65ed8adfd5a2df69f00e21e3943",
+        "bytes": 294944
+      }
+    },
+    {
+      "variant": "vbxe",
+      "build_path": "build/compressed-loader-64k/vbxe",
+      "kernel_revision": "e74c2b041ec7b57dd6573a633b90d957baddbb73",
+      "native_image_sha256": "11726bfcca603c7af1369e83c372da00ecadf8757c33946156d947a31dc5509e",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "nominal_cpu_hz": 14187580.0,
+      "measured_xex_sha256": "242622bb2a807946dcb0ad188d55a977469b0c0bd331cace5c7e7633d2550e44",
+      "loader_sha256": "4a42a5e58c86bf17fcab5625a7e590f7cd5edf439decfa90d1a72d7f2ce4792e",
+      "xex_bytes_before": 339432,
+      "xex_bytes_after": 315240,
+      "xex_bytes_saved": 24192,
+      "compression": {
+        "codec": "LZ4-HC12",
+        "library_version": "1.10.0",
+        "maximum_output_block_bytes": 65535,
+        "streaming_input_bytes": 1024,
+        "input_scratch_upper_bytes": 0,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_task": 0
+        },
+        "expanded_payload_bytes": 899390,
+        "compressed_output_bytes": 899276,
+        "stored_payload_bytes": 277123,
+        "records": 313,
+        "compressed_blocks": 29,
+        "loader_bytes": 2729,
+        "loader_capacity_bytes": 4608
+      },
+      "stored_payload_bytes_before": 300788,
+      "payload_reduction_percent": 7.8676675931220625,
+      "loader_bytes_before": 2734,
+      "timing_before": {
+        "decoder_calls": 318,
+        "decoder_ms": 4678.5850722956275,
+        "native_loading_phase_ms": 4751.642704393561,
+        "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+        "payload_kib_per_second": 187.70615585260623
+      },
+      "timing_after": {
+        "decoder_calls": 289,
+        "decoder_ms": 4579.467957185087,
+        "native_loading_phase_ms": 4651.224028340281,
+        "scope": "Summed lz4_decode call elapsed time including OS interrupts and bus stalls; excludes record admission, progress output and XEX transport.",
+        "payload_kib_per_second": 191.76883143643886
+      },
+      "decoder_improvement_percent": 2.1185275800041703,
+      "verification": {
+        "status": "pass",
+        "bytes": 909705,
+        "extents": 44,
+        "diagnostic_scratch": {
+          "loader_bytes": 512,
+          "staging_bytes": 1024,
+          "restored": true,
+          "extra_reservations": 0
+        }
+      },
+      "result_path": "build/compressed-loader-64k/vbxe-timing/8x/results.json",
+      "result_sha256": "111be449f4c67df5b22264ee00bf2fa20b38d7bfac9cfe1536a0e806a371725c",
+      "trace_sha256": "d63abfb1bec72b12f0d1d47b9135a69bdb1e8d9026ccdac4056f1071b40be4fb",
+      "distribution": {
+        "path": "build/compressed-loader-64k/vbxe/exec816-demo.zip",
+        "sha256": "b3448064b405541807dc5e7e35d90213fe6ef1ee35d4324cd312f1e3fc33762d",
+        "bytes": 338800
+      }
+    }
+  ]
+}

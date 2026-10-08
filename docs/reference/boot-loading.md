@@ -10,8 +10,9 @@ guarded RUNAD enters it only after every extent is complete. The Atarimax
 wrapper feeds the same XEX records to the same loader.
 
 The bootstrap and OF816 remain uncompressed. The host packages kernel copy/code
-extents as independent raw LZ4 blocks, using HC level 12 and at most 32 KiB of
-output per block. Extents retain their bank boundaries, kinds and gaps. A block
+extents as independent raw LZ4 blocks, using HC level 12 and up to 65,535 bytes
+of output per block (the 64 KiB class, limited by the 16-bit length). Extents
+retain their bank boundaries, kinds and gaps. A block
 is stored raw when compression plus its four-byte header would not shrink it.
 Zero-fill extents retain their metadata-only representation.
 
@@ -64,6 +65,8 @@ new fixed/per-Task bank-zero reservation is required. Expanded kernel RAM use
 is unchanged. Loader/staging retirement follows the existing startup phases;
 OF816 return does not retire them early. Boot settings and earlier screen text
 remain intact, and progress counts expanded bytes.
+The progress accumulator emits four 16 KiB dots for a 64 KiB carry before
+processing the stored remainder, so maximum-size blocks retain exact rounding.
 
 See the [implementation measurements](../history/loader-compression.md) for
 actual artifact sizes, decoder times and development-check scope.

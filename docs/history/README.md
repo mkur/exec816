@@ -94,7 +94,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 ## Platform and boot
 
 - [Compressed kernel loader](loader-compression.md): streaming LZ4 implementation,
-  actual standard/VBXE XEX sizes, emitted decoder speed and boot checks.
+  actual standard/VBXE XEX sizes, emitted decoder speed and boot checks; the
+  [64 KiB follow-up](loader-compression.md#64-kib-follow-up) measures the larger default.
 - [Boot image compression experiment](boot-compression.md): bank-bounded LZ4,
   LZ4-HC and DEFLATE measurements, exact-byte round trips and modeled XEX sizes.
 - [OF816 before kernel loading](of816-first-boot.md): returning INITAD monitor,

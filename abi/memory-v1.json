@@ -59,7 +59,7 @@
     "encoding": 7
   },
   "compression": {
-    "block_bytes": 32768,
+    "block_bytes": 65535,
     "header_size": 4,
     "header_fields": {"output": 0, "input": 2},
     "encodings": {"RAW": 0, "LZ4_BEGIN": 1, "LZ4_CONTINUE": 2}

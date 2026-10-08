@@ -173,9 +173,11 @@ def run(output):
     report=dict(status='running',tier='development',pin=PIN,cases=[],
                 observer_sha256=sha256(Path(__file__)),bank_zero_delta=dict(fixed=0,per_task=0))
     random_data=random.Random(816).randbytes(4096)
+    long_seed=random.Random(65535).randbytes(33000)
     try:
         for name,data,fragment,address in [
-            ('maximum',b'A'*32768,False,0x30000),
+            ('maximum',b'A'*65535,False,0x30000),
+            ('long-offset',long_seed+long_seed[:32535],False,0x30000),
             ('continuations',random_data*6,False,0x30000),
             ('byte-fragments',b'A'*1900+bytes(range(128))*3,True,0x30000),
             ('bank-boundary',random_data*3,False,0x1f000),

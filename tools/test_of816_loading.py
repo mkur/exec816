@@ -235,7 +235,7 @@ def check_image(out,record,program):
     return dict(case='native-payload',status='pass',screen_preserved=True,**report)
 
 
-def check_feedback(out,record,program,name,size,zero=False,failure=None):
+def check_feedback(out,record,program,name,size,zero=False,failure=None,prefix=0):
     """Small real record streams cover rounding, zero-fill and guarded failure."""
     folder=out/name;folder.mkdir(parents=True,exist_ok=True)
     memory=program['build']['memory'];c=memory['constants']
@@ -247,11 +247,19 @@ def check_feedback(out,record,program,name,size,zero=False,failure=None):
 .export start
 start: jmp start
 ''',finish_address)['start']
-    bank=next(b for b in memory['usable_banks'] if b not in reserved_banks(memory))
+    reserved=reserved_banks(memory)
+    bank=next(b for b in memory['usable_banks'] if b not in reserved and
+              (prefix<=1 or (b+1 in memory['usable_banks'] and b+1 not in reserved)))
     address=bank<<16
     data=bytes((i*29+7)&255 for i in range(size))
     image=dict(entry=address,segments=[dict(address=address,bytes=list(data if not zero else data[:1]),
                                           executable=True)],zero_fill=[])
+    if prefix:
+        # Different kinds prevent coalescing: leave a progress remainder before
+        # a full-sized compressed block. The exact case also ends at a bank edge.
+        second=address+prefix if prefix==1 else address+65536
+        image['segments']=[dict(address=address,bytes=list(data[:prefix]),executable=True),
+                           dict(address=second,bytes=list(data[prefix:]),executable=False)]
     if zero:image['zero_fill']=[dict(address=address+1,size=size-1)]
     (folder/'hosted.bin').write_bytes(b'\xea')
     raw,labels=emit(folder,image,memory,dict(start=finish))
@@ -298,7 +306,7 @@ start: jmp start
                 sample=dict(output=folder,image=image,build=dict(memory=memory),
                             labels={**labels,'loader_start':finish})
                 snapshot_image(b,sample,folder)
-    return dict(case=name,status='pass',bytes=size,dots=dots,zero_fill=zero,
+    return dict(case=name,status='pass',bytes=size,dots=dots,zero_fill=zero,prefix_bytes=prefix,
                 rejected=failure,xex_sha256=sha256(path))
 
 
@@ -316,13 +324,14 @@ def run(bundle,out,case='all'):
         if case in ('all','payload'):
             report['cases'].append(check_image(out,record,program))
         if case in ('all','feedback'):
-            for name,size,zero,failure in [('small',1,False,None),('exact',16384,False,None),
-                                         ('remainder',16385,False,None),('block',32768,False,None),
-                                         ('zero',16384,True,None),
-                                         ('bad-record',1024,False,'record'),
-                                         ('incomplete',2048,False,'incomplete'),
-                                         ('bounds',1,False,'bounds')]:
-                report['cases'].append(check_feedback(out,record,program,name,size,zero,failure))
+            for name,size,zero,failure,prefix in [
+                    ('small',1,False,None,0),('exact',16384,False,None,0),
+                    ('remainder',16385,False,None,0),('block',65535,False,None,0),
+                    ('carry-exact',65536,False,None,1),
+                    ('carry-remainder',81918,False,None,16383),
+                    ('zero',16384,True,None,0),('bad-record',1024,False,'record',0),
+                    ('incomplete',2048,False,'incomplete',0),('bounds',1,False,'bounds',0)]:
+                report['cases'].append(check_feedback(out,record,program,name,size,zero,failure,prefix))
         report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error))
