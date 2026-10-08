@@ -73,21 +73,22 @@ Count guards, alignment and unused capacity, not only live payload bytes.
 The build's `memory.json` is authoritative for `runtime_reservations`,
 `task_pools` and `bank_zero_budget`. Loading and runtime lifetimes differ:
 loader/staging storage may be reused only after adoption retires every live
-bootstrap frame and callback. The manifest at `$6000–$67FF` remains protected
+bootstrap frame and callback. The manifest at `$6200–$69FF` remains protected
 through memory adoption, Task initialization and boot-setting capture. The
 adapter publishes `M_RETIRED=1` at `startup_complete`, before Task dispatch;
 only then is that entire range reusable. Failed startup does not publish it.
 Repeated memory adoption/initialization uses the live adoption state and never
-revalidates retired manifest bytes. The boot-state page at `$0900–$09FF` stays
+revalidates retired manifest bytes. The boot-state page at `$0B00–$0BFF` stays
 reserved, including shutdown information. Restarting retired bootstrap code is
 unsupported; a cold boot reloads the manifest.
 
-The no-resident-Atari-DOS profile reserves `$0000–$07FF` for the OS and places
-the 256-byte adapter state at `$0800–$08FF`. Both loader and hosted entry require
-the original `MEMLO <= $0800`; hosted entry checks before writing that page.
-`MEMTOP` must still cover `$9000`. State fields are generated from the profile
-base and ABI offsets. Exec's own DOS/file services are independent of this
-resident Atari DOS restriction.
+The launch profile reserves `$0000–$09FF` for the OS or a small binary loader
+and places the 256-byte adapter state at `$0A00–$0AFF`. Both loader and hosted
+entry require the original `MEMLO <= $0A00`; hosted entry checks before writing
+that page. `MEMTOP` must still cover `$9000`. State fields are generated from
+the profile base and ABI offsets. Larger resident Atari DOS layouts remain
+unsupported; Exec's own DOS/file services are independent of that restriction.
+This boundary does not itself qualify a particular third-party loader.
 
 Ordinary compiled globals default to a 2 KiB `image_data` arena in the selected
 upper kernel bank, after resident metadata and 256-byte alignment. Emitted code
@@ -118,23 +119,23 @@ loading and runtime. Persistent Exec reservations are packed below it:
 
 | Eight-Task range | Ownership |
 | --- | --- |
-| `$0800–$08FF` | Adapter state |
-| `$0900–$09FF` | Boot state |
-| `$0A00–$0AFF` | Kernel DP |
-| `$0B00–$12FF` | Public Task DPs |
-| `$1300–$13FF` | Idle DP |
-| `$1400–$23FF` | Resident platform adapter, including segment padding |
-| `$2400–$5B3F` | Root, kernel, worker and idle stacks, including guards |
-| `$5B40–$7FFF` | 9,408 unreserved bytes after startup |
+| `$0A00–$0AFF` | Adapter state |
+| `$0B00–$0BFF` | Boot state |
+| `$0C00–$0CFF` | Kernel DP |
+| `$0D00–$14FF` | Public Task DPs |
+| `$1500–$15FF` | Idle DP |
+| `$1600–$25FF` | Resident platform adapter, including segment padding |
+| `$2600–$5D3F` | Root, kernel, worker and idle stacks, including guards |
+| `$5D40–$7FFF` | 8,896 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
-placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
-owns slot `capacity`. Four-Task DPs end at `$0FFF`, followed by the full near
-bank-table reservation at `$1000–$13FF`. The eight-Task table is in upper RAM.
+placement. Kernel DP is `$0C00`; public slot `i` owns `$0D00+i*$100`, and idle
+owns slot `capacity`. Four-Task DPs end at `$11FF`, followed by the full near
+bank-table reservation at `$1200–$15FF`. The eight-Task table is in upper RAM.
 Generated assembly/Action! constants and the resident linker configuration use
 this profile. Unsupported capacities and overlaps are rejected.
 
-The root stack starts at `$2410`, the kernel stack at `$2A30`; each reserves
+The root stack starts at `$2610`, the kernel stack at `$2C30`; each reserves
 1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
 are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
 All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
@@ -142,25 +143,34 @@ slots 1–5 have 1,024-byte stacks, slots 6–7 have 2,560 bytes and private idl
 has 512 bytes. Every stack retains checked bounds and an internal 256-byte
 interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
-Temporary staging occupies `$5BF0–$5FFF`, the manifest `$6000–$67FF`, and the
-loader `$6800–$7BFF`. They form one boot arena clear of every persistent pool.
+Temporary staging occupies `$5DF0–$61FF`, the manifest `$6200–$69FF`, and the
+loader `$6A00–$7BFF`. They form one boot arena clear of every persistent pool.
 `phase_reservations` records loading, initialization and runtime ownership;
 `runtime_free_ranges` records the complement after startup. Initialization
 retains the manifest after retiring loader/staging. The full free range becomes
 reusable only at `startup_complete`; it is not registered with the general heap.
 
+Moving the start from `$0800` to `$0A00` protects 512 additional low bytes.
+Fixed Exec runtime reservations and every per-Task reservation change by **0**;
+the OS/loader reservation grows by **512**. The temporary loader capacity
+shrinks from 5,120 to 4,608 bytes, retaining its `$7C00` end, so total loading
+reservations are unchanged. The linker enforces that smaller capacity.
+Runtime reserves 56,640 bytes including OS ranges; initialization reserves
+58,688 while the manifest is live, and loading reserves 52,592. The guarded
+idle stack ends at `$5D40` exclusive, leaving 176 bytes before staging. Pools
+may not overlap any part of the boot arena, even when phase lifetimes differ.
+See the [low-memory relocation checks](../development/memory-low-a00.json).
+
 The [larger-stack development record](../development/larger-task-stacks.json)
-accounts for the 3,072-byte increase over the compact eight-Task map: fixed
-delta 0, slots 6 and 7 +1,536 bytes each, all other pools unchanged. Runtime
-reserves 56,128 bytes including OS ranges; initialization reserves 58,176
-while the manifest is live, and loading remains 52,592. The guarded idle stack
-ends at `$5B40` exclusive, leaving 176 bytes before staging. Pools may not
-overlap any part of the boot arena, even when phase lifetimes differ.
+accounts for the earlier 3,072-byte increase over the compact eight-Task map:
+fixed delta 0, slots 6 and 7 +1,536 bytes each, all other pools unchanged. Its
+addresses and totals describe that revision.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) combines nine
 holes into one for eight Tasks, with zero change in total reservations or
 per-Task cost. Removing an obsolete near context reservation also saves 240
-fixed bytes for four Tasks, leaving `$48C0–$7FFF` (14,144 bytes) contiguous.
+fixed bytes for four Tasks. The current relocated map leaves `$4AC0–$7FFF`
+(13,632 bytes) contiguous.
 Both budgets include guards and full reserved capacity. The earlier
 [DP compaction record](../development/dp-compaction.json) preserves its separate
 192/2,336-byte savings and historical addresses.

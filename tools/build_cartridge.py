@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Wrap an unchanged Exec816 XEX in an Atarimax 8 Mbit cartridge."""
 import argparse
+import adapter_state as adapter
 import hashlib
 import json
 from pathlib import Path
@@ -40,17 +41,17 @@ def segments(raw):
             raise ValueError('Truncated or reversed XEX segment')
         # INITAD effects remain the responsibility of the Exec image builder.
         # Direct records must not overwrite this reader, the screen, or ROM.
-        if not (0x0800 <= low <= high < RAM_START or
+        if not (adapter.STATE <= low <= high < RAM_START or
                 (low, high) in ((0x02e0, 0x02e1), (0x02e2, 0x02e3))):
             raise ValueError(f'Unsupported cartridge XEX destination: ${low:04x}-${high:04x}')
         payload = raw[offset:offset+size]
         if low == 0x02e0:
             run = int.from_bytes(payload, 'little')
-        if low == 0x02e2 and not 0x0800 <= int.from_bytes(payload, 'little') < RAM_START:
+        if low == 0x02e2 and not adapter.STATE <= int.from_bytes(payload, 'little') < RAM_START:
             raise ValueError('INITAD must point into the Exec loading arena')
         result.append((low, payload))
         offset += size
-    if run is None or not 0x0800 <= run < RAM_START:
+    if run is None or not adapter.STATE <= run < RAM_START:
         raise ValueError('An explicit Exec RUNAD is required')
     if not result or len(raw) > 126 * BANK_BYTES - 1:
         raise ValueError('XEX does not fit between the two cartridge boot banks')

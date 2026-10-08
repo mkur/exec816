@@ -35,7 +35,7 @@ def observers(p, breakdown=False):
         ('DESKPAINT_PUMP','pump'),('DESKWIDGETS_RUN','model_call'),('DESKAPP_REFRESHSTATUS','application'),('DESKINPUT_CONSUME','consume')])
     points={n:p['labels'][n] for n in ('native_irq','native_nmi','interrupt_schedule')}
     restore=p['labels']['context_restore']
-    require((p['output']/'hosted.bin').read_bytes()[restore-0x1400:restore-0x1400+8]==bytes.fromhex('c230ab2b7afa6840'),'Unknown restore boundary')
+    require((p['output']/'hosted.bin').read_bytes()[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8]==bytes.fromhex('c230ab2b7afa6840'),'Unknown restore boundary')
     points.update(turn=spans['pump']['entry'],selected=restore+4,worker_retire=p['labels']['done'])
     definition=dict(points=points,spans={k:v for k,v in spans.items() if k!='application'},
         task_dps=[x['dp'] for x in p['build']['memory']['task_pools']])

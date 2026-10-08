@@ -8,6 +8,7 @@ instructions, storage or scheduling changes are inserted into the guest.
 from bisect import bisect_right
 from collections import defaultdict
 
+import adapter_state as adapter
 from bitmap_console_performance import native_markers, markers as drawing_markers
 from dos_concurrent_trace import call_marker
 from native_program import require
@@ -43,7 +44,7 @@ def markers(program, foreign, output):
     # to that Task. IRQ entry and interrupt_schedule bracket the native body.
     address = program['labels']['context_restore']
     hosted = (program['output']/'hosted.bin').read_bytes()
-    require(hosted[address-0x1400:address-0x1400+8] == bytes.fromhex('c230ab2b7afa6840'),
+    require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8] == bytes.fromhex('c230ab2b7afa6840'),
             'Unrecognized context restore sequence')
     points['selected'] = address+4
     for name in ('native_irq', 'native_nmi', 'interrupt_schedule'):

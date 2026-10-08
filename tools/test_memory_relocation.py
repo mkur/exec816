@@ -6,7 +6,7 @@ import struct
 from pathlib import Path
 
 import adapter_state as adapter
-from native_program import ROOT, build, compiler, execute, platform_files, require, verify_machine
+from native_program import ROOT, build, compiler, execute, platform_files, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from test_cooperative import data
 
@@ -20,19 +20,23 @@ def stop_at(bridge, address):
     bridge.bp_clear_all()
 
 
-def load(bridge, program, memlo=None):
+def load(bridge, program, memlo=None, low_guard=None):
     bridge.bp_clear_all()
     bridge.boot(str(program['xex']))
     if memlo is not None:
         stop_at(bridge, program['labels']['loader_init'])
         bridge.memload(0x2e7, struct.pack('<H', memlo))
+        if low_guard is not None:
+            bridge.memload(0x0800, low_guard)
     stop_at(bridge, program['labels']['loader_start'])
     stop_at(bridge, program['labels']['start'])
 
 
 def retired_case(bridge, program, memlo=None):
     c = program['build']['memory']['constants']
-    load(bridge, program, memlo)
+    # Simulate a small binary loader's resident bytes below the new boundary.
+    low_guard = bytes([0x69])*512 if memlo is not None else None
+    load(bridge, program, memlo, low_guard)
     observed = {}
 
     def symbol(name):
@@ -79,6 +83,10 @@ def retired_case(bridge, program, memlo=None):
             'Upper array/pointer mutation failed')
     require(runtime['vbi_dispatches'] > 0 and runtime['created'] == 1,
             'No preempted Task lifetime')
+    if low_guard is not None:
+        require(bridge.memdump(0x0800,512) == low_guard,
+                'Loading or Task execution overwrote protected low memory')
+        observed['protected_low'] = dict(address=0x0800,size=512,intact=True,memlo=memlo)
     for address, size, value in ((adapter.TEST_RELOCATION_SENTINEL,256,0x6d),(0x8800,2048,0x97),(c['MANIFEST'],2048,0xd3)):
         require(bridge.memdump(address,size) == bytes([value])*size, f'Retired bytes changed at ${address:x}')
     bridge.memload(adapter.TEST_RELOCATION_SENTINEL,bytes.fromhex(observed.pop('scratch_original')))
@@ -93,28 +101,29 @@ def retired_case(bridge, program, memlo=None):
 
 def rejection_cases(bridge, program):
     c = program['build']['memory']['constants']
+    rejected_memlo = c['MEMLO_LIMIT']+1
     observed = []
     # Loader must reject before touching the newly claimed adapter page.
     bridge.bp_clear_all()
     bridge.boot(str(program['xex']))
     stop_at(bridge, program['labels']['loader_init'])
     bridge.memload(adapter.STATE, bytes([0x73])*256)
-    bridge.memload(0x2e7, struct.pack('<H', 0x801))
+    bridge.memload(0x2e7, struct.pack('<H', rejected_memlo))
     stop_at(bridge, program['labels']['loader_start'])
     stop_at(bridge, program['labels']['loader_done'])
     require(bridge.peek(program['labels']['loader_error']) == b'\1', 'Loader accepted high MEMLO')
     require(bridge.memdump(adapter.STATE,256) == bytes([0x73])*256, 'Loader rejection wrote state')
-    observed.append('loader-memlo-0801')
+    observed.append(f'loader-memlo-{rejected_memlo:04x}')
 
     # Exercise the hosted preflight independently of the earlier loader check.
     load(bridge, program)
     vectors = bridge.memdump(0x256,9)
     bridge.memload(adapter.STATE, bytes([0x73])*256)
-    bridge.memload(c['OLD_MEMLO'], struct.pack('<H', 0x801))
+    bridge.memload(c['OLD_MEMLO'], struct.pack('<H', rejected_memlo))
     stop_at(bridge, program['labels']['state_rejected'])
     require(bridge.memdump(adapter.STATE,256) == bytes([0x73])*256 and
             bridge.memdump(0x256,9) == vectors, 'Hosted rejection changed unclaimed storage/vectors')
-    observed.append('hosted-memlo-0801')
+    observed.append(f'hosted-memlo-{rejected_memlo:04x}')
 
     load(bridge, program)
     bridge.memload(c['MANIFEST']+4, b'\0\0')
@@ -129,40 +138,52 @@ def rejection_cases(bridge, program):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
+    parser.add_argument('--compiler-bin',type=Path,help='Same-pin host compiler binary; hash recorded')
     parser.add_argument('--bridge-dir',type=Path,default=ROOT/'build/altirra-irq-bridge')
     parser.add_argument('--rom',type=Path,default=ROOT/'build/firmware/altirraos-816.rom')
     parser.add_argument('--output',type=Path,default=ROOT/'build/memory-relocation')
+    parser.add_argument('--case',action='append',choices=('raw','opt','nmi-stack'),
+                        help='Select emitted fixtures; default is optimized plus NMI stack checkpoint')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True,exist_ok=True)
     toolchain = compiler(args.compiler_dir)
+    if args.compiler_bin:
+        toolchain['binary'] = args.compiler_bin.resolve()
+        toolchain['binary_sha256'] = sha256(toolchain['binary'])
     platform_files(args.bridge_dir,args.rom)
     report = dict(tier='development',status='running',pin=PIN,cases=[])
     try:
         with emulator(args.bridge_dir.resolve(),args.rom.resolve(),output,pin=PIN) as bridge:
             report['machine'] = verify_machine(bridge,args.rom,PIN)
+            selected = args.case or ['opt','nmi-stack']
             for name, optimized, checkpoint in (('raw',False,0),('opt',True,0),('nmi-stack',True,3)):
+                if name not in selected:
+                    continue
                 print('Running relocation '+name+'...',flush=True)
                 program = build(toolchain,ROOT/'tests/programs/memory_relocation.act',output/name,
                                 optimize=optimized,tasks=True,task_capacity=8,probe_nmi=checkpoint)
-                observed = retired_case(bridge,program,memlo=0x800)
+                observed = retired_case(bridge,program,memlo=program['build']['memory']['constants']['MEMLO_LIMIT'])
                 report['cases'].append(dict(name=name,status='pass',build=program['build'],observed=observed))
                 if name == 'opt':
                     report['rejections'] = rejection_cases(bridge,program)
                     report['cold_restart'] = retired_case(bridge,program)
+                    report['accepted_memlo'] = [retired_case(bridge,program,memlo=value)
+                                                for value in (0x092a,0x0980)]
             simple = build(toolchain,ROOT/'examples/hello.act',output/'direct',optimize=True)
+            limit = adapter.STATE
             bridge.bp_clear_all()
             bridge.boot(str(simple['xex']))
             stop_at(bridge,simple['labels']['start'])
             bridge.memload(adapter.STATE,bytes([0x73])*256)
-            bridge.memload(0x2e7,struct.pack('<H',0x801))
+            bridge.memload(0x2e7,struct.pack('<H',limit+1))
             stop_at(bridge,simple['labels']['state_rejected'])
             require(bridge.memdump(adapter.STATE,256) == bytes([0x73])*256,'Direct rejection wrote state')
-            report['rejections'].append('direct-xex-memlo-0801')
+            report.setdefault('rejections',[]).append(f'direct-xex-memlo-{limit+1:04x}')
             bridge.bp_clear_all()
             bridge.boot(str(simple['xex']))
             stop_at(bridge,simple['labels']['start'])
-            bridge.memload(0x2e7,struct.pack('<H',0x800))
+            bridge.memload(0x2e7,struct.pack('<H',limit))
             report['direct_boundary'],_ = execute(bridge,simple,preloaded=True)
         report['status'] = 'pass'
     except Exception as error:

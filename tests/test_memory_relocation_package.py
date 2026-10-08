@@ -16,11 +16,21 @@ from banked_image import validate_extents, manifest
 
 
 class MemoryRelocationTests(unittest.TestCase):
+    def test_profiles_protect_small_loader_memory(self):
+        for name in ('memory-4m.json','memory-1m.json'):
+            with self.subTest(profile=name):
+                memory = layout(profile=PROFILE.with_name(name))
+                self.assertEqual(memory['constants']['MEMLO_LIMIT'],0x0a00)
+                self.assertEqual(memory['regions']['os-low'],[0,0x0a00])
+                self.assertEqual(memory['regions']['state'],[0x0a00,0x0b00])
+                self.assertEqual(memory['regions']['loader'],[0x6a00,0x7c00])
+                self.assertEqual(memory['constants']['LOADER_BYTES'],4608)
+
     def test_resident_linker_layout_survives_sorted_metadata(self):
         from adapter_state import hosted_config, resident_addresses
         profile=json.loads(json.dumps(layout()['profile'],sort_keys=True))
         self.assertEqual(hosted_config(profile),hosted_config())
-        self.assertEqual(resident_addresses(profile)['RESIDENT_BASE'],0x1400)
+        self.assertEqual(resident_addresses(profile)['RESIDENT_BASE'],0x1600)
         profile['resident_segments']['FAULT']=profile['resident_segments']['EXIT']
         with self.assertRaisesRegex(ValueError,'resident adapter layout'):
             resident_addresses(profile)
@@ -36,8 +46,8 @@ class MemoryRelocationTests(unittest.TestCase):
             self.assertGreaterEqual(arena['address'], previous)
             self.assertEqual(arena['address'] >> 16, bank)
             self.assertEqual(m['profile']['code_origin'], arena['address']+2048)
-            self.assertEqual(addresses(m['profile'])['KERNEL_OWNER'], 0x0860)
-            self.assertEqual(m['regions']['state'], [0x0800, 0x0900])
+            self.assertEqual(addresses(m['profile'])['KERNEL_OWNER'], 0x0a60)
+            self.assertEqual(m['regions']['state'], [0x0a00, 0x0b00])
 
     def test_data_permission_does_not_expose_metadata_or_padding(self):
         m = layout(upper_table=True)
@@ -76,10 +86,10 @@ class MemoryRelocationTests(unittest.TestCase):
         m = layout(upper_table=True)
         pools = configure(m, 8)
         self.assertEqual([p['dp'] for p in pools],
-                         [0x0b00+i*256 for i in range(9)])
+                         [0x0d00+i*256 for i in range(9)])
         self.assertEqual([p['stack_base'] for p in pools],
-                         [0x2410, 0x3050, 0x3470, 0x3890, 0x3cb0,
-                          0x40d0, 0x44f0, 0x4f10, 0x5930])
+                         [0x2610, 0x3250, 0x3670, 0x3a90, 0x3eb0,
+                          0x42d0, 0x46f0, 0x5110, 0x5b30])
 
     def test_aperture_reserved_during_loading_and_runtime(self):
         for capacity in (4, 8):
@@ -88,7 +98,7 @@ class MemoryRelocationTests(unittest.TestCase):
                 configure(memory, 8)
             validate_memory(memory)
             self.assertEqual(memory['regions']['vbxe-aperture'], [0x8000, 0x9000])
-            self.assertEqual(memory['regions']['staging'], [0x5bf0, 0x6000])
+            self.assertEqual(memory['regions']['staging'], [0x5df0, 0x6200])
             spans = memory['runtime_reservations']
             self.assertEqual(sum(r['size'] for r in spans if r['name'] == 'vbxe-aperture'), 4096)
             for name, (start, end) in memory['regions'].items():
@@ -118,7 +128,7 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total, saving, loading in (('four',51392,432,336),('eight',56128,-736,544)):
+        for capacity, total, saving, loading in (('four',51904,-80,336),('eight',56640,-1248,544)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
             self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
@@ -132,10 +142,10 @@ class MemoryRelocationTests(unittest.TestCase):
             self.assertEqual(after['idle'], before['idle']-per_task)
         m = layout(upper_table=True)
         configure(m,8)
-        self.assertEqual(m['regions']['manifest'], [0x6000,0x6800])
+        self.assertEqual(m['regions']['manifest'], [0x6200,0x6a00])
         self.assertNotIn('manifest', [r['name'] for r in m['runtime_reservations']])
         self.assertEqual(m['startup_retirement']['address'], m['constants']['RETIRED'])
-        self.assertEqual(m['constants']['RETIRED'], 0x0923)
+        self.assertEqual(m['constants']['RETIRED'], 0x0b23)
 
 
 if __name__ == '__main__':

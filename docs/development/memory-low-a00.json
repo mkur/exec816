@@ -1,0 +1,448 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-08",
+  "status": "pass",
+  "tier": "development",
+  "base_revision": "5380b21397c8449db4fb59e495350571bec3801e",
+  "source_state": "Implementation atop base revision; hashes identify the checked inputs.",
+  "scope": "Bank-zero start at $0A00, four/eight-Task packaging and optimized native boot/OF816 handoff on pinned AltirraOS.",
+  "source_inputs": {
+    "lib/exec/adapter-state.inc": "145d3ebc6ec611ae3589b618dc7fcf33f90dafd62aff40383dfcfbb2b1a6bc03",
+    "lib/exec/exec-abi.inc": "949c7f19ff6522f371116223045482b52b6754d05d97c4b45442025a27cd8b94",
+    "platform/altirraos/exec-abi.inc": "c7d1c6faea9f1c424a9c38b9e530a6e627d97aa384624fd17bfb20fb2ac8a184",
+    "platform/altirraos/hosted.cfg": "7f000651ead14e4f7ca7b4bffa78405620d3f247f665ca4e0c7378835bc54159",
+    "platform/altirraos/memory-1m.json": "c603ab7dcc1c14a7af41f25980fb0d706777febac61f55b9435ccb024db585c7",
+    "platform/altirraos/memory-4m.json": "77d519a3d44a4e9370f09118f9e1f8b7ec82680590d9c4ef3e835a78db1d5d32",
+    "tests/test_banked_package.py": "e9fbc2fb867f5d562d8bb4ee9d6727fa9993be232773d249faecceb887235384",
+    "tests/test_capacity_package.py": "11d38da5902ae33ea7c1cd37369c4a7a57425ed8d7f5757889af00978e76b87d",
+    "tests/test_cartridge_package.py": "7903b9dea5fb79d2a9dbbc0ef6a4406fff66cfe80c759171109b361d0031dd3c",
+    "tests/test_memory_relocation_package.py": "d1594b56ee6ac53e6b21fb0af7bbd30649ff61a989dec3f31285fb84b1152454",
+    "tests/test_of816_package.py": "3b3ee903623aa31cfa80d6cf5f8c7bf986a7bdbf08c6e77811954ee8769b015b",
+    "tests/test_tasks_package.py": "658d7bc36c1a2e843008f53ce561b74751f8dee4998e6a82f9bff5ed6947a8a4",
+    "tools/aes_timing_breakdown.py": "6c5fe8ab2526abb35f3924b631453b84ff1e424cc175bfc2e5041163dfb6ecd3",
+    "tools/build_cartridge.py": "0694a0c0bc09e90367f05ba4b0dd925d9967aef0a35684b68594808a850512bf",
+    "tools/console_turn_profile.py": "2970dc65ef7c0de3524403a22fdcf3475fcf09bd4c0f0c5d8cb00ab66b8af774",
+    "tools/measure_aes_presenter.py": "7ea20e1c9fcbb0a439d268118a74dd71db6ef3f5a218c2cdbec931abb3e03032",
+    "tools/measure_desktop.py": "8e47ef46f7bc100cc83499c33b5aa91dab00bb991403a35fc66305c3461903ec",
+    "tools/measure_input_operations.py": "161a74daaf830876c6097163f549c965bdd5f61dbfc36b6669ee465bd17db526",
+    "tools/test_desktop_presentation.py": "86f173588a497248d9d139ab871bc86d85c7d134e875fe346f61c36173852367",
+    "tools/test_memory_relocation.py": "b0f3bbdab5822901da8f91c347d9d715907256f1d756271aa08372e43514c78a",
+    "tools/test_widget_panel.py": "3bd1ce9b389422846c0b7d2720309b3a9e888cca1936a0b1d534c67832f203e6"
+  },
+  "memory": {
+    "state": 2560,
+    "memlo_limit": 2560,
+    "protected_low": [
+      0,
+      2560
+    ],
+    "kernel_dp": 3072,
+    "task_dp_base": 3328,
+    "resident": [
+      5632,
+      9728
+    ],
+    "staging": [
+      24048,
+      25088
+    ],
+    "manifest": [
+      25088,
+      27136
+    ],
+    "loader": [
+      27136,
+      31744
+    ],
+    "vbxe_aperture": [
+      32768,
+      36864
+    ]
+  },
+  "bank_zero_budget": {
+    "4": {
+      "after": {
+        "fixed_runtime": 11552,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20672,
+        "loading_excluding_os": 22896,
+        "runtime_including_os": 51904,
+        "loading_including_os": 54128
+      },
+      "runtime_free_ranges": [
+        {
+          "address": 19136,
+          "size": 13632
+        }
+      ],
+      "initialization_including_os": 53952,
+      "delta": {
+        "fixed_exec_runtime": 0,
+        "fixed_runtime_including_os": 512,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "loading_including_os": 0
+      }
+    },
+    "8": {
+      "after": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21360,
+        "runtime_including_os": 56640,
+        "loading_including_os": 52592
+      },
+      "runtime_free_ranges": [
+        {
+          "address": 23872,
+          "size": 8896
+        }
+      ],
+      "initialization_including_os": 58688,
+      "delta": {
+        "fixed_exec_runtime": 0,
+        "fixed_runtime_including_os": 512,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0,
+        "loading_including_os": 0
+      }
+    }
+  },
+  "loader": {
+    "previous_reserved_bytes": 5120,
+    "reserved_bytes": 4608,
+    "emitted_bytes": {
+      "opt": 1538,
+      "nmi-stack": 1538
+    },
+    "rationale": "Keep the loader end and diagnostics below the fixed VBXE aperture; the linker bounds the full loader payload."
+  },
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary_sha256": "ca14d78c3add0640851c37f0b4eddd354e9c8b78c521ec85c36bb914d5f7bbde",
+    "override": false,
+    "host_binary": "build/development/dir-latency/host-compiler/debug/actionc-65816"
+  },
+  "native": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "on",
+      "burstio": false,
+      "accuratedisk": false,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": true,
+      "diskemu": "generic",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$eeca81434d995c35",
+      "actual_kernel_id": "$eeca81434d995c35",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "cases": [
+      {
+        "name": "opt",
+        "checks": 278,
+        "probe_nmi": 0,
+        "guards": "intact",
+        "protected_low": {
+          "address": 2048,
+          "size": 512,
+          "intact": true,
+          "memlo": 2560
+        },
+        "retired_ranges_intact": true,
+        "table_restored": true,
+        "xex_sha256": "c3d755be621c93a6549c5b8c508862e009689c3c257f99720f9bb92d2a36c09c"
+      },
+      {
+        "name": "nmi-stack",
+        "checks": 278,
+        "probe_nmi": 3,
+        "guards": "intact",
+        "protected_low": {
+          "address": 2048,
+          "size": 512,
+          "intact": true,
+          "memlo": 2560
+        },
+        "retired_ranges_intact": true,
+        "table_restored": true,
+        "xex_sha256": "7bf1d922d7ff352adff10f3e82071e4857690ee5e0746f5ff10294fe94321777"
+      }
+    ],
+    "accepted_memlo": [
+      2346,
+      2432,
+      2560
+    ],
+    "rejections": [
+      "loader-memlo-0a01",
+      "hosted-memlo-0a01",
+      "invalid-first-adoption",
+      "direct-xex-memlo-0a01"
+    ],
+    "cold_restart_checks": 278,
+    "direct_boundary": {
+      "status": 0,
+      "native_nmi_count": 1,
+      "native_irq_count": 0,
+      "os_busy": 0,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "fault_required": 0,
+      "fault_s": 0,
+      "clock_start": 3,
+      "clock_end": 4,
+      "return_dbr": 0,
+      "return_e": 0,
+      "guards": "intact"
+    }
+  },
+  "of816": {
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "on",
+      "burstio": false,
+      "accuratedisk": false,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": true,
+      "diskemu": "generic",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$91213499097d0042",
+      "actual_kernel_id": "$91213499097d0042",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "autoboot": {
+      "case": "autoboot",
+      "status": "pass",
+      "frames": 249,
+      "seconds": 4.98,
+      "clock_wrap": false,
+      "guards": "intact",
+      "os_restored": true
+    },
+    "xex_sha256": "9e5ceb10c2b6d0fe22de53d72a4f829270a0d419283a98af051f75d2a253f1a8",
+    "handoff_checks": 278,
+    "protected_low": {
+      "address": 2048,
+      "size": 512,
+      "intact": true,
+      "memlo": 2560
+    },
+    "guards": "intact",
+    "borrowed_bank_zero_bytes": 3392
+  },
+  "checks": {
+    "host": "398 tests passed",
+    "generated": [
+      "tools/generate_exec_abi.py --check"
+    ],
+    "mode": "Optimized; compiler semantics and wire layouts are unchanged. The additional NMI checkpoint covers relocated stack/DP entry."
+  },
+  "artifacts": {
+    "build/development/memory-low-a00/results.json": "000e2bf310259f6b2163b10fc40b2871b98fbbac51b2b9573adb6e15f5317628",
+    "build/development/memory-low-a00/of816/memory-layout-results.json": "2dc1f51227f84124dc064d2481d7d635eefeb7aab22dda13ffb582973db5e558",
+    "build/development/memory-low-a00/of816/of816.json": "3287c982395bd7c21e49c67744a171058719e53b179cd5f8745a7e194794c2c0"
+  },
+  "limits": [
+    "Development scope, not a full release qualification.",
+    "MEMLO values are injected on the pinned AltirraOS ROM; this does not qualify third-party binary loaders or alternative ROMs.",
+    "The historical 1 MiB profile is checked for matching placement on the host; native execution uses the current 4 MiB profile."
+  ]
+}

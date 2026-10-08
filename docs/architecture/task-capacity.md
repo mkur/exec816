@@ -66,11 +66,11 @@ bytes respectively. Stack reservations and public Task capacity are unchanged.
 
 | Reservation after startup | Four public Tasks | Eight public Tasks |
 | --- | ---: | ---: |
-| OS ranges | 30,720 | 30,720 |
+| OS/loader ranges | 31,232 | 31,232 |
 | Fixed Exec runtime, including aperture, guards and slack | 11,552 | 10,528 |
 | Public and idle pools | 9,120 | 14,880 |
-| Total reserved | 51,392 | 56,128 |
-| One contiguous unreserved range | 14,144 | 9,408 |
+| Total reserved | 51,904 | 56,640 |
+| One contiguous unreserved range | 13,632 | 8,896 |
 
 The manifest still occupies 2 KiB during loading. Total loading reservations
 are 54,128 and 52,592 bytes respectively. Every DP now reserves exactly 256
@@ -99,19 +99,24 @@ persistent reservations together, with no additional eight-Task byte savings.
 It removes the obsolete 240-byte near context reservation in four-Task builds;
 current Task metadata remains in upper RAM. Per-Task costs do not change.
 
-Kernel DP is `$0A00`. Public slot `i` has DP `$0B00+i*$100`; idle is slot
-`capacity`. The four-Task DP area ends at `$0FFF`, followed by the full near
-bank table at `$1000–$13FF`. The eight-Task DP area ends at `$13FF`. Both
-capacities then place the resident adapter at `$1400–$23FF`.
+The current map starts at `$0A00`, protecting 512 more bytes for the OS or
+binary loader. Fixed Exec runtime and per-Task costs are unchanged. Reducing
+unused temporary loader capacity by 512 bytes keeps loading totals unchanged;
+see the [platform contract](../reference/platform.md#bank-zero-memory-budget).
+
+Kernel DP is `$0C00`. Public slot `i` has DP `$0D00+i*$100`; idle is slot
+`capacity`. The four-Task DP area ends at `$11FF`, followed by the full near
+bank table at `$1200–$15FF`. The eight-Task DP area ends at `$15FF`. Both
+capacities then place the resident adapter at `$1600–$25FF`.
 
 Stack placement is explicit in the platform profile. Four-Task bases, including
-idle, are `$2410`, `$3050`, `$3670`, `$3C90`, `$42B0`. Eight-Task bases are
-`$2410`, `$3050`, `$3470`, `$3890`, `$3CB0`, `$40D0`, `$44F0`, `$4F10`, `$5930`.
-Kernel stack starts at `$2A30`, with 1,536 bytes. Every stack retains 16-byte
+idle, are `$2610`, `$3250`, `$3870`, `$3E90`, `$44B0`. Eight-Task bases are
+`$2610`, `$3250`, `$3670`, `$3A90`, `$3EB0`, `$42D0`, `$46F0`, `$5110`, `$5B30`.
+Kernel stack starts at `$2C30`, with 1,536 bytes. Every stack retains 16-byte
 guards at both ends; adjacent guarded reservations have no extra padding.
 
-After startup, the free range is `$48C0–$7FFF` for four Tasks or `$5B40–$7FFF`
-for eight. Staging, manifest and loader temporarily occupy `$5BF0–$7BFF` inside
+After startup, the free range is `$4AC0–$7FFF` for four Tasks or `$5D40–$7FFF`
+for eight. Staging, manifest and loader temporarily occupy `$5DF0–$7BFF` inside
 this area. The manifest remains live until `startup_complete`. Generated
 `phase_reservations` and `runtime_free_ranges` describe these lifetimes; free
 space remains unregistered with the heap.

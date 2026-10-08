@@ -41,26 +41,26 @@ class CapacityPackaging(unittest.TestCase):
         c=storage(m)
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1280))
         self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],25408)
-        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],21872)
+        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],21360)
         self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
 
     def test_compact_maps_preserve_all_stack_reservations(self):
         for capacity,bases,total,loading in (
-            (4,[0x2410,0x3050,0x3670,0x3c90,0x42b0],51392,54128),
-            (8,[0x2410,0x3050,0x3470,0x3890,0x3cb0,0x40d0,0x44f0,0x4f10,0x5930],56128,52592)):
+            (4,[0x2610,0x3250,0x3870,0x3e90,0x44b0],51904,54128),
+            (8,[0x2610,0x3250,0x3670,0x3a90,0x3eb0,0x42d0,0x46f0,0x5110,0x5b30],56640,52592)):
             with self.subTest(capacity=capacity):
                 m=layout(upper_table=capacity==8)
                 pools=configure(m,capacity)
-                self.assertEqual(m['regions']['kernel-dp'],[0x0a00,0x0b00])
-                self.assertEqual([p['dp'] for p in pools],[0x0b00+i*256 for i in range(capacity+1)])
+                self.assertEqual(m['regions']['kernel-dp'],[0x0c00,0x0d00])
+                self.assertEqual([p['dp'] for p in pools],[0x0d00+i*256 for i in range(capacity+1)])
                 self.assertEqual([p['stack_base'] for p in pools],bases)
                 self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
                 budget=m['bank_zero_budget']
                 self.assertEqual(budget['runtime_including_os'],total)
                 self.assertEqual(budget['loading_including_os'],loading)
                 self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
-                self.assertEqual(m['regions']['kernel-stack'],[0x2a20,0x3040])
-                end = 0x48c0 if capacity == 4 else 0x5b40
+                self.assertEqual(m['regions']['kernel-stack'],[0x2c20,0x3240])
+                end = 0x4ac0 if capacity == 4 else 0x5d40
                 self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end)])
                 phases=m['phase_reservations']
                 self.assertEqual(sum(r['size'] for r in phases['loading']),loading)
@@ -90,14 +90,14 @@ class CapacityPackaging(unittest.TestCase):
             m['profile']['direct_pages'][key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):
                 configure(m,8)
-        for capacity,base in ((4,0x0d00),(8,0x0e00),(8,0x0a00),(8,0xff00)):
+        for capacity,base in ((4,0x0f00),(8,0x1000),(8,0x0c00),(8,0xff00)):
             m=layout(upper_table=capacity==8)
             m['profile']['direct_pages']['task_base']=base
             with self.subTest(capacity=capacity,base=base),self.assertRaisesRegex(RuntimeError,'overlaps'):
                 configure(m,capacity)
         # The unused portion of the near bank table remains reserved too.
         m=layout()
-        m['regions']['foreign']=[0x13f0,0x1400]
+        m['regions']['foreign']=[0x15f0,0x1600]
         with self.assertRaisesRegex(RuntimeError,'overlaps'):
             configure(m,4)
         m=layout(upper_table=True)
@@ -126,13 +126,13 @@ class CapacityPackaging(unittest.TestCase):
             self.assertEqual(delta['fixed'],0)
             self.assertEqual(delta['idle'],0)
             self.assertEqual(delta['per_public_task'],[0]+[n-1024 for n in expected])
-            self.assertEqual(delta['runtime'],sum(n-1024 for n in expected))
+            self.assertEqual(delta['runtime'],512+sum(n-1024 for n in expected))
         m=layout()
         configure(m,4)
         self.assertEqual(bank_zero_delta(m)['per_public_task'],[0]*4)
 
     def test_stacks_cannot_borrow_retired_boot_storage(self):
-        for slot,base in ((6,0x5c00),(7,0x6810),(8,0x5c00)):
+        for slot,base in ((6,0x5e00),(7,0x6810),(8,0x5e00)):
             m=layout(upper_table=True)
             m['profile']['task_stacks']['8']['bases'][slot]=base
             with self.subTest(slot=slot),self.assertRaisesRegex(RuntimeError,'overlaps'):

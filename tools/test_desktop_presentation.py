@@ -128,7 +128,7 @@ def run(out, mode, replay=False, observe_moves=False):
         points={name:p['labels'][name] for name in ('native_irq','native_nmi','interrupt_schedule')}
         restore=p['labels']['context_restore']
         code=(p['output']/'hosted.bin').read_bytes()
-        require(code[restore-0x1400:restore-0x1400+8]==bytes.fromhex('c230ab2b7afa6840'),'Unknown context restore')
+        require(code[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8]==bytes.fromhex('c230ab2b7afa6840'),'Unknown context restore')
         points.update(turn=spans['copy']['entry'],selected=restore+4,worker_retire=p['labels']['done'])
         definition=dict(points=points,spans=spans,task_dps=[pool['dp'] for pool in p['build']['memory']['task_pools']])
         pcs=set(flat_markers(definition).values())

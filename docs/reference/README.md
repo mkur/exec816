@@ -16,7 +16,7 @@ rebuild programs when the ABI changes.
 | Graphics | [Desktop client service](desktop.md), [AES applications](aes.md), [AES widgets](widgets.md), [Layers and regions](layers.md), [minimal GEM/VDI hosting](gem-vdi.md) |
 | Programs | [Processes](process.md), [loading and imports](program-loading.md), [arguments](command-arguments.md), [C strings](cstrings.md) |
 | Filesystem internals | [Block adapter](block-io.md) |
-| Machine boundary | [Platform contract](platform.md), [display ownership](display.md) |
+| Machine boundary | [Platform contract](platform.md), [bank-zero memory map](platform.md#bank-zero-memory-budget), [display ownership](display.md) |
 
 For the reason these services are organized this way, read the
 [architecture](../architecture/README.md). For runnable examples, use the

@@ -61,6 +61,10 @@ class CartridgePackageTests(unittest.TestCase):
                     b'\xff\xff'+segment(0x9000,b'x'),
                     b'\xff\xff'+segment(0xa000,b'x'),
                     b'\xff\xff'+segment(0x0400,b'x'),
+                    b'\xff\xff'+segment(0x0800,b'x')+segment(0x2e0,b'\x00\x20'),
+                    b'\xff\xff'+segment(0x09ff,b'x')+segment(0x2e0,b'\x00\x20'),
+                    b'\xff\xff'+segment(0x02e2,b'\xff\x09')+segment(0x2e0,b'\x00\x20'),
+                    b'\xff\xff'+segment(0x2000,b'x')+segment(0x2e0,b'\xff\x09'),
                     b'\xff\xff'+segment(0x02e2,b'\x00\x90')+segment(0x2e0,b'\x00\x20')):
             with self.subTest(data=bad[:12]):
                 with self.assertRaises(ValueError):cart.segments(bad)

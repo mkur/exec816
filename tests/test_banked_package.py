@@ -252,7 +252,7 @@ class BankedPackageTests(unittest.TestCase):
             elif mutation == 'missing':
                 changed = changed[:first]
             elif mutation == 'manifest':
-                i = next(i for i,(a,_) in enumerate(changed) if a == 0x6000)
+                i = next(i for i,(a,_) in enumerate(changed) if a == self.memory['constants']['MANIFEST'])
                 a,d = changed[i]; changed[i] = (a, bytes([d[0]^1])+d[1:])
             else:
                 a,d = changed[first]; d = bytearray(d)

@@ -19,77 +19,77 @@
     15
   ],
   "code_origin": 65536,
-  "memlo_limit": 2048,
+  "memlo_limit": 2560,
   "memtop_required": 36864,
   "regions": [
     {
       "name": "os-low",
       "address": 0,
-      "size": 2048
+      "size": 2560
     },
     {
       "name": "state",
-      "address": 2048,
-      "size": 256
-    },
-    {
-      "name": "task0-dp",
-      "address": 2816,
-      "size": 256
-    },
-    {
-      "name": "task1-dp",
-      "address": 3072,
-      "size": 256
-    },
-    {
-      "name": "kernel-dp",
       "address": 2560,
       "size": 256
     },
     {
+      "name": "task0-dp",
+      "address": 3328,
+      "size": 256
+    },
+    {
+      "name": "task1-dp",
+      "address": 3584,
+      "size": 256
+    },
+    {
+      "name": "kernel-dp",
+      "address": 3072,
+      "size": 256
+    },
+    {
       "name": "table",
-      "address": 4096,
+      "address": 4608,
       "size": 1024
     },
     {
       "name": "boot-state",
-      "address": 2304,
+      "address": 2816,
       "size": 256
     },
     {
       "name": "resident",
-      "address": 5120,
+      "address": 5632,
       "size": 4096
     },
     {
       "name": "task0-stack",
-      "address": 9216,
+      "address": 9728,
       "size": 1568
     },
     {
       "name": "kernel-stack",
-      "address": 10784,
+      "address": 11296,
       "size": 1568
     },
     {
       "name": "task1-stack",
-      "address": 12352,
+      "address": 12864,
       "size": 1568
     },
     {
       "name": "manifest",
-      "address": 24576,
+      "address": 25088,
       "size": 2048
     },
     {
       "name": "loader",
-      "address": 26624,
-      "size": 5120
+      "address": 27136,
+      "size": 4608
     },
     {
       "name": "staging",
-      "address": 23536,
+      "address": 24048,
       "size": 1040
     },
     {
@@ -105,18 +105,18 @@
   ],
   "image_data_bytes": 2048,
   "direct_pages": {
-    "kernel": 2560,
-    "task_base": 2816,
+    "kernel": 3072,
+    "task_base": 3328,
     "task_stride": 256
   },
   "task_stacks": {
     "4": {
       "bases": [
-        9232,
-        12368,
-        13936,
-        15504,
-        17072
+        9744,
+        12880,
+        14448,
+        16016,
+        17584
       ],
       "sizes": [
         1536,
@@ -128,15 +128,15 @@
     },
     "8": {
       "bases": [
-        9232,
-        12368,
-        13424,
-        14480,
-        15536,
-        16592,
-        17648,
-        20240,
-        22832
+        9744,
+        12880,
+        13936,
+        14992,
+        16048,
+        17104,
+        18160,
+        20752,
+        23344
       ],
       "sizes": [
         1536,

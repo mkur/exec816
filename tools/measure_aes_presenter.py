@@ -22,7 +22,7 @@ def run(out, program):
                               ('DESKCORE_PUMP', 'native_intake')])
     restore = p['labels']['context_restore']
     code = (p['output']/'hosted.bin').read_bytes()
-    require(code[restore-0x1400:restore-0x1400+8] == bytes.fromhex('c230ab2b7afa6840'),
+    require(code[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8] == bytes.fromhex('c230ab2b7afa6840'),
             'Unknown context restore for presenter accounting')
     points = {name: p['labels'][name] for name in ('native_irq', 'native_nmi', 'interrupt_schedule')}
     points.update(turn=spans['controls']['entry'], selected=restore+4,

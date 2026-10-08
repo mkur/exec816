@@ -9,6 +9,7 @@ from collections import defaultdict
 import re
 
 from aes_latency_trace import routine
+import adapter_state as adapter
 from bitmap_console_performance import native_markers
 from console_turn_profile import Timeline
 from generate_tasks import constants
@@ -271,7 +272,7 @@ def io_markers(program, foreign):
     for category, names in groups.items():
         for name in names:
             entry, end = (program['labels'][n] for n in (name, name+'_end'))
-            last = (hosted[end-1-0x1400:end-0x1400] if end < 0x10000 else
+            last = (hosted[end-1-adapter.RESIDENT_BASE:end-adapter.RESIDENT_BASE] if end < 0x10000 else
                     image_bytes(program, end-1, 1))
             require(last == b'\x6b', 'Unknown I/O gateway return '+name)
             spans[name] = dict(entry=entry, returns=[end-1], category=category)

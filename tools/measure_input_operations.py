@@ -10,6 +10,7 @@ import re
 import shutil
 from unittest.mock import patch
 
+import adapter_state as adapter
 from bitmap_console_performance import native_markers
 from console_turn_profile import analyze_events, flat_markers
 from input_registration_checks import audit_paths
@@ -54,7 +55,7 @@ def markers(program):
     points = {n: program['labels'][n] for n in ('native_irq', 'native_nmi', 'interrupt_schedule')}
     restore = program['labels']['context_restore']
     code = (program['output']/'hosted.bin').read_bytes()
-    require(code[restore-0x1400:restore-0x1400+8] == bytes.fromhex('c230ab2b7afa6840'),
+    require(code[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8] == bytes.fromhex('c230ab2b7afa6840'),
             'Unknown context restore')
     points.update(turn=spans['take']['entry'], selected=restore+4, worker_retire=program['labels']['done'])
     return dict(spans=spans, points=points,
