@@ -19,6 +19,9 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [RAM filesystem](ram-filesystem.md): shared-worker backend, dynamic storage,
+  allocation failures, command integration and memory costs.
+
 - [Background console panes and primes](background-pane-primes.md): foundation
   slices, loadable command, numeric drawing, resource costs and packaged preview.
 

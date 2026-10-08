@@ -52,7 +52,8 @@ Both [MyDOS](mydos.md) and [SpartaDOS](spartados.md) support explicitly
 [writable mounts](filesystem-writes.md); read-only remains the default. Geometry
 and bounded header checks run at mount, without a filesystem scan. Keep media
 unchanged externally while mounted. There is no automatic disk-change detection,
-filesystem repair or RAM: filesystem.
+filesystem repair. [RAM:](ram-filesystem.md) supplies volatile files through
+the same DOS interface, without disk I/O.
 
 ## Errors and partial transfers
 

@@ -53,6 +53,11 @@ CMP succeeds silently. Redirection immediately creates or truncates its target;
 a later command failure does not restore old contents. Use disposable copies of
 WORK: and see [filesystem writes](../reference/filesystem-writes.md) for limits.
 
+`RAM:` stores temporary files in upper memory and needs no disk. Try
+`ECHO temporary >RAM:NOTE.TXT`, then `CAT RAM:NOTE.TXT`. COPY, folders,
+append redirection and EXECUTE also work there. Delete files to release their
+storage; reboot discards all RAM contents. See the [RAM contract](../reference/ram-filesystem.md).
+
 The default sector cache keeps 64 KiB of recently read disk data in upper RAM,
 shared across files and commands. Repeated commands can avoid SIO while still
 loading and relocating normally. Tags/control add about 6.2 KiB; bank-zero
@@ -63,11 +68,12 @@ If allocation fails, the shell reports the fallback and remains usable.
 
 ## A short walkthrough
 
-Successful startup reports both configured disks:
+Successful startup reports both configured disks and the RAM volume:
 
 ```text
 Filesystems: mounting...
 SYS: -> D1: ready, read-only
+RAM: ready, read-write (volatile)
 WORK: -> D8: ready, read-write
 ```
 

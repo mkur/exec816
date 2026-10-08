@@ -19,7 +19,7 @@ Contents disappear on unmount, filesystem-service shutdown or reboot.
    descriptor, metadata/file operations and write dispatch. Allow eight physical
    disks plus RAM. Test public DOS behavior on a RAM-only machine, including
    cross-bank binary data, exhaustion, leases, enumeration and restart cleanup.
-2. **R2 — command integration and documentation.** Enable RAM in shell/demo
+2. **R2 — command integration and documentation (complete).** Enable RAM in shell/demo
    configuration, display it in startup diagnostics, update the user story and
    current filesystem contract. Exercise actual loaded commands, redirection,
    append and EXECUTE against RAM and disk. Record development evidence and costs.
@@ -28,3 +28,6 @@ Commit each executable slice. Reserved bank-zero delta is zero fixed and zero
 per Task; no new Task, stack, signal protocol or public DOS ABI is needed.
 Measure emitted code, rounded upper allocations and invocation-stack usage.
 Run host checks and focused optimized emitted-code tests, not release matrices.
+
+Both slices are complete. See the [development record](../history/ram-filesystem.md)
+for the actual execution scope and memory costs.

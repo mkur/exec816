@@ -249,7 +249,8 @@ The other possible milestones have no delivery order:
   needed. MyDOS/SpartaDOS file and namespace writes are implemented; their
   [development record](history/filesystem-write-implementation.md) retains
   the selected coverage and remaining qualification limits.
-- A RAM filesystem and broader volume assignments beyond the implemented
+- Broader volume assignments beyond the implemented
+  [RAM filesystem](reference/ram-filesystem.md),
   [SYS: alias](reference/sys-volume.md) and [directory assigns](reference/assigns.md).
 - Longer shell pipelines and background job control beyond the current
   [two-command foreground pipeline](guides/shell.md) and the implemented

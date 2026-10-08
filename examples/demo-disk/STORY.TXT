@@ -52,6 +52,14 @@ and length; HEXDUMP shows their values:
   HEXDUMP SYS:STORY.TXT LENGTH 32
 
 SYS: is read-only. WORK: is writable.
+RAM: holds temporary files in memory:
+  ECHO a quick note >RAM:NOTE.TXT
+  CAT RAM:NOTE.TXT
+  CP SYS:STORY.TXT RAM:STORY.TXT
+RAM: also supports folders, append,
+pipes and EXECUTE scripts. It grows as
+needed and loses its files on reboot.
+DELETE frees their memory.
 MKDIR and CP are preset aliases for
 MAKEDIR and COPY. Supply an exact name
 for the copy's destination:

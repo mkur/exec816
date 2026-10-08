@@ -404,6 +404,9 @@ PROC ShellMounts(DOS.FileHandle POINTER output)
     WHEN FSFORMATS.SDFS THEN
       ShellText(output,c"SDFS       ")
 
+    WHEN FSFORMATS.RAM THEN
+      ShellText(output,c"RAM        ")
+
     ELSE
       ShellText(output,c"unknown    ")
     ESAC

@@ -41,7 +41,16 @@ RETURN(FSSTATUS.ERROR)
 PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
 
   FSCORE.BeginOperation(op,FSCORE.READ,1)
-  IF op.requested<0 OR BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
+  op.remaining=0
+  IF op.requested<0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  IF op.requested=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+  IF BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
     RETURN(Fail(op,ERROR_BAD_NUMBER))
   FI
 

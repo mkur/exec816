@@ -1,10 +1,10 @@
 # Filesystems and disk I/O
 
 **Exec816 uses one shared filesystem Task for all mounted filesystems and open
-disk files.**
+files.**
 
-- **Filesystem Task:** `dos.filesystem` handles requests for both MyDOS and
-  SpartaDOS mounts.
+- **Filesystem Task:** `dos.filesystem` handles requests for MyDOS,
+  SpartaDOS and RAM mounts.
 - **Each mount:** has its own request port and volume state.
 - **Each independent file open:** allocates a handle and cursor/backing state,
   with no Task, stack or direct page of its own.
@@ -14,12 +14,18 @@ The filesystem service is part of the resident system, executing in its worker
 Task's context. It uses the kernel for scheduling, allocation, messages and
 device I/O. See the [runtime model](runtime.md) for that distinction.
 
+[RAM:](../reference/ram-filesystem.md) retains nodes and file bytes in upper RAM.
+It opens no block device and needs no sector cache. A RAM-only service allocates
+neither the block adapter nor disk parsing scratch. RAM requests still queue
+behind the shared worker's active operation, including a disk request waiting
+for SIO; adding RAM does not add another filesystem Task.
+
 ## Who owns what?
 
 | Scope | State and responsibility |
 | --- | --- |
 | One filesystem service | Worker, mount table, management port, shared parsing/operation workspace, block adapter, transfer buffer and sector cache. |
-| One mount | Effective name and geometry, filesystem-specific volume state, block volume/device-open request, request port and generation. |
+| One mount | Effective name, filesystem-specific volume state, request port and generation; disk mounts also retain geometry and a block volume/device-open request. |
 | One calling Task | DOS error slot and a lazily allocated client context with a reusable packet, reply port and owned-object list. |
 | One independent open file | Owned handle wrapper and reference-counted backing containing its cursor, position and length state. |
 | One lock | Metadata, ancestry, canonical name and enumeration identity; no file backing. |
@@ -61,7 +67,7 @@ sequenceDiagram
 1. Caller-side DOS code resolves the handle and prepares the Task's reusable
    packet. It sends the packet to that file's mount port and waits for its reply.
 2. The filesystem worker checks ownership and mount identity, selects the
-   MyDOS or SpartaDOS backend, and uses the file's retained cursor.
+   appropriate backend, and uses the file's retained cursor.
 3. The backend interprets disk structures and requests sectors through the
    block adapter. A cache hit needs no SIO request.
 4. A miss uses the adapter's shared transfer request. The SIO worker owns the
@@ -98,7 +104,7 @@ not hold the filesystem worker, and a pipe has no filesystem mount or worker.
 ## Mounting, stopping and media identity
 
 Mount descriptors are supplied with the image: names, SIO units, geometry,
-profiles, filesystem formats and access policy. The first disk operation starts the shared
+profiles, filesystem formats and access policy. The first filesystem operation starts the shared
 service if necessary. An empty mount configuration creates no filesystem Task.
 
 Startup validates the complete descriptor set, allocates shared and per-mount
@@ -118,14 +124,16 @@ mount's port, generation, cache and references. It is not another mount or Task,
 and does not mean the drive from which the kernel XEX was loaded. See
 [system-volume selection](../reference/sys-volume.md).
 
-Both filesystems support opt-in write access. Keep media unchanged externally while mounted;
+Both disk filesystems support opt-in write access. Keep media unchanged externally while mounted;
 there is no automatic disk-change detection. Unmount/remount establishes a new
 volume identity. An uncertain transport failure can mark the bus and affected
-mounts offline rather than continuing to return cached bytes.
+disk mounts offline rather than continuing to return cached bytes. RAM remains
+usable after a bus failure.
 
 ## The cache belongs to the service
 
-The sector cache is shared by both backends, every mount and all open files.
+The sector cache is shared by both disk backends, every disk mount and all
+open disk files.
 
 The default is **64 KiB of sector payload**, with additional tag/replacement
 storage. It resides in upper RAM and needs no Task of its own.
