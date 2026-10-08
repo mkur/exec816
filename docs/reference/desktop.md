@@ -318,13 +318,13 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 14,186 bytes in upper RAM, including the
-6,790-byte Layers scene, four 668-byte client records, four 812-byte windows,
+The generated service occupies 14,210 bytes in upper RAM, including the
+6,790-byte Layers scene, four 668-byte client records, four 818-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
 fourteen-byte snapshot records. Public
 client handles are 18 bytes and requests are
 92 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 14,192 bytes at Exec’s eight-byte alignment; unused window/queue/list
+rounds to 14,216 bytes at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at
@@ -361,7 +361,7 @@ Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
 first, then the least recently used unpinned slot. The generated Service is
-14,186 bytes, including the two fourteen-byte slot records and alignment.
+14,210 bytes, including the two fourteen-byte slot records and alignment.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.
@@ -384,3 +384,11 @@ completion advances the strip. Unaligned fragments use retained drawing without
 expanding over an occluder. The sixteen-scanline/four-command preparation limits
 remain. A fully visible nonconsole client cannot contain the console's clipped
 caret; the bridge removes intersecting pointer/outline overlays at capture.
+
+### GEM size and scroll gadgets
+
+AES windows may opt into a size box and vertical arrows/slider. Shared frame
+geometry defines work insets, painting and hits. The presenter delivers GEM
+requests; applications accept sizes and own their scroll position. See the
+[AES contract](aes.md) and [development record](../history/window-gadgets.md).
+The shell and native copied-content windows retain fixed sizes.

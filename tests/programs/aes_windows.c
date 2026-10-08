@@ -257,6 +257,19 @@ UWORD AESRun(void)
     CHECK(wind_close(handle));
     CHECK(wind_open(handle,32,32,240,160));
     geometry(handle,WF_WXYWH,40,48,216,128);
+    AESView=(ULONG)ExecAESContext()->view;
+    AESWindow=handle;
+    for (i=0;i<7;++i) {
+        AESPhysical=10+i*2;
+        do { CHECK(evnt_mesag(AESControl)); } while (AESControl[0]==WM_REDRAW);
+        CHECK(AESControl[3]==handle);
+        CHECK(AESControl[0]==(i==0 ? WM_SIZED:(i==4 || i==6 ? WM_VSLID:WM_ARROWED)));
+        AESPhysical=11+i*2;
+        while (AESPhysicalGo!=AESPhysical) ExecYield();
+        if (!i) CHECK(wind_set(handle,WF_CXYWH,AESControl[4],AESControl[5],AESControl[6],AESControl[7]));
+        else if (i==4 || i==6) CHECK(wind_set(handle,WF_VSLIDE,AESControl[4],0,0,0));
+    }
+    AESPhysical=24;
     CHECK(ExecAESDetach());
     FreeSignal(bit);
     CHECK(AvailMem(0) == available);

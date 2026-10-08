@@ -1,0 +1,198 @@
+{
+  "tier": "development",
+  "status": "pass",
+  "qualification": false,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "AESChecks": 241,
+  "AESFailures": 0,
+  "stack_usage": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 517,
+      "remaining_above_floor": 763
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 177,
+      "remaining_above_floor": 591
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 154,
+      "remaining_above_floor": 614
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 179,
+      "remaining_above_floor": 589
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 18,
+      "remaining_above_floor": 750
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 18,
+      "remaining_above_floor": 750
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 700,
+      "remaining_above_floor": 1604
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 117,
+      "remaining_above_floor": 139
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 289,
+      "remaining_above_floor": 991
+    }
+  },
+  "gadgets": {
+    "resize": [
+      32,
+      32,
+      280,
+      184
+    ],
+    "escape_cancel": true,
+    "deferred_geometry": true,
+    "arrow_pages": [
+      2,
+      3,
+      0,
+      1
+    ],
+    "slider_endpoints": [
+      0,
+      1000
+    ],
+    "deferred_slider": true,
+    "scene_token": 0,
+    "frame_pixels": 2688,
+    "outline_pixels": "exact"
+  },
+  "physical_requests": {
+    "top": "deferred",
+    "move": [
+      26,
+      20,
+      200,
+      120
+    ],
+    "close": "deferred",
+    "scene_token": 0,
+    "outline_pixels": "exact",
+    "copied_title_bytes": 65
+  },
+  "visible_rectangles": [
+    [
+      17,
+      25,
+      184,
+      24
+    ],
+    [
+      17,
+      49,
+      72,
+      72
+    ]
+  ],
+  "visible_pixels": 9600,
+  "schema_version": 1,
+  "slice": "WG2",
+  "source_report": "build/window-gadgets/wg2/windows/results.json",
+  "report_sha256": "d152afbafb98644c00c8f1d5df08e045ecdab805cc3a157f3d0ec837bdcc3873",
+  "host": {
+    "tests": 417,
+    "skipped": 4
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0
+  },
+  "upper_globals_added_bytes": 7,
+  "build": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "binary_sha256": "5ce0fb35d63da28f6dbe4717c7cad1ff287cf58e1a83b505f482f1a810e30341",
+    "image_sha256": "27db5f3ac5688b6574e6dc1656b9b63de3cb89060169b32aadfffceece434799",
+    "xex_sha256": "66cd21280854abfa4ea17f61b0cabce3fa418eb42baf33134c765283d7e8b978",
+    "manifest_sha256": "dcef0e5470917abc8709506d9ce8113717fe5b030241c34ef418ab3a1c047d9a"
+  },
+  "retirement": {
+    "status": 0,
+    "os_busy": 0,
+    "return_s": 10766,
+    "return_d": 2816,
+    "return_dbr": 0,
+    "return_e": 0,
+    "live_tasks": 0,
+    "guards": "intact"
+  }
+}

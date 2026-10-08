@@ -2,7 +2,8 @@
 
 [Design note](window-gadgets-design.md) · [GEM integration](README.md)
 
-Status: WG1 passes development checks; WG2 is in progress.
+Status: WG1–WG2 pass development checks. See the
+[execution record](../../history/window-gadgets.md).
 
 | Slice | Change | Development gate |
 | --- | --- | --- |

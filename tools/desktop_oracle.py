@@ -26,7 +26,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
     wf = types['Window']['fields']
     for slot in range(4):
         start = service+fields['windows']+slot*types['Window']['size']
-        window = bridge.memdump(start, wf['content'])
+        window = bridge.memdump(start, types['Window']['size'])
         if number(window, wf['id'], 4):
             windows[number(window, wf['layer'], 4)] = (window, start+wf['content'])
     result = Raster(font)
@@ -129,7 +129,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
             content[cf['commands']:cf['commands']+length] = bridge.memdump(content_address+cf['commands'], length)
             content[cf['text']:cf['text']+text_bytes] = bridge.memdump(content_address+cf['text'], text_bytes)
         frame(result, bounds, title, number(window, wf['id'], 4) == focused,
-              number(content, cf['background']) if kind == 2 else 0, close=kind != 1)
+              number(content, cf['background']) if kind == 2 else 0, close=kind != 1,
+              kind=number(window,wf['frameKind']),
+              slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
         if kind == 1:
             terminal.paint(result, (left+8)//8, (top+16)//8, number(window, wf['id'], 4) == focused)
         elif kind == 3:

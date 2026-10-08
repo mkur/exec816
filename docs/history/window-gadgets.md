@@ -24,3 +24,18 @@ pending GUI facts add 28 bytes per registered client including alignment.
 No new VRAM allocation or Task is introduced. Stack/ownership results and exact
 machine pins are retained in the evidence. The integrated package follows Files
 and dialogs, using the existing OF816 distribution workflow.
+
+WG2 adds captured size/thumb outlines and release-triggered arrow/page requests
+inside the existing gesture continuation. Inactive gadgets top first; Escape,
+loss and geometry/retirement retain the existing cancellation protocol. There is
+no held-button repeat or live client redraw during a drag. The application owns
+acceptance and logical scrolling.
+
+[WG2 evidence](../development/window-gadgets-wg2.json) records 241 passing emitted
+checks, size acceptance, four arrow/page codes, slider endpoints and unchanged
+client state before acknowledgment. An independent raster matches all 2,688
+pixels in the resized gadget strip; cancelled size outlines restore exact pixels.
+The smallest active public-Task margin in this fixture is 589 bytes; the presenter
+retains 1,604 bytes above its floor. Guards and ownership retirement pass.
+Seven upper global bytes store additional gesture state; fixed, per-public-Task
+and private-idle bank-zero deltas are all zero. No VRAM allocation changes.

@@ -23,12 +23,15 @@ USE HEAPCORE
 
 LONGCARD windowId,lossEpoch
 LAYERTYPES.Rect origin,target
-INT pressX,pressY
+INT pressX,pressY,sliderMin,sliderTravel,sliderValue
+BYTE gadget
 BYTE phase,blocked,dirty,focusWanted,escapePending,pixelMotion
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
 CONST CLOSING=3
 CONST CLOSE_PENDING=4
+CONST SIZING=5, SIZE_PENDING=6, SLIDING=7, SLIDE_PENDING=8
+CONST ARROWING=9, ARROW_PENDING=10
 CONST ESC_SCAN=28
 
 PUBLIC PROC Reset()
@@ -123,11 +126,69 @@ PROC Position(INT x,y)
 
 RETURN
 
+BYTE FUNC Outlined()
+
+RETURN(phase=DRAGGING OR phase=MOVE_PENDING OR phase=SIZING
+    OR phase=SIZE_PENDING OR phase=SLIDING OR phase=SLIDE_PENDING)
+
+; Resizing keeps its upper-left anchor. Applications may request larger minima.
+PROC SizePosition(INT x,y CARD kind)
+  INT width,height,minimum
+
+  width=origin.right-origin.left+x-pressX
+  height=origin.bottom-origin.top+y-pressY
+  minimum=IF (kind & DESKTYPES.FRAME_VERTICAL)<>0 THEN
+      DESKTYPES.FRAME_MIN_SCROLL_HEIGHT ELSE DESKTYPES.FRAME_MIN_SIZE_HEIGHT FI
+  IF width<DESKTYPES.FRAME_MIN_WIDTH THEN
+    width=DESKTYPES.FRAME_MIN_WIDTH
+  FI
+  IF height<minimum THEN
+    height=minimum
+  FI
+  IF width>640-origin.left THEN
+    width=640-origin.left
+  FI
+  IF height>240-origin.top THEN
+    height=240-origin.top
+  FI
+  IF target.right<>origin.left+width OR target.bottom<>origin.top+height THEN
+    target.right=origin.left+width
+    target.bottom=origin.top+height
+    dirty=1
+  FI
+
+RETURN
+
+PROC SlidePosition(INT y)
+  INT top,height
+
+  top=y-pressY
+  IF top<sliderMin THEN
+    top=sliderMin
+  FI
+  IF top>sliderMin+sliderTravel THEN
+    top=sliderMin+sliderTravel
+  FI
+  sliderValue=0
+  IF sliderTravel<>0 THEN
+    sliderValue=INT((LONGCARD(CARD(top-sliderMin))*1000
+        +LONGCARD(CARD(sliderTravel) RSH 1))/LONGCARD(CARD(sliderTravel)))
+  FI
+  IF top<>target.top THEN
+    height=target.bottom-target.top
+    target.top=top
+    target.bottom=top+height
+    dirty=1
+  FI
+
+RETURN
+
 ; A title/close press captures subsequent edges and motion even outside the
 ; original window. A release remains pending until geometry can safely commit.
 PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
-  BYTE slot
+  BYTE slot,hit
   LONGCARD layerId
+  LAYERTYPES.Rect rail
 
   LET service=DESKSTATE.Get()
   IF lossEpoch<>DESKSTATE.LossEpoch() THEN
@@ -148,6 +209,36 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       phase=MOVE_PENDING
     FI
 
+    RETURN(1)
+  FI
+
+  IF phase=SIZING OR phase=SLIDING OR phase=ARROWING THEN
+    BEGIN
+      LET window=DESKCORE.Find(service,windowId)
+      IF window=NULL THEN
+        Cancel()
+        RETURN(1)
+      FI
+      LET layer=DESKCORE.Layer(service,window)
+      IF phase=SIZING THEN
+        SizePosition(sample.x,sample.y,window.frameKind)
+        IF (sample.buttons & INPUT.LEFT)=0 THEN
+          phase=SIZE_PENDING
+        FI
+      ELSEIF phase=SLIDING THEN
+        SlidePosition(sample.y)
+        IF (sample.buttons & INPUT.LEFT)=0 THEN
+          phase=SLIDE_PENDING
+        FI
+      ELSEIF (sample.buttons & INPUT.LEFT)=0 THEN
+        IF DESKGEOMETRY.GadgetHit(window,@layer.bounds,sample.x,sample.y)=gadget THEN
+          phase=ARROW_PENDING
+        ELSE
+          phase=0
+          windowId=0
+        FI
+      FI
+    END
     RETURN(1)
   FI
 
@@ -188,7 +279,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       IF window.id<>0 AND window.layer=layerId THEN
         BEGIN
           LET layer=DESKCORE.Layer(service,window)
-          IF DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)=0 THEN
+          hit=DESKGEOMETRY.GadgetHit(window,@layer.bounds,sample.x,sample.y)
+          IF hit=0 AND DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)=0 THEN
             RETURN(0)
           FI
 
@@ -201,6 +293,31 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           windowId=window.id
           pixelMotion=window.kind=DESKTYPES.CONTENT_AES
           focusWanted=window.kind<>DESKTYPES.CONTENT_AES
+          IF hit<>0 THEN
+            gadget=hit
+            REGIONS.Copy(@layer.bounds,@origin)
+            REGIONS.Copy(@origin,@target)
+            pressX=sample.x
+            pressY=sample.y
+            IF hit=1 THEN
+              phase=SIZING
+              dirty=1
+            ELSEIF hit=6 THEN
+              DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@rail)
+              sliderMin=rail.top
+              sliderTravel=rail.bottom-rail.top-window.sliderHeight
+              REGIONS.Assign(@target,rail.left,origin.top+window.sliderTop,
+                  rail.right,origin.top+window.sliderTop+window.sliderHeight)
+              pressY=sample.y-target.top
+              phase=SLIDING
+              dirty=1
+              SlidePosition(sample.y)
+            ELSE
+              phase=ARROWING
+            FI
+            RETURN(1)
+          FI
+
           IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
             phase=CLOSING
             RETURN(1)
@@ -264,7 +381,7 @@ PUBLIC PROC Advance()
     RETURN
   FI
 
-  IF (phase=DRAGGING OR phase=MOVE_PENDING)
+  IF (phase=DRAGGING OR phase=MOVE_PENDING OR phase>=SIZING)
       AND REGIONS.Equal(@layer.bounds,@origin)=0 THEN
     Cancel()
     RETURN
@@ -282,6 +399,26 @@ PUBLIC PROC Advance()
 
     DESKCORE.Focus(service,window.id)
     focusWanted=0
+  FI
+
+  IF phase=SIZE_PENDING OR phase=SLIDE_PENDING OR phase=ARROW_PENDING THEN
+    IF phase<>ARROW_PENDING THEN
+      drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+      DESKSTATE.outlineVisible=0
+    FI
+    IF phase=SIZE_PENDING THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_SIZED,target.left,target.top,
+          target.right-target.left,target.bottom-target.top)
+    ELSEIF phase=SLIDE_PENDING THEN
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_VSLID,sliderValue,0,0,0)
+    ELSE
+      AESWINDOWSTATE.Control(window,AESTYPES.GUI_ARROWED,
+          IF gadget<4 THEN INT(gadget) ELSE INT(gadget)-4 FI,0,0,0)
+    FI
+    phase=0
+    windowId=0
+    dirty=0
+    RETURN
   FI
 
   IF phase=MOVE_PENDING THEN
@@ -354,14 +491,13 @@ PUBLIC PROC Present()
     Cancel()
   FI
 
-  IF dirty<>0 OR ((phase=DRAGGING OR phase=MOVE_PENDING)
-      AND CONSOLEBITMAP.Changed()<>0) THEN
+  IF dirty<>0 OR (Outlined()<>0 AND CONSOLEBITMAP.Changed()<>0) THEN
     IF CONSOLEBITMAP.Pending()=0 THEN
       drawn=CONSOLEBITMAP.Outline(CARD(target.left),CARD(target.top),
           CARD(target.right-target.left),CARD(target.bottom-target.top),
-          phase=DRAGGING OR phase=MOVE_PENDING)
+          Outlined())
       IF drawn<>0 THEN
-        DESKSTATE.outlineVisible=phase=DRAGGING OR phase=MOVE_PENDING
+        DESKSTATE.outlineVisible=Outlined()
         dirty=0
       FI
     FI
@@ -383,6 +519,7 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN((dirty<>0 AND CONSOLEBITMAP.Pending()=0)
     OR (phase<>0 AND phase<>DRAGGING AND phase<>CLOSING
+    AND phase<>SIZING AND phase<>SLIDING AND phase<>ARROWING
     AND service.scene.busy=0 AND CONSOLEBITMAP.Pending()=0))
 
 ENDMODULE

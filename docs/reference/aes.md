@@ -203,6 +203,14 @@ Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 application calls the corresponding set or close operation. Inactive clicks
 request top first. The existing native-window behavior is unchanged.
 
+Size release sends `WM_SIZED` with proposed outer x/y/w/h. Vertical thumb
+release sends `WM_VSLID` with 0..1000 in word 4; arrows and track clicks send
+`WM_ARROWED` with `WA_UPLINE`, `WA_DNLINE`, `WA_UPPAGE` or `WA_DNPAGE`.
+Applications accept sizes through `WF_CURRXYWH`, and publish their own slider
+values after scrolling. These gestures never change client content by themselves.
+Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
+cancels. Hold repeat, horizontal gadgets and live resizing remain unsupported.
+
 For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
 manager damage after the complete frame transaction without claiming that the

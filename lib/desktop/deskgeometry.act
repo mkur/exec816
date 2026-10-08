@@ -66,6 +66,42 @@ PUBLIC PROC Slider(DESKTYPES.Window POINTER window
 
 RETURN
 
+; Hit codes are private presenter facts: size, up, down, page up/down, thumb.
+PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds INT x,y)
+  LAYERTYPES.Rect rail
+
+  IF x<bounds.right-DESKTYPES.FRAME_GADGET OR x>=bounds.right
+      OR y<bounds.top+DESKTYPES.TITLE_HEIGHT OR y>=bounds.bottom THEN
+    RETURN(0)
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_SIZER)<>0
+      AND y>=bounds.bottom-DESKTYPES.FRAME_GADGET THEN
+    RETURN(1)
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_VERTICAL)=0
+      OR y>=bounds.bottom-Bottom(window.frameKind) THEN
+    RETURN(0)
+  FI
+  ScrollTrack(window,bounds,@rail)
+  IF y<rail.top THEN
+    RETURN(2)
+  FI
+  IF y>=rail.bottom THEN
+    RETURN(3)
+  FI
+  IF (window.frameKind & DESKTYPES.FRAME_VSLIDE)=0 THEN
+    RETURN(0)
+  FI
+  IF y<bounds.top+window.sliderTop THEN
+    RETURN(4)
+  FI
+  IF y>=bounds.top+window.sliderTop+window.sliderHeight THEN
+    RETURN(5)
+  FI
+
+RETURN(6)
+
 PUBLIC BYTE FUNC TitleHit(LAYERTYPES.Rect POINTER bounds INT x,y)
 
 RETURN(x>=bounds.left+DESKTYPES.FRAME_EDGE
