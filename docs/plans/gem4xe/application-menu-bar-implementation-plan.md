@@ -4,7 +4,7 @@
 [Current AES contract](../../reference/aes.md) ·
 [Desktop menu baseline](../../history/desktop-menu-window-switching.md)
 
-Status: AM1–AM5 implemented; AM6 pending. See the
+Status: AM1–AM6 implemented and checked at the development tier. See the
 [implementation record](../../history/application-menu-bars.md).
 
 Implement the design in six executable slices, with a commit after each passing

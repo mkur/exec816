@@ -60,14 +60,21 @@ class Menus:
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, target))
         self.s.frames(75)
         require(self.focus() == target, 'Menu selected the wrong window')
+        if 'Shell' in title:
+            require(not self.s.number(self.at('DESKAPPMENU','owner'),3),
+                    'Native focus retained the previous application menu')
         return target
 
     def close(self):
         owner = self.focus()
         candidates = [w for w in self.windows() if w['id'] != owner]
         expected = min(candidates, key=lambda w: w['rank'])['id'] if candidates else 0
-        self.click(80, 8)
-        self.click(40, 40)
+        if self.s.number(self.at('DESKAPPMENU', 'owner'), 3):
+            self.click(472, 8)
+            self.click(472, 24+(len(self.windows())+1)*16)
+        else:
+            self.click(80, 8)
+            self.click(40, 40)
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, expected))
         require(self.focus() == expected, 'Close did not restore the frontmost remaining owner')
         self.closed.append(owner)

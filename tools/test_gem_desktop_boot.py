@@ -72,7 +72,7 @@ class DesktopBoot:
             screen=s.command('MEM').decode('ascii')
             return [int(v) for v in re.findall(r'(?:ordinary|linear) (?:total|largest) +(\d+)',screen)][-4:]
         baseline=memory();owners=s.ledger()
-        browser=launch_files();click(250,64)
+        browser=launch_files();click(24,8);click(32,72)
         s.rendezvous('db($%x)=3'%(job+12))
         require(s.ledger()==owners,'Idle RUN completion retained ownership')
         click(96,32);require(memory()==baseline,'Files restart leaked heap storage')
@@ -87,6 +87,15 @@ class DesktopBoot:
                 if name in names:click(80,108+names.index(name)*12);return
                 click(204,88);s.frames(100)
             raise RuntimeError('Missing relaunched Files entry '+name)
+        # Quit from the application menu follows the same child-stop/collect path.
+        click(24,64);row('C');key('RETURN');row('TICK');key('RETURN')
+        s.rendezvous('dw($%x)!=0'%(browser+1980));s.frames(80)
+        click(24,8);click(32,72)
+        s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
+        require(s.ledger()==owners,'Menu Quit retained its native child')
+        click(96,32);require(memory()==baseline,'Menu Quit with child leaked heap storage')
+        s.saved['menu_quit_with_child']=True
+        browser=launch_files()
         click(24,64);row('C');key('RETURN');row('PANEL.APP');key('RETURN')
         s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(browser+1980,browser+1386))
         child=s.number(browser+1980,4);require(child!=0,'Relaunched Files lost its GUI child')
@@ -95,7 +104,7 @@ class DesktopBoot:
         click(96,32)
         s.save_screen(s.p['output']/'boot-smoke.png')
         s.saved['integration']=dict(profile='gem-desktop',desktop_menu=s.saved['desktop_menu'],panel_settings=s.saved['panel_settings'],panel_keyboard=True,panel_drag=True,counter=True,shell=True,
-            files_relaunch=True,idle_job_collection=True,heap_restored=True,exit_with_gui_child_and_popup=True)
+            files_relaunch=True,idle_job_collection=True,heap_restored=True,menu_quit_with_child=True,exit_with_gui_child_and_popup=True)
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 

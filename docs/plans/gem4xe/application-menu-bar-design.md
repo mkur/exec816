@@ -4,7 +4,8 @@
 [Current AES contract](../../reference/aes.md#resources-and-popup-menus) ·
 [Desktop menus](../../reference/desktop.md#desktop-menus-and-window-switching)
 
-Status: proposed design. No implementation or ABI change is made by this note.
+Status: implemented through AM6 with development checks.
+See the [execution record](../../history/application-menu-bars.md).
 
 Let an ordinary GEM application install an OBJECT menu tree, receive
 `MN_SELECTED` through its existing event loop, and acknowledge the selected

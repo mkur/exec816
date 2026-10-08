@@ -10,8 +10,8 @@ assuming work is pending. Current behavior belongs in the
 
 - [Application menu-bar design](gem4xe/application-menu-bar-design.md) and
   [AM1–AM6 implementation plan](gem4xe/application-menu-bar-implementation-plan.md):
-  planned application-owned GEM menus, durable selections, presenter interaction,
-  Files integration and OF816 validation.
+  application-owned GEM menus, durable selections, presenter interaction and
+  Files integration pass development checks, including the exact OF816 ZIP.
 - [Desktop menu and window switching](gem4xe/desktop-menu-window-switching-plan.md): active-window menu, covered-window access and focus restoration; implemented with development checks.
 
 ## Exec and project history

@@ -587,6 +587,11 @@ PUBLIC PROC Advance()
   FI
 
   DESKAPPMENU.Finish()
+  ; A native focus command must select its bar before focusSeen is published.
+  ; Otherwise the next fresh click is mistaken for an old owner's gesture.
+  IF pendingAction<>0 THEN
+    Execute()
+  FI
   changed=DESKAPPMENU.Refresh()
   IF changed=1 THEN
     Cancel()
@@ -602,9 +607,6 @@ PUBLIC PROC Advance()
   FI
   IF menu=0 THEN
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
-  FI
-  IF pendingAction<>0 THEN
-    Execute()
   FI
   IF focusSeen<>service.focus OR revision<>service.scene.rebuilds THEN
     DESKSTATE.TopChrome()

@@ -2,13 +2,13 @@
 
 [Implementation plans](../README.md)
 
-The proposed [application menu-bar design](application-menu-bar-design.md)
+The [application menu-bar design](application-menu-bar-design.md)
 extends the implemented desktop menu with registered application-owned OBJECT
 trees, focus-selected menus and durable `MN_SELECTED` delivery. Files is the
 first consumer; no new Task or event-wait mechanism is proposed. The
 [AM1–AM6 implementation plan](application-menu-bar-implementation-plan.md) orders
 registration and command delivery before rendering/input, Files integration and
-the packaged desktop checks. Implementation has not started.
+the packaged desktop checks. AM1–AM6 pass development checks. See the [execution record](../../history/application-menu-bars.md).
 
 For the current comparison against GEM4XE 0.9.4 and implemented Exec816, read
 [GEM4XE as the GUI layer for Exec816](exec816-integration-assessment.md).

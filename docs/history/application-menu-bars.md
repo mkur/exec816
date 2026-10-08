@@ -135,3 +135,40 @@ private Browser model grows by 244 upper bytes to 2272: a 240-byte menu tree and
 four state bytes. No C Task stack arrays are added. The two Files Tasks left
 143/156 bytes above their interrupt reserves in this fixture; presenter margin
 was 1550 bytes. This remains development coverage.
+
+## AM6 — Packaged desktop
+
+The exact OF816 ZIP passes the expanded desktop and calculator walkthroughs.
+Coverage includes four windows, covered-window access, keyboard cycling,
+application/fallback bars, independent menu pixels, disabled actions, panel
+settings, Counter/shell output, native HELLO/TICK and GEM launches, menu Stop,
+menu Quit with a live child, window-popup close, reload/heap return, idle Process
+collection and EXIT with a live GUI child and popup. Two Files instances and
+withdrawn RSC storage are covered by the focused AM4/AM5 fixtures.
+
+Integration exposed one native focus handoff error: changing from an application
+to the shell could leave the previous menu owner until the next click. Execute
+native window commands before refreshing the active menu and publishing the
+focus snapshot. The corrected ZIP passes immediate subsequent Windows selection
+and an explicit fallback-owner check.
+
+Both cold-boot walkthroughs use the same ZIP SHA-256:
+`767038b7635c38772dd720e8b98da810c4549d891e9a50cf5f95f4e14d9746c3`.
+They retain 249 measured PAL autoboot frames (the existing five-second check),
+intact guards, no interrupt-reserve touches, clean OS return and zero live Tasks.
+The minimum observed public stack margin remains 33 bytes; presenter margin is
+1546 bytes. The host suite passes 417 tests with four historical skips, generated
+ABI checks pass, and all eighteen packaged payload checksums match. Compiler and
+machine pins, source/artifact hashes, stack observations and actual scope are in
+the [AM6 evidence](../development/application-menu-bars-am6.json).
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 private idle**. The upper
+global arena uses 4930 of 5120 reserved bytes including alignment. The fixed
+image owns 21 upper banks and uses 63 of 64 manifest extents. OF816 XEX size is
+1,024,827 bytes; uncompressed cartridge headroom is 7,364 bytes, informational
+under the user's compression direction. Compression itself is separate work.
+The ZIP contains boot media, ROM, guide, notices and checksums; development
+outputs remain outside it. The standard no-option shell/prime demo is unchanged.
+
+AM1–AM6 are complete at the development tier. Full hosted/hardware qualification
+and HY4/PI4 remain separate. No p95 improvement or flicker-closure claim is made.

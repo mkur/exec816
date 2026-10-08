@@ -409,8 +409,9 @@ objects are unsupported. Valid pointers, links and indices remain caller-owned.
 Installed-tree enable, title-state and text setters execute at a presenter paint
 boundary, including while the caller owns UPDATE/MCTRL. Uninstalled helpers act
 locally. `menu_text` replaces a borrowed string pointer within unchanged object
-geometry. Withdraw before freeing/replacing tree or string storage or its RSC;
-`appl_exit` withdraws before automatic resource cleanup. Window close retains the
+geometry; after a successful replacement returns, the old label is no longer
+borrowed. Keep current labels alive and withdraw before freeing the tree or its
+RSC. `appl_exit` withdraws before automatic resource cleanup. Window close retains the
 installation for reopen but invalidates its commands.
 
 A selection returns `MN_SELECTED` through `evnt_mesag`/`evnt_multi`:
@@ -461,7 +462,7 @@ separate from standard GEM. A registered application supplies `AES_MOUSE_OFF`
 `AES_MOUSE_QUERY` (-1). The result is the chosen profile; -1 indicates failure,
 with `ExecAESDiagnostic()` supplying the cause. Valid enum use belongs to the
 caller. AES wire version 9 adds operation 201 without changing record layouts;
-C application import ABI 4 exports the binding. Rebuild the runtime and apps.
+C application import ABI 5 exports the binding. Rebuild the runtime and apps.
 
 The presenter serializes this infrequent request with input processing. It
 preserves pointer coordinates and clears fractional motion when the profile
