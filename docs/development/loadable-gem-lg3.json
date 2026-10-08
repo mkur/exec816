@@ -1,0 +1,504 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-08",
+  "scope": "LG3: C/native PROGRAMFILE dispatch; int main signed returns and Process arguments; concurrent private copies, duplicate-start rejection, owner release while running, retained-instance restart, complete AES window/resource/timer teardown, fresh load, early return, malformed header/import/fixup/truncation, both image allocation failures, native HELLO and heap/ownership restoration. SDFS and MyDOS use identical emitted code; only the serialized filesystem format changes. Small raw/optimized bridge regressions include physical IRQ/NMI.",
+  "cases": [
+    {
+      "name": "lg3-opt",
+      "filesystem": "sdfs",
+      "optimized": true,
+      "xex_sha256": "9387b4cc7dc1be8a39323adf1af94c44cd88394b9c2a1c1c9d457095f6e78044",
+      "image_sha256": "5c1fd5d4c1555b8193089e38d1233ff55bf39781369f300bf439bd5827074122",
+      "app_sha256": "4d5549af02e00472da0917a44e38dea325a91ed95381126bd8ee42754f10f239",
+      "app_bytes": 1307,
+      "span": 65571,
+      "backing_bytes": 131106,
+      "checks": [
+        87
+      ],
+      "completed": [
+        12
+      ],
+      "irq_entries": 36024,
+      "nmi_entries": 1235,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 434,
+          "untouched_above_floor": 846
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 273,
+          "untouched_above_floor": 495
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 151,
+          "untouched_above_floor": 617
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 556,
+          "untouched_above_floor": 212
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 531,
+          "untouched_above_floor": 237
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 658,
+          "untouched_above_floor": 1646
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 289,
+        "untouched_from_base": 1247,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "compiler_binary_sha256": "5ce0fb35d63da28f6dbe4717c7cad1ff287cf58e1a83b505f482f1a810e30341",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "lg3-mydos",
+      "filesystem": "mydos",
+      "optimized": true,
+      "xex_sha256": "74ec40492d5a2c5bfe45874f79e390461500835f9eeba0cfe55c31b9ca9b1a93",
+      "image_sha256": "4fa7107cb9f285eaa7edb098d64661ff279c30464ac5e8e13bf62b4aca3f1354",
+      "app_sha256": "4d5549af02e00472da0917a44e38dea325a91ed95381126bd8ee42754f10f239",
+      "app_bytes": 1307,
+      "span": 65571,
+      "backing_bytes": 131106,
+      "checks": [
+        87
+      ],
+      "completed": [
+        12
+      ],
+      "irq_entries": 27730,
+      "nmi_entries": 1148,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 434,
+          "untouched_above_floor": 846
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1024,
+          "touched_bytes": 245,
+          "untouched_above_floor": 523
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1024,
+          "touched_bytes": 151,
+          "untouched_above_floor": 617
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1024,
+          "touched_bytes": 556,
+          "untouched_above_floor": 212
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1024,
+          "touched_bytes": 556,
+          "untouched_above_floor": 212
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1024,
+          "touched_bytes": 18,
+          "untouched_above_floor": 750
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 658,
+          "untouched_above_floor": 1646
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 289,
+        "untouched_from_base": 1247,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "compiler_binary_sha256": "5ce0fb35d63da28f6dbe4717c7cad1ff287cf58e1a83b505f482f1a810e30341",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "lg3-bridge-raw",
+      "filesystem": null,
+      "optimized": false,
+      "xex_sha256": "d8bc41e4080138cb4ab237b124cc33015799c787706725b66b65e69718de5069",
+      "image_sha256": "af00ed924d5167de2ecfa8f97af3034caea779bfc4e48baf1eb42b366e8ca854",
+      "app_sha256": "640909531aec4d64a3c73f30c45f518ac7aa347929254ca95d1befe5dc5511d3",
+      "app_bytes": 2042,
+      "span": 65594,
+      "backing_bytes": 131129,
+      "checks": null,
+      "completed": null,
+      "irq_entries": 258,
+      "nmi_entries": 26,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 300,
+          "untouched_above_floor": 980
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1536,
+          "touched_bytes": 128,
+          "untouched_above_floor": 1152
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1536,
+          "touched_bytes": 113,
+          "untouched_above_floor": 1167
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1536,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1262
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1536,
+          "touched_bytes": 24,
+          "untouched_above_floor": 1256
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 266,
+        "untouched_from_base": 1270,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "compiler_binary_sha256": "5ce0fb35d63da28f6dbe4717c7cad1ff287cf58e1a83b505f482f1a810e30341",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    {
+      "name": "lg3-bridge-opt",
+      "filesystem": null,
+      "optimized": true,
+      "xex_sha256": "4e28bcc58696a5d06735bfb6f95d437fe5ad91cd29d2a5d6453b0aa74c0ead7c",
+      "image_sha256": "03540e976fc3e4f9f22b2d3db733a188e3fcf61757092ab916a238fafc29482c",
+      "app_sha256": "5ab44d928b3c67a177f4d10b51e109acb94a160634ecd04ac352447bda4ebec1",
+      "app_bytes": 1700,
+      "span": 65594,
+      "backing_bytes": 131129,
+      "checks": null,
+      "completed": null,
+      "irq_entries": 235,
+      "nmi_entries": 24,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 274,
+          "untouched_above_floor": 1006
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1536,
+          "touched_bytes": 126,
+          "untouched_above_floor": 1154
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1536,
+          "touched_bytes": 126,
+          "untouched_above_floor": 1154
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1536,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1262
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1536,
+          "touched_bytes": 24,
+          "untouched_above_floor": 1256
+        }
+      ],
+      "kernel_stack": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 260,
+        "untouched_from_base": 1276,
+        "interrupt_reserve_bytes_touched": 0
+      },
+      "compiler": {
+        "schema_version": 1,
+        "repository": "https://github.com/mkur/actionc.git",
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary": "actionc-65816",
+        "target": "wdc-65816-native",
+        "abi": "action65816.native.v2",
+        "image_format_version": 3,
+        "abi_json": "docs/abi/action65816-native-v2.json",
+        "abi_assembly": "docs/abi/action65816-native-v2.inc",
+        "abi_action": "docs/abi/action65816-native-v2.act",
+        "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+        "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+      },
+      "compiler_binary_sha256": "c88c6791b03751b4848a3269d08b9d2c0ea21b8e967ac17d10025049f83bcf6d",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "includes_guards_padding_unused_capacity": true
+  },
+  "import_abi": 2,
+  "host_tests": {
+    "tests": 414,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "compiler_build_note": "The optimized bridge probe uses unchanged pinned compiler source with CARGO_PROFILE_DEV_OPT_LEVEL=2 and CARGO_PROFILE_DEV_DEBUG=0. Its compiler binary hash is recorded; no source or pin override.",
+  "limits": [
+    "No hosted/release/hardware qualification claim.",
+    "C has no Action per-routine stack checks; measured cases retain Task/domain guards.",
+    "AES teardown failure parks and retains the image; this exceptional park path is not fault-injected in LG3.",
+    "Desktop application migration and cooperative GUI Stop remain LG4/LG5."
+  ]
+}

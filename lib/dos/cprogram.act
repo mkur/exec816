@@ -167,6 +167,7 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER bytes LONGCARD length)
         entry^=ADDRESS(base+entryAt)
         image.references=1
         image.ownerHeld=1
+        image.kind=PROGRAMIMAGE.KIND_C
         image.magic=PROGRAMIMAGE.MAGIC
         DOSCLIENT.SetError(0)
         RETURN(image)

@@ -1,14 +1,15 @@
 # C application image profile
 
-The `exec816.c-program` v1 profile describes bank-relocatable Calypsi 5.18 code
+The `exec816.c-program` profile describes bank-relocatable Calypsi 5.18 code
 using the large-code/huge-data ABI. It is separate from the
 [native o65 contract](program-loading.md). Its constants and import ordinals
 are defined in [abi/c-program.json](../../abi/c-program.json).
 
-LG2 supplies the packer, internal image loader and native/C entry bridge, with
-emitted development probes. Ordinary `PROGRAMFILE`/Process dispatch is added
-in LG3; the desktop applications are migrated in LG4/LG5. This page does not
-claim that the current shell can launch these files yet.
+`PROGRAMFILE.Load` and `PROGRAM.Load` recognize this profile alongside native
+o65. A desktop build supplies the fixed C provider; a build without that
+provider rejects the image with `ERROR_BAD_PROVIDER`. Loading does not start
+an application. Use the ordinary Process start, wait/collect and Image unload
+operations to retain ownership through execution.
 
 ## Build profile and relocation
 
@@ -41,7 +42,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 1 |
+| 6 | 2 | Import ABI version, 2 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -81,10 +82,22 @@ caller-owned. IRQ/NMI and scheduling stay enabled. Its own peak stack cost is
 40 bytes, in addition to the caller's outgoing arguments and the C call chain.
 A synthetic RTL target keeps the bank unchanged when the entry is at `$0000`.
 
-This bridge signature is not the ordinary `int main(void)` entry signature.
-The Process wrapper must call that C entry with its C ABI and sign-extend the
-result before native completion. Passing it to native `LONGINT FUNC()` directly
-is unsupported. Calypsi routines have no Action! per-routine stack checks;
+The shared Process wrapper attaches the Task's AES context, calls ordinary
+`int main(void)` with its C ABI and sign-extends the 16-bit result to the native
+32-bit Process result. `ExecGetArgStr()` returns the borrowed, NUL-terminated
+Process argument string; it returns null outside a Process. There is no hosted
+`argc`/`argv` startup or command-line parser.
+
+On return, the wrapper detaches AES, settling windows, drawing references,
+resources and timers before native DOS cleanup and Process retirement. An
+application can explicitly close its resources earlier. The Process owns DOS
+cleanup; an application must not also call `ExecDOSDetach`. If AES attachment
+fails, the Process returns 20. If teardown fails, it reports the failure to
+its output and parks with its Task and image retained. There is no forced
+unload. The parent must collect every child before it exits.
+
+Passing a C entry to native `LONGINT FUNC()` directly is unsupported.
+Calypsi routines have no Action! per-routine stack checks;
 Task/domain guards remain and stack use must be measured for each application.
 
 Fixed, per-public-Task and private-idle bank-zero reservation changes are all
@@ -96,3 +109,6 @@ The [LG2 development record](../development/loadable-gem-lg2.json) covers raw
 and optimized native/C emission, two simultaneous copies at different bases,
 all permitted link bases, retained state, IRQ/NMI and heap/guard restoration.
 It does not qualify arbitrary C programs or a hosted desktop release.
+The [LG3 record](../development/loadable-gem-lg3.json) adds SDFS/MyDOS Process
+dispatch, signed `main` results, argument access, failure rollback and complete
+AES/image retirement over repeated cycles.

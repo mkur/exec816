@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Program loading](../../reference/program-loading.md) ·
 [C bindings](../../guides/calypsi-c.md) · [AES](../../reference/aes.md)
 
-Status: LG1/LG2 implemented at the development tier; LG3–LG6 in progress.
+Status: LG1–LG3 implemented at the development tier; LG4–LG6 in progress.
 Commit each passing executable slice.
 The immediate priority is cartridge capacity, followed by independently
 loadable, closable and restartable GEM applications.
@@ -21,8 +21,16 @@ guards and unused capacity. The upper global arena grows by 512 bytes.
 C/native probes pass with concurrent private copies in banks 3 and 5, IRQ/NMI,
 retained-state reuse and heap restoration. Each C build is independently
 verified at all 62 permitted bases. The [C file profile and entry bridge](../../reference/c-program-loading.md)
-are now defined; Program/Process dispatch remains LG3. Fixed, per-public-Task
+are now defined. Fixed, per-public-Task
 and private-idle bank-zero deltas are all 0 bytes.
+
+[LG3 evidence](../../development/loadable-gem-lg3.json): SDFS and MyDOS each
+pass 87 assertions and 12 Process cycles, including concurrent private images,
+retained restart, early return, failed admission/allocation and automatic AES
+teardown. Native HELLO still runs. Raw/optimized bridge regressions pass with
+IRQ/NMI; heap ownership and stack guards are restored. Import ABI 2 adds Process
+argument access. Fixed, per-public-Task and private-idle bank-zero deltas are
+all 0 bytes. Cooperative GUI Stop and desktop migration follow in LG4/LG5.
 
 ## Starting point and scope
 

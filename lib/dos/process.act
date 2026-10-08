@@ -9,6 +9,7 @@ USE DOSBREAK
 USE PROCESSSTATE
 USE HEAPCORE
 USE PROGRAMIMAGE
+USE CPROGRAMBIND
 INCLUDE "process-types.inc"
 INCLUDE "command-results.inc"
 
@@ -54,6 +55,13 @@ PUBLIC LONGINT FUNC ExecuteImage()
 
   IF image.magic<>PROGRAMIMAGE.MAGIC OR image.running<>1 THEN
     HEAPCORE.Abort($ff96)
+  FI
+
+  IF image.kind=PROGRAMIMAGE.KIND_C THEN
+    BEGIN
+      LET entry=ADDRESS POINTER(@image.entry)
+      RETURN(CPROGRAMBIND.Run(entry^))
+    END
   FI
 
 RETURN(image.entry())

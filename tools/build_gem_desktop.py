@@ -11,14 +11,16 @@ from native_program import ROOT,build,compiler
 def build_desktop(out,source=None,program_output=None,files=False,disk_component=False,**options):
     from library_paths import read_source
     from build_gem_input import input_bindings
+    from c_program import ABI,binding
     out.mkdir(parents=True,exist_ok=True)
     options.pop('desktop',None)
     foreign=drawing(out,True,widgets=True,client_sources=[
         ROOT/'c/calypsi/aes.c',ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
+        ROOT/'c/calypsi/program.c',
         ROOT/'examples/gem-panel/panel.c',ROOT/'examples/gem-panel/resident.c',
         ROOT/'examples/gem-counter/counter.c',ROOT/'examples/gem-browser/browser.c'],
         client_entries=['GEMPanelTask','GEMCounterTask','GEMBrowserTask'],
-        client_roots=['GEMDesktopStart','GEMDesktopStop','GEMDesktopService','GEMPanel','GEMCounter','GEMBrowser','GEMDesktopFiles'],
+        client_roots=['GEMDesktopStart','GEMDesktopStop','GEMDesktopService','GEMPanel','GEMCounter','GEMBrowser','GEMDesktopFiles','ExecProgramRun',*ABI['imports']],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),
             (ROOT/'tests/programs/gem_panel_layout.c',[
                 ('Panel size',400),('Panel ready',8),('Panel actions',10),('Panel paints',14),
@@ -26,9 +28,11 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
             (ROOT/'tests/programs/gem_browser_layout.c',[('Browser size',1992),('Browser ready',8),('Browser work',26),
                 ('Browser tree',170),('Browser path',178),('Browser names',306),('Browser status',1386),
                 ('Browser count',1962),('Browser selected',1966),('Browser launches',1972),('Browser child',1980)])])
+    binding(foreign,out)
     if disk_component:
         from gem_component import prepare as prepare_component
         prepare_component(foreign,out)
+    (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     # Reuse the existing two-call Action!/C startup binding without adding a
     # public lifecycle abstraction to GEM applications.
     aliases=dict(foreign);aliases['symbols']=dict(foreign['symbols'])

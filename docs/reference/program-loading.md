@@ -4,6 +4,9 @@ Exec consumes `actionc.o65.compact.v3` with the checked
 `action65816.native.v2` ABI. The compiler profile defines the file format;
 [abi/program.json](../../abi/program.json) defines Exec's resource policy and
 errors. This is separate from the XEX image that boots the resident kernel.
+The same Program/Process ownership API also dispatches the
+[C application profile](c-program-loading.md) in builds with a shared GUI
+provider. Its file format and entry ABI are separate from native o65.
 
 ## Validation
 

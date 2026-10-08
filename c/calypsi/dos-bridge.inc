@@ -103,6 +103,10 @@ LONGINT FUNC CWaitProgram(LONGCARD identity,outcome,unused)
 
 RETURN(PROCESS.Wait(identity,PROCESS.Result POINTER(ADDRESS(outcome))))
 
+LONGCARD FUNC CGetArgStr(LONGCARD unused,unused2,unused3)
+
+RETURN(LONGCARD(ADDRESS(PROCESS.GetArgStr())))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -123,5 +127,6 @@ PROC BindDos(BYTE unused)
   entries(13)=ADDRESS(@CCollectProgram)
   entries(14)=ADDRESS(@CBreakProgram)
   entries(15)=ADDRESS(@CWaitProgram)
+  entries(16)=ADDRESS(@CGetArgStr)
 
 RETURN

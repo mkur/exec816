@@ -20,7 +20,9 @@ def run(out,optimize,reuse=False):
     app=application(out/'app',[ROOT/'tests/programs/c_program.c'],optimize)
     foreign=emit(out/'provider',[ROOT/'c/calypsi/exec.c',ROOT/'tests/programs/c_program.c'],
         [ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/image-info.s'],(),optimize,roots=['ExecYield'])
-    (out/'cprogrambind.act').write_text('MODULE CPROGRAMBIND\nPUBLIC ADDRESS FUNC Import(CARD ordinal)\nRETURN(ADDRESS($%x))\nENDMODULE\n'%foreign['symbols']['ExecYield'])
+    binding=(ROOT/'lib/dos/cprogrambind.act').read_text().replace('RETURN(ADDRESS(0))',
+        'RETURN(ADDRESS($%x))'%foreign['symbols']['ExecYield'],1)
+    (out/'cprogrambind.act').write_text(binding)
     payload=(out/'app/program.app').read_bytes()
     include=out/'app.inc'
     include.write_text('CONST WIRE_BYTES='+str(len(payload))+'\nBYTE ARRAY wire=['+' '.join(str(b) for b in payload)+']\n')

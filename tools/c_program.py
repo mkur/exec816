@@ -83,3 +83,49 @@ def import_assembly():
     lines += ['              .rtmodel version,"1"','              .rtmodel codeModel,"large"',
               '              .rtmodel dataModel,"huge"','              .rtmodel core,"65816"','']
     return '\n'.join(lines)
+
+
+def binding(image, output):
+    """One fixed provider per desktop build; no runtime library discovery."""
+    symbols=image['symbols']
+    require(all(name in symbols for name in (*ABI['imports'],'ExecProgramRun')),
+            'Incomplete C application provider')
+    table=' '.join(f'${symbols[name]:x}' for name in ABI['imports'])
+    source=f'''MODULE CPROGRAMBIND
+USE AESBOOT
+USE CALYPSICALL
+
+ADDRESS ARRAY entries=[{table}]
+TYPE Invocation=[LONGCARD entry,service]
+
+PUBLIC ADDRESS FUNC Import(CARD ordinal)
+
+  IF ordinal>={len(ABI['imports'])} THEN
+    RETURN(ADDRESS(0))
+  FI
+
+RETURN(entries(ordinal))
+
+PUBLIC ADDRESS FUNC Runner()
+
+  IF AESBOOT.Port()=NULL THEN
+    RETURN(ADDRESS(0))
+  FI
+
+RETURN(ADDRESS(${symbols['ExecProgramRun']:x}))
+
+PUBLIC LONGINT FUNC Run(ADDRESS entry)
+  Invocation invocation
+
+  invocation.entry=LONGCARD(entry)
+  invocation.service=LONGCARD(ADDRESS(AESBOOT.Port()))
+
+RETURN(CALYPSICALL.Invoke(ADDRESS(${symbols['ExecProgramRun']:x}),
+    LONGCARD(ADDRESS(@invocation))))
+
+ENDMODULE
+'''
+    path=Path(output)/'cprogrambind.act';path.write_text(source)
+    image['provenance']['c_program_provider']=dict(abi=ABI['version'],imports=ABI['imports'],
+        runner=symbols['ExecProgramRun'])
+    return path

@@ -1,0 +1,123 @@
+MODULE CPROCESSTEST
+USE EXEC
+USE DOS
+USE DOSCLIENT
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE PROCESSSTATE
+USE AESSTATE
+USE AESCORE
+USE O65CONTROL
+USE O65TYPES
+USE HEAPCORE
+
+CARD checks,completed
+LONGCARD baseline
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PUBLIC PROC Collected(LONGCARD id LONGINT expected)
+  PROCESS.Result result
+
+  Require(id<>0)
+  Require(PROCESS.Wait(id,@result)<>0)
+  Require(result.primary=expected)
+  completed==+1
+
+RETURN
+
+PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load()
+
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+  Require(image<>NULL)
+  Require(image.kind=PROGRAMIMAGE.KIND_C)
+
+RETURN(image)
+
+PUBLIC LONGCARD FUNC Start(PROGRAMIMAGE.Image POINTER image BYTE POINTER args)
+
+RETURN(PROCESS.StartLoaded(BYTE POINTER(image),args,1,0))
+
+PROC Bad(BYTE POINTER name LONGINT error)
+
+  Require(PROGRAMFILE.Load(name)=NULL)
+  Require(DOS.IoErr()=error)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC Main()
+  PROGRAMIMAGE.Image POINTER first,second
+  LONGCARD one,two
+  BYTE index
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  LET oldInput=DOS.SelectInput(input)
+  LET oldOutput=DOS.SelectOutput(output)
+  ; Warm the shared service/cache before checking per-instance ownership.
+  first=Load()
+  Collected(Start(first,BYTE POINTER(c"X")),-124)
+  PROGRAM.Unload(first)
+  baseline=EXEC.AvailMem(0)
+
+  FOR index=0 TO 2 DO
+    first=Load()
+    second=Load()
+    Require(first.text<>second.text)
+    one=Start(first,BYTE POINTER(c"B"))
+    two=Start(second,BYTE POINTER(c"B"))
+    Require(Start(first,BYTE POINTER(c"B"))=0)
+    ; Drop ownership while executing; collection retains the image until ACK.
+    PROGRAM.Unload(second)
+    Collected(one,-124)
+    Collected(two,-124)
+    Collected(Start(first,BYTE POINTER(c"X")),-125)
+    PROGRAM.Unload(first)
+    Require(EXEC.AvailMem(0)=baseline)
+  OD
+
+  first=Load()
+  Collected(Start(first,BYTE POINTER(c"F")),-321)
+  PROGRAM.Unload(first)
+  Require(EXEC.AvailMem(0)=baseline)
+
+  Bad(BYTE POINTER(c"SYS:TRUNC.APP"),LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  Bad(BYTE POINTER(c"SYS:VERSION.APP"),LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  Bad(BYTE POINTER(c"SYS:IMPORT.APP"),LONGINT(O65TYPES.ERROR_BAD_PROVIDER))
+  Bad(BYTE POINTER(c"SYS:FIXUP.APP"),LONGINT(O65TYPES.ERROR_BAD_FORMAT))
+  FOR index=1 TO 2 DO
+    O65CONTROL.allocations=0
+    O65CONTROL.failAt=index
+    Bad(BYTE POINTER(c"SYS:PROBE.APP"),LONGINT(O65TYPES.ERROR_NO_FREE_STORE))
+    O65CONTROL.failAt=0
+  OD
+
+  first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:HELLO"))
+  Require(first<>NULL AND first.kind=PROGRAMIMAGE.KIND_NATIVE)
+  one=PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)
+  PROGRAM.Unload(first)
+  Collected(one,0)
+  Require(EXEC.AvailMem(0)=baseline)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+  DOS.SelectInput(oldInput)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(input)<>0)
+  Require(DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+
+ENDMODULE
