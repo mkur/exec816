@@ -21,6 +21,13 @@ PROC BankCrossing()
   Require(LAYERS.Create(state,@bounds,@id)=LAYERTYPES.OK)
   Require(LAYERS.Show(state,id,1)=LAYERTYPES.OK)
 
+  REGIONS.Assign(@bounds,0,0,640,16)
+  Require(LAYERS.Create(state,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.Show(state,id,1)=LAYERTYPES.OK)
+  REGIONS.Assign(@bounds,432,16,640,80)
+  Require(LAYERS.Create(state,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.Show(state,id,1)=LAYERTYPES.OK)
+
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     Require(LAYERS.BeginPaint(state,state.items(slot).id,@token)=LAYERTYPES.OK)
     Require(LAYERS.PaintRegion(state,token)=@state.work)
@@ -28,6 +35,6 @@ PROC BankCrossing()
     Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
   OD
 
-  Require(state.rebuilds=5 AND state.busy=0)
+  Require(state.rebuilds=7 AND state.busy=0)
 
 RETURN

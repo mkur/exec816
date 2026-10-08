@@ -8,6 +8,8 @@ assuming work is pending. Current behavior belongs in the
 [reference](../reference/README.md), and implementation results in
 [history](../history/README.md).
 
+- [Desktop menu and window switching](gem4xe/desktop-menu-window-switching-plan.md): active-window menu, covered-window access and focus restoration; implementation in progress.
+
 ## Exec and project history
 
 - [OF816 before kernel loading](of816-first-boot-implementation-plan.md): implemented through B4;
@@ -280,6 +282,10 @@ assuming work is pending. Current behavior belongs in the
 - [Direct-page partition implementation plan](direct-page-partition-implementation-plan.md)
 
 ## GEM desktop applications
+
+- [Control Panel session settings](gem4xe/control-panel-settings-plan.md): runtime
+  Off/Mild acceleration, staged Apply/Cancel and focused redraw/lifetime checks.
+  CP1–CP3 implemented; [development record](../history/control-panel-settings.md).
 
 - [GEM4XE calculator port](gem4xe/calculator-port-implementation-plan.md): CAL1–CAL4 pass development
   checks: TEDINFO text drawing, classic resource loading, a windowed

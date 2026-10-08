@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 8
+#define AES_VERSION 9
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -82,6 +82,10 @@
 #define AES_MU_BUTTON 2
 #define AES_MU_M1 4
 #define AES_MU_M2 8
+#define AES_OP_MOUSE_PROFILE 201
+#define AES_MOUSE_QUERY -1
+#define AES_MOUSE_OFF 0
+#define AES_MOUSE_MILD 1
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];
@@ -306,5 +310,5 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_VIEWPAD 107
 #define AES_REQUEST_OFFSET_DISPLAYGRANT 108
 #define AES_REQUEST_OFFSET_DISPLAYGRANTPAD 111
-#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY)
+#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE)
 #endif

@@ -124,7 +124,8 @@ PROC DamageAll(LAYERTYPES.Scene POINTER scene LAYERTYPES.Rect POINTER rect)
 
 RETURN
 
-; Four occluders partition at most a 9 by 9 endpoint grid, below MAX_RECTS.
+; Six occluders have at most 13 horizontal endpoint bands and seven free
+; intervals per band. At most 91 disjoint pieces fit below MAX_RECTS (96).
 ; Rebuild only for actual layout changes, never for drawing or hit testing.
 BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
   LAYERTYPES.Layer POINTER layer,above

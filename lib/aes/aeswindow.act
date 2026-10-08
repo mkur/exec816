@@ -13,6 +13,7 @@ USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKMENU
 USE DESKCACHE
 USE LAYERTYPES
 USE LAYERS
@@ -105,9 +106,7 @@ BYTE FUNC Close(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   AESMOUSE.Cancel(client.id)
   AESGUI.Close(client)
-  IF desktop.focus=client.window.id THEN
-    DESKCORE.Focus(desktop,0)
-  FI
+  DESKCORE.RestoreFocus(desktop,client.window.id)
 
   IF client.window.keyRoute<>0 THEN
     captured=CONSOLEINPUT.Pump(NULL)
@@ -260,6 +259,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       FI
 
       A816MEMORY.Move(@window.title(0),title,length+1)
+      DESKMENU.Renamed(window.id)
       REGIONS.Copy(@layer.bounds,@bounds)
       bounds.bottom=bounds.top+16
       status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)

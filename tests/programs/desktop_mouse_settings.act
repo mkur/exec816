@@ -1,0 +1,75 @@
+MODULE MOUSESETTINGS
+USE DESKMOUSE
+USE DESKMOUSECONFIG
+USE INPUT
+USE HEAPCORE
+
+INPUT.Event event
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+; A delivered event is the transform's only timing and gesture boundary.
+PROC Motion(INT dx CARD info,buttons INT expected)
+
+  event.kind=INPUT.EVENT_POINTER
+  event.x=dx
+  event.y=0
+  event.motionInfo=info
+  event.buttons=buttons
+  DESKMOUSE.Apply(@event)
+  Require(event.x=expected AND event.y=100)
+
+RETURN
+
+PROC Main()
+
+  DESKMOUSE.Start(100,100,DESKMOUSECONFIG.MILD)
+  Require(DESKMOUSE.Profile(-1)=DESKMOUSECONFIG.MILD)
+  Motion(1,11,0,101)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.MILD)=DESKMOUSECONFIG.MILD)
+  Motion(1,11,0,103)
+  Motion(1,11,0,104)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.OFF)=DESKMOUSECONFIG.OFF)
+  Motion(0,0,0,104)
+  Motion(1,11,0,106)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.MILD)=DESKMOUSECONFIG.MILD)
+  Motion(1,11,0,107)
+
+  ; Setting and querying while held must not change this gesture's gain.
+  Motion(0,0,1,107)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.OFF)=DESKMOUSECONFIG.OFF)
+  Require(DESKMOUSE.Profile(-1)=DESKMOUSECONFIG.OFF)
+  Motion(1,0,1,111)
+  Motion(1,0,0,115)
+  Motion(1,0,0,117)
+
+  ; The latest pending preference wins; a loss ends the held gesture too.
+  Motion(0,0,1,117)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.MILD)=DESKMOUSECONFIG.MILD)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.OFF)=DESKMOUSECONFIG.OFF)
+  Motion(1,0,0,119)
+  Motion(1,0,0,121)
+  Motion(0,0,1,121)
+  Require(DESKMOUSE.Profile(DESKMOUSECONFIG.MILD)=DESKMOUSECONFIG.MILD)
+  event.kind=INPUT.EVENT_LOSS
+  event.x=20
+  event.y=20
+  event.buttons=1
+  DESKMOUSE.Apply(@event)
+  Require(event.x=121 AND event.y=100)
+  Motion(1,0,0,125)
+
+  DESKMOUSE.Start(100,100,DESKMOUSECONFIG.OFF)
+  Require(DESKMOUSE.Profile(-1)=DESKMOUSECONFIG.OFF)
+  Motion(1,0,0,102)
+
+RETURN
+ENDMODULE

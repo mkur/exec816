@@ -40,9 +40,9 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
                       'GEMDesktopDone','GEMDesktopFailure','ExecProgramRun',*ABI['imports']],
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),
             (ROOT/'tests/programs/gem_panel_layout.c',[
-                ('Panel size',400),('Panel ready',8),('Panel actions',10),('Panel paints',14),
+                ('Panel size',404),('Panel ready',8),('Panel actions',10),('Panel paints',14),
                 ('Panel work',34),('Panel tree',178),('Panel status',370),('Panel focus',392),('Panel armed',394)]),
-            (ROOT/'tests/programs/gem_browser_layout.c',[('Browser size',1992),('Browser ready',8),('Browser work',26),
+            (ROOT/'tests/programs/gem_browser_layout.c',[('Browser size',2028),('Browser ready',8),('Browser work',26),
                 ('Browser tree',170),('Browser path',178),('Browser names',306),('Browser status',1386),
                 ('Browser count',1962),('Browser selected',1966),('Browser launches',1972),('Browser child',1980)])])
     binding(foreign,out)

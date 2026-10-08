@@ -6,8 +6,8 @@
 static const OBJECT initial[8]={
     {-1,1,7,G_BOX,0,0,0x1170,0,0,192,136},
     {2,-1,-1,G_STRING,0,0,0,8,8,176,8},
-    {3,-1,-1,G_BUTTON,SELECTABLE,0,0,8,32,80,16},
-    {4,-1,-1,G_BUTTON,SELECTABLE,DISABLED,0,104,32,80,16},
+    {3,-1,-1,G_BUTTON,SELECTABLE|EXIT,0,0,8,32,80,16},
+    {4,-1,-1,G_STRING,0,0,0,104,36,80,8},
     {5,-1,-1,G_BUTTON,SELECTABLE|RBUTTON,SELECTED,0,8,64,80,16},
     {6,-1,-1,G_BUTTON,SELECTABLE|RBUTTON,0,0,104,64,80,16},
     {7,-1,-1,G_BUTTON,SELECTABLE|DEFAULT|EXIT,0,0,8,104,80,16},
@@ -50,34 +50,59 @@ static WORD cancel(struct Panel *p)
     p->tree[armed].ob_state=p->saved; p->armed=-1;
     return object(p,armed);
 }
+/* The tree is the pending edit. Only Apply changes desktop policy. */
+static void selection(struct Panel *p)
+{
+    p->tree[4].ob_state=p->staged==AES_MOUSE_OFF ? SELECTED:0;
+    p->tree[5].ob_state=p->staged==AES_MOUSE_MILD ? SELECTED:0;
+    strcpy(p->status,p->staged==p->applied ? "Active: ":"Pending: ");
+    strcat(p->status,p->staged==AES_MOUSE_OFF ? "Off":"Mild");
+}
+
 static WORD action(struct Panel *p,WORD target)
 {
-    WORD i;
+    WORD old=p->staged,applied=p->applied,profile;
     ++p->actions;
-    if (target==7) {
-        p->tree[2].ob_state=0; p->tree[4].ob_state=SELECTED; p->tree[5].ob_state=0;
-        strcpy(p->status,"Reset");
-        for (i=2;i<=5;++i) if (i!=3 && !object(p,i)) return 0;
-    } else {
-        strcpy(p->status,target==6 ? "Applied":"Changed");
-        if (target==4 || target==5) {
-            if (!object(p,4) || !object(p,5)) return 0;
-        } else if (!object(p,target)) return 0;
+    switch (target) {
+    case 2: p->staged=AES_MOUSE_MILD; break;
+    case 4: p->staged=AES_MOUSE_OFF; break;
+    case 5: p->staged=AES_MOUSE_MILD; break;
+    case 6:
+        profile=ExecAESMouseProfile(p->staged);
+        if (profile<0) return 0;
+        p->applied=profile;
+        break;
+    case 7:
+        profile=ExecAESMouseProfile(AES_MOUSE_QUERY);
+        if (profile<0) return 0;
+        p->staged=p->applied=profile;
+        break;
     }
-    return object(p,1);
+    /* form_button leaves EXIT buttons selected; these commands stay open. */
+    if (target==2 || target==6 || target==7) p->tree[target].ob_state=0;
+    selection(p);
+    if (!object(p,target)) return 0;
+    if (old!=p->staged) {
+        if (target!=4 && !object(p,4)) return 0;
+        if (target!=5 && !object(p,5)) return 0;
+    }
+    return (old==p->staged && applied==p->applied) || object(p,1);
 }
 WORD PanelRun(struct Panel *p)
 {
     WORD i,cw,ch,bw,bh,mx,my,mb,ks,kr,br,events,hit,next,unused,previous,quit=0,result=1;
     memcpy(p->tree,initial,sizeof(initial));
-    strcpy(p->status,"Ready");
     p->tree[1].ob_spec=(ULONG)p->status;
-    p->tree[2].ob_spec=(ULONG)"Toggle"; p->tree[3].ob_spec=(ULONG)"Locked";
-    p->tree[4].ob_spec=(ULONG)"Small"; p->tree[5].ob_spec=(ULONG)"Large";
+    p->tree[2].ob_spec=(ULONG)"Defaults"; p->tree[3].ob_spec=(ULONG)"Mouse";
+    p->tree[4].ob_spec=(ULONG)"Off"; p->tree[5].ob_spec=(ULONG)"Mild";
     p->tree[6].ob_spec=(ULONG)"Apply"; p->tree[7].ob_spec=(ULONG)"Cancel";
     p->focus=2; p->armed=-1; p->down=0;
     p->id=appl_init(); p->window=-1;
     if (p->id<0) return 1;
+    p->applied=ExecAESMouseProfile(AES_MOUSE_QUERY);
+    if (p->applied<0) goto finish;
+    p->staged=p->applied;
+    selection(p);
     p->vdi=graf_handle(&cw,&ch,&bw,&bh);
     for (i=0;i<10;++i) p->input[i]=1;
     p->input[10]=2; v_opnvwk(p->input,&p->vdi,p->output);
@@ -101,7 +126,7 @@ WORD PanelRun(struct Panel *p)
             hit=objc_find(p->tree,0,MAX_DEPTH,mx,my);
             if (mb&1) {
                 p->down=1;
-                if (hit>=2 && !(p->tree[hit].ob_state&DISABLED)) {
+                if (hit>=2 && (p->tree[hit].ob_flags&SELECTABLE) && !(p->tree[hit].ob_state&DISABLED)) {
                     previous=p->focus; p->focus=hit;
                     p->armed=hit; p->saved=p->tree[hit].ob_state;
                     p->tree[hit].ob_state^=SELECTED;

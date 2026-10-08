@@ -17,7 +17,7 @@ class DesktopContractTests(unittest.TestCase):
             self.assertEqual(len(constants), len(set(constants)))
         sizes = {name: value['size'] for name, value in generate_desktop.layout().items()}
         self.assertEqual(sizes['Request'], 92)
-        self.assertEqual(sizes['Service'], 12480)
+        self.assertEqual(sizes['Service'], 14186)
         self.assertEqual(generate_desktop.layout()['Request']['fields']['message'], 0)
         constants = generate_desktop.ABI['constants']
         self.assertEqual(constants['EVENTS'] & (constants['EVENTS'] - 1), 0)
@@ -37,7 +37,7 @@ class DesktopContractTests(unittest.TestCase):
 
     def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
         import generate_aes_server as aes
-        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET', 'OP_DISPLAY'])
+        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET', 'OP_DISPLAY', 'OP_MOUSE_PROFILE'])
         self.assertEqual(aes.layout()['Request']['size'], 112)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)

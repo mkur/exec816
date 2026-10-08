@@ -1,0 +1,544 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slices": [
+    "DW1",
+    "DW2",
+    "DW3"
+  ],
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "compiler_source_override": false,
+  "compiler_host_environment": {
+    "CARGO_PROFILE_DEV_OPT_LEVEL": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0"
+  },
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "0439dfeb77d9bd54e5b136e9f3df14675e508ef0d2a30dc5c301e9a7116ff929",
+      "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+      "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+      "build_record": "toolchain/altirra-build.json"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 1,
+      "memory": "64K",
+      "high_banks": 0,
+      "video": "PAL",
+      "basic": false,
+      "dli": false
+    }
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$99f5ac5db7eaae86",
+    "actual_kernel_id": "$99f5ac5db7eaae86",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-menu/final-distribution/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "checks": {
+    "focus-opt": {
+      "path": "build/desktop-menu/focus-opt/results.json",
+      "sha256": "a56da1f3c61d78b380cef0f91cfa19735c799e5a89e3a994c108b6aa0d783af2",
+      "status": "pass",
+      "checks": 330
+    },
+    "layers-opt": {
+      "path": "build/desktop-menu/layers-opt/results.json",
+      "sha256": "a0245eeced4ffda81ac9c34420ce9aebb94beff40d209607fac6b0691037f409",
+      "status": "pass",
+      "checks": 56694
+    },
+    "layout-raw": {
+      "path": "build/desktop-menu/layout-raw/results.json",
+      "sha256": "d3be94d282a9f33338bb09715fb6904f118d2e2226c77e116d7792b6f3375a18",
+      "status": "pass",
+      "checks": 89
+    },
+    "layout-opt": {
+      "path": "build/desktop-menu/layout-opt/results.json",
+      "sha256": "38bc0fff8382c46854cdf966cbd0682147a647c06219b358b78becad412ee6b5",
+      "status": "pass",
+      "checks": 89
+    },
+    "host": {
+      "path": "build/desktop-menu/host-tests.log",
+      "sha256": "ce2a811129541fc96376e40a8d941986447e076b9e0738089075aae1781c57f9",
+      "status": "pass",
+      "tests": 417,
+      "skipped": 4
+    },
+    "packaged_desktop": {
+      "path": "build/desktop-menu/final-distribution/gem-desktop-results.json",
+      "sha256": "a2598475276c98688a8a3adcf8ef528bc2bb342f93e8bdb272938f9606a09967",
+      "status": "pass"
+    }
+  },
+  "integration": {
+    "profile": "gem-desktop",
+    "desktop_menu": {
+      "windows": 4,
+      "covered_counter": true,
+      "pointer": true,
+      "keyboard_cycle": 8,
+      "keyboard_menu": true,
+      "outside_cancel": true,
+      "escape": true,
+      "disabled_close": true,
+      "next_window": true,
+      "independent_pixels": 5,
+      "counter_during_menu": true,
+      "held_escape": true,
+      "gesture_ownership": true,
+      "drag_limit": true,
+      "focus_restoration": true,
+      "window_reuse": true
+    },
+    "panel_settings": {
+      "staging": true,
+      "cancel": true,
+      "defaults": true,
+      "keyboard": true,
+      "outside_release": true,
+      "escape": true,
+      "held_profile_deferral": true,
+      "physical_off_step": 2,
+      "physical_mild_step": 1,
+      "repeated_applies": 6,
+      "independent_pixels": 6,
+      "shell_output": true,
+      "counter_progress": true,
+      "reopen_profile": 0,
+      "reopen_verified": true
+    },
+    "panel_keyboard": true,
+    "panel_drag": true,
+    "counter": true,
+    "shell": true,
+    "files_relaunch": true,
+    "idle_job_collection": true,
+    "heap_restored": true,
+    "exit_with_gui_child_and_popup": true
+  },
+  "observations": [
+    {
+      "stage": "startup",
+      "guest_frame": 7704
+    },
+    {
+      "stage": "menu-covered-counter",
+      "guest_frame": 8588
+    },
+    {
+      "stage": "windows-menu-open",
+      "guest_frame": 8800
+    },
+    {
+      "stage": "windows-menu-dismissed",
+      "guest_frame": 8890
+    },
+    {
+      "stage": "shell-close-disabled",
+      "guest_frame": 11287
+    },
+    {
+      "stage": "menu-panel-restored",
+      "guest_frame": 12711
+    },
+    {
+      "stage": "settings-pending-off",
+      "guest_frame": 13590
+    },
+    {
+      "stage": "settings-active-off",
+      "guest_frame": 13834
+    },
+    {
+      "stage": "settings-cancel",
+      "guest_frame": 14137
+    },
+    {
+      "stage": "settings-keyboard-mild",
+      "guest_frame": 15123
+    },
+    {
+      "stage": "settings-repeated-apply",
+      "guest_frame": 16395
+    },
+    {
+      "stage": "CAT STORY.TXT",
+      "guest_frame": 19847
+    },
+    {
+      "stage": "settings-shell-scroll-exposure",
+      "guest_frame": 20101
+    },
+    {
+      "stage": "browser-front",
+      "guest_frame": 20864
+    },
+    {
+      "stage": "TASKS",
+      "guest_frame": 24690
+    },
+    {
+      "stage": "HELLO",
+      "guest_frame": 28174
+    },
+    {
+      "stage": "CAT STORY.TXT | WC",
+      "guest_frame": 28530
+    },
+    {
+      "stage": "MEM",
+      "guest_frame": 28582
+    },
+    {
+      "stage": "MEM",
+      "guest_frame": 29315
+    }
+  ],
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "live_tasks_after_exit": 0
+  },
+  "stacks": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 592,
+      "remaining_above_floor": 688
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 336,
+      "remaining_above_floor": 432
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 167,
+      "remaining_above_floor": 601
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 735,
+      "remaining_above_floor": 33
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 645,
+      "remaining_above_floor": 123
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 730,
+      "remaining_above_floor": 38
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 739,
+      "remaining_above_floor": 1565
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 359,
+      "remaining_above_floor": 1945
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 131,
+      "remaining_above_floor": 125
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 301,
+      "remaining_above_floor": 979
+    }
+  },
+  "minimum_public_stack_margin": 33,
+  "interrupt_reserve_bytes": 256,
+  "loaded_panel_feedback": {
+    "initial": {
+      "model_address": 327946,
+      "samples_ms": [
+        100.28940805972549,
+        120.49750556472632,
+        100.28884418625304,
+        100.28828031278061,
+        100.28828031278061,
+        100.28828031278061
+      ],
+      "median_ms": 100.28856224951683,
+      "max_ms": 120.49750556472632,
+      "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+    },
+    "reloaded": {
+      "model_address": 721162,
+      "samples_ms": [
+        120.24489024907702,
+        100.28715256583575,
+        100.28771643930818,
+        120.24432637560457,
+        100.03566499713129,
+        120.24545412254945
+      ],
+      "median_ms": 110.26602140745638,
+      "max_ms": 120.24545412254945,
+      "scope": "Six press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+    }
+  },
+  "autoboot_frames": 249,
+  "desktop_ready_frames": 7013,
+  "memory": {
+    "baseline": {
+      "path": "build/panel-settings/final-distribution/memory.json",
+      "sha256": "bc770731472324d01f09c81f6a63738991ae07bd8833c6a63d7b08043e162e10"
+    },
+    "current": {
+      "path": "build/desktop-menu/final-distribution/memory.json",
+      "sha256": "bde6eb967b4cc6e175feab91e06db70f6dcb8379776f148b8a3a599fa6a35234"
+    },
+    "bank_zero_reservations_identical": true,
+    "slice_reserved_bank_zero_delta": {
+      "DW1": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      },
+      "DW2": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      },
+      "DW3": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "private_idle": 0
+      }
+    },
+    "before": {
+      "data_reserved_bytes": 4608,
+      "data_used_bytes": 4564,
+      "image_banks": [
+        1,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        63
+      ],
+      "manifest_extents": 61
+    },
+    "after": {
+      "data_reserved_bytes": 4864,
+      "data_used_bytes": 4796,
+      "image_banks": [
+        1,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        63
+      ],
+      "manifest_extents": 63
+    },
+    "newly_owned_image_banks": [
+      30
+    ],
+    "desktop_service_bytes": 14186,
+    "desktop_service_rounded_bytes": 14192,
+    "desktop_service_rounded_increase": 1712
+  },
+  "distribution": {
+    "path": "build/desktop-menu/final-distribution/exec816-demo.zip",
+    "sha256": "b7ea956b8b04fc349786281f1f79166d4b484fbac03ddbbba71baa43bfae856d",
+    "bytes": 439749,
+    "members": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+      "exec816-demo/CALCULATOR-COPYING.txt",
+      "exec816-demo/CALCULATOR-LICENSING.md",
+      "exec816-demo/CALCULATOR-PROVENANCE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/GEM-COPYING.LIB.txt",
+      "exec816-demo/GEM-COPYING.txt",
+      "exec816-demo/GEM-FONT-NOTICE.txt",
+      "exec816-demo/GEM-LICENSING.md",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr",
+      "exec816-demo/work.atr"
+    ],
+    "cartridge_capacity": {
+      "program.xex": {
+        "bytes": 973459,
+        "headroom": 58732
+      },
+      "of816/Exec-of816.xex": {
+        "bytes": 998433,
+        "headroom": 33758
+      }
+    }
+  },
+  "standard_default": {
+    "path": "build/desktop-menu/standard-distribution",
+    "built": true,
+    "executed": false,
+    "image_data_bytes": 4096
+  },
+  "limitations": [
+    "Development tier only; no full release qualification or physical-hardware run.",
+    "Desktop-owned menu; application menu_bar/MN_SELECTED remains unsupported.",
+    "Existing HY4/PI4 latency and transient flicker gates remain open.",
+    "Stack margins are observed high-water marks, not arbitrary-depth guarantees."
+  ],
+  "sources": {
+    "lib/desktop/deskmenu.act": "0d99232d6bf0093ac314642f34336a3f26b77829caf3d2ac0f8e4b5062bb215c",
+    "lib/desktop/deskmenupaint.act": "a6122adccfedd3bebeb5574948fb5049383f9157a3d1e8e82e55447d56d24e33",
+    "lib/desktop/deskcore.act": "6c6d859e4b85d2547e74cc16ff01ad00a599ff26b93e4fd45c2f9b0c0a6a9f43",
+    "lib/display/layers-update.inc": "2c0467189f7723ef30273a22bbe6e34ab2fde286b51a0ae743f477af7776107a",
+    "tools/desktop_menu_check.py": "40e7e681ff7bbfddb910ae1e1c48a24d02dd0d175d3145f901c922843f475b2a",
+    "tools/gem_applications.py": "aca09e56924f6b43d4a1dd27669aaf71e5de5e5d6953dc98ef38405ada505ca0",
+    "tests/test_gem_applications.py": "90c39195066adfdeeee7d410d75e91177340a5d194b7546bf5646194d6ac5677",
+    "tools/test_gem_desktop_boot.py": "090ea18c19435062e10183b065c747534f7b674415f4d7c1db0ece9665ffe2da"
+  }
+}

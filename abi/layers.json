@@ -1,7 +1,7 @@
 {
-  "version": 5,
+  "version": 6,
   "constants": {
-    "MAX_LAYERS": 4,
+    "MAX_LAYERS": 6,
     "MAX_RECTS": 96,
     "OK": 0,
     "BAD_ARGUMENT": 1,
@@ -12,8 +12,8 @@
     "EXHAUSTED": 6,
     "BAD_ID": 7,
     "BAD_TOKEN": 8,
-    "BACKGROUND_SLOT": 4,
-    "SLOT_COUNT": 5,
+    "BACKGROUND_SLOT": 6,
+    "SLOT_COUNT": 7,
     "UPDATE_PAINT": 1,
     "UPDATE_COPY": 2,
     "MAX_DAMAGE": 8,

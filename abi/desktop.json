@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,

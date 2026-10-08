@@ -19,6 +19,12 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [Desktop menu and window switching](desktop-menu-window-switching.md): active
+  window menus, covered-window selection, keyboard cycling and focus restoration.
+
+- [Control Panel session settings](control-panel-settings.md): runtime Off/Mild,
+  staged Apply/Cancel, physical redraw checks and reduced Files popup stack use.
+
 - [GEM4XE calculator port](calculator-port.md): noneditable TEDINFO, classic
   resources and a private windowed APP with Files/shell ownership and disk packaging.
 

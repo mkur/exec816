@@ -232,9 +232,9 @@ RETURN(LAYERTYPES.REDRAW)
 ; Reuse the existing saved rectangle pair; copy and move cannot coexist.
 PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
     INT left,top LONGCARD POINTER token)
-  BYTE status
+  BYTE status,rank
   INT width,height
-  LAYERTYPES.Layer POINTER layer
+  LAYERTYPES.Layer POINTER layer,above
 
   status=Admit(scene)
   IF status<>LAYERTYPES.OK THEN
@@ -261,14 +261,26 @@ PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
-      OR scene.items(scene.order(0)).id<>id THEN
+  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1 THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
   IF REGIONS.Equal(@layer.visible.rects(0),@layer.bounds)=0 THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
+
+  ; A disjoint menu bar above a window must not disable its copied move.
+  ; The source is already wholly visible; the target must also miss every
+  ; shown layer above it. Otherwise the ordinary clipped redraw path applies.
+  rank=0
+  WHILE scene.items(scene.order(rank)).id<>id DO
+    above=@scene.items(scene.order(rank))
+    IF above.shown<>0 AND left<above.bounds.right AND left+width>above.bounds.left
+        AND top<above.bounds.bottom AND top+height>above.bounds.top THEN
+      RETURN(LAYERTYPES.REDRAW)
+    FI
+    rank==+1
+  OD
 
   status=Claim(scene,id,LAYERTYPES.UPDATE_MOVE,token)
   IF status=LAYERTYPES.OK THEN

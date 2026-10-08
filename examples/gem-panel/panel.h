@@ -11,6 +11,7 @@ struct Panel {
     OBJECT tree[8];
     char status[22];
     WORD focus,armed,saved,down;
+    WORD staged,applied;
 };
 #pragma pack(pop)
 WORD PanelRun(struct Panel *);

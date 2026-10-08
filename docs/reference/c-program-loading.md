@@ -42,7 +42,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 3 |
+| 6 | 2 | Import ABI version, 4 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -122,7 +122,7 @@ and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
 existing background job after the initial Files window closes.
 Calculator is launched on demand with `SYS:CALC.RSC`; it does not add a startup
 Process or enlarge the fixed pools. Close an existing GEM window before launch
-when the shell and three initial apps occupy all four layers. The
+when the shell and three initial apps occupy all four application-window slots. The
 [calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes its input.
 
 The shell includes owned child completion masks in its existing DOS waits.

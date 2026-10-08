@@ -110,7 +110,9 @@ The text, bitmap and desktop demos use a 4 KiB arena to hold their composed
 application globals and the resident fault strings. `tools/build_demo.py`
 derives `demo-memory.json` from the default profile with this explicit 2 KiB
 upper-RAM increase over the default (1.5 KiB over the earlier desktop arena).
-The disk-loaded GEM desktop adds 512 bytes to that arena (4.5 KiB total) for
+Desktop menu profiles add 256 bytes of upper arena capacity for menu state and
+labels (4.25 KiB total). The disk-loaded GEM desktop adds another 512 bytes
+(4.75 KiB total) for
 its native component-loader checksum table and fixed descriptors, within the
 already owned data bank. Its C image banks remain reserved and are cleared by
 the XEX bootstrap; the native DOS path loads their payload from `SYS:GEMSYS.BIN`

@@ -38,12 +38,19 @@ Use the desktop
 ---------------
 
 Click a window to bring it forward. Drag application titles to any on-screen pixel
-position; shell moves use its character grid. Escape cancels a title drag.
-Click X to close one application. Click another window to give it focus afterward.
-The panel uses an application-owned GEM object tree. Toggle changes selection;
-Small/Large are exclusive radio choices. Locked is disabled. Apply reports the
-current settings; Cancel resets them. Tab/Shift-Tab move focus, Space activates
-focus and Return activates Apply. Escape/BREAK cancels a held press. Release
+position below the menu bar; shell moves use its character grid. Escape cancels
+a title drag. The top-left menu follows the active window and offers Next window
+and Close. Windows lists every open window, including covered ones and the shell.
+Ctrl-Tab / Ctrl-Shift-Tab cycle windows. Ctrl-Escape opens Windows; Tab or arrow
+keys and Return select an entry. Escape or a click outside cancels the menu.
+Click X or use Close to close an application. Focus returns to the frontmost
+remaining window. Close is disabled for the shell; use EXIT to end the session.
+The panel controls mouse acceleration through its own GEM object tree.
+Off gives fixed 2x movement; Mild gives slow precision and faster travel.
+Select a radio button, then Apply; Defaults stages Mild. Cancel discards pending
+edits and restores the active session choice. Closing discards pending edits;
+reopening reads the active choice. Settings last until the desktop restarts.
+Tab/Shift-Tab move focus, Space activates focus and Return activates Apply. Escape/BREAK cancels a held press. Release
 outside a button to cancel it. The counter continues independently.
 @POINTER_DESCRIPTION@
 

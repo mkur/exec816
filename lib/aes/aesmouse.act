@@ -80,7 +80,8 @@ PUBLIC PROC Refresh()
         eligible=0
         IF client.window<>NULL AND client.endpoint.input.windowEpoch<>0
             AND (client.endpoint.input.loss & AESTYPES.INPUT_BUTTON)=0
-            AND needRelease=0 AND manager=0 AND nativePending=0 THEN
+            AND needRelease=0 AND manager=0 AND nativePending=0
+            AND DESKSTATE.menuActive=0 THEN
           IF owner<>0 THEN
             eligible=owner=client.id
           ELSEIF service.mouseHolds<>0 THEN
@@ -201,7 +202,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 
   client=NULL
   LET desktop=DESKSTATE.Get()
-  IF nativePending=0 THEN
+  IF nativePending=0 AND DESKSTATE.menuActive=0 THEN
     IF service.mouseHolds<>0 THEN
       client=AESSTATE.Find(service,service.mouseOwner)
       IF client.window=NULL OR client.endpoint.input.windowEpoch=0 THEN
@@ -239,7 +240,8 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   BEGIN
     LET layer=LAYERS.Find(@desktop.scene,
         LAYERS.Hit(@desktop.scene,sample.x,sample.y))
-    IF layer<>NULL AND sample.y>=layer.bounds.top+2
+    IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0
+        AND sample.y>=layer.bounds.top+2
         AND sample.y<layer.bounds.top+14 THEN
       manager=TITLE
     FI

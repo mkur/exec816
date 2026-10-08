@@ -41,7 +41,7 @@ Exact layouts, operation numbers and statuses come from
 | --- | --- |
 | REGISTER | Retain owner and assign client identity. |
 | OPEN | Copy a title of at most 64 bytes and create a hidden, fixed-size, fully onscreen window. Four slots include hidden windows. Return its ID in `window`. |
-| SHOW / HIDE | Change visibility. Hiding the focused window clears focus. |
+| SHOW / HIDE | Change visibility. Hiding the focused window restores the frontmost remaining shown, routable window. |
 | MOVE | Set the top-left position from `bounds.left/top`; preserve dimensions. |
 | RAISE | Move a window to the front. |
 | FOCUS | Focus a shown window and retain focus-change notices. |
@@ -162,8 +162,11 @@ Deferred events already contain final absolute screen coordinates and are not
 accelerated again. The current default is `mild`: slow/reset motion is 1×,
 ordinary movement about 2× and fast movement up to 4×. Build with
 `--mouse-profile off` for a fixed **two screen pixels per decoded ST step**.
-The same curve applies while dragging. The profile is selected at build time;
-the Control Panel is a widget demo, not a preferences editor.
+The build selects the initial profile. In the GEM desktop, `PANEL.APP` edits
+this session preference through [the AES extension](aes.md#session-mouse-preference).
+Apply preserves pointer coordinates and clears fractional motion. A held
+gesture keeps its old curve through release; closing a panel retains the applied
+choice. Reacquiring desktop input restores the build default.
 
 [mouse.json](../../config/mouse.json) supplies the quarter-pixel gains and the
 default profile; build metadata records the selected profile and table hash.
@@ -215,6 +218,37 @@ Graphical close gadgets publish durable CLOSE events. They do not force a Task
 to retire, and an application may decline. The shell has no active close gadget;
 its normal EXIT path controls retirement.
 
+### Desktop menus and window switching
+
+The presenter owns a persistent 16-pixel menu bar. Its left menu follows the
+focused window and offers Next window and Close. Close is disabled for the shell.
+Windows lists all shown application windows in stable slot order, including
+covered windows and the shell. Selecting an AES entry sends `WM_TOPPED`; the
+application raises itself with `WF_TOP`. Close sends `WM_CLOSED`. Native windows
+use the existing focus and close notices. Neither command forces Task removal.
+
+Ctrl+Tab and Ctrl+Shift+Tab cycle the same stable window order. Ctrl+Escape opens
+Windows; arrows or Tab/Shift+Tab change selection, and Return selects. Escape,
+BREAK, capture loss or an outside click cancels. Desktop menu input is consumed
+before application input routing. An existing held application/title gesture
+keeps its ownership; menu actions wait for scene, display and GUI owners to
+release their resources. Dragging keeps the title below the bar when the window
+fits in the remaining screen height; taller windows retain the screen-fit clamp.
+
+Hide, close and AES retirement restore focus only if the retiring window owns
+it. The target is the frontmost remaining shown window with a live input route;
+a retired AES input epoch is ineligible. Closing a background window leaves
+focus unchanged. No remaining owner means focus and the published route are zero.
+
+The bar and bounded four-row popup occupy two private Layers; all four application
+window slots remain available. They participate in normal visibility, damage
+and repaint, with no saved-under framebuffer. Labels and window IDs are copied
+into upper-memory state. A scene/focus change dismisses an open menu, preventing
+selection of stale labels after window retirement or slot reuse. No extra Task,
+timer, signal or bank-zero reservation is needed. This desktop-owned menu does
+not yet expose application-defined GEM `menu_bar`/`MN_SELECTED` menus, accessories
+or submenus. Existing application `menu_popup` remains window-scoped.
+
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.
 The [mouse performance record](../history/mouse-performance.md) compares the
@@ -252,13 +286,13 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 12,480 bytes in upper RAM, including the
-5,084-byte Layers scene, four 668-byte client records, four 812-byte windows,
+The generated service occupies 14,186 bytes in upper RAM, including the
+6,790-byte Layers scene, four 668-byte client records, four 812-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
 fourteen-byte snapshot records. Public
 client handles are 18 bytes and requests are
 92 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 12,344 bytes at Exec’s eight-byte alignment; unused window/queue/list
+rounds to 14,192 bytes at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at
@@ -295,7 +329,7 @@ Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
 first, then the least recently used unpinned slot. The generated Service is
-12,480 bytes, including the two fourteen-byte slot records and alignment.
+14,186 bytes, including the two fourteen-byte slot records and alignment.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.

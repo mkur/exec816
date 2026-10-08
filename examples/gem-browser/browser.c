@@ -77,15 +77,17 @@ static WORD open_item(struct Browser *b)
 }
 static WORD file_menu(struct Browser *b)
 {
-    MENU input={(LONG)(ULONG)b->menu,0,1,0,0},output;
     WORD okay;
+    b->popupInput.mn_tree=(LONG)(ULONG)b->menu;
+    b->popupInput.mn_menu=0;b->popupInput.mn_item=1;
+    b->popupInput.mn_scroll=0;b->popupInput.mn_keystate=0;
     menu_ienable(b->menu,1,b->selected>=0);
     menu_ienable(b->menu,3,b->child!=0);
-    okay=menu_popup(&input,b->work[0]+8,b->work[1]+32,&output);
+    okay=menu_popup(&b->popupInput,b->work[0]+8,b->work[1]+32,&b->popupOutput);
     if (okay) {
-        if (output.mn_item==1) return open_item(b);
-        if (output.mn_item==2) return refresh(b);
-        if (output.mn_item==3 && b->child) {
+        if (b->popupOutput.mn_item==1) return open_item(b);
+        if (b->popupOutput.mn_item==2) return refresh(b);
+        if (b->popupOutput.mn_item==3 && b->child) {
             ExecBreakProgram(b->child);strcpy(b->status,"Stopping");
         }
     }
@@ -93,7 +95,7 @@ static WORD file_menu(struct Browser *b)
 }
 WORD BrowserRun(struct Browser *b)
 {
-    WORD i,cw,ch,bw,bh,events,mx,my,mb,ks,kr,br,hit,quit=0,result=1;
+    WORD i,cw,ch,bw,bh,events,hit,quit=0,result=1;
     b->id=appl_init();b->window=-1;b->selected=b->armed=-1;
     if (b->id<0) return 1;
     if (!rsrc_load("SYS:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&b->tree) ||
@@ -112,14 +114,14 @@ WORD BrowserRun(struct Browser *b)
     b->ready=1;result=0;
     while (!quit) {
         events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|(b->child ? MU_TIMER:0),1,1,b->down ? 0:1,
-            0,0,0,0,0,0,0,0,0,0,b->message,100,0,&mx,&my,&mb,&ks,&kr,&br);
+            0,0,0,0,0,0,0,0,0,0,b->message,100,0,&b->mx,&b->my,&b->mb,&b->ks,&b->kr,&b->br);
         if (!events) {
             if (ExecAESDiagnostic()!=AES_INPUT_LOST) { result=2;break; }
             b->armed=-1;b->down=1;continue;
         }
         if (events&MU_BUTTON) {
-            hit=objc_find(b->tree,0,MAX_DEPTH,mx,my);
-            if (mb&1) { b->down=1;b->armed=hit; }
+            hit=objc_find(b->tree,0,MAX_DEPTH,b->mx,b->my);
+            if (b->mb&1) { b->down=1;b->armed=hit; }
             else {
                 b->down=0;
                 if (hit==b->armed) {
@@ -136,12 +138,12 @@ WORD BrowserRun(struct Browser *b)
             }
         }
         if (events&MU_KEYBD) {
-            if ((kr&255)==13) { if (!open_item(b)) result=2; }
-            else if ((kr&255)=='f' || (kr&255)=='F') { if (!file_menu(b)) result=2; }
-            else if ((kr&255)==8) { if (!up(b)) result=2; }
-            else if ((kr>>8)==0x48 || (kr>>8)==0x50) {
+            if ((b->kr&255)==13) { if (!open_item(b)) result=2; }
+            else if ((b->kr&255)=='f' || (b->kr&255)=='F') { if (!file_menu(b)) result=2; }
+            else if ((b->kr&255)==8) { if (!up(b)) result=2; }
+            else if ((b->kr>>8)==0x48 || (b->kr>>8)==0x50) {
                 if (b->selected>=0) b->tree[4+b->selected].ob_state=0;
-                if ((kr>>8)==0x48) b->selected=b->selected>0 ? b->selected-1:b->count-1;
+                if ((b->kr>>8)==0x48) b->selected=b->selected>0 ? b->selected-1:b->count-1;
                 else b->selected=b->selected+1<b->count ? b->selected+1:0;
                 if (b->count) b->tree[4+b->selected].ob_state=SELECTED;
                 if (!redraw(b,b->work)) result=2;

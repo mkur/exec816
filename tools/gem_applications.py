@@ -28,7 +28,8 @@ def instances(bridge,program,directory):
         sy={key:base+address-reference for key,address in app['image']['symbols'].items()
             if reference<=address<reference+app['span']}
         result.append(dict(name=name,identity=int.from_bytes(row[offsets['identity']:offsets['identity']+4],'little'),
-                           symbols=sy,base=base,state=row[offsets['state']]))
+                           symbols=sy,base=base,state=row[offsets['state']],
+                           task=table['address']+offset+offsets['task']))
     return result
 
 def symbols(bridge,program,directory,name,identity):
@@ -39,12 +40,29 @@ def symbols(bridge,program,directory,name,identity):
 
 def scene_symbols(bridge,program,directory,title,bounds):
     name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc'}[title]
-    model,ready,work=MODELS[name];found=[]
+    from generate_aes_server import ABI,layout
+    records=layout();request=records['Request'];view=records['WindowView']
+    number=lambda raw,at,size: int.from_bytes(raw[at:at+size],'little')
+    resident=json.loads((directory/'c-image.json').read_text())['symbols']
+    pointers=bridge.memdump(resident['contexts'],4*ABI['constants']['CONTEXTS'])
+    owners={}
+    for offset in range(0,len(pointers),4):
+        at=number(pointers,offset,4)
+        if not at:continue
+        raw=bridge.memdump(at,request['size'])
+        target=number(raw,request['fields']['view'],3)
+        if not target:continue
+        state=bridge.memdump(target,view['fields']['visibleCount'])
+        rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
+                                       'little',signed=True) for i in (0,2,4,6))
+        if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
+            owners[number(raw,request['fields']['owner'],3)]=target
+    # wind_get clears caller output words before filling them. The application
+    # work[] buffer is scratch, not a window identity, even at an IRQ snapshot.
+    # Use the published AES view and its retained Process Task instead.
+    found=[]
     for item in instances(bridge,program,directory):
-        if item['name']!=name:continue
-        at=item['symbols'][model]
-        xy=bridge.memdump(at+work,4)
-        if int.from_bytes(xy[:2],'little')==bounds[0]+8 and int.from_bytes(xy[2:],'little')==bounds[1]+16:
+        if item['name']==name and item['task'] in owners:
             found.append(item['symbols'])
     require(len(found)==1,'No unique loaded window model for '+name)
     return found[0]

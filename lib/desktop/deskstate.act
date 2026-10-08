@@ -10,6 +10,24 @@ DESKTYPES.Service POINTER service
 LONGCARD selectedLayer,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
 PUBLIC BYTE outlineVisible
+PUBLIC LONGCARD barLayer,popupLayer
+PUBLIC BYTE menuActive
+
+; Keep desktop chrome above application layers within the same scene mutation.
+PUBLIC PROC TopChrome()
+  BYTE status
+
+  IF service<>NULL AND barLayer<>0 THEN
+    IF service.scene.count>=2
+        AND service.scene.items(service.scene.order(0)).id=popupLayer
+        AND service.scene.items(service.scene.order(1)).id=barLayer THEN
+      RETURN
+    FI
+    status=LAYERS.Order(@service.scene,barLayer,1)
+    status=LAYERS.Order(@service.scene,popupLayer,1)
+  FI
+
+RETURN
 
 PUBLIC DESKTYPES.Service POINTER FUNC Get()
 

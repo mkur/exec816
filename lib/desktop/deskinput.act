@@ -16,6 +16,7 @@ USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
 USE DESKDRAG
+USE DESKMENU
 USE DESKWIDGETINPUT
 USE DESKEVENTS
 USE LAYERS
@@ -132,6 +133,10 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     RETURN(0)
   FI
 
+  IF DESKMENU.Key(captured,buttons)<>0 THEN
+    RETURN(1)
+  FI
+
   IF DESKDRAG.Escape(captured)<>0 THEN
     RETURN(1)
   FI
@@ -178,6 +183,7 @@ PROC Consume()
   Copy(@sample)
   IF sample.kind=INPUT.EVENT_LOSS THEN
     AESMOUSE.Lost()
+    DESKMENU.Cancel()
     released=0
     DESKWIDGETINPUT.Lost()
     focusWanted=0
@@ -196,6 +202,11 @@ PROC Consume()
     released=1
   FI
 
+  IF DESKMENU.Active()<>0 AND DESKMENU.Mouse(@sample)<>0 THEN
+    focusWanted=0
+    RETURN
+  FI
+
   event.kind=DESKTYPES.EVENT_MOTION
   IF sample.kind=INPUT.EVENT_BUTTON THEN
     event.kind=DESKTYPES.EVENT_BUTTON
@@ -206,6 +217,11 @@ PROC Consume()
   FI
 
   IF DESKDRAG.Capture(@sample,released)<>0 THEN
+    focusWanted=0
+    RETURN
+  FI
+
+  IF DESKMENU.Mouse(@sample)<>0 THEN
     focusWanted=0
     RETURN
   FI
@@ -321,6 +337,7 @@ PUBLIC PROC Advance()
 
   DESKWIDGETINPUT.Advance()
   DESKDRAG.Advance()
+  DESKMENU.Advance()
   LET service=DESKSTATE.Get()
   IF focusWanted<>0 AND service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 THEN
     BEGIN
@@ -369,7 +386,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(pending<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (AESLOCKS.MouseBlocked()=0 AND (AESINPUT.Pending()<>0
+RETURN(pending<>0 OR DESKMENU.Runnable()<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (AESLOCKS.MouseBlocked()=0 AND (AESINPUT.Pending()<>0
     OR (focusWanted<>0 AND service.scene.busy=0)))
     OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0))
 

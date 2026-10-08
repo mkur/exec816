@@ -16,6 +16,9 @@ struct Browser {
     volatile ULONG launches,paints;
     ULONG child;
     struct ExecProgramResult result;
+    /* Popup descriptors and event outputs outlive nested drawing calls. */
+    MENU popupInput,popupOutput;
+    WORD mx,my,mb,ks,kr,br;
 };
 WORD BrowserRun(struct Browser *);
 #endif

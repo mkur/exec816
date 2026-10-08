@@ -22,9 +22,10 @@ class DesktopBoot:
         position=[320,120]
         def move(x,y):
             nonlocal position
-            position=schedule(s.b,s.p,position,(x,y));s.saved["pointer"]=position
             cursor=lambda name:next(d['address'] for d in s.p['image']['data']
                 if '_DESKINPUT_'+name.upper()+'_' in d['name'])
+            position=[s.number(cursor(name),2) for name in ("cursorX","cursorY")]
+            position=schedule(s.b,s.p,position,(x,y));s.saved["pointer"]=position
             s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)'%
                 (cursor('cursorX'),position[0],cursor('cursorY'),position[1]))
             s.frames(3)
@@ -32,11 +33,15 @@ class DesktopBoot:
             move(x,y)
             s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(35)
             s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(60)
+        from desktop_menu_check import exercise as check_menus
+        s.menus=check_menus(s,sy,click,move)
         click(458,56);click(456,104)
-        require(s.number(panel+178+2*24+10,2)==1,'Packaged panel toggle')
+        require(s.number(panel+400,2)==1 and s.number(panel+178+2*24+10,2)==0,'Packaged panel Defaults')
         require(s.number(counter+14,4)>0,'Packaged counter did not advance')
         from loadable_gem_feedback import measure
         measure(s,panel,move,'initial')
+        from panel_settings_check import exercise
+        exercise(s,sy,click,move)
         actions=s.number(panel+10,4)
         s.b._cmd_ok('KEY RETURN down');s.frames(3)
         s.b._cmd_ok('KEY RETURN up');s.frames(70)
@@ -89,7 +94,7 @@ class DesktopBoot:
         s.rendezvous('dw($%x)=1'%(loaded_panel+8));click(24,64);key('F')
         click(96,32)
         s.save_screen(s.p['output']/'boot-smoke.png')
-        s.saved['integration']=dict(profile='gem-desktop',panel_toggle=True,panel_keyboard=True,panel_drag=True,counter=True,shell=True,
+        s.saved['integration']=dict(profile='gem-desktop',desktop_menu=s.saved['desktop_menu'],panel_settings=s.saved['panel_settings'],panel_keyboard=True,panel_drag=True,counter=True,shell=True,
             files_relaunch=True,idle_job_collection=True,heap_restored=True,exit_with_gui_child_and_popup=True)
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()

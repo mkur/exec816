@@ -19,6 +19,7 @@ USE CONSOLEWINDOWS
 USE AESHOST
 USE AESLOCKS
 USE DESKWIDGETINPUT
+USE DESKMENU
 
 BYTE firstPort,lateAES
 
@@ -40,12 +41,19 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
 
+  IF DESKMENU.Start()=0 THEN
+    stopped=DESKCORE.Stop(service)
+    EXEC.FreeSignal(bit)
+    RETURN(0)
+  FI
+
   service.consoleOwner=DESKSTATE.Owner()
   LET windows=CONSOLEWINDOWS.Registry()
   service.keyboard=BYTE POINTER(CONSOLECAPTURE.GetLease())
   service.consoleRoute=@windows.items(0).route
   service.consoleFocus=@windows.focusSlot
   IF DESKINPUT.Start()=0 THEN
+    DESKMENU.Stop()
     stopped=DESKCORE.Stop(service)
     EXEC.FreeSignal(bit)
     RETURN(0)
@@ -292,6 +300,7 @@ PUBLIC PROC Stop()
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     DESKINPUT.Stop()
+    DESKMENU.Stop()
     IF DESKCORE.Stop(service)=0 THEN
       HEAPCORE.Abort($fae2)
     FI

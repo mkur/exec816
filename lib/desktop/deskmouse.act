@@ -5,7 +5,7 @@ USE DESKMOUSECONFIG
 INCLUDE "mouse-gains.inc"
 
 INT pixelX,pixelY,remainderX,remainderY
-BYTE selectedProfile
+BYTE selectedProfile,requestedProfile,holding
 
 PUBLIC PROC Start(INT x,y BYTE selected)
 
@@ -14,8 +14,24 @@ PUBLIC PROC Start(INT x,y BYTE selected)
   remainderX=0
   remainderY=0
   selectedProfile=selected
+  requestedProfile=selected
+  holding=0
 
 RETURN
+
+; Only the presenter calls this. Keep a gesture's gain through its release.
+PUBLIC INT FUNC Profile(INT profile)
+
+  IF profile>=0 THEN
+    requestedProfile=BYTE(profile)
+    IF holding=0 AND selectedProfile<>requestedProfile THEN
+      selectedProfile=requestedProfile
+      remainderX=0
+      remainderY=0
+    FI
+  FI
+
+RETURN(INT(requestedProfile))
 
 ; The curve uses only these fixed gains; no general arithmetic helper is needed.
 INT FUNC ScaledDistance(INT steps BYTE gain)
@@ -86,6 +102,13 @@ PUBLIC PROC Apply(INPUT.Event POINTER event)
     IF event.y<>0 THEN
       Move(IF event.y<0 THEN -distance ELSE distance FI,239,@pixelY,@remainderY)
     FI
+  FI
+
+  holding=BYTE(event.buttons<>0 AND event.kind<>INPUT.EVENT_LOSS)
+  IF holding=0 AND selectedProfile<>requestedProfile THEN
+    selectedProfile=requestedProfile
+    remainderX=0
+    remainderY=0
   FI
 
   event.x=pixelX

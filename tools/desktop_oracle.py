@@ -20,7 +20,7 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
     scene = service+fields['scene']
     lf = layers_layout()['Scene']['fields']
     count = number(bridge.memdump(scene+lf['count'], 1), 0, 1)
-    require(count <= 4, 'Unbounded desktop scene')
+    require(count <= 6, 'Unbounded desktop scene')
     order = bridge.memdump(scene+lf['order'], count)
     windows = {}
     wf = types['Window']['fields']
@@ -31,6 +31,41 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
             windows[number(window, wf['layer'], 4)] = (window, start+wf['content'])
     result = Raster(font)
     rectangle(result, (0, 0, 640, 240), 8)
+    chrome = {}
+    if any('_DESKSTATE_BARLAYER_' in d['name'] for d in program['image']['data']):
+        chrome = {name: number(bridge.memdump(symbol('DESKSTATE' if name in ('barLayer', 'popupLayer') else 'DESKMENU', name), size), 0, size)
+                  for name, size in [('barLayer', 4), ('popupLayer', 4), ('menu', 1),
+                                     ('selected', 2)]}
+    shown = set()
+    for slot in order:
+        at = scene+lf['items']+slot*layers_layout()['Layer']['size']
+        if bridge.memdump(at+layers_layout()['Layer']['fields']['shown'], 1)[0]:
+            shown.add(number(bridge.memdump(at, 4), 0, 4))
+    active = next((w for w, _ in windows.values() if number(w, wf['id'], 4) == focused), None)
+
+    def menu_layer(ident, bounds):
+        left, top, right, bottom = bounds
+        rectangle(result, bounds, 0)
+        if ident == chrome['barLayer']:
+            inverse = chrome['menu'] == 1
+            rectangle(result, (0, 0, 320, 15), int(inverse))
+            title = active[wf['title']:wf['title']+32].split(b'\0')[0] if active else b'Desktop'
+            text(result, 8, 4, title, int(not inverse), int(inverse))
+            inverse = chrome['menu'] == 2
+            rectangle(result, (432, 0, 640, 15), int(inverse))
+            text(result, 440, 4, b'Windows', int(not inverse), int(inverse))
+            rectangle(result, (0, 15, 640, 16), 1)
+        else:
+            if chrome['menu'] == 2:
+                entries = [(w[wf['title']:wf['title']+24].split(b'\0')[0], True)
+                           for ident, (w, _) in windows.items() if ident in shown]
+            else:
+                entries = [(b'Next window', True), (b'Close', active is not None and active[wf['kind']] != 1)]
+            for row, (label, enabled) in enumerate(entries):
+                inverse = enabled and row == chrome['selected']
+                rectangle(result, (left, top+row*16, right, top+(row+1)*16), int(inverse))
+                text(result, left+8, top+row*16+4, label,
+                     int(not inverse) if enabled else 8, int(inverse))
     for slot in reversed(order):
         start = scene+lf['items']+slot*layers_layout()['Layer']['size']
         if not bridge.memdump(start+layers_layout()['Layer']['fields']['shown'], 1)[0]:
@@ -38,8 +73,12 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None):
         # Read retained geometry/content only, never the target's cached visible
         # regions or damage. This also avoids thousands of far debugger reads.
         layer = bridge.memdump(start, 12)
-        window, content_address = windows[number(layer, 0, 4)]
         bounds = rect(layer, 4)
+        ident = number(layer, 0, 4)
+        if chrome and ident in (chrome['barLayer'], chrome['popupLayer']):
+            menu_layer(ident, bounds)
+            continue
+        window, content_address = windows[ident]
         left, top, right, bottom = bounds
         kind = window[wf['kind']]
         title = window[wf['title']:wf['title']+32].split(b'\0')[0]

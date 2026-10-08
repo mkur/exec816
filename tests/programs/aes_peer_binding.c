@@ -5,6 +5,7 @@
 #define ExecAESAttach Peer_ExecAESAttach
 #define ExecAESDetach Peer_ExecAESDetach
 #define ExecAESDiagnostic Peer_ExecAESDiagnostic
+#define ExecAESMouseProfile Peer_ExecAESMouseProfile
 #define appl_init Peer_appl_init
 #define appl_exit Peer_appl_exit
 #define appl_write Peer_appl_write

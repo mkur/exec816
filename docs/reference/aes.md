@@ -250,8 +250,9 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 8 has a 112-byte request and permits init, exit, update,
-window mutations and cold display delegation on the RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
+profile: version 9 has a 112-byte request and permits init, exit, update,
+window mutations, cold display delegation and session mouse preferences on the
+RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
@@ -282,9 +283,9 @@ native Control Panel is replaced in this bundle; adding it would leave only one
 Task slot after disk services start. The separate four-layer coexistence proof
 uses root-driven disk I/O rather than pipeline children.
 
-All clients must detach before service shutdown. Closing a focused window clears
-focus under the current desktop policy; click another window to restore it.
-No auto-focus successor, resize or dynamic GEM launcher is supplied.
+All clients must detach before service shutdown. Closing a focused window
+restores the frontmost remaining shown, routable owner. Closing a background
+window preserves focus. Fixed-size windows remain the supported geometry.
 Window-scoped menus and resource loading are described below. [WA6](../history/aes-windows.md#wa6--coexistence-and-the-of816-demo)
 records development coverage and measured stack use, not hardware qualification.
 
@@ -295,6 +296,12 @@ reopen creates a fresh one. GEM translation uses the pinned Atari mapping and
 shared Caps state. Ctrl-C is delivered as a key; physical BREAK becomes Escape,
 except when a native title gesture consumes it. Public input waits consume these
 records directly in their caller.
+
+The desktop reserves Ctrl+Tab/Ctrl+Shift+Tab for window cycling and Ctrl+Escape
+for its Windows menu when no pointer/title gesture is held. While that menu is
+open, navigation, selection and cancellation keys are consumed by the presenter
+before application delivery. These commands use the existing top/close notices;
+they do not add another application event transport.
 
 Private button routing now retains the focused work-area recipient through
 release, even outside its window. Activation/chrome sequences remain native.
@@ -384,11 +391,13 @@ ordinary caller-local evnt_multi waits. On return it restores tree positions and
 states; the application repaints the underlying content. Non-redraw window
 messages cancel the popup and are preserved in one deferred caller-local slot,
 consumed by the next message wait. This adds no kernel signal or service queue.
-There is no global menu bar or accessory protocol yet.
+The [desktop-owned menu bar](desktop.md#desktop-menus-and-window-switching)
+provides active-window commands and a Windows list. Application-defined
+`menu_bar`/`MN_SELECTED` menus and the accessory protocol remain unsupported.
 
 The private C context is now 288 bytes: the resource pointer and deferred message
 add 21 upper-RAM bytes per attached caller. Rebuild bindings and applications.
-The version-8 server wire record and all bank-zero reservations are unchanged.
+The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
 
 ## Small GEM desktop
 
@@ -404,9 +413,33 @@ text suffice. Initial apps belong to the shell; Files owns its one launched
 child. Closed apps are collected at the idle prompt. `RUN C:FILES.APP` uses the
 shell background job to reopen Files.
 
-Three AES registrations and all four desktop layers are used. Seven idle public
+Three AES registrations and all four application-window slots are used (plus two private menu layers). Seven idle public
 Tasks leave one slot for a launched command. Close one GEM window before a
 shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
 PRIMES requires tiled-console mode and returns an error in desktop mode.
 This optional profile does not change the
 default shell/prime demo or its five-second OF816 autoboot.
+
+## Session mouse preference
+
+`ExecAESMouseProfile(profile)` in `<exec816/aes.h>` is an Exec816 extension,
+separate from standard GEM. A registered application supplies `AES_MOUSE_OFF`
+(fixed 2× motion), `AES_MOUSE_MILD` (the existing accelerated curve) or
+`AES_MOUSE_QUERY` (-1). The result is the chosen profile; -1 indicates failure,
+with `ExecAESDiagnostic()` supplying the cause. Valid enum use belongs to the
+caller. AES wire version 9 adds operation 201 without changing record layouts;
+C application import ABI 4 exports the binding. Rebuild the runtime and apps.
+
+The presenter serializes this infrequent request with input processing. It
+preserves pointer coordinates and clears fractional motion when the profile
+changes. An already processed held-button gesture retains its old profile
+through the release event; the latest requested choice then takes effect.
+Input loss also ends that gesture. Query reports the chosen preference during
+this deferral, so acknowledgement does not promise immediate movement changes.
+Repeatedly selecting the active profile preserves fractional motion.
+
+The choice survives application close/reload until desktop input is reacquired,
+which restores the build default. There is no persistent settings file or
+change broadcast. Multiple panels keep independent pending edits; Apply is
+last-writer-wins and Cancel reloads the current session choice. No new Task,
+signal, timer, bank-zero reservation or IRQ work is involved.

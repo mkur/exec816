@@ -7,6 +7,8 @@ USE DESKTYPES
 USE DESKCORE
 USE DESKCACHE
 USE DESKWIDGETS
+USE DESKMENU
+USE DESKMENUPAINT
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -202,6 +204,9 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   LET service=DESKSTATE.Get()
   IF window=NULL THEN
+    IF layer.id<>0 AND (layer.id=DESKSTATE.barLayer OR layer.id=DESKSTATE.popupLayer) THEN
+      RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
+    FI
     RETURN(Fill(@strip,@strip,8))
   FI
 

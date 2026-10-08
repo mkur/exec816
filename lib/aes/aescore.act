@@ -12,6 +12,7 @@ USE AESLOCKS
 USE AESGUI
 USE AESWINDOW
 USE AESINBOX
+USE DESKMOUSE
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -349,6 +350,9 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
     IF status<>AESTYPES.PENDING THEN
       AESSTATE.Reply(request,status)
     FI
+  ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
+    request.intout(0)=DESKMOUSE.Profile(request.intin(0))
+    AESSTATE.Reply(request,AESTYPES.OK)
   ELSEIF request.operation=AESTYPES.OP_DISPLAY THEN
     BEGIN
       LET grant=DISPLAY.Grant POINTER(request.displayGrant)

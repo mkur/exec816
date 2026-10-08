@@ -165,6 +165,17 @@ WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
     return c->diagnostic == AES_OK ? r->intout[0] : failure;
 }
 
+/* This infrequent desktop preference is serialized by the input owner. */
+WORD ExecAESMouseProfile(WORD profile)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (c == NULL) return -1;
+    if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
+    c->request.intin[0] = profile;
+    ExecAESSubmit(c, AES_OP_MOUSE_PROFILE);
+    return c->diagnostic == AES_OK ? c->request.intout[0] : -1;
+}
+
 WORD appl_init(void)
 {
     struct ExecAESContext *c = ExecAESContext();

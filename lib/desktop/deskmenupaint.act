@@ -1,0 +1,107 @@
+; Menu chrome is normal opaque scene content, painted in bounded row steps.
+MODULE DESKMENUPAINT
+USE DESKMENU
+USE DESKSTATE
+USE LAYERTYPES
+USE REGIONS
+USE CONSOLEBITMAP
+
+BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
+  LAYERTYPES.Rect area
+
+  REGIONS.Intersect(bounds,clip,@area)
+  IF REGIONS.Empty(@area)<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+    CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
+
+BYTE FUNC Text(CARD x,y BYTE POINTER value CARD foreground,background
+    LAYERTYPES.Rect POINTER clip BYTE limit)
+  CARD length
+
+  length=0
+  WHILE length<CARD(limit) AND value(length)<>0 DO
+    length==+1
+  OD
+
+RETURN(CONSOLEBITMAP.ClippedText(x,y,value,length,foreground,background,clip))
+
+PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
+    BYTE POINTER phase)
+  LAYERTYPES.Rect bounds,area
+  CARD foreground,background
+  BYTE row,okay
+
+  IF phase^=0 THEN
+    phase^=1
+    RETURN(IF Fill(clip,clip,0)<>0 THEN 2 ELSE 0 FI)
+  FI
+
+  IF layer.id=DESKSTATE.barLayer THEN
+    background=0
+    foreground=1
+    IF phase^=1 THEN
+      REGIONS.Assign(@bounds,0,0,320,15)
+      IF DESKMENU.paintMenu=DESKMENU.APP_MENU THEN
+        background=1
+        foreground=0
+      FI
+      okay=Fill(@bounds,clip,background)
+      IF okay<>0 THEN
+        okay=Text(8,4,@DESKMENU.title(0),foreground,background,clip,32)
+      FI
+      phase^=2
+      RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+    FI
+
+    IF phase^=2 THEN
+      REGIONS.Assign(@bounds,DESKMENU.WINDOWS_LEFT,0,640,15)
+      IF DESKMENU.paintMenu=DESKMENU.WINDOWS_MENU THEN
+        background=1
+        foreground=0
+      FI
+      okay=Fill(@bounds,clip,background)
+      IF okay<>0 THEN
+        okay=Text(DESKMENU.WINDOWS_LEFT+8,4,BYTE POINTER(c"Windows"),
+            foreground,background,clip,7)
+      FI
+      phase^=3
+      RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
+    FI
+
+    REGIONS.Assign(@bounds,0,15,640,16)
+    RETURN(Fill(@bounds,clip,1))
+  FI
+
+  row=phase^-1
+  REGIONS.Assign(@bounds,layer.bounds.left,
+      DESKMENU.BAR_HEIGHT+INT(row)*DESKMENU.ROW_HEIGHT,0,0)
+  bounds.right=bounds.left+208
+  bounds.bottom=bounds.top+DESKMENU.ROW_HEIGHT
+  REGIONS.Intersect(@bounds,clip,@area)
+  okay=1
+  IF row<DESKMENU.count AND REGIONS.Empty(@area)=0 THEN
+    background=0
+    foreground=1
+    IF DESKMENU.items(row).enabled=0 THEN
+      foreground=8
+    ELSEIF INT(row)=DESKMENU.paintSelection THEN
+      background=1
+      foreground=0
+    FI
+    okay=Fill(@bounds,clip,background)
+    IF okay<>0 THEN
+      okay=Text(CARD(bounds.left)+8,CARD(bounds.top)+4,
+          @DESKMENU.items(row).label(0),foreground,background,@area,
+          DESKMENU.LABEL_BYTES-1)
+    FI
+  FI
+
+  phase^==+1
+
+RETURN(IF okay=0 THEN 0 ELSE
+    IF phase^>DESKMENU.ROWS THEN 1 ELSE 2 FI FI)
+
+ENDMODULE

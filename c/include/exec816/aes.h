@@ -42,5 +42,8 @@ BOOL ExecAESAttach(struct MsgPort *service);
 BOOL ExecAESDetach(void);
 struct ExecAESContext *ExecAESContext(void);
 UWORD ExecAESDiagnostic(void);
+/* Session preference: AES_MOUSE_QUERY, AES_MOUSE_OFF or AES_MOUSE_MILD.
+ * Returns the chosen profile, or -1 on failure. Held gestures finish first. */
+WORD ExecAESMouseProfile(WORD profile);
 BOOL ExecAESPointer(const void *pointer, ULONG bytes);
 #endif

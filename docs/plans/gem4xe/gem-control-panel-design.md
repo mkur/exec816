@@ -2,11 +2,12 @@
 
 [Plans](../README.md) · [Application objects](application-widgets-design.md)
 
-Replace the demo's native panel path with an ordinary resident GEM application
+Replace the demo's native panel path with an ordinary disk-loaded GEM application
 using its own compiled-in OBJECT tree. Run it beside the existing GEM counter
 and shell. Its body uses gem.h: registration, workstation/window lifetime,
-evnt_multi, object/form calls, UPDATE and WM_* handling. The small resident
-wrapper supplies Exec Tasks and cooperative shutdown, as for the counter.
+evnt_multi, object/form calls, UPDATE and WM_* handling. The Process wrapper supplies Exec lifetime and cooperative shutdown, as for
+the counter. The original demonstration controls described below are superseded
+by the [session settings follow-up](control-panel-settings-plan.md).
 
 The panel contains a toggle, disabled control, two exclusive radio buttons,
 Apply and Cancel. Tab/Shift-Tab move focus; Space activates focus; Return

@@ -80,7 +80,32 @@ def run(out):
     return report
 
 
+def settings(out,optimize=True):
+    out.mkdir(parents=True,exist_ok=True)
+    p=build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/desktop_mouse_settings.act',out/'program',
+            tasks=True,task_capacity=8,optimize=optimize,console=False)
+    report=dict(status='running',tier='development',qualification=False,build=p['build'])
+    try:
+        with emulator(BRIDGE,ROM,out,pin=PIN) as b:
+            report['machine']=verify_machine(b,ROM,PIN)
+            report['runtime'],_=execute(b,p,timeout=100,frame_limit=5000)
+            report['checks']=data(b,p['image'],'checks',True)[0]
+            require(report['checks']==27,'Incomplete settings fixture')
+            clean_ownership(b,p,p['output'])
+        report['status']='pass'
+    finally:
+        (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    print('Mouse settings passed',report['checks'],'checks',flush=True)
+    return report
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
-    run(parser.parse_args().output.resolve())
+    parser.add_argument('--settings',action='store_true')
+    parser.add_argument('--raw',action='store_true',help='Small settings probe only')
+    args=parser.parse_args()
+    if args.settings: settings(args.output.resolve(),not args.raw)
+    else:
+        require(not args.raw,'Full curve regression is optimized')
+        run(args.output.resolve())

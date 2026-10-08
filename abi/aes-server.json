@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 8,
+  "version": 9,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -80,7 +80,11 @@
     "MU_KEYBD": 1,
     "MU_BUTTON": 2,
     "MU_M1": 4,
-    "MU_M2": 8
+    "MU_M2": 8,
+    "OP_MOUSE_PROFILE": 201,
+    "MOUSE_QUERY": -1,
+    "MOUSE_OFF": 0,
+    "MOUSE_MILD": 1
   },
   "records": {
     "Delivery": [
@@ -510,7 +514,8 @@
     "OP_CLOSE",
     "OP_DELETE",
     "OP_SET",
-    "OP_DISPLAY"
+    "OP_DISPLAY",
+    "OP_MOUSE_PROFILE"
   ],
   "public_constants": [
     "NAME",

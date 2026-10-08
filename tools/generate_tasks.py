@@ -377,6 +377,8 @@ ENDMODULE
 
 
 def application_entry(routine):
+    if routine['name'].startswith(('M_DESKMENU_', 'M_DESKMENUPAINT_')):
+        return False
     if routine['name'].startswith(('M_AESCORE_', 'M_AESHOST_', 'M_AESBOOT_', 'M_AESSTATE_',
                                    'M_AESINPUT_', 'M_AESLOCKS_', 'M_AESGUI_', 'M_AESWINDOW_', 'M_AESWINDOWSTATE_', 'M_AESTYPES_')):
         return False

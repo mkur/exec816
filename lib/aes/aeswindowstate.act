@@ -93,7 +93,7 @@ PUBLIC PROC Sync()
   WHILE slot<desktop.scene.count DO
     BEGIN
       LET layer=@desktop.scene.items(desktop.scene.order(slot))
-      IF layer.shown<>0 THEN
+      IF layer.shown<>0 AND FindWindow(layer.id)<>0 THEN
         BEGIN
           LET client=Find(IF layer.externalPaint<>0 THEN
               FindWindow(layer.id) ELSE LONGCARD(0) FI)

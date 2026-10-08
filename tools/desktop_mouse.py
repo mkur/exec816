@@ -50,6 +50,14 @@ def slow_schedule(bridge, program, current, target):
 
 
 def schedule(bridge, program, current, target):
+    # Session preferences may differ from the immutable build default. Observe
+    # the active transform; never alter target state to position the pointer.
+    selected = next((d['address'] for d in program['image']['data']
+                     if '_DESKMOUSE_SELECTEDPROFILE_' in d['name']), None)
+    if selected is not None and 'desktop_mouse' in program['build']:
+        profile = 'mild' if bridge.memdump(selected,1)[0] else 'off'
+        program = {**program, 'build': {**program['build'], 'desktop_mouse':
+            {**program['build']['desktop_mouse'], 'profile': profile}}}
     if program['build'].get('desktop_mouse',{}).get('profile') != 'mild':
         return slow_schedule(bridge,program,current,target)
     # Coarse physical travel, observing the cursor like a user, followed by

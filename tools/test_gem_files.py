@@ -1,5 +1,6 @@
 """Physical browser/RSC/popup/launcher cases for the exact OF816 desktop."""
 from native_program import require
+from stack_budget import stack_usage
 
 
 def exercise(s,sy,click,move):
@@ -60,10 +61,17 @@ def exercise(s,sy,click,move):
     # Explicit popup mouse cancel; same loaded object tree and public API.
     click(48,88);s.frames(80);click(80,160);s.frames(100)
     require(num(8)==1,'Popup mouse cancel closed browser')
+    popup_stacks=stack_usage(b,s.p['build']['memory'])
     click(96,32);s.command('TASKS')
     # Release an initial app while the shell waits, then let Files own a new
     # private panel. Stop is an AES close, with ordinary Process collection.
-    click(592,56);click(618,56)
+    click(592,56)
+    if 'panel_settings' in s.saved:
+        click(456,104)
+        require(s.number(sy['GEMPanel']+400,2)==1 and s.number(sy['GEMPanel']+402,2)==0,
+                'Close-with-pending-edit setup')
+    if hasattr(s,'menus'):s.menus.close()
+    else:click(618,56)
     s.rendezvous('dw($%x)=0'%sy['GEMDesktopChildren'])
     click(24,64);row('C');key('RETURN');row('PANEL.APP');key('RETURN')
     s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(base+1980,base+1386))
@@ -71,8 +79,15 @@ def exercise(s,sy,click,move):
     from gem_applications import symbols
     panel=symbols(b,s.p,s.p['output']/'bitmap-console','panel',child)['GEMPanel']
     s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
+    if hasattr(s,'menus'):
+        current=s.menus.select('Control Panel')
+        require(current not in s.menus.closed,'Window menu reused a retired identity')
+        s.saved['desktop_menu']['window_reuse']=True
+    if 'panel_settings' in s.saved:
+        require(s.number(panel+402,2)==s.saved['panel_settings']['reopen_profile'],'Reopened panel lost session preference')
+        s.saved['panel_settings']['reopen_verified']=True
     click(456,104)
-    require(s.number(panel+178+2*24+10,2)==1,'Loaded child panel did not handle input')
+    require(s.number(panel+400,2)==1 and s.number(panel+178+2*24+10,2)==0,'Loaded child panel Defaults')
     from loadable_gem_feedback import measure
     measure(s,panel,move,'reloaded')
     click(24,64);key('F');key('TAB');key('TAB');key('RETURN')
@@ -86,7 +101,6 @@ def exercise(s,sy,click,move):
     s.rendezvous('dw($%x)=%d'%(base+1972,old+1));key('F')
     menu=num(174,4)
     require(s.number(menu+18,2)!=0,'Popup did not enter its wait')
-    from stack_budget import stack_usage
     s.saved['browser_stacks']=stack_usage(b,s.p['build']['memory'])
     click(250,64)
     s.rendezvous('dw($%x)=2'%sy['GEMDesktopDone']);s.frames(100)
@@ -94,4 +108,5 @@ def exercise(s,sy,click,move):
     require(s.number(sy['GEMDesktopFailure'],2)==0,'Browser teardown failed')
     s.saved['browser']=dict(resource=True,navigation=True,popup_keyboard=True,popup_mouse=True,
         launch='HELLO',cancel='TICK',gem_launch='PANEL.APP',gem_stop=True,
-        idle_collection=True,invalid_executable=True,close_during_popup_with_child=True)
+        idle_collection=True,invalid_executable=True,close_during_popup_with_child=True,
+        popup_stacks=popup_stacks)

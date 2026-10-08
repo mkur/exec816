@@ -40,8 +40,8 @@ python3 tools/test_gem_counter.py --program build/aes-windows/counters/program \
 The proof adds development-only pause and timing hooks outside rendering
 ownership. It compares full framebuffers after timers, physical top/drag/close,
 full cover/exposure, simultaneous readiness and repeated restart. Closing the
-focused window clears keyboard focus under the current desktop policy; click
-another window to focus it.
+focused window restores the frontmost remaining window. The Windows menu or
+Ctrl+Tab reaches covered windows; the active-window menu provides Close.
 
 ## Optional OF816 counter desktop
 
@@ -214,7 +214,7 @@ Distribute `build/gem-input-demo/exec816-demo.zip`. Follow its short guide for
 machine setup, D1/D8 disks and ST mouse capture. At the prompt there are six
 Tasks; a two-command pipeline uses all eight public slots. The two application
 registrations plus the controller use three of four AES slots. The shell and
-two windows use three of four layers. The existing `--aes-counters` profile and
+two windows use three of four application-window slots. The existing `--aes-counters` profile and
 no-option five-second shell/PRIMES autoboot remain available.
 
 For focused cost measurements, the separate development root supplies continuous
@@ -254,7 +254,8 @@ Distribute `build/gem-desktop-demo/exec816-demo.zip`, including OF816, its pinne
 ROM, matching D1/D8 disks, notices and guide. Boot retains the five-second delay.
 The no-option build still starts the standard shell/prime demo.
 
-Use Toggle, Small/Large, Apply and Cancel in the panel. Tab/Shift-Tab changes
+Use Off/Mild, Defaults, Apply and Cancel in the panel (see
+[mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes
 keyboard focus, Space activates it and Return activates Apply. Release outside
 or Escape cancels a press. In Files, select a directory/file and press Return;
 Up and Next navigate, and File or F opens the popup. Tab/Up/Down and Return select;
@@ -263,14 +264,17 @@ arguments, NIL input and shell output; Stop requests native BREAK or a GEM close
 tiled-console mode and returns an error in this desktop. Close one GEM window
 before a two-child shell pipeline.
 Files can also launch `PANEL.APP`, `COUNTER.APP`, `FILES.APP` or `CALC.APP`. Close an existing
-GEM window first when all four layers are occupied. Closing Files stops and
+GEM window first when all four application-window slots are occupied. Closing Files stops and
 collects its child before retirement. The shell collects closed initial apps
 even at an idle prompt. Use `RUN C:FILES.APP` to reopen Files; this uses the
 shell's one background job. EXIT closes the desktop and any owned GUI child.
 
-This profile uses four layers, three AES registrations and seven idle Tasks.
-It offers a bounded object/form, resource and window-popup subset, not a global
-menu bar or Atari ST binary compatibility. See the [current AES contract](../reference/aes.md)
+This profile uses four application-window slots, two private menu layers, three
+AES registrations and seven idle Tasks. The desktop bar follows the active
+window and supplies Next window, Close and the Windows list. Ctrl+Tab cycles;
+Ctrl+Escape opens Windows, then Tab/arrows and Return select, or Escape cancels.
+Application-defined GEM menu bars and Atari ST binary compatibility remain
+unsupported. See the [current AES contract](../reference/aes.md)
 and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).
 
 ## GEM4XE calculator
@@ -301,3 +305,17 @@ The first command builds APP/RSC inputs; the matching desktop build above ships
 them together with the shared GUI, OF816 and the calculator's upstream notices.
 See the [implementation record](../history/calculator-port.md) for costs and
 the exact development checks.
+
+## Mouse settings in Control Panel
+
+`PANEL.APP` now changes the session's mouse acceleration. Choose Off (fixed 2×)
+or Mild (the existing acceleration curve), then Apply. Defaults stages Mild;
+Cancel reloads the active choice. Closing discards unapplied edits. Reopening
+reads the current preference, including a choice applied by another panel.
+Settings are session-only. Tab/Shift-Tab, Space and Return operate the controls;
+Escape cancels an armed press, and releasing outside a button cancels it too.
+
+The application uses standard GEM object/form/redraw calls and the small
+[`ExecAESMouseProfile` extension](../reference/aes.md#session-mouse-preference)
+for the desktop preference. An Apply during a held mouse gesture takes effect
+after release. The counter and shell continue independently.
