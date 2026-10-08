@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "e74c2b041ec7b57dd6573a633b90d957baddbb73",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_sha256": "ca14d78c3add0640851c37f0b4eddd354e9c8b78c521ec85c36bb914d5f7bbde",
+  "host_checks": {
+    "tests_run": 399,
+    "failures": 0,
+    "errors": 0
+  },
+  "bank_zero_delta": {
+    "fixed_runtime": 0,
+    "fixed_loading": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  },
+  "scope": "Static console adapter selection, panes/cooked input and rollback, bitmap presentation/scrolling, optional desktop startup/unwind/retirement. Optimized emitted-code checks only; no full release qualification.",
+  "console_adapter": {
+    "code_bytes": 84,
+    "global_bytes": 0,
+    "callback_table_bytes": 0
+  },
+  "results": {
+    "text-pane": {
+      "status": "pass",
+      "path": "build/development/console-linking/text-pane/results.json",
+      "sha256": "0c536ba5f93c3f135156148156f5b546b4137de1616b23cb2a550b5f6d6de8bc",
+      "build_path": "build/development/console-linking/text-pane/build.json",
+      "build_sha256": "adcd4b591497ded6bd55585484399741bdea1ff794a67d3c1c7e2871f499dd21",
+      "xex_sha256": "ea28f2f58027653702018fe0a25459d961a6d6f7e1ae9d52517f4f218128685e",
+      "console_desktop": false,
+      "gui_routines": 0
+    },
+    "bitmap-pane": {
+      "status": "pass",
+      "path": "build/development/console-linking/bitmap-pane/results.json",
+      "sha256": "2f26ba71a00e535b02bad3e59a6fbd9788a4de76d13b1e9b0cecc6c65fb9eeb2",
+      "build_path": "build/development/console-linking/bitmap-pane/program/build.json",
+      "build_sha256": "c7cd230fe7ae50081154d09401e72ad610fb960044d18da56d3b92b40b3466f6",
+      "xex_sha256": "53e3ecf7d5a9ac341bf49585b425c35646f5d5f6ea62ff53913b63c45923a42f",
+      "console_desktop": false,
+      "gui_routines": 0
+    },
+    "bitmap-scroll": {
+      "status": "pass",
+      "path": "build/development/console-linking/bitmap-scroll/results.json",
+      "sha256": "030fdf9c6505021d9d1fb5908e943066247cc271afbc94ee86c1cfb97266eb50",
+      "build_path": "build/development/console-linking/bitmap-scroll/program/build.json",
+      "build_sha256": "d4b9ea9432d3e3dd28ff681e1648f5d92f74dcc493d86d147a30bdebd96e7703",
+      "xex_sha256": "e4769406bf273fccb0bb9c3976a10d3814f8e53fa56930ccc144cfe23e6271a7",
+      "console_desktop": false,
+      "gui_routines": 0,
+      "checks": [
+        48
+      ]
+    },
+    "desktop-startup": {
+      "status": "pass",
+      "path": "build/development/console-linking/desktop-startup/results.json",
+      "sha256": "146a4a99f7878c108a9f5357e5f09ad881c023ce8e68399c31c28957f7e13b35",
+      "build_path": "build/development/console-linking/desktop-startup/program/build.json",
+      "build_sha256": "aa4744be99195e48415f0ab72984c7060454033bd402867c5d0b973fc957c7e1",
+      "xex_sha256": "ce8d6cba7fed9fbe74ac1b703bc263525a60a8079bf9d3821a82f19dea68f56e",
+      "console_desktop": true,
+      "gui_routines": 215,
+      "checks": 32
+    }
+  },
+  "actual_emulators": {
+    "text": {
+      "path": "build/shell-paced-bridge/AltirraBridgeServer",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8"
+    },
+    "bitmap": {
+      "path": "build/mouse-bridge/AltirraBridgeServer",
+      "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
+    }
+  },
+  "actual_rom": {
+    "path": "build/firmware/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  }
+}

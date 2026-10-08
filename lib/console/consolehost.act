@@ -1,0 +1,86 @@
+; Standalone presenter hooks. Desktop builds select DESKCONSOLE at link time.
+; No optional GUI storage, callbacks or Tasks belong to the ordinary console.
+MODULE CONSOLEHOST
+USE INPUT
+
+PUBLIC BYTE FUNC Start()
+
+RETURN(1)
+
+PUBLIC PROC Stop()
+
+RETURN
+
+PUBLIC LONGCARD FUNC Mask()
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Ready()
+
+RETURN(1)
+
+PUBLIC BYTE FUNC PaintReady()
+
+RETURN(1)
+
+PUBLIC BYTE FUNC ControlPending()
+
+RETURN(0)
+
+PUBLIC BYTE FUNC Idle()
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Runnable()
+
+RETURN(0)
+
+PUBLIC PROC Controls()
+
+RETURN
+
+PUBLIC PROC AfterPaint()
+
+RETURN
+
+PUBLIC PROC Events()
+
+RETURN
+
+PUBLIC PROC Settle()
+
+RETURN
+
+PUBLIC PROC Cache()
+
+RETURN
+
+PUBLIC LONGCARD FUNC InputMask()
+
+RETURN(0)
+
+PUBLIC PROC InputService(LONGCARD bits)
+
+RETURN
+
+PUBLIC PROC InputPresent()
+
+RETURN
+
+PUBLIC PROC InputAdvance()
+
+RETURN
+
+PUBLIC BYTE FUNC Key(INPUT.Event POINTER event)
+
+RETURN(0)
+
+PUBLIC BYTE FUNC PaintPump()
+
+RETURN(0)
+
+PUBLIC BYTE FUNC PaintPending()
+
+RETURN(0)
+
+ENDMODULE

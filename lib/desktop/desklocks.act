@@ -1,0 +1,9 @@
+; Optional paint admission without importing the presenter above the registry.
+MODULE CONSOLELOCKS
+USE AESLOCKS
+
+PUBLIC BYTE FUNC PaintBlocked()
+
+RETURN(AESLOCKS.PaintBlocked())
+
+ENDMODULE

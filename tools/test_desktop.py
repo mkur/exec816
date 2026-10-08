@@ -37,7 +37,7 @@ def run(out, mode, existing=None):
             profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
             memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
             p=build(compiler(ROOT/'build/actionc'),source,out/'program',optimize=mode=='opt',memory_profile=memory,
-                tasks=True,task_capacity=8,console=False,console_deferred=True,foreign_image=foreign)
+                tasks=True,task_capacity=8,console=False,console_deferred=True,console_desktop=True,foreign_image=foreign)
         report.update(build=p['build'], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                       reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:

@@ -1,7 +1,7 @@
 ; Application lifetime API. Extra instances are initially hidden.
 MODULE CONSOLE
 USE EXEC
-USE DESKSTATE
+USE CONSOLESCENE
 USE EXECLISTS
 USE HEAPCORE
 USE CONSOLETYPES
@@ -55,7 +55,7 @@ PUBLIC LONGCARD FUNC Create(CARD width,height)
   CARD row,count
   LONGCARD unit
 
-  IF DESKSTATE.Enabled()<>0 OR width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
+  IF CONSOLESCENE.Enabled()<>0 OR width=0 OR height=0 OR width>CONSOLETYPES.MAX_WIDTH
       OR height>CONSOLETYPES.MAX_HEIGHT THEN
     RETURN(0)
   FI
@@ -212,7 +212,7 @@ RETURN(1)
 ; Ordinary tiles can change height within their original backing allocation.
 PUBLIC BYTE FUNC ResizeHeight(LONGCARD unit CARD height)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLESCENE.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -248,7 +248,7 @@ RETURN
 
 PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLESCENE.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -256,7 +256,7 @@ RETURN(CONSOLETILING.Show(unit,left,top))
 
 PUBLIC BYTE FUNC Hide(LONGCARD unit)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLESCENE.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -264,7 +264,7 @@ RETURN(CONSOLETILING.Hide(unit))
 
 PUBLIC BYTE FUNC Focus(LONGCARD unit)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLESCENE.Enabled()<>0 THEN
     RETURN(0)
   FI
 

@@ -14,7 +14,7 @@ PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
 
   ; Remember admission: exposure can repaint the gathered model before flush.
   ; A batch which started obscured must not later copy those newer pixels.
-  batchCopyReady=DESKSTATE.CopyReady()
+  batchCopyReady=CONSOLESCENE.CopyReady()
   RemoveCursor(view)
   IF CONSOLEBITMAP.Failed()<>0
       OR CONSOLEBATCH.Begin(instance,unit,view.generation)=0 THEN

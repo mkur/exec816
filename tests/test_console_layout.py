@@ -28,6 +28,8 @@ class ConsoleLayoutTests(unittest.TestCase):
             ({'console': 1}, 'boolean'),
             ({'console': True}, 'requires Tasks'),
             ({'console_test': True}, 'require Tasks'),
+            ({'console_desktop': 1}, 'boolean'),
+            ({'console_desktop': True, 'tasks': True, 'console': False}, 'requires Tasks and the native console'),
             ({'console': True, 'tasks': True, 'irq_probe': 10}, 'exclude the disposable probe'),
         ):
             with self.subTest(options=options), self.assertRaisesRegex(RuntimeError, message):
@@ -35,7 +37,9 @@ class ConsoleLayoutTests(unittest.TestCase):
 
     def test_bitmap_helpers_are_not_application_task_entries(self):
         for name in ('M_CONSOLEBITMAP_CLOSE_1234', 'M_CONSOLEBITMAP_POLL_1234',
-                     'M_CONSOLEBATCH_RESET_1234'):
+                     'M_CONSOLEBATCH_RESET_1234', 'M_CONSOLEHOST_START_1234',
+                     'M_CONSOLEHOST_CONTROLS_1234', 'M_CONSOLESCENE_ENDSCROLL_1234',
+                     'M_CONSOLELOCKS_PAINTBLOCKED_1234'):
             self.assertFalse(generate_tasks.application_entry({'name': name}))
 
     def test_glyphs(self):

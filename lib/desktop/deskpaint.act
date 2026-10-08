@@ -177,7 +177,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
     IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
       okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.left+8),CARD(layer.bounds.top+4),
-          @window.title(0),titleLength,1,IF window.id=service.focus THEN 2 ELSE 7 FI,@area)
+          @window.title(0),titleLength,1,
+          IF window.id=service.focus THEN 2 ELSE 7 FI,CARD POINTER(@area))
     FI
 
     IF okay<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
@@ -187,7 +188,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       REGIONS.Intersect(@bounds,@strip,@area)
       IF okay<>0 AND REGIONS.Empty(@area)=0 THEN
         okay=CONSOLEBITMAP.ClippedText(CARD(layer.bounds.right-12),
-            CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,@area)
+            CARD(layer.bounds.top+4),BYTE POINTER(c"X"),1,1,8,CARD POINTER(@area))
       FI
     FI
 
@@ -236,7 +237,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       WHILE row<last DO
         index=CONSOLECORE.CellOffset(instance,row*instance.width+first)
         okay=CONSOLEBITMAP.ClippedText(CARD(client.left)+(first LSH 3),
-            CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,@area)
+            CARD(client.top)+(row LSH 3),instance.cells+SIZE(index),count,1,0,
+            CARD POINTER(@area))
         IF okay=0 THEN
           RETURN(0)
         FI
@@ -267,7 +269,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
         ELSE
           okay=CONSOLEBITMAP.ClippedText(CARD(client.left+command.bounds.left),
               CARD(client.top+command.bounds.top),@window.content.text(command.offset),
-              command.count,CARD(command.pen),window.content.background,@bounds)
+              command.count,CARD(command.pen),window.content.background,
+              CARD POINTER(@bounds))
         FI
       FI
 

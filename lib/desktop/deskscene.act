@@ -1,0 +1,53 @@
+; Optional scene hooks below the console bitmap/registry dependency boundary.
+MODULE CONSOLESCENE
+USE DESKSTATE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+
+PUBLIC BYTE FUNC Enabled()
+
+RETURN(DESKSTATE.Enabled())
+
+PUBLIC BYTE FUNC CopyReady()
+
+RETURN(DESKSTATE.CopyReady())
+
+; The presenter retains only the scene token while the blitter owns the copy.
+PUBLIC BYTE FUNC BeginScroll(CARD left,top,width,height)
+  LAYERTYPES.Rect source,target
+  LONGCARD token
+
+  LET desktop=DESKSTATE.Get()
+  IF desktop=NULL THEN
+    RETURN(1)
+  FI
+
+  REGIONS.Assign(@source,INT(left LSH 3),INT(top LSH 3),
+      INT((left+width) LSH 3),INT((top+height) LSH 3))
+  REGIONS.Copy(@source,@target)
+  LET status=LAYERS.BeginCopy(@desktop.scene,DESKSTATE.Selected(),
+      @source,@target,@token)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+
+  DESKSTATE.SetScrollToken(token)
+
+RETURN(1)
+
+PUBLIC PROC EndScroll(BYTE success)
+  BYTE status
+
+  LET token=DESKSTATE.PendingToken()
+  IF token<>0 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      status=LAYERS.Finish(@desktop.scene,token,success)
+      DESKSTATE.SetScrollToken(0)
+    END
+  FI
+
+RETURN
+
+ENDMODULE

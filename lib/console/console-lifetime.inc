@@ -183,7 +183,7 @@ BYTE FUNC AllIdle(CONSOLETYPES.Service POINTER service)
   BYTE index
   CONSOLETYPES.Instance POINTER instance
 
-  IF DESKHOST.Idle()=0 THEN
+  IF CONSOLEHOST.Idle()=0 THEN
     RETURN(0)
   FI
 

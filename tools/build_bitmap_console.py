@@ -161,7 +161,7 @@ def build_bitmap(source,out,optimize=True,probe=False,fault=False,program_output
         client_roots=client_roots,client_probes=client_probes)
     launcher=prepare(Path(source),out,foreign,desktop,aes)
     program=build(compiler(compiler_dir or ROOT/'build/actionc'),launcher,program_output or out/'program',optimize=optimize,tasks=True,
-                 task_capacity=8,console=False,console_deferred=True,foreign_image=foreign,**kwargs)
+                 task_capacity=8,console=False,console_deferred=True,console_desktop=desktop,foreign_image=foreign,**kwargs)
     if desktop:
         from generate_desktop import ABI
         program['build']['desktop_pointer_pixels_per_step']=ABI['constants']['POINTER_PIXELS_PER_STEP']

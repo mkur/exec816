@@ -225,7 +225,9 @@ def validate_memory(memory):
     require(c['WRITABLE_POINTER']+4 == c['ENTRY_COUNT']+c['BINDINGS_BYTES'], 'Invalid binding extent')
 
 
-def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False,input_diagnostics=False):
+def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False,input_diagnostics=False,console_desktop=False):
+    require(type(console_desktop) is bool, 'Console desktop option must be boolean')
+    require(not console_desktop or console, 'Desktop integration requires the native console')
     if memory is None:
         from generate_memory import layout
         memory=layout()
@@ -325,9 +327,20 @@ ENDMODULE
     policy=read_source(ROOT/'lib/exec/taskpolicy.act', policy_includes)
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
+    # Select one static adapter; plain console linking never imports GUI policy.
+    for target, desktop_source in (('consolehost','deskconsole'),
+                                   ('consolescene','deskscene'),
+                                   ('consolelocks','desklocks')):
+        adapter=ROOT/(f'lib/desktop/{desktop_source}.act' if console_desktop
+                      else f'lib/console/{target}.act')
+        (directory/(target+'.act')).write_text(read_source(adapter))
     if console:
         for module in ('consoledriver','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
-            driver=read_source(library_file(module+'.act'))
+            includes={}
+            if module=='consolebitmap' and console_desktop:
+                includes={f'console-bitmap-{part}.inc':ROOT/f'lib/desktop/desk-bitmap-{part}.inc'
+                          for part in ('imports','drawing')}
+            driver=read_source(library_file(module+'.act'),includes)
             driver=driver.replace('"console-storage-action.inc"','"'+str(Path(output)/'console-storage-action.inc')+'"')
             (directory/(module+'.act')).write_text(driver)
         console_policy=read_source(ROOT/'lib/console/task-console.inc')
@@ -390,7 +403,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith('M_PROCESS_') and not re.fullmatch(r'M_PROCESS_(?:RUN|FINISH|EXECUTEIMAGE)_[0-9A-F]+',routine['name']):
         return False
-    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_CONSOLEBATCH_', 'M_CONSOLECAPTURE_', 'M_CONSOLECONTROL_', 'M_DISPLAY_', 'M_BLITTER_', 'M_BLITTERADAPTER_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
+    if routine['name'].startswith(('M_BOOTCONFIG_', 'M_CONSOLEHOST_', 'M_CONSOLESCENE_', 'M_CONSOLELOCKS_', 'M_CONSOLEBATCH_', 'M_CONSOLECAPTURE_', 'M_CONSOLECONTROL_', 'M_DISPLAY_', 'M_BLITTER_', 'M_BLITTERADAPTER_', 'M_DISPLAYBOOT_', 'M_DISPLAYADAPTER_', 'M_PROGRAM_', 'M_PROGRAMAPI_', 'M_PROGRAMIMAGE_', 'M_PROGRAMPLACE_', 'M_PROGRAMPROVIDERS_', 'M_PROGRAMLIBRARIES_', 'M_CSTRING_IMPL_')):
         return False
     if routine['name'].startswith(('M_DOSPROCESS_','M_DOSINHERIT_','M_FSFILES_','M_FSOBJECTS_','M_DOSCANCEL_','M_FSOPERATION_','M_FSABORT_','M_FSACTIVE_','M_DOSBREAK_','M_CONSOLE_', 'M_CONSOLEWINDOWS_','M_CONSOLETILING_','M_CONSOLEFOREGROUND_','M_CONSOLEDISPLAY_','M_CONSOLEBITMAP_','M_CONSOLEDRIVER_','M_CONSOLEINPUT_','M_CONSOLECORE_','M_DOS_','M_DOSCALLS_','M_DOSRAW_','M_DOSSTREAMS_','M_DOSOBJECTS_','M_FSDIRECTORY_','M_FSMUX_','M_FSMOUNT_','M_FSMANAGER_','M_FSPACKET_','M_FSINFO_','M_FSIO_','M_FSINIT_','M_FSBOOT_','M_FSWORKER_','M_FSREGISTRY_','M_FSTYPES_','M_FSHANDLER_','M_FSPORTS_','M_FSNAMES_','M_DOSCLIENT_','M_DOSCORE_','M_DOSWIRE_','M_BLOCKIO_','M_BLOCKWIRE_','M_BLOCKTYPES_','M_MYDOSFILE_','M_MYDOS_','M_FS83_','M_FSCORE_','M_MYDOSTYPES_')):return False
     if re.match(r'M_(?:EXEC|EXECLISTS|EXECMEMORY|HEAPCORE|HEAPPOLICY|PORTCORE|IOCORE|IORESIDENT|IOTESTDRIVER|PRODUCERPROBE|EXECTASKS|TASKPOLICY)_', routine['name']):

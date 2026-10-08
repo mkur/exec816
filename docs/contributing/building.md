@@ -75,6 +75,14 @@ and GEM notices. See the [bitmap shell package guide](../bitmap-shell-distributi
 for VBXE configuration and commands. Reserved bank-zero memory is unchanged,
 both fixed and per Task; the prime Task is never started.
 
+The standard and bitmap shells link the standalone console adapter. They do
+not include desktop, AES, Widgets or Layers code. Desktop builds remain optional:
+`tools/build_demo.py --desktop` and `tools/build_bitmap_console.py --desktop`
+select that integration explicitly. Direct `native_program.build` callers use
+`console_desktop=True` with a native console. The choice is recorded in
+`build.json`; it adds no bank-zero reservation, per-Task storage or callback
+table. Console panes and `RUN PRIMES` work in the standalone builds.
+
 To refresh OF816 assembly, boot guides and the ZIP around an existing matching
 native build, use:
 

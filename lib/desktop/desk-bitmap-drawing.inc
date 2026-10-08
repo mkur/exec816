@@ -42,7 +42,7 @@ BYTE FUNC DesktopDraw(LAYERTYPES.Rect POINTER bounds BYTE text
       IF REGIONS.Empty(@clip)=0 THEN
         IF text<>0 THEN
           okay=ClippedText(CARD(bounds.left),CARD(bounds.top),source,count,
-              foreground,background,@clip)
+              foreground,background,CARD POINTER(@clip))
         ELSE
           okay=RawFill(CARD(clip.left),CARD(clip.top),CARD(clip.right-clip.left),
               CARD(clip.bottom-clip.top),background)
@@ -65,3 +65,17 @@ BYTE FUNC DesktopDraw(LAYERTYPES.Rect POINTER bounds BYTE text
   status=LAYERS.Finish(@service.scene,token,okay<>0 AND wasDirty=0)
 
 RETURN(okay)
+
+BYTE FUNC DesktopFill(CARD left,top,width,height,pen)
+  LAYERTYPES.Rect bounds
+
+  REGIONS.Assign(@bounds,INT(left),INT(top),INT(left+width),INT(top+height))
+
+RETURN(DesktopDraw(@bounds,0,NULL,0,0,pen))
+
+BYTE FUNC DesktopText(CARD x,y BYTE POINTER text CARD count)
+  LAYERTYPES.Rect bounds
+
+  REGIONS.Assign(@bounds,INT(x),INT(y),INT(x+(count LSH 3)),INT(y+8))
+
+RETURN(DesktopDraw(@bounds,1,text,count,1,0))

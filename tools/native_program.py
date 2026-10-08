@@ -253,7 +253,7 @@ def place_after_foreign(memory, foreign):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0, console_desktop=False):
     require(type(input_diagnostics) is bool, 'Input diagnostics option must be boolean')
     require(not input_diagnostics or tasks, 'Input diagnostics require Tasks')
     configuration=json.loads(Path(kernel_config or ROOT/'config/kernel.json').read_text())
@@ -262,6 +262,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     console_enabled=configuration.get('console',False) if console is None else console
     require(type(console_enabled) is bool and type(console_test) is bool and type(console_deferred) is bool,'Console build options must be boolean')
     console_native=console_enabled or console_test or console_deferred
+    require(type(console_desktop) is bool, 'Console desktop option must be boolean')
+    require(not console_desktop or (tasks and console_native),
+            'Desktop integration requires Tasks and the native console')
     require(not console_deferred or (tasks and not console_enabled),
             'Deferred console requires Tasks without automatic startup')
     require(not console_enabled or tasks,'Configured console requires Tasks')
@@ -366,7 +369,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             generate_timer_device.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
             task_generate(output)
-            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics)
+            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics,console_desktop=console_desktop)
         memory['config']['stack_checks']=stack_checks_enabled
         generate_memory.reserve_image_data(memory)
         if foreign_image is not None:
@@ -971,7 +974,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/display/display-types.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
             task_generated={name:sha256(output/name) for name in (
-                'execbuild.act','exec-build.json','input-build.inc','task-kernel/input.act',
+                'execbuild.act','exec-build.json','input-build.inc','task-kernel/input.act','task-kernel/consolehost.act','task-kernel/consolescene.act','task-kernel/consolelocks.act',
                 'dos.inc','dos-action.inc','dos-storage-action.inc','task-kernel/dosraw.act','task-kernel/doscore.act',
                 'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc','timer-storage-action.inc',
                 'ports.inc','ports-action.inc','port-packets.inc','ports-storage.inc','ports-storage-action.inc',
@@ -992,14 +995,19 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         provenance['task_inputs']['platform/altirraos/console-probe.s']=sha256(ROOT/'platform/altirraos/console-probe.s')
         provenance['console_probe_storage']={'base':task_storage['BASE']+0xc00,'bytes':288,'arena_reserved_bytes':4096,'added_bank_zero_bytes':0}
     if console_native:
+        provenance['console_desktop']=console_desktop
         provenance['console_deferred']=console_deferred
         provenance['console_test']=console_test
         provenance['console_enabled']=console_enabled
         provenance['console_start']=console_start
         provenance['console_inputs']={name:sha256(ROOT/name) for name in ('abi/console.json','abi/console-bitmap.json','tools/generate_console.py','tools/generate_console_bitmap.py','lib/console/consolebitmap.act','lib/console/consolebatch.act','lib/console/console-bitmap-types.inc','lib/console/console-bitmap-display.inc','lib/console/console-batch-display.inc',
-            'lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
+            'lib/console/consolehost.act','lib/console/consolescene.act','lib/console/consolelocks.act','lib/console/console-bitmap-imports.inc','lib/console/console-bitmap-drawing.inc','lib/console/console.act','lib/console/consolewindows.act','lib/console/consoletiling.act','lib/console/consoleforeground.act','lib/dos/dosbreaktypes.act','lib/console/consoledisplay.act','lib/console/consoletypes.act','lib/console/consolecore.act','lib/console/consoledriver.act','lib/console/console-requests.inc','lib/console/console-lifetime.inc','lib/console/consolecapture.act','lib/console/consoleinput.act','lib/console/task-console.inc',
             'platform/altirraos/console-layout.inc','platform/altirraos/console.s')}
         provenance['task_generated'].update({name:sha256(output/name) for name in ('console-storage.inc','console-storage-action.inc','console-action.inc','console-tables.bin','task-kernel/consoleforeground.act','task-kernel/consoledriver.act','task-kernel/consoleinput.act','task-kernel/consoledisplay.act','task-kernel/consolebitmap.act')})
+    if console_desktop:
+        provenance['console_inputs'].update({p.relative_to(ROOT).as_posix():sha256(p)
+            for group in ('desktop','aes','widgets') for p in sorted((ROOT/'lib'/group).iterdir())
+            if p.suffix in ('.act','.inc')})
     if tasks and (dos_test or dos_system):provenance['task_generated']['task-kernel/dos.act']=sha256(output/'task-kernel/dos.act')
     if banked:
         provenance.update(banked=True, memory=memory, memory_sha256=memory_hash,
@@ -1186,6 +1194,7 @@ def main():
     parser.add_argument("--input-diagnostics", action="store_true", help="Compile full INPUT per-use audits (requires --tasks)")
     parser.add_argument("--tasks", action="store_true", help="Classic Exec Task API; root counts toward task capacity")
     parser.add_argument('--dos-mounts',type=Path,help='Explicit read-only MyDOS mount configuration (requires --tasks)')
+    parser.add_argument("--console-desktop",action="store_true",help="Link optional desktop/AES console integration (requires native console)")
     parser.add_argument("--console",action=argparse.BooleanOptionalAction,default=None,help="Start the resident native console (requires --tasks; defaults to kernel config)")
     parser.add_argument("--stack-checks",action=argparse.BooleanOptionalAction,default=None,help="Compiler and assembly stack checks (default: kernel config, enabled)")
     parser.add_argument("--cooperative", action="store_true", help="Launch two tasks with the Exec gateway")
@@ -1210,7 +1219,7 @@ def main():
                          json.loads(args.compiler_pin.read_text()) if args.compiler_pin else None)
     program = build(toolchain, args.source, args.output, not args.no_opt, cooperative=args.cooperative,
                     preemptive=args.preemptive, banked=args.banked, max_banks=args.max_banks,
-                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks,input_diagnostics=args.input_diagnostics)
+                    memory_profile=args.memory_profile, kernel_config=args.kernel_config, tasks=args.tasks, kernel_bank=args.kernel_bank,task_capacity=args.task_capacity,worker_stack=args.worker_stack,idle_stack=args.idle_stack,dos_mounts=mount_config['mounts'],system_mount=mount_config['system_mount'],console=args.console,stack_checks=args.stack_checks,input_diagnostics=args.input_diagnostics,console_desktop=args.console_desktop)
     print(f"Built {program['xex']}", flush=True)
     if args.bridge_dir:
         bridge_dir, rom = args.bridge_dir.resolve(), args.rom.resolve()

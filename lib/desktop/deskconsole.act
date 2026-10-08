@@ -1,0 +1,108 @@
+; Optional static console adapter, selected only by a desktop build.
+; Console policy stays in its worker; scene and AES policy stay with the GUI.
+MODULE CONSOLEHOST
+USE INPUT
+USE DESKHOST
+USE DESKINPUT
+USE DESKPAINT
+USE AESHOST
+
+PUBLIC BYTE FUNC Start()
+
+RETURN(DESKHOST.Start())
+
+PUBLIC PROC Stop()
+
+  DESKHOST.Stop()
+
+RETURN
+
+PUBLIC LONGCARD FUNC Mask()
+
+RETURN(DESKHOST.Mask())
+
+PUBLIC BYTE FUNC Ready()
+
+RETURN(DESKHOST.Ready())
+
+PUBLIC BYTE FUNC PaintReady()
+
+RETURN(DESKHOST.PaintReady())
+
+PUBLIC BYTE FUNC ControlPending()
+
+RETURN(DESKHOST.ControlPending())
+
+PUBLIC BYTE FUNC Idle()
+
+RETURN(DESKHOST.Idle())
+
+PUBLIC BYTE FUNC Runnable()
+
+RETURN(DESKHOST.Runnable())
+
+PUBLIC PROC Controls()
+
+  DESKHOST.Controls()
+
+RETURN
+
+PUBLIC PROC AfterPaint()
+
+  DESKHOST.AfterPaint()
+
+RETURN
+
+PUBLIC PROC Events()
+
+  DESKHOST.Events()
+
+RETURN
+
+PUBLIC PROC Settle()
+
+  AESHOST.Settle()
+
+RETURN
+
+PUBLIC PROC Cache()
+
+  DESKHOST.Cache()
+
+RETURN
+
+PUBLIC LONGCARD FUNC InputMask()
+
+RETURN(DESKINPUT.Mask())
+
+PUBLIC PROC InputService(LONGCARD bits)
+
+  DESKINPUT.Service(bits)
+
+RETURN
+
+PUBLIC PROC InputPresent()
+
+  DESKINPUT.Present()
+
+RETURN
+
+PUBLIC PROC InputAdvance()
+
+  DESKINPUT.Advance()
+
+RETURN
+
+PUBLIC BYTE FUNC Key(INPUT.Event POINTER event)
+
+RETURN(DESKINPUT.Key(event))
+
+PUBLIC BYTE FUNC PaintPump()
+
+RETURN(DESKPAINT.Pump())
+
+PUBLIC BYTE FUNC PaintPending()
+
+RETURN(DESKPAINT.Ready())
+
+ENDMODULE

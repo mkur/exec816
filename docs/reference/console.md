@@ -9,6 +9,13 @@ The normal text backend admits 40×24 cells. The optional bitmap backend admits
 not a Task, stack or DP. The backend is selected before startup; live conversion
 is unsupported.
 
+Standalone text and bitmap builds omit desktop/AES integration. Optional desktop
+builds select it before linking, while retaining the same console device and
+instance interfaces. They cannot acquire desktop support after startup.
+The [development record](../development/console-linking.json) covers link
+selection, standalone panes/bitmap output and optional desktop startup. Fixed
+and per-Task bank-zero reservation changes are zero.
+
 ## Public interface
 
 `CONSOLE.ScreenWidth()` and `ScreenHeight()` return the active display capacity

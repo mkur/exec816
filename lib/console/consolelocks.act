@@ -1,0 +1,8 @@
+; Standalone rendering is gated by its worker and display lease.
+MODULE CONSOLELOCKS
+
+PUBLIC BYTE FUNC PaintBlocked()
+
+RETURN(0)
+
+ENDMODULE

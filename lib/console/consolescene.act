@@ -1,0 +1,20 @@
+; Standalone scene admission has no layer state or pending scene tokens.
+MODULE CONSOLESCENE
+
+PUBLIC BYTE FUNC Enabled()
+
+RETURN(0)
+
+PUBLIC BYTE FUNC CopyReady()
+
+RETURN(1)
+
+PUBLIC BYTE FUNC BeginScroll(CARD left,top,width,height)
+
+RETURN(1)
+
+PUBLIC PROC EndScroll(BYTE success)
+
+RETURN
+
+ENDMODULE
