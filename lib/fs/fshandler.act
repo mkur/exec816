@@ -1,5 +1,6 @@
 MODULE FSHANDLER
 USE FSNAMESPACE
+USE FSFORMATS
 USE FSWRITE
 USE FSWRITEIO
 USE FSLEASES
@@ -263,7 +264,8 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
       RETURN(FSPACKET.Error(service,service.selected.error))
     FI
 
-    IF SIODRIVER.Unavailable()<>0 THEN
+    IF service.selected.spec.format<>FSFORMATS.RAM AND
+        SIODRIVER.Unavailable()<>0 THEN
       service.work.ioError=EXEC.SIOERR_BUSUNAVAILABLE
       FSIO.Offline(service)
       RETURN(FSPACKET.Error(service,service.selected.error))

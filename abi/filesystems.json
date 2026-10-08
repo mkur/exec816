@@ -1,5 +1,9 @@
 {
   "schema_version": 1,
-  "formats": {"MYDOS": 1, "SDFS": 2},
+  "formats": {
+    "MYDOS": 1,
+    "SDFS": 2,
+    "RAM": 3
+  },
   "default": "MYDOS"
 }

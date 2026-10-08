@@ -1,0 +1,117 @@
+; Direct file copies use upper RAM and the common DOS operation checkpoints.
+MODULE RAMFILE
+USE RAMTYPES
+USE RAMFS
+USE FSBTYPES
+USE FSCORE
+USE FSSTATUS
+USE A816MEMORY
+USE BLOCKIO
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC RAMTYPES.Node POINTER FUNC Node(FSBTYPES.Cursor POINTER file)
+
+  LET cursor=RAMTYPES.Cursor POINTER(@file.storage(0))
+
+RETURN(cursor.node)
+
+PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
+  BYTE index
+
+  LET cursor=RAMTYPES.Cursor POINTER(@file.storage(0))
+  cursor.node=RAMFS.Find(work.volume,
+      work.entry.start)
+  FSCORE.CopyEntry(@file.entry,@work.entry)
+  file.position=0
+  file.depth=work.depth
+  FOR index=0 TO work.depth DO
+    file.ancestors(index)=work.ancestors(index)
+  OD
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER op LONGINT error)
+
+  op.work.error=error
+  op.result=-1
+  op.stage=0
+
+RETURN(FSSTATUS.ERROR)
+
+PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
+
+  FSCORE.BeginOperation(op,FSCORE.READ,1)
+  IF op.requested<0 OR BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
+    RETURN(Fail(op,ERROR_BAD_NUMBER))
+  FI
+
+  LET node=Node(op.file)
+  op.remaining=node.entry.length-op.start
+  IF op.remaining>op.requested THEN
+    op.remaining=op.requested
+  FI
+
+RETURN(FSSTATUS.MORE)
+
+; Each completed prefix is committed before the next cancellation checkpoint.
+PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER op)
+  LONGINT amount
+
+  LET node=Node(op.file)
+  amount=op.remaining
+  IF amount>RAMTYPES.COPY_BYTES THEN
+    amount=RAMTYPES.COPY_BYTES
+  FI
+
+  IF amount<>0 THEN
+    A816MEMORY.Move(op.output+SIZE(op.completed),node.data+
+        SIZE(op.start+op.completed),SIZE(amount))
+    op.completed==+amount
+    op.remaining==-amount
+  FI
+
+  IF op.remaining=0 THEN
+    RETURN(FSCORE.FinishOperation(op))
+  FI
+
+RETURN(FSSTATUS.MORE)
+
+; Seeking past EOF is unsupported, matching the disk backends.
+PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER op)
+  LONGINT base
+
+  LET node=Node(op.file)
+  FSCORE.BeginOperation(op,FSCORE.SEEK,1)
+  CASE op.mode OF
+  WHEN OFFSET_BEGINNING THEN
+    base=0
+  WHEN OFFSET_CURRENT THEN
+    base=op.start
+  WHEN OFFSET_END THEN
+    base=node.entry.length
+  ELSE
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  ESAC
+
+  IF op.offset < -base OR op.offset>node.entry.length-base THEN
+    RETURN(Fail(op,ERROR_SEEK_ERROR))
+  FI
+
+  op.target=base+op.offset
+
+RETURN(FSCORE.FinishOperation(op))
+
+PUBLIC BYTE FUNC Cancel(FSBTYPES.Operation POINTER op)
+
+  op.work.error=ERROR_BREAK
+  op.result=-1
+  IF op.kind=FSCORE.READ AND op.completed<>0 THEN
+    op.file.position=op.start+op.completed
+    op.result=op.completed
+  FI
+
+  op.stage=0
+
+RETURN(FSSTATUS.ERROR)
+
+ENDMODULE

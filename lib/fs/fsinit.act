@@ -17,6 +17,7 @@ USE BLOCKTYPES
 USE FSBACKEND
 USE FSBTYPES
 USE FSWTYPES
+USE FSFORMATS
 INCLUDE "../dos/dos-types.inc"
 
 ; Reject conflicting mount descriptors before allocating or opening devices.
@@ -25,7 +26,7 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
 
   LET registry=DOSCORE.GetRegistry()
   LET specs=FSTYPES.Spec POINTER(registry.config)
-  IF registry.count=0 OR registry.count>8 OR
+  IF registry.count=0 OR registry.count>9 OR
       (BOOTCONFIG.B_SYSTEM_SLOT<>255
           AND BOOTCONFIG.B_SYSTEM_SLOT>=registry.count) THEN
     service.error=ERROR_DEVICE_NOT_MOUNTED
@@ -63,7 +64,16 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
       FI
 
       LET unit=FSSYSTEM.Unit(spec,index)
-      IF BLOCKIO.Geometry(unit,spec.profile,
+      IF spec.format=FSFORMATS.RAM THEN
+        IF FS83.Fold(spec.alias(0))<>'R OR FS83.Fold(spec.alias(1))<>'A OR
+            FS83.Fold(spec.alias(2))<>'M OR spec.alias(3)<>0 OR
+            spec.unit<>0 OR spec.profile<>0 OR spec.sectors<>0 OR
+            spec.dataBytes<>0 OR spec.boot<>0 OR spec.access<>1 OR
+            FSSYSTEM.Selected(index)<>0 THEN
+          service.error=ERROR_BAD_NUMBER
+          RETURN(0)
+        FI
+      ELSEIF BLOCKIO.Geometry(unit,spec.profile,
           spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
         service.error=ERROR_BAD_NUMBER
         RETURN(0)
@@ -71,7 +81,7 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
 
       other=0
       WHILE other<index DO
-        IF FSSYSTEM.Unit(@specs(other),other)=unit OR
+        IF (unit<>0 AND FSSYSTEM.Unit(@specs(other),other)=unit) OR
             FSSYSTEM.SameName(@specs(other),spec,other,index)<>0 THEN
           service.error=ERROR_OBJECT_IN_USE
           RETURN(0)
@@ -100,7 +110,7 @@ BYTE FUNC Workspace(FSTYPES.Service POINTER service)
     RETURN(0)
   FI
 
-  IF FSBACKEND.CreateWork(service.work)=0 THEN
+  IF service.adapter<>NULL AND FSBACKEND.CreateWork(service.work)=0 THEN
     RETURN(0)
   FI
 
@@ -190,6 +200,11 @@ BYTE FUNC AllocateBlock(FSTYPES.Service POINTER service)
   BLOCKTYPES.Volume POINTER block
 
   mount=service.selected
+  IF mount.spec.format=FSFORMATS.RAM THEN
+    mount.port=FSPORTS.Create(service.arrival)
+    RETURN(mount.port<>NULL)
+  FI
+
   block=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(BLOCKTYPES.VOLUME_SIZE,
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
   IF block=BLOCKTYPES.Volume POINTER(0) THEN
@@ -237,10 +252,20 @@ PUBLIC BYTE FUNC First(BYTE POINTER raw)
   FI
 
   service.stage=1
-  service.adapter=BLOCKIO.Create()
-  IF service.adapter=NULL THEN
-    RETURN(FSSTATUS.STOP)
-  FI
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  FOR service.index=0 TO service.count-1 DO
+    IF specs(service.index).format<>FSFORMATS.RAM THEN
+      service.adapter=BLOCKIO.Create()
+      IF service.adapter=NULL THEN
+        RETURN(FSSTATUS.STOP)
+      FI
+
+      EXIT
+    FI
+  OD
+
+  service.index=0
 
   IF Workspace(service)=0 OR Arrival(service)=0 THEN
     RETURN(FSSTATUS.STOP)
@@ -260,6 +285,9 @@ PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
   FI
 
   service.nextStep=@OpenedStep
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(FSSTATUS.MORE)
+  FI
 
 RETURN(FSSTATUS.OPEN_VOLUME)
 
@@ -378,7 +406,7 @@ PUBLIC PROC Cleanup(FSTYPES.Service POINTER service)
     registry.cancelReady=0
   FI
 
-  FOR index=0 TO 7 DO
+  FOR index=0 TO 8 DO
     DestroyMount(service,service.mounts(index).item)
   OD
 

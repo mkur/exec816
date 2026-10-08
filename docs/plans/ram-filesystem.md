@@ -10,11 +10,12 @@ same-directory rename and enumeration invalidation. Allocate nodes and file
 storage from upper RAM. Limit the namespace to 256 live nodes, with monotonically
 assigned identities. Grow each file's contiguous buffer geometrically from
 256 bytes; allocate the replacement before releasing the old buffer. Copy and
-commit at most 4 KiB per read/write worker step. Do not clear unused file storage.
+commit at most 4 KiB of payload per read/write worker step. Growth first copies
+the existing contents into the replacement buffer. Do not clear unused file storage.
 Allocation failure preserves existing contents and leaves the volume usable.
 Contents disappear on unmount, filesystem-service shutdown or reboot.
 
-1. **R1 — backend and ownership.** Add a generated format ID, explicit RAM mount
+1. **R1 — backend and ownership (complete).** Add a generated format ID, explicit RAM mount
    descriptor, metadata/file operations and write dispatch. Allow eight physical
    disks plus RAM. Test public DOS behavior on a RAM-only machine, including
    cross-bank binary data, exhaustion, leases, enumeration and restart cleanup.

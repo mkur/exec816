@@ -1,5 +1,6 @@
 MODULE FSIO
 USE FSSTATUS
+USE FSFORMATS
 USE FSTYPES
 USE FSBACKEND
 USE BLOCKIO
@@ -52,7 +53,7 @@ PUBLIC PROC Offline(FSTYPES.Service POINTER service)
   FOR index=0 TO service.count-1 DO
     mount=service.mounts(index).item
     IF mount<>FSTYPES.Mount POINTER(0) THEN
-      IF mount.offline=0 THEN
+      IF mount.spec.format<>FSFORMATS.RAM AND mount.offline=0 THEN
         mount.error=service.work.ioError
         mount.offline=1
         mount.writable=0

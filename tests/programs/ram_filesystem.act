@@ -1,0 +1,221 @@
+MODULE RAMTEST
+USE EXEC
+USE DOS
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE FSBTYPES
+USE RAMTYPES
+USE HEAPCORE
+USE A816MEMORY
+
+CARD checks,phase
+BYTE layoutOnly
+CARD ARRAY layouts(6)
+LONGINT partial
+BYTE POINTER buffer
+BYTE POINTER ARRAY held(64)
+LONGCARD ARRAY sizes(64)
+DOS.FileInfoBlock info
+DOS.FileHandle POINTER file,other
+DOS.FileLock POINTER lock,old
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f600+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise new record access in both emitted modes without duplicating the
+; larger optimized system/failure scenario.
+PROC Layout()
+
+  layouts(0)=SIZEOF(RAMTYPES.Node)
+  layouts(1)=SIZEOF(RAMTYPES.Volume)
+  layouts(2)=SIZEOF(RAMTYPES.Cursor)
+  layouts(3)=SIZEOF(FSBTYPES.Entry)
+  layouts(4)=SIZEOF(FSTYPES.Service)
+  layouts(5)=SIZEOF(FSTYPES.MountSlot)
+  lock=DOS.CreateDir(BYTE POINTER(c"RAM:SUB"))
+  Require(lock<>NULL)
+  DOS.UnLock(lock)
+  file=DOS.Open(BYTE POINTER(c"RAM:SUB/TEST.BIN"),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,BYTE POINTER(c"abc"),3)=3)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=3)
+  Require(DOS.Read(file,buffer,4)=3)
+  Require(buffer(0)='a AND buffer(1)='b AND buffer(2)='c)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.Rename(BYTE POINTER(c"RAM:SUB/TEST.BIN"),
+      BYTE POINTER(c"RAM:SUB/OTHER.BIN"))<>0)
+  lock=DOS.Lock(BYTE POINTER(c"RAM:SUB/OTHER.BIN"),DOS.SHARED_LOCK)
+  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0 AND info.fib_Size=3)
+  DOS.UnLock(lock)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:SUB/OTHER.BIN"))<>0)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:SUB"))<>0)
+
+RETURN
+
+; Independent byte oracle across a native bank boundary and several growths.
+PROC Binary()
+  LONGCARD index
+  BYTE POINTER cursor
+
+  phase=2
+  cursor=buffer+SIZE(16)
+  FOR index=0 TO 70000 DO
+    cursor^=BYTE(index) XOR $6d
+    cursor=cursor+SIZE(1)
+  OD
+
+  file=DOS.Open(BYTE POINTER(c"RAM:BIG.BIN"),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,NULL,0)=0)
+  Require(DOS.Write(file,buffer+SIZE(16),70001)=70001)
+  Require(DOS.Open(BYTE POINTER(c"ram:big.bin"),DOS.MODE_OLDFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:BIG.BIN"))=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Seek(file,1,DOS.OFFSET_END)=-1 AND
+      DOS.IoErr()=DOS.ERROR_SEEK_ERROR)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=70001)
+  A816MEMORY.Fill(buffer+SIZE(16),$ac,SIZE(70001))
+  Require(DOS.Read(file,buffer+SIZE(16),70002)=70001)
+  cursor=buffer+SIZE(16)
+  FOR index=0 TO 70000 DO
+    IF cursor^<>(BYTE(index) XOR $6d) THEN
+      Require(0)
+    FI
+
+    cursor=cursor+SIZE(1)
+  OD
+
+  Require(cursor^=$a5 AND buffer(15)=$a5)
+  Require(DOS.Read(file,buffer,1)=0)
+  Require(DOS.Seek(file,$fffa,DOS.OFFSET_BEGINNING)=70001)
+  Require(DOS.Write(file,BYTE POINTER(c"boundary"),8)=8)
+  Require(DOS.Flush(file)<>0)
+  Require(DOS.Close(file)<>0)
+  file=DOS.Open(BYTE POINTER(c"ram:big.bin"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,buffer,1)=-1 AND
+      DOS.IoErr()=DOS.ERROR_WRITE_PROTECTED)
+  Require(DOS.Seek(file,$fffa,DOS.OFFSET_BEGINNING)=0)
+  Require(DOS.Read(file,buffer,8)=8)
+  Require(buffer(0)='b AND buffer(7)='y)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; Namespace changes invalidate enumeration, while live ancestry protects parents.
+PROC Names()
+
+  phase=3
+  lock=DOS.CreateDir(BYTE POINTER(c"RAM:DIR"))
+  Require(lock<>NULL)
+  old=DOS.CurrentDir(lock)
+  Require(old=NULL)
+  file=DOS.Open(BYTE POINTER(c"CHILD"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Close(file)<>0)
+  Require(DOS.Examine(lock,@info)<>0 AND info.fib_EntryType=DOS.ST_USERDIR)
+  Require(DOS.ExNext(lock,@info)<>0 AND info.fib_Size=0)
+  file=DOS.Open(BYTE POINTER(c"OTHER"),DOS.MODE_READWRITE)
+  Require(file<>NULL AND DOS.Close(file)<>0)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Examine(lock,@info)<>0 AND DOS.ExNext(lock,@info)<>0)
+  Require(DOS.ExNext(lock,@info)<>0)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  other=DOS.Open(BYTE POINTER(c"/BIG.BIN"),DOS.MODE_OLDFILE)
+  Require(other<>NULL AND DOS.Close(other)<>0)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:DIR"))=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  old=DOS.CurrentDir(NULL)
+  Require(old=lock)
+  DOS.UnLock(old)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:DIR"))=0 AND
+      DOS.IoErr()=DOS.ERROR_DIR_NOT_EMPTY)
+  Require(DOS.Rename(BYTE POINTER(c"RAM:DIR/CHILD"),
+      BYTE POINTER(c"RAM:CHILD"))=0 AND DOS.IoErr()=DOS.ERROR_ACTION_NOT_KNOWN)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:DIR/CHILD"))<>0)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:DIR/OTHER"))<>0)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:DIR"))<>0)
+
+RETURN
+
+; Hold all free upper memory, then extend an already-open file. Committed
+; prefixes must survive, and allocation failure must not disable the mount.
+PROC Exhaustion()
+  LONGCARD extent
+  CARD count,index
+  LONGINT result
+
+  phase=4
+  file=DOS.Open(BYTE POINTER(c"RAM:BIG.BIN"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  Require(DOS.Seek(file,0,DOS.OFFSET_END)=0)
+  count=0
+  DO
+    extent=EXEC.AvailMem(EXEC.MEMF_UPPER OR EXEC.MEMF_LARGEST)
+    IF extent=0 THEN
+      EXIT
+    FI
+
+    Require(count<64)
+    sizes(count)=extent
+    held(count)=EXEC.AllocMem(extent,EXEC.MEMF_UPPER)
+    Require(held(count)<>NULL)
+    count==+1
+  OD
+
+  partial=DOS.Write(file,buffer+SIZE(16),65536)
+  Require(partial>0 AND partial<65536 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  result=DOS.Write(file,buffer+SIZE(16),4096)
+  Require(result=-1 AND DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=70001+partial)
+  Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=70001+partial)
+  Require(DOS.Read(file,buffer,1)=1 AND buffer(0)=$6d)
+  LET service=FSREGISTRY.Service()
+  Require(service.mounts(0).item.offline=0)
+  FOR index=0 TO count-1 DO
+    EXEC.FreeMem(held(index),sizes(index))
+  OD
+
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  LONGCARD baseline
+
+  baseline=EXEC.AvailMem(0)
+  buffer=EXEC.AllocMem(70049,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  Require(buffer<>NULL)
+  A816MEMORY.Fill(buffer,$a5,SIZE(70049))
+  phase=1
+  Layout()
+  IF layoutOnly=0 THEN
+    Binary()
+    Names()
+    Exhaustion()
+  FI
+
+  phase=5
+  Require(DOS.ReleaseContext()<>0)
+  Require(FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline-70056)
+  lock=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  Require(DOS.Examine(lock,@info)<>0 AND info.fib_EntryType=DOS.ST_ROOT)
+  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  DOS.UnLock(lock)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  EXEC.FreeMem(buffer,70049)
+  Require(EXEC.AvailMem(0)=baseline)
+  phase=6
+
+RETURN
+ENDMODULE

@@ -9,7 +9,7 @@ USE DEVICEINSPECT
 USE SIODRIVER
 
 FSTYPES.Service service
-FSTYPES.Mount ARRAY mounts(8)
+FSTYPES.Mount ARRAY mounts(9)
 CARD checks
 BYTE finished
 
@@ -41,13 +41,13 @@ PROC Main()
   self=EXEC.FindTask(BYTE POINTER(0))
   registry=DOSCORE.GetRegistry()
   available=EXEC.AvailMem(0)
-  Check(SIZEOF(FSINSPECT.Info)=35 AND SIZEOF(DEVICEINSPECT.Info)=2)
-  Check(FSINSPECT.Snapshot(rows,7)=0 AND buffer(16)=$a5)
-  Check(FSINSPECT.Snapshot(FSINSPECT.Info POINTER(0),8)=0)
+  Check(SIZEOF(FSINSPECT.Info)=36 AND SIZEOF(DEVICEINSPECT.Info)=2)
+  Check(FSINSPECT.Snapshot(rows,8)=0 AND buffer(16)=$a5)
+  Check(FSINSPECT.Snapshot(FSINSPECT.Info POINTER(0),FSINSPECT.CAPACITY)=0)
   Check(DEVICEINSPECT.Snapshot(devices,DEVICEINSPECT.CAPACITY-1)=0
       AND buffer(16)=$a5)
   Check(DEVICEINSPECT.Snapshot(NULL,DEVICEINSPECT.CAPACITY)=0)
-  Check(FSINSPECT.Snapshot(rows,8)=0 AND buffer(16)=$a5)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0 AND buffer(16)=$a5)
   EXEC.Forbid()
   Check(DEVICEINSPECT.Snapshot(devices,DEVICEINSPECT.CAPACITY)=2
       AND self.tc_TDNestCnt=0)
@@ -56,13 +56,13 @@ PROC Main()
   Check(devices(1).kind=DEVICEINSPECT.TIMER
       AND devices(1).state=DEVICEINSPECT.READY)
   Check(SIODRIVER.State()=0)
-  ; Eight diagnostic mount records exercise capacity, holes, publication and
+  ; Nine diagnostic mount records exercise capacity, holes, publication and
   ; offline state without a filesystem worker or disk traffic. Restore the
   ; actual empty registry before allowing scheduling again.
   oldState=registry.state
   previous=registry.runtime
-  service.count=8
-  FOR slot=0 TO 7 DO
+  service.count=9
+  FOR slot=0 TO 8 DO
     mounts(slot).published=1
     mounts(slot).offline=slot & 1
     mounts(slot).spec.format=1+(slot & 1)
@@ -77,9 +77,9 @@ PROC Main()
 
   registry.runtime=BYTE POINTER(@service)
   registry.state=FSTYPES.STATE_READY
-  count=FSINSPECT.Snapshot(rows,8)
-  Check(count=8 AND self.tc_TDNestCnt=0)
-  FOR slot=0 TO 7 DO
+  count=FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)
+  Check(count=9 AND self.tc_TDNestCnt=0)
+  FOR slot=0 TO 8 DO
     Check(rows(slot).name(0)=65+slot AND rows(slot).name(31)=0)
     FOR index=1 TO 30 DO
       Check(rows(slot).name(index)=65+(index & 15))
@@ -95,32 +95,32 @@ PROC Main()
   mounts(1).published=0
   service.mounts(2).item=FSTYPES.Mount POINTER(0)
   mounts(3).spec.alias(1)=1
-  Check(FSINSPECT.Snapshot(rows,8)=6)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=7)
   Check(rows(0).name(0)=90 AND rows(0).offline=1)
   Check(rows(1).name(0)=68 AND rows(1).name(1)=46)
   registry.stop=1
-  Check(FSINSPECT.Snapshot(rows,8)=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0)
   registry.stop=0
   registry.state=FSTYPES.STATE_STARTING
-  Check(FSINSPECT.Snapshot(rows,8)=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0)
   registry.state=FSTYPES.STATE_STOPPING
-  Check(FSINSPECT.Snapshot(rows,8)=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0)
   registry.state=FSTYPES.STATE_FAILED
-  Check(FSINSPECT.Snapshot(rows,8)=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0)
   registry.state=FSTYPES.STATE_READY
   service.count=0
-  Check(FSINSPECT.Snapshot(rows,8)=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0)
   registry.state=oldState
   registry.runtime=previous
   EXEC.Permit()
   Check(self.tc_TDNestCnt=$ff AND EXEC.AvailMem(0)=available)
-  Check(FSINSPECT.Snapshot(rows,8)=0 AND SIODRIVER.State()=0)
+  Check(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=0 AND SIODRIVER.State()=0)
   FOR index=0 TO 15 DO
     Check(buffer(index)=$a5)
   OD
 
-  ; The maximum snapshot occupies 280 bytes from offset 16.
-  FOR count=296 TO 511 DO
+  ; The maximum snapshot occupies 324 bytes from offset 16.
+  FOR count=340 TO 511 DO
     Check(buffer(count)=$a5)
   OD
 

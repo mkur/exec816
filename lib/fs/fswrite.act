@@ -1,6 +1,8 @@
 ; Common write admission, bounded commit units and explicit writer finalization.
 MODULE FSWRITE
 USE EXEC
+USE RAMWRITE
+USE RAMTYPES
 USE FSTYPES
 USE FSBTYPES
 USE FSWTYPES
@@ -36,6 +38,10 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry
     POINTER entry)
   BYTE okay
 
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(1)
+  FI
+
   IF service.selected.spec.format=FSFORMATS.SDFS THEN
     okay=SDFSWRITE.Validate(service,entry)
   ELSE
@@ -51,6 +57,10 @@ RETURN(FSALLOC.CountRoom(service,entry.count))
 PUBLIC BYTE FUNC Mark(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
     entry BYTE opened)
 
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(1)
+  FI
+
   IF service.selected.spec.format=FSFORMATS.SDFS THEN
     RETURN(SDFSWRITE.Mark(service,entry,opened))
   FI
@@ -61,6 +71,10 @@ RETURN(MYDOSWRITE.Mark(service,entry,opened))
 ; one-sector/map empty files when first opened for writing.
 BYTE FUNC Normalize(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry)
   CARD maximum
+
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(1)
+  FI
 
   IF entry.start<>0 THEN
     RETURN(1)
@@ -112,6 +126,10 @@ PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
     RETURN(FSWRITEIO.Error(service,ERROR_TOO_MANY_LEVELS))
   FI
 
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(RAMWRITE.Create(service,directory))
+  FI
+
   IF service.selected.spec.format=FSFORMATS.SDFS THEN
     RETURN(SDFSWRITE.Create(service,directory))
   FI
@@ -143,7 +161,11 @@ PUBLIC BYTE FUNC Open(FSTYPES.Service POINTER service)
     FI
 
     IF service.packet.sp_Pkt.dp_Type=MODE_NEWFILE THEN
-      IF service.selected.spec.format=FSFORMATS.SDFS THEN
+      IF service.selected.spec.format=FSFORMATS.RAM THEN
+        IF RAMWRITE.Truncate(service,entry)=0 THEN
+          RETURN(0)
+        FI
+      ELSEIF service.selected.spec.format=FSFORMATS.SDFS THEN
         IF SDFSWRITE.Truncate(service,entry)=0 THEN
           RETURN(0)
         FI
@@ -178,6 +200,9 @@ PUBLIC BYTE FUNC WriteStep(BYTE POINTER raw)
         done=SDFSWRITE.Write(service,file,operation.output+
             SIZE(operation.completed+state.staged),operation.remaining)
         buffered=state.buffered
+      ELSEIF service.selected.spec.format=FSFORMATS.RAM THEN
+        done=RAMWRITE.Write(service,file,operation.output+
+            SIZE(operation.completed),operation.remaining)
       ELSE
         done=MYDOSWRITE.Write(service,file,operation.output+
             SIZE(operation.completed),operation.remaining)
@@ -258,7 +283,9 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service FSTYPES.FileObject
   operation.stage=1
   maximum=service.selected.spec.sectors*
       LONGCARD(service.selected.spec.dataBytes-3)
-  IF service.selected.spec.format=FSFORMATS.SDFS THEN
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    maximum=RAMTYPES.MAX_FILE
+  ELSEIF service.selected.spec.format=FSFORMATS.SDFS THEN
     maximum=16777215
   FI
 
@@ -319,6 +346,10 @@ PUBLIC BYTE FUNC Delete(FSTYPES.Service POINTER service)
     RETURN(FSWRITEIO.Error(service,ERROR_OBJECT_IN_USE))
   FI
 
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(RAMWRITE.Delete(service,entry))
+  FI
+
   IF (entry.flags & FSBTYPES.DIR)<>0 THEN
     IF service.selected.spec.format=FSFORMATS.SDFS THEN
       IF SDFSWRITE.Empty(service,entry.start)=0 OR Validate(service,entry)=0 THEN
@@ -350,6 +381,10 @@ PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service)
 
   LET state=FSWRITEIO.State(service)
   LET entry=@state.target
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    RETURN(RAMWRITE.Rename(service,entry,service.work.wanted))
+  FI
+
   IF service.selected.spec.format=FSFORMATS.SDFS THEN
     RETURN(SDFSWRITE.Rename(service,entry,service.work.wanted))
   FI

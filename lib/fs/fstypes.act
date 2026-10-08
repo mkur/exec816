@@ -63,7 +63,7 @@ PUBLIC TYPE Service=[
   BLOCKTYPES.Adapter POINTER adapter
   FSBTYPES.Workspace POINTER work
   FSBTYPES.Operation POINTER operation
-  MountSlot ARRAY mounts(8)
+  MountSlot ARRAY mounts(9)
   EXEC.MsgPort POINTER control
   Mount POINTER selected
   Packet POINTER packet

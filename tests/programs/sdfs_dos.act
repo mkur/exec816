@@ -209,7 +209,7 @@ PROC Lifetime()
 
   item=FSTYPES.Object POINTER(root)
   rows=FSINSPECT.Info POINTER($d5000)
-  Require(FSINSPECT.Snapshot(rows,8)=2 AND rows(0).format=2 AND rows(1).format=1
+  Require(FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)=2 AND rows(0).format=2 AND rows(1).format=1
       AND rows(0).readOnly=1)
   Require(FSMANAGER.Unmount(0)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   DOS.UnLock(root)

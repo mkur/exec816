@@ -1,0 +1,19 @@
+; Private upper-RAM metadata; no disk geometry or application-visible handles.
+MODULE RAMTYPES
+USE FSBTYPES
+
+PUBLIC CONST MAX_NODES=256, MAX_FILE=$800000, COPY_BYTES=4096
+PUBLIC TYPE Node=[
+  FSBTYPES.Entry entry
+  Node POINTER next
+  BYTE POINTER data
+  LONGCARD capacity
+]
+PUBLIC TYPE Volume=[
+  Node POINTER nodes,scan
+  CARD serial,live
+  LONGCARD ordinal
+]
+PUBLIC TYPE Cursor=[Node POINTER node]
+
+ENDMODULE

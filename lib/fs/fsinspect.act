@@ -5,7 +5,7 @@ USE DOSCORE
 USE FSTYPES
 USE FSREGISTRY
 USE BOOTCONFIG
-PUBLIC CONST CAPACITY=8
+PUBLIC CONST CAPACITY=9
 
 PUBLIC TYPE Info=[
   BYTE ARRAY name(32)
@@ -32,6 +32,11 @@ PUBLIC BYTE FUNC CacheStatus(CacheInfo POINTER info)
       AND registry.runtime<>NULL THEN
     BEGIN
       LET service=FSTYPES.Service POINTER(registry.runtime)
+      IF service.adapter=NULL THEN
+        EXEC.Permit()
+        RETURN(0)
+      FI
+
       LET cache=@service.adapter.cache
       info.requested=cache.requested
       info.blocks=cache.blocks

@@ -945,6 +945,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/spartados/sdfsdir.act','lib/spartados/sdfsname.act','lib/spartados/sdfsdate.act',
                 'lib/fs/fsformats.act','lib/fs/fsbtypes.act','lib/fs/fsbackend.act',
                 'lib/fs/fs83.act','lib/fs/fscore.act','lib/fs/fsstatus.act',
+                'lib/ram/ramtypes.act','lib/ram/ramfs.act','lib/ram/ramfile.act','lib/ram/ramwrite.act',
                 'abi/process.json','tools/generate_process.py','lib/dos/process.act','lib/dos/processstate.act',
                 'lib/dos/dosprocess.act','lib/dos/dosinherit.act','lib/fs/fsfiles.act',
                 'lib/fs/fsleases.act','lib/fs/fswtypes.act','lib/fs/fswriteio.act',

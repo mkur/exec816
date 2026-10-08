@@ -1,6 +1,10 @@
-; Explicit two-backend boundary; common DOS ownership stays in lib/fs.
+; Explicit filesystem backend boundary; common DOS ownership stays in lib/fs.
 MODULE FSBACKEND
 USE EXEC
+USE FSSTATUS
+USE RAMFS
+USE RAMFILE
+USE RAMTYPES
 USE FSBTYPES
 USE MYDOS
 USE MYDOSFILE
@@ -13,10 +17,14 @@ INCLUDE "../dos/dos-types.inc"
 
 PUBLIC BYTE FUNC Available(BYTE format)
 
-RETURN(format=FSFORMATS.MYDOS OR format=FSFORMATS.SDFS)
+RETURN(format=FSFORMATS.MYDOS OR format=FSFORMATS.SDFS OR format=FSFORMATS.RAM)
 
 ; Allocate format-specific metadata while keeping common mount ownership here.
 PUBLIC BYTE FUNC CreateVolume(FSBTYPES.Volume POINTER volume)
+
+  IF volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.CreateVolume(volume))
+  FI
 
   IF Available(volume.format)=0 THEN
     RETURN(0)
@@ -33,6 +41,11 @@ RETURN(MYDOS.CreateVolume(volume))
 PUBLIC PROC DestroyVolume(FSBTYPES.Volume POINTER volume)
 
   IF volume=NULL THEN
+    RETURN
+  FI
+
+  IF volume.format=FSFORMATS.RAM THEN
+    RAMFS.DestroyVolume(volume)
     RETURN
   FI
 
@@ -76,6 +89,10 @@ RETURN
 
 PUBLIC LONGCARD FUNC EnumLimit(FSBTYPES.Volume POINTER volume)
 
+  IF volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMTYPES.MAX_NODES)
+  FI
+
   IF volume.format=FSFORMATS.SDFS THEN
     RETURN(729443)
   FI
@@ -83,6 +100,10 @@ PUBLIC LONGCARD FUNC EnumLimit(FSBTYPES.Volume POINTER volume)
 RETURN(64)
 
 PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.BeginMount(work))
+  FI
 
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFS.BeginMount(work))
@@ -92,6 +113,10 @@ RETURN(MYDOS.BeginMount(work))
 
 PUBLIC BYTE FUNC MountBuffered(FSBTYPES.Workspace POINTER work)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(FSSTATUS.DONE)
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFS.MountBuffered(work))
   FI
@@ -99,6 +124,10 @@ PUBLIC BYTE FUNC MountBuffered(FSBTYPES.Workspace POINTER work)
 RETURN(MYDOS.MountBuffered(work))
 
 PUBLIC BYTE FUNC BufferedEntry(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.BufferedEntry(work))
+  FI
 
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSDIR.BufferedEntry(work))
@@ -108,6 +137,10 @@ RETURN(MYDOS.BufferedEntry(work))
 
 PUBLIC BYTE FUNC ResolveComponent(FSBTYPES.Workspace POINTER work)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.ResolveComponent(work))
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSNAME.ResolveComponent(work))
   FI
@@ -115,6 +148,10 @@ PUBLIC BYTE FUNC ResolveComponent(FSBTYPES.Workspace POINTER work)
 RETURN(MYDOS.ResolveComponent(work))
 
 PUBLIC BYTE FUNC ResolveStep(FSBTYPES.Workspace POINTER work)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.ResolveStep(work))
+  FI
 
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSNAME.ResolveStep(work))
@@ -124,6 +161,10 @@ RETURN(MYDOS.ResolveStep(work))
 
 PUBLIC BYTE FUNC Descend(FSBTYPES.Workspace POINTER work)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.Descend(work))
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSNAME.Descend(work))
   FI
@@ -131,6 +172,10 @@ PUBLIC BYTE FUNC Descend(FSBTYPES.Workspace POINTER work)
 RETURN(MYDOS.Descend(work))
 
 PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.BeginRead(operation))
+  FI
 
   IF operation.work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.BeginRead(operation))
@@ -140,6 +185,10 @@ RETURN(MYDOSFILE.BeginRead(operation))
 
 PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER operation)
 
+  IF operation.work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.BeginSeek(operation))
+  FI
+
   IF operation.work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.BeginSeek(operation))
   FI
@@ -148,6 +197,10 @@ RETURN(MYDOSFILE.BeginSeek(operation))
 
 PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER operation)
 
+  IF operation.work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.ContinueOperation(operation))
+  FI
+
   IF operation.work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.ContinueOperation(operation))
   FI
@@ -155,6 +208,10 @@ PUBLIC BYTE FUNC ContinueOperation(FSBTYPES.Operation POINTER operation)
 RETURN(MYDOSFILE.ContinueOperation(operation))
 
 PUBLIC BYTE FUNC Cancel(FSBTYPES.Operation POINTER operation)
+
+  IF operation.work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.Cancel(operation))
+  FI
 
   IF operation.work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.Cancel(operation))
@@ -165,6 +222,10 @@ RETURN(MYDOSFILE.Cancel(operation))
 PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
     LONGCARD ordinal)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.BeginEntry(work,directory,ordinal))
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSDIR.BeginEntry(work,directory,ordinal))
   FI
@@ -172,6 +233,10 @@ PUBLIC BYTE FUNC BeginEntry(FSBTYPES.Workspace POINTER work CARD directory
 RETURN(MYDOS.BeginEntry(work,directory,ordinal))
 
 PUBLIC BYTE FUNC StartResolve(FSBTYPES.Workspace POINTER work BYTE POINTER path)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.StartResolve(work,path))
+  FI
 
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSNAME.StartResolve(work,path))
@@ -181,6 +246,10 @@ RETURN(MYDOS.StartResolve(work,path))
 
 PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.Open(work,file))
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.Open(work,file))
   FI
@@ -188,6 +257,10 @@ PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER fi
 RETURN(MYDOSFILE.Open(work,file))
 
 PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER operation LONGINT error)
+
+  IF operation.work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFILE.Fail(operation,error))
+  FI
 
   IF operation.work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSFILE.Fail(operation,error))
@@ -199,6 +272,10 @@ RETURN(MYDOSFILE.Fail(operation,error))
 PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     POINTER file BYTE received)
 
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.Measure(work,file))
+  FI
+
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSDIR.Measure(work,file,received))
   FI
@@ -207,6 +284,10 @@ RETURN(MYDOSFILE.Measure(work,file,received))
 
 PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockState
     POINTER state)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.ValidateBase(work,state))
+  FI
 
   IF work.volume.format=FSFORMATS.SDFS THEN
     RETURN(SDFSNAME.ValidateBase(work,state))

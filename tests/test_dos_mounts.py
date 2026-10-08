@@ -2,7 +2,7 @@ import copy,json,struct,sys,tempfile,unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'tools'))
 from generate_dos_mounts import validate_mounts,encode,load,select_system
-from filesystem_formats import MYDOS,SDFS
+from filesystem_formats import MYDOS,SDFS,RAM
 from generate_filesystem_formats import generate
 class DosMountTests(unittest.TestCase):
     def test_backend_ids_and_small_sdfs_geometry(self):
@@ -10,6 +10,24 @@ class DosMountTests(unittest.TestCase):
         self.assertEqual((MYDOS,SDFS),(1,2))
         raw=encode([dict(alias='D1',unit=49,sectors=100,sector_bytes=128,format=SDFS)])
         self.assertEqual(raw[43],SDFS)
+    def test_ram_has_no_disk_geometry(self):
+        ram=dict(alias='RAM',format=RAM)
+        raw=encode([ram])
+        self.assertEqual(struct.unpack('<32sHHIHBBBx',raw),
+                         (b'RAM'+bytes(29),0,0,0,0,0,RAM,1))
+        disks=[dict(alias=f'D{i}',unit=48+i,sectors=720,sector_bytes=128)
+               for i in range(1,9)]
+        self.assertEqual(len(validate_mounts([*disks,ram])),9)
+        self.assertEqual(select_system(validate_mounts([*disks,ram]),'D1')['system_slot'],0)
+        for patch in (dict(alias='TEMP'),dict(unit=49),dict(sectors=720),
+                      dict(sector_bytes=256),dict(profile=1),dict(boot=1),
+                      dict(access='readonly')):
+            with self.subTest(patch=patch),self.assertRaises(ValueError):
+                encode([{**ram,**patch}])
+        with self.assertRaises(ValueError):encode([ram,ram])
+        with self.assertRaises(ValueError):encode([{**disks[0],'alias':'RAM'}])
+        with self.assertRaises(ValueError):select_system(validate_mounts([ram]),'RAM')
+
     def test_explicit_geometry_and_layout(self):
         for size,profile in ((128,1),(256,1),(128,2),(128,4),(256,4)):
             m=dict(alias='D1',unit=49,sectors=720,sector_bytes=size,profile=profile)

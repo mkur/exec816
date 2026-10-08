@@ -1,0 +1,163 @@
+; RAM mutations allocate before publication; allocation failures do not poison
+; the volume. Common DOS code enforces leases, access and namespace rules.
+MODULE RAMWRITE
+USE EXEC
+USE A816MEMORY
+USE RAMTYPES
+USE RAMFS
+USE RAMFILE
+USE FSTYPES
+USE FSBTYPES
+USE FSCORE
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
+
+  LET state=RAMFS.State(service.work.volume)
+  IF state.live=RAMTYPES.MAX_NODES OR state.serial=$ffff THEN
+    service.work.error=ERROR_DISK_FULL
+    RETURN(0)
+  FI
+
+  LET node=RAMTYPES.Node POINTER(EXEC.AllocMem(SIZEOF(RAMTYPES.Node),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  IF node=NULL THEN
+    service.work.error=ERROR_NO_FREE_STORE
+    RETURN(0)
+  FI
+
+  state.serial==+1
+  state.live==+1
+  node.entry.key=LONGCARD(state.serial)
+  node.entry.start=state.serial
+  node.entry.parent=service.work.directory
+  node.entry.known=1
+  IF directory<>0 THEN
+    node.entry.flags=FSBTYPES.DIR
+  FI
+
+  A816MEMORY.Move(node.entry.name,service.work.wanted,SIZE(11))
+  node.next=state.nodes
+  state.nodes=node
+  FSCORE.CopyEntry(@service.work.entry,@node.entry)
+  service.committing=1
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry)
+
+  LET node=RAMFS.Find(service.work.volume,entry.start)
+  RAMFS.ReleaseData(node)
+  FSCORE.CopyEntry(entry,@node.entry)
+  service.committing=1
+
+RETURN(1)
+
+; Geometric buffers keep sequential creation linear. An unsuccessful growth
+; leaves both the old bytes and their allocation intact. Unused space is not
+; cleared or exposed through reads.
+BYTE FUNC Grow(FSTYPES.Service POINTER service RAMTYPES.Node POINTER node
+    LONGCARD needed)
+  LONGCARD capacity
+  BYTE POINTER data
+
+  IF needed<=node.capacity THEN
+    RETURN(1)
+  FI
+
+  capacity=node.capacity
+  IF capacity=0 THEN
+    capacity=256
+  FI
+
+  WHILE capacity<needed DO
+    capacity=capacity LSH 1
+  OD
+
+  data=EXEC.AllocMem(capacity,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)
+  IF data=NULL THEN
+    service.work.error=ERROR_NO_FREE_STORE
+    RETURN(0)
+  FI
+
+  IF node.entry.length<>0 THEN
+    A816MEMORY.Move(data,node.data,SIZE(node.entry.length))
+  FI
+
+  IF node.data<>NULL THEN
+    EXEC.FreeMem(node.data,node.capacity)
+  FI
+
+  node.data=data
+  node.capacity=capacity
+
+RETURN(1)
+
+PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
+    POINTER file BYTE POINTER source LONGINT remaining)
+  LONGINT amount
+
+  amount=remaining
+  IF amount>RAMTYPES.COPY_BYTES THEN
+    amount=RAMTYPES.COPY_BYTES
+  FI
+
+  LET node=RAMFILE.Node(file)
+  IF Grow(service,node,LONGCARD(file.position+amount))=0 THEN
+    RETURN(0)
+  FI
+
+  A816MEMORY.Move(node.data+SIZE(file.position),source,SIZE(amount))
+  file.position==+amount
+  IF file.position>node.entry.length THEN
+    node.entry.length=file.position
+  FI
+
+  node.entry.count=LONGINT(node.capacity RSH 8)
+  FSCORE.CopyEntry(@file.entry,@node.entry)
+
+RETURN(amount)
+
+; Caller already rejected live files/locks and descendant leases.
+PUBLIC BYTE FUNC Delete(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry)
+  RAMTYPES.Node POINTER node,previous
+
+  LET state=RAMFS.State(service.work.volume)
+  node=state.nodes
+  previous=NULL
+  WHILE node.entry.start<>entry.start DO
+    IF node.entry.parent=entry.start THEN
+      service.work.error=ERROR_DIR_NOT_EMPTY
+      RETURN(0)
+    FI
+
+    previous=node
+    node=node.next
+  OD
+
+  ; Children are inserted ahead of their parent; all were checked above.
+  IF previous=NULL THEN
+    state.nodes=node.next
+  ELSE
+    previous.next=node.next
+  FI
+
+  RAMFS.ReleaseData(node)
+  EXEC.FreeMem(BYTE POINTER(node),SIZEOF(RAMTYPES.Node))
+  state.live==-1
+  service.committing=1
+
+RETURN(1)
+
+PUBLIC BYTE FUNC Rename(FSTYPES.Service POINTER service FSBTYPES.Entry
+    POINTER entry BYTE POINTER name)
+
+  LET node=RAMFS.Find(service.work.volume,entry.start)
+  A816MEMORY.Move(node.entry.name,name,SIZE(11))
+  service.committing=1
+
+RETURN(1)
+
+ENDMODULE

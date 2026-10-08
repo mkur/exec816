@@ -1,23 +1,36 @@
 """Validate explicit filesystem mount access and encode upper-RAM specs."""
 import argparse,json,re,struct
 from pathlib import Path
-from filesystem_formats import DEFAULT, FORMATS, MYDOS
+from filesystem_formats import DEFAULT, FORMATS, MYDOS, RAM
 ALIAS=re.compile(r'[0-9@A-Z_`a-z]{1,31}\Z')
 FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format','access'}
 def require(ok,message):
     if not ok:raise ValueError(message)
 def validate_mounts(mounts):
-    require(isinstance(mounts,(list,tuple)) and len(mounts)<=8,'Mount list must contain at most eight units')
+    require(isinstance(mounts,(list,tuple)) and len(mounts)<=9,'Mount list must contain at most eight disks and RAM')
     aliases=set();units=set();result=[]
     for number,mount in enumerate(mounts):
         require(isinstance(mount,dict),'Mount must be an object')
         require(not set(mount)-FIELDS,'Unknown mount field')
-        require({'alias','unit','sectors','sector_bytes'}<=set(mount),'Incomplete mount geometry')
+        require({'alias'}<=set(mount),'Missing mount alias')
         name=mount['alias'];require(isinstance(name,str) and ALIAS.fullmatch(name),'Invalid mount alias')
         require(name.upper() not in {'NIL','RAW','CON','CONSOLE','SYS'},'Reserved DOS alias')
-        spec=dict(profile=1,boot=1,format=DEFAULT,access="readonly");spec.update(mount)
+        ram=mount.get('format')==RAM
+        if ram:
+            spec=dict(unit=0,sectors=0,sector_bytes=0,profile=0,boot=0,format=RAM,access="readwrite")
+        else:
+            require({'unit','sectors','sector_bytes'}<=set(mount),'Incomplete mount geometry')
+            require(name.upper()!='RAM','RAM is reserved for the RAM filesystem')
+            spec=dict(profile=1,boot=1,format=DEFAULT,access="readonly")
+        spec.update(mount)
         for key in FIELDS-{'alias','access'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
         require(spec['access'] in ('readonly','readwrite'),'Unknown mount access policy')
+        require(name.upper() not in aliases,'Duplicate mount alias')
+        if ram:
+            require(name.upper()=='RAM','RAM filesystem must use the RAM alias')
+            require(all(spec[k]==0 for k in ('unit','sectors','sector_bytes','profile','boot')), 'RAM has no physical geometry')
+            require(spec['access']=='readwrite','RAM must be writable')
+            aliases.add(name.upper());result.append(spec);continue
         require(49<=spec['unit']<=56,'SIO unit must be 49..56')
         require(1<=spec['sectors']<=65535,'Geometry must have 1..65535 sectors')
         if spec['format']==MYDOS: require(spec['sectors']>=368,'MyDOS needs at least 368 sectors')
