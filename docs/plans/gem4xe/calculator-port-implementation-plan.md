@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Loadable GEM applications](loadable-gem-applications-implementation-plan.md) ·
 [AES contract](../../reference/aes.md) · [C application profile](../../reference/c-program-loading.md)
 
-Status: CAL1 implemented and checked at the development tier; CAL2–CAL4 pending.
+Status: CAL1–CAL2 implemented and checked at the development tier; CAL3–CAL4 pending.
 Commit each passing executable slice. Reuse the established LG6 baseline; no separate
 baseline slice is needed.
 
@@ -11,6 +11,11 @@ baseline slice is needed.
 layout and cross-bank access/measurement, 41 optimized object checks, three
 independent text pixel comparisons and all 22 retained-widget pixel stages pass.
 Fixed, per-public-Task and private-idle bank-zero deltas are all zero.
+
+[CAL2 evidence](../../development/calculator-cal2.json): the pinned flat
+resource is 650 bytes and takes 672 rounded upper-heap bytes with metadata.
+SDFS/MyDOS load, fixup, drawing, failure replacement and cleanup checks pass;
+415 host tests run with four historical-source skips. Bank-zero deltas remain zero.
 
 ## Outcome
 

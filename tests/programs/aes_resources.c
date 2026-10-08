@@ -2,6 +2,7 @@
 #include <exec816/aes.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
+#include <string.h>
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,ResourceStatus;
 volatile LONG ResourceError;
@@ -9,10 +10,51 @@ static void check(WORD okay) { ++AESChecks;if (!okay) { ++AESFailures;if (!AESFi
 #define CHECK(x) check((x)!=0)
 void AESClientOne(void) { }
 void AESClientTwo(void) { }
+static struct FileInfoBlock info;
+static WORD work_in[11]={1,1,1,1,1,1,1,1,1,1,2},work_out[57];
+static void text_resource(void)
+{
+    OBJECT *tree,*again;
+    TEDINFO *ted;
+    WORD handle=1,window,i;
+    const char *bad[]={"D1:TEDBAD.RSC","D1:TEDSHORT.RSC","D1:TEDSTR.RSC"};
+    CHECK(rsrc_load("D1:CALC.RSC"));
+    if (!rsrc_gaddr(R_TREE,0,(void **)&tree)) { CHECK(0); return; }
+    CHECK(tree[0].ob_width==184 && tree[0].ob_height==160 && tree[2].ob_type==G_BOXTEXT);
+    ted=(TEDINFO *)(ULONG)tree[2].ob_spec;
+    CHECK((ULONG)ted>65535UL && ted->te_ptext>65535UL);
+    CHECK(ted->te_font==IBM && ted->te_just==TE_RIGHT && ted->te_thickness==-1);
+    CHECK(ted->te_txtlen==12 && ted->te_tmplen==12);
+    CHECK(!strcmp((char *)(ULONG)ted->te_ptext,"           ") &&
+          !strcmp((char *)(ULONG)ted->te_ptmplt,"___________") &&
+          !strcmp((char *)(ULONG)ted->te_pvalid,"9"));
+    strcpy((char *)(ULONG)ted->te_ptext,"         42");
+    for (i=0;i<3;++i) {
+        CHECK(!rsrc_load(bad[i]));
+        CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && tree==again);
+        CHECK(!strcmp((char *)(ULONG)ted->te_ptext,"         42"));
+    }
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,200,184);CHECK(window>0);
+    CHECK(wind_open(window,312,24,200,184));
+    tree[0].ob_x=320;tree[0].ob_y=40;
+    CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(tree,0,MAX_DEPTH,320,40,184,160));
+    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+    for (i=0;i<3;++i) {
+        CHECK(rsrc_load("D1:SHARED.RSC"));
+        CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+        CHECK(tree[1].ob_spec==tree[2].ob_spec);
+        ted=(TEDINFO *)(ULONG)tree[2].ob_spec;
+        CHECK(!strcmp((char *)(ULONG)ted->te_ptext,"           "));
+        CHECK(rsrc_free());
+    }
+    /* Deliberately leave the final resource to ordinary appl_exit cleanup. */
+    CHECK(rsrc_load("D1:CALC.RSC"));
+}
 UWORD AESRun(void)
 {
     OBJECT *tree,*again,*popup;
-    struct FileInfoBlock info;
     BPTR lock,file;
     ULONG memory;
     WORD x,y,words[8];
@@ -51,6 +93,7 @@ UWORD AESRun(void)
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);CHECK(file!=0);
     CHECK(Seek(file,36,OFFSET_BEGINNING)==0);CHECK(Seek(file,0,OFFSET_CURRENT)==36);
     CHECK(Close(file));
+    text_resource();
 cleanup:
     CHECK(appl_exit());CHECK(ExecAESDetach());CHECK(ExecDOSDetach());
     CHECK(AvailMem(0)==memory);

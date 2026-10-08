@@ -357,7 +357,13 @@ binding remains presenter-owned. No additional bank-zero reservation is needed.
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
 big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
 trees, using the object/string subset above. Each tree ends with LASTOB within
-32 objects. TEDINFO, icons, bitmaps, extensions and indirect specs are unsupported.
+32 objects. Up to 256 TEDINFO records support noneditable G_TEXT/G_BOXTEXT.
+Each record's three string offsets must identify bounded NUL-terminated strings
+of at most 63 characters. Load fixes full upper-memory addresses and normalizes
+text/template lengths to string length plus NUL, including files with zero
+length fields. Shared TEDINFO records are fixed once. Text remains writable
+within the buffer supplied by the resource; text editing is not implemented.
+Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.
 Character coordinates use the fixed 8×8 cell. File extents and string offsets are
 checked once during loading; valid object links remain the caller's responsibility.
 Already loaded coordinates are pixels and must not be passed through obfix again.

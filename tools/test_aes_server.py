@@ -353,7 +353,10 @@ ENDMODULE
                 payload=resource();(media/'DESKTOP.RSC').write_bytes(payload)
                 bad=bytearray(payload);bad[72:76]=b'\xff'*4
                 (media/'BAD.RSC').write_bytes(bad);(media/'SHORT.RSC').write_bytes(payload[:35])
-                make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC'},filesystem=filesystem,sector_bytes=128,sectors=720)
+                from prepare_calculator import resource_cases
+                cases=resource_cases(out/'calculator')
+                for name,payload in cases.items():(media/name).write_bytes(payload)
+                make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC',*cases},filesystem=filesystem,sector_bytes=128,sectors=720)
                 bridge.mount(0,str(out/'resources.atr'))
 
             try:
