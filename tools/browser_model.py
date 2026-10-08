@@ -20,8 +20,15 @@ def listing(session,base):
 def select(session,base,name,click):
     """Reach a retained directory entry through the actual scrollbar, then click."""
     from native_program import require
-    names=listing(session,base)
-    require(name in names,'Missing Files entry '+name)
+    # Directory enumeration can span many disk turns. The application publishes
+    # its path as status after the complete snapshot, then redraws the rows.
+    for attempt in range(50):
+        names=listing(session,base)
+        status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
+        path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
+        if name in names and (status==path or not status.startswith(b'SYS:')):break
+        session.frames(40)
+    require(name in names,'Missing Files entry '+name+': '+repr((path,status,names)))
     index=names.index(name)
     for _ in range(256):
         first=session.number(base+FIELDS['first'],2)
