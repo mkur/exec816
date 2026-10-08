@@ -90,3 +90,45 @@ UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
     paint=0;
     return status;
 }
+
+/* Native popup rows use the same strip, font and disabled stipple as GEM
+ * objects. The allocated popup owns its one-pixel outline. */
+extern void GemWidgetStipple(UWORD,UWORD,UWORD,UWORD);
+static UWORD menu_row(void)
+{
+    struct ConsoleBitmapPacket *p=paint;
+    const UBYTE *label=(const UBYTE *)p->text;
+    WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height,row=p->fillY;
+    UWORD first=p->fillX,n=0,selected=p->foreground && p->background;
+    if (!first) {
+        fill(l,row,r,row+16,0);
+        fill(l+1,row>t ? row:t+1,r-1,row+16<b ? row+16:b-1,selected);
+        box(l,t,r,b);
+    }
+    while (n<16 && first+n<24 && label[first+n]) {
+        glyphs[n]=label[first+n];++n;
+    }
+    if (n) GemWidgetText(l+8+(first<<3),row+4,glyphs,n,!selected,
+                         p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+    first+=n;
+    p->fillX=first<24 && label[first] ? first:0;
+    if (!p->fillX && !p->foreground) {
+        WORD pl=l+1>p->clipLeft ? l+1:p->clipLeft;
+        WORD pt=row>t ? row:t+1,pr=r-1<p->clipRight ? r-1:p->clipRight;
+        WORD pb=row+16<b ? row+16:b-1;
+        if (pt<p->clipTop) pt=p->clipTop;
+        if (pb>p->clipBottom) pb=p->clipBottom;
+        if (pl<pr && pt<pb) GemWidgetStipple(pl,pt,pr,pb);
+    }
+    return !p->fillX;
+}
+
+UWORD DesktopMenuRow(struct ConsoleBitmapPacket *p)
+{
+    UWORD status;
+    paint=p;
+    status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
+                                !p->fillX,menu_row);
+    paint=0;
+    return status;
+}

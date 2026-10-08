@@ -10,11 +10,11 @@ static const OBJECT menuSource[] = {
     {1,3,3,G_IBOX,0,0,0,8,0,424,16},
     {2,-1,-1,G_TITLE,0,0,(ULONG)"Files",0,0,64,16},
     {0,5,5,G_IBOX,0,0,0,0,16,640,224},
-    {4,6,9,G_BOX,0,0,0x1100,8,0,112,64},
-    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",0,0,112,16},
-    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh",0,16,112,16},
-    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",0,32,112,16},
-    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit",0,48,112,16}
+    {4,6,9,G_BOX,0,0,0x00011100,8,0,112,66},
+    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,110,16},
+    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh",1,17,110,16},
+    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,33,110,16},
+    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit",1,49,110,16}
 };
 static WORD menu_state(struct Browser *b)
 {

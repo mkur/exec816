@@ -255,6 +255,12 @@ it. The target is the frontmost remaining shown window with a live input route;
 a retired AES input epoch is ineligible. Closing a background window leaves
 focus unchanged. No remaining owner means focus and the published route are zero.
 
+Native fallback and Windows popups have a one-pixel black outline inside their
+allocated bounds. The outline is not an item target. Selection is black/white
+inversion; disabled text uses the GEM white stipple. Each native row is composed
+in the existing widget strip, with at most sixteen glyphs per callback. Installed
+application menus retain their own OBJECT geometry and specifications.
+
 The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
 and repaint, with no saved-under framebuffer. Labels and window IDs are copied

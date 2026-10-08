@@ -82,7 +82,7 @@ PUBLIC BYTE FUNC Run(CARD operation)
   packet.status=DISPLAY.BAD_ARGUMENT
   Call(state.entry)
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
-      OR operation=OP_TEXT_CLIP OR operation=OP_FRAME
+      OR operation=OP_TEXT_CLIP OR operation=OP_FRAME OR operation=OP_MENU_ROW
       OR operation=OP_SCROLL OR operation=OP_COPY_START THEN
     drawingChanged=1
   FI
@@ -165,6 +165,31 @@ PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
   packet.clipBottom=CARD(clip.bottom)
   packet.fillX=progress^
   IF Run(OP_FRAME)=0 THEN
+    RETURN(0)
+  FI
+
+  progress^=packet.fillX
+
+RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
+
+PUBLIC BYTE FUNC MenuRow(LAYERTYPES.Rect POINTER bounds,clip
+    BYTE POINTER title CARD rowTop BYTE enabled,selected CARD POINTER progress)
+
+  LET packet=GetPacket()
+  packet.x=CARD(bounds.left)
+  packet.y=CARD(bounds.top)
+  packet.width=CARD(bounds.right-bounds.left)
+  packet.height=CARD(bounds.bottom-bounds.top)
+  packet.text=LONGCARD(ADDRESS(title))
+  packet.foreground=CARD(enabled)
+  packet.background=CARD(selected)
+  packet.clipLeft=CARD(clip.left)
+  packet.clipTop=CARD(clip.top)
+  packet.clipRight=CARD(clip.right)
+  packet.clipBottom=CARD(clip.bottom)
+  packet.fillY=rowTop
+  packet.fillX=progress^
+  IF Run(OP_MENU_ROW)=0 THEN
     RETURN(0)
   FI
 

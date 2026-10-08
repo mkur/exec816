@@ -7,6 +7,8 @@ USE LAYERTYPES
 USE REGIONS
 USE CONSOLEBITMAP
 
+CARD menuGlyph
+
 BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
   LAYERTYPES.Rect area
 
@@ -41,12 +43,49 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
       okay=DESKAPPMENU.Paint(layer,clip,phase^=0,
           DESKMENU.paintMenu=DESKMENU.GEM_MENU)
       phase^=1
-      IF okay=0 OR okay=2 THEN RETURN(okay) FI
-      IF layer.id<>DESKSTATE.barLayer THEN RETURN(1) FI
+      IF okay=0 OR okay=2 THEN
+        RETURN(okay)
+      FI
+      IF layer.id<>DESKSTATE.barLayer THEN
+        RETURN(1)
+      FI
       phase^=2
       RETURN(2)
     FI
   FI
+  IF layer.id<>DESKSTATE.barLayer THEN
+    IF phase^=0 THEN
+      menuGlyph=0
+      phase^=1
+    FI
+
+    row=phase^-1
+    REGIONS.Assign(@bounds,layer.bounds.left,
+        layer.bounds.top+INT(row)*DESKMENU.ROW_HEIGHT,
+        layer.bounds.right,layer.bounds.top+INT(row+1)*DESKMENU.ROW_HEIGHT)
+    REGIONS.Intersect(@bounds,clip,@area)
+    okay=1
+    IF REGIONS.Empty(@area)=0 THEN
+      IF row<DESKMENU.count THEN
+        okay=CONSOLEBITMAP.MenuRow(@layer.bounds,@area,
+            @DESKMENU.items(row).label(0),CARD(bounds.top),
+            DESKMENU.items(row).enabled,INT(row)=DESKMENU.paintSelection,
+            @menuGlyph)
+      ELSE
+        okay=CONSOLEBITMAP.MenuRow(@layer.bounds,@area,BYTE POINTER(c""),
+            CARD(bounds.top),1,0,@menuGlyph)
+      FI
+    FI
+
+    IF okay=0 OR okay=2 THEN
+      RETURN(okay)
+    FI
+
+    phase^==+1
+    RETURN(IF phase^>BYTE(CARD(layer.bounds.bottom-layer.bounds.top) RSH 4)
+        THEN 1 ELSE 2 FI)
+  FI
+
   IF phase^=0 THEN
     phase^=1
     RETURN(IF Fill(clip,clip,0)<>0 THEN 2 ELSE 0 FI)
@@ -88,33 +127,6 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     RETURN(Fill(@bounds,clip,1))
   FI
 
-  row=phase^-1
-  REGIONS.Assign(@bounds,layer.bounds.left,
-      DESKMENU.BAR_HEIGHT+INT(row)*DESKMENU.ROW_HEIGHT,0,0)
-  bounds.right=bounds.left+208
-  bounds.bottom=bounds.top+DESKMENU.ROW_HEIGHT
-  REGIONS.Intersect(@bounds,clip,@area)
-  okay=1
-  IF row<DESKMENU.count AND REGIONS.Empty(@area)=0 THEN
-    background=0
-    foreground=1
-    IF DESKMENU.items(row).enabled=0 THEN
-      foreground=8
-    ELSEIF INT(row)=DESKMENU.paintSelection THEN
-      background=1
-      foreground=0
-    FI
-    okay=Fill(@bounds,clip,background)
-    IF okay<>0 THEN
-      okay=Text(CARD(bounds.left)+8,CARD(bounds.top)+4,
-          @DESKMENU.items(row).label(0),foreground,background,@area,
-          DESKMENU.LABEL_BYTES-1)
-    FI
-  FI
-
-  phase^==+1
-
-RETURN(IF okay=0 THEN 0 ELSE
-    IF phase^>BYTE(CARD(layer.bounds.bottom-layer.bounds.top) RSH 4) THEN 1 ELSE 2 FI FI)
+RETURN(1)
 
 ENDMODULE

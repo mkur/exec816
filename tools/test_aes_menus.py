@@ -129,6 +129,24 @@ def physical(b,p,foreign,report):
             move(24,8);edge(1);move(32,24);edge(0);actions(0,3,6)
             click(24,8);move(472,8);frames()
             require(get(at('DESKMENU','menu'),1)==2,'Heading switch to Windows failed')
+            # The native popup uses the same monochrome conventions. Rebuild
+            # it from retained windows, then compare only its opaque bounds.
+            from desktop_oracle import compose
+            from bitmap_console_oracle import Terminal
+            packed=compose(b,p,font,Terminal(64,20),pointer=position,
+                           external=lambda raster,title,bounds:None,
+                           menu_contexts=sy['contexts'])
+            bottom=16+max(4,get(at('DESKMENU','count'),1))*16
+            path=out/'native-menu.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
+            for yy in range(16,bottom):
+                for xx in range(432,640):
+                    byte=packed[yy*320+xx//2];pen=byte&15 if xx&1 else byte>>4
+                    pixel=yy*capture.stride+64+xx*4
+                    require(pixels[pixel:pixel+3]==hardware[pen],f'Native menu pixel {xx},{yy}')
+            for xx,yy in [(432,24),(639,24),(472,16),(472,bottom-1)]:
+                move(xx,yy);frames()
+                require(get(at('DESKMENU','selected'))==65535,'Popup border selected an item')
+            report['native_popup']=dict(pixels='exact',border_hits='excluded')
             move(24,8);frames();click(32,40);actions(0,4,7)
             click(24,8);move(32,24);edge(1);mutation(1);edge(0);actions(0,4)
             key('ESC');mutation(2)

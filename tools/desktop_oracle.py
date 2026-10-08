@@ -1,7 +1,7 @@
 """Independent full recomposition from desktop retained records (no GPU reads)."""
 from generate_desktop import layout
 from generate_layers import layout as layers_layout
-from gem_render_oracle import Raster
+from gem_render_oracle import Raster, PENS
 from test_desktop_presentation import frame, rectangle, text
 from test_gem_cursor import overlay
 from native_program import require
@@ -93,9 +93,16 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 entries = [(b'Next window', True), (b'Close', active is not None and active[wf['kind']] != 1)]
             for row, (label, enabled) in enumerate(entries):
                 inverse = enabled and row == chrome['selected']
-                rectangle(result, (left, top+row*16, right, top+(row+1)*16), int(inverse))
+                rectangle(result, (left+1, max(top+1,top+row*16), right-1, min(bottom-1,top+(row+1)*16)), int(inverse))
                 text(result, left+8, top+row*16+4, label,
-                     int(not inverse) if enabled else 8, int(inverse))
+                     int(not inverse), int(inverse))
+                if not enabled:
+                    for yy in range(top+row*16+4,top+row*16+12):
+                        for xx in range(left+8,left+8+len(label)*8):
+                            if (xx+yy)%2==0:result.pixels[yy*640+xx]=PENS[0]
+            for edge in [(left,top,right,top+1),(left,bottom-1,right,bottom),
+                         (left,top,left+1,bottom),(right-1,top,right,bottom)]:
+                rectangle(result,edge,1)
     for slot in reversed(order):
         start = scene+lf['items']+slot*layers_layout()['Layer']['size']
         if not bridge.memdump(start+layers_layout()['Layer']['fields']['shown'], 1)[0]:

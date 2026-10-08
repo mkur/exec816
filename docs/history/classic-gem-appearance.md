@@ -45,3 +45,25 @@ See [GA1 evidence](../development/classic-gem-appearance-ga1.json).
 
 The early OF816 package builds; the exact extracted distribution walkthrough
 is reserved for GA4. This is development evidence, not hosted qualification.
+
+## GA2 — Menus and controls
+
+Native fallback and Windows popups now use inside black outlines, inverse
+selection and the existing GEM disabled stipple. Border pixels cannot select an
+item. A row is composed in the existing widget strip before publication; long
+labels resume after sixteen glyphs. The private packet is version 11, still
+78 bytes. It adds MENU_ROW and borrows its label only for the call.
+
+Files owns a one-pixel G_BOX border and inset entries in its compiled menu tree.
+The general application-menu renderer continues to honor caller geometry and
+OBJECT specifications. Existing Control Panel, Counter and calculator controls
+already use the extracted GEM rendering, so their semantics and palettes stay
+application-owned.
+
+The native painter adds one two-byte upper continuation; C reuses the frame
+callback scratch. Additional VRAM and reserved bank-zero delta are **0**,
+including **0 fixed, 0 per public Task and 0 private idle** with guards/padding.
+Optimized menu, two-Files-instance and panel-control fixtures pass, including
+exact native-popup pixels, all four border hit edges, menu replacement/withdrawal,
+keyboard navigation, radio/default activation and press cancellation. Host checks
+pass 417 tests with four existing skips. See [GA2 evidence](../development/classic-gem-appearance-ga2.json).

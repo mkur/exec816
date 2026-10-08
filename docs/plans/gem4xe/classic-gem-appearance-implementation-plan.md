@@ -3,7 +3,7 @@
 [Design note](classic-gem-appearance-design.md) · [GEM integration](README.md) ·
 [Roadmap](../../roadmap.md#next-desktop-milestones)
 
-Status: GA1 implemented and passing development checks; GA2–GA4 follow.
+Status: GA1–GA2 implemented and passing development checks; GA3–GA4 follow.
 
 Implement the design in four executable slices, committing after each passing
 slice. The current runtime baseline is the completed

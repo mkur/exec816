@@ -242,8 +242,9 @@ INT FUNC Hit(INT x,y)
     RETURN(DESKAPPMENU.EntryAt(x,y))
   FI
   left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI
-  IF x<left OR x>=left+208 OR y<BAR_HEIGHT
-      OR y>=BAR_HEIGHT+INT(count)*ROW_HEIGHT THEN
+  IF x<=left OR x>=left+207 OR y<=BAR_HEIGHT
+      OR y>=BAR_HEIGHT+INT(count)*ROW_HEIGHT
+      OR (count>=4 AND y=BAR_HEIGHT+INT(count)*ROW_HEIGHT-1) THEN
     RETURN(NO_ROW)
   FI
   row=(y-BAR_HEIGHT) RSH 4
