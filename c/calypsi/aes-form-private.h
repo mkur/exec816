@@ -15,7 +15,11 @@ struct ExecAESForm {
     WORD message[8], saved[GEM_OBJECT_LIMIT];
     WORD mx, my, buttons, key;
     struct ExecAESAlert *alert;
+    struct ExecAESFileSelector *fileSelector;
 };
 WORD ExecAESFormPaint(struct ExecAESContext *,WORD);
 WORD ExecAESFormRun(struct ExecAESContext *,WORD);
+WORD ExecAESFormFocus(struct ExecAESContext *,WORD);
+void ExecAESFormCancelPress(struct ExecAESForm *);
+WORD ExecAESFormMessage(struct ExecAESContext *);
 #endif

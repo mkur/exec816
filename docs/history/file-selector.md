@@ -37,3 +37,49 @@ The loadable Files artifact grows from 19,565 to 21,089 bytes; its image span
 grows from 69,497 to 69,527 bytes. The filtered index is not allocated by Files.
 Stack/DP pools and VRAM reservations are unchanged. These are development checks,
 not real-hardware qualification or closure of HY4/PI4.
+
+## FSEL2 Private hosted selector
+
+The private selector uses a compiled 31-object tree, caller-owned form lifetime,
+editable path/filename fields, a filtered viewport and DOS scans stepped between
+ready-event passes. Loading leaves Cancel active. Scanning retains input interest
+without creating a timer, clearing signals or waiting for fresh input with a
+live directory lock. Existing blocking AES event behavior is preserved.
+
+The optimized fixture passes **195 target checks**, plus physical keyboard/mouse
+interaction and four independent pixel comparisons (220,928 compared pixels).
+Cases include two callers, compact 208×128 work space, scrolling/truncation,
+filter changes without directory reads, navigation, edited Cancel, temporary
+move/close, cancellation while loading, held-entry/outside-release/input-loss
+handling, and borrowed move/close interruption with exact message/repair order.
+Allocation/retirement faults, retry, full window capacity and a full receive
+queue return their resources. Caller-owned DOS handles and locks survive.
+An injected late read failure clears the partial snapshot. The separate blocking
+event regression passes 371 checks while its CPU peer continues progressing.
+Raw/optimized emitted layout probes agree; the host suite passes 423 tests with
+four existing skips.
+
+The final warmed heap baseline is **2,661,056 bytes before and after** the
+exercise. The first real access allocates 73,624 bytes of persistent filesystem
+mount/cache storage; it is measured separately from selector/context ownership.
+Minimum ordinary stack margin is **302 bytes**; idle is 192 bytes, reported
+separately. No stack increase is required.
+
+Initial pixel trials exposed a status field that overlapped Cancel's border.
+It now leaves space above the buttons. Row updates also exclude hidden rows
+to avoid unnecessary draw calls. Earlier failed/diagnostic runs are excluded
+from acceptance. The fixture also now releases an old host's held mouse gesture
+before waiting for a new UPDATE, observes final system completion directly, and
+measures ownership after warming the filesystem. The event fixture excludes two
+never-spawned setup helpers from its existing Task-entry table; its reservation
+is unchanged.
+
+Reserved bank-zero delta is **0 fixed, 0 per public Task and 0 private idle**,
+including guards, alignment and unused capacity. The form grows from 315 to 319
+live upper bytes but still reserves 320. A selector adds 3,248 reserved state
+bytes (including its 512-byte filtered index) and the 28,672-byte snapshot:
+32,240 bytes together with the form, before existing host/workstation resources.
+The optimized selector object contains 11,918 code bytes and 180 constant bytes.
+The private fixture still uses C code banks $0C/$0E/$10, data $0D and lookup bank
+$0F; exact fixture extents are in the evidence. No VRAM reservation changes.
+Public bindings and the loadable consumer remain FSEL3/FSEL4 work at this slice.

@@ -104,5 +104,171 @@
     "FSEL2",
     "FSEL3",
     "FSEL4"
-  ]
+  ],
+  "FSEL2": {
+    "status": "pass",
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "selector": {
+      "path": "build/file-selector/fsel2-warm/results.json",
+      "sha256": "18d9c84a4988f15cb1aa4f02b4cb3fda704f60e31d90cdb01210dff3230e577b",
+      "status": "pass",
+      "tier": "development"
+    },
+    "events": {
+      "path": "build/file-selector/events-ready/results.json",
+      "sha256": "c3f7c4c47565c563819e74a0e23f9532476c35036ad36a212d044d680131f96c",
+      "status": "pass",
+      "tier": "development"
+    },
+    "layouts": {
+      "path": "build/file-selector/layout/results.json",
+      "sha256": "dcf0f244813a4fbf9fb34304640ee69d4ca29f0e8cb3eb73ceb6aa879c0bd63f",
+      "status": "pass",
+      "tier": "development"
+    },
+    "checks": 195,
+    "event_checks": 371,
+    "pixels": [
+      {
+        "name": "initial",
+        "pixels": 64768
+      },
+      {
+        "name": "exposed",
+        "pixels": 64768
+      },
+      {
+        "name": "scrolled",
+        "pixels": 26624
+      },
+      {
+        "name": "moved",
+        "pixels": 64768
+      }
+    ],
+    "heap": {
+      "Cold": 2734680,
+      "Warm": 2661056,
+      "Returned": 2661056
+    },
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 708,
+        "remaining_above_floor": 572
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1280,
+        "peak": 341,
+        "remaining_above_floor": 683
+      },
+      "2": {
+        "base": 13680,
+        "bytes": 1280,
+        "peak": 155,
+        "remaining_above_floor": 869
+      },
+      "3": {
+        "base": 14992,
+        "bytes": 1280,
+        "peak": 666,
+        "remaining_above_floor": 358
+      },
+      "4": {
+        "base": 16304,
+        "bytes": 1280,
+        "peak": 722,
+        "remaining_above_floor": 302
+      },
+      "5": {
+        "base": 17616,
+        "bytes": 1280,
+        "peak": 200,
+        "remaining_above_floor": 824
+      },
+      "6": {
+        "base": 18928,
+        "bytes": 2560,
+        "peak": 699,
+        "remaining_above_floor": 1605
+      },
+      "7": {
+        "base": 21520,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24112,
+        "bytes": 512,
+        "peak": 64,
+        "remaining_above_floor": 192
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 291,
+        "remaining_above_floor": 989
+      }
+    },
+    "ordinary_minimum_margin": 302,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "private_idle": 0
+    },
+    "upper_heap": {
+      "selector_live": 3242,
+      "selector_reserved": 3248,
+      "snapshot": 28672,
+      "filtered_index_in_state": 512,
+      "form_live": 319,
+      "form_reserved": 320,
+      "total_with_form": 32240
+    },
+    "selector_object": {
+      "code_bytes": 11918,
+      "constant_bytes": 180
+    },
+    "fixture_segments": [
+      {
+        "address": 786432,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 917504,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 983040,
+        "bytes": 37132,
+        "executable": false
+      },
+      {
+        "address": 1048576,
+        "bytes": 2768,
+        "executable": true
+      },
+      {
+        "address": 851968,
+        "bytes": 5063,
+        "executable": false
+      }
+    ],
+    "fixture_zero_fill": [
+      {
+        "address": 857032,
+        "size": 13361,
+        "writable": true
+      }
+    ],
+    "qualification": false
+  }
 }

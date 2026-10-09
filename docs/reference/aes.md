@@ -442,7 +442,7 @@ returns **zero**; inspect `ExecAESDiagnostic()` and never interpret zero as cons
 Return uses DEFAULT, Space uses button focus, and the temporary closer dismisses.
 The fixed monochrome donor icons use clipped fill runs; this adds no general
 G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
-or application teardown can complete. Session storage is 315 live / 320 reserved
+or application teardown can complete. Session storage is 319 live / 320 reserved
 upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
 AESPB dispatch use C component ABI 9; rebuild GEMSYS and applications together.
 

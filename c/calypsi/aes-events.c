@@ -152,8 +152,8 @@ static BOOL port_ready(struct MsgPort *port)
            (struct Node *)&port->mp_MsgList.lh_Tail;
 }
 
-WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
-                   WORD *message)
+static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
+                   WORD *message, BOOL blocking)
 {
     ULONG high = 0, low = 0, mask = 0;
     UWORD ready = 0, status = AES_OK, inputFlags, i;
@@ -241,6 +241,7 @@ decide:
             break;
         }
         Permit();
+        if (!blocking) goto done;
         if ((flags & AES_MU_TIMER) && !submitted) {
             ExecAESTimerSend(c, high, low);
             submitted = TRUE;
@@ -302,11 +303,23 @@ done:
             i = ExecAESInputRecover(c, inputFlags);
             if (i != AES_OK) status = i;
         }
-        ExecAESInputDisarm(c);
+        if (blocking || status!=AES_OK) ExecAESInputDisarm(c);
     }
     if (status != AES_OK)
         for (i = 0; i < AES_INTOUT_WORDS; ++i) c->intout[i] = 0;
     c->diagnostic = status;
     c->busy = 0;
     return status == AES_OK ? (WORD)ready : 0;
+}
+
+/* Poll retains input interest between DOS reads; its owner disarms at scan end.
+ * It shares exactly the blocking path's selection and atomic payload commit. */
+WORD ExecAESPoll(struct ExecAESContext *c,UWORD flags,WORD *message)
+{
+    return events(c,flags,0,message,FALSE);
+}
+
+WORD ExecAESEvents(struct ExecAESContext *c,UWORD flags,ULONG milliseconds,WORD *message)
+{
+    return events(c,flags,milliseconds,message,TRUE);
 }

@@ -1,6 +1,7 @@
 /* Synchronous forms run in their caller, using ordinary window ownership. */
 #include "aes-form-private.h"
 #include "aes-alert-private.h"
+#include "aes-fsel-private.h"
 #include "vdi-private.h"
 #include <proto/exec.h>
 extern WORD App_ob_get_par(OBJECT *,WORD);
@@ -71,6 +72,7 @@ BOOL ExecAESFormFinish(struct ExecAESContext *c)
         f->tree[0].ob_x=f->originalX; f->tree[0].ob_y=f->originalY;
     }
     if (f->alert) FreeMem(f->alert,sizeof(*f->alert));
+    if (f->fileSelector) ExecAESFileFree(f->fileSelector);
     FreeMem(f,sizeof(*f)); c->form=NULL;
     c->diagnostic=saved;
     return TRUE;
@@ -213,7 +215,7 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
 }
 
 /* Move the existing one-field editor without retaining UPDATE in a wait. */
-static WORD focus_edit(struct ExecAESContext *c,WORD focus)
+WORD ExecAESFormFocus(struct ExecAESContext *c,WORD focus)
 {
     struct ExecAESForm *f=c->form;
     if (f->edit!=NIL && f->edit!=focus) {
@@ -228,7 +230,7 @@ static WORD focus_edit(struct ExecAESContext *c,WORD focus)
     return 1;
 }
 
-static void cancel_press(struct ExecAESForm *f)
+void ExecAESFormCancelPress(struct ExecAESForm *f)
 {
     if (f->armed!=NIL) f->tree[f->armed].ob_state=f->pressedState;
     f->armed=NIL;
@@ -236,7 +238,7 @@ static void cancel_press(struct ExecAESForm *f)
 
 /* Return 1 for handled GUI policy, 0 for dismissal/interruption, -1 for a
  * failed operation. Ordinary WM-shaped application messages stay opaque. */
-static WORD form_message(struct ExecAESContext *c)
+WORD ExecAESFormMessage(struct ExecAESContext *c)
 {
     struct ExecAESForm *f=c->form;
     WORD i,x,y;
@@ -250,7 +252,7 @@ static WORD form_message(struct ExecAESContext *c)
             break;
         case WM_MOVED:
             if (!f->ownWindow) break;
-            cancel_press(f); f->down=1;
+            ExecAESFormCancelPress(f); f->down=1;
             x=c->view->work.left; y=c->view->work.top;
             if (!wind_set(f->window,WF_CURRXYWH,f->message[4],f->message[5],
                           f->message[6],f->message[7])) return -1;
@@ -281,7 +283,7 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
         if (f->focus==NIL) for (i=1;i<f->count;++i)
             if (eligible(f->tree,i)) { f->focus=i; break; }
     }
-    if (!ExecAESFormPaint(c,1) || !focus_edit(c,f->focus)) goto finish;
+    if (!ExecAESFormPaint(c,1) || !ExecAESFormFocus(c,f->focus)) goto finish;
     for (;;) {
         f->oldFocus=f->focus;
         for (i=0;i<f->count;++i) f->saved[i]=f->tree[i].ob_state;
@@ -289,13 +291,13 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
         events=ExecAESEvents(c,MU_KEYBD|MU_BUTTON|MU_MESAG,0,f->message);
         if (!events) {
             if (c->diagnostic!=AES_INPUT_LOST) break;
-            cancel_press(f); f->down=1;
+            ExecAESFormCancelPress(f); f->down=1;
             if (!ExecAESFormPaint(c,0)) break;
             continue;
         }
         f->mx=c->intout[1]; f->my=c->intout[2];
         f->buttons=c->intout[3]; f->key=c->intout[5];
-        if ((events&MU_MESAG) && form_message(c)!=1) break;
+        if ((events&MU_MESAG) && ExecAESFormMessage(c)!=1) break;
         if (events&MU_BUTTON) {
             hit=objc_find(f->tree,0,MAX_DEPTH,f->mx,f->my);
             if (f->buttons&1) {
@@ -305,17 +307,17 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
                     if (!(f->tree[hit].ob_flags&EDITABLE)) f->tree[hit].ob_state^=SELECTED;
                 }
             } else {
-                f->down=0; next=f->armed; cancel_press(f);
+                f->down=0; next=f->armed; ExecAESFormCancelPress(f);
                 if (hit==next && eligible(f->tree,hit)) {
                     proceed=form_button(f->tree,hit,1,&next);
-                    if (!focus_edit(c,hit)) break;
+                    if (!ExecAESFormFocus(c,hit)) break;
                     if (!proceed) { result=hit; break; }
                 }
             }
         }
         if (events&MU_KEYBD) {
             if (f->down) {
-                if ((f->key&255)==27) cancel_press(f);
+                if ((f->key&255)==27) ExecAESFormCancelPress(f);
             } else if (f->focus!=NIL) {
                 next=f->focus;
                 if (f->key==0x4800 || f->key==0x5000) {
@@ -324,10 +326,10 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
                         i+=step; if (i<1) i=f->count-1; if (i>=f->count) i=1;
                         if (eligible(f->tree,i) && (f->tree[i].ob_flags&EDITABLE)) { next=i; break; }
                     } while (i!=f->focus);
-                    if (!focus_edit(c,next)) break;
+                    if (!ExecAESFormFocus(c,next)) break;
                 } else {
                     proceed=form_keybd(f->tree,f->focus,f->focus,f->key,&next,&unused);
-                    if (!focus_edit(c,next)) break;
+                    if (!ExecAESFormFocus(c,next)) break;
                     if (!proceed) { result=next; break; }
                     if (unused && f->edit!=NIL &&
                         !objc_edit(f->tree,f->edit,unused,&f->index,ED_CHAR)) break;
@@ -338,7 +340,7 @@ WORD ExecAESFormRun(struct ExecAESContext *c,WORD start)
     }
 finish:
     status=c->diagnostic;
-    cancel_press(f);
+    ExecAESFormCancelPress(f);
     if (f->edit!=NIL && !objc_edit(f->tree,f->edit,0,&f->index,ED_END)) {
         result=-1; status=c->diagnostic;
     }

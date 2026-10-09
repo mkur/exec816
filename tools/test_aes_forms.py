@@ -2,7 +2,7 @@
 from native_program import ROOT, require, sha256
 
 
-def instrument(out,alerts=False):
+def instrument(out,alerts=False,file_selector=False):
     """Replace only this fixture's form resource boundaries, never production."""
     import build_bitmap_console as builder
     original=builder.emit
@@ -18,6 +18,7 @@ BOOL AESFormVDIClose(struct ExecAESContext *);
 '''
     source=source.replace('#include "aes-form-private.h"',
         '#include "'+str(ROOT/'c/calypsi/aes-form-private.h')+'"'+prototypes)
+    source=source.replace('#include "aes-fsel-private.h"', '#include "'+str(ROOT/'c/calypsi/aes-fsel-private.h')+'"')
     source=source.replace('#include "vdi-private.h"',
         '#include "'+str(ROOT/'c/calypsi/vdi-private.h')+'"')
     source=source.replace('#include "aes-alert-private.h"',
@@ -34,12 +35,21 @@ BOOL AESFormVDIClose(struct ExecAESContext *);
         alert=alert.replace('#include <string.h>', '#include <string.h>\nvoid *AESAlertAlloc(ULONG,ULONG);')
         alert=alert.replace('a=AllocMem(', 'a=AESAlertAlloc(')
         alert_path=out/'aes-alert-fault.c';alert_path.write_text(alert)
+    if file_selector:
+        selector=(ROOT/'c/calypsi/aes-fsel.c').read_text().replace('#include "aes-fsel-private.h"',
+            '#include "'+str(ROOT/'c/calypsi/aes-fsel-private.h')+'"\nvoid *AESFileStateAlloc(ULONG,ULONG);\nvoid *AESFileEntriesAlloc(ULONG,ULONG);')
+        selector=selector.replace('a=AllocMem(', 'a=AESFileStateAlloc(').replace('a->entries=AllocMem(', 'a->entries=AESFileEntriesAlloc(')
+        selector=selector.replace('#include <string.h>', '#include <string.h>\nWORD AESFileNext(struct FileScan *);')
+        selector=selector.replace('FileScanNext(&a->scan)', 'AESFileNext(&a->scan)')
+        selector_path=out/'aes-fsel-fault.c';selector_path.write_text(selector)
     def emit(output,sources,*args,**kwargs):
+        if file_selector:sources=[selector_path if p==ROOT/'c/calypsi/aes-fsel.c' else p for p in sources]
         if alerts:sources=[alert_path if p==ROOT/'c/calypsi/aes-alert.c' else p for p in sources]
         sources=[path if p==ROOT/'c/calypsi/aes-form.c' else p for p in sources]
         foreign=original(output,sources,*args,**kwargs)
         foreign['provenance']['form_fault_source_sha256']=sha256(path)
         if alerts:foreign['provenance']['alert_fault_source_sha256']=sha256(alert_path)
+        if file_selector:foreign['provenance']['selector_fault_source_sha256']=sha256(selector_path)
         return foreign
     builder.emit=emit
     return original
