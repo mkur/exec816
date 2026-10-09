@@ -84,8 +84,12 @@ blitter_claim:
     lda #4
     jsr timer_acquire
     beq blitter_claim_bad8
+    rep #$20
+    lda f:BV_PAGE_OFFSET
+    tax
+    sep #$20
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     sta f:BV_CONTROL
     sta f:BV_EVENT
     rep #$20
@@ -116,8 +120,12 @@ blitter_release_unchecked:
     sep #$20
     lda f:BV_BINDING+T_BINDING_ACTIVE
     beq blitter_release_done
+    rep #$20
+    lda f:BV_PAGE_OFFSET
+    tax
+    sep #$20
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     sta f:BV_CONTROL
     sta f:BV_BINDING+T_BINDING_ACTIVE
     sta f:TM_BLITTER
@@ -141,15 +149,19 @@ blitter_arm:
     sei
     sep #$20
     lda f:BV_BINDING+T_BINDING_ACTIVE
-    beq blitter_arm_bad
+    jeq blitter_arm_bad
     lda f:BV_EVENT
     cmp #BV_ARMED
-    beq blitter_arm_bad
-    lda f:$d653
+    jeq blitter_arm_bad
+    rep #$20
+    lda f:BV_PAGE_OFFSET
+    tax
+    sep #$20
+    lda f:$d653,x
     and #3
-    bne blitter_arm_bad
+    jne blitter_arm_bad
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     rep #$20
     lda 5,s
     sta f:BV_ID
@@ -159,11 +171,11 @@ blitter_arm:
     sta f:BV_STARTED
     sep #$20
     lda #<BV_COMMAND
-    sta f:$d650
+    sta f:$d650,x
     lda #>BV_COMMAND
-    sta f:$d651
+    sta f:$d651,x
     lda #^BV_COMMAND
-    sta f:$d652
+    sta f:$d652,x
     lda #1
     sta f:TM_BLITTER
     lda f:$0010
@@ -171,8 +183,8 @@ blitter_arm:
     lda #BV_ARMED
     sta f:BV_EVENT
     sta f:BV_CONTROL
-    sta f:$d654
-    sta f:$d653
+    sta f:$d654,x
+    sta f:$d653,x
 .export blitter_launched
 blitter_launched:
     rep #$20
@@ -205,9 +217,11 @@ blitter_state_end:
 blitter_reset:
     php
     sei
+    lda f:BV_PAGE_OFFSET
+    tax
     sep #$20
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     sta f:BV_CONTROL
     sta f:BV_EVENT
     jsr blitter_cancel_timer
@@ -224,16 +238,20 @@ blitter_irq_service:
     beq blitter_irq_none
     lda f:BV_BINDING+T_BINDING_ACTIVE
     beq blitter_irq_none
-    lda f:$d654
+    rep #$20
+    lda f:BV_PAGE_OFFSET
+    tax
+    sep #$20
+    lda f:$d654,x
     and #1
     beq blitter_irq_none
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     sta f:BV_CONTROL
     lda f:BV_EVENT
     cmp #BV_ARMED
     bne blitter_irq_handled
-    lda f:$d653
+    lda f:$d653,x
     and #3
     bne blitter_irq_handled
 blitter_irq_complete:
@@ -273,8 +291,12 @@ blitter_watchdog:
     cmp #16
     sep #$20
     bcc blitter_watchdog_done
+    rep #$20
+    lda f:BV_PAGE_OFFSET
+    tax
+    sep #$20
     lda #0
-    sta f:$d654
+    sta f:$d654,x
     sta f:BV_CONTROL
 blitter_expired:
     lda #BV_EXPIRED

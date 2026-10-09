@@ -16,7 +16,7 @@ from test_large_stacks import observe
 from generate_memory import layout
 from task_capacity import configure
 
-CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
+CASES=['pattern','unknown-baseline','absent','compatible','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
        'async-scroll','async-timeout','async-wrap','async-unquiesced','async-lost-irq','async-copy','copy-boundary','copy-exhaustion','snapshot-copy']
 
@@ -51,7 +51,7 @@ def run(output,mode,cases=None,replay=False,production=False):
             require(memory[key]==before[key],'G3 changed '+key)
         for name in cases or CASES:
             variant=CASES.index(name)
-            pin=case_pin('absent' if variant==2 else 'unsupported' if variant==3 else 'present')
+            pin=case_pin('absent' if variant==2 else 'compatible' if variant==3 else 'present')
             folder=output/name
             folder.mkdir(exist_ok=True)
             case=dict(name=name,status='running')
@@ -62,6 +62,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                 b.mount(0,str(output/'system.atr'))
                 case['machine']=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
                 def before_run(b):
+                    b.poke(memory['boot_config']['address']+7,0)
                     b.memload(symbols['variant'],variant.to_bytes(2,'little'))
                     b.memload(symbols['tickAddress'],adapter.VBI_COUNT.to_bytes(4,'little'))
                     b.memload(symbols['notifyControl'],(program['build']['task_storage']['BLITTER_STATE']+28).to_bytes(4,'little'))
@@ -126,8 +127,13 @@ def run(output,mode,cases=None,replay=False,production=False):
                         clean_ownership(b,program,program['output'])
                         require(b.memdump(0x8000,4096)==sentinel,'Underlying CPU aperture was changed')
                         require(b.memdump(0x22f,3)==saved['os'],'OS DMA/display list not restored')
-                        require(b.memdump(saved['screen_at'],960)==saved['screen'],'OS screen not restored')
-                        require(b.peek(0x2f0)==saved['cursor'],'OS cursor not restored')
+                        if variant in (1,2):
+                            from test_boot_diagnostics import os_text
+                            require(('VBXE BASELINE=' if variant==1 else 'NO VBXE; IDs=') in os_text(b),
+                                    'Admission failure was not reported')
+                        else:
+                            require(b.memdump(saved['screen_at'],960)==saved['screen'],'OS screen not restored')
+                            require(b.peek(0x2f0)==saved['cursor'],'OS cursor not restored')
                         require(b.memdump(0xd65e,2)==bytes(2) if variant!=2 else True,'MEMAC still mapped')
                         if variant==5:
                             case['vcount_reads']=read('vcountReads')

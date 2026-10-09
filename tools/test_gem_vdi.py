@@ -18,7 +18,7 @@ def case_pin(case):
     if case == 'absent':
         pin['machine']['addons'] = 'off'
         pin['devices'] = []
-    elif case == 'unsupported':
+    elif case == 'compatible':
         pin['devices'][0]['settings']['version'] = 124
         pin['devices'][0]['readback'][0]['bytes'][1] = 0x24
     elif case != 'present':
@@ -51,7 +51,7 @@ def run(output, mode):
             require(program['build']['memory'][key] == before[key], 'G0 changed '+key)
         report['baseline_budget'] = before['bank_zero_budget']
         report['bank_zero_delta'] = dict(fixed=0, per_task=[0]*8, private_idle=0)
-        for case in ('present', 'absent', 'unsupported'):
+        for case in ('present', 'absent', 'compatible'):
             pin = case_pin(case)
             folder = output/case
             selected = dict(program, output=folder)
@@ -80,7 +80,7 @@ def run(output, mode):
                                      frame_limit=180, timeout=15)
                 result = data(bridge, program['image'], 'result', True)[0]
                 version = data(bridge, program['image'], 'version', True)[0]
-                require(result == (0 if case == 'present' else 1), 'Wrong target detection result')
+                require(result == (1 if case == 'absent' else 0), 'Wrong target detection result')
                 require((version == 0x1026) == (case == 'present'), 'Wrong target identity')
                 require(bridge.memdump(0x8000, len(sentinel)) == sentinel, 'Aperture RAM changed')
                 require(bridge.memdump(0x230, 2) == saved['display_list'] and

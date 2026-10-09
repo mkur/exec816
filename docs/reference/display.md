@@ -68,13 +68,25 @@ of at most sixteen rows, reduced further by the work limit. An error after an
 earlier chunk leaves that prefix drawn and follows normal device recovery.
 These limits bound work; they are not a measured two-millisecond guarantee.
 
-Only the cold-boot inactive full FX 1.26 core at `$D600`, private 512 KiB VRAM,
-with VBXE interrupts off is supported. The launcher's private boot authorization
-is required in addition to exact identity reads. Standard text launchers do not
+The adapter detects VBXE at `$D600` or `$D700` by reading CORE_VERSION (`$10`
+for FX, `$11` for GTIA emulation). It reports the page, raw identity/revision
+and decoded BCD revision, including the `a/r` flag. It requires the FX core
+type for drawing, but does not require revision 1.26 or reject the `r` variant.
+The driver and native IRQ/timer paths use the same detected page. Detection
+does not write VBXE registers or change Antonia II configuration.
+
+The cold-boot inactive full FX core, private 512 KiB VRAM and interrupts off
+remain launch requirements. The launcher's private boot authorization
+is required in addition to identity reads. Standard text launchers do not
 authorize graphics. Unknown previous graphics state is UNSUPPORTED; identity
 reads alone never authorize resetting hardware. The adapter tracks subsequent
 write-only control values. The baseline is inactive, not a promise to preserve
 unused VRAM contents or inactive overlay palette entries.
+
+Hardware absence, wrong core type, baseline contradictions and console-start
+failure are reported through the OS text screen, even with boot tracing off.
+The pinned qualification evidence uses FX 1.26 at `$D600`; accepting a detected
+revision is not a qualification claim for every FPGA core or physical board.
 
 All hardware waits use unsigned 16-bit Exec tick subtraction, with deadlines
 of sixteen ticks (strictly below half the range), while VBI remains enabled.

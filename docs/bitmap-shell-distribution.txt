@@ -17,7 +17,8 @@ Extract this ZIP into one folder. In System > Configure System, select:
   Memory: 64K base plus 4032K high memory (63 banks), giving 4MB total.
   Firmware: the included altirraos-816.rom, registered as XL/XE OS.
   Internal BASIC disabled.
-  VBXE FX 1.26 at $D600, with private 512K VRAM.
+  VBXE full FX core with private 512K VRAM (tested baseline: 1.26 at $D600).
+  Exec detects $D600 or $D700 and reports the revision; it does not require 1.26.
   SIO Patch and D: burst I/O disabled.
   "Unload disks when booting new image" disabled.
 

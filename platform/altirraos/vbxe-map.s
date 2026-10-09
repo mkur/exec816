@@ -11,17 +11,20 @@ _VbxeMap:
               sta dp:0x80
               stx dp:0x82
               php
+              ldy ##4
+              lda [0x80],y
+              tax
               sep #0x20
               lda #0
-              sta long:0xd65e
+              sta long:0xd65e,x
 VbxeMapDisabled:
               ldy ##0
               lda [0x80],y
-              sta long:0xd65f
+              sta long:0xd65f,x
 VbxeMapBank:
               iny
               lda [0x80],y
-              sta long:0xd65e
+              sta long:0xd65e,x
 VbxeMapControl:
               ldy ##0
               rep #0x20

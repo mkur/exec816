@@ -271,7 +271,7 @@ int main(void)
         Wait(rootMask);
     } else if (stage==1) {
         send(1);
-        if (variant>=1 && variant<=3) {
+        if (variant>=1 && variant<=2) {
             check(answer==DISPLAY_UNSUPPORTED);
             check(!display.mutated && display.lease.state==DISPLAY_FREE);
         } else check(answer==DISPLAY_OK);
@@ -285,7 +285,7 @@ int main(void)
     } else if (stage==3) {
         send(3);
     } else {
-        if (variant>=1 && variant<=3) {
+        if (variant>=1 && variant<=2) {
             /* This peer never borrowed graphics in negative admission cases. */
             Forbid();
             check(ReleaseTask(&peerLease));

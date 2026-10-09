@@ -1,15 +1,17 @@
-/* Exec-owned FX 1.26 adapter with bounded native completion notification. */
+/* Exec-owned FX adapter with detected I/O page and bounded completion. */
 #include "vbxe-internal.h"
 #include <hardware/vbxe-upload.h>
 #include <hardware/vbxe-notify.h>
+#include <hardware/boot-diagnostics.h>
 #include <proto/exec.h>
 
 #define REG(address) (*(volatile UBYTE *)(ULONG)(address))
-#define BUSY 0xd653UL
+#define BUSY (registerBase+0x53UL)
 #define VCOUNT 0xd40bUL
 void EXEC_CALL _VbxeMap(struct VbxeMapState *map);
 /* One hardware owner; IDs are never reused, including across close/reopen. */
 static ULONG operationSequence;
+static ULONG registerBase;
 
 static UWORD check(struct VbxeDisplay *d)
 {
@@ -45,16 +47,16 @@ static UWORD retire(struct VbxeDisplay *d, UWORD result)
     if (VbxeNotifyClose(&d->lease)!=DISPLAY_OK)
         DisplayResetRequired();
     if (d->mutated) {
-        REG(0xd640)=d->video=0;
+        REG(registerBase+0x40UL)=d->video=0;
         map(d,0,0);
-        REG(0xd641)=d->xdl[0]=0;
-        REG(0xd642)=d->xdl[1]=0;
-        REG(0xd643)=d->xdl[2]=0;
-        REG(0xd650)=d->blit[0]=0;
-        REG(0xd651)=d->blit[1]=0;
-        REG(0xd652)=d->blit[2]=0;
-        REG(0xd644)=d->color=0;
-        REG(0xd645)=d->palette=0;
+        REG(registerBase+0x41UL)=d->xdl[0]=0;
+        REG(registerBase+0x42UL)=d->xdl[1]=0;
+        REG(registerBase+0x43UL)=d->xdl[2]=0;
+        REG(registerBase+0x50UL)=d->blit[0]=0;
+        REG(registerBase+0x51UL)=d->blit[1]=0;
+        REG(registerBase+0x52UL)=d->blit[2]=0;
+        REG(registerBase+0x44UL)=d->color=0;
+        REG(registerBase+0x45UL)=d->palette=0;
         REG(0x230)=(UBYTE)d->savedList;
         REG(0x231)=(UBYTE)(d->savedList>>8);
         REG(0xd402)=(UBYTE)d->savedList;
@@ -99,12 +101,26 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
     d->mutated=0;
     d->operationPending=0;
     d->operationId=0;
+    registerBase=VbxeHardwareBase();
+    if (!registerBase) {
+        VbxeBootReport(BOOT_DIAG_NO_VBXE,((UWORD)REG(0xd640UL)<<8)|REG(0xd740UL));
+        return retire(d,DISPLAY_UNSUPPORTED);
+    }
+    d->map.pageOffset=(UWORD)(registerBase-0xd600UL);
+    if (REG(registerBase+0x40UL)!=0x10) {
+        VbxeBootReport(BOOT_DIAG_BAD_CORE,REG(registerBase+0x40UL));
+        return retire(d,DISPLAY_UNSUPPORTED);
+    }
     /* Authorization is a launch precondition, separate from identity reads. */
-    if (!DisplayBaseline() || REG(0xd640)!=0x10 || REG(0xd641)!=0x26)
+    if (!DisplayBaseline()) {
+        VbxeBootReport(BOOT_DIAG_BAD_BASELINE,0);
         return retire(d,DISPLAY_UNSUPPORTED);
+    }
     /* Readable checks catch contradictions; they do not infer write-only state. */
-    if ((REG(BUSY)&3) || REG(0xd65e) || REG(0xd65f) || REG(0xd654))
+    if ((REG(BUSY)&3) || REG(registerBase+0x5eUL) || REG(registerBase+0x5fUL) || REG(registerBase+0x54UL)) {
+        VbxeBootReport(BOOT_DIAG_BUSY,REG(BUSY));
         return retire(d,DISPLAY_UNSUPPORTED);
+    }
     status=VbxeNotifyOpen(&d->lease);
     if (status!=DISPLAY_OK) return retire(d,status);
     d->savedDma=REG(0x22f);
@@ -112,7 +128,7 @@ UWORD VbxeOpen(struct VbxeDisplay *d)
     d->mutated=1;
     REG(0x22f)=0;
     REG(0xd400)=0;
-    REG(0xd640)=d->video=0;
+    REG(registerBase+0x40UL)=d->video=0;
     map(d,0,0);
     d->lastError=DISPLAY_OK;
     return DisplayActivate(&d->lease);
@@ -224,9 +240,9 @@ static UWORD stepped(ULONG at,WORD pitch,BYTE x,UWORD bytes,UWORD rows)
  * and list/work bounds. Both paths keep the same fences and recovery. */
 static void start(struct VbxeDisplay *d)
 {
-    REG(0xd650)=d->blit[0]=(UBYTE)VBXE_BCB;
-    REG(0xd651)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
-    REG(0xd652)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
+    REG(registerBase+0x50UL)=d->blit[0]=(UBYTE)VBXE_BCB;
+    REG(registerBase+0x51UL)=d->blit[1]=(UBYTE)(VBXE_BCB>>8);
+    REG(registerBase+0x52UL)=d->blit[2]=(UBYTE)(VBXE_BCB>>16);
     REG(BUSY)=1;
 }
 
@@ -572,10 +588,10 @@ UWORD VbxeOwnerShow(struct VbxeDisplay *d)
     if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerWaitFrame(d);
     if (status!=DISPLAY_OK) return status;
-    REG(0xd641)=d->xdl[0]=(UBYTE)VBXE_XDL;
-    REG(0xd642)=d->xdl[1]=(UBYTE)(VBXE_XDL>>8);
-    REG(0xd643)=d->xdl[2]=(UBYTE)(VBXE_XDL>>16);
-    REG(0xd640)=d->video=VBXE_VIDEO_XDL|VBXE_VIDEO_OPAQUE_ZERO;
+    REG(registerBase+0x41UL)=d->xdl[0]=(UBYTE)VBXE_XDL;
+    REG(registerBase+0x42UL)=d->xdl[1]=(UBYTE)(VBXE_XDL>>8);
+    REG(registerBase+0x43UL)=d->xdl[2]=(UBYTE)(VBXE_XDL>>16);
+    REG(registerBase+0x40UL)=d->video=VBXE_VIDEO_XDL|VBXE_VIDEO_OPAQUE_ZERO;
     return DISPLAY_OK;
 }
 
@@ -585,12 +601,12 @@ UWORD VbxeOwnerPalette(struct VbxeDisplay *d, const UBYTE *rgb)
     if (!extent(0,rgb,48)) return DISPLAY_BAD_ARGUMENT;
     status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK) return status;
-    REG(0xd645)=d->palette=1;
-    REG(0xd644)=d->color=0;
+    REG(registerBase+0x45UL)=d->palette=1;
+    REG(registerBase+0x44UL)=d->color=0;
     for (i=0;i<16;i++) {
-        REG(0xd646)=*rgb++;
-        REG(0xd647)=*rgb++;
-        REG(0xd648)=*rgb++;
+        REG(registerBase+0x46UL)=*rgb++;
+        REG(registerBase+0x47UL)=*rgb++;
+        REG(registerBase+0x48UL)=*rgb++;
         d->color++;
     }
     return DISPLAY_OK;

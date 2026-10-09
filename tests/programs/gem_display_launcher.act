@@ -70,7 +70,7 @@ PROC Main()
   FI
 
   Run(1)
-  IF variant^=0 OR variant^>=4 THEN
+  IF variant^=0 OR variant^>=3 THEN
     Require(DISPLAY.State()=DISPLAY.ACTIVE)
     Require(CONSOLEDRIVER.Start()=0)
     file=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
@@ -94,7 +94,7 @@ PROC Main()
   Require(DOS.Close(file)<>0)
   Require(DOS.ReleaseContext()<>0)
   Require(CONSOLEDRIVER.Stop()<>0)
-  IF variant^=0 OR variant^>=4 THEN
+  IF variant^=0 OR variant^>=3 THEN
     Run(3)
   FI
 

@@ -18,7 +18,10 @@
 #define VBXE_VIDEO_XDL 1
 #define VBXE_VIDEO_OPAQUE_ZERO 4
 
-struct VbxeMapState { UBYTE pendingBank, pendingControl, bank, control; };
+struct VbxeMapState {
+    UBYTE pendingBank, pendingControl, bank, control;
+    UWORD pageOffset;
+};
 /* Zero once before use. Opaque, address-stable, upper CPU RAM, never VRAM. */
 struct VbxeDisplay {
     struct DisplayLease lease;

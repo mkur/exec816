@@ -4,7 +4,7 @@ USE EXECTASKS
 INCLUDE "../../lib/exec/exec-abi.inc"
 
 CONST FX_CORE=$d640,FX_MINOR=$d641
-CONST FX_126=0,SERVICE_UNSUPPORTED=1
+CONST FX_SUPPORTED=0,SERVICE_UNSUPPORTED=1
 VOLATILE BYTE core=FX_CORE,minor=FX_MINOR
 CARD result,version
 
@@ -13,8 +13,8 @@ PROC Main()
 
   version=CARD(core)*256+minor
   result=SERVICE_UNSUPPORTED
-  IF version=$1026 THEN
-    result=FX_126
+  IF core=$10 THEN
+    result=FX_SUPPORTED
   FI
   ; Exercise the hosted return after at least one real VBI scheduling boundary.
   LET ignored=EXECTASKS.Sleep(2)

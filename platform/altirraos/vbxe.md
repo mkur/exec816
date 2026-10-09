@@ -3,8 +3,12 @@
 [Public display contract](../../docs/reference/display.md) ·
 [VRAM map](vbxe-vram.json)
 
-`vbxe.c` and `vbxe-map.s` implement the G3 adapter for the pinned inactive FX 1.26
-baseline. They do not link the donor startup or its unbounded low-level waits.
+`vbxe.c` and `vbxe-map.s` implement the G3 adapter for an inactive full FX core.
+The resident source detects `$D600` or `$D700`, and shares the selected page
+with MEMAC and the native/emulation IRQ paths. Kernel boot reports the raw
+identity and decoded revision; admission requires an FX core, without an exact
+minor-revision check. The qualification baseline remains FX 1.26 at `$D600`.
+They do not link the donor startup or its unbounded low-level waits.
 The [G4 backend](../../ports/gem4xe/adapter/README.md) connects the selected GEM
 dispatcher/device to this driver.
 
@@ -16,7 +20,7 @@ native frame. The 20-byte native lease layout is checked through emitted C
 constants. Shared state occupies the existing upper image-data reservation.
 
 All adapter operations run on the retained owner Task. `VbxeOpen` acquires the
-shared display resource, verifies authorization and exact hardware identity,
+shared display resource, verifies authorization and the FX core type,
 snapshots SDLST/SDMCTL, disables ANTIC display DMA and activates the lease.
 ANTIC VBI remains enabled. `VbxePresent` installs a 640×240, 4-bpp XDL with a
 16-entry grayscale overlay palette. This is an adapter pattern, not a GEM
