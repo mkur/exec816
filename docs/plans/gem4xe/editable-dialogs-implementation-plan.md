@@ -2,8 +2,8 @@
 
 [Design note](editable-dialogs-design.md) · [GEM integration](README.md)
 
-Status: ED1 editor/resource and ED2 dialog development gates pass; ED3 final
-package audit is running. See the [execution record](../../history/editable-dialogs.md).
+Status: ED1–ED3 pass development checks, including the exact OF816 package.
+See the [execution record](../../history/editable-dialogs.md).
 
 | Slice | Implementation | Development gate |
 | --- | --- | --- |

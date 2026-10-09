@@ -68,3 +68,40 @@ pass. An independent SDFS audit confirms that New Folder/Rename persists `BBB`,
 removes `AAA` and leaves consistent allocation. The initial desktop runner's
 last host assertion expected only the root directory; it is corrected to audit
 this intentional fixture result. ED3 records the rerun with that final audit.
+
+## ED3: Integrated OF816 package
+
+[ED3 evidence](../development/editable-dialogs-ed3.json) records two passing
+walkthroughs of the same exact ZIP. The Files-focused run covers all three
+dialogs, independent pixels, scrolling/resizing, native and GEM child launch,
+Stop, close while editing, idle collection, heap restoration, disk allocation,
+guards and OS return. Its initial panel/settings matrix is explicitly omitted.
+The separate calculator run checks full-window rejection cleanup, launch/Stop,
+two independent instances, resource isolation, shell/counter coexistence, heap
+return and desktop exit with a calculator and popup still active.
+
+The earlier full desktop run also passed the menu/settings/runtime checks,
+then reached the obsolete final WORK assertion described above. The focused
+rerun passes the corrected assertion and verifies the persisted `BBB` directory;
+it does not relabel that earlier run as a complete pass. The calculator observer
+now waits for Files to finish directory enumeration before taking its heap
+baseline; the exact first-child timer allocation expectation remains 112 bytes.
+
+`tools/build_demo.py --gem-desktop` produced
+`build/desktop-milestones/complete/exec816-demo.zip`, retaining OF816 and the
+five-second autoboot. All 127 recorded source inputs match the current tree.
+The ZIP has 19 distribution files and 18 verified payload checksums; it includes
+the matching disks, pinned ROM, guide and notices, with no build intermediates.
+The compiler pin is unchanged; `CARGO_PROFILE_DEV_OPT_LEVEL=2` optimizes the
+host compiler build only. All target fixtures and the package use optimized
+emission with stack checks. Host tests pass (419, four historical skips), and
+the affected generated ABI definitions are current.
+
+The smallest observed public-Task margin above its checked floor is **17 bytes**
+in the Files walkthrough and **49 bytes** in the calculator walkthrough;
+presenter margins are 1,494 and 1,470 bytes respectively. Guards remain intact.
+These narrow application-stack margins are an observed limit of this development
+coverage, not a qualification of every possible input or call path. ED3 adds
+**0 fixed, 0 per-public-Task and 0 private-idle reserved bank-zero bytes**,
+including guards, alignment and unused capacity. HY4/PI4 and release
+qualification remain open; these functional runs make no new latency claim.

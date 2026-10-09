@@ -258,12 +258,22 @@ Use Off/Mild, Defaults, Apply and Cancel in the panel (see
 [mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes
 keyboard focus, Space activates it and Return activates Apply. Release outside
 or Escape cancels a press. In Files, select a directory/file and press Return;
-Up and Next navigate. The top Files menu provides Open/Refresh/Stop/Quit;
+Up navigates to the parent; Refresh reloads the directory. Drag the lower-right
+size gadget to change the view, and use arrows, track clicks or the thumb to
+scroll. Files caches at most 256 entries and adapts up to sixteen visible rows;
+Refresh preserves the selected name. The top Files menu provides
+Open/Refresh/Stop/Quit/Path/New Folder/Rename;
 File inside the window or F opens the existing popup. Tab/Up/Down and Return select;
 Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
 arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
 tiled-console mode and returns an error in this desktop. Close one GEM window
 before a two-child shell pipeline.
+Path (P), New Folder (N) and Rename (R) open a text dialog in Files' work area.
+Type into the field; Tab/Shift-Tab changes focus, Return accepts, and Escape or
+Cancel dismisses it. The mouse can also select the field and OK/Cancel. Use
+`WORK:` for writable operations; `SYS:` is read-only. Errors preserve the text
+for correction. Other windows remain usable during the dialog.
+
 Files can also launch `PANEL.APP`, `COUNTER.APP`, `FILES.APP` or `CALC.APP`. Close an existing
 GEM window first when all four application-window slots are occupied. Closing Files stops and
 collects its child before retirement. The shell collects closed initial apps
@@ -295,7 +305,8 @@ entry, overflow and division by zero leave the displayed operand unchanged.
 The [pinned donor inputs and patches](../../ports/gem4xe/apps/calculator/README.md)
 retain its arithmetic and keypad/resource IDs. The adaptation replaces the
 modal dialog with the existing windowed event loop and repaints changed objects.
-The display uses noneditable TEDINFO; no text editing API is added.
+The calculator display uses noneditable TEDINFO; the separate `objc_edit` API
+is available for application-owned editable fields.
 
 ```sh
 python3 tools/build_calculator.py --output build/calculator/app

@@ -2,15 +2,18 @@
 
 The [editable dialogs design](editable-dialogs-design.md) and
 [implementation plan](editable-dialogs-implementation-plan.md) add
-caller-owned text editing and Files path/folder/rename dialogs.
+caller-owned text editing and Files path/folder/rename dialogs. ED1–ED3 pass
+development checks; see the [execution record](../../history/editable-dialogs.md).
 
 The [Files scrolling design](files-scrolling-design.md) and
 [implementation plan](files-scrolling-implementation-plan.md) cover
-the adaptive directory list and preserved selection.
+the adaptive directory list and preserved selection. FS1–FS2 pass development
+checks; see the [execution record](../../history/files-scrolling.md).
 
 The [window gadgets design](window-gadgets-design.md) and
 [implementation plan](window-gadgets-implementation-plan.md) add
-application-acknowledged resizing and vertical scrolling.
+application-acknowledged resizing and vertical scrolling. WG1–WG2 pass
+development checks; see the [execution record](../../history/window-gadgets.md).
 
 [Implementation plans](../README.md)
 

@@ -40,7 +40,7 @@ Use the desktop
 Click a window to bring it forward. Drag application titles to any on-screen pixel
 position below the menu bar; shell moves use its character grid. Escape cancels
 a title drag. The top-left menu belongs to the active application. Files offers
-Open, Refresh, Stop and Quit. Windows lists every open window, including covered
+Open, Refresh, Stop, Quit, Path, New Folder and Rename. Windows lists every open window, including covered
 ones and the shell, with Next window and Close below when Files is active.
 Other windows offer Next window and Close in the top-left menu.
 Ctrl-Tab / Ctrl-Shift-Tab cycle windows. Ctrl-Escape opens Windows; Tab or arrow
@@ -61,7 +61,16 @@ outside a button to cancel it. The counter continues independently.
 
 Files loads its interface from DESKTOP.RSC on the system disk. Select a row and
 press Return to enter a folder or launch an Exec command. Up returns to the parent;
-Next pages through eight entries. The top Files menu offers Open/Refresh/Stop/Quit.
+Refresh reloads the directory and retains the selected filename. Drag the lower-right
+size gadget to change the view. Arrows move one row, track clicks one page, and the
+thumb scrolls continuously. Files caches up to 256 entries, shows up to sixteen
+rows, and reports when a listing exceeds that limit.
+Path (P), New Folder (N) and Rename (R) open text dialogs inside the Files window.
+Use WORK: for writes. Type a directory path or one folder/file name; the fields
+fold letters to uppercase for the current disk formats. Tab/Shift-Tab changes
+focus; Return accepts, Escape or Cancel dismisses. You can also click OK/Cancel.
+Errors keep the dialog and text available for correction. Other windows remain
+usable. Closing Files while editing follows its normal child-cleanup path.
 File inside the window (or F) retains the Open/Refresh/Stop/Cancel popup.
 Use Tab or Up/Down and Return in that popup; Escape cancels. Launched commands
 have no arguments or keyboard input; their output appears in the shell. Stop
@@ -88,5 +97,6 @@ The shell collects closed initial applications while waiting at the prompt.
 After closing Files, type RUN C:FILES.APP to start it again. The same RUN command
 can launch PANEL.APP or COUNTER.APP; the shell supports one background job.
 
-This is a desktop development preview with fixed-size windows and application
-menu bars. Resizing, cascading menus and file-manager icons remain future work.
+This is a desktop development preview. Files resizes and scrolls; the other
+example windows retain fixed geometry. Horizontal scrolling, cascading menus
+and file-manager icons remain future work.

@@ -82,37 +82,42 @@ kernel startup, and the existing screen text is preserved. The bitmap/no-primes
 preview includes both Atarimax forms. Remote image loading remains a later
 extension.
 
-## Next desktop milestones
+## Desktop usability milestones
 
-With [application menus and window switching](history/application-menu-bars.md)
-implemented, the next sequence focuses on window usability and reusable GEM
-application facilities:
+The three milestones following
+[application menus and window switching](history/application-menu-bars.md)
+are implemented, with a design note, implementation plan and development
+record for each:
 
 The [classic GEM appearance](history/classic-gem-appearance.md) is implemented
 through GA1–GA4: flat outlined frames, left closers, centered patterned titles,
 consistent menus/controls and a patterned desktop. The exact OF816 package
 passes development walkthroughs. Current work-area insets and font metrics are
-retained; painting and input share frame geometry. The resizing milestone below
-extends that geometry with working gadgets and revisits the actual client insets.
+retained for fixed windows; painting and input share frame geometry. Resizable
+windows extend that geometry with working gadgets and kind-dependent insets.
 
-1. **Resizable windows and vertical scrolling.** Add the GEM size gadget,
-   vertical scrollbar and arrows, with `WM_SIZED`, `WM_VSLID`, `WM_ARROWED`
-   and corresponding slider fields. The presenter handles the gadgets;
-   applications own their content and scroll position.
-2. **Use resizing and scrolling in Files.** Replace the fixed eight-row,
-   page-based list with a list that adapts to the window's work area and supports
-   continuous scrolling. Preserve selection across redraws and refreshes.
-   Exercise geometry changes, overlapping windows and repaint correctness with
-   Files running beside the calculator, counter and shell.
-3. **Editable TEDINFO and dialogs.** Add text entry and keyboard editing,
-   then use them for path entry, New Folder and Rename. Keep the interfaces
-   compatible with GEM callers to support further application ports.
+1. **Resizable windows and vertical scrolling.** Size, thumb, arrow and page
+   gestures deliver `WM_SIZED`, `WM_VSLID` and `WM_ARROWED`. Applications
+   acknowledge geometry and own their scroll position. See the
+   [design](plans/gem4xe/window-gadgets-design.md),
+   [plan](plans/gem4xe/window-gadgets-implementation-plan.md) and
+   [record](history/window-gadgets.md).
+2. **Adaptive Files.** A bounded 256-entry snapshot replaces eight-entry pages;
+   up to sixteen rows follow the work area, with continuous scrolling and
+   preserved selection. See the [design](plans/gem4xe/files-scrolling-design.md),
+   [plan](plans/gem4xe/files-scrolling-implementation-plan.md) and
+   [record](history/files-scrolling.md).
+3. **Editable TEDINFO and dialogs.** Caller-local `objc_edit` supports bounded
+   single-line fields. Files uses it for Path, New Folder and Rename while
+   continuing window events and child collection. See the
+   [design](plans/gem4xe/editable-dialogs-design.md),
+   [plan](plans/gem4xe/editable-dialogs-implementation-plan.md) and
+   [record](history/editable-dialogs.md).
 
-Start milestones 1–2 with a short design note covering window geometry,
-clipping, damage and application messages, followed by an implementation plan
-in small executable slices. Keep application state caller-owned and validation
-minimal. Record reserved bank-zero changes for each slice. Cartridge size does
-not block these milestones; compression remains separate work.
+Application state remains caller-owned. All slices add zero reserved bank-zero
+bytes. Development checks do not close HY4/PI4 or qualify the hosted system.
+Horizontal scrolling, richer editing and desktop icons remain outside this
+bounded subset. Cartridge compression remains separate work.
 
 ## Follow-on capabilities
 
