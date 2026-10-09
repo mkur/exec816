@@ -42,7 +42,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 6 |
+| 6 | 2 | Import ABI version, 11 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -115,7 +115,7 @@ APP in upper RAM using reads of at most 4 KiB, then frees that file buffer
 after validation/copying. The shared GUI component reads directly into its
 reserved extents and needs no separate payload buffer.
 
-The desktop ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP` and `C:CALC.APP`. Each has an
+The desktop ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`, `C:CALC.APP`, `C:DIALOG.APP` and `C:TEXT.APP`. Each has an
 application-owned model and a small `main` wrapper; their bodies are absent from
 the shared `GEMSYS.BIN`. The shell owns the three initial Processes. Files owns
 and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
@@ -124,6 +124,15 @@ Calculator is launched on demand with `SYS:CALC.RSC`; it does not add a startup
 Process or enlarge the fixed pools. Close an existing GEM window before launch
 when the shell and three initial apps occupy all four application-window slots. The
 [calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes its input.
+
+`ExecStartProgram(name, arguments, length)` uses the existing native Process
+argument-copy path. Length excludes NUL and is bounded at 255 bytes. Null/zero
+starts with an empty tail. This signature requires C component ABI 11 and a
+rebuild of the shared component and all APPs; there is no old-signature entry.
+Files associates a case-insensitive `.TXT` suffix with `C:TEXT.APP`, supplying
+one quoted Exec path of at most 127 bytes. Other files retain empty-argument
+program launching. Directories navigate normally, including while a child runs.
+Files retains its one-child limit and collects that child before exiting.
 
 The shell includes owned child completion masks in its existing DOS waits.
 The optional DOS client callback occupies eight more upper-memory bytes per

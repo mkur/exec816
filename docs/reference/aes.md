@@ -444,7 +444,7 @@ The fixed monochrome donor icons use clipped fill runs; this adds no general
 G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
 or application teardown can complete. Session storage is 319 live / 320 reserved
 upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
-AESPB dispatch use C component ABI 10; rebuild GEMSYS and applications together.
+AESPB dispatch use C component ABI 11; rebuild GEMSYS and applications together.
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget

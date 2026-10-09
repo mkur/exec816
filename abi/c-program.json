@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 10,
+  "version": 11,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,

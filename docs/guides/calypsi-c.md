@@ -295,9 +295,16 @@ Read accepts upper-RAM buffers and native stack buffers on MyDOS and SDFS.
 Each caller retains its handles and locks until Close/UnLock. After retiring
 all DOS resources, call ExecDOSDetach before removing a raw Task.
 
-ExecStartProgram loads a native disk command or a supported C application with an empty
-argument tail, NIL input and RAW shell output. It returns a parent-owned Process
-identity, or zero on failure with IoErr. ExecCollectProgram returns zero while
+`ExecStartProgram(name, arguments, length)` loads a native disk command or a
+supported C application with NIL input and RAW shell output. The Process copies
+0–255 argument bytes before launch returns, adds its own NUL, and retains that
+copy until collection. Length excludes NUL; use null/zero for an empty tail.
+The caller may reuse or free its buffer after successful launch. Embedded NUL
+and invalid lengths are rejected by the existing Process admission boundary.
+The call returns a parent-owned Process identity, or zero on failure with IoErr.
+C component ABI 11 changes this signature; rebuild GEMSYS and all applications.
+
+ExecCollectProgram returns zero while
 pending and nonzero after copying primary/secondary results and collecting it.
 ExecBreakProgram requests native BREAK or a GEM window close;
 ExecWaitProgram waits and collects.

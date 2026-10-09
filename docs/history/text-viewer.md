@@ -46,8 +46,7 @@ startup, peer shell/counter progress, read cancellation, Stop, invalid arguments
 warmed heap return, guards and OS restoration. It retained **158 ordinary-stack
 bytes** above the interrupt floor. That run preceded the final slider-state cache;
 the final-package focused test covers the subsequent resize/scroll changes. The
-complete workflow is repeated in TV4, rather than treating the earlier executable
-as exact-package evidence for later changes.
+complete workflow was repeated against the final package for TV4.
 
 Dragging a small scrollbar thumb exposed an existing backend restriction:
 XOR outlines required 32×32 pixels. The adapter now admits 8×8 outlines, covering
@@ -73,4 +72,48 @@ four historical skips**. Reserved bank-zero delta is **0 fixed, 0 per public Tas
 and 0 private idle**, including guards and unused capacity; VRAM delta is **0**.
 No stack pools were enlarged. These are development checks.
 
-TV3–TV4 are still in progress.
+The final exact-ZIP standalone viewer run also passes all 13 pixel scenes,
+Open/Cancel/error preservation, selector interruption, read cancellation, Stop,
+invalid startup arguments, peer activity, warmed heap return and EXIT. Its minimum
+ordinary-stack headroom is **149 bytes**, above the 128-byte target.
+
+## TV3 Launcher and Files association
+
+The C launcher now forwards a pointer and counted length to the existing native
+Process argument-copy path. There is one signature and one argument-admission
+boundary. C component ABI advances from 10 to **11**; GEMSYS and all APPs must
+be rebuilt together. The import count remains **77**. Files gives `.TXT` entries
+one quoted path and retains its existing one-child/Stop/collection policy;
+directories navigate and other files use empty-argument program launching.
+
+Small emitted C/native probes pass **22 checks each in raw and optimized mode**:
+empty, one-byte and 255-byte tails, caller-buffer overwrite/free before the child
+reads, invalid length, embedded NUL, unavailable program and exact warmed memory
+return. Argument storage rounds to 8 bytes for an empty tail and 256 for the
+maximum tail; a maximum quoted viewer path reserves 136 bytes. The shared
+component grows **58 bytes**, to **196,520**; no import ordinal is added.
+`FILES.APP` grows by 506 bytes on disk to 21,619; its model stays 3,074 bytes.
+Its loaded span is 69,557 bytes and rounded image backing is 135,096 bytes,
+32 more than before the association.
+
+The first Files-owned child initializes its existing **112-byte timer resources**.
+The first `.TXT` association additionally initializes DOS's **256-byte assign-path
+buffer**, because Files now uses `C:TEXT.APP`. The observed block contains the
+expanded physical path `D1:C/TEXT.APP`. DOS retains this buffer until the parent's
+`ReleaseContext`; it is separate from the copied argument tail. The walkthrough
+uses warmed child baselines and requires the original pre-Files baseline after
+parent retirement. Initial cold-baseline assertions, and then an assertion using
+the logical `SYS:` spelling, correctly failed as harness assumptions; no runtime
+allocation workaround was introduced.
+
+The final exact-ZIP Files workflow passes text launch, quoted copied paths,
+caller-scratch reuse during navigation, one-child refusal, selector Stop,
+read-time Stop, native HELLO and GEM calculator launches, collection and relaunch.
+Closing Files with its child selector active removes both windows, restores focus
+to a survivor and returns the original pre-Files heap/ownership baseline. Panel
+keyboard activation, pixel checks, guards and EXIT also pass. Ordinary-stack
+headroom is at least **152 bytes** in this run.
+
+Reserved bank-zero delta is **0 fixed, 0 per public Task and 0 private idle**,
+including guards, alignment and unused reservation. VRAM delta is **0**.
+TV4 packaging documentation remains in progress.

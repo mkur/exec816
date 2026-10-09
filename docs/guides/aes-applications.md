@@ -427,4 +427,4 @@ prefixes and `/`, rather than GEMDOS drive/backslash paths. Do not reopen the
 selector automatically after AES_PENDING: first handle the application message.
 The [file-selector contract](../reference/aes.md#file-selector) describes the
 bounded snapshot, filters, input controls, cancellation and cleanup rules.
-Rebuild GEMSYS and all applications with C component ABI 10.
+Rebuild GEMSYS and all applications with C component ABI 11.

@@ -269,7 +269,16 @@ static WORD open_item(struct Browser *b)
     }
     if (b->child) strcpy(b->status,"Command still running");
     else {
-        b->child=ExecStartProgram(b->target);
+        const char *name=b->entries[i].name;
+        UWORD length=strlen(name);
+        if (length>=4 && name[length-4]=='.' && (name[length-3]|32)=='t' &&
+            (name[length-2]|32)=='x' && (name[length-1]|32)=='t') {
+            length=strlen(b->target);
+            if (length>127) { strcpy(b->status,"Text path too long");return redraw(b,b->work); }
+            memmove(b->target+1,b->target,length);
+            b->target[0]='"';b->target[length+1]='"';b->target[length+2]=0;
+            b->child=ExecStartProgram("C:TEXT.APP",b->target,length+2);
+        } else b->child=ExecStartProgram(b->target,NULL,0);
         if (b->child) { ++b->launches;strcpy(b->status,"Running (File > Stop)"); }
         else strcpy(b->status,"Cannot launch this file");
     }

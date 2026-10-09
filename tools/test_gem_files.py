@@ -79,8 +79,8 @@ def exercise(s,sy,click,move):
         s.saved['files_dialogs']['child_collection_while_editing']=True
     print('Browser menu Stop/collection pass',flush=True)
     click(120,88);require(string(178)=='SYS:','Parent directory')
-    row('STORY.TXT');old=num(F['launches'],4);key('RETURN')
-    require(num(F['launches'],4)==old and not num(F['child'],4),'Text file accepted as executable')
+    row('DESKTOP.RSC');old=num(F['launches'],4);key('RETURN')
+    require(num(F['launches'],4)==old and not num(F['child'],4),'Resource file accepted as executable')
     # Explicit popup mouse cancel; same loaded object tree and public API.
     click(48,88);s.frames(80);click(80,160);s.frames(100)
     require(num(8)==1,'Popup mouse cancel closed browser')

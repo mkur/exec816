@@ -322,7 +322,7 @@
       "status": "pass",
       "checks": 122
     },
-    "execution_scope": "Initial standalone workflow preceded slider-state caching. Focused final-package resize/thumb/cleanup and emitted drawing checks cover the subsequent changes. The combined ABI 11 package is used for that check; TV4 repeats the complete workflow.",
+    "execution_scope": "Initial standalone checks, focused outline/resize regression, and the final exact-ZIP standalone viewer workflow all pass. The final runs use the combined ABI 11 package.",
     "model_bytes": 1678,
     "image_file_bytes": 16542,
     "image_span_bytes": 67777,
@@ -349,6 +349,254 @@
       "per_public_task": 0,
       "idle": 0
     },
-    "vram_delta": 0
+    "vram_delta": 0,
+    "final_standalone": {
+      "path": "build/text-viewer/demo-viewer-final/text-viewer-results.json",
+      "sha256": "912ae7aa669f33d3618d4a8449fd7fb3db3d4f3ffd549e8333165abb6d1c580a",
+      "status": "pass",
+      "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+      "scenarios": {
+        "scenes": [
+          "empty",
+          "open",
+          "page",
+          "arrow",
+          "minimum",
+          "thumb-bottom",
+          "page-up",
+          "failed-open",
+          "selector-interrupted",
+          "argument",
+          "exposure",
+          "cancel-load",
+          "bad-arguments"
+        ],
+        "page_observations": [
+          {
+            "operation": "page",
+            "input_to_model_ms": 30.566453193567895,
+            "model_to_paint_ms": 1250.6984277797906,
+            "scope": "Physical key submission through completed paint bands; scanout excluded"
+          },
+          {
+            "operation": "page",
+            "input_to_model_ms": 53.55388304418371,
+            "model_to_paint_ms": 1331.2827134719241,
+            "scope": "Physical key submission through completed paint bands; scanout excluded"
+          }
+        ],
+        "selector": true,
+        "cancel_preserves_document": true,
+        "error_preserves_document": true,
+        "quoted_path": true,
+        "cancel_loading": true,
+        "stop": true,
+        "heap_return": true,
+        "counter_progress": true,
+        "qualification": false
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 591,
+          "remaining_above_floor": 689
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1312,
+          "peak": 323,
+          "remaining_above_floor": 733
+        },
+        "2": {
+          "base": 13712,
+          "bytes": 1312,
+          "peak": 180,
+          "remaining_above_floor": 876
+        },
+        "3": {
+          "base": 15056,
+          "bytes": 1312,
+          "peak": 624,
+          "remaining_above_floor": 432
+        },
+        "4": {
+          "base": 16400,
+          "bytes": 1312,
+          "peak": 635,
+          "remaining_above_floor": 421
+        },
+        "5": {
+          "base": 17744,
+          "bytes": 1312,
+          "peak": 907,
+          "remaining_above_floor": 149
+        },
+        "6": {
+          "base": 19088,
+          "bytes": 2560,
+          "peak": 767,
+          "remaining_above_floor": 1537
+        },
+        "7": {
+          "base": 21680,
+          "bytes": 2560,
+          "peak": 424,
+          "remaining_above_floor": 1880
+        },
+        "8": {
+          "base": 24272,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "guards": "intact",
+      "os_restoration": "pass",
+      "ordinary_stack_headroom_pass": true
+    }
+  },
+  "TV3": {
+    "status": "pass",
+    "argument_probes": [
+      {
+        "path": "build/text-viewer/launch-raw/results.json",
+        "sha256": "c01cbfb34ef3a73c177b904d14a1d4d17dc5eaef85a990180c11c49ccd83de38",
+        "mode": "raw",
+        "checks": 22,
+        "status": "pass",
+        "c_elf_sha256": "4558c90c1f5dfd2a4bd4ae749791b3590889c900a489b2e0e8e4f97fa71a26d2",
+        "native_image_sha256": "a211da1f0a663a07cac815abbcbf4e57f0ab2c13220b3726ea7cf64842e12903"
+      },
+      {
+        "path": "build/text-viewer/launch-opt/results.json",
+        "sha256": "ffdb6fca4eec13be36f995df21086d34d32af75afe4aa58a24dffb9440d82d25",
+        "mode": "opt",
+        "checks": 22,
+        "status": "pass",
+        "c_elf_sha256": "3cc5c6c5e1ca5e7de8a11395da8b3845c561b450813f2e6dea33b56295ff7bfd",
+        "native_image_sha256": "1aa23cfc7adfee9727fd340237d7de903214cd89eadb9fa6b909042e611ede55"
+      }
+    ],
+    "c_component_abi": 11,
+    "imports": 77,
+    "shared_component_bytes": 196520,
+    "shared_component_delta_bytes": 58,
+    "argument_max_bytes": 255,
+    "argument_max_rounded_allocation": 256,
+    "empty_argument_rounded_allocation": 8,
+    "files_first_child_timer_bytes": 112,
+    "files_first_association_assign_bytes": 256,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "vram_delta": 0,
+    "files_model_bytes": 3074,
+    "files_image_bytes": 21619,
+    "files_image_delta_bytes": 506,
+    "files_image_span": 69557,
+    "files_image_backing_rounded": 135096,
+    "files_image_backing_delta": 32,
+    "files_walkthrough": {
+      "path": "build/text-viewer/demo-files-final/text-viewer-results.json",
+      "sha256": "077b76e2f56adac3446c671fb6399991a1ea666b6e811bba08dbdaf553e0bbde",
+      "status": "pass",
+      "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+      "scenarios": {
+        "open": true,
+        "quoted_path": true,
+        "caller_scratch_reuse": true,
+        "one_child": true,
+        "selector_stop": true,
+        "read_stop": true,
+        "native_launch": true,
+        "ordinary_gem_launch": true,
+        "panel_keyboard": true,
+        "relaunch": true,
+        "parent_close": true,
+        "heap_return": true,
+        "first_child_timer_bytes": 112,
+        "first_association_assign_bytes": 256
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 581,
+          "remaining_above_floor": 699
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1312,
+          "peak": 327,
+          "remaining_above_floor": 729
+        },
+        "2": {
+          "base": 13712,
+          "bytes": 1312,
+          "peak": 189,
+          "remaining_above_floor": 867
+        },
+        "3": {
+          "base": 15056,
+          "bytes": 1312,
+          "peak": 683,
+          "remaining_above_floor": 373
+        },
+        "4": {
+          "base": 16400,
+          "bytes": 1312,
+          "peak": 635,
+          "remaining_above_floor": 421
+        },
+        "5": {
+          "base": 17744,
+          "bytes": 1312,
+          "peak": 904,
+          "remaining_above_floor": 152
+        },
+        "6": {
+          "base": 19088,
+          "bytes": 2560,
+          "peak": 812,
+          "remaining_above_floor": 1492
+        },
+        "7": {
+          "base": 21680,
+          "bytes": 2560,
+          "peak": 424,
+          "remaining_above_floor": 1880
+        },
+        "8": {
+          "base": 24272,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 301,
+          "remaining_above_floor": 979
+        }
+      },
+      "guards": "intact",
+      "os_restoration": "pass",
+      "ordinary_stack_headroom_pass": true
+    },
+    "test_source_sha256": {
+      "tests/programs/c_launch_arguments.c": "0cdabefe5b073fa06013bdfea8d6b7b32086d5e09b72ab242e30a94777f6f5aa",
+      "tools/test_c_launch_arguments.py": "86cac758b70fe7e09c6a680d7fd38641ce71c0b145bbaee981a524fae7a2d834",
+      "tools/text_files_check.py": "224cf981c42d853545483f2472e162cc6a9fd2497ead36992d1171ea8376fb3c",
+      "tools/test_text_viewer_demo.py": "05a4a4e67ce51caab682cd3dee22ad94b4d4a2ba3d1ae0352cd1a1a111d8c533"
+    }
   }
 }

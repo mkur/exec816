@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Exact OF816 ZIP: viewer pixels, file selection, scrolling and lifetime."""
-import argparse,json,zipfile
+import argparse,hashlib,json,zipfile
 from pathlib import Path
 from native_program import require,sha256
 from test_demo import run
@@ -14,8 +14,13 @@ from sio_transaction_trace import BASE_HZ
 
 class TextViewerDemo(FileSelectorDemo):
     capacity_app='TEXT'
-    def __init__(self,focused=False):self.extensions_only=focused
+    def __init__(self,focused=False,files=False,files_only=False):
+        self.extensions_only=focused or files_only;self.files=files;self.files_only=files_only
     def selectors(self,s,shared,menus,counter,launch,accept,phase,move,edge,click,key,collected,owners,memory,baseline):
+        if self.files_only:
+            from text_files_check import exercise
+            exercise(s,shared,menus,move,click,key,collected,memory)
+            return
         if not self.extensions_only:
             super().selectors(s,shared,menus,counter,launch,accept,phase,move,edge,click,key,collected,owners,memory,baseline)
         directory=s.p['output']/'bitmap-console';job=s.at('job');scenes=[];timing=[]
@@ -30,7 +35,13 @@ class TextViewerDemo(FileSelectorDemo):
             if wait:settled(a)
             return identity,a
         def pixels(a,label):
-            settled(a);move(630,230);s.cells('text-'+label);scenes.append(label)
+            settled(a)
+            doc=a+F['document'];data=s.number(doc,4);count=s.number(doc+8,4)
+            if data:
+                path=value(doc+14).split(':',1)[1]
+                require(hashlib.sha256(s.b.memdump(data,count)).hexdigest()==s.manifest['files'][path]['sha256'],
+                    'Loaded document differs from packaged fixture')
+            move(630,230);s.cells('text-'+label);scenes.append(label)
         def context(a):
             for i in range(4):
                 c=s.number(shared['contexts']+4*i,4)
@@ -130,13 +141,18 @@ class TextViewerDemo(FileSelectorDemo):
         s.saved['text_viewer']=dict(scenes=scenes,page_observations=timing,selector=True,
             cancel_preserves_document=True,error_preserves_document=True,quoted_path=True,
             cancel_loading=True,stop=True,heap_return=True,counter_progress=True,qualification=False)
+        if self.files:
+            from text_files_check import exercise
+            exercise(s,shared,menus,move,click,key,collected,memory)
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
-    p.add_argument('--viewer-only',action='store_true');args=p.parse_args();out=args.bundle.resolve()
+    p.add_argument('--viewer-only',action='store_true');p.add_argument('--files',action='store_true')
+    p.add_argument('--files-only',action='store_true')
+    args=p.parse_args();out=args.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(out/'extracted')
-    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=TextViewerDemo(args.viewer_only),profile_commands=False)
-    result.update(qualification=False,scope='Exact ZIP viewer'+(' (focused)' if args.viewer_only else ', standard dialogs/selectors and existing desktop smoke'),zip_sha256=sha256(out/'exec816-demo.zip'))
+    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=TextViewerDemo(args.viewer_only,args.files,args.files_only),profile_commands=False)
+    result.update(qualification=False,scope=('Exact ZIP Files-to-viewer' if args.files_only else 'Exact ZIP viewer'+(' (focused)' if args.viewer_only else ', standard dialogs/selectors and existing desktop smoke')),zip_sha256=sha256(out/'exec816-demo.zip'))
     result['ordinary_stack_headroom_pass']=all(result['gem_stacks'][str(slot)]['remaining_above_floor']>=128 for slot in range(1,6))
     if not result['ordinary_stack_headroom_pass']:result['status']='fail'
     (out/'text-viewer-results.json').write_text(json.dumps(result,indent=2)+'\n')

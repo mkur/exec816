@@ -3,9 +3,10 @@
 #define EXEC816_PROGRAM_H
 #include <exec/types.h>
 struct ExecProgramResult { LONG primary,secondary; };
-/* Native/C disk programs, empty arguments, NIL input and shell RAW output.
+/* Native/C disk programs, copied arguments, NIL input and shell RAW output.
+ * Length excludes NUL (0..255); NULL/zero supplies an empty tail.
  * One parent owns the returned Process identity until collection succeeds. */
-ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name);
+ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name,CONST_STRPTR arguments,UWORD length);
 LONG EXEC_CALL ExecCollectProgram(ULONG id,struct ExecProgramResult *result);
 LONG EXEC_CALL ExecBreakProgram(ULONG id);
 LONG EXEC_CALL ExecWaitProgram(ULONG id,struct ExecProgramResult *result);
