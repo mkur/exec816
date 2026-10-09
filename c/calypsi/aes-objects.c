@@ -108,17 +108,6 @@ WORD objc_change(OBJECT *tree,WORD obj,WORD reserved,WORD x,WORD y,WORD w,WORD h
     tree[obj].ob_state=state;
     return redraw ? objc_draw(tree,obj,0,x,y,w,h):1;
 }
-WORD form_center(OBJECT *tree,WORD *x,WORD *y,WORD *w,WORD *h)
-{
-    struct ExecAESContext *c=ExecAESContext();
-    if (!c || !c->view || !c->view->shown) return 0;
-    *w=tree[0].ob_width; *h=tree[0].ob_height;
-    /* Keep the form in the caller's work area, the hosted drawing domain. */
-    *x=c->view->work.left+(c->view->work.right-c->view->work.left-*w)/2;
-    *y=c->view->work.top+(c->view->work.bottom-c->view->work.top-*h)/2;
-    tree[0].ob_x=*x; tree[0].ob_y=*y;
-    return 1;
-}
 static WORD eligible(OBJECT *tree,WORD obj)
 {
     WORD at=obj;

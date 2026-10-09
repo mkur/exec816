@@ -10,6 +10,7 @@ struct ExecAESTimer {
     UWORD error;
 };
 struct ExecVDIWorkstation;
+struct ExecAESForm;
 
 /* Runtime hooks, separate from GEM application entry points. The startup
  * controller retains the service until every attached Task has detached. */
@@ -41,6 +42,11 @@ struct ExecAESContext {
     ULONG deferredEpoch, deferredMenuEpoch;
     ULONG editTree;
     WORD editObject, editIndex, editScroll;
+    struct ExecAESForm *form;
+    UWORD updateDepth, mouseDepth;
+    ULONG repairEpoch;
+    struct AESRect repair;
+    WORD repairWindow;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

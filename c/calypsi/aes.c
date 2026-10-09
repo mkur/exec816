@@ -209,6 +209,7 @@ WORD appl_exit(void)
     WORD result;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!ExecAESFormFinish(c)) return 0;
     c->busy = 1;
     if (!ExecVDIClose(c)) {
         c->busy = 0;
@@ -225,6 +226,8 @@ WORD appl_exit(void)
         c->busy = 1;
         ExecAESResourceFree(c);
         c->messagePending=0;
+        c->repairEpoch=0;
+        c->updateDepth=c->mouseDepth=0;
         c->menuTree=0;
         c->editTree=0;
         if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
@@ -316,7 +319,14 @@ WORD wind_update(WORD code)
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0] = code;
-    return ExecAESSubmit(c, AES_OP_UPDATE);
+    if (!ExecAESSubmit(c, AES_OP_UPDATE)) return 0;
+    switch (code & ~BEG_CHECK) {
+    case BEG_UPDATE: ++c->updateDepth; break;
+    case END_UPDATE: --c->updateDepth; break;
+    case BEG_MCTRL: ++c->mouseDepth; break;
+    case END_MCTRL: --c->mouseDepth; break;
+    }
+    return 1;
 }
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
@@ -375,7 +385,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
-    if (ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
+    if (ExecAESForms(c,pb) || ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }

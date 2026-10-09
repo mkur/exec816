@@ -7,6 +7,10 @@ BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
+BOOL ExecAESForms(struct ExecAESContext *,AESPB *);
+BOOL ExecAESFormFinish(struct ExecAESContext *);
+WORD ExecAESFormBegin(struct ExecAESContext *,const GRECT *,const char *);
+void ExecAESFormExtent(OBJECT *,GRECT *);
 void ExecAESDrawEdit(struct ExecAESContext *,OBJECT *,WORD,WORD,WORD);
 
 /* A reservation pins the destination until publication.

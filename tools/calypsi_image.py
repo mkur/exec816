@@ -28,9 +28,11 @@ def check_layout(path, expected):
 def read_image(path, task_entries=(), base_bank=12):
     path = Path(path)
     raw = path.read_bytes()
-    require(1 <= base_bank <= 252, 'Invalid C link bank')
+    require(1 <= base_bank <= 251, 'Invalid C link bank')
     code_base = base_bank << 16
     data_base, extra_base, table_base = (code_base+n*65536 for n in (1,2,3))
+
+    more_code_base = code_base+4*65536
 
     def bytes_at(offset, size):
         require(0 <= offset <= offset+size <= len(raw), 'Truncated Calypsi ELF')
@@ -83,7 +85,7 @@ def read_image(path, task_entries=(), base_bank=12):
                     'Invalid host-only C metadata')
             info = struct.unpack('<IIII', payload)
         else:
-            require((address in (code_base, extra_base) and reserved == 65536 and
+            require((address in (code_base, extra_base, more_code_base) and reserved == 65536 and
                      (permissions == 5 or (permissions == 4 and not payload))) or
                     (data_base <= address <= address+reserved <= extra_base and permissions in (4, 6)) or
                     (address == table_base and reserved == 65536 and permissions == 4),

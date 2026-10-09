@@ -1,5 +1,10 @@
 # Implementation plans
 
+The proposed [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
+[FD1–FD4 plan](gem4xe/standard-dialogs-implementation-plan.md) cover caller-local
+`form_do`/`form_alert`, the `form_dial` lifecycle and a packaged example.
+FD1 host lifetime passes development checks; form interaction and alerts follow.
+
 The [GEM application stack headroom plan](gem4xe/application-stack-headroom-implementation-plan.md)
 addresses the narrow margins observed during editable-dialog validation.
 SH1–SH3 pass development checks: ordinary pools grow to 1,280 bytes, and the

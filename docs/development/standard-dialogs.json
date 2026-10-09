@@ -1,0 +1,289 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "slices": {
+    "FD1": {
+      "status": "pass",
+      "cases": {
+        "fd1": {
+          "report": "build/standard-dialogs/fd1/results.json",
+          "status": "pass",
+          "checks": 149,
+          "stack": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 462,
+              "untouched_above_floor": 818
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1280,
+              "touched_bytes": 182,
+              "untouched_above_floor": 842
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1280,
+              "touched_bytes": 156,
+              "untouched_above_floor": 868
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1280,
+              "touched_bytes": 156,
+              "untouched_above_floor": 868
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 696,
+              "untouched_above_floor": 1608
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "c_elf_sha256": "ac515493f8bc7b97427fce4510260cd5aeaf70fd3ae41babd2367390be88653b",
+          "segments": [
+            {
+              "address": 786432,
+              "bytes": 65536
+            },
+            {
+              "address": 917504,
+              "bytes": 65536
+            },
+            {
+              "address": 983040,
+              "bytes": 37132
+            },
+            {
+              "address": 1048576,
+              "bytes": 997
+            },
+            {
+              "address": 851968,
+              "bytes": 3773
+            }
+          ],
+          "fault_source_sha256": "87ba568d8b50b8dcaa76d4d56bc65e2f4047f2baedeeb4344c00615bfea4c7d0"
+        },
+        "fd1-context-raw": {
+          "report": "build/standard-dialogs/fd1-context-raw/results.json",
+          "status": "pass",
+          "checks": [
+            1081,
+            1081
+          ],
+          "stack": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 235,
+              "untouched_above_floor": 1045
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1280,
+              "touched_bytes": 330,
+              "untouched_above_floor": 694
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1280,
+              "touched_bytes": 307,
+              "untouched_above_floor": 717
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 706,
+              "untouched_above_floor": 1598
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "c_elf_sha256": "d31409be95ef43ae269d1d762d31b202e889225e15443d2b6e25f18fc1048b9f",
+          "segments": [
+            {
+              "address": 786432,
+              "bytes": 65536
+            },
+            {
+              "address": 917504,
+              "bytes": 27527
+            },
+            {
+              "address": 983040,
+              "bytes": 37132
+            },
+            {
+              "address": 851968,
+              "bytes": 4390
+            }
+          ],
+          "fault_source_sha256": null
+        },
+        "fd1-context-opt": {
+          "report": "build/standard-dialogs/fd1-context-opt/results.json",
+          "status": "pass",
+          "checks": [
+            1081,
+            1081
+          ],
+          "stack": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 212,
+              "untouched_above_floor": 1068
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1280,
+              "touched_bytes": 300,
+              "untouched_above_floor": 724
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1280,
+              "touched_bytes": 300,
+              "untouched_above_floor": 724
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1280,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1006
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 696,
+              "untouched_above_floor": 1608
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "c_elf_sha256": "4dba70034841dd3855c4a7f509aff1e5bff0beead292dce8ffcd7e0f1bc63a15",
+          "segments": [
+            {
+              "address": 786432,
+              "bytes": 65536
+            },
+            {
+              "address": 917504,
+              "bytes": 40437
+            },
+            {
+              "address": 983040,
+              "bytes": 37132
+            },
+            {
+              "address": 851968,
+              "bytes": 4396
+            }
+          ],
+          "fault_source_sha256": null
+        }
+      },
+      "host": {
+        "tests": 422,
+        "skips": 4
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "public": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "context_bytes": 340,
+      "context_growth_bytes": 22,
+      "code_capacity_added_upper_banks": 1,
+      "excluded_trials": [
+        "Initial fixture link exceeded the two code banks.",
+        "Initial queue assertion failed to allow an independently queued GUI redraw; repaired the fixture to check ordinary-message FIFO while preserving GUI provenance."
+      ]
+    }
+  }
+}

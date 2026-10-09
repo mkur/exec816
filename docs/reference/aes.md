@@ -17,7 +17,8 @@ The current source profile in [gem.h](../../c/include/gem.h) implements
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
-AES implementation. Resource and form calls are pending. Selected
+AES implementation. The object/form, resource and menu subsets are described
+below. Selected
 [private VDI workstation calls](gem-vdi.md#resident-application-workstations)
 execute directly in the caller.
 
@@ -392,6 +393,23 @@ unconsumed key. These are deliberate departures from modal GEM form handling.
 The application tracks press/cancel and redraws changed objects. It continues
 handling WM_* messages in `evnt_multi`. `form_do` and modal screen ownership
 are not implemented.
+
+`form_dial` now provides START/FINISH host lifetime (opcode 51, 9/1/0/0).
+START borrows a shown application window or creates a temporary ordinary
+NAME/CLOSER/MOVER window when the caller has none. It opens a private workstation
+only if absent. The requested form rectangle must fit; an allocated closed
+window, existing session, edit association or held UPDATE/MCTRL prevents START.
+`form_center` can compute a desktop-centered rectangle before window creation.
+GROW/SHRINK succeed without animation inside a started session. Caller drawing
+still takes a short UPDATE section.
+
+FINISH closes only owned resources. Borrowed content receives a local WM_REDRAW
+repair on the next message wait, after any deferred message and before queued
+messages. Repair is tied to the open epoch and does not need queue capacity.
+Cleanup failure retains the session for retry; `appl_exit` also finishes an
+abandoned session. No Task, bank-zero or VRAM reservation is added. The C context
+is now 340 live / 344 heap-reserved upper bytes. See the
+[dialog development record](../history/standard-dialogs.md).
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget

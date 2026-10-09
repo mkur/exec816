@@ -32,12 +32,14 @@ def expected_layout():
     for name, record in layout().items():
         result += [(name+' size', record['size'])]
         result += [(name+' '+f, o) for f, o in record['fields'].items()]
-    result += [('C context size', 227 + layout()['Request']['size'] - 86 + 14 + 4 + 17 + 20 + 10), ('C context request', 0)]
+    result += [('C context size', 227 + layout()['Request']['size'] - 86 + 14 + 4 + 17 + 20 + 10 + 22), ('C context request', 0)]
     context_size = dict(result)['C context size']
-    result += [('C context '+field, context_size-30+index*4) for index,field in
+    result += [('C context '+field, context_size-52+index*4) for index,field in
                enumerate(('menuTree','messageEpoch','messageMenuEpoch','deferredEpoch','deferredMenuEpoch'))]
-    result += [('C context '+field, context_size-10+offset) for field,offset in
+    result += [('C context '+field, context_size-32+offset) for field,offset in
                (('editTree',0),('editObject',4),('editIndex',6),('editScroll',8))]
+    result += [('C context '+field, context_size-22+offset) for field,offset in
+               (('form',0),('updateDepth',4),('mouseDepth',6),('repairEpoch',8),('repair',12),('repairWindow',20))]
     return result
 
 
@@ -97,7 +99,8 @@ def files():
             '    offsetof(struct ExecAESContext, request),',
             *['    offsetof(struct ExecAESContext, '+field+'),' for field in
               ('menuTree','messageEpoch','messageMenuEpoch','deferredEpoch','deferredMenuEpoch',
-               'editTree','editObject','editIndex','editScroll')],
+               'editTree','editObject','editIndex','editScroll','form','updateDepth','mouseDepth',
+               'repairEpoch','repair','repairWindow')],
             '};', ''])}
 
 

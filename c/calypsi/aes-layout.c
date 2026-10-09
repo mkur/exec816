@@ -141,4 +141,10 @@ const UWORD AESLayout[] = {
     offsetof(struct ExecAESContext, editObject),
     offsetof(struct ExecAESContext, editIndex),
     offsetof(struct ExecAESContext, editScroll),
+    offsetof(struct ExecAESContext, form),
+    offsetof(struct ExecAESContext, updateDepth),
+    offsetof(struct ExecAESContext, mouseDepth),
+    offsetof(struct ExecAESContext, repairEpoch),
+    offsetof(struct ExecAESContext, repair),
+    offsetof(struct ExecAESContext, repairWindow),
 };

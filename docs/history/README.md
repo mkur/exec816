@@ -1,5 +1,8 @@
 # Historical records
 
+- [Standard GEM dialogs](standard-dialogs.md): host lifecycle and development
+  evidence for synchronous forms and alerts.
+
 - [GEM application stack headroom](gem-application-stack-headroom.md): attribution,
   ordinary stack growth and packaged desktop checks.
 

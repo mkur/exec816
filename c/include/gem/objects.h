@@ -51,6 +51,11 @@ WORD objc_change(OBJECT *,WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD);
 #define ED_CHAR 2
 #define ED_END 3
 WORD objc_edit(OBJECT *,WORD,WORD,WORD *,WORD);
+#define FMD_START 0
+#define FMD_GROW 1
+#define FMD_SHRINK 2
+#define FMD_FINISH 3
+WORD form_dial(WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 /* Windowed subset: commit an accepted activation, no input wait or drawing. */
 WORD form_button(OBJECT *,WORD,WORD,WORD *);

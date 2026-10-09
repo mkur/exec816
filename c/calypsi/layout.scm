@@ -10,6 +10,8 @@
             (section farcode switch))
    (memory GemTables (address (#xf0000 . #xfffff))
             (section gemtables))
+   (memory MoreCode (address (#x100000 . #x10ffff))
+            (section farcode switch))
    (memory DirectPage (address (#x0 . #x7f)) (section registers))
    (memory HostInfo (address (#x100 . #x10f)) (section execinfo))
    (base-address _DirectPageStart DirectPage 0)

@@ -303,6 +303,15 @@
         1,
         0
       ]
+    },
+    "form_dial": {
+      "opcode": 51,
+      "control_counts": [
+        9,
+        1,
+        0,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
