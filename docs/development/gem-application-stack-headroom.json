@@ -1,0 +1,641 @@
+{
+  "status": "in-progress",
+  "tier": "development",
+  "qualification": false,
+  "baseline": {
+    "record": "docs/development/editable-dialogs-ed3.json",
+    "package": {
+      "path": "build/desktop-milestones/complete/exec816-demo.zip",
+      "sha256": "95180bf2fc44a7c1448da2b2f2ac40933561f02f35e51e17c3fd843c034eeb38",
+      "entries": 19,
+      "payload_checksums": 18,
+      "source_inputs_matched": 127,
+      "demo_manifest_sha256": "2e10d0c9e9fa56f9383ea9fe72aa333467a92bec3bbb6c1897fe28bd8c735805",
+      "build_manifest_sha256": "bc0e47b8a3fa84879e05ecdfe7ff07911abc5c64c3bed94265c187968f44fb1c",
+      "boot_manifest_bytes": 808,
+      "boot_manifest_extents": 65,
+      "boot_manifest_extent_limit": 96,
+      "cartridge_capacity": {
+        "program.xex": {
+          "bytes": 1009647,
+          "headroom": 22544,
+          "fits_uncompressed": true
+        },
+        "of816/Exec-of816.xex": {
+          "bytes": 1034621,
+          "headroom": -2430,
+          "fits_uncompressed": false
+        }
+      }
+    },
+    "compiler": {
+      "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "override": false,
+      "changes": [],
+      "host_cargo_profile_dev_opt_level": 2,
+      "optimize": true,
+      "stack_checks": true
+    }
+  },
+  "SH1": {
+    "status": "complete",
+    "scope": "Exploratory partial Files replay; intentionally interrupted after Path editing, exposure and resize. Not a complete integration pass.",
+    "directory": "build/gem-stack-headroom/baseline-files",
+    "checkpoints": [
+      {
+        "label": "desktop-ready",
+        "clock": 304829041,
+        "owners": [
+          {
+            "slot": 3,
+            "task": 68860,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "panel",
+              "identity": 1,
+              "base": 262144
+            }
+          },
+          {
+            "slot": 4,
+            "task": 68988,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "counter",
+              "identity": 2,
+              "base": 393216
+            }
+          },
+          {
+            "slot": 5,
+            "task": 69116,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "files",
+              "identity": 3,
+              "base": 589824
+            }
+          }
+        ],
+        "margins": {
+          "0": 718,
+          "1": 467,
+          "2": 588,
+          "3": 147,
+          "4": 131,
+          "5": 131,
+          "6": 1550,
+          "7": 2286,
+          "8": 121,
+          "kernel": 991
+        }
+      },
+      {
+        "label": "files-path-dialog",
+        "clock": 336448881,
+        "owners": [
+          {
+            "slot": 3,
+            "task": 68860,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "panel",
+              "identity": 1,
+              "base": 262144
+            }
+          },
+          {
+            "slot": 4,
+            "task": 68988,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "counter",
+              "identity": 2,
+              "base": 393216
+            }
+          },
+          {
+            "slot": 5,
+            "task": 69116,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "files",
+              "identity": 3,
+              "base": 589824
+            }
+          }
+        ],
+        "margins": {
+          "0": 718,
+          "1": 467,
+          "2": 588,
+          "3": 125,
+          "4": 131,
+          "5": 52,
+          "6": 1550,
+          "7": 2286,
+          "8": 121,
+          "kernel": 991
+        }
+      },
+      {
+        "label": "files-dialog-exposed",
+        "clock": 367464369,
+        "owners": [
+          {
+            "slot": 3,
+            "task": 68860,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "panel",
+              "identity": 1,
+              "base": 262144
+            }
+          },
+          {
+            "slot": 4,
+            "task": 68988,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "counter",
+              "identity": 2,
+              "base": 393216
+            }
+          },
+          {
+            "slot": 5,
+            "task": 69116,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "files",
+              "identity": 3,
+              "base": 589824
+            }
+          }
+        ],
+        "margins": {
+          "0": 718,
+          "1": 467,
+          "2": 588,
+          "3": 125,
+          "4": 131,
+          "5": 52,
+          "6": 1550,
+          "7": 2286,
+          "8": 121,
+          "kernel": 991
+        }
+      },
+      {
+        "label": "files-dialog-resize-72",
+        "clock": 386351152,
+        "owners": [
+          {
+            "slot": 3,
+            "task": 68860,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "panel",
+              "identity": 1,
+              "base": 262144
+            }
+          },
+          {
+            "slot": 4,
+            "task": 68988,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "counter",
+              "identity": 2,
+              "base": 393216
+            }
+          },
+          {
+            "slot": 5,
+            "task": 69116,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "files",
+              "identity": 3,
+              "base": 589824
+            }
+          }
+        ],
+        "margins": {
+          "0": 718,
+          "1": 467,
+          "2": 588,
+          "3": 125,
+          "4": 131,
+          "5": 52,
+          "6": 1550,
+          "7": 2286,
+          "8": 121,
+          "kernel": 991
+        }
+      },
+      {
+        "label": "files-dialog-resize-144",
+        "clock": 394567043,
+        "owners": [
+          {
+            "slot": 3,
+            "task": 68860,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "panel",
+              "identity": 1,
+              "base": 262144
+            }
+          },
+          {
+            "slot": 4,
+            "task": 68988,
+            "state": 3,
+            "incarnation": 1,
+            "app": {
+              "name": "counter",
+              "identity": 2,
+              "base": 393216
+            }
+          },
+          {
+            "slot": 5,
+            "task": 69116,
+            "state": 5,
+            "incarnation": 1,
+            "app": {
+              "name": "files",
+              "identity": 3,
+              "base": 589824
+            }
+          }
+        ],
+        "margins": {
+          "0": 718,
+          "1": 467,
+          "2": 588,
+          "3": 125,
+          "4": 131,
+          "5": 52,
+          "6": 1550,
+          "7": 2286,
+          "8": 121,
+          "kernel": 991
+        }
+      }
+    ],
+    "minima": {
+      "8:interrupt-entry": {
+        "slot": 8,
+        "kind": "interrupt-entry",
+        "minimum_s": 23238,
+        "remaining_above_floor": 151,
+        "event": {
+          "clock": 305569658,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 23238,
+          "dp": 23242
+        }
+      },
+      "kernel:interrupt-entry": {
+        "slot": "kernel",
+        "kind": "interrupt-entry",
+        "minimum_s": 12070,
+        "remaining_above_floor": 1015,
+        "event": {
+          "clock": 395674928,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 12070,
+          "dp": 2560
+        }
+      },
+      "8:context-restore": {
+        "slot": 8,
+        "kind": "context-restore",
+        "minimum_s": 23325,
+        "remaining_above_floor": 238,
+        "event": {
+          "clock": 304829768,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 23325,
+          "dp": 2560
+        }
+      },
+      "4:context-restore": {
+        "slot": 4,
+        "kind": "context-restore",
+        "minimum_s": 15981,
+        "remaining_above_floor": 190,
+        "event": {
+          "clock": 342134209,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 15981,
+          "dp": 2560
+        }
+      },
+      "4:selected-code": {
+        "slot": 4,
+        "kind": "selected-code",
+        "minimum_s": 15961,
+        "remaining_above_floor": 170,
+        "event": {
+          "clock": 305646880,
+          "pc": 846104,
+          "name": "blit_mask:after-tcs",
+          "s": 15961,
+          "dp": 3840
+        }
+      },
+      "4:interrupt-entry": {
+        "slot": 4,
+        "kind": "interrupt-entry",
+        "minimum_s": 15954,
+        "remaining_above_floor": 163,
+        "event": {
+          "clock": 305647088,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 15954,
+          "dp": 3840
+        }
+      },
+      "6:context-restore": {
+        "slot": 6,
+        "kind": "context-restore",
+        "minimum_s": 19532,
+        "remaining_above_floor": 1629,
+        "event": {
+          "clock": 403025331,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 19532,
+          "dp": 2560
+        }
+      },
+      "6:selected-code": {
+        "slot": 6,
+        "kind": "selected-code",
+        "minimum_s": 19482,
+        "remaining_above_floor": 1579,
+        "event": {
+          "clock": 312042937,
+          "pc": 958704,
+          "name": "display_dispatch",
+          "s": 19482,
+          "dp": 4352
+        }
+      },
+      "6:interrupt-entry": {
+        "slot": 6,
+        "kind": "interrupt-entry",
+        "minimum_s": 19477,
+        "remaining_above_floor": 1574,
+        "event": {
+          "clock": 389915440,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 19477,
+          "dp": 4352
+        }
+      },
+      "5:context-restore": {
+        "slot": 5,
+        "kind": "context-restore",
+        "minimum_s": 16912,
+        "remaining_above_floor": 65,
+        "event": {
+          "clock": 397517557,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 16912,
+          "dp": 2560
+        }
+      },
+      "5:selected-code": {
+        "slot": 5,
+        "kind": "selected-code",
+        "minimum_s": 16928,
+        "remaining_above_floor": 81,
+        "event": {
+          "clock": 397511788,
+          "pc": 846104,
+          "name": "blit_mask:after-tcs",
+          "s": 16928,
+          "dp": 4096
+        }
+      },
+      "5:interrupt-entry": {
+        "slot": 5,
+        "kind": "interrupt-entry",
+        "minimum_s": 16921,
+        "remaining_above_floor": 74,
+        "event": {
+          "clock": 397505289,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 16921,
+          "dp": 4096
+        }
+      },
+      "3:context-restore": {
+        "slot": 3,
+        "kind": "context-restore",
+        "minimum_s": 14908,
+        "remaining_above_floor": 173,
+        "event": {
+          "clock": 318485412,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 14908,
+          "dp": 2560
+        }
+      },
+      "3:selected-code": {
+        "slot": 3,
+        "kind": "selected-code",
+        "minimum_s": 14919,
+        "remaining_above_floor": 184,
+        "event": {
+          "clock": 318457397,
+          "pc": 846104,
+          "name": "blit_mask:after-tcs",
+          "s": 14919,
+          "dp": 3584
+        }
+      },
+      "3:interrupt-entry": {
+        "slot": 3,
+        "kind": "interrupt-entry",
+        "minimum_s": 14891,
+        "remaining_above_floor": 156,
+        "event": {
+          "clock": 318480072,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 14891,
+          "dp": 2560
+        }
+      },
+      "1:interrupt-entry": {
+        "slot": 1,
+        "kind": "interrupt-entry",
+        "minimum_s": 12838,
+        "remaining_above_floor": 215,
+        "event": {
+          "clock": 417323226,
+          "pc": 6144,
+          "name": "native_nmi",
+          "s": 12838,
+          "dp": 0
+        }
+      },
+      "1:context-restore": {
+        "slot": 1,
+        "kind": "context-restore",
+        "minimum_s": 12833,
+        "remaining_above_floor": 210,
+        "event": {
+          "clock": 416218548,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 12833,
+          "dp": 2560
+        }
+      },
+      "2:context-restore": {
+        "slot": 2,
+        "kind": "context-restore",
+        "minimum_s": 14321,
+        "remaining_above_floor": 642,
+        "event": {
+          "clock": 419493339,
+          "pc": 6958,
+          "name": "context_restore",
+          "s": 14321,
+          "dp": 2560
+        }
+      },
+      "2:interrupt-entry": {
+        "slot": 2,
+        "kind": "interrupt-entry",
+        "minimum_s": 14304,
+        "remaining_above_floor": 625,
+        "event": {
+          "clock": 419493192,
+          "pc": 6400,
+          "name": "native_irq",
+          "s": 14304,
+          "dp": 2560
+        }
+      }
+    },
+    "frame_experiment": {
+      "retained": false,
+      "frames": {
+        "App_just_draw": [
+          54,
+          6
+        ],
+        "ExecAESDrawEdit": [
+          52,
+          12
+        ],
+        "App_bb_fill": [
+          18,
+          10
+        ]
+      },
+      "nested_saving": 96
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "private_idle": 0
+    },
+    "observer_checks": {
+      "command": "python3 -m unittest discover -s tests -p 'test_gem_stack_observer.py'",
+      "tests": 2,
+      "status": "pass"
+    },
+    "trace_sha256": "1bd7e9662fd6c4ef42ac44c3ea625a0c0e4bcf98a67fa71c0adfa3a3bd502254"
+  },
+  "SH2": {
+    "status": "in-progress"
+  },
+  "SH3": {
+    "status": "pending"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$ef82ce86bc54d7a5",
+    "actual_kernel_id": "$ef82ce86bc54d7a5",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-milestones/files-check/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "emulator": {
+    "path": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
+  }
+}

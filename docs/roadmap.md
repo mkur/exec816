@@ -119,6 +119,13 @@ bytes. Development checks do not close HY4/PI4 or qualify the hosted system.
 Horizontal scrolling, richer editing and desktop icons remain outside this
 bounded subset. Cartridge compression remains separate work.
 
+Next, the [application stack headroom plan](plans/gem4xe/application-stack-headroom-implementation-plan.md)
+addresses the narrow worker-stack margins observed in the final dialog checks.
+SH1–SH3 attribute deep call paths, enlarge ordinary stack pools and verify
+at least 128 bytes above the existing checked floor in selected application
+scenarios. The selected 256-byte increase per ordinary pool adds 1,280 reserved
+bank-zero bytes; interrupt reserves and guards remain intact.
+
 ## Follow-on capabilities
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,

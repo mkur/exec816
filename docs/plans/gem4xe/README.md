@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [application stack headroom plan](application-stack-headroom-implementation-plan.md)
+follows editable dialogs with call-path attribution, ordinary stack growth
+and a packaged desktop check. SH1–SH3 are in progress, targeting at least 128 bytes
+above the existing checked floor in the selected application scenarios.
+
 The [editable dialogs design](editable-dialogs-design.md) and
 [implementation plan](editable-dialogs-implementation-plan.md) add
 caller-owned text editing and Files path/folder/rename dialogs. ED1–ED3 pass

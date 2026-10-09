@@ -1,5 +1,8 @@
 # Historical records
 
+- [GEM application stack headroom](gem-application-stack-headroom.md): attribution,
+  ordinary stack growth and packaged desktop checks.
+
 - [Editable dialogs](editable-dialogs.md): caller-local TEDINFO and Files dialogs.
 - [Files scrolling](files-scrolling.md): cached directory rows and adaptive layout.
 - [Window gadgets](window-gadgets.md): resizing and vertical scrolling.

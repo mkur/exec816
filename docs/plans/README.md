@@ -1,5 +1,10 @@
 # Implementation plans
 
+The [GEM application stack headroom plan](gem4xe/application-stack-headroom-implementation-plan.md)
+addresses the narrow margins observed during editable-dialog validation.
+SH1–SH3 are in progress: attribute call paths, enlarge ordinary pools and verify at least
+128 bytes of application headroom in the selected packaged desktop scenarios.
+
 The [editable dialogs design](gem4xe/editable-dialogs-design.md) and
 [implementation plan](gem4xe/editable-dialogs-implementation-plan.md) add
 caller-owned text editing and Files path/folder/rename dialogs. ED1–ED3 pass
