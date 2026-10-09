@@ -15,7 +15,7 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
     out.mkdir(parents=True,exist_ok=True)
     options.pop('desktop',None)
     applications={}
-    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser')]:
+    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('dialog','gem-dialog')]:
         body='browser' if name=='files' else name
         applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/'main.c',
                                                        ROOT/'examples'/folder/(body+'.c')])

@@ -97,13 +97,14 @@ image payload in bank zero.
 
 For a linked foreign image, native code starts above the foreign image's full
 banks. The bitmap/desktop C image uses code bank `$0C`, data bank `$0D`, and
-an optional second code bank `$0E` for composed AES applications. GEM renderer
+code banks `$0E` and `$10` as needed for composed AES applications. GEM renderer
 lookup tables occupy read-only bank `$0F`, reserving its full 64 KiB including
-unused capacity. Images with these tables start native code at `$100000`;
-other C images begin at `$0E0000` or `$0F0000`, above their linked C payload. Runtime
-renderer bindings check generated executable extents, including the second bank
-only when populated. The existing native data arena and all stack/DP reservations stay in
-place. The effective origin is recorded in `memory.json` and `layout.json`;
+unused capacity. The composed standard-dialog desktop uses `$10` and starts
+native code at `$110000`; smaller images start above their highest populated
+foreign bank. Runtime renderer bindings check generated executable extents,
+including additional code banks only when populated. The existing native data
+arena and all stack/DP reservations stay in place. The effective origin is
+recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
 The text, bitmap and desktop demos use a 4 KiB arena to hold their composed

@@ -129,14 +129,16 @@ bytes against the 128-byte target. See the
 
 ## Follow-on capabilities
 
-Next, the proposed [standard dialogs design](plans/gem4xe/standard-dialogs-design.md)
+The [standard dialogs design](plans/gem4xe/standard-dialogs-design.md)
 and [FD1–FD4 plan](plans/gem4xe/standard-dialogs-implementation-plan.md) add bounded
 `form_do`/`form_alert` and the supporting `form_dial` lifecycle. Forms run in the
 caller using its window or a temporary host; application-policy messages
 interrupt the call and remain available to its event loop. This reduces custom
 form-loop code in simple ports while preserving desktop concurrency. The slices
-cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD3 host
-lifetime, interaction and alerts pass development checks; FD4 remains planned. A file selector and text viewer remain subsequent work.
+cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD4 pass
+development checks, including the extracted ZIP walkthrough; see the
+[execution record](history/standard-dialogs.md). A file selector and text viewer
+remain subsequent work.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

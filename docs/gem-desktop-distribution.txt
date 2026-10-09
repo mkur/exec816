@@ -84,6 +84,15 @@ Tab/Shift-Tab move focus, Space activates it and Return is equals.
 Use +/- to change sign. Division truncates toward zero. Values range from
 -2147483647 to 2147483647; excess entry, overflow and division by zero leave
 the displayed operand unchanged. Quit or X closes it; Files' Stop does too.
+DIALOG.APP demonstrates standard GEM dialogs. Close Files or Panel, then type
+RUN C:DIALOG.APP. Continue accepts the initial alert before the app window opens.
+Edit (E) opens a text form; Apply accepts and keeps editing, Done returns to the
+app. Alert (A) asks Keep/Back. Quit (Q), the Dialog menu or the closer exits.
+Tab/Shift-Tab traverse controls, Return activates the default, and Space activates
+a focused button. Release outside cancels a press. Other windows keep running.
+Moving or choosing a menu command while editing returns to the application's
+normal event loop, preserving the typed text. Closing during a form exits cleanly.
+
 PRIMES needs tiled-console mode and cannot run in this desktop. Closing Files stops
 and collects its running child. Close an existing GEM window before launching
 another GUI app when all four desktop windows are occupied.

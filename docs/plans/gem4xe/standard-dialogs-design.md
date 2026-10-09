@@ -2,7 +2,9 @@
 
 [GEM integration](README.md) · [Implementation plan](standard-dialogs-implementation-plan.md)
 
-Status: FD1–FD3 host lifetime, `form_do` and `form_alert` are implemented. The [AES contract](../../reference/aes.md) records current behavior.
+Status: FD1–FD4 are implemented and pass development checks. The
+[AES contract](../../reference/aes.md) records current behavior; the
+[execution record](../../history/standard-dialogs.md) records the tested scope.
 
 Add bounded synchronous GEM dialogs on top of the existing caller-local object,
 editing and event routines. This removes the need for a custom form loop in
@@ -144,7 +146,7 @@ message and must not be consumed as presenter damage.
 
 | Event during the loop | Action |
 | --- | --- |
-| Live host WM_REDRAW | Paint the form/background within the damage and visible region under UPDATE. Remember that borrowed application content needs repair later. |
+| Live host WM_REDRAW | Reconstruct the form/background within the visible work area under UPDATE. Remember that borrowed application content needs repair later. |
 | Live host WM_TOPPED | Acknowledge through `WF_TOP`, then repaint as needed. |
 | WM_MOVED for an internally owned temporary window | Accept through `WF_CURRXYWH`, translate the form root by the committed work-area delta and repaint. Restore the caller's original root position at FINISH. |
 | WM_CLOSED for an internally owned temporary window | Dismiss without selecting a button. Return -1/zero with `AES_OK`; tear down at implicit finish or the caller's explicit FINISH. |

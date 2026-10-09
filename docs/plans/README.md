@@ -1,9 +1,10 @@
 # Implementation plans
 
-The proposed [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
+The [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
 [FD1–FD4 plan](gem4xe/standard-dialogs-implementation-plan.md) cover caller-local
 `form_do`/`form_alert`, the `form_dial` lifecycle and a packaged example.
-FD1–FD3 host lifetime, interaction and alerts pass development checks; packaging follows.
+FD1–FD4 pass development checks, including the extracted OF816 ZIP walkthrough.
+See the [execution record](../history/standard-dialogs.md).
 
 The [GEM application stack headroom plan](gem4xe/application-stack-headroom-implementation-plan.md)
 addresses the narrow margins observed during editable-dialog validation.

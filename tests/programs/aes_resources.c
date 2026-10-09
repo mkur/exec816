@@ -56,7 +56,7 @@ static void editable_resource(void)
 {
     OBJECT *tree,*again;
     TEDINFO *ted;
-    WORD i,index,handle=1,window;
+    WORD i,index,handle=1,window,words[8]={123,2,3,4,5,6,7,321};
     const char *bad[]={"D1:EDCAP.RSC","D1:EDEXT.RSC","D1:EDNUL.RSC","D1:EDTYPE.RSC"};
     CHECK(rsrc_load("D1:EDIT.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
     ted=(TEDINFO *)(ULONG)tree[1].ob_spec;
@@ -68,6 +68,12 @@ static void editable_resource(void)
     CHECK(objc_edit(tree,1,0,&index,ED_INIT) && index==2);
     CHECK(objc_edit(tree,1,'c',&index,ED_CHAR) && !strcmp((char *)ted->te_ptext,"2BC"));
     CHECK(objc_edit(tree,1,0,&index,ED_END));
+    /* The synchronous loop borrows the fixed-up writable resource tree. */
+    CHECK(appl_write(ExecAESContext()->gemId,16,words));
+    CHECK(form_do(tree,1)==-1 && ExecAESDiagnostic()==AES_PENDING);
+    CHECK(evnt_mesag(words) && words[0]==123 && words[7]==321);
+    CHECK(!ExecAESContext()->form && !ExecAESContext()->editTree);
+    CHECK(!strcmp((char *)ted->te_ptext,"2BC"));
     for (i=0;i<4;++i) {
         CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
         CHECK(!strcmp((char *)ted->te_ptext,"2BC") && ted->te_txtlen==12);

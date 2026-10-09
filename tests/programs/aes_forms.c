@@ -99,7 +99,7 @@ void AESClientTwo(void)
         m->tree[i].ob_next=i+1; m->tree[i].ob_head=m->tree[i].ob_tail=NIL;
     }
     m->tree[0].ob_next=NIL; m->tree[0].ob_head=1; m->tree[0].ob_tail=6;
-    m->tree[0].ob_type=G_BOX; m->tree[0].ob_spec=0x1170;
+    m->tree[0].ob_type=G_BOX; m->tree[0].ob_spec=who ? 0x1170:0x00ff1170UL;
     m->tree[0].ob_width=240; m->tree[0].ob_height=144;
     m->ted.te_ptext=(ULONG)m->text; m->ted.te_ptmplt=(ULONG)""; m->ted.te_pvalid=(ULONG)"X";
     m->ted.te_font=IBM; m->ted.te_color=0x1180; m->ted.te_thickness=-1; m->ted.te_txtlen=128;

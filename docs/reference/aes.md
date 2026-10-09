@@ -342,7 +342,8 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 `G_FBOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
 with at most 32 objects, eight levels and 63 characters per label. Coordinates
-are pixels. Unsupported object types, indirect specs and user callbacks are
+are pixels. Box specs use a signed border-thickness byte; centering and drawing
+include outward borders. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
 
 `G_TEXT` and `G_BOXTEXT` use a TEDINFO addressed by `ob_spec`, with full
@@ -520,8 +521,8 @@ Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
 Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
 
-The private C context is 308 bytes. Rebuild bindings and applications with
-C import ABI version 5.
+The private C context is 340 bytes. Rebuild bindings and applications with
+the current C component ABI (9).
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
 
 ## Small GEM desktop
@@ -566,7 +567,7 @@ separate from standard GEM. A registered application supplies `AES_MOUSE_OFF`
 `AES_MOUSE_QUERY` (-1). The result is the chosen profile; -1 indicates failure,
 with `ExecAESDiagnostic()` supplying the cause. Valid enum use belongs to the
 caller. AES wire version 9 adds operation 201 without changing record layouts;
-C application import ABI 5 exports the binding. Rebuild the runtime and apps.
+The current C component ABI exports the binding. Rebuild the runtime and apps.
 
 The presenter serializes this infrequent request with input processing. It
 preserves pointer coordinates and clears fractional motion when the profile

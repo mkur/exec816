@@ -96,3 +96,75 @@ read-only bytes and are hash-pinned through existing extraction. Ordinary Task
 minimum checked margin is 412 bytes. Guards, heap return and OS restoration pass.
 Bank-zero delta is **0 fixed, 0 per public Task, 0 private idle**. VRAM and Task
 pools are unchanged; packaged integration remains FD4 development work.
+
+## FD4 Loadable example and packaged desktop
+
+`C:DIALOG.APP` demonstrates an alert before opening a window, a compiled editable
+form in a borrowed window, repeated Apply within START/FINISH, and application
+menu/move/close handoffs. The caller checks negative results before indexing its
+tree and reconstructs its full work area after borrowed-content repair. Files
+and calculator keep their event-driven loops. The example is packaged alongside
+them; close one GEM application before launching it within current capacity.
+
+The exact `build/standard-dialogs/demo-ready/exec816-demo.zip` passes its extracted
+OF816 walkthrough on the recorded PAL/8x 65816/VBXE configuration and pinned ROM.
+It checks the five-second autoboot, full-desktop rejection without leaks,
+physical text entry and repeated Apply, pre-window and borrowed alerts, independent
+scene pixels, shell disk work and counter progress while a form waits, cover and
+exposure, menu/move handoffs, close/Stop during a form, three launches, and desktop
+EXIT with a form still waiting. Files path editing and calculator `12 + 7 = 19`
+also pass. Ownership/heap baselines return after collection; final guards,
+read-only disk hashes and OS display/input restoration pass.
+
+Focused development checks add a resource-loaded form interruption to the
+resource fixture (102 assertions), and outward-root-border pixel coverage to the
+form fixture (194 assertions, 35,332 pixels). Paced typing captures/routes/consumes
+3/3/3 keys; the bounded burst delivers 8/8/8 and inserts three before field capacity.
+Fourteen signed box-extent cases pass in both raw and optimized emitted builds.
+The host suite runs 423 tests with four historical skips; the affected generator
+checks and local documentation links pass.
+
+| Physical pool | Reserved stack bytes | Measured bytes above floor |
+| --- | ---: | ---: |
+| Root 0 | 1536 | 708 |
+| Ordinary 1 | 1280 | 711 |
+| Ordinary 2 | 1280 | 844 |
+| Ordinary 3 | 1280 | 385 |
+| Ordinary 4 | 1280 | 390 |
+| Ordinary 5 | 1280 | 184 |
+| Large 6 | 2560 | 1521 |
+| Large 7 | 2560 | 1899 |
+| Private idle | 512 | 125 |
+| Kernel | 1536 | 991 |
+
+These are cumulative physical-pool fill watermarks, including earlier occupants.
+The minimum ordinary-pool margin is **184 bytes** against the
+128-byte target. Private idle retains its separate existing guard/reserve policy.
+No stack pool grows. Per-slice reserved bank-zero delta is **0 fixed, 0 per public
+Task, 0 private idle**, including guards, alignment and spare capacity; VRAM
+reservations are unchanged.
+
+Compared with the final SH3 shared C image, the production payload grows by
+15,683 bytes: 14,774 code and 909 data, including 896 icon-table bytes. GEMSYS is
+180,666 bytes including its component framing. Code now occupies `$0C`, `$0E`
+and 7,768 bytes of `$10`; the additional bank reserves 64 KiB of upper capacity.
+The native image begins at `$110000`. DIALOG.APP is 6,277 file bytes with a
+66,877-byte linked span. Context/session/alert live and heap-reserved sizes are
+340/344, 315/320 and 514/520 bytes respectively. Hashes, source inputs, per-slot
+measurements and the unchanged compiler/platform pins accompany the
+[machine-readable record](../development/standard-dialogs.json).
+
+Excluded trials found unpainted example margins and incorrect emitted signed
+box-thickness handling/outward clipping; the corrected target code passes the
+final checks. One burst snapshot preceded its final queued key; the fixture now
+waits for the existing inbox to drain. A screenshot-basename mismatch prevented
+one report from being saved. Another final assertion wrongly applied the
+ordinary-pool headroom target to idle and discarded the measurements. The final
+replay writes the expected screenshot directly, saves measurements even on
+failure, and gates ordinary pools 1–5 as specified. No failed trial is acceptance
+evidence. A metadata-only builder follow-up includes example sources in future
+demo manifests; the tested package is unchanged and this record retains the
+example build hashes.
+
+FD1–FD4 are complete at the development tier. This does not qualify real hardware
+or close the existing HY4/PI4 latency gates.

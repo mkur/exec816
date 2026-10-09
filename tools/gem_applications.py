@@ -2,7 +2,7 @@
 import json
 from native_program import ROOT,require
 
-MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22)}
+MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40)}
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())
@@ -39,7 +39,7 @@ def symbols(bridge,program,directory,name,identity):
     return found[0]['symbols']
 
 def scene_symbols(bridge,program,directory,title,bounds):
-    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc'}[title]
+    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc',b'Dialog example':'dialog',b'Alert':'dialog'}[title]
     from generate_aes_server import ABI,layout
     records=layout();request=records['Request'];view=records['WindowView']
     number=lambda raw,at,size: int.from_bytes(raw[at:at+size],'little')

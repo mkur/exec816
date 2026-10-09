@@ -7,6 +7,10 @@ from test_desktop_presentation import rectangle
 
 def paint(bridge,symbols,r,title,bounds):
     left,top,right,bottom=bounds
+    if title in (b'Dialog example',b'Alert'):
+        from standard_dialog_oracle import paint as dialog
+        dialog(bridge,symbols,r,bounds)
+        return
     if title==b'Calculator':
         base=symbols['Calculator'];tree=int.from_bytes(bridge.memdump(symbols['tree'],4),'little')
         raw=bridge.memdump(tree,21*24)

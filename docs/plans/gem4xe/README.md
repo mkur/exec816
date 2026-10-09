@@ -1,10 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [standard dialogs design](standard-dialogs-design.md) and
+The [standard dialogs design](standard-dialogs-design.md) and
 [FD1–FD4 implementation plan](standard-dialogs-implementation-plan.md) add bounded
 caller-local `form_do` and `form_alert`, with the `form_dial` lifecycle, temporary
 pre-window hosts and preserved application messages. Other applications keep
-running. FD1–FD3 host lifetime, interaction and alerts pass development checks; FD4 remains planned.
+running. FD1–FD4 pass development checks, including the loadable dialog example
+and exact OF816 ZIP walkthrough. See the
+[execution record](../../history/standard-dialogs.md).
 
 The [application stack headroom plan](application-stack-headroom-implementation-plan.md)
 follows editable dialogs with call-path attribution, ordinary stack growth

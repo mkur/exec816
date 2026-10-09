@@ -240,6 +240,10 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from generate_display import expected_layout as display_layout
             renderer = instrument(out)
             extra_probes = [(ROOT/'c/calypsi/display-layout.c', display_layout())]
+        if suite=='alerts':
+            extra_probes.append((ROOT/'tests/programs/aes_form_layout.c',[
+                ('Form size',315),('Form focus',209),('Form alert',311),
+                ('Alert size',514),('Alert icon',508)]))
         import build_bitmap_console as bitmap_builder
         original_extract=bitmap_builder.extract
         original_emit=bitmap_builder.emit
@@ -352,7 +356,7 @@ ENDMODULE
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
+        slice='FD3' if suite=='alerts' else 'FD2' if suite=='forms' else 'AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, filesystem=filesystem if suite=='resources' else None, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     if borrowed:

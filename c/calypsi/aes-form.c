@@ -8,8 +8,11 @@ extern WORD App_ob_get_par(OBJECT *,WORD);
 void ExecAESFormExtent(OBJECT *tree,GRECT *r)
 {
     WORD border=0;
-    if (tree[0].ob_type==G_BOX || tree[0].ob_type==G_IBOX)
-        border=(BYTE)(tree[0].ob_spec>>16);
+    if (tree[0].ob_type==G_BOX || tree[0].ob_type==G_IBOX) {
+        WORD high=(WORD)(tree[0].ob_spec>>16);
+        BYTE thickness=(BYTE)high;
+        border=thickness;
+    }
     if (border>0) border=0;
     r->g_x=tree[0].ob_x+border; r->g_y=tree[0].ob_y+border;
     r->g_w=tree[0].ob_width-2*border; r->g_h=tree[0].ob_height-2*border;

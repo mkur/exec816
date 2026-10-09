@@ -81,13 +81,14 @@ def physical(b,p,foreign,report):
         return get(endpoint+36,3)
     def keyboard_counts():
         inbox=input_inbox()
+        reach('db($%x)=db($%x)'%(inbox+20,inbox+21))
         capture=p['build']['memory']['input_storage']['CAPTURE']
         return (get(capture+10),get(inbox+20,1),get(inbox+21,1))
     def typing(before,offered,inserted):
         after=keyboard_counts()
         counts=[(after[i]-before[i]) & (65535 if i==0 else 255) for i in range(3)]
         require(counts==[offered]*3,'Keyboard capture/route/consume mismatch: '+str(counts))
-        return dict(offered=offered,captured=counts[0],routed=counts[1],consumed=counts[2],inserted=inserted)
+        return dict(offered=offered,captured=counts[0],routed=counts[2],consumed=counts[1],inserted=inserted)
     def xy(object,who=0):
         t=tree(who)
         return (get(t+16)+get(t+object*24+16)+get(t+object*24+20)//2,
@@ -106,9 +107,9 @@ def physical(b,p,foreign,report):
     labels={}
     for i in range(2,7):
         labels[i]=b.memdump(objects[i][6],32).split(b'\0')[0].decode();objects[i][6]=i
-    objects[1][3]=25;objects[1][6]=0;objects[0][7]=objects[0][8]=0
+    objects[1][3]=25;objects[1][6]=0;objects[0][7]=objects[0][8]=1
     raster=Raster(font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'))
-    draw(raster,objects,labels,(left,top,left+width,top+height))
+    draw(raster,objects,labels,(left-1,top-1,left+width+1,top+height+1))
     x,y=left+8,top+16
     rectangle(raster,(x-1,y-1,x+225,y+17),1);rectangle(raster,(x,y,x+224,y+16),0)
     raster.text=1;raster.apply(8,(x,y+10),b'seed')
@@ -116,11 +117,11 @@ def physical(b,p,foreign,report):
     path=p['output'].parent/'form-edit.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
     colours={hw:rgb[i*3:i*3+3][::-1] for i,hw in enumerate(PENS)}
-    for yy in range(top,top+height):
-        for xx in range(left,left+width):
+    for yy in range(top-1,top+height+1):
+        for xx in range(left-1,left+width+1):
             pixel=yy*capture.stride+(xx+16)*4
             require(pixels[pixel:pixel+3]==colours[raster.pixels[yy*640+xx]],f'Form pixels {xx},{yy}')
-    report['form_pixels']=width*height
+    report['form_pixels']=(width+2)*(height+2)
     before=keyboard_counts()
     for letter in ('A','B','C'):key(letter)
     report['paced_typing']=typing(before,3,3)

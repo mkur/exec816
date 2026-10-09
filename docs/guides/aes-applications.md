@@ -346,4 +346,49 @@ pointer without changing geometry. These calls safely patch an installed menu;
 do not edit a live installed tree directly. Withdraw with `menu_bar(tree,0)`
 before freeing its storage or resource. `appl_exit` also withdraws it.
 See the [bounded menu contract](../reference/aes.md) for supported objects,
-counts and keyboard interaction. Rebuild APPs against C import ABI 5.
+counts and keyboard interaction. Rebuild GEMSYS and APPs against the current
+C component ABI.
+
+## Standard dialogs
+
+[The dialog example](../../examples/gem-dialog/dialog.c) is a separately loaded
+`C:DIALOG.APP`. Close one existing GEM application, then run `RUN C:DIALOG.APP`.
+Continue accepts an alert before the example owns a window. Edit (E) opens a
+compiled-in editable tree; Apply repeats `form_do` inside START/FINISH and Done
+returns to the application. Alert (A) borrows its existing window. The Dialog
+menu and Quit (Q) remain ordinary application policy.
+
+Use `form_center`, `form_dial(FMD_START, ...)`, one or more `form_do` calls and
+`form_dial(FMD_FINISH, ...)` for an explicit session. An isolated `form_do` or
+`form_alert` creates and finishes an implicit session. Keep the tree and text
+buffers alive through FINISH; this includes a failed cleanup pending retry.
+End an existing `objc_edit` association and release UPDATE/MCTRL before entry.
+Drawing ownership is short-lived; all other applications continue running.
+
+`form_do` returns an EXIT index with SELECTED set. Check for a negative result
+before indexing the tree, and clear SELECTED before reusing that button:
+
+```c
+result = form_do(tree, 0);
+if (result < 0) {
+    status = ExecAESDiagnostic();
+    /* FINISH an explicit session, then handle AES_PENDING in the event loop. */
+} else {
+    tree[result].ob_state &= ~SELECTED;
+    /* Apply the accepted application action. */
+}
+```
+
+A borrowed window's move/size/scroll/close, a menu selection or an ordinary
+application message returns `AES_PENDING`. FINISH, resume the event loop and
+process the retained message. The following WM_REDRAW repairs the application's
+work area from its own model. Repaint the whole damaged area, including margins;
+a saved screen image is neither needed nor maintained. Temporary hosts accept
+movement themselves; their closer dismisses with `AES_OK`.
+
+`form_alert` returns a **one-based** button or **zero** on interruption,
+dismissal or failure. Zero is never an accepted button. The bounded syntax,
+limits, default selection and unsupported operations are in the
+[AES contract](../reference/aes.md). Files and calculator retain their existing
+event-driven loops. Rebuild the shared GEMSYS component and every application
+for the current C component ABI.

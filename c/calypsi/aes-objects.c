@@ -61,6 +61,12 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
                 border=((const TEDINFO *)(ULONG)tree[obj].ob_spec)->te_thickness;
                 border=border<0 ? -border:0;
             }
+            if (tree[obj].ob_type==G_BOX || tree[obj].ob_type==G_IBOX) {
+                WORD high=(WORD)(tree[obj].ob_spec>>16);
+                BYTE thickness=(BYTE)high;
+                border=thickness;
+                border=border<0 ? -border:0;
+            }
             l=p.x-border; t=p.y-border;
             r=p.x+tree[obj].ob_width+border; b=p.y+tree[obj].ob_height+border;
             if (l<x) l=x;

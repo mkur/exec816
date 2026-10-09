@@ -614,6 +614,454 @@
         "Concurrent fixture signalled before the peer window existed, so peer could cover the measured window. Setup now opens peer before starting the second caller.",
         "A final report lookup requested an unused constant eliminated by the linker; replaced by explicit emitted layout checks."
       ]
+    },
+    "FD4": {
+      "status": "pass",
+      "report": "build/standard-dialogs/demo-ready/standard-dialog-results.json",
+      "report_sha256": "a392f628b8dbc86eeb1e17f36cc9aec5c3ec4ca0b2a240dee81a2a513d85e9f2",
+      "scope": "Exact ZIP: standard dialogs beside shell/counter/panel, Files editor and calculator smoke, physical input, pixels, resource return and EXIT",
+      "host_tests": 423,
+      "host_skips": 4,
+      "host_log": "build/standard-dialogs/fd4-final-host.log",
+      "integration": {
+        "profile": "standard-dialogs",
+        "full_capacity": true,
+        "pre_window_alert": true,
+        "repeat_apply": true,
+        "text": "Exec816abc",
+        "borrowed_repair": true,
+        "menu_handoff": true,
+        "move_handoff": true,
+        "covered_form": true,
+        "counter_progress": true,
+        "shell_disk": true,
+        "close_while_waiting": true,
+        "stop_while_waiting": true,
+        "relaunches": 3,
+        "heap_return": true,
+        "files_smoke": true,
+        "calculator": 19,
+        "exit_while_waiting": true,
+        "heap_baseline": [
+          2316784,
+          65536,
+          2316784,
+          2031616
+        ]
+      },
+      "stack": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 572,
+          "remaining_above_floor": 708
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1280,
+          "peak": 313,
+          "remaining_above_floor": 711
+        },
+        "2": {
+          "base": 13680,
+          "bytes": 1280,
+          "peak": 180,
+          "remaining_above_floor": 844
+        },
+        "3": {
+          "base": 14992,
+          "bytes": 1280,
+          "peak": 639,
+          "remaining_above_floor": 385
+        },
+        "4": {
+          "base": 16304,
+          "bytes": 1280,
+          "peak": 634,
+          "remaining_above_floor": 390
+        },
+        "5": {
+          "base": 17616,
+          "bytes": 1280,
+          "peak": 840,
+          "remaining_above_floor": 184
+        },
+        "6": {
+          "base": 18928,
+          "bytes": 2560,
+          "peak": 783,
+          "remaining_above_floor": 1521
+        },
+        "7": {
+          "base": 21520,
+          "bytes": 2560,
+          "peak": 405,
+          "remaining_above_floor": 1899
+        },
+        "8": {
+          "base": 24112,
+          "bytes": 512,
+          "peak": 131,
+          "remaining_above_floor": 125
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "minimum_ordinary_margin": 184,
+      "target_ordinary_margin": 128,
+      "autoboot_frames": 249,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$dd5a9bcf5e5d9773",
+        "actual_kernel_id": "$dd5a9bcf5e5d9773",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/standard-dialogs/demo-ready/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "package": {
+        "path": "build/standard-dialogs/demo-ready/exec816-demo.zip",
+        "sha256": "660e729e95f5269e593ae03d8aa140080ac401a1f48d45b1494c979fac6447f7",
+        "manifest_sha256": "91d2ec8b0a13dc5d6b5ddff239700657534eb871025ca3f2db954bbce029b768",
+        "xex_sha256": "34652633872d597cb58817926dac2ce646b9a76becd66affd3f46dfb317be07f",
+        "media_sha256": "152d07ddb8f0135ddcd624dffe9aaba3236f15ec17f936ab590fc34107c748aa"
+      },
+      "c_elf_sha256": "2b76d9cc57b6794ccd04a5b53a0539e2059c2f13b9a57f3178398540b5ef15d5",
+      "segments": [
+        {
+          "address": 786432,
+          "bytes": 65536
+        },
+        {
+          "address": 917504,
+          "bytes": 65536
+        },
+        {
+          "address": 983040,
+          "bytes": 37132
+        },
+        {
+          "address": 1048576,
+          "bytes": 7768
+        },
+        {
+          "address": 851968,
+          "bytes": 4662
+        }
+      ],
+      "c_payload_bytes": 180634,
+      "c_payload_growth": 15683,
+      "c_code_growth": 14774,
+      "c_data_growth": 909,
+      "baseline": {
+        "path": "build/gem-stack-headroom/final/bitmap-console/c-image.json",
+        "elf_sha256": "3a5af27685fcb6c0f851fca0341f79427d2b12e9d8648c6c2807dcee60c5fbd6",
+        "payload_bytes": 164951
+      },
+      "gemsys_bytes": 180666,
+      "application": {
+        "file_bytes": 6277,
+        "span": 66877,
+        "sha256": "979d5eece48728291ffa62f0cac9db0d93898ee14c66bbb757a76b2d88e24b04",
+        "elf_sha256": "8a952fcd180c93ebfac0510c1ec6fe8b257f58e76cca05db6f9945d27c445b48"
+      },
+      "c_source_inputs": {
+        "c/calypsi/exec.c": "ada5b767f7df3bd616291a4a1c57d23622d39fea50067ecfc07997e16602daf4",
+        "c/calypsi/display.c": "cae0efecf663e9f8e948221e0b9f2c86a8862d436631038d2370d45e4e6ec616",
+        "platform/altirraos/vbxe.c": "b84667c0a8d742832407776a77c209b43f9ec4fa9d4b25d008823eabaf0bb5ea",
+        "build/standard-dialogs/demo-ready/bitmap-console/selected/src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+        "build/standard-dialogs/demo-ready/bitmap-console/selected/src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+        "build/standard-dialogs/demo-ready/bitmap-console/selected/src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+        "build/standard-dialogs/demo-ready/bitmap-console/selected/src/vdi/dev_vbxe.c": "6d74a2747a13b01445bcfdd903ed0a9cd2563974c365770e9ed76bdc4b9a9e51",
+        "ports/gem4xe/adapter/gem-vbxe.c": "7975fec22b5595f5ea76b2e1c27d73deaf363bb30d85b25954236bdc24262a9b",
+        "lib/console/console-bitmap.c": "e8f30ce3f167d812fb851f66dbeb43c1ed93e658b78a53b22b30d3923c738b4f",
+        "lib/desktop/desktop-frame.c": "44bb00585e84731bb0e6279d31f7082a1c35b08a16f93e894f5a5e530bc1e8c9",
+        "ports/gem4xe/aes/widgets-model.c": "1e51955d34f7d179626bbf7c05a51d3a63c52e1aadeb31ef3d180936a8067bd0",
+        "ports/gem4xe/aes/widgets-graf.c": "b64f21702e40e9c42352ed55cdd2c5faff45f51ab3d5c1d3a9ef08858f3e089f",
+        "ports/gem4xe/aes/widgets-render.c": "42053b572867911895f7d3842b00566bd484843b7b4ba5e53827a5fa914b0dae",
+        "ports/gem4xe/aes/menu-render.c": "130817676b9f0a92903a756c9722cef79e706faedbc49ea9117663cd49dce11e",
+        "build/standard-dialogs/demo-ready/bitmap-console/aes-selected/aes-objects.c": "ca7640182c0109c7dc4177d49f7f5f0fb1a5e8301e5a8a3c06e5a8e2f91c07b5",
+        "build/standard-dialogs/demo-ready/bitmap-console/aes-selected/aes-graf.c": "8a15bfe91316c6031884b822dccc6efb6de3c28ee1c90161ef72e0509468f26c",
+        "build/standard-dialogs/demo-ready/bitmap-console/aes-selected/aes-form.c": "51ab6497ce1435b2681eacc16fed4faac50a26137a790e9301825b28e4532171",
+        "ports/gem4xe/aes/widgets-state.c": "ad75c4f139fdbe43379abf8d935507cdd11edb426a6dea11ed1b009d052e63d3",
+        "ports/gem4xe/aes/widgets-input.c": "769b479b90cb7b4cb022f8c3b2dcb1d1f2f0f907c8a966909fee30a5fb0869d0",
+        "ports/gem4xe/aes/widgets-entry.c": "11f98fdb6fd7fca09493207b2babe56d2b3ae2ff87963a3fac124eafd903ed43",
+        "c/calypsi/io.c": "d54c70d8b30a2ef2c7e75bf1a55f74875263fff0f9aee6f2bc9028e771b3ae8f",
+        "c/calypsi/aes.c": "d4de0b1e8850e7c77dccaec2d5cfe520182ca58311a03acbb8a79e2c3f8bc7c0",
+        "c/calypsi/aes-messages.c": "76d83e86f5db7898fb42f0f25a03c34716d8edfa99043c99af0e770bb7e87e0e",
+        "c/calypsi/aes-events.c": "97b6ceeb510ee457123b18ea6a2276f5d4a2937c8f9543593f4c96a48d4405a6",
+        "c/calypsi/program.c": "56bcdde27314dc89daae27594722377f1ee4b8eaef00de0e8bab6f77faef64d4",
+        "examples/gem-desktop/resident.c": "f73d6752c67767c646a2bbaa86916780bcd50f97b69c78cd36554e2fe549604f",
+        "c/calypsi/aes-windows.c": "68650c391fc2d4a6b2ab73ff1cda341bbe9d80a9064f3e0cfa93c9114936e05d",
+        "c/calypsi/aes-input.c": "11ed6c059f5f9f82ea8ed2629b77bc8ccfe741c278943cd3c510238194d56a4c",
+        "c/calypsi/vdi.c": "9788ae305376d6731e65531d957f63525b1eb08124074b1405c019430d322a26",
+        "build/standard-dialogs/demo-ready/bitmap-console/app-objects/aes-objects.c": "fa2b79a809d09eb97fbd9c3d47a713eb2e5133ee2ab6c800bb12418530b7e5a6",
+        "build/standard-dialogs/demo-ready/bitmap-console/app-objects/aes-graf.c": "71dca45f0d3d635aa3ee04475722642cf78f5c5a8516edd125c543f665c1e2f4",
+        "build/standard-dialogs/demo-ready/bitmap-console/app-objects/aes-form.c": "1ba03f353e8c36edf2b3439167aa03f7a307e0d3f0505e9626fcc04b7c99efa2",
+        "build/standard-dialogs/demo-ready/bitmap-console/app-objects/app-graf.c": "add0382b55f1aaa05b2c7e609ada6305beef3c4a61fa9f5f1f4987715aac8f50",
+        "c/calypsi/aes-objects.c": "a97b583fb63d7ed776823e50ee1854b20e36dfbcbc31e083be6ee80866ddb9f8",
+        "c/calypsi/aes-edit.c": "17b7b076e3f85c61db3a1c351a3750da99c1c9767acc0b3f26a36f93269e9ae2",
+        "c/calypsi/aes-form.c": "34a562243339c8b73fd1eac9c6553684671cb0c5768b2447afad92342b6bb685",
+        "c/calypsi/aes-alert.c": "ad3e83d38216ca468fbd987a97314746770a1eb8ffc100fe70f046c88efe3dc5",
+        "c/calypsi/aes-resource.c": "66c47df6b124dafa70971f54ac43603c8cae752d6d150a441f10388c1ef28ba8",
+        "c/calypsi/aes-menu.c": "726f3c948182a654491f40359cadb11f2268b08a955017a9fc092d7f829e79db",
+        "c/calypsi/dos.c": "36cba4786ab64ee96ae5fcf0a8b9815356ca1dc32b6d40d104082e1748a122d5",
+        "c/calypsi/gateway.s": "5942de33306e8a4244ba6af012ff73885ad47d7a8b797d34fb0501c98440b3a1",
+        "c/calypsi/display.s": "40349300a774d10a61edb623e47e41df02fbe2d41d2aebdfc93a9d91ed07f099",
+        "c/calypsi/image-info.s": "ee2b75322d39901c11780cf7d6928a84243823439cdb4435053fb5b8daea13d5",
+        "platform/altirraos/vbxe-map.s": "b318746adc6b9c5a0624997174c86a0eace226488eeedb84d651d18ef61b3aef",
+        "c/calypsi/io.s": "9b27f1178d471990365f5a868d905e13bc6c15311db964fa2d001ae6d342e1dd",
+        "c/calypsi/dos.s": "4789af31ca0177455a2957bc3c4aa31d218f8f9cf68af487dc87600cf322e6f8",
+        "abi/console-bitmap.json": "0e53294728078c6a8fac5fdcea26cc9d84ab872f8434ce3daf05007b85b8a884",
+        "c/include/hardware/console-bitmap.h": "547578d62bc6df56a69e9325571ba5847caa86ce59963dd5e46dcb571f328483"
+      },
+      "example_source_inputs": {
+        "examples/gem-dialog/main.c": "d27c1fa6494b61a07a36dd5e1c7453574b27ed9a5c80d58cf1d53ee322e6c8e7",
+        "examples/gem-dialog/dialog.c": "538a0f248caacbabe7b150179fe3d7e7b3082c7704baa1ea70e6e93e0175542d"
+      },
+      "example_header_sha256": "3807ae0e7a4e2890b8d1d1c12dd151bec840bf0eb28f5ac4377471b541c577e1",
+      "runner_sha256": "c544ec24a98716b24046ee949ed5a59d310521919adc5f889aad37ed38097e10",
+      "context_live_bytes": 340,
+      "context_heap_bytes": 344,
+      "session_live_bytes": 315,
+      "session_heap_bytes": 320,
+      "alert_live_bytes": 514,
+      "alert_heap_bytes": 520,
+      "icon_table_bytes": 896,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "public": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta_bytes": 0,
+      "code_capacity_added_upper_banks": 1,
+      "cases": {
+        "fd4-borders-accepted": {
+          "report": "build/standard-dialogs/fd4-borders-accepted/results.json",
+          "sha256": "c2a950a6685938832fd490c26d158882fff8fffda35f79a17c559322b658aa5f",
+          "status": "pass",
+          "AESChecks": 194,
+          "AESFailures": 0,
+          "form_pixels": 35332,
+          "paced_typing": {
+            "offered": 3,
+            "captured": 3,
+            "routed": 3,
+            "consumed": 3,
+            "inserted": 3
+          },
+          "bounded_burst": {
+            "offered": 8,
+            "captured": 8,
+            "routed": 8,
+            "consumed": 8,
+            "inserted": 3
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 482,
+              "remaining_above_floor": 798
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1280,
+              "peak": 699,
+              "remaining_above_floor": 325
+            },
+            "2": {
+              "base": 13680,
+              "bytes": 1280,
+              "peak": 778,
+              "remaining_above_floor": 246
+            },
+            "3": {
+              "base": 14992,
+              "bytes": 1280,
+              "peak": 157,
+              "remaining_above_floor": 867
+            },
+            "4": {
+              "base": 16304,
+              "bytes": 1280,
+              "peak": 18,
+              "remaining_above_floor": 1006
+            },
+            "5": {
+              "base": 17616,
+              "bytes": 1280,
+              "peak": 18,
+              "remaining_above_floor": 1006
+            },
+            "6": {
+              "base": 18928,
+              "bytes": 2560,
+              "peak": 700,
+              "remaining_above_floor": 1604
+            },
+            "7": {
+              "base": 21520,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24112,
+              "bytes": 512,
+              "peak": 61,
+              "remaining_above_floor": 195
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 289,
+              "remaining_above_floor": 991
+            }
+          }
+        },
+        "fd4-resources": {
+          "report": "build/standard-dialogs/fd4-resources/results.json",
+          "sha256": "16b1a972f3cb4969468998e88e45aa1dede06968a7a26b020aaf12bc2d98068d",
+          "status": "pass",
+          "AESChecks": 102,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 725,
+              "remaining_above_floor": 555
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1280,
+              "peak": 291,
+              "remaining_above_floor": 733
+            },
+            "2": {
+              "base": 13680,
+              "bytes": 1280,
+              "peak": 153,
+              "remaining_above_floor": 871
+            },
+            "3": {
+              "base": 14992,
+              "bytes": 1280,
+              "peak": 18,
+              "remaining_above_floor": 1006
+            },
+            "4": {
+              "base": 16304,
+              "bytes": 1280,
+              "peak": 18,
+              "remaining_above_floor": 1006
+            },
+            "5": {
+              "base": 17616,
+              "bytes": 1280,
+              "peak": 18,
+              "remaining_above_floor": 1006
+            },
+            "6": {
+              "base": 18928,
+              "bytes": 2560,
+              "peak": 696,
+              "remaining_above_floor": 1608
+            },
+            "7": {
+              "base": 21520,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24112,
+              "bytes": 512,
+              "peak": 60,
+              "remaining_above_floor": 196
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 289,
+              "remaining_above_floor": 991
+            }
+          }
+        },
+        "extent-raw": {
+          "report": "build/standard-dialogs/extent-raw/results.json",
+          "sha256": "fd1854a6836bc0e8160c0ba0e6958219e6abd0652b2fad110e3c1fd7aba7b03c",
+          "status": "pass",
+          "cases": 14,
+          "c_elf_sha256": "c852c8f733c675c1dc9f00c23694c64b010d3a97584a1d921dcf39fb6372e19f"
+        },
+        "extent-opt": {
+          "report": "build/standard-dialogs/extent-opt/results.json",
+          "sha256": "4ea2243cea85d525148dc234964efe01cee0849a694bd137c9d58e944473506f",
+          "status": "pass",
+          "cases": 14,
+          "c_elf_sha256": "45e443b4c2b1cebaa4da53057248301a7ede5cca083adfe135b80e956509065d"
+        }
+      },
+      "excluded_trials": [
+        "The initial example left window margins unpainted; reconstructing the entire home work area fixed the pixel mismatch.",
+        "Emitted signed box-thickness conversion and outward object clipping were corrected; the explicit BYTE-to-WORD promotion passes raw/optimized extent checks and physical border pixels.",
+        "The burst fixture sampled before its last key was consumed; it now waits for the existing inbox to drain before measuring counters.",
+        "One completed walkthrough failed report creation because its screenshot basename differed from test_demo. A later trial copied the actual completed screenshot under the expected basename; final replay writes that basename directly.",
+        "An overbroad final assertion applied the ordinary-Task 128-byte gate to private idle too and discarded measurements. Final replay records all slots and gates ordinary pools 1 through 5 as the plan requires."
+      ],
+      "reporting_notes": [
+        "The final replay uses the unchanged demo-ready ZIP and production sources.",
+        "The packaged build predates a metadata-only builder addition listing dialog sources in future demo manifests; this record retains their application-build hashes and header hash.",
+        "Resource-tree behavior was checked before the outward-box-only correction; its inward/zero-border case is unaffected. The final shared binding is covered by the border fixture and exact ZIP replay."
+      ]
     }
   }
 }

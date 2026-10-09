@@ -14,7 +14,7 @@ Object traversal, coordinates, hit testing, box geometry, text placement and
 radio selection run selected donor code. The host validates the complete tree
 before donor walks, resolves string offsets into its own retained text, and
 replaces blocking form waits with release-time selection. Unsupported drawing
-branches and direct screen mutation in ob_change are removed. No form_do,
+branches and direct screen mutation in ob_change are removed. No donor form_do,
 GEMDOS, resource loader, application callback or donor input/startup is linked.
 
 The generated native packet uses the donor's 24-byte object layout, with
