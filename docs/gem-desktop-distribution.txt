@@ -88,6 +88,11 @@ DIALOG.APP demonstrates standard GEM dialogs. Close Files or Panel, then type
 RUN C:DIALOG.APP. Continue accepts the initial alert before the app window opens.
 Edit (E) opens a text form; Apply accepts and keeps editing, Done returns to the
 app. Alert (A) asks Keep/Back. Quit (Q), the Dialog menu or the closer exits.
+Open (O) and Save (S) choose a directory/filter and filename. Save only selects
+a name; it does not write a file. Try SYS:SELECT/*.TXT for a multi-page list,
+or SYS:SELECT/SUB/*.TXT and Up for navigation. Edit Path and press Return to
+apply it; Escape cancels. RUN C:DIALOG.APP SELECT also opens the selector before
+the application's own window, after the initial alert.
 Tab/Shift-Tab traverse controls, Return activates the default, and Space activates
 a focused button. Release outside cancels a press. Other windows keep running.
 Moving or choosing a menu command while editing returns to the application's

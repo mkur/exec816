@@ -27,8 +27,8 @@ class DialogDemo:
         def memory():
             screen=s.command('MEM').decode('ascii')
             return [int(v) for v in re.findall(r'(?:ordinary|linear) (?:total|largest) +(\d+)',screen)][-4:]
-        def begin(name):
-            menus.select('Shell');old=s.begin('RUN C:'+name+'.APP');s.ready(old);s.result()
+        def begin(name,args=''):
+            menus.select('Shell');old=s.begin('RUN C:'+name+'.APP'+(' '+args if args else ''));s.ready(old);s.result()
             return s.number(job,4)
         def collected():s.rendezvous('db($%x)=3'%(job+12));s.frames(80)
         # Existing resource-backed Files editing remains independent.
@@ -41,8 +41,8 @@ class DialogDemo:
         require(len(menus.windows())==4 and s.ledger()==owners,'Full desktop launch retained resources')
         require(memory()==baseline,'Full desktop launch leaked memory')
         menus.select('Files');menus.close();menus.select('Shell');baseline=memory();owners=s.ledger()
-        def launch():
-            identity=begin('DIALOG');sy=symbols(s.b,s.p,directory,'dialog',identity);app=sy['GEMDialog']
+        def launch(args=''):
+            identity=begin('DIALOG',args);sy=symbols(s.b,s.p,directory,'dialog',identity);app=sy['GEMDialog']
             s.rendezvous('dw($%x)=3'%(app+10));s.frames(100)
             return identity,app
         def accept(app):
@@ -51,7 +51,8 @@ class DialogDemo:
         identity,app=launch();move(630,230);s.cells('pre-window-alert');accept(app)
         s.cells('dialog-home');key('E');phase(app,2)
         for letter in 'ABC':key(letter)
-        text=s.b.memdump(app+668,32).split(b'\0')[0]
+        from dialog_model import FIELDS as D
+        text=s.b.memdump(app+D['text'],32).split(b'\0')[0]
         require(text==b'Exec816abc','Loaded form insertion: '+repr(text))
         old=s.number(app+12,4);key('RETURN');phase(app,2)
         require(s.number(app+12,4)==old+1,'Apply did not repeat the explicit form')
@@ -84,6 +85,8 @@ class DialogDemo:
         key('7');key('RETURN');require(s.number(sy['shown'],4)==19,'Calculator shared-binding smoke')
         move(630,230);s.cells('calculator-smoke');menus.close();collected();menus.select('Shell')
         require(s.ledger()==owners and memory()==baseline,'Calculator teardown leaked ownership')
+        if hasattr(self,'selectors'):
+            self.selectors(s,shared,menus,counter,launch,accept,phase,move,edge,click,key,collected,owners,memory,baseline)
         identity,app=launch();accept(app);key('E');phase(app,2)
         menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
         s.saved['integration']=dict(profile='standard-dialogs',full_capacity=True,pre_window_alert=True,

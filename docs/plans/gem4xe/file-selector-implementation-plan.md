@@ -2,8 +2,8 @@
 
 [Design note](file-selector-design.md) · [GEM integration](README.md)
 
-Status: FSEL1–FSEL3 pass development checks. FSEL4 is pending; see the
-[execution record](../../history/file-selector.md).
+Status: FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP
+walkthrough. See the [execution record](../../history/file-selector.md).
 
 Implement the design's caller-local `fsel_input`/`fsel_exinput` profile in four
 executable slices. Reuse Files and the standard-dialog lifecycle, keeping the
@@ -154,7 +154,7 @@ unchanged. Preserve the original completion diagnostic unless cleanup fails.
 Path errors that the user can correct remain visible within the selector.
 
 Advance the current [C component ABI](../../../abi/c-program.json) revision
-(currently 9), regenerate its interfaces and rebuild GEMSYS and all applications
+from 9 to 10, regenerate its interfaces and rebuild GEMSYS and all applications
 together. Keep one current ABI, with no legacy profile. Update the source lists
 in the shared-component and loadable-Files builders; do not add an AES server
 wire operation. Any changed context/observer layout must be generated or checked

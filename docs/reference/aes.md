@@ -509,7 +509,9 @@ Painting uses existing visible rectangles and short UPDATE sections.
 Per active selector, upper-heap storage is 3,242 live / 3,248 reserved bytes
 (including the 512-byte filtered index), a 28,672-byte entry allocation, and
 the existing 320-byte form allocation. Existing host/workstation resources are
-borrowed or owned by that form. Bank-zero and VRAM reservations are unchanged.
+borrowed or owned by that form. The selector adds no fixed bank-zero or VRAM
+storage. The packaged consumer required 32 more bytes per ordinary stack
+(slots 1–5), adding 160 reserved bank-zero bytes in total.
 See the [development record](../history/file-selector.md).
 
 ## Resources and popup menus

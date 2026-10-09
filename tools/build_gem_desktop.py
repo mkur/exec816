@@ -43,7 +43,8 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
             (ROOT/'tests/programs/gem_panel_layout.c',[
                 ('Panel size',404),('Panel ready',8),('Panel actions',10),('Panel paints',14),
                 ('Panel work',34),('Panel tree',178),('Panel status',370),('Panel focus',392),('Panel armed',394)]),
-            (ROOT/'tests/programs/gem_browser_layout.c',__import__('browser_model').LAYOUT)])
+            (ROOT/'tests/programs/gem_browser_layout.c',__import__('browser_model').LAYOUT),
+            (ROOT/'tests/programs/gem_dialog_layout.c',__import__('dialog_model').LAYOUT)])
     binding(foreign,out)
     if disk_component:
         from gem_component import prepare as prepare_component

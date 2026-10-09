@@ -7,7 +7,7 @@ from test_desktop_presentation import rectangle
 
 def paint(bridge,symbols,r,title,bounds):
     left,top,right,bottom=bounds
-    if title in (b'Dialog example',b'Alert'):
+    if title in (b'Dialog example',b'Alert',b'File selector'):
         from standard_dialog_oracle import paint as dialog
         dialog(bridge,symbols,r,bounds)
         return

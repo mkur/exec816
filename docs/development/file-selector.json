@@ -100,9 +100,7 @@
     "files_image_span": 69527,
     "files_state_bytes": 3074
   },
-  "pending": [
-    "FSEL4"
-  ],
+  "pending": [],
   "FSEL2": {
     "status": "pass",
     "host": {
@@ -433,5 +431,453 @@
         "writable": true
       }
     ]
+  },
+  "FSEL4": {
+    "status": "pass",
+    "qualification": false,
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "desktop": {
+      "path": "build/file-selector/demo-final/file-selector-results.json",
+      "sha256": "38f66415b66a0de099a884a64587fd831f6c9cce37da1db9f87a70953d807eba",
+      "status": "pass",
+      "tier": "development"
+    },
+    "layouts": {
+      "path": "build/file-selector/dialog-layout/results.json",
+      "sha256": "ef468c2c86abcab499001e63cfb1f74238001a126c52ccd49f3c5c1a8ff7c52c",
+      "status": "pass",
+      "tier": "development"
+    },
+    "zip_sha256": "beb7fd3768cbb461a6fca83f1357c721cae65377dd80bebb6ffe635aae8f3f2f",
+    "manifest_sha256": "e8062773a8ec1f46b79af9d4dd1f93f9527281695cf58a8a627063c7e7decd86",
+    "build_sha256": "10644a3809813255777f05861ede16bb87002bcaa4a78c6ce0b02f23bdbf0db3",
+    "of816_sha256": "2ff5669ce276e6fbc653aa9c97744bae81fc1da072f138e603e0dfc3aa47e0b5",
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_override": false,
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 591,
+        "remaining_above_floor": 689
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1312,
+        "peak": 346,
+        "remaining_above_floor": 710
+      },
+      "2": {
+        "base": 13712,
+        "bytes": 1312,
+        "peak": 180,
+        "remaining_above_floor": 876
+      },
+      "3": {
+        "base": 15056,
+        "bytes": 1312,
+        "peak": 624,
+        "remaining_above_floor": 432
+      },
+      "4": {
+        "base": 16400,
+        "bytes": 1312,
+        "peak": 635,
+        "remaining_above_floor": 421
+      },
+      "5": {
+        "base": 17744,
+        "bytes": 1312,
+        "peak": 917,
+        "remaining_above_floor": 139
+      },
+      "6": {
+        "base": 19088,
+        "bytes": 2560,
+        "peak": 755,
+        "remaining_above_floor": 1549
+      },
+      "7": {
+        "base": 21680,
+        "bytes": 2560,
+        "peak": 400,
+        "remaining_above_floor": 1904
+      },
+      "8": {
+        "base": 24272,
+        "bytes": 512,
+        "peak": 135,
+        "remaining_above_floor": 121
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      }
+    },
+    "ordinary_minimum_margin": 139,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        32,
+        32,
+        32,
+        32,
+        32,
+        0,
+        0
+      ],
+      "private_idle": 0,
+      "runtime": 160,
+      "loading": 32
+    },
+    "files": {
+      "C/CALC.APP": {
+        "bytes": 6811,
+        "sha256": "3baf531ca65a87b41b13bb00279ce2b62a7ed1c91312dbb9f7fb128204104b6f"
+      },
+      "C/COUNTER.APP": {
+        "bytes": 4456,
+        "sha256": "08e6b88b68e506cd82c5cc0439ae5bffca2840077ff33f16f2d773c3e57dbb52"
+      },
+      "C/DIALOG.APP": {
+        "bytes": 7972,
+        "sha256": "d56c79c74d8041a74fe5034c017051649ca21c03bbd092da8169dd888d1b3242"
+      },
+      "C/FILES.APP": {
+        "bytes": 21113,
+        "sha256": "b2c6c10a8d4cc83bcbab1bd8a6b5934cb71059ea9bd76616748835708c19d897"
+      },
+      "C/PANEL.APP": {
+        "bytes": 7284,
+        "sha256": "00114a3ba0430eaae8f635ddaec470f697c291c4987802a04d8073e7fabdff35"
+      },
+      "GEMSYS.BIN": {
+        "bytes": 196462,
+        "sha256": "783ed50b62b8cce3f2b04e18c81ed9803b9d4f03c6f461a251d1da6e6c427076"
+      }
+    },
+    "applications": {
+      "panel": {
+        "bytes": 7284,
+        "sha256": "00114a3ba0430eaae8f635ddaec470f697c291c4987802a04d8073e7fabdff35",
+        "span": 66206,
+        "relative_manifest": "bitmap-console/apps/panel/app.json"
+      },
+      "counter": {
+        "bytes": 4456,
+        "sha256": "08e6b88b68e506cd82c5cc0439ae5bffca2840077ff33f16f2d773c3e57dbb52",
+        "span": 65776,
+        "relative_manifest": "bitmap-console/apps/counter/app.json"
+      },
+      "files": {
+        "bytes": 21113,
+        "sha256": "b2c6c10a8d4cc83bcbab1bd8a6b5934cb71059ea9bd76616748835708c19d897",
+        "span": 69527,
+        "relative_manifest": "bitmap-console/apps/files/app.json"
+      },
+      "dialog": {
+        "bytes": 7972,
+        "sha256": "d56c79c74d8041a74fe5034c017051649ca21c03bbd092da8169dd888d1b3242",
+        "span": 67502,
+        "relative_manifest": "bitmap-console/apps/dialog/app.json"
+      },
+      "calc": {
+        "bytes": 6811,
+        "sha256": "3baf531ca65a87b41b13bb00279ce2b62a7ed1c91312dbb9f7fb128204104b6f",
+        "span": 65778,
+        "relative_manifest": "bitmap-console/apps/calc/app.json"
+      }
+    },
+    "component_segments": [
+      {
+        "address": 786432,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 917504,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 983040,
+        "bytes": 37132,
+        "executable": false
+      },
+      {
+        "address": 1048576,
+        "bytes": 23372,
+        "executable": true
+      },
+      {
+        "address": 851968,
+        "bytes": 4854,
+        "executable": false
+      }
+    ],
+    "component_zero_fill": [
+      {
+        "address": 856822,
+        "size": 12855,
+        "writable": true
+      }
+    ],
+    "dialog_state_bytes": 1073,
+    "selector_cases": {
+      "pre_window": true,
+      "temporary_move_close": true,
+      "open": true,
+      "save_name": true,
+      "edited_cancel": true,
+      "filter": true,
+      "scroll": true,
+      "path_correction": true,
+      "parent": true,
+      "counter_progress": true,
+      "shell_disk": true,
+      "exposure_pixels": true,
+      "menu_policy": true,
+      "cooperative_stop": true,
+      "relaunch": true,
+      "heap_return": true
+    },
+    "integration": {
+      "profile": "standard-dialogs",
+      "full_capacity": true,
+      "pre_window_alert": true,
+      "repeat_apply": true,
+      "text": "Exec816abc",
+      "borrowed_repair": true,
+      "menu_handoff": true,
+      "move_handoff": true,
+      "covered_form": true,
+      "counter_progress": true,
+      "shell_disk": true,
+      "close_while_waiting": true,
+      "stop_while_waiting": true,
+      "relaunches": 3,
+      "heap_return": true,
+      "files_smoke": true,
+      "calculator": 19,
+      "exit_while_waiting": true,
+      "heap_baseline": [
+        2316784,
+        65536,
+        2316784,
+        2031616
+      ]
+    },
+    "stack_shortfall": {
+      "path": "build/file-selector/demo-ready/file-selector-results.json",
+      "sha256": "6be8248641ca5f52444e7f930645ed9df73728625c7bd8161b77bdc3e688fe9d",
+      "status": "fail",
+      "tier": "development",
+      "ordinary_minimum_margin": 110
+    },
+    "source_inputs": {
+      "platform/altirraos/memory-4m.json": "5fe45db394d27bfeeecc5454ddfdce69f5a3d4800ae8282ce8436acb5b3394cc",
+      "abi/c-program.json": "4d0ba004b41e5770e495aff4366919768143b1aa222e3781e56ddc563b1410aa",
+      "c/calypsi/aes-fsel.c": "0855c6a47a3d705638f6e7ea7f64b5a7776a486e45d574a5107d3d0b19bd55df",
+      "c/calypsi/aes-fsel-private.h": "4c73f5c5c2ff87bccb50d898df1ae84bef656f4c6997c78bc2a058b047807c28",
+      "c/calypsi/file-list.c": "46a91592d3c8580dc1f0e852bf39c610b5a5201278b0323f315d3f751be5103a",
+      "c/calypsi/file-list.h": "2c707e71c3de44864ed6525b1a55c0c25a6867017215256481db4e3da8bb7969",
+      "c/calypsi/aes-form.c": "c5d00b2279c55df48699b9c826b62ac8d9f775660a1094161798dba78942f01b",
+      "c/calypsi/aes-events.c": "50496292bfd93084a62b81e46e6ca84d20a15c451347f46b1ff2a329755898b9",
+      "examples/gem-dialog/dialog.c": "55c878d03177c79279e00eee3f82719969b271e0403d90ef0c8493c66cd5b6fb",
+      "examples/gem-dialog/dialog.h": "4a55d141fab2bee4889e694d6af992abc9ec2ce19b7db85aacc90d3b06e68b03",
+      "tools/test_file_selector_demo.py": "d1737aab2529aa622ff9a9981cceff7be4c5ec8280d1ac336b216bd09270d0a9",
+      "tools/standard_dialog_oracle.py": "ab4b2ec5e5df1c8da6e0c0dd581c574efedf031a7ff5a3084c570d30a7834642",
+      "tools/gem_desktop_oracle.py": "a64cc6055583e0fa399c9bc1cce39b3b5f712ec52c82b282b23bdff4e8b8f1ef",
+      "tools/build_gem_desktop.py": "73ca72c5a2b6dbe486fc6427b72a78b3a550a218809fd991dfeda035c170fb3c",
+      "tools/build_demo.py": "879fc78623e9f375772df7d36d39cbfc784f241e76ee5228f25273b184d0277f",
+      "docs/gem-desktop-distribution.txt": "56def142bb61647df16401a02b10347139ee4720943e7ae2ee4b166375b3d782"
+    },
+    "distribution_checks": {
+      "files": 19,
+      "payload_checksums": 18,
+      "source_inputs": 144,
+      "all_match": true,
+      "unchanged_c_payloads": true
+    },
+    "scene_checks": 28
   }
 }

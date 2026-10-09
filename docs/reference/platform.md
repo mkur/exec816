@@ -136,8 +136,8 @@ loading and runtime. Persistent Exec reservations are packed below it:
 | `$0B00–$12FF` | Public Task DPs |
 | `$1300–$13FF` | Idle DP |
 | `$1400–$23FF` | Resident platform adapter, including segment padding |
-| `$2400–$603F` | Root, kernel, worker and idle stacks, including guards |
-| `$6040–$7FFF` | 8,128 unreserved bytes after startup |
+| `$2400–$60DF` | Root, kernel, worker and idle stacks, including guards |
+| `$60E0–$7FFF` | 7,968 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
 placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
@@ -150,7 +150,7 @@ The root stack starts at `$2410`, the kernel stack at `$2A30`; each reserves
 1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
 are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
 All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
-slots 1–5 have 1,280-byte stacks, slots 6–7 have 2,560 bytes and private idle
+slots 1–5 have 1,312-byte stacks, slots 6–7 have 2,560 bytes and private idle
 has 512 bytes. Every stack retains checked bounds and an internal 256-byte
 interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
@@ -172,11 +172,15 @@ delta 0, slots 6 and 7 +1,536 bytes each. The subsequent
 [application headroom change](../history/gem-application-stack-headroom.md) adds
 256 bytes to each of slots 1–5 (1,280 bytes total), with zero fixed-runtime or
 idle growth. It moves the boot arena and reduces the loader reservation from
-5 KiB to 3 KiB; the linker still bounds its emitted payload. Runtime reserves
-57,408 bytes including OS ranges; initialization reserves 59,456 while the
-manifest is live. Loading reserves 50,800 bytes (1,792 fewer than before).
-The guarded idle stack ends at `$6040` exclusive, leaving 176 bytes before staging. Pools may not
-overlap any part of the boot arena, even when phase lifetimes differ.
+5 KiB to 3 KiB; the linker still bounds its emitted payload. The subsequent
+[file-selector headroom change](../history/file-selector.md#fsel4-loadable-consumer-and-of816-package)
+adds 32 bytes to each ordinary pool (160 bytes total), fitting the existing gap
+before staging. Root, kernel, service-pool and idle sizes are unchanged, as are
+the boot arena, guards and alignment. Runtime now reserves 57,568 bytes including
+OS ranges; initialization reserves 59,616 while the manifest is live. Loading
+reserves 50,832 bytes. The guarded idle stack ends at `$60E0` exclusive, leaving
+16 bytes before staging. Pools may not overlap any part of the boot arena,
+even when phase lifetimes differ.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) combines nine
 holes into one for eight Tasks, with zero change in total reservations or

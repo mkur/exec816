@@ -1,11 +1,11 @@
 # Implementation plans
 
-The proposed [standard GEM file selector design](gem4xe/file-selector-design.md)
+The [standard GEM file selector design](gem4xe/file-selector-design.md)
 covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and the
 standard-dialog lifecycle. The
 [FSEL1–FSEL4 plan](gem4xe/file-selector-implementation-plan.md) orders shared
 helpers, hosted interaction, standard bindings and the packaged example.
-FSEL1–FSEL3 pass development checks; FSEL4 remains pending.
+FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP walkthrough.
 
 The [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
 [FD1–FD4 plan](gem4xe/standard-dialogs-implementation-plan.md) cover caller-local

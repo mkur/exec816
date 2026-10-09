@@ -8,10 +8,12 @@ struct DialogApp {
     volatile WORD ready,phase;
     volatile ULONG accepted,paints,interruptions;
     WORD message[8],work[4],input[11],output[57];
-    OBJECT home[6],edit[4],menu[9];
+    OBJECT home[10],edit[4],menu[11];
     TEDINFO ted;
     char text[32];
     WORD armed,down;
+    char path[128],file[13],directory[40],selection[40];
+    WORD fileButton,fileResult;
 };
 #pragma pack(pop)
 WORD DialogRun(struct DialogApp *);

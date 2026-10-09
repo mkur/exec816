@@ -355,8 +355,12 @@ C component ABI.
 `C:DIALOG.APP`. Close one existing GEM application, then run `RUN C:DIALOG.APP`.
 Continue accepts an alert before the example owns a window. Edit (E) opens a
 compiled-in editable tree; Apply repeats `form_do` inside START/FINISH and Done
-returns to the application. Alert (A) borrows its existing window. The Dialog
-menu and Quit (Q) remain ordinary application policy.
+returns to the application. Alert (A) borrows its existing window. Open (O) and
+Save (S) invoke the standard file selectors and display the returned selection;
+Save does not write a file. `SYS:SELECT/` has multiple pages and a subdirectory
+for trying filters and navigation. `RUN C:DIALOG.APP SELECT` also opens the
+selector before the application owns a window. The Dialog menu and Quit (Q)
+remain ordinary application policy.
 
 Use `form_center`, `form_dial(FMD_START, ...)`, one or more `form_do` calls and
 `form_dial(FMD_FINISH, ...)` for an explicit session. An isolated `form_do` or

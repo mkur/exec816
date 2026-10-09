@@ -39,7 +39,7 @@ def symbols(bridge,program,directory,name,identity):
     return found[0]['symbols']
 
 def scene_symbols(bridge,program,directory,title,bounds):
-    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc',b'Dialog example':'dialog',b'Alert':'dialog'}[title]
+    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc',b'Dialog example':'dialog',b'Alert':'dialog',b'File selector':'dialog'}[title]
     from generate_aes_server import ABI,layout
     records=layout();request=records['Request'];view=records['WindowView']
     number=lambda raw,at,size: int.from_bytes(raw[at:at+size],'little')

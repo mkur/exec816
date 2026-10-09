@@ -3,6 +3,7 @@ import ast,struct
 from native_program import ROOT
 from generate_aes_server import expected_layout
 from control_panel_oracle import draw
+from file_selector_model import FORM_SELECTOR
 from test_desktop_presentation import rectangle
 from gem_render_oracle import PENS
 
@@ -11,6 +12,10 @@ def paint(b,sy,r,bounds):
     number=lambda at,size=2:int.from_bytes(b.memdump(at,size),'little')
     c=sy['__aes_context'];layout=dict(expected_layout())
     session=number(c+layout['C context form'],4)
+    if session and number(session+FORM_SELECTOR,4):
+        from file_selector_oracle import paint as selector
+        selector(b,c,r)
+        return
     tree=number(session,4) if session else sy['GEMDialog']+184
     objects=[]
     for i in range(32):

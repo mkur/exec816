@@ -34,20 +34,21 @@ class CapacityPackaging(unittest.TestCase):
         m=layout(upper_table=True)
         pools=configure(m,8)
         self.assertEqual(len(pools),9)
-        self.assertEqual([p['stack_bytes'] for p in pools],[1536]+[1280]*5+[2560]*2+[512])
+        self.assertEqual([p['stack_bytes'] for p in pools],[1536]+[1312]*5+[2560]*2+[512])
         self.assertTrue(all(p['dp']%256==0 for p in pools))
         spans=m['runtime_reservations']
         self.assertTrue(all(a['address']+a['size']<=b['address'] for a,b in zip(spans,spans[1:])))
         c=storage(m)
         self.assertEqual((c['CAPACITY'],c['IDLE'],c['PUBLIC_CONTEXT_BYTES'],c['METADATA_BYTES']),(8,8,512,1280))
-        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],26688)
-        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],20080)
+        self.assertEqual(m['bank_zero_budget']['runtime_excluding_os'],26848)
+        self.assertEqual(m['bank_zero_budget']['loading_excluding_os'],20112)
         self.assertTrue(all(p['dp_reserved_bytes']==256 for p in pools))
+        self.assertEqual(m['regions']['staging'][0]-(pools[-1]['stack_base']+pools[-1]['stack_bytes']+16),16)
 
     def test_compact_maps_preserve_all_stack_reservations(self):
         for capacity,bases,total,loading in (
             (4,[0x2410,0x3050,0x3670,0x3c90,0x42b0],51392,52080),
-            (8,[0x2410,0x3050,0x3570,0x3a90,0x3fb0,0x44d0,0x49f0,0x5410,0x5e30],57408,50800)):
+            (8,[0x2410,0x3050,0x3590,0x3ad0,0x4010,0x4550,0x4a90,0x54b0,0x5ed0],57568,50832)):
             with self.subTest(capacity=capacity):
                 m=layout(upper_table=capacity==8)
                 pools=configure(m,capacity)
@@ -60,7 +61,7 @@ class CapacityPackaging(unittest.TestCase):
                 self.assertEqual(budget['loading_including_os'],loading)
                 self.assertEqual(sum(r['size'] for r in m['runtime_reservations']),total)
                 self.assertEqual(m['regions']['kernel-stack'],[0x2a20,0x3040])
-                end = 0x48c0 if capacity == 4 else 0x6040
+                end = 0x48c0 if capacity == 4 else 0x60e0
                 self.assertEqual(m['runtime_free_ranges'],[dict(address=end,size=0x8000-end)])
                 phases=m['phase_reservations']
                 self.assertEqual(sum(r['size'] for r in phases['loading']),loading)
@@ -119,7 +120,7 @@ class CapacityPackaging(unittest.TestCase):
         for override in (None,512,1024):
             m=layout(upper_table=True)
             pools=configure(m,8,override)
-            expected=[1280]*5+[2560]*2 if override is None else [override]*7
+            expected=[1312]*5+[2560]*2 if override is None else [override]*7
             self.assertEqual([p['stack_bytes'] for p in pools[1:8]],expected)
             self.assertEqual(m['stack_overrides'],dict(worker=override,idle=None))
             delta=bank_zero_delta(m)

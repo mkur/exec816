@@ -2,7 +2,8 @@
 
 [GEM integration](README.md) · [Implementation plan](file-selector-implementation-plan.md)
 
-Status: FSEL1–FSEL3 pass development checks. FSEL4 remains pending; see the [execution record](../../history/file-selector.md).
+Status: FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP
+walkthrough. See the [execution record](../../history/file-selector.md).
 
 Add `fsel_input` and `fsel_exinput` as synchronous, caller-local AES routines.
 Reuse Files' bounded directory snapshot, viewport and path handling, and the

@@ -307,7 +307,7 @@ without `--desktop`, the standard shell/prime demo remains selected. The
 [distribution guide](../desktop-distribution.txt) describes ST/port 1 setup,
 interaction and the outstanding timing limits.
 
-`DESKAPP` owns an ordinary 1,280-byte-stack Task and one 176×120 widget client.
+`DESKAPP` owns an ordinary 1,312-byte-stack Task and one 176×120 widget client.
 Its compiled-in Control Panel has a toggle, two sibling radio buttons, Apply
 (default/momentary), Cancel, a disabled button and a status label. It consumes
 semantic widget events, reads authoritative state, and patches only the label.
