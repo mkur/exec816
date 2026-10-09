@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 7,
+  "version": 8,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -83,6 +83,7 @@
     "objc_edit",
     "CreateDir",
     "Rename",
-    "form_dial"
+    "form_dial",
+    "form_do"
   ]
 }

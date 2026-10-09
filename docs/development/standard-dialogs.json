@@ -284,6 +284,153 @@
         "Initial fixture link exceeded the two code banks.",
         "Initial queue assertion failed to allow an independently queued GUI redraw; repaired the fixture to check ordinary-message FIFO while preserving GUI provenance."
       ]
+    },
+    "FD2": {
+      "status": "pass",
+      "report": "build/standard-dialogs/fd2-checked/results.json",
+      "build": "build/standard-dialogs/fd2-final",
+      "checks": 194,
+      "pixels": 34560,
+      "paced_typing": {
+        "offered": 3,
+        "captured": 3,
+        "routed": 3,
+        "consumed": 3,
+        "inserted": 3
+      },
+      "bounded_burst": {
+        "offered": 8,
+        "captured": 8,
+        "routed": 8,
+        "consumed": 8,
+        "inserted": 3
+      },
+      "physical_forms": {
+        "two_callers": true,
+        "ordinary_stacks": true,
+        "editing": true,
+        "radio": true,
+        "disabled": true,
+        "outside_release": true,
+        "escape_cancel": true,
+        "temporary_move": [
+          8,
+          8
+        ],
+        "repeated_form_do": true,
+        "aespb": true,
+        "borrowed_move": "interrupted and preserved",
+        "borrowed_close": "interrupted and preserved"
+      },
+      "stack": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 462,
+          "remaining_above_floor": 818
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1280,
+          "peak": 699,
+          "remaining_above_floor": 325
+        },
+        "2": {
+          "base": 13680,
+          "bytes": 1280,
+          "peak": 782,
+          "remaining_above_floor": 242
+        },
+        "3": {
+          "base": 14992,
+          "bytes": 1280,
+          "peak": 181,
+          "remaining_above_floor": 843
+        },
+        "4": {
+          "base": 16304,
+          "bytes": 1280,
+          "peak": 18,
+          "remaining_above_floor": 1006
+        },
+        "5": {
+          "base": 17616,
+          "bytes": 1280,
+          "peak": 18,
+          "remaining_above_floor": 1006
+        },
+        "6": {
+          "base": 18928,
+          "bytes": 2560,
+          "peak": 702,
+          "remaining_above_floor": 1602
+        },
+        "7": {
+          "base": 21520,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24112,
+          "bytes": 512,
+          "peak": 52,
+          "remaining_above_floor": 204
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "c_elf_sha256": "db44a18b33ca0c03ebe1e2b2dd537ec1df78b9db951c1f42b1e175bf5cd9f533",
+      "fault_source_sha256": "ecc4e70ce6abff746cd6c3104f306a44f8eaa80cd9b53129aa54fe5c28bfb00c",
+      "segments": [
+        {
+          "address": 786432,
+          "bytes": 65536
+        },
+        {
+          "address": 917504,
+          "bytes": 65536
+        },
+        {
+          "address": 983040,
+          "bytes": 37132
+        },
+        {
+          "address": 1048576,
+          "bytes": 11787
+        },
+        {
+          "address": 851968,
+          "bytes": 3872
+        }
+      ],
+      "host_tests": 422,
+      "host_skips": 4,
+      "session_live_bytes": 311,
+      "session_heap_bytes": 312,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "public": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "excluded_trials": [
+        "Fixture compilation hit a Calypsi member-address cast ICE; used the established typed TEDINFO pointer expression, without changing the compiler pin.",
+        "Physical fixture initially aimed outside the temporary closer; corrected its coordinate.",
+        "Synthetic durable-loss injection omitted its wake; added an independent physical key to wake the consumer before the held sequence releases."
+      ]
     }
   }
 }

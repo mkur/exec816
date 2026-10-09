@@ -10,5 +10,11 @@ struct ExecAESForm {
     WORD originalX, originalY, window;
     UBYTE ownWindow, ownWorkstation, ready, running, ownView;
     WORD workIn[11], workOut[57];
+    OBJECT paper, focusLine;
+    WORD count, focus, oldFocus, armed, pressedState, edit, index, down;
+    WORD message[8], saved[GEM_OBJECT_LIMIT];
+    WORD mx, my, buttons, key;
 };
+WORD ExecAESFormPaint(struct ExecAESContext *,WORD);
+WORD ExecAESFormRun(struct ExecAESContext *,WORD);
 #endif

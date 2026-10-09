@@ -391,8 +391,25 @@ unconsumed editing key on a field. `form_button` focuses EDITABLE without
 toggling SELECTED; it reports the next object and
 unconsumed key. These are deliberate departures from modal GEM form handling.
 The application tracks press/cancel and redraws changed objects. It continues
-handling WM_* messages in `evnt_multi`. `form_do` and modal screen ownership
-are not implemented.
+handling WM_* messages in `evnt_multi`.
+
+`form_do(tree, start)` (opcode 50, 1/1/1/0) now supplies a synchronous,
+caller-local loop. It reuses the editor and form helpers, waits through the
+existing event engine, and takes UPDATE only for painting. Zero start chooses
+an editable field, then a button; Tab/Shift-Tab traverses controls and Up/Down
+traverses fields. A press previews selection; an inside release commits and an
+outside release or Escape cancels it. Entry/loss waits for release before a new
+press. No motion/hover feedback is promised. Return activates DEFAULT; Space
+activates a focused button. Accepted EXIT returns its index with SELECTED set.
+
+A direct call creates and finishes an implicit session. START permits repeated
+calls on the same tree until FINISH. Temporary windows accept movement and
+close locally. Borrowed move/size/scroll/close, menu and ordinary application
+messages interrupt with **-1 / AES_PENDING**, preserving the exact message for
+the next wait. Check for a negative result before indexing the tree. Temporary
+close returns -1 / AES_OK; failures also return -1. GUI provenance distinguishes
+redraws from ordinary WM-shaped messages. Recursive forms, TOUCHEXIT,
+double-click result bits and desktop-wide modal ownership are unsupported.
 
 `form_dial` now provides START/FINISH host lifetime (opcode 51, 9/1/0/0).
 START borrows a shown application window or creates a temporary ordinary

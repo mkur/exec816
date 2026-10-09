@@ -2,7 +2,7 @@
 
 [GEM integration](README.md) · [Implementation plan](standard-dialogs-implementation-plan.md)
 
-Status: FD1 host lifetime is implemented; `form_do` and `form_alert` remain
+Status: FD1–FD2 host lifetime and `form_do` are implemented; `form_alert` remains
 planned. The [AES contract](../../reference/aes.md) records current behavior.
 
 Add bounded synchronous GEM dialogs on top of the existing caller-local object,

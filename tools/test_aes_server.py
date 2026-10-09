@@ -385,6 +385,9 @@ ENDMODULE
 
             try:
                 before = None
+                if suite=='forms':
+                    from test_aes_forms import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if borrowed:
                     from test_display_borrow import physical
                     before = lambda b: physical(b, program, foreign, report)
