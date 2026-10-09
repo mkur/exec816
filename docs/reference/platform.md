@@ -73,7 +73,7 @@ Count guards, alignment and unused capacity, not only live payload bytes.
 The build's `memory.json` is authoritative for `runtime_reservations`,
 `task_pools` and `bank_zero_budget`. Loading and runtime lifetimes differ:
 loader/staging storage may be reused only after adoption retires every live
-bootstrap frame and callback. The manifest at `$6000–$67FF` remains protected
+bootstrap frame and callback. The manifest at `$6500–$6CFF` remains protected
 through memory adoption, Task initialization and boot-setting capture. The
 adapter publishes `M_RETIRED=1` at `startup_complete`, before Task dispatch;
 only then is that entire range reusable. Failed startup does not publish it.
@@ -135,8 +135,8 @@ loading and runtime. Persistent Exec reservations are packed below it:
 | `$0B00–$12FF` | Public Task DPs |
 | `$1300–$13FF` | Idle DP |
 | `$1400–$23FF` | Resident platform adapter, including segment padding |
-| `$2400–$5B3F` | Root, kernel, worker and idle stacks, including guards |
-| `$5B40–$7FFF` | 9,408 unreserved bytes after startup |
+| `$2400–$603F` | Root, kernel, worker and idle stacks, including guards |
+| `$6040–$7FFF` | 8,128 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
 placement. Kernel DP is `$0A00`; public slot `i` owns `$0B00+i*$100`, and idle
@@ -149,12 +149,12 @@ The root stack starts at `$2410`, the kernel stack at `$2A30`; each reserves
 1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
 are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
 All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
-slots 1–5 have 1,024-byte stacks, slots 6–7 have 2,560 bytes and private idle
+slots 1–5 have 1,280-byte stacks, slots 6–7 have 2,560 bytes and private idle
 has 512 bytes. Every stack retains checked bounds and an internal 256-byte
 interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
-Temporary staging occupies `$5BF0–$5FFF`, the manifest `$6000–$67FF`, and the
-loader `$6800–$7BFF`. The manifest permits 96 extents within its existing
+Temporary staging occupies `$60F0–$64FF`, the manifest `$6500–$6CFF`, and the
+loader `$6D00–$78FF`. The manifest permits 96 extents within its existing
 2,048-byte reservation (1,056 bytes at the 64-bank profile). The loader
 retains byte-sized extent indexes; build checks also bound manifest storage.
 This capacity increase adds **0 fixed, 0 per-Task and 0 private-idle** reserved
@@ -167,10 +167,14 @@ reusable only at `startup_complete`; it is not registered with the general heap.
 
 The [larger-stack development record](../development/larger-task-stacks.json)
 accounts for the 3,072-byte increase over the compact eight-Task map: fixed
-delta 0, slots 6 and 7 +1,536 bytes each, all other pools unchanged. Runtime
-reserves 56,128 bytes including OS ranges; initialization reserves 58,176
-while the manifest is live, and loading remains 52,592. The guarded idle stack
-ends at `$5B40` exclusive, leaving 176 bytes before staging. Pools may not
+delta 0, slots 6 and 7 +1,536 bytes each. The subsequent
+[application headroom change](../history/gem-application-stack-headroom.md) adds
+256 bytes to each of slots 1–5 (1,280 bytes total), with zero fixed-runtime or
+idle growth. It moves the boot arena and reduces the loader reservation from
+5 KiB to 3 KiB; the linker still bounds its emitted payload. Runtime reserves
+57,408 bytes including OS ranges; initialization reserves 59,456 while the
+manifest is live. Loading reserves 50,800 bytes (1,792 fewer than before).
+The guarded idle stack ends at `$6040` exclusive, leaving 176 bytes before staging. Pools may not
 overlap any part of the boot arena, even when phase lifetimes differ.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) combines nine

@@ -78,8 +78,8 @@ class MemoryRelocationTests(unittest.TestCase):
         self.assertEqual([p['dp'] for p in pools],
                          [0x0b00+i*256 for i in range(9)])
         self.assertEqual([p['stack_base'] for p in pools],
-                         [0x2410, 0x3050, 0x3470, 0x3890, 0x3cb0,
-                          0x40d0, 0x44f0, 0x4f10, 0x5930])
+                         [0x2410, 0x3050, 0x3570, 0x3a90, 0x3fb0,
+                          0x44d0, 0x49f0, 0x5410, 0x5e30])
 
     def test_aperture_reserved_during_loading_and_runtime(self):
         for capacity in (4, 8):
@@ -88,7 +88,7 @@ class MemoryRelocationTests(unittest.TestCase):
                 configure(memory, 8)
             validate_memory(memory)
             self.assertEqual(memory['regions']['vbxe-aperture'], [0x8000, 0x9000])
-            self.assertEqual(memory['regions']['staging'], [0x5bf0, 0x6000])
+            self.assertEqual(memory['regions']['staging'], [0x60f0, 0x6500])
             spans = memory['runtime_reservations']
             self.assertEqual(sum(r['size'] for r in spans if r['name'] == 'vbxe-aperture'), 4096)
             for name, (start, end) in memory['regions'].items():
@@ -118,7 +118,7 @@ class MemoryRelocationTests(unittest.TestCase):
     def test_retirement_separates_loading_and_runtime_reservations(self):
         from ports_budget import current
         budgets = current()
-        for capacity, total, saving, loading in (('four',51392,432,336),('eight',56128,-736,544)):
+        for capacity, total, saving, loading in (('four',51392,432,2384),('eight',57408,-2016,2336)):
             before, after = budgets['before'][capacity], budgets['after'][capacity]
             self.assertEqual(after['runtime_including_os'], total)
             self.assertEqual(after['runtime_including_os']-before['runtime_including_os'], -6144-saving)
@@ -126,13 +126,14 @@ class MemoryRelocationTests(unittest.TestCase):
             per_task = 32 if capacity == 'four' else 256
             expected = [v-per_task for v in before['public']]
             if capacity == 'eight':
+                for slot in range(1,6): expected[slot] += 256
                 expected[6] += 1536
                 expected[7] += 1536
             self.assertEqual(after['public'], expected)
             self.assertEqual(after['idle'], before['idle']-per_task)
         m = layout(upper_table=True)
         configure(m,8)
-        self.assertEqual(m['regions']['manifest'], [0x6000,0x6800])
+        self.assertEqual(m['regions']['manifest'], [0x6500,0x6d00])
         self.assertNotIn('manifest', [r['name'] for r in m['runtime_reservations']])
         self.assertEqual(m['startup_retirement']['address'], m['constants']['RETIRED'])
         self.assertEqual(m['constants']['RETIRED'], 0x0923)

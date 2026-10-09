@@ -4,11 +4,11 @@
 [Stack checks](../../contributing/stack-checks.md) ·
 [Task capacity](../../architecture/task-capacity.md)
 
-Status: implementation in progress. This follows the completed editable-dialog
+Status: SH1 and SH2 complete at the development tier; SH3 is pending. This follows the completed editable-dialog
 milestone; the existing stack and Task contracts are sufficient for this work.
 
 The user explicitly permits larger stacks and prefers them to a major refactor.
-SH2 will enlarge the five ordinary pools to 1,280 bytes and repack the temporary
+SH2 enlarges the five ordinary pools to 1,280 bytes and repack the temporary
 boot arena. A small renderer experiment saved 96 nested frame bytes; it is not
 retained. Existing renderer ownership and allocation remain unchanged. See the
 [execution record](../../history/gem-application-stack-headroom.md).

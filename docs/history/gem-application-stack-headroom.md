@@ -55,10 +55,52 @@ is retained. SH1 adds **0 fixed, 0 per-public-Task and 0 idle bank-zero bytes**.
 
 ## SH2 — ordinary pools and boot arena
 
-Implementation and validation are in progress. Ordinary slots 1–5 use 1,280
+Ordinary slots 1–5 use 1,280
 bytes; root, kernel, large worker and idle sizes remain unchanged. Guards and
 the 256-byte interrupt reserve are retained. The boot arena moves above the
-enlarged stacks and the loader reservation shrinks from 5 KiB to 3 KiB.
+enlarged stacks and the loader reservation shrinks from 5 KiB to 3 KiB. Its
+1,874-byte emitted payload leaves 1,198 bytes spare, enforced by packaging.
+
+Compared with ED3, reserved bank-zero deltas are **0 fixed runtime, +256 bytes
+for each of public slots 1–5, 0 for slots 0/6/7, and 0 private idle**. This
+includes DP, guards, alignment and unused capacity. Eight-Task runtime grows
+1,280 bytes to 57,408 including OS ranges; initialization grows to 59,456.
+Loading falls by 1,792 bytes to 50,800: the bootstrap slot gains 256 while the
+loader loses 2,048. Four-Task runtime remains 51,392; its loading reservation
+falls 2,048 to 52,080. Post-startup eight-Task free space is `$6040–$7FFF`
+(8,128 bytes), with the existing 176-byte gap before boot staging.
+
+No application context, production upper-RAM/heap or VRAM allocation grows.
+The resident C payload is byte-for-byte unchanged at 164,951 bytes. No compiler
+pin, C ABI, interrupt protocol or driver policy changes. Rebuild the platform
+image and loader together; do not mix the old and new memory maps.
+
+Diagnostic capture now borrows space from the generated retired-manifest
+address, with checks against live stacks and the helper itself. The OF816
+caller-return probe also derives its address from the loader reservation.
+The G5 rendezvous word moves out of `$6000` into fixture-owned upper RAM;
+its obsolete hook replacements now fail explicitly if their source boundaries
+move. Current fixture map checks use the platform profile; historical evidence
+is preserved. Composed DOS/console fixtures require 4 KiB of upper global
+storage (2 KiB more than their old default), independent of production stacks.
+
+Development checks pass: 421 host tests with four historical skips; all 12
+OF816 loading/return/payload/feedback cases; optimized larger-stack physical
+I/O coexistence (6,798 checks), checked-floor rejection before guard damage,
+and G5 rendering/peer/physical-SDFS overlap (260 checks). The latter checks
+pixels, context/DP restoration, ownership, aperture and OS return. A focused
+4,098-byte capture-buffer probe checks two chunks, CPU/borrowed-RAM restoration,
+guards and OS return. The legacy full G4 runner expects the removed `commonKind`
+symbol and is not counted as passing; its unrelated fixture drift is recorded
+in the evidence. This is
+focused development coverage, not a full raw/optimized qualification matrix.
+
+The bounded Path edit/exposure/cancel replay passes on the enlarged build,
+including exact pixels, shell EXIT, guards, ownership and OS return. Its smallest
+ordinary-pool watermark is **309 bytes**, versus 52 in the corresponding baseline
+interaction. Files selected-code and IRQ-entry margins are 339 and 333 bytes.
+All ordinary pools exceed 128 bytes in both the fill and selected-S observations.
+This is a scenario gate; full Files/calculator validation follows in SH3.
 
 ## SH3 — integrated desktop
 

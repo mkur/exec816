@@ -2,6 +2,7 @@
 """G3 emitted display ownership, VRAM, completion and recovery checks."""
 import argparse
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_vdi import build_display_probe
@@ -43,7 +44,7 @@ def run(output,mode,cases=None,replay=False,production=False):
         symbols=foreign['symbols']
         memory=program['build']['memory']
         report['bank_zero_delta']=dict(fixed=0,per_task=[0]*8,private_idle=0)
-        before=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        before=current_task_memory()
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[key]==before[key],'G3 changed '+key)
         for name in cases or CASES:

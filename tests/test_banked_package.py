@@ -93,7 +93,7 @@ class BankedPackageTests(unittest.TestCase):
             'zero_fill':[]}
         blob,head,spans=self.make(image)
         self.assertEqual(len(spans),96)
-        self.assertEqual(self.memory['regions']['manifest'],[0x6000,0x6800])
+        self.assertEqual(self.memory['regions']['manifest'],[0x6500,0x6d00])
         self.assertLessEqual(len(head),2048)
         ram=model(blob,self.memory,head)
         self.assertEqual([ram[0x10000+i*2] for i in range(96)],list(range(96)))
@@ -282,7 +282,7 @@ class BankedPackageTests(unittest.TestCase):
             elif mutation == 'missing':
                 changed = changed[:first]
             elif mutation == 'manifest':
-                i = next(i for i,(a,_) in enumerate(changed) if a == 0x6000)
+                i = next(i for i,(a,_) in enumerate(changed) if a == self.memory['constants']['MANIFEST'])
                 a,d = changed[i]; changed[i] = (a, bytes([d[0]^1])+d[1:])
             else:
                 a,d = changed[first]; d = bytearray(d)

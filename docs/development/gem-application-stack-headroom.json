@@ -584,10 +584,478 @@
       "tests": 2,
       "status": "pass"
     },
-    "trace_sha256": "1bd7e9662fd6c4ef42ac44c3ea625a0c0e4bcf98a67fa71c0adfa3a3bd502254"
+    "trace_sha256": "1bd7e9662fd6c4ef42ac44c3ea625a0c0e4bcf98a67fa71c0adfa3a3bd502254",
+    "commit": "d7735c3"
   },
   "SH2": {
-    "status": "in-progress"
+    "status": "complete",
+    "bank_zero_delta": {
+      "fixed_runtime": 0,
+      "per_public_task": [
+        0,
+        256,
+        256,
+        256,
+        256,
+        256,
+        0,
+        0
+      ],
+      "private_idle": 0,
+      "runtime": 1280,
+      "initialization": 1280,
+      "loading": -1792,
+      "four_task_loading": -2048
+    },
+    "boot": {
+      "before": {
+        "staging": [
+          23536,
+          24576
+        ],
+        "manifest": [
+          24576,
+          26624
+        ],
+        "loader": [
+          26624,
+          31744
+        ]
+      },
+      "after": {
+        "staging": [
+          24816,
+          25856
+        ],
+        "manifest": [
+          25856,
+          27904
+        ],
+        "loader": [
+          27904,
+          30976
+        ]
+      },
+      "loader_payload_bytes": 1874,
+      "loader_reserved_bytes": 3072,
+      "loader_spare_bytes": 1198
+    },
+    "upper_memory_delta": {
+      "production_reserved": 0,
+      "context": 0,
+      "heap": 0,
+      "fixture_global_arena": 2048,
+      "diagnostic_rendezvous_word": 2
+    },
+    "resident_c_payload_unchanged": true,
+    "resident_c_payload_bytes": 164951,
+    "checks": {
+      "loading": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/loading/results.json",
+        "sha256": "7f079d0e3fe43c304948aebbaca129d1376f5e757142408b02d66171ae30ca32",
+        "cases": [
+          "return-d0-auto",
+          "return-b0-auto",
+          "return-b0-manual",
+          "return-d0-masked",
+          "native-payload",
+          "small",
+          "exact",
+          "remainder",
+          "zero",
+          "bad-record",
+          "incomplete",
+          "bounds"
+        ]
+      },
+      "coexistence": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/coexistence/results.json",
+        "sha256": "874ec1d1fb0f105e280076f7dd26c0042060506b11a9c59a797c49917a808fdc",
+        "checks": [
+          6798
+        ],
+        "native_irq_count": 767,
+        "native_nmi_count": 73,
+        "runtime_status": 0
+      },
+      "checked-floor": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/checked-floor/results.json",
+        "sha256": "a738dfdd56eb12c93ac6ca1833549a543c17f5b6bec2737841a98e91c2e87a16",
+        "checks": [
+          0
+        ],
+        "native_irq_count": 0,
+        "native_nmi_count": 1,
+        "runtime_status": 1
+      },
+      "concurrent": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/concurrent/results.json",
+        "sha256": "0ecdbe95fdf206fd01d470489d527a8a28d84cb1850f207640af40bdb6a1a144",
+        "checks": 260,
+        "scope": "Optimized G5 rendering/peer/physical-SDFS overlap; context/DP, pixel hash, guards, ownership, aperture and OS return."
+      },
+      "host": {
+        "status": "pass",
+        "tests": 421,
+        "skipped_historical": 4
+      },
+      "capture_buffer": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/capture-buffer/results.json",
+        "sha256": "273bf37dc7917d6c9c22900f0d43364cf37823048feb3d6c2028037e70ea708c",
+        "bytes": 4098,
+        "scope": "Two-chunk diagnostic copy: exact bytes, CPU/borrowed RAM restoration, Task guards and OS return.",
+        "harness": "import sys,json,hashlib\nfrom pathlib import Path\nsys.path.insert(0,str(Path.cwd()/'tools'))\nfrom native_program import read_build,execute,ROOT,require\nfrom test_large_stacks import PIN\nfrom test_gem_render import read_capture\nfrom os_boundary import emulator,run_to\np=read_build(ROOT/'build/gem-stack-headroom/coexistence/program')\nout=ROOT/'build/gem-stack-headroom/capture-buffer';out.mkdir(exist_ok=True)\nwith emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:\n def before(b):\n  marker=p['labels']['native_nmi'];b.bp_set(marker);run_to(b,marker);b.bp_clear_all()\n  memory=p['build']['memory'];buffer=memory['constants']['MANIFEST']\n  source=p['image']['routines'][0]['address'];expected=b.memdump(source,4098)\n  oldbuffer=b.memdump(buffer,4096);oldregs=b.regs()\n  actual=read_capture(b,source,4098,p)\n  require(actual==expected,'Copied bytes differ')\n  require(oldbuffer==b.memdump(buffer,4096),'Borrowed buffer was not restored')\n  after=b.regs()\n  require(all(oldregs[k]==after[k] for k in ('PC','A','X','Y','S','P')),'Copy changed CPU context')\n runtime,_=execute(b,{**p,'output':out},before_run=before,frame_limit=12000,timeout=180)\n (out/'results.json').write_text(json.dumps(dict(status='pass',tier='development',bytes=4098,source_build=str(p['output']),harness_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),runtime=runtime),indent=2)+'\\n')\nprint('Capture buffer: bytes, CPU, borrowed RAM, guards and OS return passed')\n"
+      },
+      "edit": {
+        "status": "pass",
+        "path": "build/gem-stack-headroom/enlarged-edit/stack-results.json",
+        "sha256": "08e9e778fba71d5a619ea73ce71c51e03e9e9fe3f5ecb8e40da851873b82e5d4",
+        "package_sha256": "b82fa1f60e7c533b5dbcabfac5d5cc43320bbd4d2ce0b5f7d7a3853eac211261",
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 570,
+            "remaining_above_floor": 710
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1280,
+            "peak": 313,
+            "remaining_above_floor": 711
+          },
+          "2": {
+            "base": 13680,
+            "bytes": 1280,
+            "peak": 174,
+            "remaining_above_floor": 850
+          },
+          "3": {
+            "base": 14992,
+            "bytes": 1280,
+            "peak": 625,
+            "remaining_above_floor": 399
+          },
+          "4": {
+            "base": 16304,
+            "bytes": 1280,
+            "peak": 642,
+            "remaining_above_floor": 382
+          },
+          "5": {
+            "base": 17616,
+            "bytes": 1280,
+            "peak": 715,
+            "remaining_above_floor": 309
+          },
+          "6": {
+            "base": 18928,
+            "bytes": 2560,
+            "peak": 753,
+            "remaining_above_floor": 1551
+          },
+          "7": {
+            "base": 21520,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24112,
+            "bytes": 512,
+            "peak": 129,
+            "remaining_above_floor": 127
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 289,
+            "remaining_above_floor": 991
+          }
+        },
+        "minima": {
+          "8:interrupt-entry": {
+            "slot": 8,
+            "kind": "interrupt-entry",
+            "minimum_s": 24555,
+            "remaining_above_floor": 188,
+            "event": {
+              "clock": 310121476,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 24555,
+              "dp": 24559
+            }
+          },
+          "kernel:interrupt-entry": {
+            "slot": "kernel",
+            "kind": "interrupt-entry",
+            "minimum_s": 12072,
+            "remaining_above_floor": 1017,
+            "event": {
+              "clock": 367294773,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 12072,
+              "dp": 2560
+            }
+          },
+          "8:context-restore": {
+            "slot": 8,
+            "kind": "context-restore",
+            "minimum_s": 24605,
+            "remaining_above_floor": 238,
+            "event": {
+              "clock": 305185676,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 24605,
+              "dp": 2560
+            }
+          },
+          "6:context-restore": {
+            "slot": 6,
+            "kind": "context-restore",
+            "minimum_s": 20823,
+            "remaining_above_floor": 1640,
+            "event": {
+              "clock": 343697940,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 20823,
+              "dp": 2560
+            }
+          },
+          "6:selected-code": {
+            "slot": 6,
+            "kind": "selected-code",
+            "minimum_s": 20774,
+            "remaining_above_floor": 1591,
+            "event": {
+              "clock": 307105798,
+              "pc": 958635,
+              "name": "_DisplayCall",
+              "s": 20774,
+              "dp": 4352
+            }
+          },
+          "6:interrupt-entry": {
+            "slot": 6,
+            "kind": "interrupt-entry",
+            "minimum_s": 20758,
+            "remaining_above_floor": 1575,
+            "event": {
+              "clock": 330468726,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 20758,
+              "dp": 4352
+            }
+          },
+          "4:context-restore": {
+            "slot": 4,
+            "kind": "context-restore",
+            "minimum_s": 17005,
+            "remaining_above_floor": 446,
+            "event": {
+              "clock": 320920829,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 17005,
+              "dp": 2560
+            }
+          },
+          "4:interrupt-entry": {
+            "slot": 4,
+            "kind": "interrupt-entry",
+            "minimum_s": 16978,
+            "remaining_above_floor": 419,
+            "event": {
+              "clock": 308277492,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 16978,
+              "dp": 3840
+            }
+          },
+          "4:selected-code": {
+            "slot": 4,
+            "kind": "selected-code",
+            "minimum_s": 16985,
+            "remaining_above_floor": 426,
+            "event": {
+              "clock": 305881362,
+              "pc": 846104,
+              "name": "blit_mask:after-tcs",
+              "s": 16985,
+              "dp": 3840
+            }
+          },
+          "5:context-restore": {
+            "slot": 5,
+            "kind": "context-restore",
+            "minimum_s": 18231,
+            "remaining_above_floor": 360,
+            "event": {
+              "clock": 321076718,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 18231,
+              "dp": 2560
+            }
+          },
+          "5:interrupt-entry": {
+            "slot": 5,
+            "kind": "interrupt-entry",
+            "minimum_s": 18204,
+            "remaining_above_floor": 333,
+            "event": {
+              "clock": 318189492,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 18204,
+              "dp": 4096
+            }
+          },
+          "3:context-restore": {
+            "slot": 3,
+            "kind": "context-restore",
+            "minimum_s": 15731,
+            "remaining_above_floor": 484,
+            "event": {
+              "clock": 313872943,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 15731,
+              "dp": 2560
+            }
+          },
+          "3:interrupt-entry": {
+            "slot": 3,
+            "kind": "interrupt-entry",
+            "minimum_s": 15680,
+            "remaining_above_floor": 433,
+            "event": {
+              "clock": 313804021,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 15680,
+              "dp": 3584
+            }
+          },
+          "3:selected-code": {
+            "slot": 3,
+            "kind": "selected-code",
+            "minimum_s": 15687,
+            "remaining_above_floor": 440,
+            "event": {
+              "clock": 313783792,
+              "pc": 846104,
+              "name": "blit_mask:after-tcs",
+              "s": 15687,
+              "dp": 3584
+            }
+          },
+          "5:selected-code": {
+            "slot": 5,
+            "kind": "selected-code",
+            "minimum_s": 18210,
+            "remaining_above_floor": 339,
+            "event": {
+              "clock": 318189331,
+              "pc": 846104,
+              "name": "blit_mask:after-tcs",
+              "s": 18210,
+              "dp": 4096
+            }
+          },
+          "0:context-restore": {
+            "slot": 0,
+            "kind": "context-restore",
+            "minimum_s": 10395,
+            "remaining_above_floor": 908,
+            "event": {
+              "clock": 366152335,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 10395,
+              "dp": 2560
+            }
+          },
+          "0:selected-code": {
+            "slot": 0,
+            "kind": "selected-code",
+            "minimum_s": 10478,
+            "remaining_above_floor": 991,
+            "event": {
+              "clock": 366146848,
+              "pc": 1509715,
+              "name": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+              "s": 10478,
+              "dp": 2816
+            }
+          },
+          "0:interrupt-entry": {
+            "slot": 0,
+            "kind": "interrupt-entry",
+            "minimum_s": 10389,
+            "remaining_above_floor": 902,
+            "event": {
+              "clock": 366150598,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 10389,
+              "dp": 2560
+            }
+          },
+          "1:context-restore": {
+            "slot": 1,
+            "kind": "context-restore",
+            "minimum_s": 13465,
+            "remaining_above_floor": 842,
+            "event": {
+              "clock": 370674690,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 13465,
+              "dp": 2560
+            }
+          },
+          "1:interrupt-entry": {
+            "slot": 1,
+            "kind": "interrupt-entry",
+            "minimum_s": 13481,
+            "remaining_above_floor": 858,
+            "event": {
+              "clock": 369741301,
+              "pc": 6400,
+              "name": "native_irq",
+              "s": 13481,
+              "dp": 2560
+            }
+          },
+          "2:context-restore": {
+            "slot": 2,
+            "kind": "context-restore",
+            "minimum_s": 14875,
+            "remaining_above_floor": 940,
+            "event": {
+              "clock": 370589433,
+              "pc": 6958,
+              "name": "context_restore",
+              "s": 14875,
+              "dp": 2560
+            }
+          }
+        },
+        "scope": "Bounded Path open/edit/exposure/cancel, exact pixels, shell EXIT, guards, ownership and OS return."
+      }
+    }
   },
   "SH3": {
     "status": "pending"
@@ -637,5 +1105,204 @@
   "emulator": {
     "path": "build/mouse-bridge/AltirraBridgeServer",
     "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
-  }
+  },
+  "bank_zero": {
+    "baseline": "ED3",
+    "before": {
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1312,
+          1312,
+          1312,
+          1312,
+          1312,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 25408,
+        "loading_excluding_os": 21872,
+        "runtime_including_os": 56128,
+        "loading_including_os": 52592
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13424,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14480,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 15536,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16592,
+          "stack_bytes": 1024,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17648,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 20240,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 22832,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "runtime_free_ranges": [
+        {
+          "address": 23360,
+          "size": 9408
+        }
+      ]
+    },
+    "after": {
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1568,
+          1568,
+          1568,
+          1568,
+          1568,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26688,
+        "loading_excluding_os": 20080,
+        "runtime_including_os": 57408,
+        "loading_including_os": 50800
+      },
+      "task_pools": [
+        {
+          "dp": 2816,
+          "dp_reserved_bytes": 256,
+          "stack_base": 9232,
+          "stack_bytes": 1536,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3072,
+          "dp_reserved_bytes": 256,
+          "stack_base": 12368,
+          "stack_bytes": 1280,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3328,
+          "dp_reserved_bytes": 256,
+          "stack_base": 13680,
+          "stack_bytes": 1280,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3584,
+          "dp_reserved_bytes": 256,
+          "stack_base": 14992,
+          "stack_bytes": 1280,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 3840,
+          "dp_reserved_bytes": 256,
+          "stack_base": 16304,
+          "stack_bytes": 1280,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4096,
+          "dp_reserved_bytes": 256,
+          "stack_base": 17616,
+          "stack_bytes": 1280,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4352,
+          "dp_reserved_bytes": 256,
+          "stack_base": 18928,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4608,
+          "dp_reserved_bytes": 256,
+          "stack_base": 21520,
+          "stack_bytes": 2560,
+          "interrupt_reserve": 256
+        },
+        {
+          "dp": 4864,
+          "dp_reserved_bytes": 256,
+          "stack_base": 24112,
+          "stack_bytes": 512,
+          "interrupt_reserve": 256
+        }
+      ],
+      "runtime_free_ranges": [
+        {
+          "address": 24640,
+          "size": 8128
+        }
+      ]
+    }
+  },
+  "excluded_attempts": [
+    {
+      "path": "build/gem-stack-headroom/baseline-edit",
+      "reason": "Profiling from boot missed shell readiness; not a passing scenario. Final observer starts profiling after desktop readiness."
+    },
+    {
+      "path": "build/gem-stack-headroom/baseline-edit-ready",
+      "reason": "Completed bounded edit/exposure/exit, then recorder lacked boot-smoke.png. Final observer saves it; not counted as a passing end-to-end test."
+    },
+    {
+      "path": "build/gem-stack-headroom/capture",
+      "reason": "Legacy G4 runner expects removed commonKind symbol. No G4 pass claimed; moved scratch buffer verified separately with a bounded emitted-code copy/restoration probe."
+    }
+  ]
 }

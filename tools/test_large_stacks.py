@@ -11,6 +11,7 @@ from filesystem_formats import SDFS
 from native_program import ROOT, build, compiler, execute, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from native_abi import FIELDS
+from generate_memory import PROFILE
 from stack_budget import bank_zero_delta, stack_usage
 from test_cooperative import data
 
@@ -68,10 +69,16 @@ def run(output, mode, case, nmi=0, from_build=None):
         make(media,media_source,binary_names={'DATA.BIN'})
         mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=SDFS)]
     mounts=validate_mounts(mounts)
+    # The composed DOS/console fixture has outgrown the default 2 KiB global
+    # arena. This is upper-RAM fixture storage, independent of stack sizing.
+    profile=json.loads(PROFILE.read_text())
+    profile['image_data_bytes']=4096
+    memory_profile=output/'fixture-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     program=read_build(from_build) if from_build else build(
         compiler(ROOT/'build/actionc'),source,output/'program',
         optimize=mode=='opt',tasks=True,task_capacity=8,console=case=='coexistence',
-        dos_mounts=mounts,probe_nmi=nmi)
+        dos_mounts=mounts,probe_nmi=nmi,memory_profile=memory_profile)
     require(program['build']['optimize'] == (mode=='opt') and
             program['build']['probe_nmi'] == nmi and
             program['build']['dos_mounts'] == mounts, 'Reused fixture differs')

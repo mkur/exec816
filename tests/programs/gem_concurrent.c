@@ -50,6 +50,7 @@ void Peer(void)
     RemTask(NULL);
 }
 #ifdef GEM_DIAGNOSTIC
+volatile UWORD observerGo;
 UBYTE ProbeBusy(void)
 {
     if (inject && (variant==4 || !stopped)) return 2;
@@ -65,7 +66,7 @@ void ProbeCommand(void)
             Signal(parent,1UL<<29);
             while (server.state==GEM_RUNNING) { }
         } else if (!variant) {
-            while (!*(volatile UWORD *)0x6000UL) { }
+            while (!observerGo) { }
         }
         if (variant==3 || variant==4) inject=1;
     }

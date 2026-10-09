@@ -16,7 +16,7 @@ from build_of816 import xex_segments
 from banked_image import extents, emit, reserved_banks
 
 
-def return_probe(folder,record,depth,masked=False):
+def return_probe(folder,record,depth,base,masked=False):
     """Keep a real host frame above two different synthetic caller depths."""
     source=f'''.setcpu "65816"
 .a8
@@ -85,21 +85,22 @@ done:
 host_stack: .byte 0
 observed: .res 9,0
 '''
-    return assemble_probe(folder,source,0x7a00)
+    return assemble_probe(folder,source,base)
 
 
 def check_return(out,record,program,depth,manual=False,masked=False):
     folder=out/f'return-{depth:02x}-{"manual" if manual else "masked" if masked else "auto"}'
     folder.mkdir(parents=True,exist_ok=True)
-    labels=return_probe(folder,record,depth,masked)
     c=program['build']['memory']['constants']
+    base=c['LOADER']+c['LOADER_BYTES']-512
+    labels=return_probe(folder,record,depth,base,masked)
     probe=(folder/'probe.bin').read_bytes()
-    require(c['LOADER']+len((program['output']/'loader.bin').read_bytes())<=0x7a00 and
-            0x7a00+len(probe)<=c['LOADER']+c['LOADER_BYTES'],'Return probe overlaps live boot code')
+    require(c['LOADER']+len((program['output']/'loader.bin').read_bytes())<=base and
+            base+len(probe)<=c['LOADER']+c['LOADER_BYTES'],'Return probe overlaps live boot code')
     segments=list(xex_segments((program['output']/'of816/Exec-of816.xex').read_bytes()))
     stop=record['loading']['monitor_init_segment']
     raw=b'\xff\xff'+b''.join(xex_segment(a,d) for a,d in segments[:stop])
-    raw+=xex_segment(0x7a00,probe)+xex_segment(0x2e2,struct.pack('<H',labels['start']))
+    raw+=xex_segment(base,probe)+xex_segment(0x2e2,struct.pack('<H',labels['start']))
     raw+=xex_segment(0x2e0,struct.pack('<H',record['labels']['of_park']))
     image=folder/'return.xex';image.write_bytes(raw)
     pin,binary,rom=boot_environment(record)

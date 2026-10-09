@@ -6,6 +6,15 @@ from pathlib import Path
 BASELINE = Path(__file__).resolve().parents[1]/'docs/development/bank-zero-compaction.json'
 
 
+def current_task_memory():
+    """Default eight-Task platform contract, independent of a fixture build."""
+    from generate_memory import layout
+    from task_capacity import configure
+    memory = layout(upper_table=True)
+    configure(memory, 8)
+    return memory
+
+
 def bank_zero_delta(memory):
     """Include each pool's guards, DP and unused capacity, including overrides."""
     source = BASELINE.read_bytes()

@@ -68,13 +68,13 @@ bytes respectively. Stack reservations and public Task capacity are unchanged.
 | --- | ---: | ---: |
 | OS ranges | 30,720 | 30,720 |
 | Fixed Exec runtime, including aperture, guards and slack | 11,552 | 10,528 |
-| Public and idle pools | 9,120 | 14,880 |
-| Total reserved | 51,392 | 56,128 |
-| One contiguous unreserved range | 14,144 | 9,408 |
+| Public and idle pools | 9,120 | 16,160 |
+| Total reserved | 51,392 | 57,408 |
+| One contiguous unreserved range | 14,144 | 8,128 |
 
 The manifest still occupies 2 KiB during loading. Total loading reservations
-are 54,128 and 52,592 bytes respectively. Every DP now reserves exactly 256
-bytes. Eight-Task slots 1–5 have 1,024 stack bytes; slots 6–7 have 2,560 bytes.
+are 52,080 and 50,800 bytes respectively. Every DP now reserves exactly 256
+bytes. Eight-Task slots 1–5 have 1,280 stack bytes; slots 6–7 have 2,560 bytes.
 Each adds 32 external guard bytes and includes 256 bytes of interrupt reserve.
 Root has 1,536 stack bytes and idle 512; every four-Task stack has 1,536 bytes.
 Initialization retains the 2 KiB manifest in addition to the runtime budget.
@@ -93,6 +93,10 @@ overrides replace every worker size without moving bases; the packager rejects
 overlap, including overlap with boot storage. Omitted overrides use the profile.
 The [development record](../development/larger-task-stacks.json) measures the
 two-pool change: fixed delta 0, slots 6–7 +1,536 bytes each, total +3,072.
+The [application headroom change](../history/gem-application-stack-headroom.md)
+subsequently adds 256 bytes to slots 1–5, totaling 1,280 bytes, and relocates the
+boot arena. Its 3 KiB loader reservation reduces loading-only storage by 2 KiB.
+Root, kernel and idle stack sizes, guards and DP reservations remain unchanged.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) packs the
 persistent reservations together, with no additional eight-Task byte savings.
@@ -106,12 +110,12 @@ capacities then place the resident adapter at `$1400–$23FF`.
 
 Stack placement is explicit in the platform profile. Four-Task bases, including
 idle, are `$2410`, `$3050`, `$3670`, `$3C90`, `$42B0`. Eight-Task bases are
-`$2410`, `$3050`, `$3470`, `$3890`, `$3CB0`, `$40D0`, `$44F0`, `$4F10`, `$5930`.
+`$2410`, `$3050`, `$3570`, `$3A90`, `$3FB0`, `$44D0`, `$49F0`, `$5410`, `$5E30`.
 Kernel stack starts at `$2A30`, with 1,536 bytes. Every stack retains 16-byte
 guards at both ends; adjacent guarded reservations have no extra padding.
 
-After startup, the free range is `$48C0–$7FFF` for four Tasks or `$5B40–$7FFF`
-for eight. Staging, manifest and loader temporarily occupy `$5BF0–$7BFF` inside
+After startup, the free range is `$48C0–$7FFF` for four Tasks or `$6040–$7FFF`
+for eight. Staging, manifest and loader temporarily occupy `$60F0–$78FF` inside
 this area. The manifest remains live until `startup_complete`. Generated
 `phase_reservations` and `runtime_free_ranges` describe these lifetimes; free
 space remains unregistered with the heap.

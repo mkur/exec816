@@ -2,6 +2,7 @@
 """Focused emitted input ABI and capture development checks."""
 import argparse
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 
 import adapter_state as adapter
@@ -61,7 +62,7 @@ def run(output, mode, case='abi', replay=False, input_diagnostics=False):
         require(program['build']['input_diagnostics'] == input_diagnostics, 'Wrong input diagnostic setting')
         require(program['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
         memory = program['build']['memory']
-        baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline = current_task_memory()
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(memory[key] == baseline[key], 'Input changed '+key)
         report.update(build=program['build'], pin=PIN, harness_sha256=sha256(Path(__file__)),

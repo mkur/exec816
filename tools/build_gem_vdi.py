@@ -8,6 +8,7 @@ from pathlib import Path
 from calypsi_build import emit
 from extract_gem_vdi import extract, PORT
 from gem_vdi_inputs import local_inputs
+from generate_memory import PROFILE
 from library_paths import read_source
 from native_program import ROOT, build, compiler, require, sha256
 
@@ -259,8 +260,11 @@ def build_concurrent_probe(output, optimize=True, instrument=True):
         require(draw_hook in backend,'Changed queued-drawing observer boundary')
         backend=backend.replace(draw_hook,
             'if (commandCount && !fault) { latch(VbxeOwnerSubmit(&display,commands,commandCount)); if (!fault) ProbeDraw(); }')
-        backend=backend.replace('return GemVdiCommand(cmd->opcode', 'ProbeCommand();\n    return GemVdiCommand(cmd->opcode')
-        backend=backend.replace('return fault ? GEM_DEVICE_FAULT : GEM_OK;', 'if (!fault) ProbeSnapshot(&display);\n    return fault ? GEM_DEVICE_FAULT : GEM_OK;')
+        command_hook='status=GemVdiCommand(cmd->opcode'
+        snapshot_hook='return render_exit(fault ? GEM_DEVICE_FAULT : GEM_OK);'
+        require(command_hook in backend and snapshot_hook in backend,'Changed GEM observer boundaries')
+        backend=backend.replace(command_hook, 'ProbeCommand();\n    '+command_hook)
+        backend=backend.replace(snapshot_hook, 'if (!fault) ProbeSnapshot(&display);\n    '+snapshot_hook)
     (output/'vbxe-concurrent.c').write_text(hardware)
     (output/'gem-vbxe-concurrent.c').write_text(backend)
     sources=[ROOT/'c/calypsi/exec.c',ROOT/'c/calypsi/display.c',output/'vbxe-concurrent.c',
@@ -292,8 +296,13 @@ def build_concurrent_probe(output, optimize=True, instrument=True):
     (media/'DATA.BIN').write_bytes(bytes((i&255)^0x5a for i in range(2048)))
     make(output/'system.atr',media,binary_names={'DATA.BIN'})
     mounts=validate_mounts([dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=SDFS)])
+    # The composed DOS/console fixture needs more than the default 2 KiB arena.
+    profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=4096
+    memory_profile=output/'fixture-memory.json'
+    memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc'),source,output/'program',optimize=optimize,
-        tasks=True,task_capacity=8,console=True,foreign_image=foreign,dos_mounts=mounts)
+        tasks=True,task_capacity=8,console=True,foreign_image=foreign,dos_mounts=mounts,
+        memory_profile=memory_profile)
     return program,foreign
 
 

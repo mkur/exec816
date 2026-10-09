@@ -22,13 +22,16 @@ PIN=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
 def read_capture(b,address,size,program):
     """Bulk test read at paused native NMI entry. Preserve CPU and borrowed RAM.
 
-    $6000-$6FFF is unused post-startup in the eight-Task memory profile. This
-    observer masks IRQ/NMI while copying upper RAM; it is not a preemption test.
+    Borrow 4 KiB starting at the retired manifest, clear of the live stacks.
+    This observer masks IRQ/NMI while copying upper RAM; it is not a preemption test.
     No production reservation, aperture mapping or platform ABI changes.
     """
-    require(program['build']['memory']['task_pools'][-1]['stack_base']+
-            program['build']['memory']['task_pools'][-1]['stack_bytes']+16<=0x6000,'Observer overlaps idle')
-    pc=b.eval_expr('@xpc');base=adapter.TEST_FAR_WRITE;buffer=0x6000
+    memory=program['build']['memory'];buffer=memory['constants']['MANIFEST']
+    require(memory['task_pools'][-1]['stack_base']+
+            memory['task_pools'][-1]['stack_bytes']+16<=buffer and
+            buffer+4096<=adapter.TEST_FAR_WRITE,'Observer overlaps live storage')
+    require(b.peek(memory['constants']['RETIRED'])==b'\1','Observer requires retired manifest')
+    pc=b.eval_expr('@xpc');base=adapter.TEST_FAR_WRITE
     require(pc==program['labels']['native_nmi'],'Observer requires NMI rendezvous')
     oldpc=b.memdump(pc,3);scratch=b.memdump(base,256);oldbuffer=b.memdump(buffer,4096)
     nmien=int(b.antic()['NMIEN'].lstrip('$'),16);b.hwpoke(0xd40e,0)

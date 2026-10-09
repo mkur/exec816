@@ -2,6 +2,7 @@
 """Copied pointer stimuli published by a real diagnostic Task; exact scene pixels."""
 import argparse
 import json
+from stack_budget import current_task_memory
 import struct
 from pathlib import Path
 from types import SimpleNamespace
@@ -24,7 +25,7 @@ def run(output, mode, replay=False):
         sy=foreign['symbols']; memory=p['build']['memory']
         report.update(build=p['build'],pin=PIN,harness_sha256=sha256(Path(__file__)),xex_sha256=sha256(p['xex']),
                       bank_zero_delta=dict(fixed=0,per_task=[0]*8,private_idle=0))
-        baseline=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline=current_task_memory()
         for k in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[k]==baseline[k],'Bank-zero change: '+k)
         with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',output,pin=PIN) as b:
