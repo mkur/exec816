@@ -118,6 +118,13 @@
     "RETURN_DBR": 30,
     "RETURN_E": 31,
     "WAKE_PENDING": 58,
-    "IRQ_ALLOW": 59
+    "IRQ_ALLOW": 59,
+    "BOOT_PHASE": 60,
+    "BOOT_DMA": 61,
+    "BOOT_CAUSE": 62,
+    "BOOT_SCREEN": 112,
+    "BOOT_LIST": 114,
+    "CONSOLE_CHACT": 116,
+    "CONSOLE_GPRIOR": 117
   }
 }

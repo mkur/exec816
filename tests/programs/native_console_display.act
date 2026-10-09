@@ -8,7 +8,7 @@ USE CONSOLEDISPLAY
 USE CONSOLETYPES
 BYTE stage,gate,phase
 CARD checks
-BYTE dindex=$57,attract=$4d,clockLow=$14
+BYTE dindex=$57,attract=$4d,drkmsk=$4e,clockLow=$14
 CONSOLETYPES.Service POINTER service
 CONSOLETYPES.Instance POINTER instance
 CONSOLETYPES.Presentation POINTER view
@@ -79,22 +79,40 @@ PROC BadState(CARD location BYTE value)
 
 RETURN
 
+; Fonts and transient display mode/color settings do not decide admission.
+PROC AcceptedState(CARD location BYTE value)
+  BYTE POINTER at
+  BYTE old
+
+  at=BYTE POINTER(ADDRESS(location))
+  old=at^
+  at^=value
+  Require(CONSOLEDISPLAY.Validate()=1)
+  at^=old
+
+RETURN
+
 PROC Start()
   INT error
   LONGCARD state
   CARD ticks
 
   Require(CONSOLEDISPLAY.Validate()=1)
+  LET oldMask=drkmsk
+  drkmsk=$ff
+  Require(CONSOLEDISPLAY.Validate()=1)
+  drkmsk=$f6
+  Require(CONSOLEDISPLAY.Validate()=1)
+  drkmsk=oldMask
   BadState($59,$80)
   BadState($5f,$80)
   BadState($231,$80)
   BadState($22f,0)
-  BadState($2f4,$e4)
-  BadState($2f3,0)
-  BadState($26f,1)
-  BadState($4d,$80)
-  BadState($4e,$f6)
-  BadState($4f,1)
+  AcceptedState($2f4,$e4)
+  AcceptedState($2f3,0)
+  AcceptedState($26f,1)
+  AcceptedState($4d,$80)
+  AcceptedState($4f,1)
   dindex=1
   Require(CONSOLEDRIVER.Start()=0)
   Require(CONSOLEDISPLAY.Validate()=0)

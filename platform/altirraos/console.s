@@ -49,6 +49,12 @@ console_shutdown:
     sta f:$02f0
     lda f:CS_PRESENTATION+CON_PRESENTATION_SAVEDATTRACT
     sta f:$004d
+    lda f:E816_CONSOLE_CHACT
+    sta f:$02f3
+    sta f:$d401
+    lda f:E816_CONSOLE_GPRIOR
+    sta f:$026f
+    sta f:$d01b
     lda #0
     sta f:CS_PRESENTATION+CON_PRESENTATION_CLAIMED
     sta f:CS_PRESENTATION+CON_PRESENTATION_VISIBLE

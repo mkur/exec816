@@ -11,8 +11,11 @@ USE DISPLAY
 USE HEAPCORE
 USE DESKSTATE
 INCLUDE "console-storage-action.inc"
-BYTE dindex=$57,crsinh=$2f0,attract=$4d,drkmsk=$4e,colrsh=$4f
-BYTE sdmctl=$22f,chbas=$2f4,chact=$2f3,gprior=$26f
+INCLUDE "../exec/adapter-state.inc"
+BYTE dindex=$57,crsinh=$2f0,attract=$4d
+BYTE sdmctl=$22f,chact=$2f3,gprior=$26f
+BYTE chactl=$d401,prior=$d01b
+BYTE savedChact=ASTATE_CONSOLE_CHACT,savedPriority=ASTATE_CONSOLE_GPRIOR
 BYTE oldchr=$5d
 CARD savmsc=$58,sdlst=$230,oldadr=$5e
 DISPLAY.Lease lease
@@ -97,13 +100,9 @@ RETURN(1)
 
 ; Reject an incompatible OS display instead of guessing its memory layout.
 PUBLIC BYTE FUNC Validate()
-  ; Both extents must be RAM inside the existing OS-high reservation, below
-  ; ROM/hardware, without overlap. The ROM/font itself is pinned by packaging.
-  IF dindex<>0 OR sdmctl<>$22 OR chbas<>$e0 OR chact<>2 OR gprior<>0 THEN
-    RETURN(0)
-  FI
-
-  IF attract>=128 OR drkmsk<>$fe OR colrsh<>0 THEN
+  ; Check storage and geometry, not the installed font or transient colors.
+  ; Claim establishes the character/priority mode after acquiring ownership.
+  IF dindex<>0 OR sdmctl<>$22 THEN
     RETURN(0)
   FI
 
@@ -222,6 +221,12 @@ PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
   A816MEMORY.Move(snapshot,screen,SIZE(960))
   view.savedCursor=crsinh
   view.savedAttract=attract
+  savedChact=chact
+  savedPriority=gprior
+  chact=2
+  chactl=2
+  gprior=0
+  prior=0
   crsinh=1
   view.claimed=1
   attract=0
@@ -268,6 +273,10 @@ PUBLIC PROC Release(CONSOLETYPES.Presentation POINTER view)
   view.presentedGeneration=0
   A816MEMORY.Move(view.screen,view.snapshot,SIZE(960))
   crsinh=view.savedCursor
+  chact=savedChact
+  chactl=savedChact
+  gprior=savedPriority
+  prior=savedPriority
   view.claimed=0
   attract=view.savedAttract
   view.cursorOn=0

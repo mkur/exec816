@@ -6,4 +6,9 @@ PUBLIC EXTERNAL PROC Report(CARD event,CARD value)
 ; The ordinary C display bridge carries value followed by the event number.
 PUBLIC EXTERNAL PROC DisplayReport(LONGCARD value CARD event)
 
+; Only the resident boot session reports subsystem milestones.
+PUBLIC EXTERNAL BYTE FUNC Active()
+PUBLIC EXTERNAL PROC Complete()
+PUBLIC EXTERNAL PROC Halt(CARD reason)
+
 ENDMODULE

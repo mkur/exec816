@@ -42,7 +42,7 @@ def run(output, mode):
             require(observed == expected, f'{name}: {observed} != {expected}')
             if name=='default':
                 from test_boot_diagnostics import os_text
-                require('VBXE rev=1.26r' in os_text(bridge),
+                require('VBXE rev      =1.26r' in os_text(bridge),
                         'Long-argument diagnostic bridge or revision decoding failed')
             clean_ownership(bridge, program, output)
             observations.append(dict(case=name, facts=observed, runtime=runtime))

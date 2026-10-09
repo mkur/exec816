@@ -75,7 +75,7 @@ def compiler(directory, allow_override=False, pin=None):
 
 def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=False,
              dispatch=APP_BASE, probe_flags=0x100, forward_signature=0, preemptive=False,
-             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, io_check=0, display_kind=0, pump_divisor=0):
+             memory=None, kernel_init=0, tasks=False, task_init=0, policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, heap_shutdown=0, heap_allocate=0, heap_deallocate=0, heap_probe=False, ports_create=0, ports_delete=0, io_create=0, io_delete=0, io_wait=0, io_do=0, io_open=0, console_test=False, console_enabled=False, console_start=0, stack_checks=True, io_close=0, io_begin=0, io_send=0, io_abort=0, io_check=0, display_kind=0, pump_divisor=0, boot_startup=False):
     command(["ca65", "-I", output, "-I", toolchain["directory"] / "docs/abi",
              "-I", toolchain["directory"] / "runtime/65816",
              "-I", ROOT / "platform/altirraos", "-D", f"PROGRAM_ENTRY={entry}", "-D", f"DISPLAY_KIND={display_kind}",
@@ -89,6 +89,7 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-D", f"IO_CHECK={io_check}", "-D", f"IO_CLOSE={io_close}", "-D", f"IO_BEGIN={io_begin}", "-D", f"IO_SEND={io_send}", "-D", f"IO_ABORT={io_abort}",
              "-D", f"SIGNAL_PROBE={policy_probe}", "-D", f"SIGNAL_IRQ_PROBE={irq_probe}", "-D", f"SIGNAL_AUTO={int(not manual_wake)}", "-D", f"PUMP_COUNT={pump_count}", "-D", f"PUMP_DIVISOR={pump_divisor}",
              "-D", f"INPUT_NATIVE={int(tasks and irq_probe != 10)}", "-D", f"CONSOLE_NATIVE={int(console_test)}", "-D", f"CONSOLE_STARTUP={int(console_enabled)}", "-D", f"CONSOLE_START={console_start}",
+             "-D", f"BOOT_STARTUP={int(boot_startup)}",
              "-D", f"COOPERATIVE={int(cooperative)}", "-D", f"DISPATCH_ENTRY={dispatch}",
              "-D", f"BANKED={int(memory is not None)}", "-D", f"MEMORY_INIT={kernel_init}",
              "-D", f"PROBE_FLAGS={probe_flags}",
@@ -396,7 +397,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     command(["python3", ROOT / "tools/generate_exec_abi.py", "--check"])
     labels = assemble(toolchain, output, APP_BASE, probe_nmi, initial_i, cooperative,
                       probe_flags=probe_flags, forward_signature=forward_signature, preemptive=preemptive,
-                      memory=memory, tasks=tasks, policy_probe=policy_probe, irq_probe=irq_probe, manual_wake=manual_wake, pump_count=pump_count, pump_divisor=pump_divisor, heap_probe=heap_probe,console_test=console_native,console_enabled=console_enabled,stack_checks=stack_checks_enabled)
+                      memory=memory, tasks=tasks, policy_probe=policy_probe, irq_probe=irq_probe, manual_wake=manual_wake, pump_count=pump_count, pump_divisor=pump_divisor, heap_probe=heap_probe,console_test=console_native,console_enabled=console_enabled,stack_checks=stack_checks_enabled,boot_startup=console_enabled or console_deferred)
     if tasks:
         task_generate(output, labels)
     base_args = [toolchain["binary"], *(["--module-path", task_modules] if tasks else []),
@@ -438,13 +439,22 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             peak=48 if operation=='EmulationProbe' else 8
         elif tasks and name.startswith('BOOTDIAG.'):
             operation=name.split('.')[1]
-            require(operation in ('Report','DisplayReport'),'Unknown boot diagnostic import')
-            label='boot_record' if operation=='Report' else 'boot_display_report'
-            arguments=([dict(alignment=2,offset=0,size=2),dict(alignment=2,offset=2,size=2)]
-                       if operation=='Report' else
-                       [dict(alignment=2,offset=0,size=4),dict(alignment=2,offset=4,size=2)])
-            outgoing=5 if operation=='Report' else 7
-            result='None';peak=80
+            require(operation in ('Report','DisplayReport','Active','Complete','Halt'),
+                    'Unknown boot diagnostic import')
+            label={'Report':'boot_record','DisplayReport':'boot_display_report',
+                   'Active':'boot_active','Complete':'boot_complete','Halt':'boot_abort'}[operation]
+            if operation in ('Report','DisplayReport'):
+                arguments=([dict(alignment=2,offset=0,size=2),dict(alignment=2,offset=2,size=2)]
+                           if operation=='Report' else
+                           [dict(alignment=2,offset=0,size=4),dict(alignment=2,offset=4,size=2)])
+                outgoing=5 if operation=='Report' else 7
+                result='None';peak=80
+            elif operation=='Halt':
+                arguments=[dict(alignment=2,offset=0,size=2)]
+                outgoing=3;result='None';peak=0
+            else:
+                result='Some(NativeResult(A8ZeroExtended))' if operation=='Active' else 'None'
+                peak=0
         elif tasks and name.startswith('DISPLAYADAPTER.'):
             operation=name.split('.')[1]
             require(operation in ('Ticks','ResetRequired'),'Unknown display adapter import')
@@ -905,7 +915,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         display_kind = display_fields[0]['address']
     final_labels = assemble(toolchain, output, image["entry"], probe_nmi, initial_i, cooperative,
                             dispatch, probe_flags, forward_signature, preemptive, memory, kernel_init, tasks, task_init, policy_probe, irq_probe, manual_wake, pump_count, heap_shutdown, heap_allocate, heap_deallocate, heap_probe, ports_create, ports_delete, io_create, io_delete, io_wait, io_do, io_open,console_native,console_enabled,console_start,stack_checks_enabled,
-                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,io_check=io_check,display_kind=display_kind,pump_divisor=pump_divisor)
+                            io_close=io_close,io_begin=io_begin,io_send=io_send,io_abort=io_abort,io_check=io_check,display_kind=display_kind,pump_divisor=pump_divisor,boot_startup=console_enabled or console_deferred)
     require(labels == final_labels, "Platform addresses changed during final assembly")
     if tasks:
         # Heap private-call thunks depend on final compiled routine addresses.
@@ -991,7 +1001,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'abi/boot-diagnostics.json','tools/generate_boot_diagnostics.py',
                 'lib/exec/bootdiag.act','lib/exec/boot-diagnostics-action.inc',
                 'platform/altirraos/boot-diagnostics.s','platform/altirraos/boot-diagnostics.inc',
-                'platform/altirraos/boot-labels.inc',
+                'platform/altirraos/boot-labels.inc','platform/altirraos/boot-worker.s',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
                 'lib/display/display-types.inc','lib/display/display-access.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},

@@ -43,11 +43,19 @@ Type 0 BOOT-VERBOSE! in Forth to suppress this trace, or 1 BOOT-VERBOSE! to enab
 it. Boot failures remain visible in quiet mode. Exec reserves the first linear
 RAM bank, $010000-$01FFFF, and starts its kernel in bank $02.
 RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED result. A kernel
-initialization failure prints its error code and System halted, even in quiet
-mode. A blank line separates the boot messages from the Exec816 banner.
+initialization failure prints System halted: $hhhh with the original error code,
+even in quiet mode. A blank line separates boot messages from the Exec816 banner.
 
 The standard console keeps the boot screen and appends shell startup messages.
 Output scrolls normally as it fills the screen. Use CLS or Ctrl-L to clear it.
+VBI/IRQ reports interrupt initialization; CONSOLE WORKER reports that its Task
+and endpoint are ready. CONSOLE and SHELL report console/session setup;
+mounting and startup scripts run before the prompt. These readiness
+messages are suppressed in quiet mode. Console admission failure leaves
+System halted: $FF95 visible. Other startup faults retain their original code.
+Diagnostic labels and values stay aligned across console handoff. The console
+keeps the installed font, ignores incoming attract/color state and establishes
+its own CHACT/GPRIOR values. Display geometry and storage checks still apply.
 
 Try it
 ------
@@ -63,7 +71,7 @@ Try it
     RUN PRIMES
     JOBS
 
-The pipelines print 1 3 17 and 108 518 3171 respectively (lines, words, bytes).
+The pipelines print 1 3 17 and 154 759 4717 respectively (lines, words, bytes).
 TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
 Ctrl-L clears the screen and redraws the prompt and your current input.
@@ -81,7 +89,8 @@ File arguments still use the current directory. Try:
     ALIAS
     ASSIGN
 
-The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, GREP, LIST, MORE,
+The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, TAIL, FIND,
+GREP, LIST, MORE,
 COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN and PRIMES. C: and S: use two of four
 assignment slots. Before the prompt, optional S:STARTUP and S:USER run in order.
 The supplied files contain comments only. Edit S/USER in the system disk source

@@ -1,0 +1,301 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-10-09",
+  "source": {
+    "revision": "aeed1f550d63b4cd87a023bb813c30c5e9102339",
+    "dirty": true,
+    "display": "aeed1f5-dirty",
+    "actionc_pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "task_capacity": 8,
+    "stack_checks": true,
+    "mount": {
+      "profile": 4,
+      "boot": 1,
+      "format": 2,
+      "access": "readonly",
+      "alias": "D1",
+      "unit": 49,
+      "sectors": 2880,
+      "sector_bytes": 256
+    },
+    "strings": {
+      "banner": "Exec816 (aeed1f5-dirty)\n\n",
+      "slots": "exec: 8 task slots\n",
+      "stackChecks": "exec: stack checks enabled\n",
+      "version": "Exec816 (aeed1f5-dirty)\nactionc pin: 6510ea1\n",
+      "sioReady": " ready, 57.6k profile\n",
+      "mountStart": "Filesystems: mounting...\n",
+      "otherMountsReady": "\nRAM: ready, read-write (volatile)\nWORK: -> D8: ready, read-write",
+      "mountFailure": "Filesystem startup failed; check configured disks\nRequired: WORK: on D8:\nUse CD SYS: to retry; cold-boot after SIO timeout"
+    }
+  },
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "binary_sha256": "4febd179ef704cf9f352c4606c21a3df5536ea858b444b62a152f5f64c8c3101"
+  },
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true
+    },
+    "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ]
+  },
+  "configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "bridge_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+  "host": {
+    "tests": 421,
+    "status": "pass",
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'"
+  },
+  "native_bindings": {
+    "raw": {
+      "status": "pass",
+      "xex_sha256": "a00b488a197aeac1f102b8817983413ea1181e3fe68405262a789a8b3e7873d2",
+      "cases": [
+        {
+          "name": "quiet",
+          "status": 49689,
+          "stack_domain_guards": "pass",
+          "os_restoration": "pass"
+        },
+        {
+          "name": "worker-bottom",
+          "status": 49689,
+          "stack_domain_guards": "pass",
+          "os_restoration": "pass"
+        }
+      ]
+    },
+    "opt": {
+      "status": "pass",
+      "xex_sha256": "22fa46cc5846f1e70d5538d8acf6becf51f9fe712763814715220166957c768c",
+      "cases": [
+        {
+          "name": "quiet",
+          "status": 49689,
+          "stack_domain_guards": "pass",
+          "os_restoration": "pass"
+        },
+        {
+          "name": "worker-bottom",
+          "status": 49689,
+          "stack_domain_guards": "pass",
+          "os_restoration": "pass"
+        }
+      ]
+    }
+  },
+  "packaged_cases": [
+    {
+      "name": "verbose",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65535,
+      "first_cause": 0
+    },
+    {
+      "name": "quiet",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65535,
+      "first_cause": 0
+    },
+    {
+      "name": "brightness",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65535,
+      "first_cause": 0
+    },
+    {
+      "name": "admission",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65429,
+      "first_cause": 65429
+    },
+    {
+      "name": "fault-before-console",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65431,
+      "first_cause": 65431
+    },
+    {
+      "name": "fault-after-claim",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65431,
+      "first_cause": 65431
+    },
+    {
+      "name": "reset-required",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65427,
+      "first_cause": 65431
+    },
+    {
+      "name": "normal-return",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 0,
+      "first_cause": 0
+    },
+    {
+      "name": "post-startup",
+      "status": "pass",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "status_word": 65431,
+      "first_cause": 0
+    },
+    {
+      "name": "xlos",
+      "status": "pass",
+      "rom_sha256": "c105cb742b773bbd4f50fd9f941128330ce811f67755e3ae19130ca2f3a03312",
+      "status_word": 65535,
+      "first_cause": 0
+    }
+  ],
+  "memory": {
+    "fixed_bank_zero_delta": 0,
+    "per_public_task_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "spare_state_bytes_used": 8,
+    "reservations_guards_alignment_unchanged": true,
+    "upper_blitter_used": 1650,
+    "upper_blitter_reserved": 2048,
+    "upper_signals_used": 10874,
+    "upper_signals_reserved": 12288
+  },
+  "package": {
+    "path": "build/boot-milestones-cartridge/exec816-demo.zip",
+    "sha256": "c5c674cc6e1c7884d7bdff2a3274fafaa479ba3bd2b50287ec418b74a2b3f50b",
+    "xex_sha256": "b5d60f2fac776ac5d305e20c107bbb09b1b6d2045db16221748e126fedfb0f80",
+    "xex_bytes": 327045,
+    "cartridge_capacity": 1032191,
+    "cartridge_headroom": 705146,
+    "zip_crc_checksums": "pass",
+    "executed_car_matches_zip": true,
+    "published": false
+  },
+  "commands": [
+    "python3 tools/build_demo.py --text-shell-only --output build/boot-milestones-standard",
+    "python3 tools/test_boot_milestone_bindings.py --mode raw --output build/development/boot-milestones/bindings-raw",
+    "python3 tools/test_boot_milestone_bindings.py --mode opt --output build/development/boot-milestones/bindings-opt",
+    "python3 tools/test_boot_milestones.py --bundle build/boot-milestones-standard --output build/development/boot-milestones/standard --xlos-rom /Users/michalkurcewicz/xlos-20251207/XLOS816A.ROM"
+  ],
+  "limitations": [
+    "No full release qualification matrix.",
+    "No physical Antonia II / OSXL / IDE Plus 2.0 check.",
+    "VBXE terminal scanout was implemented but not exercised in this standard-console run.",
+    "XLOS 2.48A is an explicit ROM override for bounded cartridge-boot compatibility only."
+  ],
+  "source_inputs": {
+    "abi/boot-diagnostics.json": "3ef6dca8dfbf7cdd4b8c4e78db65c46b02b20e0dc5a0ead9bfbb3b0b341d54cf",
+    "abi/exec816-v1.json": "694bb51b38a60913a446d17b1fce767382a452fd307e2d7d127d04be096858d1",
+    "platform/altirraos/hosted.s": "fe0344f1f9dc21092c8c33ce36f000e8d8c27ab1b2c84417e61fff547bf02aae",
+    "platform/altirraos/boot-diagnostics.s": "258aaab8cafe36984aca00d972dbdb18d1ad880f9e05829efdd9c48f2911e4d5",
+    "platform/altirraos/boot-worker.s": "3f9d6a22e9387eae0d934bec8436897328340949ff9d211882e5905aa1c6945e",
+    "lib/console/consoledisplay.act": "f3cece8e1bd09ac3fc0f96c1cb7342269b06f5e5a756c34c441eba99b6a14083",
+    "lib/console/consoledriver.act": "5dc17b7d6d68a2b162e7db1ce6be8265d8be746c93f9d67575f1db9767cc21fd",
+    "lib/exec/bootdiag.act": "4f48a7303b5e87dc18761f1679626149ed17eca4d658cc75b319e29c5a194459",
+    "lib/exec/bootconfig.act": "509988e52d3c990558841f6e8d695eee353b72b2c56851ff250ce935c4c98b62",
+    "examples/shell/shell-boot.inc": "8175c23efa12b217d3836c8ac7d7bbf9d06639e39b968a0bfcf778f3a83c993f",
+    "tools/native_program.py": "67275b91f33ddc8531480ff86af7f84ffb683b796371600c543391c9e4feb811",
+    "tools/test_boot_milestones.py": "dc66ade24a4130324d332a23550bcc6a9ac21e570be6b3da39a2cd748fdaa7e8",
+    "tools/test_boot_milestone_bindings.py": "824999d28cd13355ed907788287927cf4530624f024a598b463d67fa09978493",
+    "tests/programs/boot_milestones.act": "3316b9b5d361096d53070d5b7212fe68f1c76791563672ab036e80f9a6dc6a9a"
+  }
+}

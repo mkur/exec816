@@ -4,6 +4,13 @@ INCLUDE "boot-config-action.inc"
 
 PUBLIC CONST BAD_RECORD=1, BAD_CAPACITY=2
 
+; The monitor's trace flag remains live through the console handover.
+PUBLIC BYTE FUNC Verbose()
+
+  LET flags=BYTE POINTER(ADDRESS(B_ADDRESS+B_FIELD_FLAGS))
+
+RETURN((flags^ & B_FLAG_VERBOSE)<>0)
+
 ; Use the boot override only when the boot record and capacity are valid.
 PUBLIC CARD FUNC CacheBlocks()
 

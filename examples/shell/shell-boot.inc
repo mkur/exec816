@@ -107,10 +107,21 @@ RETURN
 BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
 
   IF ShellOpen(consoleName)=0 THEN
-    BOOTDIAG.Report(BOOTDIAG.CONSOLE_FAILED,$ffff)
-    RETURN(0)
+  BEGIN
+    LET reason=IF shell=NULL THEN CARD(DOS.ERROR_NO_FREE_STORE)
+        ELSE CARD(shell.error) FI
+    BOOTDIAG.Halt(reason)
+  END
   FI
 
+  IF BOOTCONFIG.Verbose()<>0 THEN
+    ShellText(shell.console,c"\rCONSOLE       =OK\nSHELL         =LAUNCHED\n")
+    IF shell.status<>PROCESS.RETURN_OK THEN
+      BOOTDIAG.Halt(CARD(shell.error))
+    FI
+  FI
+
+  BOOTDIAG.Complete()
   LET self=EXEC.FindTask(NULL)
   EXEC.Forbid()
   self.tc_Node.ln_Name=bootShellName

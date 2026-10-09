@@ -9,7 +9,7 @@ startup; the cartridge does not contain them.
 WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
-is too small for this uncompressed boot image.
+is too small for this boot image.
 
 Files
 -----

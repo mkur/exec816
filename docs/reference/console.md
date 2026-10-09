@@ -61,6 +61,18 @@ FF, including the shell's CLS and Ctrl-L, still explicitly clears the instance.
 This uses the existing cell buffer and adds no fixed or per-Task reserved
 bank-zero bytes.
 
+Text admission checks GRAPHICS 0 geometry, the display-list layout and disjoint
+OS-high screen/list extents. It ignores `ATRACT`, `COLRSH`, `DRKMSK`, `CHBAS`,
+`CHACT` and `GPRIOR`. The installed font remains selected, allowing international
+fonts. On display claim the text backend sets `CHACT`/`CHACTL` to 2 and
+`GPRIOR`/`PRIOR` to 0; release restores the incoming shadows and hardware modes.
+The existing VBI hook suppresses attract mode while the console owns the screen.
+
+Verbose kernel startup prints worker readiness before display claim. After the
+shell opens its stream, console and shell readiness go through retained output.
+The [platform boot contract](platform.md#boot-service-settings) defines these
+milestones and the independent fatal-startup screen path.
+
 The retained model and presentation are separate. Hidden instances still accept
 output; showing them redraws retained cells. The worker rotates runnable instances
 and bounds output/redraw work so pending input and other Tasks can progress.
@@ -88,7 +100,8 @@ its scene token. Other views cannot replace its frozen source. A scene exposure
 acknowledges all dirty console rows only if it repainted the full window;
 partial exposure preserves model damage outside the painted rectangle.
 
-The text backend uses the available ROM glyphs, with `?` for unavailable glyphs.
+The text backend uses the installed OS font with the standard Atari screen-code
+mapping, with `?` for unsupported terminal bytes.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
 background. A synchronized visible instance scrolls with one asynchronous opaque
 rectangle copy followed by the exposed-strip fill in the same hardware list.

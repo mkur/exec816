@@ -1,0 +1,26 @@
+MODULE BOOTMILESTONES
+USE BOOTDIAG
+USE HEAPCORE
+INCLUDE "../../lib/exec/adapter-state.inc"
+BYTE phase=ASTATE_BOOT_PHASE
+
+; Exercise the ordinary Action! argument/result bridge in raw and optimized code.
+PROC Main()
+
+  IF BOOTDIAG.Active()<>1 THEN
+    HEAPCORE.Abort($ea01)
+  FI
+
+  BOOTDIAG.Report(BOOTDIAG.WORKER,0)
+  BOOTDIAG.Complete()
+  IF BOOTDIAG.Active()<>0 THEN
+    HEAPCORE.Abort($ea02)
+  FI
+
+  phase=1
+  BOOTDIAG.Halt($c219)
+  HEAPCORE.Abort($ea03)
+
+RETURN
+
+ENDMODULE

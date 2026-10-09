@@ -101,6 +101,19 @@ clear_state:
     bpl clear_state
     lda #$ffff
     sta STATUS
+    .if BOOT_STARTUP
+        ; Capture the ROM text display before console ownership changes it.
+        lda $58
+        sta E816_BOOT_SCREEN
+        lda $230
+        sta E816_BOOT_LIST
+        sep #$20
+        lda $22f
+        sta E816_BOOT_DMA
+        lda #DIAG_PHASE_ACTIVE
+        sta E816_BOOT_PHASE
+        rep #$20
+    .endif
     .if BANKED
         lda M_OLD_MEMLO
     .else
@@ -207,10 +220,12 @@ clear_dp:
             tax
             lda #DIAG_KERNEL_FAILED
             jsl boot_report
-            lda #DIAG_HALTED
-            jsl boot_report
         .endif
-        lda #FAULT_CONTEXT
+        .if GENERAL_TASKS
+            txa
+        .else
+            lda #FAULT_CONTEXT
+        .endif
         jmp finish
 :
     .endif
@@ -227,9 +242,7 @@ clear_dp:
         tax
         lda #DIAG_KERNEL_FAILED
         jsl boot_report
-        lda #DIAG_HALTED
-        jsl boot_report
-        lda #FAULT_CONTEXT
+        txa
         jmp finish
 :
     .endif
@@ -258,6 +271,11 @@ startup_complete:
     rep #$20
     .if INITIAL_I = 0
         cli
+    .endif
+    .if BOOT_STARTUP
+        ldx #0
+        lda #DIAG_VBI_IRQ
+        jsl boot_report
     .endif
     ; Ordinary v1 zero-argument call: one zero padding byte, then JSL.
     tsc
@@ -646,6 +664,10 @@ finish:
     lda #0
     sta f:NMIEN
     .if GENERAL_TASKS
+        rep #$30
+        jml boot_finish_check
+finish_prepared:
+        sep #$20
         ; A terminated graphics owner may still have live DMA. Never reclaim
         ; its storage or return to ROM through any normal/fault exit path.
         lda f:DISPLAY_KIND
@@ -670,6 +692,8 @@ reset_required:
         lda #0
         sta f:NMIEN
         rep #$30
+        jml boot_reset_prepare
+reset_park:
         lda #$ff93
         sta f:STATUS
         lda #OS_STACK_TOP
@@ -709,6 +733,7 @@ reset_required:
         .endif
         jsl HEAP_SHUTDOWN
 :
+        jsl boot_failure_line
     .endif
     lda #OS_STACK_TOP
     tcs
@@ -755,6 +780,9 @@ done:
 
 .if COOPERATIVE
     .include "cooperative.s"
+.endif
+.if GENERAL_TASKS
+    .include "boot-worker.s"
 .endif
 
 .if GENERAL_TASKS

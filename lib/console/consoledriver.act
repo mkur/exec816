@@ -11,6 +11,7 @@ USE TASKMEMORY
 USE HEAPCORE
 USE SYS
 USE ASCII
+USE BOOTDIAG
 USE CONSOLETYPES
 USE CONSOLECORE
 USE CONSOLEBATCH
@@ -566,6 +567,10 @@ PUBLIC PROC Worker()
     EXEC.Forbid()
     RetireWorker(service)
     RETURN
+  FI
+
+  IF BOOTDIAG.Active()<>0 THEN
+    BOOTDIAG.Report(BOOTDIAG.WORKER,0)
   FI
 
   registered=Initialize(service,defaultInstance)

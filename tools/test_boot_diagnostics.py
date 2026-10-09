@@ -145,6 +145,8 @@ def run(bundle, output, selected=None):
                     text = os_text(bridge)
                     require('CONSOLE FAILED=$F731' in text,
                             'Quiet boot hid the console failure: '+text)
+                    require('System halted: $F731' in text,
+                            'Quiet boot hid the fatal startup code: '+text)
                     require('BOOT MEMLO' not in text, 'Quiet mode printed the boot trace')
                     require(bridge.peek16(memory['adapter_state']['STATUS']) == 0xf731,
                             'Unexpected failure status')
@@ -152,7 +154,7 @@ def run(bundle, output, selected=None):
                 else:
                     if verbose:
                         # The bridge only supports bank-zero PC breakpoints.
-                        # Stop at the console-start trace's ROM gateway, before
+                        # Stop at the worker-ready trace's ROM gateway, before
                         # the C driver activates the bitmap display.
                         marker = program['labels']['native_cop']
                         condition = '(db($342)=11)&(dw(dw($344))=$4f43)&(dw(dw($344)+2)=$534e)'
@@ -165,16 +167,16 @@ def run(bundle, output, selected=None):
                     text = os_text(bridge)
                     base = '$D700' if alternate else '$D600'
                     if verbose:
-                        require('BOOT MEMLO=' in text and 'RAM ADOPT=OK' in text
+                        require('BOOT MEMLO    =' in text and 'RAM ADOPT     =OK' in text
                                 and 'TASK/HEAP INIT=OK' in text
-                                and text.count('RAM ADOPT=') == 1
+                                and text.count('RAM ADOPT     =') == 1
                                 and text.count('TASK/HEAP INIT=') == 1,
                                 'Missing kernel diagnostics: '+text)
-                        require('VBXE BASE='+base in text and
-                                ('VBXE rev=1.24a' if version == 124 else 'VBXE rev=1.26a') in text,
+                        require('VBXE BASE     ='+base in text and
+                                ('VBXE rev      =1.24a' if version == 124 else 'VBXE rev      =1.26a') in text,
                                 'Wrong hardware report: '+text)
                     else:
-                        require('BOOT MEMLO' not in text and 'VBXE rev=' not in text,
+                        require('BOOT MEMLO' not in text and 'VBXE rev      =' not in text,
                                 'Quiet mode printed diagnostics')
                     bridge.bp_clear_all()
                     rendezvous(bridge,program,f'(dw(${shell:x})!=0)|(db(${shell+2:x})!=0)')

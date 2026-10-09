@@ -244,16 +244,44 @@ system-drive byte and a flags byte. Bit 0 enables technical kernel boot output;
 other flag bits must be zero. Verbose output defaults on. OF816's
 `BOOT-VERBOSE@` and `BOOT-VERBOSE!` inspect/change this flag before handoff.
 
-Kernel diagnostics use CIO on the existing OS screen before bitmap activation.
+Kernel diagnostics use CIO on the existing OS screen before console ownership.
 They report memory bounds, kernel/table banks, skipped firmware bank, DP/stack
-placement, memory adoption, Task/heap initialization and console startup.
+placement, memory adoption, Task/heap initialization and detected VBXE hardware.
 Memory adoption and Task/heap initialization each print a single `OK` or `FAILED`
-result. Kernel initialization failure prints its error code and `System halted`
-before the existing controlled termination path; it never enters the shell.
-Failure events print even in quiet mode. A private stack buffer and the existing
-OS_BUSY protocol serialize ROM entry and preserve native context and IOCB0.
-Code and labels fit the existing upper blitter reservation; no bank-zero
-reservation or per-Task allocation is added.
+result. `VBI/IRQ       =OK` follows vector/state installation and interrupt enable;
+`CONSOLE WORKER=OK` follows worker signal/endpoint setup, before display claim.
+Console admission already blocks ROM entry, so this one line appends directly
+to the OS text screen with cursor updates under IRQ/NMI exclusion.
+Both automatic text startup and deferred bitmap startup activate the startup
+phase and OS-screen snapshot before Task initialization.
+These messages report completed initialization, not interrupt qualification.
+After its console stream opens, the resident shell prints `CONSOLE       =OK` and
+`SHELL         =LAUNCHED` through retained console output. Session/streams/initial aliases
+are then established; mounting and startup scripts follow, with the prompt
+marking interactive readiness. Quiet mode suppresses routine milestones.
+All technical diagnostic lines begin at column zero, with `=` in column 14
+(zero based), including the handoff from ROM output to the retained console.
+ROM reporting temporarily selects full-width margins and restores them afterward.
+
+Terminal kernel failures during this startup phase print `System halted: $hhhh`
+even in quiet mode. Console admission failure is `$FF95`; heap/Task initialization
+and later startup faults retain their original native code. The adapter records
+the first cause before a subsequent reset-required status can replace `STATUS`.
+Terminal reporting abandons the faulting stack, uses kernel DP/stack, disables
+IRQ/NMI and writes the final OS text row directly after console restoration.
+It does not allocate, call ROM or wait for the worker. A reset-required path
+exposes the saved OS text display, disabling an owned FX overlay, but retains
+DMA/bus ownership and storage; this is reporting, not device recovery.
+Loader/unclaimed-state rejection retains its separate pre-kernel path. Ordinary
+command errors after shell launch do not produce this fatal-startup message.
+
+OS success reports retain the existing private stack buffer and OS_BUSY protocol,
+preserving native context and IOCB0. Startup phase, first cause and OS display
+snapshot occupy spare bytes in the existing adapter state page. Two further
+spare bytes retain the text console's incoming character/priority shadows for
+normal and terminal restoration. Native routines
+fit existing upper code reservations: **0 fixed, 0 per-public-Task and 0 idle
+reserved bank-zero byte growth**, including guards, alignment and unused capacity.
 
 The first setup callback initializes defaults once, before OF816. A monitor may
 change settings before `loader_start`; resumed copy/zero-fill callbacks preserve

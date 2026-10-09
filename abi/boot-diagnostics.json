@@ -1,6 +1,9 @@
 {
   "label_bytes": 16,
+  "label_columns": 14,
   "failure_first": 14,
+  "failure_last": 20,
+  "phases": {"ACTIVE": 1, "FAILED": 2, "REPORTED": 3},
   "events": [
     ["MEMLO", "BOOT MEMLO="],
     ["MEMTOP", "MEMTOP="],
@@ -15,13 +18,15 @@
     ["CONSOLE", "CONSOLE START="],
     ["READY", "KERNEL READY="],
     ["SKIP_BANK", "SKIP RAM BANK="],
-    ["VBXE_REVISION", "VBXE rev=1."],
+    ["VBXE_REVISION", "VBXE rev="],
     ["NO_VBXE", "NO VBXE; IDs="],
     ["BAD_CORE", "VBXE NOT FX="],
     ["BAD_BASELINE", "VBXE BASELINE="],
     ["BUSY", "VBXE BUSY="],
     ["CONSOLE_FAILED", "CONSOLE FAILED="],
     ["KERNEL_FAILED", "KERNEL FAILED="],
-    ["HALTED", "System halted"]
+    ["HALTED", "System halted: "],
+    ["VBI_IRQ", "VBI/IRQ="],
+    ["WORKER", "CONSOLE WORKER="]
   ]
 }

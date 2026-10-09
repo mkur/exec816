@@ -22,6 +22,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Exec and project history
 
+- [Kernel boot milestones and fatal startup reporting](boot-milestones-implementation-plan.md):
+  ordered verbose readiness messages, console logging handover and persistent
+  fatal startup codes; BD1–BD3 pass focused standard-console development checks.
 - [OF816 before kernel loading](of816-first-boot-implementation-plan.md): implemented through B4;
   an INITAD monitor returns to the paused XEX/cartridge reader, preserves Forth
   boot settings and earlier screen text, and adds small loading messages.
