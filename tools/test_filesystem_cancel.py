@@ -86,7 +86,7 @@ def run(out,optimize,bank,reuse=False):
 
 if __name__=='__main__':
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True)
-    a.add_argument('--reuse',action='store_true');a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--output',type=Path,required=True)
+    a.add_argument('--reuse',action='store_true');a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--output',type=Path,required=True)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}
     try:r=run(out,args.case=='opt',args.bank,args.reuse)
     except Exception as error:r.update(status='fail',error=str(error));raise

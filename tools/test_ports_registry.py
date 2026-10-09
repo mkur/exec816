@@ -5,7 +5,7 @@ from banked_test_memory import read as far_read,write as far_write
 from test_heap_concurrent import ownership
 
 
-def registry(bridge,toolchain,output,optimize,bank=1,capacity=4):
+def registry(bridge,toolchain,output,optimize,bank=2,capacity=4):
     output.mkdir(parents=True,exist_ok=True)
     ports=[0x8fffd,0x8f001,0x9f001,0x9f041,0x9f081,0x9f0c1,0x9f101,0x9f141]
     priorities=[0,127,-128,-1,127,1,0,-128]

@@ -2,7 +2,6 @@
   "name": "altirraos-4m",
   "pin": "toolchain/altirra-4m.json",
   "usable_banks": [
-    1,
     2,
     3,
     4,
@@ -66,7 +65,7 @@
     62,
     63
   ],
-  "code_origin": 65536,
+  "code_origin": 131072,
   "memlo_limit": 2560,
   "memtop_required": 36864,
   "regions": [

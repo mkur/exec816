@@ -79,7 +79,7 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
             'Unsupported memory wire layout')
     if max_banks is not None:
         cfg['max_banks'] = max_banks
-    cfg['kernel_bank'] = cfg.get('kernel_bank',1) if kernel_bank is None else kernel_bank
+    cfg['kernel_bank'] = cfg.get('kernel_bank',2) if kernel_bank is None else kernel_bank
     count = integer(cfg['max_banks'], 1, 256, 'MAX_BANKS')
     integer(cfg['max_extents'], 1, 64, 'extent capacity')
     integer(cfg['staging_bytes'], 1, 1024, 'staging capacity')
@@ -124,10 +124,11 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
     require(platform['memlo_limit'] == adapter.STATE and platform['memtop_required'] == 0x9000,
             'Memory bounds differ from hosted console/launch contract')
     usable = platform['usable_banks']
+    require(1 not in usable, 'Bank $01 is reserved for platform firmware')
     require(len(usable) == len(set(usable)), 'Duplicate usable bank')
     for bank in usable:
         integer(bank, 1, 255, 'usable bank')
-    kernel = integer(cfg['kernel_bank'],1,255,'KERNEL_BANK')
+    kernel = integer(cfg['kernel_bank'],2,255,'KERNEL_BANK')
     require(kernel < count and kernel in usable,'Kernel bank is not usable')
     if upper_table:
         table = kernel << 16
@@ -162,7 +163,8 @@ def layout(config=CONFIG, profile=PROFILE, max_banks=None, kernel_bank=None, upp
         regions['table'] = [table, table + c['TABLE_BYTES']]
     memory = {'adapter_state':adapter.addresses(platform), 'abi':abi, 'config':cfg, 'profile':platform, 'constants':c,
             'upper_reservations':([{'name':'bank-table','address':table,'size':c['TABLE_BYTES']}] if upper_table else []),
-            'regions':regions, 'usable_banks':[b for b in usable if b < count]}
+            'regions':regions, 'usable_banks':[b for b in usable if b < count],
+            'platform_reserved_banks':[1]}
     from boot_config import describe
     memory['boot_config'] = describe(memory)
     memory['reclaimed_after_startup'] = ['manifest']

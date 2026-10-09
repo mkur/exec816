@@ -86,7 +86,7 @@ def run(t,out,optimize,capacity,speed,bank,trace=False,program=None,key=False,fa
 
 def main():
     a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),default='opt');a.add_argument('--capacity',type=int,choices=(4,8),default=4)
-    a.add_argument('--speed',type=int,choices=(0,1,2),default=0);a.add_argument('--bank',type=int,default=1);a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--fault',choices=('queued','timeout'));a.add_argument('--output',type=Path,default=ROOT/'build/sio-concurrent')
+    a.add_argument('--speed',type=int,choices=(0,1,2),default=0);a.add_argument('--bank',type=int,default=2);a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--fault',choices=('queued','timeout'));a.add_argument('--output',type=Path,default=ROOT/'build/sio-concurrent')
     a.add_argument('--sector-size',type=int,choices=(128,256),default=128)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);result={'status':'running'}
     require(not(args.fault and args.trace),'Fault controls are separate from normal timing')

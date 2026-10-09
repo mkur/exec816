@@ -13,7 +13,7 @@ from test_dos_stack import execute, ownership
 from test_cooperative import data
 
 
-def fixture(t, out, mode, source, bank=1, large=False):
+def fixture(t, out, mode, source, bank=2, large=False):
     out.mkdir(parents=True, exist_ok=True)
     size = 256 if large else 128
     media = out / 'volume.atr'
@@ -130,7 +130,7 @@ def nil_suite(t,out,mode,only=None):
     return cases
 
 
-def defaults(t,out,mode,bank=1):
+def defaults(t,out,mode,bank=2):
     out.mkdir(parents=True,exist_ok=True)
     names=bytearray(128)
     for offset,value in ((0,b'NIL:'),(32,b'D1:TOOLS/SUB/DATA.BIN'),(64,b'D1:')):

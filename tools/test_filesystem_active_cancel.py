@@ -88,7 +88,7 @@ def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
 
 if __name__=='__main__':
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),default=128)
-    a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(1,3),default=1)
+    a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(2,3),default=2)
     a.add_argument('--format',choices=('mydos','sdfs'),default='mydos');a.add_argument('--suite',default=','.join(name for name in CASES if name not in ('directory-accounting','lookup','extent-publication')));a.add_argument('--output',type=Path,required=True)
     a.add_argument('--warm',action='store_true')
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}

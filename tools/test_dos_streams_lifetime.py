@@ -34,7 +34,7 @@ def instrument(output,*args,**kwargs):
 original_policy=generate_tasks.policy_modules
 
 
-def run(t,out,mode,bank=1,scenario=0):
+def run(t,out,mode,bank=2,scenario=0):
     out.mkdir(parents=True,exist_ok=True)
     names=bytearray(128)
     for offset,value in ((0,b'RAW:'),(32,b'NIL:'),(64,b'.'),(80,b'END!'),(96,b'D1:TOOLS/SUB/DATA.BIN')):
@@ -82,7 +82,7 @@ def run(t,out,mode,bank=1,scenario=0):
         limits=dict(host_seconds=240,guest_frames=12000))
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=1);a.add_argument('--scenario',type=int,default=0);a.add_argument('--output',type=Path,required=True)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=2);a.add_argument('--scenario',type=int,default=0);a.add_argument('--output',type=Path,required=True)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     try:r=run(compiler(args.compiler_dir),out,args.case,args.bank,args.scenario)
     except Exception as e:r.update(status='fail',error=str(e));raise

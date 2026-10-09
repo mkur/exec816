@@ -37,6 +37,9 @@ to resume loading and continue into the text shell. OF816 appends its banner
 without clearing earlier boot messages. CACHE-BLOCKS! and SYSTEM-DRIVE! settings
 entered in Forth are preserved while loading resumes and the kernel starts.
 
+Exec reserves the first linear RAM bank, $010000-$01FFFF, and starts its
+kernel in bank $02.
+
 Try it
 ------
 

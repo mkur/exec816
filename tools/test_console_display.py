@@ -110,7 +110,7 @@ def run(t,out,optimize,bank,paced=False):
         return dict(status='pass',build=p['build'],machine=machine,pin=pin,runtime=runtime,checks=data(b,p['image'],'checks',True),screen_before=saved,observations=observations)
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),default='opt');a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--output',type=Path,required=True)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),default='opt');a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--output',type=Path,required=True)
     a.add_argument('--paced',action='store_true');args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}
     try:r=run(compiler(ROOT/'build/actionc'),out,args.case=='opt',args.bank,args.paced)
     except Exception as error:r.update(status='fail',error=str(error));raise

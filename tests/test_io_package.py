@@ -94,7 +94,7 @@ class IOPackageTests(unittest.TestCase):
         from generate_ports import reserve_metadata as ports
         from ports_budget import account
         from generate_tasks import validate_memory
-        for bank in (1,3):
+        for bank in (2,3):
             memory=layout(kernel_bank=bank);heap(memory);ports(memory);validate_memory(memory)
             before=account(memory);reserve_metadata(memory)
             self.assertEqual(account(memory),before)

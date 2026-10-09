@@ -11,7 +11,7 @@ from banked_image import manifest,validate_extents
 class RegistrationMapTests(unittest.TestCase):
     def test_metadata_follows_table_and_moves_with_kernel(self):
         for count in (16,256):
-            for kernel in (1,3):
+            for kernel in (2,3):
                 memory=layout(max_banks=count,kernel_bank=kernel,upper_table=True)
                 reserve_metadata(memory)
                 storage=memory['heap_storage']

@@ -119,7 +119,7 @@ def main():
     report=dict(schema_version=1,status='running',scope='Simultaneous Task capacity and full wake queue',platform=pin,observer=observer,cases=[])
     env={k:os.environ.get(k) for k in ('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS')}
     try:
-        for bank in args.kernel_bank or (1,3):
+        for bank in args.kernel_bank or (2,3):
             for mode in (args.mode,) if args.mode else ('raw','opt'):
                 name=f'{args.capacity}-bank{bank}-{mode}-{args.flags:x}'+(f'-burst{args.burst}' if args.burst else '')
                 print('Running '+name+'...',flush=True)

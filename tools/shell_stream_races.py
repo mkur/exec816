@@ -6,7 +6,7 @@ from native_program import ROOT,build,require,sha256
 from test_shell_lifetime import PIN
 from os_boundary import emulator
 
-def run(t,out,mode,bank=1,scenario=0):
+def run(t,out,mode,bank=2,scenario=0):
     out.mkdir(parents=True,exist_ok=True)
     s=(ROOT/'tests/programs/dos_streams_lifetime.act').read_text()
     s=s.replace('CARD checks,childChecks','DOS.FileLock POINTER rootDirectory,peerDirectory\nBYTE directories\nBYTE ARRAY rootPath=[68 49 58 0]\nCARD checks,childChecks')

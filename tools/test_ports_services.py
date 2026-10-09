@@ -197,7 +197,7 @@ def run(args):
     if args.suite=='wait-publication':variants=['publication-2','publication-3']
     if args.suite=='delete-faults':variants=['delete-0','delete-1','delete-2']
     if args.suite=='capacity':variants=['capacity-1','capacity-3']
-    if args.suite=='registry':variants=[f'registry-{bank}-{capacity}' for bank in (1,3) for capacity in (4,8)]
+    if args.suite=='registry':variants=[f'registry-{bank}-{capacity}' for bank in (2,3) for capacity in (4,8)]
     cases=[(variant+'-'+mode,mode=='opt',variant) for mode in ('raw','opt') for variant in variants]
     if args.case:
         cases=[c for c in cases if c[0] in args.case]

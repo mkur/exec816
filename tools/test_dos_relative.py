@@ -9,7 +9,7 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 
 
-def relative(t,out,mode,bank=1,size=128):
+def relative(t,out,mode,bank=2,size=128):
     out.mkdir(parents=True,exist_ok=True)
     names=bytearray(1024)
     paths=('D1:','D1:TOOLS','SUB/DATA.BIN','DATA.BIN','','TOOLS/SUB/DATA.BIN','TOOLS/SUB',
@@ -109,7 +109,7 @@ def main():
     from test_dos_lifetime import run as lifetime
     from test_dos_directories import run as directories
     cases=[]
-    for bank in (1,3):
+    for bank in (2,3):
         for size in (128,256):cases.append((f'bank{bank}-{size}',lambda out,bank=bank,size=size:relative(t,out,a.case,bank,size)))
     cases += [('depth',lambda out:bounds(t,out,a.case)),('corrupt-ancestry',lambda out:bounds(t,out,a.case,True)),
               ('abi',lambda out:abi(t,out,a.case=='opt')),('headless',lambda out:nil(t,out,a.case)),

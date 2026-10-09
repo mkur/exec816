@@ -125,10 +125,10 @@ class BankedPackageTests(unittest.TestCase):
     def test_compressed_continuations_preserve_banks_offsets_and_raw_fallback(self):
         seed=random.Random(816).randbytes(4096)
         data=seed*33
-        image={'entry':0x1f000,'segments':[
-            {'address':0x1f000,'bytes':list(data),'executable':True},
-            {'address':0x40000,'bytes':list(seed[:64]),'executable':False}],
-            'zero_fill':[{'address':0x40100,'size':32}]}
+        image={'entry':0x2f000,'segments':[
+            {'address':0x2f000,'bytes':list(data),'executable':True},
+            {'address':0x60000,'bytes':list(seed[:64]),'executable':False}],
+            'zero_fill':[{'address':0x60100,'size':32}]}
         blob,head,spans=self.make(image)
         records=[d for a,d in segments(blob) if a==self.memory['constants']['STAGE'] and len(d)>8]
         self.assertTrue(any(r[7]==1 for r in records))
@@ -142,8 +142,8 @@ class BankedPackageTests(unittest.TestCase):
                 self.assertEqual(actual,bytes(size) if kind==1 else payload)
 
     def test_compressed_stream_cannot_start_with_a_continuation(self):
-        image={'entry':0x10000,'segments':[
-            {'address':0x10000,'bytes':list(b'A'*32768),'executable':True}],'zero_fill':[]}
+        image={'entry':0x20000,'segments':[
+            {'address':0x20000,'bytes':list(b'A'*32768),'executable':True}],'zero_fill':[]}
         blob,head,_=self.make(image)
         wire=list(segments(blob))
         index=next(i for i,(a,d) in enumerate(wire)
@@ -156,49 +156,49 @@ class BankedPackageTests(unittest.TestCase):
 
     def test_adjacent_routines_share_extents_without_merging_gaps_or_data(self):
         image = {'segments':[
-            {'address':0x10000+i, 'bytes':[i], 'executable':True} for i in range(80)],
+            {'address':0x20000+i, 'bytes':[i], 'executable':True} for i in range(80)],
             'zero_fill':[]}
         image['segments'] += [
-            {'address':0x10051,'bytes':[0xaa],'executable':True},
-            {'address':0x10052,'bytes':[0xbb],'executable':False},
-            {'address':0x10053,'bytes':[0xcc],'executable':True}]
+            {'address':0x20051,'bytes':[0xaa],'executable':True},
+            {'address':0x20052,'bytes':[0xbb],'executable':False},
+            {'address':0x20053,'bytes':[0xcc],'executable':True}]
         spans = extents(image,layout())
         self.assertEqual([(a,p,n,f) for a,p,n,f,_ in spans], [
-            (0x10000,bytes(range(80)),80,2),(0x10051,b'\xaa',1,2),
-            (0x10052,b'\xbb',1,0),(0x10053,b'\xcc',1,2)])
+            (0x20000,bytes(range(80)),80,2),(0x20051,b'\xaa',1,2),
+            (0x20052,b'\xbb',1,0),(0x20053,b'\xcc',1,2)])
 
     def test_many_data_objects_roundtrip_without_growing_manifest(self):
-        image = {'entry':0x10000, 'segments':[
-            {'address':0x10000,'bytes':[0x6b],'executable':True},
-            *[{'address':0x20000+i,'bytes':[i],'executable':False} for i in range(80)]],
-            'zero_fill':[{'address':0x20050+i,'size':1} for i in range(80)]}
-        image['segments'].append({'address':0x200a1,'bytes':[0xee],'executable':False})
+        image = {'entry':0x20000, 'segments':[
+            {'address':0x20000,'bytes':[0x6b],'executable':True},
+            *[{'address':0x30000+i,'bytes':[i],'executable':False} for i in range(80)]],
+            'zero_fill':[{'address':0x30050+i,'size':1} for i in range(80)]}
+        image['segments'].append({'address':0x300a1,'bytes':[0xee],'executable':False})
         blob,head,spans=self.make(image)
         self.assertEqual(len(spans),4)
         for every in (False,True):
             ram=model(blob,self.memory,head,every)
-            self.assertEqual(bytes(ram[0x20000+i] for i in range(160)),bytes(range(80))+bytes(80))
-            self.assertNotIn(0x200a0,ram)
-            self.assertEqual(ram[0x200a1],0xee)
+            self.assertEqual(bytes(ram[0x30000+i] for i in range(160)),bytes(range(80))+bytes(80))
+            self.assertNotIn(0x300a0,ram)
+            self.assertEqual(ram[0x300a1],0xee)
         # Merging does not hide an invalid source region or cross a kind boundary.
         for size in (0,-1,True):
-            bad=copy.deepcopy(image);bad['zero_fill'].append({'address':0x200a0,'size':size})
+            bad=copy.deepcopy(image);bad['zero_fill'].append({'address':0x300a0,'size':size})
             with self.subTest(size=size),self.assertRaises(ValueError):extents(bad,self.memory)
 
     def test_empty_code_cannot_disappear_when_adjacent_regions_merge(self):
         image = {'segments':[
-            {'address':0x10000,'bytes':[0x6b],'executable':True},
-            {'address':0x10001,'bytes':[],'executable':True}], 'zero_fill':[]}
+            {'address':0x20000,'bytes':[0x6b],'executable':True},
+            {'address':0x20001,'bytes':[],'executable':True}], 'zero_fill':[]}
         with self.assertRaisesRegex(ValueError, 'Empty'):
             extents(image,layout())
 
     def setUp(self):
         self.memory = layout()
-        self.image = {'entry':0x10000, 'segments':[
-            {'address':0x10000, 'bytes':[0x6b], 'executable':True},
-            {'address':0x1fffd, 'bytes':[7,9,11,13,15,17], 'executable':False},
-            {'address':0x18000, 'bytes':[65,155], 'executable':False}],
-            'zero_fill':[{'address':0x20003, 'size':65533}]}
+        self.image = {'entry':0x20000, 'segments':[
+            {'address':0x20000, 'bytes':[0x6b], 'executable':True},
+            {'address':0x2fffd, 'bytes':[7,9,11,13,15,17], 'executable':False},
+            {'address':0x28000, 'bytes':[65,155], 'executable':False}],
+            'zero_fill':[{'address':0x30003, 'size':65533}]}
 
     def make(self, image=None, memory=None):
         memory = memory or self.memory
@@ -215,16 +215,16 @@ class BankedPackageTests(unittest.TestCase):
                 actual = bytes(ram.get(address+i, 255) for i in range(size))
                 self.assertEqual(actual, bytes(size) if flags == 1 else payload)
         # Claims are coalesced by bank; zero-fill participates in ownership.
-        self.assertEqual(head[32:48], bytes([2,0,1,0,2,0,2,0,2,0,2,0,1,0,0,0]))
+        self.assertEqual(head[32:52], bytes([2,0,1,0,2,0,1,0,2,0,2,0,2,0,2,0,1,0,0,0]))
 
     def test_claims_and_regions_reject_without_side_effects(self):
         cases = [
-            [(0x10000,b'a',1,2,2),(0x10002,b'b',1,0,3)],
-            [(0x10000,b'a',1,2,2),(0x10000,b'b',1,0,2)],
+            [(0x20000,b'a',1,2,2),(0x20002,b'b',1,0,3)],
+            [(0x20000,b'a',1,2,2),(0x20000,b'b',1,0,2)],
             [(0x2800,b'a',1,0,2)], [(0x6800,b'a',1,0,2)],
             [(0x8800,b'a',1,2,2)], [(0x8fff,b'ab',2,0,2)],
             [(0x400000,b'a',1,2,2)], [(0xffffff,b'ab',2,0,2)],
-            [(0x10000,b'',0,2,2)], [(0x10000,b'a',65536,2,2)],
+            [(0x20000,b'',0,2,2)], [(0x20000,b'a',65536,2,2)],
         ]
         original = copy.deepcopy(self.memory)
         for regions in cases:
@@ -232,7 +232,7 @@ class BankedPackageTests(unittest.TestCase):
                 validate_extents(regions, self.memory)
             self.assertEqual(self.memory, original)
         hole = copy.deepcopy(self.memory)
-        hole['usable_banks'].remove(2)
+        hole['usable_banks'].remove(3)
         with self.assertRaises(ValueError):
             manifest(self.image, hole)
 
@@ -242,21 +242,21 @@ class BankedPackageTests(unittest.TestCase):
         image.update(format='actionc-65816-image',version=2,target='wdc-65816-native',
                      abi='action65816.native.v2',stack_overflow=0x3c00,
                      task_headroom=26,irq_headroom=13,imports=[],data=[],
-                     routines=[{'address':0x10000,'arguments':[],'result_bytes':0}])
+                     routines=[{'address':0x20000,'arguments':[],'result_bytes':0}])
         for s in image['segments']:
             s['writable'] = not s['executable']
         for z in image['zero_fill']:
             z['writable'] = True
         image_regions(image,{'stack_overflow':0x3c00},[],self.memory,image_version=2)
-        require_executable(image,0x10000)
-        for address in (0x8800,0x10001,0x20000,True):
+        require_executable(image,0x20000)
+        for address in (0x8800,0x20001,0x30000,True):
             with self.assertRaises(RuntimeError):
                 require_executable(image,address)
         for change in (
             lambda i:i.update(entry=0x8800), lambda i:i.update(abi='wrong'),
             lambda i:i.update(imports=[{'address':0xd000}]),
             lambda i:i['segments'][0].update(writable=True),
-            lambda i:i['zero_fill'][0].update(address=0x10000),
+            lambda i:i['zero_fill'][0].update(address=0x20000),
             lambda i:i['zero_fill'][0].update(size=0x1000000),
             lambda i:i['routines'][0].update(result_bytes=2),
         ):
@@ -275,7 +275,7 @@ class BankedPackageTests(unittest.TestCase):
     def test_generated_limits_and_text_conventions(self):
         with tempfile.TemporaryDirectory() as temp:
             p = Path(temp)
-            for count in (2,16,256):
+            for count in (3,16,256):
                 m = layout(max_banks=count)
                 self.assertEqual(m['constants']['TABLE_BYTES'], 4*count)
                 generate(p/str(count),m)
@@ -288,7 +288,7 @@ class BankedPackageTests(unittest.TestCase):
                 (p/'config.json').write_bytes(CONFIG.read_text().replace('\n',nl).encode())
                 (p/'profile.json').write_bytes(PROFILE.read_text().replace('\n',nl).encode())
                 self.assertEqual(layout(p/'config.json',p/'profile.json'),layout())
-        for invalid in (0,1,257,-1,True,1.5):
+        for invalid in (0,1,2,257,-1,True,1.5):
             with self.subTest(limit=invalid),self.assertRaises(ValueError):
                 layout(max_banks=invalid)
 

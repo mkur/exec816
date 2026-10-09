@@ -46,7 +46,7 @@ class DosPackageTests(unittest.TestCase):
         from ports_budget import account
         from generate_tasks import validate_memory
         for capacity in (4,8):
-            for bank in (1,3):
+            for bank in (2,3):
                 memory=layout(kernel_bank=bank,upper_table=capacity==8)
                 if capacity==8:configure(memory,8)
                 heap(memory);ports(memory);io(memory);validate_memory(memory);before=account(memory)

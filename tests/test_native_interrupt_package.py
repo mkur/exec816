@@ -29,7 +29,7 @@ class NativeInterruptPackageTests(unittest.TestCase):
             self.assertEqual((ROOT/path).read_text(),text,path)
 
     def test_no_bank_zero_growth_and_complete_upper_reservations(self):
-        for bank in (1,3):
+        for bank in (2,3):
             memory=layout(kernel_bank=bank)
             original=copy.deepcopy(memory)
             with tempfile.TemporaryDirectory() as directory:

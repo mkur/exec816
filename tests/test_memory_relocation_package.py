@@ -16,6 +16,21 @@ from banked_image import validate_extents, manifest
 
 
 class MemoryRelocationTests(unittest.TestCase):
+    def test_firmware_bank_is_reserved_and_cannot_hold_image_payload(self):
+        for name in ('memory-4m.json','memory-1m.json'):
+            memory = layout(profile=PROFILE.with_name(name),upper_table=True)
+            self.assertNotIn(1,memory['usable_banks'])
+            self.assertEqual(memory['constants']['TABLE'],0x20000)
+            image = dict(entry=0x30000,zero_fill=[],segments=[
+                dict(address=0x30000,bytes=[0x6b],executable=True)])
+            header,_ = manifest(image,memory)
+            self.assertEqual(header[36:40],bytes([2,0,1,0]))
+            for address in (0x10000,0x10100,0x1ffff):
+                with self.assertRaises(ValueError):
+                    validate_extents([(address,b'x',1,0,2)],memory)
+            with self.assertRaises(ValueError):
+                layout(profile=PROFILE.with_name(name),kernel_bank=1)
+
     def test_profiles_protect_small_loader_memory(self):
         for name in ('memory-4m.json','memory-1m.json'):
             with self.subTest(profile=name):
@@ -36,7 +51,7 @@ class MemoryRelocationTests(unittest.TestCase):
             resident_addresses(profile)
 
     def test_data_placement_follows_metadata_and_kernel_bank(self):
-        for bank in (1, 3):
+        for bank in (2, 3):
             m = layout(kernel_bank=bank, upper_table=True)
             reserve_metadata(m)
             previous = m['profile']['code_origin']
@@ -61,10 +76,11 @@ class MemoryRelocationTests(unittest.TestCase):
         ):
             with self.subTest(address=address, kind=kind), self.assertRaises(ValueError):
                 validate_extents([(address, b'' if kind == 1 else bytes(size), size, kind, owner)], m)
-        image = dict(entry=0x20000, zero_fill=[], segments=[
-            dict(address=0x20000, bytes=[0x6b], executable=True)])
+        image = dict(entry=0x30000, zero_fill=[], segments=[
+            dict(address=0x30000, bytes=[0x6b], executable=True)])
         header, _ = manifest(image, m)
-        self.assertEqual(header[36:40], bytes([2, 0, 2, 0]))
+        self.assertEqual(header[36:40], bytes([2, 0, 1, 0]))
+        self.assertEqual(header[40:44], bytes([2, 0, 2, 0]))
 
     def test_compiler_data_overflow_is_rejected_before_foreign_bindings(self):
         m = layout()
@@ -78,7 +94,7 @@ class MemoryRelocationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_compiled_data(bad, m)
         m = layout()
-        m['profile']['code_origin'] = 0x1ff00
+        m['profile']['code_origin'] = 0x2ff00
         with self.assertRaises(ValueError):
             reserve_image_data(m)
 

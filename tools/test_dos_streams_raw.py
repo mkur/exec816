@@ -15,7 +15,7 @@ from os_boundary import emulator,run_to
 from generate_console import constants as console_layout
 CONSOLE_LAYOUT=console_layout()
 
-def run(t,out,mode,bank=1):
+def run(t,out,mode,bank=2):
     out.mkdir(parents=True,exist_ok=True)
     names=bytearray(520)
     for offset,value in ((0,b'RAW:'),(32,b'NIL:'),(64,b'console.device'),(96,b'CHILD\n'),
@@ -103,7 +103,7 @@ def run(t,out,mode,bank=1):
 
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--output',type=Path,required=True)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--output',type=Path,required=True)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
     try:result=run(compiler(args.compiler_dir),out,args.case,args.bank)
     except Exception as error:result.update(status='fail',error=str(error));raise

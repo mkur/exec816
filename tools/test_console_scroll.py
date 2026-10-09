@@ -25,7 +25,7 @@ def run(t, out, optimize, from_build=None, observe=False):
     require(sha256(bridge / 'AltirraBridgeServer') == PIN['emulator']['sha256'],
             'Unpinned scrolling emulator')
     p = read_build(from_build) if from_build else build(t, ROOT / 'tests/programs/console_scroll.act', out,
-              optimize=optimize, tasks=True, task_capacity=8, kernel_bank=1,
+              optimize=optimize, tasks=True, task_capacity=8, kernel_bank=2,
               console=False, console_test=True, stack_checks=True)
     require(p['build']['optimize'] == optimize, 'Wrong benchmark NIR mode')
     with observation(p, observe) as marks, emulator(bridge, ROOT / 'build/firmware/altirraos-816.rom', out, pin=PIN) as b:

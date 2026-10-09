@@ -58,7 +58,7 @@ class PortPackageTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as directory:
                 registration_include(directory,memory)
                 self.assertIn(f'${old:x}',(Path(directory)/'ports-storage.inc').read_text())
-        memory['profile']['code_origin']=0x1fff1
+        memory['profile']['code_origin']=0x2fff1
         with self.assertRaises(ValueError):reserve_metadata(memory)
 
     def test_publish_rejects_failed_timing(self):

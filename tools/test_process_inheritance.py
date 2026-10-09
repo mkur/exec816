@@ -167,7 +167,7 @@ def retained(bridge, program, variant):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',choices=('raw','opt'),required=True)
-    parser.add_argument('--bank',type=int,default=1)
+    parser.add_argument('--bank',type=int,default=2)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--suite',default='0,1,2,3,4,5',help='Comma-separated scenario numbers; 0 is the functional development case')
     args = parser.parse_args()

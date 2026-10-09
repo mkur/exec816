@@ -6,7 +6,7 @@ from native_program import ROOT,compiler
 from test_shell_commands import run
 
 def cases():
-    return [(f'basic-bank{bank}-{size}','basic',bank,size)for bank in (1,3)for size in (128,256)]+[('large-256','large',1,256)]+[(f'{scenario}-{size}',scenario,1,size)for scenario in ('raw-text','fault-read','fault-enumeration')for size in (128,256)]
+    return [(f'basic-bank{bank}-{size}','basic',bank,size)for bank in (2,3)for size in (128,256)]+[('large-256','large',2,256)]+[(f'{scenario}-{size}',scenario,2,size)for scenario in ('raw-text','fault-read','fault-enumeration')for size in (128,256)]
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--case',choices=('raw','opt'),required=True);p.add_argument('--only');p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');p.add_argument('--output',type=Path,default=ROOT/'build/shell-commands');a=p.parse_args();t=compiler(a.compiler_dir)
     for name,scenario,bank,size in cases():

@@ -45,6 +45,12 @@ The current target has 4 MiB of CPU address space: 64 KiB base RAM plus 63
 linear 64 KiB high banks (4,032 KiB). Select 63 high banks in Altirra; this is
 separate from Atari extended-memory modes and VBXE's private VRAM. Current
 builds use `max_banks=64` and the [4 MiB map](../../platform/altirraos/memory-4m.json).
+Exec leaves the entire first linear bank, **`$010000–$01FFFF`**, untouched for
+platform firmware and possible hardware aliases. The bank table marks bank
+`$01` RESERVED with SYSTEM ownership; neither payload loading nor heap
+registration uses it. The default kernel and upper bank table start in bank
+`$02`. This reserves 64 KiB of upper RAM and adds **0 fixed and 0 per-Task
+reserved bank-zero bytes**, including guards, alignment and unused capacity.
 The [development check](../development/memory-4m.json) covers every upper bank
 and raw shell/pipeline cleanup. Historical 1 MiB pins and evidence retain their
 original configuration.
@@ -52,7 +58,7 @@ original configuration.
 The bank manager validates usable banks and image reservations before payload
 writes. The [heap](memory.md) allocates byte ranges from registered memory.
 `kernel_bank` in [kernel.json](../../config/kernel.json) selects the resident
-image's starting bank: require 1..255, below MAX_BANKS, and usable mapped RAM.
+image's starting bank: require 2..255, below MAX_BANKS, and usable mapped RAM.
 Check every emitted extent, including additional banks. This is not a one-bank
 image size limit or runtime relocation feature.
 

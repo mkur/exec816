@@ -12,7 +12,7 @@ from banked_test_memory import read as far_read
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 LIMITS=dict(host_seconds=240,guest_frames=12000)
 
-def run(t,out,mode,bank=1,scenario=0):
+def run(t,out,mode,bank=2,scenario=0):
     out.mkdir(parents=True,exist_ok=True)
     session=(ROOT/'examples/shell/shell-session.inc').read_text().replace('DOS.CurrentDir(', 'TestDirectory(').replace('DOS.SelectOutput(', 'TestOutput(').replace('DOS.BeginForeground(', 'TestForeground(')
     dispatch='          ShellDispatch()'
@@ -69,4 +69,4 @@ def run(t,out,mode,bank=1,scenario=0):
         hooks={str(f.relative_to(out)):sha256(f)for f in (out/'shell-lifetime.inc',out/'shell-redirection.inc',out/'task-kernel/dosclient.act',out/'task-kernel/fslocks.act')},
         source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','examples/shell/shell-redirection.inc','tests/programs/shell_lifetime.act','tests/programs/shellfaultcontrol.act','tools/test_shell_lifetime.py')})
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',type=int,default=0);a.add_argument('--bank',type=int,default=1);a.add_argument('--output',type=Path,required=True);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');o=a.parse_args();r=run(compiler(o.compiler_dir),o.output.resolve(),o.case,o.bank,o.scenario);(o.output/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell lifetime passed',o.case,o.bank,o.scenario,flush=True)
+    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',type=int,default=0);a.add_argument('--bank',type=int,default=2);a.add_argument('--output',type=Path,required=True);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');o=a.parse_args();r=run(compiler(o.compiler_dir),o.output.resolve(),o.case,o.bank,o.scenario);(o.output/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell lifetime passed',o.case,o.bank,o.scenario,flush=True)

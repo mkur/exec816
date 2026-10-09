@@ -22,7 +22,7 @@ def main():
     try:
         with emulator(args.bridge_dir.resolve(),args.rom.resolve(),out,pin=PIN) as bridge:
             report['machine']=verify_machine(bridge,args.rom,PIN)
-            for bank in (1,3):
+            for bank in (2,3):
                 for mode in ('raw','opt'):
                     name=f'bank{bank}-{mode}';print('Running '+name+'...',flush=True)
                     program=build(toolchain,ROOT/'tests/programs/upper_bank_table.act',out/name,

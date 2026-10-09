@@ -133,7 +133,7 @@ KEYS={c:(c.upper(),False)for c in 'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEYS.update({c:(c,True)for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'})
 KEYS.update({' ':('SPACE',False),'\n':('RETURN',False),'\t':('TAB',False),'\b':('BACKSPACE',False),':':('SEMICOLON',True),'"':('2',True),'*':('ASTERISK',False),'<':('LESS',False),'>':('GREATER',False),'/':('SLASH',False),'.':('PERIOD',False),';':('SEMICOLON',False),'|':('EQUALS',True),'-':('MINUS',False),'=':('EQUALS',False),'?':('SLASH',True)})
 
-def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=None,reuse=False,pin=None,bridge_build=None,history_unavailable=False):
+def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=None,reuse=False,pin=None,bridge_build=None,history_unavailable=False):
     pin = pin or PIN
     bridge_build = bridge_build or ROOT/'build/shell-console-bridge'
     out.mkdir(parents=True,exist_ok=True)
@@ -350,7 +350,7 @@ def run(t,out,mode,bank=1,size=128,no_mount=False,smoke=False,eof=None,external=
     return dict(status='pass',mode=mode,kernel_bank=bank,sector_bytes=size,no_mount=no_mount,smoke=smoke,eof=eof,history_unavailable=history_unavailable,build=p['build'],runtime=rt,machine=machine,pin=pin,limits=LIMITS,observations=observations,schedule=schedule,counts=counts,media_sha256=digest,writes_sha256=sha256(out/'writes.bin'),source_inputs={s:sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_core.act','tools/test_shell_core.py')},hook_sha256=sha256(out/'shell-observed.inc'))
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=1);a.add_argument('--sector-size',type=int,default=128);a.add_argument('--no-mount',action='store_true');a.add_argument('--smoke',action='store_true');a.add_argument('--history-unavailable',action='store_true');a.add_argument('--paced',action='store_true');a.add_argument('--eof',choices=('empty','partial'));a.add_argument('--output',type=Path,required=True);args=a.parse_args()
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--bank',type=int,default=2);a.add_argument('--sector-size',type=int,default=128);a.add_argument('--no-mount',action='store_true');a.add_argument('--smoke',action='store_true');a.add_argument('--history-unavailable',action='store_true');a.add_argument('--paced',action='store_true');a.add_argument('--eof',choices=('empty','partial'));a.add_argument('--output',type=Path,required=True);args=a.parse_args()
     out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text()) if args.paced else None
     bridge=ROOT/'build/shell-paced-bridge' if args.paced else None

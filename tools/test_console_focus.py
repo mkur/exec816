@@ -109,7 +109,7 @@ def run(out,mode,bank,quota=False):
         return dict(quota_probe=quota,quota_drains=quota_drains,status='pass',tier='development',mode=mode,bank=bank,checks=data(b,p['image'],'checks',True),build=p['build'],pin=PIN,machine=machine,runtime=runtime,observations=observations,events=events,source_inputs={str(source.relative_to(ROOT)):sha256(source),'tools/test_console_focus.py':sha256(ROOT/'tools/test_console_focus.py')})
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(1,3),default=1);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quota',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(2,3),default=2);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quota',action='store_true');args=parser.parse_args()
     result=run(args.output.resolve(),args.case,args.bank,args.quota)
     (args.output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Console focus/presentation development checks passed',args.case,args.bank,flush=True)

@@ -13,7 +13,7 @@ from test_cooperative import data
 from generate_console import constants as console_layout
 CONSOLE_LAYOUT=console_layout()
 
-def run(t,out,optimize,size,bank=1):
+def run(t,out,optimize,size,bank=2):
     out.mkdir(parents=True,exist_ok=True)
     p=build(t,ROOT/'tests/programs/native_console_dos.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,
             dos_mounts=[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)])
@@ -102,7 +102,7 @@ def run(t,out,optimize,size,bank=1):
         counters={name:int.from_bytes(b.memdump(at(name.upper()),4 if name=='verified' else 2),'little') for name in ('typed','duringRead','lines','textReads','errors','verified')}
     return dict(status='pass',build=p['build'],runtime=rt,machine=machine,sector_bytes=size,media_sha256=media_hash,stimuli=stimuli,observations=observations,counters=counters,limits=dict(checkpoint_host_seconds=120,checkpoint_guest_frames=6000,read_host_seconds=1800,read_guest_frames=30000))
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--sector-size',type=int,choices=(128,256),required=True);a.add_argument('--bank',type=int,default=1);a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--sector-size',type=int,choices=(128,256),required=True);a.add_argument('--bank',type=int,default=2);a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     try:r=run(compiler(ROOT/'build/actionc'),out,args.case=='opt',args.sector_size,args.bank)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')

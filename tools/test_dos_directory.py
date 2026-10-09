@@ -12,7 +12,7 @@ from test_cooperative import data
 from ports_budget import current
 
 
-def directory(t, out, mode, bank=1, removal=False):
+def directory(t, out, mode, bank=2, removal=False):
     out.mkdir(parents=True, exist_ok=True)
     media = out / 'volume.atr'
     shutil.copyfile(ROOT / 'tests/fixtures/mydos/mydos450-128.atr', media)

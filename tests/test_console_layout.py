@@ -58,7 +58,7 @@ class ConsoleLayoutTests(unittest.TestCase):
             with self.subTest(failure=failure),self.assertRaises(ValueError):console.constants(a)
 
     def test_bank_selection_overlap_and_overflow(self):
-        for bank in (1,3):
+        for bank in (2,3):
             m=memory.layout(memory.CONFIG,memory.PROFILE,kernel_bank=bank)
             console.reserve_metadata(m)
             self.assertEqual(m['console_storage']['BASE']>>16,bank)

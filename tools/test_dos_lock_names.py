@@ -10,7 +10,7 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 
 
-def names(t,out,mode,bank=1):
+def names(t,out,mode,bank=2):
     out.mkdir(parents=True,exist_ok=True)
     media=out/'volume.atr';shutil.copyfile(ROOT/'tests/fixtures/mydos/mydos450-128.atr',media)
     digest=sha256(media);paths=bytearray(512)

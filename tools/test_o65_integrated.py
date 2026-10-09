@@ -144,7 +144,7 @@ if __name__=='__main__':
     parser.add_argument('--case',choices=('raw','opt'),required=True)
     parser.add_argument('--size',type=int,choices=(128,256),default=128)
     parser.add_argument('--profile',type=int,choices=(1,2,4),default=1)
-    parser.add_argument('--bank',type=int,choices=(1,3),default=1)
+    parser.add_argument('--bank',type=int,choices=(2,3),default=2)
     parser.add_argument('--trace',action='store_true')
     parser.add_argument('--reuse',action='store_true')
     parser.add_argument('--from-build',type=Path,help='Repackage frozen machine code with another mount geometry/profile')

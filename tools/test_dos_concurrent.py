@@ -9,7 +9,7 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from banked_test_memory import read
 
-def run(t,out,mode,size,capacity=8,bank=1,speed=0,trace=False,program=None,key=False):
+def run(t,out,mode,size,capacity=8,bank=2,speed=0,trace=False,program=None,key=False):
     out.mkdir(parents=True,exist_ok=True)
     mounts=[dict(alias='D'+str(i+1),unit=49+i,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1 if speed==0 else 2) for i in range(2)]
     paths=bytearray(224)
@@ -89,7 +89,7 @@ def run(t,out,mode,size,capacity=8,bank=1,speed=0,trace=False,program=None,key=F
         result['replay']=dict(status='identical',xex_sha256=sha256(p['xex']),emulator_sha256=PIN['emulator']['sha256'])
     return result
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),required=True);a.add_argument('--capacity',type=int,choices=(4,8),default=8);a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--speed',type=int,choices=(0,1),default=0);a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
+    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),required=True);a.add_argument('--capacity',type=int,choices=(4,8),default=8);a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--speed',type=int,choices=(0,1),default=0);a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     require(not(args.speed and args.size!=128),'Stock profile is 128 only')
     try:r=run(compiler(ROOT/'build/actionc'),out,args.case,args.size,args.capacity,args.bank,args.speed,args.trace,key=args.key)
     except Exception as e:r.update(status='fail',error=str(e));raise

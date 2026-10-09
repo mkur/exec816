@@ -2,7 +2,7 @@
   "max_banks": 64,
   "max_extents": 64,
   "staging_bytes": 1024,
-  "kernel_bank": 1,
+  "kernel_bank": 2,
   "console": false,
   "cache_blocks": 512,
   "stack_checks": true

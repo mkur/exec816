@@ -15,8 +15,8 @@ def run(t,out,modes,only=None,reuse=None):
     for mode in modes:
         cases=[('lifetime-bank1',lambda p:life(t,p,mode)),
                ('lifetime-bank3',lambda p:life(t,p,mode,3,1)),
-               ('console-only',lambda p:life(t,p,mode,1,3)),
-               ('stream-removal-guard',lambda p:life(t,p,mode,1,2)),
+               ('console-only',lambda p:life(t,p,mode,2,3)),
+               ('stream-removal-guard',lambda p:life(t,p,mode,2,2)),
                ('headless',lambda p:nil(t,p,mode)),
                ('serial-128',lambda p:recovery(t,p,mode,128)),
                ('serial-256',lambda p:recovery(t,p,mode,256)),

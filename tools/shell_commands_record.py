@@ -9,7 +9,9 @@ from test_shell_commands_suite import cases
 
 def validate(r,*,current_layout=False):
     budgets=current()['after'] if current_layout else historical()
-    expected={(m,n)for m in ('raw','opt')for n,*_ in cases()}
+    # The checked-in qualification record predates the bank-$01 reservation.
+    names=[n if current_layout else n.replace('basic-bank2-','basic-bank1-') for n,*_ in cases()]
+    expected={(m,n)for m in ('raw','opt')for n in names}
     require(r['status']=='pass'and {(c['mode'],c['name'])for c in r['cases']}==expected and len(r['cases'])==22,'Missing command matrix case')
     require(r['shell_allocation']==1288 and r['fixed_bank_zero_delta']==r['per_task_bank_zero_delta']==0,'Shell budget changed')
     require({c['mode']for c in r['entry_checks']}=={'raw','opt'}and all(c['runtime']['status']==0 and c['runtime']['guards']=='intact'for c in r['entry_checks']),'Missing shipped entry execution')

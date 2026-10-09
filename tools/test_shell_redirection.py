@@ -46,7 +46,7 @@ def prepare(size,scenario):
         cases += [item('EXIT >NIL:',done=1)]
     return disk,cases,derived,original
 
-def run(t,out,mode,bank=1,size=128,scenario='basic'):
+def run(t,out,mode,bank=2,size=128,scenario='basic'):
     out.mkdir(parents=True,exist_ok=True);source=instrument(out,'shell_redirection.act')
     observed=out/'shell-observed.inc'
     core=observed.read_text()
@@ -115,5 +115,5 @@ def run(t,out,mode,bank=1,size=128,scenario='basic'):
                 capture_address=capture_address,command_address=command_address,fixture_sha256=sha256(source),writes_sha256=sha256(out/'writes.bin'),expected_sha256=sha256(out/'expected.bin'),media_sha256=digest,original_media_sha256=original_sha,hook_sha256=sha256(out/'shell-observed.inc'),
                 source_inputs={s:LOADED_SOURCE_SHA256 if s=='tools/test_shell_redirection.py' else sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','examples/shell/shell-redirection.inc','tests/programs/shell_redirection.act','tools/test_shell_redirection.py','tools/test_shell_core.py','tools/test_shell_commands.py')})
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--case',choices=('raw','opt'),required=True);p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');p.add_argument('--bank',type=int,default=1);p.add_argument('--sector-size',type=int,default=128);p.add_argument('--scenario',choices=SCENARIOS,default='basic');p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
+    p=argparse.ArgumentParser();p.add_argument('--case',choices=('raw','opt'),required=True);p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');p.add_argument('--bank',type=int,default=2);p.add_argument('--sector-size',type=int,default=128);p.add_argument('--scenario',choices=SCENARIOS,default='basic');p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
     r=run(compiler(a.compiler_dir),out,a.case,a.bank,a.sector_size,a.scenario);(out/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell redirection passed',a.case,a.scenario,a.bank,a.sector_size,flush=True)

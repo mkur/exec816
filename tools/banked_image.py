@@ -81,6 +81,9 @@ def manifest(image, memory):
     c = memory['constants']
     seed = bytearray(c['TABLE_BYTES'])
     seed[:4] = bytes([2, 0, 1, 0])
+    for bank in memory.get('platform_reserved_banks', []):
+        if bank < c['MAX_BANKS']:
+            seed[bank*4:bank*4+4] = struct.pack('<BBH', 2, 0, 1)
     for bank in memory['usable_banks']:
         seed[bank*4] = 1
     for bank in reserved_banks(memory):

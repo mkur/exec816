@@ -11,7 +11,7 @@ from generate_tasks import storage
 
 class CapacityPackaging(unittest.TestCase):
     def test_kernel_parameter_and_table(self):
-        for bank in (1,3):
+        for bank in (2,3):
             m=layout(kernel_bank=bank,upper_table=True)
             self.assertEqual(m['constants']['TABLE'],bank<<16)
             self.assertEqual(m['profile']['code_origin'],(bank<<16)+256)

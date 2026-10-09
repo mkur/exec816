@@ -21,8 +21,8 @@ def reuse(t,p,mode):
 
 def cases(t,mode):return [
  ('basic-bank1',lambda p:shell(t,p,mode)),('filesystem-first-bank3',lambda p:shell(t,p,mode,3,4)),
- ('restore-failure',lambda p:shell(t,p,mode,1,1)),('close-failure',lambda p:shell(t,p,mode,1,2)),('removal-guard',lambda p:shell(t,p,mode,1,3)),
- ('stream-races-bank1',lambda p:races(t,p,mode)),('stream-races-bank3',lambda p:races(t,p,mode,3,1)),('stream-no-mount',lambda p:races(t,p,mode,1,3)),
+ ('restore-failure',lambda p:shell(t,p,mode,2,1)),('close-failure',lambda p:shell(t,p,mode,2,2)),('removal-guard',lambda p:shell(t,p,mode,2,3)),
+ ('stream-races-bank1',lambda p:races(t,p,mode)),('stream-races-bank3',lambda p:races(t,p,mode,3,1)),('stream-no-mount',lambda p:races(t,p,mode,2,3)),
  ('headless',lambda p:directory(t,p,mode)),('reuse',lambda p:reuse(t,p,mode)),('shell-no-mount',lambda p:entry(t,p,mode,True,True)),
  ('serial-128',lambda p:serial(t,p,mode,128)),('serial-256',lambda p:serial(t,p,mode,256))]
 if __name__=='__main__':

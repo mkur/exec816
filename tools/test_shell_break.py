@@ -237,7 +237,7 @@ def run(out,mode,name,size,profile,bank,replay,reuse=False):
     return result
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',choices=CASES,default='compute');a.add_argument('--size',type=int,choices=(128,256),default=256);a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(1,3),default=1);a.add_argument('--reuse-build',action='store_true');a.add_argument('--replay',action='store_true');a.add_argument('--output',type=Path,required=True)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--scenario',choices=CASES,default='compute');a.add_argument('--size',type=int,choices=(128,256),default=256);a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--reuse-build',action='store_true');a.add_argument('--replay',action='store_true');a.add_argument('--output',type=Path,required=True)
     o=a.parse_args();out=o.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     try:r=run(out,o.case,o.scenario,o.size,o.profile,o.bank,o.replay,o.reuse_build)
     except Exception as e:r.update(status='fail',error=str(e));raise

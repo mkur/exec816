@@ -13,6 +13,8 @@ from test_cooperative import data
 from test_gem_vdi import case_pin
 from test_calypsi import pattern
 from test_large_stacks import observe
+from generate_memory import layout
+from task_capacity import configure
 
 CASES=['pattern','unknown-baseline','absent','unsupported','busy-timeout','vcount-timeout',
        'unquiesced','retained-owner','wrap-timeout','map-nmi','bitmap-copy','copy-fault',
@@ -43,7 +45,8 @@ def run(output,mode,cases=None,replay=False,production=False):
         symbols=foreign['symbols']
         memory=program['build']['memory']
         report['bank_zero_delta']=dict(fixed=0,per_task=[0]*8,private_idle=0)
-        before=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        before=layout(upper_table=True)
+        configure(before,8)
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[key]==before[key],'G3 changed '+key)
         for name in cases or CASES:

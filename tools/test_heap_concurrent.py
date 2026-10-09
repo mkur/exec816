@@ -118,7 +118,7 @@ RETURN
     return program
 
 
-def case(bridge,toolchain,output,optimize,variant,bank=1):
+def case(bridge,toolchain,output,optimize,variant,bank=2):
     if variant=='races':program=race_program(toolchain,output,optimize)
     else:
         source='heap_lifetime.act' if variant=='lifetime' else 'heap_capacity.act'

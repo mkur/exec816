@@ -11,7 +11,7 @@ if __name__=='__main__':
     a.add_argument('--case',choices=('raw','opt'),required=True)
     a.add_argument('--sector-size',type=int,choices=(128,256),default=128)
     a.add_argument('--speed',type=int,choices=(0,1),default=0)
-    a.add_argument('--bank',type=int,choices=(1,3),default=1)
+    a.add_argument('--bank',type=int,choices=(2,3),default=2)
     a.add_argument('--trace',action='store_true');a.add_argument('--output',type=Path,required=True)
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     try:r=run(out,args.case,args.sector_size,args.speed,args.bank,args.trace,compiler(args.compiler_dir),streams=True)

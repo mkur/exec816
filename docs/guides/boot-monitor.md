@@ -29,6 +29,9 @@ the final partial block also prints a dot. The monitor appends its banner and
 countdown without clearing earlier text. The bitmap console starts later when
 the selected Exec application opens it. Remote image loading is not provided.
 
+Exec leaves `$010000–$01FFFF` available to platform firmware and starts its
+default kernel in bank `$02`.
+
 The sector cache defaults to 64 KiB of upper-RAM data storage. At the Forth
 prompt, select a different capacity for this boot:
 
