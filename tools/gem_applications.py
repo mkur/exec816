@@ -56,13 +56,13 @@ def scene_symbols(bridge,program,directory,title,bounds):
         rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
                                        'little',signed=True) for i in (0,2,4,6))
         if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
-            owners[number(raw,request['fields']['owner'],3)]=target
+            owners[number(raw,request['fields']['owner'],3)]=at
     # wind_get clears caller output words before filling them. The application
     # work[] buffer is scratch, not a window identity, even at an IRQ snapshot.
     # Use the published AES view and its retained Process Task instead.
     found=[]
     for item in instances(bridge,program,directory):
         if item['name']==name and item['task'] in owners:
-            found.append(item['symbols'])
+            found.append({**item['symbols'],'__aes_context':owners[item['task']]})
     require(len(found)==1,'No unique loaded window model for '+name)
     return found[0]

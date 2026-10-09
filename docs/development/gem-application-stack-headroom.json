@@ -1,5 +1,5 @@
 {
-  "status": "in-progress",
+  "status": "pass",
   "tier": "development",
   "qualification": false,
   "baseline": {
@@ -1055,10 +1055,622 @@
         },
         "scope": "Bounded Path open/edit/exposure/cancel, exact pixels, shell EXIT, guards, ownership and OS return."
       }
-    }
+    },
+    "commit": "6cfe747"
   },
   "SH3": {
-    "status": "pending"
+    "status": "complete",
+    "implementation_commit": "6cfe747439526326c8abdb8a9c44a81af65d6989",
+    "package": {
+      "path": "build/gem-stack-headroom/final/exec816-demo.zip",
+      "sha256": "0f4383116a12004e613e43c2ec2514be83e2fff93db4da8529b13c9b936507a9",
+      "entries": 19,
+      "payload_checksums": 18,
+      "source_inputs_matched": 127,
+      "demo_manifest_sha256": "6a854f76cf6dfdb1e3fd33e7baf965e4bd2ae9ad1e7e5b46daec9c952cc6b1ec",
+      "build_manifest_sha256": "1dddabef7e3ad83b26a1cbae8b07991d454c8e3bf2ed6eafb2858cecac420abf",
+      "exec_build": {
+        "revision": "6cfe747439526326c8abdb8a9c44a81af65d6989",
+        "dirty": false,
+        "display": "6cfe747",
+        "actionc_pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "task_capacity": 8,
+        "stack_checks": true,
+        "mount": {
+          "profile": 4,
+          "boot": 1,
+          "format": 2,
+          "access": "readonly",
+          "alias": "D1",
+          "unit": 49,
+          "sectors": 2880,
+          "sector_bytes": 256
+        },
+        "strings": {
+          "banner": "Exec816 (6cfe747)\n\n",
+          "slots": "exec: 8 task slots\n",
+          "stackChecks": "exec: stack checks enabled\n",
+          "version": "Exec816 (6cfe747)\nactionc pin: 6510ea1\n",
+          "sioReady": " ready, 57.6k profile\n",
+          "mountStart": "Filesystems: mounting...\n",
+          "otherMountsReady": "\nWORK: -> D8: ready, read-write",
+          "mountFailure": "Filesystem startup failed; check configured disks\nRequired: WORK: on D8:\nUse CD SYS: to retry; cold-boot after SIO timeout"
+        }
+      },
+      "boot_manifest": "of816/of816.json",
+      "resident_c_unchanged_from_ED3": true
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "private_idle": 0
+    },
+    "harness_inputs": {
+      "tools/test_demo.py": "15276243a0c30e3e034671cbdcae570e04be523ef43f1f05664ca7db96ece2ba",
+      "tools/test_gem_desktop_boot.py": "8220bab4615dcdc7e409920c0f0c8177eebd8feb8deb071c48133d04c6bdfd39",
+      "tools/test_calculator_desktop.py": "ff28d78f149cb959fa0f7b003cb25fa0fdcc9074e2720bc3ddcd28efd52f9812",
+      "tools/files_dialog_check.py": "0d2a398b6b4ab2ac7aefc79483e17eda760ab25496523ae2b1f478c6d68cf36a",
+      "tools/desktop_mouse.py": "b1d909cb861c61d7385fb2248d1484173aff8afc430a95b02fb729913db35c73",
+      "tools/gem_applications.py": "aca09e56924f6b43d4a1dd27669aaf71e5de5e5d6953dc98ef38405ada505ca0",
+      "tools/measure_gem_stacks.py": "3bd1d86c1fbc5fb782711110484cb9daf817368f13511a2f1ddbdd67df39dd5b"
+    },
+    "reports": {
+      "calculator": {
+        "path": "build/gem-stack-headroom/calculator-check/calculator-results.json",
+        "sha256": "81a074804d011bce6ca475551e62a4d40ff2f6fea6b5a33f1e603e90f201232a",
+        "status": "pass",
+        "scope": "Extracted OF816 calculator: Files launch/Stop/reload, window capacity, two private instances, idle shell collection, feedback and session exit",
+        "integration": {
+          "profile": "calculator",
+          "no_window_cleanup": true,
+          "files_launch": true,
+          "stop": true,
+          "relaunch": true,
+          "counter": true,
+          "shell": true,
+          "independent_instances": 2,
+          "resource_isolation": true,
+          "idle_run_collection": true,
+          "heap_restored": true,
+          "exit_with_calculator_and_popup": true,
+          "feedback": [
+            140.20150018537342,
+            38.1460404099924,
+            140.4535516275503,
+            140.46482909699893,
+            140.45862648880217,
+            140.45411550102273
+          ]
+        },
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 595,
+            "remaining_above_floor": 685
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1280,
+            "peak": 319,
+            "remaining_above_floor": 705
+          },
+          "2": {
+            "base": 13680,
+            "bytes": 1280,
+            "peak": 199,
+            "remaining_above_floor": 825
+          },
+          "3": {
+            "base": 14992,
+            "bytes": 1280,
+            "peak": 687,
+            "remaining_above_floor": 337
+          },
+          "4": {
+            "base": 16304,
+            "bytes": 1280,
+            "peak": 685,
+            "remaining_above_floor": 339
+          },
+          "5": {
+            "base": 17616,
+            "bytes": 1280,
+            "peak": 695,
+            "remaining_above_floor": 329
+          },
+          "6": {
+            "base": 18928,
+            "bytes": 2560,
+            "peak": 762,
+            "remaining_above_floor": 1542
+          },
+          "7": {
+            "base": 21520,
+            "bytes": 2560,
+            "peak": 557,
+            "remaining_above_floor": 1747
+          },
+          "8": {
+            "base": 24112,
+            "bytes": 512,
+            "peak": 135,
+            "remaining_above_floor": 121
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 299,
+            "remaining_above_floor": 981
+          }
+        },
+        "pre_helper_stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 595,
+            "untouched_above_floor": 685
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1280,
+            "touched_bytes": 319,
+            "untouched_above_floor": 705
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1280,
+            "touched_bytes": 199,
+            "untouched_above_floor": 825
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1280,
+            "touched_bytes": 687,
+            "untouched_above_floor": 337
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1280,
+            "touched_bytes": 685,
+            "untouched_above_floor": 339
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1280,
+            "touched_bytes": 695,
+            "untouched_above_floor": 329
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 762,
+            "untouched_above_floor": 1542
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 557,
+            "untouched_above_floor": 1747
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "live_tasks": 0,
+          "os_busy": 0,
+          "irq_depth": 0,
+          "native_irq_count": 58391,
+          "native_nmi_count": 22014
+        },
+        "minimum_ordinary_margin": 329,
+        "harness_inputs": {
+          "tools/test_demo.py": "15276243a0c30e3e034671cbdcae570e04be523ef43f1f05664ca7db96ece2ba",
+          "tools/test_gem_desktop_boot.py": "8220bab4615dcdc7e409920c0f0c8177eebd8feb8deb071c48133d04c6bdfd39",
+          "tools/test_calculator_desktop.py": "ff28d78f149cb959fa0f7b003cb25fa0fdcc9074e2720bc3ddcd28efd52f9812",
+          "tools/files_dialog_check.py": "0d2a398b6b4ab2ac7aefc79483e17eda760ab25496523ae2b1f478c6d68cf36a",
+          "tools/desktop_mouse.py": "b1d909cb861c61d7385fb2248d1484173aff8afc430a95b02fb729913db35c73",
+          "tools/gem_applications.py": "aca09e56924f6b43d4a1dd27669aaf71e5de5e5d6953dc98ef38405ada505ca0",
+          "tools/measure_gem_stacks.py": "3bd1d86c1fbc5fb782711110484cb9daf817368f13511a2f1ddbdd67df39dd5b",
+          "tools/gem_desktop_oracle.py": "31601f82897205ad6e5c674d55da241cf76041775fc9a7cfc80df9328f27f471"
+        }
+      },
+      "files": {
+        "path": "build/gem-stack-headroom/files-check/gem-desktop-results.json",
+        "sha256": "c07b76443b86a76e4822b353dd886d9304e8ca4186adefd53e161bd2df6b3c29",
+        "status": "pass",
+        "scope": "Files dialogs, scrolling/resizing, native/GEM launch/Stop, close/relaunch, child collection, heap/ownership return, shutdown. Initial panel settings matrix omitted.",
+        "integration": {
+          "profile": "gem-desktop",
+          "files_only": true,
+          "desktop_menu": {
+            "focus_restoration": true,
+            "window_reuse": true
+          },
+          "panel_settings": null,
+          "panel_keyboard": false,
+          "panel_drag": false,
+          "counter": true,
+          "shell": true,
+          "files_relaunch": true,
+          "idle_job_collection": true,
+          "heap_restored": true,
+          "menu_quit_with_child": true,
+          "exit_with_gui_child_and_popup": true
+        },
+        "files_dialogs": {
+          "path": true,
+          "new_folder": true,
+          "rename": true,
+          "duplicate_preserved": true,
+          "invalid_leaf": true,
+          "missing_path": true,
+          "file_path": true,
+          "empty_directory": true,
+          "keyboard_default": true,
+          "mouse_ok_cancel": true,
+          "escape_cancel": true,
+          "exposure_caret": true,
+          "counter_continued": true,
+          "resize_while_editing": true,
+          "bank_zero_delta": 0,
+          "child_collection_while_editing": true,
+          "close_while_editing_with_child": true,
+          "persisted_directory": "BBB"
+        },
+        "files_scrolling": {
+          "snapshot_entries": 24,
+          "rows": [
+            8,
+            4,
+            8
+          ],
+          "continuous_scroll": true,
+          "resize": true,
+          "preserved_selection": "HELLO",
+          "pixel_repair": true
+        },
+        "work_media": [
+          {
+            "name": "work-walkthrough.atr",
+            "sha256": "7bca0fc7cbd08ddffe971af343711f2ad47b74a169b21229b59b069577cb7c00",
+            "allocation": {
+              "sectors": 2880,
+              "sector_bytes": 256,
+              "allocated": 11,
+              "free": 2869,
+              "files": 1,
+              "directories": 2
+            }
+          }
+        ],
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 580,
+            "remaining_above_floor": 700
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1280,
+            "peak": 606,
+            "remaining_above_floor": 418
+          },
+          "2": {
+            "base": 13680,
+            "bytes": 1280,
+            "peak": 199,
+            "remaining_above_floor": 825
+          },
+          "3": {
+            "base": 14992,
+            "bytes": 1280,
+            "peak": 716,
+            "remaining_above_floor": 308
+          },
+          "4": {
+            "base": 16304,
+            "bytes": 1280,
+            "peak": 642,
+            "remaining_above_floor": 382
+          },
+          "5": {
+            "base": 17616,
+            "bytes": 1280,
+            "peak": 744,
+            "remaining_above_floor": 280
+          },
+          "6": {
+            "base": 18928,
+            "bytes": 2560,
+            "peak": 771,
+            "remaining_above_floor": 1533
+          },
+          "7": {
+            "base": 21520,
+            "bytes": 2560,
+            "peak": 353,
+            "remaining_above_floor": 1951
+          },
+          "8": {
+            "base": 24112,
+            "bytes": 512,
+            "peak": 135,
+            "remaining_above_floor": 121
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 301,
+            "remaining_above_floor": 979
+          }
+        },
+        "pre_helper_stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 580,
+            "untouched_above_floor": 700
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1280,
+            "touched_bytes": 606,
+            "untouched_above_floor": 418
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1280,
+            "touched_bytes": 199,
+            "untouched_above_floor": 825
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1280,
+            "touched_bytes": 716,
+            "untouched_above_floor": 308
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1280,
+            "touched_bytes": 642,
+            "untouched_above_floor": 382
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1280,
+            "touched_bytes": 744,
+            "untouched_above_floor": 280
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 771,
+            "untouched_above_floor": 1533
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 353,
+            "untouched_above_floor": 1951
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "live_tasks": 0,
+          "os_busy": 0,
+          "irq_depth": 0,
+          "native_irq_count": 56648,
+          "native_nmi_count": 41671
+        },
+        "minimum_ordinary_margin": 280,
+        "harness_inputs": {
+          "tools/test_demo.py": "15276243a0c30e3e034671cbdcae570e04be523ef43f1f05664ca7db96ece2ba",
+          "tools/test_gem_desktop_boot.py": "8220bab4615dcdc7e409920c0f0c8177eebd8feb8deb071c48133d04c6bdfd39",
+          "tools/test_calculator_desktop.py": "ff28d78f149cb959fa0f7b003cb25fa0fdcc9074e2720bc3ddcd28efd52f9812",
+          "tools/files_dialog_check.py": "0d2a398b6b4ab2ac7aefc79483e17eda760ab25496523ae2b1f478c6d68cf36a",
+          "tools/desktop_mouse.py": "b1d909cb861c61d7385fb2248d1484173aff8afc430a95b02fb729913db35c73",
+          "tools/gem_applications.py": "aca09e56924f6b43d4a1dd27669aaf71e5de5e5d6953dc98ef38405ada505ca0",
+          "tools/measure_gem_stacks.py": "3bd1d86c1fbc5fb782711110484cb9daf817368f13511a2f1ddbdd67df39dd5b",
+          "tools/gem_desktop_oracle.py": "31601f82897205ad6e5c674d55da241cf76041775fc9a7cfc80df9328f27f471"
+        }
+      },
+      "maximum_edit": {
+        "path": "build/gem-stack-headroom/maximum-edit-final/maximum-edit-results.json",
+        "sha256": "4e6316eb52646df63a982216cfac5d559e769818630234a75ebbcd0d2f86d1f4",
+        "status": "pass",
+        "scope": "Maximum 127-character Files field, rejected extra input, exposure/cancel and EXIT",
+        "maximum_edit": {
+          "maximum_characters": 127,
+          "nul_preserved": true,
+          "overflow_ignored": true,
+          "pixels": true
+        },
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 570,
+            "remaining_above_floor": 710
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1280,
+            "peak": 313,
+            "remaining_above_floor": 711
+          },
+          "2": {
+            "base": 13680,
+            "bytes": 1280,
+            "peak": 199,
+            "remaining_above_floor": 825
+          },
+          "3": {
+            "base": 14992,
+            "bytes": 1280,
+            "peak": 640,
+            "remaining_above_floor": 384
+          },
+          "4": {
+            "base": 16304,
+            "bytes": 1280,
+            "peak": 642,
+            "remaining_above_floor": 382
+          },
+          "5": {
+            "base": 17616,
+            "bytes": 1280,
+            "peak": 770,
+            "remaining_above_floor": 254
+          },
+          "6": {
+            "base": 18928,
+            "bytes": 2560,
+            "peak": 756,
+            "remaining_above_floor": 1548
+          },
+          "7": {
+            "base": 21520,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24112,
+            "bytes": 512,
+            "peak": 129,
+            "remaining_above_floor": 127
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 289,
+            "remaining_above_floor": 991
+          }
+        },
+        "pre_helper_stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 570,
+            "untouched_above_floor": 710
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1280,
+            "touched_bytes": 313,
+            "untouched_above_floor": 711
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1280,
+            "touched_bytes": 199,
+            "untouched_above_floor": 825
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1280,
+            "touched_bytes": 640,
+            "untouched_above_floor": 384
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1280,
+            "touched_bytes": 642,
+            "untouched_above_floor": 382
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1280,
+            "touched_bytes": 770,
+            "untouched_above_floor": 254
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 756,
+            "untouched_above_floor": 1548
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 129,
+            "untouched_above_floor": 127
+          }
+        ],
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "live_tasks": 0,
+          "os_busy": 0,
+          "irq_depth": 0,
+          "native_irq_count": 7792,
+          "native_nmi_count": 10732
+        },
+        "minimum_ordinary_margin": 254,
+        "harness": "import sys,json,shutil,zipfile,hashlib\nfrom pathlib import Path\nsys.path.insert(0,str(Path.cwd()/'tools'))\nfrom measure_gem_stacks import EditProbe\nfrom test_demo import run\nfrom native_program import require\nfrom gem_applications import instances\nfrom browser_model import FIELDS\nroot=Path('build/gem-stack-headroom');out=(root/'maximum-edit-final').resolve()\nshutil.copytree(root/'final',out)\nwith zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')\nchecks={}\nclass MaximumEdit:\n def exercise(self,s):\n  app=next(a for a in instances(s.b,s.p,s.p['output']/'bitmap-console') if a['name']=='files')\n  at=app['symbols']['GEMBrowser']+FIELDS['editText']\n  read=lambda:s.b.memdump(at,128).split(b'\\0')[0]\n  def checkpoint(label):\n   if label!='path-open':return\n   for length in range(len(read())+1,128):\n    s.press('A')\n    s.rendezvous('db($%x)!=0'%(at+length-1))\n    if length%32==0:print('Edit characters:',len(read()),flush=True)\n   s.frames(90)\n   expected=read();require(len(expected)==127,'Maximum editable length was not reached')\n   s.press('A');s.frames(90)\n   require(read()==expected and s.b.peek(at+127)==b'\\0','Editing exceeded TEDINFO capacity')\n   s.cells('maximum-edit-length')\n   checks.update(maximum_characters=127,nul_preserved=True,overflow_ignored=True,pixels=True)\n  s.stack_checkpoint=checkpoint\n  EditProbe().exercise(s)\nr=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=MaximumEdit(),profile_commands=False)\nrequire(all(r['gem_stacks'][str(i)]['remaining_above_floor']>=128 for i in range(1,6)),'Application headroom below target')\nr.update(scope='Maximum 127-character Files field, rejected extra input, exposure/cancel and EXIT',maximum_edit=checks,harness_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())\n(out/'maximum-edit-results.json').write_text(json.dumps(r,indent=2)+'\\n')\nprint('Maximum-length edit passed:',{k:v['remaining_above_floor'] for k,v in r['gem_stacks'].items()})\n",
+        "harness_inputs": {
+          "tools/test_demo.py": "15276243a0c30e3e034671cbdcae570e04be523ef43f1f05664ca7db96ece2ba",
+          "tools/gem_desktop_oracle.py": "fe3f7e6014b08e4431c299ab196cd9ff1112b2cf25a42d938f0bff4627055acb",
+          "tools/measure_gem_stacks.py": "3bd1d86c1fbc5fb782711110484cb9daf817368f13511a2f1ddbdd67df39dd5b",
+          "tools/gem_applications.py": "7365a84e751d02b27937da9a697eabb90addc5bc9d7613d7761def95b311acd1",
+          "tools/test_gem_desktop_boot.py": "8220bab4615dcdc7e409920c0f0c8177eebd8feb8deb071c48133d04c6bdfd39",
+          "tools/files_dialog_check.py": "0d2a398b6b4ab2ac7aefc79483e17eda760ab25496523ae2b1f478c6d68cf36a",
+          "tools/desktop_mouse.py": "b1d909cb861c61d7385fb2248d1484173aff8afc430a95b02fb729913db35c73",
+          "tools/test_calculator_desktop.py": "ff28d78f149cb959fa0f7b003cb25fa0fdcc9074e2720bc3ddcd28efd52f9812"
+        }
+      }
+    },
+    "observer_correction": {
+      "before": {
+        "tools/gem_applications.py": "aca09e56924f6b43d4a1dd27669aaf71e5de5e5d6953dc98ef38405ada505ca0",
+        "tools/gem_desktop_oracle.py": "31601f82897205ad6e5c674d55da241cf76041775fc9a7cfc80df9328f27f471"
+      },
+      "reason": "Long editable viewport persists across Backspace; the pixel oracle incorrectly recalculated its start from the caret index.",
+      "after": {
+        "tools/gem_applications.py": "7365a84e751d02b27937da9a697eabb90addc5bc9d7613d7761def95b311acd1",
+        "tools/gem_desktop_oracle.py": "fe3f7e6014b08e4431c299ab196cd9ff1112b2cf25a42d938f0bff4627055acb"
+      }
+    },
+    "host_checks": {
+      "tests": 422,
+      "skipped_historical": 4,
+      "status": "pass"
+    },
+    "minimum_ordinary_margin": 254,
+    "target_ordinary_margin": 128
   },
   "machine": {
     "ok": true,
@@ -1303,6 +1915,15 @@
     {
       "path": "build/gem-stack-headroom/capture",
       "reason": "Legacy G4 runner expects removed commonKind symbol. No G4 pass claimed; moved scratch buffer verified separately with a bounded emitted-code copy/restoration probe."
+    },
+    {
+      "path": "build/gem-stack-headroom/maximum-edit",
+      "reason": "Probe waited only for keyboard capture after each key; did not reach a full field. Replaced with a probe waiting for application insertion after each key. No burst-input throughput claim."
+    },
+    {
+      "path": "build/gem-stack-headroom/maximum-edit-paced",
+      "reason": "Reached 127 characters and passed the maximum-field pixel check. Post-Backspace exposure used a faulty host oracle that re-centered a retained viewport; interrupted after diagnosis. Target renderer unchanged. Final replay uses the corrected oracle."
     }
-  ]
+  ],
+  "scope": "SH1 attribution, SH2 ordinary-pool growth, SH3 exact-package Files/calculator/maximum-edit development checks. No hardware qualification or new latency acceptance claim."
 }

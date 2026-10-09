@@ -119,12 +119,13 @@ bytes. Development checks do not close HY4/PI4 or qualify the hosted system.
 Horizontal scrolling, richer editing and desktop icons remain outside this
 bounded subset. Cartridge compression remains separate work.
 
-Next, the [application stack headroom plan](plans/gem4xe/application-stack-headroom-implementation-plan.md)
-addresses the narrow worker-stack margins observed in the final dialog checks.
-SH1–SH3 attribute deep call paths, enlarge ordinary stack pools and verify
-at least 128 bytes above the existing checked floor in selected application
-scenarios. The selected 256-byte increase per ordinary pool adds 1,280 reserved
-bank-zero bytes; interrupt reserves and guards remain intact.
+The [application stack headroom plan](plans/gem4xe/application-stack-headroom-implementation-plan.md)
+is complete through SH1–SH3. Ordinary pools now hold 1,280 bytes, adding 1,280
+reserved bank-zero bytes while preserving guards and interrupt reserves. The
+renderer remains unchanged. The final OF816 package passes Files, calculator
+and maximum-length editing checks; the smallest ordinary-pool margin is 254
+bytes against the 128-byte target. See the
+[execution record](history/gem-application-stack-headroom.md).
 
 ## Follow-on capabilities
 

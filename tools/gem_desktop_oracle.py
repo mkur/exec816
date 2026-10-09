@@ -50,7 +50,13 @@ def paint(bridge,symbols,r,title,bounds):
             text=bridge.memdump(base+F['editText'],128).split(b'\0')[0]
             index=int.from_bytes(bridge.memdump(base+F['editIndex'],2),'little')
             active=int.from_bytes(bridge.memdump(base+F['focus'],2),'little')==2
-            columns=min(w//8,63);start=max(0,index-columns+1) if active else 0
+            columns=min(w//8,63);start=0
+            if active:
+                from generate_aes_server import expected_layout
+                offset=dict(expected_layout())['C context editScroll']
+                # Backspace retains the viewport while the caret stays visible.
+                start=int.from_bytes(bridge.memdump(symbols['__aes_context']+offset,2),'little')
+                require(start<=index<start+columns,'Caret outside the editable viewport')
             visible=text[start:start+columns]
             r.clip=(left+8,top+16,right-17,bottom-17)
             rectangle(r,(x-1,y-1,x+w+1,y+h+1),1);rectangle(r,(x,y,x+w,y+h),0)

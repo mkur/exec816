@@ -2,8 +2,9 @@
 
 The [GEM application stack headroom plan](gem4xe/application-stack-headroom-implementation-plan.md)
 addresses the narrow margins observed during editable-dialog validation.
-SH1–SH3 are in progress: attribute call paths, enlarge ordinary pools and verify at least
-128 bytes of application headroom in the selected packaged desktop scenarios.
+SH1–SH3 pass development checks: ordinary pools grow to 1,280 bytes, and the
+selected packaged desktop scenarios retain at least 254 bytes above the floor
+(128-byte target). See the [execution record](../history/gem-application-stack-headroom.md).
 
 The [editable dialogs design](gem4xe/editable-dialogs-design.md) and
 [implementation plan](gem4xe/editable-dialogs-implementation-plan.md) add

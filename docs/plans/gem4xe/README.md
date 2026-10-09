@@ -2,8 +2,9 @@
 
 The [application stack headroom plan](application-stack-headroom-implementation-plan.md)
 follows editable dialogs with call-path attribution, ordinary stack growth
-and a packaged desktop check. SH1–SH3 are in progress, targeting at least 128 bytes
-above the existing checked floor in the selected application scenarios.
+and a packaged desktop check. SH1–SH3 pass development checks; the smallest
+ordinary-pool margin is 254 bytes against a 128-byte target. See the
+[execution record](../../history/gem-application-stack-headroom.md).
 
 The [editable dialogs design](editable-dialogs-design.md) and
 [implementation plan](editable-dialogs-implementation-plan.md) add
