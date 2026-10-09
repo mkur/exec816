@@ -428,3 +428,31 @@ selector automatically after AES_PENDING: first handle the application message.
 The [file-selector contract](../reference/aes.md#file-selector) describes the
 bounded snapshot, filters, input controls, cancellation and cleanup rules.
 Rebuild GEMSYS and all applications with C component ABI 11.
+
+## Text viewer
+
+Close one GEM application to free a window, then run `RUN C:TEXT.APP`, or
+`RUN C:TEXT.APP "SYS:STORY.TXT"`. The loadable viewer uses the existing selector,
+DOS calls and caller-local VDI drawing. It adds no startup Task. Files also
+opens `.TXT` entries in the viewer; close another GEM window first. Files owns
+that child, so File > Stop closes it, and closing Files stops and collects it.
+Other files retain normal program launching.
+
+Use File > Open or O to choose a file. Up/Down scroll one line; Space and
+Shift-Space scroll a page. The arrows, track and thumb provide vertical scrolling.
+Drag the size gadget to resize; long lines are clipped rather than wrapped.
+Escape or File > Cancel Load cancels a pending replacement. Q, File > Quit and
+the closer exit. Cancellation takes effect between synchronous DOS calls.
+
+Files must be regular files of at most 65,536 bytes and 4,096 lines. LF, CR,
+CRLF and ATASCII `$9B` end lines. Tabs use eight-column stops; unsupported bytes,
+including embedded NUL, display as dots. The viewer is read-only. Cancel and
+failed Open preserve the current document and scroll position.
+
+[The application](../../examples/gem-text/text.c) keeps a candidate separate
+from its committed document, reads at most 1 KiB per event-loop turn, and paints
+at most four text rows per UPDATE section. It polls `evnt_multi` with a zero
+timer only while work remains and blocks normally when idle. Repainting and
+scrolling use the retained line index without disk reads. The minimum work area
+also leaves enough room for the borrowed file selector. After selector policy
+interruption, the application resumes event delivery before repairing pixels.

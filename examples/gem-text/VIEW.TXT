@@ -1,0 +1,26 @@
+Exec816 text viewer
+==================
+
+This file is displayed by an ordinary GEM application.
+The shell and counter keep running beside it.
+
+O opens the standard file selector.
+Cancel leaves the current document alone.
+A failed Open also keeps the current document.
+
+Up and Down scroll one line.
+Space scrolls one page; Shift-Space goes back.
+The vertical track and thumb also scroll.
+Drag the bottom-right gadget to resize.
+Long lines are clipped, not wrapped.
+
+Escape cancels a replacement between disk reads.
+Q or the closer exits the viewer.
+Files can open TXT entries and stop its viewer child.
+
+Text is read-only, up to 64 KiB and 4096 lines.
+Tabs	use	eight-column stops.
+LF, CR, CRLF and ATASCII EOL delimit lines.
+Other nonprinting bytes appear as dots.
+
+Try STORY.TXT and LONG.TXT for longer documents.

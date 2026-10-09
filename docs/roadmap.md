@@ -155,7 +155,7 @@ then opens `.TXT` documents through a launcher carrying copied path arguments.
 The design preserves the current document after Cancel or a failed replacement.
 The [TV1–TV4 plan](plans/gem4xe/text-viewer-implementation-plan.md) orders
 document loading, the standalone viewer, Files launching and the OF816 package;
-TV1–TV3 pass development checks; TV4 is in progress. See the
+TV1–TV4 are implemented and pass the recorded development checks. See the
 [execution record](history/text-viewer.md).
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,

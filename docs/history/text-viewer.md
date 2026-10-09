@@ -116,4 +116,78 @@ headroom is at least **152 bytes** in this run.
 
 Reserved bank-zero delta is **0 fixed, 0 per public Task and 0 private idle**,
 including guards, alignment and unused reservation. VRAM delta is **0**.
-TV4 packaging documentation remains in progress.
+
+## TV4 Packaged desktop and final evidence
+
+The normal `tools/build_demo.py --gem-desktop` build includes `C/TEXT.APP` and
+`VIEW.TXT`, the matching system/work disks, OF816, pinned AltirraOS ROM, guide,
+licences and checksums. Startup still opens the shell, Panel, counter and Files;
+TEXT runs on demand within the existing four-window limit. The five-second
+OF816 autoboot is unchanged. The ZIP contains **19 files**, with **18 payload
+checksums**; all **150 recorded source inputs** match the final production tree.
+Build manifests, screenshots and test output stay outside the distribution.
+
+The tested ZIP is **489,687 bytes**, SHA-256
+`0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965`.
+The development copy is `build/text-viewer/exec816-demo.zip`. Both final focused
+walkthroughs use that exact ZIP and pass through EXIT:
+
+| Scope | Result file | Result |
+| --- | --- | --- |
+| Standalone viewer and 13 settled-pixel scenes | `build/text-viewer/demo-viewer-final/text-viewer-results.json` | Pass |
+| Files association, Stop, relaunch and parent/child retirement | `build/text-viewer/demo-files-final/text-viewer-results.json` | Pass |
+| Minimum resize and narrow thumb drag regression | `build/text-viewer/demo-gadgets/text-gadgets-results.json` | Pass |
+
+An earlier combined run exercised the rebuilt legacy dialogs, selectors,
+calculator and viewer before failing the Files harness's assign-path spelling
+assertion. It is partial legacy-consumer coverage, **not a passing full
+walkthrough**. The corrected final runs cover the changed viewer/Files workflows;
+no full qualification matrix was rerun. Host checks pass **423 tests with four
+historical skips**; C ABI generation, Python syntax, diff and local-link checks
+also pass. The argument bridge has separate raw/optimized emitted probes.
+
+The evidence pins the native compiler revision without a local override, the
+Calypsi 5.18 inputs in the build manifest, ROM and actual mouse-capable emulator
+binary. The machine is PAL 800XL, 65C816 at multiplier 8, 64 KiB base RAM plus
+63 high banks and VBXE. Disk emulation is accurate `generic56k`, with SIO patching,
+burst I/O and random delay disabled. These checks do not qualify real hardware.
+
+Maximum observed stack usage across the two final workflows is below. Headroom
+excludes the existing 256-byte interrupt floor; the 128-byte acceptance target
+applies to ordinary slots 1–5, whose pools remain 1,312 bytes.
+
+| Physical slot | Reserved pool bytes | Maximum touched bytes | Minimum headroom bytes |
+| --- | ---: | ---: | ---: |
+| 0, root | 1,536 | 591 | 689 |
+| 1 | 1,312 | 327 | 729 |
+| 2 | 1,312 | 189 | 867 |
+| 3 | 1,312 | 683 | 373 |
+| 4 | 1,312 | 635 | 421 |
+| 5 | 1,312 | 907 | 149 |
+| 6 | 2,560 | 812 | 1,492 |
+| 7 | 2,560 | 424 | 1,880 |
+| 8, private idle | 512 | 135 | 121 |
+| Kernel | 1,536 | 301 | 979 |
+
+Guards remain intact, owned allocations return after collection, and OS display
+and input restoration pass. The previously recorded 112-byte child timer and
+256-byte DOS assign expansion are first-use parent resources; both return when
+Files exits. Bank-zero delta for **every slice** is **0 fixed, 0 per public Task
+and 0 private idle**, including guards, alignment and spare reserved capacity.
+VRAM delta is **0**. Upper-memory and image costs are recorded in TV1–TV3 above.
+
+Two physical Space-key observations separate event acceptance from completion
+of all paint bands. They use emulator base-clock time and exclude scanout and
+the harness's later screenshot settling delay. Paging reads the retained document
+and performs no disk I/O.
+
+| Observation | Input to model change | Model change to completed repaint |
+| --- | ---: | ---: |
+| Page 1 | 30.6 ms | 1,250.7 ms |
+| Page 2 | 53.6 ms | 1,331.3 ms |
+
+Full-page painting remains slow and progresses in visible bands. Settled pixels
+pass, but these two observations establish neither median/p95 nor freedom from
+transient flicker. Load, resize and overlap have functional/pixel coverage;
+separate duration breakdowns for those operations were not collected. No HY4/PI4
+latency gate is closed by this work.

@@ -3,7 +3,7 @@
 [Design note](text-viewer-design.md) · [GEM integration](README.md) ·
 [Open roadmap](../../roadmap.md)
 
-Status: TV1–TV3 pass development checks; TV4 is in progress.
+Status: TV1–TV4 are implemented and pass the recorded development checks.
 See the [execution record](../../history/text-viewer.md).
 
 Implement the design in four executable slices. Keep document storage and

@@ -111,6 +111,26 @@ The shell collects closed initial applications while waiting at the prompt.
 After closing Files, type RUN C:FILES.APP to start it again. The same RUN command
 can launch PANEL.APP or COUNTER.APP; the shell supports one background job.
 
-This is a desktop development preview. Files resizes and scrolls; the other
-example windows retain fixed geometry. Horizontal scrolling, cascading menus
+This is a desktop development preview. Files and the text viewer resize and scroll;
+the other example windows retain fixed geometry. Horizontal scrolling, cascading menus
 and file-manager icons remain future work.
+
+Read text files
+---------------
+
+Close one GEM application to free a window, then type RUN C:TEXT.APP.
+RUN C:TEXT.APP "SYS:VIEW.TXT" opens the included introduction directly.
+Files also opens TXT entries in this viewer. Files owns that child: Stop
+closes it, and closing Files stops and collects it before Files exits.
+
+File > Open or O opens the standard selector. Up/Down move one line; Space
+and Shift-Space move a page. Use the vertical arrows, track or thumb to scroll
+and the bottom-right gadget to resize. Escape or File > Cancel Load abandons
+a pending replacement between disk reads. Q, File > Quit or the closer exits.
+The shell and counter continue running during loading and drawing.
+
+The viewer is read-only: at most 64 KiB and 4096 lines, without wrapping or
+horizontal scrolling. LF, CR, CRLF and ATASCII EOL delimit lines. Tabs use
+eight-column stops; other nonprinting bytes appear as dots. Cancel and failed
+Open preserve the current document and scroll position. Try STORY.TXT or
+LONG.TXT for more scrolling. Opening a new GUI app still requires a free slot.
