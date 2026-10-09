@@ -238,5 +238,117 @@
       "tools/test_text_document.py": "d9aa4372da3a0ef55f69f9896722e6da7ebc63ceac80a6d3ea1f14b207dd62df"
     }
   },
-  "qualification": false
+  "qualification": false,
+  "TV2": {
+    "status": "pass",
+    "tier": "development",
+    "initial_standalone": {
+      "path": "build/text-viewer/demo-tv2/text-viewer-results.json",
+      "sha256": "1255214bd9b09c22961470c42e4e51f11929cdc3f9d32e1065c61ff2aca99c05",
+      "status": "pass"
+    },
+    "final_focused_package": {
+      "path": "build/text-viewer/demo-gadgets/text-gadgets-results.json",
+      "sha256": "2f308803f8aa9a1545b2210d5c3844f0a5434221b2d90804e3f5a2215b99f60a",
+      "status": "pass",
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 581,
+          "remaining_above_floor": 699
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1312,
+          "peak": 319,
+          "remaining_above_floor": 737
+        },
+        "2": {
+          "base": 13712,
+          "bytes": 1312,
+          "peak": 174,
+          "remaining_above_floor": 882
+        },
+        "3": {
+          "base": 15056,
+          "bytes": 1312,
+          "peak": 624,
+          "remaining_above_floor": 432
+        },
+        "4": {
+          "base": 16400,
+          "bytes": 1312,
+          "peak": 635,
+          "remaining_above_floor": 421
+        },
+        "5": {
+          "base": 17744,
+          "bytes": 1312,
+          "peak": 716,
+          "remaining_above_floor": 340
+        },
+        "6": {
+          "base": 19088,
+          "bytes": 2560,
+          "peak": 762,
+          "remaining_above_floor": 1542
+        },
+        "7": {
+          "base": 21680,
+          "bytes": 2560,
+          "peak": 424,
+          "remaining_above_floor": 1880
+        },
+        "8": {
+          "base": 24272,
+          "bytes": 512,
+          "peak": 131,
+          "remaining_above_floor": 125
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "guards": "intact",
+      "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965"
+    },
+    "drawing": {
+      "path": "build/text-viewer/narrow-outlines/results.json",
+      "sha256": "aaae47691dc44e1195316ca9dad2300a63d95c25f45322316c13c0ef62f147fe",
+      "status": "pass",
+      "checks": 122
+    },
+    "execution_scope": "Initial standalone workflow preceded slider-state caching. Focused final-package resize/thumb/cleanup and emitted drawing checks cover the subsequent changes. The combined ABI 11 package is used for that check; TV4 repeats the complete workflow.",
+    "model_bytes": 1678,
+    "image_file_bytes": 16542,
+    "image_span_bytes": 67777,
+    "image_backing_rounded_bytes": 133312,
+    "document_rounded_bytes": 81928,
+    "replacement_rounded_bytes": 163856,
+    "workstation_rounded_bytes": 288,
+    "aes_context_rounded_bytes": 344,
+    "registration_rounded_bytes": 1152,
+    "window_view_rounded_bytes": 808,
+    "selector_state_and_snapshot_and_session_bytes": 32240,
+    "max_read_step_bytes": 1024,
+    "max_text_rows_per_update": 4,
+    "layout_modes": [
+      "raw",
+      "optimized"
+    ],
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "vram_delta": 0
+  }
 }

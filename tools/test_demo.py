@@ -583,11 +583,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         result=result,ready=ready,rendezvous=rendezvous,frames=frames,press=press,
                         cells=cells,ledger=ledger,save_screen=save_screen))
                 except Exception:
-                    diagnostic = dict(pc=b.eval_expr('@xpc'),frame=b.eval_expr('@frame'),
+                    diagnostic = dict(adapter_state=b.memdump(adapter.STATE,64).hex(),
+                        pc=b.eval_expr('@xpc'),frame=b.eval_expr('@frame'),
                         read_state=number(saved['top']+51,1),scope=saved['scope'],
                         current_scope=pointer(pointer(dos)+83),scope_bytes=far(saved['scope'],56).hex(),
                         shell=far(saved['shell'],40).hex(),live_tasks=number(p['build']['task_storage']['LIVE'],1),
-                        cells=read_cells(far,saved['top']).decode('ascii'))
+                        cells=read_cells(far,saved['top']).decode('ascii',errors='replace'))
                     (out/'integration-failure.json').write_text(json.dumps(diagnostic,indent=2)+'\n')
                     raise
                 return
@@ -648,8 +649,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             # Adapter.cache and Cache. The application ABI is unchanged.
             registry=p['build']['memory']['dos_storage']['SHARED']
             service=pointer(registry+68)
-            adapter=pointer(service)
-            cache=adapter+30
+            filesystem_adapter=pointer(service)
+            cache=filesystem_adapter+30
             saved['cache_address']=cache
             settings=p['build']['memory']['boot_config']['settings']
             saved['cache']=dict(requested=number(cache+10,2),blocks=number(cache+12,2),
@@ -1008,7 +1009,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         screenshots=screenshots,boot_xex_sha256=sha256(boot_image) if boot_image else None,
         autoboot_frames=saved.get('autoboot_frames'),startup_frames=saved.get('startup_frames'),desktop_ready_frames=saved.get('desktop_ready_frames'),
         loaded_panel_feedback=saved.get('loaded_panel_feedback'),distribution_root=str(distribution_root) if distribution_root else None,
-        disk_boot=disk_boot,integration=saved.get('integration'),file_selector=saved.get('file_selector'),browser=saved.get('browser'),files_scrolling=saved.get('files_scrolling'),files_dialogs=saved.get('files_dialogs'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
+        disk_boot=disk_boot,integration=saved.get('integration'),file_selector=saved.get('file_selector'),text_viewer=saved.get('text_viewer'),browser=saved.get('browser'),files_scrolling=saved.get('files_scrolling'),files_dialogs=saved.get('files_dialogs'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),

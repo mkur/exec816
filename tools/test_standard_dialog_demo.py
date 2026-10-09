@@ -37,7 +37,7 @@ class DialogDemo:
         require(s.number(files+FIELDS['dialog'],2)!=0,'Files path editor did not open')
         key('ESC');require(s.number(files+FIELDS['dialog'],2)==0,'Files editor did not dismiss')
         menus.select('Shell');baseline=memory();owners=s.ledger()
-        begin('DIALOG');collected()
+        begin(getattr(self,'capacity_app','DIALOG'));collected()
         require(len(menus.windows())==4 and s.ledger()==owners,'Full desktop launch retained resources')
         require(memory()==baseline,'Full desktop launch leaked memory')
         menus.select('Files');menus.close();menus.select('Shell');baseline=memory();owners=s.ledger()
@@ -48,6 +48,12 @@ class DialogDemo:
         def accept(app):
             menus.select('Alert');key('RETURN');s.rendezvous('dw($%x)=1'%(app+8));s.frames(80)
         def phase(app,value):s.rendezvous('dw($%x)=%d'%(app+10,value));s.frames(50)
+        if getattr(self,'extensions_only',False):
+            self.selectors(s,shared,menus,counter,launch,accept,phase,move,edge,click,key,collected,owners,memory,baseline)
+            menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
+            s.saved['integration']=dict(profile='focused-extension',heap_return=True,heap_baseline=baseline)
+            for char in 'EXIT':s.press(char)
+            s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all();return
         identity,app=launch();move(630,230);s.cells('pre-window-alert');accept(app)
         s.cells('dialog-home');key('E');phase(app,2)
         for letter in 'ABC':key(letter)
@@ -73,7 +79,8 @@ class DialogDemo:
         key('E');phase(app,2);menus.close();collected();menus.select('Shell')
         require(s.ledger()==owners and memory()==baseline,'Close during form leaked ownership')
         identity,app=launch();accept(app);key('E');phase(app,2)
-        menus.select('Shell');s.command('BREAK '+str(identity));collected()
+        menus.select('Shell');old=s.begin('BREAK '+str(identity));s.ready(old);s.result();collected()
+        s.cells('collected-stop')
         require(s.ledger()==owners and memory()==baseline,'Stopped form leaked ownership')
         # Rebuilt resource-loaded calculator still uses its event-driven helpers.
         identity=begin('CALC');sy=symbols(s.b,s.p,directory,'calc',identity)

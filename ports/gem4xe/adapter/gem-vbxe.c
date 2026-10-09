@@ -635,7 +635,7 @@ static UWORD draw_Outline(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD vi
 {
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (visible>1 || (visible && (left>=right || top>=bottom ||
-        right>640 || bottom>240 || right-left<32 || bottom-top<32))) return DISPLAY_BAD_ARGUMENT;
+        right>640 || bottom>240 || right-left<8 || bottom-top<8))) return DISPLAY_BAD_ARGUMENT;
     if (display.operationPending) return DISPLAY_BUSY;
     if (!visible || left!=outlineLeft || top!=outlineTop || right!=outlineRight || bottom!=outlineBottom) {
         if (outlineDrawn) { cursor_hide(); outline_hide(); }

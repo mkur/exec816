@@ -3,7 +3,7 @@
 [GEM integration](README.md) · [Implementation plan](text-viewer-implementation-plan.md) ·
 [Open roadmap](../../roadmap.md)
 
-Status: TV1 passes development checks; TV2–TV4 are in progress.
+Status: TV1–TV2 pass development checks; TV3–TV4 are in progress.
 See the [execution record](../../history/text-viewer.md).
 
 Add a small loadable `C:TEXT.APP` that opens text through the standard file

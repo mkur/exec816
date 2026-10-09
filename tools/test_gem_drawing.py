@@ -24,8 +24,8 @@ def run(out,mode):
              ROOT/'platform/altirraos/vbxe.c',src/'vdi/vdi.c',src/'vdi/font.c',
              src/'vdi/font8x8.c',src/'vdi/dev_vbxe.c',ad/'gem-vbxe.c',ROOT/'tests/programs/gem_drawing.c']
     admission=(ROOT/'c/calypsi/display.c').read_text().replace(
-        'UWORD DisplayCheck(struct DisplayLease *p) {',
-        'extern volatile UWORD ownerChecks;\nUWORD DisplayCheck(struct DisplayLease *p) { ++ownerChecks;')
+        'UWORD DisplayOwnerEnter(void) {',
+        'extern volatile UWORD ownerChecks;\nUWORD DisplayOwnerEnter(void) { ++ownerChecks;')
     (out/'display-probe.c').write_text(admission)
     sources[sources.index(ROOT/'c/calypsi/display.c')]=out/'display-probe.c'
     backend=(ad/'gem-vbxe.c').read_text().replace('static void drain(void)\n{',
@@ -60,7 +60,7 @@ def run(out,mode):
                 saved['dma']=b.memdump(0x22f,3)
                 condition=f'dw(${sy["checkpoint"]:x})=1';marker=p['labels']['native_nmi']
                 b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=10000,timeout=180)
-                b.bp_clear_all();require(b.peek16(sy['failures'])==0,'Shared library or input failure')
+                b.bp_clear_all();require(b.peek16(sy['failures'])==0,'Shared library or input failure at check '+str(b.peek16(sy['failedCheck'])))
                 condition=f'@frame>{b.eval_expr("@frame")+1}'
                 b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=10,timeout=5);b.bp_clear_all()
                 model=Raster(font_bytes(src/'vdi/font8x8.c'));model.apply(25,ints=[5]);model.apply(11,[0,0,639,239])
@@ -109,6 +109,24 @@ def run(out,mode):
                         for col in range(fx,fx+w):model.pixel(col,row,pen)
                 report['text_fill_pixels_sha256']=pixels(b,out,model.packed())
                 b.memload(sy['gate'],b'\3\0')
+                report['outline_pixels']=[]
+                for checkpoint,outline in ((4,(248,88,263,97)),(5,(249,90,264,98)),
+                                            (6,(632,232,640,240)),(7,None)):
+                    condition=f'dw(${sy["checkpoint"]:x})={checkpoint}'
+                    b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=4000,timeout=60)
+                    b.bp_clear_all();require(b.peek16(sy['failures'])==0,'Narrow outline failure')
+                    condition=f'@frame>{b.eval_expr("@frame")+1}'
+                    b.bp_set(marker,condition=condition);run_to(b,marker,condition=condition,frame_limit=10,timeout=5)
+                    b.bp_clear_all()
+                    model=Raster(font_bytes(src/'vdi/font8x8.c'));model.apply(25,ints=[5]);model.apply(11,[0,0,639,239])
+                    if outline:
+                        left,top,right,bottom=outline
+                        for yy in range(top,bottom):
+                            for xx in range(left,right):
+                                if xx in (left,right-1) or yy in (top,bottom-1):model.pixels[yy*640+xx]^=15
+                    folder=out/f'outline-{checkpoint}';folder.mkdir(exist_ok=True)
+                    report['outline_pixels'].append(pixels(b,folder,model.packed()))
+                    b.memload(sy['gate'],checkpoint.to_bytes(2,'little'))
             runtime,_=execute(b,p,before_run=before,frame_limit=4000,timeout=120)
             require(b.peek16(sy['finished'])==1 and b.peek16(sy['failures'])==0,'Incomplete fixture')
             clean_ownership(b,p,p['output'])

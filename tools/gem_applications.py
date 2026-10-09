@@ -2,7 +2,7 @@
 import json
 from native_program import ROOT,require
 
-MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40)}
+MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32)}
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())
@@ -39,7 +39,6 @@ def symbols(bridge,program,directory,name,identity):
     return found[0]['symbols']
 
 def scene_symbols(bridge,program,directory,title,bounds):
-    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc',b'Dialog example':'dialog',b'Alert':'dialog',b'File selector':'dialog'}[title]
     from generate_aes_server import ABI,layout
     records=layout();request=records['Request'];view=records['WindowView']
     number=lambda raw,at,size: int.from_bytes(raw[at:at+size],'little')
@@ -62,7 +61,7 @@ def scene_symbols(bridge,program,directory,title,bounds):
     # Use the published AES view and its retained Process Task instead.
     found=[]
     for item in instances(bridge,program,directory):
-        if item['name']==name and item['task'] in owners:
+        if item['task'] in owners:
             found.append({**item['symbols'],'__aes_context':owners[item['task']]})
-    require(len(found)==1,'No unique loaded window model for '+name)
+    require(len(found)==1,'No unique loaded window model for '+repr(title))
     return found[0]

@@ -22,6 +22,10 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
                                                        *([ROOT/'c/calypsi/file-list.c'] if name=='files' else [])])
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
+    applications['text']=application(out/'apps/text',[
+        ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
+        [ROOT/'c/calypsi/file-list.c'],probes=[
+            (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
     if 'dos_mounts' not in options:
         from make_data_disk import make
         from build_gem_resource import resource
@@ -53,7 +57,7 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
     text=read_source(source or ROOT/'tests/programs/gem_desktop_session.act')
     sy=foreign['symbols']
     require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser',
-                 'Calculator','calc_start','calc_ws','calc_panel'} & sy.keys(),
+                 'Calculator','calc_start','calc_ws','calc_panel','TextRun','GEMText','TextStep'} & sy.keys(),
             'Application body or model retained in shared GUI image')
     service=''
     if '      ShellReadStep()' in text:

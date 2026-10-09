@@ -139,7 +139,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if gem_desktop:
         shutil.copyfile(output/'bitmap-console/GEMSYS.BIN',media/'GEMSYS.BIN')
         binary_names.add('GEMSYS.BIN')
-        for name in ('panel','counter','files','calc','dialog'):
+        for name in ('panel','counter','files','calc','dialog','text'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -250,6 +250,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-counter').glob('*')),
             *sorted((ROOT/'examples/gem-desktop').glob('*')),
             *sorted((ROOT/'examples/gem-dialog').glob('*')),
+            *sorted((ROOT/'examples/gem-text').glob('*')),
             *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
             ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})

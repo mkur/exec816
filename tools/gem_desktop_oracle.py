@@ -7,6 +7,10 @@ from test_desktop_presentation import rectangle
 
 def paint(bridge,symbols,r,title,bounds):
     left,top,right,bottom=bounds
+    if 'GEMText' in symbols:
+        from text_viewer_oracle import paint as text
+        text(bridge,symbols,r,bounds)
+        return
     if title in (b'Dialog example',b'Alert',b'File selector'):
         from standard_dialog_oracle import paint as dialog
         dialog(bridge,symbols,r,bounds)

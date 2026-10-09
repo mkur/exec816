@@ -6,7 +6,7 @@ VDI text and resizable vertical scrolling. Files-to-viewer launch follows
 through the existing Process lifecycle with copied filename arguments.
 The [TV1–TV4 implementation plan](text-viewer-implementation-plan.md) orders
 document loading, the standalone viewer, Files launching and the OF816 package.
-TV1 passes development checks; TV2–TV4 are in progress.
+TV1–TV2 pass development checks; TV3–TV4 are in progress.
 
 The [standard file selector design](file-selector-design.md) adds
 caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,

@@ -32,4 +32,45 @@ fixture's root stack retains 863 bytes above its interrupt floor.
 Reserved bank-zero delta is **0 fixed, 0 per public Task and 0 private idle**,
 including guards, alignment and unused reservation. There is no VRAM change.
 
-TV2–TV4 are still in progress.
+## TV2 Loadable viewer
+
+`TEXT.APP` provides Open, one optional quoted startup path, line/page/thumb
+scrolling, resizing, Cancel Load and cooperative close. It owns the document,
+menu and workstation. Idle waits block; pending work alternates bounded reads
+and painting, with at most four text rows per UPDATE. Slider values are sent
+only when changed, and padded text replaces rows without clearing the page.
+
+The initial optimized standalone walkthrough passed selector acceptance,
+Cancel/failed replacement, policy interruption, scroll/resize/exposure, quoted
+startup, peer shell/counter progress, read cancellation, Stop, invalid arguments,
+warmed heap return, guards and OS restoration. It retained **158 ordinary-stack
+bytes** above the interrupt floor. That run preceded the final slider-state cache;
+the final-package focused test covers the subsequent resize/scroll changes. The
+complete workflow is repeated in TV4, rather than treating the earlier executable
+as exact-package evidence for later changes.
+
+Dragging a small scrollbar thumb exposed an existing backend restriction:
+XOR outlines required 32×32 pixels. The adapter now admits 8×8 outlines, covering
+the 15-pixel-wide track and minimum thumb. The emitted drawing fixture passes
+**122 checks**, including odd packed edges, moving narrow outlines, screen edges
+and exact background restoration. Its admission counter was updated to observe
+the current `DisplayOwnerEnter` boundary. The extracted final-package diagnostic
+passes physical minimum resize and thumb-to-bottom dragging, pixel comparison,
+heap return and EXIT, retaining **340 ordinary-stack bytes** above the floor.
+This diagnostic uses the combined ABI 11 package prepared for TV3/TV4.
+
+The model occupies **1,678 upper bytes**, included in a **67,777-byte image span**.
+`TEXT.APP` is **16,542 bytes** on disk: 12,531 code bytes, 563 constants and 1,678
+zero-fill bytes, plus packing/import/relocation records. The loader reserves
+**133,312 upper bytes** including its existing bank-alignment allowance. A private
+workstation reserves 288 bytes; AES context, registration and window-view storage
+reserve 344, 1,152 and 808 bytes respectively. The existing selector's state,
+snapshot and form session add **32,240 bytes** while active, before those shared
+lifetime records. Document and replacement allocations are additional.
+
+The checked raw/optimized model layouts agree. The host suite remains **423 tests,
+four historical skips**. Reserved bank-zero delta is **0 fixed, 0 per public Task
+and 0 private idle**, including guards and unused capacity; VRAM delta is **0**.
+No stack pools were enlarged. These are development checks.
+
+TV3–TV4 are still in progress.
