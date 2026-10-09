@@ -137,8 +137,15 @@ interrupt the call and remain available to its event loop. This reduces custom
 form-loop code in simple ports while preserving desktop concurrency. The slices
 cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD4 pass
 development checks, including the extracted ZIP walkthrough; see the
-[execution record](history/standard-dialogs.md). A file selector and text viewer
-remain subsequent work.
+[execution record](history/standard-dialogs.md).
+
+Next, the proposed [standard file selector design](plans/gem4xe/file-selector-design.md)
+adds `fsel_input`/`fsel_exinput` by reusing Files' directory enumeration, scrolling
+and path editing in the standard-dialog host. It returns an Exec path/filter
+and filename; applications own the actual Open/Save and overwrite decisions.
+The [FSEL1–FSEL4 plan](plans/gem4xe/file-selector-implementation-plan.md) orders
+shared Files helpers, the hosted selector, standard bindings and the packaged
+example. FSEL1 passes development checks; FSEL2–FSEL4 remain pending. A text viewer remains subsequent work.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

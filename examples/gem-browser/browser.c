@@ -58,8 +58,7 @@ static void layout(struct Browser *b)
     b->visible=(b->work[3]-48)/12;
     if (b->visible<1) b->visible=1;
     if (b->visible>BROWSER_ROWS) b->visible=BROWSER_ROWS;
-    if (b->first>b->count-b->visible) b->first=b->count-b->visible;
-    if (b->first<0) b->first=0;
+    b->first=FileFirst(b->first,b->count,b->visible);
     if (columns>80) columns=80;
     b->tree[0].ob_x=b->work[0];b->tree[0].ob_y=b->work[1];
     b->tree[0].ob_width=b->work[2];b->tree[0].ob_height=b->work[3];
@@ -98,32 +97,28 @@ static WORD redraw(struct Browser *b,const WORD *damage)
     return okay;
 }
 /* Enumerate only on navigation/refresh. Preserve a selected name, not its row. */
-static WORD refresh(struct Browser *b)
+static WORD refresh_path(struct Browser *b,const char *path)
 {
-    BPTR lock;
-    LONG error=0;
-    WORD more=0;
+    WORD i,changed=strcmp(path,b->path)!=0;
     b->savedName[0]=0;
-    if (b->selected>=0) strcpy(b->savedName,b->entries[b->selected].name);
-    lock=Lock(b->path,SHARED_LOCK);
-    if (!lock) { strcpy(b->status,"Directory unavailable");return redraw(b,b->work); }
-    b->count=0;b->selected=-1;b->truncated=0;
-    if (Examine(lock,&b->info) && b->info.fib_DirEntryType>0) {
-        while ((more=ExNext(lock,&b->info)!=0) && b->count<BROWSER_ENTRIES) {
-            struct BrowserEntry *entry=&b->entries[b->count];
-            strcpy(entry->name,(char *)b->info.fib_FileName);entry->kind=b->info.fib_DirEntryType;
-            if (!strcmp(entry->name,b->savedName)) b->selected=b->count;
-            ++b->count;
-        }
-        if (more) b->truncated=1;
-        else { error=IoErr();if (error==ERROR_NO_MORE_ENTRIES) error=0; }
-    } else error=ERROR_OBJECT_WRONG_TYPE;
-    UnLock(lock);
-    if (error) strcpy(b->status,"Directory read failed");
+    if (!changed && b->selected>=0) strcpy(b->savedName,b->entries[b->selected].name);
+    if (!FileScanBegin(&b->scan,path,&b->info,b->entries)) {
+        strcpy(b->status,"Directory unavailable");return redraw(b,b->work);
+    }
+    if (changed) { strcpy(b->path,path); b->first=0; }
+    while (FileScanNext(&b->scan)) {}
+    b->count=b->scan.count;b->truncated=b->scan.truncated;b->selected=-1;
+    for (i=0;i<b->count;++i)
+        if (!strcmp(b->entries[i].name,b->savedName)) b->selected=i;
+    if (b->scan.error) strcpy(b->status,"Directory read failed");
     else if (b->truncated) strcpy(b->status,"First 256 entries (list full)");
     else label(b->status,b->path,63);
     layout(b);
     return sliders(b) && redraw(b,b->work);
+}
+static WORD refresh(struct Browser *b)
+{
+    return refresh_path(b,b->path);
 }
 static WORD scroll(struct Browser *b,WORD first)
 {
@@ -136,8 +131,7 @@ static WORD select_row(struct Browser *b,WORD index)
     if (index<0) index=0;
     if (index>=b->count) index=b->count-1;
     b->selected=index;
-    if (index<b->first) b->first=index;
-    if (index>=b->first+b->visible) b->first=index-b->visible+1;
+    b->first=FileExpose(b->first,index,b->visible);
     return scroll(b,b->first);
 }
 enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3 };
@@ -192,10 +186,7 @@ static WORD dialog_focus(struct Browser *b,WORD focus)
 }
 static void full_name(struct Browser *b,const char *leaf,char *target)
 {
-    WORD n=strlen(b->path);
-    strcpy(target,b->path);
-    if (n && target[n-1]!=':') strcat(target,"/");
-    strcat(target,leaf);
+    FileJoin(target,sizeof(b->target),b->path,leaf);
 }
 static WORD dialog_accept(struct Browser *b)
 {
@@ -238,8 +229,8 @@ static WORD dialog_accept(struct Browser *b)
             kind==DIALOG_PATH ? "Directory unavailable":"Operation failed");
         return redraw(b,b->work);
     }
-    if (kind==DIALOG_PATH) { strcpy(b->path,b->editText);b->first=0;b->selected=-1; }
-    if (!dialog_end(b) || !refresh(b)) return 0;
+    if (!dialog_end(b)) return 0;
+    if (!refresh_path(b,kind==DIALOG_PATH ? b->editText:b->path)) return 0;
     if (kind!=DIALOG_PATH) {
         for (i=0;i<b->count;++i) if (!strcmp(b->entries[i].name,b->editText)) return select_row(b,i);
     }
@@ -264,24 +255,17 @@ static WORD dialog_click(struct Browser *b,WORD hit)
 }
 static WORD up(struct Browser *b)
 {
-    WORD length=strlen(b->path);
-    while (length && b->path[length-1]!=':' && b->path[length-1]!='/') --length;
-    if (length && b->path[length-1]=='/') --length;
-    b->path[length]=0;b->first=0;b->selected=-1;
-    return refresh(b);
+    strcpy(b->target,b->path);FileParent(b->target);
+    return refresh_path(b,b->target);
 }
 static WORD open_item(struct Browser *b)
 {
-    WORD i=b->selected,n;
+    WORD i=b->selected;
     if (i<0 || i>=b->count) return 1;
-    n=strlen(b->path);
-    if (n+strlen(b->entries[i].name)+2>=sizeof(b->target)) return 1;
-    strcpy(b->target,b->path);
-    if (n && b->target[n-1]!=':') strcat(b->target,"/");
-    strcat(b->target,b->entries[i].name);
+    if (!FileJoin(b->target,sizeof(b->target),b->path,b->entries[i].name)) return 1;
     if (b->entries[i].kind>0) {
         if (strlen(b->target)>=sizeof(b->path)) { strcpy(b->status,"Path too long");return redraw(b,b->work); }
-        strcpy(b->path,b->target);b->first=0;b->selected=-1;return refresh(b);
+        return refresh_path(b,b->target);
     }
     if (b->child) strcpy(b->status,"Command still running");
     else {

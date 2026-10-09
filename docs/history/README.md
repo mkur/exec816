@@ -1,5 +1,8 @@
 # Historical records
 
+- [Standard GEM file selector](file-selector.md): shared directory helpers and
+  the file-selector implementation's development evidence.
+
 - [Standard GEM dialogs](standard-dialogs.md): host lifecycle and development
   evidence for synchronous forms and alerts.
 

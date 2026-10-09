@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "FSEL1": {
+    "status": "pass",
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "helpers": [
+      {
+        "path": "build/file-selector/helpers-raw/results.json",
+        "sha256": "b364aaa8bf76d7d99ef318fc7577191aca7a93690a2d0a6056ea20372568fbab",
+        "status": "pass",
+        "tier": "development"
+      },
+      {
+        "path": "build/file-selector/helpers-opt/results.json",
+        "sha256": "600721d8c12f7e289e5801aeb02bebd8956be156810548722d0b95e1db1e1cf8",
+        "status": "pass",
+        "tier": "development"
+      }
+    ],
+    "desktop": {
+      "path": "build/file-selector/fsel1-demo/gem-desktop-results.json",
+      "sha256": "d23f4e2d6b783b337ac57bd2d2d3d6a1ba92db6488ae56b28938fce992eb5ecf",
+      "status": "pass",
+      "tier": "development"
+    },
+    "zip_sha256": "6028ddf7c3823a0928a786482da63d07c91e14227eea9aa3cf9e54b652d4c722",
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "ordinary_min_margin": 277,
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 592,
+        "remaining_above_floor": 688
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1280,
+        "peak": 599,
+        "remaining_above_floor": 425
+      },
+      "2": {
+        "base": 13680,
+        "bytes": 1280,
+        "peak": 189,
+        "remaining_above_floor": 835
+      },
+      "3": {
+        "base": 14992,
+        "bytes": 1280,
+        "peak": 716,
+        "remaining_above_floor": 308
+      },
+      "4": {
+        "base": 16304,
+        "bytes": 1280,
+        "peak": 632,
+        "remaining_above_floor": 392
+      },
+      "5": {
+        "base": 17616,
+        "bytes": 1280,
+        "peak": 747,
+        "remaining_above_floor": 277
+      },
+      "6": {
+        "base": 18928,
+        "bytes": 2560,
+        "peak": 786,
+        "remaining_above_floor": 1518
+      },
+      "7": {
+        "base": 21520,
+        "bytes": 2560,
+        "peak": 353,
+        "remaining_above_floor": 1951
+      },
+      "8": {
+        "base": 24112,
+        "bytes": 512,
+        "peak": 135,
+        "remaining_above_floor": 121
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 304,
+        "remaining_above_floor": 976
+      }
+    },
+    "files_image_bytes": 21089,
+    "files_image_span": 69527,
+    "files_state_bytes": 3074
+  },
+  "pending": [
+    "FSEL2",
+    "FSEL3",
+    "FSEL4"
+  ]
+}

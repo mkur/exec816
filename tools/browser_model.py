@@ -4,7 +4,7 @@ FIELDS=dict(ready=8,work=26,tree=170,menu=174,path=178,status=306,target=434,
     armed=2368,truncated=2370,launches=2372,paints=2376,child=2380,result=2384,
     bar=2428,menuInstalled=2740,menuEnabled=2742,dialogTree=2744,dialogTed=2888,
     editText=2916,dialog=3044,focus=3046,editIndex=3048,dialogError=3050)
-SIZE=3054
+SIZE=3074
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21

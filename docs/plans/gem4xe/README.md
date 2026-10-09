@@ -1,5 +1,13 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [standard file selector design](file-selector-design.md) adds
+caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,
+scrolling and path editing within the standard-dialog host. It returns a
+selection for the application's Open or Save operation using Exec paths.
+The [FSEL1–FSEL4 implementation plan](file-selector-implementation-plan.md)
+orders shared Files helpers, the hosted selector, standard bindings and the
+packaged example. FSEL1 passes development checks; FSEL2–FSEL4 remain pending.
+
 The [standard dialogs design](standard-dialogs-design.md) and
 [FD1–FD4 implementation plan](standard-dialogs-implementation-plan.md) add bounded
 caller-local `form_do` and `form_alert`, with the `form_dial` lifecycle, temporary

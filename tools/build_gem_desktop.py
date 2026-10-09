@@ -18,7 +18,8 @@ def build_desktop(out,source=None,program_output=None,files=False,disk_component
     for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('dialog','gem-dialog')]:
         body='browser' if name=='files' else name
         applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/'main.c',
-                                                       ROOT/'examples'/folder/(body+'.c')])
+                                                       ROOT/'examples'/folder/(body+'.c'),
+                                                       *([ROOT/'c/calypsi/file-list.c'] if name=='files' else [])])
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
     if 'dos_mounts' not in options:
