@@ -6,7 +6,7 @@ scrolling and path editing within the standard-dialog host. It returns a
 selection for the application's Open or Save operation using Exec paths.
 The [FSEL1–FSEL4 implementation plan](file-selector-implementation-plan.md)
 orders shared Files helpers, the hosted selector, standard bindings and the
-packaged example. FSEL1/FSEL2 pass development checks; FSEL3/FSEL4 remain pending.
+packaged example. FSEL1–FSEL3 pass development checks; FSEL4 remains pending.
 
 The [standard dialogs design](standard-dialogs-design.md) and
 [FD1–FD4 implementation plan](standard-dialogs-implementation-plan.md) add bounded

@@ -362,14 +362,15 @@ ENDMODULE
             program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
                 tasks=True, task_capacity=8, foreign_image=foreign,
                 console_deferred=True, memory_profile=memory,
-                **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus','fsel') else {}))
+                **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus','fsel') else {}),
+                **(dict(system_mount='D1') if suite=='fsel' else {}))
         finally:generate_tasks.task_entries=task_entries
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse'] = metadata(None)
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,
-        slice='FSEL2' if suite=='fsel' else 'FD3' if suite=='alerts' else 'FD2' if suite=='forms' else 'AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
+        slice=('FSEL3' if 'AESFileABI' in foreign['symbols'] else 'FSEL2') if suite=='fsel' else 'FD3' if suite=='alerts' else 'FD2' if suite=='forms' else 'AI5' if input_events else 'AI4' if pointer else 'AI3' if keyboard else 'AI2' if inbox else 'WA4' if vdi else 'WA3' if borrowed else 'WA2' if windows else 'WA1' if gui else 'HY3', suite=suite, c_mode=mode,
         native_mode='opt', video=video, filesystem=filesystem if suite=='resources' else None, build=program['build'],
         reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
     if borrowed:

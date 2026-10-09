@@ -444,12 +444,73 @@ The fixed monochrome donor icons use clipped fill runs; this adds no general
 G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
 or application teardown can complete. Session storage is 319 live / 320 reserved
 upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
-AESPB dispatch use C component ABI 9; rebuild GEMSYS and applications together.
+AESPB dispatch use C component ABI 10; rebuild GEMSYS and applications together.
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget
 binding remains presenter-owned. No additional bank-zero reservation is needed.
 
+
+## File selector
+
+`fsel_input(path, file, &button)` and
+`fsel_exinput(path, file, &button, title)` are synchronous caller-local calls.
+AESPB opcodes 90 and 91 use counts **0/2/2/0** and **0/2/3/0** respectively.
+Supply writable path[128] and filename[13] buffers, including their NULs.
+The extended caption shows up to 30 characters, further clipped to the host
+width; the default caption is File selector.
+
+| Completion | Return | Button | Diagnostic / strings |
+| --- | --- | --- | --- |
+| OK | 1 | FSEL_OK (1) | AES_OK; current directory/filter and literal filename |
+| Cancel, Escape or temporary closer | 1 | FSEL_CANCEL (0) | AES_OK; current edited fields, which need not be valid |
+| Application-policy interruption | 0 | FSEL_CANCEL | AES_PENDING; original strings unchanged |
+| Admission or operational failure | 0 | FSEL_CANCEL | Error diagnostic; original strings unchanged |
+
+Outputs are published after successful host retirement. A cleanup failure keeps
+the private session for FMD_FINISH retry or `appl_exit`; the caller's strings are
+still unchanged. The selector never opens a selected file for the application,
+writes a file, confirms overwrites or changes the Task's current directory.
+
+Use Exec paths such as `SYS:*.TXT`, `SYS:SELECT/*.*` and `WORK:*.C`, with `/`
+separators. An empty path starts at `SYS:*.*`; a prefix root or trailing `/`
+acquires `*.*`. The last component is the filter. GEMDOS drive translation and
+backslashes are unsupported. Path/open/read errors remain visible for correction.
+OK requires a successfully enumerated directory and a legal literal 8.3 leaf;
+the leaf need not exist and no extension is added automatically.
+
+The list keeps the first 256 directory entries in enumeration order, plus one
+read to detect truncation. `First 256 only` stays visible when that limit is hit.
+ASCII-insensitive GEM 8.3 `*`/`?` filtering operates on that snapshot; directories
+always remain visible and `*.*` includes extensionless files. Filtering and
+line/page scrolling perform no directory reads. Refresh rereads the directory
+and retains an exact-name selection. An initial open/examine failure preserves
+the old view; a later read failure clears the overwritten snapshot.
+
+Click a file to fill Filename, or a directory to enter it. Up retains the filter.
+Return in Path commits an edit; Tab/Shift-Tab visit fields, the list and controls.
+List arrows move selection; Return accepts/navigates and Space activates a
+focused noneditable control. Buttons activate on release inside; outside release
+and input loss cancel a press. Escape cancels an armed press first, then the
+selector. No double-click, hold-repeat, list dragging or drive-button grid exists.
+
+The host is the caller's shown window, or the existing temporary form host when
+it owns no handle. Work areas below **208×128** are rejected before painting.
+Closed handles, nesting, an active editor or held UPDATE/MCTRL are busy errors.
+Borrowed-window policy interrupts with the existing deferred-message/repair
+ordering. Temporary hosts handle movement and dismiss on their closer.
+
+Loading disables path, list and navigation actions while leaving Cancel usable.
+A private ready-event pass between ExNext calls keeps input interest armed;
+it submits no timer and does not wait for fresh input with a directory lock.
+Cancellation can wait for the current synchronous DOS call to finish.
+Painting uses existing visible rectangles and short UPDATE sections.
+
+Per active selector, upper-heap storage is 3,242 live / 3,248 reserved bytes
+(including the 512-byte filtered index), a 28,672-byte entry allocation, and
+the existing 320-byte form allocation. Existing host/workstation resources are
+borrowed or owned by that form. Bank-zero and VRAM reservations are unchanged.
+See the [development record](../history/file-selector.md).
 
 ## Resources and popup menus
 
@@ -522,7 +583,7 @@ Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape open
 Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
 
 The private C context is 340 bytes. Rebuild bindings and applications with
-the current C component ABI (9).
+the current C component ABI (10).
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
 
 ## Small GEM desktop

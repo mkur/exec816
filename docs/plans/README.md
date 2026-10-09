@@ -5,7 +5,7 @@ covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and th
 standard-dialog lifecycle. The
 [FSEL1–FSEL4 plan](gem4xe/file-selector-implementation-plan.md) orders shared
 helpers, hosted interaction, standard bindings and the packaged example.
-FSEL1/FSEL2 pass development checks; FSEL3/FSEL4 remain pending.
+FSEL1–FSEL3 pass development checks; FSEL4 remains pending.
 
 The [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
 [FD1–FD4 plan](gem4xe/standard-dialogs-implementation-plan.md) cover caller-local

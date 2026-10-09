@@ -145,7 +145,7 @@ and path editing in the standard-dialog host. It returns an Exec path/filter
 and filename; applications own the actual Open/Save and overwrite decisions.
 The [FSEL1–FSEL4 plan](plans/gem4xe/file-selector-implementation-plan.md) orders
 shared Files helpers, the hosted selector, standard bindings and the packaged
-example. FSEL1/FSEL2 pass development checks; FSEL3/FSEL4 remain pending. A text viewer remains subsequent work.
+example. FSEL1–FSEL3 pass development checks; FSEL4 remains pending. A text viewer remains subsequent work.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

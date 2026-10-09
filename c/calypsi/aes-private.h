@@ -41,6 +41,7 @@ WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds);
 WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
                    WORD *message);
 WORD ExecAESPoll(struct ExecAESContext *,UWORD,WORD *);
+BOOL ExecAESFileSelector(struct ExecAESContext *,AESPB *);
 #define AES_ALARM_IDLE 0
 #define AES_ALARM_OUTSTANDING 1
 #define AES_ALARM_RETIRING 2

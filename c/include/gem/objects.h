@@ -58,6 +58,11 @@ WORD objc_edit(OBJECT *,WORD,WORD,WORD *,WORD);
 WORD form_dial(WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD form_do(OBJECT *,WORD);
 WORD form_alert(WORD,const char *);
+#define FSEL_CANCEL 0
+#define FSEL_OK 1
+/* Writable path[128] and filename[13]; Exec prefixes and '/' separators. */
+WORD fsel_input(char *,char *,WORD *);
+WORD fsel_exinput(char *,char *,WORD *,const char *);
 WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 /* Windowed subset: commit an accepted activation, no input wait or drawing. */
 WORD form_button(OBJECT *,WORD,WORD,WORD *);

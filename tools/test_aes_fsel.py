@@ -138,6 +138,16 @@ def physical(b,p,foreign,report):
     phase(8,False);frames(100)
     require(text('status')=='Read failed' and get(selector()+F['count'])==0 and not get(selector()+F['valid']),
         'Partial read failure retained an overwritten snapshot')
+    if 'AESFileABI' in sy:
+        require(text('title')=='012345678901234567890123456789','Custom title bound')
+        key('ESC');phase(9)
+        require(text('title')=='File selector' and text('path')=='SYS:*.*','Default path/caption')
+        key('ESC');phase(10)
+        require(len(text('path'))==127 and text('file')=='EIGHTCHR.TXT','Public buffer limits')
+        pixels('boundary-path')
+        key('ESC');phase(11,False)
+        require(text('status')=='Invalid path','Unsupported GEMDOS syntax silently translated')
+        report['standard_bindings']=dict(named=True,aespb=True,context_arrays=True,limits=True,canaries=True)
     # The last caller can finish and restore the OS before another native IRQ.
     # Let execute observe its completion breakpoint, not a later frame count.
     b._cmd_ok('KEY ESC down')

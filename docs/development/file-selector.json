@@ -101,8 +101,6 @@
     "files_state_bytes": 3074
   },
   "pending": [
-    "FSEL2",
-    "FSEL3",
     "FSEL4"
   ],
   "FSEL2": {
@@ -270,5 +268,170 @@
       }
     ],
     "qualification": false
+  },
+  "FSEL3": {
+    "status": "pass",
+    "qualification": false,
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "selector": {
+      "path": "build/file-selector/fsel3/results.json",
+      "sha256": "c6bb6b04880104b08242643e77bef15d7ee9b7f63abb6eb5883696adc768ce22",
+      "status": "pass",
+      "tier": "development"
+    },
+    "layouts": {
+      "path": "build/file-selector/binding-layout/results.json",
+      "sha256": "1cbed47eb07e97db2e6f1a96fd4428ed0ff4740d8f2cda4bf163bcd462f72115",
+      "status": "pass",
+      "tier": "development"
+    },
+    "checks": 215,
+    "pixels": [
+      {
+        "name": "initial",
+        "pixels": 64768
+      },
+      {
+        "name": "exposed",
+        "pixels": 64768
+      },
+      {
+        "name": "scrolled",
+        "pixels": 26624
+      },
+      {
+        "name": "moved",
+        "pixels": 64768
+      },
+      {
+        "name": "boundary-path",
+        "pixels": 64768
+      }
+    ],
+    "standard_bindings": {
+      "named": true,
+      "aespb": true,
+      "context_arrays": true,
+      "limits": true,
+      "canaries": true
+    },
+    "heap": {
+      "Cold": 2734680,
+      "Warm": 2661056,
+      "Returned": 2661056
+    },
+    "stack_usage": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 890,
+        "remaining_above_floor": 390
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1280,
+        "peak": 341,
+        "remaining_above_floor": 683
+      },
+      "2": {
+        "base": 13680,
+        "bytes": 1280,
+        "peak": 155,
+        "remaining_above_floor": 869
+      },
+      "3": {
+        "base": 14992,
+        "bytes": 1280,
+        "peak": 775,
+        "remaining_above_floor": 249
+      },
+      "4": {
+        "base": 16304,
+        "bytes": 1280,
+        "peak": 836,
+        "remaining_above_floor": 188
+      },
+      "5": {
+        "base": 17616,
+        "bytes": 1280,
+        "peak": 200,
+        "remaining_above_floor": 824
+      },
+      "6": {
+        "base": 18928,
+        "bytes": 2560,
+        "peak": 700,
+        "remaining_above_floor": 1604
+      },
+      "7": {
+        "base": 21520,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24112,
+        "bytes": 512,
+        "peak": 64,
+        "remaining_above_floor": 192
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 292,
+        "remaining_above_floor": 988
+      }
+    },
+    "ordinary_minimum_margin": 188,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "private_idle": 0
+    },
+    "component_abi": 10,
+    "upper_heap_delta": 0,
+    "selector_object": {
+      "code_bytes": 12435,
+      "constant_bytes": 188,
+      "code_delta": 517,
+      "constant_delta": 8
+    },
+    "fixture_segments": [
+      {
+        "address": 786432,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 917504,
+        "bytes": 65536,
+        "executable": true
+      },
+      {
+        "address": 983040,
+        "bytes": 37132,
+        "executable": false
+      },
+      {
+        "address": 1048576,
+        "bytes": 30981,
+        "executable": true
+      },
+      {
+        "address": 851968,
+        "bytes": 5169,
+        "executable": false
+      }
+    ],
+    "fixture_zero_fill": [
+      {
+        "address": 857138,
+        "size": 13375,
+        "writable": true
+      }
+    ]
   }
 }

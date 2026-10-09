@@ -5,6 +5,8 @@
 #include <string.h>
 
 ULONG AESService;
+volatile UWORD AESFileABI=10;
+static UWORD bindingVariant;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESFilePhase[2],AESFileDone;
 volatile ULONG AESFileReads;
 ULONG AESFileCold,AESFileWarm,AESFileReturned;
@@ -14,7 +16,7 @@ static ULONG wake;
 static UWORD fault;
 static char path[128],file[13];
 static WORD message[8],button;
-struct FileClient { char path[128],file[13]; WORD button; };
+struct FileClient { UWORD before; char path[128]; UWORD middle; char file[13]; UWORD after; WORD button; };
 static struct FileClient clients[2];
 static struct Task *peers[3];
 static ULONG peerWake[3];
@@ -51,6 +53,20 @@ WORD AESFileNext(struct FileScan *scan)
     return FileScanNext(scan);
 }
 
+static WORD select_file(char *path,char *file,WORD *button,const char *title)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    AESPB pb={c->control,c->request.global,c->intin,c->intout,c->addrin,c->addrout};
+    WORD variant=AESFilePhase[0] ? AESFilePhase[0]%4:bindingVariant++%4;
+    if (AESFilePhase[0]==8) variant=1;
+    if (!variant) return fsel_input(path,file,button);
+    if (variant==1) return fsel_exinput(path,file,button,title);
+    c->control[0]=variant==2 ? 90:91;c->control[1]=0;c->control[2]=2;
+    c->control[3]=variant==2 ? 2:3;c->control[4]=0;
+    c->addrin[0]=(LONG)(ULONG)path;c->addrin[1]=(LONG)(ULONG)file;c->addrin[2]=(LONG)(ULONG)title;
+    aes_call(&pb);*button=c->intout[1];return c->intout[0];
+}
+
 static WORD host(WORD x,WORD y,WORD w,WORD h)
 {
     WORD bx,by,bw,bh,window;
@@ -61,6 +77,7 @@ static WORD host(WORD x,WORD y,WORD w,WORD h)
 
 static void finish(WORD who)
 {
+    CHECK(clients[who].before==0x1234 && clients[who].middle==0x5678 && clients[who].after==0x9abc);
     CHECK(ExecAESDetach());CHECK(ExecDOSDetach());AESFilePhase[who]=90;
     Forbid();++AESFileDone;Signal(controller,wake);RemTask(NULL);
 }
@@ -76,10 +93,11 @@ void AESClientOne(void)
         Wait(peerWake[who]);CHECK(ExecAESDetach());FreeSignal(bit);
         Forbid();++done;Signal(controller,wake);RemTask(NULL);
     }
+    a->before=0x1234;a->middle=0x5678;a->after=0x9abc;
     host(16,64,224,136);AESFileContext[1]=(ULONG)ExecAESContext();
     strcpy(a->path,"D1:*.BIN");strcpy(a->file,"PEER.BIN");
     AESFilePhase[1]=1;Signal(controller,wake);
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Independent peer"));
+    CHECK(select_file(a->path,a->file,&a->button,"Independent peer"));
     CHECK(a->button==0 && !strcmp(a->path,"D1:*.BIN") && !strcmp(a->file,"PEER.BIN"));
     finish(1);
 }
@@ -89,40 +107,52 @@ void AESClientTwo(void)
     struct FileClient *a=&clients[0];
     struct ExecAESContext *c;
     WORD window;
+    ULONG reads;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
     c=ExecAESContext();AESFileContext[0]=(ULONG)c;
+    a->before=0x1234;a->middle=0x5678;a->after=0x9abc;
     strcpy(a->path,"D1:*.TXT");strcpy(a->file,"SEED.TXT");AESFilePhase[0]=1;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Save selection"));
+    CHECK(select_file(a->path,a->file,&a->button,"Save selection"));
     CHECK(a->button==1 && !strcmp(a->file,"new.txt") && !strcmp(a->path,"D1:*.TXT"));
     CHECK(!c->form && !c->view && !c->workstation);
     window=host(360,72,208,128);
     strcpy(a->path,"D1:MANY/*.TXT");a->file[0]=0;AESFilePhase[0]=2;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Compact selector"));
+    CHECK(select_file(a->path,a->file,&a->button,"Compact selector"));
     CHECK(a->button==1 && !strcmp(a->file,"A005.TXT"));
     CHECK(c->view->handle==window && c->view->shown && !c->workstation);
     CHECK(wind_close(window));CHECK(wind_delete(window));
     strcpy(a->path,"D1:MISSING/*.*");strcpy(a->file,"OLD.TXT");AESFilePhase[0]=3;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Correct a path"));
+    CHECK(select_file(a->path,a->file,&a->button,"Correct a path"));
     CHECK(a->button==0 && !strcmp(a->path,"D1:*.TXT") && !strcmp(a->file,"OLD.TXT"));
     strcpy(a->path,"D1:*.TXT");AESFilePhase[0]=4;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Move and close"));CHECK(a->button==0);
+    CHECK(select_file(a->path,a->file,&a->button,"Move and close"));CHECK(a->button==0);
     strcpy(a->path,"D1:MANY/*.*");AESFilePhase[0]=5;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Cancel loading"));CHECK(a->button==0);
+    CHECK(select_file(a->path,a->file,&a->button,"Cancel loading"));CHECK(a->button==0);
     window=host(320,64,240,152);strcpy(a->path,"D1:*.TXT");
     AESFilePhase[0]=6;
-    CHECK(!ExecAESFileSelect(a->path,a->file,&a->button,"Borrowed policy"));
+    CHECK(!select_file(a->path,a->file,&a->button,"Borrowed policy"));
     CHECK(ExecAESDiagnostic()==AES_PENDING && a->button==0 && !strcmp(a->path,"D1:*.TXT"));
     CHECK(evnt_mesag(message) && message[0]==WM_MOVED && c->messageEpoch);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && c->messageEpoch);
     AESFilePhase[0]=7;
-    CHECK(!ExecAESFileSelect(a->path,a->file,&a->button,"Borrowed closer"));
+    CHECK(!select_file(a->path,a->file,&a->button,"Borrowed closer"));
     CHECK(ExecAESDiagnostic()==AES_PENDING && a->button==0);
     CHECK(evnt_mesag(message) && message[0]==WM_CLOSED && c->messageEpoch);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && c->messageEpoch);
     CHECK(wind_close(window));CHECK(wind_delete(window));
     strcpy(a->path,"D1:MANY/*.*");fault=10;AESFilePhase[0]=8;
-    CHECK(ExecAESFileSelect(a->path,a->file,&a->button,"Read failure"));
+    CHECK(select_file(a->path,a->file,&a->button,"0123456789012345678901234567890123456789"));
     CHECK(!fault && a->button==0);
+    a->path[0]=0;strcpy(a->file,"DEFAULT.TXT");AESFilePhase[0]=9;
+    CHECK(select_file(a->path,a->file,&a->button,NULL));
+    CHECK(a->button==0 && !strcmp(a->path,"SYS:*.*") && !strcmp(a->file,"DEFAULT.TXT"));
+    strcpy(a->path,"D1:");memset(a->path+3,'?',124);a->path[127]=0;
+    strcpy(a->file,"EIGHTCHR.TXT");AESFilePhase[0]=10;
+    CHECK(select_file(a->path,a->file,&a->button,NULL));
+    CHECK(a->button==0 && strlen(a->path)==127 && !strcmp(a->file,"EIGHTCHR.TXT"));
+    strcpy(a->path,"A:\\GEM\\*.*");reads=AESFileReads;AESFilePhase[0]=11;
+    CHECK(select_file(a->path,a->file,&a->button,"Exec paths"));
+    CHECK(a->button==0 && !strcmp(a->path,"A:\\GEM\\*.*") && AESFileReads==reads);
     CHECK(!c->form && !c->editTree && !c->updateDepth && !c->mouseDepth);
     CHECK(!c->timer.port && !c->endpoint->input->interest);
     finish(0);
@@ -135,6 +165,7 @@ UWORD AESRun(void)
     BPTR lock,opened;
     WORD i,window;
     BYTE bit;
+    CHECK(AESFileABI==10);
     /* Mount metadata and the shared filesystem cache live until shutdown. */
     AESFileCold=AvailMem(0);
     opened=Open("D1:A.TXT",MODE_OLDFILE);CHECK(opened && Close(opened));CHECK(ExecDOSDetach());
@@ -143,17 +174,38 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);c=ExecAESContext();
     opened=Open("D1:A.TXT",MODE_OLDFILE);CHECK(opened!=0);
     lock=Lock("D1:",SHARED_LOCK);CHECK(lock!=0);base=AvailMem(0);
+    {
+        WORD ctl[5]={90,0,2,2,0},globals[15],output[2]={9,9};
+        LONG address[3]={(LONG)(ULONG)path,(LONG)(ULONG)file,0};
+        AESPB pb={ctl,globals,NULL,output,address,NULL};
+        for (i=0;i<2;++i) {
+            ctl[0]=90+i;ctl[3]=2+i;ctl[1]=1;
+            aes_call(&pb);CHECK(!output[0] && !output[1] && ExecAESDiagnostic()==AES_MALFORMED);
+            ctl[1]=0;ctl[3]=1;
+            aes_call(&pb);CHECK(!output[0] && !output[1] && ExecAESDiagnostic()==AES_MALFORMED);
+            ctl[3]=2+i;ctl[2]=1;output[1]=0x5678;
+            aes_call(&pb);CHECK(!output[0] && output[1]==0x5678 && ExecAESDiagnostic()==AES_MALFORMED);
+            ctl[2]=2;ctl[4]=1;
+            aes_call(&pb);CHECK(!output[0] && !output[1] && ExecAESDiagnostic()==AES_MALFORMED);
+            ctl[4]=0;
+        }
+        memset(path,'X',128);strcpy(file,"A.TXT");
+        CHECK(!fsel_input(path,file,&button) && !button && ExecAESDiagnostic()==AES_MALFORMED);
+        strcpy(path,"D1:*.TXT");memset(file,'X',13);
+        CHECK(!fsel_exinput(path,file,&button,"Limits") && !button && ExecAESDiagnostic()==AES_MALFORMED);
+        CHECK(!c->form && AvailMem(0)==base);
+    }
     strcpy(path,"D1:*.TXT");strcpy(file,"ORIGINAL.TXT");
     for (i=1;i<=9;++i) {
         if (i>=5 && i<=7) continue;
-        fault=i;CHECK(!ExecAESFileSelect(path,file,&button,0) && !fault);
+        fault=i;CHECK(!select_file(path,file,&button,0) && !fault);
         CHECK(ExecAESDiagnostic()==AES_RESOURCE && !c->form && AvailMem(0)==base);
         CHECK(!strcmp(path,"D1:*.TXT") && !strcmp(file,"ORIGINAL.TXT") && button==0);
     }
     for (i=5;i<=7;++i) {
         message[0]=WM_REDRAW;message[1]=123;message[7]=500+i;
         CHECK(appl_write(c->gemId,16,message));fault=i;
-        CHECK(!ExecAESFileSelect(path,file,&button,0) && !fault);
+        CHECK(!select_file(path,file,&button,0) && !fault);
         CHECK(ExecAESDiagnostic()==AES_DISPLAY_ERROR && c->form && c->form->fileSelector);
         CHECK(!strcmp(file,"ORIGINAL.TXT") && button==0);
         CHECK(form_dial(FMD_FINISH,0,0,0,0,0,0,0,0));
@@ -161,22 +213,22 @@ UWORD AESRun(void)
         CHECK(!c->form && AvailMem(0)==base);
     }
     window=host(16,56,207,128);
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_RESOURCE);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_RESOURCE);
     CHECK(!c->form && c->view->handle==window && c->view->shown);
     CHECK(wind_close(window));
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(wind_delete(window));
     CHECK(wind_update(BEG_UPDATE));
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(wind_update(END_UPDATE));
     CHECK(form_dial(FMD_START,0,0,0,0,24,48,208,128));
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(form_dial(FMD_FINISH,0,0,0,0,0,0,0,0));
     /* A full application queue still leaves room for the separate repair fact. */
     window=host(16,56,224,136);
     for (i=0;i<16;++i) { message[0]=WM_REDRAW;message[7]=600+i;CHECK(appl_write(c->gemId,16,message)); }
     CHECK(!appl_write(c->gemId,16,message));
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_PENDING);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_PENDING);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && message[7]==600 && !c->messageEpoch);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && c->messageEpoch);
     for (i=1;i<16;++i) {
@@ -190,7 +242,7 @@ UWORD AESRun(void)
         CHECK(peers[i]!=NULL);while (ready<=i) Wait(wake);
     }
     base=AvailMem(0);
-    CHECK(!ExecAESFileSelect(path,file,&button,0) && ExecAESDiagnostic()==AES_RESOURCE);
+    CHECK(!select_file(path,file,&button,0) && ExecAESDiagnostic()==AES_RESOURCE);
     CHECK(!c->form && AvailMem(0)==base);
     for (i=0;i<3;++i) Signal(peers[i],peerWake[i]);
     while (done<3) Wait(wake);

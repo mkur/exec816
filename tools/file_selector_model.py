@@ -6,4 +6,5 @@ FIELDS=dict(tree=0,ted=744,entries=1304,scan=1308,info=1328,indices=1588,
 SIZE=3242
 FORM_SELECTOR=315
 LAYOUT=[('Selector size',SIZE),('Form size',319),('Form selector',FORM_SELECTOR)]+[
-    ('Selector '+name,offset) for name,offset in FIELDS.items()]
+    ('Selector '+name,offset) for name,offset in FIELDS.items()]+[
+    ('FSEL_CANCEL',0),('FSEL_OK',1),('fsel_input pointer',4),('fsel_exinput pointer',4)]

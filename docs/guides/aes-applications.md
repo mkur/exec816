@@ -392,3 +392,35 @@ limits, default selection and unsupported operations are in the
 [AES contract](../reference/aes.md). Files and calculator retain their existing
 event-driven loops. Rebuild the shared GEMSYS component and every application
 for the current C component ABI.
+
+## Selecting a file
+
+Keep a writable 128-byte path/filter and 13-byte filename in application storage.
+Enter without an active form/editor or an UPDATE/MCTRL lock. The selector borrows
+your shown work area, or creates a temporary host before you have a window:
+
+```c
+static char path[128] = "SYS:*.TXT";
+static char file[13] = "";
+WORD button;
+
+if (!fsel_exinput(path, file, &button, "Open text")) {
+    if (ExecAESDiagnostic() == AES_PENDING) {
+        /* Resume the event loop: retained policy precedes WM_REDRAW repair. */
+    } else {
+        /* Handle failure; original path/file are unchanged. */
+    }
+} else if (button == FSEL_OK) {
+    /* Replace the final filter with file, then perform the application's I/O. */
+} else {
+    /* Normal Cancel returns the current fields, but no selection to use. */
+}
+```
+
+`fsel_input` uses the default caption. Both calls can select a new Save filename;
+the application checks existence and decides how to handle overwrites. Use Exec
+prefixes and `/`, rather than GEMDOS drive/backslash paths. Do not reopen the
+selector automatically after AES_PENDING: first handle the application message.
+The [file-selector contract](../reference/aes.md#file-selector) describes the
+bounded snapshot, filters, input controls, cancellation and cleanup rules.
+Rebuild GEMSYS and all applications with C component ABI 10.

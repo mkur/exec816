@@ -2,7 +2,7 @@
 
 [Design note](file-selector-design.md) · [GEM integration](README.md)
 
-Status: FSEL1/FSEL2 pass development checks. FSEL3/FSEL4 are pending; see the
+Status: FSEL1–FSEL3 pass development checks. FSEL4 is pending; see the
 [execution record](../../history/file-selector.md).
 
 Implement the design's caller-local `fsel_input`/`fsel_exinput` profile in four

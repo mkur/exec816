@@ -83,3 +83,30 @@ The optimized selector object contains 11,918 code bytes and 180 constant bytes.
 The private fixture still uses C code banks $0C/$0E/$10, data $0D and lookup bank
 $0F; exact fixture extents are in the evidence. No VRAM reservation changes.
 Public bindings and the loadable consumer remain FSEL3/FSEL4 work at this slice.
+
+## FSEL3 Standard bindings
+
+The named `fsel_input`/`fsel_exinput` calls and AESPB opcodes 90/91 now share the
+selector implementation. The dispatcher saves its input pointers before nested
+calls reuse the context arrays. C component ABI 10 adds the two exports; GEMSYS
+and applications must be rebuilt together. No AES server wire operation changed.
+
+The optimized fixture passes **215 target checks**, including named/AESPB calls,
+context-array reuse, default/custom/truncated captions, empty/default paths,
+127-character path and 12-character filename boundaries with buffer canaries,
+unsupported path syntax, malformed counts and unchanged failure outputs. It
+retains the physical interaction, allocation/retirement failures and ownership
+checks from FSEL2. Five independent pixel comparisons cover 285,696 pixels.
+Raw/optimized emitted binding/layout probes agree. The ABI generator is current;
+the host suite passes 423 tests with four existing skips. The initial host run
+caught an old ABI-9 expected package header, updated with the ABI itself.
+
+The warmed heap returns exactly to **2,661,056 bytes**. Minimum ordinary stack
+margin is **188 bytes** (idle 192); no stack change is needed. Reserved bank-zero
+delta remains **0 fixed, 0 per public Task and 0 private idle**, including guards,
+alignment and unused capacity. Heap and VRAM reservations are unchanged. The
+production optimized selector object is 12,435 code / 188 constant bytes, an
+increase of 517 / 8 from the private implementation. The expanded fixture still
+occupies code banks $0C/$0E/$10, data $0D and lookup bank $0F; its exact extents
+are recorded separately from production. The packaged consumer and complete
+desktop walkthrough remain FSEL4 work. These are development checks only.

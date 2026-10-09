@@ -385,7 +385,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         !ExecAESPointer(pb->global, 30) ||
         !ExecAESPointer(pb->int_out, 2)) return;
     op = pb->control[0];
-    if (ExecAESForms(c,pb) || ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
+    if (ExecAESForms(c,pb) || ExecAESFileSelector(c,pb) || ExecAESObjects(c,pb) || ExecAESResources(c,pb) || ExecAESMenus(c,pb)) goto globals;
     if (op == AES_OP_WRITE) { inputs = 2; addresses = 1; }
     if (op == AES_OP_MESAG) addresses = 1;
     if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }

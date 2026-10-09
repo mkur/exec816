@@ -406,7 +406,7 @@ WORD ExecAESFileSelect(char *path,char *file,WORD *button,const char *title)
     if (!a) { c->diagnostic=AES_RESOURCE; return 0; }
     a->entries=AllocMem((ULONG)sizeof(*a->entries)*FILE_LIST_LIMIT,MEMF_PUBLIC);
     if (!a->entries) { c->diagnostic=AES_RESOURCE; goto failure; }
-    strcpy(a->path,path); strcpy(a->file,file); a->selected=NIL;
+    strcpy(a->path,*path ? path:"SYS:*.*"); strcpy(a->file,file); a->selected=NIL;
     if (!title) title="File selector";
     for (n=0;n<30 && title[n];++n) a->title[n]=title[n]; a->title[n]=0;
     tree(a,w,h);
@@ -423,4 +423,34 @@ WORD ExecAESFileSelect(char *path,char *file,WORD *button,const char *title)
     ExecAESFileFree(a); return okay;
 failure:
     ExecAESFileFree(a); return 0;
+}
+
+WORD fsel_input(char *path,char *file,WORD *button)
+{
+    return ExecAESFileSelect(path,file,button,NULL);
+}
+
+WORD fsel_exinput(char *path,char *file,WORD *button,const char *title)
+{
+    return ExecAESFileSelect(path,file,button,title);
+}
+
+BOOL ExecAESFileSelector(struct ExecAESContext *c,AESPB *pb)
+{
+    WORD op=pb->control[0],button=FSEL_CANCEL,result;
+    char *path,*file;
+    const char *title;
+    if (op!=90 && op!=91) return FALSE;
+    pb->int_out[0]=0;
+    if (pb->control[2]==2) pb->int_out[1]=FSEL_CANCEL;
+    if (pb->control[1] || pb->control[2]!=2 ||
+        pb->control[3]!=(op==90 ? 2:3) || pb->control[4]) {
+        c->diagnostic=AES_MALFORMED; return TRUE;
+    }
+    /* Nested AES calls may reuse the context arrays holding this outer call. */
+    path=(char *)(ULONG)pb->addr_in[0]; file=(char *)(ULONG)pb->addr_in[1];
+    title=op==90 ? NULL:(const char *)(ULONG)pb->addr_in[2];
+    result=ExecAESFileSelect(path,file,&button,title);
+    pb->int_out[0]=result; pb->int_out[1]=button;
+    return TRUE;
 }

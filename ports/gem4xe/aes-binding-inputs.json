@@ -330,6 +330,24 @@
         1,
         0
       ]
+    },
+    "fsel_input": {
+      "opcode": 90,
+      "control_counts": [
+        0,
+        2,
+        2,
+        0
+      ]
+    },
+    "fsel_exinput": {
+      "opcode": 91,
+      "control_counts": [
+        0,
+        2,
+        3,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
