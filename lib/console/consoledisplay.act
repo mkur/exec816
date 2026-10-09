@@ -135,6 +135,38 @@ PUBLIC BYTE FUNC Geometry(CONSOLETYPES.Presentation POINTER view
 
 RETURN(1)
 
+; Continue the default text terminal after Claim removes the OS cursor overlay.
+; Unsupported graphics and inverse attributes have no retained form.
+PUBLIC PROC Adopt(CONSOLETYPES.Presentation POINTER view
+    CONSOLETYPES.Instance POINTER instance)
+  CARD index
+  BYTE value
+
+  IF CONSOLEBITMAP.Enabled()<>0 THEN
+    RETURN
+  FI
+
+  LET screen=view.screen
+  FOR index=0 TO 959 DO
+    value=screen(index) & $7f
+    IF value<64 THEN
+      value==+32
+    ELSEIF (value<97 OR value>122) AND value<>124 THEN
+      value='?
+    FI
+
+    instance.cells(index)=value
+  OD
+
+  LET position=oldadr-savmsc
+  instance.column=position MOD instance.width
+  instance.lineStart=position-instance.column
+  instance.row=instance.lineStart/instance.width
+  instance.cellOrigin=0
+  instance.operation=CONSOLETYPES.OP_IDLE
+
+RETURN
+
 ; Save the OS display and cursor before granting the terminal ownership.
 PUBLIC BYTE FUNC Claim(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance BYTE POINTER snapshot)

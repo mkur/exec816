@@ -21,6 +21,7 @@ BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
 BYTE ARRAY keys(4)
 BYTE ARRAY prefix=[69 120 101 99 56 49 54 32 110 97 116 105 118 101 32 99 111 110 115 111 108 101 10]
 BYTE ARRAY ending=[69 78 68 8 33 9 84 13 90 10]
+BYTE ARRAY blank=[12]
 
 ; Stop at the first failed fixture invariant and retain its check index for
 ; diagnosis.
@@ -130,6 +131,8 @@ PROC Printable()
     source(index-32)=BYTE(index)
   OD
 
+  ; The printable oracle starts empty rather than inheriting boot text.
+  Write(blank,1)
   Write(prefix,23)
   Write(source,95)
   EXEC.FreeMem(source,128)

@@ -116,6 +116,7 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
   self.tc_Node.ln_Name=bootShellName
   EXEC.Permit()
 
+  ShellByte(shell.console,ASCII.LF)
   ShellText(shell.console,CSTRING(EXECBUILD.banner))
   ShellText(shell.console,CSTRING(EXECBUILD.slots))
   ShellText(shell.console,CSTRING(EXECBUILD.stackChecks))

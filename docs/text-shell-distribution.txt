@@ -44,7 +44,10 @@ it. Boot failures remain visible in quiet mode. Exec reserves the first linear
 RAM bank, $010000-$01FFFF, and starts its kernel in bank $02.
 RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED result. A kernel
 initialization failure prints its error code and System halted, even in quiet
-mode.
+mode. A blank line separates the boot messages from the Exec816 banner.
+
+The standard console keeps the boot screen and appends shell startup messages.
+Output scrolls normally as it fills the screen. Use CLS or Ctrl-L to clear it.
 
 Try it
 ------

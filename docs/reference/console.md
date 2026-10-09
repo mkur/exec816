@@ -53,6 +53,14 @@ Cooked editing, EOF and foreground cancellation belong to the
 
 ## Display, scrolling and input
 
+At startup the default text instance adopts the current GRAPHICS 0 screen and
+cursor position. Shell output continues after the boot messages; startup does
+not clear them. Imported text uses the supported ROM glyphs; inverse attributes
+and graphics characters are not retained. Additional instances start empty.
+FF, including the shell's CLS and Ctrl-L, still explicitly clears the instance.
+This uses the existing cell buffer and adds no fixed or per-Task reserved
+bank-zero bytes.
+
 The retained model and presentation are separate. Hidden instances still accept
 output; showing them redraws retained cells. The worker rotates runnable instances
 and bounds output/redraw work so pending input and other Tasks can progress.

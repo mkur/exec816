@@ -23,6 +23,7 @@ BYTE ARRAY name=[99 111 110 115 111 108 101 46 100 101 118 105 99 101 0]
 BYTE ARRAY message=[72 101 108 108 111 10]
 BYTE ARRAY scroll(64)
 BYTE ARRAY input(64)
+BYTE ARRAY blank=[12]
 
 ; Stop at the first failed fixture invariant and retain its check index for
 ; diagnosis.
@@ -85,6 +86,11 @@ PROC Setup()
   Require(error=EXEC.IOERR_UNITBUSY)
   CopyBinding(second)
   CopyBinding(third)
+
+  ; These transfer checks explicitly require a blank terminal at the origin.
+  Prepare(first,EXEC.CMD_WRITE,blank,1)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
+  Require(error=0 AND first.io_Actual=1)
 
 RETURN
 

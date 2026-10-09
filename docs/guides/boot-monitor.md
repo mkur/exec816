@@ -33,9 +33,12 @@ Technical kernel boot output defaults on. It shows hexadecimal memory bounds,
 kernel/table banks, DP/stack placement and initialization results.
 RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED line
 after returning. A failed kernel initialization also prints its error code and
-System halted, including in quiet mode. Both console
+System halted, including in quiet mode. A blank line separates boot output from
+the Exec816 banner. Both console
 variants detect VBXE at `$D600` or `$D700` and print its core revision before changing
 the display. Failures remain on the OS screen when the bitmap console cannot open.
+The standard text console keeps the existing screen and cursor, so shell startup
+appends to the diagnostic messages. CLS or Ctrl-L clears it explicitly.
 At the Forth prompt, use:
 
 ```forth

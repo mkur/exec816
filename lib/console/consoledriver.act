@@ -447,6 +447,7 @@ BYTE FUNC Initialize(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
     RETURN(0)
   FI
 
+  CONSOLEDISPLAY.Adopt(view,instance)
   IF CONSOLECAPTURE.Acquire()=0 THEN
     RETURN(0)
   FI
