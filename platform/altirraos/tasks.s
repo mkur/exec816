@@ -181,6 +181,7 @@ general_finalizer_start:
     .include "calypsi-call.s"
     .include "display.s"
     .include "blitter.s"
+    .include "boot-diagnostics.s"
     .if SIGNAL_IRQ_PROBE = 10
         .include "console-probe.s"
     .endif

@@ -184,8 +184,16 @@ map_done_{index}:
     (media/'DATA.BIN').write_bytes(bytes(i^0x5a for i in range(128)))
     make(output/'system.atr',media,binary_names={'DATA.BIN'})
     mounts=validate_mounts([dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=SDFS)])
+    # This diagnostic launcher links DOS fault strings as well as its probes.
+    # Reserve enough upper image data; bank-zero pools remain unchanged.
+    from generate_memory import PROFILE
+    profile=json.loads(PROFILE.read_text())
+    profile['image_data_bytes']=4096
+    profile_path=output/'memory-profile.json'
+    profile_path.write_text(json.dumps(profile,indent=2)+'\n')
     program=build(compiler(ROOT/'build/actionc'),source,output/'program',optimize=optimize,
-        tasks=True,task_capacity=8,console=True,foreign_image=foreign,dos_mounts=mounts)
+        tasks=True,task_capacity=8,console=True,foreign_image=foreign,dos_mounts=mounts,
+        memory_profile=profile_path)
     return program,foreign
 
 

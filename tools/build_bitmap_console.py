@@ -119,7 +119,7 @@ def prepare(source,out,foreign,desktop=False,aes=False,mouse_profile=None):
     text=read_source(source);sy=foreign['symbols']
     require(len(re.findall(r'(?m)^PROC Main\(\)',text))==1,'Expected one ordinary Main entry')
     text=text.replace('PROC Main()','PROC BitmapApplication(BYTE unused)')
-    uses=''.join('USE '+name+'\n' for name in ('EXEC','CONSOLEDRIVER','CONSOLEBITMAP','DISPLAY','DISPLAYBOOT','DISPLAYADAPTER','BLITTER','BLITTERADAPTER','HEAPCORE') if not re.search(r'(?mi)^USE '+name+r'\s*$',text))
+    uses=''.join('USE '+name+'\n' for name in ('EXEC','CONSOLEDRIVER','CONSOLEBITMAP','DISPLAY','DISPLAYBOOT','DISPLAYADAPTER','BOOTDIAG','BLITTER','BLITTERADAPTER','HEAPCORE') if not re.search(r'(?mi)^USE '+name+r'\s*$',text))
     text=re.sub(r'(?m)^(MODULE \w+\n)',lambda m:m[1]+uses,text,count=1)
     binding=f'CONST C_EXECDISPLAYENTRIES=${sy["ExecDisplayEntries"]:x}\n'
     binding+=read_source(ROOT/'c/calypsi/display-bridge.inc')
@@ -135,11 +135,13 @@ PROC Main()
 
   BindDisplay()
   DISPLAYBOOT.Authorize()
+  BOOTDIAG.Report(BOOTDIAG.CONSOLE,2)
   IF CONSOLEBITMAP.Bind(${sy['ConsoleBitmapEntry']:x},${sy['ConsoleBitmapPacket']:x})=0 THEN
     HEAPCORE.Abort($f730)
   FI
 
   IF CONSOLEDRIVER.Start()=0 THEN
+    BOOTDIAG.Report(BOOTDIAG.CONSOLE_FAILED,$f731)
     HEAPCORE.Abort($f731)
   FI
 

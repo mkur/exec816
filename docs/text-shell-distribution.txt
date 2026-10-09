@@ -37,8 +37,14 @@ to resume loading and continue into the text shell. OF816 appends its banner
 without clearing earlier boot messages. CACHE-BLOCKS! and SYSTEM-DRIVE! settings
 entered in Forth are preserved while loading resumes and the kernel starts.
 
-Exec reserves the first linear RAM bank, $010000-$01FFFF, and starts its
-kernel in bank $02.
+Technical boot messages default on. They show memory bounds, kernel/table banks,
+DP/stack placement, initialization results and any detected VBXE core revision.
+Type 0 BOOT-VERBOSE! in Forth to suppress this trace, or 1 BOOT-VERBOSE! to enable
+it. Boot failures remain visible in quiet mode. Exec reserves the first linear
+RAM bank, $010000-$01FFFF, and starts its kernel in bank $02.
+RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED result. A kernel
+initialization failure prints its error code and System halted, even in quiet
+mode.
 
 Try it
 ------

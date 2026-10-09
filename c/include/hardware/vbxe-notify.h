@@ -3,6 +3,8 @@
 #ifndef EXEC_VBXE_NOTIFY_H
 #define EXEC_VBXE_NOTIFY_H
 #include <exec/display.h>
+UWORD VbxeHardwareBase(void);
+void VbxeBootReport(UWORD event,UWORD value);
 #define VBXE_NOTIFY_ARMED 1
 #define VBXE_NOTIFY_DONE 2
 #define VBXE_NOTIFY_EXPIRED 3

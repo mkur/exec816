@@ -42,7 +42,7 @@ PUBLIC PROC Init()
   drive^=B_DEFAULT_DRIVE
   result^=BAD_RECORD
   IF words^<>B_MAGIC OR bytes(B_FIELD_VERSION)<>B_VERSION
-      OR bytes(B_FIELD_SIZE)<>B_SIZE OR bytes(B_FIELD_RESERVED)<>0
+      OR bytes(B_FIELD_SIZE)<>B_SIZE OR (bytes(B_FIELD_FLAGS) & $fe)<>0
       OR bytes(B_FIELD_SYSTEM_DRIVE)>8 THEN
     RETURN
   FI

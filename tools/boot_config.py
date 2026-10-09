@@ -32,6 +32,7 @@ def definitions(record):
                   SIZE=ABI['size'], DEFAULT_BLOCKS=record['cache_blocks'],
                   MIN_BLOCKS=ABI['cache']['minimum'], MAX_BLOCKS=ABI['cache']['maximum'],
                   BLOCK_BYTES=ABI['cache']['block_bytes'])
+    values.update(DEFAULT_FLAGS=ABI['default_flags'], FLAG_VERBOSE=ABI['flags']['VERBOSE'])
     values.update({'FIELD_'+key.upper(): value for key,value in ABI['fields'].items()})
     return values
 

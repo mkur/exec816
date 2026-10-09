@@ -240,13 +240,26 @@ isolation.
 The loader publishes the eight-byte record in [boot-v1.json](../../abi/boot-v1.json).
 Use `memory.json`'s `boot_config` address, not a hard-coded historical location.
 The fields are magic `$4245`, version 1, record size 8, cache-block count,
-system-drive byte and a reserved zero byte.
+system-drive byte and a flags byte. Bit 0 enables technical kernel boot output;
+other flag bits must be zero. Verbose output defaults on. OF816's
+`BOOT-VERBOSE@` and `BOOT-VERBOSE!` inspect/change this flag before handoff.
+
+Kernel diagnostics use CIO on the existing OS screen before bitmap activation.
+They report memory bounds, kernel/table banks, skipped firmware bank, DP/stack
+placement, memory adoption, Task/heap initialization and console startup.
+Memory adoption and Task/heap initialization each print a single `OK` or `FAILED`
+result. Kernel initialization failure prints its error code and `System halted`
+before the existing controlled termination path; it never enters the shell.
+Failure events print even in quiet mode. A private stack buffer and the existing
+OS_BUSY protocol serialize ROM entry and preserve native context and IOCB0.
+Code and labels fit the existing upper blitter reservation; no bank-zero
+reservation or per-Task allocation is added.
 
 The first setup callback initializes defaults once, before OF816. A monitor may
 change settings before `loader_start`; resumed copy/zero-fill callbacks preserve
 the entire boot record and skip initialization. Task initialization validates
-and captures these requests before
-admission. Later writes have no effect. Invalid headers or drive values select
+and captures cache/drive requests before admission; later writes do not change
+those services. The trace flag is read during boot. Invalid headers or drive values select
 build defaults with status 1; invalid cache capacity selects defaults with status
 2; valid input has status 0.
 

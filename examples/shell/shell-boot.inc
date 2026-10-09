@@ -107,6 +107,7 @@ RETURN
 BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
 
   IF ShellOpen(consoleName)=0 THEN
+    BOOTDIAG.Report(BOOTDIAG.CONSOLE_FAILED,$ffff)
     RETURN(0)
   FI
 

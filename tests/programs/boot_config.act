@@ -1,11 +1,14 @@
 MODULE BOOTCONFIGTEST
 USE BOOTCONFIG
+USE BOOTDIAG
 
 CARD ARRAY facts(4)
 
 ; Exercise validated boot overrides and fallback defaults.
 PROC Main()
 
+  BOOTDIAG.Report(BOOTDIAG.READY,$816)
+  BOOTDIAG.DisplayReport($a6,BOOTDIAG.VBXE_REVISION)
   facts(0)=BOOTCONFIG.CacheBlocks()
   facts(1)=BOOTCONFIG.Status()
   facts(2)=BOOTCONFIG.SystemDrive()

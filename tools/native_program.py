@@ -421,7 +421,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name.startswith('BLITTERADAPTER.'):
             operation=name.split('.')[1]
             label={'Prepare':'blitter_prepare','Arm':'blitter_arm','State':'blitter_state',
-                   'Reset':'blitter_reset','EmulationProbe':'blitter_emulation_probe'}[operation]
+                   'Reset':'blitter_reset','EmulationProbe':'blitter_emulation_probe',
+                   'Base':'blitter_base'}[operation]
             if operation=='Prepare':
                 arguments=[dict(alignment=1,offset=0,size=3),dict(alignment=2,offset=4,size=4)]
                 outgoing=9;result='None'
@@ -431,10 +432,19 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             elif operation=='State':
                 arguments=[dict(alignment=2,offset=0,size=4)]
                 outgoing=5
-            else:result='None'
+            elif operation!='Base':result='None'
             if operation=='EmulationProbe':
                 require(source.name=='blitter_irq.act','Blitter emulation probe is fixture-only')
             peak=48 if operation=='EmulationProbe' else 8
+        elif tasks and name.startswith('BOOTDIAG.'):
+            operation=name.split('.')[1]
+            require(operation in ('Report','DisplayReport'),'Unknown boot diagnostic import')
+            label='boot_record' if operation=='Report' else 'boot_display_report'
+            arguments=([dict(alignment=2,offset=0,size=2),dict(alignment=2,offset=2,size=2)]
+                       if operation=='Report' else
+                       [dict(alignment=2,offset=0,size=4),dict(alignment=2,offset=4,size=2)])
+            outgoing=5 if operation=='Report' else 7
+            result='None';peak=80
         elif tasks and name.startswith('DISPLAYADAPTER.'):
             operation=name.split('.')[1]
             require(operation in ('Ticks','ResetRequired'),'Unknown display adapter import')
@@ -978,6 +988,10 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
                 'lib/exec/calypsicall.act','platform/altirraos/calypsi-call.s',
+                'abi/boot-diagnostics.json','tools/generate_boot_diagnostics.py',
+                'lib/exec/bootdiag.act','lib/exec/boot-diagnostics-action.inc',
+                'platform/altirraos/boot-diagnostics.s','platform/altirraos/boot-diagnostics.inc',
+                'platform/altirraos/boot-labels.inc',
                 'abi/display.json','tools/generate_display.py','lib/display/display.act',
                 'lib/display/display-types.inc','lib/display/display-access.inc','lib/display/displayboot.act','lib/display/blitter.act','lib/display/blitteradapter.act','abi/blitter.json','tools/generate_blitter.py','platform/altirraos/blitter.s','platform/altirraos/blitter.inc',
                 'lib/display/displayadapter.act','platform/altirraos/display.s')},
@@ -1030,7 +1044,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
 
 
 def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None,
-            frame_limit=None, timeout=None, load_timeout=180, preloaded=False):
+            frame_limit=None, timeout=None, load_timeout=180, preloaded=False,
+            boot_verbose=False):
     if frame_limit is None:
         frame_limit = 1200 if program['build'].get('tasks') else 120
     if timeout is None:
@@ -1047,6 +1062,13 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
     old_vectors = bridge.memdump(0x0256, 9)
     old_vbi = bridge.memdump(0x0222, 2)
     old_memlo = bridge.memdump(program['build']['memory']['constants']['OLD_MEMLO'], 2) if program['build'].get('banked') else bridge.memdump(0x02E7, 2)
+    # Ordinary fixtures compare their own console output and restoration.
+    # Keep boot inventory quiet; dedicated boot probes preserve the record.
+    if boot_verbose is not None and program['build'].get('banked') and program['build'].get('tasks'):
+        record=program['build']['memory']['boot_config']
+        at=record['address']+record['abi']['fields']['flags']
+        flags=int.from_bytes(bridge.memdump(at,1),'little')
+        bridge.poke(at,(flags & 0xfe) | int(bool(boot_verbose)))
     if timer_irq:
         # Real POKEY timer-1 IRQs, handled by the pinned ROM's default vector.
         # This is a test stimulus; the next cold boot restores the machine.

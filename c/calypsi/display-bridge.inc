@@ -128,6 +128,8 @@ PROC BindDisplay()
   entries(22)=ADDRESS(@DISPLAY.OwnerWake)
   entries(23)=ADDRESS(@CDisplayAccessFault)
   entries(24)=ADDRESS(@DISPLAY.Delegated)
+  entries(25)=ADDRESS(@BLITTERADAPTER.Base)
+  entries(26)=ADDRESS(@BOOTDIAG.DisplayReport)
 
 
 RETURN

@@ -139,6 +139,8 @@ clear_boot:
     sta B_ADDRESS+B_FIELD_CACHE_BLOCKS+1
     lda #B_DEFAULT_DRIVE
     sta B_ADDRESS+B_FIELD_SYSTEM_DRIVE
+    lda #B_DEFAULT_FLAGS
+    sta B_ADDRESS+B_FIELD_FLAGS
     lda $02e7
     sta M_OLD_MEMLO
     lda $02e8

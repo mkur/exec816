@@ -8,6 +8,7 @@
 .include "layout.inc"
 .if GENERAL_TASKS
     .include "tasks.inc"
+    .include "boot-diagnostics.inc"
     .include "native-interrupts.inc"
     .include "timer-device.inc"
 .endif
@@ -169,9 +170,46 @@ clear_dp:
         lda #0
         sta 1,s
         rep #$20
+        .if GENERAL_TASKS
+            ldx a:M_OLD_MEMLO
+            lda #DIAG_MEMLO
+            jsl boot_report
+            ldx a:MEMTOP
+            lda #DIAG_MEMTOP
+            jsl boot_report
+            ldx #M_KERNEL_BANK
+            lda #DIAG_KERNEL_BANK
+            jsl boot_report
+            ldx #.hiword(M_TABLE)
+            lda #DIAG_TABLE_BANK
+            jsl boot_report
+            ldx #1
+            lda #DIAG_SKIP_BANK
+            jsl boot_report
+            ldx #E816_KERNEL_DP
+            lda #DIAG_KERNEL_DP
+            jsl boot_report
+            ldx #E816_KERNEL_STACK_TOP-1
+            lda #DIAG_KERNEL_STACK
+            jsl boot_report
+        .endif
         jsl MEMORY_INIT
+        .if GENERAL_TASKS
+            pha
+            tax
+            lda #DIAG_ADOPT
+            jsl boot_report
+            pla
+        .endif
         cmp #0
         beq :+
+        .if GENERAL_TASKS
+            tax
+            lda #DIAG_KERNEL_FAILED
+            jsl boot_report
+            lda #DIAG_HALTED
+            jsl boot_report
+        .endif
         lda #FAULT_CONTEXT
         jmp finish
 :
@@ -179,8 +217,18 @@ clear_dp:
     .if GENERAL_TASKS
         ; Adoption is complete: the INITAD loader/staging may now be reclaimed.
         jsl TASK_INIT
+        pha
+        tax
+        lda #DIAG_TASK_INIT
+        jsl boot_report
+        pla
         cmp #0
         beq :+
+        tax
+        lda #DIAG_KERNEL_FAILED
+        jsl boot_report
+        lda #DIAG_HALTED
+        jsl boot_report
         lda #FAULT_CONTEXT
         jmp finish
 :
@@ -194,6 +242,12 @@ clear_dp:
         rep #$20
     .endif
 startup_complete:
+    .if GENERAL_TASKS
+        jsl boot_vbxe_probe
+        ldx #0
+        lda #DIAG_READY
+        jsl boot_report
+    .endif
     lda #TASK_DP
     tcd
     lda #STACK_TOP

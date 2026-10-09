@@ -22,7 +22,7 @@ def run(output, mode):
              ('override', {4:128,5:0}, [128,0,0,128]),
              ('no-system', {6:2}, [512,1,0,512]),
              ('magic', {0:0}, [512,1,0,512]), ('version', {2:255}, [512,1,0,512]),
-             ('size', {3:7}, [512,1,0,512]), ('reserved', {7:1}, [512,1,0,512]),
+             ('size', {3:7}, [512,1,0,512]), ('flags', {7:2}, [512,1,0,512]),
              ('drive', {6:9}, [512,1,0,512]), ('capacity', {4:17,5:0}, [512,2,0,512]),
              ('wide', {4:0,5:16}, [512,2,0,512])]
     observations = []
@@ -32,14 +32,18 @@ def run(output, mode):
             bridge.bp_clear_all()
             bridge.boot(str(program['xex']))
             run_to(bridge, program['labels']['loader_start'], frame_limit=1800, timeout=180)
-            require(bridge.memdump(address,8)==bytes([0x45,0x42,1,8,0,2,0,0]), 'Loader defaults differ')
+            require(bridge.memdump(address,8)==bytes([0x45,0x42,1,8,0,2,0,1]), 'Loader defaults differ')
             for offset,value in patch.items(): bridge.poke(address+offset,value)
             bridge.bp_clear_all()
             bridge.bp_set(program['labels']['start'])
             run_to(bridge, program['labels']['start'])
-            runtime,_ = execute(bridge, program, preloaded=True)
+            runtime,_ = execute(bridge, program, preloaded=True, boot_verbose=None)
             observed = data(bridge, program['image'], 'facts', True)
             require(observed == expected, f'{name}: {observed} != {expected}')
+            if name=='default':
+                from test_boot_diagnostics import os_text
+                require('VBXE rev=1.26r' in os_text(bridge),
+                        'Long-argument diagnostic bridge or revision decoding failed')
             clean_ownership(bridge, program, output)
             observations.append(dict(case=name, facts=observed, runtime=runtime))
     return dict(status='pass', mode=mode, machine=machine, build=program['build'], cases=observations)

@@ -76,6 +76,33 @@ invalid:
     jmp _throway
 eword
 
+; Boot trace defaults on; the persistent record survives the monitor handoff.
+dword BOOT_VERBOSE_FETCH,"BOOT-VERBOSE@"
+    lda f:B_ADDRESS+B_FIELD_FLAGS
+    and #B_FLAG_VERBOSE
+    tay
+    lda #0
+    PUSHNEXT
+eword
+
+; Zero disables boot tracing; one enables it without changing other settings.
+dword BOOT_VERBOSE_STORE,"BOOT-VERBOSE!"
+    jsr _popay
+    cmp #0
+    bne invalid
+    cpy #2
+    bcs invalid
+    tya
+    sep #$20
+    sta f:B_ADDRESS+B_FIELD_FLAGS
+    rep #$20
+    NEXT
+invalid:
+    lda #.hiword(-24)
+    ldy #.loword(-24)
+    jmp _throway
+eword
+
 ; Retire the monitor and resume the paused XEX/cartridge reader with RTS.
 dword EXEC816_BOOT,"EXEC816"
     jml of_handoff

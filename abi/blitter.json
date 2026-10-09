@@ -11,7 +11,8 @@
     "OLDIRQ": 26,
     "CONTROL": 28,
     "EMULATIONS": 30,
-    "PROBE_STACK": 32
+    "PROBE_STACK": 32,
+    "PAGE_OFFSET": 34
   },
   "states": {
     "IDLE": 0,

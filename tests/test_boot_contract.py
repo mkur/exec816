@@ -19,6 +19,8 @@ class BootConfigTests(unittest.TestCase):
         self.assertEqual(record['address'], memory['regions']['boot-state'][0]+128)
         self.assertEqual(record['cache_blocks'], 512)
         self.assertEqual(ABI['size'], 8)
+        self.assertEqual(ABI['fields']['flags'],7)
+        self.assertEqual(ABI['default_flags'],ABI['flags']['VERBOSE'])
         self.assertIn('B_FIELD_CACHE_BLOCKS = $4', files(record)['boot-config.inc'])
         before = memory['profile']['code_origin']
         regions = dict(memory['regions'])

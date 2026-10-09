@@ -1,0 +1,9 @@
+; Early OS-screen output is independent of the console being brought up.
+MODULE BOOTDIAG
+INCLUDE "boot-diagnostics-action.inc"
+
+PUBLIC EXTERNAL PROC Report(CARD event,CARD value)
+; The ordinary C display bridge carries value followed by the event number.
+PUBLIC EXTERNAL PROC DisplayReport(LONGCARD value CARD event)
+
+ENDMODULE

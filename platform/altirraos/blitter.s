@@ -8,6 +8,46 @@
 .export blitter_reset,blitter_reset_end,blitter_irq_complete,blitter_irq_posted
 .a16
 .i16
+; Read-only hardware detection; no register writes or revision restriction.
+; The selected offset is private driver state shared by all IRQ paths.
+.export blitter_base,blitter_base_end
+blitter_base:
+    lda f:BV_BINDING+T_BINDING_ACTIVE
+    and #$ff
+    beq @probe
+    lda f:BV_PAGE_OFFSET
+    clc
+    adc #$d600
+    rtl
+@probe:
+    sep #$20
+    lda f:$d640
+    cmp #$10
+    beq @d6
+    cmp #$11
+    beq @d6
+    lda f:$d740
+    cmp #$10
+    beq @d7
+    cmp #$11
+    beq @d7
+    rep #$20
+    lda #0
+    rtl
+@d6:
+    rep #$20
+    lda #0
+    bra @selected
+@d7:
+    rep #$20
+    lda #$100
+@selected:
+    sta f:BV_PAGE_OFFSET
+    clc
+    adc #$d600
+    rtl
+blitter_base_end:
+
 blitter_prepare:
     php
     sei

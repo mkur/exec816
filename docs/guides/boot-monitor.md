@@ -29,6 +29,23 @@ the final partial block also prints a dot. The monitor appends its banner and
 countdown without clearing earlier text. The bitmap console starts later when
 the selected Exec application opens it. Remote image loading is not provided.
 
+Technical kernel boot output defaults on. It shows hexadecimal memory bounds,
+kernel/table banks, DP/stack placement and initialization results.
+RAM ADOPT and TASK/HEAP INIT each print one OK or FAILED line
+after returning. A failed kernel initialization also prints its error code and
+System halted, including in quiet mode. Both console
+variants detect VBXE at `$D600` or `$D700` and print its core revision before changing
+the display. Failures remain on the OS screen when the bitmap console cannot open.
+At the Forth prompt, use:
+
+```forth
+BOOT-VERBOSE@ .       \ 1: enabled, 0: quiet
+0 BOOT-VERBOSE!       \ suppress technical progress for this boot
+1 BOOT-VERBOSE!       \ enable it again
+EXEC816
+```
+
+Quiet mode keeps the normal loader progress and always prints boot failures.
 Exec leaves `$010000–$01FFFF` available to platform firmware and starts its
 default kernel in bank `$02`.
 
