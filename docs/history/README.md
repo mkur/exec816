@@ -1,5 +1,7 @@
 # Historical records
 
+- [GEM text viewer](text-viewer.md): bounded document loading and application evidence.
+
 - [Standard GEM file selector](file-selector.md): shared directory helpers and
   the file-selector implementation's development evidence.
 

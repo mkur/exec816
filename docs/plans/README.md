@@ -1,5 +1,12 @@
 # Implementation plans
 
+The [GEM text viewer design](gem4xe/text-viewer-design.md) covers a
+loadable read-only viewer, bounded loading and line indexing, incremental
+painting and subsequent `.TXT` launch from Files. The
+[TV1–TV4 implementation plan](gem4xe/text-viewer-implementation-plan.md) orders
+document loading, the standalone viewer, Files launching and the OF816 package.
+TV1 passes development checks; TV2–TV4 are in progress.
+
 The [standard GEM file selector design](gem4xe/file-selector-design.md)
 covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and the
 standard-dialog lifecycle. The

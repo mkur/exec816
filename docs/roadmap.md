@@ -146,8 +146,17 @@ and filename; applications own the actual Open/Save and overwrite decisions.
 The [FSEL1–FSEL4 plan](plans/gem4xe/file-selector-implementation-plan.md) orders
 shared Files helpers, the hosted selector, standard bindings and the packaged
 example. FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP
-walkthrough; see the [execution record](history/file-selector.md). A text viewer
-remains subsequent work.
+walkthrough; see the [execution record](history/file-selector.md).
+
+The [GEM text viewer](plans/gem4xe/text-viewer-design.md):
+loadable `TEXT.APP`, standard Open selection, bounded read-only loading,
+resizable vertical scrolling and short VDI repaint units. Files integration
+then opens `.TXT` documents through a launcher carrying copied path arguments.
+The design preserves the current document after Cancel or a failed replacement.
+The [TV1–TV4 plan](plans/gem4xe/text-viewer-implementation-plan.md) orders
+document loading, the standalone viewer, Files launching and the OF816 package;
+TV1 passes development checks; TV2–TV4 are in progress. See the
+[execution record](history/text-viewer.md).
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

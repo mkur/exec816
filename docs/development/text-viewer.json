@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "TV1": {
+    "status": "pass",
+    "host": {
+      "tests": 423,
+      "skipped": 4
+    },
+    "fixtures": [
+      {
+        "path": "build/text-viewer/tv1-mock-final/results.json",
+        "sha256": "32546bb95bac67a4dd97c9da4222041b51ad08494f22afec3f198270d62761e8",
+        "checks": 139,
+        "c_elf_sha256": "718ac77fccd008645c737e06fe73e90c44731444dbba8751e07570e4c2ec6210",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 191,
+            "untouched_above_floor": 1089
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "guards": "intact",
+        "fixture_initialized_bytes": 6243,
+        "fixture_zero_fill": [
+          {
+            "address": 852149,
+            "size": 800,
+            "writable": true
+          }
+        ]
+      },
+      {
+        "path": "build/text-viewer/tv1-disk-checked/results.json",
+        "sha256": "49465e155a6f4734d858585422bae4e91013dbd14dcf6fc407bfd72ca3a9df58",
+        "checks": 119,
+        "c_elf_sha256": "04b0fcbebe29bd34e572e0b38e0a1edf8bba2349d8bff0cbcf52f979f6a0d0e0",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 417,
+            "untouched_above_floor": 863
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 251,
+            "untouched_above_floor": 805
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 138,
+            "untouched_above_floor": 918
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "guards": "intact",
+        "fixture_initialized_bytes": 5784,
+        "fixture_zero_fill": [
+          {
+            "address": 852149,
+            "size": 846,
+            "writable": true
+          }
+        ]
+      }
+    ],
+    "document_payload_bytes": 81924,
+    "document_rounded_bytes": 81928,
+    "replacement_rounded_bytes": 163856,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "source_sha256": {
+      "examples/gem-text/document.c": "fb4729d3a54614e66027cd886c24e5467df21c812c8dbb0408171c48ca01da08",
+      "examples/gem-text/document.h": "d642f2b18da511639e56690cc07bef77048acc54e9f7fa493a3a7b0880a931ed",
+      "tests/programs/text_document.c": "434eb47f4c679714b31153bf909e056e4218c1286fb16feb48b5cf2aa1ea39c2",
+      "tools/test_text_document.py": "d9aa4372da3a0ef55f69f9896722e6da7ebc63ceac80a6d3ea1f14b207dd62df"
+    }
+  },
+  "qualification": false
+}
