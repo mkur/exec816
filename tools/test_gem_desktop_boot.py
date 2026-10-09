@@ -34,6 +34,11 @@ class DesktopBoot:
             move(x,y)
             s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(35)
             s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(60)
+        if 'objc_edit' in sy:
+            from desktop_menu_check import Menus
+            from files_dialog_check import exercise as dialogs
+            s.saved['desktop_menu']={};s.menus=Menus(s,click,move)
+            s.menus.select('Files');dialogs(s,sy,click,move)
         if self.files_only:
             from desktop_menu_check import Menus
             s.menus=Menus(s,click,move);s.saved['desktop_menu']={}
@@ -89,6 +94,9 @@ class DesktopBoot:
         # Quit from the application menu follows the same child-stop/collect path.
         s.menus.select('Files');row('C');key('RETURN');row('TICK');key('RETURN')
         s.rendezvous('dw($%x)!=0'%(browser+BF['child']));s.frames(80)
+        if 'objc_edit' in sy:
+            key('N');s.rendezvous('dw($%x)=2'%(browser+BF['dialog']))
+            s.saved['files_dialogs']['close_while_editing_with_child']=True
         click(24,8);click(32,72)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         require(s.ledger()==owners,'Menu Quit retained its native child')

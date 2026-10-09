@@ -38,3 +38,33 @@ A 96-extent host wire round trip and exact-package cold startup beyond the old
 64-descriptor limit pass. The loader's byte index and reserved-space bounds
 remain enforced. Uncompressed cartridge capacity is informational for XEX demos;
 OF816 exceeds that cartridge limit, and compression remains separate work.
+
+## ED2: Files dialogs
+
+Files now uses a six-object compiled tree and one writable TEDINFO for Path,
+New Folder and Rename. The dialog occupies the existing Files work area;
+the application keeps servicing geometry, exposure, child completion and close.
+Tab/Shift-Tab moves focus, Return accepts, Escape cancels, and pointer activation
+uses the same actions. Other applications continue running. Ordinary filesystem
+errors retain the field for correction. Path replaces the current directory
+only after Lock/Examine succeeds; creation and rename refresh the snapshot and
+select the result. The public C bindings use the existing DOS operations.
+
+The Browser model grows 2,672 → 3,054 upper-image bytes: 72 bytes for the three
+menu entries and 310 for the dialog state. It remains within the application's
+existing two-bank image allocation. Its 28,672-byte snapshot is unchanged.
+Rename temporarily allocates 256 upper-heap bytes for
+the second full path and frees them after the DOS call, keeping both paths off
+the Task stack. No new Task, timer, screen surface or event abstraction is added.
+ED2 reserved bank-zero delta is **0 fixed, 0 per public Task, 0 private idle**,
+including guards, alignment and unused capacity.
+
+ED2 development checks pass in the exact OF816 package: keyboard/pointer
+accept/cancel, duplicate creation, invalid leaf, missing/file path, empty
+directory, caret exposure, resize while editing and counter coexistence.
+Child collection preserves an open dialog; closing while editing stops and
+collects a child. Relaunch restores heap/ownership, and guards and OS restoration
+pass. An independent SDFS audit confirms that New Folder/Rename persists `BBB`,
+removes `AAA` and leaves consistent allocation. The initial desktop runner's
+last host assertion expected only the root directory; it is corrected to audit
+this intentional fixture result. ED3 records the rerun with that final audit.

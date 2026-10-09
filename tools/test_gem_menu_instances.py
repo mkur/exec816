@@ -1,6 +1,6 @@
-from browser_model import FIELDS as BF
 #!/usr/bin/env python3
 """Two private Files images use independent public menu trees and lifetimes."""
+from browser_model import FIELDS as BF
 import argparse,json
 from pathlib import Path
 import adapter_state as adapter

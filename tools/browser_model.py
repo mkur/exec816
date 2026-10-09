@@ -2,8 +2,9 @@
 FIELDS=dict(ready=8,work=26,tree=170,menu=174,path=178,status=306,target=434,
     entries=2094,count=2358,first=2360,visible=2362,selected=2364,down=2366,
     armed=2368,truncated=2370,launches=2372,paints=2376,child=2380,result=2384,
-    bar=2428,menuInstalled=2668,menuEnabled=2670)
-SIZE=2672
+    bar=2428,menuInstalled=2740,menuEnabled=2742,dialogTree=2744,dialogTed=2888,
+    editText=2916,dialog=3044,focus=3046,editIndex=3048,dialogError=3050)
+SIZE=3054
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21
@@ -15,6 +16,18 @@ def listing(session,base):
     at=session.number(base+FIELDS['entries'],4)
     raw=session.b.memdump(at,count*ENTRY_BYTES)
     return [raw[i*ENTRY_BYTES:i*ENTRY_BYTES+108].split(b'\0')[0].decode('ascii') for i in range(count)]
+
+
+def wait_listing(session,base):
+    """Wait for navigation to release its directory lock before heap baselines."""
+    from native_program import require
+    for _ in range(50):
+        status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
+        path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
+        if status==path:
+            session.frames(80);return
+        session.frames(40)
+    require(False,'Directory snapshot did not finish: '+repr((path,status)))
 
 
 def select(session,base,name,click):

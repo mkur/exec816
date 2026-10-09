@@ -24,4 +24,12 @@ const UWORD BrowserLayout[]={sizeof(struct Browser),
     offsetof(struct Browser,bar),
     offsetof(struct Browser,menuInstalled),
     offsetof(struct Browser,menuEnabled),
+    offsetof(struct Browser,dialogTree),
+    offsetof(struct Browser,dialogTed),
+    offsetof(struct Browser,editText),
+    offsetof(struct Browser,dialog),
+    offsetof(struct Browser,focus),
+    offsetof(struct Browser,editIndex),
+    offsetof(struct Browser,dialogError),
+
 };

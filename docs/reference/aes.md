@@ -480,9 +480,17 @@ adapting the count and width to its work area. Arrows, page clicks and the verti
 thumb scroll continuously; keyboard selection follows into view. Refresh preserves
 the selected filename. Directories above the limit report a truncated listing.
 Files launches native Exec commands or C/GEM APPs using Program/Process. Its
-application menu offers Open, Refresh, Stop and Quit; its window-scoped File
+application menu offers Open, Refresh, Stop, Quit, Path, New Folder and Rename; its window-scoped File
 popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
-and child availability, and menu Quit shares the ordinary close path. A launched command
+and child availability, and menu Quit shares the ordinary close path.
+Path (P), New Folder (N) and Rename (R) use compiled-in OBJECT/TEDINFO dialogs
+inside Files' existing window. Tab/Shift-Tab, Return, Escape and mouse OK/Cancel
+operate them. Fields use GEM uppercase folding for the current disk formats.
+The other applications keep running. Path validates a directory
+before replacing the snapshot; New Folder/Rename accept one leaf name and
+preserve operational errors and entered text. Success refreshes and selects the
+result; Cancel does not mutate the filesystem. Files continues servicing
+geometry, exposure, child completion and close while a dialog is open. A launched command
 has an empty argument tail, NIL input and RAW output in the shell; closing Files
 requests native BREAK or GEM close and collects the child before Task retirement.
 The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries

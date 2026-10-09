@@ -4,26 +4,34 @@
 #include <string.h>
 #include <proto/exec.h>
 
-enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9 };
+enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU_PATH=10, MENU_NEW=11, MENU_RENAME=12 };
 static const OBJECT menuSource[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
     {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
     {1,3,3,G_IBOX,0,0,0,8,0,424,16},
     {2,-1,-1,G_TITLE,0,0,(ULONG)"Files",0,0,64,16},
     {0,5,5,G_IBOX,0,0,0,0,16,640,224},
-    {4,6,9,G_BOX,0,0,0x00011100,8,0,112,66},
+    {4,6,12,G_BOX,0,0,0x00011100,8,0,112,114},
     {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,110,16},
     {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh",1,17,110,16},
     {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,33,110,16},
-    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit",1,49,110,16}
+    {10,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,49,110,16},
+    {11,-1,-1,G_STRING,0,0,(ULONG)"Path...",1,65,110,16},
+    {12,-1,-1,G_STRING,0,0,(ULONG)"New Folder",1,81,110,16},
+    {5,-1,-1,G_STRING,LASTOB,DISABLED,(ULONG)"Rename...",1,97,110,16}
 };
 static WORD menu_state(struct Browser *b)
 {
-    WORD enabled=(b->selected>=0 && (b->entries[b->selected].kind>0 || !b->child) ? 1:0)
-        |(b->child ? 2:0);
+    WORD enabled=(!b->dialog && b->selected>=0 && (b->entries[b->selected].kind>0 || !b->child) ? 1:0)
+        |(b->child ? 2:0)|(!b->dialog && b->selected>=0 ? 4:0)|(!b->dialog ? 8:0);
     WORD changed=enabled^b->menuEnabled;
     if ((changed&1) && !menu_ienable(b->bar,MENU_OPEN,enabled&1)) return 0;
     if ((changed&2) && !menu_ienable(b->bar,MENU_STOP,enabled&2)) return 0;
+    if ((changed&4) && !menu_ienable(b->bar,MENU_RENAME,enabled&4)) return 0;
+    if (changed&8) {
+        if (!menu_ienable(b->bar,MENU_REFRESH,enabled&8) ||
+            !menu_ienable(b->bar,MENU_PATH,enabled&8) || !menu_ienable(b->bar,MENU_NEW,enabled&8)) return 0;
+    }
     b->menuEnabled=enabled;return 1;
 }
 static void stop(struct Browser *b)
@@ -40,6 +48,13 @@ static void label(char *to,const char *from,WORD max)
 static void layout(struct Browser *b)
 {
     WORD i,index,columns=(b->work[2]-16)/8;
+    if (b->dialog) {
+        b->dialogTree[0].ob_x=b->work[0];b->dialogTree[0].ob_y=b->work[1];
+        b->dialogTree[0].ob_width=b->work[2];b->dialogTree[0].ob_height=b->work[3];
+        b->dialogTree[2].ob_width=b->work[2]-16;
+        b->dialogTree[5].ob_y=b->work[3]-10;b->dialogTree[5].ob_width=b->work[2]-16;
+        return;
+    }
     b->visible=(b->work[3]-48)/12;
     if (b->visible<1) b->visible=1;
     if (b->visible>BROWSER_ROWS) b->visible=BROWSER_ROWS;
@@ -66,7 +81,7 @@ static void layout(struct Browser *b)
 }
 static WORD sliders(struct Browser *b)
 {
-    WORD extent=b->count>b->visible ? b->count-b->visible:0;
+    WORD extent=!b->dialog && b->count>b->visible ? b->count-b->visible:0;
     WORD position=extent ? (LONG)b->first*1000/extent:0;
     WORD size=extent ? (LONG)b->visible*1000/b->count:1000;
     return wind_set(b->window,WF_VSLSIZE,size,0,0,0) &&
@@ -77,7 +92,7 @@ static WORD redraw(struct Browser *b,const WORD *damage)
     WORD okay;
     if (!wind_update(BEG_UPDATE)) return 0;
     okay=wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]);
-    if (okay) { layout(b);okay=objc_draw(b->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]); }
+    if (okay) { layout(b);okay=objc_draw(b->dialog ? b->dialogTree:b->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]); }
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++b->paints;
     return okay;
@@ -124,6 +139,128 @@ static WORD select_row(struct Browser *b,WORD index)
     if (index<b->first) b->first=index;
     if (index>=b->first+b->visible) b->first=index-b->visible+1;
     return scroll(b,b->first);
+}
+enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3 };
+static const OBJECT dialogSource[]={
+    {-1,1,5,G_BOX,0,0,0x1170,0,0,216,144},
+    {2,-1,-1,G_STRING,0,0,0,8,2,192,8},
+    {3,-1,-1,G_BOXTEXT,EDITABLE,0,0,8,16,200,16},
+    {4,-1,-1,G_BUTTON,SELECTABLE|DEFAULT|EXIT,0,(ULONG)"OK",8,40,64,16},
+    {5,-1,-1,G_BUTTON,SELECTABLE|EXIT,0,(ULONG)"Cancel",96,40,88,16},
+    {0,-1,-1,G_STRING,LASTOB,0,0,8,134,200,8}
+};
+static WORD dialog_open(struct Browser *b,WORD kind)
+{
+    WORD i;
+    TEDINFO *ted=&b->dialogTed;
+    if (b->dialog || (kind==DIALOG_RENAME && b->selected<0)) return 1;
+    for (i=0;i<6;++i) b->dialogTree[i]=dialogSource[i];
+    if (kind==DIALOG_PATH) b->dialogTree[1].ob_spec=(ULONG)"Path";
+    else if (kind==DIALOG_NEW) b->dialogTree[1].ob_spec=(ULONG)"New Folder";
+    else b->dialogTree[1].ob_spec=(ULONG)"Rename";
+    b->dialogTree[2].ob_spec=(ULONG)ted;b->dialogTree[5].ob_spec=(ULONG)b->status;
+    b->dialogTed.te_ptext=(ULONG)b->editText;b->dialogTed.te_ptmplt=(ULONG)"";
+    b->dialogTed.te_pvalid=(ULONG)"x";b->dialogTed.te_font=IBM;b->dialogTed.te_just=TE_LEFT;
+    b->dialogTed.te_color=0x1180;b->dialogTed.te_thickness=-1;
+    b->dialogTed.te_txtlen=kind==DIALOG_PATH ? sizeof(b->editText):108;b->dialogTed.te_tmplen=1;
+    strcpy(b->editText,kind==DIALOG_PATH ? b->path:kind==DIALOG_RENAME ? b->entries[b->selected].name:"");
+    b->dialog=kind;b->focus=2;b->armed=-1;b->dialogError=0;b->status[0]=0;
+    layout(b);
+    return sliders(b) && redraw(b,b->work) && objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT);
+}
+static WORD dialog_end(struct Browser *b)
+{
+    WORD okay=objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END);
+    b->dialog=0;b->armed=-1;layout(b);
+    return okay && sliders(b);
+}
+static WORD dialog_cancel(struct Browser *b)
+{
+    if (!dialog_end(b)) return 0;
+    label(b->status,b->path,63);return redraw(b,b->work);
+}
+static WORD dialog_focus(struct Browser *b,WORD focus)
+{
+    if (b->focus==focus) return 1;
+    if (b->focus==2 && !objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) return 0;
+    if (b->focus!=2) b->dialogTree[b->focus].ob_state=0;
+    b->focus=focus;
+    if (focus!=2) b->dialogTree[focus].ob_state=SELECTED;
+    if (!redraw(b,b->work)) return 0;
+    if (focus==2) return objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT);
+    return 1;
+}
+static void full_name(struct Browser *b,const char *leaf,char *target)
+{
+    WORD n=strlen(b->path);
+    strcpy(target,b->path);
+    if (n && target[n-1]!=':') strcat(target,"/");
+    strcat(target,leaf);
+}
+static WORD dialog_accept(struct Browser *b)
+{
+    BPTR lock;
+    WORD i,kind=b->dialog,okay=0;
+    if (!b->editText[0] || (kind!=DIALOG_PATH &&
+        (strchr(b->editText,':') || strchr(b->editText,'/') || strchr(b->editText,'\\') ||
+         !strcmp(b->editText,".") || !strcmp(b->editText,"..")))) {
+        strcpy(b->status,kind==DIALOG_PATH ? "Enter a directory":"Enter one leaf name");
+        return redraw(b,b->work);
+    }
+    if (kind==DIALOG_PATH) {
+        lock=Lock(b->editText,SHARED_LOCK);
+        if (lock) {
+            okay=Examine(lock,&b->info)!=0;
+            b->dialogError=okay ? 0:IoErr();
+            if (okay && b->info.fib_DirEntryType<=0) { okay=0;b->dialogError=ERROR_OBJECT_WRONG_TYPE; }
+            UnLock(lock);
+        } else b->dialogError=IoErr();
+    } else {
+        full_name(b,b->editText,b->target);
+        if (kind==DIALOG_NEW) {
+            lock=CreateDir(b->target);okay=lock!=0;b->dialogError=okay ? 0:IoErr();
+            if (lock) UnLock(lock);
+        } else {
+            /* Keep both full paths off the Task stack during the DOS call. */
+            char *destination=AllocMem(256UL,MEMF_PUBLIC);
+            if (!destination) { strcpy(b->status,"No memory");return redraw(b,b->work); }
+            strcpy(destination,b->target);full_name(b,b->entries[b->selected].name,b->target);
+            okay=Rename(b->target,destination)!=0;b->dialogError=okay ? 0:IoErr();
+            FreeMem(destination,256UL);
+        }
+    }
+    if (!okay) {
+        strcpy(b->status,b->dialogError==ERROR_OBJECT_EXISTS ? "Name already exists":
+            b->dialogError==ERROR_OBJECT_NOT_FOUND ? "Not found":
+            b->dialogError==ERROR_DISK_WRITE_PROTECTED || b->dialogError==ERROR_WRITE_PROTECTED ? "Read-only volume":
+            b->dialogError==ERROR_INVALID_COMPONENT_NAME ? "Invalid name":
+            b->dialogError==ERROR_DISK_FULL ? "Disk full":
+            kind==DIALOG_PATH ? "Directory unavailable":"Operation failed");
+        return redraw(b,b->work);
+    }
+    if (kind==DIALOG_PATH) { strcpy(b->path,b->editText);b->first=0;b->selected=-1; }
+    if (!dialog_end(b) || !refresh(b)) return 0;
+    if (kind!=DIALOG_PATH) {
+        for (i=0;i<b->count;++i) if (!strcmp(b->entries[i].name,b->editText)) return select_row(b,i);
+    }
+    return 1;
+}
+static WORD dialog_key(struct Browser *b)
+{
+    WORD next=b->focus,key=b->kr;
+    if ((key&255)==27) return dialog_cancel(b);
+    form_keybd(b->dialogTree,b->focus,b->focus,key,&next,&key);
+    if (!key && next==3 && (b->kr&255)!=9 && b->kr!=0x0f00) return dialog_accept(b);
+    if (!key && next==4 && (b->kr&255)!=9 && b->kr!=0x0f00) return dialog_cancel(b);
+    if (!dialog_focus(b,next)) return 0;
+    return key && b->focus==2 ? objc_edit(b->dialogTree,2,key,&b->editIndex,ED_CHAR):1;
+}
+static WORD dialog_click(struct Browser *b,WORD hit)
+{
+    if (hit==3) return dialog_accept(b);
+    if (hit==4) return dialog_cancel(b);
+    if (hit==2) return dialog_focus(b,2);
+    return 1;
 }
 static WORD up(struct Browser *b)
 {
@@ -179,7 +316,7 @@ WORD BrowserRun(struct Browser *b)
     if (b->id<0) return 1;
     if (!rsrc_load("SYS:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&b->tree) ||
         !rsrc_gaddr(R_TREE,1,(void **)&b->menu)) goto finish;
-    for (i=0;i<10;++i) b->bar[i]=menuSource[i];
+    for (i=0;i<13;++i) b->bar[i]=menuSource[i];
     if (!menu_bar(b->bar,1)) goto finish;
     b->menuInstalled=1;b->menuEnabled=0;
     b->entries=AllocMem((ULONG)sizeof(*b->entries)*BROWSER_ENTRIES,MEMF_PUBLIC);
@@ -204,12 +341,13 @@ WORD BrowserRun(struct Browser *b)
             b->armed=-1;b->down=1;continue;
         }
         if (events&MU_BUTTON) {
-            hit=objc_find(b->tree,0,MAX_DEPTH,b->mx,b->my);
+            hit=objc_find(b->dialog ? b->dialogTree:b->tree,0,MAX_DEPTH,b->mx,b->my);
             if (b->mb&1) { b->down=1;b->armed=hit; }
             else {
                 b->down=0;
                 if (hit==b->armed) {
-                    if (hit==1) { if (!file_menu(b)) result=2; }
+                    if (b->dialog) { if (!dialog_click(b,hit)) result=2; }
+                    else if (hit==1) { if (!file_menu(b)) result=2; }
                     else if (hit==2) { if (!up(b)) result=2; }
                     else if (hit==3) { if (!refresh(b)) result=2; }
                     else if (hit>=BROWSER_ROW_FIRST && hit<BROWSER_ROW_FIRST+b->visible &&
@@ -221,7 +359,11 @@ WORD BrowserRun(struct Browser *b)
             }
         }
         if (events&MU_KEYBD) {
-            if ((b->kr&255)==13) { if (!open_item(b)) result=2; }
+            if (b->dialog) { if (!dialog_key(b)) result=2; }
+            else if ((b->kr&255)=='p' || (b->kr&255)=='P') { if (!dialog_open(b,DIALOG_PATH)) result=2; }
+            else if ((b->kr&255)=='n' || (b->kr&255)=='N') { if (!dialog_open(b,DIALOG_NEW)) result=2; }
+            else if ((b->kr&255)=='r' || (b->kr&255)=='R') { if (!dialog_open(b,DIALOG_RENAME)) result=2; }
+            else if ((b->kr&255)==13) { if (!open_item(b)) result=2; }
             else if ((b->kr&255)=='f' || (b->kr&255)=='F') { if (!file_menu(b)) result=2; }
             else if ((b->kr&255)==8) { if (!up(b)) result=2; }
             else if ((b->kr>>8)==0x48 || (b->kr>>8)==0x50) {
@@ -230,7 +372,7 @@ WORD BrowserRun(struct Browser *b)
         }
         if ((events&MU_TIMER) && b->child && ExecCollectProgram(b->child,&b->result)) {
             b->child=0;
-            strcpy(b->status,b->result.primary ? "Command returned error":"Command finished");
+            if (!b->dialog) strcpy(b->status,b->result.primary ? "Command returned error":"Command finished");
             if (!redraw(b,b->work)) result=2;
         }
         if ((events&MU_MESAG) && b->message[0]==MN_SELECTED) {
@@ -239,6 +381,9 @@ WORD BrowserRun(struct Browser *b)
             case MENU_REFRESH:if (!refresh(b)) result=2;break;
             case MENU_STOP:stop(b);if (!redraw(b,b->work)) result=2;break;
             case MENU_QUIT:quit=1;break;
+            case MENU_PATH:if (!dialog_open(b,DIALOG_PATH)) result=2;break;
+            case MENU_NEW:if (!dialog_open(b,DIALOG_NEW)) result=2;break;
+            case MENU_RENAME:if (!dialog_open(b,DIALOG_RENAME)) result=2;break;
             }
             if (!menu_tnormal(b->bar,b->message[3],1)) result=2;
         }
@@ -258,9 +403,11 @@ WORD BrowserRun(struct Browser *b)
                 layout(b);if (!sliders(b)) result=2;
                 break;
             case WM_VSLID:
+                if (b->dialog) break;
                 if (!scroll(b,(LONG)b->message[4]*(b->count>b->visible ? b->count-b->visible:0)/1000)) result=2;
                 break;
             case WM_ARROWED:
+                if (b->dialog) break;
                 hit=b->message[4];
                 if (!scroll(b,b->first+(hit==WA_UPLINE ? -1:hit==WA_DNLINE ? 1:
                     hit==WA_UPPAGE ? -b->visible:b->visible))) result=2;
@@ -273,6 +420,7 @@ WORD BrowserRun(struct Browser *b)
     }
 finish:
     b->ready=0;
+    if (b->dialog && !dialog_end(b)) result=3;
     if (b->child) {
         ExecBreakProgram(b->child);
         if (!ExecWaitProgram(b->child,&b->result)) return 3;

@@ -57,6 +57,9 @@ def exercise(s,sy,click,move):
     require(num(F['work']+4)==216,'Files restore width')
     s.saved['files_scrolling']=dict(snapshot_entries=num(F['count']),rows=[old_visible,4,8],
         continuous_scroll=True,resize=True,preserved_selection=selected_name,pixel_repair=True)
+    if 'objc_edit' in sy and 'files_dialogs' not in s.saved:
+        from files_dialog_check import exercise as dialogs
+        dialogs(s,sy,click,move)
     # Browser stays responsive while a command runs; close requests a break
     # and collects it before the browser Task can retire.
     row('TICK');old=num(F['launches'],4);key('RETURN')
@@ -65,9 +68,15 @@ def exercise(s,sy,click,move):
     s.saved['desktop_peak_tasks']=s.ledger()['live']
     require(s.saved['desktop_peak_tasks']==8,'Launch did not use all eight Tasks')
     require(num(F['bar']+6*24+10)==8 and num(F['bar']+8*24+10)==0,'Live-child menu availability')
+    if 'objc_edit' in sy:
+        key('N');s.rendezvous('dw($%x)=2'%(base+F['dialog']))
     bar(8,True)
     s.rendezvous('dw($%x)=0'%(base+F['child']));s.frames(100)
     require(num(F['result'],4)!=0 or num(F['result']+4,4)==304,'Stopped command result')
+    if 'objc_edit' in sy:
+        require(num(F['dialog'])==2,'Child completion dismissed Files dialog')
+        key('ESC');s.rendezvous('dw($%x)=0'%(base+F['dialog']))
+        s.saved['files_dialogs']['child_collection_while_editing']=True
     print('Browser menu Stop/collection pass',flush=True)
     click(120,88);require(string(178)=='SYS:','Parent directory')
     row('STORY.TXT');old=num(F['launches'],4);key('RETURN')

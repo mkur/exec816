@@ -2,7 +2,8 @@
 
 [Design note](editable-dialogs-design.md) · [GEM integration](README.md)
 
-Status: ED1 editor/resource development gates pass; ED2/ED3 integration running.
+Status: ED1 editor/resource and ED2 dialog development gates pass; ED3 final
+package audit is running. See the [execution record](../../history/editable-dialogs.md).
 
 | Slice | Implementation | Development gate |
 | --- | --- | --- |

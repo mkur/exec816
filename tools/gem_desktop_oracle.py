@@ -35,7 +35,29 @@ def paint(bridge,symbols,r,title,bounds):
         r.clip=(0,0,639,239);return
     if title==b'Files':
         base=symbols['GEMBrowser'];tree=int.from_bytes(bridge.memdump(base+170,4),'little')
-        from browser_model import OBJECTS
+        from browser_model import OBJECTS,FIELDS as F
+        if 'objc_edit' in symbols and int.from_bytes(bridge.memdump(base+F['dialog'],2),'little'):
+            raw=bridge.memdump(base+F['dialogTree'],6*24)
+            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(6)]
+            labels={}
+            for i,obj in enumerate(objects):
+                if obj[3] in (26,28):
+                    labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
+            field=objects[2][:];objects[2][3]=25;objects[2][6]=0
+            objects[0][7]=objects[0][8]=0
+            draw(r,objects,labels,(left+8,top+16,right-16,bottom-16))
+            x,y=left+8+field[7],top+16+field[8];w,h=field[9:11]
+            text=bridge.memdump(base+F['editText'],128).split(b'\0')[0]
+            index=int.from_bytes(bridge.memdump(base+F['editIndex'],2),'little')
+            active=int.from_bytes(bridge.memdump(base+F['focus'],2),'little')==2
+            columns=min(w//8,63);start=max(0,index-columns+1) if active else 0
+            visible=text[start:start+columns]
+            r.clip=(left+8,top+16,right-17,bottom-17)
+            rectangle(r,(x-1,y-1,x+w+1,y+h+1),1);rectangle(r,(x,y,x+w,y+h),0)
+            r.text=1;r.apply(8,(x,y+(h-8)//2+6),visible)
+            if active:rectangle(r,(x+(index-start)*8,y+(h-8)//2,x+(index-start)*8+1,y+(h-8)//2+8),1)
+            r.clip=(0,0,639,239)
+            return
         raw=bridge.memdump(tree,OBJECTS*24)
         objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(OBJECTS)]
         labels={}

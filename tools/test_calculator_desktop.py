@@ -22,7 +22,7 @@ class DesktopColdBoot:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 
-from browser_model import FIELDS as BF, select as select_file
+from browser_model import FIELDS as BF, select as select_file, wait_listing
 
 
 class CalculatorDesktop:
@@ -64,7 +64,7 @@ class CalculatorDesktop:
             ox,oy,w,h=[s.number(tree+index*24+16+i*2,2) for i in range(4)]
             click(x+ox+w//2,y+oy+h//2)
         menus=Menus(s,click,move)
-        menus.select('Files');row('C');key('RETURN')
+        menus.select('Files');row('C');key('RETURN');wait_listing(s,browser)
         baseline=memory();owners=s.ledger()
         load();s.rendezvous('dw($%x)=0'%(browser+BF['child']));s.frames(100)
         require(s.number(browser+BF['result'],4)==1,'Full desktop must reject a fifth window')
@@ -72,7 +72,7 @@ class CalculatorDesktop:
         # Files first arms its existing child-collection timer: one 32-byte
         # port and two 40-byte requests, retained until Files exits.
         require([a-z for a,z in zip(baseline,after)]==[112,0,112,0],
-                'Unexpected first Files launch heap cost')
+                'Unexpected first Files launch heap cost: '+str((baseline,after)))
         print('Files child-collection timer opened: 112 upper bytes',flush=True)
         require(after_owners==owners,'No-window failure retained ownership')
         baseline=after

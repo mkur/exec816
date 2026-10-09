@@ -24,8 +24,13 @@ struct Browser {
     struct ExecProgramResult result;
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
-    OBJECT bar[10];
+    OBJECT bar[13];
     WORD menuInstalled,menuEnabled;
+    OBJECT dialogTree[6];
+    TEDINFO dialogTed;
+    char editText[128];
+    WORD dialog,focus,editIndex;
+    LONG dialogError;
 };
 WORD BrowserRun(struct Browser *);
 #endif
