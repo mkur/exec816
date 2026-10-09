@@ -14,6 +14,7 @@ struct ExecAESForm {
     WORD count, focus, oldFocus, armed, pressedState, edit, index, down;
     WORD message[8], saved[GEM_OBJECT_LIMIT];
     WORD mx, my, buttons, key;
+    struct ExecAESAlert *alert;
 };
 WORD ExecAESFormPaint(struct ExecAESContext *,WORD);
 WORD ExecAESFormRun(struct ExecAESContext *,WORD);

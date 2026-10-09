@@ -67,3 +67,32 @@ size. Minimum ordinary-Task checked margin is 242 bytes, above the 128-byte targ
 all guards, heap return and OS restoration pass. Bank-zero delta is **0 fixed,
 0 per public Task, 0 private idle**; VRAM and Task pools remain unchanged.
 Packaged integration follows in FD4. These are development checks only.
+
+## FD3 Standard alerts
+
+The alert parser, ten-object layout, three donor icons and named/AESPB binding
+reuse the same session and event loop. Operational return zero is distinct from
+accepted one-based buttons. Allocation/fit failures paint nothing; failed owned
+resource retirement keeps both session and alert storage available for retry.
+
+Development checks pass: 92 optimized emitted assertions, six independent pixel
+comparisons (90,784 pixels), and 423 host tests with four historical skips.
+The target covers all icons, one/two/three buttons, defaults including none,
+escaped delimiters, decoded bounds, valid 511-byte input and rejected 512-byte
+input, all new allocation/setup/retirement boundaries, message preservation,
+fit rejection and heap return. Physical input covers pointer, Return, Space,
+temporary close, movement, two ordinary callers and clipped cover/exposure repair.
+Private layout constants are checked from emitted objects in raw and optimized
+C. No shared context/bridge layout changes in this slice.
+
+The first fixture used an unsupported window kind; another signalled before
+its peer had opened, letting that peer cover the measured alert. A final report
+lookup referred to an unused constant removed by the linker. These failed trials
+are excluded; the corrected setup and explicit layout probes pass.
+
+The session grows by four live bytes to 315 (320 heap-reserved); an alert owns
+514 live / 520 reserved upper bytes. The three icon run tables total 896 upper
+read-only bytes and are hash-pinned through existing extraction. Ordinary Task
+minimum checked margin is 412 bytes. Guards, heap return and OS restoration pass.
+Bank-zero delta is **0 fixed, 0 per public Task, 0 private idle**. VRAM and Task
+pools are unchanged; packaged integration remains FD4 development work.

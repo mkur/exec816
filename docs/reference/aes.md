@@ -428,6 +428,23 @@ abandoned session. No Task, bank-zero or VRAM reservation is added. The C contex
 is now 340 live / 344 heap-reserved upper bytes. See the
 [dialog development record](../history/standard-dialogs.md).
 
+`form_alert(default_button, text)` (opcode 52, 1/1/1/0) uses the same implicit
+session. It accepts `[icon][line|line][button|button]`, icons 0–3, up to five
+40-character lines, three nonempty 20-character buttons and 511 source bytes
+excluding NUL. Doubled `||` and `]]` represent literal delimiters. Default zero
+means none; otherwise it names a one-based button. Malformed syntax/default
+returns zero / AES_MALFORMED; bounds or unsupported icons return zero /
+AES_UNSUPPORTED. Fit/capacity failure returns zero / AES_RESOURCE before painting.
+
+Acceptance returns a one-based button number. Interruption, dismissal or failure
+returns **zero**; inspect `ExecAESDiagnostic()` and never interpret zero as consent.
+Return uses DEFAULT, Space uses button focus, and the temporary closer dismisses.
+The fixed monochrome donor icons use clipped fill runs; this adds no general
+G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
+or application teardown can complete. Session storage is 315 live / 320 reserved
+upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
+AESPB dispatch use C component ABI 9; rebuild GEMSYS and applications together.
+
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget
 binding remains presenter-owned. No additional bank-zero reservation is needed.

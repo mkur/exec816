@@ -57,6 +57,7 @@ WORD objc_edit(OBJECT *,WORD,WORD,WORD *,WORD);
 #define FMD_FINISH 3
 WORD form_dial(WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD form_do(OBJECT *,WORD);
+WORD form_alert(WORD,const char *);
 WORD form_center(OBJECT *,WORD *,WORD *,WORD *,WORD *);
 /* Windowed subset: commit an accepted activation, no input wait or drawing. */
 WORD form_button(OBJECT *,WORD,WORD,WORD *);

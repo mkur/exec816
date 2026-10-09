@@ -1,4 +1,5 @@
 """Hash-checked AES function extraction followed by explicit hosted patches."""
+import ast
 import json
 import re
 from pathlib import Path
@@ -7,12 +8,39 @@ from native_program import ROOT, command, require, sha256
 PORT = ROOT/'ports/gem4xe/aes'
 
 
+def alert_icons(source):
+    """Encode the pinned 32x32 masks as (row, left, width) black fill runs."""
+    tree=ast.parse(source)
+    masks=next(ast.literal_eval(node.value) for node in tree.body
+        if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and
+            t.id=='ALERT_ICONS' for t in node.targets))
+    runs=[];offsets=[0]
+    for name in ('NOTE','QUEST','STOP'):
+        words=masks[name]
+        require(len(words)==64,'Alert mask must have 32 rows')
+        for y in range(32):
+            bits=(words[y*2]<<16)|words[y*2+1];x=0
+            while x<32:
+                if not (bits & (1<<(31-x))):x+=1;continue
+                left=x
+                while x<32 and bits & (1<<(31-x)):x+=1
+                runs.extend((y,left,x-left))
+        offsets.append(len(runs))
+    return offsets,runs
+
+
 def extract(output, upstream=None):
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
     upstream=Path(upstream or ROOT/'build/gem-vdi/upstream')
     pin=json.loads((PORT/'inputs.json').read_text())
     for name,digest in pin['files'].items():
         require(sha256(upstream/name)==digest,'Changed AES donor: '+name)
+    offsets,runs=alert_icons((upstream/'tools/gemdata.py').read_text())
+    (output/'alert-icons.h').write_text(
+        '/* Generated from pinned GEM4XE tools/gemdata.py; EmuTOS GPLv2 artwork. */\n'+
+        'static const UWORD AlertIconOffsets[]={'+','.join(map(str,offsets))+'};\n'+
+        'static const UBYTE AlertIconRuns[]={\n'+
+        ''.join(','.join(map(str,runs[n:n+24]))+',\n' for n in range(0,len(runs),24))+'};\n')
     selection=json.loads((PORT/'selection.json').read_text())
     selected={}
     for name,spec in selection['outputs'].items():

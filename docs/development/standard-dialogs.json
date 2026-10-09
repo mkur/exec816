@@ -431,6 +431,189 @@
         "Physical fixture initially aimed outside the temporary closer; corrected its coordinate.",
         "Synthetic durable-loss injection omitted its wake; added an independent physical key to wake the consumer before the held sequence releases."
       ]
+    },
+    "FD3": {
+      "status": "pass",
+      "report": "build/standard-dialogs/fd3-accepted/results.json",
+      "build": "build/standard-dialogs/fd3-checked",
+      "checks": 92,
+      "pixels": [
+        {
+          "name": "plain",
+          "icon": 0,
+          "pixels": 6688
+        },
+        {
+          "name": "question",
+          "icon": 2,
+          "pixels": 20736
+        },
+        {
+          "name": "covered",
+          "icon": 2,
+          "pixels": 4224
+        },
+        {
+          "name": "exposed",
+          "icon": 2,
+          "pixels": 20736
+        },
+        {
+          "name": "stop",
+          "icon": 3,
+          "pixels": 19200
+        },
+        {
+          "name": "note",
+          "icon": 1,
+          "pixels": 19200
+        }
+      ],
+      "physical": {
+        "two_ordinary_callers": true,
+        "pointer": true,
+        "default": true,
+        "no_default": true,
+        "space": true,
+        "temporary_close": true,
+        "movement": true,
+        "clipped_exposure": true
+      },
+      "stack": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 536,
+          "remaining_above_floor": 744
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1280,
+          "peak": 501,
+          "remaining_above_floor": 523
+        },
+        "2": {
+          "base": 13680,
+          "bytes": 1280,
+          "peak": 612,
+          "remaining_above_floor": 412
+        },
+        "3": {
+          "base": 14992,
+          "bytes": 1280,
+          "peak": 18,
+          "remaining_above_floor": 1006
+        },
+        "4": {
+          "base": 16304,
+          "bytes": 1280,
+          "peak": 18,
+          "remaining_above_floor": 1006
+        },
+        "5": {
+          "base": 17616,
+          "bytes": 1280,
+          "peak": 18,
+          "remaining_above_floor": 1006
+        },
+        "6": {
+          "base": 18928,
+          "bytes": 2560,
+          "peak": 699,
+          "remaining_above_floor": 1605
+        },
+        "7": {
+          "base": 21520,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24112,
+          "bytes": 512,
+          "peak": 57,
+          "remaining_above_floor": 199
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 299,
+          "remaining_above_floor": 981
+        }
+      },
+      "c_elf_sha256": "6d406d3b9f7c77672ffbaa069f2d91e8ca7a9ed22e6c8c61a573a131df95d144",
+      "form_fault_source_sha256": "ead256ae1477f38f3962da7ae36d37e4035ebf16fb293d6be17aea27aa954251",
+      "alert_fault_source_sha256": "f345f525122b713870627e8e081d3732bb529aee9a7d24baf6788662890eaf24",
+      "segments": [
+        {
+          "address": 786432,
+          "bytes": 65536
+        },
+        {
+          "address": 917504,
+          "bytes": 65536
+        },
+        {
+          "address": 983040,
+          "bytes": 37132
+        },
+        {
+          "address": 1048576,
+          "bytes": 10460
+        },
+        {
+          "address": 851968,
+          "bytes": 5113
+        }
+      ],
+      "layout": {
+        "raw": {
+          "layout": {
+            "Form size": 315,
+            "Form focus": 209,
+            "Form alert": 311,
+            "Alert size": 514,
+            "Alert icon": 508
+          },
+          "object_sha256": "01bc2a96c711636543f515fd4acd6cf138e2b7f9276050ac111189827a4cc593"
+        },
+        "opt": {
+          "layout": {
+            "Form size": 315,
+            "Form focus": 209,
+            "Form alert": 311,
+            "Alert size": 514,
+            "Alert icon": 508
+          },
+          "object_sha256": "01bc2a96c711636543f515fd4acd6cf138e2b7f9276050ac111189827a4cc593"
+        }
+      },
+      "host_tests": 423,
+      "host_skips": 4,
+      "session_live_bytes": 315,
+      "session_heap_bytes": 320,
+      "alert_live_bytes": 514,
+      "alert_heap_bytes": 520,
+      "icon_table_bytes": 896,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "public": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "excluded_trials": [
+        "Failure fixture initially requested unsupported window kind without MOVER.",
+        "Concurrent fixture signalled before the peer window existed, so peer could cover the measured window. Setup now opens peer before starting the second caller.",
+        "A final report lookup requested an unused constant eliminated by the linker; replaced by explicit emitted layout checks."
+      ]
     }
   }
 }

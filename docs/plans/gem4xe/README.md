@@ -4,7 +4,7 @@ The proposed [standard dialogs design](standard-dialogs-design.md) and
 [FD1–FD4 implementation plan](standard-dialogs-implementation-plan.md) add bounded
 caller-local `form_do` and `form_alert`, with the `form_dial` lifecycle, temporary
 pre-window hosts and preserved application messages. Other applications keep
-running. FD1–FD2 host lifetime and interaction pass development checks; FD3–FD4 remain planned.
+running. FD1–FD3 host lifetime, interaction and alerts pass development checks; FD4 remains planned.
 
 The [application stack headroom plan](application-stack-headroom-implementation-plan.md)
 follows editable dialogs with call-path attribution, ordinary stack growth

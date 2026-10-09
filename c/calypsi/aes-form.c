@@ -1,5 +1,6 @@
 /* Synchronous forms run in their caller, using ordinary window ownership. */
 #include "aes-form-private.h"
+#include "aes-alert-private.h"
 #include "vdi-private.h"
 #include <proto/exec.h>
 extern WORD App_ob_get_par(OBJECT *,WORD);
@@ -66,6 +67,7 @@ BOOL ExecAESFormFinish(struct ExecAESContext *c)
     if (f->tree) {
         f->tree[0].ob_x=f->originalX; f->tree[0].ob_y=f->originalY;
     }
+    if (f->alert) FreeMem(f->alert,sizeof(*f->alert));
     FreeMem(f,sizeof(*f)); c->form=NULL;
     c->diagnostic=saved;
     return TRUE;
@@ -140,12 +142,13 @@ WORD form_dial(WORD type,WORD x1,WORD y1,WORD w1,WORD h1,
 BOOL ExecAESForms(struct ExecAESContext *c,AESPB *pb)
 {
     WORD result,*a=pb->int_in,op=pb->control[0];
-    if (op!=50 && op!=51) return FALSE;
-    if (pb->control[1]!=(op==50 ? 1:9) || pb->control[2]!=1 ||
-        pb->control[3]!=(op==50 ? 1:0) || pb->control[4]) {
+    if (op<50 || op>52) return FALSE;
+    if (pb->control[1]!=(op==51 ? 9:1) || pb->control[2]!=1 ||
+        pb->control[3]!=(op==51 ? 0:1) || pb->control[4]) {
         c->diagnostic=AES_MALFORMED; pb->int_out[0]=op==50 ? -1:0; return TRUE;
     }
     if (op==50) result=form_do((OBJECT *)(ULONG)pb->addr_in[0],a[0]);
+    else if (op==52) result=form_alert(a[0],(const char *)(ULONG)pb->addr_in[0]);
     else result=form_dial(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8]);
     pb->int_out[0]=result;
     return TRUE;
@@ -185,6 +188,7 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
         f->paper.ob_width=c->view->work.right-f->paper.ob_x;
         f->paper.ob_height=c->view->work.bottom-f->paper.ob_y;
         okay=draw_object(c,&f->paper,0,0) && draw_object(c,f->tree,0,MAX_DEPTH);
+        if (okay && f->alert) okay=ExecAESAlertPaint(c);
     } else for (i=1;i<f->count && okay;++i)
         if (f->saved[i]!=f->tree[i].ob_state ||
             (f->focus!=f->oldFocus && (i==f->focus || i==f->oldFocus)))

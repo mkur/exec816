@@ -2,7 +2,7 @@
 
 [Design note](standard-dialogs-design.md) · [GEM integration](README.md)
 
-Status: FD1–FD2 pass development checks; FD3–FD4 remain planned. See the
+Status: FD1–FD3 pass development checks; FD4 remains planned. See the
 [execution record](../../history/standard-dialogs.md).
 
 Implement the design's caller-local `form_do`/`form_alert` profile, including

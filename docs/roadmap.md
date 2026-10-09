@@ -135,8 +135,8 @@ and [FD1–FD4 plan](plans/gem4xe/standard-dialogs-implementation-plan.md) add b
 caller using its window or a temporary host; application-policy messages
 interrupt the call and remain available to its event loop. This reduces custom
 form-loop code in simple ports while preserving desktop concurrency. The slices
-cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD2 host
-lifetime and interaction pass development checks; FD3–FD4 remain planned. A file selector and text viewer remain subsequent work.
+cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD3 host
+lifetime, interaction and alerts pass development checks; FD4 remains planned. A file selector and text viewer remain subsequent work.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

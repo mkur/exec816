@@ -88,7 +88,7 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
             sources.append(path)
         graf=out/'app-objects'/'app-graf.c'
         graf.write_text((object_port/'widgets-graf.c').read_text().replace('"widgets.h"','"application-hosted.h"'))
-        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',ROOT/'c/calypsi/aes-form.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
+        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',ROOT/'c/calypsi/aes-form.c',ROOT/'c/calypsi/aes-alert.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
         assembly.append(ROOT/'c/calypsi/dos.s')
         extra_includes.append(object_port)
         from generate_vdi_client import expected_layout as vdi_layout, files as vdi_files
