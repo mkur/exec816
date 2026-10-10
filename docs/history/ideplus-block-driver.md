@@ -49,3 +49,23 @@ plus active heap buffer 512 bytes and ordinary timer resources. Emitted driver
 Action! routines occupy 16,655 bytes in this focused optimized build; native
 helpers occupy existing upper service-code capacity. One existing small Task
 pool is consumed during open; its reservation and guards are unchanged.
+
+## IP2 — APT partition reads
+
+Mapped-unit discovery is bounded to fifteen slots and sixteen headers. Physical
+extents, IDs, sector-1 offsets, links and overlapping mappings are checked before
+publishing the set. Failed discovery clears every mapped descriptor. Raw unit 0
+remains available when only the table is unsupported.
+
+Two independent host fixture checks and ten optimized emitted cases pass:
+direct, even-byte, MBR-contained, chained and even-byte chained tables; unknown
+revision, cycle, overlap, overflow and invalid offset rejection. Native reads
+cover all four packings at both 128/256 bytes, both packed neighbours, final
+logical sectors, short boot prefixes and far buffers. Media remains byte-exact,
+heap ownership balances and stack/domain guards remain intact. Evidence:
+`build/development/ideplus-ip2/`. This is development coverage only.
+
+Reserved bank-zero delta: **0 fixed / 0 per Task / 0 idle bytes**. Descriptors
+use the previously reserved upper arena; no second physical buffer or retained
+partition table was added. The bounded visited-LBA list uses 64 bytes on the
+existing worker stack during discovery, without increasing its reservation.

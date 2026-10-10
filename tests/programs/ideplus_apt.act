@@ -1,0 +1,66 @@
+MODULE IDEPLUSAPTTEST
+USE EXEC
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE HEAPCORE
+
+CARD checks
+BYTE expectedFailure
+PROC Require(BYTE okay)
+  IF okay=0 THEN HEAPCORE.Abort($f900+(checks & 255)) FI
+  checks==+1
+RETURN
+
+PROC Main()
+  BYTE unit,sector
+  CARD index
+  IDEPLUS.Geometry geometry
+  LET before=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  LET name=BYTE POINTER(ADDRESS(IDEMETA.NAME))
+  Require(EXEC.OpenDevice(name,1,EXEC.IORequest POINTER(request),0)<>0)
+  FOR unit=2 TO 9 DO
+    BEGIN
+      LET error=EXEC.OpenDevice(name,LONGCARD(unit),EXEC.IORequest POINTER(request),0)
+      IF expectedFailure<>0 THEN
+        Require(error<>0)
+      ELSE
+        Require(error=0)
+        request.io_Command=IDEPLUS.GET_GEOMETRY
+        request.io_Data=BYTE POINTER(@geometry)
+        request.io_Length=SIZEOF(IDEPLUS.Geometry)
+        Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+        Require(geometry.bytes=(IF unit<6 THEN CARD(128) ELSE CARD(256) FI))
+        Require(geometry.sectors=4 AND geometry.flags=IDEPLUS.FLAG_READONLY)
+        request.io_Data=BYTE POINTER($2dfff0)
+        FOR sector=0 TO 3 DO
+          request.io_Command=IDEPLUS.READ_SECTOR
+          request.io_Length=LONGCARD(geometry.bytes)
+          request.io_Offset=LONGCARD(sector)
+          Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+          Require(request.io_Actual=request.io_Length)
+          FOR index=0 TO geometry.bytes-1 DO
+            Require(request.io_Data(index)=(BYTE(index) XOR sector XOR unit))
+          OD
+        OD
+        IF geometry.bytes=256 THEN
+          request.io_Offset=1
+          request.io_Length=128
+          Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+          Require(request.io_Actual=128)
+          FOR index=0 TO 127 DO Require(request.io_Data(index)=(BYTE(index) XOR 1 XOR unit)) OD
+        FI
+        EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+      FI
+    END
+  OD
+  IDEPLUSDRIVER.Stop()
+  Require(IDEPLUSDRIVER.State()=0)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+RETURN
+ENDMODULE

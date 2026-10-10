@@ -42,7 +42,7 @@ TYPE Controller=[
   EXEC.MsgPort POINTER timerPort
   TIMER.TimerClockRequest POINTER timer
   LONGCARD physical
-  BYTE irq,status,error,owned,signals,resident
+  BYTE irq,status,error,owned,signals,resident,apt
 ]
 INCLUDE "ideplus-lifetime.inc"
 
@@ -71,7 +71,7 @@ PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
   error=EXEC.IOERR_OPENFAIL
   IF bus.state=5 THEN
     error=IDEPLUS.ERROR_OFFLINE
-  ELSEIF bus.state=2 AND bus.stop=0 AND number=0 AND flags=0 THEN
+  ELSEIF bus.state=2 AND bus.stop=0 AND number<=15 AND flags=0 THEN
     BEGIN
       LET unit=UnitAt(BYTE(number))
       IF request.io_Message.mn_Length<EXEC.IOSTDREQ_SIZE THEN
@@ -242,6 +242,8 @@ BYTE FUNC Identify()
   unit.enabled=1
 RETURN(0)
 
+INCLUDE "ideplus-apt.inc"
+
 ; Acquire timer, buffer and board ownership before publishing readiness.
 BYTE FUNC HardwareInit()
   BYTE okay
@@ -269,8 +271,16 @@ BYTE FUNC HardwareInit()
   c.irq=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_IRQ) & 1
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,0)
   c.owned=1
+  A816MEMORY.Clear(BYTE POINTER(ADDRESS(IDEMETA.UNITS)),384)
   error=Identify()
   c.error=error
+  IF error=0 THEN
+    c.apt=DiscoverPartitions()
+    IF c.apt=0 THEN
+      A816MEMORY.Clear(BYTE POINTER(ADDRESS(IDEMETA.UNITS+24)),360)
+    FI
+    IF c.error=IDEPLUS.ERROR_TIMEOUT OR c.error=IDEPLUS.ERROR_ABSENT THEN error=c.error FI
+  FI
 RETURN(error=0)
 
 ; Retire every borrowed resource before releasing the resident Task lease.
@@ -336,7 +346,8 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
   ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR THEN
     error=BYTE(EXEC.IOERR_NOCMD)
-  ELSEIF request.io_Length<>512 OR request.io_Offset>=unit.sectors THEN
+  ELSEIF (request.io_Length<>LONGCARD(unit.bytes) AND (unit.number=0 OR unit.bytes<>256
+      OR request.io_Offset>=3 OR request.io_Length<>128)) OR request.io_Offset>=unit.sectors THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
   ELSE
     EXEC.Forbid()
@@ -344,11 +355,15 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     IF bus.cancelled<>0 THEN error=BYTE(EXEC.IOERR_ABORTED) FI
     EXEC.Permit()
     IF error=0 THEN
-      error=ReadPhysical(request.io_Offset)
+      error=ReadPhysical(PhysicalSector(unit,request.io_Offset))
       IF error=0 AND bus.cancelled<>0 THEN error=BYTE(EXEC.IOERR_ABORTED) FI
       IF error=0 THEN
-        A816MEMORY.Move(request.io_Data,c.buffer,512)
-        request.io_Actual=512
+        IF unit.number=0 THEN
+          A816MEMORY.Move(request.io_Data,c.buffer,512)
+        ELSE
+          CopyLogical(unit,request)
+        FI
+        request.io_Actual=request.io_Length
       FI
     FI
   FI

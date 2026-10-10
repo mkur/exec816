@@ -7,11 +7,27 @@ target is IDE Plus 2.0 revision E, PBI ID 0, ATA master, 512-byte physical secto
 LBA28, and the pinned AltirraOS816 platform. It uses ordinary public Task, lease,
 message, signal and timer facilities. There is no firmware SIO fallback.
 
-The current slice exposes read-only raw unit 0. Its generated
+Unit 0 exposes read-only physical sectors; units 1–15 expose active APT DOS
+mapping slots. All units are read-only in this slice. Its generated
 [interface](../../lib/io/ideplus.act) uses IOStdReq: READ_SECTOR addresses a
-zero-based physical sector in io_Offset and transfers exactly 512 bytes.
+zero-based physical sector in io_Offset and transfers exactly one opened unit sector. Raw reads use 512 bytes;
+mapped units use 128 or 256. The first three 256-byte sectors also admit a
+128-byte prefix.
 GET_GEOMETRY returns a 12-byte record containing sector bytes, flags, sector
 count and controller generation. Writes and unsupported commands fail.
+
+APT may start at LBA 0 or inside a single protective MBR type $7F container.
+The driver decodes low-byte tables and follows at most sixteen headers to
+collect the normal fifteen mapping slots. Unsupported slots fail on open.
+Malformed revisions, bounds, links, cycles, reserved offsets and overlapping
+mappings reject the mapped-unit set; raw diagnostics remain available on an
+otherwise healthy controller. Partition sector-1 offsets are physical offsets.
+
+All four documented 256-byte packing modes are supported: low bytes, consecutive
+padded bytes, interleaved bytes and interleaved sectors. A 128-byte unit uses
+every other byte of the same 256-byte container. Short boot-sector transfers
+do not change that container stride. Table sectors and metadata leaders are
+never exposed as logical file data. See the [APT specification](https://drac030.krap.pl/APT_spec.pdf).
 All successful requests publish the full length, with one terminal reply.
 
 The worker polls status briefly, then sleeps one timer.device VBI tick. Each
