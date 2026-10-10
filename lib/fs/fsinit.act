@@ -73,6 +73,9 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
           service.error=ERROR_BAD_NUMBER
           RETURN(0)
         FI
+      ELSEIF FSSYSTEM.Selected(index)<>0 AND spec.backend<>BLOCKTYPES.BACKEND_SIO THEN
+        service.error=ERROR_BAD_NUMBER
+        RETURN(0)
       ELSEIF BLOCKIO.Geometry(spec.backend,unit,spec.profile,
           spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
         service.error=ERROR_BAD_NUMBER
@@ -221,6 +224,7 @@ BYTE FUNC AllocateBlock(FSTYPES.Service POINTER service)
   block.dataBytes=mount.spec.dataBytes
   block.boot=mount.spec.boot
   block.backend=mount.spec.backend
+  block.access=mount.spec.access
   block.generation=mount.generation
   mount.port=FSPORTS.Create(service.arrival)
 

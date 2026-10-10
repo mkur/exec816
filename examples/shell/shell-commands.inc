@@ -337,6 +337,9 @@ PROC ShellDevices(DOS.FileHandle POINTER output)
     WHEN DEVICEINSPECT.SIO THEN
       ShellText(output,c"sio.device      ")
 
+    WHEN DEVICEINSPECT.IDEPLUS THEN
+      ShellText(output,c"ideplus.device  ")
+
     WHEN DEVICEINSPECT.TIMER THEN
       ShellText(output,c"timer.device    ")
     ESAC
@@ -379,7 +382,7 @@ PROC ShellMounts(DOS.FileHandle POINTER output)
 
   LET rows=FSINSPECT.Info POINTER(ShellTransfer())
   LET count=FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)
-  ShellText(output,c"MOUNT FILESYSTEM ACCESS    STATE")
+  ShellText(output,c"MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT")
   ShellByte(output,ASCII.LF)
   IF count=0 THEN
     ShellText(output,c"No mounted filesystems")
@@ -423,6 +426,17 @@ PROC ShellMounts(DOS.FileHandle POINTER output)
 
     ELSE
       ShellText(output,c"mounted")
+    FI
+
+    IF rows(index).format<>FSFORMATS.RAM THEN
+      ShellByte(output,ASCII.SPACE)
+      IF rows(index).backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+        ShellText(output,c"ideplus.device/")
+        ShellNumber(output,LONGINT(rows(index).unit))
+      ELSE
+        ShellText(output,c"sio.device/D")
+        ShellNumber(output,LONGINT(rows(index).unit-48))
+      FI
     FI
 
     ShellByte(output,ASCII.LF)

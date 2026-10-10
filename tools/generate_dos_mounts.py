@@ -21,33 +21,39 @@ def validate_mounts(mounts):
         else:
             require({'unit','sectors','sector_bytes'}<=set(mount),'Incomplete mount geometry')
             require(name.upper()!='RAM','RAM is reserved for the RAM filesystem')
-            spec=dict(profile=1,boot=1,format=DEFAULT,access="readonly")
+            spec=dict(profile=0 if mount.get('device')=='ideplus.device' else 1,boot=1,format=DEFAULT,access="readonly")
         spec.update(mount)
         spec.setdefault('device','sio.device')
-        require(spec['device']=='sio.device','Unavailable block device')
+        require(spec['device'] in ('sio.device','ideplus.device'),'Unavailable block device')
         for key in FIELDS-{'alias','access','device'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
         require(spec['access'] in ('readonly','readwrite'),'Unknown mount access policy')
         require(name.upper() not in aliases,'Duplicate mount alias')
         if ram:
+            require(spec['device']=='sio.device','RAM has no block device')
             require(name.upper()=='RAM','RAM filesystem must use the RAM alias')
             require(all(spec[k]==0 for k in ('unit','sectors','sector_bytes','profile','boot')), 'RAM has no physical geometry')
             require(spec['access']=='readwrite','RAM must be writable')
             aliases.add(name.upper());result.append(spec);continue
-        require(49<=spec['unit']<=56,'SIO unit must be 49..56')
+        if spec['device']=='sio.device':
+            require(49<=spec['unit']<=56,'SIO unit must be 49..56')
+        else:
+            require(1<=spec['unit']<=15,'IDE unit must be 1..15')
+            require(spec['profile']==0,'IDE does not use SIO timing profiles')
+            require(spec['access']=='readonly','IDE writable mounts unavailable')
         require(1<=spec['sectors']<=65535,'Geometry must have 1..65535 sectors')
         if spec['format']==MYDOS: require(spec['sectors']>=368,'MyDOS needs at least 368 sectors')
         require(spec['sector_bytes'] in (128,256),'Data sectors must be 128 or 256 bytes')
         require(spec['boot']==1,'Only three short boot sectors are supported')
         require(spec['format'] in FORMATS,'Unknown filesystem format')
-        require(spec['profile'] in (1,2,4) and (spec['profile']!=2 or spec['sector_bytes']==128),'Unqualified profile/sector size')
+        if spec['device']=='sio.device': require(spec['profile'] in (1,2,4) and (spec['profile']!=2 or spec['sector_bytes']==128),'Unqualified profile/sector size')
         require(name.upper() not in aliases,'Duplicate mount alias')
-        require((spec['device'],spec['unit']) not in units,'A SIO unit may only be mounted once')
+        require((spec['device'],spec['unit']) not in units,'A device unit may only be mounted once')
         aliases.add(name.upper());units.add((spec['device'],spec['unit']));result.append(spec)
     return result
 def encode(mounts):
     data=bytearray()
     for spec in validate_mounts(mounts):
-        data+=struct.pack('<32sHHIHBBBB',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'],int(spec['access']=='readwrite'),0)
+        data+=struct.pack('<32sHHIHBBBB',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'],int(spec['access']=='readwrite'),int(spec['device']=='ideplus.device'))
     return bytes(data)
 def select_system(mounts, name=None):
     """Resolve an explicit system volume; list order is never a default."""
@@ -58,12 +64,13 @@ def select_system(mounts, name=None):
     require(len(slots)==1, 'system_mount must identify a configured mount')
     slot=slots[0]
     mount=mounts[slot]
+    require(mount.get('device','sio.device')=='sio.device','System mount must use SIO')
     drive=mount['unit']-48
     require(mount['alias'].upper()==f'D{drive}', 'System mount must use D1..D8 matching its SIO unit')
     # The monitor can reject conflicts without retaining filesystem objects.
     allowed=0
     for candidate in range(1,9):
-        if all(i==slot or (m['unit']!=48+candidate and m['alias'].upper()!=f'D{candidate}')
+        if all(i==slot or ((m.get('device','sio.device')!='sio.device' or m['unit']!=48+candidate) and m['alias'].upper()!=f'D{candidate}')
                for i,m in enumerate(mounts)):
             allowed |= 1 << (candidate-1)
     return dict(system_slot=slot, system_drive=drive, allowed_drives=allowed)

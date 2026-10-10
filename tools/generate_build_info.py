@@ -42,10 +42,10 @@ def generate(output, mounts, task_capacity, stack_checks=True, system_mount=None
     # and access mode remain runtime values because OF816 can change the drive.
     strings['otherMountsReady'] = ''.join(
         (f"\n{m['alias']}: ready, read-write (volatile)" if m.get('format')==RAM else
-         f"\n{m['alias']}: -> D{m['unit']-48}: ready, "
+         (f"\n{m['alias']}: -> IDE Plus unit {m['unit']}: ready, " if m.get('device')=='ideplus.device' else f"\n{m['alias']}: -> D{m['unit']-48}: ready, ")
          + ('read-write' if m.get('access', 'readonly') == 'readwrite' else 'read-only'))
         for m in mounts if m is not mount)
-    required = ''.join(f"Required: {m['alias']}: on D{m['unit']-48}:\n"
+    required = ''.join((f"Required: {m['alias']}: on IDE Plus unit {m['unit']}\n" if m.get('device')=='ideplus.device' else f"Required: {m['alias']}: on D{m['unit']-48}:\n")
                        for m in mounts if m is not mount and m.get('format')!=RAM)
     strings['mountFailure'] = ('Filesystem startup failed; check configured disks\n'
                                + required

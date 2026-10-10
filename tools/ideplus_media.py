@@ -48,3 +48,25 @@ def pattern_fixture(even=False,mbr=False,chained=False):
             media[sector*512:sector*512+len(table)*2:2]=table
         else:media[sector*512:sector*512+len(table)]=table
     return media,mappings
+
+def filesystem_fixture(atr,mode=3,unit=2,readonly=True):
+    """Wrap an ATR as APT containers, preserving padding and metadata sentinels."""
+    from mydos_fixtures import Image
+    image=Image(atr)
+    start=64
+    physical=(image.count+1)//2 if mode in (1,3) else image.count
+    capacity=max(8192,start+physical+2)
+    media=bytearray([0x96])*(capacity*512)
+    media[:512]=bytes(512);media[1:4]=b'APT';media[5]=16
+    entry=struct.pack('<BBIIHBBH',0x40+mode*4+(1 if image.size==128 else 2),0,start,physical+1,unit,0xc0 if readonly else 0x40,0,1)
+    media[unit*16:unit*16+16]=entry
+    for sector in range(1,image.count+1):put_sector(media,start+1,mode,image.size,sector-1,image.sector(sector))
+    return media,dict(unit=unit,start=start+1,mode=mode,size=image.size,sectors=image.count)
+
+def filesystem_atr(media,mapping,template):
+    from mydos_fixtures import Image
+    image=Image(template)
+    for sector in range(1,image.count+1):
+        value=get_sector(media,mapping['start'],mapping['mode'],mapping['size'],sector-1,128 if sector<=3 else image.size)
+        offset=image.offset(sector);image.data[offset:offset+len(value)]=value
+    return bytes(image.data)

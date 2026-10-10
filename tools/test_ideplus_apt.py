@@ -23,7 +23,7 @@ def cases():
 
 if __name__=='__main__':
     out=ROOT/'build/development/ideplus-ip2';out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out) if '--reuse' in sys.argv else build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/ideplus_apt.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
+    p=read_build(out) if '--reuse' in sys.argv else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_apt.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
     for name,image,invalid in cases():
         dest=out/name;dest.mkdir(exist_ok=True);disk=dest/'ide.img';disk.write_bytes(image)
         with ide_emulator(dest,disk) as b:

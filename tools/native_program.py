@@ -37,7 +37,7 @@ def read_build(output):
                 image=json.loads((output/'program.a816.json').read_text()))
 
 
-def compiler(directory, allow_override=False, pin=None):
+def compiler(directory, allow_override=False, pin=None, release=False):
     pin = COMPILER_PIN if pin is None else pin
     directory = directory.resolve()
     revision = command(["git", "-C", directory, "rev-parse", "HEAD"]).strip()
@@ -51,8 +51,8 @@ def compiler(directory, allow_override=False, pin=None):
     # selecting an unrelated binary. Build before hashing or invoking it.
     target = directory / "target"
     command(["cargo", "build", "--locked", "--manifest-path", directory / "Cargo.toml",
-             "--target-dir", target, "--bin", "actionc-65816"])
-    binary = target / "debug/actionc-65816"
+             "--target-dir", target, "--bin", "actionc-65816", *(["--release"] if release else [])])
+    binary = target / ("release/actionc-65816" if release else "debug/actionc-65816")
     from generate_native_abi import generate as native_definitions
     for path, content in native_definitions(directory).items():
         require(path.read_text() == content, "Stale native ABI consumer: " + str(path))
@@ -66,6 +66,7 @@ def compiler(directory, allow_override=False, pin=None):
             "override": pin != COMPILER_PIN or revision != COMPILER_PIN["revision"] or bool(changes),
             "compiler_contract": pin,
             "image_format_version": pin['image_format_version'],
+            "build_profile": "release" if release else "debug",
             "binary_sha256": sha256(binary),
             "abi_sha256": sha256(directory / pin["abi_json"]),
             "memory_runtime_inputs": {name: sha256(directory/'runtime/65816'/name)

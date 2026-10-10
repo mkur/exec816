@@ -69,3 +69,29 @@ Reserved bank-zero delta: **0 fixed / 0 per Task / 0 idle bytes**. Descriptors
 use the previously reserved upper arena; no second physical buffer or retained
 partition table was added. The bounded visited-LBA list uses 64 bytes on the
 existing worker stack during discovery, without increasing its reservation.
+
+## IP3 — filesystem mounting
+
+Mount sources accept explicit IDE device/unit identity and profile 0. Attachment
+compares GET_GEOMETRY bytes/count and rejects writable admission in this slice.
+SYS/OF system-drive overrides remain SIO-only. Existing configured-slot mount
+management, cache and filesystem algorithms are shared. Boot/MOUNT/DEVICES
+diagnostics expose IDE bindings; inactive inspection does not probe hardware.
+
+Reserved bank-zero delta: **0 fixed / 0 per Task / 0 idle bytes**. The mount
+descriptor remains 46 bytes. Block access policy uses existing record padding;
+no extra sector cache or request buffer is added. Diagnostic rows add two upper
+bytes per configured mount, within the existing shell transfer buffer.
+
+Focused checks use the same pinned compiler revision, now also supporting an
+explicit optimized host compiler build (`release=True`). Its actual binary hash
+and profile are recorded; emitted-code optimization remains an independent
+setting. Default build-tool behavior is unchanged. This reduces build time
+without changing language, ABI or compiler sources.
+
+Optimized emitted checks read every file byte from both MyDOS and SpartaDOS
+APT partitions and a simultaneous SIO volume, enumerate an IDE directory,
+reject creation on read-only media, write RAM: and retire all ownership. The
+APT and SIO images remain byte-exact. Eight existing and two IDE mount-source
+host checks pass. Evidence: `build/development/ideplus-ip3/{mydos,sdfs}/`.
+This is focused development coverage, not a release qualification.

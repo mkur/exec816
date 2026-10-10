@@ -42,7 +42,7 @@ def ide_emulator(output,media,absent=False,writable=False):
 
 def run(output,reuse=False,absent=False):
     output.mkdir(parents=True,exist_ok=True)
-    p=read_build(output) if reuse else build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/ideplus_raw.act',output,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
+    p=read_build(output) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_raw.act',output,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
     disk=output/'ide.img';media=bytearray(8192*512)
     for sector,seed in [(7,0xa7),(8191,0x6c)]: media[sector*512:(sector+1)*512]=bytes((i&255)^seed for i in range(512))
     disk.write_bytes(media)

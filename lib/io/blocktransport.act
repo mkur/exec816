@@ -3,6 +3,10 @@ MODULE BLOCKTRANSPORT
 USE EXEC
 USE BLOCKTYPES
 USE SIODRIVER
+USE IDEPLUSDRIVER
+USE IDEPLUS
+USE IDEMETA
+USE A816MEMORY
 
 ; Common filesystem bounds precede transport-specific immutable geometry.
 PUBLIC BYTE FUNC Geometry(BYTE backend CARD unit,profile LONGCARD sectors
@@ -11,6 +15,10 @@ PUBLIC BYTE FUNC Geometry(BYTE backend CARD unit,profile LONGCARD sectors
   IF sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 OR boot<>1
       OR (dataBytes<>128 AND dataBytes<>256) THEN
     RETURN(0)
+  FI
+
+  IF backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    RETURN(unit>=1 AND unit<=15 AND profile=0)
   FI
 
   IF backend<>BLOCKTYPES.BACKEND_SIO OR unit<49 OR unit>56 THEN
@@ -23,13 +31,16 @@ RETURN((profile=EXEC.SIO_PROFILE_FASTEST125 OR profile=EXEC.SIO_PROFILE_GENERIC5
 ; Names use the idle upper scratch buffer, never near string initializers.
 PUBLIC PROC DeviceName(BYTE backend BYTE POINTER name)
 
- 
+  IF backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    A816MEMORY.Move(name,BYTE POINTER(ADDRESS(IDEMETA.NAME)),15)
+    RETURN
+  FI
+
   name(0)=115
   name(1)=105
   name(2)=111
   name(3)=46
   name(4)=100
- 
   name(5)=101
   name(6)=118
   name(7)=105
@@ -49,6 +60,12 @@ PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volu
   request.io_Data=buffer
   request.io_Length=LONGCARD(expected)
   request.io_Actual=0
+  IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    request.io_Offset=sector-1
+    request.io_Command=IDEPLUS.READ_SECTOR
+    IF writing<>0 THEN request.io_Command=IDEPLUS.WRITE_SECTOR FI
+    RETURN
+  FI
   request.io_Command=EXEC.SIOCMD_TRANSACTION
   sio=EXEC.IOSIOReq POINTER(request)
   sio.sio_Command=$52
@@ -68,11 +85,42 @@ RETURN
 ; Conditional cancellation belongs to the established transport.
 PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
 
+  IF request.io_Device=BYTE POINTER(ADDRESS(IDEMETA.BUS)) THEN
+    RETURN(IDEPLUSDRIVER.TryCancel(request))
+  FI
+
 RETURN(SIODRIVER.TryCancel(request))
 
 ; Cached blocks remain subject to the owning controller's availability.
 PUBLIC BYTE FUNC Unavailable(BLOCKTYPES.Volume POINTER volume)
 
+  IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    RETURN(IDEPLUSDRIVER.Unavailable())
+  FI
+
 RETURN(SIODRIVER.Unavailable())
+
+; Compare configured logical geometry once, while the open request is idle.
+PUBLIC INT FUNC CheckGeometry(BLOCKTYPES.Volume POINTER volume BYTE POINTER buffer)
+  INT error
+  IF volume.backend=BLOCKTYPES.BACKEND_SIO THEN RETURN(0) FI
+  LET request=volume.request
+  request.io_Command=IDEPLUS.GET_GEOMETRY
+  request.io_Data=buffer
+  request.io_Length=SIZEOF(IDEPLUS.Geometry)
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  IF error=0 THEN
+    BEGIN
+      LET geometry=IDEPLUS.Geometry POINTER(buffer)
+      IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) OR geometry.bytes<>volume.dataBytes
+          OR geometry.sectors<>volume.sectors THEN error=EXEC.IOERR_BADLENGTH
+      ELSEIF volume.access<>0 THEN error=IDEPLUS.ERROR_PROTECTED
+      FI
+    END
+  FI
+  request.io_Data=NULL
+  request.io_Length=0
+  request.io_Actual=0
+RETURN(error)
 
 ENDMODULE

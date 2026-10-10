@@ -134,6 +134,10 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   name=adapter.buffer
   BLOCKTRANSPORT.DeviceName(volume.backend,name)
   error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)
+  IF error=0 THEN
+    error=BLOCKTRANSPORT.CheckGeometry(volume,adapter.buffer)
+    IF error<>0 THEN EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request)) FI
+  FI
   IF error<>0 THEN
     adapter.error=LONGINT(error)
     EXEC.DeleteIORequest(EXEC.IORequest POINTER(volume.request))

@@ -58,6 +58,13 @@ plus a 512-byte heap buffer, timer port and clock request while active. Four-slo
 profiles without the requested small stack fail normally rather than taking a
 larger stack. The first linear RAM bank remains reserved.
 
+Configured filesystem mounts select `device: "ideplus.device"`, unit 1–15,
+profile 0, explicit logical geometry and `access: "readonly"`. Geometry must
+match GET_GEOMETRY exactly. SIO stays the default device; SYS: selection and OF816
+system-drive overrides remain SIO-only. MOUNT and DEVICES identify the transport
+and unit without probing hardware. An offline controller cannot satisfy cached
+reads and only invalidates volumes belonging to that backend.
+
 Other revisions, slaves, LBA48, hot removal, ATA-backed SYS: and partition editing
 are unsupported. Development emulator checks do not establish physical hardware
 compatibility or qualify the hosted platform.

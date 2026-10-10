@@ -9,7 +9,7 @@ PUBLIC TYPE Volume=[
   BYTE POINTER adapter
   LONGCARD sectors,generation
   CARD dataBytes
-  BYTE unit,profile,boot,busy,backend
+  BYTE unit,profile,boot,busy,backend,access
   CARD references
 ]
 

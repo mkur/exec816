@@ -9,7 +9,7 @@ PUBLIC CONST CAPACITY=9
 
 PUBLIC TYPE Info=[
   BYTE ARRAY name(32)
-  BYTE offline,format,readOnly,requestedAccess
+  BYTE offline,format,readOnly,requestedAccess,backend,unit
 ]
 
 PUBLIC TYPE CacheInfo=[
@@ -96,6 +96,8 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
             rows(count).format=mount.spec.format
             rows(count).readOnly=mount.writable=0
             rows(count).requestedAccess=mount.spec.access
+            rows(count).backend=mount.spec.backend
+            rows(count).unit=BYTE(mount.spec.unit)
             count==+1
           FI
         FI
