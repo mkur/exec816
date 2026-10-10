@@ -158,11 +158,14 @@ document loading, the standalone viewer, Files launching and the OF816 package;
 TV1–TV4 are implemented and pass the recorded development checks. See the
 [execution record](history/text-viewer.md).
 
-The proposed [viewer performance plan](plans/gem4xe/text-viewer-performance-plan.md)
-targets the remaining page-repaint delay: first attribute CPU, display and
-inter-band waits, then optimize measured work while preserving input response.
-Its first objective is a twofold median/p95 page-completion improvement against
-a matched repeated baseline, with no reproducible loaded-input regression.
+The [viewer performance plan](plans/gem4xe/text-viewer-performance-plan.md)
+is implemented through TVP4. Reusing native VDI text upload and limiting viewer
+damage reduce page median/p95 from 1282/1322 to 943/965 ms, with better loaded
+Panel feedback against the original baseline. The twofold page target remains
+open; UPDATE waits and peer execution now dominate the representative trace.
+The [measurement record](history/text-viewer-performance.md) preserves the
+intermediate latency tradeoffs, exact OF816 package checks and remaining
+scanout/flicker limits.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

@@ -160,6 +160,22 @@ key-repeat rate. The Panel raise is offered at a fixed offset during a viewer
 repaint and the actual button gesture follows focus acknowledgment. Model-change
 observations remain around 60.4 ms, bounded by the three-frame key pulse.
 
+A separate short replay adds `CAT LONG.TXT` disk/console activity. Its single
+Panel raise/action falls from 1517.2 to 918.3 ms, and gesture-only completion
+from 694.9 to 557.3 ms. These are individual observations, not another p95
+cohort. The same replay verifies replacement of the viewer model during painting,
+physical shell BREAK, retirement and heap return. The four traced key actions
+on both baseline and final images reproduce the replay's exact clock milestones
+and settled pixels with detailed tracing disabled.
+
+CAT retirement after BREAK is longer in the final short replay: 1015.3 ms
+versus 282.4 ms. BREAK follows the variable-duration Panel transaction, so CAT
+has reached different output/read progress at cancellation. This does not
+isolate a cancellation-path regression, and **cancellation latency remains
+unqualified**. Functional Escape/Stop/BREAK passes are not a timing acceptance
+claim. A longer pilot that waited for the entire covered-window CAT stream
+timed out; the retained bounded workload cancels it through the normal shell.
+
 TVP3 adds **245 file bytes** to TEXT.APP (16542 to 16787), including 233 code
 bytes. Its 563 constant bytes, 1678 zero-fill bytes, 67777-byte load span and
 133312-byte rounded image backing are unchanged. It adds **0 fixed bank-zero
@@ -174,3 +190,66 @@ repaint verifies that the latest model repairs already painted bands. Boundary
 no-op scrolling, Stop, counter progress, warmed heap/ownership return and EXIT
 pass. The ordinary-task minimum is 156 bytes above the 256-byte stack floor,
 against the unchanged 128-byte headroom target.
+
+## Remaining page cost
+
+The first traced page provides a reconciled example, not component percentiles:
+
+| Charged interval | TVP1 | TVP2 | TVP3 |
+| --- | ---: | ---: | ---: |
+| Viewer CPU | 565.3 ms | 381.6 ms | 282.8 ms |
+| Interrupts while viewer owns CPU | 121.1 ms | 81.4 ms | 60.0 ms |
+| Viewer blocked, off CPU | 425.0 ms | 475.5 ms | 433.9 ms |
+| Viewer runnable, off CPU | 169.9 ms | 109.1 ms | 110.5 ms |
+| Complete page | 1281.3 ms | 1047.6 ms | 887.2 ms |
+
+TVP3 reduces bar calls from 25 to one and display borrows from 61 to 37, while
+retaining 17 document rows, 18 text calls and five UPDATE bands. There are 36
+native text uploads and one bar submission. The native uploads bypass
+`VbxeOwnerSubmit`: its recorded list sizes alone therefore no longer describe
+all lists. Each full 56-character row uses 32/24-character chunks, whose native
+uploader constructs 33/25 records including the background record. The trace
+counts 37 hardware launches and 76 `VbxeOwnerFence` calls; internal native
+uploader polls remain separately visible. Paging still transfers zero staging
+pages.
+
+CPU work is almost halved, but 544.4 ms of this final page is off CPU. The first
+UPDATE acquisition is short in this sample; the second takes 343.3 ms. Remaining
+UPDATE holds range from 62.1 to 97.8 ms. Faster construction changes which band
+encounters presenter/peer work; it does not remove that work. The 13.8 ms sum of
+hardware launch-to-idle-return bounds is small and includes scheduling delay.
+These observations point to display admission and bounded presenter work as
+future investigation, not another staging-transfer optimization.
+
+Cold document observation falls from 6342.2 to 5431.0 ms in the individual
+traced runs. Loader and DOS code are unchanged, and this is not a cold-load
+distribution or a claim about APP loading. The final trace remains below the
+256 MiB cap (69.1 MB). The intermediate TVP2 trace completed the functional run
+but required offline reanalysis after correcting the first observed scheduler
+state boundary; its three unobserved cohort runs independently pass cleanup and
+EXIT. The corrected analyzer completes directly for the final trace.
+
+## Package and limits
+
+The final OF816 package is
+`build/text-performance/exec816-demo.zip` (SHA-256
+`5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f`).
+Its 18 payload checksums and all 150 production source inputs match. The ZIP
+contains boot files, the matching system/work disks, pinned AltirraOS ROM,
+guide and license notices; manifests and observations stay outside it. OF816
+retains its five-second autoboot (249 observed PAL frames).
+
+Both exact-ZIP viewer and Files workflows pass through EXIT with intact guards,
+zero live tasks, ownership/heap return and restored OS state. Files checks cover
+quoted document paths, copied launch arguments, one-child behavior, selector/read
+Stop, native/GEM launch, Panel keyboard interaction, relaunch and parent close.
+Ordinary-task minimum stack headroom is 156 bytes in the viewer workflow and
+169 bytes in the Files workflow. TVP4 adds **0 fixed bank-zero bytes, 0 per public
+Task and 0 private idle**, and no code, upper-RAM, stack or VRAM reservation.
+
+These are development checks on the pinned PAL 8× 65C816 emulator, AltirraOS
+3.44, VBXE FX 1.26 and paced `generic56k` disk, using the pinned Action! compiler
+and Calypsi 5.18. They do not qualify real hardware or close HY4/PI4. Settled
+pixel oracles pass; scanout and transient flicker are not qualified. Four-row
+painting still exposes intermediate bands, and the twofold median/p95 target
+remains open. There is no new scheduler policy or interrupt change in this pass.

@@ -7749,6 +7749,416 @@
         "ordinary_stack_headroom_pass": true
       },
       "comparison": "Accepted against TVP1, with intermediate TVP2 first-band and raise/action p95 regressions retained explicitly."
+    },
+    "TVP4": {
+      "status": "implemented; twofold performance target open",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": 0,
+        "private_idle": 0
+      },
+      "upper_buffer_bytes_delta": 0,
+      "vram_bytes_delta": 0,
+      "stack_capacity_delta": 0,
+      "checks": {
+        "viewer": {
+          "path": "build/text-performance/final-viewer/text-viewer-results.json",
+          "sha256": "2edc1a6b15b00386627e26c64d926fc673c1cabc9e5c130a41f7fe4dc7021366",
+          "status": "pass",
+          "scope": "Exact ZIP viewer (focused)",
+          "zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
+          "ordinary_stack_headroom_pass": true,
+          "stacks": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 578,
+              "remaining_above_floor": 702
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1312,
+              "peak": 341,
+              "remaining_above_floor": 715
+            },
+            "2": {
+              "base": 13712,
+              "bytes": 1312,
+              "peak": 225,
+              "remaining_above_floor": 831
+            },
+            "3": {
+              "base": 15056,
+              "bytes": 1312,
+              "peak": 621,
+              "remaining_above_floor": 435
+            },
+            "4": {
+              "base": 16400,
+              "bytes": 1312,
+              "peak": 645,
+              "remaining_above_floor": 411
+            },
+            "5": {
+              "base": 17744,
+              "bytes": 1312,
+              "peak": 900,
+              "remaining_above_floor": 156
+            },
+            "6": {
+              "base": 19088,
+              "bytes": 2560,
+              "peak": 755,
+              "remaining_above_floor": 1549
+            },
+            "7": {
+              "base": 21680,
+              "bytes": 2560,
+              "peak": 424,
+              "remaining_above_floor": 1880
+            },
+            "8": {
+              "base": 24272,
+              "bytes": 512,
+              "peak": 135,
+              "remaining_above_floor": 121
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 299,
+              "remaining_above_floor": 981
+            }
+          },
+          "observations": [
+            {
+              "stage": "startup",
+              "guest_frame": 10029
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 10904
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 12143
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 13228
+            },
+            {
+              "stage": "text-empty",
+              "guest_frame": 14307
+            },
+            {
+              "stage": "text-open",
+              "guest_frame": 15631
+            },
+            {
+              "stage": "text-page",
+              "guest_frame": 16772
+            },
+            {
+              "stage": "text-arrow",
+              "guest_frame": 17096
+            },
+            {
+              "stage": "text-minimum",
+              "guest_frame": 17467
+            },
+            {
+              "stage": "text-wider",
+              "guest_frame": 17877
+            },
+            {
+              "stage": "text-thumb-bottom",
+              "guest_frame": 18200
+            },
+            {
+              "stage": "text-page-up",
+              "guest_frame": 18668
+            },
+            {
+              "stage": "text-failed-open",
+              "guest_frame": 21710
+            },
+            {
+              "stage": "text-selector-interrupted",
+              "guest_frame": 22170
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 23370
+            },
+            {
+              "stage": "text-argument",
+              "guest_frame": 25410
+            },
+            {
+              "stage": "CAT STORY.TXT",
+              "guest_frame": 27514
+            },
+            {
+              "stage": "HELLO",
+              "guest_frame": 27659
+            },
+            {
+              "stage": "text-exposure",
+              "guest_frame": 28117
+            },
+            {
+              "stage": "text-cancel-load",
+              "guest_frame": 29312
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 30516
+            },
+            {
+              "stage": "collected-stop",
+              "guest_frame": 31783
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 31853
+            },
+            {
+              "stage": "text-bad-arguments",
+              "guest_frame": 33032
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 34239
+            }
+          ],
+          "integration": {
+            "profile": "focused-extension",
+            "heap_return": true,
+            "heap_baseline": [
+              2316784,
+              65536,
+              2316784,
+              2031616
+            ]
+          },
+          "text_viewer": {
+            "scenes": [
+              "empty",
+              "open",
+              "page",
+              "arrow",
+              "minimum",
+              "wider",
+              "thumb-bottom",
+              "page-up",
+              "failed-open",
+              "selector-interrupted",
+              "argument",
+              "exposure",
+              "cancel-load",
+              "bad-arguments"
+            ],
+            "page_observations": [
+              {
+                "operation": "page",
+                "input_to_model_ms": 30.061222562269254,
+                "model_to_paint_ms": 897.5422165020391,
+                "scope": "Physical key submission through completed paint bands; scanout excluded"
+              },
+              {
+                "operation": "page",
+                "input_to_model_ms": 28.54496679490089,
+                "model_to_paint_ms": 899.0584722694075,
+                "scope": "Physical key submission through completed paint bands; scanout excluded"
+              }
+            ],
+            "selector": true,
+            "cancel_preserves_document": true,
+            "error_preserves_document": true,
+            "quoted_path": true,
+            "cancel_loading": true,
+            "stop": true,
+            "heap_return": true,
+            "counter_progress": true,
+            "qualification": false
+          },
+          "text_files": null,
+          "exit": {
+            "guards": "intact",
+            "status": 0,
+            "live_tasks": 0,
+            "os_busy": 0,
+            "switching": 0,
+            "irq_depth": 0
+          },
+          "autoboot_frames": 249
+        },
+        "files": {
+          "path": "build/text-performance/final-files/text-viewer-results.json",
+          "sha256": "2534ca6eb7402e357a8836cc8bbcc94f62915fe0d0d0c531d628b39c4a7b17a2",
+          "status": "pass",
+          "scope": "Exact ZIP Files-to-viewer",
+          "zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
+          "ordinary_stack_headroom_pass": true,
+          "stacks": {
+            "0": {
+              "base": 9232,
+              "bytes": 1536,
+              "peak": 594,
+              "remaining_above_floor": 686
+            },
+            "1": {
+              "base": 12368,
+              "bytes": 1312,
+              "peak": 397,
+              "remaining_above_floor": 659
+            },
+            "2": {
+              "base": 13712,
+              "bytes": 1312,
+              "peak": 225,
+              "remaining_above_floor": 831
+            },
+            "3": {
+              "base": 15056,
+              "bytes": 1312,
+              "peak": 683,
+              "remaining_above_floor": 373
+            },
+            "4": {
+              "base": 16400,
+              "bytes": 1312,
+              "peak": 645,
+              "remaining_above_floor": 411
+            },
+            "5": {
+              "base": 17744,
+              "bytes": 1312,
+              "peak": 887,
+              "remaining_above_floor": 169
+            },
+            "6": {
+              "base": 19088,
+              "bytes": 2560,
+              "peak": 769,
+              "remaining_above_floor": 1535
+            },
+            "7": {
+              "base": 21680,
+              "bytes": 2560,
+              "peak": 424,
+              "remaining_above_floor": 1880
+            },
+            "8": {
+              "base": 24272,
+              "bytes": 512,
+              "peak": 135,
+              "remaining_above_floor": 121
+            },
+            "kernel": {
+              "base": 10800,
+              "bytes": 1536,
+              "peak": 307,
+              "remaining_above_floor": 973
+            }
+          },
+          "observations": [
+            {
+              "stage": "startup",
+              "guest_frame": 10029
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 10904
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 12143
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 13228
+            },
+            {
+              "stage": "rebuilt-panel",
+              "guest_frame": 13737
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 14566
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 15593
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 18758
+            },
+            {
+              "stage": "files-text-open",
+              "guest_frame": 20880
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 23760
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 28746
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 31168
+            },
+            {
+              "stage": "files-text-relaunch",
+              "guest_frame": 33243
+            },
+            {
+              "stage": "MEM",
+              "guest_frame": 34593
+            }
+          ],
+          "integration": {
+            "profile": "focused-extension",
+            "heap_return": true,
+            "heap_baseline": [
+              2316784,
+              65536,
+              2316784,
+              2031616
+            ]
+          },
+          "text_viewer": null,
+          "text_files": {
+            "open": true,
+            "quoted_path": true,
+            "caller_scratch_reuse": true,
+            "one_child": true,
+            "selector_stop": true,
+            "read_stop": true,
+            "native_launch": true,
+            "ordinary_gem_launch": true,
+            "panel_keyboard": true,
+            "relaunch": true,
+            "parent_close": true,
+            "heap_return": true,
+            "first_child_timer_bytes": 112,
+            "first_association_assign_bytes": 256
+          },
+          "exit": {
+            "guards": "intact",
+            "status": 0,
+            "live_tasks": 0,
+            "os_busy": 0,
+            "switching": 0,
+            "irq_depth": 0
+          },
+          "autoboot_frames": 249
+        }
+      }
     }
   },
   "baseline": {
@@ -12708,6 +13118,1307 @@
         ],
         "trace_bytes": 43164539,
         "trace_sha256": "043c92d286e6888c901d0022b5cefb080bba746d0ed13a69dd131b0bfa593853"
+      },
+      "analysis_note": "The emitted trace completed; the original analyzer failed at an unobserved initial scheduler state. Corrected offline analysis pins the cold interval to the first observed viewer state. The three unobserved TVP2 cohort runs independently pass all functional checks."
+    },
+    "final": {
+      "path": "build/text-performance/tvp3-trace/text-performance-breakdown.json",
+      "sha256": "ed46f1e4e4799564f8690e646b44db63a911a8bb2c484f33438d6268decbe778",
+      "breakdown": {
+        "scope": "Checked call/return sites; conservative Task CPU, IRQ/NMI and observed signal-wait attribution. First text return follows the synchronous fence; scanout is separate.",
+        "viewer_dp": 4096,
+        "records": [
+          {
+            "operation": "cold_load",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.016704751620783814,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.12560281598412132,
+                0.3353637477286472,
+                0.21575208738911075,
+                0.2151177297326253,
+                0.2158225715731647,
+                0.33585713701702474,
+                0.16606073763108295,
+                0.30653571645058564,
+                0.2151177297326253,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.15605198349542346,
+                0.1960165158540075,
+                0.24507350795554986,
+                0.3066062006346396,
+                0.1847390464053771,
+                0.30653571645058564,
+                0.21624547667748834,
+                0.21624547667748834,
+                0.2444391502990644,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.06519787024989462,
+                0.06576174372232614,
+                0.30547845368977655,
+                0.21575208738911075,
+                0.3558041611042898,
+                0.2168798343339738,
+                0.30540796950572263,
+                0.2158225715731647,
+                0.35622706620861344,
+                0.21575208738911075,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.38660574953586163,
+                0.2151177297326253,
+                0.3048440960332911,
+                0.24507350795554986,
+                0.3060423271622081,
+                0.2168798343339738,
+                0.30547845368977655,
+                0.21518821391667925,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.21638644504559623,
+                0.2456373814279814,
+                0.3364914946735102,
+                0.21518821391667925,
+                0.30533748532166866,
+                0.27601606475522955,
+                0.3059013587941002,
+                0.18480953058943103,
+                0.06512738606584069,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.21695031851802773,
+                0.09451929081633373,
+                0.2456373814279814,
+                0.21518821391667925,
+                0.355592708552128,
+                0.2451439921396038
+              ],
+              "rows": 21,
+              "text_calls": 22,
+              "bar_calls": 16,
+              "borrows": 76,
+              "submissions": 32,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "fences": 216,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 5431.038062869073,
+            "charged_cpu_ms": 650.8164183038969,
+            "off_cpu_ms": 4641.7909890199735,
+            "interrupt_ms": 138.4306555452022,
+            "blocked_off_cpu_ms": 4390.463771834238,
+            "runnable_off_cpu_ms": 251.3272171857357,
+            "exclusive_cpu_ms": {
+              "viewer_other": 61.83457643939271,
+              "geometry": 35.834864014863705,
+              "arithmetic": 0.3748348907988537,
+              "event": 61.745484430748576,
+              "update": 40.655347846496724,
+              "vdi": 90.89365487278295,
+              "borrow": 128.4533373556305,
+              "upload": 49.54601137050861,
+              "fence": 15.655171636036654,
+              "format": 9.08090033677343,
+              "load": 132.87523312643876,
+              "dos": 23.867001983424938
+            },
+            "routines": {
+              "wind_set": {
+                "calls": 3,
+                "charged_cpu_ms": 10.595534967908552,
+                "elapsed_ms": 540.8355054209386
+              },
+              "wind_get": {
+                "calls": 13,
+                "charged_cpu_ms": 15.88776944341459,
+                "elapsed_ms": 19.380895120943812
+              },
+              "_Div16": {
+                "calls": 8,
+                "charged_cpu_ms": 0.3748348907988536,
+                "elapsed_ms": 0.41768927470364925
+              },
+              "evnt_multi": {
+                "calls": 14,
+                "charged_cpu_ms": 61.74548443074858,
+                "elapsed_ms": 93.86667775617829
+              },
+              "wind_update": {
+                "calls": 12,
+                "charged_cpu_ms": 40.655347846496724,
+                "elapsed_ms": 264.5879001210918
+              },
+              "vs_clip": {
+                "calls": 6,
+                "charged_cpu_ms": 9.351559603540561,
+                "elapsed_ms": 22.741369564083517
+              },
+              "DisplayEnter": {
+                "calls": 76,
+                "charged_cpu_ms": 64.9755631333885,
+                "elapsed_ms": 164.6044639043445
+              },
+              "idle": {
+                "calls": 304,
+                "charged_cpu_ms": 10.640644845703072,
+                "elapsed_ms": 13.10745031922287
+              },
+              "VbxeOwnerFence": {
+                "calls": 216,
+                "charged_cpu_ms": 4.000541318533534,
+                "elapsed_ms": 5.042790948139147
+              },
+              "submit": {
+                "calls": 32,
+                "charged_cpu_ms": 6.462130962433339,
+                "elapsed_ms": 7.764185294461775
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 32,
+                "charged_cpu_ms": 6.5097077866697495,
+                "elapsed_ms": 7.811762118698185
+              },
+              "fence_owner": {
+                "calls": 152,
+                "charged_cpu_ms": 4.977029204416821,
+                "elapsed_ms": 5.889235514442914
+              },
+              "DisplayLeave": {
+                "calls": 76,
+                "charged_cpu_ms": 15.330169063363872,
+                "elapsed_ms": 18.65977143388795
+              },
+              "GemDrawingBorrow": {
+                "calls": 76,
+                "charged_cpu_ms": 193.65452036217593,
+                "elapsed_ms": 322.9927866486039
+              },
+              "paint": {
+                "calls": 60,
+                "charged_cpu_ms": 207.91325934373586,
+                "elapsed_ms": 340.45876745717027
+              },
+              "v_bar": {
+                "calls": 16,
+                "charged_cpu_ms": 92.21452848195393,
+                "elapsed_ms": 199.55947384966288
+              },
+              "TextRow": {
+                "calls": 21,
+                "charged_cpu_ms": 9.080900336773432,
+                "elapsed_ms": 11.033100782515412
+              },
+              "_VbxeTextUpload": {
+                "calls": 44,
+                "charged_cpu_ms": 35.05770540148496,
+                "elapsed_ms": 42.65110751798404
+              },
+              "VbxeOwnerText": {
+                "calls": 44,
+                "charged_cpu_ms": 53.71444601545859,
+                "elapsed_ms": 65.3117726913258
+              },
+              "text": {
+                "calls": 22,
+                "charged_cpu_ms": 173.6258755897764,
+                "elapsed_ms": 210.7035167378792
+              },
+              "v_gtext": {
+                "calls": 22,
+                "charged_cpu_ms": 192.3336467530051,
+                "elapsed_ms": 233.35945947088933
+              },
+              "TextStep": {
+                "calls": 8,
+                "charged_cpu_ms": 156.7422351098637,
+                "elapsed_ms": 3351.46325166096
+              },
+              "Open": {
+                "calls": 1,
+                "charged_cpu_ms": 5.247406534447736,
+                "elapsed_ms": 96.86239654683885
+              },
+              "Read": {
+                "calls": 5,
+                "charged_cpu_ms": 18.6195954489772,
+                "elapsed_ms": 2927.7004957857507
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 16.91578126784131,
+                "hold_ms": 103.93752845798932
+              },
+              {
+                "acquire_ms": 11.46777674557606,
+                "hold_ms": 118.9879457948431
+              },
+              {
+                "acquire_ms": 32.226355728038186,
+                "hold_ms": 103.9676956887644
+              },
+              {
+                "acquire_ms": 28.035859533479282,
+                "hold_ms": 113.92598314864128
+              },
+              {
+                "acquire_ms": 56.052617853079944,
+                "hold_ms": 94.49483280446701
+              },
+              {
+                "acquire_ms": 24.29491146481641,
+                "hold_ms": 91.88085635464259
+              }
+            ],
+            "first_text_return_ms": 1299.6031740437763
+          },
+          {
+            "operation": "page",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.30540796950572263,
+                0.2765799382276611,
+                0.3674340514731899,
+                0.24507350795554986,
+                0.3679274407615675,
+                0.2450030237714959,
+                0.329654528820278,
+                0.16556734834270537,
+                0.33754875743431934,
+                0.15534714165488406,
+                0.32457966756839435,
+                0.21631596086154228,
+                0.2462012549004129,
+                0.24676512837284442,
+                0.4143060338690601,
+                0.15548811002299195,
+                0.4475040845584659,
+                0.27615703312333745,
+                3.300139981589531,
+                0.27784865354063204,
+                0.3539010881348334,
+                0.33585713701702474,
+                0.4159976542863547,
+                0.21631596086154228,
+                0.4159976542863547,
+                0.15605198349542346,
+                0.35672045549699105,
+                0.24450963448311833,
+                0.39731934551206055,
+                0.2462012549004129,
+                0.383856866357758,
+                0.21525869810073317,
+                0.21695031851802773,
+                0.35608609784050554,
+                0.2151177297326253,
+                0.3566499713129371,
+                0.24450963448311833
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 1,
+              "borrows": 37,
+              "submissions": 1,
+              "records_per_list": [
+                1
+              ],
+              "fences": 76,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 887.1838608134722,
+            "charged_cpu_ms": 282.8331540685586,
+            "off_cpu_ms": 544.3495649011319,
+            "interrupt_ms": 60.00114184378167,
+            "blocked_off_cpu_ms": 433.8566549052058,
+            "runnable_off_cpu_ms": 110.49290999592601,
+            "exclusive_cpu_ms": {
+              "viewer_other": 23.677610980871997,
+              "geometry": 25.721934255172478,
+              "arithmetic": 1.9363415043298433,
+              "update": 35.12551118654485,
+              "format": 16.895693275385938,
+              "vdi": 55.76934191736717,
+              "borrow": 62.4601235728714,
+              "upload": 36.85350144281123,
+              "fence": 11.438173388273425,
+              "event": 12.954922544930142
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 11,
+                "charged_cpu_ms": 13.335043749533043,
+                "elapsed_ms": 16.10027925833722
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.3345179375199999,
+                "elapsed_ms": 0.42086106298607656
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.2070120485664222,
+                "elapsed_ms": 0.2927208163760134
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.2730853323822666,
+                "elapsed_ms": 1.4464059409709056
+              },
+              "_Mul16": {
+                "calls": 15,
+                "charged_cpu_ms": 0.12172618586115462,
+                "elapsed_ms": 0.1647215381340581
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 5.19059628210026,
+                "elapsed_ms": 14.455037434150151
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.12551118654485,
+                "elapsed_ms": 494.185125299734
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.19629422353918,
+                "elapsed_ms": 8.619651836324447
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 16.895693275385938,
+                "elapsed_ms": 20.61161945870966
+              },
+              "DisplayEnter": {
+                "calls": 37,
+                "charged_cpu_ms": 31.825864594243697,
+                "elapsed_ms": 73.68106470589065
+              },
+              "idle": {
+                "calls": 148,
+                "charged_cpu_ms": 9.34866975199435,
+                "elapsed_ms": 13.915269552665077
+              },
+              "_VbxeTextUpload": {
+                "calls": 36,
+                "charged_cpu_ms": 28.34993705762364,
+                "elapsed_ms": 34.33503106237991
+              },
+              "VbxeOwnerText": {
+                "calls": 36,
+                "charged_cpu_ms": 45.51755831508968,
+                "elapsed_ms": 59.87215578696296
+              },
+              "VbxeOwnerFence": {
+                "calls": 76,
+                "charged_cpu_ms": 1.4298421577182296,
+                "elapsed_ms": 1.7369417476412468
+              },
+              "fence_owner": {
+                "calls": 74,
+                "charged_cpu_ms": 2.4259246467685114,
+                "elapsed_ms": 2.9039483830223336
+              },
+              "DisplayLeave": {
+                "calls": 37,
+                "charged_cpu_ms": 7.15069095645628,
+                "elapsed_ms": 8.713043380195918
+              },
+              "GemDrawingBorrow": {
+                "calls": 37,
+                "charged_cpu_ms": 110.75179840395614,
+                "elapsed_ms": 174.20321154136224
+              },
+              "paint": {
+                "calls": 37,
+                "charged_cpu_ms": 118.85895973802438,
+                "elapsed_ms": 183.65366045513048
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 146.33503388174728,
+                "elapsed_ms": 220.71551314600518
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 162.1427332920766,
+                "elapsed_ms": 239.81933493943293
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.954922544930144,
+                "elapsed_ms": 15.643400777299581
+              },
+              "submit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.3467117013613315,
+                "elapsed_ms": 0.4348169314287567
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.3481918692264643,
+                "elapsed_ms": 0.43629709929388943
+              },
+              "v_bar": {
+                "calls": 1,
+                "charged_cpu_ms": 4.378407029246707,
+                "elapsed_ms": 16.03691397687273
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 10.765683788214762,
+                "hold_ms": 97.77241784715928
+              },
+              {
+                "acquire_ms": 343.3381168599578,
+                "hold_ms": 73.72095875406518
+              },
+              {
+                "acquire_ms": 18.43957884290344,
+                "hold_ms": 82.47044245741698
+              },
+              {
+                "acquire_ms": 31.141533651263995,
+                "hold_ms": 80.26689541133865
+              },
+              {
+                "acquire_ms": 20.783600867801272,
+                "hold_ms": 62.07098039270968
+              }
+            ],
+            "first_text_return_ms": 86.95076961680569
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.3381126309067508,
+                0.21624547667748834,
+                0.30653571645058564,
+                0.2151177297326253,
+                0.2750292861784744,
+                0.27495880199442047,
+                0.4159976542863547,
+                0.1859372775342941,
+                0.3978832189844921,
+                0.275522675466852,
+                0.41874653746445833,
+                0.24458011866717227,
+                0.21575208738911075,
+                0.24676512837284442,
+                0.38378638217370403,
+                0.24683561255689837,
+                0.3674340514731899,
+                0.24676512837284442,
+                0.3966849878555751,
+                0.156615856967855,
+                0.4475040845584659,
+                0.2168798343339738,
+                0.2457078656120353,
+                0.2456373814279814,
+                0.3849141291185671,
+                0.24507350795554986,
+                0.41592717010230074,
+                0.24450963448311833,
+                0.3251435410408258,
+                0.24739948602932987,
+                0.39731934551206055,
+                0.24556689724392744,
+                0.1559814993113695,
+                0.4170549170471638,
+                0.2457078656120353,
+                0.35672045549699105,
+                0.24676512837284442
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 1,
+              "borrows": 37,
+              "submissions": 1,
+              "records_per_list": [
+                1
+              ],
+              "fences": 76,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 905.1212398449911,
+            "charged_cpu_ms": 283.6810788027275,
+            "off_cpu_ms": 561.0075855078878,
+            "interrupt_ms": 60.43257553437584,
+            "blocked_off_cpu_ms": 405.87542061436835,
+            "runnable_off_cpu_ms": 155.13216489351953,
+            "exclusive_cpu_ms": {
+              "viewer_other": 23.63842177453802,
+              "geometry": 25.77578417178969,
+              "arithmetic": 2.6382934933230335,
+              "update": 34.35222920328907,
+              "format": 18.732088206727294,
+              "vdi": 55.41586373433667,
+              "borrow": 62.61582313544652,
+              "upload": 36.418825479750595,
+              "fence": 11.132553966215553,
+              "event": 12.961195637310944
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 11,
+                "charged_cpu_ms": 14.156889335601985,
+                "elapsed_ms": 37.23023940657956
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.3283858135073071,
+                "elapsed_ms": 0.3718745550685882
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.20024556689724393,
+                "elapsed_ms": 0.24401624519474074
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.2746359844314534,
+                "elapsed_ms": 1.4512693496706275
+              },
+              "_Mul16": {
+                "calls": 15,
+                "charged_cpu_ms": 0.8350261284870288,
+                "elapsed_ms": 12.393375050572402
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 3.694639959739434,
+                "elapsed_ms": 13.538179167976498
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 34.35222920328907,
+                "elapsed_ms": 479.8417348131253
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.924254876448273,
+                "elapsed_ms": 15.515542467425734
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 18.732088206727294,
+                "elapsed_ms": 45.45673046425112
+              },
+              "DisplayEnter": {
+                "calls": 37,
+                "charged_cpu_ms": 32.129369490779965,
+                "elapsed_ms": 55.76736836021365
+              },
+              "idle": {
+                "calls": 148,
+                "charged_cpu_ms": 9.05545554632996,
+                "elapsed_ms": 11.050228439240518
+              },
+              "_VbxeTextUpload": {
+                "calls": 36,
+                "charged_cpu_ms": 28.524949286629575,
+                "elapsed_ms": 34.71423597259011
+              },
+              "VbxeOwnerText": {
+                "calls": 36,
+                "charged_cpu_ms": 44.83872513846618,
+                "elapsed_ms": 54.47433600374412
+              },
+              "VbxeOwnerFence": {
+                "calls": 76,
+                "charged_cpu_ms": 1.37528739926048,
+                "elapsed_ms": 1.6766777702751279
+              },
+              "fence_owner": {
+                "calls": 74,
+                "charged_cpu_ms": 2.4281096564741835,
+                "elapsed_ms": 2.8584860843075424
+              },
+              "DisplayLeave": {
+                "calls": 37,
+                "charged_cpu_ms": 7.1251051976447,
+                "elapsed_ms": 8.513714107691374
+              },
+              "GemDrawingBorrow": {
+                "calls": 37,
+                "charged_cpu_ms": 110.16720258141275,
+                "elapsed_ms": 150.24542592887582
+              },
+              "paint": {
+                "calls": 37,
+                "charged_cpu_ms": 118.42470668006806,
+                "elapsed_ms": 160.2388849965956
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 145.6226502335141,
+                "elapsed_ms": 184.80445572817916
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 161.27204216645828,
+                "elapsed_ms": 206.5637691558391
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.961195637310944,
+                "elapsed_ms": 15.687876297437619
+              },
+              "submit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.2829939989765696,
+                "elapsed_ms": 0.32620080380163496
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.2845446510257563,
+                "elapsed_ms": 0.32775145585082166
+              },
+              "v_bar": {
+                "calls": 1,
+                "charged_cpu_ms": 4.31102414929114,
+                "elapsed_ms": 16.448612095931793
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 10.542671829868096,
+                "hold_ms": 103.19293353764348
+              },
+              {
+                "acquire_ms": 332.1818802079001,
+                "hold_ms": 84.87811170051552
+              },
+              {
+                "acquire_ms": 28.579363076719215,
+                "hold_ms": 67.54633277838786
+              },
+              {
+                "acquire_ms": 9.855592003710287,
+                "hold_ms": 106.33843121941868
+              },
+              {
+                "acquire_ms": 17.80952072164527,
+                "hold_ms": 63.02970626421137
+              }
+            ],
+            "first_text_return_ms": 114.83776655356304
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.3077339475795026,
+                0.21518821391667925,
+                0.3657424310558954,
+                0.2760865489392835,
+                0.4182531481760808,
+                0.1847390464053771,
+                0.39731934551206055,
+                0.2450030237714959,
+                0.4153632966298692,
+                0.275522675466852,
+                0.3364914946735102,
+                0.2451439921396038,
+                0.41472893897338375,
+                0.24450963448311833,
+                0.36806840912967537,
+                0.21631596086154228,
+                0.3978832189844921,
+                0.2444391502990644,
+                0.44581246414117137,
+                0.2456373814279814,
+                0.30822733686788023,
+                0.15534714165488406,
+                0.4182531481760808,
+                0.2456373814279814,
+                0.2771438117000926,
+                0.2755931596509059,
+                0.4171254012312177,
+                0.16725896875999993,
+                0.41486990734149165,
+                0.27495880199442047,
+                0.27488831781036654,
+                0.2456373814279814,
+                0.18523243569375467,
+                0.3048440960332911,
+                0.1661312218151369,
+                0.3352932635445932,
+                0.21518821391667925
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 1,
+              "borrows": 37,
+              "submissions": 1,
+              "records_per_list": [
+                1
+              ],
+              "fences": 76,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 900.3316985701579,
+            "charged_cpu_ms": 282.0193436794718,
+            "off_cpu_ms": 558.1038485774177,
+            "interrupt_ms": 60.208506313268366,
+            "blocked_off_cpu_ms": 397.59190785179715,
+            "runnable_off_cpu_ms": 160.51194072562058,
+            "exclusive_cpu_ms": {
+              "viewer_other": 23.554757048065987,
+              "geometry": 23.538475201549524,
+              "arithmetic": 1.915619154217985,
+              "update": 35.31046168550239,
+              "format": 17.130898997573937,
+              "vdi": 54.68635242937838,
+              "borrow": 64.65267508623731,
+              "upload": 36.938364400412176,
+              "fence": 11.335830353027115,
+              "event": 12.9559093235069
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 11,
+                "charged_cpu_ms": 13.341387326097896,
+                "elapsed_ms": 16.153635785666054
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.32267659459893794,
+                "elapsed_ms": 0.32267659459893794
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.20031605108129785,
+                "elapsed_ms": 0.24373430845852498
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.278724067106582,
+                "elapsed_ms": 1.492855018262452
+              },
+              "_Mul16": {
+                "calls": 15,
+                "charged_cpu_ms": 0.11390244143116726,
+                "elapsed_ms": 0.15725021462434044
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 2.9912782870651653,
+                "elapsed_ms": 22.734955503334607
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.31046168550239,
+                "elapsed_ms": 501.0024965497992
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.205809588386462,
+                "elapsed_ms": 8.717765820527532
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 17.130898997573933,
+                "elapsed_ms": 20.928304897664013
+              },
+              "DisplayEnter": {
+                "calls": 37,
+                "charged_cpu_ms": 33.31322184614994,
+                "elapsed_ms": 68.63700504243853
+              },
+              "idle": {
+                "calls": 148,
+                "charged_cpu_ms": 9.256828860172066,
+                "elapsed_ms": 11.076871460812908
+              },
+              "_VbxeTextUpload": {
+                "calls": 36,
+                "charged_cpu_ms": 29.142672675678305,
+                "elapsed_ms": 37.686131109040446
+              },
+              "VbxeOwnerText": {
+                "calls": 36,
+                "charged_cpu_ms": 45.541311485115855,
+                "elapsed_ms": 57.293280460797405
+              },
+              "VbxeOwnerFence": {
+                "calls": 76,
+                "charged_cpu_ms": 1.3793049977515546,
+                "elapsed_ms": 1.5528370588923552
+              },
+              "fence_owner": {
+                "calls": 74,
+                "charged_cpu_ms": 2.413448946190964,
+                "elapsed_ms": 2.8037198732976307
+              },
+              "DisplayLeave": {
+                "calls": 37,
+                "charged_cpu_ms": 7.145475126836289,
+                "elapsed_ms": 8.664338809014644
+              },
+              "GemDrawingBorrow": {
+                "calls": 37,
+                "charged_cpu_ms": 112.92686983967667,
+                "elapsed_ms": 169.48549365007986
+              },
+              "paint": {
+                "calls": 37,
+                "charged_cpu_ms": 121.1828232862828,
+                "elapsed_ms": 179.44335820485242
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 148.42658155936388,
+                "elapsed_ms": 209.74006842604587
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 163.26935248999476,
+                "elapsed_ms": 227.70662790976334
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.955909323506898,
+                "elapsed_ms": 15.637057200734727
+              },
+              "submit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.31788367008327,
+                "elapsed_ms": 0.4040858271812388
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.31943432213245665,
+                "elapsed_ms": 0.4056364792304255
+              },
+              "v_bar": {
+                "calls": 1,
+                "charged_cpu_ms": 4.3438697790602765,
+                "elapsed_ms": 7.931585231589883
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 329.2872357371729,
+                "hold_ms": 77.02286084025606
+              },
+              {
+                "acquire_ms": 30.17350386746718,
+                "hold_ms": 80.285644204297
+              },
+              {
+                "acquire_ms": 21.680441625703608,
+                "hold_ms": 94.49363457333808
+              },
+              {
+                "acquire_ms": 27.038790265852246,
+                "hold_ms": 69.72006501461136
+              },
+              {
+                "acquire_ms": 9.739152131653178,
+                "hold_ms": 85.74506716437898
+              }
+            ],
+            "first_text_return_ms": 408.60083255918204
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.35552222436807407,
+                0.15485375236650648,
+                0.3849141291185671,
+                0.2156816032050568,
+                0.39851757664097753,
+                0.19608700003806145,
+                0.42946013344065725,
+                0.21462434044424772,
+                0.39731934551206055,
+                0.18586679335024014,
+                0.44524859066873984,
+                0.2451439921396038,
+                0.2158225715731647,
+                0.21518821391667925,
+                0.38886124342558775,
+                0.24507350795554986,
+                0.41754830633554135,
+                0.24401624519474074,
+                0.3978832189844921,
+                0.275522675466852,
+                0.3584120759142856,
+                0.35953982285914865,
+                0.3364210104894563,
+                0.21631596086154228,
+                0.4475040845584659,
+                0.16606073763108295,
+                0.38554848677505255,
+                0.24739948602932987,
+                0.3961915985671975,
+                0.24676512837284442,
+                0.41592717010230074,
+                0.18537340406186256,
+                0.18530291987780861,
+                0.4469402110860344,
+                0.2462012549004129,
+                0.3561565820245595,
+                0.24507350795554986
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 1,
+              "borrows": 37,
+              "submissions": 1,
+              "records_per_list": [
+                1
+              ],
+              "fences": 76,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 886.93293711824,
+            "charged_cpu_ms": 284.6218312072954,
+            "off_cpu_ms": 541.6990071597834,
+            "interrupt_ms": 60.61209875116123,
+            "blocked_off_cpu_ms": 418.76676642528184,
+            "runnable_off_cpu_ms": 122.93224073450159,
+            "exclusive_cpu_ms": {
+              "viewer_other": 23.453823696500738,
+              "geometry": 26.104804342953486,
+              "arithmetic": 1.9423326599744284,
+              "update": 35.83021205871614,
+              "format": 17.302527985745275,
+              "vdi": 54.723568078558856,
+              "borrow": 63.38452364673882,
+              "upload": 37.55221115933795,
+              "fence": 11.37727505325084,
+              "event": 12.9505525255188
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 11,
+                "charged_cpu_ms": 14.473010901083907,
+                "elapsed_ms": 34.777953674974874
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.3415663559253939,
+                "elapsed_ms": 0.4699180550876189
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.20045701944940575,
+                "elapsed_ms": 0.24373430845852498
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.2919750937087227,
+                "elapsed_ms": 1.5949161167725574
+              },
+              "_Mul16": {
+                "calls": 15,
+                "charged_cpu_ms": 0.10833419089090598,
+                "elapsed_ms": 0.10833419089090598
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 4.429085157581491,
+                "elapsed_ms": 14.39526684607241
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.83021205871614,
+                "elapsed_ms": 509.00132369297654
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.2027082842880885,
+                "elapsed_ms": 8.718400178184018
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 17.30252798574528,
+                "elapsed_ms": 20.81087824703015
+              },
+              "DisplayEnter": {
+                "calls": 37,
+                "charged_cpu_ms": 31.905793658960867,
+                "elapsed_ms": 65.65636986716551
+              },
+              "idle": {
+                "calls": 148,
+                "charged_cpu_ms": 9.300247117549294,
+                "elapsed_ms": 11.446349553623662
+              },
+              "_VbxeTextUpload": {
+                "calls": 36,
+                "charged_cpu_ms": 29.764061242297842,
+                "elapsed_ms": 40.723506052476885
+              },
+              "VbxeOwnerText": {
+                "calls": 36,
+                "charged_cpu_ms": 46.20435620451127,
+                "elapsed_ms": 60.693789920479745
+              },
+              "VbxeOwnerFence": {
+                "calls": 76,
+                "charged_cpu_ms": 1.3756398201807496,
+                "elapsed_ms": 1.5051897504718916
+              },
+              "fence_owner": {
+                "calls": 74,
+                "charged_cpu_ms": 2.4047793915523297,
+                "elapsed_ms": 2.7054649207264383
+              },
+              "DisplayLeave": {
+                "calls": 37,
+                "charged_cpu_ms": 7.141034623240891,
+                "elapsed_ms": 8.611687123526352
+              },
+              "GemDrawingBorrow": {
+                "calls": 37,
+                "charged_cpu_ms": 112.31400985932767,
+                "elapsed_ms": 170.31304845505716
+              },
+              "paint": {
+                "calls": 37,
+                "charged_cpu_ms": 120.55206032318408,
+                "elapsed_ms": 180.24349466223273
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 147.7390083439177,
+                "elapsed_ms": 202.69327115688512
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 162.68637780368462,
+                "elapsed_ms": 220.91357370319673
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.950552525518798,
+                "elapsed_ms": 15.58666100913616
+              },
+              "submit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.31879996447597125,
+                "elapsed_ms": 0.4056364792304255
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 1,
+                "charged_cpu_ms": 0.3203506165251579,
+                "elapsed_ms": 0.40718713127961215
+              },
+              "v_bar": {
+                "calls": 1,
+                "charged_cpu_ms": 4.3512001342018864,
+                "elapsed_ms": 16.014852427263847
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 31.005217239303672,
+                "hold_ms": 80.21170629522442
+              },
+              {
+                "acquire_ms": 334.76646475297406,
+                "hold_ms": 82.20133384269904
+              },
+              {
+                "acquire_ms": 18.57018603595539,
+                "hold_ms": 81.6818654062215
+              },
+              {
+                "acquire_ms": 31.739380500409514,
+                "hold_ms": 80.34449849798204
+              },
+              {
+                "acquire_ms": 20.392977519774337,
+                "hold_ms": 62.4952951807144
+              }
+            ],
+            "first_text_return_ms": 100.40211227002773
+          }
+        ],
+        "trace_bytes": 69094139,
+        "trace_sha256": "d6f5d860b90de8be241634e8e9888eb2f894202493ac962ee57c904970f1b047"
+      },
+      "functional": {
+        "path": "build/text-performance/tvp3-trace/text-performance-results.json",
+        "sha256": "643a8e6340d99a7a15a2dafc0d8db8c06db06d6173a3b90dfb94c8a22d80d2bc",
+        "status": "pass",
+        "scope": "Physical text page/line and Panel feedback during viewer repaint",
+        "zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
+        "ordinary_stack_headroom_pass": true,
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 581,
+            "remaining_above_floor": 699
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1312,
+            "peak": 319,
+            "remaining_above_floor": 737
+          },
+          "2": {
+            "base": 13712,
+            "bytes": 1312,
+            "peak": 189,
+            "remaining_above_floor": 867
+          },
+          "3": {
+            "base": 15056,
+            "bytes": 1312,
+            "peak": 647,
+            "remaining_above_floor": 409
+          },
+          "4": {
+            "base": 16400,
+            "bytes": 1312,
+            "peak": 645,
+            "remaining_above_floor": 411
+          },
+          "5": {
+            "base": 17744,
+            "bytes": 1312,
+            "peak": 694,
+            "remaining_above_floor": 362
+          },
+          "6": {
+            "base": 19088,
+            "bytes": 2560,
+            "peak": 755,
+            "remaining_above_floor": 1549
+          },
+          "7": {
+            "base": 21680,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24272,
+            "bytes": 512,
+            "peak": 131,
+            "remaining_above_floor": 125
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 297,
+            "remaining_above_floor": 983
+          }
+        },
+        "observations": [
+          {
+            "stage": "startup",
+            "guest_frame": 10030
+          },
+          {
+            "stage": "MEM",
+            "guest_frame": 10740
+          },
+          {
+            "stage": "performance-initial",
+            "guest_frame": 12145
+          },
+          {
+            "stage": "performance-page",
+            "guest_frame": 12308
+          },
+          {
+            "stage": "performance-line",
+            "guest_frame": 12470
+          },
+          {
+            "stage": "performance-model-replaced",
+            "guest_frame": 12954
+          },
+          {
+            "stage": "MEM",
+            "guest_frame": 13766
+          }
+        ],
+        "integration": null,
+        "text_viewer": null,
+        "text_files": null,
+        "exit": {
+          "guards": "intact",
+          "status": 0,
+          "live_tasks": 0,
+          "os_busy": 0,
+          "switching": 0,
+          "irq_depth": 0
+        },
+        "autoboot_frames": 249
       }
     }
   },
@@ -16788,5 +18499,1744 @@
       "accuratedisk": true,
       "diskemu": "generic56k"
     }
-  }
+  },
+  "package": {
+    "path": "build/text-performance/exec816-demo.zip",
+    "sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
+    "bytes": 489861,
+    "members": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+      "exec816-demo/CALCULATOR-COPYING.txt",
+      "exec816-demo/CALCULATOR-LICENSING.md",
+      "exec816-demo/CALCULATOR-PROVENANCE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/GEM-COPYING.LIB.txt",
+      "exec816-demo/GEM-COPYING.txt",
+      "exec816-demo/GEM-FONT-NOTICE.txt",
+      "exec816-demo/GEM-LICENSING.md",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr",
+      "exec816-demo/work.atr"
+    ],
+    "payload_checksums": 18,
+    "production_inputs_verified": 150,
+    "manifest_path": "build/text-performance/tvp3-demo/demo-manifest.json",
+    "manifest_sha256": "ba17f4a1626477cd35f11cf234bd1915f84479d67c070b38959b08ab0a6ac037",
+    "compiler_override": false
+  },
+  "gates": {
+    "comparator": "TVP1 original 30-action deterministic cohorts",
+    "twofold_page": {
+      "median": {
+        "limit_ms": 640.7586071761357,
+        "actual_ms": 942.6343322821792,
+        "passed": false
+      },
+      "p95": {
+        "limit_ms": 660.8416657386249,
+        "actual_ms": 964.7418375790656,
+        "passed": false
+      }
+    },
+    "input_cohorts_vs_tvp1": {
+      "page": {
+        "first_band": {
+          "baseline_p95_ms": 583.0361485186339,
+          "final_p95_ms": 525.9450871818873,
+          "improved": true
+        }
+      },
+      "line": {
+        "first_band": {
+          "baseline_p95_ms": 559.5423602897746,
+          "final_p95_ms": 524.6825744771131,
+          "improved": true
+        }
+      },
+      "panel": {
+        "paint": {
+          "baseline_p95_ms": 1425.508226209121,
+          "final_p95_ms": 1222.9113069318375,
+          "improved": true
+        },
+        "button_paint": {
+          "baseline_p95_ms": 984.188705896284,
+          "final_p95_ms": 781.8444019346499,
+          "improved": true
+        }
+      }
+    },
+    "intermediate_tradeoffs": "TVP3 vs TVP2: page/line first-band p95 +22.0/+25.5 ms; Panel raise/action p95 +105.1 ms. Gesture-only p95 improves 75.0 ms. These exceed the frozen tolerance and are not characterized as noise.",
+    "cancellation": "Escape/Stop/physical BREAK functional checks pass. CAT retirement was longer in the final short replay (1015.3 vs 282.4 ms), but BREAK follows variable-duration Panel completion, so stream progress at cancellation differs. This is not a controlled cancellation-latency comparison; that gate remains unqualified.",
+    "scanout": "not measured",
+    "transient_flicker": "unqualified",
+    "qualification": false
+  },
+  "stack_policy": {
+    "ordinary_slots": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "floor_bytes": 256,
+    "minimum_headroom_bytes": 128,
+    "minimum_observed_bytes": 156,
+    "reservation_change_bytes": 0
+  },
+  "additional_workloads": {
+    "baseline": {
+      "path": "build/text-performance/baseline-extra/text-performance-results.json",
+      "sha256": "77b91671c21acd0551c2241ac5c9db147c734e68085daec8dd3cd2effcfb9b6b",
+      "observer_sha256": "430fd67f0b78798e6b1b52df7bc256b629ceea930fe4976a5d8a6d0091a6048e",
+      "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+      "status": "pass",
+      "text_performance": {
+        "samples": [
+          {
+            "operation": "page",
+            "index": 0,
+            "start": 432482804,
+            "first": 0,
+            "paints": 12,
+            "model": 432589877,
+            "first_band": 433453172,
+            "complete": 434755060,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 547.1647736964303,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "start": 434936950,
+            "first": 17,
+            "paints": 17,
+            "model": 435044020,
+            "first_band": 435359860,
+            "complete": 437245941,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37393269324296,
+            "first_band_ms": 238.4677302260146,
+            "complete_ms": 1301.9787729831303
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "start": 439631989,
+            "first": 0,
+            "paints": 22,
+            "model": 439739060,
+            "first_band": 440623861,
+            "complete": 441878260,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 559.2903088475977,
+            "complete_ms": 1266.6126287922252
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "start": 442086133,
+            "first": 1,
+            "paints": 27,
+            "model": 442193205,
+            "first_band": 442509940,
+            "complete": 444358388,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.97352473078567,
+            "complete_ms": 1281.264317099886
+          }
+        ],
+        "panel": [
+          {
+            "index": 0,
+            "offered_frame": 12917,
+            "start": 458269684,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 459265589,
+            "gesture_dirty": 1,
+            "paint": 460839412,
+            "paint_ms": 1449.0014505645079,
+            "button_paint_ms": 887.4370400025938,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 1,
+            "offered_frame": 13338,
+            "start": 473243636,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 473528116,
+            "gesture_dirty": 1,
+            "paint": 474668725,
+            "paint_ms": 803.569882953964,
+            "button_paint_ms": 643.1591575166449,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          }
+        ],
+        "milestones": "IRQ-sampled software state; scanout excluded",
+        "app": {
+          "name": "text",
+          "identity": 4,
+          "symbols": {
+            "?L10": 535186,
+            "?L102": 530634,
+            "?L104": 533846,
+            "?L108": 533876,
+            "?L109": 533862,
+            "?L11": 533074,
+            "?L110": 533921,
+            "?L111": 532559,
+            "?L114": 532555,
+            "?L120": 532472,
+            "?L1209": 532839,
+            "?L1210": 532854,
+            "?L1211": 530813,
+            "?L1212": 531138,
+            "?L1213": 524472,
+            "?L1214": 524548,
+            "?L1215": 524675,
+            "?L1216": 524729,
+            "?L1217": 524763,
+            "?L1218": 524799,
+            "?L1219": 524866,
+            "?L1220": 524921,
+            "?L1221": 525061,
+            "?L1222": 525070,
+            "?L1223": 525300,
+            "?L1224": 525421,
+            "?L1225": 525451,
+            "?L1226": 526146,
+            "?L1227": 526153,
+            "?L1228": 526163,
+            "?L1229": 526429,
+            "?L123": 532408,
+            "?L1230": 526444,
+            "?L1231": 526591,
+            "?L1232": 526790,
+            "?L1233": 526941,
+            "?L1234": 526956,
+            "?L1235": 526998,
+            "?L1236": 527197,
+            "?L1237": 527204,
+            "?L1238": 527211,
+            "?L1239": 527314,
+            "?L124": 532468,
+            "?L1240": 527329,
+            "?L1241": 527488,
+            "?L1242": 527606,
+            "?L1243": 527836,
+            "?L1244": 527843,
+            "?L1245": 527877,
+            "?L1246": 528015,
+            "?L1247": 528030,
+            "?L1248": 528053,
+            "?L1249": 528430,
+            "?L1250": 528467,
+            "?L1251": 528650,
+            "?L1252": 528708,
+            "?L1253": 528924,
+            "?L126": 534708,
+            "?L127": 532614,
+            "?L128": 534655,
+            "?L129": 531600,
+            "?L131": 533366,
+            "?L132": 534683,
+            "?L133": 531804,
+            "?L136": 533117,
+            "?L138": 533388,
+            "?L139": 531738,
+            "?L14": 534960,
+            "?L140": 533171,
+            "?L143": 533295,
+            "?L146": 531778,
+            "?L147": 531782,
+            "?L15": 535345,
+            "?L153": 535766,
+            "?L156": 533318,
+            "?L157": 532034,
+            "?L158": 533374,
+            "?L16": 532976,
+            "?L160": 533342,
+            "?L161": 533337,
+            "?L165": 531859,
+            "?L169": 531926,
+            "?L173": 529840,
+            "?L174": 529223,
+            "?L176": 524383,
+            "?L179": 529241,
+            "?L18": 534339,
+            "?L180": 524456,
+            "?L184": 530526,
+            "?L186": 529168,
+            "?L19": 535341,
+            "?L190": 532511,
+            "?L193": 532516,
+            "?L197": 533146,
+            "?L20": 534353,
+            "?L201": 533207,
+            "?L202": 529164,
+            "?L204": 525002,
+            "?L205": 525025,
+            "?L206": 533202,
+            "?L21": 534839,
+            "?L210": 525050,
+            "?L214": 525285,
+            "?L215": 530469,
+            "?L217": 525252,
+            "?L22": 534377,
+            "?L220": 530181,
+            "?L221": 526131,
+            "?L224": 525392,
+            "?L225": 526123,
+            "?L227": 525381,
+            "?L228": 525385,
+            "?L23": 535358,
+            "?L230": 526103,
+            "?L231": 526111,
+            "?L232": 530336,
+            "?L235": 525905,
+            "?L236": 525784,
+            "?L237": 526075,
+            "?L238": 525647,
+            "?L239": 525465,
+            "?L24": 535979,
+            "?L240": 526021,
+            "?L241": 526008,
+            "?L243": 526065,
+            "?L247": 525724,
+            "?L248": 525728,
+            "?L25": 535263,
+            "?L251": 525759,
+            "?L255": 525898,
+            "?L259": 526002,
+            "?L26": 534253,
+            "?L260": 526069,
+            "?L262": 529694,
+            "?L265": 529158,
+            "?L267": 526356,
+            "?L268": 526360,
+            "?L27": 535364,
+            "?L272": 526270,
+            "?L273": 526192,
+            "?L274": 526182,
+            "?L276": 526264,
+            "?L277": 526187,
+            "?L280": 532296,
+            "?L282": 526256,
+            "?L283": 526260,
+            "?L284": 532424,
+            "?L286": 532455,
+            "?L287": 526346,
+            "?L288": 526294,
+            "?L289": 526342,
+            "?L29": 534446,
+            "?L290": 532571,
+            "?L292": 532589,
+            "?L293": 526372,
+            "?L294": 532622,
+            "?L296": 533167,
+            "?L297": 526419,
+            "?L298": 533257,
+            "?L300": 526749,
+            "?L302": 526740,
+            "?L303": 526744,
+            "?L304": 533350,
+            "?L305": 533764,
+            "?L306": 526930,
+            "?L307": 533381,
+            "?L308": 533396,
+            "?L309": 533839,
+            "?L310": 526926,
+            "?L311": 526921,
+            "?L312": 530628,
+            "?L313": 533896,
+            "?L314": 530478,
+            "?L315": 530092,
+            "?L316": 528635,
+            "?L317": 529153,
+            "?L318": 529929,
+            "?L319": 528612,
+            "?L320": 528616,
+            "?L321": 532276,
+            "?L322": 529149,
+            "?L323": 533173,
+            "?L324": 532641,
+            "?L325": 528917,
+            "?L326": 536506,
+            "?L327": 536494,
+            "?L328": 536482,
+            "?L329": 528782,
+            "?L33": 534532,
+            "?L330": 536470,
+            "?L331": 536162,
+            "?L332": 528770,
+            "?L333": 528757,
+            "?L334": 528818,
+            "?L335": 528822,
+            "?L336": 536408,
+            "?L337": 536458,
+            "?L338": 528892,
+            "?L339": 536434,
+            "?L34": 534499,
+            "?L340": 536696,
+            "?L341": 529143,
+            "?L342": 531866,
+            "?L343": 529221,
+            "?L345": 531902,
+            "?L348": 536220,
+            "?L350": 531975,
+            "?L351": 536200,
+            "?L353": 532043,
+            "?L355": 532071,
+            "?L357": 531003,
+            "?L358": 531050,
+            "?L360": 531064,
+            "?L361": 531106,
+            "?L364": 535099,
+            "?L374": 533923,
+            "?L376": 531879,
+            "?L377": 531788,
+            "?L378": 531606,
+            "?L381": 532109,
+            "?L384": 536687,
+            "?L387": 536678,
+            "?L390": 536669,
+            "?L391": 536258,
+            "?L394": 525101,
+            "?L395": 536660,
+            "?L396": 525106,
+            "?L397": 536807,
+            "?L399": 536222,
+            "?L4": 535140,
+            "?L401": 525970,
+            "?L402": 525975,
+            "?L404": 525963,
+            "?L407": 525945,
+            "?L409": 536088,
+            "?L412": 526213,
+            "?L413": 526229,
+            "?L415": 526310,
+            "?L416": 526315,
+            "?L417": 529395,
+            "?L418": 529787,
+            "?L419": 530000,
+            "?L420": 526768,
+            "?L421": 526773,
+            "?L422": 530107,
+            "?L423": 526809,
+            "?L424": 526814,
+            "?L425": 532301,
+            "?L426": 532314,
+            "?L427": 526848,
+            "?L428": 526853,
+            "?L429": 532400,
+            "?L430": 533126,
+            "?L431": 533135,
+            "?L435": 526729,
+            "?L437": 526581,
+            "?L440": 526555,
+            "?L445": 526724,
+            "?L449": 526706,
+            "?L453": 526998,
+            "?L454": 528601,
+            "?L456": 527139,
+            "?L462": 527190,
+            "?L463": 528438,
+            "?L466": 528381,
+            "?L470": 527998,
+            "?L471": 528008,
+            "?L476": 528377,
+            "?L479": 528058,
+            "?L480": 528198,
+            "?L482": 528202,
+            "?L483": 528278,
+            "?L486": 531628,
+            "?L487": 531658,
+            "?L488": 528456,
+            "?L489": 531720,
+            "?L49": 530695,
+            "?L490": 531727,
+            "?L491": 531771,
+            "?L492": 528597,
+            "?L493": 531821,
+            "?L494": 531841,
+            "?L498": 527793,
+            "?L5": 535498,
+            "?L50": 529662,
+            "?L504": 527798,
+            "?L509": 527993,
+            "?L51": 530692,
+            "?L513": 528370,
+            "?L516": 528538,
+            "?L517": 528543,
+            "?L521": 528962,
+            "?L524": 528981,
+            "?L527": 529003,
+            "?L53": 531538,
+            "?L530": 529099,
+            "?L531": 529107,
+            "?L535": 531398,
+            "?L541": 531163,
+            "?L545": 531186,
+            "?L548": 536216,
+            "?L550": 536196,
+            "?L556": 532834,
+            "?L558": 532849,
+            "?L569": 534511,
+            "?L572": 530787,
+            "?L58": 529470,
+            "?L580": 531020,
+            "?L584": 531081,
+            "?L587": 531102,
+            "?L59": 531467,
+            "?L590": 531121,
+            "?L595": 531231,
+            "?L6": 536044,
+            "?L602": 531382,
+            "?L607": 535021,
+            "?L609": 535034,
+            "?L617": 534693,
+            "?L62": 531452,
+            "?L620": 535719,
+            "?L625": 524410,
+            "?L628": 524467,
+            "?L63": 531447,
+            "?L630": 524511,
+            "?L643": 524931,
+            "?L647": 524962,
+            "?L66": 531535,
+            "?L663": 525769,
+            "?L666": 525801,
+            "?L669": 525853,
+            "?L676": 526085,
+            "?L684": 526470,
+            "?L688": 526529,
+            "?L69": 531520,
+            "?L691": 526614,
+            "?L694": 526665,
+            "?L7": 534238,
+            "?L71": 529652,
+            "?L711": 527309,
+            "?L713": 527324,
+            "?L727": 527831,
+            "?L73": 529769,
+            "?L730": 527872,
+            "?L732": 527898,
+            "?L737": 528025,
+            "?L739": 528048,
+            "?L741": 528083,
+            "?L743": 528102,
+            "?L745": 528139,
+            "?L747": 528169,
+            "?L749": 528227,
+            "?L75": 535107,
+            "?L751": 528255,
+            "?L753": 528295,
+            "?L759": 528578,
+            "?L761": 528660,
+            "?L764": 528765,
+            "?L766": 528778,
+            "?L769": 528858,
+            "?L77": 529756,
+            "?L772": 528902,
+            "?L78": 535104,
+            "?L780": 529131,
+            "?L786": 529261,
+            "?L788": 532986,
+            "?L790": 531386,
+            "?L791": 531181,
+            "?L792": 528458,
+            "?L794": 529135,
+            "?L795": 528998,
+            "?L796": 526932,
+            "?L797": 526267,
+            "?L798": 526348,
+            "?L799": 526137,
+            "?L8": 535540,
+            "?L80": 530551,
+            "?L800": 529160,
+            "?L801": 525048,
+            "?L802": 527804,
+            "?L803": 528728,
+            "?L804": 526352,
+            "?L806": 534843,
+            "?L807": 536578,
+            "?L808": 536566,
+            "?L809": 536777,
+            "?L810": 536554,
+            "?L811": 536650,
+            "?L812": 536381,
+            "?L813": 536640,
+            "?L814": 536367,
+            "?L815": 536630,
+            "?L816": 536353,
+            "?L817": 536542,
+            "?L818": 536058,
+            "?L819": 536240,
+            "?L820": 536620,
+            "?L821": 536813,
+            "?L822": 536800,
+            "?L823": 536309,
+            "?L824": 536339,
+            "?L825": 536768,
+            "?L826": 536610,
+            "?L827": 536292,
+            "?L828": 536759,
+            "?L829": 536600,
+            "?L831": 536750,
+            "?L832": 536590,
+            "?L834": 536741,
+            "?L835": 536421,
+            "?L837": 536530,
+            "?L838": 536793,
+            "?L85": 530509,
+            "?L88": 530031,
+            "?L9": 536052,
+            "?L92": 530484,
+            "AllocMem": 533411,
+            "Close": 533431,
+            "CreateDir": 533683,
+            "DivMod16": 533983,
+            "DivMod32": 534060,
+            "ExNext": 533451,
+            "Examine": 533447,
+            "ExecAESDiagnostic": 533479,
+            "ExecAESMouseProfile": 533671,
+            "ExecBreakProgram": 533471,
+            "ExecCollectProgram": 533467,
+            "ExecGetArgStr": 533663,
+            "ExecProgramMask": 533667,
+            "ExecStartProgram": 533463,
+            "ExecWaitProgram": 533475,
+            "ExecYield": 533403,
+            "Far10": 536153,
+            "FileJoin": 533711,
+            "FileSplit": 531556,
+            "FindTask": 533407,
+            "FreeMem": 533415,
+            "GEMText": 590387,
+            "Huge10": 536126,
+            "Huge20": 536130,
+            "IoErr": 533455,
+            "Lock": 533439,
+            "Open": 533427,
+            "Output": 533419,
+            "Read": 533435,
+            "Rename": 533687,
+            "Seek": 533459,
+            "TextArgument": 533084,
+            "TextBegin": 535626,
+            "TextCancel": 534853,
+            "TextDispose": 535460,
+            "TextRow": 532116,
+            "TextRun": 524288,
+            "TextStep": 529294,
+            "UnLock": 533443,
+            "Write": 533423,
+            "_Div16": 534038,
+            "_Div32": 534171,
+            "_DivModSign16": 534052,
+            "_DivModSign32": 534184,
+            "_FillDP4": 535844,
+            "_MoveLongFar": 536149,
+            "_MoveLongFarOdd": 536139,
+            "_MoveLongHuge": 536124,
+            "_MoveLongHugeOdd": 536116,
+            "_Mul16": 535897,
+            "_Mul32": 535986,
+            "_StringLiteral_ / ": 589824,
+            "_StringLiteral_ lines": 589837,
+            "_StringLiteral_*.*": 589828,
+            "_StringLiteral_Cancel Load": 589883,
+            "_StringLiteral_Cannot load: error ": 589982,
+            "_StringLiteral_Empty file": 589872,
+            "_StringLiteral_Expected one path (127 bytes max)": 590137,
+            "_StringLiteral_File": 589832,
+            "_StringLiteral_File exceeds 64 KiB": 590002,
+            "_StringLiteral_File selector failed": 590042,
+            "_StringLiteral_Input lost - load cancelled": 590109,
+            "_StringLiteral_Load cancelled": 589949,
+            "_StringLiteral_Loading - Escape cancels": 590084,
+            "_StringLiteral_More than 4096 lines": 590063,
+            "_StringLiteral_Not enough memory": 589964,
+            "_StringLiteral_O: Open a text file": 590022,
+            "_StringLiteral_Open        O": 589907,
+            "_StringLiteral_Open text": 589852,
+            "_StringLiteral_Path too long": 589921,
+            "_StringLiteral_Quit        Q": 589935,
+            "_StringLiteral_SYS:*.*": 589844,
+            "_StringLiteral_SYS:*.TXT": 589862,
+            "_StringLiteral_Text viewer": 589895,
+            "_UDivMod16": 534001,
+            "_UDivMod32": 534098,
+            "_ValueSwitch16": 535247,
+            "aes_call": 533599,
+            "appl_exit": 533487,
+            "appl_init": 533483,
+            "appl_write": 533535,
+            "bar": 534989,
+            "begin": 535701,
+            "damage": 532651,
+            "evnt_button": 533547,
+            "evnt_keybd": 533543,
+            "evnt_mesag": 533539,
+            "evnt_multi": 533591,
+            "evnt_multi_moblk": 533595,
+            "evnt_timer": 533551,
+            "failed": 535945,
+            "form_alert": 533699,
+            "form_button": 533623,
+            "form_center": 533619,
+            "form_dial": 533691,
+            "form_do": 533695,
+            "form_keybd": 533627,
+            "fsel_exinput": 533707,
+            "fsel_input": 533703,
+            "graf_handle": 533491,
+            "main": 536324,
+            "maximum": 536182,
+            "memcpy": 535119,
+            "memmove": 534206,
+            "memset": 535773,
+            "menu": 590171,
+            "menu_bar": 533675,
+            "menu_ienable": 533651,
+            "menu_popup": 533647,
+            "menu_text": 533659,
+            "menu_tnormal": 533655,
+            "minimum": 536202,
+            "number": 534424,
+            "objc_change": 533615,
+            "objc_draw": 533603,
+            "objc_edit": 533679,
+            "objc_find": 533607,
+            "objc_offset": 533611,
+            "rsrc_free": 533635,
+            "rsrc_gaddr": 533639,
+            "rsrc_load": 533631,
+            "rsrc_obfix": 533643,
+            "scroll": 534574,
+            "status": 534714,
+            "strcmp": 535548,
+            "strcpy": 535370,
+            "strlen": 536023,
+            "v_bar": 533503,
+            "v_clsvwk": 533499,
+            "v_gtext": 533507,
+            "v_opnvwk": 533495,
+            "vdi_call": 533531,
+            "viewport": 530707,
+            "vs_clip": 533511,
+            "vsf_color": 533523,
+            "vsf_interior": 533519,
+            "vst_color": 533527,
+            "vswr_mode": 533515,
+            "wind_calc": 533587,
+            "wind_close": 533567,
+            "wind_create": 533559,
+            "wind_delete": 533571,
+            "wind_get": 533575,
+            "wind_open": 533563,
+            "wind_set": 533579,
+            "wind_set_str": 533583,
+            "wind_update": 533555
+          },
+          "base": 524288,
+          "state": 2,
+          "task": 69116
+        },
+        "start_load_observation": 408090017,
+        "load_settled_observation": 419360438,
+        "model_replaced_during_paint": true,
+        "shell_loaded_panel": {
+          "index": 0,
+          "offered_frame": 14794,
+          "start": 525030504,
+          "viewer_dirty": 1,
+          "viewer_first": 17,
+          "gesture": 526488745,
+          "gesture_dirty": 1,
+          "paint": 527721192,
+          "paint_ms": 1517.2075857898246,
+          "button_paint_ms": 694.9441694778109,
+          "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing",
+          "cancelled": true,
+          "retire_ms": 282.42392289594136
+        },
+        "counter_progress": true,
+        "heap_return": true,
+        "no_op": true,
+        "page_distribution": {
+          "model": {
+            "count": 2,
+            "median": 60.37477850345161,
+            "p95": 60.37562431366026,
+            "maximum": 60.37562431366026
+          },
+          "first_band": {
+            "count": 2,
+            "median": 392.81625196122246,
+            "p95": 547.1647736964303,
+            "maximum": 547.1647736964303
+          },
+          "complete": {
+            "count": 2,
+            "median": 1291.6218269782444,
+            "p95": 1301.9787729831303,
+            "maximum": 1301.9787729831303
+          }
+        },
+        "line_distribution": {
+          "model": {
+            "count": 2,
+            "median": 60.37477850345161,
+            "p95": 60.37506044018782,
+            "maximum": 60.37506044018782
+          },
+          "first_band": {
+            "count": 2,
+            "median": 399.1319167891917,
+            "p95": 559.2903088475977,
+            "maximum": 559.2903088475977
+          },
+          "complete": {
+            "count": 2,
+            "median": 1273.9384729460558,
+            "p95": 1281.264317099886,
+            "maximum": 1281.264317099886
+          }
+        },
+        "panel_distribution": {
+          "paint": {
+            "count": 2,
+            "median": 1126.285666759236,
+            "p95": 1449.0014505645079,
+            "maximum": 1449.0014505645079
+          },
+          "button_paint": {
+            "count": 2,
+            "median": 765.2980987596193,
+            "p95": 887.4370400025938,
+            "maximum": 887.4370400025938
+          }
+        }
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 581,
+          "remaining_above_floor": 699
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1312,
+          "peak": 319,
+          "remaining_above_floor": 737
+        },
+        "2": {
+          "base": 13712,
+          "bytes": 1312,
+          "peak": 174,
+          "remaining_above_floor": 882
+        },
+        "3": {
+          "base": 15056,
+          "bytes": 1312,
+          "peak": 687,
+          "remaining_above_floor": 369
+        },
+        "4": {
+          "base": 16400,
+          "bytes": 1312,
+          "peak": 635,
+          "remaining_above_floor": 421
+        },
+        "5": {
+          "base": 17744,
+          "bytes": 1312,
+          "peak": 662,
+          "remaining_above_floor": 394
+        },
+        "6": {
+          "base": 19088,
+          "bytes": 2560,
+          "peak": 758,
+          "remaining_above_floor": 1546
+        },
+        "7": {
+          "base": 21680,
+          "bytes": 2560,
+          "peak": 357,
+          "remaining_above_floor": 1947
+        },
+        "8": {
+          "base": 24272,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 297,
+          "remaining_above_floor": 983
+        }
+      }
+    },
+    "final": {
+      "path": "build/text-performance/final-extra/text-performance-results.json",
+      "sha256": "130ba1b553e98c61b30a33eb6493c9fd90deaf6fd53414e039238e563d4848f2",
+      "observer_sha256": "430fd67f0b78798e6b1b52df7bc256b629ceea930fe4976a5d8a6d0091a6048e",
+      "zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
+      "status": "pass",
+      "text_performance": {
+        "samples": [
+          {
+            "operation": "page",
+            "index": 0,
+            "start": 431024454,
+            "first": 0,
+            "paints": 13,
+            "model": 431131533,
+            "first_band": 431305350,
+            "complete": 432597828,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37900755449485,
+            "first_band_ms": 158.38980291212454,
+            "complete_ms": 887.183860813472
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "start": 432803012,
+            "first": 17,
+            "paints": 18,
+            "model": 432910084,
+            "first_band": 433119301,
+            "complete": 434408197,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 178.34697672189338,
+            "complete_ms": 905.1212398449912
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "start": 436822020,
+            "first": 0,
+            "paints": 23,
+            "model": 436929097,
+            "first_band": 437646357,
+            "complete": 438418711,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37787980754998,
+            "first_band_ms": 464.8217666437828,
+            "complete_ms": 900.3316985701579
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "start": 438600580,
+            "first": 1,
+            "paints": 28,
+            "model": 438707653,
+            "first_band": 438881029,
+            "complete": 440173509,
+            "final_first": 0,
+            "paint_bands": 4,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 158.13775146994766,
+            "complete_ms": 886.93293711824
+          }
+        ],
+        "panel": [
+          {
+            "index": 0,
+            "offered_frame": 12789,
+            "start": 453716996,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 454499205,
+            "gesture_dirty": 1,
+            "paint": 455885765,
+            "paint_ms": 1222.9113069318375,
+            "button_paint_ms": 781.8444019346499,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 1,
+            "offered_frame": 13186,
+            "start": 467837509,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 468655557,
+            "gesture_dirty": 1,
+            "paint": 469618309,
+            "paint_ms": 1004.1458797060527,
+            "button_paint_ms": 542.8703133303918,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          }
+        ],
+        "milestones": "IRQ-sampled software state; scanout excluded",
+        "app": {
+          "name": "text",
+          "identity": 4,
+          "symbols": {
+            "?L10": 535387,
+            "?L102": 530647,
+            "?L104": 533864,
+            "?L108": 533894,
+            "?L109": 533880,
+            "?L11": 533092,
+            "?L110": 533939,
+            "?L111": 532577,
+            "?L114": 532573,
+            "?L120": 532490,
+            "?L1227": 532857,
+            "?L1228": 532872,
+            "?L1229": 530818,
+            "?L123": 532426,
+            "?L1230": 531156,
+            "?L1231": 534258,
+            "?L1232": 534274,
+            "?L1233": 534295,
+            "?L1234": 524473,
+            "?L1235": 524546,
+            "?L1236": 524672,
+            "?L1237": 524726,
+            "?L1238": 524760,
+            "?L1239": 524796,
+            "?L124": 532486,
+            "?L1240": 524863,
+            "?L1241": 524918,
+            "?L1242": 525056,
+            "?L1243": 525065,
+            "?L1244": 525298,
+            "?L1245": 525419,
+            "?L1246": 525449,
+            "?L1247": 526142,
+            "?L1248": 526149,
+            "?L1249": 526159,
+            "?L1250": 526425,
+            "?L1251": 526440,
+            "?L1252": 526778,
+            "?L1253": 526929,
+            "?L1254": 526944,
+            "?L1255": 526986,
+            "?L1256": 527204,
+            "?L1257": 527211,
+            "?L1258": 527218,
+            "?L1259": 527321,
+            "?L126": 534869,
+            "?L1260": 527336,
+            "?L1261": 527494,
+            "?L1262": 527613,
+            "?L1263": 527682,
+            "?L1264": 527855,
+            "?L1265": 527862,
+            "?L1266": 528024,
+            "?L1267": 528039,
+            "?L1268": 528062,
+            "?L1269": 528448,
+            "?L127": 532632,
+            "?L1270": 528485,
+            "?L1271": 528668,
+            "?L1272": 528727,
+            "?L1273": 528940,
+            "?L128": 534751,
+            "?L129": 531618,
+            "?L131": 533384,
+            "?L132": 534779,
+            "?L133": 531822,
+            "?L136": 533135,
+            "?L138": 533406,
+            "?L139": 531756,
+            "?L14": 535291,
+            "?L140": 533189,
+            "?L143": 533313,
+            "?L146": 531796,
+            "?L147": 531800,
+            "?L15": 535546,
+            "?L153": 535968,
+            "?L156": 533336,
+            "?L157": 532052,
+            "?L158": 533392,
+            "?L16": 532994,
+            "?L160": 533360,
+            "?L161": 533355,
+            "?L165": 531877,
+            "?L169": 531944,
+            "?L173": 529853,
+            "?L174": 529236,
+            "?L176": 524383,
+            "?L179": 529254,
+            "?L18": 534579,
+            "?L180": 524457,
+            "?L184": 530539,
+            "?L186": 529181,
+            "?L19": 535542,
+            "?L190": 532529,
+            "?L193": 532534,
+            "?L197": 533164,
+            "?L20": 534593,
+            "?L201": 533225,
+            "?L202": 529177,
+            "?L204": 524997,
+            "?L205": 525020,
+            "?L206": 533220,
+            "?L21": 535020,
+            "?L210": 525045,
+            "?L214": 525283,
+            "?L215": 530482,
+            "?L217": 525250,
+            "?L22": 534617,
+            "?L220": 530194,
+            "?L221": 526127,
+            "?L224": 525390,
+            "?L225": 526119,
+            "?L227": 525379,
+            "?L228": 525383,
+            "?L23": 535559,
+            "?L230": 526099,
+            "?L231": 526107,
+            "?L232": 530349,
+            "?L235": 525900,
+            "?L236": 525779,
+            "?L237": 526070,
+            "?L238": 525645,
+            "?L239": 525463,
+            "?L24": 536181,
+            "?L240": 526016,
+            "?L241": 526003,
+            "?L243": 526060,
+            "?L247": 525722,
+            "?L248": 525726,
+            "?L25": 535464,
+            "?L251": 525757,
+            "?L255": 525893,
+            "?L259": 525997,
+            "?L26": 534493,
+            "?L260": 526064,
+            "?L262": 529707,
+            "?L265": 529171,
+            "?L267": 526352,
+            "?L268": 526356,
+            "?L27": 535565,
+            "?L272": 526266,
+            "?L273": 526188,
+            "?L274": 526178,
+            "?L276": 526260,
+            "?L277": 526183,
+            "?L280": 532314,
+            "?L282": 526252,
+            "?L283": 526256,
+            "?L284": 532442,
+            "?L286": 532473,
+            "?L287": 526342,
+            "?L288": 526290,
+            "?L289": 526338,
+            "?L29": 535056,
+            "?L290": 532589,
+            "?L292": 532607,
+            "?L293": 526368,
+            "?L294": 532640,
+            "?L296": 533185,
+            "?L297": 526415,
+            "?L298": 533275,
+            "?L300": 526737,
+            "?L302": 526728,
+            "?L303": 526732,
+            "?L304": 533368,
+            "?L305": 533782,
+            "?L306": 526918,
+            "?L307": 533399,
+            "?L308": 533414,
+            "?L309": 533857,
+            "?L310": 526914,
+            "?L311": 526909,
+            "?L312": 530641,
+            "?L313": 533914,
+            "?L314": 530491,
+            "?L315": 530105,
+            "?L316": 528653,
+            "?L317": 529166,
+            "?L318": 529942,
+            "?L319": 528630,
+            "?L320": 528634,
+            "?L321": 532294,
+            "?L322": 529162,
+            "?L323": 533191,
+            "?L324": 532659,
+            "?L325": 528933,
+            "?L326": 536679,
+            "?L327": 536667,
+            "?L328": 536655,
+            "?L329": 528801,
+            "?L33": 535142,
+            "?L330": 536643,
+            "?L331": 536334,
+            "?L332": 528789,
+            "?L333": 528776,
+            "?L334": 528837,
+            "?L335": 528841,
+            "?L336": 536594,
+            "?L337": 536631,
+            "?L338": 528911,
+            "?L339": 536607,
+            "?L34": 535109,
+            "?L340": 536918,
+            "?L341": 529156,
+            "?L342": 531884,
+            "?L343": 529234,
+            "?L345": 531920,
+            "?L348": 536392,
+            "?L350": 531993,
+            "?L351": 536372,
+            "?L353": 532061,
+            "?L355": 532089,
+            "?L357": 531008,
+            "?L358": 531060,
+            "?L360": 531074,
+            "?L361": 531124,
+            "?L368": 534426,
+            "?L374": 533941,
+            "?L376": 531897,
+            "?L377": 531806,
+            "?L378": 531624,
+            "?L381": 532127,
+            "?L384": 536909,
+            "?L387": 536900,
+            "?L390": 536891,
+            "?L391": 536430,
+            "?L395": 536882,
+            "?L396": 536581,
+            "?L397": 537040,
+            "?L398": 525096,
+            "?L399": 537026,
+            "?L4": 535341,
+            "?L400": 525101,
+            "?L403": 536394,
+            "?L405": 525965,
+            "?L406": 525970,
+            "?L408": 525958,
+            "?L411": 525940,
+            "?L413": 536260,
+            "?L416": 526209,
+            "?L417": 526225,
+            "?L418": 529800,
+            "?L419": 526306,
+            "?L420": 526311,
+            "?L421": 530053,
+            "?L422": 530120,
+            "?L423": 530506,
+            "?L424": 526756,
+            "?L425": 526761,
+            "?L426": 532332,
+            "?L427": 526797,
+            "?L428": 526802,
+            "?L429": 532418,
+            "?L430": 533144,
+            "?L431": 526836,
+            "?L432": 526841,
+            "?L439": 526717,
+            "?L441": 526578,
+            "?L444": 526552,
+            "?L449": 526712,
+            "?L453": 526694,
+            "?L457": 526986,
+            "?L458": 528619,
+            "?L460": 527130,
+            "?L466": 527197,
+            "?L467": 528456,
+            "?L470": 528383,
+            "?L474": 528007,
+            "?L475": 528017,
+            "?L480": 528379,
+            "?L483": 528067,
+            "?L484": 528207,
+            "?L486": 528211,
+            "?L487": 528287,
+            "?L488": 531705,
+            "?L489": 531738,
+            "?L49": 530708,
+            "?L490": 531745,
+            "?L491": 531789,
+            "?L492": 528474,
+            "?L493": 531839,
+            "?L494": 531859,
+            "?L496": 528615,
+            "?L5": 535699,
+            "?L50": 529675,
+            "?L502": 527812,
+            "?L508": 527817,
+            "?L51": 530705,
+            "?L513": 528002,
+            "?L517": 528372,
+            "?L520": 528556,
+            "?L521": 528561,
+            "?L525": 528978,
+            "?L528": 528997,
+            "?L53": 531556,
+            "?L531": 529019,
+            "?L534": 529115,
+            "?L535": 529123,
+            "?L539": 531416,
+            "?L545": 531181,
+            "?L549": 531204,
+            "?L552": 536388,
+            "?L554": 536368,
+            "?L560": 532852,
+            "?L562": 532867,
+            "?L574": 535121,
+            "?L577": 530792,
+            "?L58": 529483,
+            "?L585": 531025,
+            "?L589": 531091,
+            "?L59": 531485,
+            "?L592": 531112,
+            "?L595": 531139,
+            "?L6": 536246,
+            "?L600": 531249,
+            "?L607": 531400,
+            "?L612": 534253,
+            "?L614": 534269,
+            "?L616": 534290,
+            "?L618": 534311,
+            "?L62": 531470,
+            "?L620": 534332,
+            "?L622": 534359,
+            "?L63": 531465,
+            "?L632": 535921,
+            "?L637": 524411,
+            "?L640": 524468,
+            "?L642": 524509,
+            "?L655": 524925,
+            "?L659": 524957,
+            "?L66": 531553,
+            "?L675": 525764,
+            "?L678": 525796,
+            "?L681": 525848,
+            "?L688": 526081,
+            "?L69": 531538,
+            "?L696": 526467,
+            "?L7": 534478,
+            "?L700": 526526,
+            "?L703": 526605,
+            "?L706": 526653,
+            "?L71": 529665,
+            "?L723": 527316,
+            "?L725": 527331,
+            "?L73": 529782,
+            "?L739": 527850,
+            "?L742": 527894,
+            "?L744": 527914,
+            "?L749": 528034,
+            "?L75": 534434,
+            "?L751": 528057,
+            "?L753": 528092,
+            "?L755": 528111,
+            "?L757": 528148,
+            "?L759": 528178,
+            "?L761": 528236,
+            "?L763": 528264,
+            "?L765": 528304,
+            "?L77": 529769,
+            "?L771": 528596,
+            "?L773": 528679,
+            "?L776": 528784,
+            "?L778": 528797,
+            "?L78": 534431,
+            "?L781": 528877,
+            "?L784": 528918,
+            "?L792": 529144,
+            "?L798": 529274,
+            "?L8": 535741,
+            "?L80": 530564,
+            "?L800": 533004,
+            "?L802": 531404,
+            "?L803": 531199,
+            "?L804": 528476,
+            "?L806": 529148,
+            "?L807": 529014,
+            "?L808": 526920,
+            "?L809": 526263,
+            "?L810": 526344,
+            "?L811": 526133,
+            "?L812": 529173,
+            "?L813": 525043,
+            "?L814": 527823,
+            "?L815": 528747,
+            "?L816": 526348,
+            "?L818": 535024,
+            "?L819": 536799,
+            "?L820": 536787,
+            "?L821": 537017,
+            "?L822": 536775,
+            "?L823": 536872,
+            "?L824": 536567,
+            "?L825": 536862,
+            "?L826": 536553,
+            "?L827": 536852,
+            "?L828": 536539,
+            "?L829": 536763,
+            "?L830": 536751,
+            "?L831": 536755,
+            "?L832": 536412,
+            "?L833": 536842,
+            "?L834": 536739,
+            "?L835": 536481,
+            "?L836": 536525,
+            "?L837": 536511,
+            "?L838": 537008,
+            "?L839": 536832,
+            "?L840": 536727,
+            "?L841": 536464,
+            "?L842": 536999,
+            "?L843": 536990,
+            "?L844": 536822,
+            "?L846": 537046,
+            "?L847": 536981,
+            "?L848": 536972,
+            "?L849": 536963,
+            "?L85": 530522,
+            "?L850": 536715,
+            "?L851": 536703,
+            "?L852": 537033,
+            "?L854": 536811,
+            "?L88": 530044,
+            "?L9": 536254,
+            "?L92": 530497,
+            "AllocMem": 533429,
+            "Close": 533449,
+            "CreateDir": 533701,
+            "DivMod16": 534001,
+            "DivMod32": 534078,
+            "ExNext": 533469,
+            "Examine": 533465,
+            "ExecAESDiagnostic": 533497,
+            "ExecAESMouseProfile": 533689,
+            "ExecBreakProgram": 533489,
+            "ExecCollectProgram": 533485,
+            "ExecGetArgStr": 533681,
+            "ExecProgramMask": 533685,
+            "ExecStartProgram": 533481,
+            "ExecWaitProgram": 533493,
+            "ExecYield": 533421,
+            "Far10": 536325,
+            "FileJoin": 533729,
+            "FileSplit": 531574,
+            "FindTask": 533425,
+            "FreeMem": 533433,
+            "GEMText": 590387,
+            "Huge10": 536298,
+            "Huge20": 536302,
+            "IoErr": 533473,
+            "Lock": 533457,
+            "Open": 533445,
+            "Output": 533437,
+            "Read": 533453,
+            "Rename": 533705,
+            "Seek": 533477,
+            "TextArgument": 533102,
+            "TextBegin": 535827,
+            "TextCancel": 535184,
+            "TextDispose": 535661,
+            "TextRow": 532134,
+            "TextRun": 524288,
+            "TextStep": 529307,
+            "UnLock": 533461,
+            "Write": 533441,
+            "_Div16": 534056,
+            "_Div32": 534189,
+            "_DivModSign16": 534070,
+            "_DivModSign32": 534202,
+            "_FillDP4": 536046,
+            "_MoveLongFar": 536321,
+            "_MoveLongFarOdd": 536311,
+            "_MoveLongHuge": 536296,
+            "_MoveLongHugeOdd": 536288,
+            "_Mul16": 536099,
+            "_Mul32": 536188,
+            "_StringLiteral_ / ": 589824,
+            "_StringLiteral_ lines": 589837,
+            "_StringLiteral_*.*": 589828,
+            "_StringLiteral_Cancel Load": 589883,
+            "_StringLiteral_Cannot load: error ": 589982,
+            "_StringLiteral_Empty file": 589872,
+            "_StringLiteral_Expected one path (127 bytes max)": 590137,
+            "_StringLiteral_File": 589832,
+            "_StringLiteral_File exceeds 64 KiB": 590002,
+            "_StringLiteral_File selector failed": 590042,
+            "_StringLiteral_Input lost - load cancelled": 590109,
+            "_StringLiteral_Load cancelled": 589949,
+            "_StringLiteral_Loading - Escape cancels": 590084,
+            "_StringLiteral_More than 4096 lines": 590063,
+            "_StringLiteral_Not enough memory": 589964,
+            "_StringLiteral_O: Open a text file": 590022,
+            "_StringLiteral_Open        O": 589907,
+            "_StringLiteral_Open text": 589852,
+            "_StringLiteral_Path too long": 589921,
+            "_StringLiteral_Quit        Q": 589935,
+            "_StringLiteral_SYS:*.*": 589844,
+            "_StringLiteral_SYS:*.TXT": 589862,
+            "_StringLiteral_Text viewer": 589895,
+            "_UDivMod16": 534019,
+            "_UDivMod32": 534116,
+            "_ValueSwitch16": 535448,
+            "aes_call": 533617,
+            "appl_exit": 533505,
+            "appl_init": 533501,
+            "appl_write": 533553,
+            "bar": 534224,
+            "begin": 535902,
+            "damage": 532669,
+            "evnt_button": 533565,
+            "evnt_keybd": 533561,
+            "evnt_mesag": 533557,
+            "evnt_multi": 533609,
+            "evnt_multi_moblk": 533613,
+            "evnt_timer": 533569,
+            "failed": 536147,
+            "form_alert": 533717,
+            "form_button": 533641,
+            "form_center": 533637,
+            "form_dial": 533709,
+            "form_do": 533713,
+            "form_keybd": 533645,
+            "fsel_exinput": 533725,
+            "fsel_input": 533721,
+            "graf_handle": 533509,
+            "main": 536496,
+            "maximum": 536354,
+            "memcpy": 535320,
+            "memmove": 534446,
+            "memset": 535975,
+            "menu": 590171,
+            "menu_bar": 533693,
+            "menu_ienable": 533669,
+            "menu_popup": 533665,
+            "menu_text": 533677,
+            "menu_tnormal": 533673,
+            "minimum": 536374,
+            "number": 535034,
+            "objc_change": 533633,
+            "objc_draw": 533621,
+            "objc_edit": 533697,
+            "objc_find": 533625,
+            "objc_offset": 533629,
+            "rsrc_free": 533653,
+            "rsrc_gaddr": 533657,
+            "rsrc_load": 533649,
+            "rsrc_obfix": 533661,
+            "scroll": 534664,
+            "status": 534881,
+            "strcmp": 535749,
+            "strcpy": 535571,
+            "strlen": 536225,
+            "v_bar": 533521,
+            "v_clsvwk": 533517,
+            "v_gtext": 533525,
+            "v_opnvwk": 533513,
+            "vdi_call": 533549,
+            "viewport": 530720,
+            "vs_clip": 533529,
+            "vsf_color": 533541,
+            "vsf_interior": 533537,
+            "vst_color": 533545,
+            "vswr_mode": 533533,
+            "wind_calc": 533605,
+            "wind_close": 533585,
+            "wind_create": 533577,
+            "wind_delete": 533589,
+            "wind_get": 533593,
+            "wind_open": 533581,
+            "wind_set": 533597,
+            "wind_set_str": 533601,
+            "wind_update": 533573
+          },
+          "base": 524288,
+          "state": 2,
+          "task": 69116
+        },
+        "start_load_observation": 408409834,
+        "load_settled_observation": 418064710,
+        "model_replaced_during_paint": true,
+        "shell_loaded_panel": {
+          "index": 0,
+          "offered_frame": 14605,
+          "start": 518308239,
+          "viewer_dirty": 1,
+          "viewer_first": 17,
+          "gesture": 518948429,
+          "gesture_dirty": 1,
+          "paint": 519936718,
+          "paint_ms": 918.256108511811,
+          "button_paint_ms": 557.2699501958756,
+          "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing",
+          "cancelled": true,
+          "retire_ms": 1015.259825847678
+        },
+        "counter_progress": true,
+        "heap_return": true,
+        "no_op": true,
+        "page_distribution": {
+          "model": {
+            "count": 2,
+            "median": 60.377033997341336,
+            "p95": 60.37900755449485,
+            "maximum": 60.37900755449485
+          },
+          "first_band": {
+            "count": 2,
+            "median": 168.36838981700896,
+            "p95": 178.34697672189338,
+            "maximum": 178.34697672189338
+          },
+          "complete": {
+            "count": 2,
+            "median": 896.1525503292316,
+            "p95": 905.1212398449912,
+            "maximum": 905.1212398449912
+          }
+        },
+        "line_distribution": {
+          "model": {
+            "count": 2,
+            "median": 60.37675206060512,
+            "p95": 60.37787980754998,
+            "maximum": 60.37787980754998
+          },
+          "first_band": {
+            "count": 2,
+            "median": 311.4797590568652,
+            "p95": 464.8217666437828,
+            "maximum": 464.8217666437828
+          },
+          "complete": {
+            "count": 2,
+            "median": 893.632317844199,
+            "p95": 900.3316985701579,
+            "maximum": 900.3316985701579
+          }
+        },
+        "panel_distribution": {
+          "paint": {
+            "count": 2,
+            "median": 1113.5285933189452,
+            "p95": 1222.9113069318375,
+            "maximum": 1222.9113069318375
+          },
+          "button_paint": {
+            "count": 2,
+            "median": 662.3573576325209,
+            "p95": 781.8444019346499,
+            "maximum": 781.8444019346499
+          }
+        }
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 581,
+          "remaining_above_floor": 699
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1312,
+          "peak": 319,
+          "remaining_above_floor": 737
+        },
+        "2": {
+          "base": 13712,
+          "bytes": 1312,
+          "peak": 189,
+          "remaining_above_floor": 867
+        },
+        "3": {
+          "base": 15056,
+          "bytes": 1312,
+          "peak": 686,
+          "remaining_above_floor": 370
+        },
+        "4": {
+          "base": 16400,
+          "bytes": 1312,
+          "peak": 645,
+          "remaining_above_floor": 411
+        },
+        "5": {
+          "base": 17744,
+          "bytes": 1312,
+          "peak": 694,
+          "remaining_above_floor": 362
+        },
+        "6": {
+          "base": 19088,
+          "bytes": 2560,
+          "peak": 755,
+          "remaining_above_floor": 1549
+        },
+        "7": {
+          "base": 21680,
+          "bytes": 2560,
+          "peak": 357,
+          "remaining_above_floor": 1947
+        },
+        "8": {
+          "base": 24272,
+          "bytes": 512,
+          "peak": 131,
+          "remaining_above_floor": 125
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      }
+    },
+    "comparison_scope": "Two page/two line/two Panel prefix, then in-flight model replacement and one Panel gesture during CAT LONG.TXT. Report individual timings, not percentiles. BREAK is cleanup offered after Panel completion, not a fixed-offset cancellation measurement."
+  },
+  "trace_replays": [
+    {
+      "image": "baseline",
+      "traced": "build/text-performance/baseline-cold-trace",
+      "replay": "build/text-performance/baseline-extra",
+      "actions": 4,
+      "clock_milestones_equal": true,
+      "settled_pixel_oracles": true
+    },
+    {
+      "image": "final",
+      "traced": "build/text-performance/tvp3-trace",
+      "replay": "build/text-performance/final-extra",
+      "actions": 4,
+      "clock_milestones_equal": true,
+      "settled_pixel_oracles": true
+    }
+  ],
+  "bank_zero_accounting": "Slice deltas compare the starting TV4 desktop. Full runner records retain their older bank-zero-compaction reference and existing stack growth; this pass adds no reservations."
 }
