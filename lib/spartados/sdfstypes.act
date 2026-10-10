@@ -1,6 +1,7 @@
 ; Private SDFS structures; no bank-zero or per-handle sector reservations.
 MODULE SDFSTYPES
 USE FSBTYPES
+USE BLOCKTYPES
 
 PUBLIC TYPE Volume=[
   CARD bitmap,bitmapEnd,capacity
@@ -44,7 +45,7 @@ PUBLIC TYPE BackendState=[
   CARD sector
   CARD allocated,firstEmpty
   BYTE valid
-  BYTE ARRAY map(256)
+  BYTE ARRAY map(BLOCKTYPES.SECTOR_BUFFER_BYTES)
   BYTE ARRAY row(23)
   FSBTYPES.Cursor directory
   FSBTYPES.Operation operation

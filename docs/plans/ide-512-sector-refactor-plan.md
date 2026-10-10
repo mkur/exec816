@@ -1,6 +1,6 @@
 # IDE 512-byte sector refactor
 
-Status: I512-0 implemented with development checks; I512-1–I512-4 remain open.
+Status: I512-0–I512-1 implemented with development checks; I512-2–I512-4 remain open.
 See the [development record](../history/ide-512-sector-refactor.md).
 This supersedes the IDE
 128/256-byte partition packing in the

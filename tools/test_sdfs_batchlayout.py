@@ -13,19 +13,19 @@ from test_sio_device import PIN
 
 
 def run(out, optimize):
-    program = build(compiler(ROOT/'build/actionc'),
+    program = build(compiler(ROOT/'build/actionc',release=True),
                     ROOT/'tests/programs/sdfs_batchlayout.act', out,
                     optimize=optimize, tasks=True, task_capacity=8, dos_test=True,
-                    image_data=[(0x30ffd0, bytes([0xa5])*(1264+64))])
+                    image_data=[(0x30ffd0, bytes([0xa5])*(2288+64))])
     with emulator(ROOT/'build/altirra-sio-multi',
                   ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as b:
         machine = verify_machine(b, ROOT/'build/firmware/altirraos-816.rom', PIN)
         runtime, _ = execute(b, program)
         ownership(b, program, out)
         observed = data(b, program['image'], 'results', True)
-        require(observed == [1190, 0x31, 0x42, 0x53, 1, 8193, 0x1234, 0x64],
+        require(observed == [2214, 0x31, 0x42, 0x53, 1, 8193, 0x1234, 0x64],
                 f'Record access/layout differs: {observed}')
-        guard = read(b, 0x30ffd0, 1264+64, out)
+        guard = read(b, 0x30ffd0, 2288+64, out)
         require(guard[:32] == guard[-32:] == bytes([0xa5])*32,
                 'Record guard changed')
     return dict(status='pass', tier='development', build=program['build'],

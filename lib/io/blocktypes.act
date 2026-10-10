@@ -2,6 +2,7 @@
 MODULE BLOCKTYPES
 USE EXEC
 INCLUDE "block-backends.inc"
+PUBLIC CONST SECTOR_BUFFER_BYTES=512
 
 ; Geometry is validated before attachment and fixed for this volume lifetime.
 PUBLIC TYPE Volume=[

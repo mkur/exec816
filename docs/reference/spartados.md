@@ -48,7 +48,7 @@ negative or past-EOF destinations, and leave the position unchanged on error.
 Length queries and rewind require no media I/O. A canceled read retains its
 already-transferred count and cursor position under the existing DOS rules.
 
-The filesystem worker owns one additional 256-byte map cache and 23-byte
+The filesystem worker owns one additional 512-byte map cache and 23-byte
 directory-record scratch in upper RAM, shared across mounts. Cache identity
 includes volume, generation and sector. Failed reads and retirement invalidate
 it. The existing BLOCKIO buffer remains the data-sector buffer; file handles

@@ -25,7 +25,7 @@ PUBLIC CARD FUNC SectorBytes(BLOCKTYPES.Volume POINTER volume LONGCARD sector)
     RETURN(0)
   FI
 
-  IF sector<4 THEN
+  IF volume.boot<>0 AND sector<4 THEN
     RETURN(128)
   FI
 
@@ -78,7 +78,7 @@ PUBLIC BLOCKTYPES.Adapter POINTER FUNC Create()
     adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
         EXEC.IOSIOREQ_SIZE))
     IF adapter.request<>NULL THEN
-      adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)
+      adapter.buffer=EXEC.AllocMem(BLOCKTYPES.SECTOR_BUFFER_BYTES,EXEC.MEMF_UPPER)
       IF adapter.buffer<>NULL THEN
         BLOCKCACHE.Create(@adapter.cache,BOOTCONFIG.CacheBlocks())
         RETURN(adapter)
@@ -107,7 +107,7 @@ PUBLIC BYTE FUNC Destroy(BLOCKTYPES.Adapter POINTER adapter)
   FI
 
   BLOCKCACHE.Destroy(@adapter.cache)
-  EXEC.FreeMem(adapter.buffer,256)
+  EXEC.FreeMem(adapter.buffer,BLOCKTYPES.SECTOR_BUFFER_BYTES)
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(adapter.request))
   EXEC.DeleteMsgPort(adapter.port)
   EXEC.FreeMem(BYTE POINTER(adapter),BLOCKTYPES.ADAPTER_SIZE)

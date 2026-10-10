@@ -211,7 +211,7 @@ PROC SmallAndDisabled()
   ReadChecked(second,4)
   FOR index=0 TO adapter.cache.blocks-1 DO
     IF adapter.cache.tags(index).volume=second
-        AND adapter.cache.tags(index).part=2 THEN
+        AND adapter.cache.tags(index).part=1 THEN
       adapter.cache.tags(index).volume=NULL
     FI
   OD
@@ -235,6 +235,47 @@ PROC SmallAndDisabled()
   Require(calls^=count+3 AND adapter.cache.blocks=0)
   ReadChecked(first,10)
   Require(calls^=count+3)
+
+RETURN
+
+; Every piece is needed for a hit; misses leave a crossing destination intact.
+PROC Cache512(BLOCKTYPES.Adapter POINTER adapter)
+  BLOCKTYPES.Volume volume
+  CARD index
+  BYTE missing
+
+  BLOCKIO.Invalidate(adapter)
+  volume.unit=2
+  volume.generation=9
+  volume.dataBytes=512
+  volume.boot=0
+  LET destination=BYTE POINTER($cfff0)
+  FOR missing=0 TO 3 DO
+    FOR index=0 TO 511 DO
+      adapter.buffer(index)=BYTE(index) XOR BYTE(index RSH 8) XOR $6c
+      destination(index)=$a5
+    OD
+    BLOCKCACHE.Store(@adapter.cache,@volume,17,512,adapter.buffer)
+    Require(BLOCKCACHE.Read(@adapter.cache,@volume,17,512,destination)<>0)
+    FOR index=0 TO 511 DO
+      Require(destination(index)=(BYTE(index) XOR BYTE(index RSH 8) XOR $6c))
+      destination(index)=$a5
+    OD
+    FOR index=0 TO adapter.cache.blocks-1 DO
+      IF adapter.cache.tags(index).volume=@volume
+          AND adapter.cache.tags(index).part=missing THEN
+        adapter.cache.tags(index).volume=NULL
+      FI
+    OD
+    Require(BLOCKCACHE.Read(@adapter.cache,@volume,17,512,destination)=0)
+    FOR index=0 TO 511 DO
+      Require(destination(index)=$a5)
+    OD
+  OD
+  BLOCKCACHE.Store(@adapter.cache,@volume,17,512,adapter.buffer)
+  BLOCKCACHE.Forget(@adapter.cache,@volume,17)
+  Require(BLOCKCACHE.Read(@adapter.cache,@volume,17,512,destination)=0)
+  BLOCKIO.Invalidate(adapter)
 
 RETURN
 
@@ -395,6 +436,9 @@ PROC Main()
     BorrowProbe()
     phase=6
     SmallAndDisabled()
+    BLOCKCACHE.Create(@adapter.cache,16)
+    phase=7
+    Cache512(adapter)
   FI
 
   Cleanup()

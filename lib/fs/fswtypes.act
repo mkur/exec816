@@ -1,14 +1,15 @@
 ; One upper-RAM mutation workspace shared by all writable mounts.
 MODULE FSWTYPES
 USE FSBTYPES
+USE BLOCKTYPES
 
 ; Four sectors keep accurate-disk BREAK latency below the eight-sector result.
 PUBLIC CONST EXTENSION_SECTORS=4
 
 PUBLIC TYPE State=[
-  BYTE ARRAY data(256)
-  BYTE ARRAY map(256)
-  BYTE ARRAY scratch(256)
+  BYTE ARRAY data(BLOCKTYPES.SECTOR_BUFFER_BYTES)
+  BYTE ARRAY map(BLOCKTYPES.SECTOR_BUFFER_BYTES)
+  BYTE ARRAY scratch(BLOCKTYPES.SECTOR_BUFFER_BYTES)
   BYTE ARRAY row(23)
   CARD ARRAY reserved(10)
   BYTE reservations,used
@@ -18,7 +19,7 @@ PUBLIC TYPE State=[
   LONGINT directoryLength
   LONGCARD ordinal
   FSBTYPES.Entry target
-  BYTE ARRAY bitmap(256)
+  BYTE ARRAY bitmap(BLOCKTYPES.SECTOR_BUFFER_BYTES)
   BYTE batchActive,bitmapValid,freeValid,bitmapDirty,buffered,drain
   CARD batchPage,batchMap,free
   LONGINT staged,confirmedPosition,confirmedLength,confirmedCount

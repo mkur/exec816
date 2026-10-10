@@ -20,7 +20,7 @@ def run(t,out,optimize,backend='sio'):
     if backend=='fixture':
         shutil.copyfile(ROOT/'tests/fixtures/block/blockwire.act',out/'blockwire.act');override=sha256(out/'blockwire.act')
     p=build(t,ROOT/'tests/programs/block_io.act',out,optimize=optimize,tasks=True,
-        image_data=[(0xaffd0,bytes([0xa5])*320),(0xe0000,bytes(16))])
+        image_data=[(0xaffd0,bytes([0xa5])*320),(0xcffd0,bytes([0xa5])*576),(0xe0000,bytes(16))])
     disks=[]
     if backend=='sio':
         for unit,size,count in ((0,128,720),(1,256,65535)):
@@ -38,6 +38,8 @@ def run(t,out,optimize,backend='sio'):
         clean_ownership(b,p,out)
         buf=far_read(b,0xaffd0,320,out)
         require(buf[:32]==buf[-32:]==bytes([0xa5])*32,'Block buffer guard changed')
+        buf=far_read(b,0xcffd0,576,out)
+        require(buf[:32]==buf[-32:]==bytes([0xa5])*32,'512-byte buffer guard changed')
         hardware=far_read(b,p['build']['task_storage']['BASE']+0x800,128,out)
         require(int.from_bytes(hardware[56:58],'little')==(10 if backend=='sio' else 0),'Unexpected wire command count')
         for disk,digest in disks:require(sha256(disk)==digest,'Read modified media')
@@ -52,7 +54,7 @@ def allocation(t,out,optimize,fault):
         'adapter':('adapter=BLOCKTYPES.Adapter POINTER(EXEC.AllocMem(BLOCKTYPES.ADAPTER_SIZE,\n      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','adapter=BLOCKTYPES.Adapter POINTER(0)'),
         'port':('adapter.port=EXEC.CreateMsgPort()','adapter.port=EXEC.MsgPort POINTER(0)'),
         'transfer':('adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,\n        EXEC.IOSIOREQ_SIZE))','adapter.request=EXEC.IOStdReq POINTER(0)'),
-        'buffer':('adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)','adapter.buffer=BYTE POINTER(0)'),
+        'buffer':('adapter.buffer=EXEC.AllocMem(BLOCKTYPES.SECTOR_BUFFER_BYTES,EXEC.MEMF_UPPER)','adapter.buffer=BYTE POINTER(0)'),
         'volume':('LET volume=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(\n      BLOCKTYPES.VOLUME_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','LET volume=BLOCKTYPES.Volume POINTER(0)'),
         'owner':('volume.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,\n      EXEC.IOSIOREQ_SIZE))','volume.request=EXEC.IOStdReq POINTER(0)'),
         'open':('error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)','error=-1'),
@@ -79,7 +81,7 @@ if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--fault',choices=('adapter','port','transfer','buffer','volume','owner','open','cache-payload','cache-tags'));a.add_argument('--backend',choices=('sio','fixture'),default='sio');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')
     try:
-        t=compiler(ROOT/'build/actionc')
+        t=compiler(ROOT/'build/actionc',release=True)
         result=allocation(t,out,args.case=='opt',args.fault) if args.fault else run(t,out,args.case=='opt',args.backend)
     except Exception as e:result.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')

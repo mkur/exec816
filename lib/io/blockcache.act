@@ -6,7 +6,7 @@ USE BOOTCONFIG
 USE A816MEMORY
 
 CONST WAYS=4, BLOCK_BYTES=128
-CONST SHORT_SECTOR=0, FIRST_HALF=1, SECOND_HALF=2
+CONST MAX_PARTS=BLOCKTYPES.SECTOR_BUFFER_BYTES/128
 CONST ABSENT=$ffff
 
 SIZE FUNC MetadataBytes(CARD blocks)
@@ -75,21 +75,24 @@ PUBLIC PROC Invalidate(BLOCKTYPES.Cache POINTER cache
 
 RETURN
 
-; Consecutive halves use different sets, so filling one cannot evict the other.
+; Consecutive pieces use distinct sets; short sectors still use every set.
 CARD FUNC SetIndex(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
     CARD sector BYTE part)
   CARD key
 
   key=sector XOR (sector RSH 8)
-  IF part<>SHORT_SECTOR THEN
-    key=(key LSH 1)+CARD(part-FIRST_HALF)
+  IF volume.dataBytes=512 THEN
+    key=key LSH 2
+  ELSEIF volume.dataBytes=256 AND (volume.boot=0 OR sector>=4) THEN
+    key=key LSH 1
   FI
+  key==+CARD(part)
 
   key=key XOR (CARD(volume.unit) LSH 3) XOR CARD(volume.generation)
 
 RETURN(key & cache.mask)
 
-; Accept only a matching volume incarnation, sector and sector half.
+; Accept only a matching volume incarnation, sector and sector piece.
 CARD FUNC Find(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volume
     CARD sector BYTE part CARD bucket)
   CARD index
@@ -117,7 +120,7 @@ PUBLIC PROC Forget(BLOCKTYPES.Cache POINTER cache BLOCKTYPES.Volume POINTER volu
     RETURN
   FI
 
-  FOR part=SHORT_SECTOR TO SECOND_HALF DO
+  FOR part=0 TO MAX_PARTS-1 DO
     index=Find(cache,volume,sector,part,SetIndex(cache,volume,sector,part))
     IF index<>ABSENT THEN
       cache.tags(index).volume=NULL
@@ -140,34 +143,26 @@ RETURN(cache.payload+(SIZE(index) LSH 7))
 ; A physical read is a hit only when its entire sector is retained.
 PUBLIC BYTE FUNC Read(BLOCKTYPES.Cache POINTER cache
     BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
-  CARD first,second
-  BYTE part
+  CARD ARRAY slots(MAX_PARTS)
+  BYTE part,parts
 
   IF cache.blocks=0 THEN
     RETURN(0)
   FI
 
-  part=SHORT_SECTOR
-  IF bytes>BLOCK_BYTES THEN
-    part=FIRST_HALF
-  FI
+  parts=BYTE(bytes RSH 7)
+  FOR part=0 TO parts-1 DO
+    slots(part)=Find(cache,volume,sector,part,
+        SetIndex(cache,volume,sector,part))
+    IF slots(part)=ABSENT THEN
+      cache.misses==+1
+      RETURN(0)
+    FI
+  OD
 
-  first=Find(cache,volume,sector,part,SetIndex(cache,volume,sector,part))
-  second=ABSENT
-  IF first<>ABSENT AND bytes>BLOCK_BYTES THEN
-    second=Find(cache,volume,sector,SECOND_HALF,
-        SetIndex(cache,volume,sector,SECOND_HALF))
-  FI
-
-  IF first=ABSENT OR (bytes>BLOCK_BYTES AND second=ABSENT) THEN
-    cache.misses==+1
-    RETURN(0)
-  FI
-
-  Copy(Payload(cache,first),buffer)
-  IF bytes>BLOCK_BYTES THEN
-    Copy(Payload(cache,second),buffer+SIZE(BLOCK_BYTES))
-  FI
+  FOR part=0 TO parts-1 DO
+    Copy(Payload(cache,slots(part)),buffer+SIZE(CARD(part)*BLOCK_BYTES))
+  OD
 
   cache.hits==+1
 
@@ -208,17 +203,16 @@ RETURN
 ; Call only after a successful, exact-length physical-sector transfer.
 PUBLIC PROC Store(BLOCKTYPES.Cache POINTER cache
     BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
+  BYTE part,parts
 
   IF cache.blocks=0 THEN
     RETURN
   FI
 
-  IF bytes=BLOCK_BYTES THEN
-    StorePart(cache,volume,sector,SHORT_SECTOR,buffer)
-  ELSE
-    StorePart(cache,volume,sector,FIRST_HALF,buffer)
-    StorePart(cache,volume,sector,SECOND_HALF,buffer+SIZE(BLOCK_BYTES))
-  FI
+  parts=BYTE(bytes RSH 7)
+  FOR part=0 TO parts-1 DO
+    StorePart(cache,volume,sector,part,buffer+SIZE(CARD(part)*BLOCK_BYTES))
+  OD
 
 RETURN
 

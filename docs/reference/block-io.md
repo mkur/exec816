@@ -49,13 +49,13 @@ Framing and checksums remain the SIO driver's responsibility.
 
 BeginStore stages one complete sector and sends verified WRITE `$57`. It rejects
 overlapping requests and invalid source extents before submission. Invalidate
-the scratch tag and all cached halves of that sector first; FinishStore publishes
+the scratch tag and all cached pieces of that sector first; FinishStore publishes
 replacement bytes only after an error-free, exact-length terminal completion.
 Writes use the same upper-RAM buffer and request as reads, with no write-back
 queue or additional reservation. The [filesystem writers](filesystem-writes.md)
 use these operations to commit data and metadata on explicitly writable mounts.
 
-The filesystem service owns one reusable transfer request and 256-byte upper-RAM
+The filesystem service owns one reusable transfer request and 512-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that
 binding without copying Message links and cannot reuse the request or buffer
 until exact reply collection. Filesystem validation precedes copying payload to
