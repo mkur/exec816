@@ -20,7 +20,6 @@ sector per logical sector. IDE requires revision 2.1, the size marker `$01`,
 512 at offsets 33–34 and `JMP $0440`; floppy headers retain `JMP $3080`.
 Reject other revisions and clustered sectors. STOCK810 supports only 128;
 FASTEST125 and GENERIC57600 support both floppy sizes. IDE uses profile 0.
-Filesystem writes on IDE remain temporarily disabled during the reader slice.
 
 Validate the root-map address, total/free counts and bitmap extent at mount.
 The bitmap must cover sectors 0 through the declared final sector. Boot and

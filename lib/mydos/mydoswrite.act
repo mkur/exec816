@@ -212,7 +212,7 @@ PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
       RETURN(0)
     FI
 
-    FSWRITEIO.Zero(state.data)
+    FSWRITEIO.Zero(state.data,service.selected.spec.dataBytes)
     IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
       RETURN(0)
     FI
@@ -470,7 +470,7 @@ PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
   FI
 
   next=state.next
-  FSWRITEIO.Zero(state.data)
+  FSWRITEIO.Zero(state.data,service.selected.spec.dataBytes)
   Trailer(service,entry,0,0)
   IF FSWRITEIO.Write(service,entry.start,state.data)=0 THEN
     RETURN(0)

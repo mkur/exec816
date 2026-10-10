@@ -83,8 +83,7 @@ larger stack. The first linear RAM bank remains reserved.
 
 Configured filesystem mounts select `device: "ideplus.device"`, unit 1–15,
 profile 0, 512-byte sectors and uniform geometry (`boot: 0`). IDE filesystems
-require SDFS 2.1; MyDOS on IDE is unsupported. During the reader slice, filesystem
-write admission remains closed until the corresponding writer slice is checked. Use `access: "readonly"` by default;
+require SDFS 2.1; MyDOS on IDE is unsupported. Use `access: "readonly"` by default;
 `access: "readwrite"` requires reported writable and durable capability. Geometry must
 match GET_GEOMETRY exactly. SIO stays the default device. SYS may select an IDE
 mount with a fixed configured unit; OF816 system-drive overrides remain SIO-only.

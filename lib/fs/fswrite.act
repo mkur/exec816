@@ -95,7 +95,7 @@ BYTE FUNC Normalize(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
   FI
 
   LET state=FSWRITEIO.State(service)
-  FSWRITEIO.Zero(state.data)
+  FSWRITEIO.Zero(state.data,service.selected.spec.dataBytes)
   IF service.selected.spec.format=FSFORMATS.MYDOS AND (entry.key & $400)=0 THEN
     state.data(service.selected.spec.dataBytes-3)=BYTE(entry.key) LSH 2
   FI

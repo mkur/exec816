@@ -56,7 +56,7 @@ PROC FileWrites()
 
   LET buffer=BYTE POINTER($30fff0)
   FOR index=0 TO amount-1 DO
-    buffer(CARD(index))=BYTE(index) XOR $6d
+    buffer(SIZE(index))=BYTE(index) XOR BYTE(index RSH 8) XOR BYTE(index RSH 16) XOR $6d
   OD
 
   phase=1
@@ -104,7 +104,7 @@ PROC FileWrites()
   Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=amount)
   Require(DOS.Read(file,buffer,amount)=amount)
   FOR index=0 TO amount-1 DO
-    IF buffer(CARD(index))<>(BYTE(index) XOR $6d) THEN
+    IF buffer(SIZE(index))<>(BYTE(index) XOR BYTE(index RSH 8) XOR BYTE(index RSH 16) XOR $6d) THEN
       Require(0)
     FI
   OD
@@ -115,13 +115,13 @@ PROC FileWrites()
   Require(file<>NULL)
   Require(DOS.Seek(file,123,DOS.OFFSET_BEGINNING)=0)
   FOR index=0 TO 16 DO
-    buffer(CARD(index))=BYTE(index)+$31
+    buffer(SIZE(index))=BYTE(index)+$31
   OD
 
   Require(DOS.Write(file,buffer,17)=17)
   Require(DOS.Seek(file,0,DOS.OFFSET_END)=140)
   FOR index=0 TO 36 DO
-    buffer(CARD(index))=BYTE(index)+$93
+    buffer(SIZE(index))=BYTE(index)+$93
   OD
 
   Require(DOS.Write(file,buffer,37)=37)
@@ -136,14 +136,14 @@ PROC FileWrites()
   Require(DOS.Read(file,buffer,amount+38)=amount+37)
   FOR index=0 TO amount-1 DO
     IF index>=123 AND index<140 THEN
-      Require(buffer(CARD(index))=BYTE(index-123)+$31)
-    ELSEIF buffer(CARD(index))<>(BYTE(index) XOR $6d) THEN
+      Require(buffer(SIZE(index))=BYTE(index-123)+$31)
+    ELSEIF buffer(SIZE(index))<>(BYTE(index) XOR BYTE(index RSH 8) XOR BYTE(index RSH 16) XOR $6d) THEN
       Require(0)
     FI
   OD
 
   FOR index=0 TO 36 DO
-    Require(buffer(CARD(amount+index))=BYTE(index)+$93)
+    Require(buffer(SIZE(amount+index))=BYTE(index)+$93)
   OD
 
   Require(DOS.Close(file)<>0)

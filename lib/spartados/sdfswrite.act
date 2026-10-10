@@ -145,7 +145,7 @@ BYTE FUNC GrowMap(FSTYPES.Service POINTER service)
       RETURN(0)
     FI
 
-    FSWRITEIO.Zero(state.scratch)
+    FSWRITEIO.Zero(state.scratch,service.selected.spec.dataBytes)
     FSWRITEIO.Word(state.scratch,2,previous)
     IF FSWRITEIO.Write(service,mapSector,state.scratch)=0 THEN
       RETURN(0)
@@ -156,7 +156,7 @@ BYTE FUNC GrowMap(FSTYPES.Service POINTER service)
       RETURN(0)
     FI
 
-    FSWRITEIO.Zero(state.map)
+    FSWRITEIO.Zero(state.map,service.selected.spec.dataBytes)
     FSWRITEIO.Word(state.map,2,previous)
     state.mapSector=mapSector
     state.mapOffset=4
@@ -178,7 +178,7 @@ BYTE FUNC Grow(FSTYPES.Service POINTER service)
     RETURN(0)
   FI
 
-  FSWRITEIO.Zero(state.scratch)
+  FSWRITEIO.Zero(state.scratch,service.selected.spec.dataBytes)
   IF FSWRITEIO.Write(service,dataSector,state.scratch)=0 THEN
     RETURN(0)
   FI
@@ -423,14 +423,14 @@ PUBLIC BYTE FUNC Create(FSTYPES.Service POINTER service BYTE directory)
     RETURN(0)
   FI
 
-  FSWRITEIO.Zero(state.map)
+  FSWRITEIO.Zero(state.map,service.selected.spec.dataBytes)
   IF directory<>0 THEN
     data=FSALLOC.Take(service)
     IF data=0 THEN
       RETURN(0)
     FI
 
-    FSWRITEIO.Zero(state.data)
+    FSWRITEIO.Zero(state.data,service.selected.spec.dataBytes)
     state.data(0)=$28
     FSWRITEIO.Word(state.data,1,service.work.directory)
     FSWRITEIO.Length(state.data,3,23)
@@ -848,7 +848,7 @@ PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry
     RETURN(0)
   FI
 
-  FSWRITEIO.Zero(state.data)
+  FSWRITEIO.Zero(state.data,service.selected.spec.dataBytes)
   IF FSWRITEIO.Write(service,entry.start,state.data)=0 THEN
     RETURN(0)
   FI

@@ -12,6 +12,15 @@ USE SDFSTYPES
 USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 
+; Start beyond this format's boot reservation; bitmap exclusion is separate.
+CARD FUNC First(FSTYPES.Service POINTER service)
+
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    RETURN(4)
+  FI
+
+RETURN(SDFS.BootSectors(service.work.volume)+1)
+
 BYTE FUNC Allowed(FSTYPES.Service POINTER service CARD sector)
   BYTE index
 
@@ -133,15 +142,16 @@ BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous
     limit=LONGCARD(maximum)
   FI
 
+  LET first=LONGCARD(First(service))
   sector=LONGCARD(service.work.volume.allocationHint)
-  IF sector<4 OR sector>limit OR contiguous<>0 THEN
-    sector=4
+  IF sector<first OR sector>limit OR contiguous<>0 THEN
+    sector=first
   FI
 
   visited=0
   cached=0
   page=0
-  WHILE visited<=limit-4 DO
+  WHILE visited<=limit-first DO
     IF Allowed(service,CARD(sector))<>0 THEN
       IF Bitmap(service,CARD(sector),cached)=0 THEN
         RETURN(0)
@@ -170,7 +180,7 @@ BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous
     sector==+1
     visited==+1
     IF sector>limit THEN
-      sector=4
+      sector=first
       IF contiguous<>0 THEN
         state.reservations=0
       FI
@@ -226,13 +236,14 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
     limit=LONGCARD(maximum)
   FI
 
+  LET first=LONGCARD(First(service))
   sector=LONGCARD(service.work.volume.allocationHint)
-  IF sector<4 OR sector>limit THEN
-    sector=4
+  IF sector<first OR sector>limit THEN
+    sector=first
   FI
 
   visited=0
-  WHILE visited<=limit-4 DO
+  WHILE visited<=limit-first DO
     IF Allowed(service,CARD(sector))<>0 THEN
       offset=sector RSH 3
       page=native.bitmap+CARD(offset/LONGCARD(sectorBytes))
@@ -272,7 +283,7 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
     sector==+1
     visited==+1
     IF sector>limit THEN
-      sector=4
+      sector=first
     FI
   OD
 
@@ -317,7 +328,7 @@ BYTE FUNC TakeBatch(FSTYPES.Service POINTER service)
   state.free==-CARD(state.reservations)
   state.bitmapDirty=1
   state.used=state.reservations
-  service.work.volume.allocationHint=4
+  service.work.volume.allocationHint=First(service)
   IF sector<>$ffff THEN
     service.work.volume.allocationHint=sector+1
   FI
@@ -384,7 +395,7 @@ PUBLIC BYTE FUNC TakeGroup(FSTYPES.Service POINTER service)
   FI
 
   state.used=state.reservations
-  service.work.volume.allocationHint=4
+  service.work.volume.allocationHint=First(service)
   IF sector<>$ffff THEN
     service.work.volume.allocationHint=sector+1
   FI
@@ -462,7 +473,7 @@ PUBLIC CARD FUNC Take(FSTYPES.Service POINTER service)
   FI
 
   state.used==+1
-  service.work.volume.allocationHint=4
+  service.work.volume.allocationHint=First(service)
   IF sector<>$ffff THEN
     service.work.volume.allocationHint=sector+1
   FI

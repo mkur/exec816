@@ -65,3 +65,38 @@ Comparing optimized APT fixtures, IDE driver routines change from
 not a whole-kernel size claim. Fixed controller metadata and buffers retain
 their existing sizes. Runtime bank-zero reservation change: **0 fixed,
 0 per-Task and 0 idle bytes**, including guards/alignment/unused capacity.
+
+## I512-3 — Filesystem mutation
+
+SDFS-512 write admission is enabled. Metadata initialization clears the admitted
+sector length, including each complete new map; MyDOS callers supply their
+floppy size. Allocation scan origins and wraparound follow the format's boot
+reservation. Four-sector batching and payload → bitmap → header → map → length
+publication remain unchanged, with no extra data-sector zero-fill pass.
+
+Optimized development checks pass for persisted create, read-back, append,
+overwrite, truncate, rename, directory creation/deletion and remount. Independent
+allocation/content audits cover a directory row beginning at byte 506, a
+130,567-byte write crossing the 254-pointer map boundary, and allocation across
+4,095/4,096 with the sector cache disabled. Sector-1 bytes outside the free count
+remain exact, including its boot code and reserved tail. MyDOS-256 and SDFS-256
+floppy mutation regressions pass. IDE-only admission/protection, failed write,
+verification corruption, cached-read denial and independent RAM/console survival
+pass. The IDE-only startup script and disk-command check also passes.
+
+The extracted IDE demo's cancelled COPY persists an exact confirmed prefix;
+PRIMES, timer ticks and VBI continue during it, and another command loads afterward.
+Evidence: `build/development/ide-512/i512-3/` and
+`build/development/ide-512/i512-4/copy-break-cart/`.
+
+The map-boundary mutation observes at most 584 bytes touched in the filesystem
+worker's 1,024-byte stack, leaving 184 bytes above its interrupt floor; all
+stack/domain guards pass. FSALLOC and FSWRITEIO optimized routine totals in
+the read and mutation fixtures change by +429 and +32 bytes respectively;
+this comparison covers those modules, not whole-kernel growth. The 2,214-byte
+mutation workspace rounds to 2,216 bytes at the heap's eight-byte alignment.
+Buffer growth remains exactly +1,536 allocated upper-RAM bytes across the three
+existing allocations, because each increase is a multiple of eight. No new
+allocation headers, workers or per-file buffers are introduced. Runtime
+bank-zero reservation change: **0 fixed, 0 per-Task and 0 idle bytes**, including
+guards/alignment/unused capacity.

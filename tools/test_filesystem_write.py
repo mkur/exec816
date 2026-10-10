@@ -17,7 +17,7 @@ from filesystem_audit import Audit
 from banked_test_memory import read as far_read
 from generate_dos_mounts import encode
 
-CAPACITY = 33038
+CAPACITY = 131038
 
 
 def reuse(path):
@@ -34,7 +34,7 @@ def reuse(path):
 def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
         from_build=None, hint=0, fixture=None, cache_blocks=None, profile=4,
         file_only=False, device="sio.device"):
-    require(140 <= amount <= 33000, 'Amount must be 140..33000')
+    require(140 <= amount <= 131000, 'Amount must be 140..131000')
     paths = bytearray(7 * 64)
     for index, name in enumerate(['WRITE.BIN', 'WRENAMED.BIN', 'WRITEDIR',
                                   'WRITEDIR/CHILD', 'WTRUNC.BIN', 'WEMPTY', '']):
@@ -156,10 +156,16 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
             put_sector(oracle,mapping['start'],sector-1,logical.sector(sector))
         require(persisted==oracle,'Physical padding, short boot tails or metadata leader changed')
         media.write_bytes(restored)
+    if ide:
+        from sector_images import ATRImage
+        previous=ATRImage(template).sector(1)
+        current=ATRImage(media.read_bytes()).sector(1)
+        require(previous[:13]==current[:13] and previous[15:]==current[15:],
+                'Sector-1 boot code or reserved tail changed')
     after = Audit(media.read_bytes())
     report = getattr(after, filesystem)()
     expected = dict(before.files)
-    content = bytearray((i & 255) ^ 0x6d for i in range(amount))
+    content = bytearray((i ^ (i >> 8) ^ (i >> 16) ^ 0x6d) & 255 for i in range(amount))
     content[123:140] = bytes(i + 0x31 for i in range(17))
     content.extend(i + 0x93 for i in range(37))
     expected.update({'WRENAMED.BIN': bytes(content)})
