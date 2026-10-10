@@ -1,5 +1,7 @@
 # Historical records
 
+- [GEM text viewer performance](text-viewer-performance.md): VDI text costs and measured tuning.
+
 - [GEM text viewer](text-viewer.md): bounded document loading and application evidence.
 
 - [Standard GEM file selector](file-selector.md): shared directory helpers and

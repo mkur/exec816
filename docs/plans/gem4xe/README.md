@@ -8,6 +8,10 @@ The [TV1–TV4 implementation plan](text-viewer-implementation-plan.md) orders
 document loading, the standalone viewer, Files launching and the OF816 package.
 TV1–TV4 are implemented and pass the recorded development checks.
 
+The proposed [text viewer performance plan](text-viewer-performance-plan.md)
+profiles page repaint, optimizes the dominant VDI/application cost and checks
+input responsiveness before refreshing the desktop package.
+
 The [standard file selector design](file-selector-design.md) adds
 caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,
 scrolling and path editing within the standard-dialog host. It returns a

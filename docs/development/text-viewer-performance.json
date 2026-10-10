@@ -1,0 +1,3619 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "baseline_commit": "018c414",
+  "slices": {
+    "TVP1": {
+      "status": "pass",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": 0,
+        "private_idle": 0
+      },
+      "cohorts": 30,
+      "host_tests": 423,
+      "host_skips": 4
+    }
+  },
+  "baseline": {
+    "runs": [
+      {
+        "path": "build/text-performance/baseline-1/text-performance-results.json",
+        "sha256": "7ab4c3742515029fdf7e381cd752bcc7a2939c865afc21e75d8b8831b4645d67",
+        "observer_sha256": "e054184f8c2ca2202fcbbe34a510dae5afbd19946ca5cf9db6434b09f3b89e2c",
+        "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+        "samples": [
+          {
+            "operation": "page",
+            "index": 0,
+            "start": 432482804,
+            "first": 0,
+            "paints": 12,
+            "model": 432589877,
+            "first_band": 433453172,
+            "complete": 434755060,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 547.1647736964303,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "start": 434936950,
+            "first": 17,
+            "paints": 17,
+            "model": 435044020,
+            "first_band": 435359860,
+            "complete": 437245941,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37393269324296,
+            "first_band_ms": 238.4677302260146,
+            "complete_ms": 1301.9787729831303
+          },
+          {
+            "operation": "page",
+            "index": 2,
+            "start": 437426486,
+            "first": 0,
+            "paints": 22,
+            "model": 437534004,
+            "first_band": 437849844,
+            "complete": 439699190,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.626548008892286,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 3,
+            "start": 439880628,
+            "first": 17,
+            "paints": 27,
+            "model": 439988148,
+            "first_band": 440908341,
+            "complete": 442224564,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 579.5000979730158,
+            "complete_ms": 1321.6833314772498
+          },
+          {
+            "operation": "page",
+            "index": 4,
+            "start": 442406006,
+            "first": 0,
+            "paints": 32,
+            "model": 442513525,
+            "first_band": 443398324,
+            "complete": 444678710,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5417964163022,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 5,
+            "start": 444860149,
+            "first": 17,
+            "paints": 37,
+            "model": 444967668,
+            "first_band": 445283957,
+            "complete": 447132852,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.9740886042581,
+            "complete_ms": 1281.5169324155352
+          },
+          {
+            "operation": "page",
+            "index": 6,
+            "start": 447314741,
+            "first": 0,
+            "paints": 42,
+            "model": 447421813,
+            "first_band": 447737653,
+            "complete": 449586997,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 7,
+            "start": 449768884,
+            "first": 17,
+            "paints": 47,
+            "model": 449875958,
+            "first_band": 450193140,
+            "complete": 452041141,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1281.2654448468309
+          },
+          {
+            "operation": "page",
+            "index": 8,
+            "start": 452223029,
+            "first": 0,
+            "paints": 52,
+            "model": 452330100,
+            "first_band": 452645942,
+            "complete": 454495285,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46942184643189,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 9,
+            "start": 454677174,
+            "first": 17,
+            "paints": 57,
+            "model": 454784245,
+            "first_band": 455711158,
+            "complete": 456992436,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 583.0361485186339,
+            "complete_ms": 1305.5148235287484
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "start": 459407605,
+            "first": 0,
+            "paints": 62,
+            "model": 459514678,
+            "first_band": 459878453,
+            "complete": 461111349,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 265.49869674743684,
+            "complete_ms": 960.6960454143695
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "start": 461292789,
+            "first": 1,
+            "paints": 67,
+            "model": 461399861,
+            "first_band": 462107254,
+            "complete": 463956596,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 459.25520772393884,
+            "complete_ms": 1502.050102977393
+          },
+          {
+            "operation": "line",
+            "index": 2,
+            "start": 464138038,
+            "first": 0,
+            "paints": 72,
+            "model": 464245557,
+            "first_band": 465130357,
+            "complete": 466417908,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5423602897746,
+            "complete_ms": 1285.558213592452
+          },
+          {
+            "operation": "line",
+            "index": 3,
+            "start": 466628022,
+            "first": 1,
+            "paints": 77,
+            "model": 466735093,
+            "first_band": 467061685,
+            "complete": 468906997,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 244.53106167507073,
+            "complete_ms": 1285.0535468346259
+          },
+          {
+            "operation": "line",
+            "index": 4,
+            "start": 469117558,
+            "first": 0,
+            "paints": 82,
+            "model": 469225077,
+            "first_band": 469540916,
+            "complete": 471425653,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1301.4735423518316
+          },
+          {
+            "operation": "line",
+            "index": 5,
+            "start": 471607542,
+            "first": 1,
+            "paints": 87,
+            "model": 471714613,
+            "first_band": 472030918,
+            "complete": 473880246,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.73049526416767,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 6,
+            "start": 474061684,
+            "first": 0,
+            "paints": 92,
+            "model": 474168756,
+            "first_band": 474484596,
+            "complete": 476307508,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1266.3605773500485
+          },
+          {
+            "operation": "line",
+            "index": 7,
+            "start": 476515829,
+            "first": 1,
+            "paints": 97,
+            "model": 476622900,
+            "first_band": 476938740,
+            "complete": 478788533,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46829409948703,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 8,
+            "start": 478969972,
+            "first": 0,
+            "paints": 102,
+            "model": 479077046,
+            "first_band": 479394228,
+            "complete": 481217140,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1267.1184232969963
+          },
+          {
+            "operation": "line",
+            "index": 9,
+            "start": 481424116,
+            "first": 1,
+            "paints": 107,
+            "model": 481531636,
+            "first_band": 481859126,
+            "complete": 483696820,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 245.290599242436,
+            "complete_ms": 1281.5174962890078
+          }
+        ],
+        "panel": [
+          {
+            "index": 0,
+            "offered_frame": 14024,
+            "start": 497643060,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 498425717,
+            "gesture_dirty": 1,
+            "paint": 500171124,
+            "paint_ms": 1425.508226209121,
+            "button_paint_ms": 984.188705896284,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 1,
+            "offered_frame": 14439,
+            "start": 512404213,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 513186421,
+            "gesture_dirty": 1,
+            "paint": 514327028,
+            "paint_ms": 1084.2243708934152,
+            "button_paint_ms": 643.1580297697,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 2,
+            "offered_frame": 14863,
+            "start": 527484788,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 528089589,
+            "gesture_dirty": 1,
+            "paint": 529239605,
+            "paint_ms": 989.4947552718645,
+            "button_paint_ms": 648.4635152718082,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 3,
+            "offered_frame": 15263,
+            "start": 541711924,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 542494582,
+            "gesture_dirty": 1,
+            "paint": 543693428,
+            "paint_ms": 1117.3175411169489,
+            "button_paint_ms": 675.9974569306394,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 4,
+            "offered_frame": 15685,
+            "start": 556721717,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 557717620,
+            "gesture_dirty": 1,
+            "paint": 558833588,
+            "paint_ms": 1190.8280340974288,
+            "button_paint_ms": 629.2647512824598,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 5,
+            "offered_frame": 16091,
+            "start": 571162548,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 571944757,
+            "gesture_dirty": 1,
+            "paint": 573108661,
+            "paint_ms": 1097.3614950541248,
+            "button_paint_ms": 656.2945900569371,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 6,
+            "offered_frame": 16502,
+            "start": 585780789,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 586563445,
+            "gesture_dirty": 1,
+            "paint": 587855029,
+            "paint_ms": 1169.6089114563583,
+            "button_paint_ms": 728.2899550169938,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 7,
+            "offered_frame": 16929,
+            "start": 600968437,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 601786484,
+            "gesture_dirty": 1,
+            "paint": 602903349,
+            "paint_ms": 1091.0455482894192,
+            "button_paint_ms": 629.7705457872308,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 8,
+            "offered_frame": 17344,
+            "start": 615729140,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 616725050,
+            "gesture_dirty": 1,
+            "paint": 617841013,
+            "paint_ms": 1190.8291618443736,
+            "button_paint_ms": 629.2619319150975,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 9,
+            "offered_frame": 17750,
+            "start": 630169525,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 631165429,
+            "gesture_dirty": 1,
+            "paint": 632284533,
+            "paint_ms": 1192.5969051804466,
+            "button_paint_ms": 631.033058492005,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          }
+        ],
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 581,
+            "remaining_above_floor": 699
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1312,
+            "peak": 319,
+            "remaining_above_floor": 737
+          },
+          "2": {
+            "base": 13712,
+            "bytes": 1312,
+            "peak": 174,
+            "remaining_above_floor": 882
+          },
+          "3": {
+            "base": 15056,
+            "bytes": 1312,
+            "peak": 683,
+            "remaining_above_floor": 373
+          },
+          "4": {
+            "base": 16400,
+            "bytes": 1312,
+            "peak": 635,
+            "remaining_above_floor": 421
+          },
+          "5": {
+            "base": 17744,
+            "bytes": 1312,
+            "peak": 662,
+            "remaining_above_floor": 394
+          },
+          "6": {
+            "base": 19088,
+            "bytes": 2560,
+            "peak": 754,
+            "remaining_above_floor": 1550
+          },
+          "7": {
+            "base": 21680,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24272,
+            "bytes": 512,
+            "peak": 135,
+            "remaining_above_floor": 121
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 289,
+            "remaining_above_floor": 991
+          }
+        },
+        "counter_progress": true,
+        "heap_return": true,
+        "no_op": true,
+        "bank_zero_delta": {
+          "baseline": "bank-zero-compaction",
+          "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            288,
+            288,
+            288,
+            288,
+            288,
+            1536,
+            1536
+          ],
+          "idle": 0,
+          "runtime": 4512,
+          "loading": -1760
+        },
+        "pixel_scenes": []
+      },
+      {
+        "path": "build/text-performance/baseline-2/text-performance-results.json",
+        "sha256": "4ac2645f101937b78e8a2118b0a3308d84c86cfd5d4b0d052c12a28b71587987",
+        "observer_sha256": "e054184f8c2ca2202fcbbe34a510dae5afbd19946ca5cf9db6434b09f3b89e2c",
+        "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+        "samples": [
+          {
+            "operation": "page",
+            "index": 0,
+            "start": 432482804,
+            "first": 0,
+            "paints": 12,
+            "model": 432589877,
+            "first_band": 433453172,
+            "complete": 434755060,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 547.1647736964303,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "start": 434936950,
+            "first": 17,
+            "paints": 17,
+            "model": 435044020,
+            "first_band": 435359860,
+            "complete": 437245941,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37393269324296,
+            "first_band_ms": 238.4677302260146,
+            "complete_ms": 1301.9787729831303
+          },
+          {
+            "operation": "page",
+            "index": 2,
+            "start": 437426486,
+            "first": 0,
+            "paints": 22,
+            "model": 437534004,
+            "first_band": 437849844,
+            "complete": 439699190,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.626548008892286,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 3,
+            "start": 439880628,
+            "first": 17,
+            "paints": 27,
+            "model": 439988148,
+            "first_band": 440908341,
+            "complete": 442224564,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 579.5000979730158,
+            "complete_ms": 1321.6833314772498
+          },
+          {
+            "operation": "page",
+            "index": 4,
+            "start": 442406006,
+            "first": 0,
+            "paints": 32,
+            "model": 442513525,
+            "first_band": 443398324,
+            "complete": 444678710,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5417964163022,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 5,
+            "start": 444860149,
+            "first": 17,
+            "paints": 37,
+            "model": 444967668,
+            "first_band": 445283957,
+            "complete": 447132852,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.9740886042581,
+            "complete_ms": 1281.5169324155352
+          },
+          {
+            "operation": "page",
+            "index": 6,
+            "start": 447314741,
+            "first": 0,
+            "paints": 42,
+            "model": 447421813,
+            "first_band": 447737653,
+            "complete": 449586997,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 7,
+            "start": 449768884,
+            "first": 17,
+            "paints": 47,
+            "model": 449875958,
+            "first_band": 450193140,
+            "complete": 452041141,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1281.2654448468309
+          },
+          {
+            "operation": "page",
+            "index": 8,
+            "start": 452223029,
+            "first": 0,
+            "paints": 52,
+            "model": 452330100,
+            "first_band": 452645942,
+            "complete": 454495285,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46942184643189,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 9,
+            "start": 454677174,
+            "first": 17,
+            "paints": 57,
+            "model": 454784245,
+            "first_band": 455711158,
+            "complete": 456992436,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 583.0361485186339,
+            "complete_ms": 1305.5148235287484
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "start": 459407605,
+            "first": 0,
+            "paints": 62,
+            "model": 459514678,
+            "first_band": 459878453,
+            "complete": 461111349,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 265.49869674743684,
+            "complete_ms": 960.6960454143695
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "start": 461292789,
+            "first": 1,
+            "paints": 67,
+            "model": 461399861,
+            "first_band": 462107254,
+            "complete": 463956596,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 459.25520772393884,
+            "complete_ms": 1502.050102977393
+          },
+          {
+            "operation": "line",
+            "index": 2,
+            "start": 464138038,
+            "first": 0,
+            "paints": 72,
+            "model": 464245557,
+            "first_band": 465130357,
+            "complete": 466417908,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5423602897746,
+            "complete_ms": 1285.558213592452
+          },
+          {
+            "operation": "line",
+            "index": 3,
+            "start": 466628022,
+            "first": 1,
+            "paints": 77,
+            "model": 466735093,
+            "first_band": 467061685,
+            "complete": 468906997,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 244.53106167507073,
+            "complete_ms": 1285.0535468346259
+          },
+          {
+            "operation": "line",
+            "index": 4,
+            "start": 469117558,
+            "first": 0,
+            "paints": 82,
+            "model": 469225077,
+            "first_band": 469540916,
+            "complete": 471425653,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1301.4735423518316
+          },
+          {
+            "operation": "line",
+            "index": 5,
+            "start": 471607542,
+            "first": 1,
+            "paints": 87,
+            "model": 471714613,
+            "first_band": 472030918,
+            "complete": 473880246,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.73049526416767,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 6,
+            "start": 474061684,
+            "first": 0,
+            "paints": 92,
+            "model": 474168756,
+            "first_band": 474484596,
+            "complete": 476307508,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1266.3605773500485
+          },
+          {
+            "operation": "line",
+            "index": 7,
+            "start": 476515829,
+            "first": 1,
+            "paints": 97,
+            "model": 476622900,
+            "first_band": 476938740,
+            "complete": 478788533,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46829409948703,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 8,
+            "start": 478969972,
+            "first": 0,
+            "paints": 102,
+            "model": 479077046,
+            "first_band": 479394228,
+            "complete": 481217140,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1267.1184232969963
+          },
+          {
+            "operation": "line",
+            "index": 9,
+            "start": 481424116,
+            "first": 1,
+            "paints": 107,
+            "model": 481531636,
+            "first_band": 481859126,
+            "complete": 483696820,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 245.290599242436,
+            "complete_ms": 1281.5174962890078
+          }
+        ],
+        "panel": [
+          {
+            "index": 0,
+            "offered_frame": 14024,
+            "start": 497643060,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 498425717,
+            "gesture_dirty": 1,
+            "paint": 500171124,
+            "paint_ms": 1425.508226209121,
+            "button_paint_ms": 984.188705896284,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 1,
+            "offered_frame": 14439,
+            "start": 512404213,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 513186421,
+            "gesture_dirty": 1,
+            "paint": 514327028,
+            "paint_ms": 1084.2243708934152,
+            "button_paint_ms": 643.1580297697,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 2,
+            "offered_frame": 14863,
+            "start": 527484788,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 528089589,
+            "gesture_dirty": 1,
+            "paint": 529239605,
+            "paint_ms": 989.4947552718645,
+            "button_paint_ms": 648.4635152718082,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 3,
+            "offered_frame": 15263,
+            "start": 541711924,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 542494582,
+            "gesture_dirty": 1,
+            "paint": 543693428,
+            "paint_ms": 1117.3175411169489,
+            "button_paint_ms": 675.9974569306394,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 4,
+            "offered_frame": 15685,
+            "start": 556721717,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 557717620,
+            "gesture_dirty": 1,
+            "paint": 558833588,
+            "paint_ms": 1190.8280340974288,
+            "button_paint_ms": 629.2647512824598,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 5,
+            "offered_frame": 16091,
+            "start": 571162548,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 571944757,
+            "gesture_dirty": 1,
+            "paint": 573108661,
+            "paint_ms": 1097.3614950541248,
+            "button_paint_ms": 656.2945900569371,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 6,
+            "offered_frame": 16502,
+            "start": 585780789,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 586563445,
+            "gesture_dirty": 1,
+            "paint": 587855029,
+            "paint_ms": 1169.6089114563583,
+            "button_paint_ms": 728.2899550169938,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 7,
+            "offered_frame": 16929,
+            "start": 600968437,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 601786484,
+            "gesture_dirty": 1,
+            "paint": 602903349,
+            "paint_ms": 1091.0455482894192,
+            "button_paint_ms": 629.7705457872308,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 8,
+            "offered_frame": 17344,
+            "start": 615729140,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 616725050,
+            "gesture_dirty": 1,
+            "paint": 617841013,
+            "paint_ms": 1190.8291618443736,
+            "button_paint_ms": 629.2619319150975,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 9,
+            "offered_frame": 17750,
+            "start": 630169525,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 631165429,
+            "gesture_dirty": 1,
+            "paint": 632284533,
+            "paint_ms": 1192.5969051804466,
+            "button_paint_ms": 631.033058492005,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          }
+        ],
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 581,
+            "remaining_above_floor": 699
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1312,
+            "peak": 319,
+            "remaining_above_floor": 737
+          },
+          "2": {
+            "base": 13712,
+            "bytes": 1312,
+            "peak": 174,
+            "remaining_above_floor": 882
+          },
+          "3": {
+            "base": 15056,
+            "bytes": 1312,
+            "peak": 683,
+            "remaining_above_floor": 373
+          },
+          "4": {
+            "base": 16400,
+            "bytes": 1312,
+            "peak": 635,
+            "remaining_above_floor": 421
+          },
+          "5": {
+            "base": 17744,
+            "bytes": 1312,
+            "peak": 662,
+            "remaining_above_floor": 394
+          },
+          "6": {
+            "base": 19088,
+            "bytes": 2560,
+            "peak": 754,
+            "remaining_above_floor": 1550
+          },
+          "7": {
+            "base": 21680,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24272,
+            "bytes": 512,
+            "peak": 135,
+            "remaining_above_floor": 121
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 289,
+            "remaining_above_floor": 991
+          }
+        },
+        "counter_progress": true,
+        "heap_return": true,
+        "no_op": true,
+        "bank_zero_delta": {
+          "baseline": "bank-zero-compaction",
+          "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            288,
+            288,
+            288,
+            288,
+            288,
+            1536,
+            1536
+          ],
+          "idle": 0,
+          "runtime": 4512,
+          "loading": -1760
+        },
+        "pixel_scenes": []
+      },
+      {
+        "path": "build/text-performance/baseline-3/text-performance-results.json",
+        "sha256": "19d82dadd940798f919a7f5bf125c653dc8395b9bff0a222fbe1461868290b8c",
+        "observer_sha256": "e054184f8c2ca2202fcbbe34a510dae5afbd19946ca5cf9db6434b09f3b89e2c",
+        "zip_sha256": "0bbe79a3a0b8a364de2bb53caf20c52f365eef8a1f27678df9976fbaf1136965",
+        "samples": [
+          {
+            "operation": "page",
+            "index": 0,
+            "start": 432482804,
+            "first": 0,
+            "paints": 12,
+            "model": 432589877,
+            "first_band": 433453172,
+            "complete": 434755060,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 547.1647736964303,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "start": 434936950,
+            "first": 17,
+            "paints": 17,
+            "model": 435044020,
+            "first_band": 435359860,
+            "complete": 437245941,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37393269324296,
+            "first_band_ms": 238.4677302260146,
+            "complete_ms": 1301.9787729831303
+          },
+          {
+            "operation": "page",
+            "index": 2,
+            "start": 437426486,
+            "first": 0,
+            "paints": 22,
+            "model": 437534004,
+            "first_band": 437849844,
+            "complete": 439699190,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.626548008892286,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 3,
+            "start": 439880628,
+            "first": 17,
+            "paints": 27,
+            "model": 439988148,
+            "first_band": 440908341,
+            "complete": 442224564,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 579.5000979730158,
+            "complete_ms": 1321.6833314772498
+          },
+          {
+            "operation": "page",
+            "index": 4,
+            "start": 442406006,
+            "first": 0,
+            "paints": 32,
+            "model": 442513525,
+            "first_band": 443398324,
+            "complete": 444678710,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5417964163022,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "page",
+            "index": 5,
+            "start": 444860149,
+            "first": 17,
+            "paints": 37,
+            "model": 444967668,
+            "first_band": 445283957,
+            "complete": 447132852,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.9740886042581,
+            "complete_ms": 1281.5169324155352
+          },
+          {
+            "operation": "page",
+            "index": 6,
+            "start": 447314741,
+            "first": 0,
+            "paints": 42,
+            "model": 447421813,
+            "first_band": 447737653,
+            "complete": 449586997,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 7,
+            "start": 449768884,
+            "first": 17,
+            "paints": 47,
+            "model": 449875958,
+            "first_band": 450193140,
+            "complete": 452041141,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1281.2654448468309
+          },
+          {
+            "operation": "page",
+            "index": 8,
+            "start": 452223029,
+            "first": 0,
+            "paints": 52,
+            "model": 452330100,
+            "first_band": 452645942,
+            "complete": 454495285,
+            "final_first": 17,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46942184643189,
+            "complete_ms": 1281.2648809733585
+          },
+          {
+            "operation": "page",
+            "index": 9,
+            "start": 454677174,
+            "first": 17,
+            "paints": 57,
+            "model": 454784245,
+            "first_band": 455711158,
+            "complete": 456992436,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 583.0361485186339,
+            "complete_ms": 1305.5148235287484
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "start": 459407605,
+            "first": 0,
+            "paints": 62,
+            "model": 459514678,
+            "first_band": 459878453,
+            "complete": 461111349,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37562431366026,
+            "first_band_ms": 265.49869674743684,
+            "complete_ms": 960.6960454143695
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "start": 461292789,
+            "first": 1,
+            "paints": 67,
+            "model": 461399861,
+            "first_band": 462107254,
+            "complete": 463956596,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 459.25520772393884,
+            "complete_ms": 1502.050102977393
+          },
+          {
+            "operation": "line",
+            "index": 2,
+            "start": 464138038,
+            "first": 0,
+            "paints": 72,
+            "model": 464245557,
+            "first_band": 465130357,
+            "complete": 466417908,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 559.5423602897746,
+            "complete_ms": 1285.558213592452
+          },
+          {
+            "operation": "line",
+            "index": 3,
+            "start": 466628022,
+            "first": 1,
+            "paints": 77,
+            "model": 466735093,
+            "first_band": 467061685,
+            "complete": 468906997,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 244.53106167507073,
+            "complete_ms": 1285.0535468346259
+          },
+          {
+            "operation": "line",
+            "index": 4,
+            "start": 469117558,
+            "first": 0,
+            "paints": 82,
+            "model": 469225077,
+            "first_band": 469540916,
+            "complete": 471425653,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.627111882364716,
+            "first_band_ms": 238.7203455416639,
+            "complete_ms": 1301.4735423518316
+          },
+          {
+            "operation": "line",
+            "index": 5,
+            "start": 471607542,
+            "first": 1,
+            "paints": 87,
+            "model": 471714613,
+            "first_band": 472030918,
+            "complete": 473880246,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.73049526416767,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 6,
+            "start": 474061684,
+            "first": 0,
+            "paints": 92,
+            "model": 474168756,
+            "first_band": 474484596,
+            "complete": 476307508,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37506044018782,
+            "first_band_ms": 238.46885797295946,
+            "complete_ms": 1266.3605773500485
+          },
+          {
+            "operation": "line",
+            "index": 7,
+            "start": 476515829,
+            "first": 1,
+            "paints": 97,
+            "model": 476622900,
+            "first_band": 476938740,
+            "complete": 478788533,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.37449656671539,
+            "first_band_ms": 238.46829409948703,
+            "complete_ms": 1281.5174962890078
+          },
+          {
+            "operation": "line",
+            "index": 8,
+            "start": 478969972,
+            "first": 0,
+            "paints": 102,
+            "model": 479077046,
+            "first_band": 479394228,
+            "complete": 481217140,
+            "final_first": 1,
+            "paint_bands": 5,
+            "model_ms": 60.37618818713269,
+            "first_band_ms": 239.2267039199074,
+            "complete_ms": 1267.1184232969963
+          },
+          {
+            "operation": "line",
+            "index": 9,
+            "start": 481424116,
+            "first": 1,
+            "paints": 107,
+            "model": 481531636,
+            "first_band": 481859126,
+            "complete": 483696820,
+            "final_first": 0,
+            "paint_bands": 5,
+            "model_ms": 60.627675755837146,
+            "first_band_ms": 245.290599242436,
+            "complete_ms": 1281.5174962890078
+          }
+        ],
+        "panel": [
+          {
+            "index": 0,
+            "offered_frame": 14024,
+            "start": 497643060,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 498425717,
+            "gesture_dirty": 1,
+            "paint": 500171124,
+            "paint_ms": 1425.508226209121,
+            "button_paint_ms": 984.188705896284,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 1,
+            "offered_frame": 14439,
+            "start": 512404213,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 513186421,
+            "gesture_dirty": 1,
+            "paint": 514327028,
+            "paint_ms": 1084.2243708934152,
+            "button_paint_ms": 643.1580297697,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 2,
+            "offered_frame": 14863,
+            "start": 527484788,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 528089589,
+            "gesture_dirty": 1,
+            "paint": 529239605,
+            "paint_ms": 989.4947552718645,
+            "button_paint_ms": 648.4635152718082,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 3,
+            "offered_frame": 15263,
+            "start": 541711924,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 542494582,
+            "gesture_dirty": 1,
+            "paint": 543693428,
+            "paint_ms": 1117.3175411169489,
+            "button_paint_ms": 675.9974569306394,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 4,
+            "offered_frame": 15685,
+            "start": 556721717,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 557717620,
+            "gesture_dirty": 1,
+            "paint": 558833588,
+            "paint_ms": 1190.8280340974288,
+            "button_paint_ms": 629.2647512824598,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 5,
+            "offered_frame": 16091,
+            "start": 571162548,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 571944757,
+            "gesture_dirty": 1,
+            "paint": 573108661,
+            "paint_ms": 1097.3614950541248,
+            "button_paint_ms": 656.2945900569371,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 6,
+            "offered_frame": 16502,
+            "start": 585780789,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 586563445,
+            "gesture_dirty": 1,
+            "paint": 587855029,
+            "paint_ms": 1169.6089114563583,
+            "button_paint_ms": 728.2899550169938,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 7,
+            "offered_frame": 16929,
+            "start": 600968437,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 601786484,
+            "gesture_dirty": 1,
+            "paint": 602903349,
+            "paint_ms": 1091.0455482894192,
+            "button_paint_ms": 629.7705457872308,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 8,
+            "offered_frame": 17344,
+            "start": 615729140,
+            "viewer_dirty": 1,
+            "viewer_first": 17,
+            "gesture": 616725050,
+            "gesture_dirty": 1,
+            "paint": 617841013,
+            "paint_ms": 1190.8291618443736,
+            "button_paint_ms": 629.2619319150975,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          },
+          {
+            "index": 9,
+            "offered_frame": 17750,
+            "start": 630169525,
+            "viewer_dirty": 1,
+            "viewer_first": 0,
+            "gesture": 631165429,
+            "gesture_dirty": 1,
+            "paint": 632284533,
+            "paint_ms": 1192.5969051804466,
+            "button_paint_ms": 631.033058492005,
+            "scope": "Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing"
+          }
+        ],
+        "stacks": {
+          "0": {
+            "base": 9232,
+            "bytes": 1536,
+            "peak": 581,
+            "remaining_above_floor": 699
+          },
+          "1": {
+            "base": 12368,
+            "bytes": 1312,
+            "peak": 319,
+            "remaining_above_floor": 737
+          },
+          "2": {
+            "base": 13712,
+            "bytes": 1312,
+            "peak": 174,
+            "remaining_above_floor": 882
+          },
+          "3": {
+            "base": 15056,
+            "bytes": 1312,
+            "peak": 683,
+            "remaining_above_floor": 373
+          },
+          "4": {
+            "base": 16400,
+            "bytes": 1312,
+            "peak": 635,
+            "remaining_above_floor": 421
+          },
+          "5": {
+            "base": 17744,
+            "bytes": 1312,
+            "peak": 662,
+            "remaining_above_floor": 394
+          },
+          "6": {
+            "base": 19088,
+            "bytes": 2560,
+            "peak": 754,
+            "remaining_above_floor": 1550
+          },
+          "7": {
+            "base": 21680,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24272,
+            "bytes": 512,
+            "peak": 135,
+            "remaining_above_floor": 121
+          },
+          "kernel": {
+            "base": 10800,
+            "bytes": 1536,
+            "peak": 289,
+            "remaining_above_floor": 991
+          }
+        },
+        "counter_progress": true,
+        "heap_return": true,
+        "no_op": true,
+        "bank_zero_delta": {
+          "baseline": "bank-zero-compaction",
+          "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            288,
+            288,
+            288,
+            288,
+            288,
+            1536,
+            1536
+          ],
+          "idle": 0,
+          "runtime": 4512,
+          "loading": -1760
+        },
+        "pixel_scenes": []
+      }
+    ],
+    "distributions": {
+      "page": {
+        "model": {
+          "count": 30,
+          "median": 60.375906250396476,
+          "p95": 60.627675755837146,
+          "maximum": 60.627675755837146
+        },
+        "first_band": {
+          "count": 30,
+          "median": 239.10039626208277,
+          "p95": 583.0361485186339,
+          "maximum": 583.0361485186339
+        },
+        "complete": {
+          "count": 30,
+          "median": 1281.5172143522714,
+          "p95": 1321.6833314772498,
+          "maximum": 1321.6833314772498
+        }
+      },
+      "line": {
+        "model": {
+          "count": 30,
+          "median": 60.37534237692404,
+          "p95": 60.627675755837146,
+          "maximum": 60.627675755837146
+        },
+        "first_band": {
+          "count": 30,
+          "median": 241.87888279748907,
+          "p95": 559.5423602897746,
+          "maximum": 559.5423602897746
+        },
+        "complete": {
+          "count": 30,
+          "median": 1281.5174962890078,
+          "p95": 1502.050102977393,
+          "maximum": 1502.050102977393
+        }
+      },
+      "panel": {
+        "paint": {
+          "count": 30,
+          "median": 1143.4632262866535,
+          "p95": 1425.508226209121,
+          "maximum": 1425.508226209121
+        },
+        "button_paint": {
+          "count": 30,
+          "median": 645.8107725207541,
+          "p95": 984.188705896284,
+          "maximum": 984.188705896284
+        }
+      }
+    },
+    "manifest_sha256": "b1e75cffa34208558885d540a9176c8372fe056c83fe37ce00b98dd65425ef36",
+    "source_inputs": {
+      "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+      "examples/demo-session.inc": "4051346a79bc37c583eeacf2955b94b78619e5b929f1ec7cb2265e308fe35a44",
+      "examples/shell/shell-session.inc": "2893b8a860b5de8ebfdeb48ebcaa6375d2518be71838519a8eda57f2e1592166",
+      "examples/shell/shell-commands.inc": "57dd32ab69449d965d193e141c105c53af3bde4b60128c96aabc8583e3a8b6c6",
+      "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+      "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+      "examples/shell/shell-jobs.inc": "da7bfc5395f3c16779db4e89a40c9254891741e629434eb0c1c15746d60a1a23",
+      "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+      "examples/shell/shell-boot.inc": "061d8416a7acf94b2d8eb626eef96e00dbbe81805f375d72e7f2f730a1488649",
+      "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+      "examples/commands/command-files.inc": "8ee77c8038111d0c9d0173f0defad2b3e934ee961c04e8833a6faae2db52d3bb",
+      "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+      "examples/commands/command-transfer.inc": "1b3c5caab17f045cf5d4977781c9e2d2f7dd616e45145aac3185c1b9db59dfbe",
+      "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+      "docs/guides/demo.md": "7b939061574bfd7ab3c59602cc1d11e32eab38ff5caf0b37d831952797130302",
+      "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+      "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+      "docs/demo-distribution.txt": "0f8f8c8c6090886ef179cb7b91863e7dee8d653a5fd9460b08e98b7ca04e31f3",
+      "tools/package_demo.py": "e03478acda8617b3e64b4787c12e68b7a30de944039cd9a348cf36700306e0e5",
+      "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "LICENSING.md": "10e5a42a568c396776c4be1b2a09c2d4f6c2017307f65f096c0dcc8026cc3a31",
+      "config/shell-sdfs-256.json": "23d4e20e33f4ba4179e07a501a7549d5ba37f892d46e3be57db20154582d3165",
+      "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+      "tools/make_data_disk.py": "9e3dd14ada69f7cdc421e442c00e4560101a8f04ec13ba3210330fb615ff9c43",
+      "tools/sdfs_reference.py": "298da1eed3ffbf5feacc3d7908463574eb29efb3f3e6b7adb09fa44c0b8eec57",
+      "tools/sdfs_reference.cpp": "66931b4b4d55aa9a9bfd14225ae706fb0a1aaec67917c7f29462320d01313ff2",
+      "tools/make_shell_disk.py": "e3de919c13a359a02c27f8a89f11d88ca6e785e54a73ac5253b15ad82dc14ffd",
+      "tools/build_demo.py": "012daa746c14df270ac1dc4883500a28a5b38349f54df5c1945bf52fca77075c",
+      "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+      "examples/demo-disk/README.TXT": "57f0973b6ac9e5f6b92479f651cd20fd5676babe31373b9410d53449f2df1dbd",
+      "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+      "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+      "examples/demo-disk/SELECT/A000.TXT": "78b31251b40a6aa86dda40d7a6bfc9ed18330f638676fdcd9e1f3a78fb5ccfec",
+      "examples/demo-disk/SELECT/A001.TXT": "1af71eda0b899f120ded0f8d37e744a11943f37a331e3b0bb77f20bf6859c6af",
+      "examples/demo-disk/SELECT/A002.TXT": "538094795c033f4995234f8e857642700a07a631996f2747ebff83c8e60ed905",
+      "examples/demo-disk/SELECT/A003.TXT": "c956d794c2cc743be261290a8fcdb6a47f677d3617dbeb232f9621f8d7fdd4a0",
+      "examples/demo-disk/SELECT/A004.TXT": "0b8e87575583be8f1859ae45c06839a7a1382f689dd104af5b601beb6bc6fd9a",
+      "examples/demo-disk/SELECT/A005.TXT": "563e2183cc050221b7658d94c4c24451b43a5757581dd97bc39da171b849f090",
+      "examples/demo-disk/SELECT/A006.TXT": "6db59afcda04c13332ca105b4ae7bce83bfd5c59248d802678940a975dd43337",
+      "examples/demo-disk/SELECT/A007.TXT": "550fdd536902ea032f12f21907dad64dc7faefeb31f02166171bec6bf801fb18",
+      "examples/demo-disk/SELECT/A008.TXT": "6a1a29e68a858b303162ffa64be59069db952605bc21ead3708ef5f83dbd0dad",
+      "examples/demo-disk/SELECT/A009.TXT": "6e0f85391a3ee265b6984ccad48562d454404961524852b02b15de712a8bd419",
+      "examples/demo-disk/SELECT/A010.TXT": "c85c33c4c0d23372e8c08ef668c44929a1f07b74e045ae333607aa8eff4833f8",
+      "examples/demo-disk/SELECT/A011.TXT": "3e4e5977df44c7f1d16861fafc1046a1e572b6134880ee8745b56bbb2936b73d",
+      "examples/demo-disk/SELECT/B.BIN": "7a363897c7f658dcc477d586d2546f3aea2c27be864f7e174a3cfb4fd1d40ee1",
+      "examples/demo-disk/SELECT/SUB/NOTE.TXT": "43ff94cd7b39213e4556b2b068e59c8f2ff337f10537c254f72ff681df19d4c9",
+      "examples/demo-disk/STORY.TXT": "18575bfaa4e7513017d694ad2ebb9ed45216458a4fe45e14986ef25132241ddc",
+      "examples/demo-disk/WORK/README.TXT": "797f18216a45f58003777f1f098fa2cf11cf26362598029c7d89c4eee312ee56",
+      "lib/dos/command.act": "9a2d3b259acbcbb14bd7b0c1b6bf6d2571f26c3d3174ac8e50cd492d42b893a2",
+      "lib/dos/cookedline.act": "480ab8f0caa9e990293e4651947451198517624de78e1a6e5a0e8882bcb76cdd",
+      "lib/dos/cprogram.act": "ca1d925f332564be2165a2a388382cd2737c83190539c6cabd3eff6c85fa3611",
+      "lib/dos/cprogrambind.act": "aec463d88e845ad3754552f1072867bfbc1819f31c64a42d85c44bd74c22e4c9",
+      "lib/dos/dos.act": "fa5336c3c6f5fa05291f2c993ac1152b2fa50e3c92512f20d5147565217cd65c",
+      "lib/dos/dosargs.act": "a239440218fc4df3b7209a8ff4671b0acdc3d9ec5ea71e060b2f9b8ad23d9f26",
+      "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+      "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+      "lib/dos/doscalls.act": "7eda501573fe8330696d8a5e39e4d46260868a7f6353bc8000bcd6ad769f473d",
+      "lib/dos/doscancel.act": "4a1e000895510d32ceac80a500d41238490f51e85c1de7547149d7b494281713",
+      "lib/dos/dosclient.act": "6c142fe3bee64cc07036c803b3072795e21157ceec0dbf36135a0ee48984e07d",
+      "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+      "lib/dos/doscooked.act": "0aa3abf087ad9001561c05997db2cefacdbf828d3b0af7088c3d6f79875cab32",
+      "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+      "lib/dos/dosdelay.act": "c0e235201c816a7e7c82f466673f9fb946c767c2080e7f7d5adc91989dca325b",
+      "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+      "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+      "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+      "lib/dos/dosobjects.act": "1a971c398e51fcb23fd4f682586f7e8df11a14e28b949d8bcc85520a204fead3",
+      "lib/dos/dospane.act": "16a072ee99641ce853429de508308a326fd26f49d2dbac1650fae16f9b0d3510",
+      "lib/dos/dospipe.act": "f4cb23f6dab1f2fe2c30e32e2df7eb0908d7067a0447f9bdd7a181aabc0ab9d5",
+      "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+      "lib/dos/dosraw.act": "11e54002024f14c24d36ae687993c0aa082ade1a020ca0a49b9d725c1c4fa165",
+      "lib/dos/dosstreams.act": "e79c7ea69bb9bc3894b7273c17e889431d12a918c91f715a7c8b415c5d0a9163",
+      "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+      "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+      "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+      "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+      "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+      "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+      "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+      "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+      "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+      "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+      "lib/dos/process.act": "64f0ff0b16f4d3e255a036bbc0f468b7251e5b16c6216510ce2bf9f059d7c4fd",
+      "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+      "lib/dos/program.act": "724679468537e048e8c2b85ef9403d97fe561cbed823fec1f00583eae4b82878",
+      "lib/dos/programapi.act": "1d7be6ef971d1903f5696bc89b3b4c5e96b5bc74f99c6df91c38910c1e5c611e",
+      "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+      "lib/dos/programimage.act": "3286a283e484330962f4f052b2594c95fb34cd85359ce7cd9525c3cff20d5826",
+      "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+      "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+      "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+      "examples/gem-desktop.act": "d676f359f8111042467d88eeac4b7b891d6901655a7dbbfca3d27ffd0fe5e665",
+      "docs/bitmap-shell-distribution.txt": "a3de757682da7c3849cb420812a2cb4578a4628e14b6644ba165bcb1b4fc2810",
+      "tools/build_bitmap_console.py": "4c22ffcbab64ebdbc5b8022c94ff6e10ff3d0c74fa7d35266e43ac665cd84f8c",
+      "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6",
+      "docs/desktop-distribution.txt": "8c68430bf7eece5993a93003799baeddd3b63a5ca5f163f326e902bbdb62661c",
+      "lib/desktop/deskapp.act": "e7c73dd7164c6c8fe36fe6dcb263ec3161e473b548f1ca4b144627db5c2e9aef",
+      "lib/desktop/deskappmenu.act": "afecbae8bfc70d1dff30d908dc43a107e5aad8c29ba6757bbd7ddc6d4d9e406d",
+      "lib/desktop/deskboot.act": "cb4cdb3bcf38c26ac57f66190984a4a4a9331a1aa84bdd35eaed69d0f2a7987c",
+      "lib/desktop/deskcache.act": "d1247adbcb3933f1ed3b79bdce9caa7cad7bb35f185bdfc4529e51a74ad4ff12",
+      "lib/desktop/deskcore.act": "b44fe29703b34123c8b218207143fbf1b879e5f9d0f7a57726487a6226cfc69b",
+      "lib/desktop/deskdrag.act": "9e945fba8dea5159fa66e8612baf566a7b07bbed2deec721b68b590da24b5df7",
+      "lib/desktop/deskevents.act": "19a05d780e9713a5954bb27d57cb34f7c48a029cd1887881b0692e9563e72a47",
+      "lib/desktop/deskgeometry.act": "38341bf6579edef7a245cbc2d0cb715af977698ef927a4413fc60642f023fff2",
+      "lib/desktop/deskhost.act": "3acffde306a7c4d85fe20f7e8e5eb21f217a50dfc62e264d50f7a4c744e76811",
+      "lib/desktop/deskinput.act": "e7e0a65b4892c732317684b248a2a0eedeef8bab1abdb727dfc4b6333c8dd2d5",
+      "lib/desktop/deskmenu.act": "6ff88c062bc40e1d1a8e0679629b1d55da8bc519553bde712cedd072cf143ebc",
+      "lib/desktop/deskmenupaint.act": "db5ca8e1e80a5f8165b58e14a0da753fd085abdd30d1e1efd52ec15bc579b7bf",
+      "lib/desktop/deskmouse.act": "73573b5221912f91db08954357260e7ec300344f448d717341868dc627caf595",
+      "lib/desktop/deskmouseconfig.act": "49687232aad92769f13522ccc4b774d91707d646bd07b08dfdeb5ad29456f89e",
+      "lib/desktop/deskmove.act": "7a18a1f95ca84efed8007d0b8442d5e6bb4a9387e6715eec96d9eb73aa75df5a",
+      "lib/desktop/deskpaint.act": "1bd60bdbf80451bda9e8c1fb57df350dc510899e01a29377400c7455cd64ec73",
+      "lib/desktop/deskstate.act": "a56cce818e4dcb8d637b925a2f839fe68eddf332b5e88eb251f599f28f945276",
+      "lib/desktop/desktop.act": "2efeefd86d7b877e1bf37eb649124fdb97a7c64c8ed010d2589e6c9f76919a98",
+      "lib/desktop/desktypes.act": "29c616a4b058cb8ca7fec16c9673b74f11e664b6f22e0b4d8da3925fef79102b",
+      "lib/desktop/deskwidgetinput.act": "eeada7b6bd196839473189abede8e2544c18bc990aa298d81eb4b61f98db0543",
+      "lib/desktop/deskwidgets.act": "e16bc8168b6e8614bb306da4e1653c69cb1edfff8345d45dfe3dd8f56f2a77cd",
+      "docs/gem-desktop-distribution.txt": "82106622699f90e1a7487233c5f476ac507a1a6b0e6bbda46af68c963a129d6d",
+      "tools/build_gem_desktop.py": "d215c5739c98d1ddb39b4bda9b300a893831971e68f6ae6b0b767eebb847aff8",
+      "examples/gem-panel/main.c": "24df748fb8576efc36b7cdd56478a2c71a3d40aed0b62a10a2802b05d5492efd",
+      "examples/gem-panel/panel.c": "71d16f41c5a1750195895431cba695c5dcb1a1bfb996c165011d3dbadfc63f7a",
+      "examples/gem-panel/panel.h": "f1f325f07ac711b2c2486660912b07d4b1295cf9c22d6235166058f6882c25a3",
+      "examples/gem-counter/counter.c": "635b58389bcbbc37f6dd3188d52fe2def94d60abc128c73685658c79394bc25d",
+      "examples/gem-counter/counter.h": "45a2ffa8e965cf466d333fa5e71e40ac96d6935aa28c6a5a925f649c89801571",
+      "examples/gem-counter/main.c": "e03bcb60b2281fbdcd32ed269d3be7e394ccd63c062ce24eeee8c557a4d75b92",
+      "examples/gem-counter/resident.c": "670629d6fe1ed0430a90508297b87ea74f7a89c21f0948263d538bee8f300033",
+      "examples/gem-desktop/resident.c": "78a7f9b453381577c35db438ea12f21f8b4944f53de974868a9f332d5d664635",
+      "examples/gem-dialog/dialog.c": "55c878d03177c79279e00eee3f82719969b271e0403d90ef0c8493c66cd5b6fb",
+      "examples/gem-dialog/dialog.h": "4a55d141fab2bee4889e694d6af992abc9ec2ce19b7db85aacc90d3b06e68b03",
+      "examples/gem-dialog/main.c": "d27c1fa6494b61a07a36dd5e1c7453574b27ed9a5c80d58cf1d53ee322e6c8e7",
+      "examples/gem-text/VIEW.TXT": "cd27f3a07f6a051fc0106861b24028af10ae9886d06deaff0d488c7f8335bb28",
+      "examples/gem-text/document.c": "fb4729d3a54614e66027cd886c24e5467df21c812c8dbb0408171c48ca01da08",
+      "examples/gem-text/document.h": "d642f2b18da511639e56690cc07bef77048acc54e9f7fa493a3a7b0880a931ed",
+      "examples/gem-text/main.c": "a571c7ba164e5e6f8725f55a70f3661c4dafeacf0ee0cffcb8b0375afd3026be",
+      "examples/gem-text/text.c": "e7a16fb3238753d1e5c7d0d4aea9edf274220064f6187f40088e3da9fb6fa3ec",
+      "examples/gem-text/text.h": "692daf0180e0c407ee3b4af636f15abe526610870a9141465db0554fa806bf9b",
+      "examples/gem-browser/browser.c": "3ad0e0cd18fff3e538ba51fc1892cc0d54b6d06735c173a610ecdcf06f869cc0",
+      "examples/gem-browser/browser.h": "10aa841dab6ebe23fd7b21bc928d684b27f0d41eee68a76baf4a94b633959ccb",
+      "examples/gem-browser/main.c": "7e20387b17b92fe7a5f5d22b4c509f2aa9ecf921486eeb1d7f14932c6c50e3ef",
+      "examples/gem-browser/resource.json": "c4b910e7eb9778a40073c348729ff9c554fe5197ab1822f98e6c9b4549d12629",
+      "examples/gem-browser/tick.act": "44e67309b72aa0051cb80cd05ae302388df5c66e712dd9fc39e8688b5274c89f",
+      "tools/build_gem_resource.py": "ed9a047a3a0d8a5d5bb2e270cce4f68046c882bda2485b854dfd715348a7c00c",
+      "tools/build_calculator.py": "422e30f5814e8142acd161456152df742016c46bf740396c375af522d23b11f1",
+      "tools/prepare_calculator.py": "3e68261a43aa16bf0de5674263c1fe1a9c5acd5d01fb69ae7225ac24373c7c39",
+      "ports/gem4xe/apps/calculator/README.md": "89ca6a50cdd4916b35764ff5eea4a4590db226aee5f0127ef34e1665ce533a77",
+      "ports/gem4xe/apps/calculator/calculator.h": "25e0e1acb105830be8b3b7a7fda9b41de17782574f9c672de4ba65138ca52081",
+      "ports/gem4xe/apps/calculator/inputs.json": "1965f436a8ebe5afdefc022b5cc65bc51709f7847feef7260d56f039532a23e5",
+      "ports/gem4xe/apps/calculator/patches/0001-flat-resource.patch": "884be063af8500ed7b93a6f7089f608c91392c1db9eb84c7eafd9b25b5a2766f",
+      "ports/gem4xe/apps/calculator/patches/0002-exec-window.patch": "62de11c905794dc8a7b996b43211d913c694f325b4613cdec1efaf777ba57cd1"
+    },
+    "artifacts": {
+      "program.xex": "30bd1e808a19a2810efdab959644646a8ebad2b9080c65a732f29e91f79e015c",
+      "system.atr": "c33f8c792306f507fac145bee9ddc018f268e4ebed6e2bdca3c110a3016b0769",
+      "work.atr": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a",
+      "README.md": "bdbb7f37a34b5ca9ac3eb1e15db89296a78ff24d8717c31fe9ed1c0661ff4382",
+      "system.verification.json": "4614198e462e1cf93d89c1e82563ee3e4be5643374d6969636fd9c434b962800",
+      "GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e"
+    },
+    "pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 1,
+        "internal_port": 0,
+        "map": "Mouse -> ST Mouse (port 1)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c48180051ddf6ebe",
+      "actual_kernel_id": "$c48180051ddf6ebe",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/text-performance/baseline-1/extracted/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    }
+  },
+  "comparison_policy": {
+    "frozen_before_candidate_measurement": true,
+    "tolerance_ms": 20.05,
+    "reason": "One PAL frame, covering the IRQ-sampled completion resolution; three deterministic baseline replays use the same guest input schedule.",
+    "page_goal_ratio": 0.5
+  },
+  "tools": {
+    "tools/measure_text_viewer.py": "e054184f8c2ca2202fcbbe34a510dae5afbd19946ca5cf9db6434b09f3b89e2c",
+    "tools/text_performance_trace.py": "575a2edad9e8524daa12d10cd72743a05cced120f630cfecc3f4abddcbf54f59"
+  },
+  "traces": {
+    "baseline": {
+      "path": "build/text-performance/baseline-cold-trace/text-performance-breakdown.json",
+      "sha256": "85a59e0318f1d35614d16bc91a6b55d93b417a2570e84cddc205c89ea55289b7",
+      "breakdown": {
+        "scope": "Checked call/return sites; conservative Task CPU, IRQ/NMI and observed signal-wait attribution. First text return follows the synchronous fence; scanout is separate.",
+        "viewer_dp": 4096,
+        "records": [
+          {
+            "operation": "cold_load",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.06519787024989462,
+                0.0646339967774631,
+                0.07591146622609353,
+                0.155417625838938,
+                0.10579676026496415,
+                0.10636063373739567,
+                0.12553233180006737,
+                0.1368098012486978,
+                0.09444880663227978,
+                0.10579676026496415,
+                0.06576174372232614,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.07584098204203958,
+                0.07570001367393171,
+                0.15485375236650648,
+                0.10579676026496415,
+                0.1368098012486978,
+                0.06519787024989462,
+                0.1362459277762663,
+                0.076545823882579,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.1260962052724989,
+                0.076545823882579,
+                0.09515364847281918,
+                0.10636063373739567,
+                0.07710969735501051,
+                0.155417625838938,
+                0.07591146622609353,
+                0.09451929081633373,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.07640485551447111,
+                0.12496845832763587,
+                6.827732425121127,
+                0.07598195041014746,
+                0.12616668945655285,
+                0.07647533969852505,
+                0.10579676026496415,
+                0.07598195041014746,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.21575208738911075,
+                0.12553233180006737,
+                0.12496845832763587,
+                0.10579676026496415,
+                0.3364210104894563,
+                0.07598195041014746
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 25,
+              "borrows": 61,
+              "submissions": 61,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                22,
+                1
+              ],
+              "fences": 244,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 6342.235744221354,
+            "charged_cpu_ms": 710.1140575066361,
+            "off_cpu_ms": 5479.8381401197385,
+            "interrupt_ms": 152.28354659497955,
+            "blocked_off_cpu_ms": 5190.56082855568,
+            "runnable_off_cpu_ms": 289.27731156405815,
+            "exclusive_cpu_ms": {
+              "viewer_other": 76.25056563557702,
+              "geometry": 19.691166499149254,
+              "arithmetic": 4.037122610057533,
+              "event": 59.12051244821175,
+              "update": 33.57154638070763,
+              "vdi": 93.60496998078595,
+              "borrow": 110.95296026524592,
+              "upload": 10.576504238213992,
+              "fence": 10.373368819770597,
+              "format": 7.343042294739483,
+              "renderer": 124.78153427152478,
+              "builder": 2.2808681959855024,
+              "load": 133.63322004175484,
+              "dos": 23.896675824911647
+            },
+            "routines": {
+              "wind_set": {
+                "calls": 3,
+                "charged_cpu_ms": 10.546830396727279,
+                "elapsed_ms": 962.4971982536839
+              },
+              "wind_get": {
+                "calls": 1,
+                "charged_cpu_ms": 1.1935086885853683,
+                "elapsed_ms": 1.451762738959005
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.3293021079000083,
+                "elapsed_ms": 0.3293021079000083
+              },
+              "evnt_multi": {
+                "calls": 13,
+                "charged_cpu_ms": 59.12051244821175,
+                "elapsed_ms": 90.97111699105838
+              },
+              "_Mul16": {
+                "calls": 236,
+                "charged_cpu_ms": 3.707820502157521,
+                "elapsed_ms": 4.484274273695726
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 33.57154638070763,
+                "elapsed_ms": 564.4451696483826
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.95082741383661,
+                "elapsed_ms": 15.593850395909662
+              },
+              "DisplayEnter": {
+                "calls": 61,
+                "charged_cpu_ms": 50.63132683657114,
+                "elapsed_ms": 90.500212157394
+              },
+              "idle": {
+                "calls": 244,
+                "charged_cpu_ms": 5.493748757716256,
+                "elapsed_ms": 11.815052320409823
+              },
+              "VbxeOwnerFence": {
+                "calls": 244,
+                "charged_cpu_ms": 8.431247612348265,
+                "elapsed_ms": 15.532670124150842
+              },
+              "submit": {
+                "calls": 61,
+                "charged_cpu_ms": 16.83937641232684,
+                "elapsed_ms": 25.545230405749255
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 61,
+                "charged_cpu_ms": 16.930723914860746,
+                "elapsed_ms": 25.63657790828316
+              },
+              "fence_owner": {
+                "calls": 122,
+                "charged_cpu_ms": 4.019149143123775,
+                "elapsed_ms": 4.84339119145055
+              },
+              "DisplayLeave": {
+                "calls": 61,
+                "charged_cpu_ms": 15.252636460904537,
+                "elapsed_ms": 36.56444580400604
+              },
+              "GemDrawingBorrow": {
+                "calls": 61,
+                "charged_cpu_ms": 261.66062147314767,
+                "elapsed_ms": 385.80328710040754
+              },
+              "paint": {
+                "calls": 61,
+                "charged_cpu_ms": 274.1578197268315,
+                "elapsed_ms": 400.89310509614745
+              },
+              "v_bar": {
+                "calls": 25,
+                "charged_cpu_ms": 92.30355000641407,
+                "elapsed_ms": 171.45327110049777
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 7.343042294739483,
+                "elapsed_ms": 8.862328882022164
+              },
+              "vdi_v_gtext": {
+                "calls": 36,
+                "charged_cpu_ms": 129.75778814991705,
+                "elapsed_ms": 158.34990886395002
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 248.12399295722034,
+                "elapsed_ms": 334.93957390901056
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 262.9620414475196,
+                "elapsed_ms": 352.85080330824564
+              },
+              "glyph_record": {
+                "calls": 21,
+                "charged_cpu_ms": 1.6015416300736278,
+                "elapsed_ms": 1.9057513684504335
+              },
+              "blit_glyph": {
+                "calls": 21,
+                "charged_cpu_ms": 2.280868195985503,
+                "elapsed_ms": 2.8016053477760123
+              },
+              "TextStep": {
+                "calls": 8,
+                "charged_cpu_ms": 157.52989586666646,
+                "elapsed_ms": 3902.0087287613533
+              },
+              "Open": {
+                "calls": 1,
+                "charged_cpu_ms": 5.274120040204179,
+                "elapsed_ms": 96.94697756770358
+              },
+              "Read": {
+                "calls": 5,
+                "charged_cpu_ms": 18.62255578470747,
+                "elapsed_ms": 3477.5149109291365
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 371.36241698725223,
+                "hold_ms": 138.62321833603758
+              },
+              {
+                "acquire_ms": 22.737422449776496,
+                "hold_ms": 132.7912864632305
+              },
+              {
+                "acquire_ms": 27.67251356468122,
+                "hold_ms": 128.6142527478259
+              },
+              {
+                "acquire_ms": 10.210056965317552,
+                "hold_ms": 186.0824749534452
+              },
+              {
+                "acquire_ms": 51.07615252213556,
+                "hold_ms": 105.33882452116569
+              }
+            ],
+            "first_text_return_ms": 1649.0960403395081
+          },
+          {
+            "operation": "page",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.06526835443394857,
+                0.1362459277762663,
+                0.12616668945655285,
+                0.1064311179214496,
+                0.3961915985671975,
+                0.15485375236650648,
+                0.3674340514731899,
+                0.15534714165488406,
+                0.38660574953586163,
+                0.1368098012486978,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.21807806546289077,
+                0.15654537278380104,
+                0.24676512837284442,
+                0.12616668945655285,
+                0.3364210104894563,
+                0.07584098204203958,
+                0.24732900184527593,
+                0.12496845832763587,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.0660436804585419,
+                0.01614087814835229,
+                0.41649104357473227,
+                0.1057262760809102,
+                0.2456373814279814,
+                0.18537340406186256,
+                0.27777816935657806,
+                0.1057262760809102,
+                0.3364210104894563,
+                0.12496845832763587,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.3370553681459417,
+                0.1057262760809102,
+                0.13737367472112932,
+                0.09444880663227978,
+                0.3860418760634301,
+                0.10579676026496415,
+                0.24613077071635894,
+                0.12503894251168982,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.21518821391667925,
+                0.09451929081633373,
+                0.32457966756839435,
+                0.076545823882579,
+                0.2760865489392835,
+                0.076545823882579
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 25,
+              "borrows": 61,
+              "submissions": 61,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                28,
+                7,
+                28,
+                7,
+                28,
+                5,
+                1,
+                1,
+                1,
+                1,
+                12,
+                1,
+                9,
+                1,
+                20,
+                1,
+                29,
+                5,
+                1,
+                1,
+                1,
+                1,
+                29,
+                6,
+                25,
+                8,
+                17,
+                1,
+                23,
+                1,
+                1,
+                1,
+                1,
+                1,
+                23,
+                1,
+                1,
+                1,
+                28,
+                8,
+                28,
+                2,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                17,
+                1,
+                15,
+                1
+              ],
+              "fences": 244,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 1281.2648809733585,
+            "charged_cpu_ms": 565.263702477801,
+            "off_cpu_ms": 594.9369800910373,
+            "interrupt_ms": 121.06419840452001,
+            "blocked_off_cpu_ms": 425.01716289881716,
+            "runnable_off_cpu_ms": 169.91981719222025,
+            "exclusive_cpu_ms": {
+              "viewer_other": 55.00740788774404,
+              "geometry": 12.792526984869864,
+              "arithmetic": 5.660514337187887,
+              "update": 35.8893482891374,
+              "vdi": 91.79761453327494,
+              "borrow": 110.26538704979974,
+              "upload": 25.537759082239543,
+              "fence": 12.067526667691139,
+              "format": 16.736821924528353,
+              "renderer": 144.68880527898364,
+              "builder": 41.856750763696105,
+              "event": 12.96323967864851
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 1,
+                "charged_cpu_ms": 1.1861078492597048,
+                "elapsed_ms": 1.4063709244282676
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.34079102990080057,
+                "elapsed_ms": 0.427416092103093
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.1998226617929203,
+                "elapsed_ms": 0.2435933400904171
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.313966159133552,
+                "elapsed_ms": 1.529506793970501
+              },
+              "_Mul16": {
+                "calls": 251,
+                "charged_cpu_ms": 3.8059344863606057,
+                "elapsed_ms": 4.500344667660023
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 3.0043178611151444,
+                "elapsed_ms": 22.52843684405656
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.8893482891374,
+                "elapsed_ms": 499.3559155261151
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 8.602101274495016,
+                "elapsed_ms": 36.500375680701005
+              },
+              "DisplayEnter": {
+                "calls": 61,
+                "charged_cpu_ms": 51.99970678579434,
+                "elapsed_ms": 101.8987734342291
+              },
+              "idle": {
+                "calls": 244,
+                "charged_cpu_ms": 7.068224461113171,
+                "elapsed_ms": 8.580956019278833
+              },
+              "VbxeOwnerFence": {
+                "calls": 244,
+                "charged_cpu_ms": 10.101229385138268,
+                "elapsed_ms": 12.460687446343915
+              },
+              "submit": {
+                "calls": 61,
+                "charged_cpu_ms": 33.36925677247282,
+                "elapsed_ms": 40.51684642483073
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 61,
+                "charged_cpu_ms": 33.466172525546995,
+                "elapsed_ms": 40.65718043528213
+              },
+              "fence_owner": {
+                "calls": 122,
+                "charged_cpu_ms": 4.13911322438358,
+                "elapsed_ms": 5.242613609932067
+              },
+              "DisplayLeave": {
+                "calls": 61,
+                "charged_cpu_ms": 13.026182055008677,
+                "elapsed_ms": 18.49660054780308
+              },
+              "GemDrawingBorrow": {
+                "calls": 61,
+                "charged_cpu_ms": 337.1099933885835,
+                "elapsed_ms": 455.60469086341715
+              },
+              "paint": {
+                "calls": 61,
+                "charged_cpu_ms": 349.62685672961845,
+                "elapsed_ms": 470.8960936255514
+              },
+              "v_bar": {
+                "calls": 25,
+                "charged_cpu_ms": 89.22134712191931,
+                "elapsed_ms": 132.56538465333765
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 16.736821924528353,
+                "elapsed_ms": 20.167005225697405
+              },
+              "vdi_v_gtext": {
+                "calls": 36,
+                "charged_cpu_ms": 189.23932058885308,
+                "elapsed_ms": 229.41939358227407
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 324.85596556988577,
+                "elapsed_ms": 416.62940402803014
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 339.6862607999391,
+                "elapsed_ms": 434.4459731680808
+              },
+              "glyph_record": {
+                "calls": 383,
+                "charged_cpu_ms": 29.703515328195508,
+                "elapsed_ms": 36.188342197894215
+              },
+              "blit_glyph": {
+                "calls": 383,
+                "charged_cpu_ms": 41.856750763696134,
+                "elapsed_ms": 50.50600595732324
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.963239678648508,
+                "elapsed_ms": 15.68146223668871
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 329.7415767875846,
+                "hold_ms": 159.182256593443
+              },
+              {
+                "acquire_ms": 10.708521114947017,
+                "hold_ms": 161.68980192534596
+              },
+              {
+                "acquire_ms": 31.10911092659918,
+                "hold_ms": 181.2558589977995
+              },
+              {
+                "acquire_ms": 51.82039502156111,
+                "hold_ms": 145.24217660799093
+              },
+              {
+                "acquire_ms": 11.086809730764514,
+                "hold_ms": 124.46745674738045
+              }
+            ],
+            "first_text_return_ms": 449.13085952643087
+          },
+          {
+            "operation": "page",
+            "index": 1,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.06519787024989462,
+                0.06519787024989462,
+                0.18530291987780861,
+                0.24450963448311833,
+                0.10579676026496415,
+                0.1363164119603202,
+                0.09515364847281918,
+                0.41754830633554135,
+                0.1362459277762663,
+                0.3990109659293551,
+                0.1057262760809102,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.3860418760634301,
+                0.10636063373739567,
+                0.2456373814279814,
+                0.16676557947162235,
+                0.09451929081633373,
+                0.10636063373739567,
+                0.41649104357473227,
+                0.1064311179214496,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.3251435410408258,
+                0.10699499139388113,
+                0.4158566859182468,
+                0.1368098012486978,
+                0.30709958992301717,
+                0.07710969735501051,
+                0.1260962052724989,
+                0.10629014955334172,
+                0.01621136233240623,
+                0.01621136233240623,
+                0.01614087814835229,
+                0.04602617218722291,
+                0.4158566859182468,
+                0.07591146622609353,
+                0.248456748790139,
+                0.1362459277762663,
+                0.36799792494562145,
+                0.1559814993113695,
+                0.3849141291185671,
+                0.1057262760809102,
+                0.04602617218722291,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.21575208738911075,
+                0.1064311179214496,
+                0.3978832189844921,
+                0.07647533969852505,
+                0.24732900184527593,
+                0.12553233180006737
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 25,
+              "borrows": 61,
+              "submissions": 61,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                14,
+                1,
+                1,
+                1,
+                28,
+                6,
+                28,
+                7,
+                1,
+                1,
+                1,
+                1,
+                28,
+                6,
+                27,
+                8,
+                1,
+                1,
+                26,
+                2,
+                1,
+                1,
+                1,
+                1,
+                18,
+                1,
+                28,
+                6,
+                23,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                28,
+                4,
+                28,
+                6,
+                29,
+                6,
+                29,
+                5,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                29,
+                4,
+                14,
+                1
+              ],
+              "fences": 244,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 1301.9787729831303,
+            "charged_cpu_ms": 575.4410547817175,
+            "off_cpu_ms": 603.4651434564598,
+            "interrupt_ms": 123.07257474495297,
+            "blocked_off_cpu_ms": 429.4416665844351,
+            "runnable_off_cpu_ms": 174.02347687202467,
+            "exclusive_cpu_ms": {
+              "viewer_other": 53.74764406614797,
+              "geometry": 13.575324332972922,
+              "arithmetic": 5.660443853003828,
+              "update": 35.13749349783402,
+              "vdi": 94.17328395681282,
+              "borrow": 110.49121837550855,
+              "upload": 26.58987649761271,
+              "fence": 12.343965637550673,
+              "format": 17.283356287682608,
+              "renderer": 146.84519840592972,
+              "builder": 45.930313696909494,
+              "event": 13.662936173751973
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 1,
+                "charged_cpu_ms": 1.1916760997999658,
+                "elapsed_ms": 1.4570490527630504
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.33571616864891685,
+                "elapsed_ms": 0.3784295841856046
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.20045701944940575,
+                "elapsed_ms": 0.24352285590636316
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.3064243514397804,
+                "elapsed_ms": 1.4794630232922035
+              },
+              "_Mul16": {
+                "calls": 251,
+                "charged_cpu_ms": 3.8178463134657212,
+                "elapsed_ms": 4.595357347764735
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 5.175865087632986,
+                "elapsed_ms": 14.259796244320738
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.13749349783402,
+                "elapsed_ms": 504.54531357708646
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.207783145539972,
+                "elapsed_ms": 8.721078577178067
+              },
+              "DisplayEnter": {
+                "calls": 61,
+                "charged_cpu_ms": 53.672155505026225,
+                "elapsed_ms": 121.61009841001777
+              },
+              "idle": {
+                "calls": 244,
+                "charged_cpu_ms": 7.465191385704961,
+                "elapsed_ms": 8.811016396030894
+              },
+              "VbxeOwnerFence": {
+                "calls": 244,
+                "charged_cpu_ms": 10.38372999482646,
+                "elapsed_ms": 12.383436780620796
+              },
+              "submit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.82799744565317,
+                "elapsed_ms": 42.1298064927211
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.91920397981897,
+                "elapsed_ms": 42.221013026886894
+              },
+              "fence_owner": {
+                "calls": 122,
+                "charged_cpu_ms": 4.014638155344322,
+                "elapsed_ms": 4.793276936588199
+              },
+              "DisplayLeave": {
+                "calls": 61,
+                "charged_cpu_ms": 12.888878864471602,
+                "elapsed_ms": 15.782395588253952
+              },
+              "GemDrawingBorrow": {
+                "calls": 61,
+                "charged_cpu_ms": 344.886795351991,
+                "elapsed_ms": 479.6144938037354
+              },
+              "paint": {
+                "calls": 61,
+                "charged_cpu_ms": 357.42071586556693,
+                "elapsed_ms": 495.0578604666899
+              },
+              "v_bar": {
+                "calls": 25,
+                "charged_cpu_ms": 91.58172147751766,
+                "elapsed_ms": 181.35030780443176
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 17.283356287682608,
+                "elapsed_ms": 20.91322128227647
+              },
+              "glyph_record": {
+                "calls": 411,
+                "charged_cpu_ms": 32.792766631095645,
+                "elapsed_ms": 45.34247560189969
+              },
+              "blit_glyph": {
+                "calls": 411,
+                "charged_cpu_ms": 45.93031369690955,
+                "elapsed_ms": 61.556093428195645
+              },
+              "vdi_v_gtext": {
+                "calls": 36,
+                "charged_cpu_ms": 195.46173484131896,
+                "elapsed_ms": 242.48335515993566
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 332.62719928275294,
+                "elapsed_ms": 426.12150909457426
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 347.47835783128625,
+                "elapsed_ms": 444.09109939820604
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 13.662936173751973,
+                "elapsed_ms": 31.79442864815564
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 10.935198250864488,
+                "hold_ms": 178.377848794509
+              },
+              {
+                "acquire_ms": 341.6785667464078,
+                "hold_ms": 172.92004697066025
+              },
+              {
+                "acquire_ms": 24.570716077019476,
+                "hold_ms": 163.70656588368135
+              },
+              {
+                "acquire_ms": 30.632637842394544,
+                "hold_ms": 160.44878689670824
+              },
+              {
+                "acquire_ms": 23.75380438383431,
+                "hold_ms": 113.05282507658107
+              }
+            ],
+            "first_text_return_ms": 142.96814537785866
+          },
+          {
+            "operation": "line",
+            "index": 0,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.016704751620783814,
+                0.01614087814835229,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.1057262760809102,
+                0.10586724444901809,
+                0.1057262760809102,
+                0.4153632966298692,
+                0.15492423655056042,
+                0.41931041093688987,
+                0.16669509528756843,
+                0.355592708552128,
+                0.09515364847281918,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.35777771825780014,
+                0.1661312218151369,
+                0.10692450720982719,
+                0.10636063373739567,
+                0.3854780025909986,
+                0.09444880663227978,
+                0.27777816935657806,
+                0.10579676026496415,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.06632561719475767,
+                0.41761879051959533,
+                0.1368098012486978,
+                0.3075929792113948,
+                0.09564703776119676,
+                0.155417625838938,
+                0.07591146622609353,
+                0.2456373814279814,
+                0.15548811002299195,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.41761879051959533,
+                0.13737367472112932,
+                0.3657424310558954,
+                0.15485375236650648,
+                0.36623582034427293,
+                0.15548811002299195,
+                0.3860418760634301,
+                0.07647533969852505,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.01614087814835229,
+                0.21631596086154228,
+                0.1064311179214496,
+                0.07591146622609353,
+                0.12553233180006737,
+                0.2456373814279814,
+                0.10636063373739567
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 25,
+              "borrows": 61,
+              "submissions": 61,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                28,
+                6,
+                28,
+                7,
+                28,
+                6,
+                1,
+                1,
+                1,
+                1,
+                27,
+                8,
+                1,
+                1,
+                26,
+                2,
+                18,
+                1,
+                1,
+                1,
+                1,
+                1,
+                28,
+                6,
+                23,
+                1,
+                1,
+                1,
+                28,
+                4,
+                1,
+                1,
+                1,
+                1,
+                28,
+                6,
+                29,
+                6,
+                29,
+                5,
+                29,
+                4,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                14,
+                1
+              ],
+              "fences": 244,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 1266.6126287922252,
+            "charged_cpu_ms": 565.024549641306,
+            "off_cpu_ms": 580.8905394718479,
+            "interrupt_ms": 120.69753967907141,
+            "blocked_off_cpu_ms": 454.6766256119789,
+            "runnable_off_cpu_ms": 126.21391385986898,
+            "exclusive_cpu_ms": {
+              "viewer_other": 53.56868472283506,
+              "geometry": 12.83982187237006,
+              "arithmetic": 6.394889050845891,
+              "update": 35.76099658997518,
+              "vdi": 93.07506988506843,
+              "borrow": 105.49797780875936,
+              "upload": 26.024593341500104,
+              "fence": 12.095085983656224,
+              "format": 17.081489584552124,
+              "renderer": 146.56643345799654,
+              "builder": 43.16282269421555,
+              "event": 12.956684649531493
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 1,
+                "charged_cpu_ms": 1.1941430462418539,
+                "elapsed_ms": 1.4523970966154904
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.33028888647676347,
+                "elapsed_ms": 0.33028888647676347
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.19467731635698265,
+                "elapsed_ms": 0.19467731635698265
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.3299660689137964,
+                "elapsed_ms": 1.6768187386432358
+              },
+              "_Mul16": {
+                "calls": 251,
+                "charged_cpu_ms": 4.539956779098338,
+                "elapsed_ms": 8.275759502325274
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 3.008335459606219,
+                "elapsed_ms": 23.507391676381737
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 35.76099658997518,
+                "elapsed_ms": 518.2092365294152
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 8.637343366521986,
+                "elapsed_ms": 36.49515985108101
+              },
+              "DisplayEnter": {
+                "calls": 61,
+                "charged_cpu_ms": 49.806661883140045,
+                "elapsed_ms": 84.55487123244416
+              },
+              "idle": {
+                "calls": 244,
+                "charged_cpu_ms": 7.214408658841043,
+                "elapsed_ms": 8.6876690739365
+              },
+              "VbxeOwnerFence": {
+                "calls": 244,
+                "charged_cpu_ms": 10.145000063435766,
+                "elapsed_ms": 12.355454559551383
+              },
+              "submit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.01580819279962,
+                "elapsed_ms": 41.09115155650224
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.107155695333525,
+                "elapsed_ms": 41.18249905903614
+              },
+              "fence_owner": {
+                "calls": 122,
+                "charged_cpu_ms": 4.012523629822704,
+                "elapsed_ms": 4.790034664121718
+              },
+              "DisplayLeave": {
+                "calls": 61,
+                "charged_cpu_ms": 11.73843601234319,
+                "elapsed_ms": 13.95664376870474
+              },
+              "GemDrawingBorrow": {
+                "calls": 61,
+                "charged_cpu_ms": 336.04821963999495,
+                "elapsed_ms": 431.19573598880146
+              },
+              "paint": {
+                "calls": 61,
+                "charged_cpu_ms": 348.6459988243238,
+                "elapsed_ms": 446.98426370106813
+              },
+              "v_bar": {
+                "calls": 25,
+                "charged_cpu_ms": 88.0646311774101,
+                "elapsed_ms": 133.55759051226497
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 17.081489584552124,
+                "elapsed_ms": 20.76386529626617
+              },
+              "vdi_v_gtext": {
+                "calls": 36,
+                "charged_cpu_ms": 192.43056250607927,
+                "elapsed_ms": 233.81549214171832
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 325.15016655412694,
+                "elapsed_ms": 394.5058283371794
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 341.05865834765336,
+                "elapsed_ms": 413.92661750629776
+              },
+              "glyph_record": {
+                "calls": 398,
+                "charged_cpu_ms": 30.505202437625023,
+                "elapsed_ms": 37.405322119769544
+              },
+              "blit_glyph": {
+                "calls": 398,
+                "charged_cpu_ms": 43.16282269421564,
+                "elapsed_ms": 52.58634664967528
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.956684649531493,
+                "elapsed_ms": 15.635083643581217
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 345.9749301854157,
+                "hold_ms": 154.5230405749254
+              },
+              {
+                "acquire_ms": 51.18709462783646,
+                "hold_ms": 145.29940976544273
+              },
+              {
+                "acquire_ms": 24.09811962293781,
+                "hold_ms": 152.2325160457245
+              },
+              {
+                "acquire_ms": 11.427036887192882,
+                "hold_ms": 184.99715948738262
+              },
+              {
+                "acquire_ms": 20.391849772829474,
+                "hold_ms": 100.93941320507092
+              }
+            ],
+            "first_text_return_ms": 456.1658154526706
+          },
+          {
+            "operation": "line",
+            "index": 1,
+            "work": {
+              "dma_launch_to_idle_return_ms": [
+                0.01614087814835229,
+                0.04602617218722291,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.12553233180006737,
+                0.2462012549004129,
+                0.15548811002299195,
+                0.1057262760809102,
+                0.07598195041014746,
+                0.24739948602932987,
+                0.12553233180006737,
+                0.3849141291185671,
+                0.16676557947162235,
+                0.01614087814835229,
+                0.04602617218722291,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.2462012549004129,
+                0.1362459277762663,
+                0.355592708552128,
+                0.21631596086154228,
+                0.10579676026496415,
+                0.09451929081633373,
+                0.36623582034427293,
+                0.07647533969852505,
+                0.01614087814835229,
+                0.0646339967774631,
+                0.01614087814835229,
+                0.016704751620783814,
+                0.30822733686788023,
+                0.09508316428876525,
+                0.3877334964807247,
+                0.10636063373739567,
+                0.2151177297326253,
+                0.10636063373739567,
+                0.1362459277762663,
+                0.15534714165488406,
+                0.04602617218722291,
+                0.01614087814835229,
+                0.01621136233240623,
+                0.016070393964298352,
+                0.3860418760634301,
+                0.1362459277762663,
+                0.36623582034427293,
+                0.15428987889407497,
+                0.3675045356572439,
+                0.15548811002299195,
+                0.355592708552128,
+                0.09444880663227978,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.01614087814835229,
+                0.04659004565965443,
+                0.2760865489392835,
+                0.10579676026496415,
+                0.3849141291185671,
+                0.10586724444901809,
+                0.24613077071635894,
+                0.07598195041014746
+              ],
+              "rows": 17,
+              "text_calls": 18,
+              "bar_calls": 25,
+              "borrows": 61,
+              "submissions": 61,
+              "records_per_list": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                14,
+                1,
+                1,
+                1,
+                28,
+                6,
+                28,
+                7,
+                1,
+                1,
+                1,
+                1,
+                28,
+                6,
+                27,
+                8,
+                1,
+                1,
+                26,
+                2,
+                1,
+                1,
+                1,
+                1,
+                18,
+                1,
+                28,
+                6,
+                23,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                28,
+                4,
+                28,
+                6,
+                29,
+                6,
+                29,
+                5,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                29,
+                4,
+                14,
+                1
+              ],
+              "fences": 244,
+              "staging_windows": 0,
+              "staging_read_bytes": 0,
+              "staging_write_bytes": 0
+            },
+            "elapsed_ms": 1281.2643170998858,
+            "charged_cpu_ms": 569.7896329042726,
+            "off_cpu_ms": 590.0123206353727,
+            "interrupt_ms": 121.46236356024072,
+            "blocked_off_cpu_ms": 461.92261118527614,
+            "runnable_off_cpu_ms": 128.0897094500965,
+            "exclusive_cpu_ms": {
+              "viewer_other": 53.69203204492945,
+              "geometry": 12.804015906870656,
+              "arithmetic": 5.675034079102995,
+              "update": 33.570136697026555,
+              "vdi": 94.74596795225114,
+              "borrow": 108.93147386657904,
+              "upload": 26.58825536137947,
+              "fence": 12.086064008097315,
+              "format": 17.40113535923674,
+              "renderer": 146.4490068073625,
+              "builder": 44.89039004537769,
+              "event": 12.95612077605906
+            },
+            "routines": {
+              "wind_get": {
+                "calls": 1,
+                "charged_cpu_ms": 1.187940438045107,
+                "elapsed_ms": 1.402494294305301
+              },
+              "_Div16": {
+                "calls": 7,
+                "charged_cpu_ms": 0.3357866528329708,
+                "elapsed_ms": 0.37857055255371247
+              },
+              "_Mul32": {
+                "calls": 2,
+                "charged_cpu_ms": 0.20595478580561305,
+                "elapsed_ms": 0.29391904750493036
+              },
+              "_UDivMod16": {
+                "calls": 30,
+                "charged_cpu_ms": 1.3236929765329957,
+                "elapsed_ms": 1.6279027149098013
+              },
+              "_Mul16": {
+                "calls": 251,
+                "charged_cpu_ms": 3.8095996639314103,
+                "elapsed_ms": 4.544044861773466
+              },
+              "wind_set": {
+                "calls": 1,
+                "charged_cpu_ms": 3.687732509702148,
+                "elapsed_ms": 13.36344887570678
+              },
+              "wind_update": {
+                "calls": 10,
+                "charged_cpu_ms": 33.570136697026555,
+                "elapsed_ms": 550.5566136014739
+              },
+              "vs_clip": {
+                "calls": 5,
+                "charged_cpu_ms": 7.928342959123402,
+                "elapsed_ms": 15.558608303882691
+              },
+              "DisplayEnter": {
+                "calls": 61,
+                "charged_cpu_ms": 51.37669708294156,
+                "elapsed_ms": 91.7971211439865
+              },
+              "idle": {
+                "calls": 244,
+                "charged_cpu_ms": 7.230760989541556,
+                "elapsed_ms": 8.613308259759593
+              },
+              "VbxeOwnerFence": {
+                "calls": 244,
+                "charged_cpu_ms": 10.125194007716608,
+                "elapsed_ms": 11.983368551930631
+              },
+              "submit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.57460680397926,
+                "elapsed_ms": 41.869508401009895
+              },
+              "VbxeOwnerSubmit": {
+                "calls": 61,
+                "charged_cpu_ms": 34.66560188559289,
+                "elapsed_ms": 41.96050348262354
+              },
+              "fence_owner": {
+                "calls": 122,
+                "charged_cpu_ms": 4.008717483883792,
+                "elapsed_ms": 4.7438675235663865
+              },
+              "DisplayLeave": {
+                "calls": 61,
+                "charged_cpu_ms": 12.814659018662802,
+                "elapsed_ms": 15.489392835141723
+              },
+              "GemDrawingBorrow": {
+                "calls": 61,
+                "charged_cpu_ms": 341.6604523111059,
+                "elapsed_ms": 446.2011139320448
+              },
+              "paint": {
+                "calls": 61,
+                "charged_cpu_ms": 354.15800298571,
+                "elapsed_ms": 461.3434426449049
+              },
+              "v_bar": {
+                "calls": 25,
+                "charged_cpu_ms": 92.47891465634027,
+                "elapsed_ms": 152.02085204101053
+              },
+              "TextRow": {
+                "calls": 17,
+                "charged_cpu_ms": 17.40113535923674,
+                "elapsed_ms": 21.1945941450198
+              },
+              "glyph_record": {
+                "calls": 411,
+                "charged_cpu_ms": 31.766657879638387,
+                "elapsed_ms": 38.78942004203677
+              },
+              "blit_glyph": {
+                "calls": 411,
+                "charged_cpu_ms": 44.89039004537772,
+                "elapsed_ms": 54.64984162203843
+              },
+              "vdi_v_gtext": {
+                "calls": 36,
+                "charged_cpu_ms": 194.05465907505015,
+                "elapsed_ms": 235.7148999336039
+              },
+              "text": {
+                "calls": 18,
+                "charged_cpu_ms": 328.1252334788597,
+                "elapsed_ms": 398.09995785045794
+              },
+              "v_gtext": {
+                "calls": 18,
+                "charged_cpu_ms": 343.9275056070168,
+                "elapsed_ms": 417.4050119893597
+              },
+              "evnt_multi": {
+                "calls": 4,
+                "charged_cpu_ms": 12.956120776059059,
+                "elapsed_ms": 15.64713643905444
+              }
+            },
+            "updates": [
+              {
+                "acquire_ms": 31.282783956108087,
+                "hold_ms": 160.87021183316676
+              },
+              {
+                "acquire_ms": 341.73770297682904,
+                "hold_ms": 155.677641993913
+              },
+              {
+                "acquire_ms": 51.82504697770867,
+                "hold_ms": 143.9771264725908
+              },
+              {
+                "acquire_ms": 23.995706103507434,
+                "hold_ms": 172.42912462872457
+              },
+              {
+                "acquire_ms": 19.940891963252366,
+                "hold_ms": 116.2117147533265
+              }
+            ],
+            "first_text_return_ms": 141.5590255702523
+          }
+        ],
+        "trace_bytes": 44401661,
+        "trace_sha256": "7ec72b67151c5403ca4397f418b4e1c01f4e3bc33e03f10cd2d3852cdac64a08"
+      }
+    }
+  }
+}
