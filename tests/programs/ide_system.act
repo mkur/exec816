@@ -8,6 +8,7 @@ USE HEAPCORE
 
 CARD checks
 BYTE expectedStatus
+BYTE noSio
 BYTE ARRAY name(64),buffer(17)
 
 PROC Require(BYTE okay)
@@ -21,6 +22,18 @@ PROC Require(BYTE okay)
 RETURN
 
 PROC Main()
+
+  IF noSio<>0 THEN
+  BEGIN
+    LET port=EXEC.CreateMsgPort()
+    LET request=EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE)
+    Require(port<>NULL AND request<>NULL)
+    Require(EXEC.OpenDevice(BYTE POINTER(c"sio.device"),49,
+        request,0)<>0)
+    EXEC.DeleteIORequest(request)
+    EXEC.DeleteMsgPort(port)
+  END
+  FI
 
   Require(BOOTCONFIG.Status()=expectedStatus)
   Require(BOOTCONFIG.SystemDrive()=0 AND FSSYSTEM.SystemUnit()=2)

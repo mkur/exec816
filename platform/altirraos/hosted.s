@@ -494,7 +494,11 @@ stack_ok:
     .endif
     sep #$20
     .if GENERAL_TASKS
-        lda f:SD_OWNED
+        .if SIO_ENABLED
+            lda f:SD_OWNED
+        .else
+            lda #0
+        .endif
         .if CONSOLE_NATIVE
             ora f:CS_BASE+CON_SERVICE_STATE
             ora f:CI_ACTIVE
@@ -673,6 +677,7 @@ finish_prepared:
         lda f:DISPLAY_KIND
         cmp #2
         beq reset_required
+        .if SIO_ENABLED
         lda f:SD_OWNED
         beq sio_exit_checked
         lda f:SD_STARTED
@@ -683,7 +688,10 @@ finish_prepared:
         sta f:SD_OFFLINE
 sio_exit_checked:
         lda f:SD_OFFLINE
-        beq :+
+        beq finish_devices_ready
+        .else
+            brl finish_devices_ready
+        .endif
         ; No qualified bus recovery: park with interrupts off, without handing
         ; owned POKEY/callback state or live kernel storage back to ROM.
 reset_required:
@@ -706,7 +714,7 @@ reset_park:
         sec
         xce
         jmp done
-:
+finish_devices_ready:
         jsl signal_release_shutdown
     .endif
     rep #$30

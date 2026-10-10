@@ -185,7 +185,15 @@ def registration_include(output,memory,test_device=False):
         'BeginIO':('PROC','EXEC.IORequest POINTER request','request'),
         'AbortIO':('PROC','EXEC.IORequest POINTER request','request')}
     residents=[r for r in ABI['resident_dispatch']['residents'].values()
-               if (test_device or not r['test_only']) and r.get('storage','io_storage') in memory]
+               if (test_device or not r['test_only']) and r.get('storage','io_storage') in memory
+               and (memory.get('sio_enabled',True) or r['module']!='SIODRIVER')]
+    admission=HEADER+'MODULE IOADMISSION\n'+''.join('USE '+r['module']+'\n' for r in residents if r['module'] in ('SIODRIVER','IDEPLUSDRIVER'))
+    admission+='PUBLIC PROC Start(BYTE POINTER name)\n  BYTE okay\n\n'
+    for resident in residents:
+        module=resident['module']
+        if module in ('SIODRIVER','IDEPLUSDRIVER'):
+            admission+=f'  IF {module}.Matches(name)<>0 THEN\n    okay={module}.Start()\n    RETURN\n  FI\n\n'
+    write(Path(output)/'ioadmission.act',admission+'RETURN\n\nENDMODULE\n',False)
     text=HEADER+'MODULE IORESIDENT\nUSE EXEC\nUSE HEAPCORE\n'+''.join('USE '+r['module']+'\n' for r in residents)
     if test_device:
         text+=''.join(f'PUBLIC EXTERNAL PROC Test{name}(EXEC.IORequest POINTER request)\n'

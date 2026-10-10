@@ -28,7 +28,11 @@ timer_acquire:
     rep #$20
     lda f:$0210
     sta f:TM_VECTOR
-    lda #sio_emu_alarm
+    .if SIO_ENABLED
+        lda #sio_emu_alarm
+    .else
+        lda #timer_emulation_entry
+    .endif
     sta f:$0210
     sep #$20
     lda #TIMER_DIVISOR
@@ -168,17 +172,21 @@ timer_tick:
     inc a
     sta f:TM_TICKS
     sep #$20
+    .if SIO_ENABLED
     lda f:TM_ALARM
     beq :+
     jsr sio_alarm
 :
+    .endif
     lda f:TM_BLITTER
     beq :+
     jsr blitter_watchdog
 :
     lda f:TM_POINTER
     beq timer_poll_done
-    jsr sio_pointer_service
+    .if SIO_ENABLED
+        jsr sio_pointer_service
+    .endif
     lda f:TM_FINE
     beq timer_capture
     lda f:TM_SAMPLE_PHASE
@@ -189,13 +197,19 @@ timer_tick:
     sta f:TM_SAMPLE_PHASE
 timer_capture:
     jsr timer_sample
-    jsr sio_pointer_service
+    .if SIO_ENABLED
+        jsr sio_pointer_service
+    .endif
 timer_poll_done:
     rts
 timer_skip_capture:
     sta f:TM_SAMPLE_PHASE
     ; Serial service remains bounded even on a fine tick with no capture.
-    jmp sio_pointer_service
+    .if SIO_ENABLED
+        jmp sio_pointer_service
+    .else
+        rts
+    .endif
 
 timer_sample:
 .if INPUT_NATIVE
@@ -227,6 +241,43 @@ pointer_sample_return:
     sta f:TM_TRIGGER
 .endif
     rts
+
+.if !SIO_ENABLED
+; The ROM timer callback preserves the entire native context on its OS stack.
+; It cannot schedule; native NMI recognizes the live bank-zero OS activation.
+.segment "IRQ"
+.a8
+.i8
+timer_emulation_entry:
+    clc
+    xce
+    php
+    jsl timer_emulation
+    plp
+    xce
+    pla
+    rti
+.segment "SIGNAL_CODE"
+.a16
+.i16
+timer_emulation:
+    rep #$30
+    pha
+    phx
+    phy
+    phd
+    phb
+    sep #$20
+    jsr timer_tick
+    rep #$30
+    plb
+    pld
+    ply
+    plx
+    pla
+    sep #$30
+    rtl
+.endif
 
 .if SIGNAL_IRQ_PROBE = 11
 .a16

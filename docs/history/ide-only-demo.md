@@ -20,3 +20,19 @@ Read-only media stays byte-exact. Evidence:
 Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**, including
 guards, alignment and unused capacity. No pools or public layouts change.
 This is development coverage, not hosted-system or physical qualification.
+
+## ID1 — Driver selection
+
+The generated admission/transport modules and native assembly can exclude SIO.
+Keyboard, pointer, timer and interrupt services remain shared; timer callbacks
+have a standalone bridge when the serial engine is absent. Reserved metadata
+and Task pools are unchanged. OpenDevice on sio.device returns the ordinary
+open failure, with no SIO worker, Action driver or native serial engine linked.
+
+All 425 host checks and the optimized ordinary SIO public example pass. The
+IDE-only SYS fixture passes both boot-setting cases, guarded cleanup and exact
+read-only media comparison. Its IDE worker ordinary call bound is 458 bytes;
+including the 256-byte interrupt reserve and 16-byte dispatch margin gives
+730 of the existing 1,024 bytes (294 bytes headroom). Evidence:
+`build/development/ide-only/id1/results.json` and `id1-sio/results.json`.
+Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.

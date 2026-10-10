@@ -1,7 +1,6 @@
 MODULE IOCORE
 USE EXEC
-USE SIODRIVER
-USE IDEPLUSDRIVER
+USE IOADMISSION
 USE IORESIDENT
 USE IORESIDENTMETA
 USE HEAPCORE
@@ -12,15 +11,9 @@ PUBLIC EXTERNAL LONGCARD FUNC OpenGateway(BYTE POINTER name LONGCARD unit
 ; Serialize resident-device admission and preserve its public error result.
 PUBLIC INT FUNC OpenDevice(BYTE POINTER name LONGCARD unit EXEC.IORequest
     POINTER request LONGCARD flags)
-  BYTE okay
   LONGCARD route
   INT error
-  ; Only the matching resident is initialized. Open has no SIO wire traffic.
-  IF SIODRIVER.Matches(name)<>0 THEN
-    okay=SIODRIVER.Start()
-  ELSEIF IDEPLUSDRIVER.Matches(name)<>0 THEN
-    okay=IDEPLUSDRIVER.Start()
-  FI
+  IOADMISSION.Start(name)
 
   EXEC.Forbid()
   route=OpenGateway(name,unit,request,flags)

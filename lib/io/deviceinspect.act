@@ -1,7 +1,9 @@
 ; Internal diagnostic view of the current built-in drivers, not a public ABI.
 MODULE DEVICEINSPECT
 USE EXEC
+; IF SIO
 USE SIODRIVER
+; ENDIF SIO
 USE IDEPLUSDRIVER
 USE CONSOLETYPES
 ; Generated console address goes here.
@@ -32,6 +34,7 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
     count==+1
   FI
 
+; IF SIO
   rows(count).kind=SIO
   rows(count).state=SIODRIVER.State()
   IF SIODRIVER.Unavailable()<>0 THEN
@@ -39,6 +42,7 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
   FI
 
   count==+1
+; ENDIF SIO
 
   ; The resident VBI clock remains available without open requests or a worker.
   rows(count).kind=TIMER

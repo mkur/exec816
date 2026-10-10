@@ -176,7 +176,9 @@ general_finalizer_start:
     .include "memory.s"
     .include "io.s"
     .include "dos.s"
-    .include "sio.s"
+    .if SIO_ENABLED
+        .include "sio.s"
+    .endif
 .include "ideplus.s"
     .include "platform-timer.s"
     .include "calypsi-call.s"

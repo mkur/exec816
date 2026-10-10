@@ -65,7 +65,11 @@ native_cop:
     beq exec_entry
     rep #$20
     .if GENERAL_TASKS
-        lda f:SD_OWNED
+        .if SIO_ENABLED
+            lda f:SD_OWNED
+        .else
+            lda #0
+        .endif
         .if CONSOLE_NATIVE
             ora f:CS_BASE+CON_SERVICE_STATE
         .endif

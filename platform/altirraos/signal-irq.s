@@ -11,7 +11,9 @@ SIO_SAVED_MASK = T_SERIAL_STATE
 SIO_SAVED_CRITIC = T_SERIAL_STATE+1
 SIO_SAVED_SEROR = T_SERIAL_STATE+2
 SIO_OS_BUSY = OS_BUSY
+.if SIO_ENABLED
 SIO_EMULATION_ENTRY = signal_emulation_entry
+.endif
 .include "serial-irq.inc"
 .include "sio-state.inc"
 .include "platform-timer.inc"
@@ -104,10 +106,12 @@ signal_route_owned:
     sec
     rtl
 signal_route_other:
+    .if SIO_ENABLED
     lda f:SD_OWNED
     beq :+
     jml sio_route
 :
+    .endif
     lda f:TM_USERS
     beq :+
     jsr timer_poll
@@ -143,7 +147,9 @@ signal_pending_done:
     .elseif SIGNAL_IRQ_PROBE = 10
         jml console_probe_route
     .endif
-    .if SIGNAL_IRQ_PROBE >= 2 .and SIGNAL_IRQ_PROBE <= 3
+    .if !SIO_ENABLED
+        jmp signal_unowned
+    .elseif SIGNAL_IRQ_PROBE >= 2 .and SIGNAL_IRQ_PROBE <= 3
         serial_irq_route signal_probe_burst, signal_unowned, signal_handled
     .elseif SIGNAL_IRQ_PROBE = 8
         serial_irq_route signal_pump, signal_unowned, signal_handled
@@ -161,6 +167,7 @@ signal_handled:
 ; Ownership changes mask IRQs locally and preserve the incoming I bit.
 .a16
 signal_claim:
+    .if SIO_ENABLED
     signal_stack_check 3
     php
     sei
@@ -173,10 +180,15 @@ signal_claim:
 :
     plp
     rtl
+    .else
+        lda #1
+        rtl
+    .endif
 signal_claim_end:
 signal_release:
     signal_stack_check 3
 signal_release_unchecked:
+    .if SIO_ENABLED
     php
     sei
     sep #$20
@@ -192,11 +204,16 @@ signal_release_done:
     rep #$20
     plp
     rtl
+    .else
+        rtl
+    .endif
 signal_release_end:
 .export signal_release_shutdown
 signal_release_shutdown:
     jsl blitter_release_unchecked
-    jsl sio_shutdown_unchecked
+    .if SIO_ENABLED
+        jsl sio_shutdown_unchecked
+    .endif
     .if INPUT_NATIVE
         jsl pointer_release_unchecked
     .endif
@@ -206,7 +223,9 @@ signal_release_shutdown:
     rep #$30
     jmp signal_release_unchecked
 .a8
-serial_ownership_routines signal_claim_inner, signal_release_inner
+    .if SIO_ENABLED
+        serial_ownership_routines signal_claim_inner, signal_release_inner
+    .endif
 
 ; Full native context is already saved by the adapter. Preserve D and stack;
 ; A/X/Y may change. Scratch consists of 12 activation-local bytes below S.
@@ -395,6 +414,7 @@ signal_post_end:
 
 ; Native post callable by the tiny emulation bridge. There is a live OS
 ; activation below this frame, so this path can never schedule.
+    .if SIO_ENABLED
 signal_emulation_post:
     .if SIGNAL_IRQ_PROBE = 8
         jsr signal_pump
@@ -437,6 +457,7 @@ signal_emulation_entry:
     pla
     rti
 
+    .endif
 .segment "SIGNAL_CODE"
 .export signal_irq_window, signal_irq_window_end
 .a16

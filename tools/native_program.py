@@ -84,6 +84,7 @@ def assemble(toolchain, output, entry, probe_nmi=0, initial_i=0, cooperative=Fal
              "-D", f"PROBE_NMI={probe_nmi}", "-D", f"INITIAL_I={initial_i}",
              "-D", f"PREEMPTIVE={int(preemptive)}",
              "-D", f"GENERAL_TASKS={int(tasks)}", "-D", f"TASK_INIT={task_init}", "-D", f"HEAP_SHUTDOWN={heap_shutdown}", "-D", f"HEAP_ALLOCATE={heap_allocate}", "-D", f"HEAP_DEALLOCATE={heap_deallocate}", "-D", f"HEAP_PROBE={int(heap_probe)}",
+             "-D", f"SIO_ENABLED={int((memory or {}).get('sio_enabled',True))}",
              "-D", f"PORTS_CREATE={ports_create}", "-D", f"PORTS_DELETE={ports_delete}",
              "-D", f"IO_CREATE={io_create}", "-D", f"IO_DELETE={io_delete}",
              "-D", f"IO_OPEN={io_open}", "-D", f"IO_WAIT={io_wait}", "-D", f"IO_DO={io_do}",
@@ -256,7 +257,7 @@ def place_after_foreign(memory, foreign):
 
 def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, cooperative=False,
           probe_flags=0x100, forward_signature=0, preemptive=False, banked=False,
-          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0):
+          max_banks=None, memory_profile=None, kernel_config=None, kernel_init_name='EXECMEMORY.Init', tasks=False, image_data=(), policy_probe=0, irq_probe=0, manual_wake=False, pump_count=256, kernel_bank=None, task_capacity=4, worker_stack=None, idle_stack=None, heap_probe=False, io_test_device=False, dos_test=False, dos_mounts=(), console_test=False, console=None, stack_checks=None, sio_request_probe=False, sio_lifetime_probe=False, foreign_image=None, system_mount=None, console_deferred=False, input_diagnostics=False, pump_divisor=0,sio_enabled=True):
     require(type(input_diagnostics) is bool, 'Input diagnostics option must be boolean')
     require(not input_diagnostics or tasks, 'Input diagnostics require Tasks')
     configuration=json.loads(Path(kernel_config or ROOT/'config/kernel.json').read_text())
@@ -276,6 +277,12 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
     require(not dos_mounts or (tasks and not dos_test),'Mounts require ordinary Task packaging')
     from generate_dos_mounts import validate_mounts, select_system, encode as encode_mounts
     dos_mounts=validate_mounts(dos_mounts)
+    require(type(sio_enabled) is bool,'SIO selection must be boolean')
+    require(sio_enabled or tasks,'Storage selection requires Tasks')
+    require(sio_enabled or (not sio_request_probe and not sio_lifetime_probe and irq_probe==0),
+            'Serial probes require SIO')
+    require(sio_enabled or all(m['format']==3 or m['device']=='ideplus.device' for m in dos_mounts),
+            'SIO mounts are unavailable in an IDE-only build')
     system_selection=select_system(dos_mounts,system_mount)
     dos_system=tasks and not dos_test
     require(type(dos_test) is bool and (not dos_test or tasks),'DOS fixtures require tasks')
@@ -318,6 +325,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         memory = generate_memory.layout(kernel_config or generate_memory.CONFIG,
                                         memory_profile or generate_memory.PROFILE, max_banks,kernel_bank,upper_table)
         memory['boot_config'].update(system_selection)
+        memory['sio_enabled']=sio_enabled
         if upper_table:
             from task_capacity import configure
             configure(memory,task_capacity,worker_stack,idle_stack)
@@ -1037,7 +1045,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'task-kernel/processstate.act','task-kernel/exec.act','task-kernel/taskpolicy.act','task-kernel/taskmemory.act','task-kernel/task-wakes.inc',
                 'task-kernel/task-console.inc','task-kernel/task-signals.inc','task-kernel/exectasks.act','task-kernel/taskstacks.act','task-kernel/taskinspect.act','task-kernel/deviceinspect.act')})
     if tasks:
-        provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act','idemeta.act')})
+        provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act','ioadmission.act','idemeta.act','task-kernel/blocktransport.act')})
+        provenance['task_inputs']['tools/storage_profile.py']=sha256(ROOT/'tools/storage_profile.py')
+        provenance['sio_enabled']=sio_enabled
     if sio_request_probe:
         provenance['sio_request_probe']=True
         provenance['task_inputs']['tests/programs/sio_request_probe.inc']=sha256(ROOT/'tests/programs/sio_request_probe.inc')

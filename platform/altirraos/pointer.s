@@ -707,7 +707,9 @@ pointer_loss_other_route:
     lda #INPUT_LOSS_HARDWARE
     jmp pointer_loss
 pointer_notify:
-    jsr sio_pointer_service
+    .if SIO_ENABLED
+        jsr sio_pointer_service
+    .endif
     ldx #PI_BINDING-T_BASE
     jmp signal_post_binding
 

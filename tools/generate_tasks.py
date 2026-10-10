@@ -265,7 +265,11 @@ def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_p
     devices = read_source(ROOT/'lib/io/deviceinspect.act').replace(
         '; Generated console address goes here.',
         f'CONST CONSOLE_BASE=${memory["console_storage"]["BASE"] if console else 0:x}')
+    from storage_profile import select_sio
+    sio_enabled=memory.get('sio_enabled',True)
+    devices=select_sio(devices,sio_enabled)
     (directory/'deviceinspect.act').write_text(devices)
+    (directory/'blocktransport.act').write_text(select_sio(read_source(ROOT/'lib/io/blocktransport.act'),sio_enabled))
     (directory/'exec.act').write_text('MODULE EXEC\nUSE EXECLISTS\nUSE TASKPOLICY\n'+public_api()+declarations()+generate_heap.public_api()+generate_heap.declarations()+generate_ports.public_api()+generate_ports.declarations()+generate_io.public_api()+generate_io.declarations()+'''
 PUBLIC EXTERNAL CARD FUNC Version()
 PUBLIC EXTERNAL PROC Yield()
@@ -323,8 +327,17 @@ ENDMODULE
         'sio-storage-action.inc', 'dos-action.inc', 'dos-storage-action.inc')}
     policy_includes.update({name: directory/name for name in (
         'task-input.inc', 'task-console.inc', 'task-signals.inc', 'task-wakes.inc')})
+    task_io=read_source(ROOT/'lib/io/task-io.inc')
+    if not sio_enabled:
+        route='  IF IOName(args.name,BYTE POINTER(ADDRESS(IS_BASE+224)))<>0 THEN\n    MaskResult(saved,LONGCARD(IO_ROUTE_SIO))\n    RETURN(saved)\n  FI\n'
+        require(task_io.count(route)==1,'Stale SIO admission route')
+        task_io=task_io.replace(route,'')
+    (directory/'task-io.inc').write_text(task_io)
+    policy_includes['task-io.inc']=directory/'task-io.inc'
     policy=read_source(ROOT/'lib/exec/taskpolicy.act', policy_includes)
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
+    if not sio_enabled:
+        init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\nRETURN\n'
     init=init.replace('RETURN\n', '  bytes=BYTE POINTER(ADDRESS(IDEMETA.BASE))\n  FOR i=0 TO 1023 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IDEMETA.NAME))\n  name(0)=$6469 name(1)=$7065 name(2)=$756c name(3)=$2e73 name(4)=$6564 name(5)=$6976 name(6)=$6563 name(7)=0\nRETURN\n')
     policy=policy.replace('MODULE TASKPOLICY\n','MODULE TASKPOLICY\nUSE IDEMETA\n',1)
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')

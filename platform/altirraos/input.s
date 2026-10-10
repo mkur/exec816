@@ -201,12 +201,16 @@ input_claim:
     lda f:$0010
     and #$3f
     sta f:$d20e             ; retire pre-claim keyboard/BREAK requests
+    .if SIO_ENABLED
     lda f:SD_OWNED
     beq :+
     lda f:SD_OLD_SKCTL      ; restore the common baseline, not a serial phase
     bra input_claim_saved
 :
     lda f:$0232
+    .else
+    lda f:$0232
+    .endif
 input_claim_saved:
     sta f:CI_SKCTL
     rep #$20
@@ -275,12 +279,14 @@ input_release_unchecked:
     lda f:CI_VBREAK
     sta f:$0236
     sep #$20
+    .if SIO_ENABLED
     lda f:SD_OWNED
     beq :+
     lda f:CI_SKCTL
     sta f:SD_OLD_SKCTL      ; last remaining owner restores the shared baseline
     bra input_release_mask
 :
+    .endif
     lda f:CI_SKCTL
     sta f:$0232
     sta f:$d20f
@@ -507,7 +513,9 @@ input_capture_ignore:
     pla
     rts
 input_capture_ring:
+    .if SIO_ENABLED
     lda f:SD_PHASE
+    .endif
 input_capture_phase:
     lda f:CI_HEAD
     sec
@@ -536,7 +544,9 @@ input_capture_phase:
     inc a
     sta f:CI_HEAD          ; publish the complete event before notification
 input_notify:
-    jsr sio_console_service
+    .if SIO_ENABLED
+        jsr sio_console_service
+    .endif
     ldx #CI_BINDING-T_BASE
     jmp signal_post_binding
 input_overflow:
@@ -602,6 +612,7 @@ input_errors:
 input_errors_reset:
     ; Reset only without a live serial frame. Idle/terminal owners also need
     ; keyboard recovery even if no later transaction calls SKREST.
+    .if SIO_ENABLED
     lda f:SD_OWNED
     beq input_errors_clear
     lda f:SD_PHASE
@@ -610,6 +621,7 @@ input_errors_reset:
     beq input_errors_clear
     cmp #15
     bne input_errors_done
+    .endif
 input_errors_clear:
     sta f:$d20a
 input_errors_rearmed:

@@ -43,7 +43,7 @@ def record(output):
         result=(r['fixed_frame'],[r['name']])
         for target,call in zip(calls,r['calls']):
             name=routines.get(target,{}).get('name','')
-            impossible=(r['name'].startswith('M_IOCORE_OPENDEVICE_') and name.startswith(('M_SIODRIVER_START_','M_IDEPLUSDRIVER_START_')) or r['name'].startswith('M_IORESIDENT_') and name.startswith(('M_SIODRIVER_','M_IDEPLUSDRIVER_','M_CONSOLEDRIVER_')))
+            impossible=(r['name'].startswith(('M_IOCORE_OPENDEVICE_','M_IOADMISSION_START_')) and name.startswith(('M_SIODRIVER_START_','M_IDEPLUSDRIVER_START_')) or r['name'].startswith('M_IORESIDENT_') and name.startswith(('M_SIODRIVER_','M_IDEPLUSDRIVER_','M_CONSOLEDRIVER_')))
             if impossible:
                 pruned.append([r['name'],name]);continue
             child=bound(target,path+[address])
