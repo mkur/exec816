@@ -31,6 +31,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     distribution_root=Path(distribution_root) if distribution_root is not None else None
     manifest=json.loads((out/'demo-manifest.json').read_text())
     require(all(sha256(out/name)==digest for name,digest in manifest['artifacts'].items()),'Changed demo bundle')
+    ide_only=manifest.get('ide_only',False)
+    if ide_only:
+        system_drive=0
     story=manifest['files']['STORY.TXT']
     story_wc=f'{story["lines"]} {story["words"]} {story["bytes"]}'.encode('ascii')
     story_pair_wc=f'{story["lines"]*2} {story["words"]*2} {story["bytes"]*2}'.encode('ascii')
@@ -89,7 +92,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             saved['exec_start_frame']=bridge.eval_expr('@frame')
             bridge.bp_clear_all()
     console=console_constants()
-    media=manifest.get('media',next(name for name in manifest['artifacts'] if name.endswith('.atr')))
+    media=manifest['media']
     media_path=Path(media_path) if media_path is not None else (distribution_root or out)/media
     expected_media_sha256=manifest['artifacts'][media]
     if measurement_media_sha256 is not None:
@@ -99,7 +102,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     require(sha256(media_path)==expected_media_sha256,'Changed companion media')
     if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
     ideplus=manifest.get('ideplus')
-    binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap or ideplus else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
+    binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap or ideplus or ide_only else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
     if distribution_root is not None:
         rom=distribution_root/'altirraos-816.rom'
     if rom_override is not None:
@@ -109,7 +112,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
     def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
-    if ideplus:
+    if ide_only:
+        from test_ideplus import ide_emulator
+        fixture=out/'ide-walkthrough.img'
+        shutil.copyfile(media_path,fixture)
+        environment=ide_emulator(out,fixture,writable=True)
+    elif ideplus:
         from test_ideplus import ide_emulator
         fixture=out/'ideplus/ideplus.img'
         expected_ide_sha256=json.loads((out/ideplus['fixture']).read_text())['image_sha256']
@@ -123,7 +131,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         if stock_smoke:b.config('diskemu','810')
         if desktop:b._cmd_ok('MOUSE ST')
         saved['pointer']=(320,120)
-        mounted=ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path
+        mounted=None if ide_only else (ROOT/'tests/fixtures/mydos/mydos450-128.atr' if disk_failure=='wrong' else None if disk_failure=='missing' else media_path)
         mounted_hash=sha256(mounted) if mounted else None
         if mounted:b.mount(system_drive-1,str(mounted))
         work_media=[]
@@ -691,7 +699,9 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
             if boot_smoke:
                 startup=cells('system-volume')
-                require(f'SYS: -> D{system_drive}: ready, read-only'.encode() in startup[:shell_cells],
+                mapping=('SYS: -> IDE Plus unit 1: ready, read-only' if ide_only else
+                         f'SYS: -> D{system_drive}: ready, read-only')
+                require(mapping.encode() in startup[:shell_cells],
                         'Wrong system-volume startup mapping')
                 for mount in manifest['mounts']:
                     if mount['alias'].upper() != p['build']['system_mount'].upper():
@@ -987,6 +997,18 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                     'OF816 shell reused retired manifest data')
         require(sha256(media_path)==expected_media_sha256,'Read-only demo media changed')
         if ideplus:require(sha256(fixture)==expected_ide_sha256,'Read-only IDE fixture changed')
+        if ide_only:
+            from filesystem_audit import Audit
+            from ideplus_media import filesystem_atr
+            raw=fixture.read_bytes();initial=media_path.read_bytes()
+            mapping=manifest['ide_mapping']['partitions']
+            high=mapping[1]['start']*512;end=high+mapping[1]['physical']*512
+            require(raw[:high]==initial[:high] and raw[end:]==initial[end:],
+                    'IDE walkthrough changed SYS, APT, leader or unallocated extents')
+            audit=Audit(filesystem_atr(raw,mapping[1],(out/'work.atr').read_bytes()))
+            saved['ide_work_audit']=audit.sdfs()
+            saved['ide_work_files']={name:dict(bytes=len(payload),sha256=__import__('hashlib').sha256(payload).hexdigest())
+                                     for name,payload in audit.files.items()}
         if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
         saved['work_media']=[]
         if work_media:
@@ -1029,6 +1051,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_boot=disk_boot,integration=saved.get('integration'),browser=saved.get('browser'),browser_stacks=saved.get('browser_stacks'),gem_stacks=saved.get('gem_stacks'),
         editing_history=saved.get('editing_history',False),write_commands=saved.get('write_commands',False),
         filesystem_writes=saved.get('filesystem_writes',False),work_media=saved.get('work_media'),
+        ide_work_audit=saved.get('ide_work_audit'),ide_work_files=saved.get('ide_work_files'),
+        ide_media=str(fixture) if ide_only else None,
         measurements=saved.get('measurements'),desktop_interaction=saved.get('desktop_interaction'),
         mouse_profile_check=saved.get('mouse_profile_check'),counter_coexistence=saved.get('counter_coexistence'),input_coexistence=saved.get('input_coexistence'),
         copy_break_frames=saved.get('copy_break_frames'),

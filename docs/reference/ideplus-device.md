@@ -94,3 +94,9 @@ reads and only invalidates volumes belonging to that backend.
 Other revisions, slaves, LBA48, hot removal and partition editing
 are unsupported. Development emulator checks do not establish physical hardware
 compatibility or qualify the hosted platform.
+
+The separate `build_demo.py --ide-only --text-shell-only` profile admits fixed
+IDE SYS/WORK mounts and excludes Exec SIO registration, driver code and serial
+IRQ engine. Opening sio.device fails normally; shared keyboard/timer services
+remain available. Ordinary and mixed IDE builds retain SIO. The profile does
+not reserve additional bank-zero or Task capacity.

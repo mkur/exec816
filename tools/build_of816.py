@@ -79,27 +79,7 @@ def boot_layout(program):
     return layout
 
 
-def build(output, exec_build, upstream):
-    output = output.resolve()
-    upstream = upstream.resolve()
-    output.mkdir(parents=True, exist_ok=True)
-    rom = ROOT/'build/firmware/altirraos-816.rom'
-    notice = rom.with_name('ALTIRRAOS-LICENSE.txt')
-    require(rom.is_file() and notice.is_file(),
-            'Build the pinned ROM and license notice with tools/build_rom.py first')
-    require(rom.stat().st_size == ROM_PIN['bytes'] and sha256(rom) == ROM_PIN['sha256'],
-            'AltirraOS ROM differs from toolchain/altirra.json')
-    if not upstream.exists():
-        command(['git', 'clone', '--depth', '1', PIN['repository'], upstream])
-        if command(['git', '-C', upstream, 'rev-parse', 'HEAD']).strip() != PIN['revision']:
-            command(['git', '-C', upstream, 'fetch', '--depth', '1', 'origin', PIN['revision']])
-            command(['git', '-C', upstream, 'checkout', '--detach', PIN['revision']])
-    revision = command(['git', '-C', upstream, 'rev-parse', 'HEAD']).strip()
-    require(revision == PIN['revision'], 'OF816 checkout differs from toolchain/of816.json')
-    require(not command(['git', '-C', upstream, 'status', '--porcelain']).strip(), 'OF816 checkout must be clean')
-    program = read_build(exec_build.resolve())
-    compiler_pin = json.loads((ROOT/'toolchain/actionc.json').read_text())
-    require(program['build']['revision'] == compiler_pin['revision'], 'Exec compiler pin changed')
+def copy_media(program, output):
     media = None
     additional_media = []
     manifest_path = program['output']/'demo-manifest.json'
@@ -122,6 +102,43 @@ def build(output, exec_build, upstream):
             if (program['output']/name).resolve()!=(output/name).resolve():
                 shutil.copyfile(program['output']/name,output/name)
             additional_media.append(item)
+    return media,additional_media
+
+
+def finalize_media(output, exec_build):
+    """Refresh companion hashes without recomposing the executable containing itself."""
+    program=read_build(exec_build.resolve())
+    record=json.loads((output/'of816.json').read_text())
+    require(sha256(output/'Exec-of816.xex')==record['xex_sha256'] and
+            sha256(exec_build/'program.xex')==record['exec_xex_sha256'],
+            'Executable changed during media finalization')
+    record['media'],record['additional_media']=copy_media(program,output)
+    (output/'of816.json').write_text(json.dumps(record,indent=2)+'\n')
+    return record
+
+
+def build(output, exec_build, upstream):
+    output = output.resolve()
+    upstream = upstream.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    rom = ROOT/'build/firmware/altirraos-816.rom'
+    notice = rom.with_name('ALTIRRAOS-LICENSE.txt')
+    require(rom.is_file() and notice.is_file(),
+            'Build the pinned ROM and license notice with tools/build_rom.py first')
+    require(rom.stat().st_size == ROM_PIN['bytes'] and sha256(rom) == ROM_PIN['sha256'],
+            'AltirraOS ROM differs from toolchain/altirra.json')
+    if not upstream.exists():
+        command(['git', 'clone', '--depth', '1', PIN['repository'], upstream])
+        if command(['git', '-C', upstream, 'rev-parse', 'HEAD']).strip() != PIN['revision']:
+            command(['git', '-C', upstream, 'fetch', '--depth', '1', 'origin', PIN['revision']])
+            command(['git', '-C', upstream, 'checkout', '--detach', PIN['revision']])
+    revision = command(['git', '-C', upstream, 'rev-parse', 'HEAD']).strip()
+    require(revision == PIN['revision'], 'OF816 checkout differs from toolchain/of816.json')
+    require(not command(['git', '-C', upstream, 'status', '--porcelain']).strip(), 'OF816 checkout must be clean')
+    program = read_build(exec_build.resolve())
+    compiler_pin = json.loads((ROOT/'toolchain/actionc.json').read_text())
+    require(program['build']['revision'] == compiler_pin['revision'], 'Exec compiler pin changed')
+    media,additional_media=copy_media(program,output)
     layout = boot_layout(program)
     for name, content in boot_files(program['build']['memory']['boot_config']).items():
         (output/name).write_text(content)

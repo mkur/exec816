@@ -69,3 +69,21 @@ controller service normally persists until kernel EXIT. Evidence:
 loader text, so this check compares accepted output rather than an empty-screen
 pixel baseline. All 426 host checks pass.
 Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.
+
+## ID4 — Distribution
+
+`--ide-only --text-shell-only` packages the final OF816 executable inside SYS
+and as the external XEX. Companion hashes are finalized after packing without
+changing executable bytes, avoiding a disk digest cycle. The ZIP includes the
+raw image and both Atarimax carts, no ATRs, BIOS or development manifests.
+Refresh paths also repack SYS around the refreshed executable.
+
+All 426 host checks pass. An extracted new-cart package boots with no floppy
+attachments, keeps the five-second OF816 countdown, mounts IDE SYS/WORK, loads
+C:HELLO, lists devices/mounts/assigns, and passes pixel, stack, ownership and
+OS restoration checks on EXIT. SYS's EXEC816.XEX equals the external file.
+Evidence: `build/development/ide-only/cart-smoke/results.json`; package and
+capacity reports in `build/development/ide-only/demo/`. The combined executable
+is 329,163 bytes, with 703,028 bytes cartridge headroom. Its measured IDE worker
+call bound remains 730 bytes in the existing 1,024-byte stack.
+Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.

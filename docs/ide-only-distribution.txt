@@ -1,0 +1,43 @@
+Exec816 IDE-only development demo
+================================
+
+Requirements: Atari XL/XE with 65C816, 4 MiB linear RAM, IDE Plus 2.0
+revision E at PBI ID 0, ATA master, SDX disabled and board writes enabled.
+Use the bundled AltirraOS816 ROM. Install the IDE Plus BIOS separately;
+its vendor firmware is not included here. Physical hardware is unqualified.
+
+Back up ideplus.img before experimenting. Attach it as a writable raw IDE
+master disk; do not attach system/work ATRs. The 4 MiB image contains two
+720 KiB SpartaDOS partitions: unit 1 SYSTEM/SYS is read-only, unit 2 WORK
+is writable. SYS protection is recorded in both the APT and Exec mount.
+All D1-D8 floppy slots can stay empty. This kernel excludes sio.device.
+
+Boot Exec-of816.xex externally or select a matching old/new Atarimax cart
+from cartridge/. OF816 runs first, then starts the standard shell after
+five seconds. Return cancels the countdown; EXEC816 resumes loading.
+CACHE-BLOCKS! and BOOT-VERBOSE! remain available. SYSTEM-DRIVE@ returns
+zero and SYSTEM-DRIVE! rejects changes: SYS is fixed at IDE unit 1.
+EXEC816.XEX on SYS is byte-identical to the external combined boot XEX.
+The IDE BIOS START-key loader can select that file on partition 1;
+consult the source development record for the checked firmware route.
+Automatic power-on filesystem bootstrap is outside this profile.
+
+Try DEVICES, MOUNT, HELP, C:HELLO and MORE SYS:STORY.TXT.
+C: points to SYS:C; S: points to SYS:S. Optional S:STARTUP/S:USER scripts
+run before the prompt. No prime task starts automatically; RUN PRIMES
+opens its own lower pane. RAM: is volatile and independent of IDE.
+
+COPY SYS:LONG.TXT WORK:COPY.TXT
+CMP SYS:LONG.TXT WORK:COPY.TXT
+ECHO saved >WORK:NOTE.TXT
+ECHO again >>WORK:NOTE.TXT
+MAKEDIR WORK:SUB
+RENAME WORK:NOTE.TXT WORK:SUB/NOTE.TXT
+DIR WORK:SUB
+
+BREAK cancels a command. EXIT returns to the OS. An uncertain accepted
+IDE write makes the shared controller offline: both SYS and WORK require
+a cold reset. Console and RAM remain usable. Writes are experimental.
+
+SHA256SUMS covers every boot/media/notice file in this ZIP. Build logs,
+intermediate ATRs and development manifests stay in the source build tree.

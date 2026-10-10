@@ -74,7 +74,8 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError('Expected a shell-only text build')
         if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
             raise ValueError('OF816 does not wrap this text shell')
-        guide = (ROOT/'docs/text-shell-distribution.txt').read_text()
+        guide = (ROOT/('docs/ide-only-distribution.txt' if demo.get('ide_only') else
+                       'docs/text-shell-distribution.txt')).read_text()
     if bitmap_shell is not None:
         manifest = bitmap_shell/'demo-manifest.json'
         if hashlib.sha256(manifest.read_bytes()).hexdigest() != media['manifest_sha256']:

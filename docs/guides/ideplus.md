@@ -93,3 +93,25 @@ A timeout or uncertain accepted write leaves IDE offline until cold reset.
 Closing/reopening or remounting cannot reset it. SIO and RAM remain independent.
 There is no automatic retry, software reset, hot-removal handling or partition
 editor. See the device contract for cancellation, ownership and further limits.
+
+## IDE-only SYS and WORK demo
+
+Build the separate standard-console profile with:
+
+```sh
+python3 tools/build_demo.py --ide-only --text-shell-only --release-compiler \
+  --output build/development/ide-only/demo
+```
+
+`--ide-only` excludes Exec's SIO driver and cannot be combined with `--ideplus`.
+The ZIP includes `ideplus.img`, the external combined OF816/kernel XEX, both
+Atarimax cartridge variants, pinned OS ROM, guide, notices and checksums.
+Attach the raw image as a writable ATA master; leave every floppy slot empty.
+SYSTEM/SYS is protected APT unit 1; WORK is writable unit 2. Each has 2,880
+256-byte logical sectors. Copy the image before writes. SYS contains the exact
+external executable as EXEC816.XEX, C commands and S startup scripts.
+
+OF816 retains its five-second autoboot. SYSTEM-DRIVE@ is zero and overrides are
+rejected; cache and verbosity settings still work. DEVICES omits sio.device.
+The [development record](../history/ide-only-demo.md) distinguishes cartridge
+and actual firmware-loader coverage; neither establishes physical qualification.
