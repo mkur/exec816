@@ -167,6 +167,12 @@ The [measurement record](history/text-viewer-performance.md) preserves the
 intermediate latency tradeoffs, exact OF816 package checks and remaining
 scanout/flicker limits.
 
+Next, the [UPDATE admission latency plan](plans/gem4xe/update-admission-latency-plan.md)
+separates queueing, ownership, presenter settlement and caller resumption before
+changing admission or handoff ordering. UA1–UA3 retain lock fairness and bounded
+presenter work, compare against TVP4 and each intermediate candidate, and add
+cancellation offers independent of repaint completion.
+
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The
 [XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw

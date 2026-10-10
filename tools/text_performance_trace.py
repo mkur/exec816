@@ -27,9 +27,10 @@ CATEGORIES={
 }
 
 
-def sites(folder, image):
+def sites(folder, image, extra=None):
     """Resolve full emitted sections; static symbol names are not unique."""
     targets={name:category for category,names in CATEGORIES.items() for name in names.split()}
+    targets.update(extra or {})
     result={}
     public_names={name for path in folder.glob('*.lst') for name in
             re.findall(r'\.public (\w+)',path.read_text())}
@@ -94,11 +95,64 @@ def prepare(out):
     return record
 
 
+def prepare_locks(out):
+    """Sparse companion trace for BEGIN/END distributions on the same workload."""
+    p=read_build(out);directory=out/'bitmap-console'
+    app=json.loads((directory/'apps/text/app.json').read_text())
+    local={pc:s for pc,s in sites(directory/'apps/text',app['image']).items() if s['callee']=='wind_update'}
+    require(local,'Missing loaded viewer UPDATE sites')
+    pcs={(bank<<16)|(address&65535) for pc,s in local.items() for address in (pc,s['end'])
+         for bank in p['build']['memory']['usable_banks']}
+    return dict(local=local,reference=app['abi']['link_bank']<<16,pcs=sorted(pcs))
+
+
+def analyze_locks(out,definition,record):
+    from measure_text_viewer import distribution
+    trace=out/'emulator.log'
+    require(trace.stat().st_size<256*1024*1024,'Sparse UPDATE trace exceeds cap')
+    delta=record['app']['base']-definition['reference']
+    local={int(pc)+delta:{**s,'end':s['end']+delta} for pc,s in definition['local'].items()}
+    active={};spans=[];owners=set()
+    for tick,e in read_events(trace,kinds={'cpu'}):
+        pc,sp,dp,a=(int(e[i],16) for i in (4,8,9,5))
+        if dp in active and pc==active[dp]['return_pc']:
+            require(sp==active[dp]['stack'],'Unbalanced sparse UPDATE return')
+            spans.append(dict(active.pop(dp),end=tick))
+        if pc in local:
+            require(dp not in active,'Overlapping sparse UPDATE call')
+            owners.add(dp)
+            active[dp]=dict(start=tick,return_pc=local[pc]['end'],stack=sp,code=a)
+    require(not active and len(owners)==1,'Incomplete/ambiguous relocated UPDATE trace')
+    rows=[]
+    for sample in record['samples']:
+        calls=[s for s in spans if sample['start']<=s['start']<s['end']<=sample['complete']]
+        begins=[(s['end']-s['start'])*1000/BASE_HZ for s in calls if s['code']==1]
+        ends=[(s['end']-s['start'])*1000/BASE_HZ for s in calls if s['code']==0]
+        require(begins and len(begins)==len(ends),'Unmatched sampled UPDATE pairs')
+        rows.append(dict(operation=sample['operation'],index=sample['index'],begin_ms=begins,
+                         end_ms=ends,total_acquisition_ms=sum(begins)))
+    result=dict(scope='Passive loaded-viewer call/return markers; companion to unobserved cohorts',
+                rows=rows,viewer_dp=owners.pop(),trace_bytes=trace.stat().st_size,trace_sha256=sha256(trace))
+    for operation in ('page','line'):
+        selected=[r for r in rows if r['operation']==operation]
+        result[operation]=dict(begin=distribution([v for r in selected for v in r['begin_ms']]),
+                               end=distribution([v for r in selected for v in r['end_ms']]),
+                               total_acquisition=distribution([r['total_acquisition_ms'] for r in selected]))
+    (out/'update-call-times.json').write_text(json.dumps(result,indent=2)+'\n')
+    return result
+
+
 def timeline(events,points):
     owner=None;interrupts=[];segments=[];previous=events[0][0];last=None
+    boundaries=set(points.values());boundary=True
     for tick,e in events:
         if e[0]!='cpu':continue
-        if tick>previous:segments.append((previous,tick,owner,bool(interrupts)))
+        if tick>previous:
+            rate=(owner,bool(interrupts))
+            if segments and not boundary and segments[-1][2:]==rate:
+                segments[-1]=(segments[-1][0],tick,*rate)
+            else:
+                segments.append((previous,tick,*rate))
         previous=tick;pc,dp,sp=(int(e[i],16) for i in (4,9,8))
         if pc in (points['native_irq'],points['native_nmi']):
             frame=sp-9
@@ -108,6 +162,9 @@ def timeline(events,points):
         elif pc==points['selected']:
             require(not interrupts,'Performance selection inside interrupt');owner=dp
         last=e[4:]
+        # Keep scheduler state publications even when the CPU owner does not
+        # change: an off-CPU Task can become ready inside this owner's turn.
+        boundary=pc in boundaries
     require(not interrupts,'Incomplete performance interrupt')
     return segments
 
@@ -135,7 +192,10 @@ def analyze(out,definition,record):
             active.append(dict(start=tick,return_pc=site['end'],stack=sp,argument=a,
                                category=site['category'],callee=site['callee'],depth=len(active)))
         last=e
-    require(not active,'Incomplete viewer call-site stack: '+str(active[-2:]))
+    terminal_event=(record.get('trace_end') and len(active)==1
+                    and active[0]['category']=='event'
+                    and active[0]['start']>=record['samples'][-1]['complete'])
+    require(not active or terminal_event,'Incomplete viewer call-site stack: '+str(active[-2:]))
     changes=states[worker];ticks=[t for t,_ in changes]
     # Launch through the return of the next synchronous idle poll bounds DMA
     # occupancy. It includes CPU/scheduling delay and is not a BUSY-edge clock.

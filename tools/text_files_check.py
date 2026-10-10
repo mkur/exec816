@@ -104,6 +104,7 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     menus.select('Files');key('BACKSPACE');wait_listing(s,browser)
     child,a=launch('LONG.TXT')
     s.rendezvous('dw($%x)=3'%(a+T['load']+LOAD_PHASE))
+    load_start=s.b.eval_expr('@clk')
     def fast_click(x,y):
         move(x,y);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(3)
         s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(3)
@@ -116,7 +117,25 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     fast_click(24,8);s.rendezvous('db($%x)=3'%menus.at('DESKMENU','menu'))
     require(s.number(a+T['load']+LOAD_PHASE,2)==3 and not s.number(a+T['loads'],4),
         'Read completed before physical Stop submission')
-    fast_click(32,56);s.rendezvous('dw($%x)=0'%(browser+B['child']));s.frames(80)
+    if s.saved.get('fixed_cancellation'):
+        from text_cancellation import at_offset
+        from sio_transaction_trace import BASE_HZ
+        move(32,56)
+        (s.p['output']/'fixed-stop-offer.json').write_text(json.dumps(dict(start=load_start,
+            setup_ms=(s.b.eval_expr('@clk')-load_start)*1000/BASE_HZ,offset_ms=6500),indent=2)+'\n')
+        offered=at_offset(s,load_start,6500)
+        require(s.number(a+T['load']+LOAD_PHASE,2)==3,'Read finished before fixed Stop')
+        s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(3)
+        s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(3)
+    else:
+        fast_click(32,56)
+    s.rendezvous('dw($%x)=0'%(browser+B['child']))
+    if s.saved.get('fixed_cancellation'):
+        retired=s.b.eval_expr('@clk')
+        s.saved['fixed_stop']=dict(kind='files_stop',boundary='Observed child load.phase=READ',
+            start=load_start,offset_ms=6500,offered=offered,mouse_delay_ticks=2000,idle=retired,
+            retire_ms=(retired-offered)*1000/BASE_HZ)
+    s.frames(80)
     require(num('result',4)==0,'Read-time Stop did not close viewer cleanly')
     menus.select('Shell');require(s.ledger()==file_owners and memory()==file_baseline,'Read-time Stop leaked')
     child,a=launch('LONG.TXT');content(a);menus.select('LONG.TXT')

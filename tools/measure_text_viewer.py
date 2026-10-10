@@ -26,8 +26,10 @@ def distribution(values):
 
 
 class ViewerMeasurement:
-    def __init__(self, count, panel=True):
+    def __init__(self, count, panel=True, cancel=False, trace_cohorts=False):
         self.count, self.panel = count, panel
+        self.cancel = cancel
+        self.trace_cohorts = trace_cohorts
         self.record = dict(samples=[], panel=[], milestones='IRQ-sampled software state; scanout excluded')
 
     def exercise(self, s):
@@ -139,6 +141,14 @@ class ViewerMeasurement:
                 self.record['panel'].append(row);checkpoint()
                 print('panel',i,round(row['paint_ms'],3),'ms',flush=True)
             move(630,230);s.frames(60);s.cells('performance-panel-overlap')
+        if self.trace_cohorts:
+            context=next(c for i in range(4) if (c:=s.number(shared['contexts']+i*4,4))
+                         and s.number(c+fields['owner'],3)==app['task'])
+            inbox=s.number(context+fields['receiving'],3)
+            mask=1<<s.number(inbox+12,1)
+            s.rendezvous('(db($%x)=4)&(dw($%x)=%d)&(dw($%x)=%d)'%
+                         (app['task']+12,app['task']+20,mask&65535,app['task']+22,mask>>16))
+            self.record['trace_end']=clock();s.b.profile_stop();checkpoint()
         # New model damage must repair bands already drawn for the old page.
         menus.select('STORY.TXT');settled();move(630,230);s.frames(20)
         key('SPACE');s.frames(3)
@@ -166,6 +176,13 @@ class ViewerMeasurement:
                 retire_ms=((clock()-started)&0xffffffff)*1000/BASE_HZ)
             move(630,230);s.frames(60);s.cells('performance-shell-load')
         require(s.number(counter+14,4)>start_count,'Counter stopped during repaint workload')
+        if self.cancel:
+            from text_cancellation import escape, shell_break
+            menus.select('STORY.TXT');settled()
+            self.record['cancellation']=[escape(s,shared,a,click,key,settled)]
+            checkpoint();menus.select('Shell')
+            self.record['cancellation'].append(shell_break(s))
+            checkpoint();s.cells('fixed-cancellation')
         menus.select('STORY.TXT');menus.close()
         s.rendezvous('db($%x)=3'%(s.at('job')+12));s.frames(80);menus.select('Shell')
         require(s.ledger()==owners and memory()==baseline,'Viewer measurement retained resources')
@@ -175,18 +192,28 @@ class ViewerMeasurement:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 
-def measure(out,count,observe=False,panel=True):
+def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock_times=False):
     out=out.resolve()
     (out/'measurement-observer.py').write_text(Path(__file__).read_text())
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
     definition=None
+    require(not (lock_times and observe),'Choose detailed or sparse tracing')
     if observe:
         from text_performance_trace import prepare
         definition=prepare(out)
+        if admission:
+            from update_admission_trace import prepare as admission_prepare
+            admission_definition=admission_prepare(out)
+            definition['pcs']=sorted(set(definition['pcs']) | set(admission_definition['pcs']))
         os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in definition['pcs'])
         os.environ.pop('EXEC816_MASK_TRACE',None)
-    integration=ViewerMeasurement(count,panel)
+    if lock_times:
+        from text_performance_trace import prepare_locks
+        lock_definition=prepare_locks(out)
+        os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in lock_definition['pcs'])
+        os.environ.pop('EXEC816_MASK_TRACE',None)
+    integration=ViewerMeasurement(count,panel,cancel,admission)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=integration,profile_commands=False)
     result.update(scope='Physical text page/line and Panel feedback during viewer repaint',
                   qualification=False,zip_sha256=sha256(out/'exec816-demo.zip'),text_performance=integration.record)
@@ -201,6 +228,12 @@ def measure(out,count,observe=False,panel=True):
     if definition:
         from text_performance_trace import analyze
         result['breakdown']=analyze(out,definition,integration.record)
+        if admission:
+            from update_admission_trace import analyze as admission_analyze
+            result['admission']=admission_analyze(out,admission_definition,definition,integration.record)
+    if lock_times:
+        from text_performance_trace import analyze_locks
+        result['update_times']=analyze_locks(out,lock_definition,integration.record)
     (out/'text-performance-results.json').write_text(json.dumps(result,indent=2)+'\n')
     return result
 
@@ -211,5 +244,8 @@ if __name__=='__main__':
     parser.add_argument('--count',type=int,default=10)
     parser.add_argument('--observe',action='store_true')
     parser.add_argument('--no-panel',action='store_true')
+    parser.add_argument('--admission',action='store_true',help='Trace UPDATE request admission (implies --observe)')
+    parser.add_argument('--cancel',action='store_true',help='Append fixed-offset Escape and BREAK cases')
+    parser.add_argument('--lock-times',action='store_true',help='Sparse BEGIN/END timing companion')
     args=parser.parse_args();require(args.count>0 and args.count%2==0,'Use a positive even count')
-    measure(args.bundle,args.count,args.observe,not args.no_panel)
+    measure(args.bundle,args.count,args.observe or args.admission,not args.no_panel,args.admission,args.cancel,args.lock_times)

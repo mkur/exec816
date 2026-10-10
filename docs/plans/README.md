@@ -7,9 +7,11 @@ painting and subsequent `.TXT` launch from Files. The
 document loading, the standalone viewer, Files launching and the OF816 package.
 TV1–TV4 are implemented and pass the recorded development checks.
 
-The proposed [text viewer performance plan](gem4xe/text-viewer-performance-plan.md)
-adds a bounded timing breakdown, measured drawing/application improvements and
-an exact-package comparison with input responsiveness gates.
+The [text viewer performance plan](gem4xe/text-viewer-performance-plan.md) is
+implemented through TVP4; the twofold page target remains open. The proposed
+[UPDATE admission latency plan](gem4xe/update-admission-latency-plan.md) next
+attributes logical-lock and physical-display waits, applies one measured fix,
+and checks matched input/cancellation response and the OF816 package.
 
 The [standard GEM file selector design](gem4xe/file-selector-design.md)
 covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and the

@@ -1,5 +1,8 @@
 # Historical records
 
+- [AES UPDATE admission latency](update-admission-latency.md): logical lock,
+  presenter painting and physical display handoff attribution.
+
 - [GEM text viewer performance](text-viewer-performance.md): VDI text costs and measured tuning.
 
 - [GEM text viewer](text-viewer.md): bounded document loading and application evidence.

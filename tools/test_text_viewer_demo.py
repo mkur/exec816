@@ -14,9 +14,11 @@ from sio_transaction_trace import BASE_HZ
 
 class TextViewerDemo(FileSelectorDemo):
     capacity_app='TEXT'
-    def __init__(self,focused=False,files=False,files_only=False):
+    def __init__(self,focused=False,files=False,files_only=False,fixed_cancellation=False):
         self.extensions_only=focused or files_only;self.files=files;self.files_only=files_only
+        self.fixed_cancellation=fixed_cancellation
     def selectors(self,s,shared,menus,counter,launch,accept,phase,move,edge,click,key,collected,owners,memory,baseline):
+        s.saved['fixed_cancellation']=self.fixed_cancellation
         if self.files_only:
             from text_files_check import exercise
             exercise(s,shared,menus,move,click,key,collected,memory)
@@ -153,9 +155,10 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--viewer-only',action='store_true');p.add_argument('--files',action='store_true')
     p.add_argument('--files-only',action='store_true')
+    p.add_argument('--fixed-cancellation',action='store_true')
     args=p.parse_args();out=args.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(out/'extracted')
-    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=TextViewerDemo(args.viewer_only,args.files,args.files_only),profile_commands=False)
+    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=TextViewerDemo(args.viewer_only,args.files,args.files_only,args.fixed_cancellation),profile_commands=False)
     result.update(qualification=False,scope=('Exact ZIP Files-to-viewer' if args.files_only else 'Exact ZIP viewer'+(' (focused)' if args.viewer_only else ', standard dialogs/selectors and existing desktop smoke')),zip_sha256=sha256(out/'exec816-demo.zip'))
     result['ordinary_stack_headroom_pass']=all(result['gem_stacks'][str(slot)]['remaining_above_floor']>=128 for slot in range(1,6))
     if not result['ordinary_stack_headroom_pass']:result['status']='fail'

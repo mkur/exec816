@@ -14,6 +14,11 @@ matched desktop/package checks. Page median/p95 improve by 26%/27%; the twofold
 target remains open. See the [execution record](../../history/text-viewer-performance.md)
 for loaded-input results and intermediate tradeoffs.
 
+The proposed [UPDATE admission latency plan](update-admission-latency-plan.md)
+follows TVP4 with ownership/wait attribution, one measured admission or handoff
+fix, and matched input/cancellation checks. It preserves the current AES lock
+contract and presenter budgets.
+
 The [standard file selector design](file-selector-design.md) adds
 caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,
 scrolling and path editing within the standard-dialog host. It returns a
