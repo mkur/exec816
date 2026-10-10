@@ -36,3 +36,21 @@ including the 256-byte interrupt reserve and 16-byte dispatch margin gives
 730 of the existing 1,024 bytes (294 bytes headroom). Evidence:
 `build/development/ide-only/id1/results.json` and `id1-sio/results.json`.
 Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.
+
+## ID3 — Production disk layout
+
+The new host builder creates a 4 MiB APT with fifteen mapping slots, two real
+partition entries, SYSTEM/WORK metadata leaders and boot unit 1. Both partitions
+have 2,880 256-byte logical sectors packed as adjacent halves of 512-byte
+physical sectors. SYSTEM is protected; WORK is writable. Each source filesystem
+is reconstructed byte-for-byte and audited independently after packing. Layout
+follows [APT revision T](https://drac030.krap.pl/APT_spec.pdf); partition IDs
+count actual partitions from one, excluding headers and mapping slots.
+
+All 426 host checks pass. The optimized native case discovers units 1 and 2,
+checks exact geometry/protection, rejects SYSTEM writes and verifies a WORK
+write/read. Whole-image comparison permits only the requested 256 bytes to
+change, preserving metadata, SYSTEM and the neighbouring packed sector. Evidence:
+`build/development/ide-only/id3/results.json`. This media slice was completed
+before ID2 to let shell checks use the production layout.
+Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.

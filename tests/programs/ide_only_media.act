@@ -1,0 +1,57 @@
+MODULE IDEONLYMEDIA
+USE EXEC
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE HEAPCORE
+CARD checks
+BYTE ARRAY payload(256)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN HEAPCORE.Abort($fb80+checks) FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE unit
+  CARD index
+  IDEPLUS.Geometry geometry
+
+  LET before=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  FOR unit=1 TO 2 DO
+    Require(EXEC.OpenDevice(BYTE POINTER(ADDRESS(IDEMETA.NAME)),unit,
+        EXEC.IORequest POINTER(request),0)=0)
+    request.io_Command=IDEPLUS.GET_GEOMETRY
+    request.io_Data=BYTE POINTER(@geometry)
+    request.io_Length=SIZEOF(IDEPLUS.Geometry)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(geometry.bytes=256 AND geometry.sectors=2880)
+    Require(((geometry.flags & IDEPLUS.FLAG_READONLY)<>0)=(unit=1))
+    FOR index=0 TO 255 DO payload(index)=BYTE(index) XOR $a7 OD
+    request.io_Command=IDEPLUS.WRITE_SECTOR
+    request.io_Offset=2800
+    request.io_Length=256
+    request.io_Data=payload
+    IF unit=1 THEN
+      Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=IDEPLUS.ERROR_PROTECTED)
+    ELSE
+      Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0 AND request.io_Actual=256)
+      request.io_Command=IDEPLUS.READ_SECTOR
+      Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+      FOR index=0 TO 255 DO Require(payload(index)=(BYTE(index) XOR $a7)) OD
+    FI
+    EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  OD
+  IDEPLUSDRIVER.Stop()
+  Require(IDEPLUSDRIVER.State()=0)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE
