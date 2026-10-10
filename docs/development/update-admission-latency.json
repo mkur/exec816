@@ -6,7 +6,7 @@
   "baseline_zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f",
   "slices": {
     "UA1": {
-      "status": "Attribution and unchanged-image replay passed; frozen Files Stop baseline running on unchanged ZIP",
+      "status": "complete",
       "host_tests": {
         "tests": 429,
         "historical_skips": 4
@@ -14,10 +14,10 @@
       "reserved_guest_growth_bytes": 0
     },
     "UA2": {
-      "status": "planned"
+      "status": "not accepted: all nine measured candidates miss at least one gate"
     },
     "UA3": {
-      "status": "planned"
+      "status": "comparison recorded; acceptance/package gate open because no UA2 candidate passes all frozen gates"
     }
   },
   "comparison_policy": {
@@ -31,8 +31,9 @@
   },
   "selected_change": {
     "reason": "Second page BEGIN waits on a retained native scene repaint; eligibility-to-acquire is prompt.",
-    "target": "lib/aes/aeswindow.act",
-    "change": "Invalidate old/new thumb bounds for slider mutations, skipping unchanged rounded pixel geometry; preserve scene and lock lifetime."
+    "target": "lib/desktop/desktop-frame.c",
+    "change": "No production change accepted. Measured slider-damage and frame-construction reductions retained as experimental patches.",
+    "disposition": "No production candidate accepted; renderer, application code and memory profile restored to TVP4/UA1."
   },
   "cancellation_baseline": [
     {
@@ -100,7 +101,8 @@
         0
       ],
       "private_idle": 0,
-      "includes": "guards, alignment and unused capacity"
+      "includes": "guards, alignment and unused capacity",
+      "total": 0
     },
     "UA3": {
       "fixed": 0,
@@ -6541,12 +6543,4438 @@
   },
   "stop_baseline": {
     "path": "build/update-admission/ua1-files-6500",
-    "status": "running",
-    "offset_ms": 6500
+    "status": "pass",
+    "offset_ms": 6500,
+    "result_path": "build/update-admission/ua1-files-final/text-viewer-results.json",
+    "retire_ms": 1356.2921935946792
   },
   "observer_notes": [
     "The first detailed trace loaded its observer module before analysis was added; its passing functional and trace artifacts were analyzed offline with the completed parser.",
     "The same trace exposed interrupts arriving before DP changes; the parser preserves pending load observations through those entries, with a focused regression.",
     "Future detailed runs stop tracing at the completed cohort inbox wait. Sparse BEGIN/END traces extend distributions without whole-session detail."
-  ]
+  ],
+  "candidates": {
+    "ua2a": {
+      "status": "rejected: Panel p95, fixed-offset cancellation and focused viewer stack headroom gates",
+      "paths": [
+        "build/update-admission/ua2-1",
+        "build/update-admission/ua2-2",
+        "build/update-admission/ua2-3"
+      ],
+      "page_median_ms": 644.674,
+      "page_p95_ms": 687.114,
+      "panel_button_p95_ms": 803.8213705226684,
+      "baseline_panel_button_p95_ms": 781.8444019346499,
+      "tolerance_ms": 20.05,
+      "extra_change": "Skip frame gadget groups wholly outside the admitted clip; current thumb-only strips still execute all arrow and size-gadget fill loops.",
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 557366277,
+          "offered": 557544049,
+          "io_retired": 559353212,
+          "idle": 559563325,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 1020.139023004628,
+          "idle_ms": 1138.616169917632,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 573275262,
+          "offered": 575048892,
+          "foreground": 374688,
+          "idle": 575694013,
+          "retire_ms": 363.76661840849533
+        }
+      ],
+      "repeated_cohort_status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 644.6742855370683,
+          "p95": 687.1136585661543,
+          "maximum": 687.1136585661543
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 198.30302278471734,
+          "p95": 244.02639491724452,
+          "maximum": 244.02639491724452
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 619.6650873510494,
+          "p95": 644.4267450826709,
+          "maximum": 644.4267450826709
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 160.5375969686162,
+          "p95": 199.0608687316653,
+          "maximum": 199.0608687316653
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 829.0885408223248,
+          "p95": 964.2326598334599,
+          "maximum": 964.2326598334599
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 546.2811839651301,
+          "p95": 803.8213705226684,
+          "maximum": 803.8213705226684
+        }
+      },
+      "focused_viewer": {
+        "path": "build/update-admission/ua2-viewer/text-viewer-results.json",
+        "status": "fail",
+        "reason": "ordinary Task 5 has 123 bytes above floor; required 128; pixels, lifetime and EXIT passed"
+      },
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1071155181,
+        "offset_ms": 6500,
+        "offered": 1082682725,
+        "mouse_delay_ticks": 2000,
+        "idle": 1085677465,
+        "retire_ms": 1688.6544428295736
+      },
+      "trace": {
+        "path": "build/update-admission/ua2-trace/text-performance-results.json",
+        "status": "pass",
+        "scope": "two page and two line actions, no Panel"
+      },
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -297.96004674511096,
+            "p95": -277.62817901291135
+          },
+          "page_first_band_ms": {
+            "median": 19.70145719002113,
+            "p95": -281.9186922646428
+          },
+          "line_complete_ms": {
+            "median": -320.8270896093625,
+            "p95": -316.01724888952174
+          },
+          "line_first_band_ms": {
+            "median": -30.818786572481002,
+            "p95": -325.6217057454478
+          },
+          "panel_paint_ms": {
+            "median": -151.94303750181507,
+            "p95": -258.6786470983776
+          },
+          "panel_button_paint_ms": {
+            "median": 7.963866987886604,
+            "p95": 21.976968588018508
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -297.96004674511096,
+            "p95": -277.62817901291135
+          },
+          "page_first_band_ms": {
+            "median": 19.70145719002113,
+            "p95": -281.9186922646428
+          },
+          "line_complete_ms": {
+            "median": -320.8270896093625,
+            "p95": -316.01724888952174
+          },
+          "line_first_band_ms": {
+            "median": -30.818786572481002,
+            "p95": -325.6217057454478
+          },
+          "panel_paint_ms": {
+            "median": -151.94303750181507,
+            "p95": -258.6786470983776
+          },
+          "panel_button_paint_ms": {
+            "median": 7.963866987886604,
+            "p95": 21.976968588018508
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": false
+      }
+    },
+    "ua2b": {
+      "status": "rejected: Panel gesture p95 and Files Stop latency exceed TVP4; Panel p95 also exceeds candidate A tolerance",
+      "paths": [
+        "build/update-admission/ua2b-1",
+        "build/update-admission/ua2b-2",
+        "build/update-admission/ua2b-3"
+      ],
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 631.2856738076543,
+          "p95": 699.7455520955652,
+          "maximum": 699.7455520955652
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 158.38952097538834,
+          "p95": 198.30302278471734,
+          "maximum": 198.30302278471734
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 605.1405525114219,
+          "p95": 640.127773728853,
+          "maximum": 640.127773728853
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 158.39008484886074,
+          "p95": 182.64087321445942,
+          "maximum": 182.64087321445942
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 766.4345857433051,
+          "p95": 1003.6412129482266,
+          "maximum": 1003.6412129482266
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 507.88393792316947,
+          "p95": 843.2310513843798,
+          "maximum": 843.2310513843798
+        }
+      },
+      "change": "Skip clipped-out arrow and size-gadget loops in frame strips; retain thumb damage union",
+      "repeated_cohort_status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 557083420,
+          "offered": 557261141,
+          "io_retired": 558874273,
+          "idle": 559029729,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 909.6023423304044,
+          "idle_ms": 997.259856860719,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 574563036,
+          "offered": 576336668,
+          "foreground": 374688,
+          "idle": 576803485,
+          "retire_ms": 263.2257227800654
+        }
+      ],
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1070313659,
+        "offset_ms": 6500,
+        "offered": 1081841304,
+        "mouse_delay_ticks": 2000,
+        "idle": 1084685068,
+        "retire_ms": 1603.5230814557522
+      },
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2b-viewer/text-viewer-results.json",
+        "sha256": "ea59abba7325970937ee0bbb6ba9b9d15b09a7b0fe13b9c23b2664f8cdd9a74b",
+        "ordinary_minimum_above_floor": 153
+      },
+      "trace": {
+        "path": "build/update-admission/ua2b-trace/text-performance-results.json",
+        "status": "pass",
+        "trace_bytes": 179127209,
+        "replay_matches": true,
+        "selected_first_page_requests": [
+          {
+            "code": 1,
+            "caller": {
+              "elapsed_ms": 9.872226271147017,
+              "charged_cpu_ms": 2.437272600401196,
+              "off_cpu_ms": 6.960806564614966,
+              "interrupt_ms": 0.4741471061308553,
+              "blocked_off_cpu_ms": 6.243700476050179,
+              "runnable_off_cpu_ms": 0.717106088564787
+            },
+            "presenter": {
+              "elapsed_ms": 9.872226271147017,
+              "charged_cpu_ms": 5.641906512597639,
+              "off_cpu_ms": 2.9114197065320515,
+              "interrupt_ms": 1.3189000520173277,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 2.9114197065320515
+            },
+            "phases_ms": {
+              "submit": 0.11051920059657813,
+              "intake": 4.407376028892877,
+              "admitted": 0.2115935205299283,
+              "grant": 2.3658016377705007,
+              "reply_work": 0.018889761326455957,
+              "resume": 2.7580461220306773
+            }
+          },
+          {
+            "code": 0,
+            "caller": {
+              "elapsed_ms": 14.659018662802254,
+              "charged_cpu_ms": 2.0728693688423254,
+              "off_cpu_ms": 12.198274829111096,
+              "interrupt_ms": 0.3878744648488326,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 12.198274829111096
+            },
+            "presenter": {
+              "elapsed_ms": 14.659018662802254,
+              "charged_cpu_ms": 9.968578150748755,
+              "off_cpu_ms": 2.4607438336911582,
+              "interrupt_ms": 2.229696678362342,
+              "blocked_off_cpu_ms": 0.959642165894395,
+              "runnable_off_cpu_ms": 1.501101667796763
+            },
+            "phases_ms": {
+              "submit": 0.11122404243711753,
+              "intake": 4.339852180569202,
+              "admitted": 1.3051556361268095,
+              "resume": 8.902786803669125
+            }
+          },
+          {
+            "code": 1,
+            "caller": {
+              "elapsed_ms": 56.17490791241354,
+              "charged_cpu_ms": 3.178061374808107,
+              "off_cpu_ms": 52.351916253511874,
+              "interrupt_ms": 0.6449302840935522,
+              "blocked_off_cpu_ms": 51.75808700285743,
+              "runnable_off_cpu_ms": 0.5938292506544457
+            },
+            "presenter": {
+              "elapsed_ms": 56.17490791241354,
+              "charged_cpu_ms": 43.109254714334654,
+              "off_cpu_ms": 3.822991658901659,
+              "interrupt_ms": 9.242661539177226,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 3.822991658901659
+            },
+            "phases_ms": {
+              "submit": 0.06195559778341338,
+              "intake": 50.793158523158986,
+              "admitted": 0.21046577358506524,
+              "grant": 2.6330776637030415,
+              "reply_work": 0.018748792958348075,
+              "resume": 2.4575015612246767
+            }
+          },
+          {
+            "code": 0,
+            "caller": {
+              "elapsed_ms": 10.627323334916879,
+              "charged_cpu_ms": 2.0777327775420473,
+              "off_cpu_ms": 8.114280236657697,
+              "interrupt_ms": 0.43531032071713427,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 8.114280236657697
+            },
+            "presenter": {
+              "elapsed_ms": 10.627323334916879,
+              "charged_cpu_ms": 6.660755393097343,
+              "off_cpu_ms": 2.5130430982591814,
+              "interrupt_ms": 1.4535248435603534,
+              "blocked_off_cpu_ms": 0.9616157230479053,
+              "runnable_off_cpu_ms": 1.5514273752112764
+            },
+            "phases_ms": {
+              "submit": 0.06195559778341338,
+              "intake": 4.341050411698119,
+              "admitted": 1.35167519760241,
+              "resume": 4.872642127832935
+            }
+          },
+          {
+            "code": 1,
+            "caller": {
+              "elapsed_ms": 23.59944402075618,
+              "charged_cpu_ms": 3.183700109532422,
+              "off_cpu_ms": 19.722250024317045,
+              "interrupt_ms": 0.693493886906717,
+              "blocked_off_cpu_ms": 19.078447487168354,
+              "runnable_off_cpu_ms": 0.6438025371486892
+            },
+            "presenter": {
+              "elapsed_ms": 23.59944402075618,
+              "charged_cpu_ms": 16.235326954984572,
+              "off_cpu_ms": 3.8771939964391393,
+              "interrupt_ms": 3.486923069332472,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 3.877193996439139
+            },
+            "phases_ms": {
+              "submit": 0.11206985264576481,
+              "intake": 18.432812361234262,
+              "admitted": 0.16218410750811627,
+              "grant": 2.414929114056097,
+              "reply_work": 0.018748792958348075,
+              "resume": 2.4586997923535936
+            }
+          },
+          {
+            "code": 0,
+            "caller": {
+              "elapsed_ms": 17.79915954658934,
+              "charged_cpu_ms": 2.0704024224004374,
+              "off_cpu_ms": 15.338063291977914,
+              "interrupt_ms": 0.3906938322109902,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 15.338063291977914
+            },
+            "presenter": {
+              "elapsed_ms": 17.79915954658934,
+              "charged_cpu_ms": 12.590307860819111,
+              "off_cpu_ms": 2.461096254611428,
+              "interrupt_ms": 2.7477554311588026,
+              "blocked_off_cpu_ms": 0.9588668398698016,
+              "runnable_off_cpu_ms": 1.5022294147416262
+            },
+            "phases_ms": {
+              "submit": 0.06202608196746732,
+              "intake": 4.339570243832986,
+              "admitted": 1.3523095552588955,
+              "resume": 12.045253665529993
+            }
+          },
+          {
+            "code": 1,
+            "caller": {
+              "elapsed_ms": 17.73565329675674,
+              "charged_cpu_ms": 3.177074596231352,
+              "off_cpu_ms": 13.902652883719423,
+              "interrupt_ms": 0.655925816805967,
+              "blocked_off_cpu_ms": 13.307695886120113,
+              "runnable_off_cpu_ms": 0.5949569975993086
+            },
+            "presenter": {
+              "elapsed_ms": 17.73565329675674,
+              "charged_cpu_ms": 11.415547965192092,
+              "off_cpu_ms": 3.8330004130373183,
+              "interrupt_ms": 2.487104918527332,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 3.8330004130373188
+            },
+            "phases_ms": {
+              "submit": 0.06202608196746732,
+              "intake": 12.366097671343526,
+              "admitted": 0.21117061542560464,
+              "grant": 2.619615184548739,
+              "reply_work": 0.018748792958348075,
+              "resume": 2.4579949505130543
+            }
+          },
+          {
+            "code": 0,
+            "caller": {
+              "elapsed_ms": 10.132101457753894,
+              "charged_cpu_ms": 2.867860480786716,
+              "off_cpu_ms": 6.655539563477351,
+              "interrupt_ms": 0.608701413489827,
+              "blocked_off_cpu_ms": 3.5588169370674914,
+              "runnable_off_cpu_ms": 3.0967226264098597
+            },
+            "presenter": {
+              "elapsed_ms": 10.132101457753894,
+              "charged_cpu_ms": 5.428973792570686,
+              "off_cpu_ms": 3.4765618942765433,
+              "interrupt_ms": 1.2265657709066662,
+              "blocked_off_cpu_ms": 0.9604174919189883,
+              "runnable_off_cpu_ms": 2.516144402357555
+            },
+            "phases_ms": {
+              "submit": 0.06202608196746732,
+              "intake": 6.314396112656281,
+              "admitted": 1.3533668180197045,
+              "resume": 2.4023124451104416
+            }
+          },
+          {
+            "code": 1,
+            "caller": {
+              "elapsed_ms": 29.69054623832958,
+              "charged_cpu_ms": 2.43501710651147,
+              "off_cpu_ms": 26.7794789527178,
+              "interrupt_ms": 0.47605017910031167,
+              "blocked_off_cpu_ms": 6.210502425360773,
+              "runnable_off_cpu_ms": 20.568976527357027
+            },
+            "presenter": {
+              "elapsed_ms": 29.69054623832958,
+              "charged_cpu_ms": 22.030113662795205,
+              "off_cpu_ms": 2.9110672856117814,
+              "interrupt_ms": 4.7493652899225935,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 2.9110672856117814
+            },
+            "phases_ms": {
+              "submit": 0.06202608196746732,
+              "intake": 4.405895861027744,
+              "admitted": 0.2114525521618204,
+              "grant": 2.4154929875285287,
+              "reply_work": 0.019101213878617778,
+              "resume": 22.576577541765403
+            }
+          },
+          {
+            "code": 0,
+            "caller": {
+              "elapsed_ms": 14.27022790356072,
+              "charged_cpu_ms": 2.071318716793139,
+              "off_cpu_ms": 11.805748408114702,
+              "interrupt_ms": 0.39316077865287813,
+              "blocked_off_cpu_ms": 0.0,
+              "runnable_off_cpu_ms": 11.805748408114702
+            },
+            "presenter": {
+              "elapsed_ms": 14.27022790356072,
+              "charged_cpu_ms": 9.667963105758698,
+              "off_cpu_ms": 2.464479495446017,
+              "interrupt_ms": 2.1377853023560043,
+              "blocked_off_cpu_ms": 0.9635892802014157,
+              "runnable_off_cpu_ms": 1.5008902152446013
+            },
+            "phases_ms": {
+              "submit": 0.06202608196746732,
+              "intake": 4.340557022409741,
+              "admitted": 1.3026182055008677,
+              "resume": 8.565026593682644
+            }
+          }
+        ]
+      },
+      "lock_companion": {
+        "path": "build/update-admission/ua2b-locktimes/text-performance-results.json",
+        "status": "pass",
+        "update_times": {
+          "scope": "Passive loaded-viewer call/return markers; companion to unobserved cohorts",
+          "rows": [
+            {
+              "operation": "page",
+              "index": 0,
+              "begin_ms": [
+                10.846811084060848,
+                57.150479503904116,
+                24.57614335919163,
+                18.709815204566247,
+                30.666117829820166
+              ],
+              "end_ms": [
+                15.587859240265077,
+                11.605643809585567,
+                18.827382823568218,
+                11.11035144823853,
+                15.248054988941032
+              ],
+              "total_acquisition_ms": 141.949366981543
+            },
+            {
+              "operation": "page",
+              "index": 1,
+              "begin_ms": [
+                51.971090207068436,
+                28.290941795570493,
+                10.037511682753507,
+                28.540032902017117,
+                11.404059043191298
+              ],
+              "end_ms": [
+                21.35614389487143,
+                10.900097127205626,
+                21.56668015264055,
+                9.691504823232714,
+                19.96922660524205
+              ],
+              "total_acquisition_ms": 130.24363563060086
+            },
+            {
+              "operation": "page",
+              "index": 2,
+              "begin_ms": [
+                30.597818655471897,
+                65.66891605192711,
+                56.12958658206685,
+                31.170573135094216,
+                18.67570085948414
+              ],
+              "end_ms": [
+                15.43441517157965,
+                14.182122673493295,
+                11.043602925939448,
+                18.00363416452982,
+                11.034439982012437
+              ],
+              "total_acquisition_ms": 202.24259528404423
+            },
+            {
+              "operation": "page",
+              "index": 3,
+              "begin_ms": [
+                31.012759046997445,
+                64.24316197688401,
+                21.541728751485454,
+                10.824890502820072,
+                19.565916104085403
+              ],
+              "end_ms": [
+                17.690120513857895,
+                14.636393239720938,
+                11.073417735794266,
+                16.627289502508532,
+                24.565641215767595
+              ],
+              "total_acquisition_ms": 147.1884563822724
+            },
+            {
+              "operation": "page",
+              "index": 4,
+              "begin_ms": [
+                51.32862686941677,
+                27.864371513676048,
+                9.852913604716237,
+                17.87781989599354,
+                31.679680396515828
+              ],
+              "end_ms": [
+                22.053021022612736,
+                11.70551989839,
+                19.62864702789341,
+                10.900731484862112,
+                17.285329844836117
+              ],
+              "total_acquisition_ms": 138.60341228031842
+            },
+            {
+              "operation": "page",
+              "index": 5,
+              "begin_ms": [
+                31.052159705883597,
+                64.93003035048966,
+                56.89638402038967,
+                22.36293997989791,
+                16.645967811282826
+              ],
+              "end_ms": [
+                15.874870837732722,
+                9.563998934279137,
+                13.800239364289046,
+                20.891441669403804,
+                11.585978722234518
+              ],
+              "total_acquisition_ms": 191.88748186794365
+            },
+            {
+              "operation": "page",
+              "index": 6,
+              "begin_ms": [
+                31.591786619000562,
+                57.32972078395329,
+                9.643505093891982,
+                17.42221013026887,
+                31.108828989862964
+              ],
+              "end_ms": [
+                15.822007699692266,
+                11.406807926369401,
+                20.133172817351515,
+                11.112184037023932,
+                14.592622561423441
+              ],
+              "total_acquisition_ms": 147.09605161697766
+            },
+            {
+              "operation": "page",
+              "index": 7,
+              "begin_ms": [
+                52.506417584958115,
+                28.67155638946177,
+                10.552610099819702,
+                28.454465102575632,
+                11.079549859806958
+              ],
+              "end_ms": [
+                20.9754588167961,
+                10.54274231405215,
+                21.19318446133872,
+                10.467324237114434,
+                19.444612823328573
+              ],
+              "total_acquisition_ms": 131.26459903662217
+            },
+            {
+              "operation": "page",
+              "index": 8,
+              "begin_ms": [
+                31.02361361134175,
+                66.15920403620632,
+                62.977125062907135,
+                20.15925196545147,
+                10.918211562507489
+              ],
+              "end_ms": [
+                15.648687091103627,
+                12.323102319070625,
+                16.086252905710488,
+                10.946264267760958,
+                21.184867327620356
+              ],
+              "total_acquisition_ms": 191.23740623841417
+            },
+            {
+              "operation": "page",
+              "index": 9,
+              "begin_ms": [
+                30.68437323349014,
+                64.58508075372967,
+                21.355580021399,
+                11.790030435070674,
+                18.283174438487748
+              ],
+              "end_ms": [
+                16.216930582946492,
+                14.791740381375822,
+                11.116695024803384,
+                17.858859650483026,
+                19.515519912486837
+              ],
+              "total_acquisition_ms": 146.69823888217724
+            },
+            {
+              "operation": "line",
+              "index": 0,
+              "begin_ms": [
+                31.26389419478163,
+                22.58418983364323,
+                27.459510360470215,
+                10.102921005555563,
+                17.51524925322007
+              ],
+              "end_ms": [
+                13.598654597894779,
+                22.38923058055003,
+                11.01695990436706,
+                19.932222408613733,
+                10.962264177541202
+              ],
+              "total_acquisition_ms": 108.9257646476707
+            },
+            {
+              "operation": "line",
+              "index": 1,
+              "begin_ms": [
+                11.49766203961493,
+                56.03133162949566,
+                10.911867985942635,
+                17.915528934462397,
+                31.004019008174755
+              ],
+              "end_ms": [
+                11.050510375976735,
+                10.569808240728863,
+                18.30572937738501,
+                10.78048546686609,
+                14.319707800766587
+              ],
+              "total_acquisition_ms": 127.36040959769038
+            },
+            {
+              "operation": "line",
+              "index": 2,
+              "begin_ms": [
+                30.817729309720193,
+                22.70676182971303,
+                27.676108258067973,
+                9.679522511943546,
+                24.797252244568842
+              ],
+              "end_ms": [
+                13.498567056538183,
+                22.18045642738226,
+                11.865237059456229,
+                19.58480586541186,
+                11.041911305522154
+              ],
+              "total_acquisition_ms": 115.67737415401359
+            },
+            {
+              "operation": "line",
+              "index": 3,
+              "begin_ms": [
+                10.715287596616195,
+                18.858748285472224,
+                30.458753360333475,
+                20.289859158503422,
+                10.915603647697493
+              ],
+              "end_ms": [
+                17.89114140677973,
+                10.944220226423393,
+                15.900033691439978,
+                10.981788296524144,
+                14.538349739701909
+              ],
+              "total_acquisition_ms": 91.23825204862281
+            },
+            {
+              "operation": "line",
+              "index": 4,
+              "begin_ms": [
+                31.141533651263995,
+                20.139657362284478,
+                46.27702539827088,
+                31.185727234665812,
+                22.524348761381432
+              ],
+              "end_ms": [
+                16.050446940211085,
+                17.08881993969373,
+                11.094844927746664,
+                13.579271447279945,
+                11.20501170742297
+              ],
+              "total_acquisition_ms": 151.2682924078666
+            },
+            {
+              "operation": "line",
+              "index": 5,
+              "begin_ms": [
+                16.8323984781055,
+                21.988246057467165,
+                28.751767390915152,
+                9.731751292327514,
+                17.855828830568708
+              ],
+              "end_ms": [
+                14.650278623979565,
+                20.953538235555325,
+                11.775792629891779,
+                19.68306081798305,
+                17.152890062998765
+              ],
+              "total_acquisition_ms": 95.15999204938404
+            },
+            {
+              "operation": "line",
+              "index": 6,
+              "begin_ms": [
+                31.271858907579727,
+                19.581634077129433,
+                10.841877191177073,
+                19.74811771986484,
+                10.935198250864488
+              ],
+              "end_ms": [
+                16.605862310556134,
+                11.007162602783561,
+                16.448612095931793,
+                10.948801698386898,
+                15.693374063793826
+              ],
+              "total_acquisition_ms": 92.37868614661556
+            },
+            {
+              "operation": "line",
+              "index": 7,
+              "begin_ms": [
+                30.44648911230809,
+                20.48404308557203,
+                17.943934060636135,
+                24.52765024056252,
+                21.980210860485016
+              ],
+              "end_ms": [
+                15.70704799550029,
+                11.032325456490819,
+                19.403309091472963,
+                14.678472297601141,
+                21.08337010258268
+              ],
+              "total_acquisition_ms": 115.38232735956379
+            },
+            {
+              "operation": "line",
+              "index": 8,
+              "begin_ms": [
+                31.56810393315844,
+                19.646056621354735,
+                31.12933988742266,
+                21.817603847872576,
+                28.309126715056408
+              ],
+              "end_ms": [
+                16.570267797608896,
+                11.11570824622663,
+                14.38617438632945,
+                21.33915720651443,
+                12.105799579632325
+              ],
+              "total_acquisition_ms": 132.47023100486481
+            },
+            {
+              "operation": "line",
+              "index": 9,
+              "begin_ms": [
+                21.376866244983287,
+                56.95375814620957,
+                31.287013007151327,
+                19.63562496211475,
+                10.814740780316304
+              ],
+              "end_ms": [
+                11.050157955056465,
+                11.102386735440435,
+                17.634790429375553,
+                11.121346980950944,
+                14.663106745477382
+              ],
+              "total_acquisition_ms": 140.06800314077523
+            }
+          ],
+          "viewer_dp": 4096,
+          "trace_bytes": 1639971,
+          "trace_sha256": "71f685329a236e588fdc69ee59d6f68f6e27d166a32ea408ec631b735760944b",
+          "page": {
+            "begin": {
+              "count": 50,
+              "median": 28.497249002296375,
+              "p95": 64.93003035048966,
+              "maximum": 66.15920403620632
+            },
+            "end": {
+              "count": 50,
+              "median": 15.511137205922363,
+              "p95": 21.56668015264055,
+              "maximum": 24.565641215767595
+            },
+            "total_acquisition": {
+              "count": 10,
+              "median": 146.89714524957745,
+              "p95": 202.24259528404423,
+              "maximum": 202.24259528404423
+            }
+          },
+          "line": {
+            "begin": {
+              "count": 50,
+              "median": 21.898907354178796,
+              "p95": 46.27702539827088,
+              "maximum": 56.95375814620957
+            },
+            "end": {
+              "count": 50,
+              "median": 14.462262063015679,
+              "p95": 21.33915720651443,
+              "maximum": 22.38923058055003
+            },
+            "total_acquisition": {
+              "count": 10,
+              "median": 115.52985075678869,
+              "p95": 151.2682924078666,
+              "maximum": 151.2682924078666
+            }
+          }
+        }
+      },
+      "cohort_count": 3,
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -311.3486584745249,
+            "p95": -264.9962854835004
+          },
+          "page_first_band_ms": {
+            "median": -20.212044619307875,
+            "p95": -327.64206439717
+          },
+          "line_complete_ms": {
+            "median": -335.3516244489899,
+            "p95": -320.31622024333967
+          },
+          "line_first_band_ms": {
+            "median": -32.96629869223648,
+            "p95": -342.0417012626537
+          },
+          "panel_paint_ms": {
+            "median": -214.5969925808348,
+            "p95": -219.270093983611
+          },
+          "panel_button_paint_ms": {
+            "median": -30.433379054074067,
+            "p95": 61.38664944972993
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -13.388611729413924,
+            "p95": 12.631893529410945
+          },
+          "page_first_band_ms": {
+            "median": -39.913501809329006,
+            "p95": -45.723372132527174
+          },
+          "line_complete_ms": {
+            "median": -14.52453483962745,
+            "p95": -4.298971353817933
+          },
+          "line_first_band_ms": {
+            "median": -2.1475121197554756,
+            "p95": -16.419995517205876
+          },
+          "panel_paint_ms": {
+            "median": -62.65395507901974,
+            "p95": 39.40855311476662
+          },
+          "panel_button_paint_ms": {
+            "median": -38.39724604196067,
+            "p95": 39.40968086171142
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": false
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2b-files/text-viewer-results.json",
+        "sha256": "15b53a436602789f3a47077a8ca1cae589c9d2e7830c8435ff884475e2a47b79",
+        "ordinary_minimum_above_floor": 152
+      }
+    },
+    "ua2c": {
+      "status": "rejected: Files Stop latency regresses despite passing page, line, Panel, Escape and BREAK timing gates",
+      "change": "Cull clipped-out box edges and omit paper/outline fills overwritten by a wholly admitted vertical rail; retain A+B",
+      "emitted_checks": {
+        "windows": "build/update-admission/ua2c-windows-release/results.json",
+        "display": "build/update-admission/ua2c-display/results.json",
+        "status": "pass"
+      },
+      "build": {
+        "zip_sha256": "b04f7142637325539e217fff23400762438795d3040c72c2a98b1e6153d82da2",
+        "zip_bytes": 490229,
+        "executable_delta_bytes": 708,
+        "zero_fill_delta_bytes": 0,
+        "bank_zero_budget_equal": true,
+        "bank_zero_budget": {
+          "fixed_runtime": 10528,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848
+          ],
+          "idle": 800,
+          "runtime_excluding_os": 26848,
+          "loading_excluding_os": 20112,
+          "runtime_including_os": 57568,
+          "loading_including_os": 50832
+        },
+        "host_profile": "release (same pinned revision; emitted equivalence checked)",
+        "host_binary_sha256": "f482db50668e6b8aa3917b372ed2be9848ebdc462e7496abd9e6e73babbb0f78"
+      },
+      "packaging_recovery": {
+        "artifact": "build/update-admission/ua2c-demo/packaging-recovery.json",
+        "reason": "Local runpy path error after compilation; corrected absolute __file__; reused hash-verified native/component artifacts through build_demo.bundle"
+      },
+      "first_cohort_metrics": {
+        "page_complete_ms": {
+          "count": 10,
+          "median": 620.2969075769088,
+          "p95": 699.7438604751479,
+          "maximum": 699.7438604751479
+        },
+        "page_first_band_ms": {
+          "count": 10,
+          "median": 178.34641284842093,
+          "p95": 198.55563810036665,
+          "maximum": 198.55563810036665
+        },
+        "line_complete_ms": {
+          "count": 10,
+          "median": 609.4341670672518,
+          "p95": 639.6214153506095,
+          "maximum": 639.6214153506095
+        },
+        "line_first_band_ms": {
+          "count": 10,
+          "median": 158.76900782233474,
+          "p95": 198.30358665818977,
+          "maximum": 198.30358665818977
+        },
+        "panel_paint_ms": {
+          "count": 10,
+          "median": 727.5278800190026,
+          "p95": 949.8341507149211,
+          "maximum": 949.8341507149211
+        },
+        "panel_button_paint_ms": {
+          "count": 10,
+          "median": 422.87775646022794,
+          "p95": 789.171373835425,
+          "maximum": 789.171373835425
+        }
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 558470729,
+          "offered": 558648142,
+          "io_retired": 560183180,
+          "idle": 560183629,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 865.5672073743373,
+          "idle_ms": 865.820386563459,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 575930492,
+          "offered": 577704125,
+          "foreground": 374688,
+          "idle": 578159740,
+          "retire_ms": 256.9092121418875
+        }
+      ],
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1070858388,
+        "offset_ms": 6500,
+        "offered": 1082385988,
+        "mouse_delay_ticks": 2000,
+        "idle": 1085323524,
+        "retire_ms": 1656.3986247126008
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 620.2969075769088,
+          "p95": 699.7438604751479,
+          "maximum": 699.7438604751479
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 178.34641284842093,
+          "p95": 198.55563810036665,
+          "maximum": 198.55563810036665
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 609.4341670672518,
+          "p95": 639.6214153506095,
+          "maximum": 639.6214153506095
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 158.76900782233474,
+          "p95": 198.30358665818977,
+          "maximum": 198.30358665818977
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 727.5278800190026,
+          "p95": 949.8341507149211,
+          "maximum": 949.8341507149211
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 422.87775646022794,
+          "p95": 789.171373835425,
+          "maximum": 789.171373835425
+        }
+      },
+      "repeated_cohort_status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2c-viewer/text-viewer-results.json",
+        "sha256": "518bdf40c58e811a2023ee26adba4b1286297568e1232f115207e01c58e1e0db",
+        "ordinary_minimum_above_floor": 147
+      },
+      "trace": {
+        "status": "pass",
+        "path": "build/update-admission/ua2c-trace/text-performance-results.json",
+        "trace_bytes": 89147844
+      },
+      "cohort_count": 3,
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -322.33742470527045,
+            "p95": -264.9979771039177
+          },
+          "page_first_band_ms": {
+            "median": -0.25515274627528584,
+            "p95": -327.38944908152064
+          },
+          "line_complete_ms": {
+            "median": -331.05800989316003,
+            "p95": -320.82257862158315
+          },
+          "line_first_band_ms": {
+            "median": -32.58737571876247,
+            "p95": -326.37898781892335
+          },
+          "panel_paint_ms": {
+            "median": -253.50369830513728,
+            "p95": -273.0771562169165
+          },
+          "panel_button_paint_ms": {
+            "median": -115.4395605170156,
+            "p95": 7.326971900775106
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -10.988766230745568,
+            "p95": -0.0016916204173185179
+          },
+          "page_first_band_ms": {
+            "median": 19.95689187303259,
+            "p95": 0.25261531564930806
+          },
+          "line_complete_ms": {
+            "median": 4.29361455582989,
+            "p95": -0.5063583782434762
+          },
+          "line_first_band_ms": {
+            "median": 0.3789229734740047,
+            "p95": 15.662713443730354
+          },
+          "panel_paint_ms": {
+            "median": -38.90670572430247,
+            "p95": -53.80706223330549
+          },
+          "panel_button_paint_ms": {
+            "median": -85.00618146294153,
+            "p95": -54.059677548954824
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2c-files/text-viewer-results.json",
+        "sha256": "3d83ea6de1650617ea5ac50cb757a12732d8a2dd57edb150f741bf342727fce4",
+        "ordinary_minimum_above_floor": 173
+      }
+    },
+    "ua2d": {
+      "status": "not shipped: meets baseline timing gates, but Files stack margin is 126 bytes versus required 128; E adds 16 bytes to slot 5",
+      "change": "Frame clipping and overwritten-fill reductions only; restore original full-rail slider damage. Test whether the independent frame optimization meets all accepted TVP4 input/cancellation controls. Retain comparisons with rejected A/B/C to expose the page-latency tradeoff.",
+      "build": {
+        "zip_sha256": "85d453d245d672edad088fbf04e793a5bd8ee5780f4227517b70792103049f40",
+        "zip_bytes": 490139,
+        "executable_delta_bytes": 413,
+        "zero_fill_delta_bytes": 0,
+        "bank_zero_budget_equal": true,
+        "bank_zero_budget": {
+          "fixed_runtime": 10528,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848
+          ],
+          "idle": 800,
+          "runtime_excluding_os": 26848,
+          "loading_excluding_os": 20112,
+          "runtime_including_os": 57568,
+          "loading_including_os": 50832
+        },
+        "host_profile": "release (same pinned revision; emitted equivalence checked)",
+        "host_binary_sha256": "f482db50668e6b8aa3917b372ed2be9848ebdc462e7496abd9e6e73babbb0f78"
+      },
+      "windows_check": {
+        "path": "build/update-admission/ua2d-windows/results.json",
+        "status": "pass"
+      },
+      "first_cohort_metrics": {
+        "page_complete_ms": {
+          "count": 10,
+          "median": 904.867496782397,
+          "p95": 941.2441022358993,
+          "maximum": 941.2441022358993
+        },
+        "page_first_band_ms": {
+          "count": 10,
+          "median": 178.34641284842093,
+          "p95": 443.0866997754374,
+          "maximum": 443.0866997754374
+        },
+        "line_complete_ms": {
+          "count": 10,
+          "median": 903.7312917354475,
+          "p95": 921.0348769839536,
+          "maximum": 921.0348769839536
+        },
+        "line_first_band_ms": {
+          "count": 10,
+          "median": 178.47300244298182,
+          "p95": 445.856446272021,
+          "maximum": 445.856446272021
+        },
+        "panel_paint_ms": {
+          "count": 10,
+          "median": 944.0225887713057,
+          "p95": 1198.6630559968648,
+          "maximum": 1198.6630559968648
+        },
+        "panel_button_paint_ms": {
+          "count": 10,
+          "median": 526.5766254710106,
+          "p95": 757.3435356840279,
+          "maximum": 757.3435356840279
+        }
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 561599150,
+          "offered": 561776837,
+          "io_retired": 563308941,
+          "idle": 563309390,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 863.9128026062232,
+          "idle_ms": 864.1659817953449,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 578857340,
+          "offered": 580630972,
+          "foreground": 374688,
+          "idle": 580993404,
+          "retire_ms": 204.36579036030105
+        }
+      ],
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1071940700,
+        "offset_ms": 6500,
+        "offered": 1083468329,
+        "mouse_delay_ticks": 2000,
+        "idle": 1085643706,
+        "retire_ms": 1226.637382837665
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 904.867496782397,
+          "p95": 941.2441022358993,
+          "maximum": 941.2441022358993
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 178.34641284842093,
+          "p95": 443.0866997754374,
+          "maximum": 443.0866997754374
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 903.7312917354475,
+          "p95": 921.0348769839536,
+          "maximum": 921.0348769839536
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 178.47300244298182,
+          "p95": 445.856446272021,
+          "maximum": 445.856446272021
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 944.0225887713057,
+          "p95": 1198.6630559968648,
+          "maximum": 1198.6630559968648
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 526.5766254710106,
+          "p95": 757.3435356840279,
+          "maximum": 757.3435356840279
+        }
+      },
+      "repeated_cohort_status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2d-viewer/text-viewer-results.json",
+        "sha256": "8f169451d03a278672e51b7a6f4042cf280f549638737182f8b4a06ba0d659a1",
+        "ordinary_minimum_above_floor": 149
+      },
+      "focused_files": {
+        "status": "fail",
+        "path": "build/update-admission/ua2d-files/text-viewer-results.json",
+        "sha256": "6fd20c3edeafa34eaa34b284e3d6e3666332b5195c7d26af4f190e20e8a04857",
+        "ordinary_minimum_above_floor": 126
+      },
+      "lock_companion": {
+        "path": "build/update-admission/ua2d-locktimes/update-call-times.json",
+        "page": {
+          "begin": {
+            "count": 50,
+            "median": 30.805394577510754,
+            "p95": 304.97759307788925,
+            "maximum": 311.5150716330763
+          },
+          "end": {
+            "count": 50,
+            "median": 14.81387241516876,
+            "p95": 20.76400626463428,
+            "maximum": 35.444522603572985
+          },
+          "total_acquisition": {
+            "count": 10,
+            "median": 396.7643530468198,
+            "p95": 448.47648436167407,
+            "maximum": 448.47648436167407
+          }
+        },
+        "line": {
+          "begin": {
+            "count": 50,
+            "median": 30.937763875164052,
+            "p95": 303.8353263911111,
+            "maximum": 306.82082497508384
+          },
+          "end": {
+            "count": 50,
+            "median": 14.033083866311237,
+            "p95": 20.44880099354506,
+            "maximum": 20.890172954090833
+          },
+          "total_acquisition": {
+            "count": 10,
+            "median": 426.0251924570646,
+            "p95": 456.0564239990189,
+            "maximum": 456.0564239990189
+          }
+        },
+        "trace_bytes": 495723,
+        "trace_sha256": "521faf8346fd37ad1249165d8f01b17a5d4acf13bd830d74fe60e3e3b1adf258"
+      },
+      "cohort_count": 3,
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -37.766835499782246,
+            "p95": -23.49773534316637
+          },
+          "page_first_band_ms": {
+            "median": -0.25515274627528584,
+            "p95": -82.85838740644988
+          },
+          "line_complete_ms": {
+            "median": -36.76088522496434,
+            "p95": -39.40911698823902
+          },
+          "line_first_band_ms": {
+            "median": -12.883381098115393,
+            "p95": -78.82612820509212
+          },
+          "panel_paint_ms": {
+            "median": -37.00898955283424,
+            "p95": -24.248250934972702
+          },
+          "panel_button_paint_ms": {
+            "median": -11.740691506232906,
+            "p95": -24.50086625062204
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": 284.5705892054882,
+            "p95": 241.50024176075135
+          },
+          "page_first_band_ms": {
+            "median": 0.0,
+            "p95": 244.53106167507076
+          },
+          "line_complete_ms": {
+            "median": 294.2971246681957,
+            "p95": 281.4134616333441
+          },
+          "line_first_band_ms": {
+            "median": 19.70399462064708,
+            "p95": 247.55285961383123
+          },
+          "panel_paint_ms": {
+            "median": 216.49470875230304,
+            "p95": 248.82890528194378
+          },
+          "panel_button_paint_ms": {
+            "median": 103.69886901078269,
+            "p95": -31.827838151397145
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      }
+    },
+    "ua2e": {
+      "status": "rejected: Files Stop 1841.360 ms versus 1356.292 ms baseline",
+      "change": "D frame-only renderer plus 16 bytes of stack capacity for slot 5, using the final pre-staging gap; slots 6\u20137 and idle move up 16 bytes with unchanged sizes.",
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1072129257,
+        "offset_ms": 6500,
+        "offered": 1083656824,
+        "mouse_delay_ticks": 2000,
+        "idle": 1086922380,
+        "retire_ms": 1841.3604011395882
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2e-files/text-viewer-results.json",
+        "sha256": "59cf62e462ff1e5c15d6823057c8f4a9d020d2400043916a580deb246c18e49f",
+        "ordinary_minimum_above_floor": 146
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 903.8570355197996,
+          "p95": 927.3513876221315,
+          "maximum": 927.3513876221315
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 178.4673637082575,
+          "p95": 499.16729984958675,
+          "maximum": 499.16729984958675
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 902.4679332204646,
+          "p95": 920.5296463526549,
+          "maximum": 920.5296463526549
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 181.12489938382726,
+          "p95": 444.6035194162782,
+          "maximum": 444.6035194162782
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 946.5487419277988,
+          "p95": 1032.437667311832,
+          "maximum": 1032.437667311832
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 548.5538759957653,
+          "p95": 671.4515089958965,
+          "maximum": 671.4515089958965
+        }
+      },
+      "repeated_cohort_status": [
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 560254840,
+          "offered": 560432199,
+          "io_retired": 561966930,
+          "idle": 562105360,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 865.3940982183008,
+          "idle_ms": 943.4511030069963,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 577717460,
+          "offered": 579491109,
+          "foreground": 374688,
+          "idle": 579961492,
+          "retire_ms": 265.23649558275616
+        }
+      ],
+      "zip_sha256": "757e25992cf4c37baf25bdf0d3fc15662da740b2b2e8f1ddc44b90964d3b7442",
+      "resources": {
+        "fixed_bank_zero": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          16,
+          0,
+          0
+        ],
+        "private_idle": 0
+      },
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2e-viewer/text-viewer-results.json",
+        "sha256": "5c34aa652ba5ebc76e7b0f509e9ec9c1813ed76839bb99a0b4f9c7ad393d511f",
+        "ordinary_minimum_above_floor": 172
+      },
+      "ua2e-trace": {
+        "status": "pass",
+        "path": "build/update-admission/ua2e-trace/text-performance-results.json"
+      },
+      "cohort_count": 3,
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -38.77729676237959,
+            "p95": -37.39044995693416
+          },
+          "page_first_band_ms": {
+            "median": -0.1342018864387171,
+            "p95": -26.777787332300534
+          },
+          "line_complete_ms": {
+            "median": -38.024243739947224,
+            "p95": -39.91434761953769
+          },
+          "line_first_band_ms": {
+            "median": -10.23148415726996,
+            "p95": -80.07905506083495
+          },
+          "panel_paint_ms": {
+            "median": -34.4828363963411,
+            "p95": -190.47363962000554
+          },
+          "panel_button_paint_ms": {
+            "median": 10.236559018521802,
+            "p95": -110.39289293875345
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -1.010461262597346,
+            "p95": -13.892714613767794
+          },
+          "page_first_band_ms": {
+            "median": 0.12095085983656872,
+            "p95": 56.080600074149345
+          },
+          "line_complete_ms": {
+            "median": -1.2633585149828832,
+            "p95": -0.505230631298673
+          },
+          "line_first_band_ms": {
+            "median": 2.6518969408454325,
+            "p95": -1.2529268557428281
+          },
+          "panel_paint_ms": {
+            "median": 2.5261531564931374,
+            "p95": -166.22538868503284
+          },
+          "panel_button_paint_ms": {
+            "median": 21.97725052475471,
+            "p95": -85.89202668813141
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      }
+    },
+    "ua2f": {
+      "status": "rejected: BREAK 866.976 ms and Files Stop 1506.472 ms versus 273.833/1356.292 baseline",
+      "change": "Cull wholly clipped-out gadget groups, remove unused left-coordinate argument, use compile-time gadget size instead of a runtime g/2 divide. Baseline box/fragment and memory map retained.",
+      "first_cohort_metrics": {
+        "page_distribution": {
+          "model": {
+            "count": 10,
+            "median": 60.38492822595538,
+            "p95": 60.628239629309576,
+            "maximum": 60.628239629309576
+          },
+          "first_band": {
+            "count": 10,
+            "median": 191.735024577835,
+            "p95": 459.75987448176505,
+            "maximum": 459.75987448176505
+          },
+          "complete": {
+            "count": 10,
+            "median": 908.0260340382222,
+            "p95": 947.3074336849554,
+            "maximum": 947.3074336849554
+          }
+        },
+        "line_distribution": {
+          "model": {
+            "count": 10,
+            "median": 60.37477850345161,
+            "p95": 60.62993124972687,
+            "maximum": 60.62993124972687
+          },
+          "first_band": {
+            "count": 10,
+            "median": 178.7264635688398,
+            "p95": 459.75987448176505,
+            "maximum": 459.75987448176505
+          },
+          "complete": {
+            "count": 10,
+            "median": 905.5001628184652,
+            "p95": 946.2964085488857,
+            "maximum": 946.2964085488857
+          }
+        },
+        "panel_distribution": {
+          "paint": {
+            "count": 10,
+            "median": 927.8563363166938,
+            "p95": 1149.9015335948766,
+            "maximum": 1149.9015335948766
+          },
+          "button_paint": {
+            "count": 10,
+            "median": 522.6624977621271,
+            "p95": 728.7963133952372,
+            "maximum": 728.7963133952372
+          }
+        }
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 563263524,
+          "offered": 563441184,
+          "io_retired": 565052472,
+          "idle": 565052920,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 908.5625596472407,
+          "idle_ms": 908.8151749628901,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 580669696,
+          "offered": 582443328,
+          "foreground": 374688,
+          "idle": 583980864,
+          "retire_ms": 866.9757633084712
+        }
+      ],
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1073010412,
+        "offset_ms": 6500,
+        "offered": 1084537957,
+        "mouse_delay_ticks": 2000,
+        "idle": 1087209606,
+        "retire_ms": 1506.4719987482008
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 10,
+          "median": 908.0260340382222,
+          "p95": 947.3074336849554,
+          "maximum": 947.3074336849554
+        },
+        "page_first_band_ms": {
+          "count": 10,
+          "median": 191.735024577835,
+          "p95": 459.75987448176505,
+          "maximum": 459.75987448176505
+        },
+        "line_complete_ms": {
+          "count": 10,
+          "median": 905.5001628184652,
+          "p95": 946.2964085488857,
+          "maximum": 946.2964085488857
+        },
+        "line_first_band_ms": {
+          "count": 10,
+          "median": 178.7264635688398,
+          "p95": 459.75987448176505,
+          "maximum": 459.75987448176505
+        },
+        "panel_paint_ms": {
+          "count": 10,
+          "median": 927.8563363166938,
+          "p95": 1149.9015335948766,
+          "maximum": 1149.9015335948766
+        },
+        "panel_button_paint_ms": {
+          "count": 10,
+          "median": 522.6624977621271,
+          "p95": 728.7963133952372,
+          "maximum": 728.7963133952372
+        }
+      },
+      "cohort_count": 1,
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2f-viewer/text-viewer-results.json",
+        "sha256": "1efe5865172d0ce04281ed0afcf3177b3993c465d253f67e752259d1d6f2adf9",
+        "ordinary_minimum_above_floor": 149
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2f-files/text-viewer-results.json",
+        "sha256": "ab71520a5267a530dc8a9feba846915ec5fdd302d67271055d40d64f10df7d92",
+        "ordinary_minimum_above_floor": 156
+      },
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -34.60829824395705,
+            "p95": -17.434403894110233
+          },
+          "page_first_band_ms": {
+            "median": 13.13345898313878,
+            "p95": -66.18521270012224
+          },
+          "line_complete_ms": {
+            "median": -34.99201414194658,
+            "p95": -14.147585423306964
+          },
+          "line_first_band_ms": {
+            "median": -12.629919972257426,
+            "p95": -64.92269999534807
+          },
+          "panel_paint_ms": {
+            "median": -53.17524200744606,
+            "p95": -73.00977333696096
+          },
+          "panel_button_paint_ms": {
+            "median": -15.65481921511639,
+            "p95": -53.048088539412674
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": 4.168998518422541,
+            "p95": 19.95604606282393
+          },
+          "page_first_band_ms": {
+            "median": 13.267660869577497,
+            "p95": -39.4074253678217
+          },
+          "line_complete_ms": {
+            "median": 3.03222959800064,
+            "p95": 25.76676219623073
+          },
+          "line_first_band_ms": {
+            "median": -2.398435814987465,
+            "p95": 15.156355065486878
+          },
+          "panel_paint_ms": {
+            "median": -18.69240561110496,
+            "p95": 117.46386628304458
+          },
+          "panel_button_paint_ms": {
+            "median": -25.891378233638193,
+            "p95": 57.344804399340774
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      },
+      "zip_sha256": "682f8749a94b7fbf94a37c110b11f286e60d75dbd85ff38b7c11d29141d0055c"
+    },
+    "ua2g": {
+      "status": "rejected alone: Files Stop 1599.024 ms versus 1356.292 baseline; UI/Escape/BREAK/stack checks pass",
+      "change": "D full frame clipping/overdraw reduction with F compile-time gadget size and unused private argument removal; original stack map.",
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1072597048,
+        "offset_ms": 6500,
+        "offered": 1084124620,
+        "mouse_delay_ticks": 2000,
+        "idle": 1086960406,
+        "retire_ms": 1599.0244988926934
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 30,
+          "median": 906.0039837660827,
+          "p95": 921.287492299603,
+          "maximum": 921.287492299603
+        },
+        "page_first_band_ms": {
+          "count": 30,
+          "median": 158.38980291212454,
+          "p95": 483.2536627106244,
+          "maximum": 483.2536627106244
+        },
+        "line_complete_ms": {
+          "count": 30,
+          "median": 906.8887012443279,
+          "p95": 946.8027669271293,
+          "maximum": 946.8027669271293
+        },
+        "line_first_band_ms": {
+          "count": 30,
+          "median": 168.2418002224481,
+          "p95": 443.5913665332636,
+          "maximum": 443.5913665332636
+        },
+        "panel_paint_ms": {
+          "count": 30,
+          "median": 856.3659200511997,
+          "p95": 1184.5126512061959,
+          "maximum": 1184.5126512061959
+        },
+        "panel_button_paint_ms": {
+          "count": 30,
+          "median": 528.0928812383789,
+          "p95": 783.609889776833,
+          "maximum": 783.609889776833
+        }
+      },
+      "cohort_count": 3,
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2g-viewer/text-viewer-results.json",
+        "sha256": "36a6216a7292bde39eb2720680a88ec102ba54cc83bbc282f08469a0563f5632",
+        "ordinary_minimum_above_floor": 153
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2g-files/text-viewer-results.json",
+        "sha256": "0eb37c4e74cc724d92f75087ef4916b53f1787d3ffe28dbb64a81622b0282ba8",
+        "ordinary_minimum_above_floor": 152
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 561565689,
+          "offered": 561743321,
+          "io_retired": 563277470,
+          "idle": 563277918,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 865.0659238573456,
+          "idle_ms": 865.318539172995,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 578896401,
+          "offered": 580670032,
+          "foreground": 374688,
+          "idle": 581069202,
+          "retire_ms": 225.08137399049028
+        }
+      ],
+      "lock_companion": {
+        "page": {
+          "begin": {
+            "count": 50,
+            "median": 30.796548812411984,
+            "p95": 308.56171383703213,
+            "maximum": 322.2163328770657
+          },
+          "end": {
+            "count": 50,
+            "median": 14.601468326522212,
+            "p95": 22.991799870027165,
+            "maximum": 35.57266285018305
+          },
+          "total_acquisition": {
+            "count": 10,
+            "median": 422.86179179253963,
+            "p95": 441.8649974132304,
+            "maximum": 441.8649974132304
+          }
+        },
+        "line": {
+          "begin": {
+            "count": 50,
+            "median": 30.94220437875945,
+            "p95": 304.82196399949817,
+            "maximum": 307.5413143044832
+          },
+          "end": {
+            "count": 50,
+            "median": 14.253346941479801,
+            "p95": 20.12612439894612,
+            "maximum": 35.385738794072
+          },
+          "total_acquisition": {
+            "count": 10,
+            "median": 411.4769749315951,
+            "p95": 447.8280298683778,
+            "maximum": 447.8280298683778
+          }
+        },
+        "trace_bytes": 854716,
+        "trace_sha256": "c362dca5c59e506799b1164ee5fdee173395a4474aaa5b1cff5d2eb3e8cfd93f",
+        "scope": "All 20 key and 10 Panel cohort observations collected. Runner intentionally stopped during subsequent cleanup because G was rejected; this companion is timing evidence only, not another functional workflow pass."
+      },
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -36.63034851609655,
+            "p95": -43.4543452794627
+          },
+          "page_first_band_ms": {
+            "median": -20.211762682571674,
+            "p95": -42.691424471262906
+          },
+          "line_complete_ms": {
+            "median": -33.60347571608395,
+            "p95": -13.641227045063374
+          },
+          "line_first_band_ms": {
+            "median": -23.114583318649125,
+            "p95": -81.0912079438495
+          },
+          "panel_paint_ms": {
+            "median": -124.66565827294016,
+            "p95": -38.398655725641675
+          },
+          "panel_button_paint_ms": {
+            "median": -10.2244357388646,
+            "p95": 1.76548784218312
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -2.022050272139495,
+            "p95": -26.019941385352467
+          },
+          "page_first_band_ms": {
+            "median": -33.345221665710454,
+            "p95": 23.49378822885933
+          },
+          "line_complete_ms": {
+            "median": 1.3885384258626345,
+            "p95": 0.5063583782435899
+          },
+          "line_first_band_ms": {
+            "median": -10.484663346391699,
+            "p95": -16.16850794850143
+          },
+          "panel_paint_ms": {
+            "median": -71.4904162654941,
+            "p95": 34.61111761131929
+          },
+          "panel_button_paint_ms": {
+            "median": 5.430383476251791,
+            "p95": 54.813576381595794
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      },
+      "zip_sha256": "f82e42874c68008bddfd9fb348ca8dcefdd39e1c74bda3aaf863c460b62043c4"
+    },
+    "ua2h": {
+      "status": "rejected: BREAK 879.102 ms and Files Stop 1776.690 ms versus 273.833/1356.292 baseline; clipped status repaint does not resolve cancellation",
+      "change": "G frame reduction plus a status-strip-only repaint after the Files Stop menu action, instead of redrawing its whole directory while the child is trying to exit. Same UPDATE transaction and original stack map.",
+      "metrics": {
+        "page_complete_ms": {
+          "count": 10,
+          "median": 903.3523687619736,
+          "p95": 948.5705102632021,
+          "maximum": 948.5705102632021
+        },
+        "page_first_band_ms": {
+          "count": 10,
+          "median": 158.38980291212454,
+          "p95": 439.04541859852065,
+          "maximum": 439.04541859852065
+        },
+        "line_complete_ms": {
+          "count": 10,
+          "median": 891.3525773951583,
+          "p95": 920.5302102261273,
+          "maximum": 920.5302102261273
+        },
+        "line_first_band_ms": {
+          "count": 10,
+          "median": 158.38980291212454,
+          "p95": 439.04541859852065,
+          "maximum": 439.04541859852065
+        },
+        "panel_paint_ms": {
+          "count": 10,
+          "median": 916.3668504424293,
+          "p95": 1064.2683248305912,
+          "maximum": 1064.2683248305912
+        },
+        "panel_button_paint_ms": {
+          "count": 10,
+          "median": 542.8700313936556,
+          "p95": 663.3666911481732,
+          "maximum": 663.3666911481732
+        }
+      },
+      "cohort_count": 1,
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2h-files/text-viewer-results.json",
+        "sha256": "709774539a80f00d074eda7b1ff9b33da5cd031cb6eefeee2c55f311e3b2ad90",
+        "ordinary_minimum_above_floor": 156
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 564557536,
+          "offered": 564735252,
+          "io_retired": 566286453,
+          "idle": 566499252,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 874.6810943092479,
+          "idle_ms": 994.6728053692032,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 580232245,
+          "offered": 582005876,
+          "foreground": 374688,
+          "idle": 583564917,
+          "retire_ms": 879.1018623331111
+        }
+      ],
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1072386797,
+        "offset_ms": 6500,
+        "offered": 1083914566,
+        "mouse_delay_ticks": 2000,
+        "idle": 1087065432,
+        "retire_ms": 1776.6897525864172
+      },
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -39.281963520205636,
+            "p95": -16.17132731586355
+          },
+          "page_first_band_ms": {
+            "median": -20.211762682571674,
+            "p95": -86.89966858336663
+          },
+          "line_complete_ms": {
+            "median": -49.13959956525355,
+            "p95": -39.91378374606529
+          },
+          "line_first_band_ms": {
+            "median": -32.96658062897268,
+            "p95": -85.63715587859247
+          },
+          "panel_paint_ms": {
+            "median": -64.66472788171063,
+            "p95": -158.6429821012464
+          },
+          "panel_button_paint_ms": {
+            "median": 4.552714416412073,
+            "p95": -118.47771078647668
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -2.6516150041090896,
+            "p95": 27.28301796359915
+          },
+          "page_first_band_ms": {
+            "median": 0.0,
+            "p95": -44.20824411210373
+          },
+          "line_complete_ms": {
+            "median": -15.536123849169599,
+            "p95": -26.272556701001918
+          },
+          "line_first_band_ms": {
+            "median": -9.851997310323554,
+            "p95": -4.545947934742969
+          },
+          "panel_paint_ms": {
+            "median": 60.00093039122953,
+            "p95": -120.24432637560471
+          },
+          "panel_button_paint_ms": {
+            "median": 14.777150155276672,
+            "p95": -120.2431986286598
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": true,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      },
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2h-viewer/text-viewer-results.json",
+        "sha256": "e49ba2f453266dd91ce80623d1fe0f83d0075bb4bb9af968b461633bdb9de3dc",
+        "ordinary_minimum_above_floor": 153
+      },
+      "zip_sha256": "5659b511086963a7ac1654ad73c5552f78affe2c72ee27d772c9152ed8276ed8"
+    },
+    "ua2i": {
+      "status": "rejected: first-content page median 439.045 ms versus TVP4 178.602 ms, exceeding 20.05 ms tolerance",
+      "change": "Restore D frame renderer. Transfer 16 reserved bytes from public stack slot 4 to slot 5; retain slot 5 top and later stack addresses. No increase in aggregate bank-zero reservations.",
+      "patch": {
+        "path": "build/update-admission/ua2i-production.patch",
+        "sha256": "fd78c3388d08c4ae2dff8c7b5cfd3b5432f32dc2f5c7267154453e9034817618"
+      },
+      "metrics": {
+        "page_complete_ms": {
+          "count": 10,
+          "median": 902.3421894361124,
+          "p95": 920.5307740995997,
+          "maximum": 920.5307740995997
+        },
+        "page_first_band_ms": {
+          "count": 10,
+          "median": 439.04513666178445,
+          "p95": 482.495252890204,
+          "maximum": 482.495252890204
+        },
+        "line_complete_ms": {
+          "count": 10,
+          "median": 906.3840344865016,
+          "p95": 940.4862562889513,
+          "maximum": 940.4862562889513
+        },
+        "line_first_band_ms": {
+          "count": 10,
+          "median": 168.36810788027276,
+          "p95": 439.04485472504825,
+          "maximum": 439.04485472504825
+        },
+        "panel_paint_ms": {
+          "count": 10,
+          "median": 950.8440481040459,
+          "p95": 1204.4681333955473,
+          "maximum": 1204.4681333955473
+        },
+        "panel_button_paint_ms": {
+          "count": 10,
+          "median": 546.1540304970968,
+          "p95": 763.4057393861391,
+          "maximum": 763.4057393861391
+        }
+      },
+      "cohort_count": 1,
+      "comparisons": {
+        "TVP4": {
+          "page_complete_ms": {
+            "median": -40.29214284606678,
+            "p95": -44.211063479465906
+          },
+          "page_first_band_ms": {
+            "median": 260.4435710670882,
+            "p95": -43.44983429168332
+          },
+          "line_complete_ms": {
+            "median": -34.10814247391022,
+            "p95": -19.957737683241362
+          },
+          "line_first_band_ms": {
+            "median": -22.988275660824456,
+            "p95": -85.63771975206487
+          },
+          "panel_paint_ms": {
+            "median": -30.187530220094004,
+            "p95": -18.44317353629026
+          },
+          "panel_button_paint_ms": {
+            "median": 7.83671351985322,
+            "p95": -18.43866254851082
+          }
+        },
+        "immediate_trial_predecessor": {
+          "page_complete_ms": {
+            "median": -1.0101793258611451,
+            "p95": -28.039736163602356
+          },
+          "page_first_band_ms": {
+            "median": 280.6553337496599,
+            "p95": 43.44983429168332
+          },
+          "line_complete_ms": {
+            "median": 15.031457091343327,
+            "p95": 19.95604606282393
+          },
+          "line_first_band_ms": {
+            "median": 9.978304968148223,
+            "p95": -0.0005638734724016103
+          },
+          "panel_paint_ms": {
+            "median": 34.47719766161663,
+            "p95": 140.19980856495613
+          },
+          "panel_button_paint_ms": {
+            "median": 3.283999103441147,
+            "p95": 100.03904823796586
+          }
+        }
+      },
+      "timing_gates_vs_TVP4": {
+        "page_complete_ms": true,
+        "page_first_band_ms": false,
+        "line_complete_ms": true,
+        "line_first_band_ms": true,
+        "panel_paint_ms": true,
+        "panel_button_paint_ms": true
+      },
+      "cancellation": [
+        {
+          "kind": "viewer_escape",
+          "boundary": "Observed load.phase=READ",
+          "offset_ms": 100,
+          "start": 561640393,
+          "offered": 561817807,
+          "io_retired": 563365109,
+          "idle": 563582407,
+          "progress": "00002000d8060a000000000000005359533a4c4f4e472e54",
+          "retire_ms": 872.4825516402375,
+          "idle_ms": 995.0111294526621,
+          "document_retained": true
+        },
+        {
+          "kind": "shell_break",
+          "boundary": "Observed foreground scope publication",
+          "offset_ms": 1000,
+          "start": 579142141,
+          "offered": 580915761,
+          "foreground": 374688,
+          "idle": 581278192,
+          "retire_ms": 204.36522648682862
+        }
+      ],
+      "zip_sha256": "a149d1ac1459cae4795b5f8508dc86375e25b5fd7cdfdebf9fd983d28512ac67",
+      "repeated_cohort_status": [
+        "pass"
+      ],
+      "capacity_check": {
+        "path": "build/update-admission/ua2i-capacity/results.json",
+        "sha256": "5a13fef0590ee1f37d7da74b88c69fa8ab89be040306c993df62972aa437a5ab",
+        "status": "pass"
+      },
+      "windows_check": {
+        "path": "build/update-admission/ua2i-windows/results.json",
+        "sha256": "12ef1203cf2d67ffade9c4d8d9f39c9ebc3a6356ad77b3da9f6ffb51236f81ff",
+        "status": "pass"
+      },
+      "resources": {
+        "executable_delta_bytes": 413,
+        "initialized_nonexecutable_delta_bytes": 0,
+        "zero_fill_delta_bytes": 0,
+        "vrambytes_delta": 0,
+        "bank_zero_delta": {
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            -16,
+            16,
+            0,
+            0
+          ],
+          "idle": 0,
+          "total": 0
+        },
+        "disposition": "experimental image only; all production changes reverted"
+      },
+      "fixed_stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1073128546,
+        "offset_ms": 6500,
+        "offered": 1084656284,
+        "mouse_delay_ticks": 2000,
+        "idle": 1086925181,
+        "retire_ms": 1279.370829979461
+      },
+      "focused_files": {
+        "status": "pass",
+        "path": "build/update-admission/ua2i-files/text-viewer-results.json",
+        "sha256": "e20eb1400154a8676fc7f7290b9ff4b65ecfc39a493bb0bb471179bc41908bd6",
+        "ordinary_minimum_above_floor": 169
+      },
+      "build_inputs": {
+        "compiler_pin": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "profile": "release host; same clean pinned source and checked emitted equivalence",
+        "manifest_sha256": "c23b0c657241029d7da3c3d4f7fb8f050fc0b51e0a076a328c571f0a44a0fdff",
+        "zip_entries": 19,
+        "verified_payload_checksums": 18
+      },
+      "focused_viewer": {
+        "status": "pass",
+        "path": "build/update-admission/ua2i-viewer/text-viewer-results.json",
+        "sha256": "6c8801391832d0721fb54c38c6a1b062c2b7af61ba763960fc5bea529b8dc39d",
+        "ordinary_minimum_above_floor": 172
+      }
+    }
+  },
+  "cancellation_controls": {
+    "ua1-files-final": {
+      "status": "pass",
+      "stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1074733085,
+        "offset_ms": 6500,
+        "offered": 1086260628,
+        "mouse_delay_ticks": 2000,
+        "idle": 1088665941,
+        "retire_ms": 1356.2921935946792
+      },
+      "zip_sha256": "5366248c6df85bfddf793c345f3001bbb1dc8bc44ad46e140a4ec39b9c66191f"
+    },
+    "ua2-files": {
+      "status": "pass",
+      "stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1071155181,
+        "offset_ms": 6500,
+        "offered": 1082682725,
+        "mouse_delay_ticks": 2000,
+        "idle": 1085677465,
+        "retire_ms": 1688.6544428295736
+      },
+      "zip_sha256": "f05db4d4487f04cdf71ba9718c5a9052b5518945963466a4f2555a6fae823205"
+    }
+  },
+  "fixture_build_failures": [
+    {
+      "path": "build/update-admission/ua2b-fairness.log",
+      "reason": "Standalone bitmap fixture exceeds its default image_data_bytes arena; no guest execution"
+    },
+    {
+      "path": "build/update-admission/ua2b-desktop.log",
+      "reason": "Standalone proof exceeds 16 registered Task entries; no guest execution"
+    },
+    {
+      "path": "build/update-admission/ua2-fairness.log",
+      "reason": "Original host compilation hit 600-second timeout; retry raised only host timeout to 1800 seconds"
+    },
+    {
+      "path": "build/update-admission/ua2-desktop-build.log",
+      "reason": "Original host compilation hit 600-second timeout; retry raised only host timeout to 1800 seconds"
+    },
+    {
+      "path": "build/update-admission/ua2b-fairness-text.log",
+      "reason": "Text-console fixture fails compilation with overlapping native image/import regions"
+    },
+    {
+      "path": "build/update-admission/ua2c-fairness.log",
+      "reason": "Fixture-only 8192-byte data arena retry passes data placement, then fails Task entry discovery capacity (maximum 16); no guest execution; temporary runner edit reverted"
+    },
+    {
+      "path": "build/update-admission/ua2c-windows.log",
+      "reason": "Debug-host compilation exceeds 600 seconds; retry uses equivalent pinned release-host binary"
+    },
+    {
+      "path": "build/update-admission/ua2b-display.log",
+      "reason": "Debug-host compilation exceeds 600 seconds; retry uses equivalent pinned release-host binary"
+    },
+    {
+      "path": "build/update-admission/ua2c-build-debug.log",
+      "reason": "Debug-host final native compilation hit 600 seconds; rerun with verified identical-emission release host profile"
+    }
+  ],
+  "fixture_substitutions": {
+    "console": "Standalone fairness fixture attempts failed before execution. Use exact packaged native CAT/disk/Panel/counter progress and fixed cancellation cases, plus optimized presenter intake/order cases; no scheduling or physical ownership policy changes.",
+    "desktop": "Focused AES display/borrow ownership fixture, window fixture and exact ZIP loaded input/exclusion/idle workflows; no production admission/ownership change"
+  },
+  "baseline_lock_companion": {
+    "path": "build/update-admission/baseline-locks/text-performance-results.json",
+    "status": "pass",
+    "update_times": {
+      "scope": "Passive loaded-viewer call/return markers; companion to unobserved cohorts",
+      "rows": [
+        {
+          "operation": "page",
+          "index": 0,
+          "begin_ms": [
+            10.765683788214762,
+            343.3381168599578,
+            18.43957884290344,
+            31.141533651263995,
+            20.783600867801272
+          ],
+          "end_ms": [
+            14.50007682776062,
+            17.800146325166097,
+            11.010193422697881,
+            15.404036488252402,
+            11.002158225715732
+          ],
+          "total_acquisition_ms": 424.46851401014123
+        },
+        {
+          "operation": "page",
+          "index": 1,
+          "begin_ms": [
+            10.542671829868096,
+            332.1818802079001,
+            28.579363076719215,
+            9.855592003710287,
+            17.80952072164527
+          ],
+          "end_ms": [
+            17.729309720191885,
+            21.16492030353309,
+            11.265910042445576,
+            19.70448800993545,
+            11.008078897176263
+          ],
+          "total_acquisition_ms": 398.96902783984297
+        },
+        {
+          "operation": "page",
+          "index": 2,
+          "begin_ms": [
+            347.68804827884674,
+            11.343019739800587,
+            21.37743011845572,
+            28.30095054970615,
+            10.908061840003722
+          ],
+          "end_ms": [
+            11.043884862675664,
+            15.339120554738722,
+            21.281078238853983,
+            10.121528830145804,
+            21.16576611374174
+          ],
+          "total_acquisition_ms": 419.6175105268129
+        },
+        {
+          "operation": "page",
+          "index": 3,
+          "begin_ms": [
+            63.57574723807725,
+            30.314049330470734,
+            342.66823517470914,
+            19.105160992924798,
+            10.863092930577308
+          ],
+          "end_ms": [
+            11.053118290786731,
+            13.820256872560366,
+            18.158205980160112,
+            10.992360924132234,
+            15.389305293785128
+          ],
+          "total_acquisition_ms": 466.52628566675924
+        },
+        {
+          "operation": "page",
+          "index": 4,
+          "begin_ms": [
+            10.974457941382534,
+            56.03069727183917,
+            11.458966222569318,
+            331.6547994795448,
+            17.1508460216612
+          ],
+          "end_ms": [
+            11.057699762750236,
+            9.623417101436608,
+            19.412753972136194,
+            20.442104996059935,
+            10.894458392481312
+          ],
+          "total_acquisition_ms": 427.26976693699703
+        },
+        {
+          "operation": "page",
+          "index": 5,
+          "begin_ms": [
+            31.00979871126718,
+            343.67651142760076,
+            56.037040848404025,
+            9.990075826885205,
+            17.377523157578672
+          ],
+          "end_ms": [
+            17.369065055492197,
+            11.038387096319457,
+            11.089135708838294,
+            20.12090856932613,
+            11.18548758844003
+          ],
+          "total_acquisition_ms": 458.0909499717358
+        },
+        {
+          "operation": "page",
+          "index": 6,
+          "begin_ms": [
+            10.755111160606672,
+            329.83983174015583,
+            17.752428532561577,
+            18.28035507112559,
+            17.687301146495738
+          ],
+          "end_ms": [
+            20.769856451910755,
+            11.121487949319052,
+            35.493579595674525,
+            18.48729663550796,
+            11.103443998201243
+          ],
+          "total_acquisition_ms": 394.3150276509454
+        },
+        {
+          "operation": "page",
+          "index": 7,
+          "begin_ms": [
+            31.344739553891504,
+            333.97443397675994,
+            19.206587733778417,
+            46.53831026855884,
+            10.801560237898219
+          ],
+          "end_ms": [
+            17.005296181589813,
+            19.379908342367056,
+            17.05456462624352,
+            11.104007871673675,
+            19.637175614163937
+          ],
+          "total_acquisition_ms": 441.8656317708869
+        },
+        {
+          "operation": "page",
+          "index": 8,
+          "begin_ms": [
+            330.41519413458815,
+            11.850153444068685,
+            18.329623515779293,
+            56.930145944551505,
+            30.80645184027156
+          ],
+          "end_ms": [
+            10.995532712414661,
+            18.244690073994295,
+            7.428187189076643,
+            11.097593810924767,
+            16.484981934903626
+          ],
+          "total_acquisition_ms": 448.3315688792592
+        },
+        {
+          "operation": "page",
+          "index": 9,
+          "begin_ms": [
+            10.79711973430282,
+            342.59937212688845,
+            18.73258159601567,
+            31.69159222362094,
+            61.782136206456634
+          ],
+          "end_ms": [
+            15.183209539611406,
+            17.47211293257906,
+            10.898969380260763,
+            12.569655994891306,
+            18.4156142203251
+          ],
+          "total_acquisition_ms": 465.6028018872845
+        },
+        {
+          "operation": "line",
+          "index": 0,
+          "begin_ms": [
+            11.295442915564177,
+            342.20917168396585,
+            18.242152643368353,
+            45.57845665011228,
+            17.047445723654068
+          ],
+          "end_ms": [
+            15.064937078768896,
+            17.951828289250177,
+            17.091357370319674,
+            20.455567475214238,
+            9.464827687315243
+          ],
+          "total_acquisition_ms": 434.3726696166647
+        },
+        {
+          "operation": "line",
+          "index": 1,
+          "begin_ms": [
+            330.99245960198994,
+            31.565002629060064,
+            20.71093167404166,
+            10.817701116046571,
+            56.29226407886335
+          ],
+          "end_ms": [
+            11.100201725734763,
+            15.417921872511027,
+            11.049241660663764,
+            10.889172078677266,
+            9.431629636625837
+          ],
+          "total_acquisition_ms": 450.3783591000016
+        },
+        {
+          "operation": "line",
+          "index": 2,
+          "begin_ms": [
+            11.956020688517704,
+            337.59922411010194,
+            22.758708673360786,
+            28.68389112167121,
+            11.410120683019937
+          ],
+          "end_ms": [
+            13.675059453409249,
+            13.903357725559962,
+            20.95093032074533,
+            9.608051549312849,
+            13.095256555381537
+          ],
+          "total_acquisition_ms": 412.4079652766716
+        },
+        {
+          "operation": "line",
+          "index": 3,
+          "begin_ms": [
+            331.1334279700978,
+            30.95009860737349,
+            20.204996200902478,
+            31.124335510354832,
+            22.765122734109692
+          ],
+          "end_ms": [
+            11.108166438532857,
+            15.958183143284478,
+            10.676873716306797,
+            13.408488269317248,
+            20.287039791141265
+          ],
+          "total_acquisition_ms": 436.17798102283825
+        },
+        {
+          "operation": "line",
+          "index": 4,
+          "begin_ms": [
+            30.978785670283447,
+            334.2052696795366,
+            17.872886003109762,
+            31.604755708866488,
+            20.776270512659664
+          ],
+          "end_ms": [
+            15.990394415397128,
+            19.685034375136564,
+            11.008078897176263,
+            15.408265539295638,
+            10.95866948415445
+          ],
+          "total_acquisition_ms": 435.43796757445597
+        },
+        {
+          "operation": "line",
+          "index": 5,
+          "begin_ms": [
+            347.21862361304744,
+            30.350489653626624,
+            21.82986809589796,
+            26.777575879748344,
+            9.527417642755141
+          ],
+          "end_ms": [
+            11.095197348666932,
+            14.217928638992696,
+            23.118248496219934,
+            11.553415029201597,
+            21.225818638555694
+          ],
+          "total_acquisition_ms": 435.7039748850755
+        },
+        {
+          "operation": "line",
+          "index": 6,
+          "begin_ms": [
+            63.34378378835573,
+            10.815093201236575,
+            330.0070907089158,
+            10.742917396765339,
+            19.153795079922016
+          ],
+          "end_ms": [
+            10.97565617251145,
+            20.97672753210907,
+            11.118598097772841,
+            18.4065922447662,
+            10.878387998517013
+          ],
+          "total_acquisition_ms": 434.0626801751955
+        },
+        {
+          "operation": "line",
+          "index": 7,
+          "begin_ms": [
+            344.9818785162797,
+            18.443596441394515,
+            11.406666958001294,
+            20.49334699786715,
+            27.749975682956503
+          ],
+          "end_ms": [
+            19.056597390111634,
+            11.028166889631635,
+            15.701973134248407,
+            22.12265939645803,
+            11.809766006605777
+          ],
+          "total_acquisition_ms": 423.07546459649916
+        },
+        {
+          "operation": "line",
+          "index": 8,
+          "begin_ms": [
+            46.05521167105313,
+            330.60373932693244,
+            10.708098209842694,
+            18.96673005544286,
+            11.493926377860072
+          ],
+          "end_ms": [
+            20.923864394068616,
+            11.128818304460662,
+            18.592811459036707,
+            11.000466605298437,
+            15.767100520314246
+          ],
+          "total_acquisition_ms": 417.8277056411312
+        },
+        {
+          "operation": "line",
+          "index": 9,
+          "begin_ms": [
+            17.939282104488573,
+            57.10107009088231,
+            31.166273599866926,
+            332.95029878245623,
+            18.899981533143777
+          ],
+          "end_ms": [
+            10.92039657221316,
+            11.613326585647446,
+            17.694631501637346,
+            18.596335668239405,
+            10.937383260570162
+          ],
+          "total_acquisition_ms": 458.0569061108378
+        }
+      ],
+      "viewer_dp": 4096,
+      "trace_bytes": 2031977,
+      "trace_sha256": "590fcb9320e9f5e37a58ae341fe9f071db9b791db7799c6e8b3d0f5dc6e306d7",
+      "page": {
+        "begin": {
+          "count": 50,
+          "median": 21.080515493128495,
+          "p95": 343.3381168599578,
+          "maximum": 347.68804827884674
+        },
+        "end": {
+          "count": 50,
+          "median": 15.261165047175064,
+          "p95": 21.16576611374174,
+          "maximum": 35.493579595674525
+        },
+        "total_acquisition": {
+          "count": 10,
+          "median": 434.567699353942,
+          "p95": 466.52628566675924,
+          "maximum": 466.52628566675924
+        }
+      },
+      "line": {
+        "begin": {
+          "count": 50,
+          "median": 24.771349306929018,
+          "p95": 342.20917168396585,
+          "maximum": 347.21862361304744
+        },
+        "end": {
+          "count": 50,
+          "median": 13.789208589484605,
+          "p95": 21.225818638555694,
+          "maximum": 23.118248496219934
+        },
+        "total_acquisition": {
+          "count": 10,
+          "median": 434.90531859556035,
+          "p95": 458.0569061108378,
+          "maximum": 458.0569061108378
+        }
+      }
+    },
+    "unobserved_match": true
+  },
+  "host_compiler_profile_check": {
+    "status": "pass",
+    "scope": "Same pinned compiler revision; release host versus debug host on retained UA2B native inputs",
+    "segments_equal": true,
+    "routines_equal": true,
+    "host_elapsed_seconds": 131.62505554198287,
+    "release_binary_sha256": "f482db50668e6b8aa3917b372ed2be9848ebdc462e7496abd9e6e73babbb0f78",
+    "debug_binary_sha256": "5ce0fb35d63da28f6dbe4717c7cad1ff287cf58e1a83b505f482f1a810e30341",
+    "driver": "build/update-admission/run_host_release.py",
+    "policy": "Only host build profile changes for selected retries. Source revision and ABI stay pinned; build records store the actual binary hash and override flag."
+  },
+  "stop_phase_diagnostic": {
+    "baseline-stop-trace": {
+      "stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1074733085,
+        "offset_ms": 6500,
+        "offered": 1086260628,
+        "mouse_delay_ticks": 2000,
+        "idle": 1088665941,
+        "retire_ms": 1356.2921935946792
+      },
+      "events": [
+        {
+          "ms": 0.15231632174056464,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 14.819299697340913,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 24.089168131562957,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 61.45346845621311,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 71.61644198658263,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 78.21411403495169,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 78.24026366723571,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 97.1223422176298,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 102.11438455325009,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 113.5097035576187,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 119.95146459086045,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 133.74754538829032,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 138.370250599468,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 140.5795068644547,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 158.0901041615272,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 169.1893191086852,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 169.2118035633984,
+          "name": "M_DESKMENU_MOUSE_030619D6",
+          "dp": "1100"
+        },
+        {
+          "ms": 169.36672779994896,
+          "name": "M_DESKMENU_HIT_D045BE68",
+          "dp": "1100"
+        },
+        {
+          "ms": 172.45689539724182,
+          "name": "M_DESKMENU_HIGHLIGHT_6D01C5E1",
+          "dp": "1100"
+        },
+        {
+          "ms": 172.47853404174637,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 172.9922227751315,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 173.01505965076495,
+          "name": "M_DESKMENU_MOUSE_030619D6",
+          "dp": "1100"
+        },
+        {
+          "ms": 173.18295297718146,
+          "name": "M_DESKMENU_HIT_D045BE68",
+          "dp": "1100"
+        },
+        {
+          "ms": 176.47766567659883,
+          "name": "M_DESKMENU_HIGHLIGHT_6D01C5E1",
+          "dp": "1100"
+        },
+        {
+          "ms": 176.50254659356986,
+          "name": "M_DESKMENU_CHOOSE_BBA7FD38",
+          "dp": "1100"
+        },
+        {
+          "ms": 179.32015185112613,
+          "name": "M_DESKMENU_CANCEL_D5CEF3CD",
+          "dp": "1100"
+        },
+        {
+          "ms": 179.33861870734825,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 191.40318503930902,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 209.9098648254318,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 209.98507144981738,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 211.05043989179268,
+          "name": "files:stop",
+          "dp": "0e00"
+        },
+        {
+          "ms": 211.06319752910645,
+          "name": "files:ExecBreakProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 211.0897700664948,
+          "name": "M_SHELLAPP_CBREAKPROGRAM_CD145314",
+          "dp": "0e00"
+        },
+        {
+          "ms": 214.92269999534804,
+          "name": "files:redraw",
+          "dp": "0e00"
+        },
+        {
+          "ms": 214.92946647701723,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 282.3981256845776,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 282.7457536803317,
+          "name": "M_DESKMENU_LABEL_D0514BE7",
+          "dp": "1100"
+        },
+        {
+          "ms": 284.9076445736341,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 286.1369592277189,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 321.4211303125692,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 332.17194193794853,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 336.98784429761804,
+          "name": "text:TextCancel",
+          "dp": "1000"
+        },
+        {
+          "ms": 343.41593139915335,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 382.5372614639001,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 393.9279285121212,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 396.9757351147976,
+          "name": "text:appl_exit",
+          "dp": "1000"
+        },
+        {
+          "ms": 420.28830850645426,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 449.54615233887665,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 454.5377717693927,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 474.8247410763499,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 480.35415483119743,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 498.23655619915445,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 503.02539263214726,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 549.5245841785562,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 559.3421147228773,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 613.4026380820408,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 638.6714295179305,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 839.0368195280661,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 845.3714446015458,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 850.4490547366076,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 851.1679934139578,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 851.466141512506,
+          "name": "M_DESKMENU_LABEL_D0514BE7",
+          "dp": "1100"
+        },
+        {
+          "ms": 852.9736572410517,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 853.0445643302099,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 873.8928696789727,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 878.9027445131587,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 893.0826116927623,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 897.9233244852188,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 909.7760153599133,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 914.3494521264373,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 927.3241102429026,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 931.9531590306451,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 943.850607362214,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 948.4210133088236,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 960.3904259923116,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 964.9656953476209,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 976.6796028639134,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 981.5110822282588,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 994.7244702761147,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 999.5446016868275,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1011.6344718408636,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1020.8155302031777,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1026.520942965608,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1027.2701898421012,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 1028.8429034408969,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 1041.6523466299398,
+          "name": "files:redraw",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1041.659042627425,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1045.4137351119782,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1051.3561157011977,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1061.9426991777316,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1076.0248047940522,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1081.0368646379438,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1092.120432096242,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1102.2969385899498,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1104.411464111568,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1205.460832643763,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1209.5143780687051,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1211.6815552758117,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1216.79405508198,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1223.3375247928118,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1228.0715245306105,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1232.2166993948229,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1250.0821140744229,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1252.131159789055,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1262.5611274086207,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1275.91470849856,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1296.6563007926652,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1311.2528704683955,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1324.1333617149648,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1328.8645420854014,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1341.7973325965386,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1341.8234822288227,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        }
+      ]
+    },
+    "ua2g-stop-trace": {
+      "stop": {
+        "kind": "files_stop",
+        "boundary": "Observed child load.phase=READ",
+        "start": 1072597048,
+        "offset_ms": 6500,
+        "offered": 1084124620,
+        "mouse_delay_ticks": 2000,
+        "idle": 1086960406,
+        "retire_ms": 1599.0244988926934
+      },
+      "events": [
+        {
+          "ms": 5.9247595432060995,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 5.947314482103361,
+          "name": "M_DESKMENU_MOUSE_030619D6",
+          "dp": "1100"
+        },
+        {
+          "ms": 6.016107045740006,
+          "name": "M_DESKMENU_HIT_D045BE68",
+          "dp": "1100"
+        },
+        {
+          "ms": 8.154174284832227,
+          "name": "M_DESKMENU_HIGHLIGHT_6D01C5E1",
+          "dp": "1100"
+        },
+        {
+          "ms": 8.176024381888947,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 15.286398385066375,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 27.52167741080579,
+          "name": "text:wind_update",
+          "dp": "1000"
+        },
+        {
+          "ms": 38.606584068600846,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 38.632733700884856,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 47.439098140768195,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 51.89391002552937,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 61.95721891964662,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 66.50577476919953,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 68.631084370978,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 89.77810169176139,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 95.18177166225671,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 99.9211986822277,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 102.03565371966185,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 107.83995579231976,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 112.40923399198454,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 114.57549490469833,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 159.45629910104472,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 159.48244873332874,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 197.03966426973452,
+          "name": "text:wind_update",
+          "dp": "1000"
+        },
+        {
+          "ms": 203.5368963558267,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 208.7874746785569,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 213.44457617155285,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 229.2634120829627,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 231.31175295575426,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 241.19060474020233,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 252.85996625217268,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 252.9308028571469,
+          "name": "M_DESKMENU_MOUSE_030619D6",
+          "dp": "1100"
+        },
+        {
+          "ms": 252.99571879066056,
+          "name": "M_DESKMENU_HIT_D045BE68",
+          "dp": "1100"
+        },
+        {
+          "ms": 255.08578630041205,
+          "name": "M_DESKMENU_HIGHLIGHT_6D01C5E1",
+          "dp": "1100"
+        },
+        {
+          "ms": 255.11073770156713,
+          "name": "M_DESKMENU_CHOOSE_BBA7FD38",
+          "dp": "1100"
+        },
+        {
+          "ms": 264.9782415323825,
+          "name": "M_DESKMENU_CANCEL_D5CEF3CD",
+          "dp": "1100"
+        },
+        {
+          "ms": 265.0457653807062,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 279.9421042912181,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 279.9688177969745,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 290.4106267594614,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 295.87871927418206,
+          "name": "M_IOCORE_ABORTIO_125E3726",
+          "dp": "0e00"
+        },
+        {
+          "ms": 295.94208455564655,
+          "name": "M_IORESIDENT_ABORTIO_0DA61711",
+          "dp": "0e00"
+        },
+        {
+          "ms": 295.96816370374654,
+          "name": "M_TIMERDRIVER_ABORTIO_ECBC9BE0",
+          "dp": "0e00"
+        },
+        {
+          "ms": 318.8995586280395,
+          "name": "files:stop",
+          "dp": "0e00"
+        },
+        {
+          "ms": 318.91210481280103,
+          "name": "files:ExecBreakProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 318.9389592869256,
+          "name": "M_SHELLAPP_CBREAKPROGRAM_CD145314",
+          "dp": "0e00"
+        },
+        {
+          "ms": 322.91447872012,
+          "name": "files:redraw",
+          "dp": "0e00"
+        },
+        {
+          "ms": 322.92117471760514,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 337.9301473542352,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 338.2332998298512,
+          "name": "M_DESKMENU_LABEL_D0514BE7",
+          "dp": "1100"
+        },
+        {
+          "ms": 340.5009874834186,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 341.76018743154225,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 355.5946821092815,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 366.902318788687,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 373.3011549538399,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 392.1882378813018,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 404.1020385435712,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 409.17175445001897,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 424.196304091325,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 429.26411692480326,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 444.20415602942853,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 449.27027724248956,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 464.24436020801295,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 469.311891104755,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 493.1749459738729,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 501.91625351187446,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 505.0454693471332,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 770.7391253476633,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 779.4985473209666,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 789.2911969483167,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 804.2410333545256,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 805.0205884301622,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 806.6774601447181,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 818.9181664526297,
+          "name": "files:redraw",
+          "dp": "0e00"
+        },
+        {
+          "ms": 818.9248624501148,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 830.5477748847936,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 841.7520817503761,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 849.0962517920603,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 871.1521626662193,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 885.4819497053056,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 887.603312192777,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 999.500760524346,
+          "name": "files:wind_update",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1007.5124862732051,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1016.0765260883111,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1055.006209656615,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1075.2891613650813,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1109.8543232883974,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1114.9156515769425,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1153.2517173471444,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1158.3095214264872,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1161.8233694541282,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1161.8501534440686,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1170.1440273816959,
+          "name": "text:TextCancel",
+          "dp": "1000"
+        },
+        {
+          "ms": 1205.5185591905033,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1210.5723456713547,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1220.711495547514,
+          "name": "text:appl_exit",
+          "dp": "1000"
+        },
+        {
+          "ms": 1243.9484394096808,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1249.0118822237478,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1274.0940315402627,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1281.4383425503152,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1297.2783237169413,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1302.1352478717301,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1302.1615384723823,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1318.687401234037,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1334.5131445954842,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1339.568622696753,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1379.1062323525225,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1403.0757888237458,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1432.9514970135851,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1435.001670475162,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1444.3997496401782,
+          "name": "M_AESSTATE_REPLY_22640A3F",
+          "dp": "1100"
+        },
+        {
+          "ms": 1462.9666934036673,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1462.9929840043192,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1500.9548492413787,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1501.6735764661767,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 1501.9715835963568,
+          "name": "M_DESKMENU_LABEL_D0514BE7",
+          "dp": "1100"
+        },
+        {
+          "ms": 1503.478605935614,
+          "name": "M_DESKMENU_CHECK_5755D9B5",
+          "dp": "1100"
+        },
+        {
+          "ms": 1503.5978651750333,
+          "name": "M_DESKMENU_ACTIVE_76BD9D5B",
+          "dp": "1100"
+        },
+        {
+          "ms": 1512.8341126534617,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1518.8263960449915,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1529.7873915072196,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1544.1479801347375,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1548.8719711184008,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1560.2193608776126,
+          "name": "M_DESKMENU_RUNNABLE_6E866F92",
+          "dp": "1100"
+        },
+        {
+          "ms": 1566.0350109039032,
+          "name": "M_DESKMENU_ADVANCE_27506AAF",
+          "dp": "1100"
+        },
+        {
+          "ms": 1583.4720931970076,
+          "name": "files:ExecCollectProgram",
+          "dp": "0e00"
+        },
+        {
+          "ms": 1583.4983133134756,
+          "name": "M_SHELLAPP_CCOLLECTPROGRAM_20689BAD",
+          "dp": "0e00"
+        }
+      ]
+    }
+  },
+  "break_phase_diagnostic": {
+    "baseline-break-trace": {
+      "cancellation": {
+        "kind": "shell_break",
+        "boundary": "Observed foreground scope publication",
+        "offset_ms": 1000,
+        "start": 578131108,
+        "offered": 579904740,
+        "foreground": 374688,
+        "idle": 580390369,
+        "retire_ms": 273.83331054344717
+      },
+      "markers": [
+        {
+          "ms": 26.475692119445316,
+          "name": "M_CONSOLEFOREGROUND_DELIVER_8D52BBDC",
+          "dp": "1100"
+        },
+        {
+          "ms": 28.73111552498735,
+          "name": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+          "dp": "1200"
+        },
+        {
+          "ms": 28.778057991567273,
+          "name": "M_IOCORE_ABORTIO_125E3726",
+          "dp": "1200"
+        },
+        {
+          "ms": 28.890127844213037,
+          "name": "M_IORESIDENT_ABORTIO_0DA61711",
+          "dp": "1200"
+        },
+        {
+          "ms": 28.91000438411625,
+          "name": "M_CONSOLEDRIVER_ABORTIO_EFA380E8",
+          "dp": "1200"
+        },
+        {
+          "ms": 217.17614984373657,
+          "name": "M_DOSCANCEL_TRANSFER_DC8DFD88",
+          "dp": "0b00"
+        },
+        {
+          "ms": 243.73113667024256,
+          "name": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+          "dp": "0b00"
+        },
+        {
+          "ms": 256.960806564615,
+          "name": "M_DOSCANCEL_TRANSFER_DC8DFD88",
+          "dp": "0b00"
+        }
+      ]
+    },
+    "ua2h-break-trace": {
+      "cancellation": {
+        "kind": "shell_break",
+        "boundary": "Observed foreground scope publication",
+        "offset_ms": 1000,
+        "start": 580267813,
+        "offered": 582041444,
+        "foreground": 374688,
+        "idle": 583600485,
+        "retire_ms": 879.1018623331111
+      },
+      "markers": [
+        {
+          "ms": 23.48540061095691,
+          "name": "M_CONSOLEFOREGROUND_DELIVER_8D52BBDC",
+          "dp": "1100"
+        },
+        {
+          "ms": 25.738639006793267,
+          "name": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+          "dp": "1200"
+        },
+        {
+          "ms": 25.834990886395,
+          "name": "M_IOCORE_ABORTIO_125E3726",
+          "dp": "1200"
+        },
+        {
+          "ms": 25.898356167859493,
+          "name": "M_IORESIDENT_ABORTIO_0DA61711",
+          "dp": "1200"
+        },
+        {
+          "ms": 25.91773931847433,
+          "name": "M_CONSOLEDRIVER_ABORTIO_EFA380E8",
+          "dp": "1200"
+        },
+        {
+          "ms": 205.49938749244058,
+          "name": "M_DOSCANCEL_TRANSFER_DC8DFD88",
+          "dp": "0b00"
+        },
+        {
+          "ms": 861.8264002740425,
+          "name": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+          "dp": "0b00"
+        },
+        {
+          "ms": 875.0107488380683,
+          "name": "M_DOSCANCEL_TRANSFER_DC8DFD88",
+          "dp": "0b00"
+        }
+      ]
+    },
+    "passivity": "TVP4 arrays match exactly. H has a uniform one-frame (35568 guest ticks) startup offset, including every offered/model/paint/retirement timestamp; all elapsed timings and non-time fields match exactly. History enabled only at fixed BREAK offer and stopped at foreground completion."
+  },
+  "baseline_metrics": {
+    "page_complete_ms": {
+      "count": 30,
+      "median": 942.6343322821792,
+      "p95": 964.7418375790656,
+      "maximum": 964.7418375790656
+    },
+    "page_first_band_ms": {
+      "count": 30,
+      "median": 178.6015655946962,
+      "p95": 525.9450871818873,
+      "maximum": 525.9450871818873
+    },
+    "line_complete_ms": {
+      "count": 30,
+      "median": 940.4921769604118,
+      "p95": 960.4439939721926,
+      "maximum": 960.4439939721926
+    },
+    "line_first_band_ms": {
+      "count": 30,
+      "median": 191.35638354109722,
+      "p95": 524.6825744771131,
+      "maximum": 524.6825744771131
+    },
+    "panel_paint_ms": {
+      "count": 30,
+      "median": 981.0315783241399,
+      "p95": 1222.9113069318375,
+      "maximum": 1222.9113069318375
+    },
+    "panel_button_paint_ms": {
+      "count": 30,
+      "median": 538.3173169772435,
+      "p95": 781.8444019346499,
+      "maximum": 781.8444019346499
+    }
+  },
+  "production_disposition": {
+    "accepted_candidate": null,
+    "guest_source_changes": false,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "code_delta": 0,
+    "upper_ram_delta": 0,
+    "vram_delta": 0,
+    "recommended_package": "Retain TVP4 package identified by baseline_zip_sha256"
+  },
+  "retained_experimental_patches": {
+    "update-admission-slider-experiment.patch": {
+      "path": "docs/development/update-admission-slider-experiment.patch",
+      "sha256": "875d2a4a67a41afbe9c5f521963858fb4692c039ef40b4d397245a5484d77dfe"
+    },
+    "update-admission-frame-experiment.patch": {
+      "path": "docs/development/update-admission-frame-experiment.patch",
+      "sha256": "c524add40b2bfa5b973f256b582f3f552e4ed6af719b6c0bfbc0c303151d4b0d"
+    }
+  },
+  "final_checks": {
+    "host_tests": 429,
+    "historical_skips": 4,
+    "tier": "development",
+    "production_source_diff_vs_TVP4": "empty",
+    "qualification": false,
+    "host_log": {
+      "path": "build/update-admission/final-host.log",
+      "sha256": "fb3dc38a2188dea862b47adc2137988aaff33d1b95d2accdbc10151abd6d3479"
+    },
+    "retained_patches_apply_cleanly": true,
+    "relative_link_check": "539 links in six changed Markdown pages; all resolve"
+  },
+  "twofold_page_gate": {
+    "status": "open",
+    "production": {
+      "count": 30,
+      "median": 942.6343322821792,
+      "p95": 964.7418375790656,
+      "maximum": 964.7418375790656
+    },
+    "experimental_C": {
+      "count": 30,
+      "median": 620.2969075769088,
+      "p95": 699.7438604751479,
+      "maximum": 699.7438604751479
+    },
+    "target": {
+      "median": 640.8,
+      "p95": 660.8
+    }
+  }
 }

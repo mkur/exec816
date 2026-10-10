@@ -8,10 +8,12 @@ document loading, the standalone viewer, Files launching and the OF816 package.
 TV1–TV4 are implemented and pass the recorded development checks.
 
 The [text viewer performance plan](gem4xe/text-viewer-performance-plan.md) is
-implemented through TVP4; the twofold page target remains open. The proposed
-[UPDATE admission latency plan](gem4xe/update-admission-latency-plan.md) next
-attributes logical-lock and physical-display waits, applies one measured fix,
-and checks matched input/cancellation response and the OF816 package.
+implemented through TVP4; the twofold page target remains open. The
+[UPDATE admission latency plan](gem4xe/update-admission-latency-plan.md) has
+implemented UA1 attribution. All nine UA2 experiments miss at least one frozen
+gate, so production remains at TVP4 and UA2/UA3 acceptance is open. The
+[execution record](../history/update-admission-latency.md) retains comparisons,
+experimental patches and cancellation-phase findings.
 
 The [standard GEM file selector design](gem4xe/file-selector-design.md)
 covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and the

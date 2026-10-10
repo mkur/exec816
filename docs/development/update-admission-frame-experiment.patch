@@ -1,0 +1,72 @@
+--- a/lib/desktop/desktop-frame.c
++++ b/lib/desktop/desktop-frame.c
+@@ -21,8 +21,12 @@
+ 
+ static void box(WORD l,WORD t,WORD r,WORD b)
+ {
+-    fill(l,t,r,t+1,1); fill(l,b-1,r,b,1);
+-    fill(l,t+1,l+1,b-1,1); fill(r-1,t+1,r,b-1,1);
++    if (l>=paint->clipRight || r<=paint->clipLeft ||
++        t>=paint->clipBottom || b<=paint->clipTop) return;
++    if (t>=paint->clipTop) fill(l,t,r,t+1,1);
++    if (b<=paint->clipBottom) fill(l,b-1,r,b,1);
++    if (l>=paint->clipLeft) fill(l,t+1,l+1,b-1,1);
++    if (r<=paint->clipRight) fill(r-1,t+1,r,b-1,1);
+ }
+ 
+ static void text(WORD x,WORD y,UWORD count)
+@@ -39,18 +43,23 @@
+     WORD k=p->fillY,g=DESKTOP_FRAME_GADGET,left=r-g;
+     WORD top=t+DESKTOP_TITLE_HEIGHT,bottom=b-(k&DESKTOP_FRAME_SIZER ? g:DESKTOP_WORK_BOTTOM);
+     WORD i,mid=left+g/2,center;
++    if (left>=p->clipRight || r<=p->clipLeft) return;
+     if (k&DESKTOP_FRAME_VERTICAL) {
+         fill(left,top,r,bottom,8);
+         if (k&DESKTOP_FRAME_UPARROW) {
+-            fill(left,top,r,top+g,0);box(left,top,r,top+g);
+-            center=top+5;
+-            for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
++            if (top<p->clipBottom && top+g>p->clipTop) {
++                fill(left,top,r,top+g,0);box(left,top,r,top+g);
++                center=top+5;
++                for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
++            }
+             top+=g;
+         }
+         if (k&DESKTOP_FRAME_DNARROW) {
+-            fill(left,bottom-g,r,bottom,0);box(left,bottom-g,r,bottom);
+-            center=bottom-6;
+-            for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
++            if (bottom-g<p->clipBottom && bottom>p->clipTop) {
++                fill(left,bottom-g,r,bottom,0);box(left,bottom-g,r,bottom);
++                center=bottom-6;
++                for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
++            }
+             bottom-=g;
+         }
+         box(left,top,r,bottom);
+@@ -59,7 +68,7 @@
+             fill(left+1,top,r-1,bottom,0);box(left,top,r,bottom);
+         }
+     }
+-    if (k&DESKTOP_FRAME_SIZER) {
++    if ((k&DESKTOP_FRAME_SIZER) && b-g<p->clipBottom && b>p->clipTop) {
+         box(left,b-g,r,b);
+         for (i=3;i<12;i+=3) {
+             WORD j;
+@@ -83,6 +92,15 @@
+     /* Side/bottom fragments are admitted inside the outer bounds. They need
+      * only paper and the intersecting outline, never a title scan or glyphs. */
+     if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
++        /* The vertical rail supplies its own paper and outline. Avoid first
++         * constructing the two fills it would immediately overwrite. */
++        if ((p->fillY&DESKTOP_FRAME_VERTICAL) &&
++            p->clipLeft>=r-DESKTOP_FRAME_GADGET &&
++            p->clipBottom<=b-(p->fillY&DESKTOP_FRAME_SIZER ?
++                              DESKTOP_FRAME_GADGET:DESKTOP_WORK_BOTTOM)) {
++            gadgets(l,t,r,b);
++            return 1;
++        }
+         GemWidgetFill(1,1,0,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
+         if (p->clipLeft==l)
+             GemWidgetFill(1,1,1,l,p->clipTop,l+1,p->clipBottom);

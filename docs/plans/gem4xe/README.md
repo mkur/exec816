@@ -14,10 +14,11 @@ matched desktop/package checks. Page median/p95 improve by 26%/27%; the twofold
 target remains open. See the [execution record](../../history/text-viewer-performance.md)
 for loaded-input results and intermediate tradeoffs.
 
-The proposed [UPDATE admission latency plan](update-admission-latency-plan.md)
-follows TVP4 with ownership/wait attribution, one measured admission or handoff
-fix, and matched input/cancellation checks. It preserves the current AES lock
-contract and presenter budgets.
+The [UPDATE admission latency plan](update-admission-latency-plan.md) has
+implemented UA1 ownership/wait attribution. All nine UA2 experiments miss at
+least one frozen gate; production remains at TVP4 and UA2/UA3 acceptance is open.
+The [execution record](../../history/update-admission-latency.md) retains the
+experimental patches, input/cancellation comparisons and stack accounting.
 
 The [standard file selector design](file-selector-design.md) adds
 caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,

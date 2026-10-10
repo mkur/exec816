@@ -167,11 +167,15 @@ The [measurement record](history/text-viewer-performance.md) preserves the
 intermediate latency tradeoffs, exact OF816 package checks and remaining
 scanout/flicker limits.
 
-Next, the [UPDATE admission latency plan](plans/gem4xe/update-admission-latency-plan.md)
-separates queueing, ownership, presenter settlement and caller resumption before
-changing admission or handoff ordering. UA1–UA3 retain lock fairness and bounded
-presenter work, compare against TVP4 and each intermediate candidate, and add
-cancellation offers independent of repaint completion.
+The [UPDATE admission latency plan](plans/gem4xe/update-admission-latency-plan.md)
+has implemented UA1 attribution and frozen cancellation controls. A retained
+native repaint dominates the sampled UPDATE wait. All nine UA2 experiments miss
+at least one input, cancellation or stack gate; production remains at TVP4 and
+UA2/UA3 acceptance is open. The [execution record](history/update-admission-latency.md)
+retains the candidate patches and comparisons. Before retrying the renderer,
+resolve the post-abort shell-output wait and the child Read-to-close interval
+identified by the cancellation companions. Preserve the existing lock semantics
+and bounded presenter work; no current tolerance is waived.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

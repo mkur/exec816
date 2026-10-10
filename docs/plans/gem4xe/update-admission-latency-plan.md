@@ -3,9 +3,14 @@
 [GEM plans](README.md) · [Viewer measurements](../../history/text-viewer-performance.md) ·
 [AES contract](../../reference/aes.md) · [Display ownership](../../reference/display.md)
 
-Status: UA1 attribution and replay passed; the frozen Files Stop baseline is
-running on the unchanged ZIP. UA2 selects narrow slider damage. Implement UA1–UA3 as small executable
-slices, checking and committing each before continuing. Follow the
+Status: UA1 is implemented and committed. UA2 has no accepted production
+candidate: all nine trials miss at least one input, cancellation or stack gate.
+UA3 retains the comparison evidence, but its acceptance/package gate remains
+open. The production renderer, application code and memory map are restored to
+TVP4. No gate or tolerance is waived. See the execution record for the retained
+experimental patches and the measured cancellation phases.
+Implement UA1–UA3 as small executable slices, checking and committing each
+before continuing. Follow the
 [execution record](../../history/update-admission-latency.md).
 
 Shorten the waits surrounding `wind_update(BEG_UPDATE)` while preserving input
