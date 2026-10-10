@@ -16,12 +16,16 @@ PUBLIC CARD FUNC SystemUnit()
     RETURN(0)
   FI
 
+  IF BOOTCONFIG.B_DEFAULT_DRIVE=0 THEN
+    RETURN(BOOTCONFIG.B_SYSTEM_UNIT)
+  FI
+
 RETURN(48+CARD(BOOTCONFIG.SystemDrive()))
 
 ; Apply system-drive selection only to the designated mount slot.
 PUBLIC CARD FUNC Unit(FSTYPES.Spec POINTER spec BYTE slot)
 
-  IF Selected(slot)<>0 THEN
+  IF Selected(slot)<>0 AND BOOTCONFIG.B_DEFAULT_DRIVE<>0 THEN
     RETURN(SystemUnit())
   FI
 
@@ -30,7 +34,7 @@ RETURN(spec.unit)
 ; Physical names follow the selected drive; SYS remains attached to its slot.
 PUBLIC BYTE FUNC NameByte(FSTYPES.Spec POINTER spec BYTE slot,index)
 
-  IF Selected(slot)<>0 THEN
+  IF Selected(slot)<>0 AND BOOTCONFIG.B_DEFAULT_DRIVE<>0 THEN
     CASE index OF
     WHEN 0 THEN
       RETURN('D)
@@ -84,7 +88,7 @@ RETURN(0)
 ; Preserve geometry/profile/format while copying the boot-selected identity.
 PUBLIC PROC Apply(FSTYPES.Spec POINTER spec BYTE slot)
 
-  IF Selected(slot)<>0 THEN
+  IF Selected(slot)<>0 AND BOOTCONFIG.B_DEFAULT_DRIVE<>0 THEN
     spec.unit=SystemUnit()
     spec.alias(0)='D
     spec.alias(1)='0+BOOTCONFIG.SystemDrive()

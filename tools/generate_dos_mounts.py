@@ -63,7 +63,10 @@ def select_system(mounts, name=None):
     require(len(slots)==1, 'system_mount must identify a configured mount')
     slot=slots[0]
     mount=mounts[slot]
-    require(mount.get('device','sio.device')=='sio.device','System mount must use SIO')
+    require(mount.get('format')!=RAM,'RAM is not supported as the system mount')
+    if mount.get('device','sio.device')=='ideplus.device':
+        return dict(system_slot=slot,system_drive=0,allowed_drives=0,
+                    system_unit=mount['unit'])
     drive=mount['unit']-48
     require(mount['alias'].upper()==f'D{drive}', 'System mount must use D1..D8 matching its SIO unit')
     # The monitor can reject conflicts without retaining filesystem objects.

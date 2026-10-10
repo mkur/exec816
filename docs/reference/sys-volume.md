@@ -16,8 +16,9 @@ The standard configuration selects D1:
 }
 ```
 
-Selection is by name, independent of descriptor order. Only the selected
-mount must use D1..D8 matching its SIO unit. SYS is reserved and cannot be a
+Selection is by name, independent of descriptor order. A selected SIO
+mount must use D1..D8 matching its SIO unit. A selected IDE mount retains its
+configured physical alias and APT unit. SYS is reserved and cannot be a
 separate mount. Omitting `system_mount` leaves explicit-volume access intact
 but makes SYS unavailable.
 
@@ -36,6 +37,12 @@ profile stay unchanged. SYS resolves to D2, and the old D1 name is absent.
 and rejects unit/name conflicts without changing the previous request.
 The getter reports the request, not a successful mount. Five-second autoboot
 uses the image's default. Settings last for one boot and freeze at handoff.
+
+For IDE-backed SYS, system_drive is zero and the selected descriptor supplies
+the immutable APT unit. SYSTEM-DRIVE@ reports zero; SYSTEM-DRIVE! rejects SIO
+overrides without changing the record. Cache/verbosity settings remain usable.
+Malformed nonzero input falls back to the fixed IDE selection. This does not
+provide interactive IDE partition switching.
 
 The native startup path independently validates the shared eight-byte
 [boot record](platform.md#boot-service-settings). Malformed input

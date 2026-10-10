@@ -1,0 +1,45 @@
+MODULE IDESYSTEM
+USE EXEC
+USE DOS
+USE FSBOOT
+USE BOOTCONFIG
+USE FSSYSTEM
+USE HEAPCORE
+
+CARD checks
+BYTE expectedStatus
+BYTE ARRAY name(64),buffer(17)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  Require(BOOTCONFIG.Status()=expectedStatus)
+  Require(BOOTCONFIG.SystemDrive()=0 AND FSSYSTEM.SystemUnit()=2)
+  LET root=DOS.Lock(BYTE POINTER(c"SYS:"),DOS.SHARED_LOCK)
+  Require(root<>NULL)
+  Require(DOS.NameFromLock(root,name,64)<>0)
+  Require(name(0)='S AND name(1)='Y AND name(2)='S
+      AND name(3)='T AND name(4)='E AND name(5)='M AND name(6)=':
+      AND name(7)=0)
+  DOS.UnLock(root)
+  LET file=DOS.Open(BYTE POINTER(c"SYS:APPEND.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL AND DOS.Read(file,buffer,17)=17)
+  Require(DOS.Close(file)<>0)
+  LET alias=DOS.Open(BYTE POINTER(c"SYSTEM:APPEND.BIN"),DOS.MODE_OLDFILE)
+  Require(alias<>NULL AND DOS.Read(alias,buffer,17)=17)
+  Require(DOS.Close(alias)<>0)
+  Require(DOS.Open(BYTE POINTER(c"SYS:DENIED.TXT"),DOS.MODE_NEWFILE)=NULL)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

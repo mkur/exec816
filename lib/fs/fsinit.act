@@ -47,7 +47,8 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
         RETURN(0)
       FI
 
-      IF FSSYSTEM.Selected(index)<>0 THEN
+      IF FSSYSTEM.Selected(index)<>0 AND
+          spec.backend=BLOCKTYPES.BACKEND_SIO THEN
         ; The immutable descriptor must still match the packaged physical drive.
         IF spec.unit<>48+BOOTCONFIG.B_DEFAULT_DRIVE OR
             FS83.Fold(spec.alias(0))<>'D OR
@@ -73,9 +74,6 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
           service.error=ERROR_BAD_NUMBER
           RETURN(0)
         FI
-      ELSEIF FSSYSTEM.Selected(index)<>0 AND spec.backend<>BLOCKTYPES.BACKEND_SIO THEN
-        service.error=ERROR_BAD_NUMBER
-        RETURN(0)
       ELSEIF BLOCKIO.Geometry(spec.backend,unit,spec.profile,
           spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
         service.error=ERROR_BAD_NUMBER

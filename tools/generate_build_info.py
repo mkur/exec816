@@ -33,7 +33,8 @@ def generate(output, mounts, task_capacity, stack_checks=True, system_mount=None
                    stackChecks=f'exec: stack checks {"enabled" if stack_checks else "disabled"}\n',
                    version=f"Exec816 ({build['display']})\nactionc pin: {compiler[:7]}\n")
     if mount:
-        strings.update(sioReady=' ready, '+PROFILE_NAMES[mount['profile']]+' profile\n',
+        strings.update(sioReady='' if mount.get('device')=='ideplus.device' else
+                       ' ready, '+PROFILE_NAMES[mount['profile']]+' profile\n',
                        mountStart='Filesystems: mounting...\n')
     else:
         strings.update(sioReady='', mountStart='SYS: no system volume configured\n')

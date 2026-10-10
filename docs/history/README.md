@@ -23,6 +23,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 ## Exec and project history
 
 - [IDE Plus block driver](ideplus-block-driver.md): transport separation and native ATA development evidence.
+- [IDE-only demo](ide-only-demo.md): IDE system-volume selection and separate-profile development evidence.
 
 - [RAM filesystem](ram-filesystem.md): shared-worker backend, dynamic storage,
   allocation failures, command integration and memory costs.

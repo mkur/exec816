@@ -28,6 +28,7 @@ def definitions(record):
     values = dict(ADDRESS=record['address'], MAGIC=ABI['magic'], VERSION=ABI['version'],
                   SETTINGS=record.get('settings', 0),
                   SYSTEM_SLOT=record.get('system_slot', 255), DEFAULT_DRIVE=record['system_drive'],
+                  SYSTEM_UNIT=record.get('system_unit', 0),
                   ALLOWED_DRIVES=record.get('allowed_drives', 0),
                   SIZE=ABI['size'], DEFAULT_BLOCKS=record['cache_blocks'],
                   MIN_BLOCKS=ABI['cache']['minimum'], MAX_BLOCKS=ABI['cache']['maximum'],

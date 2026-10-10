@@ -81,8 +81,9 @@ configured mount to permit writes. A source mount selects, for example:
 ```
 
 Geometry must match exactly; format 1 is MyDOS and format 2 is SpartaDOS. Units
-1–15 follow APT mapping slots directly. Raw unit 0 and IDE-backed SYS: are
-unsupported for filesystem mounts. Writable admission also requires the board
+1–15 follow APT mapping slots directly. Raw unit 0 is unsupported for filesystem
+mounts. SYS may select a fixed IDE mount; SIO drive overrides do not apply.
+Writable admission also requires the board
 protection switch to allow it and IDENTIFY to report a supported durability
 policy. Successful writes preserve neighbours and complete verification before
 replying. Cache-free media has emulator coverage; successful FLUSH on cached

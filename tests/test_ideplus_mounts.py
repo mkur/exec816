@@ -14,6 +14,7 @@ class IDEMounts(unittest.TestCase):
     def test_operational_limits(self):
         for patch in [dict(unit=0),dict(unit=16),dict(profile=4),dict(sector_bytes=512),dict(sectors=65536)]:
             with self.subTest(patch=patch),self.assertRaises(ValueError):validate_mounts([{**self.spec,**patch}])
-        with self.assertRaises(ValueError):select_system(validate_mounts([self.spec]),'IDE')
+        self.assertEqual(select_system(validate_mounts([self.spec]),'IDE'),
+                         dict(system_slot=0,system_drive=0,allowed_drives=0,system_unit=2))
         with self.assertRaises(ValueError):validate_mounts([self.spec,{**self.spec,'alias':'OTHER'}])
 if __name__=='__main__':unittest.main()
