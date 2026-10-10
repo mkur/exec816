@@ -40,7 +40,8 @@ static void status(struct TextApp *a,const char *text)
     WORD r[4];
     if (!strcmp(a->status,text)) return;
     strcpy(a->status,text);
-    r[0]=a->work[0];r[1]=a->work[1]+a->work[3]-12;r[2]=a->work[2];r[3]=12;
+    r[0]=a->work[0]+4;r[1]=a->work[1]+a->work[3]-12;
+    r[2]=a->columns*a->cellw;r[3]=8;
     damage(a,r);
 }
 
@@ -87,10 +88,11 @@ static WORD viewport(struct TextApp *a)
     return 1;
 }
 
-static WORD bar(struct TextApp *a,WORD x,WORD y,WORD w,WORD h)
+static WORD bar(struct TextApp *a,const WORD *clip,WORD x,WORD y,WORD w,WORD h)
 {
     WORD p[4];
-    if (w<=0 || h<=0) return 1;
+    /* Skip unchanged margins and backgrounds outside this damage fragment. */
+    if (w<=0 || h<=0 || x>clip[2] || y>clip[3] || x+w<=clip[0] || y+h<=clip[1]) return 1;
     p[0]=x;p[1]=y;p[2]=x+w-1;p[3]=y+h-1;v_bar(a->vdi,p);
     return ExecAESDiagnostic()==AES_OK;
 }
@@ -110,11 +112,11 @@ static WORD paint(struct TextApp *a)
         if (clip[0]<=clip[2] && clip[1]<=clip[3]) {
             vs_clip(a->vdi,1,clip);
             x=a->work[0]+4;textEnd=textY+a->rows*a->cellh;statusY=a->work[1]+a->work[3]-12;
-            okay=bar(a,a->work[0],y,4,end-y) &&
-                bar(a,x+a->columns*a->cellw,y,a->work[2]-4-a->columns*a->cellw,end-y) &&
-                bar(a,x,a->work[1],a->columns*a->cellw,4) &&
-                bar(a,x,textEnd,a->columns*a->cellw,statusY-textEnd) &&
-                bar(a,x,statusY+8,a->columns*a->cellw,4);
+            okay=bar(a,clip,a->work[0],y,4,end-y) &&
+                bar(a,clip,x+a->columns*a->cellw,y,a->work[2]-4-a->columns*a->cellw,end-y) &&
+                bar(a,clip,x,a->work[1],a->columns*a->cellw,4) &&
+                bar(a,clip,x,textEnd,a->columns*a->cellw,statusY-textEnd) &&
+                bar(a,clip,x,statusY+8,a->columns*a->cellw,4);
             for (i=start;i<a->rows && okay;++i) {
                 rowY=textY+i*a->cellh;if (rowY>=end) break;
                 TextRow(&a->document,a->first+i,a->row,a->columns);
@@ -138,11 +140,16 @@ static WORD paint(struct TextApp *a)
 
 static WORD scroll(struct TextApp *a,WORD first)
 {
+    WORD r[4];
     first=minimum(maximum(first,0),maximum(0,a->document.lines-a->rows));
     if (first==a->first) return 1;
     a->first=first;
     if (!viewport(a)) return 0;
-    damage(a,a->work);return 1;
+    /* The padded rows replace their old pixels. Scrolling changes neither
+     * side margins nor the top/bottom padding; exposure still damages work. */
+    r[0]=a->work[0]+4;r[1]=a->work[1]+4;
+    r[2]=a->columns*a->cellw;r[3]=a->work[3]-8;
+    damage(a,r);return 1;
 }
 
 static void load_error(struct TextApp *a)

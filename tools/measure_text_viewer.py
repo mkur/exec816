@@ -110,33 +110,61 @@ class ViewerMeasurement:
         # A top-boundary key must not repaint.
         before=n('paints',4);key('UP');s.frames(30)
         require(n('first')==0 and n('paints',4)==before,'No-op scroll repainted')
+        def panel_action(i):
+            click(96,40);settled();s.frames(30);move(568,176)
+            first=n('first');actions=s.number(panel+10,4)
+            key('SPACE',shift=i%2==1);s.frames(3)
+            row=dict(index=i,offered_frame=s.b.eval_expr('@frame'),start=clock(),
+                     viewer_dirty=n('dirty'),viewer_first=n('first'))
+            s.b._cmd_ok('MOUSE AT 2000 0 0 1')
+            # Raising an inactive GEM window is a separate transaction.
+            # Wait for its focus acknowledgment before offering a button.
+            s.b._cmd_ok('MOUSE AT %d 0 0 0'%(2000+round(.04*BASE_HZ)))
+            target=next(w['id'] for w in menus.windows() if w['title']=='GEM Control Panel')
+            s.rendezvous('dw($%x)=%d'%(menus.focus_address,target))
+            s.frames(3);row['gesture']=clock();row['gesture_dirty']=n('dirty')
+            s.b._cmd_ok('MOUSE AT 2000 0 0 1')
+            s.b._cmd_ok('MOUSE AT %d 0 0 0'%(2000+round(.08*BASE_HZ)))
+            panel_idle(actions);row['paint']=clock()
+            s.frames(30);settled()
+            require(s.number(panel+10,4)==actions+1,'Panel missed or duplicated activation')
+            row.update(paint_ms=((row['paint']-row['start'])&0xffffffff)*1000/BASE_HZ,
+                       button_paint_ms=((row['paint']-row['gesture'])&0xffffffff)*1000/BASE_HZ,
+                       scope='Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing')
+            return row
         if self.panel:
-            # The right-hand Cancel button stays exposed when TEXT is in front.
-            # Submit it six PAL frames after a page key, independent of paint completion.
+            # Offer the raise six PAL frames after a page key.
             for i in range(self.count):
-                click(96,40);settled();s.frames(30);move(568,176)
-                first=n('first');actions=s.number(panel+10,4)
-                key('SPACE',shift=i%2==1);s.frames(3)
-                row=dict(index=i,offered_frame=s.b.eval_expr('@frame'),start=clock(),
-                         viewer_dirty=n('dirty'),viewer_first=n('first'))
-                s.b._cmd_ok('MOUSE AT 2000 0 0 1')
-                # Raising an inactive GEM window is a separate transaction.
-                # Wait for its focus acknowledgment before offering a button.
-                s.b._cmd_ok('MOUSE AT %d 0 0 0'%(2000+round(.04*BASE_HZ)))
-                target=next(w['id'] for w in menus.windows() if w['title']=='GEM Control Panel')
-                s.rendezvous('dw($%x)=%d'%(menus.focus_address,target))
-                s.frames(3);row['gesture']=clock();row['gesture_dirty']=n('dirty')
-                s.b._cmd_ok('MOUSE AT 2000 0 0 1')
-                s.b._cmd_ok('MOUSE AT %d 0 0 0'%(2000+round(.08*BASE_HZ)))
-                panel_idle(actions);row['paint']=clock()
-                s.frames(30);settled()
-                require(s.number(panel+10,4)==actions+1,'Panel missed or duplicated activation')
-                row.update(paint_ms=((row['paint']-row['start'])&0xffffffff)*1000/BASE_HZ,
-                           button_paint_ms=((row['paint']-row['gesture'])&0xffffffff)*1000/BASE_HZ,
-                           scope='Fixed-offset raise; focus acknowledgment then an 80 ms button gesture; completed inbox wait after synchronous drawing')
+                row=panel_action(i)
                 self.record['panel'].append(row);checkpoint()
                 print('panel',i,round(row['paint_ms'],3),'ms',flush=True)
             move(630,230);s.frames(60);s.cells('performance-panel-overlap')
+        # New model damage must repair bands already drawn for the old page.
+        menus.select('STORY.TXT');settled();move(630,230);s.frames(20)
+        key('SPACE');s.frames(3)
+        require(n('first')==n('rows') and n('dirty'),'Missing in-flight repaint')
+        key('SPACE',shift=True);settled();s.frames(60)
+        require(n('first')==0,'Mid-repaint model change was lost')
+        s.cells('performance-model-replaced');self.record['model_replaced_during_paint']=True
+        if self.panel:
+            # One additional bounded case with real disk/console work. Report
+            # it individually; it is not another percentile cohort.
+            menus.select('Shell');cat=s.begin('CAT LONG.TXT')
+            menus.select('STORY.TXT')
+            running=s.number(s.saved['top']+51,1)!=2 or s.number(s.saved['scope']+54,1)!=0
+            require(running,'Shell workload finished before loaded input')
+            self.record['shell_loaded_panel']=panel_action(0)
+            # Bound the offered stream instead of waiting for a full LONG.TXT
+            # repaint behind several windows. BREAK follows normal shell routing.
+            menus.select('Shell')
+            window=s.p['build']['memory']['console_storage']['WINDOWS']+s.console['WINDOWS_ITEMS']
+            foreground=s.number(window+s.console['WINDOW_SCOPE'],3)
+            cancelled=foreground not in (0,s.saved['scope']);started=clock()
+            if cancelled:s.press('\x03')
+            s.ready(cat);s.result(304 if cancelled else 0)
+            self.record['shell_loaded_panel'].update(cancelled=cancelled,
+                retire_ms=((clock()-started)&0xffffffff)*1000/BASE_HZ)
+            move(630,230);s.frames(60);s.cells('performance-shell-load')
         require(s.number(counter+14,4)>start_count,'Counter stopped during repaint workload')
         menus.select('STORY.TXT');menus.close()
         s.rendezvous('db($%x)=3'%(s.at('job')+12));s.frames(80);menus.select('Shell')
@@ -169,6 +197,7 @@ def measure(out,count,observe=False,panel=True):
         integration.record[operation+'_distribution']={k:distribution([r[k+'_ms'] for r in samples]) for k in ('model','first_band','complete')}
     if integration.record['panel']:
         integration.record['panel_distribution']={k:distribution([r[k+'_ms'] for r in integration.record['panel']]) for k in ('paint','button_paint')}
+    (out/'text-performance-functional.json').write_text(json.dumps(result,indent=2)+'\n')
     if definition:
         from text_performance_trace import analyze
         result['breakdown']=analyze(out,definition,integration.record)

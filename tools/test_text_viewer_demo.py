@@ -94,6 +94,10 @@ class TextViewerDemo(FileSelectorDemo):
         move(x+w+8,y+h+8);edge(1);move(x+208+8,y+128+8);edge(0);settled(a)
         require(num(a,'rows')==13 and s.number(a+F['work']+4,2)==208,'Viewer minimum resize')
         pixels(a,'minimum')
+        x,y,w,h=[s.number(a+F['work']+i*2,2) for i in range(4)]
+        move(x+w+8,y+h+8);edge(1);move(x+400+8,y+152+8);edge(0);settled(a)
+        require(s.number(a+F['work']+4,2)==400 and s.number(a+F['work']+6,2)==152,'Viewer wider resize')
+        pixels(a,'wider')
         # Drag the current thumb to the bottom, then test a no-op down arrow.
         x,y,w,h=[s.number(a+F['work']+i*2,2) for i in range(4)]
         count=s.number(a+F['document']+12,2);extent=count-num(a,'rows')

@@ -3,10 +3,12 @@
 [Plan](../plans/gem4xe/text-viewer-performance-plan.md) ·
 [Viewer](text-viewer.md) · [Evidence](../development/text-viewer-performance.json)
 
-The viewer's ordinary text path spends substantial CPU time setting up and
-rendering individual glyphs. The selected TVP2 change is to reuse the existing native
-text uploader under the caller's delegated display grant, preserving application
-APIs, the four-row UPDATE limit and event service between bands.
+The viewer now uses the existing native text uploader for complete even-X VDI
+chunks and limits scroll damage to changing content. The matched page median
+falls from **1281.5 to 942.6 ms**, and p95 from **1321.7 to 964.7 ms**. These are
+26% and 27% reductions; the plan's twofold improvement target remains open.
+Application APIs, the four-row UPDATE limit and event service between bands
+are unchanged.
 
 ## Measurement method
 
@@ -119,3 +121,56 @@ introduced, so these production checks use optimized emission.
 12855 bytes; the C DP workspace remains 23 bytes. TEXT.APP is byte-identical.
 TVP2 reserves **0 additional bank-zero bytes**, fixed, per public Task and private
 idle, and adds no upper-RAM buffer, VRAM reservation or stack capacity.
+
+## Smaller viewer redraws
+
+After TVP2, one representative page still spends 91.0 ms of viewer CPU in
+`v_bar`, alongside 157.3 ms in text calls. TVP3 skips margin/background calls
+outside the current clip and limits scroll/status damage to the content that
+changes. Padded text continues to erase replaced characters. Exposure, move,
+resize and document replacement retain full work-area damage; pending damage
+still unions with new damage. No screen copy, cache or new damage structure is
+introduced.
+
+The same three-run, 30-action cohorts give these results. All values are ms;
+each cell is median / nearest-rank p95.
+
+| Operation | TVP1 baseline | TVP2 text uploader | TVP3 final |
+| --- | ---: | ---: | ---: |
+| Page completion | 1281.5 / 1321.7 | 1062.5 / 1080.9 | 942.6 / 964.7 |
+| Page first changed band | 239.1 / 583.0 | 184.8 / 504.0 | 178.6 / 525.9 |
+| Line completion | 1281.5 / 1502.1 | 1061.0 / 1080.9 | 940.5 / 960.4 |
+| Line first changed band | 241.9 / 559.5 | 184.8 / 499.2 | 191.4 / 524.7 |
+| Panel raise and action | 1143.5 / 1425.5 | 1026.5 / 1117.8 | 981.0 / 1222.9 |
+| Panel gesture through completed repaint | 645.8 / 984.2 | 585.3 / 856.9 | 538.3 / 781.8 |
+
+The final build improves the input cohorts against the frozen TVP1 comparator,
+including first-band feedback. It does not improve every intermediate result:
+TVP3's Panel raise/action p95 is **105.1 ms worse than TVP2**, while gesture-only
+p95 improves by 75.0 ms. First-band p95 also rises by 22.0 ms for pages and
+25.5 ms for lines relative to TVP2. These deterministic changes exceed the
+20.05 ms comparison tolerance and are retained as tradeoffs, not dismissed as
+measurement noise. Acceptance here uses the plan's original TVP1 comparator;
+it does not establish monotonic improvement at every step or close a general
+desktop latency gate.
+
+All measured actions complete once, with no timeout or growing backlog. The
+key cohorts serialize completed actions; they do not establish a sustained
+key-repeat rate. The Panel raise is offered at a fixed offset during a viewer
+repaint and the actual button gesture follows focus acknowledgment. Model-change
+observations remain around 60.4 ms, bounded by the three-frame key pulse.
+
+TVP3 adds **245 file bytes** to TEXT.APP (16542 to 16787), including 233 code
+bytes. Its 563 constant bytes, 1678 zero-fill bytes, 67777-byte load span and
+133312-byte rounded image backing are unchanged. It adds **0 fixed bank-zero
+bytes, 0 per public Task and 0 private idle**, including guards, alignment and
+unused reservations, and no upper-memory buffer, stack or VRAM capacity.
+
+The development host suite passes 423 tests with four historical skips. The
+final extracted ZIP passes the viewer's 14 scene oracles, including minimum and
+wider resize, partial cover/exposure, failed Open, interrupted selection and
+read-time Escape. An additional physical page reversal during an unfinished
+repaint verifies that the latest model repairs already painted bands. Boundary
+no-op scrolling, Stop, counter progress, warmed heap/ownership return and EXIT
+pass. The ordinary-task minimum is 156 bytes above the 256-byte stack floor,
+against the unchanged 128-byte headroom target.
