@@ -310,6 +310,7 @@ ENDMODULE
     for filename in ('sio-storage-action.inc','io-storage-action.inc'):
         driver=driver.replace('"'+filename+'"','"'+str(Path(output)/filename)+'"')
     (directory/'siodriver.act').write_text(driver)
+    (directory/'ideplusdriver.act').write_text(read_source(ROOT/'lib/io/ideplusdriver.act'))
     streams=read_source(ROOT/'lib/dos/dosraw.act')
     streams=streams.replace('"dos-storage-action.inc"','"'+str(Path(output)/'dos-storage-action.inc')+'"')
     (directory/'dosraw.act').write_text(streams)
@@ -324,6 +325,8 @@ ENDMODULE
         'task-input.inc', 'task-console.inc', 'task-signals.inc', 'task-wakes.inc')})
     policy=read_source(ROOT/'lib/exec/taskpolicy.act', policy_includes)
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
+    init=init.replace('RETURN\n', '  bytes=BYTE POINTER(ADDRESS(IDEMETA.BASE))\n  FOR i=0 TO 1023 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IDEMETA.NAME))\n  name(0)=$6469 name(1)=$7065 name(2)=$756c name(3)=$2e73 name(4)=$6564 name(5)=$6976 name(6)=$6563 name(7)=0\nRETURN\n')
+    policy=policy.replace('MODULE TASKPOLICY\n','MODULE TASKPOLICY\nUSE IDEMETA\n',1)
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
         for module in ('consoledriver','consoleinput','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):

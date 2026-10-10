@@ -1,6 +1,7 @@
 MODULE IOCORE
 USE EXEC
 USE SIODRIVER
+USE IDEPLUSDRIVER
 USE IORESIDENT
 USE IORESIDENTMETA
 USE HEAPCORE
@@ -17,6 +18,8 @@ PUBLIC INT FUNC OpenDevice(BYTE POINTER name LONGCARD unit EXEC.IORequest
   ; Only the matching resident is initialized. Open has no SIO wire traffic.
   IF SIODRIVER.Matches(name)<>0 THEN
     okay=SIODRIVER.Start()
+  ELSEIF IDEPLUSDRIVER.Matches(name)<>0 THEN
+    okay=IDEPLUSDRIVER.Start()
   FI
 
   EXEC.Forbid()

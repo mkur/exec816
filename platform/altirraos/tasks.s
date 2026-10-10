@@ -177,6 +177,7 @@ general_finalizer_start:
     .include "io.s"
     .include "dos.s"
     .include "sio.s"
+.include "ideplus.s"
     .include "platform-timer.s"
     .include "calypsi-call.s"
     .include "display.s"

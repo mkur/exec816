@@ -22,3 +22,5 @@ For the reason these services are organized this way, read the
 [architecture](../architecture/README.md). For runnable examples, use the
 [guides](../guides/README.md). Earlier proposals are retained in
 [history](../history/README.md).
+
+- [IDE Plus device](ideplus-device.md): native ATA PIO, request ownership and initial limits.

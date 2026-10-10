@@ -24,3 +24,28 @@ The extra volume backend uses upper-memory record space only.
 The filesystem write fixture had outgrown its 2 KiB upper static-data arena and
 its injected path buffer overlapped emitted code. It now uses the demos' 4 KiB
 static-data arena and puts paths at `$2D1000`, outside the kernel image.
+
+## IP1 — native raw reads
+
+The generated resident route starts a driver-owned worker only for IDE opens.
+IDENTIFY admits ATA master/LBA28/512-byte media. GET_GEOMETRY and raw reads use
+bounded readiness polling and timer sleeps. Startup failure releases heap,
+signals, timer bindings and Task leases. Active reads drain on cancellation.
+The [device contract](../reference/ideplus-device.md) defines the pinned PBI/IRQ/
+NMI ownership protocol and unsupported configurations.
+
+Optimized emitted development checks pass known first/last raw reads, a far
+buffer spanning `$2DFFF0–$2E01EF`, bad bounds, raw-write rejection, peer progress,
+selection restoration, heap balance and guarded completion. Board absence
+finishes without a leaked worker. Fixture and pin:
+`tools/test_ideplus.py`, `toolchain/altirra-ideplus.json`; evidence:
+`build/development/ideplus-ip1/raw/`. A small raw/optimized emitted probe also checks geometry layout.
+NMI boundary injection and timing remain IP5
+work; no physical hardware or hosted-platform qualification is claimed.
+
+Reserved bank-zero delta remains **0 fixed / 0 per Task / 0 idle bytes**. Upper
+resident metadata reserves 1,024 bytes (including unused capacity/alignment),
+plus active heap buffer 512 bytes and ordinary timer resources. Emitted driver
+Action! routines occupy 16,655 bytes in this focused optimized build; native
+helpers occupy existing upper service-code capacity. One existing small Task
+pool is consumed during open; its reservation and guards are unchanged.

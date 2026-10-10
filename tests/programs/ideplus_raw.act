@@ -1,0 +1,80 @@
+MODULE IDEPLUSRAWTEST
+USE EXEC
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE HEAPCORE
+USE EXECLISTS
+USE TASKSTACKS
+
+CARD checks,progress
+BYTE done,expectedFailure
+EXEC.Task peer
+PROC POINTER noFinal()
+
+PROC Require(BYTE okay)
+  IF okay=0 THEN HEAPCORE.Abort($f900+(checks & 255)) FI
+  checks==+1
+RETURN
+
+; The peer advances during ATA readiness sleeps and PIO transfer intervals.
+PROC PeerEntry()
+  WHILE done=0 DO
+    progress==+1
+    EXEC.Yield()
+  OD
+RETURN
+
+PROC Main()
+  CARD index
+  IDEPLUS.Geometry geometry
+  LET before=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  LET name=BYTE POINTER(ADDRESS(IDEMETA.NAME))
+  LET error=EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)
+  IF expectedFailure<>0 THEN
+    Require(error<>0)
+  ELSE
+    Require(error=0)
+    peer.tc_Node.ln_Type=EXEC.NT_TASK
+    EXECLISTS.NewList(@peer.tc_MemEntry)
+    peer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
+    peer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(3))
+    peer.tc_SPReg=peer.tc_SPUpper-SIZE(2)
+    Require(EXEC.AddTask(@peer,@PeerEntry,noFinal)<>NULL)
+    request.io_Command=IDEPLUS.GET_GEOMETRY
+    request.io_Data=BYTE POINTER(@geometry)
+    request.io_Length=SIZEOF(IDEPLUS.Geometry)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(geometry.bytes=512 AND geometry.sectors=8192)
+    Require(geometry.flags=IDEPLUS.FLAG_READONLY AND geometry.generation=1)
+    request.io_Data=BYTE POINTER($2dfff0)
+    request.io_Command=IDEPLUS.READ_SECTOR
+    request.io_Length=512
+    request.io_Offset=7
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(request.io_Actual=512)
+    FOR index=0 TO 511 DO Require(request.io_Data(index)=(BYTE(index) XOR $a7)) OD
+    request.io_Offset=8191
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    FOR index=0 TO 511 DO Require(request.io_Data(index)=(BYTE(index) XOR $6c)) OD
+    request.io_Offset=8192
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_BADLENGTH)
+    Require(request.io_Actual=0)
+    request.io_Offset=7
+    request.io_Command=IDEPLUS.WRITE_SECTOR
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_NOCMD)
+    EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+    Require(progress<>0)
+    done=1
+    WHILE peer.tc_State<>EXEC.TS_REMOVED DO EXEC.Yield() OD
+    IDEPLUSDRIVER.Stop()
+    Require(IDEPLUSDRIVER.State()=0)
+  FI
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+RETURN
+ENDMODULE

@@ -60,6 +60,7 @@ def constants(abi=ABI,sio=SIO):
         'SIO':dict(id=1,module='SIODRIVER',device_offset=64,name_offset=224,test_only=False,task_offset=160,lease_offset=108),
         'IMMEDIATE':dict(id=2,module='IOTESTDRIVER',device_offset=0,name_offset=32,test_only=True),
         'CONSOLE':dict(id=3,module='CONSOLEDRIVER',storage='console_storage',device_offset=0,name_offset=107,test_only=False,task_offset=36,lease_offset=136),
+        'IDEPLUS':{'id': 5, 'module': 'IDEPLUSDRIVER', 'storage': 'ideplus_storage', 'device_offset': 16, 'name_offset': 0, 'task_offset': 512, 'lease_offset': 60, 'test_only': False},
         'TIMER':dict(id=4,module='TIMERDRIVER',storage='timer_device_storage',device_offset=16,name_offset=480,test_only=False)},
         'Unsupported resident dispatch description')
     c['ROUTE_TAG']=dispatch['tag']

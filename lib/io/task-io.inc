@@ -114,6 +114,11 @@ CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
     RETURN(saved)
   FI
 
+  IF IOName(args.name,BYTE POINTER(ADDRESS(IDEMETA.NAME)))<>0 THEN
+    MaskResult(saved,LONGCARD(IO_ROUTE_IDEPLUS))
+    RETURN(saved)
+  FI
+
   IF ConsoleName(args.name)<>0 THEN
     MaskResult(saved,LONGCARD(IO_ROUTE_CONSOLE))
     RETURN(saved)

@@ -1,0 +1,72 @@
+{
+  "abi": "exec816.ideplus.device",
+  "revision": 1,
+  "state_bytes": 1024,
+  "pbi_id": 0,
+  "hardware_revision": "e",
+  "fields": {
+    "NAME": 0,
+    "BUS": 16,
+    "UNITS": 80,
+    "TASK": 512,
+    "CONTROL": 640
+  },
+  "constants": {
+    "READ_SECTOR": 10,
+    "WRITE_SECTOR": 11,
+    "GET_GEOMETRY": 12,
+    "FLAG_READONLY": 1,
+    "FLAG_DURABLE": 2,
+    "ERROR_ABSENT": 1,
+    "ERROR_TIMEOUT": 2,
+    "ERROR_ATA": 3,
+    "ERROR_PROTECTED": 4,
+    "ERROR_UNSUPPORTED": 5,
+    "ERROR_VERIFY": 6,
+    "ERROR_OFFLINE": 7,
+    "TIMEOUT_TICKS": 250,
+    "REG_ERROR": 17,
+    "REG_COUNT": 18,
+    "REG_LBA0": 19,
+    "REG_LBA1": 20,
+    "REG_LBA2": 21,
+    "REG_HEAD": 22,
+    "REG_COMMAND": 23,
+    "REG_ALTSTATUS": 30,
+    "REG_IRQ": 248,
+    "REG_CARD": 250,
+    "ATA_READ": 32,
+    "ATA_WRITE": 48,
+    "ATA_IDENTIFY": 236,
+    "ATA_FEATURES": 239,
+    "ATA_FLUSH": 231
+  },
+  "records": {
+    "Geometry": {
+      "size": 12,
+      "alignment": 2,
+      "fields": [
+        [
+          "bytes",
+          "CARD",
+          0
+        ],
+        [
+          "flags",
+          "CARD",
+          2
+        ],
+        [
+          "sectors",
+          "LONGCARD",
+          4
+        ],
+        [
+          "generation",
+          "LONGCARD",
+          8
+        ]
+      ]
+    }
+  }
+}

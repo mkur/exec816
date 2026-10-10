@@ -699,7 +699,8 @@
   },
   "registered_entries": [
     "SIODRIVER.Worker",
-    "CONSOLEDRIVER.Worker"
+    "CONSOLEDRIVER.Worker",
+    "IDEPLUSDRIVER.Worker"
   ],
   "create_packet": {
     "size": 16,

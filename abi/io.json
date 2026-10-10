@@ -37,6 +37,16 @@
         "device_offset": 16,
         "name_offset": 480,
         "test_only": false
+      },
+      "IDEPLUS": {
+        "id": 5,
+        "module": "IDEPLUSDRIVER",
+        "storage": "ideplus_storage",
+        "device_offset": 16,
+        "name_offset": 0,
+        "task_offset": 512,
+        "lease_offset": 60,
+        "test_only": false
       }
     }
   },

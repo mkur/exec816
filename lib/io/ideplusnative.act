@@ -1,0 +1,7 @@
+; Driver-private native PBI leaves; no kernel service or bank-zero state.
+MODULE IDEPLUSNATIVE
+PUBLIC EXTERNAL BYTE FUNC ReadRegister(CARD register)
+PUBLIC EXTERNAL PROC WriteRegister(CARD register BYTE value)
+PUBLIC EXTERNAL PROC ReadWords(BYTE POINTER buffer)
+PUBLIC EXTERNAL PROC WriteWords(BYTE POINTER buffer)
+ENDMODULE

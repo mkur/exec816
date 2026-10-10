@@ -327,6 +327,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             generate_ports.reserve_metadata(memory)
             import generate_io
             generate_io.reserve_metadata(memory)
+            import generate_ideplus
+            generate_ideplus.reserve_metadata(memory)
+            generate_ideplus.generate(output,memory)
             import generate_dos
             generate_dos.reserve_metadata(memory,task_capacity)
             import generate_process
@@ -463,6 +466,22 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         elif tasks and name == 'TASKPOLICY.IRQWindow':
             label,result='signal_irq_window','None'
             peak=5 if irq_probe==3 else 1
+        elif tasks and name.startswith('IDEPLUSNATIVE.'):
+            operation=name.split('.')[1]
+            label='ideplus_'+{'ReadRegister':'read_register','WriteRegister':'write_register',
+                             'ReadWords':'read_words','WriteWords':'write_words'}[operation]
+            peak=9
+            result='None'
+            if operation in ('ReadRegister','WriteRegister'):
+                arguments=[dict(alignment=2,offset=0,size=2)]
+                outgoing=3
+                if operation=='ReadRegister': result='Some(NativeResult(A8ZeroExtended))'
+                else:
+                    arguments.append(dict(alignment=1,offset=2,size=1))
+                    outgoing=3
+            else:
+                arguments=[dict(alignment=1,offset=0,size=3)]
+                outgoing=3
         elif tasks and name.startswith('TIMERNATIVE.'):
             operation=name.split('.')[1]
             require(operation in ('Enter','Leave','Snapshot','Enable'), 'Unknown timer native bridge')
@@ -967,6 +986,8 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'abi/native-interrupts.json','tools/generate_native_interrupts.py',
                 'platform/altirraos/native-interrupts.inc','platform/altirraos/ports-atomic.s',
                 'platform/altirraos/interrupt-work.s',
+                'abi/ideplus.json','tools/generate_ideplus.py','lib/io/ideplus.act','lib/io/ideplusdriver.act',
+                'lib/io/ideplus-lifetime.inc','lib/io/ideplusnative.act','platform/altirraos/ideplus.s','platform/altirraos/ideplus.inc',
                 'abi/timer-device.json','tools/generate_timer_device.py','lib/io/timer.act',
                 'lib/io/timer-types.inc','lib/io/timernative.act','lib/io/timerdriver.act',
                 'platform/altirraos/timer-device.inc','platform/altirraos/timer-device.s',
@@ -1015,7 +1036,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'task-kernel/processstate.act','task-kernel/exec.act','task-kernel/taskpolicy.act','task-kernel/taskmemory.act','task-kernel/task-wakes.inc',
                 'task-kernel/task-console.inc','task-kernel/task-signals.inc','task-kernel/exectasks.act','task-kernel/taskstacks.act','task-kernel/taskinspect.act','task-kernel/deviceinspect.act')})
     if tasks:
-        provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act')})
+        provenance['task_generated'].update({name:sha256(output/name) for name in ('ioresident.act','ioresidentmeta.act','idemeta.act')})
     if sio_request_probe:
         provenance['sio_request_probe']=True
         provenance['task_inputs']['tests/programs/sio_request_probe.inc']=sha256(ROOT/'tests/programs/sio_request_probe.inc')
