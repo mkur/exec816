@@ -1,7 +1,7 @@
 """Validate explicit filesystem mount access and encode upper-RAM specs."""
 import argparse,json,re,struct
 from pathlib import Path
-from filesystem_formats import DEFAULT, FORMATS, MYDOS, RAM
+from filesystem_formats import DEFAULT, FORMATS, MYDOS, RAM, SDFS
 ALIAS=re.compile(r'[0-9@A-Z_`a-z]{1,31}\Z')
 FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format','access','device'}
 def require(ok,message):
@@ -21,7 +21,9 @@ def validate_mounts(mounts):
         else:
             require({'unit','sectors','sector_bytes'}<=set(mount),'Incomplete mount geometry')
             require(name.upper()!='RAM','RAM is reserved for the RAM filesystem')
-            spec=dict(profile=0 if mount.get('device')=='ideplus.device' else 1,boot=1,format=DEFAULT,access="readonly")
+            ide=mount.get('device')=='ideplus.device'
+            spec=dict(profile=0 if ide else 1,boot=0 if ide else 1,
+                      format=SDFS if ide else DEFAULT,access="readonly")
         spec.update(mount)
         spec.setdefault('device','sio.device')
         require(spec['device'] in ('sio.device','ideplus.device'),'Unavailable block device')
@@ -39,12 +41,16 @@ def validate_mounts(mounts):
         else:
             require(1<=spec['unit']<=15,'IDE unit must be 1..15')
             require(spec['profile']==0,'IDE does not use SIO timing profiles')
+            require(spec['sector_bytes']==512 and spec['boot']==0,
+                    'IDE requires uniform 512-byte sectors')
+            require(spec['format']==SDFS,'IDE supports only SpartaDOS SDFS')
         require(1<=spec['sectors']<=65535,'Geometry must have 1..65535 sectors')
         if spec['format']==MYDOS: require(spec['sectors']>=368,'MyDOS needs at least 368 sectors')
-        require(spec['sector_bytes'] in (128,256),'Data sectors must be 128 or 256 bytes')
-        require(spec['boot']==1,'Only three short boot sectors are supported')
         require(spec['format'] in FORMATS,'Unknown filesystem format')
-        if spec['device']=='sio.device': require(spec['profile'] in (1,2,4) and (spec['profile']!=2 or spec['sector_bytes']==128),'Unqualified profile/sector size')
+        if spec['device']=='sio.device':
+            require(spec['sector_bytes'] in (128,256) and spec['boot']==1,
+                    'SIO requires 128/256-byte sectors and three short boot sectors')
+            require(spec['profile'] in (1,2,4) and (spec['profile']!=2 or spec['sector_bytes']==128),'Unqualified profile/sector size')
         require(name.upper() not in aliases,'Duplicate mount alias')
         require((spec['device'],spec['unit']) not in units,'A device unit may only be mounted once')
         aliases.add(name.upper());units.add((spec['device'],spec['unit']));result.append(spec)

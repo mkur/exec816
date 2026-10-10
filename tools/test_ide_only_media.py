@@ -12,7 +12,7 @@ from test_cooperative import data
 def run(out):
     out.mkdir(parents=True,exist_ok=True);(out/'source').mkdir(exist_ok=True)
     (out/'source/README.TXT').write_text('IDE-only partition\n')
-    make(out/'stage.atr',out/'source',sector_bytes=256,sectors=2880)
+    make(out/'stage.atr',out/'source',sector_bytes=512,sectors=1440)
     record=write(out/'ideplus.img',out/'stage.atr',out/'stage.atr')
     before=(out/'ideplus.img').read_bytes()
     p=build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ide_only_media.act',out,
@@ -21,7 +21,7 @@ def run(out):
         runtime,_=execute(b,p,timeout=120,frame_limit=6000)
         clean_ownership(b,p,out);checks=data(b,p['image'],'checks',True)
     expected=bytearray(before);m=record['partitions'][1]
-    put_sector(expected,m['start'],3,256,2800,bytes(i^0xa7 for i in range(256)))
+    put_sector(expected,m['start'],1400,bytes((i&255)^0xa7 for i in range(512)))
     require((out/'ideplus.img').read_bytes()==expected,'Unexpected media/metadata/neighbour mutation')
     (out/'results.json').write_text(json.dumps(dict(status='pass',tier='development',mapping=record,
         runtime=runtime,checks=checks,build=p['build']),indent=2)+'\n')

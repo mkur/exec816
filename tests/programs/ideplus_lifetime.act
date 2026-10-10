@@ -83,10 +83,10 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
 
   LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
   request.io_Data=BYTE POINTER($2dfff0)
-  request.io_Length=128
+  request.io_Length=512
   request.io_Offset=1
   request.io_Command=IF writing<>0 THEN IDEPLUS.WRITE_SECTOR ELSE IDEPLUS.READ_SECTOR FI
-  FOR index=0 TO 127 DO
+  FOR index=0 TO 511 DO
     request.io_Data(index)=BYTE(index) XOR $55
   OD
 
@@ -97,9 +97,9 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
   Require(target=0)
   wanted=IF phase=3 THEN INT(0) ELSE INT(EXEC.IOERR_ABORTED) FI
   Require(error=wanted)
-  actual=IF phase=3 THEN LONGCARD(128) ELSE LONGCARD(0) FI
+  actual=IF phase=3 THEN LONGCARD(512) ELSE LONGCARD(0) FI
   Require(request.io_Actual=actual)
-  FOR index=0 TO 127 DO
+  FOR index=0 TO 511 DO
     Require(request.io_Data(index)=(BYTE(index) XOR $55))
   OD
 
@@ -154,7 +154,7 @@ PROC Main()
   AddPeer(@peer,3)
   IF expectedError<>0 THEN
     request.io_Data=BYTE POINTER($2dfff0)
-    request.io_Length=128
+    request.io_Length=512
     request.io_Offset=1
     request.io_Command=IDEPLUS.WRITE_SECTOR
     IF expectedError=2 THEN
@@ -169,7 +169,7 @@ PROC Main()
   ELSE
     ; Reply exactly once even when abort is repeated before worker admission.
     request.io_Command=IDEPLUS.READ_SECTOR
-    request.io_Length=128
+    request.io_Length=512
     request.io_Actual=123
     EXEC.Forbid()
     EXEC.SendIO(EXEC.IORequest POINTER(request))

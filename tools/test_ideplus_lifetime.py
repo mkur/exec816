@@ -37,8 +37,8 @@ def run(out,reuse=False,selected=None):
         media,maps=pattern_fixture(readonly=False);expected=bytearray(media)
         error={'timeout':2,'flush-error':3,'verify-error':6}.get(name,0)
         if name not in ('busy-stop','timeout'):
-            put_sector(expected,maps[0]['start'],maps[0]['mode'],128,1,
-                       bytes([0x55])*128 if error else bytes(i^0x55 for i in range(128)))
+            put_sector(expected,maps[0]['start'],1,
+                       bytes([0x55])*512 if error else bytes((i&255)^0x55 for i in range(512)))
         disk=dest/'ide.img';disk.write_bytes(media)
         sio=dest/'sio.atr';original=(ROOT/'tests/fixtures/filesystem-write/mydos-256.atr').read_bytes();sio.write_bytes(original)
         with ide_emulator(dest,disk,writable=True,history=name=='verify-error') as b:

@@ -13,11 +13,11 @@ if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=Path,default=ROOT/'build/development/ide-only/id6-failure');v=a.parse_args();out=v.output;out.mkdir(parents=True,exist_ok=True)
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=4096
     (out/'profile.json').write_text(json.dumps(profile))
-    mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,format=2,sectors=2880,sector_bytes=256),
-            dict(alias='WORK',device='ideplus.device',unit=2,profile=0,format=2,sectors=2880,sector_bytes=256,access='readwrite'),dict(alias='RAM',format=3)]
+    mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,format=2,sectors=1440,sector_bytes=512),
+            dict(alias='WORK',device='ideplus.device',unit=2,profile=0,format=2,sectors=1440,sector_bytes=512,access='readwrite'),dict(alias='RAM',format=3)]
     p=read_build(out) if v.reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ide_only_failure.act',out,optimize=True,tasks=True,task_capacity=8,console=True,heap_probe=True,dos_mounts=mounts,system_mount='SYSTEM',sio_enabled=False,memory_profile=out/'profile.json')
     (out/'source').mkdir(exist_ok=True);(out/'source/README.TXT').write_text('IDE-only partition\n')
-    make(out/'stage.atr',out/'source',sector_bytes=256,sectors=2880)
+    make(out/'stage.atr',out/'source',sector_bytes=512,sectors=1440)
     record=write(out/'original.img',out/'stage.atr',out/'stage.atr');raw=(out/'original.img').read_bytes()
     for scenario,name in enumerate(('remount','absent','protected','write-error','verify-error')):
         dest=out/name;dest.mkdir(exist_ok=True);image=bytearray(raw)
@@ -34,10 +34,8 @@ if __name__=='__main__':
                     b.bp_set(p['labels']['native_cop'],condition=cond)
                     run_to(b,p['labels']['native_cop'],12000,180,cond)
                     buffer=int.from_bytes(b.memdump(base+640,3),'little')
-                    # The first write may target either packed 256-byte half.
-                    for offset in (0,256):
-                        original=b.peek(buffer+offset)
-                        b.memload(buffer+offset,bytes([original[0]^1]))
+                    original=b.peek(buffer)
+                    b.memload(buffer,bytes([original[0]^1]))
                     b.bp_clear_all()
             runtime,_=execute(b,p,before_run=before,timeout=180,frame_limit=12000)
             clean_ownership(b,p,out);checks=data(b,p['image'],'checks',True)

@@ -174,10 +174,7 @@ BYTE FUNC Drive(FSBTYPES.Operation POINTER op)
   cursor=SDFS.Map(op.file)
   volume=SDFSTYPES.Volume POINTER(op.work.volume.state)
   state=SDFS.GetState(op.work)
-  logical=LONGCARD(op.start+op.completed) RSH 7
-  IF op.work.volume.block.dataBytes=256 THEN
-    logical=logical RSH 1
-  FI
+  logical=LONGCARD(op.start+op.completed)/LONGCARD(op.work.volume.block.dataBytes)
 
   IF logical<cursor.base THEN
     SDFS.Restart(op.file)
@@ -286,11 +283,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
 
   ; Round the byte extent once. Only the required prefix may contain no holes.
   sectorBytes=work.volume.block.dataBytes
-  IF sectorBytes=256 THEN
-    needed=LONGCARD(file.entry.length) RSH 8
-  ELSE
-    needed=LONGCARD(file.entry.length) RSH 7
-  FI
+  needed=LONGCARD(file.entry.length)/LONGCARD(sectorBytes)
 
   IF (LONGCARD(file.entry.length) & LONGCARD(sectorBytes-1))<>0 THEN
     needed==+1

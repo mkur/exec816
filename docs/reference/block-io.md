@@ -22,18 +22,19 @@ and values beyond `$FFFF` before conversion to transport addressing. Sector zero
 may terminate a filesystem chain but is never a wire sector request. Widen
 arithmetic before addition or multiplication.
 
-Supported data sectors contain 128 or 256 bytes. Sectors 1–3 always transfer 128
-bytes. Thus a 256-byte volume's logical byte stream has offsets:
+SIO data sectors contain 128 or 256 bytes, with `boot=1`: sectors 1–3 transfer
+128 bytes. Thus a 256-byte floppy volume's logical byte stream has offsets:
 
 ```text
 sectors 1..3: (sector - 1) * 128
 sectors 4..:  384 + (sector - 4) * 256
 ```
 
-For IDE partitions, every sector occupies its normal APT container, including
-the short boot prefixes. The adapter submits zero-based logical sector indices;
-it compares configured geometry with GET_GEOMETRY on attachment. ATA packing
-and controller ownership belong to [ideplus.device](ideplus-device.md).
+IDE partitions use uniform 512-byte sectors (`boot=0`), including sector 1.
+The adapter submits zero-based logical sector indices and compares configured
+geometry with GET_GEOMETRY on attachment. Controller ownership belongs to
+[ideplus.device](ideplus-device.md). Mount layout remains 46 bytes; the boot byte
+describes transfer geometry, not firmware bootability.
 
 The ATR header is a host-container detail, not guest filesystem data. Do not infer
 geometry from VTOC free counts or probe it with mismatched wire lengths. STATUS/

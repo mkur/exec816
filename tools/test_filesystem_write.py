@@ -150,10 +150,10 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
         persisted=physical_media.read_bytes()
         restored=filesystem_atr(persisted,mapping,template)
         oracle=bytearray(raw)
-        from mydos_fixtures import Image
-        logical=Image(restored)
+        from sector_images import ATRImage
+        logical=ATRImage(restored)
         for sector in range(1,logical.count+1):
-            put_sector(oracle,mapping['start'],mapping['mode'],mapping['size'],sector-1,logical.sector(sector))
+            put_sector(oracle,mapping['start'],sector-1,logical.sector(sector))
         require(persisted==oracle,'Physical padding, short boot tails or metadata leader changed')
         media.write_bytes(restored)
     after = Audit(media.read_bytes())
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     output.mkdir(parents=True, exist_ok=True)
     result = dict(status='running')
     try:
-        result = run(compiler(ROOT/'build/actionc'), output, args.case,
+        result = run(compiler(ROOT/'build/actionc',release=True), output, args.case,
                      args.filesystem, args.size, args.amount, args.fast_media,
                      args.from_build, args.hint, args.fixture, args.cache_blocks,
                      args.profile, args.file_only)

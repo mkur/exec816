@@ -4,17 +4,17 @@ from pathlib import Path
 from native_program import ROOT,build,compiler,execute,read_build,require
 from generate_memory import PROFILE
 from test_ideplus import ide_emulator
-from ideplus_media import filesystem_fixture
+from ideplus_media import filesystem_fixture,sdfs_image
 from test_cooperative import data
 from test_heap_api import clean_ownership
 
 def run(output,reuse=False,ide_only=False):
     output.mkdir(parents=True,exist_ok=True)
-    atr=(ROOT/'tests/fixtures/filesystem-write/sdfs-256.atr').read_bytes()
+    atr=sdfs_image(ROOT/'tests/fixtures/filesystem-write/sdfs-256.atr',output/'stage.atr')
     raw,mapping=filesystem_fixture(atr)
     media=output/'ide.img';media.write_bytes(raw)
     profile=output/'profile.json';value=json.loads(PROFILE.read_text());value['image_data_bytes']=4096;profile.write_text(json.dumps(value))
-    mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=2,profile=0,sectors=mapping['sectors'],sector_bytes=256,format=2)]
+    mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=2,profile=0,sectors=mapping['sectors'],sector_bytes=512,format=2)]
     p=read_build(output) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ide_system.act',output,optimize=True,tasks=True,task_capacity=8,console_deferred=True,memory_profile=profile,dos_mounts=mounts,system_mount='SYSTEM',sio_enabled=not ide_only)
     if ide_only:
         require(not any(r['name'].startswith(('M_SIODRIVER_','M_SIOADAPTER_')) for r in p['image']['routines']),'SIO implementation linked')

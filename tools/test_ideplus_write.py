@@ -1,21 +1,22 @@
 """Verify durable logical writes and every persisted neighbour/padding byte."""
-import sys,json
+import argparse,json
 from native_program import ROOT,build,compiler,execute,read_build,require
 from test_ideplus import ide_emulator
 from ideplus_media import pattern_fixture,put_sector
 from test_cooperative import data
 from test_heap_api import clean_ownership
 if __name__=='__main__':
-    out=ROOT/'build/development/ideplus-ip4/sectors';out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out) if '--reuse' in sys.argv else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_write.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
+    a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=__import__('pathlib').Path,default=ROOT/'build/development/ideplus-ip4/sectors');v=a.parse_args()
+    out=v.output;out.mkdir(parents=True,exist_ok=True)
+    p=read_build(out) if v.reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_write.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
     for protected,failed in ((False,False),(True,False),(False,True)):
         dest=out/('failed-write' if failed else 'protected' if protected else 'writable');dest.mkdir(exist_ok=True)
         original,maps=pattern_fixture(readonly=protected);expected=bytearray(original);disk=dest/'ide.img';disk.write_bytes(original)
         if not protected and not failed:
             for mapping in maps:
-                for sector,length,seed in [(0,mapping['size'],0x6c),(1,128,0xa7)]:
-                    payload=bytes((i^seed^mapping['unit'])&255 for i in range(length))
-                    put_sector(expected,mapping['start'],mapping['mode'],mapping['size'],sector,payload)
+                for sector,length,seed in [(0,512,0x6c),(1,512,0xa7)]:
+                    payload=bytes((i^(i>>8)^seed^mapping['unit'])&255 for i in range(length))
+                    put_sector(expected,mapping['start'],sector,payload)
         with ide_emulator(dest,disk,writable=not failed) as b:
             def before(b):
                 for field,value in [('PROTECTED',protected),('EXPECTEDERROR',3 if failed else 0)]:

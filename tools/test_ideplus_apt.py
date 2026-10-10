@@ -1,5 +1,5 @@
-"""APT parsing/packing through native ATA PIO on independent host images."""
-import json,sys
+"""APT parsing/native sectors through native ATA PIO on independent host images."""
+import argparse,json
 from native_program import ROOT,build,compiler,execute,read_build,require
 from test_ideplus import ide_emulator
 from test_cooperative import data
@@ -10,7 +10,7 @@ def cases():
     for name,options in [('direct',{}),('even',{'even':True}),('mbr',{'mbr':True}),('chain',{'chained':True}),('even-chain',{'even':True,'chained':True})]:
         image,maps=pattern_fixture(**options);yield name,image,False
     image,_=pattern_fixture();image[0]=0x10;yield 'metadata-default',image,False
-    for name in ('revision','cycle','overlap','leader-overlap','overflow','bad-offset'):
+    for name in ('revision','cycle','overlap','leader-overlap','overflow','bad-offset','unsupported-128','unsupported-256'):
         image,_=pattern_fixture()
         if name=='revision': image[0]=0x20
         if name=='cycle':
@@ -24,15 +24,20 @@ def cases():
             image[48]|=0x40
         if name=='overflow': image[34:38]=(8190).to_bytes(4,'little')
         if name=='bad-offset': image[46:48]=(0xffff).to_bytes(2,'little')
-        yield name,image,True
+        if name.startswith('unsupported-'):
+            image[32]=(image[32]&~3)|(1 if name.endswith('128') else 2)
+        yield name,image,not name.startswith('unsupported-')
 
 if __name__=='__main__':
-    out=ROOT/'build/development/ideplus-ip2';out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out) if '--reuse' in sys.argv else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_apt.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
+    a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=__import__('pathlib').Path,default=ROOT/'build/development/ideplus-ip2');v=a.parse_args()
+    out=v.output;out.mkdir(parents=True,exist_ok=True)
+    p=read_build(out) if v.reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_apt.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
     for name,image,invalid in cases():
         dest=out/name;dest.mkdir(exist_ok=True);disk=dest/'ide.img';disk.write_bytes(image)
         with ide_emulator(dest,disk) as b:
-            def before(b):b.memload(next(d['address'] for d in p['image']['data'] if '_EXPECTEDFAILURE_' in d['name']),bytes([invalid]))
+            def before(b):
+                for field,value in [('EXPECTEDFAILURE',invalid),('UNSUPPORTED',name.startswith('unsupported-'))]:
+                    b.memload(next(d['address'] for d in p['image']['data'] if '_'+field+'_' in d['name']),bytes([value]))
             try:runtime,_=execute(b,p,before_run=before,timeout=90,frame_limit=4500)
             except Exception:
                 print('case/checks',name,data(b,p['image'],'checks',True),flush=True)

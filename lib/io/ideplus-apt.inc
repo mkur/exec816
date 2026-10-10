@@ -10,8 +10,10 @@ BYTE FUNC PartitionEntry(BYTE number BYTE POINTER entry LONGCARD low,high)
 
   LET partition=UnitAt(number)
   IF entry(0)=0 OR (entry(0) & $80)<>0 OR entry(1)<>0
-      OR (entry(12) & $40)=0 THEN RETURN(1) FI
-  IF (entry(0) & 3)=0 OR (entry(0) & 3)=3 THEN
+      OR (entry(12) & $40)=0 THEN
+    RETURN(1)
+  FI
+  IF (entry(0) & $0f)<>3 THEN
     RETURN(1)
   FI
   id=CARD(entry(10)) OR (CARD(entry(11)) LSH 8)
@@ -19,19 +21,14 @@ BYTE FUNC PartitionEntry(BYTE number BYTE POINTER entry LONGCARD low,high)
   count=TableLong(entry,6)
   offset=CARD(entry(14)) OR (CARD(entry(15)) LSH 8)
   IF id=0 OR id=$ffff OR start=0 OR start<low OR start>=high
-      OR count=0 OR count>high-start OR LONGCARD(offset)>=count THEN RETURN(0) FI
-  partition.number=number
-  partition.mode=(entry(0) RSH 2) & 3
-  partition.bytes=128
-  IF (entry(0) & 3)=2 THEN
-    partition.bytes=256
+      OR count=0 OR count>high-start OR LONGCARD(offset)>=count THEN
+    RETURN(0)
   FI
+  partition.number=number
+  partition.bytes=512
   partition.start=start+LONGCARD(offset)
   partition.physical=count-LONGCARD(offset)
   partition.sectors=partition.physical
-  IF (partition.mode & 1)<>0 THEN
-    partition.sectors=partition.sectors LSH 1
-  FI
   partition.flags=entry(12) & $80
   IF (entry(0) & $30)<>0 OR (entry(12) & $3f)<>0 OR entry(13)<>0 THEN
     partition.flags=$80
@@ -197,41 +194,3 @@ BYTE FUNC DiscoverPartitions()
   OD
 
 RETURN(1)
-
-; One 256-byte container per logical sector, even for 128-byte filesystem units.
-CARD FUNC PackedIndex(Partition POINTER partition LONGCARD sector CARD index)
-  CARD container
-  IF partition.bytes=128 THEN
-    index=index LSH 1
-  FI
-  container=CARD(sector & 1)
-  CASE partition.mode OF
-  WHEN 0 THEN
-    RETURN(index LSH 1)
-  WHEN 1 THEN
-    RETURN((index LSH 1)+container)
-  WHEN 2 THEN
-    RETURN(index)
-  ELSE
-    RETURN(index+(container LSH 8))
-  ESAC
-
-RETURN(0)
-LONGCARD FUNC PhysicalSector(Partition POINTER partition LONGCARD sector)
-
-  IF (partition.mode & 1)<>0 THEN
-    sector=sector RSH 1
-  FI
-
-RETURN(partition.start+sector)
-
-; Copy only the admitted logical bytes after the physical transfer settles.
-PROC CopyLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
-  CARD index
-
-  LET c=Control()
-  FOR index=0 TO CARD(request.io_Length)-1 DO
-    request.io_Data(index)=c.buffer(PackedIndex(partition,request.io_Offset,index))
-  OD
-
-RETURN

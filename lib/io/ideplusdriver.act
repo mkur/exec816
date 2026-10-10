@@ -30,7 +30,7 @@ TYPE DriverBus=[
 ]
 TYPE Partition=[
   CARD opens
-  BYTE number,mode
+  BYTE number,pad
   CARD bytes
   LONGCARD start,physical,sectors
   BYTE flags,enabled
@@ -466,8 +466,7 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
   ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR AND request.io_Command<>IDEPLUS.WRITE_SECTOR THEN
     error=BYTE(EXEC.IOERR_NOCMD)
-  ELSEIF (request.io_Length<>LONGCARD(unit.bytes) AND (unit.number=0 OR unit.bytes<>256
-      OR request.io_Offset>=3 OR request.io_Length<>128)) OR request.io_Offset>=unit.sectors THEN
+  ELSEIF request.io_Length<>512 OR request.io_Offset>=unit.sectors THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
   ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR THEN
     error=WriteLogical(unit,request)
@@ -482,16 +481,12 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
     EXEC.Permit()
     IF error=0 THEN
-      error=ReadPhysical(PhysicalSector(unit,request.io_Offset))
+      error=ReadPhysical(unit.start+request.io_Offset)
       IF error=0 AND bus.cancelled<>0 THEN
         error=BYTE(EXEC.IOERR_ABORTED)
       FI
       IF error=0 THEN
-        IF unit.number=0 THEN
-          A816MEMORY.Move(request.io_Data,c.buffer,512)
-        ELSE
-          CopyLogical(unit,request)
-        FI
+        A816MEMORY.Move(request.io_Data,c.buffer,512)
         request.io_Actual=request.io_Length
       FI
     FI

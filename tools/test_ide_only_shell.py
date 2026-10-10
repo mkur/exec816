@@ -16,9 +16,9 @@ class IDEStartup(Startup):
     def __init__(self):
         super().__init__('normal','sdfs',{})
         self.mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,
-                          sectors=2880,sector_bytes=256,format=2),
+                          sectors=1440,sector_bytes=512,format=2),
                      dict(alias='WORK',device='ideplus.device',unit=2,profile=0,
-                          sectors=2880,sector_bytes=256,format=2,access='readwrite')]
+                          sectors=1440,sector_bytes=512,format=2,access='readwrite')]
     def instrument(self,out):
         super().instrument(out)
         p=out/'shell_core.act';s=p.read_text().replace('USE FSBOOT','USE FSBOOT\nUSE IDEPLUSDRIVER',1)
@@ -28,7 +28,8 @@ class IDEStartup(Startup):
     def prepare(self,t,out,mode,size):
         super().prepare(t,out,mode,size)
         self.files=make(out/'volume.atr',out/'files',binary_names={'C/'+name for name in self.commands},
-                        sector_bytes=256,sectors=2880)
+                        sector_bytes=512,sectors=1440)
+        make(out/'work.atr',out/'workspace',sector_bytes=512,sectors=1440)
         self.mapping=write(out/'ideplus.img',out/'volume.atr',out/'work.atr')
         self.directory=b'SYSTEM:SUB\n'
         self.assigns=b'C: -> SYSTEM:C\nS: -> SYSTEM:S\n'
@@ -49,7 +50,7 @@ class IDEStartup(Startup):
 
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=Path,default=ROOT/'build/development/ide-only/id2');v=a.parse_args()
-    r=run(compiler(ROOT/'build/actionc',release=True),v.output,'opt',size=256,external=IDEStartup(),
+    r=run(compiler(ROOT/'build/actionc',release=True),v.output,'opt',size=512,external=IDEStartup(),
           pin=PIN,bridge_build=ROOT/'build/mouse-bridge',reuse=v.reuse)
     (v.output/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('IDE-only shell startup passed',flush=True)

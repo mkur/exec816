@@ -14,17 +14,17 @@ USE A816MEMORY
 PUBLIC BYTE FUNC Geometry(BYTE backend CARD unit,profile LONGCARD sectors
     CARD dataBytes BYTE boot LONGCARD generation)
 
-  IF sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 OR boot<>1
-      OR (dataBytes<>128 AND dataBytes<>256) THEN
+  IF sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 THEN
     RETURN(0)
   FI
 
   IF backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
-    RETURN(unit>=1 AND unit<=15 AND profile=0)
+    RETURN(unit>=1 AND unit<=15 AND profile=0 AND dataBytes=512 AND boot=0)
   FI
 
 ; IF SIO
-  IF backend<>BLOCKTYPES.BACKEND_SIO OR unit<49 OR unit>56 THEN
+  IF backend<>BLOCKTYPES.BACKEND_SIO OR unit<49 OR unit>56 OR boot<>1
+      OR (dataBytes<>128 AND dataBytes<>256) THEN
     RETURN(0)
   FI
 

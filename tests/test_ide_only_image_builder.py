@@ -40,7 +40,7 @@ class IDEOnlyMedia(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);(folder/'source').mkdir()
             (folder/'source/README.TXT').write_text('partition bytes\n')
-            make(folder/'disk.atr',folder/'source',sector_bytes=256,sectors=2880)
+            make(folder/'disk.atr',folder/'source',sector_bytes=512,sectors=1440)
             atr=(folder/'disk.atr').read_bytes();raw,record=build(atr,atr)
         self.assertEqual(len(raw),4*1024*1024)
         self.assertEqual(raw[:6],b'\x10APT\x01\x12')
@@ -60,8 +60,8 @@ class IDEOnlyMedia(unittest.TestCase):
             extents.append((mapping['leader'],mapping['start']+mapping['physical']))
         self.assertLessEqual(extents[0][1],extents[1][0])
         changed=bytearray(raw);m=record['partitions'][1]
-        put_sector(changed,m['start'],3,256,4,b'x'*256)
+        put_sector(changed,m['start'],4,b'x'*512)
         self.assertEqual(changed[:m['start']*512],raw[:m['start']*512])
-        self.assertEqual(changed[m['start']*512+5*256:m['start']*512+6*256],raw[m['start']*512+5*256:m['start']*512+6*256])
+        self.assertEqual(changed[(m['start']+5)*512:],raw[(m['start']+5)*512:])
 
 if __name__=='__main__':unittest.main()

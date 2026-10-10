@@ -5,7 +5,7 @@ USE IDEMETA
 USE IDEPLUSDRIVER
 USE HEAPCORE
 CARD checks
-BYTE ARRAY payload(256)
+BYTE ARRAY payload(512)
 
 PROC Require(BYTE okay)
 
@@ -30,20 +30,20 @@ PROC Main()
     request.io_Data=BYTE POINTER(@geometry)
     request.io_Length=SIZEOF(IDEPLUS.Geometry)
     Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
-    Require(geometry.bytes=256 AND geometry.sectors=2880)
+    Require(geometry.bytes=512 AND geometry.sectors=1440)
     Require(((geometry.flags & IDEPLUS.FLAG_READONLY)<>0)=(unit=1))
-    FOR index=0 TO 255 DO payload(index)=BYTE(index) XOR $a7 OD
+    FOR index=0 TO 511 DO payload(index)=BYTE(index) XOR $a7 OD
     request.io_Command=IDEPLUS.WRITE_SECTOR
-    request.io_Offset=2800
-    request.io_Length=256
+    request.io_Offset=1400
+    request.io_Length=512
     request.io_Data=payload
     IF unit=1 THEN
       Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=IDEPLUS.ERROR_PROTECTED)
     ELSE
-      Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0 AND request.io_Actual=256)
+      Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0 AND request.io_Actual=512)
       request.io_Command=IDEPLUS.READ_SECTOR
       Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
-      FOR index=0 TO 255 DO Require(payload(index)=(BYTE(index) XOR $a7)) OD
+      FOR index=0 TO 511 DO Require(payload(index)=(BYTE(index) XOR $a7)) OD
     FI
     EXEC.CloseDevice(EXEC.IORequest POINTER(request))
   OD

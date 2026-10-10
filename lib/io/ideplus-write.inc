@@ -45,7 +45,7 @@ CARD FUNC AccessFlags(Partition POINTER partition)
 
 RETURN(flags)
 
-; Serialize physical RMW, durable status and verification as one request owner.
+; Write one complete ATA sector, then confirm durable status and every byte.
 BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
   BYTE error
   CARD index
@@ -56,17 +56,15 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
     RETURN(IDEPLUS.ERROR_PROTECTED)
   FI
 
-  LET sector=PhysicalSector(partition,request.io_Offset)
-  error=ReadPhysical(sector)
+  LET sector=partition.start+request.io_Offset
+  error=Ready(0,0)
   IF error<>0 THEN
     RETURN(error)
   FI
   IF bus.cancelled<>0 THEN
     RETURN(BYTE(EXEC.IOERR_ABORTED))
   FI
-  FOR index=0 TO CARD(request.io_Length)-1 DO
-    c.buffer(PackedIndex(partition,request.io_Offset,index))=request.io_Data(index)
-  OD
+  A816MEMORY.Move(c.buffer,request.io_Data,512)
   AddressSector(sector)
   EXEC.Forbid()
   IF bus.cancelled<>0 THEN
@@ -93,8 +91,8 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF error<>0 THEN
     RETURN(error)
   FI
-  FOR index=0 TO CARD(request.io_Length)-1 DO
-    IF c.buffer(PackedIndex(partition,request.io_Offset,index))<>request.io_Data(index) THEN
+  FOR index=0 TO 511 DO
+    IF c.buffer(index)<>request.io_Data(index) THEN
       RETURN(IDEPLUS.ERROR_VERIFY)
     FI
   OD

@@ -12,12 +12,15 @@ on-disk revision bytes `$20` (2.0) and `$21` (2.1). A mount explicitly supplies
 its format, sector count, sector size, unit and SIO profile. There is no format
 fallback, baud-rate guessing or media-change detection.
 
-Support 128- and 256-byte sectors, 16-bit sector addresses and three initial
-128-byte boot sectors. The configured geometry must agree with the filesystem
-header. Revision 2.1 must declare the matching sector size, 62 or 126 data
-pointers per map page, and one physical sector per logical sector. Reject other
-revisions, clustered sectors and 512-byte sectors. STOCK810 supports only 128;
-the existing FASTEST125 and GENERIC57600 profiles support both sizes.
+Support 128- and 256-byte SIO sectors with three initial 128-byte boot sectors,
+and uniform 512-byte IDE sectors with only sector 1 reserved for boot. Sector
+addresses remain 16-bit. Geometry must agree with the filesystem header.
+Revision 2.1 declares 62, 126 or 254 data pointers per map page and one physical
+sector per logical sector. IDE requires revision 2.1, the size marker `$01`,
+512 at offsets 33–34 and `JMP $0440`; floppy headers retain `JMP $3080`.
+Reject other revisions and clustered sectors. STOCK810 supports only 128;
+FASTEST125 and GENERIC57600 support both floppy sizes. IDE uses profile 0.
+Filesystem writes on IDE remain temporarily disabled during the reader slice.
 
 Validate the root-map address, total/free counts and bitmap extent at mount.
 The bitmap must cover sectors 0 through the declared final sector. Boot and

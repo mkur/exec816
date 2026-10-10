@@ -1,41 +1,32 @@
-"""Independent host fixtures for APT tables and the four documented packings."""
+"""Independent APT fixtures with native 512-byte partition sectors."""
 import struct
 from pathlib import Path
 
-def container_index(mode,logical,index,size):
-    if size==512:
-        if mode!=0:raise ValueError('512-byte sectors have no packing')
-        return index
-    # 128-byte sectors use every other byte of the same 256-byte container.
-    byte=index*(2 if size==128 else 1)
-    if mode==0:return byte*2
-    if mode==1:return byte*2+(logical%2)
-    if mode==2:return byte
-    if mode==3:return byte+(logical%2)*256
-    raise ValueError('Unsupported APT packing')
+def put_sector(media,start,logical,payload):
+    if len(payload)!=512:raise ValueError('Expected one complete 512-byte sector')
+    at=(start+logical)*512
+    if at<0 or at+512>len(media):raise ValueError('Out-of-range physical sector')
+    media[at:at+512]=payload
 
-def put_sector(media,start,mode,size,logical,payload):
-    physical=start+(logical//2 if mode in (1,3) else logical)
-    if len(payload)>size:raise ValueError('Oversized logical sector')
-    for index,value in enumerate(payload):media[physical*512+container_index(mode,logical,index,size)]=value
-
-def get_sector(media,start,mode,size,logical,length=None):
-    physical=start+(logical//2 if mode in (1,3) else logical)
-    return bytes(media[physical*512+container_index(mode,logical,i,size)] for i in range(length or size))
+def get_sector(media,start,logical):
+    at=(start+logical)*512
+    if at<0 or at+512>len(media):raise ValueError('Out-of-range physical sector')
+    return bytes(media[at:at+512])
 
 def pattern_fixture(even=False,mbr=False,chained=False,readonly=True):
     media=bytearray([0x96])*(8192*512)
-    # Boot unit D1 is deliberately empty. Test units D2..D9 cover all packings.
+    # Boot unit D1 is empty. D2..D9 exercise independent native sector mappings.
     entries=[bytes(16)]
     mappings=[]
-    for size in (128,256):
-        for mode in range(4):
-            unit=len(entries)+1;start=64+unit*16;physical=2 if mode in (1,3) else 4
-            entry=struct.pack('<BBIIHBBH',mode*4+(1 if size==128 else 2),0,start,physical+1,unit,0xc0 if readonly else 0x40,0,1)
-            entries.append(entry);mappings.append(dict(unit=unit,start=start+1,mode=mode,size=size,sectors=4))
-            for sector in range(4):
-                payload=bytes((i^sector^unit)&255 for i in range(size))
-                put_sector(media,start+1,mode,size,sector,payload)
+    for unit in range(2,10):
+        start=64+unit*16
+        entry=struct.pack('<BBIIHBBH',3,0,start,5,unit,
+                          0xc0 if readonly else 0x40,0,1)
+        entries.append(entry)
+        mappings.append(dict(unit=unit,start=start+1,size=512,sectors=4))
+        for sector in range(4):
+            payload=bytes((i^(i>>8)^sector^unit)&255 for i in range(512))
+            put_sector(media,start+1,sector,payload)
     entries+= [bytes(16)]*(15-len(entries))
     base=32 if mbr else 0
     if mbr:
@@ -52,24 +43,39 @@ def pattern_fixture(even=False,mbr=False,chained=False,readonly=True):
         else:media[sector*512:sector*512+len(table)]=table
     return media,mappings
 
-def filesystem_fixture(atr,mode=3,unit=2,readonly=True):
-    """Wrap an ATR as APT containers, preserving padding and metadata sentinels."""
+def filesystem_fixture(atr,unit=2,readonly=True):
+    """Wrap uniform SDFS sectors, preserving leader and reserved sentinels."""
     from sector_images import ATRImage as Image
     image=Image(atr)
+    if image.size!=512:raise ValueError('IDE requires uniform 512-byte sectors')
     start=64
-    physical=(image.count+1)//2 if mode in (1,3) else image.count
-    capacity=max(8192,start+physical+2)
+    capacity=max(8192,start+image.count+2)
     media=bytearray([0x96])*(capacity*512)
     media[:512]=bytes(512);media[1:4]=b'APT';media[5]=16
-    entry=struct.pack('<BBIIHBBH',0x40+mode*4+({128:1,256:2,512:3}[image.size]),0,start,physical+1,unit,0xc0 if readonly else 0x40,0,1)
+    entry=struct.pack('<BBIIHBBH',0x43,0,start,image.count+1,unit,
+                      0xc0 if readonly else 0x40,0,1)
     media[unit*16:unit*16+16]=entry
-    for sector in range(1,image.count+1):put_sector(media,start+1,mode,image.size,sector-1,image.sector(sector))
-    return media,dict(unit=unit,start=start+1,mode=mode,size=image.size,sectors=image.count)
+    for sector in range(1,image.count+1):
+        put_sector(media,start+1,sector-1,image.sector(sector))
+    return media,dict(unit=unit,start=start+1,size=512,sectors=image.count)
 
 def filesystem_atr(media,mapping,template):
     from sector_images import ATRImage as Image
     image=Image(template)
+    if image.size!=512:raise ValueError('IDE requires uniform 512-byte sectors')
     for sector in range(1,image.count+1):
-        value=get_sector(media,mapping['start'],mapping['mode'],mapping['size'],sector-1,len(image.sector(sector)))
+        value=get_sector(media,mapping['start'],sector-1)
         offset=image.offset(sector);image.data[offset:offset+len(value)]=value
     return bytes(image.data)
+
+def sdfs_image(source,destination,sectors=2000):
+    """Reformat independently and import files; relabelling sectors is invalid."""
+    import tempfile
+    from sdfs_reference import extract
+    from make_data_disk import make
+    with tempfile.TemporaryDirectory() as temp:
+        folder=Path(temp)/'source'
+        extract(source,folder)
+        binary=[p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file()]
+        make(destination,folder,binary_names=binary,sector_bytes=512,sectors=sectors)
+    return Path(destination).read_bytes()

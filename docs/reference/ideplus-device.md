@@ -11,9 +11,8 @@ Unit 0 exposes read-only physical sectors; units 1–15 expose active APT DOS
 mapping slots. Mapped units support explicitly enabled writes. Its generated
 [interface](../../lib/io/ideplus.act) uses IOStdReq: READ_SECTOR addresses a
 zero-based sector within the opened unit in io_Offset and transfers exactly one
-unit sector. Raw reads use 512 bytes;
-mapped units use 128 or 256. The first three 256-byte sectors also admit a
-128-byte prefix.
+512-byte sector, including sector 1. Raw and mapped units reject shorter
+requests. One partition sector maps directly to one ATA sector.
 GET_GEOMETRY returns a 12-byte record containing sector bytes, flags, sector
 count and controller generation. Unsupported commands fail.
 
@@ -24,11 +23,11 @@ Malformed revisions, bounds, links, cycles, reserved offsets and overlapping
 mappings reject the mapped-unit set; raw diagnostics remain available on an
 otherwise healthy controller. Partition sector-1 offsets are physical offsets.
 
-All four documented 256-byte packing modes are supported: low bytes, consecutive
-padded bytes, interleaved bytes and interleaved sectors. A 128-byte unit uses
-every other byte of the same 256-byte container. Short boot-sector transfers
-do not change that container stride. Table sectors and metadata leaders are
-never exposed as logical file data. See the [APT specification](https://drac030.krap.pl/APT_spec.pdf).
+Only native 512-byte DOS mappings (BPS bits `%11`, zero packing bits) are
+supported. Other sector sizes are skipped without hiding valid mappings in the
+same APT. Low-byte APT table storage remains supported; it is independent of
+partition-sector packing. Table sectors and metadata leaders are never exposed
+as logical file data. See the [APT specification](https://drac030.krap.pl/APT_spec.pdf).
 All successful requests publish the full length, with one terminal reply.
 
 The worker polls status briefly, then sleeps one timer.device VBI tick. Each
@@ -40,10 +39,10 @@ an active read drains before replying aborted and does not copy client bytes.
 
 ## Write completion
 
-WRITE_SECTOR reads the containing physical sector, changes only the admitted
-logical bytes, writes it, waits for durable terminal status, rereads and verifies
-the target bytes. Neighbours, padding and short boot tails remain intact. There
-is one controller owner throughout; no zero fill or dirty physical cache.
+WRITE_SECTOR stages all 512 caller bytes, writes the physical sector, waits for
+durable terminal status, then rereads and verifies every byte. There is no
+preparation read. Other physical sectors remain intact. There is one controller
+owner throughout; no zero fill or dirty physical cache.
 
 IDENTIFY with no advertised volatile write cache admits terminal-status durability.
 A cached device must advertise FLUSH CACHE support; each accepted write must
@@ -52,7 +51,7 @@ is withheld. CMD_UPDATE flushes cached media, succeeds on cache-free media and
 rejects an unsupported durability policy. APT read-only/reserved access flags,
 the board protection switch and raw unit 0 always prohibit writes.
 
-Cancellation during RMW preparation drains its read and prevents mutation. Once
+Cancellation accepted before ATA command issue prevents mutation. Once
 the write command is issued, abort is declined and completion reports the actual
 write/flush/verification outcome. Failure publishes zero actual bytes, disables
 further requests and retains the controller IRQ mask until cold reset. An
@@ -83,7 +82,9 @@ profiles without the requested small stack fail normally rather than taking a
 larger stack. The first linear RAM bank remains reserved.
 
 Configured filesystem mounts select `device: "ideplus.device"`, unit 1–15,
-profile 0 and explicit logical geometry. Use `access: "readonly"` by default;
+profile 0, 512-byte sectors and uniform geometry (`boot: 0`). IDE filesystems
+require SDFS 2.1; MyDOS on IDE is unsupported. During the reader slice, filesystem
+write admission remains closed until the corresponding writer slice is checked. Use `access: "readonly"` by default;
 `access: "readwrite"` requires reported writable and durable capability. Geometry must
 match GET_GEOMETRY exactly. SIO stays the default device. SYS may select an IDE
 mount with a fixed configured unit; OF816 system-drive overrides remain SIO-only.

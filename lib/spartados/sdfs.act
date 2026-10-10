@@ -83,12 +83,17 @@ PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)
 
 RETURN
 
+; Uniform 512-byte SDFS reserves only its first sector for boot data.
+PUBLIC CARD FUNC BootSectors(FSBTYPES.Volume POINTER volume)
+
+RETURN(IF volume.block.dataBytes=512 THEN CARD(1) ELSE CARD(3) FI)
+
 ; Exclude boot and bitmap sectors from ordinary map and file traversal.
 PUBLIC BYTE FUNC Allowed(FSBTYPES.Volume POINTER volume CARD sector)
   SDFSTYPES.Volume POINTER native
 
   native=SDFSTYPES.Volume POINTER(volume.state)
-  IF sector<4 OR LONGCARD(sector)>volume.block.sectors THEN
+  IF sector<=BootSectors(volume) OR LONGCARD(sector)>volume.block.sectors THEN
     RETURN(0)
   FI
 
@@ -118,20 +123,20 @@ BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER bytes)
 
   volume=SDFSTYPES.Volume POINTER(work.volume.state)
   size=work.volume.block.dataBytes
-  IF (size<>128 AND size<>256) OR work.volume.block.boot<>1 THEN
-    RETURN(0)
-  FI
-
-  IF bytes(6)<>$4c OR bytes(7)<>$80 OR bytes(8)<>$30 THEN
-    RETURN(0)
-  FI
-
   IF bytes(32)<>$20 AND bytes(32)<>$21 THEN
     RETURN(0)
   FI
-
-  IF bytes(31)<>BYTE(size) THEN
-    RETURN(0)
+  IF size=512 THEN
+    IF work.volume.block.boot<>0 OR bytes(32)<>$21 OR bytes(31)<>1
+        OR bytes(1)<>1 OR bytes(6)<>$4c OR bytes(7)<>$40 OR bytes(8)<>$04 THEN
+      RETURN(0)
+    FI
+  ELSE
+    IF (size<>128 AND size<>256) OR work.volume.block.boot<>1
+        OR bytes(31)<>BYTE(size) OR bytes(6)<>$4c
+        OR bytes(7)<>$80 OR bytes(8)<>$30 THEN
+      RETURN(0)
+    FI
   FI
 
   volume.capacity=(size-4) RSH 1
@@ -147,7 +152,7 @@ BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER bytes)
   bitmap=Word(bytes,16)
   count=CARD(bytes(15))
   IF LONGCARD(total)<>work.volume.block.sectors OR total<5 OR Word(bytes,
-      13)>total OR count=0 OR bitmap<4 THEN
+      13)>total OR count=0 OR bitmap<=BootSectors(work.volume) THEN
     RETURN(0)
   FI
 

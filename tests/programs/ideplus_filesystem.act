@@ -20,10 +20,11 @@ PROC Require(BYTE okay)
 RETURN
 
 PROC Main()
-  CARD index,offset,part,position
+  CARD index,offset,part
+  LONGCARD position,remaining
   LONGINT got
   BYTE POINTER row,expected
-  CARD POINTER fields
+  LONGCARD POINTER fields
   DOS.FileHandle POINTER file
 
   IF failAdmission<>0 THEN
@@ -34,15 +35,16 @@ PROC Main()
   FI
   FOR index=0 TO count-1 DO
     row=BYTE POINTER($2d1000)+SIZE(index)*72
-    fields=CARD POINTER(row+64)
+    fields=LONGCARD POINTER(row+64)
     expected=BYTE POINTER($2e0000)+SIZE(fields(1))
     file=DOS.Open(row,DOS.MODE_OLDFILE)
     Require(file<>NULL)
     position=0
     WHILE position<fields(0) DO
-      part=fields(0)-position
-      IF part>257 THEN
-        part=257
+      remaining=fields(0)-position
+      part=257
+      IF remaining<257 THEN
+        part=CARD(remaining)
       FI
 
       got=DOS.Read(file,buffer,LONGINT(part))
@@ -53,7 +55,7 @@ PROC Main()
         FI
       OD
 
-      position==+part
+      position==+LONGCARD(part)
     OD
 
     Require(DOS.Read(file,buffer,1)=0)
@@ -62,14 +64,14 @@ PROC Main()
 
   BEGIN
     IF failWrite=0 THEN
-    BEGIN
-    LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
-    lastError=DOS.IoErr()
-    Require(lock<>NULL)
-    Require(DOS.Examine(lock,@info)<>0)
-    Require(DOS.ExNext(lock,@info)<>0)
-    DOS.UnLock(lock)
-    END
+      BEGIN
+        LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
+        lastError=DOS.IoErr()
+        Require(lock<>NULL)
+        Require(DOS.Examine(lock,@info)<>0)
+        Require(DOS.ExNext(lock,@info)<>0)
+        DOS.UnLock(lock)
+      END
     FI
     LET denied=DOS.Open(BYTE POINTER(c"IDE:FORBID.TXT"),DOS.MODE_NEWFILE)
     Require(denied=NULL)
