@@ -1,0 +1,78 @@
+; Explicit filesystem transport dispatch. Device policy stays in its driver.
+MODULE BLOCKTRANSPORT
+USE EXEC
+USE BLOCKTYPES
+USE SIODRIVER
+
+; Common filesystem bounds precede transport-specific immutable geometry.
+PUBLIC BYTE FUNC Geometry(BYTE backend CARD unit,profile LONGCARD sectors
+    CARD dataBytes BYTE boot LONGCARD generation)
+
+  IF sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 OR boot<>1
+      OR (dataBytes<>128 AND dataBytes<>256) THEN
+    RETURN(0)
+  FI
+
+  IF backend<>BLOCKTYPES.BACKEND_SIO OR unit<49 OR unit>56 THEN
+    RETURN(0)
+  FI
+
+RETURN((profile=EXEC.SIO_PROFILE_FASTEST125 OR profile=EXEC.SIO_PROFILE_GENERIC57600)
+    OR (profile=EXEC.SIO_PROFILE_STOCK810 AND dataBytes=128))
+
+; Names use the idle upper scratch buffer, never near string initializers.
+PUBLIC PROC DeviceName(BYTE backend BYTE POINTER name)
+
+ 
+  name(0)=115
+  name(1)=105
+  name(2)=111
+  name(3)=46
+  name(4)=100
+ 
+  name(5)=101
+  name(6)=118
+  name(7)=105
+  name(8)=99
+  name(9)=101
+  name(10)=0
+
+RETURN
+
+; Prepare the common prefix and the selected device's sector command.
+PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volume
+    LONGCARD sector CARD expected BYTE POINTER buffer BYTE writing)
+  EXEC.IOSIOReq POINTER sio
+
+  request.io_Flags=0
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(expected)
+  request.io_Actual=0
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  sio=EXEC.IOSIOReq POINTER(request)
+  sio.sio_Command=$52
+  sio.sio_Direction=EXEC.SIODIR_READ
+  IF writing<>0 THEN
+    sio.sio_Command=$57
+    sio.sio_Direction=EXEC.SIODIR_WRITE
+  FI
+
+  sio.sio_Profile=volume.profile
+  sio.sio_Aux1=BYTE(sector)
+  sio.sio_Aux2=BYTE(sector RSH 8)
+  sio.sio_TimeoutUS=0
+
+RETURN
+
+; Conditional cancellation belongs to the established transport.
+PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
+
+RETURN(SIODRIVER.TryCancel(request))
+
+; Cached blocks remain subject to the owning controller's availability.
+PUBLIC BYTE FUNC Unavailable(BLOCKTYPES.Volume POINTER volume)
+
+RETURN(SIODRIVER.Unavailable())
+
+ENDMODULE

@@ -2,7 +2,9 @@
 
 [Reference index](README.md) · [Filesystem architecture](../architecture/filesystems.md)
 
-The internal block adapter maps filesystem sector requests onto `sio.device`.
+The internal block adapter dispatches filesystem sector requests through a small internal transport binding.
+SIO is currently implemented; other backend tags are rejected until their driver
+is connected.
 It runs with the shared filesystem worker, not as another worker or public
 block device. The [SIO interface](device-io.md) retains raw wire commands.
 
@@ -11,7 +13,10 @@ block device. The [SIO interface](device-io.md) retains raw wire commands.
 A mount supplies its device/unit, timing profile, sector count, data-sector size
 and short-boot-sector layout. Geometry is validated before attachment and remains
 immutable until detach. Filesystem type does not choose the peripheral speed.
-A volume identity and mount generation distinguish live bindings and cached data.
+A backend/unit identity and mount generation distinguish live bindings and cached data.
+The 46-byte mount descriptor stores its backend in the former padding byte at
+offset 45. Source configurations without `device` still select `sio.device`.
+Transfers use the common IOStdReq prefix in storage sized for IOSIOReq.
 
 Sector numbers are one-based. Reject zero, values beyond the configured count,
 and values beyond `$FFFF` before conversion to SIO auxiliary bytes. Sector zero
@@ -56,7 +61,7 @@ The [shared sector cache](../architecture/sector-cache.md) retains successful
 reads across file closes. Lookup checks volume/generation, sector bounds and
 service availability without revalidating immutable geometry on every hit.
 Detach and transport errors invalidate affected data; an offline/reset-required
-bus invalidates all retained blocks and cannot be bypassed with a cache hit.
+bus invalidates its own retained blocks and cannot be bypassed with a cache hit.
 External writers must leave mounted media unchanged until detach/remount.
 
 Public file positions are not physical byte offsets: MyDOS trailers and

@@ -12,7 +12,7 @@ PUBLIC TYPE Spec=[
   CARD unit,profile
   LONGCARD sectors
   CARD dataBytes
-  BYTE boot,format,access
+  BYTE boot,format,access,backend
 ]
 
 PUBLIC TYPE Mount=[

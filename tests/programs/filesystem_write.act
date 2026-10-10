@@ -34,7 +34,7 @@ RETURN
 
 BYTE POINTER FUNC Path(CARD index)
 
-RETURN(BYTE POINTER($d1000)+SIZE(index LSH 6))
+RETURN(BYTE POINTER($2d1000)+SIZE(index LSH 6))
 
 ; Populate and repeat a public measurement before the next mutation.
 PROC WarmInfo()

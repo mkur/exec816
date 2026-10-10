@@ -11,11 +11,12 @@ BYTE ARRAY staging(256)
 
 ; Supply host-controlled sector bytes while keeping all filesystem
 ; interpretation in guest code.
-PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+PUBLIC INT FUNC Transfer(EXEC.IOStdReq POINTER request DOSCORE.DosRegistry
     POINTER registry DOSBREAKTYPES.Scope POINTER scope)
   CARD index
 
-  sector=CARD(request.sio_Aux1)+(CARD(request.sio_Aux2) LSH 8)
+  LET sio=EXEC.IOSIOReq POINTER(request)
+  sector=CARD(sio.sio_Aux1)+(CARD(sio.sio_Aux2) LSH 8)
   length=CARD(request.io_Length)
   actual=length
   error=0

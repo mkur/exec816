@@ -11,7 +11,7 @@ BLOCKTYPES.Volume POINTER FUNC BlockAttach(BLOCKTYPES.Adapter POINTER adapter
     RETURN(NULL)
   FI
 
-  IF BLOCKIO.Geometry(unit,profile,sectors,dataBytes,boot,generation)=0 THEN
+  IF BLOCKIO.Geometry(BLOCKTYPES.BACKEND_SIO,unit,profile,sectors,dataBytes,boot,generation)=0 THEN
     adapter.error=EXEC.IOERR_BADLENGTH
     RETURN(NULL)
   FI

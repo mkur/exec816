@@ -51,10 +51,10 @@ def allocation(t,out,optimize,fault):
     replacements={
         'adapter':('adapter=BLOCKTYPES.Adapter POINTER(EXEC.AllocMem(BLOCKTYPES.ADAPTER_SIZE,\n      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','adapter=BLOCKTYPES.Adapter POINTER(0)'),
         'port':('adapter.port=EXEC.CreateMsgPort()','adapter.port=EXEC.MsgPort POINTER(0)'),
-        'transfer':('adapter.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,\n        EXEC.IOSIOREQ_SIZE))','adapter.request=EXEC.IOSIOReq POINTER(0)'),
+        'transfer':('adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,\n        EXEC.IOSIOREQ_SIZE))','adapter.request=EXEC.IOStdReq POINTER(0)'),
         'buffer':('adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)','adapter.buffer=BYTE POINTER(0)'),
         'volume':('LET volume=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(\n      BLOCKTYPES.VOLUME_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))','LET volume=BLOCKTYPES.Volume POINTER(0)'),
-        'owner':('volume.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,\n      EXEC.IOSIOREQ_SIZE))','volume.request=EXEC.IOSIOReq POINTER(0)'),
+        'owner':('volume.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,\n      EXEC.IOSIOREQ_SIZE))','volume.request=EXEC.IOStdReq POINTER(0)'),
         'open':('error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)','error=-1'),
         'cache-payload':('cache.payload=EXEC.AllocMem(payloadBytes,EXEC.MEMF_UPPER OR EXEC.MEMF_LINEAR)', 'cache.payload=NULL'),
         'cache-tags':('cache.tags=BLOCKTYPES.CacheTag POINTER(EXEC.AllocMem(\n      MetadataBytes(blocks),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))', 'cache.tags=NULL'),

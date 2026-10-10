@@ -1,0 +1,10 @@
+{
+  "abi": "exec816.block",
+  "revision": 1,
+  "backends": {
+    "SIO": 0,
+    "IDEPLUS": 1
+  },
+  "mount_bytes": 46,
+  "backend_offset": 45
+}

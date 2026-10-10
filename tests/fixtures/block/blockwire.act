@@ -10,7 +10,7 @@ PROC POINTER absent
 
 ; Supply host-controlled sector bytes while keeping all filesystem
 ; interpretation in guest code.
-PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+PUBLIC INT FUNC Transfer(EXEC.IOStdReq POINTER request DOSCORE.DosRegistry
     POINTER registry DOSBREAKTYPES.Scope POINTER scope)
   CARD POINTER calls
   BYTE POINTER fault,buffer
@@ -28,7 +28,8 @@ PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
   calls^==+1
   request.io_Error=0
   request.io_Actual=request.io_Length
-  sector=CARD(request.sio_Aux1)+(CARD(request.sio_Aux2) LSH 8)
+  LET sio=EXEC.IOSIOReq POINTER(request)
+  sector=CARD(sio.sio_Aux1)+(CARD(sio.sio_Aux2) LSH 8)
   seed=BYTE((sector LSH 4)-sector)
   buffer=request.io_Data
   FOR index=0 TO CARD(request.io_Length)-1 DO

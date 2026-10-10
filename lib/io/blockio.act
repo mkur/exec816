@@ -5,30 +5,14 @@ USE EXECMEMORY
 USE BLOCKTYPES
 USE BLOCKCACHE
 USE BOOTCONFIG
+USE BLOCKTRANSPORT
 INCLUDE "../dos/dos-types.inc"
 
-; Accept only the device, speed and sector layouts supported by this adapter.
-PUBLIC BYTE FUNC Geometry(CARD unit,profile LONGCARD sectors CARD dataBytes
+; Geometry admission includes the selected transport's unit/profile rules.
+PUBLIC BYTE FUNC Geometry(BYTE backend CARD unit,profile LONGCARD sectors CARD dataBytes
     BYTE boot LONGCARD generation)
 
-  IF unit<49 OR unit>56 OR sectors=0 OR sectors>LONGCARD($ffff) OR generation=0 THEN
-    RETURN(0)
-  FI
-
-  IF boot<>1 OR (dataBytes<>128 AND dataBytes<>256) THEN
-    RETURN(0)
-  FI
-
-  IF profile<>EXEC.SIO_PROFILE_FASTEST125 AND profile<>EXEC.SIO_PROFILE_STOCK810
-      AND profile<>EXEC.SIO_PROFILE_GENERIC57600 THEN
-    RETURN(0)
-  FI
-
-  IF dataBytes=256 AND profile=EXEC.SIO_PROFILE_STOCK810 THEN
-    RETURN(0)
-  FI
-
-RETURN(1)
+RETURN(BLOCKTRANSPORT.Geometry(backend,unit,profile,sectors,dataBytes,boot,generation))
 
 ; Check the sector range against admitted geometry, keeping boot sectors short.
 PUBLIC CARD FUNC SectorBytes(BLOCKTYPES.Volume POINTER volume LONGCARD sector)
@@ -91,7 +75,7 @@ PUBLIC BLOCKTYPES.Adapter POINTER FUNC Create()
 
   adapter.port=EXEC.CreateMsgPort()
   IF adapter.port<>NULL THEN
-    adapter.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,
+    adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
         EXEC.IOSIOREQ_SIZE))
     IF adapter.request<>NULL THEN
       adapter.buffer=EXEC.AllocMem(256,EXEC.MEMF_UPPER)
@@ -130,23 +114,6 @@ PUBLIC BYTE FUNC Destroy(BLOCKTYPES.Adapter POINTER adapter)
 
 RETURN(1)
 
-; Build the resident SIO device name in caller-supplied scratch storage.
-PROC DeviceName(BYTE POINTER name)
-
-  name(0)=115
-  name(1)=105
-  name(2)=111
-  name(3)=46
-  name(4)=100
-  name(5)=101
-  name(6)=118
-  name(7)=105
-  name(8)=99
-  name(9)=101
-  name(10)=0
-
-RETURN
-
 ; Internal preallocated-volume entry used by the filesystem state machine.
 ; The caller validates geometry and owns a zeroed volume record.
 PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
@@ -154,7 +121,7 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   BYTE POINTER name
   INT error
 
-  volume.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(adapter.port,
+  volume.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
       EXEC.IOSIOREQ_SIZE))
   IF volume.request=NULL THEN
     adapter.error=ERROR_NO_FREE_STORE
@@ -165,7 +132,7 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   ; NUL-terminated device name during open. Stored blocks remain valid.
   DiscardBuffer(adapter)
   name=adapter.buffer
-  DeviceName(name)
+  BLOCKTRANSPORT.DeviceName(volume.backend,name)
   error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)
   IF error<>0 THEN
     adapter.error=LONGINT(error)
@@ -242,30 +209,11 @@ PROC Publish(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume POINTER volume
 
 RETURN
 
-; Describe one sector transfer without exposing unvalidated caller extents.
-PROC Prepare(EXEC.IOSIOReq POINTER request BLOCKTYPES.Volume POINTER volume
-    LONGCARD sector CARD expected BYTE POINTER buffer)
-
-  request.io_Command=EXEC.SIOCMD_TRANSACTION
-  request.io_Flags=0
-  request.io_Offset=0
-  request.io_Data=buffer
-  request.io_Length=LONGCARD(expected)
-  request.io_Actual=0
-  request.sio_Command=$52
-  request.sio_Direction=EXEC.SIODIR_READ
-  request.sio_Profile=volume.profile
-  request.sio_Aux1=BYTE(sector)
-  request.sio_Aux2=BYTE(sector RSH 8)
-  request.sio_TimeoutUS=0
-
-RETURN
-
 ; Validate transfer completion before making its bytes available to the
 ; parser.
 LONGINT FUNC Complete(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
     POINTER volume CARD expected LONGINT error)
-  EXEC.IOSIOReq POINTER request
+  EXEC.IOStdReq POINTER request
 
   request=adapter.request
   ; The caller has collected the accepted transfer before retiring its borrow.
@@ -327,6 +275,13 @@ PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
     RETURN(0)
   FI
 
+  IF BLOCKTRANSPORT.Unavailable(volume)<>0 THEN
+    DiscardBuffer(adapter)
+    BLOCKCACHE.Invalidate(@adapter.cache,volume)
+    adapter.error=EXEC.SIOERR_BUSUNAVAILABLE
+    RETURN(0)
+  FI
+
   IF Cached(adapter,volume,sector)<>0 THEN
     RETURN(1)
   FI
@@ -342,7 +297,7 @@ PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
   volume.busy=1
   adapter.request.io_Device=volume.request.io_Device
   adapter.request.io_Unit=volume.request.io_Unit
-  Prepare(adapter.request,volume,sector,expected,adapter.buffer)
+  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,adapter.buffer,0)
 
 RETURN(2)
 
@@ -374,9 +329,7 @@ PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
   volume.busy=1
   adapter.request.io_Device=volume.request.io_Device
   adapter.request.io_Unit=volume.request.io_Unit
-  Prepare(adapter.request,volume,sector,expected,adapter.buffer)
-  adapter.request.sio_Command=$57
-  adapter.request.sio_Direction=EXEC.SIODIR_WRITE
+  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,adapter.buffer,1)
 
 RETURN(2)
 

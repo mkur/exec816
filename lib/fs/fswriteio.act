@@ -10,7 +10,7 @@ USE FSOPERATION
 USE BLOCKIO
 USE BLOCKWIRE
 USE SDFS
-USE SIODRIVER
+USE BLOCKTRANSPORT
 USE FSIO
 USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
@@ -61,7 +61,7 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service LONGINT error)
     service.selected.error=error
   FI
 
-  IF SIODRIVER.Unavailable()<>0 THEN
+  IF BLOCKTRANSPORT.Unavailable(service.selected.block)<>0 THEN
     FSIO.Offline(service)
   FI
 

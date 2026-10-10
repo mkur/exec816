@@ -1,4 +1,4 @@
-; The sole serial provider boundary. Other queued cancellations can retire
+; The queued transport boundary. Other queued cancellations can retire
 ; while this worker retains its exact adapter/request and caller buffer.
 MODULE BLOCKWIRE
 USE EXEC
@@ -6,11 +6,11 @@ USE IOCORE
 USE FSOPERATION
 USE DOSCORE
 USE DOSBREAKTYPES
-USE SIODRIVER
+USE BLOCKTRANSPORT
 INCLUDE "../dos/dos-types.inc"
 ; The filesystem worker supplies its retained context. Standalone block users
 ; pass NULL/NULL; no task or filesystem lookup belongs in a sector transfer.
-INT FUNC Exchange(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+INT FUNC Exchange(EXEC.IOStdReq POINTER request DOSCORE.DosRegistry
     POINTER registry DOSBREAKTYPES.Scope POINTER scope BYTE cancellable)
   LONGCARD mask,control,bits,state
   INT error
@@ -45,7 +45,7 @@ INT FUNC Exchange(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
 
     IF cancellable<>0 AND attempted=0 AND FSOPERATION.Canceled(scope)<>0 THEN
       attempted=1
-      aborted=SIODRIVER.TryCancel(EXEC.IORequest POINTER(request))
+      aborted=BLOCKTRANSPORT.TryCancel(EXEC.IORequest POINTER(request))
     FI
 
     bits=EXEC.Wait(mask)
@@ -59,15 +59,15 @@ INT FUNC Exchange(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
 RETURN(error)
 
 ; Ordinary reads can retire at the driver's supported cancellation points.
-PUBLIC INT FUNC Transfer(EXEC.IOSIOReq POINTER request DOSCORE.DosRegistry
+PUBLIC INT FUNC Transfer(EXEC.IOStdReq POINTER request DOSCORE.DosRegistry
     POINTER registry DOSBREAKTYPES.Scope POINTER scope)
 
 RETURN(Exchange(request,registry,scope,1))
 
 ; Once metadata mutation starts, collect every sector completion while still
 ; pumping control messages. The filesystem chooses its next safe checkpoint;
-; device queue, timeout and bus recovery policy remain in the SIO driver.
-PUBLIC INT FUNC TransferCommitted(EXEC.IOSIOReq POINTER request
+; device queue, timeout and bus recovery policy remain in the device driver.
+PUBLIC INT FUNC TransferCommitted(EXEC.IOStdReq POINTER request
     DOSCORE.DosRegistry POINTER registry DOSBREAKTYPES.Scope POINTER scope)
 
 RETURN(Exchange(request,registry,scope,0))

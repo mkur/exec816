@@ -4,7 +4,8 @@ USE FSFORMATS
 USE FSTYPES
 USE FSBACKEND
 USE BLOCKIO
-USE SIODRIVER
+USE BLOCKCACHE
+USE BLOCKTRANSPORT
 INCLUDE "../dos/dos-types.inc"
 
 ; Request the backend's next sector and invalidate parsing caches on failure.
@@ -35,7 +36,7 @@ PUBLIC BYTE FUNC Complete(FSTYPES.Service POINTER service)
       service.work.error=ERROR_BREAK
     FI
 
-    IF SIODRIVER.Unavailable()<>0 THEN
+    IF BLOCKTRANSPORT.Unavailable(service.work.volume.block)<>0 THEN
       Offline(service)
     FI
 
@@ -49,11 +50,12 @@ PUBLIC PROC Offline(FSTYPES.Service POINTER service)
   BYTE index
   FSTYPES.Mount POINTER mount
 
-  BLOCKIO.Invalidate(service.adapter)
   FOR index=0 TO service.count-1 DO
     mount=service.mounts(index).item
     IF mount<>FSTYPES.Mount POINTER(0) THEN
-      IF mount.spec.format<>FSFORMATS.RAM AND mount.offline=0 THEN
+      IF mount.spec.format<>FSFORMATS.RAM AND mount.offline=0 AND
+          mount.spec.backend=service.work.volume.block.backend THEN
+        BLOCKCACHE.Invalidate(@service.adapter.cache,mount.block)
         mount.error=service.work.ioError
         mount.offline=1
         mount.writable=0

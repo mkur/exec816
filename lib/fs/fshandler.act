@@ -24,7 +24,7 @@ USE FSPACKET
 USE FSOPERATION
 USE DOSBREAKTYPES
 USE FSIO
-USE SIODRIVER
+USE BLOCKTRANSPORT
 USE FSBACKEND
 USE FSBTYPES
 INCLUDE "../dos/dos-types.inc"
@@ -265,7 +265,7 @@ BYTE FUNC DispatchStep(BYTE POINTER raw)
     FI
 
     IF service.selected.spec.format<>FSFORMATS.RAM AND
-        SIODRIVER.Unavailable()<>0 THEN
+        BLOCKTRANSPORT.Unavailable(service.selected.block)<>0 THEN
       service.work.ioError=EXEC.SIOERR_BUSUNAVAILABLE
       FSIO.Offline(service)
       RETURN(FSPACKET.Error(service,service.selected.error))

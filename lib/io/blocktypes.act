@@ -1,14 +1,15 @@
 ; Private filesystem block boundary. All records live in upper RAM.
 MODULE BLOCKTYPES
 USE EXEC
+INCLUDE "block-backends.inc"
 
 ; Geometry is validated before attachment and fixed for this volume lifetime.
 PUBLIC TYPE Volume=[
-  EXEC.IOSIOReq POINTER request
+  EXEC.IOStdReq POINTER request
   BYTE POINTER adapter
   LONGCARD sectors,generation
   CARD dataBytes
-  BYTE unit,profile,boot,busy
+  BYTE unit,profile,boot,busy,backend
   CARD references
 ]
 
@@ -28,7 +29,7 @@ PUBLIC TYPE Cache=[
 
 PUBLIC TYPE Adapter=[
   EXEC.MsgPort POINTER port
-  EXEC.IOSIOReq POINTER request
+  EXEC.IOStdReq POINTER request
   BYTE POINTER buffer
   Volume POINTER cached
   LONGCARD cachedGeneration,cachedSector

@@ -1,6 +1,7 @@
 # IDE Plus 2.0 block driver implementation plan
 
-Status: proposed; implementation has not started.
+Status: implementation in progress. IP0 transport separation is implemented;
+IP1–IP6 remain pending. See the [development record](../history/ideplus-block-driver.md).
 
 Follow the [contributor instructions](../../AGENTS.md),
 [platform contract](../reference/platform.md),

@@ -47,11 +47,17 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
                    access='readwrite', profile=profile)]
+    # Deferred console links desktop/fault strings beyond the base 2 KiB arena.
+    from generate_memory import PROFILE
+    profile_path=output/'write-memory.json'
+    memory_profile=json.loads(PROFILE.read_text())
+    memory_profile['image_data_bytes']=4096
+    profile_path.write_text(json.dumps(memory_profile,indent=2)+'\n')
     program = reuse(from_build) if from_build else build(
                     toolchain, ROOT/'tests/programs/filesystem_write.act', output,
                     optimize=mode == 'opt', tasks=True, dos_mounts=mounts,
-                    console_deferred=True,
-                    image_data=[(0xd1000, bytes(paths)),
+                    console_deferred=True, memory_profile=profile_path,
+                    image_data=[(0x2d1000, bytes(paths)),
                                 (0x30ffd0, bytes([0xa5])*(CAPACITY+64))])
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     binary = ROOT/'build/altirra-sio-multi'
@@ -110,7 +116,7 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
             storage = (program['output']/'sio-storage-action.inc').read_text()
             addresses = dict(re.findall(r'CONST (SD_\w+)=\$(\w+)', storage))
             diagnostic = dict(fields=fields, registers=bridge.regs(),
-                              paths=list(bridge.memdump(0xd1000, 7*64)),
+                              paths=list(bridge.memdump(0x2d1000, 7*64)),
                               sio={name:list(bridge.memdump(int(addresses[name],16),2))
                                    for name in ('SD_PHASE','SD_ERROR','SD_ACTUAL',
                                                 'SD_CLOCK','SD_DEADLINE','SD_OFFLINE')},

@@ -3,7 +3,7 @@ import argparse,json,re,struct
 from pathlib import Path
 from filesystem_formats import DEFAULT, FORMATS, MYDOS, RAM
 ALIAS=re.compile(r'[0-9@A-Z_`a-z]{1,31}\Z')
-FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format','access'}
+FIELDS={'alias','unit','sectors','sector_bytes','profile','boot','format','access','device'}
 def require(ok,message):
     if not ok:raise ValueError(message)
 def validate_mounts(mounts):
@@ -23,7 +23,9 @@ def validate_mounts(mounts):
             require(name.upper()!='RAM','RAM is reserved for the RAM filesystem')
             spec=dict(profile=1,boot=1,format=DEFAULT,access="readonly")
         spec.update(mount)
-        for key in FIELDS-{'alias','access'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
+        spec.setdefault('device','sio.device')
+        require(spec['device']=='sio.device','Unavailable block device')
+        for key in FIELDS-{'alias','access','device'}:require(type(spec[key]) is int,'Mount '+key+' must be an integer')
         require(spec['access'] in ('readonly','readwrite'),'Unknown mount access policy')
         require(name.upper() not in aliases,'Duplicate mount alias')
         if ram:
@@ -39,13 +41,13 @@ def validate_mounts(mounts):
         require(spec['format'] in FORMATS,'Unknown filesystem format')
         require(spec['profile'] in (1,2,4) and (spec['profile']!=2 or spec['sector_bytes']==128),'Unqualified profile/sector size')
         require(name.upper() not in aliases,'Duplicate mount alias')
-        require(spec['unit'] not in units,'A SIO unit may only be mounted once')
-        aliases.add(name.upper());units.add(spec['unit']);result.append(spec)
+        require((spec['device'],spec['unit']) not in units,'A SIO unit may only be mounted once')
+        aliases.add(name.upper());units.add((spec['device'],spec['unit']));result.append(spec)
     return result
 def encode(mounts):
     data=bytearray()
     for spec in validate_mounts(mounts):
-        data+=struct.pack('<32sHHIHBBBx',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'],int(spec['access']=='readwrite'))
+        data+=struct.pack('<32sHHIHBBBB',spec['alias'].encode('ascii'),spec['unit'],spec['profile'],spec['sectors'],spec['sector_bytes'],spec['boot'],spec['format'],int(spec['access']=='readwrite'),0)
     return bytes(data)
 def select_system(mounts, name=None):
     """Resolve an explicit system volume; list order is never a default."""
