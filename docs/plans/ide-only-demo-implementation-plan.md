@@ -6,6 +6,10 @@ after the pinned BIOS declined IDE unit 1 before loading. See the
 profile following the completed
 [IDE Plus driver plan](ideplus-block-driver-implementation-plan.md).
 
+The [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md) supersedes
+this plan's packed 256-byte media geometry. It is planned, not implemented;
+the original execution record and open ID5 handoff gate remain unchanged.
+
 Follow the [platform contract](../reference/platform.md),
 [contributor instructions](../../AGENTS.md) and
 [development testing policy](../contributing/testing.md). Implement and commit

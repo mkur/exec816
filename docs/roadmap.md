@@ -134,6 +134,11 @@ Exec SIO driver. It follows the implemented native IDE driver with system-volume
 selection, two APT partitions, OF816/XEX/cart packaging and firmware-menu XEX
 loading. Automatic power-on disk boot remains separate work.
 
+The [IDE 512-byte sector refactor](plans/ide-512-sector-refactor-plan.md)
+supersedes that plan's packed 256-byte media layout: direct ATA sectors,
+SDFS 2.1, shared 512-byte buffers and the existing cache budget. SIO retains
+128/256-byte formats. Firmware XEX handoff remains an explicit acceptance gate.
+
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The
 [XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw
