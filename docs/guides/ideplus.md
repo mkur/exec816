@@ -115,3 +115,7 @@ OF816 retains its five-second autoboot. SYSTEM-DRIVE@ is zero and overrides are
 rejected; cache and verbosity settings still work. DEVICES omits sio.device.
 The [development record](../history/ide-only-demo.md) distinguishes cartridge
 and actual firmware-loader coverage; neither establishes physical qualification.
+The pinned BIOS menu loader declines D1 STATUS before directory loading and
+falls back to serial SIO. That route remains unsupported; use the cartridge or
+an externally loaded XEX. Keeping EXEC816.XEX in SYS does not establish firmware
+boot support.

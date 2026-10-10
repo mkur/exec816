@@ -87,3 +87,28 @@ capacity reports in `build/development/ide-only/demo/`. The combined executable
 is 329,163 bytes, with 703,028 bytes cartridge headroom. Its measured IDE worker
 call bound remains 730 bytes in the existing 1,024-byte stack.
 Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.
+
+## ID5 — Firmware-menu admission remains open
+
+The real pinned BIOS 2.1 menu was entered through cold reset with START held,
+SDX and UltraSpeed SIO disabled, no floppy attachments, and boot unit D1.
+Pressing L reaches the PBI handler at $D805 with DCB device/unit/command
+`31 01 53` (D1 STATUS). It returns to the pinned OS at $C352 with carry clear:
+the request is unclaimed, so the OS falls back to serial SIO. The menu then
+reports `Hit [1]-[9] or [A]-[O] to change disk`; a separate trace sees STATUS
+timeout $8A. Native IDE reads of both partitions succeed independently.
+
+`tools/test_ide_only_firmware.py` reproduces this admission failure and stops
+before serial fallback. Evidence is `build/development/ide-only/id5-firmware/`;
+it is an **incompatible diagnostic outcome**, not a passing boot test. Header
+global flags cleared, a protective MBR, a normal cold reset before the menu,
+and shadow ROM disabled did not resolve the failure in disposable experiments.
+The source of the BIOS's missing unit mapping is not established. Do not infer
+firmware compatibility from the native APT reader or bypass the loader guard.
+
+MEMLO at this failure is $0700. No executable reader, INITAD callback, OF816
+countdown, kernel RUNAD or native IDE worker is reached, so the actual loader
+workspace/MEMLO and page-one handoff remain **unmeasured**. ID5 remains open.
+Cartridge and external-XEX paths are the usable preview paths. No firmware or
+emulator patch was made, and physical hardware remains unqualified.
+Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.

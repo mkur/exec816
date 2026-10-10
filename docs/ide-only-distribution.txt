@@ -18,8 +18,8 @@ five seconds. Return cancels the countdown; EXEC816 resumes loading.
 CACHE-BLOCKS! and BOOT-VERBOSE! remain available. SYSTEM-DRIVE@ returns
 zero and SYSTEM-DRIVE! rejects changes: SYS is fixed at IDE unit 1.
 EXEC816.XEX on SYS is byte-identical to the external combined boot XEX.
-The IDE BIOS START-key loader can select that file on partition 1;
-consult the source development record for the checked firmware route.
+The pinned IDE BIOS menu loader currently cannot access partition 1;
+boot this preview from its cartridge or externally loaded XEX.
 Automatic power-on filesystem bootstrap is outside this profile.
 
 Try DEVICES, MOUNT, HELP, C:HELLO and MORE SYS:STORY.TXT.
@@ -32,7 +32,8 @@ CMP SYS:LONG.TXT WORK:COPY.TXT
 ECHO saved >WORK:NOTE.TXT
 ECHO again >>WORK:NOTE.TXT
 MAKEDIR WORK:SUB
-RENAME WORK:NOTE.TXT WORK:SUB/NOTE.TXT
+RENAME WORK:NOTE.TXT WORK:RENAMED.TXT
+COPY WORK:RENAMED.TXT WORK:SUB/NOTE.TXT
 DIR WORK:SUB
 
 BREAK cancels a command. EXIT returns to the OS. An uncertain accepted
