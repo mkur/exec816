@@ -161,8 +161,8 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
         memory_profile=out/'shell-memory.json'
         memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     p=read_build(out) if reuse else build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,
-            system_mount=None if no_mount else 'D1',dos_mounts=[] if no_mount else getattr(external,'mounts',[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)]),
-            image_data=[],memory_profile=memory_profile)
+            system_mount=None if no_mount else getattr(external,'system_mount','D1'),dos_mounts=[] if no_mount else getattr(external,'mounts',[dict(alias='D1',unit=49,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1)]),
+            image_data=[],memory_profile=memory_profile,sio_enabled=getattr(external,'sio_enabled',True))
     media=out/'volume.atr'
     if external:external.prepare(t,out,mode,size)
     else:shutil.copyfile(ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr',media)
@@ -170,11 +170,13 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
     require(sha256(bridge_build/'AltirraBridgeServer')==pin['emulator']['sha256'],'Wrong shell key bridge')
     def at(name):return next(d['address']for d in p['image']['data']if '_SHELLAPP_'+name.upper()+'_' in d['name'])
     schedule=[];observations=[];expected=bytearray();line=bytearray();counts={};state={}
-    with emulator(bridge_build,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin) as b:
+    environment=(external.environment(out) if external and hasattr(external,'environment') else
+                 emulator(bridge_build,ROOT/'build/firmware/altirraos-816.rom',out,pin=pin))
+    with environment as b:
         for k,v in pin['configuration'].items():b.config(k,str(v).lower()if isinstance(v,bool)else v)
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         b.config('diskemu','fastest')
-        if not no_mount:b.mount(0,str(media))
+        if not no_mount and getattr(external,'mount_primary',True):b.mount(0,str(media))
         if external and hasattr(external,'mount_extra'):external.mount_extra(b,out)
         def far(addr,n):
             result=bytearray()
@@ -220,6 +222,13 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
         def check_screen(stage):
             print('Shell screen',stage,flush=True)
             cs=p['build']['memory']['console_storage'];instance=cs['INSTANCE']
+            if getattr(external,'capture_only',False):
+                observer=next(d['address'] for d in p['image']['data'] if '_SHELLEDITPROBE_CAPTUREBUFFER_' in d['name'])
+                start=int.from_bytes(far(observer,3),'little')
+                count=int.from_bytes(far(at('captureCount'),4),'little')
+                require(count==len(expected) and far(start,count)==expected,'Accepted shell output differs at '+stage)
+                observations.append(dict(stage=stage,frame=b.eval_expr('@frame'),output_bytes=count))
+                return
             cells,physical,cursor=terminal(expected)
             rendezvous(f'(db(${instance+CONSOLE_LAYOUT["INSTANCE_DIRTYROWS"]:x})=0)&(dw(${cs["PRESENTATION"]+10:x})={cursor})')
             pointer=int.from_bytes(far(instance,3),'little')

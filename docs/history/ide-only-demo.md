@@ -54,3 +54,18 @@ change, preserving metadata, SYSTEM and the neighbouring packed sector. Evidence
 `build/development/ide-only/id3/results.json`. This media slice was completed
 before ID2 to let shell checks use the production layout.
 Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.
+
+## ID2 — Shell startup
+
+Filesystem attachment now opens the selected transport; shell startup no longer
+warms up SIO. Generated diagnostics identify IDE SYS and WORK and report IDE
+controller failures without floppy advice. C:/S: and command lookup retain the
+ordinary DOS paths. The optimized shell fixture has both IDE mounts, no floppy
+attachments, executes STARTUP/USER markers, loads HELLO through C:, and verifies
+exact accepted console output, Task counts, guards and ownership cleanup.
+Explicit IDE Stop follows filesystem stop for this fixture's heap oracle; the
+controller service normally persists until kernel EXIT. Evidence:
+`build/development/ide-only/id2/results.json`. The standard console preserves
+loader text, so this check compares accepted output rather than an empty-screen
+pixel baseline. All 426 host checks pass.
+Reserved bank-zero change: **0 fixed / 0 per Task / 0 idle bytes**.

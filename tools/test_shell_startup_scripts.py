@@ -166,7 +166,7 @@ class Startup(Toolbox):
     def startup_output(self, program):
         strings = program['build']['exec_build']['strings']
         return (strings['banner']+strings['slots']+strings['stackChecks']+
-                'console.device: ready\n'+'sio.device: D1'+strings['sioReady']+
+                'console.device: ready\n'+
                 strings['mountStart']+'SYS: -> D1: ready, read-only\n'+
                 'WORK: -> D8: ready, read-write\n\n').encode()+self.output
 

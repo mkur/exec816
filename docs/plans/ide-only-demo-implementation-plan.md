@@ -1,6 +1,6 @@
 # IDE-only SYS: and WORK: implementation plan
 
-Status: implementation in progress; ID0–ID1 and ID3 are implemented. See the
+Status: implementation in progress; ID0–ID3 are implemented. See the
 [development record](../history/ide-only-demo.md). This is a separate build
 profile following the completed
 [IDE Plus driver plan](ideplus-block-driver-implementation-plan.md).
