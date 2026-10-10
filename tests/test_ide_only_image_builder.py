@@ -7,6 +7,35 @@ from ideplus_media import filesystem_atr,put_sector
 from filesystem_audit import Audit
 
 class IDEOnlyMedia(unittest.TestCase):
+    def test_uniform_512_independent_filesystem(self):
+        from sector_images import ATRImage
+        with tempfile.TemporaryDirectory() as temp:
+            folder=Path(temp);(folder/'source/C').mkdir(parents=True)
+            payload=bytes((i*17)&255 for i in range(512*255+7))
+            (folder/'source/C/LARGE.BIN').write_bytes(payload)
+            (folder/'source/README.TXT').write_text('uniform IDE sectors\n')
+            make(folder/'disk.atr',folder/'source',binary_names=['C/LARGE.BIN'],
+                 sector_bytes=512,sectors=1440)
+            atr=(folder/'disk.atr').read_bytes();image=ATRImage(atr)
+            self.assertEqual((image.size,image.count,image.short),(512,1440,0))
+            self.assertEqual(len(atr),16+1440*512)
+            header=image.sector(1)
+            self.assertEqual(header[1],1)
+            self.assertEqual(header[31:38],bytes.fromhex('01210002fe0001'))
+            self.assertEqual(int.from_bytes(header[16:18],'little'),2)
+            audit=Audit(atr);audit.sdfs()
+            self.assertEqual(audit.files['C/LARGE.BIN'],payload)
+            raw,record=build(atr,atr)
+            for index,mapping in enumerate(record['partitions']):
+                self.assertEqual(raw[(index+1)*16],0x43)
+                self.assertEqual(mapping['physical'],1440)
+                self.assertEqual(filesystem_atr(raw,mapping,atr),atr)
+                at=mapping['start']*512
+                self.assertEqual(raw[at:at+512],header)
+            with self.assertRaisesRegex(ValueError,'MyDOS sector size'):
+                Audit(atr).mydos()
+            with self.assertRaises(RuntimeError):ATRImage(atr[:-1])
+
     def test_layout_and_roundtrip(self):
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);(folder/'source').mkdir()

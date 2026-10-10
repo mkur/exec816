@@ -6,6 +6,35 @@ from os_boundary import run_to
 from test_ideplus import ide_emulator,PIN
 from test_of816 import screen_text
 
+def directories(bundle,out):
+    """Use the real BIOS loader to read both partitions without launching code."""
+    out.mkdir(parents=True,exist_ok=True)
+    media=bundle/'ideplus.img';initial=media.read_bytes()
+    with ide_emulator(out,media,writable=False,history=True) as b:
+        b.cold_reset();b.consol(start=True)
+        for _ in range(8):b.frame(50);b.pause()
+        b.consol()
+        def key(name):
+            b._cmd_ok('KEY '+name+' down');b.frame(4);b.pause()
+            b._cmd_ok('KEY '+name+' up');b.frame(4);b.pause()
+        for name in ('B','1','RETURN','L'):key(name)
+        b.frame(250);b.pause()
+        system=screen_text(b.memdump(b.peek16(88),960))
+        require('STORY' in system,'BIOS did not list SYS')
+        b.screenshot(str(out/'sys.png'))
+        key('2');b.frame(250);b.pause()
+        work=screen_text(b.memdump(b.peek16(88),960))
+        require('README' in work,'BIOS did not list WORK')
+        require('STORY' not in work,'BIOS remained on SYS instead of WORK')
+        b.screenshot(str(out/'work.png'))
+    require(media.read_bytes()==initial,'BIOS directory reads changed media')
+    result=dict(status='pass',tier='development',pin=PIN,media_sha256=sha256(media),
+                scope='Real BIOS SYS/WORK directory reads; no executable launch',
+                sys=system,work=work)
+    (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
+    print('BIOS SYS/WORK directory reads passed',flush=True)
+    return result
+
 
 def run(bundle,out):
     out.mkdir(parents=True,exist_ok=True)
@@ -60,4 +89,6 @@ def run(bundle,out):
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--bundle',type=Path,default=ROOT/'build/development/ide-only/demo')
     a.add_argument('--output',type=Path,default=ROOT/'build/development/ide-only/id5-firmware')
-    v=a.parse_args();run(v.bundle.resolve(),v.output.resolve())
+    a.add_argument('--directories-only',action='store_true')
+    v=a.parse_args()
+    (directories if v.directories_only else run)(v.bundle.resolve(),v.output.resolve())

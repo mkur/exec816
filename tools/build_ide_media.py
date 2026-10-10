@@ -7,7 +7,7 @@ import struct
 from pathlib import Path
 from filesystem_audit import Audit
 from ideplus_media import put_sector,filesystem_atr
-from mydos_fixtures import Image
+from sector_images import ATRImage as Image
 
 SECTORS=2880
 SECTOR_BYTES=256
@@ -23,12 +23,13 @@ def build(system,work):
     for ordinal,(name,atr,start,readonly) in enumerate(zip(
             ('SYSTEM','WORK'),inputs,(64,1536),(True,False))):
         image=Image(atr)
-        if (image.count,image.size)!=(SECTORS,SECTOR_BYTES):
-            raise ValueError('IDE demo partitions require 2880 x 256 geometry')
-        count=SECTORS//2
+        if (image.count,image.size) not in ((2880,256),(1440,512)):
+            raise ValueError('IDE demo partitions require 720 KiB geometry')
+        mode=0 if image.size==512 else 3
+        count=1440
         # Fifteen mapping slots precede the actual partition entries. IDs count
         # actual partitions from one, excluding headers and mapping slots.
-        entry=struct.pack('<BBIIHBBH',0x4e,0,start,count,ordinal+1,
+        entry=struct.pack('<BBIIHBBH',0x43 if image.size==512 else 0x4e,0,start,count,ordinal+1,
                           0xc0 if readonly else 0x40,0,0)
         media[(ordinal+1)*16:(ordinal+2)*16]=entry
         actual=bytearray(entry);actual[10:12]=b'\0\0'
@@ -36,11 +37,11 @@ def build(system,work):
         leader=(start-1)*512
         media[leader:leader+8]=b'APT\0META'
         media[leader+16:leader+16+len(name)]=name.encode('ascii')
-        for sector in range(1,SECTORS+1):
-            put_sector(media,start,3,256,sector-1,image.sector(sector))
+        for sector in range(1,image.count+1):
+            put_sector(media,start,mode,image.size,sector-1,image.sector(sector))
         mappings.append(dict(name=name,unit=ordinal+1,id=ordinal+1,start=start,
-                             leader=start-1,physical=count,mode=3,size=256,
-                             sectors=SECTORS,readonly=readonly))
+                             leader=start-1,physical=count,mode=mode,size=image.size,
+                             sectors=image.count,readonly=readonly))
     reports=[]
     for mapping,atr in zip(mappings,inputs):
         reconstructed=filesystem_atr(media,mapping,atr)

@@ -7,22 +7,13 @@ those known bytes and records original directory fields for metadata tests.
 import hashlib,json
 from pathlib import Path
 from native_program import ROOT,require,sha256
+from sector_images import ATRImage
 FIXTURES=ROOT/'tests/fixtures/mydos'
 
-class Image:
+class Image(ATRImage):
     def __init__(self,data):
-        self.data=bytearray(data)
-        require(len(data)>=16 and data[:2]==b'\x96\x02','Not an ATR')
-        self.size=int.from_bytes(data[4:6],'little')
+        super().__init__(data)
         require(self.size in (128,256),'Unsupported sector size')
-        require(len(data)-16==16*(int.from_bytes(data[2:4],'little')+(int.from_bytes(data[6:8],'little')<<16)),'ATR length mismatch')
-        require((len(data)-16-384)%self.size==0,'Incomplete ATR sector')
-        self.count=3+(len(data)-16-384)//self.size
-    def offset(self,sector):
-        require(1<=sector<=self.count,'Out-of-range fixture sector')
-        return 16+(sector-1)*128 if sector<=3 else 16+384+(sector-4)*self.size
-    def sector(self,sector):
-        at=self.offset(sector);return bytes(self.data[at:at+(128 if sector<=3 else self.size)])
     def entries(self,directory=361):
         for ordinal in range(64):
             e=self.sector(directory+ordinal//8)[16*(ordinal%8):16*(ordinal%8+1)]

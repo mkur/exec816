@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from mydos_fixtures import Image
+from sector_images import ATRImage
 
 
 def word(data, offset):
@@ -16,7 +16,7 @@ def word(data, offset):
 
 class Audit:
     def __init__(self, data):
-        self.image = Image(data)
+        self.image = ATRImage(data)
         self.owners = {0: 'reserved zero'}
         self.files = {}
         self.directories = 0
@@ -41,6 +41,8 @@ class Audit:
 
     def mydos(self):
         image = self.image
+        if image.size not in (128,256):
+            raise ValueError('Unsupported MyDOS sector size')
         header = image.sector(360)
         marker = header[0]
         if marker < 2:
@@ -118,12 +120,16 @@ class Audit:
         if header[32] not in (0x20, 0x21) or word(header, 11) != image.count:
             raise ValueError('Unsupported SDFS header/geometry')
         start, pages = word(header, 16), header[15]
-        if start < 4 or not pages or start + pages - 1 > image.count:
+        boot=1 if image.size==512 else 3
+        if image.size==512 and (header[32]!=0x21 or header[31]!=1 or
+                word(header,33)!=512 or word(header,35)!=254 or header[37]!=1):
+            raise ValueError('Unsupported SDFS 512-byte geometry')
+        if start <= boot or not pages or start + pages - 1 > image.count:
             raise ValueError('Invalid SDFS bitmap extent')
         bitmap = b''.join(image.sector(start + i) for i in range(pages))
         if image.count // 8 >= len(bitmap):
             raise ValueError('SDFS bitmap does not cover geometry')
-        for sector in [1, 2, 3, *range(start, start + pages)]:
+        for sector in [*range(1,boot+1), *range(start, start + pages)]:
             self.claim(sector, 'fixed metadata')
         stack = [(word(header, 9), 0, '', None, 0)]
         while stack:

@@ -1,6 +1,8 @@
 # IDE 512-byte sector refactor
 
-Status: planned; implementation has not started. This supersedes the IDE
+Status: I512-0 implemented with development checks; I512-1–I512-4 remain open.
+See the [development record](../history/ide-512-sector-refactor.md).
+This supersedes the IDE
 128/256-byte partition packing in the
 [IDE Plus driver plan](ideplus-block-driver-implementation-plan.md) and the
 media geometry in the [IDE-only demo plan](ide-only-demo-implementation-plan.md).

@@ -65,7 +65,10 @@ int main(int argc, char **argv) {
             throw std::runtime_error("Invalid operation");
         vdrefptr<IATDiskImage> image;
         auto image_path = fs::path(argv[2]).wstring();
-        if (make) ATCreateDiskImage(std::stoul(argv[4]), 3, std::stoul(argv[5]), ~image);
+        if (make) {
+            const auto size = std::stoul(argv[5]);
+            ATCreateDiskImage(std::stoul(argv[4]), size >= 512 ? 0 : 3, size, ~image);
+        }
         else ATLoadDiskImage(image_path.c_str(), ~image);
         std::unique_ptr<IATDiskFS> disk(make ? ATDiskFormatImageSDX2(image, "EXEC816") : ATDiskMountImageSDX2(image, true));
         if (make) {
@@ -73,10 +76,11 @@ int main(int argc, char **argv) {
             disk->Flush();
             // The producer normally seeds these two identity bytes from host
             // time. Fix them for reproducible data-disk bundles.
-            uint8 boot[128];
-            image->ReadVirtualSector(0, boot, 128);
+            uint8 boot[512];
+            const auto bootBytes = image->GetSectorSize(0);
+            image->ReadVirtualSector(0, boot, bootBytes);
             boot[38] = 1; boot[39] = 0x81;
-            image->WriteVirtualSector(0, boot, 128);
+            image->WriteVirtualSector(0, boot, bootBytes);
             image->Save(image_path.c_str(), kATDiskImageFormat_ATR);
         } else export_tree(*disk, ATDiskFSKey::None, argv[3]);
         ATDiskFSValidationReport report;
