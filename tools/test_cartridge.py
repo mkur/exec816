@@ -47,6 +47,11 @@ def run(cartridge_build, demo_build, exec_source, output, variant, manual, rom_o
 
     def bootstrap(b, program):
         b.boot(str(image))
+        if integration is not None and hasattr(integration,'observe_boot'):
+            b.bp_set(cart['labels']['cart_start'])
+            run_to(b,cart['labels']['cart_start'],4000,90)
+            b.bp_clear_all()
+            case['boot_observation']=integration.observe_boot(b,program)
         b.bp_set(labels['of_start'])
         b.bp_set(cart['labels']['cart_failed'])
         run_to(b, labels['of_start'], 4000, 90)

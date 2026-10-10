@@ -1,0 +1,80 @@
+MODULE IDEONLYFAILURE
+USE EXEC
+USE DOS
+USE FSBOOT
+USE IDEPLUSDRIVER
+USE HEAPCORE
+CARD checks
+BYTE scenario
+BYTE ARRAY buffer(32)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC ReadFile(BYTE POINTER path)
+
+  LET file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>NULL AND DOS.Read(file,buffer,18)=18)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+  DOS.FileHandle POINTER console,file
+
+  LET before=EXEC.AvailMem(0)
+  console=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_OLDFILE)
+  Require(console<>NULL)
+  IF scenario=1 OR scenario=2 THEN
+    Require(DOS.Lock(BYTE POINTER(c"SYS:"),DOS.SHARED_LOCK)=NULL)
+    Require(DOS.IoErr()<>0)
+    Require(DOS.Write(console,BYTE POINTER(c"IDE admission failed\n"),21)=21)
+  ELSE
+    ReadFile(BYTE POINTER(c"SYS:README.TXT"))
+    ReadFile(BYTE POINTER(c"WORK:README.TXT"))
+    IF scenario>=3 THEN
+      BEGIN
+        Require(DOS.Open(BYTE POINTER(c"WORK:FAIL.TXT"),
+            DOS.MODE_NEWFILE)=NULL)
+        Require(IDEPLUSDRIVER.Unavailable()<>0)
+        Require(DOS.Open(BYTE POINTER(c"SYS:README.TXT"),
+            DOS.MODE_OLDFILE)=NULL)
+        Require(DOS.Open(BYTE POINTER(c"WORK:README.TXT"),
+            DOS.MODE_OLDFILE)=NULL)
+        LET ram=DOS.Open(BYTE POINTER(c"RAM:LIVE.TXT"),DOS.MODE_NEWFILE)
+        Require(ram<>NULL AND DOS.Write(ram,BYTE POINTER(c"alive"),5)=5)
+        Require(DOS.Close(ram)<>0)
+        Require(DOS.Write(console,BYTE POINTER(c"RAM and console alive\n"),
+            22)=22)
+      END
+    ELSE
+      BEGIN
+        file=DOS.Open(BYTE POINTER(c"WORK:PROBE.TXT"),DOS.MODE_NEWFILE)
+        Require(file<>NULL AND DOS.Write(file,BYTE POINTER(c"persistent"),
+            10)=10)
+        Require(DOS.Close(file)<>0)
+        Require(DOS.Close(console)<>0)
+        console=NULL
+        Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+        file=DOS.Open(BYTE POINTER(c"WORK:PROBE.TXT"),DOS.MODE_OLDFILE)
+        Require(file<>NULL AND DOS.Read(file,buffer,10)=10 AND buffer(0)='p)
+        Require(DOS.Close(file)<>0 AND DOS.DeleteFile(
+            BYTE POINTER(c"WORK:PROBE.TXT"))<>0)
+      END
+    FI
+  FI
+  IF console<>NULL THEN
+    Require(DOS.Close(console)<>0)
+  FI
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  IDEPLUSDRIVER.Stop()
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

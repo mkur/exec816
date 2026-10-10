@@ -16,8 +16,9 @@ def symbols(read, program, bundle, identity):
     row = process_record(read, program, identity)
     image = int.from_bytes(read(row+118, 3), 'little')
     require(image != 0, 'PRIMES image already collected')
+    # Current PROGRAMIMAGE.Image includes the kind byte before its pointers.
     sections = {name:int.from_bytes(read(image+offset,3),'little')
-                for name,offset in [('Data',13),('Bss',16),('Text',36)]}
+                for name,offset in [('Data',14),('Bss',17),('Text',36)]}
     profile = json.loads((bundle/'PRIMES.profile.json').read_text())
     return {item['name'].split('_PRIMES_',1)[1].rsplit('_',1)[0].lower():
             (sections[item['location']['section']]+item['location']['offset'],item['size'])

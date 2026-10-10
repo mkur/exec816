@@ -49,6 +49,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     rom=ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
+    if ide_only:
+        # This generated file is installed only after composing the final XEX.
+        (media/'EXEC816.XEX').unlink(missing_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
     for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES')+(('TICK',) if gem_desktop else ()):
@@ -108,7 +111,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,format=2,
                      sectors=2880,sector_bytes=256,access='readonly'),
                 dict(alias='WORK',device='ideplus.device',unit=2,profile=0,format=2,
-                     sectors=2880,sector_bytes=256,access='readwrite')]
+                     sectors=2880,sector_bytes=256,access='readwrite'),
+                dict(alias='RAM',format=3)]
         (workspace/'README.TXT').write_text('Disposable IDE WORK: partition.\nBack up ideplus.img before experimenting.\n')
         make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=256,sectors=2880)
     # Compile from the staging directory so unrelated example filenames do not
@@ -161,7 +165,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Adaptations: flat resource; Exec window/input and Process lifetime.\n'
             'Source, pinned inputs and patches: ports/gem4xe/apps/calculator/ in Exec816.\n'
             'Application licence: GPL-2.0-or-later.\n')
-    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|({'EXEC816.XEX'} if ide_only and (media/'EXEC816.XEX').exists() else set())|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error

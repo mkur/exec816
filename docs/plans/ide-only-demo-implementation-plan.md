@@ -1,6 +1,6 @@
 # IDE-only SYS: and WORK: implementation plan
 
-Status: ID0–ID4 are implemented; ID6 validation is in progress. ID5 remains open
+Status: ID0–ID4 and ID6 are implemented and checked. ID5 remains open
 after the pinned BIOS declined IDE unit 1 before loading. See the
 [development record](../history/ide-only-demo.md). This is a separate build
 profile following the completed

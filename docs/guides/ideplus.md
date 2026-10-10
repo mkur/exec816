@@ -119,3 +119,17 @@ The pinned BIOS menu loader declines D1 STATUS before directory loading and
 falls back to serial SIO. That route remains unsupported; use the cartridge or
 an externally loaded XEX. Keeping EXEC816.XEX in SYS does not establish firmware
 boot support.
+
+Focused development checks (not release qualification):
+
+```sh
+python3 tools/test_ide_only_demo.py --full
+python3 tools/test_ide_only_demo.py --copy-break
+python3 tools/test_ide_only_demo.py --variant old
+python3 tools/test_ide_only_failure.py
+python3 tools/test_ide_only_firmware.py
+```
+
+The last command records the incompatible BIOS admission outcome; it does not
+report a successful firmware boot. The failure runner rebuilds its own optimized
+fixture; `--reuse` selects its existing matching build.
