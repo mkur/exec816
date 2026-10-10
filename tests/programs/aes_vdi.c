@@ -6,10 +6,11 @@
 
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
-volatile UWORD VDIPhase,VDIGo,VDIStage[2],VDICommand[2],VDIUnits[2];
+volatile UWORD VDIPhase,VDIGo,VDIStage[2],VDICommand[2],VDIUnits[2],VDITextUnits[2];
 static struct Task *root,*tasks[2];
 static ULONG wake,starts[2];
 static char longText[193];
+static UBYTE *textAllocation,*crossText;
 static WORD wordText[2][40];
 static WORD grafControl[2][5]={{77,0,5,0,0},{77,0,5,0,0}};
 static WORD grafGlobal[2][15],grafOut[2][5];
@@ -32,6 +33,13 @@ void VDIYield(void)
     if (VDIUnits[who]==1) ExecYield();
 }
 
+/* Run after the accelerated path has packed its shared byte scratch. */
+void VDITextYield(void)
+{
+    UWORD who=FindTask(NULL)==tasks[0] ? 0:1;
+    if (++VDITextUnits[who]==1) ExecYield();
+}
+
 static void draw(UWORD who,WORD handle,WORD window)
 {
     WORD huge[4]={-300,-300,1000,1000};
@@ -48,7 +56,7 @@ static void draw(UWORD who,WORD handle,WORD window)
     CHECK(c->workstation->fillColor==(who ? 2:4));
     vs_clip(handle,0,huge);
     v_bar(handle,huge); CHECK(ExecAESDiagnostic()==AES_OK);
-    clip[0]=x+8; clip[1]=y+8; clip[2]=x+78; clip[3]=y+18;
+    clip[0]=x+8; clip[1]=y+12; clip[2]=x+78; clip[3]=y+14;
     vs_clip(handle,1,clip);
     CHECK(vsf_color(handle,3)==3);
     v_bar(handle,huge);
@@ -61,6 +69,16 @@ static void draw(UWORD who,WORD handle,WORD window)
     control[0]=8; control[1]=1; control[3]=40; control[6]=handle;
     points[0]=x; points[1]=y+46;
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_OK);
+    /* Even-X complete chunks use the shared uploader; the last chunk clips.
+     * Named source crosses a CPU bank; PB words retain the low-byte mapping. */
+    v_gtext(handle,x+1,y+62,(char *)crossText);
+    CHECK(ExecAESDiagnostic()==AES_OK);
+    for (i=0;i<40;++i) wordText[who][i]=0x100+crossText[i];
+    points[0]=x+1; points[1]=y+78;
+    vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_OK);
+    CHECK(vst_color(handle,0)==0);
+    v_gtext(handle,x+1,y+94,"Zero ink       ");
+    CHECK(ExecAESDiagnostic()==AES_OK);
     control[0]=1; control[1]=control[3]=0;
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_UNSUPPORTED);
     vs_clip(handle,1,outside);
@@ -164,6 +182,12 @@ UWORD AESRun(void)
     UWORD i;
     CHECK(bit>=0); wake=1UL<<bit; root=FindTask(NULL);
     available=AvailMem(0);
+    textAllocation=AllocMem(65600UL,MEMF_PUBLIC|MEMF_LINEAR);
+    CHECK(textAllocation!=NULL);
+    if (!textAllocation) return AESFailures;
+    crossText=(UBYTE *)((((ULONG)textAllocation+65551UL)&0xffff0000UL)-16UL);
+    for (i=0;i<40;++i) crossText[i]=i%4<2 ? 'A'+i%26:' ';
+    crossText[40]=0;
     for (i=0;i<192;++i) longText[i]='A'+i%26;
     VDIPhase=1;
     while (VDIGo<1) ExecYield();
@@ -191,6 +215,7 @@ UWORD AESRun(void)
     while (VDIGo<5) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
+    FreeMem(textAllocation,65600UL);
     CHECK(AvailMem(0)==available);
     FreeSignal(bit);
     return AESFailures;

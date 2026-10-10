@@ -86,3 +86,36 @@ including guards, alignment and unused reservation, and adds no guest upper RAM
 or VRAM. It passes the development host suite (423 tests, four historical skips).
 The emitted viewer remains the TV4 package. These checks do not qualify real
 hardware or close HY4/PI4.
+
+## Accelerated VDI text
+
+`GemVdiPaint` recognizes complete even-X chunks inside the already admitted
+clip. It packs the low byte of each glyph into existing renderer scratch and
+calls `vbxe_text_run`, which fences before scratch reuse. This avoids donor
+workstation save/select/restore and per-glyph C rendering for those chunks.
+Odd X and partial horizontal/vertical clipping keep the existing renderer.
+There is no new public API, native-owner admission, validation layer or cache.
+
+The optimized VDI fixture passes **179 checks**. Its independent pixels cover
+named and parameter-block text, high-byte glyph truncation, spaces, zero/nonzero
+hardware pens, long strings, bank-crossing source bytes, clipping, two-client
+preemption, cursor repair, complete cover and exposure. It also checks unchanged
+pixels when opening virtual workstations and exact allocation return. The fixture
+oracle now includes the desktop pattern and menu bar introduced since its original
+qualification. The host suite passes **423 tests, four historical skips**.
+
+TVP2 passes the same 30-action cohorts. Page completion improves to **1062.5 ms
+median / 1080.9 ms p95**; Panel raise/action improves to **1026.5 / 1117.8 ms**,
+and the button gesture alone to **585.3 / 856.9 ms**. First-band page feedback
+improves to **184.8 / 504.0 ms**. All changes exceed the baseline's reproducible
+variation in the favorable direction; the twofold page target remains open.
+
+The delegated-display fault fixture also passes **168 checks**, including fault
+release/cleanup. This exercises the shared borrow/fence failure machinery; the
+VDI fixture exercises the new text branch. No new interrupt or ABI bridge was
+introduced, so these production checks use optimized emission.
+
+`GEMSYS.BIN` grows **344 bytes**, from 196520 to 196864. Shared zero-fill remains
+12855 bytes; the C DP workspace remains 23 bytes. TEXT.APP is byte-identical.
+TVP2 reserves **0 additional bank-zero bytes**, fixed, per public Task and private
+idle, and adds no upper-RAM buffer, VRAM reservation or stack capacity.

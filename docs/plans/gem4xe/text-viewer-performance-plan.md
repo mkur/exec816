@@ -4,7 +4,7 @@
 [Viewer measurements](../../history/text-viewer.md) ·
 [Latency diagnostics](../../guides/aes-latency-diagnostics.md)
 
-Status: TVP1 complete at the development tier; TVP2–TVP4 in progress; see the [execution record](../../history/text-viewer-performance.md).
+Status: TVP1–TVP2 complete at the development tier; TVP3–TVP4 in progress; see the [execution record](../../history/text-viewer-performance.md).
 
 Reduce the time to repaint a text page while preserving mouse, button and other
 application responsiveness. Start with the working `TEXT.APP` and its existing

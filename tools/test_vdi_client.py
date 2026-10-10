@@ -4,7 +4,7 @@ from native_program import require,sha256
 from os_boundary import run_to
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import rectangle,frame
+from test_desktop_presentation import rectangle,frame,desktop,text
 from test_gem_cursor import overlay
 from test_gem_interactive import pixels
 import adapter_state as adapter
@@ -16,14 +16,17 @@ def extract_with_preemption(folder):
     path=folder/'src/hosted-dispatch.inc'; source=path.read_text()
     needle='    vwk.h_align=vwk.v_align=vwk.text_effects=0;'
     require(source.count(needle)==1,'Private workstation selection boundary changed')
-    source='extern void VDIYield(void);\n'+source.replace(needle,needle+'\n    VDIYield();')
+    source='extern void VDIYield(void);\nextern void VDITextYield(void);\n'+source.replace(needle,needle+'\n    VDIYield();')
+    fast='        vbxe_text_run(u->x,u->top,text,u->count,u->textColor,0);'
+    require(source.count(fast)==1,'VDI text upload boundary changed')
+    source=source.replace(fast,'        VDITextYield();\n'+fast)
     path.write_text(source)
-    record['fixture_override']=dict(reason='Yield after private workstation selection',vdi_sha256=sha256(path))
+    record['fixture_override']=dict(reason='Yield after private workstation selection and fast text scratch packing',vdi_sha256=sha256(path))
     return record
 
 
 def expected(font, covered=False):
-    r=Raster(font);rectangle(r,(0,0,640,240),8)
+    r=Raster(font);desktop(r)
     frame(r,(32,24,560,208),b'Exec816 Shell',False)
     long_text=bytes(65+i%26 for i in range(192))
     for who,(x,y) in enumerate(((33,17),(33,17) if covered else (201,65))):
@@ -31,12 +34,18 @@ def expected(font, covered=False):
         l,t,right,bottom=x+8,y+16,x+292,y+132
         r.clip=(l,t,right-1,bottom-1)
         r.fill=2 if who else 4;r.apply(11,(-300,-300,1000,1000))
-        r.clip=(l+8,t+8,l+78,t+18);r.fill=3;r.apply(11,(-300,-300,1000,1000))
+        r.clip=(l+8,t+12,l+78,t+14);r.fill=3;r.apply(11,(-300,-300,1000,1000))
         r.text=6 if who else 1;r.apply(8,(l+4,t+15),b'ABCDEFGHIJKLMN')
         r.clip=(l,t,right-1,bottom-1)
         r.apply(8,(l-140*8,t+30),long_text)
         r.apply(8,(l,t+46),bytes(48+i%10 for i in range(40)))
+        bank_text=bytes(65+i%26 if i%4<2 else 32 for i in range(40))
+        r.apply(8,(l+1,t+62),bank_text)
+        r.apply(8,(l+1,t+78),bank_text)
+        r.text=0;r.apply(8,(l+1,t+94),b'Zero ink       ')
         r.clip=(0,0,639,239)
+    rectangle(r,(0,0,640,15),0);rectangle(r,(0,15,640,16),1)
+    text(r,8,4,b'VDI B');text(r,440,4,b'Windows')
     return r
 
 
@@ -70,6 +79,8 @@ def physical(b,p,foreign,report):
     model=expected(font_bytes(out/'selected/src/vdi/font8x8.c'))
     report['vdi_pixels']=pixels(b,out,overlay(model,position))
     report['virtual_open_pixels']='unchanged'
+    report['fast_text_units']=[int.from_bytes(b.memdump(sy['VDITextUnits']+i*2,2),'little') for i in range(2)]
+    require(all(report['fast_text_units']),'Both clients must use the accelerated text path')
     report['backend_units']=[int.from_bytes(b.memdump(sy['VDIUnits']+i*2,2),'little') for i in range(2)]
     position=schedule(b,p,position,(620,232));frames(80)
     report['cursor_restored_pixels']=pixels(b,out,overlay(model,position))
