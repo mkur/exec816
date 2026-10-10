@@ -98,7 +98,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         expected_media_sha256=measurement_media_sha256
     require(sha256(media_path)==expected_media_sha256,'Changed companion media')
     if stock_smoke:require(manifest['mounts'][0]['sector_bytes']==128,'STOCK810 requires 128-byte sectors')
-    binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
+    ideplus=manifest.get('ideplus')
+    binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if bitmap or ideplus else 'build/shell-paced-bridge/AltirraBridgeServer');rom=ROOT/'build/firmware/altirraos-816.rom'
     if distribution_root is not None:
         rom=distribution_root/'altirraos-816.rom'
     if rom_override is not None:
@@ -108,7 +109,15 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
     def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
-    with emulator(binary.parent,rom,out,pin=pin) as b:
+    if ideplus:
+        from test_ideplus import ide_emulator
+        fixture=out/'ideplus/ideplus.img'
+        expected_ide_sha256=json.loads((out/ideplus['fixture']).read_text())['image_sha256']
+        require(sha256(fixture)==expected_ide_sha256,'Changed IDE demo fixture')
+        environment=ide_emulator(out,fixture)
+    else:
+        environment=emulator(binary.parent,rom,out,pin=pin)
+    with environment as b:
         for key,value in manifest['configuration'].items():b.config(key,str(value).lower() if isinstance(value,bool) else value)
         if disk_boot:b.config('exeloadmode','diskboot')
         if stock_smoke:b.config('diskemu','810')
@@ -691,7 +700,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                             status=f"{mount['alias']}: ready, read-write (volatile)".encode()
                         else:
                             access='read-write' if mount.get('access','readonly')=='readwrite' else 'read-only'
-                            status=f"{mount['alias']}: -> D{mount['unit']-48}: ready, {access}".encode()
+                            unit=f"IDE Plus unit {mount['unit']}:" if mount.get('device')=='ideplus.device' else f"D{mount['unit']-48}:"
+                            status=f"{mount['alias']}: -> {unit} ready, {access}".encode()
                         require(status in startup[:shell_cells], 'Missing companion-volume startup status')
                 if measurement_commands is not None:
                     saved['measurements']=[]
@@ -976,6 +986,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             require(b.memdump(boot['MANIFEST'],boot['MANIFEST_CAPACITY'])==bytes([0xd3])*boot['MANIFEST_CAPACITY'],
                     'OF816 shell reused retired manifest data')
         require(sha256(media_path)==expected_media_sha256,'Read-only demo media changed')
+        if ideplus:require(sha256(fixture)==expected_ide_sha256,'Read-only IDE fixture changed')
         if mounted:require(sha256(mounted)==mounted_hash,'Initially mounted media changed')
         saved['work_media']=[]
         if work_media:

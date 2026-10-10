@@ -10,7 +10,8 @@ message, signal and timer facilities. There is no firmware SIO fallback.
 Unit 0 exposes read-only physical sectors; units 1–15 expose active APT DOS
 mapping slots. Mapped units support explicitly enabled writes. Its generated
 [interface](../../lib/io/ideplus.act) uses IOStdReq: READ_SECTOR addresses a
-zero-based physical sector in io_Offset and transfers exactly one opened unit sector. Raw reads use 512 bytes;
+zero-based sector within the opened unit in io_Offset and transfers exactly one
+unit sector. Raw reads use 512 bytes;
 mapped units use 128 or 256. The first three 256-byte sectors also admit a
 128-byte prefix.
 GET_GEOMETRY returns a 12-byte record containing sector bytes, flags, sector

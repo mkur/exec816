@@ -84,9 +84,10 @@ assuming work is pending. Current behavior belongs in the
 ## Filesystems and DOS
 
 - [IDE Plus 2.0 block driver](ideplus-block-driver-implementation-plan.md):
-  proposed IP0–IP6 slices for a transport-independent block adapter, native ATA
-  reads, APT partitions, filesystem mounting, verified writes and a development
-  demo; targets no additional bank-zero reservations.
+  IP0–IP6 implemented at the development tier: a transport-independent block
+  adapter, native ATA reads, APT partitions, filesystem mounting, verified writes
+  and an optional development demo, with no additional bank-zero reservations.
+  Physical hardware and successful cached-media FLUSH remain unqualified.
 - [Directory listing performance](directory-listing-performance-implementation-plan.md):
   DL0–DL6 implemented at the development tier: bulk copies, one DIR Write per
   row, cheaper map accounting and a bounded cache of completed measurements.

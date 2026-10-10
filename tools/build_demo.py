@@ -13,12 +13,16 @@ from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,pointer_descript
 from library_paths import read_source
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 4096
+DEMO_IMAGE_DATA_BYTES = 4352
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
+IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
+                 'with the separate disposable ideplus/ideplus.img fixture as ATA master.\n'
+                 'IDE: is read-only; try DIR IDE: or CAT IDE:STORY.TXT.\n'
+                 'The raw image and firmware are intentionally outside this boot ZIP.\n')
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False):
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
         desktop=True
@@ -32,9 +36,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
     system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
-    toolchain=compiler(compiler_dir)
-    pin=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-    binary=ROOT/'build/shell-paced-bridge/AltirraBridgeServer'
+    require(not release_compiler or not bitmap_shell_only,
+            'The explicit release compiler option currently supports standard-console builds')
+    require(not ideplus or text_shell_only,
+            'The initial IDE development profile requires --text-shell-only')
+    toolchain=compiler(compiler_dir,release=release_compiler)
+    pin=json.loads((ROOT/('toolchain/altirra-ideplus.json' if ideplus else 'toolchain/altirra-shell-paced.json')).read_text())
+    binary=ROOT/('build/mouse-bridge/AltirraBridgeServer' if ideplus else 'build/shell-paced-bridge/AltirraBridgeServer')
     rom=ROOT/'build/firmware/altirraos-816.rom'
     require(sha256(binary)==pin['emulator']['sha256'] and sha256(rom)==pin['rom']['sha256'],'Install the pinned paced bridge and ROM before building the demo')
     media=output/'media';media.mkdir(exist_ok=True)
@@ -88,11 +96,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
          sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS)
     mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
+    if ideplus:
+        mounts.append(dict(alias='IDE',device='ideplus.device',unit=2,profile=0,
+                           sectors=system_sectors,sector_bytes=sector_bytes,
+                           format=1 if filesystem=='mydos' else 2,access='readonly'))
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
-    # Shared fault strings and the composed shell/client globals need 4 KiB.
+    # Shared fault/transport strings and shell/client globals need 4.25 KiB.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
     # Desktop menu state adds 512 bytes of upper capacity.
@@ -142,6 +154,26 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
+    if ideplus:
+        from ideplus_media import filesystem_fixture
+        fixture=output/'ideplus';fixture.mkdir(exist_ok=True)
+        raw,mapping=filesystem_fixture((output/disk_name).read_bytes())
+        (fixture/'ideplus.img').write_bytes(raw)
+        (fixture/'mounts.json').write_text(json.dumps(dict(system_mount=mount_config.get('system_mount'),mounts=mounts),indent=2)+'\n')
+        (fixture/'fixture.json').write_text(json.dumps(dict(mapping=mapping,
+            image_sha256=sha256(fixture/'ideplus.img'),system_sha256=sha256(output/disk_name),
+            pin='toolchain/altirra-ideplus.json',access='readonly'),indent=2)+'\n')
+        (fixture/'README.txt').write_text('IDE Plus disposable development disk\n\n'
+            'Attach ideplus.img as ATA master on IDE Plus 2.0 revision E, PBI ID 0.\n'
+            'Disable SDX. Use the pinned AltirraOS816 and 4 MiB linear RAM.\n'
+            'Keep system.atr on D1 and work.atr on D8. Boot Exec-of816.xex\n'
+            'or its matching cart. IDE: maps APT unit 2 and is read-only.\n'
+            'Try DIR IDE:, IDE:C/HELLO and CAT IDE:STORY.TXT.\n\n'
+            'The full setup and firmware conversion instructions are in\n'
+            'docs/guides/ideplus.md in the Exec816 source tree.\n'
+            'fixture.json pins the disk and matching system image hashes.\n'
+            'Physical hardware remains unqualified.\n')
+        (fixture/'README.md').unlink(missing_ok=True)
     guide=(ROOT/'docs/guides/demo.md').read_text().replace('../demo.png','demo.png').replace('../images/','images/')
     system_name='SDFS 2.1' if filesystem=='sdfs' else 'MyDOS'
     default_geometry=('The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB\n'
@@ -172,6 +204,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     (output/'README.md').write_text(guide)
+    if ideplus:
+        with (output/'README.md').open('a') as note:
+            note.write(IDE_DEMO_NOTE)
     shutil.copyfile(ROOT/'docs/demo.png',output/'demo.png')
     (output/'images').mkdir(exist_ok=True)
     shutil.copyfile(ROOT/'docs/images/demo-boot.png',output/'images/demo-boot.png')
@@ -205,6 +240,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         record.update(shell_only=True,expected_peak_tasks=6)
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             entry,ROOT/'docs/text-shell-distribution.txt')})
+    if ideplus:
+        record['expected_peak_tasks']+=1
+        require(record['expected_peak_tasks']<=record['task_capacity'],
+                'Selected IDE demo exceeds the existing Task-slot capacity')
+        record['ideplus']=dict(fixture='ideplus/fixture.json',access='readonly',
+                               pin=json.loads((ROOT/'toolchain/altirra-ideplus.json').read_text()))
+        record['source_inputs'].update({name:sha256(ROOT/name) for name in (
+            'tools/ideplus_media.py','docs/guides/ideplus.md','toolchain/altirra-ideplus.json')})
     if bitmap_shell_only:
         record.update(bitmap=True,shell_only=True,desktop=desktop,expected_peak_tasks=7 if desktop else 6,
             font_source='bitmap-console/selected/src/vdi/font8x8.c')
@@ -251,14 +294,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (output/'demo-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
     # OF816 records this final manifest, including the optional artifact.
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
-    if gem_desktop:
-        from build_cartridge import segments, BANK_BYTES
-        capacity={}
-        for name in ('program.xex','of816/Exec-of816.xex'):
-            raw=(output/name).read_bytes()
-            segments(raw)
-            capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
-        (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+    from build_cartridge import segments, BANK_BYTES
+    capacity={}
+    for name in ('program.xex','of816/Exec-of816.xex'):
+        raw=(output/name).read_bytes()
+        segments(raw)
+        capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
+    (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+    require(all(item['headroom']>=0 for item in capacity.values()),
+            'Compressed demo exceeds cartridge capacity; packaging stopped')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
             bitmap_shell=output if bitmap_shell_only else None,
             text_shell=output if text_shell_only else None)
@@ -287,6 +331,8 @@ def refresh_monitor(output):
         content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
         if record.get('desktop'):
             content=content.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
+        if record.get('ideplus'):
+            content+=IDE_DEMO_NOTE
         (output/'README.md').write_text(content)
         record['artifacts']['README.md']=sha256(output/'README.md')
         guides.append(guide)
@@ -355,6 +401,8 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
+    parser.add_argument('--release-compiler',action='store_true',help='Explicit optimized host compiler build for the standard console')
+    parser.add_argument('--ideplus',action='store_true',help='Require the optional IDE: read-only development mount; fixture stays outside the ZIP')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')
     parser.add_argument('--sector-bytes',type=int,choices=(128,256),default=256)
     parser.add_argument('--system-kib',type=int,choices=(360,720),default=720,
@@ -389,5 +437,5 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')

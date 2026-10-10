@@ -177,3 +177,41 @@ all guards, alignment and unused pool capacity. This compares IDE-enabled and
 ordinary builds with the same current Task profile; historical compaction
 baseline deltas in build reports include pre-existing larger application pools.
 All evidence remains development tier, not hosted-system qualification.
+
+## IP6 — optional development demo
+
+`tools/build_demo.py --text-shell-only --ideplus --release-compiler` builds an
+optional standard-console profile with read-only IDE: alongside SIO SYS:/WORK:
+and RAM:. It retains the pinned OF816 monitor and five-second autoboot. The
+matching disposable APT raw disk, mount configuration, hashes and attachment
+instructions are in the development directory's `ideplus/` subdirectory. They
+and the vendor IDE firmware stay outside the boot ZIP. Ordinary demo defaults
+keep their SIO mounts. Setup and writable admission are documented in the
+[IDE Plus guide](../guides/ideplus.md).
+
+Both compressed images fit the cartridge. The native XEX is 310,010 bytes;
+the OF816 boot XEX is 335,092 bytes, leaving 697,099 bytes of cartridge payload
+capacity. Capacity is checked before packaging. The build also passes the
+730-byte IDE worker bound against its existing 1,024-byte stack. The composed
+demo arena gains 256 upper-RAM bytes for transport/mount diagnostics, reaching
+4,352 bytes. Reserved bank-zero delta is **0 fixed / 0 per Task / 0 idle bytes**,
+including guards, alignment and unused pool capacity; no Task pool grows.
+
+The built distribution is `build/development/ideplus-demo/exec816-demo.zip`;
+`build/development/ideplus-demo/cart/exec816-demo.zip` adds matching old/new
+Atarimax cartridge images. Both contain only boot files, matching SIO disks,
+the pinned OS ROM, short guide, licences and checksums. Build reports, test
+output, manifests, the raw IDE disk and BIOS remain development artifacts.
+
+A focused check of the extracted cartridge package boots its actual XEX and
+matching ROM through OF816, runs DEVICES/MOUNT/DIR IDE:, loads IDE:C/HELLO,
+reads IDE:STORY.TXT, copies it to SIO WORK:, compares bytes with CMP and exits
+with intact guards and retired ownership. The read-only IDE/system media stay
+byte-exact. Evidence is `ideplus-demo-results.json` beside the build. Eight
+mount-source host checks, generated-definition checks and Python/content/link
+checks also pass. The emitted-code run used the pinned compiler and IDE
+emulator inputs recorded in the build.
+
+IP0–IP6 are complete at the **development tier**. No full release qualification,
+physical Antonia/IDE Plus compatibility, or successful FLUSH on cached physical
+media is claimed; those require separate frozen-input evidence.
