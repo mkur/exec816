@@ -135,6 +135,8 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
         s.saved['fixed_stop']=dict(kind='files_stop',boundary='Observed child load.phase=READ',
             start=load_start,offset_ms=6500,offered=offered,mouse_delay_ticks=2000,idle=retired,
             retire_ms=(retired-offered)*1000/BASE_HZ)
+        (s.p['output']/'fixed-stop-result.json').write_text(
+            json.dumps(s.saved['fixed_stop'],indent=2)+'\n')
     s.frames(80)
     require(num('result',4)==0,'Read-time Stop did not close viewer cleanly')
     menus.select('Shell');require(s.ledger()==file_owners and memory()==file_baseline,'Read-time Stop leaked')

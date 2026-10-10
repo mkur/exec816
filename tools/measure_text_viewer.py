@@ -213,7 +213,7 @@ def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock
         lock_definition=prepare_locks(out)
         os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in lock_definition['pcs'])
         os.environ.pop('EXEC816_MASK_TRACE',None)
-    integration=ViewerMeasurement(count,panel,cancel,admission)
+    integration=ViewerMeasurement(count,panel,cancel,admission or lock_times)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=integration,profile_commands=False)
     result.update(scope='Physical text page/line and Panel feedback during viewer repaint',
                   qualification=False,zip_sha256=sha256(out/'exec816-demo.zip'),text_performance=integration.record)

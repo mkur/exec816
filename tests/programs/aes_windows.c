@@ -239,6 +239,11 @@ UWORD AESRun(void)
         a,b,c,d,&a,&b,&c,&d));
     CHECK(a==32 && b==32 && c==240 && d==160);
     CHECK(wind_set(handle,WF_VSLSIZE,250,0,0,0));
+    /* Adjacent logical positions can round to the same thumb pixels. They
+       still publish the exact requested value for ordinary GEM callers. */
+    CHECK(wind_set(handle,WF_VSLIDE,1,0,0,0));
+    geometry(handle,WF_VSLIDE,1,0,0,0);
+    CHECK(wind_set(handle,WF_VSLIDE,1,0,0,0));
     CHECK(wind_set(handle,WF_VSLIDE,1000,0,0,0));
     geometry(handle,WF_VSLSIZE,250,0,0,0);
     geometry(handle,WF_VSLIDE,1000,0,0,0);
