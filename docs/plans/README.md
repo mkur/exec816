@@ -83,6 +83,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [IDE-only SYS: and WORK:](ide-only-demo-implementation-plan.md): planned
+  ID0–ID6 slices for a separate build without the Exec SIO driver, two APT
+  partitions, IDE-backed SYS, OF816/XEX/cart packaging and firmware-menu boot.
 - [IDE Plus 2.0 block driver](ideplus-block-driver-implementation-plan.md):
   IP0–IP6 implemented at the development tier: a transport-independent block
   adapter, native ATA reads, APT partitions, filesystem mounting, verified writes

@@ -128,6 +128,12 @@ not block these milestones; compression remains separate work.
 
 ## Follow-on capabilities
 
+The [IDE-only demo plan](plans/ide-only-demo-implementation-plan.md) adds a
+separate profile using IDE Plus for both SYS: and writable WORK:, excluding the
+Exec SIO driver. It follows the implemented native IDE driver with system-volume
+selection, two APT partitions, OF816/XEX/cart packaging and firmware-menu XEX
+loading. Automatic power-on disk boot remains separate work.
+
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The
 [XaAES study](plans/gem4xe/xaaes-study.md) recommends client/wait and window-redraw
