@@ -75,7 +75,8 @@ The controller IRQ source is disabled while the worker owns it.
 
 New fixed/per-Task/idle bank-zero reservation: zero bytes. One existing 1,024-byte
 worker stack (including its interrupt reserve), 32 guard bytes and 256-byte DP
-are consumed on open, without growing any pool. New upper state is 1,024 bytes,
+are consumed on open, without growing any pool. Builds with small pools verify
+the complete timer-bound worker call path fits before packaging. New upper state is 1,024 bytes,
 plus a 512-byte heap buffer, timer port and clock request while active. Four-slot
 profiles without the requested small stack fail normally rather than taking a
 larger stack. The first linear RAM bank remains reserved.

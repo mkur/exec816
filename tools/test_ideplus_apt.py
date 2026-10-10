@@ -9,7 +9,8 @@ from ideplus_media import pattern_fixture
 def cases():
     for name,options in [('direct',{}),('even',{'even':True}),('mbr',{'mbr':True}),('chain',{'chained':True}),('even-chain',{'even':True,'chained':True})]:
         image,maps=pattern_fixture(**options);yield name,image,False
-    for name in ('revision','cycle','overlap','overflow','bad-offset'):
+    image,_=pattern_fixture();image[0]=0x10;yield 'metadata-default',image,False
+    for name in ('revision','cycle','overlap','leader-overlap','overflow','bad-offset'):
         image,_=pattern_fixture()
         if name=='revision': image[0]=0x20
         if name=='cycle':
@@ -17,6 +18,10 @@ def cases():
             image[512:1024]=bytes(512);image[513:516]=b'APT';image[517]=2
             image[520:524]=(1).to_bytes(4,'little')
         if name=='overlap': image[50:58]=image[34:42]
+        if name=='leader-overlap':
+            image[32]|=0x40
+            image[50:54]=(int.from_bytes(image[34:38],'little')+int.from_bytes(image[38:42],'little')).to_bytes(4,'little')
+            image[48]|=0x40
         if name=='overflow': image[34:38]=(8190).to_bytes(4,'little')
         if name=='bad-offset': image[46:48]=(0xffff).to_bytes(2,'little')
         yield name,image,True

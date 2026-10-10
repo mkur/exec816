@@ -1073,6 +1073,12 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                               'boot-config-action.inc','bootconfig.act','loader-image.inc',
                               'loader.cfg','loader.bin','boot-compression.json')})
     (output / "build.json").write_text(json.dumps(provenance, indent=2)+"\n")
+    if tasks and any(pool['stack_bytes']==1024 for pool in memory['task_pools']):
+        # Admit the IDE worker only in images whose complete caller-stack path
+        # fits an existing small pool. Never enlarge bank-zero pools to fit it.
+        from ideplus_stack_bound import record as ideplus_bound
+        provenance['ideplus_worker_stack']=ideplus_bound(output)
+        (output / "build.json").write_text(json.dumps(provenance,indent=2)+"\n")
     return {"xex": xex, "labels": labels, "image": image, "build": provenance, "output": output}
 
 

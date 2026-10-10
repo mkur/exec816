@@ -10,7 +10,6 @@ USE IDEPLUSNATIVE
 USE TIMER
 USE TIMERNATIVE
 USE A816MEMORY
-
 TYPE LifetimeWaiter=[
   LifetimeWaiter POINTER next
   EXEC.Task POINTER task
@@ -45,28 +44,35 @@ TYPE Controller=[
   BYTE irq,status,error,owned,signals,resident,apt,durable,offline
 ]
 INCLUDE "ideplus-lifetime.inc"
-
 ; Fixed metadata has no independent heap ownership or bank-zero reservation.
 Controller POINTER FUNC Control()
-RETURN(Controller POINTER(ADDRESS(IDEMETA.CONTROL)))
 
+RETURN(Controller POINTER(ADDRESS(IDEMETA.CONTROL)))
 PUBLIC Partition POINTER FUNC UnitAt(BYTE number)
+
 RETURN(Partition POINTER(ADDRESS(IDEMETA.UNITS+CARD(number)*24)))
 
 ; Match the bootstrap's immutable name, without creating near literals.
 PUBLIC BYTE FUNC Matches(BYTE POINTER name)
   BYTE index
-  IF name=NULL THEN RETURN(0) FI
+  IF name=NULL THEN
+    RETURN(0)
+  FI
+
   LET expected=BYTE POINTER(ADDRESS(IDEMETA.NAME))
   FOR index=0 TO 14 DO
-    IF name(index)<>expected(index) THEN RETURN(0) FI
+    IF name(index)<>expected(index) THEN
+      RETURN(0)
+    FI
   OD
+
 RETURN(1)
 
 ; Binding establishes unit lifetime; callbacks trust that handle afterwards.
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
     POINTER request LONGCARD flags)
   INT error
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   error=EXEC.IOERR_OPENFAIL
   IF bus.state=5 THEN
@@ -86,25 +92,34 @@ PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
     END
   FI
   request.io_Error=BYTE(error)
+
 RETURN(error)
 
 ; Close consumes one settled binding and wakes an outstanding stop.
 PUBLIC PROC Close(EXEC.IORequest POINTER request)
+
   LET bus=DriverBus POINTER(request.io_Device)
   LET unit=Partition POINTER(request.io_Unit)
   unit.opens==-1
   bus.opens==-1
   request.io_Device=NULL
   request.io_Unit=NULL
-  IF bus.opens=0 AND bus.stop<>0 THEN EXEC.Signal(bus.worker,LONGCARD(STOP_MASK)) FI
+  IF bus.opens=0 AND bus.stop<>0 THEN
+    EXEC.Signal(bus.worker,LONGCARD(STOP_MASK))
+  FI
+
 RETURN
 
 ; All accepted requests use normal asynchronous reply ownership.
 PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   request.io_Flags=request.io_Flags & $fe
   IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE THEN
-    EXEC.IOStdReq POINTER(request).io_Actual=0
+    BEGIN
+      LET standard=EXEC.IOStdReq POINTER(request)
+      standard.io_Actual=0
+    END
   FI
   IF request.io_Message.mn_Length<EXEC.IOSTDREQ_SIZE THEN
     request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
@@ -117,25 +132,34 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
     RETURN
   FI
   EXEC.ReplyMsg(@request.io_Message)
+
 RETURN
 
 ; Queued cancellation removes and replies; an active transfer drains safely.
 PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
-  IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_MESSAGE THEN RETURN FI
+
+  IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_MESSAGE THEN
+    RETURN
+  FI
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   IF bus.active=request THEN
-    IF bus.phase<>3 THEN bus.cancelled=1 FI
+    IF bus.phase<>3 THEN
+      bus.cancelled=1
+    FI
     RETURN
   FI
   EXECLISTS.Remove(@request.io_Message.mn_Node)
   request.io_Error=BYTE(EXEC.IOERR_ABORTED)
   EXEC.ReplyMsg(@request.io_Message)
+
 RETURN
 
 ; The filesystem may retire a queued/preparing request, never active ATA work.
 PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
   BYTE accepted
   EXEC.Forbid()
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   accepted=0
   IF request.io_Message.mn_Node.ln_Type=EXEC.NT_MESSAGE THEN
@@ -145,50 +169,71 @@ PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
     FI
   FI
   EXEC.Permit()
+
 RETURN(accepted)
 
 ; Publish a complete clock before sleeping; timer.device retains the worker.
 BYTE FUNC Clock()
+
   LET c=Control()
+
 RETURN(TIMERNATIVE.Snapshot(BYTE POINTER(@c.timer.ticks_hi))=0)
 
 ; Sleep one VBI tick through the ordinary timer device with bounded admission.
 BYTE FUNC Delay()
   INT error
+
   LET c=Control()
-  IF Clock()=0 THEN RETURN(0) FI
+  IF Clock()=0 THEN
+    RETURN(0)
+  FI
   c.timer.ticks_lo==+1
-  IF c.timer.ticks_lo=0 THEN c.timer.ticks_hi==+1 FI
+  IF c.timer.ticks_lo=0 THEN
+    c.timer.ticks_hi==+1
+  FI
   c.timer.tc_Request.io_Command=TIMER.TD_WAITUNTIL
   error=EXEC.DoIO(@c.timer.tc_Request)
+
 RETURN(error=0)
 
 ; Ready polls remain preemptible and use monotonic VBI deadlines after a burst.
 BYTE FUNC Ready(BYTE drq,ignoreError)
   LONGCARD started
   BYTE attempts,status
+
   LET c=Control()
-  IF Clock()=0 THEN RETURN(IDEPLUS.ERROR_TIMEOUT) FI
+  IF Clock()=0 THEN
+    RETURN(IDEPLUS.ERROR_TIMEOUT)
+  FI
   started=c.timer.ticks_lo
   DO
     FOR attempts=0 TO 31 DO
       status=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_ALTSTATUS)
       c.status=status
-      IF status=0 OR status=$ff THEN RETURN(IDEPLUS.ERROR_ABSENT) FI
+      IF status=0 OR status=$ff THEN
+        RETURN(IDEPLUS.ERROR_ABSENT)
+      FI
       IF (status & $80)=0 THEN
         IF (status & $21)<>0 AND ignoreError=0 THEN
           c.error=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_ERROR)
           RETURN(IDEPLUS.ERROR_ATA)
         FI
-        IF (status & $08)=drq THEN RETURN(0) FI
+        IF (status & $08)=drq THEN
+          RETURN(0)
+        FI
       FI
     OD
-    IF Clock()=0 THEN RETURN(IDEPLUS.ERROR_TIMEOUT) FI
+    IF Clock()=0 THEN
+      RETURN(IDEPLUS.ERROR_TIMEOUT)
+    FI
     IF c.timer.ticks_lo-started>=IDEPLUS.TIMEOUT_TICKS THEN
       RETURN(IDEPLUS.ERROR_TIMEOUT)
     FI
-    IF Delay()=0 THEN RETURN(IDEPLUS.ERROR_TIMEOUT) FI
+    IF Delay()=0 THEN
+      RETURN(IDEPLUS.ERROR_TIMEOUT)
+    FI
   OD
+
 RETURN(IDEPLUS.ERROR_TIMEOUT)
 
 ; Program one LBA28 transfer, without retaining a selected PBI window.
@@ -198,44 +243,61 @@ PROC AddressSector(LONGCARD sector)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA0,BYTE(sector))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA1,BYTE(sector RSH 8))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA2,BYTE(sector RSH 16))
+
 RETURN
 
 ; Read one physical sector into the controller's reusable upper-RAM buffer.
 PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
   BYTE error
   error=Ready(0,1)
-  IF error<>0 THEN RETURN(error) FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
   AddressSector(sector)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_READ)
   error=Ready($08,0)
-  IF error<>0 THEN RETURN(error) FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
+
   LET c=Control()
   IDEPLUSNATIVE.ReadWords(c.buffer)
+
 RETURN(Ready(0,0))
 
 ; IDENTIFY admits only LBA28 ATA disks with supported physical sector size.
 BYTE FUNC Identify()
   BYTE error
   CARD POINTER words
+
   LET c=Control()
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_HEAD,$e0)
   error=Ready(0,1)
-  IF error<>0 THEN RETURN(error) FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_IDENTIFY)
   error=Ready($08,0)
-  IF error<>0 THEN RETURN(error) FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
   IDEPLUSNATIVE.ReadWords(c.buffer)
   error=Ready(0,0)
-  IF error<>0 THEN RETURN(error) FI
+  IF error<>0 THEN
+    RETURN(error)
+  FI
   words=CARD POINTER(c.buffer)
   IF ((words(0) & $8000)<>0 AND words(0)<>$848a) OR (words(49) & $0200)=0 THEN
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
-  IF (words(106) & $d000)=$5000 THEN RETURN(IDEPLUS.ERROR_UNSUPPORTED) FI
+  IF (words(106) & $d000)=$5000 THEN
+    RETURN(IDEPLUS.ERROR_UNSUPPORTED)
+  FI
   c.physical=LONGCARD(words(60)) OR (LONGCARD(words(61)) LSH 16)
   IF c.physical=0 OR c.physical>LONGCARD($10000000) THEN
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
+
   LET unit=UnitAt(0)
   unit.number=0
   unit.bytes=512
@@ -244,35 +306,51 @@ BYTE FUNC Identify()
   unit.sectors=c.physical
   unit.enabled=1
   c.durable=Durability(words)
-RETURN(0)
 
+RETURN(0)
 INCLUDE "ideplus-apt.inc"
 INCLUDE "ideplus-write.inc"
-
 ; Acquire timer, buffer and board ownership before publishing readiness.
 BYTE FUNC HardwareInit()
   BYTE okay
   INT error
+
   LET c=Control()
-  IF SIZEOF(DriverBus)>64 OR SIZEOF(Partition)<>24 THEN RETURN(0) FI
-  IF EXEC.AllocSignal(31)<>31 THEN RETURN(0) FI
+  IF SIZEOF(DriverBus)>64 OR SIZEOF(Partition)<>24 THEN
+    RETURN(0)
+  FI
+  IF EXEC.AllocSignal(31)<>31 THEN
+    RETURN(0)
+  FI
   c.signals=1
-  IF EXEC.AllocSignal(29)<>29 THEN RETURN(0) FI
+  IF EXEC.AllocSignal(29)<>29 THEN
+    RETURN(0)
+  FI
   c.signals=3
   okay=EXEC.RegisterResident(LONGCARD(STOP_MASK))
-  IF okay=0 THEN RETURN(0) FI
+  IF okay=0 THEN
+    RETURN(0)
+  FI
   c.resident=1
   c.buffer=EXEC.AllocMem(512,EXEC.MEMF_UPPER)
   c.timerPort=EXEC.CreateMsgPort()
-  IF c.buffer=NULL OR c.timerPort=NULL THEN RETURN(0) FI
+  IF c.buffer=NULL OR c.timerPort=NULL THEN
+    RETURN(0)
+  FI
   c.timer=TIMER.TimerClockRequest POINTER(EXEC.CreateIORequest(c.timerPort,
       SIZEOF(TIMER.TimerClockRequest)))
-  IF c.timer=NULL THEN RETURN(0) FI
+  IF c.timer=NULL THEN
+    RETURN(0)
+  FI
   error=EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
       @c.timer.tc_Request,0)
-  IF error<>0 THEN RETURN(0) FI
+  IF error<>0 THEN
+    RETURN(0)
+  FI
   ; Rev E card-present and IRQ bits distinguish an absent selected board.
-  IF (IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_CARD) & $20)<>0 THEN RETURN(0) FI
+  IF (IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_CARD) & $20)<>0 THEN
+    RETURN(0)
+  FI
   c.irq=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_IRQ) & 1
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,0)
   c.owned=1
@@ -284,52 +362,77 @@ BYTE FUNC HardwareInit()
     IF c.apt=0 THEN
       A816MEMORY.Clear(BYTE POINTER(ADDRESS(IDEMETA.UNITS+24)),360)
     FI
-    IF c.error=IDEPLUS.ERROR_TIMEOUT OR c.error=IDEPLUS.ERROR_ABSENT THEN error=c.error FI
+    IF c.error=IDEPLUS.ERROR_TIMEOUT OR c.error=IDEPLUS.ERROR_ABSENT THEN
+      error=c.error
+    FI
   FI
-  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT THEN c.offline=1 FI
+  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT THEN
+    c.offline=1
+  FI
+
 RETURN(error=0)
 
 ; Retire every borrowed resource before releasing the resident Task lease.
 PROC HardwareStop()
   BYTE okay
+
   LET c=Control()
   IF c.owned<>0 THEN
-    IF c.offline=0 THEN IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,c.irq) FI
+    IF c.offline=0 THEN
+      IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,c.irq)
+    FI
     c.owned=0
   FI
   IF c.timer<>NULL THEN
-    IF c.timer.tc_Request.io_Device<>NULL THEN EXEC.CloseDevice(@c.timer.tc_Request) FI
+    IF c.timer.tc_Request.io_Device<>NULL THEN
+      EXEC.CloseDevice(@c.timer.tc_Request)
+    FI
     EXEC.DeleteIORequest(@c.timer.tc_Request)
     c.timer=NULL
   FI
-  IF c.timerPort<>NULL THEN EXEC.DeleteMsgPort(c.timerPort) c.timerPort=NULL FI
-  IF c.buffer<>NULL THEN EXEC.FreeMem(c.buffer,512) c.buffer=NULL FI
+  IF c.timerPort<>NULL THEN
+    EXEC.DeleteMsgPort(c.timerPort)
+    c.timerPort=NULL
+  FI
+  IF c.buffer<>NULL THEN
+    EXEC.FreeMem(c.buffer,512)
+    c.buffer=NULL
+  FI
   IF c.resident<>0 THEN
     okay=EXEC.UnregisterResident()
     c.resident=0
   FI
-  IF (c.signals & 2)<>0 THEN EXEC.FreeSignal(29) FI
-  IF (c.signals & 1)<>0 THEN EXEC.FreeSignal(31) FI
+  IF (c.signals & 2)<>0 THEN
+    EXEC.FreeSignal(29)
+  FI
+  IF (c.signals & 1)<>0 THEN
+    EXEC.FreeSignal(31)
+  FI
   c.signals=0
+
 RETURN
 
 ; Take ownership atomically with dequeue; interrupts never inspect this queue.
 EXEC.IOStdReq POINTER FUNC Claim()
   EXEC.IOStdReq POINTER request
   EXEC.Forbid()
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   request=EXEC.IOStdReq POINTER(EXEC.GetMsg(@bus.port))
   bus.active=EXEC.IORequest POINTER(request)
   bus.phase=1
   bus.cancelled=0
   EXEC.Permit()
+
 RETURN(request)
 
 ; Complete full raw reads or copy geometry, retaining buffers until reply.
 PROC RunRequest(EXEC.IOStdReq POINTER request)
   BYTE error
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   LET unit=Partition POINTER(request.io_Unit)
+
   LET c=Control()
   request.io_Actual=0
   error=0
@@ -355,7 +458,9 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
       error=BYTE(EXEC.IOERR_BADLENGTH)
     ELSE
       EXEC.Forbid()
-      IF c.durable=2 THEN bus.phase=3 FI
+      IF c.durable=2 THEN
+        bus.phase=3
+      FI
       EXEC.Permit()
       error=FlushPhysical()
     FI
@@ -366,15 +471,21 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     error=BYTE(EXEC.IOERR_BADLENGTH)
   ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR THEN
     error=WriteLogical(unit,request)
-    IF error=0 THEN request.io_Actual=request.io_Length FI
+    IF error=0 THEN
+      request.io_Actual=request.io_Length
+    FI
   ELSE
     EXEC.Forbid()
     bus.phase=2
-    IF bus.cancelled<>0 THEN error=BYTE(EXEC.IOERR_ABORTED) FI
+    IF bus.cancelled<>0 THEN
+      error=BYTE(EXEC.IOERR_ABORTED)
+    FI
     EXEC.Permit()
     IF error=0 THEN
       error=ReadPhysical(PhysicalSector(unit,request.io_Offset))
-      IF error=0 AND bus.cancelled<>0 THEN error=BYTE(EXEC.IOERR_ABORTED) FI
+      IF error=0 AND bus.cancelled<>0 THEN
+        error=BYTE(EXEC.IOERR_ABORTED)
+      FI
       IF error=0 THEN
         IF unit.number=0 THEN
           A816MEMORY.Move(request.io_Data,c.buffer,512)
@@ -397,6 +508,7 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
   bus.cancelled=0
   EXEC.ReplyMsg(@request.io_Message)
   EXEC.Permit()
+
 RETURN
 
 ; Hardware waits run outside Forbid; lifecycle publication remains atomic.
@@ -405,6 +517,7 @@ PUBLIC PROC Worker()
   BYTE okay
   EXEC.IOStdReq POINTER request
   EXEC.Forbid()
+
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   LET self=EXEC.FindTask(NULL)
   IF bus.worker<>self OR bus.state<>1 OR bus.lease.task<>self THEN
@@ -435,5 +548,6 @@ PUBLIC PROC Worker()
   HardwareStop()
   EXEC.Forbid()
   RetireWorker(bus)
+
 RETURN
 ENDMODULE

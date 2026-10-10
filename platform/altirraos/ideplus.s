@@ -2,6 +2,7 @@
 ; Task transitions. The pinned VBI chain never accesses IDE registers/latches.
 ; It still runs and records ticks. Preserve selection and its OS shadow.
 .include "ideplus.inc"
+.include "ideplus-storage.inc"
 .segment "SIGNAL_CODE"
 .a16
 .i16
@@ -16,6 +17,17 @@ IP_VALUE = $84
 IP_SELECTED = $85
 IP_RESULT = $86
 
+; Diagnostic-only instruction boundaries. No production code or reservation.
+.macro ideplus_checkpoint point
+    .if HEAP_PROBE
+        .ident(.sprintf("ideplus_probe_%u", point)):
+        .export .ident(.sprintf("ideplus_probe_%u", point))
+        .repeat 4
+            nop
+        .endrepeat
+    .endif
+.endmacro
+
 ideplus_enter:
     sep #$20
     lda #1
@@ -23,13 +35,18 @@ ideplus_enter:
     lda f:$0247
     sta IP_SELECTED
     lda #1                      ; configured initial PBI ID 0
+    ideplus_checkpoint 1
     sta f:$0247
+    ideplus_checkpoint 2
     sta f:$d1ff
+    ideplus_checkpoint 3
     rts
 ideplus_leave:
     lda IP_SELECTED
     sta f:$0247
+    ideplus_checkpoint 6
     sta f:$d1ff
+    ideplus_checkpoint 7
     lda #0
     sta f:E816_SWITCHING
     rep #$20
@@ -41,6 +58,27 @@ ideplus_read_register:
     jsr io_context
     lda 4,s
     tax
+    .if HEAP_PROBE
+        ; Inject bounded BSY delays for a selected active-request phase.
+        ; The worker still uses its real clock, timer and scheduling path.
+        cpx #IP_REG_ALTSTATUS
+        bne ideplus_real_register
+        sep #$20
+        lda f:IP_PROBE+2
+        beq ideplus_real_register8
+        cmp f:IP_META_BUS+10
+        bne ideplus_real_register8
+        rep #$20
+        lda f:IP_PROBE
+        beq ideplus_real_register
+        dec a
+        sta f:IP_PROBE
+        lda #$80
+        rtl
+ideplus_real_register8:
+        rep #$20
+ideplus_real_register:
+    .endif
     php
     sei
     jsr ideplus_enter
@@ -91,6 +129,7 @@ ideplus_read_pair:
     lda f:$00d110
     sta [IP_POINTER],y
     iny
+    ideplus_checkpoint 4
     lda f:$00d100
     sta [IP_POINTER],y
     iny
@@ -98,6 +137,7 @@ ideplus_read_pair:
     plp
     cpy #512
     bcc ideplus_read_pair
+    ideplus_checkpoint 8
     rtl
 ideplus_read_words_end:
 
@@ -119,6 +159,7 @@ ideplus_write_pair:
     iny
     lda [IP_POINTER],y
     sta f:$00d100
+    ideplus_checkpoint 5
     dey
     lda [IP_POINTER],y
     sta f:$00d110
@@ -130,3 +171,52 @@ ideplus_write_pair:
     bcc ideplus_write_pair
     rtl
 ideplus_write_words_end:
+
+.if HEAP_PROBE
+.export ideplus_probe_wait,ideplus_probe_verify
+; Patched into one four-NOP boundary by the host. Await one real VBI, once.
+; Preserve the exact interrupted widths, flags, A, X and Y.
+ideplus_probe_wait:
+    php
+    rep #$30
+    pha
+    phx
+    phy
+    lda f:IP_PROBE+4
+    bne ideplus_probe_wait_done
+    inc a
+    sta f:IP_PROBE+4
+    lda f:NMI_COUNT
+:
+    cmp f:NMI_COUNT
+    beq :-
+ideplus_probe_wait_done:
+    ply
+    plx
+    pla
+    plp
+    rtl
+
+; A settled verification read rendezvous through the ordinary public gateway.
+ideplus_probe_verify:
+    php
+    rep #$30
+    pha
+    phx
+    phy
+    sep #$20
+    lda f:IP_META_BUS+10
+    cmp #3
+    bne ideplus_probe_verify_done
+    lda #1
+    sta f:IP_PROBE+6
+    rep #$30
+    jsl exec_poll
+ideplus_probe_verify_done:
+    rep #$30
+    ply
+    plx
+    pla
+    plp
+    rtl
+.endif

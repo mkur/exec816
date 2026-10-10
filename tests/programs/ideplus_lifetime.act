@@ -1,0 +1,216 @@
+MODULE IDEPLUSLIFETIME
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE DOS
+USE FSBOOT
+USE HEAPCORE
+
+TYPE ProbeState=[CARD busy BYTE phase,pad CARD nmi]
+TYPE BusPrefix=[CARD opens BYTE state,stop EXEC.Task POINTER worker
+    EXEC.IORequest POINTER active BYTE phase,cancelled]
+CARD checks,progress,aborts
+BYTE done,target,expectedError,blocked,busyStop,mixed,allocation
+EXEC.Task peer
+EXEC.Task ARRAY crowd(5)
+EXEC.IOStdReq POINTER pending
+PROC POINTER noFinal()
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Progress and cancellation use ordinary Task and I/O facilities during ATA waits.
+PROC PeerEntry()
+
+  LET bus=BusPrefix POINTER(ADDRESS(IDEMETA.BUS))
+  LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
+  WHILE done=0 DO
+    progress==+1
+    IF target<>0 AND bus.active=EXEC.IORequest POINTER(pending)
+        AND bus.phase=target THEN
+      IF mixed<>0 THEN
+        BEGIN
+          LET file=DOS.Open(BYTE POINTER(c"D1:APPEND.BIN"),DOS.MODE_OLDFILE)
+          Require(file<>NULL)
+          Require(DOS.Read(file,BYTE POINTER($2e1000),17)=17)
+          Require(DOS.Close(file)<>0)
+          Require(DOS.ReleaseContext()<>0)
+          mixed=0
+        END
+      FI
+
+      Require(IDEPLUSDRIVER.TryCancel(EXEC.IORequest POINTER(pending))=
+          BYTE(target=1))
+      EXEC.AbortIO(EXEC.IORequest POINTER(pending))
+      EXEC.AbortIO(EXEC.IORequest POINTER(pending))
+      aborts==+1
+      target=0
+      probe.busy=0
+    FI
+
+    EXEC.Yield()
+  OD
+
+RETURN
+
+; Occupy an existing small pool without reserving any new bank-zero storage.
+PROC AddPeer(EXEC.Task POINTER item BYTE slot)
+
+  item.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@item.tc_MemEntry)
+  item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
+  item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
+  item.tc_SPReg=item.tc_SPUpper-SIZE(2)
+  Require(EXEC.AddTask(item,@PeerEntry,noFinal)<>NULL)
+
+RETURN
+
+; A cancelled read must not replace client bytes; an accepted write must finish.
+PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
+  CARD index
+  INT error,wanted
+  LONGCARD actual
+
+  LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
+  request.io_Data=BYTE POINTER($2dfff0)
+  request.io_Length=128
+  request.io_Offset=1
+  request.io_Command=IF writing<>0 THEN IDEPLUS.WRITE_SECTOR ELSE IDEPLUS.READ_SECTOR FI
+  FOR index=0 TO 127 DO
+    request.io_Data(index)=BYTE(index) XOR $55
+  OD
+
+  probe.busy=4096
+  probe.phase=phase
+  target=phase
+  error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(target=0)
+  wanted=IF phase=3 THEN INT(0) ELSE INT(EXEC.IOERR_ABORTED) FI
+  Require(error=wanted)
+  actual=IF phase=3 THEN LONGCARD(128) ELSE LONGCARD(0) FI
+  Require(request.io_Actual=actual)
+  FOR index=0 TO 127 DO
+    Require(request.io_Data(index)=(BYTE(index) XOR $55))
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index
+  INT error
+  IDEPLUS.Geometry geometry
+
+  LET before=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  LET second=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  LET name=BYTE POINTER(ADDRESS(IDEMETA.NAME))
+  LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
+  Require(port<>NULL AND request<>NULL AND second<>NULL)
+  pending=request
+  IF allocation<>0 THEN
+    probe.pad=1
+    EXEC.Yield()
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)<>0)
+    Require(IDEPLUSDRIVER.State()=0)
+    probe.pad=2
+    EXEC.Yield()
+  FI
+
+  IF blocked<>0 THEN
+    FOR index=0 TO 4 DO
+      AddPeer(@crowd(index),BYTE(index+1))
+    OD
+
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)<>0)
+    done=1
+    FOR index=0 TO 4 DO
+      WHILE crowd(index).tc_State<>EXEC.TS_REMOVED DO
+        EXEC.Yield()
+      OD
+    OD
+
+    done=0
+  FI
+
+  Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)=0)
+  IF busyStop<>0 THEN
+    IDEPLUSDRIVER.Stop()
+    Require(0)
+  FI
+
+  Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(second),0)=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(second))
+  AddPeer(@peer,3)
+  IF expectedError<>0 THEN
+    request.io_Data=BYTE POINTER($2dfff0)
+    request.io_Length=128
+    request.io_Offset=1
+    request.io_Command=IDEPLUS.WRITE_SECTOR
+    IF expectedError=2 THEN
+      probe.busy=65535
+      probe.phase=1
+    FI
+
+    error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+    Require(error=INT(expectedError) AND request.io_Actual=0)
+    Require(IDEPLUSDRIVER.Unavailable()<>0)
+    Require(progress<>0)
+  ELSE
+    ; Reply exactly once even when abort is repeated before worker admission.
+    request.io_Command=IDEPLUS.READ_SECTOR
+    request.io_Length=128
+    request.io_Actual=123
+    EXEC.Forbid()
+    EXEC.SendIO(EXEC.IORequest POINTER(request))
+    EXEC.AbortIO(EXEC.IORequest POINTER(request))
+    EXEC.AbortIO(EXEC.IORequest POINTER(request))
+    EXEC.Permit()
+    Require(EXEC.WaitIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_ABORTED)
+    Require(request.io_Actual=0 AND EXEC.GetMsg(port)=NULL)
+    Transfer(request,1,1)
+    Transfer(request,2,0)
+    Transfer(request,3,1)
+    Require(aborts=3 AND progress<>0)
+  FI
+
+  done=1
+  WHILE peer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+
+  Require(FSBOOT.Stop()<>0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  IDEPLUSDRIVER.Stop()
+  IF expectedError<>0 THEN
+    Require(IDEPLUSDRIVER.State()=5)
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)=IDEPLUS.ERROR_OFFLINE)
+  ELSE
+    Require(IDEPLUSDRIVER.State()=0)
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)=0)
+    request.io_Command=IDEPLUS.GET_GEOMETRY
+    request.io_Data=BYTE POINTER(@geometry)
+    request.io_Length=SIZEOF(IDEPLUS.Geometry)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(geometry.generation=LONGCARD(2)+LONGCARD(allocation<>0))
+    EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+    IDEPLUSDRIVER.Stop()
+  FI
+
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(second))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

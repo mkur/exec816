@@ -30,6 +30,9 @@ def generate(output,memory):
     text=HEADER+'MODULE IDEMETA\n'+f'PUBLIC CONST BASE=${base:x}\n'
     text+=''.join(f'PUBLIC CONST {k}=${base+v:x}\n' for k,v in ABI['fields'].items())
     write(Path(output)/'idemeta.act',text+'ENDMODULE\n',False)
+    write(Path(output)/'ideplus-storage.inc',HEADER+
+          f'IP_META_BUS = ${base+ABI["fields"]["BUS"]:x}\n'+
+          f'IP_PROBE = ${base+768:x}\n',False)
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');a=p.parse_args()
     write(ROOT/'lib/io/ideplus.act',types(),a.check)

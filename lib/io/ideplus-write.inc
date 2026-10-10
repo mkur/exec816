@@ -20,6 +20,7 @@ BYTE FUNC FlushPhysical()
   IF c.durable<>2 THEN
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
+
   LET error=Ready(0,0)
   IF error<>0 THEN
     RETURN(error)
@@ -48,12 +49,13 @@ RETURN(flags)
 BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
   BYTE error
   CARD index
-  LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
 
+  LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   LET c=Control()
   IF (AccessFlags(partition) & IDEPLUS.FLAG_READONLY)<>0 THEN
     RETURN(IDEPLUS.ERROR_PROTECTED)
   FI
+
   LET sector=PhysicalSector(partition,request.io_Offset)
   error=ReadPhysical(sector)
   IF error<>0 THEN
