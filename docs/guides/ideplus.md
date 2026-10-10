@@ -23,9 +23,9 @@ packaging if the compressed boot image exceeds cartridge capacity.
 
 The separate `ideplus/` directory contains `ideplus.img`, its checksummed fixture
 record and `mounts.json`. The disposable raw disk wraps the matching system disk
-as APT unit 2, packing two 256-byte containers into each physical sector and
-preserving boot tails. With 128-byte filesystem sectors, each container uses
-every other byte.
+as APT unit 2 using independently formatted 512-byte SDFS sectors. The
+SIO system/work disks retain their floppy geometry. Changing an old partition
+flag does not convert its filesystem; keep old writable images separately.
 IDE: is read-only both in the APT flags and the Exec mount policy. It is not a
 boot drive. These development files and IDE firmware stay outside the boot ZIP.
 
@@ -73,14 +73,15 @@ configured mount to permit writes. A source mount selects, for example:
   "device": "ideplus.device",
   "unit": 2,
   "profile": 0,
-  "sectors": 2880,
-  "sector_bytes": 256,
+  "sectors": 1440,
+  "sector_bytes": 512,
   "format": 2,
   "access": "readwrite"
 }
 ```
 
-Geometry must match exactly; format 1 is MyDOS and format 2 is SpartaDOS. Units
+Geometry must match exactly. IDE requires format 2 (SDFS 2.1), uniform
+512-byte sectors and profile 0; MyDOS on IDE is unsupported. Units
 1–15 follow APT mapping slots directly. Raw unit 0 is unsupported for filesystem
 mounts. SYS may select a fixed IDE mount; SIO drive overrides do not apply.
 Writable admission also requires the board
@@ -107,18 +108,23 @@ python3 tools/build_demo.py --ide-only --text-shell-only --release-compiler \
 The ZIP includes `ideplus.img`, the external combined OF816/kernel XEX, both
 Atarimax cartridge variants, pinned OS ROM, guide, notices and checksums.
 Attach the raw image as a writable ATA master; leave every floppy slot empty.
-SYSTEM/SYS is protected APT unit 1; WORK is writable unit 2. Each has 2,880
-256-byte logical sectors. Copy the image before writes. SYS contains the exact
+SYSTEM/SYS is protected APT unit 1; WORK is writable unit 2. Each has 1,440
+512-byte logical sectors. Copy the image before writes. SYS contains the exact
 external executable as EXEC816.XEX, C commands and S startup scripts.
 
 OF816 retains its five-second autoboot. SYSTEM-DRIVE@ is zero and overrides are
 rejected; cache and verbosity settings still work. DEVICES omits sio.device.
 The [development record](../history/ide-only-demo.md) distinguishes cartridge
 and actual firmware-loader coverage; neither establishes physical qualification.
-The pinned BIOS menu loader declines D1 STATUS before directory loading and
-falls back to serial SIO. That route remains unsupported; use the cartridge or
-an externally loaded XEX. Keeping EXEC816.XEX in SYS does not establish firmware
-boot support.
+Native 512-byte APT partitions are visible to the pinned BIOS loader. The
+[512-byte development record](../history/ide-512-sector-refactor.md) records
+actual executable-load/handoff coverage separately from directory visibility.
+The pinned BIOS 2.1 menu loader can launch SYS:EXEC816.XEX: hold START during
+reset, select **B**, boot drive **1**, Return, then **L**. Select EXEC816.XEX
+with the Atari cursor keys and press Return. Release Return promptly so its
+repeat does not cancel OF816's five-second countdown. The real menu route,
+OF816 INITAD pause/resume and IDE-only shell have development emulator coverage.
+Automatic power-on disk boot remains outside this profile.
 
 Focused development checks (not release qualification):
 
@@ -128,8 +134,9 @@ python3 tools/test_ide_only_demo.py --copy-break
 python3 tools/test_ide_only_demo.py --variant old
 python3 tools/test_ide_only_failure.py
 python3 tools/test_ide_only_firmware.py
+python3 tools/test_ide_mixed_demo.py --bundle build/development/ideplus-demo \
+  --output build/development/ideplus-demo-smoke
 ```
 
-The last command records the incompatible BIOS admission outcome; it does not
-report a successful firmware boot. The failure runner rebuilds its own optimized
-fixture; `--reuse` selects its existing matching build.
+The firmware runner uses the real BIOS menu rather than a direct XEX hook.
+The failure runner rebuilds its own optimized fixture; `--reuse` selects its existing matching build.

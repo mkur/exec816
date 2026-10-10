@@ -2,6 +2,11 @@
 
 [History index](README.md) · [Implementation plan](../plans/ideplus-block-driver-implementation-plan.md)
 
+The [native 512-byte refactor record](ide-512-sector-refactor.md) supersedes this
+record's packed IDE geometry and documents the successful real BIOS XEX load
+through OF816 to the IDE shell. The original measurements and outcomes below
+retain their historical scope.
+
 ## IP0 — transport separation
 
 The block adapter uses IOStdReq and a small transport dispatcher. SIO retains

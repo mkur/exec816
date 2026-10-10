@@ -4,6 +4,10 @@ Status: IP0–IP6 implemented and committed in executable slices, with focused
 development validation. Physical hardware and successful cached-media FLUSH
 remain unqualified. See the [development record](../history/ideplus-block-driver.md).
 
+The [512-byte refactor](ide-512-sector-refactor-plan.md) is implemented and
+supersedes the packed 128/256-byte IDE mappings below. Current IDE mounts use
+SDFS 2.1 and uniform 512-byte sectors; SIO retains its floppy formats.
+
 Follow the [contributor instructions](../../AGENTS.md),
 [platform contract](../reference/platform.md),
 [resident driver boundary](../reference/resident-drivers.md) and

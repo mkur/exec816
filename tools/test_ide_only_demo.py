@@ -65,8 +65,8 @@ class Walkthrough:
         for character in 'EXIT':c.press(character)
         c.b._cmd_ok('KEY RETURN down');c.b.bp_clear_all()
 
-def extract(bundle):
-    dest=bundle/'extracted';dest.mkdir(exist_ok=True)
+def extract(bundle,destination=None):
+    dest=destination or bundle/'extracted';dest.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(bundle/'exec816-demo.zip') as z:
         require(all(n.startswith('exec816-demo/') and '..' not in Path(n).parts for n in z.namelist()),'Unsafe ZIP member')
         z.extractall(dest)
@@ -81,7 +81,8 @@ if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--bundle',type=Path,default=ROOT/'build/development/ide-only/demo')
     a.add_argument('--variant',choices=('old','new'),default='new')
     a.add_argument('--copy-break',action='store_true')
-    a.add_argument('--full',action='store_true');v=a.parse_args();bundle=v.bundle.resolve();root=extract(bundle)
+    a.add_argument('--full',action='store_true');v=a.parse_args();bundle=v.bundle.resolve()
+    root=extract(bundle,bundle/('extracted-old' if v.variant=='old' else 'extracted'))
     destination=bundle.parent/(('old-' if v.variant=='old' else '')+('full-cart' if v.full else 'copy-break-cart' if v.copy_break else 'cart-smoke'))
     run=cartridge_run(bundle/'carts/cartridge-build/Exec-of816',bundle,ROOT,
             destination,v.variant,False,

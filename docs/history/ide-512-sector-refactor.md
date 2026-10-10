@@ -100,3 +100,69 @@ existing allocations, because each increase is a multiple of eight. No new
 allocation headers, workers or per-file buffers are introduced. Runtime
 bank-zero reservation change: **0 fixed, 0 per-Task and 0 idle bytes**, including
 guards/alignment/unused capacity.
+
+## I512-4 — Demos and firmware boot
+
+Both IDE-only and mixed standard-console demos are rebuilt. IDE-only uses a
+4 MiB APT with protected SYS unit 1 and writable WORK unit 2, each 1,440 × 512
+bytes, native BPS flags, existing starts/leaders and matching EXEC816.XEX in SYS.
+The mixed profile retains floppy SYS/WORK and independently formats its IDE
+filesystem at 512 bytes. Refresh rejects old packed native builds, and updates
+the IDE guide before recreating its package. Existing user media is not converted.
+
+The extracted IDE-only package includes both Atarimax variants. Development
+checks cover real cartridge boot, OF816, IDE command loading, persistent WORK
+mutations and BREAK during COPY alongside PRIMES/timer/VBI activity. The mixed
+package boots and loads HELLO from IDE while SIO and RAM remain available.
+Capacity is checked before packaging: combined XEX sizes are 328,817 bytes
+(IDE-only) and 334,748 bytes (mixed), leaving 703,374 and 697,443 bytes under the
+cartridge payload limit. Build output, manifests and test media remain outside
+the distribution ZIPs.
+
+**ID5 is closed for the pinned native-512 emulator setup.** The actual BIOS 2.1
+menu loader reads SYS:EXEC816.XEX, reaches OF816 INITAD with native loading
+paused, completes the five-second countdown (249 PAL frames), resumes payload
+loading, reaches the kernel/IDE shell, loads a disk command and exits normally.
+The serial-output watch records zero writes through the menu-load/kernel path.
+This uses physical menu keys, not Altirra's direct-XEX hook. Return is released
+promptly after file selection to prevent keyboard repeat cancelling autoboot.
+This does not establish automatic power-on disk boot or hardware compatibility.
+
+### Matched loaded COPY
+
+Fresh SYS/WORK images contain the same 23,872 source bytes, identical 16 KiB
+COPY command binary and 512-block cache budget. Both builds use actionc
+`6510ea1d148c93edea595be8a5afa9630d5a75e3` and the same pinned emulator,
+AltirraOS ROM, BIOS, ATA-master configuration and timing. The frozen pre-refactor
+snapshot is a development comparison input only. Command loading is excluded:
+the interval runs from COPY's source Open through destination Close. Private
+observers count actual ATA command sites and successful filesystem verification;
+independent persisted-content/allocation audits pass.
+
+| Measurement | Packed 256-byte baseline | Native 512-byte sectors |
+| --- | ---: | ---: |
+| PAL frames | 505 | 196 |
+| Guest seconds | 10.10 | 3.92 |
+| ATA reads | 317 | 115 |
+| ATA writes | 108 | 61 |
+| Preparation reads | 108 | 0 |
+| Verification reads | 108 | 61 |
+| Verified writes | 108 | 61 |
+| ATA flushes | 0 | 0 |
+
+This instrumented emulator case is about 2.58× faster. Every write still has
+one verification read; the pinned emulated medium advertises no volatile cache,
+so neither case needs a flush. Cached-device successful FLUSH and physical
+hardware speed remain outside this evidence.
+
+Evidence: `build/development/ide-512/i512-4/`, including `copy-before/`,
+`copy-after-same-profile/`, firmware results, extracted cartridge/mixed checks,
+capacity records and the two `exec816-demo.zip` packages. The full host suite
+passes **427 tests**; validation remains the development tier, not release or
+hosted-platform qualification. Relative to the earlier matching IDE-only demo,
+optimized resident routine code changes from 956,160 to 956,133 bytes (-27),
+and compressed native XEX from 304,107 to 303,735 bytes (-372). The shared
+upper-buffer allocation increase remains +1,536 bytes. Existing worker stack,
+DP and guard reservations are unchanged; both packaged IDE worker call bounds
+remain 730/1,024 bytes. Runtime bank-zero reservation change: **0 fixed,
+0 per-Task and 0 idle bytes**, including guards/alignment/unused capacity.

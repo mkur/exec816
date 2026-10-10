@@ -83,12 +83,13 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
-- [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md): planned
+- [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md): completed
   I512-0–I512-4 slices replacing packed IDE sectors with direct 512-byte SDFS
   volumes, shared buffer/cache support and firmware-loader verification.
 - [IDE-only SYS: and WORK:](ide-only-demo-implementation-plan.md): ID0–ID4 and
   ID6 implemented for a separate build without the Exec SIO driver, two APT
-  partitions and OF816/XEX/cart packaging; ID5 firmware XEX handoff remains open.
+  partitions and OF816/XEX/cart packaging; the native-512 refactor closes ID5
+  firmware XEX handoff for the pinned emulator setup.
 - [IDE Plus 2.0 block driver](ideplus-block-driver-implementation-plan.md):
   IP0–IP6 implemented at the development tier: a transport-independent block
   adapter, native ATA reads, APT partitions, filesystem mounting, verified writes

@@ -9,7 +9,7 @@ its vendor firmware is not included here. Physical hardware is unqualified.
 Back up ideplus.img before experimenting. Attach it as a writable raw IDE
 master disk; do not attach system/work ATRs. The 4 MiB image contains two
 720 KiB SpartaDOS partitions: unit 1 SYSTEM/SYS is read-only, unit 2 WORK
-is writable. SYS protection is recorded in both the APT and Exec mount.
+is writable. Each partition has 1,440 uniform 512-byte sectors. SYS protection is recorded in both the APT and Exec mount.
 All D1-D8 floppy slots can stay empty. This kernel excludes sio.device.
 
 Boot Exec-of816.xex externally or select a matching old/new Atarimax cart
@@ -18,8 +18,10 @@ five seconds. Return cancels the countdown; EXEC816 resumes loading.
 CACHE-BLOCKS! and BOOT-VERBOSE! remain available. SYSTEM-DRIVE@ returns
 zero and SYSTEM-DRIVE! rejects changes: SYS is fixed at IDE unit 1.
 EXEC816.XEX on SYS is byte-identical to the external combined boot XEX.
-The pinned IDE BIOS menu loader currently cannot access partition 1;
-boot this preview from its cartridge or externally loaded XEX.
+The pinned BIOS 2.1 menu can also launch SYS:EXEC816.XEX: hold START on
+reset, B, 1, Return, L; select EXEC816.XEX with Atari cursor keys and
+press Return. Release Return promptly to preserve the OF816 countdown.
+This route has development emulator coverage with the pinned firmware.
 Automatic power-on filesystem bootstrap is outside this profile.
 
 Try DEVICES, MOUNT, HELP, C:HELLO and MORE SYS:STORY.TXT.

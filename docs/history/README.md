@@ -25,7 +25,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 - [IDE Plus block driver](ideplus-block-driver.md): transport separation and native ATA development evidence.
 - [IDE-only demo](ide-only-demo.md): IDE system-volume selection and separate-profile development evidence.
 - [IDE 512-byte sector refactor](ide-512-sector-refactor.md): independent media,
-  shared buffers/cache and native-sector implementation evidence by slice.
+  reads/writes, shared cache, matched COPY measurements and real BIOS handoff.
 
 - [RAM filesystem](ram-filesystem.md): shared-worker backend, dynamic storage,
   allocation failures, command integration and memory costs.

@@ -1,14 +1,16 @@
 # IDE-only SYS: and WORK: implementation plan
 
-Status: ID0–ID4 and ID6 are implemented and checked. ID5 remains open
-after the pinned BIOS declined IDE unit 1 before loading. See the
+Status: ID0–ID4 and ID6 were implemented and checked on packed media. The
+original ID5 outcome was a BIOS rejection before loading. See the
 [development record](../history/ide-only-demo.md). This is a separate build
 profile following the completed
 [IDE Plus driver plan](ideplus-block-driver-implementation-plan.md).
 
 The [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md) supersedes
-this plan's packed 256-byte media geometry. It is planned, not implemented;
-the original execution record and open ID5 handoff gate remain unchanged.
+this plan's packed 256-byte geometry. It is now implemented; the new real BIOS
+XEX/OF816/kernel check closes ID5 for the pinned native-512 layout. The original
+execution record below remains historical. See the
+[current development record](../history/ide-512-sector-refactor.md).
 
 Follow the [platform contract](../reference/platform.md),
 [contributor instructions](../../AGENTS.md) and

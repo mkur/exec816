@@ -34,13 +34,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'The shell-only text demo is a standalone boot selection')
     shell_only=bitmap_shell_only or text_shell_only
     require(system_kib in (360,720),'System disk must be 360 or 720 KiB')
+    if ide_only:
+        sector_bytes=512
     system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
     require(not release_compiler or not bitmap_shell_only,
             'The explicit release compiler option currently supports standard-console builds')
     require(not (ideplus and ide_only),'Select mixed IDE or IDE-only storage')
-    require(not ide_only or (text_shell_only and filesystem=='sdfs' and sector_bytes==256 and system_kib==720),
-            'IDE-only requires --text-shell-only and 720 KiB SDFS with 256-byte sectors')
+    require(not ide_only or (text_shell_only and filesystem=='sdfs' and system_kib==720),
+            'IDE-only requires --text-shell-only and 720 KiB SDFS; IDE sectors are always 512 bytes')
     require(not ideplus or text_shell_only,
             'The initial IDE development profile requires --text-shell-only')
     toolchain=compiler(compiler_dir,release=release_compiler)
@@ -104,17 +106,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     if ideplus:
         mounts.append(dict(alias='IDE',device='ideplus.device',unit=2,profile=0,
-                           sectors=system_sectors,sector_bytes=sector_bytes,
-                           format=1 if filesystem=='mydos' else 2,access='readonly'))
+                           sectors=system_kib*1024//512,sector_bytes=512,
+                           format=2,access='readonly'))
     if ide_only:
         mount_config['system_mount']='SYSTEM'
         mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,format=2,
-                     sectors=2880,sector_bytes=256,access='readonly'),
+                     sectors=1440,sector_bytes=512,access='readonly'),
                 dict(alias='WORK',device='ideplus.device',unit=2,profile=0,format=2,
-                     sectors=2880,sector_bytes=256,access='readwrite'),
+                     sectors=1440,sector_bytes=512,access='readwrite'),
                 dict(alias='RAM',format=3)]
         (workspace/'README.TXT').write_text('Disposable IDE WORK: partition.\nBack up ideplus.img before experimenting.\n')
-        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=256,sectors=2880)
+        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440)
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
@@ -172,11 +174,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if ideplus:
         from ideplus_media import filesystem_fixture
         fixture=output/'ideplus';fixture.mkdir(exist_ok=True)
-        raw,mapping=filesystem_fixture((output/disk_name).read_bytes())
+        make(fixture/'system.atr',media,binary_names=binary_names,filesystem='sdfs',
+             sector_bytes=512,sectors=system_kib*1024//512)
+        raw,mapping=filesystem_fixture((fixture/'system.atr').read_bytes())
         (fixture/'ideplus.img').write_bytes(raw)
         (fixture/'mounts.json').write_text(json.dumps(dict(system_mount=mount_config.get('system_mount'),mounts=mounts),indent=2)+'\n')
         (fixture/'fixture.json').write_text(json.dumps(dict(mapping=mapping,
             image_sha256=sha256(fixture/'ideplus.img'),system_sha256=sha256(output/disk_name),
+            ide_system_sha256=sha256(fixture/'system.atr'),
             pin='toolchain/altirra-ideplus.json',access='readonly'),indent=2)+'\n')
         (fixture/'README.txt').write_text('IDE Plus disposable development disk\n\n'
             'Attach ideplus.img as ATA master on IDE Plus 2.0 revision E, PBI ID 0.\n'
@@ -345,7 +350,7 @@ def finalize_ide_media(output,record):
     (output/'media/EXEC816.XEX').write_bytes(xex)
     binary_names={'C/'+name for name in record['commands']}|{'EXEC816.XEX'}
     files=make(output/'system.atr',output/'media',binary_names=binary_names,
-               filesystem='sdfs',sector_bytes=256,sectors=2880)
+               filesystem='sdfs',sector_bytes=512,sectors=1440)
     record['files']['EXEC816.XEX']=dict(bytes=len(xex),sha256=hashlib.sha256(xex).hexdigest())
     record['ide_mapping']=write(output/'ideplus.img',output/'system.atr',output/'work.atr')
     for name in ('system.atr','system.verification.json','ideplus.img'):
@@ -370,9 +375,23 @@ def refresh_monitor(output):
             'Rebuild the native demo first: current loader callbacks are required')
     path=output/'demo-manifest.json'
     record=json.loads(path.read_text())
+    require(not record.get('ide_only') or record['sector_bytes']==512,
+            'Rebuild the native IDE demo for 512-byte geometry before refreshing')
+    require(not record.get('ideplus') or all(m['sector_bytes']==512 for m in
+            record['mounts'] if m.get('device')=='ideplus.device'),
+            'Rebuild the mixed IDE demo for 512-byte geometry before refreshing')
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
     if record.get('ide_only'):
+        guide=ROOT/'docs/ide-only-distribution.txt'
+        (output/'README.md').write_text(guide.read_text())
+        record['artifacts']['README.md']=sha256(output/'README.md')
+        record['source_inputs']['docs/ide-only-distribution.txt']=sha256(guide)
+        record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
+            native_build_sha256=sha256(output/'build.json'),
+            source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in (
+                Path(__file__),ROOT/'tools/build_of816.py',guide)})
+        path.write_text(json.dumps(record,indent=2)+'\n')
         build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
         finalize_ide_media(output,record)
         package(output/'of816',output/record['distribution'],text_shell=output)
@@ -415,6 +434,11 @@ def refresh_loader(output):
     output=output.resolve()
     program=read_build(output)
     record=json.loads((output/'demo-manifest.json').read_text())
+    require(not record.get('ide_only') or record['sector_bytes']==512,
+            'Rebuild the native IDE demo for 512-byte geometry before refreshing')
+    require(not record.get('ideplus') or all(m['sector_bytes']==512 for m in
+            record['mounts'] if m.get('device')=='ideplus.device'),
+            'Rebuild the mixed IDE demo for 512-byte geometry before refreshing')
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
     require(sha256(output/'program.a816.json')==program['build']['image_sha256'],

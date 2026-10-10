@@ -3,7 +3,9 @@
 The filesystem adapter keeps recently read sectors in upper RAM, shared by
 MyDOS and SDFS, all mounts and all open handles. File closes and command exits
 preserve the cache. It defaults to **512 blocks of 128 bytes: 64 KiB payload**.
-A 256-byte sector occupies two blocks; a hit requires both halves.
+A 128-, 256- or 512-byte sector occupies one, two or four blocks. A hit requires
+every piece before any destination bytes are copied. Part tags are zero-based;
+short floppy sectors continue using every cache set.
 
 Capacity is a boot setting: zero or powers of two from 16 through 2048 blocks.
 Zero retains only the existing scratch-sector buffer. If allocation fails,
@@ -17,13 +19,14 @@ full. Successful exact-length reads populate it; failures do not. Detach and
 transport errors drop the affected volume. A reset-required/offline SIO bus
 drops all retained blocks and still prevents filesystem access to cached data.
 Keep mounted media unchanged until unmount/remount; there is no automatic
-media-change detection, prefetch, write support or write-back.
+media-change detection, prefetch or write-back. Verified writes invalidate every
+piece first and cache only a complete successful replacement.
 
 ## Memory and lifetime
 
 At the default capacity, payload is 65,536 bytes. Twelve-byte tags add 6,144 bytes,
 and per-set replacement indices add 128, for 71,808 allocated bytes before the
-service's existing control/transfer storage. The 256-byte transfer buffer remains.
+service's existing control/transfer storage. The shared transfer buffer is 512 bytes.
 Cache storage is shared, not allocated per file or per Task, and adds no bank-zero
 reservation.
 

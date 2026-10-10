@@ -1,15 +1,15 @@
 # IDE 512-byte sector refactor
 
-Status: I512-0–I512-3 implemented with development checks; I512-4 packaging remains open.
+Status: I512-0–I512-4 implemented with development checks, including real BIOS XEX
+load through OF816 to the IDE shell. The pinned native-512 setup closes ID5.
 See the [development record](../history/ide-512-sector-refactor.md).
 This supersedes the IDE
 128/256-byte partition packing in the
 [IDE Plus driver plan](ideplus-block-driver-implementation-plan.md) and the
 media geometry in the [IDE-only demo plan](ide-only-demo-implementation-plan.md).
-Current behavior remains documented in the
+Current behavior is documented in the
 [IDE device](../reference/ideplus-device.md) and
-[SpartaDOS](../reference/spartados.md) contracts until the corresponding slices
-are implemented.
+[SpartaDOS](../reference/spartados.md) contracts.
 
 Follow the [platform contract](../reference/platform.md),
 [contributor instructions](../../AGENTS.md) and

@@ -2,6 +2,11 @@
 
 [Implementation plan](../plans/ide-only-demo-implementation-plan.md)
 
+The [native 512-byte refactor record](ide-512-sector-refactor.md) supersedes this
+record's packed IDE geometry and documents the successful real BIOS XEX load
+through OF816 to the IDE shell. The original measurements and outcomes below
+retain their historical scope.
+
 ## ID0 — IDE system volume
 
 System selection now admits a configured IDE mount, preserving its unit and
