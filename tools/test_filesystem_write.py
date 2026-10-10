@@ -33,7 +33,7 @@ def reuse(path):
 
 def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
         from_build=None, hint=0, fixture=None, cache_blocks=None, profile=4,
-        file_only=False):
+        file_only=False, device="sio.device"):
     require(140 <= amount <= 33000, 'Amount must be 140..33000')
     paths = bytearray(7 * 64)
     for index, name in enumerate(['WRITE.BIN', 'WRENAMED.BIN', 'WRITEDIR',
@@ -44,7 +44,9 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
     shutil.copyfile(fixture or ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr', media)
     before = Audit(media.read_bytes())
     getattr(before, filesystem)()
-    mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
+    ide=device=='ideplus.device'
+    if ide: profile=0
+    mounts = [dict(alias='D1',device=device, unit=2 if ide else 49, sectors=before.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
                    access='readwrite', profile=profile)]
     # Deferred console links desktop/fault strings beyond the base 2 KiB arena.
@@ -55,23 +57,35 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
     profile_path.write_text(json.dumps(memory_profile,indent=2)+'\n')
     program = reuse(from_build) if from_build else build(
                     toolchain, ROOT/'tests/programs/filesystem_write.act', output,
-                    optimize=mode == 'opt', tasks=True, dos_mounts=mounts,
+                    optimize=mode == 'opt', tasks=True, task_capacity=8 if ide else 4, dos_mounts=mounts,
                     console_deferred=True, memory_profile=profile_path,
                     image_data=[(0x2d1000, bytes(paths)),
                                 (0x30ffd0, bytes([0xa5])*(CAPACITY+64))])
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     binary = ROOT/'build/altirra-sio-multi'
-    with emulator(binary, ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-        configuration = {**PIN['configuration'],
-                         'diskemu': {1:'fastest', 2:'810', 4:'generic56k'}[profile]}
+    pin=PIN
+    if ide:
+        from test_ideplus import ide_emulator, PIN as IDE_PIN
+        from ideplus_media import filesystem_fixture,filesystem_atr,put_sector
+        pin=IDE_PIN
+        template=media.read_bytes()
+        raw,mapping=filesystem_fixture(template,readonly=False)
+        physical_media=output/'disk.img'
+        physical_media.write_bytes(raw)
+        session=ide_emulator(output,physical_media,writable=True)
+    else:
+        session=emulator(binary, ROOT/'build/firmware/altirraos-816.rom', output, pin=pin)
+    with session as bridge:
+        configuration = {**pin['configuration'],
+                         'diskemu': 'generic56k' if ide else {1:'fastest', 2:'810', 4:'generic56k'}[profile]}
         if fast_media:
             configuration['accuratedisk'] = False
         for key, value in configuration.items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
-        machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
+        machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', pin)
 
         def before_run(bridge):
-            bridge.mount(0, str(media))
+            if not ide: bridge.mount(0, str(media))
             if cache_blocks is not None:
                 boot=program['build']['memory']['boot_config']
                 bridge.memload(boot['address']+boot['abi']['fields']['cache_blocks'],
@@ -131,7 +145,17 @@ def run(toolchain, output, mode, filesystem, size, amount, fast_media=False,
         layouts = data(bridge, program['image'], 'layouts', True)
         time.sleep(3)
         bridge.regs()
-        bridge._cmd_ok('EJECT drive=0')
+        if not ide: bridge._cmd_ok('EJECT drive=0')
+    if ide:
+        persisted=physical_media.read_bytes()
+        restored=filesystem_atr(persisted,mapping,template)
+        oracle=bytearray(raw)
+        from mydos_fixtures import Image
+        logical=Image(restored)
+        for sector in range(1,logical.count+1):
+            put_sector(oracle,mapping['start'],mapping['mode'],mapping['size'],sector-1,logical.sector(sector))
+        require(persisted==oracle,'Physical padding, short boot tails or metadata leader changed')
+        media.write_bytes(restored)
     after = Audit(media.read_bytes())
     report = getattr(after, filesystem)()
     expected = dict(before.files)

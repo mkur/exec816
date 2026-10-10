@@ -1,0 +1,81 @@
+MODULE IDEPLUSWRITETEST
+USE EXEC
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE HEAPCORE
+CARD checks
+BYTE protected,expectedError
+PROC Require(BYTE okay)
+  IF okay=0 THEN HEAPCORE.Abort($f900+(checks & 255)) FI
+  checks==+1
+RETURN
+
+; A short boot prefix must preserve both its tail and its packed neighbour.
+PROC Change(EXEC.IOStdReq POINTER request CARD length BYTE unit,sector,seed)
+  CARD index
+  request.io_Data=BYTE POINTER($2dfff0)
+  request.io_Length=LONGCARD(length)
+  request.io_Offset=LONGCARD(sector)
+  request.io_Command=IDEPLUS.WRITE_SECTOR
+  FOR index=0 TO length-1 DO request.io_Data(index)=BYTE(index) XOR seed XOR unit OD
+  LET error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  IF expectedError<>0 THEN
+    Require(error=INT(expectedError) AND request.io_Actual=0)
+    Require(IDEPLUSDRIVER.Unavailable()<>0)
+  ELSEIF protected<>0 THEN
+    Require(error=IDEPLUS.ERROR_PROTECTED AND request.io_Actual=0)
+  ELSE
+    Require(error=0 AND request.io_Actual=LONGCARD(length))
+    request.io_Command=IDEPLUS.READ_SECTOR
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    FOR index=0 TO length-1 DO Require(request.io_Data(index)=(BYTE(index) XOR seed XOR unit)) OD
+  FI
+RETURN
+
+PROC Main()
+  BYTE unit
+  IDEPLUS.Geometry geometry
+  LET before=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
+  Require(port<>NULL AND request<>NULL)
+  LET name=BYTE POINTER(ADDRESS(IDEMETA.NAME))
+  IF expectedError<>0 THEN
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)=0)
+    Change(request,128,2,1,$a7)
+    EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+    IDEPLUSDRIVER.Stop()
+    Require(IDEPLUSDRIVER.State()=5)
+    Require(EXEC.OpenDevice(name,2,EXEC.IORequest POINTER(request),0)=IDEPLUS.ERROR_OFFLINE)
+  ELSE
+  FOR unit=2 TO 9 DO
+    Require(EXEC.OpenDevice(name,LONGCARD(unit),EXEC.IORequest POINTER(request),0)=0)
+    request.io_Command=IDEPLUS.GET_GEOMETRY
+    request.io_Data=BYTE POINTER(@geometry)
+    request.io_Length=SIZEOF(IDEPLUS.Geometry)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require((geometry.flags & IDEPLUS.FLAG_DURABLE)<>0)
+    Require(((geometry.flags & IDEPLUS.FLAG_READONLY)<>0)=(protected<>0))
+    Change(request,geometry.bytes,unit,0,$6c)
+    Change(request,128,unit,1,$a7)
+    request.io_Command=EXEC.CMD_UPDATE
+    request.io_Length=0
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  OD
+  Require(EXEC.OpenDevice(name,0,EXEC.IORequest POINTER(request),0)=0)
+  request.io_Command=IDEPLUS.WRITE_SECTOR
+  request.io_Length=512
+  request.io_Offset=0
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=IDEPLUS.ERROR_PROTECTED)
+  Require(request.io_Actual=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  IDEPLUSDRIVER.Stop()
+  Require(IDEPLUSDRIVER.State()=0)
+  FI
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before)
+RETURN
+ENDMODULE

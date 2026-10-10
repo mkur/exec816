@@ -1,7 +1,7 @@
 # IDE Plus 2.0 block driver implementation plan
 
-Status: implementation in progress. IP0–IP3 are implemented;
-IP4–IP6 remain pending. See the [development record](../history/ideplus-block-driver.md).
+Status: implementation in progress. IP0–IP4 are implemented;
+IP5–IP6 remain pending. See the [development record](../history/ideplus-block-driver.md).
 
 Follow the [contributor instructions](../../AGENTS.md),
 [platform contract](../reference/platform.md),

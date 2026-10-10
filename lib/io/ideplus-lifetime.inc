@@ -11,6 +11,10 @@ PROC Reap(DriverBus POINTER bus)
     IF bus.worker.tc_State=EXEC.TS_REMOVED THEN
       bus.worker=EXEC.Task POINTER(0)
       bus.state=0
+      BEGIN
+        LET c=Control()
+        IF c.offline<>0 THEN bus.state=5 FI
+      END
       bus.stop=0
     FI
   FI
@@ -217,7 +221,7 @@ PUBLIC PROC Stop()
   EXEC.Forbid()
   bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   Reap(bus)
-  IF bus.state=0 THEN
+  IF bus.worker=NULL THEN
     EXEC.Permit()
     RETURN
   FI
@@ -242,7 +246,7 @@ PUBLIC PROC Stop()
   DO
     WaitChange(bus,@waiter)
     Reap(bus)
-  UNTIL bus.state=0 OR bus.generation<>generation
+  UNTIL bus.worker=NULL OR bus.generation<>generation
   OD
 
   FreeWaiter(@waiter)

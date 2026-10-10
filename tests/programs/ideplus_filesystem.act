@@ -5,6 +5,7 @@ USE FSBOOT
 USE HEAPCORE
 CARD checks,count
 LONGINT lastError
+BYTE failWrite,failAdmission
 BYTE ARRAY buffer(257)
 DOS.FileInfoBlock info
 
@@ -25,6 +26,12 @@ PROC Main()
   CARD POINTER fields
   DOS.FileHandle POINTER file
 
+  IF failAdmission<>0 THEN
+    file=DOS.Open(BYTE POINTER($2d1000),DOS.MODE_OLDFILE)
+    Require(file=NULL)
+    Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+    RETURN
+  FI
   FOR index=0 TO count-1 DO
     row=BYTE POINTER($2d1000)+SIZE(index)*72
     fields=CARD POINTER(row+64)
@@ -54,14 +61,26 @@ PROC Main()
   OD
 
   BEGIN
+    IF failWrite=0 THEN
+    BEGIN
     LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
     lastError=DOS.IoErr()
     Require(lock<>NULL)
     Require(DOS.Examine(lock,@info)<>0)
     Require(DOS.ExNext(lock,@info)<>0)
     DOS.UnLock(lock)
+    END
+    FI
     LET denied=DOS.Open(BYTE POINTER(c"IDE:FORBID.TXT"),DOS.MODE_NEWFILE)
     Require(denied=NULL)
+    IF failWrite<>0 THEN
+      Require(DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)=NULL)
+      lastError=DOS.IoErr()
+      Require(lastError=3)
+      file=DOS.Open(BYTE POINTER(c"D1:APPEND.BIN"),DOS.MODE_OLDFILE)
+      Require(file<>NULL AND DOS.Read(file,buffer,17)=17)
+      Require(DOS.Close(file)<>0)
+    FI
     LET ram=DOS.Open(BYTE POINTER(c"RAM:LIVE.TXT"),DOS.MODE_NEWFILE)
     Require(ram<>NULL)
     Require(DOS.Write(ram,BYTE POINTER(c"RAM is alive"),12)=12)

@@ -114,7 +114,8 @@ PUBLIC INT FUNC CheckGeometry(BLOCKTYPES.Volume POINTER volume BYTE POINTER buff
       LET geometry=IDEPLUS.Geometry POINTER(buffer)
       IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) OR geometry.bytes<>volume.dataBytes
           OR geometry.sectors<>volume.sectors THEN error=EXEC.IOERR_BADLENGTH
-      ELSEIF volume.access<>0 THEN error=IDEPLUS.ERROR_PROTECTED
+      ELSEIF volume.access<>0 AND ((geometry.flags & IDEPLUS.FLAG_READONLY)<>0
+          OR (geometry.flags & IDEPLUS.FLAG_DURABLE)=0) THEN error=IDEPLUS.ERROR_PROTECTED
       FI
     END
   FI

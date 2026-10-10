@@ -42,7 +42,7 @@ TYPE Controller=[
   EXEC.MsgPort POINTER timerPort
   TIMER.TimerClockRequest POINTER timer
   LONGCARD physical
-  BYTE irq,status,error,owned,signals,resident,apt
+  BYTE irq,status,error,owned,signals,resident,apt,durable,offline
 ]
 INCLUDE "ideplus-lifetime.inc"
 
@@ -103,6 +103,9 @@ RETURN
 PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   request.io_Flags=request.io_Flags & $fe
+  IF request.io_Message.mn_Length>=EXEC.IOSTDREQ_SIZE THEN
+    EXEC.IOStdReq POINTER(request).io_Actual=0
+  FI
   IF request.io_Message.mn_Length<EXEC.IOSTDREQ_SIZE THEN
     request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
   ELSEIF bus.state=5 THEN
@@ -121,7 +124,7 @@ PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
   IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_MESSAGE THEN RETURN FI
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   IF bus.active=request THEN
-    bus.cancelled=1
+    IF bus.phase<>3 THEN bus.cancelled=1 FI
     RETURN
   FI
   EXECLISTS.Remove(@request.io_Message.mn_Node)
@@ -240,9 +243,11 @@ BYTE FUNC Identify()
   unit.physical=c.physical
   unit.sectors=c.physical
   unit.enabled=1
+  c.durable=Durability(words)
 RETURN(0)
 
 INCLUDE "ideplus-apt.inc"
+INCLUDE "ideplus-write.inc"
 
 ; Acquire timer, buffer and board ownership before publishing readiness.
 BYTE FUNC HardwareInit()
@@ -281,6 +286,7 @@ BYTE FUNC HardwareInit()
     FI
     IF c.error=IDEPLUS.ERROR_TIMEOUT OR c.error=IDEPLUS.ERROR_ABSENT THEN error=c.error FI
   FI
+  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT THEN c.offline=1 FI
 RETURN(error=0)
 
 ; Retire every borrowed resource before releasing the resident Task lease.
@@ -288,7 +294,7 @@ PROC HardwareStop()
   BYTE okay
   LET c=Control()
   IF c.owned<>0 THEN
-    IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,c.irq)
+    IF c.offline=0 THEN IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_IRQ,c.irq) FI
     c.owned=0
   FI
   IF c.timer<>NULL THEN
@@ -338,17 +344,29 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
       BEGIN
         LET result=IDEPLUS.Geometry POINTER(request.io_Data)
         result.bytes=unit.bytes
-        result.flags=IDEPLUS.FLAG_READONLY
+        result.flags=AccessFlags(unit)
         result.sectors=unit.sectors
         result.generation=bus.generation
         request.io_Actual=SIZEOF(IDEPLUS.Geometry)
       END
     FI
-  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR THEN
+  ELSEIF request.io_Command=EXEC.CMD_UPDATE THEN
+    IF request.io_Length<>0 THEN
+      error=BYTE(EXEC.IOERR_BADLENGTH)
+    ELSE
+      EXEC.Forbid()
+      IF c.durable=2 THEN bus.phase=3 FI
+      EXEC.Permit()
+      error=FlushPhysical()
+    FI
+  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR AND request.io_Command<>IDEPLUS.WRITE_SECTOR THEN
     error=BYTE(EXEC.IOERR_NOCMD)
   ELSEIF (request.io_Length<>LONGCARD(unit.bytes) AND (unit.number=0 OR unit.bytes<>256
       OR request.io_Offset>=3 OR request.io_Length<>128)) OR request.io_Offset>=unit.sectors THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
+  ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR THEN
+    error=WriteLogical(unit,request)
+    IF error=0 THEN request.io_Actual=request.io_Length FI
   ELSE
     EXEC.Forbid()
     bus.phase=2
@@ -368,7 +386,11 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
   FI
   EXEC.Forbid()
-  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT THEN bus.state=5 FI
+  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT
+      OR (bus.phase=3 AND error<>0) THEN
+    bus.state=5
+    c.offline=1
+  FI
   request.io_Error=error
   bus.active=NULL
   bus.phase=0

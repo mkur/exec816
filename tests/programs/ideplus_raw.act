@@ -49,7 +49,7 @@ PROC Main()
     request.io_Length=SIZEOF(IDEPLUS.Geometry)
     Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
     Require(geometry.bytes=512 AND geometry.sectors=8192)
-    Require(geometry.flags=IDEPLUS.FLAG_READONLY AND geometry.generation=1)
+    Require((geometry.flags & IDEPLUS.FLAG_READONLY)<>0 AND geometry.generation=1)
     request.io_Data=BYTE POINTER($2dfff0)
     request.io_Command=IDEPLUS.READ_SECTOR
     request.io_Length=512
@@ -65,7 +65,7 @@ PROC Main()
     Require(request.io_Actual=0)
     request.io_Offset=7
     request.io_Command=IDEPLUS.WRITE_SECTOR
-    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_NOCMD)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=IDEPLUS.ERROR_PROTECTED)
     EXEC.CloseDevice(EXEC.IORequest POINTER(request))
     Require(progress<>0)
     done=1

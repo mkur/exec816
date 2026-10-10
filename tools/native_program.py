@@ -471,7 +471,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             operation=name.split('.')[1]
             label='ideplus_'+{'ReadRegister':'read_register','WriteRegister':'write_register',
                              'ReadWords':'read_words','WriteWords':'write_words'}[operation]
-            peak=9
+            peak=23 if heap_probe else 9
             result='None'
             if operation in ('ReadRegister','WriteRegister'):
                 arguments=[dict(alignment=2,offset=0,size=2)]
@@ -988,7 +988,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'platform/altirraos/native-interrupts.inc','platform/altirraos/ports-atomic.s',
                 'platform/altirraos/interrupt-work.s',
                 'abi/ideplus.json','tools/generate_ideplus.py','lib/io/ideplus.act','lib/io/ideplusdriver.act',
-                'lib/io/ideplus-lifetime.inc','lib/io/ideplus-apt.inc','lib/io/ideplusnative.act','platform/altirraos/ideplus.s','platform/altirraos/ideplus.inc',
+                'lib/io/ideplus-lifetime.inc','lib/io/ideplus-apt.inc','lib/io/ideplus-write.inc','lib/io/ideplusnative.act','platform/altirraos/ideplus.s','platform/altirraos/ideplus.inc',
                 'abi/timer-device.json','tools/generate_timer_device.py','lib/io/timer.act',
                 'lib/io/timer-types.inc','lib/io/timernative.act','lib/io/timerdriver.act',
                 'platform/altirraos/timer-device.inc','platform/altirraos/timer-device.s',

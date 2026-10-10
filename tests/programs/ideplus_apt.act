@@ -34,7 +34,7 @@ PROC Main()
         request.io_Length=SIZEOF(IDEPLUS.Geometry)
         Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
         Require(geometry.bytes=(IF unit<6 THEN CARD(128) ELSE CARD(256) FI))
-        Require(geometry.sectors=4 AND geometry.flags=IDEPLUS.FLAG_READONLY)
+        Require(geometry.sectors=4 AND (geometry.flags & IDEPLUS.FLAG_READONLY)<>0)
         request.io_Data=BYTE POINTER($2dfff0)
         FOR sector=0 TO 3 DO
           request.io_Command=IDEPLUS.READ_SECTOR

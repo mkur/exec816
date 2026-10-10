@@ -95,3 +95,30 @@ reject creation on read-only media, write RAM: and retire all ownership. The
 APT and SIO images remain byte-exact. Eight existing and two IDE mount-source
 host checks pass. Evidence: `build/development/ideplus-ip3/{mydos,sdfs}/`.
 This is focused development coverage, not a release qualification.
+
+## IP4 — verified writes
+
+Mapped WRITE_SECTOR uses one serialized physical RMW/flush/verify operation.
+Durability is admitted for cache-free IDENTIFY or advertised FLUSH CACHE;
+protection and unsafe durability reject writable admission. Cancellation stops
+preparing writes; accepted writes finish or become permanently offline. IRQ
+ownership is retained on uncertain failure until cold reset.
+
+Optimized emitted sector checks cover all eight size/packing combinations,
+short boot prefixes, raw/APT protection, CMD_UPDATE and accepted ATA write
+failure. Independent whole-media comparisons preserve neighbours, padding,
+leaders and tables. Persisted MyDOS and SpartaDOS checks cover create/readback,
+overwrite, append, truncate, empty files, rename/delete, directories and remount;
+SpartaDOS crosses 16 KiB allocation/map boundaries. Evidence:
+`build/development/ideplus-ip4/{sectors,filesystems}/`.
+
+The emulator advertises no volatile write cache. These successful-write checks
+exercise cache-free durability; they do not qualify successful FLUSH on physical
+cached media. Flush/verify fault injection and cancellation follow in IP5.
+
+Reserved bank-zero delta: **0 fixed / 0 per Task / 0 idle bytes**, including
+all guards, alignment and unused pool capacity. No extra physical buffer or
+metadata reservation was introduced. Observed IDE worker stack use is 313 bytes
+in the persisted filesystem cases, with natural VBI and intact guards; this is
+an observed lower bound, not a complete call-depth proof. The full bound is
+recorded with IP5.

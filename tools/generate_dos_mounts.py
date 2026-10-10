@@ -39,7 +39,6 @@ def validate_mounts(mounts):
         else:
             require(1<=spec['unit']<=15,'IDE unit must be 1..15')
             require(spec['profile']==0,'IDE does not use SIO timing profiles')
-            require(spec['access']=='readonly','IDE writable mounts unavailable')
         require(1<=spec['sectors']<=65535,'Geometry must have 1..65535 sectors')
         if spec['format']==MYDOS: require(spec['sectors']>=368,'MyDOS needs at least 368 sectors')
         require(spec['sector_bytes'] in (128,256),'Data sectors must be 128 or 256 bytes')

@@ -10,8 +10,9 @@ class IDEMounts(unittest.TestCase):
         wire=encode([self.spec]);self.assertEqual(len(wire),46);self.assertEqual(wire[45],1)
         sio=dict(alias='D1',unit=49,sectors=2000,sector_bytes=256)
         self.assertEqual(encode([sio])[45],0)
+        self.assertEqual(encode([{**self.spec,'access':'readwrite'}])[44],1)
     def test_operational_limits(self):
-        for patch in [dict(unit=0),dict(unit=16),dict(profile=4),dict(sector_bytes=512),dict(access='readwrite'),dict(sectors=65536)]:
+        for patch in [dict(unit=0),dict(unit=16),dict(profile=4),dict(sector_bytes=512),dict(sectors=65536)]:
             with self.subTest(patch=patch),self.assertRaises(ValueError):validate_mounts([{**self.spec,**patch}])
         with self.assertRaises(ValueError):select_system(validate_mounts([self.spec]),'IDE')
         with self.assertRaises(ValueError):validate_mounts([self.spec,{**self.spec,'alias':'OTHER'}])

@@ -20,7 +20,7 @@ def get_sector(media,start,mode,size,logical,length=None):
     physical=start+(logical//2 if mode in (1,3) else logical)
     return bytes(media[physical*512+container_index(mode,logical,i,size)] for i in range(length or size))
 
-def pattern_fixture(even=False,mbr=False,chained=False):
+def pattern_fixture(even=False,mbr=False,chained=False,readonly=True):
     media=bytearray([0x96])*(8192*512)
     # Boot unit D1 is deliberately empty. Test units D2..D9 cover all packings.
     entries=[bytes(16)]
@@ -28,7 +28,7 @@ def pattern_fixture(even=False,mbr=False,chained=False):
     for size in (128,256):
         for mode in range(4):
             unit=len(entries)+1;start=64+unit*16;physical=2 if mode in (1,3) else 4
-            entry=struct.pack('<BBIIHBBH',mode*4+(1 if size==128 else 2),0,start,physical+1,unit,0x40,0,1)
+            entry=struct.pack('<BBIIHBBH',mode*4+(1 if size==128 else 2),0,start,physical+1,unit,0xc0 if readonly else 0x40,0,1)
             entries.append(entry);mappings.append(dict(unit=unit,start=start+1,mode=mode,size=size,sectors=4))
             for sector in range(4):
                 payload=bytes((i^sector^unit)&255 for i in range(size))
