@@ -3,7 +3,7 @@
 [Implementation plans](README.md) · [Design](ide-read-ranges-design.md) ·
 [Roadmap](../roadmap.md) · [Testing policy](../contributing/testing.md)
 
-Status: RR1–RR2 pass development checks; RR3–RR4 remain. See the
+Status: RR1–RR3 pass development checks; RR4 remains. See the
 [execution record](../history/ide-read-ranges.md).
 Implement and commit one executable slice at a time. The design
 sets the scope: at most four native 512-byte IDE sectors, shared staging,

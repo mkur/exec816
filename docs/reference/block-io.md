@@ -81,6 +81,11 @@ scratch. Failure publishes none and invalidates retained data for that volume.
 Availability is checked before hits, including with the cache disabled. SIO
 remains single-sector.
 
+The filesystem Workspace carries the admitted count alongside its needed sector
+until completion and consumption. Metadata and MyDOS requests set the count to
+one; SDFS selects bounded regular-file ranges from its current validated map.
+Operation startup, retirement and payload consumption reset the count to one.
+
 The filesystem service owns one reusable transfer request and 2048-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that
 binding without copying Message links and cannot reuse the request or buffer

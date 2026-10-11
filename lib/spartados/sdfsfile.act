@@ -9,6 +9,7 @@ USE FSBTYPES
 USE FSCORE
 USE BLOCKTYPES
 USE BLOCKIO
+USE BLOCKTRANSPORT
 INCLUDE "../dos/dos-types.inc"
 
 CONST TRAVERSING=3
@@ -59,6 +60,7 @@ PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER op LONGINT error)
   op.file.position=op.start
   op.result=-1
   op.stage=0
+  op.work.neededCount=1
   SDFS.Restart(op.file)
   SDFS.Invalidate(op.work)
 
@@ -139,6 +141,9 @@ BYTE FUNC Consume(FSBTYPES.Operation POINTER op BYTE sparse)
   sectorBytes=op.work.volume.block.dataBytes
   offset=CARD((op.start+op.completed) & LONGINT(sectorBytes-1))
   amount=sectorBytes-offset
+  IF sparse=0 AND op.work.neededCount>1 THEN
+    amount=sectorBytes*op.work.neededCount
+  FI
   IF LONGINT(amount)>op.remaining THEN
     amount=CARD(op.remaining)
   FI
@@ -153,12 +158,49 @@ BYTE FUNC Consume(FSBTYPES.Operation POINTER op BYTE sparse)
 
   op.completed==+LONGINT(amount)
   op.remaining==-LONGINT(amount)
+  op.work.neededCount=1
   op.stage=TRAVERSING
   IF op.remaining=0 THEN
     RETURN(FSCORE.FinishOperation(op))
   FI
 
 RETURN(FSSTATUS.MORE)
+
+; Group complete regular-file payloads within the already validated map page.
+CARD FUNC PayloadCount(FSBTYPES.Operation POINTER op BYTE POINTER map
+    CARD slot,sector)
+  CARD count,limit
+
+  IF op.work.volume.block.backend<>BLOCKTYPES.BACKEND_IDEPLUS
+      OR (op.file.entry.flags & FSBTYPES.DIR)<>0 OR op.file.entry.known=0
+      OR ((op.start+op.completed) & 511)<>0 THEN
+    RETURN(1)
+  FI
+
+  ; IDE geometry is uniformly 512 bytes. Bound the group once so each map
+  ; lookahead needs only the adjacency comparison, including on cache hits.
+  LET complete=op.remaining RSH 9
+  IF complete<2 THEN
+    RETURN(1)
+  FI
+  LET bytes=op.work.volume.block.dataBytes
+  LET available=(bytes-slot) RSH 1
+  limit=CARD(BLOCKTRANSPORT.ReadLimit(op.work.volume.block))
+  IF LONGINT(limit)>complete THEN
+    limit=CARD(complete)
+  FI
+  IF limit>available THEN
+    limit=available
+  FI
+  count=1
+  WHILE count<limit DO
+    IF LONGCARD(SDFS.Word(map,slot+count*2))<>LONGCARD(sector)+LONGCARD(count) THEN
+      EXIT
+    FI
+    count==+1
+  OD
+
+RETURN(count)
 
 ; Advance bounded map traversal until completion or another sector is needed.
 BYTE FUNC Drive(FSBTYPES.Operation POINTER op)
@@ -182,6 +224,7 @@ BYTE FUNC Drive(FSBTYPES.Operation POINTER op)
   FI
 
   IF SDFS.Cached(op.work,cursor.page)=0 THEN
+    op.work.neededCount=1
     op.work.neededSector=cursor.page
     op.stage=1
     RETURN(FSSTATUS.NEED_IO)
@@ -211,7 +254,9 @@ BYTE FUNC Drive(FSBTYPES.Operation POINTER op)
     RETURN(Consume(op,1))
   FI
 
+  op.work.neededCount=1
   op.work.neededSector=sector
+  op.work.neededCount=PayloadCount(op,state.map,slot,sector)
   op.stage=2
 
 RETURN(FSSTATUS.NEED_IO)
@@ -266,6 +311,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
       RETURN(FSSTATUS.DONE)
     FI
 
+    work.neededCount=1
     work.neededSector=file.entry.start
     RETURN(FSSTATUS.NEED_IO)
   FI
@@ -318,6 +364,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     RETURN(FSSTATUS.ERROR)
   FI
 
+  work.neededCount=1
   work.neededSector=cursor.page
 
 RETURN(FSSTATUS.NEED_IO)

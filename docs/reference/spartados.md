@@ -50,6 +50,15 @@ negative or past-EOF destinations, and leave the position unchanged on error.
 Length queries and rewind require no media I/O. A canceled read retains its
 already-transferred count and cursor position under the existing DOS rules.
 
+On IDE, aligned regular-file reads group up to four complete adjacent payload
+sectors from the current validated map. A group stops at the caller's requested
+extent, EOF, a hole, fragmentation, a retained cache sector or a map boundary.
+Partial sectors, directory/bootstrap reads and SIO remain single-sector.
+The shared 2048-byte BLOCKIO buffer stages the complete group; only successful
+exact-length completion makes it available to the consumer. BREAK is checked
+before consumption. A failed group supplies no application bytes from that
+group and retains the existing error/position rules.
+
 The filesystem worker owns one additional 512-byte map cache and 23-byte
 directory-record scratch in upper RAM, shared across mounts. Cache identity
 includes volume, generation and sector. Failed reads and retirement invalidate

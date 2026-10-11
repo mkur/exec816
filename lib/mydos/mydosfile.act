@@ -237,6 +237,7 @@ RETURN
 BYTE FUNC NeedSector(FSBTYPES.Operation POINTER op)
 
   LET chain=Chain(op.file)
+  op.work.neededCount=1
   op.work.neededSector=chain.sector
 
 RETURN(FSSTATUS.NEED_IO)
@@ -438,6 +439,7 @@ PUBLIC BYTE FUNC Measure(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     RETURN(FSSTATUS.DONE)
   FI
 
+  work.neededCount=1
   work.neededSector=chain.sector
 
 RETURN(FSSTATUS.NEED_IO)

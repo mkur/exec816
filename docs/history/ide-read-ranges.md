@@ -51,3 +51,29 @@ new ReadInto signature.
 Additional upper allocation is exactly 1536 bytes in the existing shared buffer.
 No record, controller buffer, cache arena, Task pool or per-handle allocation
 grows. Reserved bank-zero deltas remain 0 fixed / 0 per-Task / 0 idle bytes.
+
+## RR3 Filesystem range selection
+
+Workspace carries the admitted count beside its needed sector. All backends
+explicitly request one sector for metadata/MyDOS work; operation startup,
+retirement and payload consumption reset the count. SDFS groups only complete,
+aligned regular-file payloads from its current validated IDE map. It stops at
+request/EOF limits, holes, fragmentation and map boundaries, and the adapter
+shortens the group at retained sectors. Request/map bounds are computed once
+before looking ahead, avoiding repeated multiplication on warm cache hits.
+
+Focused optimized emitted checks use real 512-byte IDE media and an independently
+audited 130567-byte file. They cover contiguous, fragmented and sparse maps,
+map transitions, partial heads/tails, small requests, EOF, mixed cache state and
+disabled cache. Test-only completion injection supplies a terminal error after
+staging, or delivers foreground BREAK before the first/second group is consumed.
+The assertions check exact application bytes, results/IoErr, cursor position,
+retired request/packet ownership, subsequent reads, guards and unchanged media.
+The terminal-error case tests filesystem propagation; RR1 covers actual driver
+failures and active abort/draining. Small raw/optimized layout/access probes and
+the existing 256-byte SDFS fixture also pass. Host checks: 447 passed.
+
+Workspace grows from 172 to 174 bytes; both use a 176-byte rounded allocation.
+Combined extra upper reservation is therefore exactly 1536 bytes. No per-handle,
+per-mount, Task stack, DP, guard or pool reservation grows. Reserved bank-zero
+deltas remain 0 fixed / 0 per-Task / 0 idle bytes.

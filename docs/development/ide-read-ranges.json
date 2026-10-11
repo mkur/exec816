@@ -204,5 +204,544 @@
         "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
       }
     }
+  },
+  "rr3": {
+    "host_tests": 447,
+    "workspace": {
+      "old_bytes": 172,
+      "new_bytes": 174,
+      "old_reserved": 176,
+      "new_reserved": 176
+    },
+    "upper_total_delta": 1536,
+    "cases": {
+      "normal": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 277,
+            "remaining_above_floor": 1003
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/normal/results.json"
+      },
+      "fragmented": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/fragmented/results.json"
+      },
+      "sparse": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/sparse/results.json"
+      },
+      "no-cache": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 7,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/no-cache/results.json"
+      },
+      "failed": {
+        "status": "pass",
+        "checks": 4107,
+        "workspace_bytes": 174,
+        "range_completions": 0,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 275,
+            "remaining_above_floor": 1005
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/failed/results.json"
+      },
+      "break-first": {
+        "status": "pass",
+        "checks": 8210,
+        "workspace_bytes": 174,
+        "range_completions": 2,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/break-first/results.json"
+      },
+      "break-middle": {
+        "status": "pass",
+        "checks": 8210,
+        "workspace_bytes": 174,
+        "range_completions": 2,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/break-middle/results.json"
+      }
+    },
+    "layout": {
+      "raw": {
+        "status": "pass",
+        "image_sha256": "34f2246bdf6e01234d2aba499b97b2087ed36d9563ebd7f69ecbbee496fedc09",
+        "source_sha256": "6355486ff6118aba3e92173448ed886b10e59d09e47bb3c98e7a501161b24cbb"
+      },
+      "opt": {
+        "status": "pass",
+        "image_sha256": "5c308cb7703d46fec83e6d76e270597ed01f08005a0955dd272339c0095c9165",
+        "source_sha256": "6355486ff6118aba3e92173448ed886b10e59d09e47bb3c98e7a501161b24cbb"
+      }
+    },
+    "sdfs_256": {
+      "status": "pass",
+      "image_sha256": "bc816320e3bee25af747c4df5ec880be2bdbc6943c5ef9c96bc6928560658d83"
+    }
   }
 }

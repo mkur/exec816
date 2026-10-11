@@ -143,6 +143,7 @@ PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)
   work.error=0
   work.ioError=0
   work.volume.mounted=0
+  work.neededCount=1
   work.neededSector=1
   Invalidate(work)
 

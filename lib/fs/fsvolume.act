@@ -62,8 +62,10 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service)
     END
   FI
 
+  service.work.neededCount=1
   service.work.neededSector=1
   IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    service.work.neededCount=1
     service.work.neededSector=360
   FI
 
