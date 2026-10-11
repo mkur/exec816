@@ -3,10 +3,14 @@ Exec816 Atarimax boot images
 
 These images contain the exact matching XEX from this ZIP. OF816 still offers
 its five-second countdown before starting the selected Exec816 demo described
-in ../README.txt. Keep the matching system.atr mounted in D1 and a disposable
-copy of work.atr in D8 with writes enabled. Both disks are required during
-startup; the cartridge does not contain them.
-WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
+in ../README.txt. Attach the matching storage before booting; the cartridge
+contains the boot executable, while system and work files stay on disk.
+
+For SIO builds, mount system.atr in D1 and a disposable writable copy of
+work.atr in D8. WORK: has 2,880 sectors of 256 bytes (720 KiB nominal capacity).
+For IDE-only builds, attach a disposable writable copy of ideplus.img as ATA
+master on IDE Plus 2.0. It contains SYS and WORK partitions with 512-byte
+sectors. Leave the floppy slots empty and follow ../README.txt for setup.
 
 Use an Atarimax Maxflash 8 Mbit (1 MiB) cartridge. The 1 Mbit (128 KiB) model
 is too small for this boot image.
@@ -28,7 +32,7 @@ Booting
 
 Use the OS ROM, CPU, memory and disk settings described in ../README.txt.
 In AltirraSDL, boot the appropriate CAR instead of Exec-of816.xex. Keep the
-system disk mounted and BASIC disabled. A cold boot is required.
+matching storage attached and BASIC disabled. A cold boot is required.
 
 The loader switches the cartridge off before every XEX initialization call.
 OF816 runs inside one of those calls, before the main kernel payload loads.
@@ -45,6 +49,8 @@ SHA256SUMS in its parent directory covers all files.
 
 Experimental XLOS boot
 ----------------------
+
+The following XLOS checks and drive instructions concern SIO builds.
 
 Development checks also exercised Drac's XLOS 2.48 (December 2025), using the
 same CPU, memory, VBXE and disk settings. The bundled AltirraOS remains the

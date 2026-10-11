@@ -23,6 +23,16 @@ CALCULATOR_NOTICES = ('CALCULATOR-COPYING.txt','CALCULATOR-COPYING.LIB.txt',
                       'CALCULATOR-LICENSING.md','CALCULATOR-PROVENANCE.txt')
 
 
+def ide_only_guide(bitmap=False):
+    guide = (ROOT/'docs/ide-only-distribution.txt').read_text()
+    return guide.replace('@CONSOLE_REQUIREMENTS@',
+        'VBXE full FX core with private 512 KiB VRAM is also required. Exec detects\n'
+        '$D600 or $D700 and reports the core revision; the development baseline is\n'
+        '1.26, without requiring that exact revision.' if bitmap else
+        'The standard console uses the 40 by 24 Atari text display; VBXE is not required.'
+    ).replace('@CONSOLE_NAME@', '80 by 30 VBXE bitmap shell' if bitmap else 'standard shell')
+
+
 def pointer_description(profile):
     return {
         'mild': 'The pointer uses mild acceleration: slow movement gives one screen pixel\n'
@@ -74,8 +84,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             raise ValueError('Expected a shell-only text build')
         if demo['artifacts']['program.xex'] != record['exec_xex_sha256']:
             raise ValueError('OF816 does not wrap this text shell')
-        guide = (ROOT/('docs/ide-only-distribution.txt' if demo.get('ide_only') else
-                       'docs/text-shell-distribution.txt')).read_text()
+        guide = ide_only_guide() if demo.get('ide_only') else (ROOT/'docs/text-shell-distribution.txt').read_text()
     if bitmap_shell is not None:
         manifest = bitmap_shell/'demo-manifest.json'
         if hashlib.sha256(manifest.read_bytes()).hexdigest() != media['manifest_sha256']:
@@ -90,7 +99,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
             files[name] = content
-        guide = (ROOT/('docs/gem-desktop-distribution.txt' if demo.get('gem_desktop') else
+        guide = ide_only_guide(bitmap=True) if demo.get('ide_only') else (ROOT/('docs/gem-desktop-distribution.txt' if demo.get('gem_desktop') else
                        'docs/aes-input-distribution.txt' if demo.get('aes_input') else
                        'docs/aes-counter-distribution.txt' if demo.get('aes_counters') else
                        'docs/desktop-distribution.txt' if demo.get('desktop') else

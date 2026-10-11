@@ -110,8 +110,12 @@ python3 tools/build_demo.py --ide-only --text-shell-only --release-compiler \
 ```
 
 `--ide-only` excludes Exec's SIO driver and cannot be combined with `--ideplus`.
-The ZIP includes `ideplus.img`, the external combined OF816/kernel XEX, both
-Atarimax cartridge variants, pinned OS ROM, guide, notices and checksums.
+Select `--text-shell-only` for the standard console or `--bitmap-shell-only`
+for the 80 by 30 VBXE console. Both IDE-only variants include the raw disk,
+OF816 XEX and old/new Atarimax cartridge images. The VBXE variant requires a
+full FX core with private 512 KiB VRAM, as described in the
+[bitmap setup guide](../bitmap-shell-distribution.txt). Both ZIPs also include
+the pinned OS ROM, guide, notices and checksums.
 Attach the raw image as a writable ATA master; leave every floppy slot empty.
 SYSTEM/SYS is protected APT unit 1; WORK is writable unit 2. Each has 1,440
 512-byte logical sectors. Copy the image before writes. SYS contains the exact
