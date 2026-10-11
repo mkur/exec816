@@ -8,7 +8,11 @@ every piece before any destination bytes are copied. Part tags are zero-based;
 short floppy sectors continue using every cache set.
 
 Capacity is a boot setting: zero or powers of two from 16 through 2048 blocks.
-Zero retains only the existing scratch-sector buffer. If allocation fails,
+Zero retains only the shared 2048-byte transfer buffer; its scratch tag names
+one sector. IDE range reads publish each sector only after complete success.
+Lookahead presence probes check all pieces without changing counters or
+replacement state, allowing physical ranges to stop before retained sectors.
+If allocation fails,
 partial storage is released and the shell reports the fallback. Use the
 [OF816 boot monitor](../guides/boot-monitor.md) to change the request for one boot,
 or `cache_blocks` in [kernel.json](../../config/kernel.json) for a build default.

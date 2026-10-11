@@ -174,5 +174,35 @@
         "Emitted worker paths use direct calls; known targets match every compiler call-map entry"
       ]
     }
+  },
+  "rr2": {
+    "upper_buffer_delta": 1536,
+    "host_tests": 447,
+    "cases": {
+      "adapter": {
+        "status": "pass",
+        "checks": [
+          6696
+        ],
+        "image_sha256": "4623e6a3b7b3d9d2379f2e0738a7b7e9af95f93a40d607761c4c5a2ee8e56099",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      },
+      "allocation": {
+        "status": "pass",
+        "checks": [
+          2
+        ],
+        "image_sha256": "f0c3dabe62c16f33b2bb9ffc50940acc707e22f4c6be67cda95f0da1d128bebe",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      },
+      "sio": {
+        "status": "pass",
+        "checks": [
+          1876
+        ],
+        "image_sha256": "813f9cf876277880dbe4b43cd7693c72df86bb9ac1c8570fe98f934b3a9988cb",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      }
+    }
   }
 }

@@ -14,7 +14,7 @@ def observe_readbacks(out):
     text = source.read_text().replace('USE EXEC\n', 'USE EXEC\nUSE IDEWRITEPROBE\n', 1)
     for include in source.parent.glob('ideplus-*.inc'):
         text = text.replace('"'+include.name+'"', '"'+str(include)+'"')
-    hook = 'BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination)\n  BYTE error\n'
+    hook = 'BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination BYTE count)\n  BYTE error,index\n'
     require(text.count(hook) == 1, 'Stale physical read observation hook')
     text = text.replace(hook, hook+'\n  IDEWRITEPROBE.Read()\n', 1)
     (out/'ideplusdriver.act').write_text(text)

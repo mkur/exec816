@@ -68,6 +68,14 @@ PUBLIC BYTE FUNC WriteLimit(BLOCKTYPES.Volume POINTER volume)
 
 RETURN(1)
 
+PUBLIC BYTE FUNC ReadLimit(BLOCKTYPES.Volume POINTER volume)
+
+  IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    RETURN(IDEPLUS.MAX_READ_SECTORS)
+  FI
+
+RETURN(1)
+
 ; Prepare the common prefix and the selected device's sector command.
 PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volume
     LONGCARD sector CARD expected BYTE POINTER buffer BYTE writing)
@@ -83,6 +91,9 @@ PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volu
   IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
     request.io_Offset=sector-1
     request.io_Command=IDEPLUS.READ_SECTOR
+    IF expected>512 THEN
+      request.io_Command=IDEPLUS.READ_SECTORS
+    FI
     IF writing<>0 THEN
       request.io_Command=IDEPLUS.WRITE_SECTOR
       IF expected>512 THEN

@@ -72,7 +72,16 @@ four-sector extension group. Partial final sectors and fragmented reservations
 remain individual transfers; metadata publication and confirmed file prefixes
 are unchanged. No range staging buffer or larger request record is allocated.
 
-The filesystem service owns one reusable transfer request and 512-byte upper-RAM
+BeginFetchRange/FinishFetchRange use the shared 2048-byte staging buffer for up to
+four adjacent IDE sectors. The in/out count is reduced to one on a first-sector
+hit, or shortened before any later retained sector. Presence probes do not copy
+bytes or change cache counters; admitted misses are counted once per sector.
+Exact successful completion publishes each sector and tags only the first in
+scratch. Failure publishes none and invalidates retained data for that volume.
+Availability is checked before hits, including with the cache disabled. SIO
+remains single-sector.
+
+The filesystem service owns one reusable transfer request and 2048-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that
 binding without copying Message links and cannot reuse the request or buffer
 until exact reply collection. Filesystem validation precedes copying payload to

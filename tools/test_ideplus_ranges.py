@@ -10,6 +10,21 @@ from test_heap_api import clean_ownership
 from os_boundary import run_to
 import adapter_state
 
+def adapter_ranges(out,reuse=False):
+    out.mkdir(parents=True,exist_ok=True)
+    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),
+        ROOT/'tests/programs/ideplus_read_adapter.act',out,optimize=True,
+        tasks=True,task_capacity=8)
+    original,_=pattern_fixture();disk=out/'ide.img';disk.write_bytes(original)
+    with ide_emulator(out,disk) as b:
+        try:runtime,_=execute(b,p,timeout=120,frame_limit=6000)
+        except Exception:
+            print('adapter checks',data(b,p['image'],'checks',True),'phase',data(b,p['image'],'phase',True),flush=True);raise
+        clean_ownership(b,p,out);checks=data(b,p['image'],'checks',True)
+    require(disk.read_bytes()==original,'Adapter read changed media')
+    (out/'results.json').write_text(json.dumps(dict(status='pass',tier='development',build=p['build'],runtime=runtime,checks=checks),indent=2)+'\n')
+    print('IDE read adapter passed',flush=True)
+
 def read_ranges(out,mode,reuse=False,selected=None):
     out.mkdir(parents=True,exist_ok=True)
     p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),
@@ -123,6 +138,8 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--mode',choices=('raw','opt'),required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true')
     parser.add_argument('--reads',action='store_true')
+    parser.add_argument('--adapter',action='store_true')
     parser.add_argument('--case',action='append',choices=('writable','protected','failed','mid-range','read','mid-read','terminal-read'))
     args=parser.parse_args()
-    (read_ranges if args.reads else run)(args.output,args.mode,args.reuse,args.case)
+    if args.adapter:adapter_ranges(args.output,args.reuse)
+    else:(read_ranges if args.reads else run)(args.output,args.mode,args.reuse,args.case)

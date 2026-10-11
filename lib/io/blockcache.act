@@ -141,6 +141,24 @@ BYTE POINTER FUNC Payload(BLOCKTYPES.Cache POINTER cache CARD index)
 RETURN(cache.payload+(SIZE(index) LSH 7))
 
 ; A physical read is a hit only when its entire sector is retained.
+PUBLIC BYTE FUNC Contains(BLOCKTYPES.Cache POINTER cache
+    BLOCKTYPES.Volume POINTER volume CARD sector,bytes)
+  BYTE part
+
+  IF cache.blocks=0 THEN
+    RETURN(0)
+  FI
+
+  LET firstBucket=SetIndex(cache,volume,sector,0)
+  FOR part=0 TO BYTE(bytes RSH 7)-1 DO
+    IF Find(cache,volume,sector,part,firstBucket XOR CARD(part))=ABSENT THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Copy only a complete hit, accounting for this actual sector lookup.
 PUBLIC BYTE FUNC Read(BLOCKTYPES.Cache POINTER cache
     BLOCKTYPES.Volume POINTER volume CARD sector,bytes BYTE POINTER buffer)
   CARD ARRAY slots(MAX_PARTS)

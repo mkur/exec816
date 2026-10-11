@@ -31,3 +31,23 @@ reserve and 16-byte dispatch margin, within its unchanged 1024-byte stack.
 Fixed, per-Task and idle reserved bank-zero deltas are all zero, including
 guards, alignment and unused capacity. No controller/request/buffer or pool
 grew in this slice. Development checks do not qualify hardware or a release.
+
+## RR2 Adapter and cache
+
+The shared transfer buffer is now 2048 bytes; sector/map/cache-piece capacities
+remain 512 bytes. BeginFetchRange reduces its in/out count on a first hit or
+before a later cached sector. Contains probes all pieces without changing cache
+statistics. Exact completion publishes individual sectors, retains only the
+first scratch tag and releases the request borrow. Failed/short completion
+publishes nothing and invalidates the volume.
+
+The optimized real-IDE adapter fixture passes mixed cache hits, exact miss
+accounting, partial-piece rejection, full cold ranges, invalid extents,
+cache-disabled reads, short completion, offline scratch rejection and cleanup.
+The enlarged-buffer allocation-failure fixture and the existing real SIO adapter
+fixture pass. Host checks: 447 passed. The existing write observer follows the
+new ReadInto signature.
+
+Additional upper allocation is exactly 1536 bytes in the existing shared buffer.
+No record, controller buffer, cache arena, Task pool or per-handle allocation
+grows. Reserved bank-zero deltas remain 0 fixed / 0 per-Task / 0 idle bytes.

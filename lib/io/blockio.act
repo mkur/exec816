@@ -78,7 +78,7 @@ PUBLIC BLOCKTYPES.Adapter POINTER FUNC Create()
     adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
         EXEC.IOSIOREQ_SIZE))
     IF adapter.request<>NULL THEN
-      adapter.buffer=EXEC.AllocMem(BLOCKTYPES.SECTOR_BUFFER_BYTES,EXEC.MEMF_UPPER)
+      adapter.buffer=EXEC.AllocMem(BLOCKTYPES.TRANSFER_BUFFER_BYTES,EXEC.MEMF_UPPER)
       IF adapter.buffer<>NULL THEN
         BLOCKCACHE.Create(@adapter.cache,BOOTCONFIG.CacheBlocks())
         RETURN(adapter)
@@ -107,7 +107,7 @@ PUBLIC BYTE FUNC Destroy(BLOCKTYPES.Adapter POINTER adapter)
   FI
 
   BLOCKCACHE.Destroy(@adapter.cache)
-  EXEC.FreeMem(adapter.buffer,BLOCKTYPES.SECTOR_BUFFER_BYTES)
+  EXEC.FreeMem(adapter.buffer,BLOCKTYPES.TRANSFER_BUFFER_BYTES)
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(adapter.request))
   EXEC.DeleteMsgPort(adapter.port)
   EXEC.FreeMem(BYTE POINTER(adapter),BLOCKTYPES.ADAPTER_SIZE)
@@ -274,15 +274,9 @@ CARD FUNC Check(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
 
 RETURN(expected)
 
-; Serve a retained sector when possible; otherwise start physical I/O.
-PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
-    POINTER volume LONGCARD sector)
-  CARD expected
-
-  expected=Check(adapter,volume,sector)
-  IF expected=0 THEN
-    RETURN(0)
-  FI
+; Serve an admitted sector or prepare its physical request without submitting.
+BYTE FUNC Fetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector CARD expected)
 
   IF BLOCKTRANSPORT.Unavailable(volume)<>0 THEN
     DiscardBuffer(adapter)
@@ -307,6 +301,66 @@ PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
   adapter.request.io_Device=volume.request.io_Device
   adapter.request.io_Unit=volume.request.io_Unit
   BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,adapter.buffer,0)
+
+RETURN(2)
+
+; Serve a retained sector when possible; otherwise start physical I/O.
+PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector)
+
+  LET expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Fetch(adapter,volume,sector,expected))
+
+; Read only consecutive misses; return the actual count to the consumer.
+PUBLIC BYTE FUNC BeginFetchRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector CARD POINTER requested)
+  CARD count
+
+  IF requested^=1 THEN
+    RETURN(BeginFetch(adapter,volume,sector))
+  FI
+
+  LET expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+  IF expected<>512 OR requested^<2
+      OR requested^>CARD(BLOCKTRANSPORT.ReadLimit(volume)) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+  IF LONGCARD(requested^)>volume.sectors-sector+1
+      OR sector+LONGCARD(requested^)-1>LONGCARD($ffff) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+
+  LET status=Fetch(adapter,volume,sector,expected)
+  IF status<>2 THEN
+    requested^=1
+    RETURN(status)
+  FI
+
+  count=1
+  WHILE count<requested^ DO
+    IF BLOCKCACHE.Contains(@adapter.cache,volume,CARD(sector)+count,
+        expected)<>0 THEN
+      EXIT
+    FI
+    count==+1
+  OD
+  requested^=count
+  IF count>1 THEN
+    IF adapter.cache.blocks<>0 THEN
+      adapter.cache.misses==+LONGCARD(count-1)
+    FI
+    BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected*count,
+        adapter.buffer,0)
+  FI
 
 RETURN(2)
 
@@ -394,6 +448,18 @@ PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
     BLOCKTYPES.Volume POINTER volume LONGCARD sector LONGINT error)
 
 RETURN(Finish(adapter,volume,sector,SectorBytes(volume,sector),1,error))
+
+; Publish every complete range sector; scratch retains only the first tag.
+PUBLIC LONGINT FUNC FinishFetchRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector CARD count LONGINT error)
+
+  LET result=Finish(adapter,volume,sector,SectorBytes(volume,sector)*count,
+      BYTE(count),error)
+  IF result=0 THEN
+    Publish(adapter,volume,sector,SectorBytes(volume,sector))
+  FI
+
+RETURN(result)
 
 ; Writes publish cache bytes only after complete peripheral confirmation.
 PUBLIC LONGINT FUNC FinishStore(BLOCKTYPES.Adapter POINTER adapter
