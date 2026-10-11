@@ -162,6 +162,12 @@ SDFS 2.1, shared 512-byte buffers and the existing cache budget. SIO retains
 IDE-only kernel shell; automatic power-on boot and hardware qualification remain
 separate work.
 
+The completed [IDE diagnostics plan](plans/ide-diagnostics-implementation-plan.md)
+adds retained controller detection, capacity, APT mappings and precise mount
+failures to verbose boot and `MOUNT DIAGNOSTICS`, without probing from reports.
+Its [development record](history/ide-diagnostics.md) covers native failure cases
+and both console variants.
+
 The [standard dialogs design](plans/gem4xe/standard-dialogs-design.md)
 and [FD1–FD4 plan](plans/gem4xe/standard-dialogs-implementation-plan.md) add bounded
 `form_do`/`form_alert` and the supporting `form_dial` lifecycle. Forms run in the

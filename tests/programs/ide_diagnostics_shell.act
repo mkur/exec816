@@ -1,0 +1,39 @@
+MODULE IDEDIAGNOSTICSSHELL
+USE SHELLDIAGPROBE
+USE FSBOOT
+USE HEAPCORE
+INCLUDE "../../examples/shell/shell-session.inc"
+
+CARD checks
+LONGINT expectedError
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise the shared boot/interactive renderer on actual failed ATA mounts.
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  Require(ShellStart(NULL)<>0)
+  LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
+  LET error=DOS.IoErr()
+  Require(lock=NULL AND error=expectedError)
+  shell.status=PROCESS.RETURN_ERROR
+  shell.error=error
+  ShellMountFailure(shell.console)
+  ShellIdeDiagnostics(shell.console,1)
+  Require(DOS.IoErr()=error AND shell.error=error)
+  LET result=ShellFinish()
+  Require(result=PROCESS.RETURN_ERROR)
+  IDEPLUSDRIVER.Stop()
+  Require(FSBOOT.Stop()<>0 AND EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

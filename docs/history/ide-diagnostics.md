@@ -35,3 +35,38 @@ writable mount, empty APT slot, bad SDFS header, missing controller and missing
 disk. Checks preserve IoErr, inspect failures after teardown, reject partially
 published startup state and restore heap ownership without modifying media.
 Evidence: `build/ide-diagnostics/mount/`.
+
+## D3: boot and interactive presentation
+
+Verbose boot prints copied controller/capacity/APT observations. Plain MOUNT
+adds retained mount failures; `MOUNT DIAGNOSTICS` repeats the hardware report and
+supports ordinary redirection. Failed startup always explains its mount failure,
+including the specific reason behind an IDE open rejection. The renderer
+preserves causal IoErr and uses existing output/transfer buffers.
+
+The demo global arena grows by **2048 upper-memory bytes**, from 4352 to 6400,
+including all unused capacity. The standard/IDE image uses 5822 bytes (578
+spare); VBXE/IDE uses 5834 (566 spare). DOS registry growth is separately counted
+in D2. Fixed/per-Task/idle bank-zero deltas remain **0/0/0 bytes**; no Task pool
+or interrupt reservation changes. IDE worker calculated stack bound is 736
+bytes including its interrupt reserve and dispatch margin, leaving 288 bytes in
+its existing 1024-byte requirement. Standard demo stack watermarks leave at
+least 721 bytes above the interrupt floor in the exercised worker pools; these
+observed depths are lower bounds, not exhaustive stack qualification.
+
+Validation at the development tier:
+
+- 447 host checks passed; generated IDE/DOS definitions and whitespace checks
+  passed.
+- Five native renderer scenarios passed: count mismatch, protected writes,
+  empty slot, malformed APT revision and absent controller. Exact diagnostic
+  transcripts stay within 40 columns and retain the original IoErr.
+- Native writable/protected/failed-write checks passed. The failed ATA command
+  retains its status and hardware error separately from logical error 3.
+- Exact standard/IDE and VBXE/IDE OF816 demos passed boot, MOUNT, diagnostic
+  display, redirection to RAM, CAT of the captured report and complete shutdown
+  with guards/ownership checks. Both builds include five-second OF816 autoboot
+  and fit the existing Atarimax cartridge formats.
+
+Evidence and disposable packages are in `build/ide-diagnostics/`; no full release
+qualification matrix or physical-hardware test was run. No packages were published.

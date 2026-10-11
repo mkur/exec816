@@ -14,7 +14,7 @@ from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 4352
+DEMO_IMAGE_DATA_BYTES = 6400
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -269,7 +269,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',

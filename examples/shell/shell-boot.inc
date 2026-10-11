@@ -138,7 +138,14 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     FI
 
   ELSE
+    ShellByte(shell.console,ASCII.LF)
+    ShellMountFailure(shell.console)
     ShellText(shell.console,CSTRING(EXECBUILD.mountFailure))
+  FI
+
+  IF BOOTCONFIG.Verbose()<>0 THEN
+    ShellByte(shell.console,ASCII.LF)
+    ShellIdeDiagnostics(shell.console,0)
   FI
 
   ShellByte(shell.console,ASCII.LF)

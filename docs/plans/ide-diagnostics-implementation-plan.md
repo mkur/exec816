@@ -1,6 +1,7 @@
 # IDE diagnostics implementation plan
 
-Status: in progress. Development checks follow the
+Status: completed (D1–D3). See the
+[development record](../history/ide-diagnostics.md). Development checks follow the
 [testing policy](../contributing/testing.md); physical hardware remains unqualified.
 
 ## Outcome
@@ -62,7 +63,9 @@ and standard/IDE demo startup at the development tier.
 All slices reserve **zero additional bank-zero bytes**: fixed 0, per Task 0,
 idle 0. D1 consumes already reserved upper-memory capacity; D2 increases the
 upper DOS registry by six bytes (subsequent alignment may add padding). D3 uses
-caller stack and the existing 512-byte shell transfer buffer. Measure native
+caller stack and existing shell buffers. Its diagnostic strings increase the
+demo upper globals reservation by 2048 bytes to 6400, including spare capacity.
+Measure native
 stack headroom after adding the reports; do not enlarge pools without evidence.
 No interrupt entry, queue ownership, deadlines, partition layout, filesystem
 write ordering or public DOS/COMMAND ABI changes are required.

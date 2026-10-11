@@ -107,6 +107,9 @@ mount with a fixed configured unit; OF816 system-drive overrides remain SIO-only
 MOUNT and DEVICES identify the transport
 and unit without probing hardware. An offline controller cannot satisfy cached
 reads and only invalidates volumes belonging to that backend.
+`MOUNT DIAGNOSTICS` and verbose boot format the copied IDE observations;
+plain `MOUNT` includes retained mount failures and offline causal errors.
+See the [shell guide](../guides/shell.md) for capture instructions.
 
 Other revisions, slaves, LBA48, hot removal and partition editing
 are unsupported. Development emulator checks do not establish physical hardware

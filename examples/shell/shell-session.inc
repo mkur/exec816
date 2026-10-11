@@ -11,6 +11,9 @@ USE FSSYSTEM
 USE BOOTCONFIG
 USE BOOTDIAG
 USE FSINSPECT
+USE FSTYPES
+USE IDEPLUS
+USE IDEPLUSDRIVER
 USE BLOCKTYPES
 USE PROGRAMFILE
 USE PROGRAM
@@ -796,9 +799,22 @@ BYTE FUNC ShellParse()
 
   IF (shell.command=CMD_HELP OR shell.command=CMD_EXIT OR shell.command=CMD_CLS
       OR shell.command=CMD_JOBS
-      OR (shell.command>=CMD_MEM AND shell.command<=CMD_DEVICES))
+      OR (shell.command>=CMD_MEM AND shell.command<=CMD_DEVICES
+      AND shell.command<>CMD_MOUNT))
     AND shell.argc<>1 THEN
     RETURN(0)
+  FI
+
+  IF shell.command=CMD_MOUNT THEN
+    IF shell.argc>2 THEN
+      RETURN(0)
+    FI
+
+    IF shell.argc=2 THEN
+      IF ShellEqual(shell.words(1).text,c"DIAGNOSTICS")=0 THEN
+        RETURN(0)
+      FI
+    FI
   FI
 
   IF shell.command=CMD_BREAK AND shell.argc<>2 THEN
@@ -1136,6 +1152,7 @@ PROC ShellChange(BYTE POINTER path)
 
 RETURN
 
+INCLUDE "shell-mount-diagnostics.inc"
 INCLUDE "shell-commands.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
@@ -1286,6 +1303,9 @@ PROC ShellDispatch()
 
   WHEN CMD_MOUNT THEN
     ShellMounts(DOS.Output())
+    IF shell.argc=2 THEN
+      ShellIdeDiagnostics(DOS.Output(),1)
+    FI
 
   WHEN CMD_DEVICES THEN
     ShellDevices(DOS.Output())
