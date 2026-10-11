@@ -132,6 +132,8 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [IDE diagnostics](ide-diagnostics-implementation-plan.md): retained controller,
+  capacity, APT and mount-failure observations for verbose boot and hardware reports.
 - [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md): completed
   I512-0–I512-4 slices replacing packed IDE sectors with direct 512-byte SDFS
   volumes, shared buffer/cache support and firmware-loader verification.
