@@ -1,6 +1,7 @@
 # INFO command implementation plan
 
-Status: planned; implementation has not started. Follow the
+Status: I1 implemented; I2–I4 pending. See the
+[implementation record](../history/info-command.md). Follow the
 [roadmap](../roadmap.md), [testing policy](../contributing/testing.md) and
 [platform budget](../reference/platform.md#bank-zero-memory-budget).
 

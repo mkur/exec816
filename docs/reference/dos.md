@@ -6,7 +6,24 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 7; the loaded COMMAND ABI is version 11.
+The current native DOS ABI is revision 8; the loaded COMMAND ABI is version 15.
+
+## Volume information
+
+`GetVolume(index, info)` copies a published mount identity into a caller-owned
+62-byte `VolumeInfo`. Iterate `0..VOLUME_SLOTS-1`; empty slots return DOSFALSE
+with IoErr zero and a cleared record. Enumeration does not start the filesystem
+service or perform I/O. Records contain terminated names, format/transport IDs,
+unit, sector bytes and effective access/state, with no internal pointers.
+
+`Info(lock, info)` uses an owned filesystem lock to request statistics through
+the normal worker packet. The initial API slice returns
+ERROR_ACTION_NOT_KNOWN until filesystem statistics are implemented. Failed
+queries do not publish a result. `VOLUME_BLOCKS_VALID` and `VOLUME_RAM_VALID`
+distinguish available measurements from unknown values; GetVolume clears both.
+
+DOS and COMMAND export the same record layout. The C header also publishes the
+record and constants; C query-call wrappers are not yet provided.
 
 ## Files and directories
 

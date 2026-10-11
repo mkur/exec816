@@ -19,6 +19,16 @@
 #define ST_FILE (-3L)
 #define PIPE_BUFFER_BYTES (1024L)
 #define FAULT_BUFFER_BYTES (384L)
+#define VOLUME_SLOTS (9L)
+#define VOLUME_ONLINE (1L)
+#define VOLUME_OFFLINE (2L)
+#define VOLUME_BLOCKS_VALID (1L)
+#define VOLUME_RAM_VALID (2L)
+#define VOLUME_MYDOS (1L)
+#define VOLUME_SDFS (2L)
+#define VOLUME_RAM (3L)
+#define VOLUME_SIO (0L)
+#define VOLUME_IDEPLUS (1L)
 #define ERROR_NO_FREE_STORE (103L)
 #define ERROR_BAD_TEMPLATE (114L)
 #define ERROR_BAD_NUMBER (115L)
@@ -72,5 +82,19 @@ struct FileInfoBlock {
     UWORD fib_OwnerUID;
     UWORD fib_OwnerGID;
     UBYTE fib_Reserved[32];
+};
+struct VolumeInfo {
+    UBYTE name[32];
+    UBYTE label[9];
+    UBYTE format;
+    UBYTE backend;
+    UBYTE readOnly;
+    UBYTE state;
+    UBYTE flags;
+    UWORD unit;
+    UWORD sectorBytes;
+    ULONG totalBlocks;
+    ULONG freeBlocks;
+    ULONG allocatedBytes;
 };
 #endif

@@ -214,7 +214,7 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
-- [INFO command](info-command-implementation-plan.md): planned I1–I4 slices for
+- [INFO command](info-command-implementation-plan.md): I1 implemented; I2–I4 cover
   copied public volume queries, metadata-based disk statistics, a loadable
   command and distinct demo SYS/WORK labels. No filesystem scan or new Task.
 - [Background commands, console panes and primes](background-pane-primes-implementation-plan.md):

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 7,
+  "revision": 8,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -25,7 +25,17 @@
     "ST_USERDIR": 2,
     "ST_FILE": -3,
     "PIPE_BUFFER_BYTES": 1024,
-    "FAULT_BUFFER_BYTES": 384
+    "FAULT_BUFFER_BYTES": 384,
+    "VOLUME_SLOTS": 9,
+    "VOLUME_ONLINE": 1,
+    "VOLUME_OFFLINE": 2,
+    "VOLUME_BLOCKS_VALID": 1,
+    "VOLUME_RAM_VALID": 2,
+    "VOLUME_MYDOS": 1,
+    "VOLUME_SDFS": 2,
+    "VOLUME_RAM": 3,
+    "VOLUME_SIO": 0,
+    "VOLUME_IDEPLUS": 1
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -79,7 +89,8 @@
     "ACTION_FLUSH": 27,
     "ACTION_CREATE_DIR": 22,
     "ACTION_DELETE_OBJECT": 16,
-    "ACTION_RENAME_OBJECT": 17
+    "ACTION_RENAME_OBJECT": 17,
+    "ACTION_INFO": 26
   },
   "records": {
     "DateStamp": {
@@ -280,6 +291,72 @@
           "target",
           "BYTE[256]",
           32
+        ]
+      ]
+    },
+    "VolumeInfo": {
+      "size": 62,
+      "alignment": 2,
+      "fields": [
+        [
+          "name",
+          "BYTE[32]",
+          0
+        ],
+        [
+          "label",
+          "BYTE[9]",
+          32
+        ],
+        [
+          "format",
+          "BYTE",
+          41
+        ],
+        [
+          "backend",
+          "BYTE",
+          42
+        ],
+        [
+          "readOnly",
+          "BYTE",
+          43
+        ],
+        [
+          "state",
+          "BYTE",
+          44
+        ],
+        [
+          "flags",
+          "BYTE",
+          45
+        ],
+        [
+          "unit",
+          "CARD",
+          46
+        ],
+        [
+          "sectorBytes",
+          "CARD",
+          48
+        ],
+        [
+          "totalBlocks",
+          "LONGCARD",
+          50
+        ],
+        [
+          "freeBlocks",
+          "LONGCARD",
+          54
+        ],
+        [
+          "allocatedBytes",
+          "LONGCARD",
+          58
         ]
       ]
     }
@@ -740,6 +817,38 @@
         }
       ],
       "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "GetVolume": {
+      "arguments": [
+        {
+          "alignment": 2,
+          "offset": 0,
+          "size": 2
+        },
+        {
+          "alignment": 1,
+          "offset": 2,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 5,
+      "result_bytes": 4
+    },
+    "Info": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
       "result_bytes": 4
     }
   },

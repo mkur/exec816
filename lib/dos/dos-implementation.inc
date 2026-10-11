@@ -1,4 +1,12 @@
 ; Native source adapters preserve the public DOS record identities and ABI.
+PUBLIC LONGINT FUNC GetVolume(CARD index VolumeInfo POINTER info)
+
+RETURN(DOSCALLS.GetVolume(index,DOSCALLS.VolumeInfo POINTER(info)))
+
+PUBLIC LONGINT FUNC Info(FileLock POINTER lock VolumeInfo POINTER info)
+
+RETURN(DOSCALLS.Info(BYTE POINTER(lock),DOSCALLS.VolumeInfo POINTER(info)))
+
 PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
 
 RETURN(DOSCALLS.AssignPath(name,target))

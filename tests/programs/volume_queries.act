@@ -1,0 +1,64 @@
+MODULE VOLUMEQUERIES
+USE EXEC
+USE DOS
+USE DOSCORE
+USE FSBOOT
+USE FSREGISTRY
+USE FSMANAGER
+USE FSTYPES
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks
+BYTE finished
+DOS.VolumeInfo info
+DOS.FileLock POINTER lock
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f700+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Enumeration is a snapshot, including before startup and after unpublication.
+PROC Main()
+  LONGCARD baseline
+
+  baseline=EXEC.AvailMem(0)
+  LET owner=DOSCORE.Current()
+  Require(DOS.GetVolume(0,@info)=0 AND DOS.IoErr()=0)
+  Require(info.name(0)=0 AND info.flags=0)
+  Require(owner.context=NULL AND EXEC.AvailMem(0)=baseline)
+  Require(DOS.GetVolume(DOS.VOLUME_SLOTS,@info)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(DOS.GetVolume(0,NULL)=0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  lock=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  Require(DOS.GetVolume(0,@info)<>0 AND DOS.IoErr()=0)
+  Require(info.name(0)='R AND info.name(3)=0 AND info.label(0)=0)
+  Require(info.format=DOS.VOLUME_RAM AND info.flags=0 AND
+      info.state=DOS.VOLUME_ONLINE AND info.readOnly=0)
+  Require(DOS.GetVolume(8,@info)=0 AND DOS.IoErr()=0 AND info.name(0)=0)
+  A816MEMORY.Fill(BYTE POINTER(@info),$a5,SIZEOF(DOS.VolumeInfo))
+  Require(DOS.Info(lock,@info)=0 AND
+      DOS.IoErr()=DOS.ERROR_ACTION_NOT_KNOWN)
+  Require(info.flags=$a5 AND info.name(0)=$a5)
+  LET service=FSREGISTRY.Service()
+  Require(service.mounts(0).item.references=1)
+  Require(DOS.Info(lock,NULL)=0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  Require(FSMANAGER.Unmount(0)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  DOS.UnLock(lock)
+  Require(DOS.Info(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Require(FSMANAGER.Unmount(0)<>0)
+  Require(DOS.GetVolume(0,@info)=0 AND DOS.IoErr()=0 AND info.flags=0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(DOS.GetVolume(0,@info)=0 AND DOS.IoErr()=0)
+  Require(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

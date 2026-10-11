@@ -1,0 +1,37 @@
+; Copied volume identities; no internal pointer escapes into public records.
+MODULE FSVOLUME
+USE A816MEMORY
+USE FSTYPES
+INCLUDE "../dos/dos-types.inc"
+
+; The registry owner excludes unpublication while copying this mount identity.
+PUBLIC PROC Identity(FSTYPES.Mount POINTER mount VolumeInfo POINTER info)
+  BYTE index,value
+
+  A816MEMORY.Clear(BYTE POINTER(info),SIZE(VOLUMEINFO_SIZE))
+  FOR index=0 TO 30 DO
+    value=mount.spec.alias(index)
+    IF value=0 THEN
+      EXIT
+    FI
+
+    IF value<32 OR value>126 THEN
+      value=46
+    FI
+
+    info.name(index)=value
+  OD
+
+  info.format=mount.spec.format
+  info.backend=mount.spec.backend
+  info.readOnly=mount.writable=0
+  info.unit=mount.spec.unit
+  info.sectorBytes=mount.spec.dataBytes
+  info.state=VOLUME_ONLINE
+  IF mount.offline<>0 THEN
+    info.state=VOLUME_OFFLINE
+  FI
+
+RETURN
+
+ENDMODULE

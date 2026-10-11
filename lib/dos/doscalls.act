@@ -19,6 +19,8 @@ USE FSNAMES
 USE FSSYSTEM
 USE FS83
 USE FSLOCKS
+USE FSVOLUME
+USE A816MEMORY
 USE CONSOLEWINDOWS
 USE CONSOLETYPES
 INCLUDE "dos-types.inc"
@@ -30,6 +32,61 @@ TYPE DestinationInfo=[
 ]
 
 PUBLIC CONST ASSIGN_SLOTS=4
+
+; Snapshot one published mount without starting the service or borrowing it.
+PUBLIC LONGINT FUNC GetVolume(CARD index VolumeInfo POINTER info)
+  BYTE occupied
+
+  LET owner=DOSCORE.Current()
+  IF index>=VOLUME_SLOTS OR FSNAMES.Mapped(BYTE POINTER(info),
+      VOLUMEINFO_SIZE)=0 THEN
+    owner.error=ERROR_BAD_NUMBER
+    RETURN(0)
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  occupied=0
+  EXEC.Forbid()
+  IF registry.state=FSTYPES.STATE_READY AND registry.stop=0 AND
+      registry.runtime<>NULL THEN
+    BEGIN
+      LET service=FSTYPES.Service POINTER(registry.runtime)
+      IF index<service.count THEN
+        BEGIN
+          LET mount=service.mounts(index).item
+          IF mount<>NULL THEN
+            IF mount.published<>0 THEN
+              FSVOLUME.Identity(mount,FSVOLUME.VolumeInfo POINTER(info))
+              occupied=1
+            FI
+          FI
+        END
+      FI
+    END
+  FI
+
+  EXEC.Permit()
+  IF occupied=0 THEN
+    A816MEMORY.Clear(BYTE POINTER(info),SIZE(VOLUMEINFO_SIZE))
+  FI
+
+  owner.error=0
+
+  IF occupied<>0 THEN
+    RETURN(-1)
+  FI
+
+RETURN(0)
+
+; Check caller storage once before sending the ordinary owned-lock packet.
+PUBLIC LONGINT FUNC Info(BYTE POINTER lock VolumeInfo POINTER info)
+
+  IF FSNAMES.Mapped(BYTE POINTER(info),VOLUMEINFO_SIZE)=0 THEN
+    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(Information(lock,BYTE POINTER(info),26))
 
 ; The caller holds Forbid while comparing or copying an immutable entry.
 BYTE FUNC AssignIndex(DOSCORE.DosRegistry POINTER registry BYTE POINTER name

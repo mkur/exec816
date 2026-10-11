@@ -225,6 +225,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [INFO command](info-command.md): copied DOS volume queries and the incremental
+  implementation of loadable volume statistics.
 - [Shell startup scripts](shell-startup.md): S: naming, optional STARTUP/USER,
   sequential execution before the prompt, compatibility and memory costs.
 - [Shell EXECUTE](shell-execute.md): bounded scripts through ordinary dispatch,

@@ -14,6 +14,14 @@ USE DOSDELAY
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
 ; implementation, retaining each checked entry and its command signature.
+PUBLIC LONGINT FUNC GetVolume(CARD index BYTE POINTER info)
+
+RETURN(DOSCALLS.GetVolume(index,DOSCALLS.VolumeInfo POINTER(info)))
+
+PUBLIC LONGINT FUNC Info(BYTE POINTER lock,info)
+
+RETURN(DOSCALLS.Info(lock,DOSCALLS.VolumeInfo POINTER(info)))
+
 PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
 
 RETURN(DOSCALLS.AssignPath(name,target))
