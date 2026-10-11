@@ -34,8 +34,10 @@ def reference(output=ROOT/'build/sdfs-reference'):
     return binary
 
 
-def make(image, directory, sectors=720, sector_bytes=128):
-    subprocess.run([str(reference()), 'make', str(image), str(directory), str(sectors), str(sector_bytes)], check=True)
+def make(image, directory, sectors=720, sector_bytes=128, label='EXEC816'):
+    if len(label) > 8 or any(not 32 <= ord(c) <= 126 for c in label):
+        raise ValueError('Label must contain at most eight printable ASCII bytes')
+    subprocess.run([str(reference()), 'make', str(image), str(directory), str(sectors), str(sector_bytes), label], check=True)
 
 
 def extract(image, directory):

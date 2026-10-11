@@ -1,6 +1,6 @@
 # INFO command implementation plan
 
-Status: I1–I3 implemented; I4 pending. See the
+Status: completed (I1–I4). See the
 [implementation record](../history/info-command.md). Follow the
 [roadmap](../roadmap.md), [testing policy](../contributing/testing.md) and
 [platform budget](../reference/platform.md#bank-zero-memory-budget).

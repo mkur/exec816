@@ -4,9 +4,10 @@ import argparse,hashlib,json,tempfile
 from pathlib import Path
 from native_program import ROOT,sha256
 import sdfs_reference
+from sector_images import ATRImage
 from make_shell_disk import make as mydos
 
-def make(path,source=ROOT/'examples/shell-disk',binary_names=(),sector_bytes=128,filesystem='sdfs',sectors=720):
+def make(path,source=ROOT/'examples/shell-disk',binary_names=(),sector_bytes=128,filesystem='sdfs',sectors=720,label='EXEC816'):
     path=Path(path);source=Path(source);binary_names=set(binary_names)
     if filesystem=='mydos':return mydos(path,source,binary_names,sector_bytes,sectors)
     if filesystem!='sdfs' or sector_bytes not in (128,256,512) or not 368<=sectors<=65535:
@@ -25,14 +26,16 @@ def make(path,source=ROOT/'examples/shell-disk',binary_names=(),sector_bytes=128
             data=item.read_bytes() if relative.as_posix() in binary_names else item.read_text(encoding='ascii').encode('ascii')
             expected[relative.as_posix()]=data;target.write_bytes(data)
         path.parent.mkdir(parents=True,exist_ok=True)
-        sdfs_reference.make(path,staging,sectors,sector_bytes)
+        sdfs_reference.make(path,staging,sectors,sector_bytes,label)
         hashes=sdfs_reference.verify(path,expected,Path(temp)/'verified')
-    proof=dict(schema_version=1,filesystem='SDFS 2.1',sector_bytes=sector_bytes,sectors=sectors,media_sha256=sha256(path),
+        if bytes(ATRImage(path.read_bytes()).sector(1)[22:30])!=label.ljust(8).encode('ascii'):
+            raise ValueError('Independent label read-back differs from producer input')
+    proof=dict(schema_version=1,filesystem='SDFS 2.1',label=label.rstrip(' '),sector_bytes=sector_bytes,sectors=sectors,media_sha256=sha256(path),
         producer_sha256=sha256(sdfs_reference.reference()),reference_sources=sdfs_reference.FILES,
         verification='Independent Altirra filesystem validation and complete byte-for-byte extraction',files=hashes)
     path.with_suffix('.verification.json').write_text(json.dumps(proof,indent=2)+'\n')
     return expected
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--source',type=Path,default=ROOT/'examples/shell-disk');parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs');parser.add_argument('--sector-bytes',type=int,choices=(128,256,512),default=128);parser.add_argument('--sectors',type=int,default=720);args=parser.parse_args()
-    files=make(args.output,args.source,sector_bytes=args.sector_bytes,filesystem=args.format,sectors=args.sectors)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--source',type=Path,default=ROOT/'examples/shell-disk');parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs');parser.add_argument('--sector-bytes',type=int,choices=(128,256,512),default=128);parser.add_argument('--sectors',type=int,default=720);parser.add_argument('--label',default='EXEC816');args=parser.parse_args()
+    files=make(args.output,args.source,sector_bytes=args.sector_bytes,filesystem=args.format,sectors=args.sectors,label=args.label)
     print(f'{args.output}: {args.format.upper()}, {args.sectors} x {args.sector_bytes}, {len(files)} files')

@@ -24,11 +24,10 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
-Next: implement loadable `INFO` using the
-[four-slice plan](plans/info-command-implementation-plan.md). Report volume
-labels, capacity, used/free space, backing device and access through small
-public DOS queries. Use existing disk allocation counts; keep RAM's dynamic
-capacity explicit and give demo SYS/WORK disks distinct filesystem labels.
+The [INFO slice](history/info-command.md) completes copied public volume queries,
+cached allocation statistics and a loadable command. It reports disk space,
+labels, backing device and access, keeps RAM's dynamic capacity explicit, and
+gives demo SYS/WORK disks distinct filesystem labels.
 
 The [directory listing performance slice](history/directory-listing-performance.md)
 completes DL0–DL6: bulk copies, one Write per row, map summaries and a bounded

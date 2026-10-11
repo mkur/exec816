@@ -1,0 +1,336 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "status": "pass",
+  "scope": "INFO I1-I4; focused emitted behavior and two packaged sessions, not release qualification",
+  "compiler_pin": "toolchain/actionc.json",
+  "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "public_abi": {
+    "dos": 8,
+    "command": 15,
+    "volume_info_bytes": 62
+  },
+  "host_checks": 447,
+  "abi_modes": [
+    "raw",
+    "opt"
+  ],
+  "public_query_assertions": 21,
+  "statistics": [
+    {
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "assertions": 41,
+      "evidence": "build/info-i2-statistics.log",
+      "cold_header_reads": 1,
+      "warm_header_reads": 0,
+      "query_writes": 0
+    },
+    {
+      "filesystem": "mydos",
+      "sector_bytes": 256,
+      "assertions": 41,
+      "evidence": "build/info-i2-statistics.log",
+      "cold_header_reads": 1,
+      "warm_header_reads": 0,
+      "query_writes": 0
+    },
+    {
+      "filesystem": "sdfs",
+      "sector_bytes": 128,
+      "assertions": 41,
+      "evidence": "build/info-i2-statistics.log",
+      "cold_header_reads": 1,
+      "warm_header_reads": 0,
+      "query_writes": 0
+    },
+    {
+      "filesystem": "sdfs",
+      "sector_bytes": 256,
+      "assertions": 41,
+      "evidence": "build/info-i2-statistics.log",
+      "cold_header_reads": 1,
+      "warm_header_reads": 0,
+      "query_writes": 0
+    },
+    {
+      "filesystem": "sdfs",
+      "sector_bytes": 512,
+      "assertions": 41,
+      "evidence": "build/info-i2-ide-statistics.log",
+      "cold_header_reads": 1,
+      "warm_header_reads": 0,
+      "query_writes": 0
+    }
+  ],
+  "command": {
+    "raw": {
+      "cases": [
+        "all",
+        "named",
+        "assign",
+        "relative",
+        "ram",
+        "empty",
+        "sparse",
+        "offline",
+        "mixed-error",
+        "named-error",
+        "missing",
+        "break",
+        "query-break",
+        "break-after-query",
+        "partial-write",
+        "output-error",
+        "zero-write",
+        "max-counts",
+        "mydos",
+        "long-label",
+        "help",
+        "help-spaces",
+        "help-no-console",
+        "help-write-error",
+        "help-close-error",
+        "help-break"
+      ],
+      "evidence": "build/info/i3-command/raw/results.json",
+      "runtime_status": 0,
+      "guards": "intact"
+    },
+    "opt": {
+      "cases": [
+        "all",
+        "named",
+        "assign",
+        "relative",
+        "ram",
+        "empty",
+        "sparse",
+        "offline",
+        "mixed-error",
+        "named-error",
+        "missing",
+        "break",
+        "query-break",
+        "break-after-query",
+        "partial-write",
+        "output-error",
+        "zero-write",
+        "max-counts",
+        "mydos",
+        "long-label",
+        "help",
+        "help-spaces",
+        "help-no-console",
+        "help-write-error",
+        "help-close-error",
+        "help-break"
+      ],
+      "evidence": "build/info/i3-command/opt/results.json",
+      "runtime_status": 0,
+      "guards": "intact"
+    }
+  },
+  "demos": {
+    "demo-standard": {
+      "evidence": "build/info/demo-standard/info-results.json",
+      "zip_sha256": "e3d01c340a0663e72d6124b8db50cd0961ecd871aaa6b4e135c575b313e99dd0",
+      "xex_sha256": "73355af8b896197e10ce30d3f5c147f3be77fd686228d1b136f9571656a758e2",
+      "system_sha256": "36e2090e9204a5ad7aec39d43c7a5404c8e786f66976afba05efbaee2495e62f",
+      "work_sha256": "2cf278f9bbda30dbef51b48c3d6fc64d09fa7d81bdb93cad747be419f1aedcfe",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "devices": [],
+      "commands": [
+        "CLS",
+        "INFO SYS:",
+        "INFO WORK:",
+        "INFO C:",
+        "INFO RAM:",
+        "INFO",
+        "INFO >RAM:INFO.TXT",
+        "CAT RAM:INFO.TXT"
+      ],
+      "status": 0,
+      "guards": "intact",
+      "live_tasks_after_shutdown": 0,
+      "stack_watermarks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 504,
+          "untouched_above_floor": 776
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 234,
+          "untouched_above_floor": 822
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 275,
+          "untouched_above_floor": 781
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 136,
+          "untouched_above_floor": 920
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 423,
+          "untouched_above_floor": 633
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ],
+      "cartridge_capacity": {
+        "bytes": 338469,
+        "headroom": 693722,
+        "fits_uncompressed": true
+      }
+    },
+    "demo-vbxe-ide": {
+      "evidence": "build/info/demo-vbxe-ide/info-results.json",
+      "zip_sha256": "e1d6169265dee04f1716887f50ff91fb5949fa56b4c1cf61f02fb53c900737ac",
+      "xex_sha256": "8d25cefdf0e38c939d3201269ca0a638275aa683e474b8628e822eb76856ca2e",
+      "system_sha256": "b78c55c5ad0b7f429731262a242a8309f2cf2407b944f62b21b646eb3ca5a5ea",
+      "work_sha256": "712c27b3d69c903c80adcdb84055cce4f7f6536f26ee437e9f0c1c2084c196ff",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "devices": [
+        "kmkjzide2",
+        "vbxe"
+      ],
+      "commands": [
+        "CLS",
+        "INFO SYS:",
+        "INFO WORK:",
+        "INFO C:",
+        "INFO RAM:",
+        "INFO",
+        "INFO >RAM:INFO.TXT",
+        "CAT RAM:INFO.TXT"
+      ],
+      "status": 0,
+      "guards": "intact",
+      "live_tasks_after_shutdown": 0,
+      "stack_watermarks": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 510,
+          "untouched_above_floor": 770
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 275,
+          "untouched_above_floor": 781
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 313,
+          "untouched_above_floor": 743
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 423,
+          "untouched_above_floor": 633
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 558,
+          "untouched_above_floor": 1746
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 44,
+          "untouched_above_floor": 212
+        }
+      ],
+      "cartridge_capacity": {
+        "bytes": 393025,
+        "headroom": 639166,
+        "fits_uncompressed": true
+      }
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "sizes": {
+    "I1_copied_query_routines_bytes": 1602,
+    "command_provider_veneers_bytes": 8,
+    "I2_resident_delta_bytes": 3660,
+    "loaded_info_routine_bytes": 6752,
+    "loaded_info_bss_bytes": 524,
+    "loaded_info_file_bytes": 8611,
+    "loaded_info_maximum_local_peak_bytes": 46
+  },
+  "source_inputs": {
+    "abi/dos.json": "178acb0ac848e4c42d816bf4f9865f2232dfa780d3660210860882b1a889336c",
+    "abi/program.json": "c7e00610f0bac666b49e0687d6cdfa62bde50e8bbb05c4254301ffd1536b498f",
+    "lib/fs/fsvolume.act": "28c910e8722528d48e9142572f169f6e3fb7b215ad4e3c9f0d87d54f3e0ea947",
+    "lib/fs/fshandler.act": "838c04512fae2fd3ac41f78ea5e908cd070b005d2276ab987de85ece12c209ce",
+    "lib/mydos/mydos.act": "af87bd4844fdd037373d8ef9fa57bb5a978d2a5c73b7ad160615cf60c4dab181",
+    "examples/commands/info.act": "545096dff8786105276121e6ba3a9d0cdadd5e2f2eae0beb89808c14755182c5",
+    "tools/build_demo.py": "88544dd9f0ca2e324b7143a5ae9b3771d45d723adcf811edd6f485dd18300d74",
+    "tools/test_info_command.py": "a9b07625f4e0c01cd61bf655a6c5f6c6dc663c3b6c1f294ebd0675327eb06d7f",
+    "tools/test_info_demo.py": "93f8b2bb69dfbba9f45aa69f01829fe33afa2421c0aec70d33b2b5ddf2e295c6",
+    "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+    "tools/sdfs_reference.cpp": "0d67232b165a10d421fcc31cca384c59c4c6d7b855bf16f51781051cf98194b4",
+    "tools/make_data_disk.py": "6da3f3fecf522138c9d9559d4f3dec0ad4a42c6ee10b5510ea6b6910f80411ba"
+  }
+}

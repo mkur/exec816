@@ -108,7 +108,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     if rom_override is not None:
         rom=Path(rom_override).resolve()
         require(len(rom.read_bytes())==pin['rom']['bytes'],'Diagnostic ROM size differs from platform ROM')
-    emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap else pin['emulator']['sha256']
+    emulator_hash=pin['mouse_input']['tooling']['sha256'] if bitmap and not ide_only else pin['emulator']['sha256']
     require(sha256(binary)==emulator_hash,'Unpinned demo emulator')
     require(rom_override is not None or sha256(rom)==pin['rom']['sha256'],'Unpinned demo ROM')
     def at(name):return next(d['address'] for d in p['image']['data'] if ('_SHELLAPP_' if shell_only else '_DEMO_')+name.upper()+'_' in d['name'])
@@ -116,7 +116,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         from test_ideplus import ide_emulator
         fixture=out/'ide-walkthrough.img'
         shutil.copyfile(media_path,fixture)
-        environment=ide_emulator(out,fixture,writable=True)
+        environment=ide_emulator(out,fixture,writable=True,pin=pin)
     elif ideplus:
         from test_ideplus import ide_emulator
         fixture=out/'ideplus/ideplus.img'

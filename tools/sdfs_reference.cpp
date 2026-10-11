@@ -59,10 +59,14 @@ static void export_tree(IATDiskFS& disk, ATDiskFSKey parent, const fs::path& pat
 
 int main(int argc, char **argv) {
     try {
-        if (argc != 4 && argc != 6) throw std::runtime_error("make IMAGE DIRECTORY SECTORS BYTES | extract IMAGE DIRECTORY");
+        if (argc != 4 && argc != 6 && argc != 7) throw std::runtime_error("make IMAGE DIRECTORY SECTORS BYTES [LABEL] | extract IMAGE DIRECTORY");
         const bool make = std::string(argv[1]) == "make";
-        if (make != (argc == 6) || (!make && std::string(argv[1]) != "extract"))
+        if (make != (argc >= 6) || (!make && std::string(argv[1]) != "extract"))
             throw std::runtime_error("Invalid operation");
+        const std::string label = argc == 7 ? argv[6] : "EXEC816";
+        if (label.size() > 8 || !std::all_of(label.begin(), label.end(),
+                [](unsigned char c) { return c >= 32 && c <= 126; }))
+            throw std::runtime_error("Label must contain at most eight printable ASCII bytes");
         vdrefptr<IATDiskImage> image;
         auto image_path = fs::path(argv[2]).wstring();
         if (make) {
@@ -70,7 +74,7 @@ int main(int argc, char **argv) {
             ATCreateDiskImage(std::stoul(argv[4]), size >= 512 ? 0 : 3, size, ~image);
         }
         else ATLoadDiskImage(image_path.c_str(), ~image);
-        std::unique_ptr<IATDiskFS> disk(make ? ATDiskFormatImageSDX2(image, "EXEC816") : ATDiskMountImageSDX2(image, true));
+        std::unique_ptr<IATDiskFS> disk(make ? ATDiskFormatImageSDX2(image, label.c_str()) : ATDiskMountImageSDX2(image, true));
         if (make) {
             import_tree(*disk, ATDiskFSKey::None, argv[3]);
             disk->Flush();

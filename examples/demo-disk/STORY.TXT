@@ -53,6 +53,17 @@ and length; HEXDUMP shows their values:
   HEXDUMP SYS:STORY.TXT LENGTH 32
 
 SYS: is read-only. WORK: is writable.
+INFO shows disk space, labels and access:
+  INFO
+  INFO SYS:
+  INFO WORK:
+  INFO C:
+K means KiB, rounded down. Disk usage
+includes filesystem metadata. RAM:
+shows allocated memory and grows as
+needed, with no fixed capacity or free
+space figure. Assigns select their
+containing disk, not an extra volume.
 RAM: holds temporary files in memory:
   ECHO a quick note >RAM:NOTE.TXT
   CAT RAM:NOTE.TXT

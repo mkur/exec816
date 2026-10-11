@@ -69,7 +69,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'EXEC816.XEX').unlink(missing_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES')+(('TICK',) if gem_desktop else ()):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','INFO','PRIMES')+(('TICK',) if gem_desktop else ()):
         command_source=ROOT/'examples/gem-browser/tick.act' if name=='TICK' else ROOT/f'examples/commands/{name.lower()}.act'
         commands[name]=compile_command(toolchain,command_source,command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
@@ -116,7 +116,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
     make(output/'work.atr',workspace,filesystem=filesystem,
-         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS)
+         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
     mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     if ideplus:
@@ -131,7 +131,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                      sectors=1440,sector_bytes=512,access='readwrite'),
                 dict(alias='RAM',format=3)]
         (workspace/'README.TXT').write_text('Disposable IDE WORK: partition.\nBack up ideplus.img before experimenting.\n')
-        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440)
+        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440,label='WORK')
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
@@ -166,6 +166,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         bitmap_pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
         if ide_only:
             pin['devices']+=bitmap_pin['devices']
+            pin['machine']['addons']=bitmap_pin['machine']['addons']
         else:
             pin=bitmap_pin
     else:
@@ -189,13 +190,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Application licence: GPL-2.0-or-later.\n')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
-                   sector_bytes=sector_bytes,sectors=system_sectors)
+                   sector_bytes=sector_bytes,sectors=system_sectors,label='SYS')
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     if ideplus:
         from ideplus_media import filesystem_fixture
         fixture=output/'ideplus';fixture.mkdir(exist_ok=True)
         make(fixture/'system.atr',media,binary_names=binary_names,filesystem='sdfs',
-             sector_bytes=512,sectors=system_kib*1024//512)
+             sector_bytes=512,sectors=system_kib*1024//512,label='SYS')
         raw,mapping=filesystem_fixture((fixture/'system.atr').read_bytes())
         (fixture/'ideplus.img').write_bytes(raw)
         (fixture/'mounts.json').write_text(json.dumps(dict(system_mount=mount_config.get('system_mount'),mounts=mounts),indent=2)+'\n')
@@ -370,7 +371,7 @@ def finalize_ide_media(output,record):
     (output/'media/EXEC816.XEX').write_bytes(xex)
     binary_names={'C/'+name for name in record['commands']}|{'EXEC816.XEX'}
     files=make(output/'system.atr',output/'media',binary_names=binary_names,
-               filesystem='sdfs',sector_bytes=512,sectors=1440)
+               filesystem='sdfs',sector_bytes=512,sectors=1440,label='SYS')
     record['files']['EXEC816.XEX']=dict(bytes=len(xex),sha256=hashlib.sha256(xex).hexdigest())
     record['ide_mapping']=write(output/'ideplus.img',output/'system.atr',output/'work.atr')
     for name in ('system.atr','system.verification.json','ideplus.img'):

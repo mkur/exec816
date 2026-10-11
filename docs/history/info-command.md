@@ -77,3 +77,37 @@ profiles and relocation records. Maximum emitted local routine peak is 46 bytes;
 that is not a whole-call-chain stack measurement. No new allocation or Task is
 made by INFO itself. Existing loaded-Process stacks and guards remain unchanged:
 reserved bank-zero delta is zero fixed, zero per Task and zero idle.
+
+## I4 demo integration
+
+Both standard/SIO and VBXE/IDE-only demos include C:INFO, the updated story and
+distinct SpartaDOS SYS/WORK labels. The independent producer accepts an optional
+eight-byte printable label; its EXEC816 default and unrelated fixture bytes are
+preserved. Label read-back and complete file extraction verify the generated
+media. IDE finalization retains SYS when embedding the matching boot XEX.
+
+Development checks pass: 447 host tests, generated DOS/COMMAND/C layout checks,
+and the exact packaged standard and VBXE/IDE demos through OF816's five-second
+autoboot. Physical-key sessions verify SYS/WORK/RAM, C: assign resolution,
+all-volume output, RAM redirection/read-back, shutdown, guards and ownership.
+SYS/WORK counts agree with independent allocation audits; the IDE pair uses
+native 512-byte sectors. The combined VBXE/IDE test environment now installs
+both declared devices and checks the combined machine pin. Build intermediates,
+development manifests and test evidence remain outside the distribution ZIPs.
+This is development evidence, not release qualification.
+
+The final OF816 boot XEX sizes are 338,469 bytes (standard) and 393,025 bytes
+(VBXE/IDE), leaving 693,722 and 639,166 bytes within the cartridge payload limit.
+The IDE ZIP includes both Atarimax cartridge variants. Packages are under
+build/info/demo-standard and build/info/demo-vbxe-ide; they have not been
+published. The refreshed IDE bundle retains matching OF816/media checksums.
+
+All slices preserve zero additional reserved bank-zero bytes, fixed, per Task
+and idle, including guards, alignment and unused reserved capacity. I2 adds
+3,660 resident bytes across FSVOLUME, MyDOS validation and handler dispatch.
+Its mutation/query fixture observes a maximum filesystem-worker watermark of
+584 bytes within the existing 1,312-byte stack, with interrupt headroom intact;
+watermarks are lower bounds, not independent whole-system qualification.
+Detailed result files remain under build/info; the
+[compact evidence record](info-command-evidence.json) records pins, sizes and
+execution scope.
