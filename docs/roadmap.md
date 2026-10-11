@@ -51,11 +51,14 @@ Retaining dirty metadata between Write calls until Flush/Close remains a
 separate design decision.
 
 The [filesystem and DOS performance plan](plans/filesystem-dos-performance-implementation-plan.md)
-addresses the shared SIO/IDE copy loops, repeated validation, broad metadata
-invalidation, selected-file validation and driver coordination costs. FP0–FP5
-retain the current interfaces and write/cancellation contracts. FP6 first records
-buffer/cache/range design decisions before implementing the remaining measured
-data-path changes.
+is complete through FP0–FP5 and the selected FP6 changes at the development tier.
+Shared bulk transfers, cheaper validation/invalidation and bounded IDE writes
+reduce matched cold/warm IDE COPY to 1.78/1.22 seconds; see the
+[execution record](history/filesystem-dos-performance.md).
+The next [bounded IDE read ranges design](plans/ide-read-ranges-design.md) proposes
+four-sector regular-file reads through shared staging while preserving cache
+hits, failure isolation and bounded cancellation. Existing-file overwrite
+batching is deferred; refreshing the demo packages follows the read work.
 
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent

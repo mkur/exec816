@@ -7,8 +7,9 @@
 
 Status: complete. FP0–FP5 and the selected FP6 implementations have passed
 development checks. FP6 retains piece tags with cheaper bookkeeping and adds
-bounded IDE writes for contiguous new payloads. Read ranges and a packed
-variable-sector cache remain future work. See the
+bounded IDE writes for contiguous new payloads. Read ranges now have a separate
+[proposed design](ide-read-ranges-design.md); a packed variable-sector cache
+remains future work. See the
 [execution record](../history/filesystem-dos-performance.md).
 Implement one executable
 slice at a time, record its development results and memory costs, and commit

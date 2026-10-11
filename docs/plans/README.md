@@ -132,10 +132,14 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [Bounded IDE read ranges design](ide-read-ranges-design.md): proposed four-sector
+  regular-file reads through shared staging, with cache boundaries and explicit
+  failure/cancellation semantics. Existing-file overwrite batching is deferred.
 - [Filesystem and DOS performance](filesystem-dos-performance-implementation-plan.md):
-  planned FP0–FP6 slices for shared bulk copies, simpler validation, targeted
-  metadata invalidation, cheaper selected-file checks and fewer driver crossings;
-  cache representation, direct buffer transfers and IDE ranges have a design gate.
+  FP0–FP5 and selected FP6 changes are complete at the development tier, including
+  shared bulk copies, simpler validation, targeted metadata invalidation, cheaper
+  selected-file checks, direct sector transfers and bounded IDE writes. See the
+  [execution record](../history/filesystem-dos-performance.md).
 - [IDE diagnostics](ide-diagnostics-implementation-plan.md): D1–D3 implemented;
   retained controller, capacity, APT and mount-failure observations for verbose
   boot and hardware reports. [Development record](../history/ide-diagnostics.md).
