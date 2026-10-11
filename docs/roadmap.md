@@ -24,6 +24,12 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
+Next: implement loadable `INFO` using the
+[four-slice plan](plans/info-command-implementation-plan.md). Report volume
+labels, capacity, used/free space, backing device and access through small
+public DOS queries. Use existing disk allocation counts; keep RAM's dynamic
+capacity explicit and give demo SYS/WORK disks distinct filesystem labels.
+
 The [directory listing performance slice](history/directory-listing-performance.md)
 completes DL0–DL6: bulk copies, one Write per row, map summaries and a bounded
 cache of completed SpartaDOS extents. Matched warm root/SYS:C listings improve
