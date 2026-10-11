@@ -1,0 +1,43 @@
+--- a/aes-objects.c
++++ b/aes-objects.c
+@@ -224,14 +224,32 @@
+             }
+             /* fall through */
+         case G_BOXTEXT:
+-            if (th != 0) {
+-                gsx_attr(0, MD_REPLACE, bcol);
+-                gr_box(t.g_x, t.g_y, t.g_w, t.g_h, th);
+-            }
+-            if (type != G_IBOX) {
+-                gr_inside(&t, tmpth);
+-                gr_rect(icol, ipat, &t);
+-                gr_inside(&t, (WORD)-tmpth);
++            if ((type == G_BOX || type == G_BUTTON) &&
++                (ipat == IP_HOLLOW || ipat == IP_SOLID) &&
++                t.g_w > 2 * tmpth && t.g_h > 2 * tmpth) {
++                /* Derive both rectangles before clipping. An opaque interior
++                 * replaces the border's middle, including the redundant
++                 * innermost outline of an outward border. */
++                c = t;
++                if (th < 0)
++                    gr_inside(&c, th);
++                if (th != 0)
++                    gr_rect(bcol, IP_SOLID, &c);
++                c = t;
++                gr_inside(&c, tmpth);
++                gr_rect(icol, ipat, &c);
++            } else {
++                /* Transparent frames, patterns, TEDINFO and degenerate
++                 * interiors retain their existing border construction. */
++                if (th != 0) {
++                    gsx_attr(0, MD_REPLACE, bcol);
++                    gr_box(t.g_x, t.g_y, t.g_w, t.g_h, th);
++                }
++                if (type != G_IBOX) {
++                    gr_inside(&t, tmpth);
++                    gr_rect(icol, ipat, &t);
++                    gr_inside(&t, (WORD)-tmpth);
++                }
+             }
+             break;
+         default:

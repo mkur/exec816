@@ -66,7 +66,7 @@ uint16_t WidgetModelProbe(void)
     check(fills==1 && firstFill.g_x==0 && firstFill.g_y==0 &&
           firstFill.g_w==320 && firstFill.g_h==160);
     WidgetDrawObject(&context,1,0,0);
-    check(fills==10 && texts==1);
+    check(fills==3 && texts==1);
     fm_button(context.objects,1,1,&selected);
     check(context.objects[1].ob_state==SELECTED);
     fm_button(context.objects,1,1,&selected);

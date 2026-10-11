@@ -5,7 +5,7 @@ the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,
 fast complete cells inside horizontally clipped strings,
 one drawing unit for AES objects up to 32 rows, direct solid rectangles bounded
 by blitter work, simpler opaque box/button fills and matched desktop latency
-checks. TX1–TX5 are implemented and development-tested; TX6–TX7 remain.
+checks. TX1–TX6 are implemented and development-tested; TX7 remains.
 Larger AES objects keep 16-row strips, with
 unchanged generic blit-list limits and VRAM reservations.
 

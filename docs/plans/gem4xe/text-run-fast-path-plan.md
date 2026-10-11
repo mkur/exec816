@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Drawing traces](../../history/g4bench-drawing-traces.md) ·
 [Earlier text optimization](text-viewer-performance-plan.md)
 
-Status: TX1–TX5 implemented and development-tested; TX6–TX7 pending. Continue in
+Status: TX1–TX6 implemented and development-tested; TX7 pending. Continue in
 executable slices, committing each after its focused development checks pass.
 See [slice results](../../history/gem-rendering-performance.md).
 

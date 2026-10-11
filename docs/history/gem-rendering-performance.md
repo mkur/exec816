@@ -409,3 +409,53 @@ Reproduce with the recorded release-host wrapper, `test_vbxe_tables.py` in
 raw/opt, `test_widget_pixels.py`, `test_aes_server.py --suite vdi` and
 `--suite objects`, and `test_display_borrow.py`. Matched application probes use
 `trace_g4bench.py --load idle` and `measure_gem_feedback.py` with fresh outputs.
+
+## TX6: two-fill opaque boxes and buttons
+
+The maintained AES extraction patch replaces uniform `G_BOX`/`G_BUTTON`
+border loops with an outer border-colour fill and an interior fill. It derives
+both from the original geometry before clipping. Zero thickness emits only
+the interior; negative thickness expands the outer rectangle. Hollow still
+means the hosted white interior. Transparent frames, patterns, TEDINFO and
+degenerate interiors retain their existing paths. Labels, selected XOR,
+disabled stipple and focus decoration retain their order. The donor checkout
+is unchanged; retained widgets and caller-local objects use the same patch.
+
+[TX6 evidence](../development/gem-rendering-tx6.json) records 822 optimized
+object assertions, eleven object-unit scenes and 21 additional independent
+border/state scenes. Coverage includes inward/outward/zero borders, positive,
+zero and negative interior sizes, odd coordinates, colour zero, every clipped
+edge, two disjoint visible regions, 33-row strip boundaries, overlapping
+children and pointer restoration. The existing hosted empty-interior and
+white-stipple behavior is preserved; these cases do not claim broader donor
+VDI compatibility. TEDINFO/editing and all 36 primitive/retained-widget scenes
+also pass. The host suite passes 452 tests with four historical-source skips.
+The object fixture peaks at 952 stack bytes, leaving 328 above its floor.
+
+The unchanged dialog now makes **14 logical fills**, as planned, versus TX5's
+59 and the original 75. Fixed fill records fall from 145 to 42; borrows,
+uploads and launches remain eight. There is no extra internal-drain cost in
+this workload. TX5 → TX6 cycle-trace means are **118.758 → 90.292 ms elapsed**
+and **71.591 → 49.155 ms Task CPU**. The bar and text controls are essentially
+unchanged.
+
+Forty matched Panel presses give median/p95 **100.288/120.496 ms**, compared
+with TX5's 80.331/100.289 ms. This returns to the matched TX3 baseline rather
+than preserving TX5's isolated feedback gain. Files selection remains
+100.288/160.411 ms. These frame-granular input-to-scanout results include
+application waits and scheduling; lower drawing CPU does not establish lower
+feedback latency. TX7 records the combined comparison and repeated-load gate.
+
+Reservation changes are **0 fixed, 0 per public Task and 0 idle bank-zero bytes**,
+including guards, alignment and unused capacity; VRAM growth is **0 bytes**.
+Resident C payload adds 272 code bytes and zero data bytes; the existing local
+rectangle is reused. This is development validation, not hosted-system or
+real-hardware qualification.
+
+The intermediate OF816 ZIP is `build/gem-rendering-tx6/demo/exec816-demo.zip`
+(540,150 bytes), SHA-256
+`0a61d096bfd5b01ba65828d873ba02ff45dccb775d58ba55e95558e81926e833`.
+Reproduce with the release-host wrapper, `test_aes_server.py --suite objects
+--mode opt`, `test_widget_pixels.py --mode opt`, `trace_g4bench.py --load idle`
+and `measure_gem_feedback.py`. Build the demo using the standard `build_demo.py`
+GEM desktop/SDFS/256-byte/720-KiB profile.
