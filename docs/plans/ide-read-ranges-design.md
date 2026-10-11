@@ -4,9 +4,9 @@
 [IDE device](../reference/ideplus-device.md) ·
 [Block adapter](../reference/block-io.md)
 
-Status: accepted for implementation through the
-[RR1–RR4 plan](ide-read-ranges-implementation-plan.md). Existing-file overwrite
-batching is deferred.
+Status: implemented through the [RR1–RR4 plan](ide-read-ranges-implementation-plan.md)
+at the development tier; see the [results](../history/ide-read-ranges.md).
+Existing-file overwrite batching is deferred.
 
 Read up to four consecutive 512-byte IDE sectors with one device request and
 one ATA command. Use the filesystem worker's shared staging buffer, publish only
@@ -29,12 +29,12 @@ extent; there is no speculative read ahead. COPY keeps its 16 KiB buffer.
 
 ## Device request and completion
 
-Add `READ_SECTORS`, proposed command 14, and `MAX_READ_SECTORS=4` to
+Add `READ_SECTORS=14` and `MAX_READ_SECTORS=4` to
 [ideplus.json](../../abi/ideplus.json), with a new ABI revision and generated
 definitions. Keep READ_SECTOR and the IOStdReq layout unchanged. The raw physical
 unit and readable APT units use the same range rules.
 
-| Field or outcome | Proposed contract |
+| Field or outcome | Contract |
 | --- | --- |
 | `io_Offset` | First zero-based sector within the opened unit. |
 | `io_Length` | 512, 1024, 1536 or 2048 bytes. |
@@ -66,7 +66,7 @@ Workspace. Every backend explicitly requests one sector unless the regular-file
 SDFS path selects a range. Initialize and retire this count with the operation
 so metadata, cancellation and subsequent requests cannot inherit an old range.
 
-The proposed BeginFetchRange operation takes the first sector and a count by
+The BeginFetchRange operation takes the first sector and a count by
 reference; it may reduce that count for cache boundaries. FSIO retains the
 actual submitted count in neededCount for FinishFetchRange and the payload
 consumer. A single-sector caller keeps the current BeginFetch/FinishFetch path.

@@ -1,0 +1,58 @@
+; Isolate ordinary file reads without console rendering or destination writes.
+MODULE IDEREADPERFORMANCE
+USE DOS
+USE DOSCORE
+USE FSTYPES
+USE FSBOOT
+USE BLOCKIO
+USE WRITEPERFPROBE
+USE HEAPCORE
+
+BYTE warm
+LONGINT bytes
+
+PROC ReadSource()
+
+  LET file=DOS.Open(BYTE POINTER(c"SYS:LONG.TXT"),DOS.MODE_OLDFILE)
+  IF file=NULL THEN
+    HEAPCORE.Abort($fc11)
+  FI
+  IF DOS.Read(file,BYTE POINTER($2dfff0),bytes)<>bytes THEN
+    HEAPCORE.Abort($fc12)
+  FI
+  IF DOS.Close(file)=0 THEN
+    HEAPCORE.Abort($fc13)
+  FI
+
+RETURN
+
+PROC Main()
+
+  IF FSBOOT.Ensure()=0 THEN
+    HEAPCORE.Abort($fc10)
+  FI
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  IF warm<>0 THEN
+    ReadSource()
+  ELSE
+    BLOCKIO.Invalidate(service.adapter)
+  FI
+
+  WRITEPERFPROBE.cacheHits=service.adapter.cache.hits
+  WRITEPERFPROBE.cacheMisses=service.adapter.cache.misses
+  WRITEPERFPROBE.cacheEvictions=service.adapter.cache.evictions
+  WRITEPERFPROBE.Begin()
+  ReadSource()
+  WRITEPERFPROBE.cacheHits=service.adapter.cache.hits-WRITEPERFPROBE.cacheHits
+  WRITEPERFPROBE.cacheMisses=service.adapter.cache.misses-WRITEPERFPROBE.cacheMisses
+  WRITEPERFPROBE.cacheEvictions=service.adapter.cache.evictions-WRITEPERFPROBE.cacheEvictions
+  WRITEPERFPROBE.End()
+
+  IF DOS.ReleaseContext()=0 OR FSBOOT.Stop()=0 THEN
+    HEAPCORE.Abort($fc14)
+  FI
+
+RETURN
+
+ENDMODULE

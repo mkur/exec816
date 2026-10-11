@@ -20,6 +20,7 @@ from build_command import compile_command
 from filesystem_audit import Audit
 from make_data_disk import make
 from build_ide_media import write
+from stack_budget import stack_usage
 
 
 @contextmanager
@@ -31,8 +32,11 @@ def driver_observer(program, enabled):
     from measure_sector_copy import instructions_for
     phases={}
     address='ADDRESSRANGE' if any(r['name'].startswith('M_IDEPLUSDRIVER_ADDRESSRANGE_') for r in program['image']['routines']) else 'ADDRESSSECTOR'
-    for module,name in (('IDEPLUSDRIVER','RUNREQUEST'),('IDEPLUSDRIVER','READY'),
-                        ('IDEPLUSDRIVER',address),('BLOCKWIRE','EXCHANGE')):
+    selected=[('IDEPLUSDRIVER','RUNREQUEST'),('IDEPLUSDRIVER','READY'),
+              ('IDEPLUSDRIVER',address),('BLOCKWIRE','EXCHANGE'),('SDFSFILE','CONSUME')]
+    if any(r['name'].startswith('M_SDFSFILE_PAYLOADCOUNT_') for r in program['image']['routines']):
+        selected.append(('SDFSFILE','PAYLOADCOUNT'))
+    for module,name in selected:
         routine,instructions,_,_=instructions_for(program,'M_'+module+'_'+name+'_')
         mapping=dict(consume=routine['address'],native_nmi=program['labels']['native_nmi'],native_irq=program['labels']['native_irq'])
         mapping.update({f'return{i}':item['pc'] for i,item in enumerate(x for x in instructions if x['text']=='RTL')})
@@ -65,6 +69,9 @@ def phase_summary(out, observer):
     selected=[row for row in events if start<=row[0]<=finish]
     result={}
     for name,mapping in phases.items():
+        if not any(e[0]=='cpu' and int(e[4],16)==mapping['consume'] for _,e in selected):
+            result[name]=dict(samples=0,estimated_uninterrupted_total_us=0)
+            continue
         rows=samples(selected,mapping)
         stats=summarize(rows)
         result[name]=dict(**stats,estimated_uninterrupted_total_us=len(rows)*stats['uninterrupted_us']['total']['mean_us'])
@@ -77,10 +84,11 @@ def frozen_module(path):
     return module
 
 
-def prepare(out,frozen=None,open_bytes=0,count_comparisons=False,validation_source=None):
+def prepare(out,frozen=None,open_bytes=0,count_comparisons=False,validation_source=None,
+            read_only=False,read_baseline=None):
     out.mkdir(parents=True,exist_ok=True)
     t=compiler(ROOT/'build/actionc',release=True)
-    instrument(out,frozen)
+    instrument(out,read_baseline or frozen)
     probe=(out/'writeperfprobe.act').read_text()
     probe=probe.replace('PUBLIC BYTE armed,active,finished','PUBLIC BYTE armed,active,finished\nPUBLIC LONGCARD ataReads,ataWrites,ataFlushes,prepReads,verifyReads')
     # Count only ATA commands in the measured source-open to target-close interval.
@@ -122,7 +130,8 @@ RETURN
         probe=probe.replace('PUBLIC BYTE armed,active,finished','PUBLIC BYTE armed,active,finished\nPUBLIC LONGCARD comparisons')
     (out/'writeperfprobe.act').write_text(probe)
     driver=out/'ideplusdriver.act'
-    original=read_source(frozen/'lib/io/ideplusdriver.act' if frozen else library_file('ideplusdriver.act'))
+    comparison=read_baseline or frozen
+    original=read_source(comparison/'lib/io/ideplusdriver.act' if comparison else library_file('ideplusdriver.act'))
     import re
     def include(match):
         path=Path(match[1])
@@ -159,6 +168,14 @@ RETURN
         (out/'sdfswrite.act').write_text(source)
     program_source=out/'write_performance.act'
     program_source.write_text(program_source.read_text().replace('$efff0','$2dfff0'))
+    if read_only:
+        program_source.write_text(read_source(ROOT/'tests/programs/ide_read_performance.act'))
+        path=read_baseline/'lib/fs/fsio.act' if read_baseline else library_file('fsio.act')
+        io=read_source(path).replace('USE FSSTATUS\n','USE FSSTATUS\nUSE WRITEPERFPROBE\n',1)
+        marker='  service.work.operations==+1'
+        require(io.count(marker)==1,'Changed filesystem read checkpoint')
+        io=io.replace(marker,'  IF WRITEPERFPROBE.active<>0 THEN\n    WRITEPERFPROBE.logicalReads==+1\n  FI\n'+marker)
+        (out/'fsio.act').write_text(io)
     if open_bytes:
         program_source.write_text(f'''MODULE WRITEROPEN
 USE EXEC
@@ -237,15 +254,19 @@ ENDMODULE
     compile_mounts=[{**m,'sectors':1440,'sector_bytes':512} for m in mounts]
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=4352
     (out/'profile.json').write_text(json.dumps(profile))
-    p=build(t,out/'write_performance.act',out,optimize=True,tasks=True,task_capacity=8,console_deferred=True,system_mount='SYSTEM',dos_mounts=compile_mounts,memory_profile=out/'profile.json',image_data=[(0x2dffd0,bytes([0xa5])*(16384+64)),(0x320000,bytes(8192))])
+    buffer_bytes=len(content) if read_only else 16384
+    p=build(t,out/'write_performance.act',out,optimize=True,tasks=True,task_capacity=8,console_deferred=True,system_mount='SYSTEM',dos_mounts=compile_mounts,memory_profile=out/'profile.json',image_data=[(0x2dffd0,bytes([0xa5])*(buffer_bytes+64)),(0x320000,bytes(8192))])
     return p,wire,mapping,content,size,command,tree
 
 
-def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None,driver_timing=False):
+def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None,driver_timing=False,
+        read_only=False,read_baseline=None):
     require(not count_comparisons or (open_bytes and from_build is None), 'Count comparisons in a fresh Open probe')
     require(validation_source is None or count_comparisons, 'Source overrides are comparison-count probes only')
     require(0 <= open_bytes <= 524288, 'Invalid selected-file size')
     require(not open_bytes or not (frozen or warm), 'Open timing uses current cold media')
+    require(not read_only or not (frozen or open_bytes or count_comparisons), 'Choose an isolated read or write workload')
+    require(read_baseline is None or (read_only and from_build is None), 'Read baseline requires a fresh isolated-read build')
     out.mkdir(parents=True,exist_ok=True)
     if from_build:
         require(frozen is None,'Choose a retained build or frozen sources')
@@ -267,13 +288,19 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         tree=from_build/'source'
         command=tree/'COPY16'
     else:
-        p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source)
+        p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source,read_only,read_baseline)
+    media_before=sha256(out/'ideplus.img')
     with driver_observer(p,driver_timing) as observer, ide_emulator(out,out/'ideplus.img',writable=True) as b:
         def before(b):
             if driver_timing:
                 b.profile_start()
             if wire is not None:
                 b.memload(p['build']['task_storage']['BASE']+0x900,wire)
+            if read_only:
+                for field,value in [('WARM',bytes([warm])),('BYTES',len(content).to_bytes(4,'little'))]:
+                    at=next(d['address'] for d in p['image']['data'] if '_IDEREADPERFORMANCE_'+field+'_' in d['name'])
+                    b.memload(at,value)
+                return
             if open_bytes:
                 return
             for field,value in [('WARM',bytes([warm])),('VARIANT',b'\1'),('ARGUMENTS',b'SYS:LONG.TXT WORK:COPY.BIN\0'),('ARGUMENTBYTES',len(b'SYS:LONG.TXT WORK:COPY.BIN').to_bytes(2,'little'))]:
@@ -283,6 +310,7 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         if driver_timing:
             b.profile_stop()
         clean_ownership(b,p,out)
+        stacks=stack_usage(b,p['build']['memory'])
         view={**p['image'],'data':[d for d in p['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
         counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions','logicalReads')}
         if open_bytes:
@@ -293,6 +321,10 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         for name in ('kernelCalls','taskSwitches'):
             if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
                 counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
+        if read_only:
+            require(b.memdump(0x2dfff0,len(content))==content,'Read sink bytes differ')
+            require(b.memdump(0x2dffd0,32)==bytes([0xa5])*32 and
+                    b.memdump(0x2dfff0+len(content),32)==bytes([0xa5])*32,'Read sink guard changed')
     media=out/'ideplus.img'
     if frozen:
         restored=frozen_module(frozen/'tools/ideplus_media.py').filesystem_atr(media.read_bytes(),mapping['partitions'][1],(out/'work.atr').read_bytes())
@@ -300,7 +332,10 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         from ideplus_media import filesystem_atr
         restored=filesystem_atr(media.read_bytes(),mapping['partitions'][1],(out/'work.atr').read_bytes())
     audit=Audit(restored);allocation=audit.sdfs()
-    require(audit.files=={'KEEP.BIN':bytes(range(256)),'COPY.BIN':content},'COPY persistence differs')
+    expected={'KEEP.BIN':bytes(range(256))}
+    if not read_only:expected['COPY.BIN']=content
+    require(audit.files==expected,'Filesystem persistence differs')
+    if read_only:require(sha256(media)==media_before and counts['ataWrites']==0,'Read changed media')
     require(counts['completedWrites']==counts['ataWrites'],'A write did not complete')
     require(counts['verifyReads']==(counts['ataWrites'] if frozen else 0),'Verification phase count differs')
     require(counts['prepReads']==(counts['ataWrites'] if frozen else 0),'Preparation phase count differs')
@@ -310,18 +345,21 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
     result['observer_sha256']=sha256(Path(__file__))
     result['timing_valid']=not count_comparisons
     result['validation_source']=str(validation_source) if validation_source else None
-    result['workload']='writable-open-close' if open_bytes else 'loaded-copy'
+    result['workload']='isolated-read' if read_only else 'writable-open-close' if open_bytes else 'loaded-copy'
+    result['read_baseline']=str(read_baseline) if read_baseline else None
+    result['stacks']=stacks
     result['selected_file_bytes']=open_bytes
     result['warm_source']=warm
     result['retained_build']=str(from_build) if from_build else None
     if observer:
         result['driver_phases']=phase_summary(out,observer)
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
-    print('IDE writable Open/Close:' if open_bytes else 'IDE loaded COPY:',size,frames,'frames',counts,flush=True)
+    print('IDE isolated read:' if read_only else 'IDE writable Open/Close:' if open_bytes else 'IDE loaded COPY:',size,frames,'frames',counts,flush=True)
     return result
 
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--frozen-sources',type=Path)
     a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true');a.add_argument('--open-bytes',type=int,default=0);a.add_argument('--count-comparisons',action='store_true');a.add_argument('--validation-source',type=Path)
     a.add_argument('--driver-timing',action='store_true')
-    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source,v.driver_timing)
+    a.add_argument('--read-only',action='store_true');a.add_argument('--read-baseline',type=Path)
+    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source,v.driver_timing,v.read_only,v.read_baseline)

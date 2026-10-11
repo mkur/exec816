@@ -77,3 +77,53 @@ Workspace grows from 172 to 174 bytes; both use a 176-byte rounded allocation.
 Combined extra upper reservation is therefore exactly 1536 bytes. No per-handle,
 per-mount, Task stack, DP, guard or pool reservation grows. Reserved bank-zero
 deltas remain 0 fixed / 0 per-Task / 0 idle bytes.
+
+## RR4 Matched measurements
+
+Loaded COPY reuses the FP6 native baseline. The isolated-read comparison uses a
+development-only library snapshot of commit 9f17b4d and the same current probe,
+compiler, ROM, BIOS, disk geometry and LONG.TXT bytes. Each case starts with
+fresh media; command loading and cache warming precede the measured interval.
+The read sink is RAM, with exact byte/guard checks and unchanged-media checks.
+COPY persistence and allocation are independently audited.
+
+| Workload | PAL frames before → after | ATA READ before → after | ATA WRITE | Gateway calls before → after |
+| --- | --- | --- | --- | --- |
+| IDE cold COPY | 89 → 74 | 54 → 20 | 27 | 1582 → 1000 |
+| IDE warm COPY | 61 → 61 | 4 → 4 | 27 | 764 → 718 |
+| IDE cold isolated read | 42 → 28 | 50 → 16 | 0 | 941 → 354 |
+| IDE warm isolated read | 12 → 13 | 0 → 0 | 0 | 81 → 106 |
+| SIO 256-byte cold COPY | 1940 → 1940 | — | — | 29221 → 29223 |
+| SIO 256-byte warm COPY | 1011 → 1011 | — | — | 15385 → 15402 |
+
+Cold IDE COPY takes 1.48 seconds, about 17% less time. The cold isolated read
+takes 0.56 seconds, one third less time. Passive full-bank observation confirms
+54 read and 61 write PIO sector spans for COPY, and 50 read spans for the
+isolated read. Coalescing reduces requests/commands, not payload bytes.
+The writer's logical accesses remain 50, while cold-read FSIO fetches fall
+from 52 to 18. Cache misses remain 54 for COPY and 50 for the isolated read.
+
+The cache-only read costs one additional 20 ms frame. Its 49 bounded map
+lookahead calls account for approximately 9.7 ms of uninterrupted CPU time;
+payload consumption changes by less than 1 ms. It has the same 50 served cache
+hits and 51 logical fetches, no ATA activity, and two additional Task switches.
+These costs and frame/scheduling boundaries explain the small warm difference.
+Hoisting request/map bounds out of the lookahead loop reduced its observed cost
+from about 24 ms. Warm COPY and accurately timed Generic 57600 SIO COPY retain
+their baseline frame counts. SIO remains at 101/4 READs and 108 PUTs for cold/warm.
+
+Emitted routine bytes in the matched COPY build grow from 914317 to 918742
+(+4425 bytes). Upper reservation grows by 1536 bytes; fixed, per-Task and idle
+bank-zero deltas stay zero, including guards/alignment/unused capacity. The
+emitted IDE worker bound remains 758 bytes, with 266 bytes headroom. Loaded
+COPY's filesystem stack watermark is 648 bytes, with 408 bytes remaining above
+the floor. Stack watermarks and image/source identities are retained in the compact result.
+Observed stack headroom is development evidence, not a worst-case proof.
+
+Host checks: 447 passed; IDE definition generation and changed-document
+content/link checks pass. Raw runs are limited to the small device/layout ABI
+probes. Optimized coverage includes range faults, cancellation, NMI/transport
+coexistence, adapter allocation/cache behavior, filesystem bytes/positions and
+matched measurements. This does not qualify physical hardware or a release.
+Direct-to-application ranges, cross-map gathering, speculative read ahead and
+existing-file overwrite batching remain unsupported/deferred.

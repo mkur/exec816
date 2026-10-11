@@ -55,9 +55,11 @@ is complete through FP0–FP5 and the selected FP6 changes at the development ti
 Shared bulk transfers, cheaper validation/invalidation and bounded IDE writes
 reduce matched cold/warm IDE COPY to 1.78/1.22 seconds; see the
 [execution record](history/filesystem-dos-performance.md).
-The next [bounded IDE read ranges design](plans/ide-read-ranges-design.md) proposes
-four-sector regular-file reads through shared staging while preserving cache
-hits, failure isolation and bounded cancellation. Existing-file overwrite
+The [bounded IDE read ranges plan](plans/ide-read-ranges-implementation-plan.md)
+is also complete at the development tier. Four-sector regular-file reads through
+shared staging reduce cold IDE COPY to 1.48 seconds; warm COPY remains at 1.22
+seconds. See the [read-range results](history/ide-read-ranges.md) for cache-only
+costs, failure isolation and bounded cancellation. Existing-file overwrite
 batching is deferred; refreshing the demo packages follows the read work.
 
 The [background command and primes slice](history/background-pane-primes.md)
