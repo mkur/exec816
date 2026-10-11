@@ -42,3 +42,30 @@ The uninterrupted SDFS copy loop takes a median 2,252.3 µs for 128 bytes,
 968.0 µs for 55 bytes and 4,504.2 µs for 256 bytes in the isolated emitted
 fixture. The current compiler shares its return epilogue; the observer accepts
 one or two RTL exits and still verifies its single byte-loop boundary.
+
+## FP1: native transfers
+
+SDFSFILE, MYDOSFILE and BLOCKIO now use the existing native Move primitive.
+Sparse spans and unused new-sector tails use Clear; no preliminary zero-sector
+writes were added. MyDOS trailers and partial-sector bytes remain intact.
+
+The transfer portion of Consume is 167.3 µs for 128 bytes, 86.2 µs for 55
+bytes and 311.2 µs for 256 bytes. Loaded IDE COPY falls from 151 to 111 frames
+(3.02 to 2.22 s), retaining exactly 54 reads and 61 writes. Accurate SIO
+256-byte COPY changes from 1,953 to 1,941 frames, retaining 101 reads and
+108 writes; mechanical timing dominates. Baseline MyDOS 128-byte writes take
+3,922 frames with 99 reads and 341 writes; it is a different format/workload,
+not a throughput comparison with SpartaDOS.
+
+Optimized emitted checks pass for SDFS 128-byte sparse/partial reads, MyDOS
+256-byte reads/seeks/corruption/trailers and 70,003-byte far buffers, and real
+block writes including an external buffer crossing a bank boundary, short
+boot sectors, cache-disabled operation, failed completions and persisted
+neighbours. The old MyDOS host provider now reuses existing test-only bank-zero
+scratch, avoiding far-write injection while native code spins. Its unmapped
+address case uses bank $40; bank $10 is valid in today's 4 MiB profile.
+
+[Compact results](../development/filesystem-performance-results.json) retain
+code size and hashes. Production records/buffers and stack reservations are
+unchanged: bank-zero delta 0 fixed / 0 per-Task / 0 idle. Guards and Task
+cleanup pass; these are bounded checks, not exact worst-case stack proofs.

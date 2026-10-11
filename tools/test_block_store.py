@@ -1,4 +1,4 @@
-"""Focused real SIO verified writes through the common block request prefix."""
+"""Focused real SIO unverified writes through the common block request prefix."""
 import json
 from native_program import ROOT,build,compiler,execute,require,verify_machine,read_build,sha256
 from os_boundary import emulator
@@ -16,7 +16,7 @@ if __name__=='__main__':
         for n,h in p['build']['task_inputs'].items():
             require(sha256(ROOT/n)==h,'Changed input: '+n)
     else:
-        p=build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/block_write.act',out,
+        p=build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/block_write.act',out,
                 optimize=True,tasks=True,image_data=[(0xafff0,bytes(256))])
     disk=out/'disk.atr';disk_image(disk,256,65535)
     original=disk.read_bytes()
@@ -42,4 +42,4 @@ if __name__=='__main__':
         expected[offset:offset+length]=bytes(i^seed for i in range(length))
     require(disk.read_bytes()==expected,'Persisted sector bytes or neighbours differ')
     (out/'results.json').write_text(json.dumps(dict(status='pass',build=p['build'],runtime=runtime,machine=machine,checks=checks),indent=2)+'\n')
-    print('Block verified writes and persisted neighbours passed',flush=True)
+    print('Block writes and persisted neighbours passed',flush=True)

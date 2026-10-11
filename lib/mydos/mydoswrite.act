@@ -252,7 +252,7 @@ RETURN(EntryIO(service,entry,1))
 ; Reserve and initialize a bounded extension before linking it to the tail.
 LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     BYTE POINTER source LONGINT length CARD previous)
-  CARD count,index,part,tail,next
+  CARD count,index,part,next
   LONGINT completed
 
   LET state=FSWRITEIO.State(service)
@@ -277,11 +277,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     FI
 
     A816MEMORY.Move(state.data,source+SIZE(completed),SIZE(part))
-    tail=part
-    WHILE tail<payload DO
-      state.data(tail)=0
-      tail==+1
-    OD
+    A816MEMORY.Clear(@state.data(part),SIZE(payload-part))
 
     next=0
     IF index+1<count THEN
@@ -408,11 +404,7 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   A816MEMORY.Move(@state.data(within),source,SIZE(part))
   IF within+part>CARD(used) THEN
     used=BYTE(within+part)
-    index=CARD(used)
-    WHILE index<payload DO
-      state.data(index)=0
-      index==+1
-    OD
+    A816MEMORY.Clear(@state.data(CARD(used)),SIZE(payload-CARD(used)))
   FI
 
   Trailer(service,@file.entry,state.next,used)

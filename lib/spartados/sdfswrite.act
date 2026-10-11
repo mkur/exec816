@@ -609,7 +609,7 @@ RETURN
 ; Initialize one bounded payload group; publication belongs to the Write step.
 LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     BYTE POINTER source LONGINT length)
-  CARD count,index,part,tail,offset
+  CARD count,index,part,offset
   LONGINT completed
 
   LET state=FSWRITEIO.State(service)
@@ -645,11 +645,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     FI
 
     A816MEMORY.Move(state.data,source+SIZE(completed),SIZE(part))
-    tail=part
-    WHILE tail<sectorBytes DO
-      state.data(tail)=0
-      tail==+1
-    OD
+    A816MEMORY.Clear(@state.data(part),SIZE(sectorBytes-part))
 
     IF FSWRITEIO.Write(service,state.reserved(index),state.data)=0 THEN
       RETURN(0)
@@ -677,7 +673,7 @@ RETURN(completed)
 ; Existing sectors and map transitions retain a single-payload commit unit.
 PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     POINTER file BYTE POINTER source LONGINT length)
-  CARD within,part,sector,index
+  CARD within,part,sector
   BYTE needed
 
   LET state=FSWRITEIO.State(service)
@@ -739,11 +735,7 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
       RETURN(0)
     FI
 
-    index=part
-    WHILE index<sectorBytes DO
-      state.data(index)=0
-      index==+1
-    OD
+    A816MEMORY.Clear(@state.data(part),SIZE(sectorBytes-part))
   ELSE
     state.bitmapValid=0
     state.freeValid=0

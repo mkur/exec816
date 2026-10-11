@@ -22,17 +22,23 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; Change a warm cached sector using that same scratch buffer as write source.
+; Exercise scratch and external bank-crossing sources, including short boot sectors.
 PROC Change(CARD sector BYTE seed)
   CARD index
+  BYTE POINTER source
 
   LET length=BLOCKIO.SectorBytes(volume,LONGCARD(sector))
   Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
+  source=adapter.buffer
+  IF sector=4 THEN
+    source=buffer
+  FI
+
   FOR index=0 TO length-1 DO
-    adapter.buffer(index)=BYTE(index) XOR seed
+    source(index)=BYTE(index) XOR seed
   OD
 
-  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),adapter.buffer)=2)
+  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),source)=2)
   LET sio=EXEC.IOSIOReq POINTER(adapter.request)
   Require(sio.sio_Command=$50)
   Require(adapter.valid=0 AND adapter.busy=1 AND volume.busy=1)

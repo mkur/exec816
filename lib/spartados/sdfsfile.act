@@ -3,6 +3,7 @@
 MODULE SDFSFILE
 USE FSSTATUS
 USE SDFS
+USE A816MEMORY
 USE SDFSTYPES
 USE FSBTYPES
 USE FSCORE
@@ -135,7 +136,7 @@ RETURN(FSSTATUS.MORE)
 BYTE FUNC Consume(FSBTYPES.Operation POINTER op BYTE sparse)
   BLOCKTYPES.Adapter POINTER adapter
   BYTE POINTER output
-  CARD amount,offset,index,sectorBytes
+  CARD amount,offset,sectorBytes
 
   sectorBytes=op.work.volume.block.dataBytes
   offset=CARD((op.start+op.completed) & LONGINT(sectorBytes-1))
@@ -146,13 +147,11 @@ BYTE FUNC Consume(FSBTYPES.Operation POINTER op BYTE sparse)
 
   adapter=BLOCKTYPES.Adapter POINTER(op.work.volume.block.adapter)
   output=op.output+SIZE(op.completed)
-  FOR index=0 TO amount-1 DO
-    IF sparse<>0 THEN
-      output(index)=0
-    ELSE
-      output(index)=adapter.buffer(offset+index)
-    FI
-  OD
+  IF sparse<>0 THEN
+    A816MEMORY.Clear(output,SIZE(amount))
+  ELSE
+    A816MEMORY.Move(output,adapter.buffer+SIZE(offset),SIZE(amount))
+  FI
 
   op.completed==+LONGINT(amount)
   op.remaining==-LONGINT(amount)

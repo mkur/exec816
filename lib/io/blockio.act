@@ -1,6 +1,7 @@
 ; Task-only, single-worker sector adapter. Geometry is immutable while attached.
 MODULE BLOCKIO
 USE EXEC
+USE A816MEMORY
 USE EXECMEMORY
 USE BLOCKTYPES
 USE BLOCKCACHE
@@ -314,7 +315,6 @@ RETURN(2)
 ; Source may be the scratch sector after a read-modify-write operation.
 PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
     POINTER volume LONGCARD sector BYTE POINTER source)
-  CARD index
 
   LET expected=Check(adapter,volume,sector)
   IF expected=0 THEN
@@ -329,9 +329,7 @@ PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
   DiscardBuffer(adapter)
   BLOCKCACHE.Forget(@adapter.cache,volume,CARD(sector))
   IF source<>adapter.buffer THEN
-    FOR index=0 TO expected-1 DO
-      adapter.buffer(index)=source(index)
-    OD
+    A816MEMORY.Move(adapter.buffer,source,SIZE(expected))
   FI
 
   adapter.busy=1

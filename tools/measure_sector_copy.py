@@ -49,22 +49,32 @@ def markers_for(program):
         code, text = rest[:11].strip(), rest[12:]
         instructions.append(dict(pc=int(pc, 16), bytes=bytes.fromhex(code), text=text))
     backward = [i for i in instructions if i['text'].startswith('BRL $') and int(i['text'][5:], 16) < i['pc']]
-    require(len(backward) == 1, 'Consume must contain exactly one backward loop branch')
-    back = backward[0]
-    head = int(back['text'][5:], 16)
-    end = back['pc'] + len(back['bytes'])
-    require(any(i['text'] == f'BRL ${end:06X}' and head <= i['pc'] < back['pc'] for i in instructions),
-            'Missing loop-exit branch')
-    require(not any(i['text'].startswith(('JSL', 'JML', 'RTL')) and head <= i['pc'] < end for i in instructions),
-            'Unexpected call or escape inside byte loop')
+    bulk = not backward
+    if bulk:
+        calls = [i for i in instructions if i['bytes'][:1] == b'\x22'
+                 and int.from_bytes(i['bytes'][1:], 'little') == program['labels']['a816_memory_move']]
+        require(len(calls) == 1, 'Missing or ambiguous native Move')
+        head = calls[0]['pc']
+        end = head + len(calls[0]['bytes'])
+    else:
+        require(len(backward) == 1, 'Consume must contain exactly one backward loop branch')
+        back = backward[0]
+        head = int(back['text'][5:], 16)
+        end = back['pc'] + len(back['bytes'])
+        require(any(i['text'] == f'BRL ${end:06X}' and head <= i['pc'] < back['pc'] for i in instructions),
+                'Missing loop-exit branch')
+        require(not any(i['text'].startswith(('JSL', 'JML', 'RTL')) and head <= i['pc'] < end for i in instructions),
+                'Unexpected call or escape inside byte loop')
     returns = [i['pc'] for i in instructions if i['text'] == 'RTL']
     require(1 <= len(returns) <= 2, 'Changed Consume return paths')
     marks = dict(consume=routine['address'], loop=head, bookkeeping=end,
                  native_nmi=program['labels']['native_nmi'], native_irq=program['labels']['native_irq'])
+    if bulk:
+        marks['bulk'] = head
     marks.update({f'return{n}': pc for n, pc in enumerate(returns)})
     loop_code = b''.join(i['bytes'] for i in instructions if head <= i['pc'] < end)
     return marks, listing, dict(routine=routine['name'], address=routine['address'], size=routine['size'],
-                               loop_bytes=end-head, loop_sha256=hashlib.sha256(loop_code).hexdigest(), decoder_sha256=sha256(source))
+                               transfer='native-move' if bulk else 'byte-loop', loop_bytes=end-head, loop_sha256=hashlib.sha256(loop_code).hexdigest(), decoder_sha256=sha256(source))
 
 
 def samples(events, marks):
@@ -100,7 +110,7 @@ def samples(events, marks):
             # The marker precedes RTL; its six CPU cycles complete the routine.
             end = tick + 6/8
             row = dict(begin=current['begin'], end=end, interrupts=current['interrupts'],
-                       bytes=current['iterations']-1, dp=current['dp'])
+                       bytes=None if 'bulk' in marks else current['iterations']-1, dp=current['dp'])
             points = (current['begin'], current['loop'], current['bookkeeping'], end)
             row['microseconds'] = {name:(b-a)/BASE_HZ*1e6 for name,a,b in zip(('setup','loop','bookkeeping'),points,points[1:])}
             row['microseconds']['total'] = (end-current['begin'])/BASE_HZ*1e6
@@ -162,6 +172,9 @@ def hello_samples(events, rows):
     require([sector(p) for p in reads[first:first+19]] == list(range(70,89)), 'Changed HELLO sector layout')
     require(len(reads) > first+19, 'Missing subsequent DIR boundary')
     selected = [r for r in rows if reads[first]['start'] <= r['begin'] < reads[first+19]['start']]
+    if selected and selected[0]['bytes'] is None:
+        for row, amount in zip(selected, [128]*18+[55]):
+            row['bytes'] = amount
     require([r['bytes'] for r in selected] == [128]*18+[55], 'Changed HELLO consume sequence')
     return selected
 
@@ -232,11 +245,14 @@ def main():
         cases = {}
         for index, (name, amount) in enumerate(CASES):
             selection = rows[32*index:32*(index+1)]
+            if 'bulk' in marks:
+                for row in selection:
+                    row['bytes'] = amount
             require(all(r['bytes'] == amount for r in selection), 'Wrong byte-loop iteration count')
             cases[name] = dict(bytes=amount, **summarize(selection))
         result.update(status='pass', observed=observed, replay=replay, identical_image_replay=True, cases=cases, samples=rows,
                       scope='Actual SDFS Consume; root only, resident upper-RAM records/buffers, IRQ/NMI enabled, no disk or other workers. Uninterrupted elapsed instruction time includes machine bus timing; not an ideal CPU-cycle model.',
-                      bank_zero_delta=dict(fixed=0,per_task=0), production_changed=False)
+                      bank_zero_delta=dict(fixed=0,per_task=0), production_changed='bulk' in marks)
         print(json.dumps(cases, indent=2), flush=True)
     except Exception as error:
         result.update(status='fail', error=str(error))

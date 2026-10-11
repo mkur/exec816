@@ -1,0 +1,284 @@
+{
+  "tier": "development",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "fp1": {
+    "ide": {
+      "status": "pass",
+      "tier": "development",
+      "guest_frames": 111,
+      "guest_seconds": 2.22,
+      "bytes": 23872,
+      "counts": {
+        "startFrame": 99,
+        "endFrame": 210,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 48,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "kernelCalls": 2556,
+        "taskSwitches": 324
+      },
+      "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+      "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+      "cache_blocks": 512,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 54,
+        "free": 1386,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "3fa680536841ecde5f2a2c7f8431182cb3ca4d4bb768c140f20f11cd2f39e5ce",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "guards": "intact"
+    },
+    "sio": {
+      "status": "pass",
+      "tier": "development",
+      "bytes": 23872,
+      "source_sha256": "68b61983af36bd449d50199fc84d5d831651709fa639f2bb802cf2ce43b3aee4",
+      "xex_sha256": "f8124a4f5ad349d3b2d557e9a1407ac5aa707572a4b8416fd6ee566bdec706f8",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "guards": null,
+      "rows": [
+        {
+          "case": "16384-cold-create",
+          "guest_pal_frames": 1941,
+          "guest_seconds": 38.82,
+          "counts": {
+            "startFrame": 607,
+            "endFrame": 2548,
+            "maxGroupWrites": 8,
+            "reads": 101,
+            "writes": 108,
+            "readBytes": 25728,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 48,
+            "cacheMisses": 101,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 66,
+            "kernelCalls": 29750,
+            "taskSwitches": 1078
+          },
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 256,
+            "allocated": 103,
+            "free": 617,
+            "files": 2,
+            "directories": 1
+          }
+        }
+      ]
+    },
+    "mydos256": {
+      "status": "pass",
+      "xex_sha256": "f24a6f4575d904481c3f9bb509712804f42314507de41e04e1753ab530a2384e",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "guards": "intact"
+    },
+    "sdfs128": {
+      "status": "pass",
+      "xex_sha256": "082c3799eb6998cc2a907344a264d00b6149574b29948afc2b4d1873e03c60c2",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "guards": "intact"
+    },
+    "sector-copy": {
+      "status": "pass",
+      "xex_sha256": "7d6af8470a58b9f3b3f34506e4d9331b422a3a6a26f0e940d7a4d48df0ea76b0",
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "guards": null,
+      "cases": {
+        "full128": {
+          "bytes": 128,
+          "samples": 32,
+          "uninterrupted": 32,
+          "interrupted": 0,
+          "uninterrupted_us": {
+            "setup": {
+              "min_us": 87.18893567472395,
+              "median_us": 90.95983952160975,
+              "mean_us": 90.06557143642539,
+              "max_us": 94.44880663227978
+            },
+            "loop": {
+              "min_us": 159.92861361839016,
+              "median_us": 167.32945294405386,
+              "mean_us": 165.44620365136265,
+              "max_us": 170.92414633080483
+            },
+            "bookkeeping": {
+              "min_us": 26.29060065211967,
+              "median_us": 26.995442492659073,
+              "mean_us": 27.266366075116405,
+              "max_us": 29.391904750493037
+            },
+            "total": {
+              "min_us": 274.04250760171925,
+              "median_us": 286.6591765473745,
+              "mean_us": 282.77814116290443,
+              "max_us": 290.0424173819636
+            }
+          },
+          "elapsed_us": {
+            "setup": {
+              "min_us": 87.18893567472395,
+              "median_us": 90.95983952160975,
+              "mean_us": 90.06557143642539,
+              "max_us": 94.44880663227978
+            },
+            "loop": {
+              "min_us": 159.92861361839016,
+              "median_us": 167.32945294405386,
+              "mean_us": 165.44620365136265,
+              "max_us": 170.92414633080483
+            },
+            "bookkeeping": {
+              "min_us": 26.29060065211967,
+              "median_us": 26.995442492659073,
+              "mean_us": 27.266366075116405,
+              "max_us": 29.391904750493037
+            },
+            "total": {
+              "min_us": 274.04250760171925,
+              "median_us": 286.6591765473745,
+              "mean_us": 282.77814116290443,
+              "max_us": 290.0424173819636
+            }
+          }
+        },
+        "tail55": {
+          "bytes": 55,
+          "samples": 32,
+          "uninterrupted": 31,
+          "interrupted": 1,
+          "uninterrupted_us": {
+            "setup": {
+              "min_us": 92.75718621498523,
+              "median_us": 96.49284796984405,
+              "mean_us": 95.84712189657569,
+              "max_us": 100.58093064497257
+            },
+            "loop": {
+              "min_us": 82.88940044743359,
+              "median_us": 86.2021570979688,
+              "mean_us": 85.65419940903331,
+              "max_us": 89.30346119634216
+            },
+            "bookkeeping": {
+              "min_us": 59.982040629903054,
+              "median_us": 62.80140799206067,
+              "mean_us": 61.987429350405485,
+              "max_us": 65.26835443394856
+            },
+            "total": {
+              "min_us": 235.84007984448368,
+              "median_us": 247.0470651090602,
+              "mean_us": 243.4887506560145,
+              "max_us": 250.00740083932567
+            }
+          },
+          "elapsed_us": {
+            "setup": {
+              "min_us": 92.75718621498523,
+              "median_us": 96.45760587781709,
+              "mean_us": 95.75276403727767,
+              "max_us": 100.58093064497257
+            },
+            "loop": {
+              "min_us": 82.88940044743359,
+              "median_us": 86.23739918999576,
+              "mean_us": 104.00381883309204,
+              "max_us": 672.8420209789125
+            },
+            "bookkeeping": {
+              "min_us": 59.982040629903054,
+              "median_us": 62.80140799206067,
+              "mean_us": 61.92916621439315,
+              "max_us": 65.26835443394856
+            },
+            "total": {
+              "min_us": 235.84007984448368,
+              "median_us": 247.11754929311414,
+              "mean_us": 261.68574908476285,
+              "max_us": 825.7927003759627
+            }
+          }
+        },
+        "full256": {
+          "bytes": 256,
+          "samples": 32,
+          "uninterrupted": 32,
+          "interrupted": 0,
+          "uninterrupted_us": {
+            "setup": {
+              "min_us": 87.18893567472395,
+              "median_us": 90.92459742958278,
+              "mean_us": 90.22856611205012,
+              "max_us": 94.3078382641719
+            },
+            "loop": {
+              "min_us": 296.5974464989801,
+              "median_us": 311.1876725981457,
+              "mean_us": 307.56214238087114,
+              "max_us": 313.5841348559797
+            },
+            "bookkeeping": {
+              "min_us": 26.29060065211967,
+              "median_us": 27.206895044820893,
+              "mean_us": 27.376497612700685,
+              "max_us": 29.885294038870615
+            },
+            "total": {
+              "min_us": 410.6408562982552,
+              "median_us": 431.57465896227546,
+              "mean_us": 425.167206105622,
+              "max_us": 433.33676356362395
+            }
+          },
+          "elapsed_us": {
+            "setup": {
+              "min_us": 87.18893567472395,
+              "median_us": 90.92459742958278,
+              "mean_us": 90.22856611205012,
+              "max_us": 94.3078382641719
+            },
+            "loop": {
+              "min_us": 296.5974464989801,
+              "median_us": 311.1876725981457,
+              "mean_us": 307.56214238087114,
+              "max_us": 313.5841348559797
+            },
+            "bookkeeping": {
+              "min_us": 26.29060065211967,
+              "median_us": 27.206895044820893,
+              "mean_us": 27.376497612700685,
+              "max_us": 29.885294038870615
+            },
+            "total": {
+              "min_us": 410.6408562982552,
+              "median_us": 431.57465896227546,
+              "mean_us": 425.167206105622,
+              "max_us": 433.33676356362395
+            }
+          }
+        }
+      }
+    }
+  },
+  "baseline_native_routine_bytes": 910092,
+  "fp1_native_routine_bytes": 910614
+}

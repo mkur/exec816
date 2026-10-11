@@ -417,7 +417,7 @@ PROC OutputExtents(BYTE unused)
   op.output=BYTE POINTER($fffff0)
   op.requested=32
   Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
-  op.output=BYTE POINTER($100000)
+  op.output=BYTE POINTER($400000)
   op.requested=1
   Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
 

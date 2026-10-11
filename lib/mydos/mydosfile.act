@@ -10,6 +10,7 @@ USE BLOCKIO
 USE FSNAMES
 USE BLOCKTYPES
 USE SYS
+USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 
 CONST LOCATING=1, COPYING=2, MEASURING=3
@@ -350,15 +351,12 @@ RETURN(NeedSector(op))
 
 ; Copy only the requested payload span, excluding the sector's chain trailer.
 PROC Copy(FSBTYPES.Operation POINTER op CARD amount)
-  CARD index
 
   LET chain=Chain(op.file)
   LET adapter=BLOCKTYPES.Adapter POINTER(op.work.volume.block.adapter)
   LET target=op.output+SIZE(op.completed)
   LET source=adapter.buffer+chain.offset
-  FOR index=0 TO amount-1 DO
-    target(index)=source(index)
-  OD
+  A816MEMORY.Move(target,source,SIZE(amount))
 
 RETURN
 
