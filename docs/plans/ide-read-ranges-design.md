@@ -4,8 +4,9 @@
 [IDE device](../reference/ideplus-device.md) ·
 [Block adapter](../reference/block-io.md)
 
-Status: proposed design. Implementation requires a separate plan. Existing-file
-overwrite batching is deferred.
+Status: accepted for implementation through the
+[RR1–RR4 plan](ide-read-ranges-implementation-plan.md). Existing-file overwrite
+batching is deferred.
 
 Read up to four consecutive 512-byte IDE sectors with one device request and
 one ATA command. Use the filesystem worker's shared staging buffer, publish only

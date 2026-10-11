@@ -134,7 +134,9 @@ assuming work is pending. Current behavior belongs in the
 
 - [Bounded IDE read ranges design](ide-read-ranges-design.md): proposed four-sector
   regular-file reads through shared staging, with cache boundaries and explicit
-  failure/cancellation semantics. Existing-file overwrite batching is deferred.
+  failure/cancellation semantics. The [RR1–RR4 plan](ide-read-ranges-implementation-plan.md)
+  orders device, adapter, filesystem and matched measurements. Existing-file
+  overwrite batching is deferred.
 - [Filesystem and DOS performance](filesystem-dos-performance-implementation-plan.md):
   FP0–FP5 and selected FP6 changes are complete at the development tier, including
   shared bulk copies, simpler validation, targeted metadata invalidation, cheaper
