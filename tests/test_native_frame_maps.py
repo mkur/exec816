@@ -25,28 +25,23 @@ class FrameMaps(unittest.TestCase):
         validate([r])
 
     def test_pointer_and_scalar_dp_boundaries(self):
-        for size, offsets in ((3, (0x80, 0x83, 0x86)), (3, tuple(range(0xa0, 0xbc, 3))), (2, (0xa0, 0xbe))):
+        for size, offsets in ((3, (0x80, 0x83, 0x86)), (3, tuple(range(0xa0, 0xbe, 2))), (2, (0xa0, 0xbe))):
             r = routine()
             r.update(fixed_frame=0, spill_bytes=0, arguments=[], local_stack_peak=0,
                      temporaries=[dict(id=i, size=size, home=dict(kind='direct_page', offset=offset))
                                   for i, offset in enumerate(offsets)])
             validate([r])
 
-    def test_pointer_and_byte_residents_share_only_unused_pool_bytes(self):
-        r = routine()
-        r.update(fixed_frame=0, spill_bytes=0, arguments=[], local_stack_peak=0,
-                 temporaries=[dict(id=0, size=3, home=dict(kind='direct_page', offset=0xa0)),
-                              dict(id=1, size=1, home=dict(kind='direct_page', offset=0xa3)),
-                              dict(id=2, size=1, home=dict(kind='direct_page', offset=0xbf))])
-        validate([r])
-        for offset in (0x80, 0x9f, 0xa0, 0xa1, 0xa2, 0xc0):
-            bad = copy.deepcopy(r)
-            bad['temporaries'][1]['home']['offset'] = offset
-            with self.subTest(offset=offset), self.assertRaises(RuntimeError):
-                validate([bad])
-        bad = copy.deepcopy(r)
-        bad['temporaries'][0].update(size=2)
-        with self.assertRaises(RuntimeError): validate([bad])
+    def test_mixed_resident_widths_reuse_extents_in_routines_with_calls(self):
+        # Maps carry final homes, not live ranges. The compiler proves that
+        # these reused extents and call-clobbered homes are safe at each use.
+        for calls in ([], [dict(outgoing=1, transfer_peak=3)]):
+            r = routine()
+            r.update(calls=calls, local_stack_peak=8 if calls else 4,
+                     temporaries=[dict(id=i, size=size, home=dict(kind='direct_page', offset=offset))
+                                  for i, (size, offset) in enumerate(((2, 0xa0), (3, 0xa0),
+                                                                    (3, 0xa4), (2, 0xbe)))])
+            validate([r])
 
     def test_rejects_invalid_frame_maps(self):
         changes = [lambda r: r.update(fixed_frame=256), lambda r: r.update(fixed_frame=3),
@@ -64,19 +59,24 @@ class FrameMaps(unittest.TestCase):
             with self.subTest(r=r), self.assertRaises(RuntimeError):
                 validate([r])
 
-    def test_rejects_dp_calls_outside_scratch_and_mixed_classes(self):
+    def test_rejects_invalid_resident_extents_and_legacy_pool_use(self):
         for size, offset, call in ((3, 0x81, False), (2, 0xc0, False), (2, 0xa1, False), (2, 0x20, False),
-                                   (3, 0xa1, False), (3, 0xbe, False), (3, 0xc0, False),
-                                   (3, 0xa0, True), (4, 0xa0, False), (2, 0xa0, True)):
+                                   (3, 0xa1, False), (3, 0xa3, False), (3, 0xbe, False), (3, 0xc0, False),
+                                   (3, 0x80, True), (2, 0x80, False), (4, 0xa0, False),
+                                   (1, 0xa0, False), (1, 0xbf, False)):
             r = routine()
             r['temporaries'] = [dict(id=0, size=size, home=dict(kind='direct_page', offset=offset))]
             if call: r.update(calls=[dict(outgoing=1, transfer_peak=3)], local_stack_peak=8)
             with self.subTest(size=size, offset=offset, call=call), self.assertRaises(RuntimeError):
                 validate([r])
-        r = routine()
-        r['temporaries'] = [dict(id=0, size=3, home=dict(kind='direct_page', offset=0x80)),
-                            dict(id=1, size=2, home=dict(kind='direct_page', offset=0xa0))]
-        with self.assertRaises(RuntimeError): validate([r])
+        for size in (2, 3):
+            for reverse in (False, True):
+                r = routine()
+                r['temporaries'] = [dict(id=0, size=3, home=dict(kind='direct_page', offset=0x80)),
+                                    dict(id=1, size=size, home=dict(kind='direct_page', offset=0xa0))]
+                if reverse: r['temporaries'].reverse()
+                with self.subTest(size=size, reverse=reverse), self.assertRaises(RuntimeError):
+                    validate([r])
 
     def test_image_requires_explicit_matching_contract(self):
         r = routine(); r['arguments'] = []
@@ -95,6 +95,12 @@ class FrameMaps(unittest.TestCase):
         arithmetic=copy.deepcopy(image); arithmetic.update(version=4,arithmetic_fault=0x3c40)
         labels={'stack_overflow':0x3c00,'arithmetic_fault':0x3c40}
         self.assertEqual(image_regions(arithmetic,labels,[],image_version=3),[(0x6000,b'\x6b')])
+        mixed = copy.deepcopy(arithmetic)
+        mixed['routines'][0].update(
+            temporaries=[dict(id=0, size=2, home=dict(kind='direct_page', offset=0xa0)),
+                         dict(id=1, size=3, home=dict(kind='direct_page', offset=0xa0))],
+            calls=[dict(outgoing=1, transfer_peak=3)], local_stack_peak=8)
+        self.assertEqual(image_regions(mixed,labels,[],image_version=3),[(0x6000,b'\x6b')])
         for value in (None,0x3c00,0x6000,True):
             bad=copy.deepcopy(arithmetic);bad['arithmetic_fault']=value
             with self.subTest(arithmetic_fault=value),self.assertRaises(RuntimeError):

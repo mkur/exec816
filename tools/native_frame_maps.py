@@ -2,8 +2,8 @@
 from os_boundary import require
 from native_abi import FIELDS, POINTERS
 
-SCALAR_START = FIELDS["scratch"]["offset"] + 32
-SCALAR_END = FIELDS["scratch"]["offset"] + FIELDS["scratch"]["size"] - 2
+RESIDENCE_START = FIELDS["scratch"]["offset"] + 32
+RESIDENCE_END = FIELDS["scratch"]["offset"] + FIELDS["scratch"]["size"]
 
 
 def natural(value, label):
@@ -39,7 +39,7 @@ def validate(routines):
         for obj in routine['objects']:
             require(isinstance(obj, dict) and {'displacement', 'size'} <= obj.keys(), 'Invalid frame object')
             extents.append((obj['displacement'], obj['size']))
-        temps, dp_width = set(), None
+        temps, legacy_pointer_pool = set(), None
         for temp in routine['temporaries']:
             require(isinstance(temp, dict) and set(temp) == {'id', 'size', 'home'}, 'Invalid v3 temporary')
             identity = natural(temp['id'], 'temporary identity')
@@ -55,24 +55,17 @@ def validate(routines):
                 require(home.get('kind') == 'direct_page' and set(home) == {'kind', 'offset'},
                         'Invalid direct-page home')
                 offset = natural(home['offset'], 'direct-page offset')
-                # Pointer CFGs keep complete three-byte slots and use remaining
-                # resident bytes for byte temporaries. Word allocation is separate.
-                resident_pointer = (SCALAR_START <= offset <= SCALAR_END - 1 and
-                                    (offset - SCALAR_START) % 3 == 0)
-                pointer = size == 3 and (offset in POINTERS or resident_pointer)
-                scalar = size == 2 and SCALAR_START <= offset <= SCALAR_END and offset % 2 == 0
-                byte = size == 1 and SCALAR_START <= offset <= SCALAR_END + 1
-                dp_class = 3 if byte else size
-                require((pointer or scalar or byte) and not routine['calls'] and
-                        dp_width in (None, dp_class), 'Invalid direct-page temporary map')
-                dp_width = dp_class
-        resident_pointers = [t['home']['offset'] for t in routine['temporaries']
-                             if t['size'] == 3 and t['home']['kind'] == 'direct_page']
-        for temp in routine['temporaries']:
-            if temp['size'] == 1 and temp['home']['kind'] == 'direct_page':
-                offset = temp['home']['offset']
-                require(not any(start <= offset < start + 3 for start in resident_pointers),
-                        'Byte resident overlaps complete pointer slot')
+                legacy_pointer = size == 3 and offset in POINTERS
+                resident = (size in (2, 3) and offset % 2 == 0 and
+                            RESIDENCE_START <= offset and offset + size <= RESIDENCE_END)
+                # Current residence supports mixed complete homes and routines
+                # containing calls. Liveness and clobber proofs are compiler-owned.
+                # The separate selector pointer pool remains leaf-only.
+                require((legacy_pointer or resident) and
+                        (not legacy_pointer or not routine['calls']) and
+                        legacy_pointer_pool in (None, legacy_pointer),
+                        'Invalid direct-page temporary map')
+                legacy_pointer_pool = legacy_pointer
         # Temporary homes may overlap when their typed live ranges do not.
         # The final map cannot establish that proof; the compiler verifies it.
         for offset, size in extents:

@@ -34,6 +34,16 @@ have separate storage. The current D-relative partition is defined in
 | `$C4–$C7` | Stack floor and ceiling. |
 | `$C8–$FF` | Reserved zero. |
 
+Native frame maps admit aligned, complete two- and three-byte temporary homes
+within `$A0–$BF`, including mixed widths and reused extents. These homes may
+appear in routines containing calls; actionc proves liveness and call-clobber
+safety. Packaging checks the final extents, not those compiler-owned proofs.
+The separate three-byte selector slots at `$80`, `$83` and `$86` remain
+leaf-only and cannot mix with residence homes in one routine. Byte and
+four-byte direct-page temporary homes are rejected by the current contract.
+This validation uses existing scratch: **0 fixed and 0 per-Task reserved
+bank-zero bytes added**, including guards, alignment and unused capacity.
+
 Each DP reservation is exactly 256 bytes, with no external canaries or stride
 padding. Initialization clears that page and publishes metadata before a new
 owner runs. Stack canaries and checked stack bounds remain enabled. During its lifetime,
