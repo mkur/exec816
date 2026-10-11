@@ -102,24 +102,30 @@ BYTE FUNC Extent(FSBTYPES.Volume POINTER volume)
 
 RETURN(1)
 
-; Validate MyDOS geometry and allocation metadata from the buffered VTOC.
-BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER buffer)
+; Validate recorded allocation counts using the recognized VTOC geometry.
+PUBLIC BYTE FUNC CountsValid(FSBTYPES.Volume POINTER volume BYTE POINTER buffer)
 
-  LET volume=work.volume
   LET native=MYDOSTYPES.Volume POINTER(volume.state)
-  native.marker=buffer(0)
-  IF Extent(volume)=0 THEN
-    RETURN(0)
-  FI
-
   LET total=CARD(buffer(1))+(CARD(buffer(2)) LSH 8)
   LET free=CARD(buffer(3))+(CARD(buffer(4)) LSH 8)
   LET available=volume.block.sectors-11-LONGCARD(native.vtocSectors)
-  IF total=0 OR free>total OR LONGCARD(total)>available THEN
+  IF buffer(0)<>native.marker OR total=0 OR free>total OR
+      LONGCARD(total)>available THEN
     RETURN(0)
   FI
 
 RETURN(1)
+
+; Validate MyDOS geometry and allocation metadata from the buffered VTOC.
+BYTE FUNC Header(FSBTYPES.Workspace POINTER work BYTE POINTER buffer)
+
+  LET native=MYDOSTYPES.Volume POINTER(work.volume.state)
+  native.marker=buffer(0)
+  IF Extent(work.volume)=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(CountsValid(work.volume,buffer))
 
 ; Reset recognition state and request the first mount-validation sector.
 PUBLIC BYTE FUNC BeginMount(FSBTYPES.Workspace POINTER work)

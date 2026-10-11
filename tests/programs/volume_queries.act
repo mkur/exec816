@@ -44,9 +44,9 @@ PROC Main()
       info.state=DOS.VOLUME_ONLINE AND info.readOnly=0)
   Require(DOS.GetVolume(8,@info)=0 AND DOS.IoErr()=0 AND info.name(0)=0)
   A816MEMORY.Fill(BYTE POINTER(@info),$a5,SIZEOF(DOS.VolumeInfo))
-  Require(DOS.Info(lock,@info)=0 AND
-      DOS.IoErr()=DOS.ERROR_ACTION_NOT_KNOWN)
-  Require(info.flags=$a5 AND info.name(0)=$a5)
+  Require(DOS.Info(lock,@info)<>0 AND DOS.IoErr()=0)
+  Require(info.flags=DOS.VOLUME_RAM_VALID AND info.name(0)='R AND
+      info.allocatedBytes=66 AND info.totalBlocks=0 AND info.freeBlocks=0)
   LET service=FSREGISTRY.Service()
   Require(service.mounts(0).item.references=1)
   Require(DOS.Info(lock,NULL)=0 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)

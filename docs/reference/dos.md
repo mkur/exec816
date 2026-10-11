@@ -17,10 +17,25 @@ service or perform I/O. Records contain terminated names, format/transport IDs,
 unit, sector bytes and effective access/state, with no internal pointers.
 
 `Info(lock, info)` uses an owned filesystem lock to request statistics through
-the normal worker packet. The initial API slice returns
-ERROR_ACTION_NOT_KNOWN until filesystem statistics are implemented. Failed
-queries do not publish a result. `VOLUME_BLOCKS_VALID` and `VOLUME_RAM_VALID`
-distinguish available measurements from unknown values; GetVolume clears both.
+the normal worker packet. Failed queries leave the caller's record unchanged.
+`VOLUME_BLOCKS_VALID` and `VOLUME_RAM_VALID` distinguish available measurements
+from unknown values; GetVolume clears both.
+
+MyDOS reads VTOC sector 360; SpartaDOS reads header sector 1. The shared cache
+serves warm queries without physical reads. Queries perform no disk writes or
+directory/bitmap scans. Total blocks are the mounted sector count, including
+boot sectors and metadata; free blocks are the recorded allocation count.
+Invalid counts return ERROR_DISK_NOT_VALIDATED. Nominal capacity is total blocks
+times sectorBytes, rather than the ATR container length. SpartaDOS labels are
+trimmed to eight printable bytes; nonprinting bytes become dots. MyDOS has no
+label.
+
+RAM leaves total/free blocks unavailable. With VOLUME_RAM_VALID, allocatedBytes
+counts its volume state, live node records and allocated file-buffer capacities,
+excluding allocator bookkeeping. It does not report file lengths or global free
+memory. The worker walks at most sixteen nodes between cancellation checkpoints,
+within RAM's existing 256-node limit. Queries retain normal BREAK and transport
+errors without publishing partial statistics.
 
 DOS and COMMAND export the same record layout. The C header also publishes the
 record and constants; C query-call wrappers are not yet provided.

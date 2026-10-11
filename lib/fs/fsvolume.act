@@ -2,6 +2,13 @@
 MODULE FSVOLUME
 USE A816MEMORY
 USE FSTYPES
+USE FSSTATUS
+USE FSFORMATS
+USE FSPACKET
+USE FSBTYPES
+USE MYDOS
+USE SDFS
+USE RAMTYPES
 INCLUDE "../dos/dos-types.inc"
 
 ; The registry owner excludes unpublication while copying this mount identity.
@@ -33,5 +40,131 @@ PUBLIC PROC Identity(FSTYPES.Mount POINTER mount VolumeInfo POINTER info)
   FI
 
 RETURN
+
+; Queries reuse worker scratch and publish nothing until the final checkpoint.
+PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service)
+  BYTE index
+
+  service.info=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  service.operation.completed=0
+  service.operation.requested=0
+  FOR index=0 TO 8 DO
+    service.work.wanted(index)=0
+  OD
+
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    BEGIN
+      LET state=RAMTYPES.Volume POINTER(service.work.volume.state)
+      service.operation.output=BYTE POINTER(state.nodes)
+      service.operation.completed=LONGINT(SIZEOF(RAMTYPES.Volume))
+      service.nextStep=@RamStep
+      RETURN(FSSTATUS.MORE)
+    END
+  FI
+
+  service.work.neededSector=1
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    service.work.neededSector=360
+  FI
+
+  service.nextStep=@DiskStep
+
+RETURN(FSSTATUS.NEED_IO)
+
+; The shared cache supplies exactly one VTOC/header sector, including failures.
+BYTE FUNC DiskStep(BYTE POINTER raw)
+  BYTE index,length,value
+
+  LET service=FSTYPES.Service POINTER(raw)
+  IF service.resultState=FSSTATUS.ERROR THEN
+    RETURN(FSPACKET.Error(service,service.work.error))
+  FI
+
+  LET bytes=service.adapter.buffer
+  service.operation.requested=LONGINT(service.selected.spec.sectors)
+  IF service.selected.spec.format=FSFORMATS.MYDOS THEN
+    IF MYDOS.CountsValid(service.work.volume,bytes)=0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DISK_NOT_VALIDATED))
+    FI
+
+    service.operation.completed=LONGINT(SDFS.Word(bytes,3))
+  ELSE
+    BEGIN
+      LET total=LONGCARD(SDFS.Word(bytes,11))
+      LET free=LONGCARD(SDFS.Word(bytes,13))
+      IF total<>service.selected.spec.sectors OR free>total THEN
+        RETURN(FSPACKET.Error(service,ERROR_DISK_NOT_VALIDATED))
+      FI
+
+      service.operation.completed=LONGINT(free)
+    END
+
+    length=8
+    WHILE length<>0 AND bytes(21+length)=32 DO
+      length==-1
+    OD
+
+    index=0
+    WHILE index<length DO
+      value=bytes(22+index)
+      IF value<32 OR value>126 THEN
+        value=46
+      FI
+
+      service.work.wanted(index)=value
+      index==+1
+    OD
+  FI
+
+  service.nextStep=@PublishStep
+
+RETURN(FSSTATUS.MORE)
+
+; Resident nodes are bounded at creation; yield a checkpoint every sixteen.
+BYTE FUNC RamStep(BYTE POINTER raw)
+  BYTE index
+
+  LET service=FSTYPES.Service POINTER(raw)
+  FOR index=0 TO 15 DO
+    BEGIN
+      LET node=RAMTYPES.Node POINTER(service.operation.output)
+      IF node=NULL THEN
+        service.nextStep=@PublishStep
+        RETURN(FSSTATUS.MORE)
+      FI
+
+      service.operation.completed==+LONGINT(SIZEOF(RAMTYPES.Node))+
+          LONGINT(node.capacity)
+      service.operation.output=BYTE POINTER(node.next)
+    END
+  OD
+
+RETURN(FSSTATUS.MORE)
+
+; Completion wins after the worker's final cancellation checkpoint.
+BYTE FUNC PublishStep(BYTE POINTER raw)
+  BYTE index
+
+  LET service=FSTYPES.Service POINTER(raw)
+  LET info=VolumeInfo POINTER(service.info)
+  service.stage=70
+  Identity(service.selected,info)
+  IF service.selected.spec.format=FSFORMATS.RAM THEN
+    info.allocatedBytes=LONGCARD(service.operation.completed)
+    info.flags=VOLUME_RAM_VALID
+  ELSE
+    FOR index=0 TO 8 DO
+      info.label(index)=service.work.wanted(index)
+    OD
+
+    info.totalBlocks=LONGCARD(service.operation.requested)
+    info.freeBlocks=LONGCARD(service.operation.completed)
+    info.flags=VOLUME_BLOCKS_VALID
+  FI
+
+  service.packet.sp_Pkt.dp_Res1=-1
+  FSPACKET.Reply(service)
+
+RETURN(FSSTATUS.MORE)
 
 ENDMODULE
