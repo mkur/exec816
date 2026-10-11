@@ -113,6 +113,16 @@ PROC FileWrites()
   phase=3
   file=DOS.Open(Path(0),DOS.MODE_READWRITE)
   Require(file<>NULL)
+  BEGIN
+    LET registry=DOSCORE.GetRegistry()
+    LET service=FSTYPES.Service POINTER(registry.runtime)
+    LET bytes=LONGINT(service.selected.spec.dataBytes)
+    IF service.selected.spec.format=2 AND amount>=bytes THEN
+      ; Rewrite a complete existing sector from the same far application span.
+      Require(DOS.Write(file,buffer,bytes)=bytes)
+      Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=bytes)
+    FI
+  END
   Require(DOS.Seek(file,123,DOS.OFFSET_BEGINNING)=0)
   FOR index=0 TO 16 DO
     buffer(SIZE(index))=BYTE(index)+$31

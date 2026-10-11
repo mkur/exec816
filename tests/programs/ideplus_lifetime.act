@@ -75,7 +75,7 @@ PROC AddPeer(EXEC.Task POINTER item BYTE slot)
 
 RETURN
 
-; A cancelled read must not replace client bytes; an accepted write must finish.
+; Cancelled read bytes are invalid; bounds and accepted writes stay intact.
 PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
   CARD index
   INT error,wanted
@@ -83,6 +83,10 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
 
   LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
   request.io_Data=BYTE POINTER($2dfff0)
+  LET left=BYTE POINTER($2dffef)
+  LET right=BYTE POINTER($2e01f0)
+  left^=$a5
+  right^=$5a
   request.io_Length=512
   request.io_Offset=1
   request.io_Command=IF writing<>0 THEN IDEPLUS.WRITE_SECTOR ELSE IDEPLUS.READ_SECTOR FI
@@ -99,9 +103,12 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
   Require(error=wanted)
   actual=IF phase=3 THEN LONGCARD(512) ELSE LONGCARD(0) FI
   Require(request.io_Actual=actual)
-  FOR index=0 TO 511 DO
-    Require(request.io_Data(index)=(BYTE(index) XOR $55))
-  OD
+  Require(left^=$a5 AND right^=$5a)
+  IF writing<>0 THEN
+    FOR index=0 TO 511 DO
+      Require(request.io_Data(index)=(BYTE(index) XOR $55))
+    OD
+  FI
 
 RETURN
 

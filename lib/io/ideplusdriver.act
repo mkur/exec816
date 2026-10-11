@@ -247,8 +247,8 @@ PROC AddressSector(LONGCARD sector)
 
 RETURN
 
-; Read one physical sector into the controller's reusable upper-RAM buffer.
-PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
+; The accepted request owns its destination until terminal reply.
+BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination)
   BYTE error
   error=Ready(0,1)
   IF error<>0 THEN
@@ -261,10 +261,16 @@ PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
     RETURN(error)
   FI
 
-  LET c=Control()
-  IDEPLUSNATIVE.ReadWords(c.buffer)
+  IDEPLUSNATIVE.ReadWords(destination)
 
 RETURN(Ready(0,0))
+
+; Discovery owns the private controller buffer independently of requests.
+PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
+
+  LET c=Control()
+
+RETURN(ReadInto(sector,c.buffer))
 
 ; IDENTIFY admits only LBA28 ATA disks with supported physical sector size.
 BYTE FUNC Identify()
@@ -511,12 +517,11 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
     EXEC.Permit()
     IF error=0 THEN
-      error=ReadPhysical(unit.start+request.io_Offset)
+      error=ReadInto(unit.start+request.io_Offset,request.io_Data)
       IF error=0 AND bus.cancelled<>0 THEN
         error=BYTE(EXEC.IOERR_ABORTED)
       FI
       IF error=0 THEN
-        A816MEMORY.Move(request.io_Data,c.buffer,512)
         request.io_Actual=request.io_Length
       FI
     FI

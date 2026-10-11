@@ -50,7 +50,6 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   BYTE error
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
-  LET c=Control()
   IF (AccessFlags(partition) & IDEPLUS.FLAG_READONLY)<>0 THEN
     RETURN(IDEPLUS.ERROR_PROTECTED)
   FI
@@ -63,7 +62,6 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF bus.cancelled<>0 THEN
     RETURN(BYTE(EXEC.IOERR_ABORTED))
   FI
-  A816MEMORY.Move(c.buffer,request.io_Data,512)
   AddressSector(sector)
   EXEC.Forbid()
   IF bus.cancelled<>0 THEN
@@ -77,7 +75,7 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF error<>0 THEN
     RETURN(error)
   FI
-  IDEPLUSNATIVE.WriteWords(c.buffer)
+  IDEPLUSNATIVE.WriteWords(request.io_Data)
   error=Ready(0,0)
   IF error<>0 THEN
     RETURN(error)

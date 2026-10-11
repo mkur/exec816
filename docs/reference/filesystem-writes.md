@@ -115,7 +115,8 @@ recovery. There is no resident fsck or repair code.
 
 The host-only [allocation audit](../../tools/filesystem_audit.py) reconstructs
 whole-volume ownership for development. Runtime validation examines touched
-metadata and the selected chain/map. SpartaDOS writable Open copies each map's populated references into
+metadata and the selected chain/map. SpartaDOS writable Open copies each map's
+populated references into
 the existing idle mutation data buffer, sorts that copy without recursion and
 rejects adjacent duplicates. The original map remains intact. This preserves
 the existing per-map duplicate-check scope; it adds no whole-volume scan.

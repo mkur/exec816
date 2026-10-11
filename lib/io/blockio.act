@@ -1,7 +1,6 @@
 ; Task-only, single-worker sector adapter. Geometry is immutable while attached.
 MODULE BLOCKIO
 USE EXEC
-USE A816MEMORY
 USE EXECMEMORY
 USE BLOCKTYPES
 USE BLOCKCACHE
@@ -311,7 +310,7 @@ PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
 
 RETURN(2)
 
-; Stage a complete sector and retain its immutable bytes until collection.
+; Borrow a complete sector until collection; its bytes remain immutable.
 ; Source may be the scratch sector after a read-modify-write operation.
 PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
     POINTER volume LONGCARD sector BYTE POINTER source)
@@ -323,15 +322,11 @@ PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
 
   DiscardBuffer(adapter)
   BLOCKCACHE.Forget(@adapter.cache,volume,CARD(sector))
-  IF source<>adapter.buffer THEN
-    A816MEMORY.Move(adapter.buffer,source,SIZE(expected))
-  FI
-
   adapter.busy=1
   volume.busy=1
   adapter.request.io_Device=volume.request.io_Device
   adapter.request.io_Unit=volume.request.io_Unit
-  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,adapter.buffer,1)
+  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,source,1)
 
 RETURN(2)
 
@@ -341,10 +336,15 @@ PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
   CARD expected
 
   expected=SectorBytes(volume,sector)
+  LET source=adapter.request.io_Data
   adapter.error=Complete(adapter,volume,expected,error)
   IF adapter.error=0 THEN
-    BLOCKCACHE.Store(@adapter.cache,volume,CARD(sector),expected,adapter.buffer)
-    Publish(adapter,volume,sector,expected)
+    BLOCKCACHE.Store(@adapter.cache,volume,CARD(sector),expected,source)
+    IF source=adapter.buffer THEN
+      Publish(adapter,volume,sector,expected)
+    ELSE
+      DiscardBuffer(adapter)
+    FI
   ELSE
     DiscardBuffer(adapter)
     BLOCKCACHE.Invalidate(@adapter.cache,volume)

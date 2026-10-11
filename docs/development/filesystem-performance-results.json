@@ -1116,5 +1116,490 @@
       }
     ],
     "native_routine_bytes": 910464
+  },
+  "fp6_direct": {
+    "ide": {
+      "status": "pass",
+      "guest_frames": 100,
+      "guest_seconds": 2.0,
+      "counts": {
+        "startFrame": 99,
+        "endFrame": 199,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 47,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "logicalReads": 50,
+        "kernelCalls": 2133,
+        "taskSwitches": 334
+      },
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 54,
+        "free": 1386,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "e1c4b50dab63840cfb691d0441c0a0d8d583b85f5571d3761c4911274c4b9ce1",
+      "guards": "intact"
+    },
+    "mydos": {
+      "status": "pass",
+      "checks": [
+        105
+      ],
+      "allocation": {
+        "sectors": 720,
+        "sector_bytes": 128,
+        "allocated": 42,
+        "free": 678,
+        "files": 8,
+        "directories": 2
+      },
+      "xex_sha256": "dfaca066d8a561c9a1a12aa65d948a6b1add4bc44a9ea56fad47ac2ee5bff834",
+      "guards": "intact"
+    },
+    "sio": {
+      "status": "pass",
+      "rows": [
+        {
+          "case": "16384-cold-create",
+          "guest_pal_frames": 1940,
+          "guest_seconds": 38.8,
+          "counts": {
+            "startFrame": 607,
+            "endFrame": 2547,
+            "maxGroupWrites": 8,
+            "reads": 101,
+            "writes": 108,
+            "readBytes": 25728,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 47,
+            "cacheMisses": 101,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 29282,
+            "taskSwitches": 1055
+          },
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 256,
+            "allocated": 103,
+            "free": 617,
+            "files": 2,
+            "directories": 1
+          }
+        },
+        {
+          "case": "16384-warm-create",
+          "guest_pal_frames": 1011,
+          "guest_seconds": 20.22,
+          "counts": {
+            "startFrame": 1452,
+            "endFrame": 2463,
+            "maxGroupWrites": 8,
+            "reads": 4,
+            "writes": 108,
+            "readBytes": 896,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 144,
+            "cacheMisses": 4,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 15387,
+            "taskSwitches": 584
+          },
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 256,
+            "allocated": 103,
+            "free": 617,
+            "files": 2,
+            "directories": 1
+          }
+        }
+      ]
+    },
+    "filesystem": {
+      "mutations": {
+        "status": "pass",
+        "checks": [
+          147
+        ],
+        "allocation": {
+          "sectors": 8193,
+          "sector_bytes": 512,
+          "allocated": 57,
+          "free": 8136,
+          "files": 9,
+          "directories": 2
+        },
+        "media_sha256": "610fdcd7515766480d5ea46b50d612b07543c299c645a968b7dc5b60fbc23aef",
+        "guards": "intact"
+      },
+      "map-boundary": {
+        "status": "pass",
+        "checks": [
+          107
+        ],
+        "allocation": {
+          "sectors": 8193,
+          "sector_bytes": 512,
+          "allocated": 279,
+          "free": 7914,
+          "files": 8,
+          "directories": 2
+        },
+        "media_sha256": "3c920433980101446e1d29729efce5ef003ca2cc7dba8ca0dccf6d6d16f33f75",
+        "guards": "intact"
+      },
+      "bitmap-boundary": {
+        "status": "pass",
+        "checks": [
+          107
+        ],
+        "allocation": {
+          "sectors": 8193,
+          "sector_bytes": 512,
+          "allocated": 56,
+          "free": 8137,
+          "files": 8,
+          "directories": 2
+        },
+        "media_sha256": "886df98a6c65caf9b55bbc996525ab10f3c89caf59cd59ddcfaec37d693508a6",
+        "guards": "intact"
+      }
+    },
+    "lifetime": {
+      "mixed": "pass",
+      "timeout": "pass",
+      "flush-error": "pass",
+      "nmi-1": "pass",
+      "nmi-7": "pass"
+    },
+    "ide_stack_bound": {
+      "total_bound": 752,
+      "reservation": 1024,
+      "headroom": 272
+    },
+    "raw": {
+      "writable": "pass",
+      "protected": "pass",
+      "failed-write": "pass"
+    },
+    "block": {
+      "status": "pass",
+      "checks": [
+        1334
+      ],
+      "guards": "intact"
+    },
+    "cache_baseline": {
+      "read": {
+        "routine": {
+          "routine": "M_BLOCKCACHE_READ_6E9EB2D8",
+          "address": 299114,
+          "size": 914,
+          "transfer": "cache-read",
+          "decoder_sha256": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a"
+        },
+        "sizes": {
+          "sector128": {
+            "bytes": 128,
+            "samples": 32,
+            "uninterrupted": 32,
+            "interrupted": 0,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 376.73796376831007,
+                "median_us": 394.78191488611867,
+                "mean_us": 389.1894354075889,
+                "max_us": 397.1783771439527
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 376.73796376831007,
+                "median_us": 394.78191488611867,
+                "mean_us": 389.1894354075889,
+                "max_us": 397.1783771439527
+              }
+            }
+          },
+          "sector256": {
+            "bytes": 256,
+            "samples": 32,
+            "uninterrupted": 30,
+            "interrupted": 2,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 734.8681029463798,
+                "median_us": 771.6608470225366,
+                "mean_us": 760.2306618417894,
+                "max_us": 774.2687618325324
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 734.8681029463798,
+                "median_us": 771.6608470225366,
+                "mean_us": 795.4360433562313,
+                "max_us": 1323.5520081648879
+              }
+            }
+          },
+          "sector512": {
+            "bytes": 512,
+            "samples": 32,
+            "uninterrupted": 29,
+            "interrupted": 3,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 1420.4677612390556,
+                "median_us": 1493.4188917348836,
+                "mean_us": 1476.8794133732606,
+                "max_us": 1494.4056703116387
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 1420.4677612390556,
+                "median_us": 1493.4893759189374,
+                "mean_us": 1526.8107739304378,
+                "max_us": 2010.2089292183728
+              }
+            }
+          }
+        }
+      },
+      "store": {
+        "routine": {
+          "routine": "M_BLOCKCACHE_STORE_364610B1",
+          "address": 301041,
+          "size": 337,
+          "transfer": "cache-store",
+          "decoder_sha256": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a"
+        },
+        "sizes": {
+          "sector128": {
+            "bytes": 128,
+            "samples": 32,
+            "uninterrupted": 31,
+            "interrupted": 1,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 382.87008778100284,
+                "median_us": 402.11227002772847,
+                "mean_us": 398.9086501783091,
+                "max_us": 494.7284878746058
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 382.87008778100284,
+                "median_us": 402.28848048786335,
+                "mean_us": 416.73773821892104,
+                "max_us": 969.4394674778927
+              }
+            }
+          },
+          "sector256": {
+            "bytes": 256,
+            "samples": 32,
+            "uninterrupted": 30,
+            "interrupted": 2,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 758.1278836841801,
+                "median_us": 796.4360377174966,
+                "mean_us": 790.4378336545062,
+                "max_us": 979.0958006932824
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 758.1278836841801,
+                "median_us": 796.4712798095235,
+                "mean_us": 825.1649506117323,
+                "max_us": 1347.164209822958
+              }
+            }
+          },
+          "sector512": {
+            "bytes": 512,
+            "samples": 32,
+            "uninterrupted": 29,
+            "interrupted": 3,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 1478.2647921632865,
+                "median_us": 1553.9648058372184,
+                "mean_us": 1552.1856878121325,
+                "max_us": 1834.7033109240617
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 1478.2647921632865,
+                "median_us": 1554.105774205326,
+                "mean_us": 1600.3500068369658,
+                "max_us": 2067.442086670172
+              }
+            }
+          }
+        }
+      }
+    },
+    "native_routine_bytes": 910365,
+    "range_gate": {
+      "guest_frames": 100,
+      "driver_phases": {
+        "runrequest": {
+          "samples": 115,
+          "uninterrupted": 52,
+          "interrupted": 63,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 4836.76567814948,
+              "median_us": 5444.16313423431,
+              "mean_us": 6169.067213392602,
+              "max_us": 13704.310389791633
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 4836.76567814948,
+              "median_us": 9889.63586460834,
+              "mean_us": 9967.881276685543,
+              "max_us": 24404.091465915964
+            }
+          },
+          "estimated_uninterrupted_total_us": 709442.7295401492
+        },
+        "ready": {
+          "samples": 345,
+          "uninterrupted": 342,
+          "interrupted": 3,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 107.55886486631265,
+              "median_us": 112.88042076238513,
+              "mean_us": 113.03890712945379,
+              "max_us": 156.40440441569316
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 107.55886486631265,
+              "median_us": 112.9156628544121,
+              "mean_us": 132.37113637114447,
+              "max_us": 3396.4213770072133
+            }
+          },
+          "estimated_uninterrupted_total_us": 38998.422959661555
+        },
+        "addresssector": {
+          "samples": 115,
+          "uninterrupted": 111,
+          "interrupted": 4,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 145.5498400713864,
+              "median_us": 155.27665747083012,
+              "mean_us": 157.53151636790707,
+              "max_us": 200.59798781751363
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 145.5498400713864,
+              "median_us": 155.27665747083012,
+              "mean_us": 242.91240158186122,
+              "max_us": 3434.6238047644492
+            }
+          },
+          "estimated_uninterrupted_total_us": 18116.124382309314
+        },
+        "exchange": {
+          "samples": 115,
+          "uninterrupted": 57,
+          "interrupted": 58,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 8839.210069652472,
+              "median_us": 9573.86672004669,
+              "mean_us": 9830.835979767131,
+              "max_us": 11280.85268946501
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 8839.210069652472,
+              "median_us": 9735.98034337075,
+              "mean_us": 10146.35397267555,
+              "max_us": 13567.7120410951
+            }
+          },
+          "estimated_uninterrupted_total_us": 1130546.1376732201
+        },
+        "pio_read": {
+          "samples": 54,
+          "uninterrupted": 47,
+          "interrupted": 7,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 3145.2862292230247,
+              "median_us": 3806.145938912767,
+              "mean_us": 3631.531120731819,
+              "max_us": 3851.6082376275585
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 3145.2862292230247,
+              "median_us": 3618.658009329287,
+              "mean_us": 3588.0965892285653,
+              "max_us": 3851.6082376275585
+            }
+          },
+          "estimated_uninterrupted_total_us": 196102.68051951824
+        },
+        "pio_write": {
+          "samples": 61,
+          "uninterrupted": 51,
+          "interrupted": 10,
+          "uninterrupted_us": {
+            "total": {
+              "min_us": 3094.255679967972,
+              "median_us": 3453.3725977227973,
+              "mean_us": 3396.9368789807845,
+              "max_us": 3580.385097387997
+            }
+          },
+          "elapsed_us": {
+            "total": {
+              "min_us": 3094.255679967972,
+              "median_us": 3371.4699758521183,
+              "mean_us": 3419.098796617748,
+              "max_us": 6356.052265432159
+            }
+          },
+          "estimated_uninterrupted_total_us": 207213.14961782785
+        }
+      },
+      "scope": "Passive full-bank PCs; estimated uninterrupted aggregate times, not exclusive routine profiles or range throughput."
+    }
   }
 }

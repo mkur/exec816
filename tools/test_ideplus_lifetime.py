@@ -28,7 +28,7 @@ def run(out,reuse=False,selected=None):
     value=json.loads(PROFILE.read_text());value['image_data_bytes']=4096
     profile.write_text(json.dumps(value))
     mounts=[dict(alias='D1',unit=49,profile=4,sector_bytes=256,sectors=2000,format=1)]
-    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_lifetime.act',out,optimize=True,tasks=True,task_capacity=8,heap_probe=True,console_deferred=True,memory_profile=profile,dos_mounts=mounts,image_data=[(0x2dfff0,bytes([0x55])*512),(0x2e1000,bytes(128))])
+    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_lifetime.act',out,optimize=True,tasks=True,task_capacity=8,heap_probe=True,console_deferred=True,memory_profile=profile,dos_mounts=mounts,image_data=[(0x2dffef,bytes([0x55])*514),(0x2e1000,bytes(128))])
     base=p['build']['memory']['ideplus_storage']['BASE']
     cases=['mixed','slots','allocation','busy-stop','timeout','flush-error']+[f'nmi-{i}' for i in range(1,8)]
     for name in cases:

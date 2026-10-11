@@ -259,3 +259,59 @@ copies, populated-file Open, and warm listing checks. Independently audit bytes
 and allocation; report physical requests, kernel calls, timing, memory and
 remaining limits by slice. Update the execution record and relevant references.
 These development results do not qualify physical hardware or a release.
+
+## FP6 design appendix
+
+### Complete-sector buffer ownership
+
+BeginStore borrows its complete-sector source until FinishStore has collected
+the accepted request. The source remains live and immutable, including during
+cancellation/draining. The reusable IOStdReq already stores this pointer; no
+new adapter field or allocation is needed. Finish reads the pointer before
+retiring the borrow and publishes clean-cache bytes from that actual completed
+source. It tags scratch only when scratch was the submitted buffer. Errors or
+short completion invalidate the affected volume's cache as before.
+
+IDE reads/writes perform PIO directly against io_Data. Identify/APT reads still
+use the existing private 512-byte controller buffer. A failed raw read may have
+changed its destination; io_Actual remains zero and those bytes are invalid.
+Filesystem reads continue to validate before copying scratch into application
+buffers. Direct application reads would require a separate lifetime design and
+are not part of this slice.
+
+SpartaDOS submits a complete aligned sector directly from the active DOS Write
+span. Partial writes retain read/merge, new final tails retain copy/clear, and
+MyDOS retains its trailer assembly. All callers keep the source until synchronous
+WritePayload returns. Payload grouping, BREAK checkpoints and metadata
+publication order are unchanged. Public request layouts and commands stay the
+same. Fixed, per-Task, idle and total reserved bank-zero deltas are zero; upper
+records, cache arenas and private controller/mutation buffers do not grow.
+
+### Cache measurement and representation
+
+The isolated sector fixture measures actual BLOCKCACHE.Read/Store for 128,
+256 and 512 bytes with a 64 KiB payload. Passive native-PC timing excludes
+interrupted samples from CPU medians and replays the identical image without
+observers. Compare bookkeeping in the existing 128-byte pieces before changing
+representation. In an admitted full sector, the hash's pre-salt base is aligned
+to its piece count; successive buckets can therefore use base XOR part. This
+preserves the exact current mapping, tags and replacement policy. Forget still
+checks all four possible pieces with the original calculation.
+
+A fixed 512-byte slot cache of the same 64 KiB payload would hold only 128
+128-byte sectors, using 16 KiB and reserving 48 KiB unused capacity. The current
+pieces can retain 512 such sectors and mix all admitted geometries. A packed
+variable-sector cache needs a separate allocator/replacement design; do not
+accept the fixed-slot capacity loss merely to reduce tags. Benchmark any chosen
+bookkeeping improvement before adopting it. No cache-budget or bank-zero
+reservation changes are proposed.
+
+### IDE range admission gate
+
+Measure request/command setup separately from payload PIO after direct transfers.
+A range still performs all PBI word accesses and terminal status checks. Only
+then decide whether a bounded range warrants a public command ABI, confirmed
+prefix/cancellation rules and filesystem extent plumbing. A range prototype or
+timing decomposition is development evidence only; no unqualified command is
+added to the production interface. Record the measured saving and gate decision
+in the execution page. SIO retains single-sector wire operations throughout.

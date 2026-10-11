@@ -674,6 +674,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     BYTE POINTER source LONGINT length)
   CARD count,index,part,offset
   LONGINT completed
+  BYTE POINTER payload
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
@@ -707,10 +708,14 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
       part=CARD(length-completed)
     FI
 
-    A816MEMORY.Move(state.data,source+SIZE(completed),SIZE(part))
-    A816MEMORY.Clear(@state.data(part),SIZE(sectorBytes-part))
+    payload=source+SIZE(completed)
+    IF part<>sectorBytes THEN
+      A816MEMORY.Move(state.data,payload,SIZE(part))
+      A816MEMORY.Clear(@state.data(part),SIZE(sectorBytes-part))
+      payload=state.data
+    FI
 
-    IF FSWRITEIO.WritePayload(service,state.reserved(index),state.data)=0 THEN
+    IF FSWRITEIO.WritePayload(service,state.reserved(index),payload)=0 THEN
       RETURN(0)
     FI
 
@@ -738,6 +743,7 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     POINTER file BYTE POINTER source LONGINT length)
   CARD within,part,sector
   BYTE needed
+  BYTE POINTER payload
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
@@ -802,13 +808,19 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   ELSE
     state.bitmapValid=0
     state.freeValid=0
-    IF FSWRITEIO.Read(service,sector,state.data)=0 THEN
-      RETURN(0)
+    IF within<>0 OR part<>sectorBytes THEN
+      IF FSWRITEIO.Read(service,sector,state.data)=0 THEN
+        RETURN(0)
+      FI
     FI
   FI
 
-  A816MEMORY.Move(@state.data(within),source,SIZE(part))
-  IF FSWRITEIO.WritePayload(service,sector,state.data)=0 THEN
+  payload=source
+  IF within<>0 OR part<>sectorBytes THEN
+    A816MEMORY.Move(@state.data(within),source,SIZE(part))
+    payload=state.data
+  FI
+  IF FSWRITEIO.WritePayload(service,sector,payload)=0 THEN
     RETURN(0)
   FI
 

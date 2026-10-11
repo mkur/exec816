@@ -48,15 +48,18 @@ Success requires both no I/O error and exactly the expected byte count. A short
 or failed response supplies no valid sector, even if some wire bytes arrived.
 Framing and checksums remain the SIO driver's responsibility.
 
-BeginStore stages one complete sector and sends SIO PUT `$50`, without readback
+BeginStore borrows one complete sector and sends SIO PUT `$50`, without readback
 verification. IDE uses ATA WRITE with terminal status and any required cache
 flush, also without automatic readback. BeginStore rejects
 overlapping requests and invalid geometry before submission. Sources are live
-caller-owned complete-sector buffers; the adapter does not walk their RAM map.
+caller-owned complete-sector buffers and stay immutable until FinishStore
+collects the reply; the adapter does not walk their RAM map or stage another
+copy. A cancelled request retains that borrow until its terminal reply.
 Invalidate
 the scratch tag and all cached pieces of that sector first; FinishStore publishes
-replacement bytes only after an error-free, exact-length terminal completion.
-Writes use the same upper-RAM buffer and request as reads, with no write-back
+replacement bytes from the submitted source only after an error-free,
+exact-length terminal completion. Scratch is tagged only if it was the source.
+Writes reuse the same request as reads, with no write-back
 queue or additional reservation. The [filesystem writers](filesystem-writes.md)
 use these operations to commit data and metadata on explicitly writable mounts.
 

@@ -46,17 +46,22 @@ same APT. Low-byte APT table storage remains supported; it is independent of
 partition-sector packing. Table sectors and metadata leaders are never exposed
 as logical file data. See the [APT specification](https://drac030.krap.pl/APT_spec.pdf).
 All successful requests publish the full length, with one terminal reply.
+PIO uses the request's live buffer directly. Write buffers remain immutable
+until reply collection. A failed or cancelled raw read may have changed its
+destination even when io_Actual is zero; those bytes are invalid. Filesystem
+reads retain their validation buffer and do not expose failed sectors.
 
 The worker polls status briefly, then sleeps one timer.device VBI tick. Each
 hardware wait has a 250-tick deadline (five seconds on the initial PAL target).
 A timeout, absent medium or failed accepted write marks the controller offline;
 cold reset is required.
 No ATA software-reset register is assumed. A queued cancellation removes/replies;
-an active read drains before replying aborted and does not copy client bytes.
+an active read drains before replying aborted; its destination may contain
+invalid data even with zero actual bytes.
 
 ## Write completion
 
-WRITE_SECTOR stages all 512 caller bytes, writes the physical sector and waits
+WRITE_SECTOR retains all 512 caller bytes, writes them directly and waits
 for terminal ATA status. It performs no preparation read or automatic readback.
 Other physical sectors remain intact. There is one controller owner throughout;
 no zero fill or dirty physical cache.

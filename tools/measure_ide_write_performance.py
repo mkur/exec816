@@ -6,6 +6,8 @@ never a production compatibility path and uses the same pinned compiler/ROM.
 import argparse
 import importlib.util
 import json
+import os
+from contextlib import contextmanager
 from pathlib import Path
 
 from native_program import ROOT,build,compiler,execute,require,sha256,read_build
@@ -18,6 +20,54 @@ from build_command import compile_command
 from filesystem_audit import Audit
 from make_data_disk import make
 from build_ide_media import write
+
+
+@contextmanager
+def driver_observer(program, enabled):
+    """Passive full-bank PCs; no guest counters or debugger pauses."""
+    if not enabled:
+        yield None
+        return
+    from measure_sector_copy import instructions_for
+    phases={}
+    for module,name in (('IDEPLUSDRIVER','RUNREQUEST'),('IDEPLUSDRIVER','READY'),
+                        ('IDEPLUSDRIVER','ADDRESSSECTOR'),('BLOCKWIRE','EXCHANGE')):
+        routine,instructions,_,_=instructions_for(program,'M_'+module+'_'+name+'_')
+        mapping=dict(consume=routine['address'],native_nmi=program['labels']['native_nmi'],native_irq=program['labels']['native_irq'])
+        mapping.update({f'return{i}':item['pc'] for i,item in enumerate(x for x in instructions if x['text']=='RTL')})
+        phases[name.lower()]=mapping
+    for name in ('read','write'):
+        phases['pio_'+name]=dict(consume=program['labels']['ideplus_'+name+'_words'],
+                                return0=program['labels']['ideplus_'+name+'_words_end']-1,
+                                native_nmi=program['labels']['native_nmi'],native_irq=program['labels']['native_irq'])
+    boundary={name:next(r['address'] for r in program['image']['routines'] if r['name'].startswith('M_WRITEPERFPROBE_'+name.upper()+'_')) for name in ('begin','end')}
+    pcs=set(boundary.values())|{pc for mapping in phases.values() for pc in mapping.values()}
+    keys=('EXEC816_LATENCY_TRACE','EXEC816_LATENCY_PCS')
+    previous={key:os.environ.get(key) for key in keys}
+    try:
+        os.environ['EXEC816_LATENCY_TRACE']='1'
+        os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in sorted(pcs))
+        yield (phases,boundary)
+    finally:
+        for key,value in previous.items():
+            if value is None:os.environ.pop(key,None)
+            else:os.environ[key]=value
+
+
+def phase_summary(out, observer):
+    from measure_sector_copy import samples, summarize
+    from sio_transaction_trace import read_events
+    phases,boundary=observer
+    events=read_events(out/'emulator.log')
+    start=next(t for t,e in events if e[0]=='cpu' and int(e[4],16)==boundary['begin'])
+    finish=next(t for t,e in events if t>start and e[0]=='cpu' and int(e[4],16)==boundary['end'])
+    selected=[row for row in events if start<=row[0]<=finish]
+    result={}
+    for name,mapping in phases.items():
+        rows=samples(selected,mapping)
+        stats=summarize(rows)
+        result[name]=dict(**stats,estimated_uninterrupted_total_us=len(rows)*stats['uninterrupted_us']['total']['mean_us'])
+    return result
 
 
 def frozen_module(path):
@@ -190,7 +240,7 @@ ENDMODULE
     return p,wire,mapping,content,size,command,tree
 
 
-def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None):
+def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None,driver_timing=False):
     require(not count_comparisons or (open_bytes and from_build is None), 'Count comparisons in a fresh Open probe')
     require(validation_source is None or count_comparisons, 'Source overrides are comparison-count probes only')
     require(0 <= open_bytes <= 524288, 'Invalid selected-file size')
@@ -217,8 +267,10 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         command=tree/'COPY16'
     else:
         p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source)
-    with ide_emulator(out,out/'ideplus.img',writable=True) as b:
+    with driver_observer(p,driver_timing) as observer, ide_emulator(out,out/'ideplus.img',writable=True) as b:
         def before(b):
+            if driver_timing:
+                b.profile_start()
             if wire is not None:
                 b.memload(p['build']['task_storage']['BASE']+0x900,wire)
             if open_bytes:
@@ -227,6 +279,8 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
                 address=next(d['address'] for d in p['image']['data'] if '_WRITEPERFORMANCE_'+field+'_' in d['name'])
                 b.memload(address,value)
         runtime,_=execute(b,{**p,'output':out},before_run=before,timeout=300,frame_limit=15000)
+        if driver_timing:
+            b.profile_stop()
         clean_ownership(b,p,out)
         view={**p['image'],'data':[d for d in p['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
         counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions','logicalReads')}
@@ -259,6 +313,8 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
     result['selected_file_bytes']=open_bytes
     result['warm_source']=warm
     result['retained_build']=str(from_build) if from_build else None
+    if observer:
+        result['driver_phases']=phase_summary(out,observer)
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('IDE writable Open/Close:' if open_bytes else 'IDE loaded COPY:',size,frames,'frames',counts,flush=True)
     return result
@@ -266,4 +322,5 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--frozen-sources',type=Path)
     a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true');a.add_argument('--open-bytes',type=int,default=0);a.add_argument('--count-comparisons',action='store_true');a.add_argument('--validation-source',type=Path)
-    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source)
+    a.add_argument('--driver-timing',action='store_true')
+    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source,v.driver_timing)

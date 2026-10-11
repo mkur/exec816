@@ -162,3 +162,35 @@ The IDE worker's emitted call-bound analysis is 732 bytes including the
 256-byte interrupt reserve and 16-byte dispatch margin, leaving 292 bytes in
 its unchanged 1,024-byte reservation. Records and buffers stay unchanged:
 bank-zero delta 0 fixed / 0 per-Task / 0 idle.
+
+## FP6a: direct complete-sector buffers
+
+The [design appendix](../plans/filesystem-dos-performance-implementation-plan.md#fp6-design-appendix)
+defines source borrowing and failure semantics. The adapter submits its actual
+source, publishes clean-cache bytes before retiring the borrow, and tags scratch
+only when scratch was submitted. IDE PIO reads/writes use io_Data directly.
+SpartaDOS complete aligned writes bypass merge/staging; partial updates, new tails
+and MyDOS trailer assembly keep their private buffers. Failed raw read destinations
+are invalid even with zero actual bytes; the current fixtures check that contract
+and retain neighbour guards.
+
+Loaded IDE COPY falls from 107 to 100 frames with the same 54 reads / 61 writes.
+Accurate SIO takes 1,940 cold frames with 101 reads / 108 writes; warm source takes
+1,011 frames with 4 reads / 108 writes. IDE mutation, map transition, bitmap
+transition/no-cache, raw protected/failing writes, cancellation, timeout, flush
+failure and NMI boundary checks pass. SIO block stores verify borrowed far buffers,
+post-reply reuse, short sectors, no-cache and failed completion. MyDOS 128-byte
+replacement/append passes independently audited media checks. Host checks: 447
+passed. The IDE worker bound is 752 bytes in its unchanged 1,024-byte reservation.
+
+The isolated cache observer measures actual Read and Store, with 32 samples of
+each 128/256/512-byte size and identical-image replay. Baseline hit medians are
+395/772/1,493 µs; publication medians are 402/796/1,554 µs. Cache bookkeeping
+therefore warrants the next measured slice. Passive full-bank IDE timing also
+finds substantial request/dispatch overhead: 115 exchanges estimate 1.13 s of
+uninterrupted aggregate time, versus 0.40 s in PIO. These inclusive estimates
+are not exclusive profiles, nor a prediction of range throughput. They justify
+implementing and measuring bounded write ranges for contiguous new payloads.
+
+All existing controller, mutation, cache and adapter buffers remain the same
+size. Bank-zero delta is 0 fixed / 0 per-Task / 0 idle; no Task pool grows.
