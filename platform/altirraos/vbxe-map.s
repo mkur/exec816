@@ -93,7 +93,7 @@ _upload_mode:
 
 ; Checked opaque even-X 8x8 text. The C driver validates the complete atlas,
 ; source string and destination before mapping. Generate one fill followed by
-; 1..32 glyphs and an optional final fill directly in the arena.
+; 1..80 glyphs and an optional final fill directly in the arena.
 ; All fixed fields are written every time;
 ; arbitrary glyph bytes cannot change stride, mode, chaining or raster bounds.
 ; No shared scratch: $80-$99 are the caller's ABI call-clobbered DP workspace.

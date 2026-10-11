@@ -271,9 +271,10 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 
 /* The descriptor proves every possible byte glyph stays in the atlas and
  * every destination stays on screen. Unlike Submit, no caller-supplied raw
- * records are trusted. Each generated list has a fill and at most 32 glyphs:
- * 33 records / 693 bytes, at most 5120 bus accesses, within existing limits.
- * The optional final fill adds one record and at most 3072 bus accesses.
+ * records are trusted. Each generated list has a fill and at most 80 glyphs:
+ * 81 records / 1701 bytes, at most 12800 bus accesses. These text-only limits
+ * leave generic lists unchanged. The optional final fill adds one record and
+ * at most 3072 bus accesses: 1722 bytes / VBXE_TEXT_WORK (15872) in total.
  * All glyphs (including blank masks) follow the same checked geometry. */
 static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
@@ -305,7 +306,7 @@ static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
         upload.fillValue=fill->value;
     }
     while (count) {
-        n=count>32 ? 32 : count;
+        n=count>VBXE_TEXT_GLYPHS ? VBXE_TEXT_GLYPHS : count;
         upload.count=n;
         upload.fillRows=fill && count==n ? fill->height : 0;
         map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);

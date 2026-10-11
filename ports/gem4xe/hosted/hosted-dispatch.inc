@@ -221,6 +221,9 @@ void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
 /* Application state is selected only during an admitted synchronous unit.
  * This save area is shared renderer scratch, protected by DISPLAY access. */
 #include <exec816/vdi-unit.h>
+#if EXEC_VDI_TEXT_CHUNK > INTIN_SIZE
+#error VDI text chunk exceeds shared donor word scratch
+#endif
 static Vwk nativeWorkstation;
 void GemVdiPaint(void *context)
 {

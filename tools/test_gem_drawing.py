@@ -32,6 +32,14 @@ def run(out,mode):
         'extern void DrawingAdmissionProbe(void);\nstatic void drain(void)\n{\n    DrawingAdmissionProbe();')
     (out/'gem-vbxe.c').write_text(backend)
     sources[sources.index(ad/'gem-vbxe.c')]=out/'gem-vbxe.c'
+    # Count actual list launches per native text call, including final fills.
+    hardware=(ROOT/'platform/altirraos/vbxe.c').read_text()
+    needle='        start(d);\n        status=VbxeOwnerFence(d);'
+    require(hardware.count(needle)==1,'Native text launch boundary changed')
+    hardware=hardware.replace(needle,'        if (fill) ++DrawingFillLaunches[n]; else ++DrawingTextLaunches[n];\n'+needle)
+    hardware='#include <hardware/vbxe.h>\nvolatile UWORD DrawingTextLaunches[81],DrawingFillLaunches[81];\n'+hardware
+    (out/'vbxe-text-probe.c').write_text(hardware)
+    sources[sources.index(ROOT/'platform/altirraos/vbxe.c')]=out/'vbxe-text-probe.c'
     foreign=emit(out,sources,[ROOT/'c/calypsi/gateway.s',ROOT/'c/calypsi/display.s',
         ROOT/'c/calypsi/input.s',ROOT/'c/calypsi/image-info.s',ROOT/'platform/altirraos/vbxe-map.s'],['DrawingPeer'],
         optimize=mode=='opt',includes=[src,ad],definitions={
@@ -84,6 +92,8 @@ def run(out,mode):
                             for col in range(8):
                                 model.pixel(x+i*8+col,y+row,ink if model.font[row*256+ch]&(128>>col) else paper)
                 for i in range(4):text_run(0,i*8,range(i*64,(i+1)*64),i,5)
+                for i,count in enumerate((0,1,31,32,33,39,64,79,80)):
+                    text_run(0,40+i*8,range(count),i&1,5)
                 cross=[i*7&255 for i in range(80)]
                 text_run(0,200,cross,1,5);text_run(512,204,cross[:16],0,3)
                 text_run(632,232,b'A',0,1)
@@ -99,7 +109,7 @@ def run(out,mode):
                     (8,8,b'A',1,5,16,15,8,1,1),
                     (0,24,range(32),0,3,256,31,8,1,0),
                     (0,40,range(32,65),1,5,264,47,8,1,1),
-                    (0,64,range(128,208),2,5,0,80,640,4,3),
+                    (0,64,range(128,208),2,5,0,80,384,8,3),
                     (0,104,range(64,128),0,5,0,120,384,8,0),
                     (0,144,b'AB W 09',1,5,0,147,56,2,7),
                     (624,232,b'A',1,5,632,239,8,1,1),
@@ -108,6 +118,15 @@ def run(out,mode):
                     for row in range(fy,fy+h):
                         for col in range(fx,fx+w):model.pixel(col,row,pen)
                 report['text_fill_pixels_sha256']=pixels(b,out,model.packed())
+                def launches(name):
+                    raw=b.memdump(sy[name],162)
+                    return {n:int.from_bytes(raw[n*2:n*2+2],'little') for n in range(81) if any(raw[n*2:n*2+2])}
+                report['text_launches']=launches('DrawingTextLaunches')
+                report['text_fill_launches']=launches('DrawingFillLaunches')
+                require(report['text_launches']=={1:2,7:8,16:1,31:1,32:1,33:1,39:1,64:5,79:1,80:2},
+                        'Native text was split: '+str(report['text_launches']))
+                require(report['text_fill_launches']=={1:2,7:1,32:1,33:2,64:1,80:1},
+                        'Text/fill was split: '+str(report['text_fill_launches']))
                 b.memload(sy['gate'],b'\3\0')
                 report['outline_pixels']=[]
                 for checkpoint,outline in ((4,(248,88,263,97)),(5,(249,90,264,98)),

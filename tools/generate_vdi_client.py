@@ -8,6 +8,7 @@ ABI=json.loads((ROOT/'abi/vdi-client.json').read_text())
 
 
 def records():
+    assert next(f[2] for f in ABI['workstation'] if f[0]=='intin')==ABI['constants']['TEXT_CHUNK']
     sizes={'UWORD':2,'WORD':2,'BYTE':1,'UBYTE':1,'const WORD *':4,'struct DisplayGrant':32}
     result={}
     for name,fields in [('ExecVDIUnit',ABI['unit']),('ExecVDIWorkstation',ABI['workstation'])]:

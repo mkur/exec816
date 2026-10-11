@@ -95,7 +95,11 @@ bytes beyond payload capacity. The screen uses 76,800 bytes. Its former
 increase in the total reservation. Widget continuations draw there and publish
 the clipped strip only after reconstruction finishes. XDL uses 12 of 256 bytes;
 the 4,096-byte BCB arena has 4,095 bytes of whole-record capacity, with each
-submission bounded to 64 records and 8,192 estimated bus accesses.
+generic submission bounded to 64 records and 8,192 estimated bus accesses.
+The trusted even-X text generator writes up to 80 glyphs plus background and
+optional trailing fill directly into that arena: at most 82 records / 1,722
+bytes / 15,872 estimated bus accesses. Its larger bound does not change the
+generic submission contract or VRAM reservation.
 The font atlases reserve 20,480 bytes (18,432 used), clipped glyph scratch reserves
 4,096 bytes, pointer storage reserves 1,280 bytes, and two desktop snapshot slots
 reserve 65,536 bytes each. The remaining 281,088 bytes are unassigned within the

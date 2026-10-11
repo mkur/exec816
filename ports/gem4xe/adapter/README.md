@@ -132,9 +132,10 @@ Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
 the generic device and list-validation path for every glyph. The driver checks
 the entire CPU string, screen rectangle, colours and 256-glyph atlas before
 submitting any prefix. A private native uploader writes one background fill and
-up to 32 fixed 8×8 glyph records directly into the existing command arena. This
-uses at most 33 records, 693 arena bytes and 5,120 blitter bus accesses per batch,
-within the existing limits. Every field, including chain termination, is written
+up to 80 fixed 8×8 glyph records directly into the existing command arena. This
+uses at most 81 records, 1,701 arena bytes and 12,800 blitter bus accesses per batch.
+These are text-generator bounds; generic lists retain their 64-record and
+8,192-access limits. Every field, including chain termination, is written
 anew; hardware-zero ink uses inverse-mask AND and other ink uses the stencil.
 The operation fences every batch before reusing the arena or returning.
 
@@ -142,12 +143,14 @@ The operation fences every batch before reusing the arena or returning.
 rectangle, with one owner admission. The rectangle requires even X and width,
 nonzero dimensions, screen bounds and at most 3,072 pixels. All arguments are
 checked before drawing; the fill is appended only to the final text batch.
-That list uses at most 34 records, 714 arena bytes and 8,192 bus accesses within
-the existing work budget. The console uses this synchronous operation for its
+That list uses at most 82 records, 1,722 arena bytes and 15,872 bus accesses.
+The fill allowance remains 3,072 accesses, independent of the larger text batch.
+The console uses this synchronous operation for its
 last dirty span and new underline caret, avoiding a second call and launch.
 
 The fifth extraction patch connects the ordinary text entry to this path. Odd-X
-text and VDI opcode 8 retain their existing device glyph path. Public raw-list
+text and clipped VDI text retain their existing device glyph path. Complete
+even-X caller-local VDI text uses the native uploader. Public raw-list
 submission still validates every supplied record. No cached admission, new Task,
 bank-zero reservation, extra arena or completion API is introduced. The uploader
 uses call-clobbered Task DP scratch `$80–$99`; its 25-byte packet layout is checked

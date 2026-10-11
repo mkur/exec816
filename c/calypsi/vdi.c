@@ -4,6 +4,11 @@
 #include <proto/exec.h>
 #include "gem-drawing.h"
 #include "vdi-inquiry.inc"
+#include <hardware/vbxe.h>
+
+#if EXEC_VDI_TEXT_CHUNK != VBXE_TEXT_GLYPHS
+#error VDI and native text batch limits must agree
+#endif
 
 /* Registration pins the presenter. Only this Task can change its context or
  * workstation; warm calls need no endpoint/pointer revalidation. */
@@ -126,7 +131,7 @@ static void bar(struct ExecAESContext *c,const WORD *points)
 }
 
 /* Named strings and parameter-block words share the streaming renderer. The
- * private 32-word chunk survives a preemption; no stack buffer escapes a call. */
+ * private 80-word chunk survives a preemption; no stack buffer escapes a call. */
 static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD words,BOOL string)
 {
     struct ExecVDIWorkstation *w=c->workstation;

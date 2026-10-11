@@ -3,8 +3,9 @@
 [GEM plans](README.md) · [Drawing traces](../../history/g4bench-drawing-traces.md) ·
 [Earlier text optimization](text-viewer-performance-plan.md)
 
-Status: planned. Implement in seven executable slices, committing each after
-its focused development checks pass.
+Status: TX1 implemented and development-tested; TX2–TX7 pending. Continue in
+executable slices, committing each after its focused development checks pass.
+See [slice results](../../history/gem-rendering-performance.md).
 
 Increase text batches from 32 to 80 characters and extend the native uploader
 to fully visible odd-X text. A complete screen row should need one display
@@ -122,6 +123,14 @@ the combined text/fill bound. Substituting 80 into the old expression would
 underflow unsigned arithmetic.
 
 ## TX1 Increase complete even X runs to 80 characters
+
+Completed. [Development evidence](../../development/gem-rendering-tx1.json)
+records native 39/80-character single launches, the 80-character/max-fill case,
+public VDI clipping/preemption, console/caret checks and matched G4BENCH runs.
+The benchmark's complete 39-character call uses one borrow/upload/launch.
+Current framed windows cannot expose a full 640-pixel work row: complete
+80-character pixels/launches are checked at the native entry, while public VDI
+tests exercise 80-character input clipped to its work area.
 
 Update [the VDI ABI input](../../../abi/vdi-client.json), its generated
 workstation layout and the streaming loop together. The private `WORD intin`

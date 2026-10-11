@@ -3,6 +3,8 @@
 - [G4BENCH port](g4bench-port.md): loadable benchmark slices and measurements.
 - [G4BENCH drawing traces](g4bench-drawing-traces.md): caller, renderer, blitter
   and scheduling costs in the unchanged packaged desktop.
+- [GEM rendering performance](gem-rendering-performance.md): implementation
+  slices and measurements following those traces.
 
 - [AES UPDATE admission latency](update-admission-latency.md): logical lock,
   presenter painting and physical display handoff attribution, rejected renderer

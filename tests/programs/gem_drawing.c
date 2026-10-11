@@ -101,12 +101,17 @@ UWORD main(void)
     check(InputAcquire(&mouse,&config)==INPUT_OK);
     checkpoint=1;
     while (!gate) { }
-    /* Every byte glyph, both hardware-zero/nonzero ink, 32-record batch
+    /* Every byte glyph, both hardware-zero/nonzero ink, text batch
      * boundaries, bottom/right screen edges and CPU/VRAM bank crossings. */
     check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
     for (i=0;i<256;i++) glyphs[i]=(UBYTE)i;
     for (i=0;i<4;i++)
         check(GemDrawingText(0,i*8,glyphs+i*64,64,i,5)==DISPLAY_OK);
+    {
+        static const UWORD lengths[]={0,1,31,32,33,39,64,79,80};
+        for (i=0;i<9;++i)
+            check(GemDrawingText(0,40+i*8,glyphs,lengths[i],i&1,5)==DISPLAY_OK);
+    }
     allocation=AllocMem(131072UL,MEMF_UPPER|MEMF_LINEAR);
     check(allocation!=NULL);
     if (allocation) {
@@ -134,7 +139,7 @@ UWORD main(void)
     check((UWORD)(ownerChecks-before)==1);
     check(GemDrawingTextFill(0,24,glyphs,32,0,3,256,31,8,1,0)==DISPLAY_OK);
     check(GemDrawingTextFill(0,40,glyphs+32,33,1,5,264,47,8,1,1)==DISPLAY_OK);
-    check(GemDrawingTextFill(0,64,glyphs+128,80,2,5,0,80,640,4,3)==DISPLAY_OK);
+    check(GemDrawingTextFill(0,64,glyphs+128,80,2,5,0,80,384,8,3)==DISPLAY_OK);
     check(GemDrawingTextFill(0,104,glyphs+64,64,0,5,0,120,384,8,0)==DISPLAY_OK);
     check(GemDrawingTextFill(0,144,text,7,1,5,0,147,56,2,7)==DISPLAY_OK);
     check(GemDrawingTextFill(624,232,text,1,1,5,632,239,8,1,1)==DISPLAY_OK);

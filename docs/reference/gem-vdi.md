@@ -37,7 +37,7 @@ explicit word count. Glyph indices are 0–255, a caller obligation. Strings are
 not truncated at a fixed call-size limit.
 
 The binding releases [physical access](display.md#delegated-renderer-access)
-between at most 16-row fill strips or 32-glyph text chunks. Each admitted unit
+between at most 16-row fill strips or 80-glyph text chunks. Each admitted unit
 selects private attributes, renders through the existing backend, fences,
 restores native attributes and overlays, then releases access. Shared parameter
 scratch and the 92-byte native-workstation save area remain protected by that
@@ -51,7 +51,7 @@ are application responsibilities. Closing releases only the virtual grant,
 signal and storage. `appl_exit` also closes an omitted workstation before
 retiring the registration. Failure to release ownership prevents disposal.
 
-Private storage is 282 live / 288 heap-reserved upper bytes per workstation,
+Private storage is 378 live / 384 heap-reserved upper bytes per workstation,
 including its grant and parameter arrays. The AES context is 267 live / 272
 reserved bytes. No Task, DP, stack pool, bank-zero reservation, staging page or
 VRAM extent is added. See [WA4 evidence](../development/aes-windows-wa4.json) for
