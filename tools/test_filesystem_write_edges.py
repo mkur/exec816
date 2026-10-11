@@ -21,7 +21,8 @@ import sdfs_reference
 CASES = {'normal': 1, 'readonly': 2, 'protected': 3, 'full': 4,
          'incomplete': 5, 'corrupt': 6, 'sparse': 7, 'legacy-empty': 8,
          'tenbit-full': 9, 'full-directory': 4, 'fragmented': 10,
-         'partial-group': 11}
+         'partial-group': 11, 'duplicate':6, 'duplicate-far':6,
+         'allocation-bit':6, 'bitmap-transition':1}
 
 
 def limited(filesystem, size, folder):
@@ -86,7 +87,20 @@ def prepare(filesystem, size, name):
         image=Image((ROOT/f'tests/fixtures/mydos/mydos450-{size}.atr').read_bytes())
         require(len(list(image.entries()))==64, 'Expected a full native directory')
         return image
-    image = Image((ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr').read_bytes())
+    fixture=ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr'
+    if name in ('duplicate-far','bitmap-transition'):
+        require(filesystem=='sdfs','Map/bitmap transition cases need SDFS')
+        source=Audit(fixture.read_bytes());source.sdfs()
+        tree=ROOT/'build/filesystem-performance/fp4/edge-input'/str(size)/name
+        tree.mkdir(parents=True,exist_ok=True)
+        for path,payload in source.files.items():
+            destination=tree/path;destination.parent.mkdir(parents=True,exist_ok=True)
+            if path=='CREATE.BIN' and name=='duplicate-far':
+                payload=bytes((i*17+3)&255 for i in range(((size-4)//2)*size))
+            destination.write_bytes(payload)
+        fixture=tree.parent/(name+'.atr')
+        sdfs_reference.make(fixture,tree,5000,size)
+    image = Image(fixture.read_bytes())
     row, first, ordinal = entry(image, filesystem, 'EMPTY' if name == 'legacy-empty' else 'CREATE.BIN')
     header = image.offset(360 if filesystem == 'mydos' else 1)
     free_at = header + (3 if filesystem == 'mydos' else 13)
@@ -120,6 +134,26 @@ def prepare(filesystem, size, name):
             image.data[at:at+2] = bytes(((ordinal << 2) | (first >> 8), first & 255))
         else:
             image.data[image.offset(first)+2:image.offset(first)+4] = b'\1\0'
+    elif name in ('duplicate','duplicate-far'):
+        require(filesystem=='sdfs','Duplicate references need SDFS')
+        offset=image.offset(first)
+        last=6 if name=='duplicate' else size-2
+        image.data[offset+last:offset+last+2]=image.data[offset+4:offset+6]
+    elif name=='allocation-bit':
+        require(filesystem=='sdfs','Allocation-bit case needs SDFS')
+        payload=word(image.data,image.offset(first)+4)
+        image.data[bitmap(image,filesystem,payload)] |= 0x80 >> (payload & 7)
+    elif name=='bitmap-transition':
+        offset=image.offset(first)
+        previous=word(image.data,offset+6)
+        payload=size*8+5
+        target=bitmap(image,filesystem,payload)
+        require(image.data[target] & (0x80 >> (payload & 7)), 'High sector already allocated')
+        image.data[bitmap(image,filesystem,previous)] |= 0x80 >> (previous & 7)
+        image.data[target] &= ~(0x80 >> (payload & 7))
+        image.data[image.offset(payload):image.offset(payload)+size]=image.sector(previous)
+        image.data[offset+6:offset+8]=payload.to_bytes(2,'little')
+        Audit(image.data).sdfs()
     elif name == 'sparse':
         require(filesystem == 'sdfs', 'Sparse case needs SDFS')
         image.data[image.offset(first)+4:image.offset(first)+6] = b'\0\0'
@@ -154,9 +188,13 @@ def run(output, mode, filesystem, size, names, from_build, profile=4):
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count, sector_bytes=size,
                    format=1 if filesystem == 'mydos' else 2, access='readwrite',
                    profile=profile)]
-    program = reuse(from_build) if from_build else build(compiler(ROOT/'build/actionc'),
+    memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    memory['image_data_bytes']=4352
+    (output/'memory-profile.json').write_text(json.dumps(memory))
+    program = reuse(from_build) if from_build else build(compiler(ROOT/'build/actionc',release=True),
                 ROOT/'tests/programs/filesystem_write_edges.act', output, optimize=mode == 'opt',
-                tasks=True, console_deferred=True, dos_mounts=mounts, system_mount='D1')
+                tasks=True, console_deferred=True, dos_mounts=mounts, system_mount='D1',
+                memory_profile=output/'memory-profile.json')
     require(program['build']['optimize'] == (mode == 'opt'), 'Changed emission mode')
     cases = []
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
@@ -182,7 +220,7 @@ def run(output, mode, filesystem, size, names, from_build, profile=4):
                 if not index:
                     bridge.state_save(slot='loaded')
                 bridge.mount(0, str(media))
-                bridge.memload(program['build']['task_storage']['BASE'] + 0x900, encode(mounts))
+                bridge.memload(program['build']['task_storage']['BASE'] + 0x900, encode([{**mounts[0],'sectors':initial.count}]))
                 address = next(d['address'] for d in program['image']['data'] if '_FSWRITEEDGES_SCENARIO_' in d['name'])
                 bridge.memload(address, CASES[name].to_bytes(2, 'little'))
 
@@ -198,7 +236,7 @@ def run(output, mode, filesystem, size, names, from_build, profile=4):
             bridge.regs()
             bridge._cmd_ok('EJECT drive=0')
             report = None
-            if name not in ('normal', 'legacy-empty', 'tenbit-full', 'partial-group'):
+            if name not in ('normal', 'legacy-empty', 'tenbit-full', 'partial-group','bitmap-transition'):
                 require(media.read_bytes() == initial.data, 'Rejected operation changed media')
             elif name == 'tenbit-full':
                 after = Image(media.read_bytes())
@@ -220,7 +258,7 @@ def run(output, mode, filesystem, size, names, from_build, profile=4):
                     expected['CREATE.BIN']=bytes((i&255)^0xc3 for i in range(length))
                 else:
                     expected = dict(baseline.files)
-                if name == 'normal':
+                if name in ('normal','bitmap-transition'):
                     payload = bytearray(expected['CREATE.BIN'])
                     payload[124:128] = bytes(i ^ 0xc3 for i in range(4))
                     payload.extend(i ^ 0xc3 for i in range(4))

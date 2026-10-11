@@ -115,7 +115,15 @@ recovery. There is no resident fsck or repair code.
 
 The host-only [allocation audit](../../tools/filesystem_audit.py) reconstructs
 whole-volume ownership for development. Runtime validation examines touched
-metadata and the selected chain/map; it cannot prove that unrelated files are
+metadata and the selected chain/map. SpartaDOS writable Open copies each map's populated references into
+the existing idle mutation data buffer, sorts that copy without recursion and
+rejects adjacent duplicates. The original map remains intact. This preserves
+the existing per-map duplicate-check scope; it adds no whole-volume scan.
+Allocation checks retain one bitmap page only during this validation walk,
+replacing it when the bitmap identity changes. A writer may reuse its leased
+current staged map until map replacement or mutation retires that identity.
+
+Runtime validation cannot prove that unrelated files are
 not cross-linked or that a falsely free sector has no owner. Neither format is
 journaled. Power loss, torn sectors and uncertain multi-sector completion can
 leave incomplete entries, lost allocation or inconsistent counts. SIO PUT

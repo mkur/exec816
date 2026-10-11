@@ -385,5 +385,317 @@
       "xex_sha256": "2577d2aa41d1f7b327507fe81a44955051a76bf5fc7981670a387f037d03f6c5",
       "guards": "intact"
     }
-  }
+  },
+  "fp4": {
+    "baseline-open": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 87,
+        "ataReads": 5,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 273,
+        "openFrames": 75,
+        "openCalls": 154,
+        "kernelCalls": 205,
+        "taskSwitches": 26
+      },
+      "guest_frames": 77,
+      "guest_seconds": 1.54,
+      "selected_file_bytes": 130048,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 261,
+        "free": 1179,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "9af5f5a46df3f53f948d7172a01420b7fc4e8733568efe9b5a639ab5c822ed34",
+      "guards": "intact"
+    },
+    "baseline-spanning": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 89,
+        "ataReads": 6,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 282,
+        "openFrames": 77,
+        "openCalls": 178,
+        "kernelCalls": 229,
+        "taskSwitches": 32
+      },
+      "guest_frames": 79,
+      "guest_seconds": 1.58,
+      "selected_file_bytes": 133127,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 269,
+        "free": 1171,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "9af5f5a46df3f53f948d7172a01420b7fc4e8733568efe9b5a639ab5c822ed34",
+      "guards": "intact"
+    },
+    "open": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 36,
+        "ataReads": 5,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 19,
+        "openFrames": 23,
+        "openCalls": 160,
+        "kernelCalls": 229,
+        "taskSwitches": 32
+      },
+      "guest_frames": 26,
+      "guest_seconds": 0.52,
+      "selected_file_bytes": 130048,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 261,
+        "free": 1179,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "e10c166c936b8c37fd70004743ebea3cc70c620730db2208da3e10c38ff5eeb5",
+      "guards": "intact"
+    },
+    "spanning": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 37,
+        "ataReads": 6,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 20,
+        "openFrames": 24,
+        "openCalls": 174,
+        "kernelCalls": 234,
+        "taskSwitches": 31
+      },
+      "guest_frames": 27,
+      "guest_seconds": 0.54,
+      "selected_file_bytes": 133127,
+      "timing_valid": true,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 269,
+        "free": 1171,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "e10c166c936b8c37fd70004743ebea3cc70c620730db2208da3e10c38ff5eeb5",
+      "guards": "intact"
+    },
+    "ide": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 101,
+        "endFrame": 209,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 47,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "logicalReads": 50,
+        "kernelCalls": 2547,
+        "taskSwitches": 320
+      },
+      "guest_frames": 108,
+      "guest_seconds": 2.16,
+      "selected_file_bytes": 0,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 54,
+        "free": 1386,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "77e852bbe39426f29e272d81ecbfc68115b91ab68a248a5a50541757fc46af00",
+      "guards": "intact"
+    },
+    "comparisons": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 37,
+        "ataReads": 5,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 19,
+        "openFrames": 24,
+        "openCalls": 158,
+        "comparisons": 3678,
+        "kernelCalls": 209,
+        "taskSwitches": 28
+      },
+      "guest_frames": 27,
+      "guest_seconds": 0.54,
+      "selected_file_bytes": 130048,
+      "timing_valid": false,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 261,
+        "free": 1179,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "3506d66719f9dd081dbee6f2996091ea7fa1e681c1051625a525de4733c8bfd5",
+      "guards": "intact"
+    },
+    "baseline-comparisons": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 10,
+        "endFrame": 97,
+        "ataReads": 5,
+        "ataWrites": 2,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 2,
+        "cacheHits": 0,
+        "cacheMisses": 0,
+        "cacheEvictions": 0,
+        "logicalReads": 273,
+        "openFrames": 84,
+        "openCalls": 158,
+        "comparisons": 32131,
+        "kernelCalls": 209,
+        "taskSwitches": 28
+      },
+      "guest_frames": 87,
+      "guest_seconds": 1.74,
+      "selected_file_bytes": 130048,
+      "timing_valid": false,
+      "allocation": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 261,
+        "free": 1179,
+        "files": 2,
+        "directories": 1
+      },
+      "xex_sha256": "a60ae66fe9c681d33bd978e7d399892e83c6a48379443b32fb4034207d382af8",
+      "guards": "intact"
+    },
+    "edges": {
+      "status": "pass",
+      "cases": [
+        {
+          "name": "corrupt",
+          "status": "pass",
+          "audit": null,
+          "media_sha256": "d1abd9d62d3fd611b267ba396e0c3afb17f80be95fe2e572dee1722adee75c80"
+        },
+        {
+          "name": "sparse",
+          "status": "pass",
+          "audit": null,
+          "media_sha256": "5d611a5632e9a22dfceb19d2b23a05419fa05932a3041996498f4a42ff46691a"
+        },
+        {
+          "name": "duplicate",
+          "status": "pass",
+          "audit": null,
+          "media_sha256": "09ee02b460d1574351d4d64e6d1f23510d3fb1b219a182baf3a801672a5e75bd"
+        },
+        {
+          "name": "duplicate-far",
+          "status": "pass",
+          "audit": null,
+          "media_sha256": "be4ae38efc9507111f609f19c9912527bd43aa3fc0ee596a413226f1c67e9267"
+        },
+        {
+          "name": "allocation-bit",
+          "status": "pass",
+          "audit": null,
+          "media_sha256": "f3afd1426ea0564fcc19abf9d7fc371c895c0da4c6a04f38b219970eedf5490e"
+        },
+        {
+          "name": "bitmap-transition",
+          "status": "pass",
+          "audit": {
+            "sectors": 5000,
+            "sector_bytes": 256,
+            "allocated": 26,
+            "free": 4974,
+            "files": 7,
+            "directories": 2
+          },
+          "media_sha256": "d52237184d310a5d20f765a98357745133dbe6be862bd9b21a0ab38d75f06612"
+        }
+      ],
+      "maximum_observed_task_stack_bytes": 566,
+      "guards": "intact"
+    },
+    "writes": {
+      "status": "pass",
+      "cases": [],
+      "maximum_observed_task_stack_bytes": 600,
+      "checks": [
+        107
+      ],
+      "allocation": {
+        "sectors": 2000,
+        "sector_bytes": 256,
+        "allocated": 30,
+        "free": 1970,
+        "files": 8,
+        "directories": 2
+      },
+      "guards": "intact"
+    }
+  },
+  "fp4_baseline_native_routine_bytes": 829405,
+  "fp4_native_routine_bytes": 830926
 }

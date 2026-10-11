@@ -26,7 +26,7 @@ def frozen_module(path):
     return module
 
 
-def prepare(out,frozen=None):
+def prepare(out,frozen=None,open_bytes=0,count_comparisons=False,validation_source=None):
     out.mkdir(parents=True,exist_ok=True)
     t=compiler(ROOT/'build/actionc',release=True)
     instrument(out,frozen)
@@ -67,6 +67,8 @@ ENDMODULE''')
 RETURN
 
 '''+probe[z:]
+    if count_comparisons:
+        probe=probe.replace('PUBLIC BYTE armed,active,finished','PUBLIC BYTE armed,active,finished\nPUBLIC LONGCARD comparisons')
     (out/'writeperfprobe.act').write_text(probe)
     driver=out/'ideplusdriver.act'
     original=read_source(frozen/'lib/io/ideplusdriver.act' if frozen else library_file('ideplusdriver.act'))
@@ -89,19 +91,83 @@ RETURN
         writing=writing[:last]+'  WRITEPERFPROBE.Reading(0)\n'+writing[last:]
     original=original[:start]+writing+original[finish:]
     driver.write_text(original)
+    if count_comparisons:
+        source=read_source(validation_source or library_file('sdfswrite.act'),
+                           {p.name:p for p in (ROOT/'lib').rglob('*.inc')})
+        source=source.replace('USE FSTYPES\n','USE FSTYPES\nUSE WRITEPERFPROBE\n',1)
+        if '        IF SDFS.Word(state.map,other)=sector THEN' in source:
+            source=source.replace('        IF SDFS.Word(state.map,other)=sector THEN',
+                '        WRITEPERFPROBE.comparisons==+1\n        IF SDFS.Word(state.map,other)=sector THEN',1)
+        else:
+            for marker in ('    IF value>=refs(child) THEN','    IF refs(index-1)=refs(index) THEN'):
+                require(source.count(marker)==1,'Changed sort comparison site')
+                source=source.replace(marker,'    WRITEPERFPROBE.comparisons==+1\n'+marker,1)
+            marker='    IF child+1<count AND refs(child)<refs(child+1) THEN'
+            require(source.count(marker)==1,'Changed heap-child comparison site')
+            source=source.replace(marker,'    IF child+1<count THEN\n      WRITEPERFPROBE.comparisons==+1\n    FI\n'+marker,1)
+        (out/'sdfswrite.act').write_text(source)
     program_source=out/'write_performance.act'
     program_source.write_text(program_source.read_text().replace('$efff0','$2dfff0'))
+    if open_bytes:
+        program_source.write_text(f'''MODULE WRITEROPEN
+USE EXEC
+USE DOS
+USE DOSCORE
+USE FSTYPES
+USE FSBOOT
+USE BLOCKIO
+USE WRITEPERFPROBE
+USE HEAPCORE
+INCLUDE "{ROOT}/lib/exec/exec-abi.inc"
+VOLATILE CARD clock=E816_VBI_COUNT
+VOLATILE CARD gateway=E816_GATE_COUNT
+CARD openFrames,openCalls
+
+PROC Main()
+
+  IF FSBOOT.Ensure()=0 THEN
+    HEAPCORE.Abort($fc01)
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  BLOCKIO.Invalidate(service.adapter)
+  WRITEPERFPROBE.Begin()
+  LET handle=DOS.Open(BYTE POINTER(c"WORK:COPY.BIN"),DOS.MODE_READWRITE)
+  openFrames=clock-WRITEPERFPROBE.startFrame
+  openCalls=gateway-WRITEPERFPROBE.kernelCalls
+  IF handle=NULL THEN
+    HEAPCORE.Abort($fc02)
+  FI
+
+  IF DOS.Close(handle)=0 THEN
+    HEAPCORE.Abort($fc03)
+  FI
+
+  WRITEPERFPROBE.End()
+  IF DOS.ReleaseContext()=0 THEN
+    HEAPCORE.Abort($fc04)
+  FI
+
+RETURN
+
+ENDMODULE
+''')
     tree=out/'source';tree.mkdir(exist_ok=True)
     command=tree/'COPY16'
     compile_command(t,ROOT/'examples/commands/copy.act',command)
     for suffix in ('options.json','profile.json'):(tree/('COPY16.'+suffix)).rename(out/('COPY16.'+suffix))
     content=(ROOT/'examples/demo-disk/LONG.TXT').read_bytes()
     (tree/'LONG.TXT').write_bytes(content)
+    if open_bytes:
+        content=bytes((i*17+3)&255 for i in range(open_bytes))
     target=out/'target';target.mkdir(exist_ok=True);(target/'KEEP.BIN').write_bytes(bytes(range(256)))
+    if open_bytes:
+        (target/'COPY.BIN').write_bytes(content)
     size=256 if frozen else 512
     sectors=2880 if frozen else 1440
     make(out/'system.atr',tree,binary_names=['COPY16','LONG.TXT'],sector_bytes=size,sectors=sectors)
-    make(out/'work.atr',target,binary_names=['KEEP.BIN'],sector_bytes=size,sectors=sectors)
+    make(out/'work.atr',target,binary_names=['KEEP.BIN','COPY.BIN'],sector_bytes=size,sectors=sectors)
     mounts=[dict(alias='SYSTEM',device='ideplus.device',unit=1,profile=0,format=2,sectors=sectors,sector_bytes=size),
             dict(alias='WORK',device='ideplus.device',unit=2,profile=0,format=2,sectors=sectors,sector_bytes=size,access='readwrite')]
     if frozen:
@@ -124,7 +190,11 @@ RETURN
     return p,wire,mapping,content,size,command,tree
 
 
-def run(out,frozen=None,from_build=None,warm=False):
+def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None):
+    require(not count_comparisons or (open_bytes and from_build is None), 'Count comparisons in a fresh Open probe')
+    require(validation_source is None or count_comparisons, 'Source overrides are comparison-count probes only')
+    require(0 <= open_bytes <= 524288, 'Invalid selected-file size')
+    require(not open_bytes or not (frozen or warm), 'Open timing uses current cold media')
     out.mkdir(parents=True,exist_ok=True)
     if from_build:
         require(frozen is None,'Choose a retained build or frozen sources')
@@ -133,25 +203,38 @@ def run(out,frozen=None,from_build=None,warm=False):
         import shutil
         for name in ('system.atr','work.atr','manifest.bin'):
             shutil.copyfile(from_build/name,out/name)
+        if open_bytes:
+            require(any('_WRITEROPEN_OPENFRAMES_' in d['name'] for d in p['image']['data']), 'Retained image is not an Open probe')
+            target=out/'target';target.mkdir(exist_ok=True)
+            (target/'KEEP.BIN').write_bytes(bytes(range(256)))
+            (target/'COPY.BIN').write_bytes(bytes((i*17+3)&255 for i in range(open_bytes)))
+            make(out/'work.atr',target,binary_names=['KEEP.BIN','COPY.BIN'],sector_bytes=512,sectors=1440)
         mapping=write(out/'ideplus.img',out/'system.atr',out/'work.atr')
         wire=None
-        content=(ROOT/'examples/demo-disk/LONG.TXT').read_bytes()
+        content=bytes((i*17+3)&255 for i in range(open_bytes)) if open_bytes else (ROOT/'examples/demo-disk/LONG.TXT').read_bytes()
         size=512
         tree=from_build/'source'
         command=tree/'COPY16'
     else:
-        p,wire,mapping,content,size,command,tree=prepare(out,frozen)
+        p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source)
     with ide_emulator(out,out/'ideplus.img',writable=True) as b:
         def before(b):
             if wire is not None:
                 b.memload(p['build']['task_storage']['BASE']+0x900,wire)
+            if open_bytes:
+                return
             for field,value in [('WARM',bytes([warm])),('VARIANT',b'\1'),('ARGUMENTS',b'SYS:LONG.TXT WORK:COPY.BIN\0'),('ARGUMENTBYTES',len(b'SYS:LONG.TXT WORK:COPY.BIN').to_bytes(2,'little'))]:
                 address=next(d['address'] for d in p['image']['data'] if '_WRITEPERFORMANCE_'+field+'_' in d['name'])
                 b.memload(address,value)
         runtime,_=execute(b,{**p,'output':out},before_run=before,timeout=300,frame_limit=15000)
         clean_ownership(b,p,out)
         view={**p['image'],'data':[d for d in p['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
-        counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions')}
+        counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions','logicalReads')}
+        if open_bytes:
+            counts['openFrames']=int.from_bytes(bytes(data(b,p['image'],'openFrames')),'little')
+            counts['openCalls']=int.from_bytes(bytes(data(b,p['image'],'openCalls')),'little')
+        if count_comparisons:
+            counts['comparisons']=int.from_bytes(bytes(data(b,view,'comparisons')),'little')
         for name in ('kernelCalls','taskSwitches'):
             if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
                 counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
@@ -170,13 +253,17 @@ def run(out,frozen=None,from_build=None,warm=False):
     result=dict(status='pass',tier='development',snapshot=str(frozen) if frozen else None,build=p['build'],pin=PIN,counts=counts,guest_frames=frames,guest_seconds=frames/50,bytes=len(content),source_sha256=sha256(tree/'LONG.TXT'),command_sha256=sha256(command),sector_bytes=size,cache_blocks=p['build']['memory']['boot_config']['cache_blocks'],allocation=allocation,runtime=runtime)
     result['observer_inputs']={p.name:sha256(p) for p in out.glob('*.act')}
     result['observer_sha256']=sha256(Path(__file__))
+    result['timing_valid']=not count_comparisons
+    result['validation_source']=str(validation_source) if validation_source else None
+    result['workload']='writable-open-close' if open_bytes else 'loaded-copy'
+    result['selected_file_bytes']=open_bytes
     result['warm_source']=warm
     result['retained_build']=str(from_build) if from_build else None
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
-    print('IDE loaded COPY:',size,frames,'frames',counts,flush=True)
+    print('IDE writable Open/Close:' if open_bytes else 'IDE loaded COPY:',size,frames,'frames',counts,flush=True)
     return result
 
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--frozen-sources',type=Path)
-    a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true')
-    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source)
+    a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true');a.add_argument('--open-bytes',type=int,default=0);a.add_argument('--count-comparisons',action='store_true');a.add_argument('--validation-source',type=Path)
+    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source)

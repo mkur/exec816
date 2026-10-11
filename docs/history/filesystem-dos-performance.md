@@ -113,3 +113,30 @@ its retained map avoids one block-cache fetch. Host checks: 447 passed.
 No cache payload/record, upper buffer, Task stack or bank-zero reservation grew.
 The writer's staged map still outranks clean cache data; bitmap replacement
 drains remain in place.
+
+## FP4: bounded selected-file validation
+
+Writable Open sorts a copy of each map's populated references in the existing
+mutation data buffer, then checks neighbours. The original map stays intact;
+the duplicate-check scope is unchanged. A nonrecursive heap sort replaces the
+quadratic loop. Allocation checks explicitly retain the current bitmap page
+within validation, replacing it when a reference crosses to another page.
+The writer also reuses its leased, staged current map during subsequent writes.
+
+A full 254-reference map opens in 23 PAL frames, down from 75. A 133,127-byte
+file spanning two maps opens in 24 frames, down from 77. Physical requests
+remain 5 reads / 2 writes and 6 / 2 respectively, including Close. Logical
+reads fall from 273 to 19 and 282 to 20. Separate count-only builds record
+3,678 sort comparisons versus 32,131 old-loop comparisons; those instrumented
+builds are not timing evidence. Fresh COPY remains 54 reads / 61 writes and
+takes 108 frames.
+
+Optimized emitted checks pass for malformed links, sparse writers, early/late
+duplicates, allocation-bit errors, bitmap-page transitions, replacement and
+append. Independent media audits and guards pass. The largest observed Task
+stack use is 600 bytes within the unchanged 1,536-byte reservation; this is
+observed headroom, not a worst-case proof. Host checks: 447 passed.
+
+The sort uses at most 508 bytes of the existing 512-byte upper data buffer.
+No records, allocations, stack pools or bank-zero reservations grow:
+0 fixed / 0 per-Task / 0 idle additional bytes.

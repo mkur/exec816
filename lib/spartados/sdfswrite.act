@@ -62,12 +62,12 @@ BYTE FUNC LocateFrom(FSTYPES.Service POINTER service CARD first LONGCARD ordinal
       RETURN(Bad(service))
     FI
 
-    IF FSALLOC.Allocated(service,page)=0 THEN
-      RETURN(0)
-    FI
-
-    ; The pending map is newer than any clean block-cache copy.
+    ; The pending map and its allocated references belong to this writer.
     IF state.staged=0 OR state.batchMap<>page THEN
+      IF FSALLOC.Allocated(service,page)=0 THEN
+        RETURN(0)
+      FI
+
       IF FSWRITEIO.Read(service,page,state.map)=0 THEN
         RETURN(0)
       FI
@@ -97,8 +97,10 @@ BYTE FUNC LocateFrom(FSTYPES.Service POINTER service CARD first LONGCARD ordinal
           RETURN(Bad(service))
         FI
 
-        IF FSALLOC.Allocated(service,state.dataSector)=0 THEN
-          RETURN(0)
+        IF state.staged=0 OR state.batchMap<>page THEN
+          IF FSALLOC.Allocated(service,state.dataSector)=0 THEN
+            RETURN(0)
+          FI
         FI
       FI
 
@@ -245,11 +247,70 @@ PUBLIC BYTE FUNC EntryIO(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
 
 RETURN(RowIO(service,entry.parent,(LONGINT(entry.key)+1)*23,write))
 
+; Restore one max-heap branch. The validation data buffer holds at most 254
+; CARD references, so this bounded sort needs no recursion or allocation.
+PROC Sift(CARD POINTER refs CARD root,count)
+  CARD child
+
+  LET value=refs(root)
+  WHILE root<(count RSH 1) DO
+    child=root*2+1
+    IF child+1<count AND refs(child)<refs(child+1) THEN
+      child==+1
+    FI
+
+    IF value>=refs(child) THEN
+      EXIT
+    FI
+
+    refs(root)=refs(child)
+    root=child
+  OD
+
+  refs(root)=value
+
+RETURN
+
+; Sort only copied references; the on-disk map stays intact. Duplicate checking
+; retains its existing per-map scope, including references across bitmap pages.
+BYTE FUNC Unique(FSTYPES.Service POINTER service CARD count)
+  CARD root,last,index,value
+
+  IF count<2 THEN
+    RETURN(1)
+  FI
+
+  LET state=FSWRITEIO.State(service)
+  LET refs=CARD POINTER(@state.data(0))
+  root=count RSH 1
+  WHILE root<>0 DO
+    root==-1
+    Sift(refs,root,count)
+  OD
+
+  last=count
+  WHILE last>1 DO
+    last==-1
+    value=refs(last)
+    refs(last)=refs(0)
+    refs(0)=value
+    Sift(refs,0,last)
+  OD
+
+  FOR index=1 TO count-1 DO
+    IF refs(index-1)=refs(index) THEN
+      RETURN(Bad(service))
+    FI
+  OD
+
+RETURN(1)
+
 ; Validate just the selected file's map chain and allocated payload. Sparse
 ; files stay readable but cannot acquire a writer in this implementation.
 PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
     entry)
-  CARD page,previous,next,index,sector,other
+  CARD page,previous,next,index,sector,references
+  BYTE bitmapCached
   LONGCARD hops,dataCount,wanted
 
   LET state=FSWRITEIO.State(service)
@@ -258,6 +319,7 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
   page=entry.start
   previous=0
   dataCount=0
+  bitmapCached=0
   hops=0
   IF page=0 THEN
     IF entry.length<>0 THEN
@@ -273,10 +335,14 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
       RETURN(Bad(service))
     FI
 
-    IF FSALLOC.Allocated(service,page)=0 OR
+    IF FSALLOC.AllocatedCached(service,page,bitmapCached)=0 OR
         FSWRITEIO.Read(service,page,state.map)=0 THEN
       RETURN(0)
     FI
+
+    ; Map reads target state.map, leaving the scratch bitmap intact.
+    bitmapCached=1
+    references=0
 
     IF SDFS.Word(state.map,2)<>previous THEN
       RETURN(Bad(service))
@@ -304,24 +370,21 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
           RETURN(Bad(service))
         FI
 
-        other=4
-        WHILE other<index DO
-          IF SDFS.Word(state.map,other)=sector THEN
-            RETURN(Bad(service))
-          FI
-
-          other==+2
-        OD
-
-        IF FSALLOC.Allocated(service,sector)=0 THEN
+        IF FSALLOC.AllocatedCached(service,sector,bitmapCached)=0 THEN
           RETURN(0)
         FI
 
+        FSWRITEIO.Word(state.data,references*2,sector)
+        references==+1
         dataCount==+1
       ELSEIF sector<>0 THEN
         RETURN(Bad(service))
       FI
     OD
+
+    IF Unique(service,references)=0 THEN
+      RETURN(0)
+    FI
 
     previous=page
     page=next
