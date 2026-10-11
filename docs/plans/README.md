@@ -1,5 +1,11 @@
 # Implementation plans
 
+- [GEM rendering performance](gem4xe/text-run-fast-path-plan.md):
+  planned 80-character uploads, native odd-X and horizontally clipped text,
+  complete AES objects
+  up to 32 rows per drawing unit, direct solid rectangles bounded by blitter
+  work, simpler opaque box/button fills and matched latency checks.
+
 - [GEM4XE benchmark port](gem4xe/g4bench-port-implementation-plan.md): implemented
   loadable G4BENCH subset, VBI batch timing and an ordinary GEM demo app.
 
