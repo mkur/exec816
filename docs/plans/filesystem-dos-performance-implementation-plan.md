@@ -5,7 +5,7 @@
 [Platform memory budget](../reference/platform.md#bank-zero-memory-budget) ·
 [Testing policy](../contributing/testing.md)
 
-Status: implementing; FP0 and FP1 are complete. See the [execution record](../history/filesystem-dos-performance.md).
+Status: implementing; FP0–FP2 are complete. See the [execution record](../history/filesystem-dos-performance.md).
 Implement one executable
 slice at a time, record its development results and memory costs, and commit
 before starting the next slice. This plan does not authorize publishing a demo

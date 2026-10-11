@@ -18,8 +18,6 @@ USE SDFS
 USE DOSOBJECTS
 USE FSPACKET
 USE FSSTATUS
-USE BLOCKIO
-USE DOSWIRE
 INCLUDE "../dos/dos-types.inc"
 
 PUBLIC BYTE FUNC Access(FSTYPES.Service POINTER service)
@@ -272,9 +270,7 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service FSTYPES.FileObject
   operation.file=@item.backing.cursor
   operation.output=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
   operation.requested=service.packet.sp_Pkt.dp_Arg3
-  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 OR
-      operation.requested<0 OR BLOCKIO.Mapped(operation.output,
-      LONGCARD(operation.requested))=0 THEN
+  IF operation.requested<0 THEN
     RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
   FI
 
@@ -289,7 +285,7 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service FSTYPES.FileObject
     maximum=16777215
   FI
 
-  IF operation.requested<0 OR LONGCARD(operation.file.position)>maximum OR
+  IF LONGCARD(operation.file.position)>maximum OR
       LONGCARD(operation.requested)>maximum-LONGCARD(operation.file.position) THEN
     RETURN(FSPACKET.Error(service,ERROR_OBJECT_TOO_LARGE))
   FI

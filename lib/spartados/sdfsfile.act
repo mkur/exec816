@@ -9,7 +9,6 @@ USE FSBTYPES
 USE FSCORE
 USE BLOCKTYPES
 USE BLOCKIO
-USE FSNAMES
 INCLUDE "../dos/dos-types.inc"
 
 CONST TRAVERSING=3
@@ -113,8 +112,7 @@ PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
     RETURN(FSCORE.FinishOperation(op))
   FI
 
-  IF op.requested>LONGINT($7fffffff)-op.start OR FSNAMES.Mapped(op.output,
-      LONGCARD(op.requested))=0 THEN
+  IF op.requested>LONGINT($7fffffff)-op.start THEN
     RETURN(Fail(op,ERROR_BAD_NUMBER))
   FI
 

@@ -8,6 +8,18 @@ I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
 The current native DOS ABI is revision 8; the loaded COMMAND ABI is version 15.
 
+## Transfer ownership
+
+Read/Write buffers and handles must remain live for the entire call. This
+single-user system has no memory protection: correct pointers, available
+buffer capacity and valid handles are caller responsibilities. DOS resolves
+its owned object and retains the mount once before queuing a file transfer;
+the filesystem handler uses that resolved object. It does not repeat ownership
+or RAM-map walks. Negative counts, read-only/offline volumes, file-size bounds,
+short transfers and physical errors remain operational errors. Mount references,
+writer leases, cancellation, exact reply collection and stack/domain guards
+still protect state transitions.
+
 ## Volume information
 
 `GetVolume(index, info)` copies a published mount identity into a caller-owned

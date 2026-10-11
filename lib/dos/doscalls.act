@@ -620,12 +620,7 @@ PUBLIC LONGINT FUNC Write(BYTE POINTER identity,buffer LONGINT length)
     RETURN(DOSRAW.Complete(client,DOSSTREAMS.Handle POINTER(header),error))
   FI
 
-  IF FSREGISTRY.FromHeader(header)=FSTYPES.Object POINTER(0) THEN
-    BadObject(slot,DOSOBJECTS.KIND_FILE)
-    RETURN(-1)
-  FI
-
-  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+  IF DOSSTREAMS.ValidLength(length)=0 THEN
     RETURN(-1)
   FI
 

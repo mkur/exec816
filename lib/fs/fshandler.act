@@ -184,23 +184,12 @@ BYTE FUNC OperationResult(FSTYPES.Service POINTER service BYTE status)
 
 RETURN(FSSTATUS.MORE)
 
-; Handle validation and argument setup are one bounded part of the request.
+; Use the retained DOS object without a second ownership-list walk.
 BYTE FUNC File(FSTYPES.Service POINTER service)
   BYTE status,index
 
-  IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg1)=0 THEN
-    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
-  FI
-
-  service.object=FSREGISTRY.FindObject(service.owner,
-      BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1)),DOSOBJECTS.KIND_FILE)
-  IF service.object=NULL THEN
-    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
-  FI
-
-  IF service.object.mount<>service.selected THEN
-    RETURN(FSPACKET.Error(service,ERROR_BAD_STREAM_NAME))
-  FI
+  ; DOS resolved and retained this caller-owned object/mount before queuing.
+  service.object=FSTYPES.Object POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
 
   LET selectedFile=FSTYPES.FileObject POINTER(service.object)
   LET backing=selectedFile.backing
@@ -230,10 +219,6 @@ BYTE FUNC File(FSTYPES.Service POINTER service)
 
   service.operation.file=@file.backing.cursor
   IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_READ THEN
-    IF DOSWIRE.IsPointer(service.packet.sp_Pkt.dp_Arg2)=0 THEN
-      RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
-    FI
-
     service.operation.output=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
     service.operation.requested=service.packet.sp_Pkt.dp_Arg3
     status=FSBACKEND.BeginRead(service.operation)

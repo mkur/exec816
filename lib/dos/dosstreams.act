@@ -3,7 +3,6 @@ USE EXEC
 USE DOSCORE
 USE DOSCLIENT
 USE DOSOBJECTS
-USE FSNAMES
 USE HEAPCORE
 INCLUDE "dos-types.inc"
 ; The inline prefix is followed by backend-specific stream identity. NIL has
@@ -18,19 +17,10 @@ PUBLIC BYTE FUNC ValidMode(LONGINT mode)
 
 RETURN(mode=MODE_OLDFILE OR mode=MODE_NEWFILE OR mode=MODE_READWRITE)
 
-; Reject unmapped or wrapping caller extents before stream transfer.
-PUBLIC BYTE FUNC ValidBuffer(BYTE POINTER buffer LONGINT length)
+; Buffers are caller-owned live objects; lengths remain operational input.
+PUBLIC BYTE FUNC ValidLength(LONGINT length)
 
   IF length<0 THEN
-    DOSCLIENT.SetError(ERROR_BAD_NUMBER)
-    RETURN(0)
-  FI
-
-  IF length=0 THEN
-    RETURN(1)
-  FI
-
-  IF FSNAMES.Mapped(buffer,LONGCARD(length))=0 THEN
     DOSCLIENT.SetError(ERROR_BAD_NUMBER)
     RETURN(0)
   FI
@@ -65,7 +55,7 @@ PUBLIC LONGINT FUNC TransferNIL(DOSCLIENT.ClientContext POINTER client BYTE
     POINTER buffer LONGINT length BYTE writing)
 
   client.busy=1
-  IF ValidBuffer(buffer,length)=0 THEN
+  IF ValidLength(length)=0 THEN
     client.busy=0
     RETURN(-1)
   FI

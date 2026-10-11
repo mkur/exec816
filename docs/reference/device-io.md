@@ -62,6 +62,9 @@ A quick completion is allowed only when IOF_QUICK was supplied. It completes
 inline and sends no reply. Deferred work clears IOF_QUICK. Every non-quick request,
 including an immediate error, completes with exactly one reply.
 
+Provide a live buffer with capacity for the requested transfer. Drivers trust
+caller-owned pointers after request/binding creation; SIO validates wire lengths,
+direction, profile and timeout, without walking the buffer RAM map.
 Keep the descriptor, data buffer, reply port and device binding alive until
 collection. Publication can allow another Task to run before SendIO returns;
 do not treat return from submission as ownership returning to the sender.

@@ -73,10 +73,6 @@ PROC FailedCompletion()
   Require(BLOCKCACHE.Read(@adapter.cache,volume,4,sectorBytes,buffer)=0)
   Require(BLOCKIO.BeginStore(adapter,volume,0,buffer)=0)
   Require(adapter.error=EXEC.IOERR_BADLENGTH)
-  Require(BLOCKIO.BeginStore(adapter,volume,4,NULL)=0)
-  Require(adapter.error=EXEC.IOERR_BADADDRESS)
-  Require(BLOCKIO.BeginStore(adapter,volume,4,BYTE POINTER($fffff0))=0)
-  Require(adapter.error=EXEC.IOERR_BADADDRESS)
 
 RETURN
 

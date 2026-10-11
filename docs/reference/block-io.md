@@ -51,7 +51,9 @@ Framing and checksums remain the SIO driver's responsibility.
 BeginStore stages one complete sector and sends SIO PUT `$50`, without readback
 verification. IDE uses ATA WRITE with terminal status and any required cache
 flush, also without automatic readback. BeginStore rejects
-overlapping requests and invalid source extents before submission. Invalidate
+overlapping requests and invalid geometry before submission. Sources are live
+caller-owned complete-sector buffers; the adapter does not walk their RAM map.
+Invalidate
 the scratch tag and all cached pieces of that sector first; FinishStore publishes
 replacement bytes only after an error-free, exact-length terminal completion.
 Writes use the same upper-RAM buffer and request as reads, with no write-back

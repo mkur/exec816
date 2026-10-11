@@ -98,7 +98,7 @@ def run(t,out,mode,bank=2):
         require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'Console ownership not restored')
         ownership(b,p,out);require(sha256(media)==digest,'Read-only media changed')
         checks={n:int.from_bytes(bytes(data(b,p['image'],n)),'little') for n in ('checks','otherChecks')}
-        require(checks==dict(checks=51,otherChecks=8),'Missing RAW assertions: '+str(checks))
+        require(checks==dict(checks=48,otherChecks=8),'Missing RAW assertions: '+str(checks))
     return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,observations=observations,checks=checks,schedule=schedule,media_sha256=digest,limits=dict(checkpoint_host_seconds=240,checkpoint_guest_frames=12000,completion_host_seconds=600,completion_guest_frames=30000))
 
 

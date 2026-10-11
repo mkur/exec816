@@ -8,7 +8,6 @@ USE EXECPRODUCER
 USE TASKSTACKS
 USE SIOADAPTER
 USE HEAPCORE
-USE EXECMEMORY
 INCLUDE "sio-storage-action.inc"
 INCLUDE "io-storage-action.inc"
 
@@ -26,34 +25,6 @@ TYPE Descriptor=[
 
 INCLUDE "sio-requests.inc"
 INCLUDE "sio-lifetime.inc"
-
-; Validate the entire DMA-independent transfer buffer against the RAM map.
-BYTE FUNC SIOMapped(BYTE POINTER data LONGCARD bytes)
-  EXECMEMORY.BankRecord info
-  CARD first,last,index
-
-  IF data=BYTE POINTER(0) OR bytes>LONGCARD($1000000)-LONGCARD(ADDRESS(data)) THEN
-    RETURN(0)
-  FI
-
-  first=CARD(ADDRESS(data) RSH 16)
-  last=CARD((LONGCARD(ADDRESS(data))+bytes-1) RSH 16)
-  ; Initial DMA-free profile uses physical upper RAM, with no bank-zero bounce.
-  IF first=0 THEN
-    RETURN(0)
-  FI
-
-  FOR index=first TO last DO
-    IF EXECMEMORY.Query(index,@info)<>0 THEN
-      RETURN(0)
-    FI
-
-    IF info.state=0 THEN
-      RETURN(0)
-    FI
-  OD
-
-RETURN(1)
 
 ; Derive the byte extent required by the selected SIO direction.
 BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
@@ -141,10 +112,6 @@ BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
 
   IF PayloadLength(sio)=0 THEN
     RETURN(BYTE(EXEC.IOERR_BADLENGTH))
-  FI
-
-  IF SIOMapped(sio.io_Data,sio.io_Length)=0 THEN
-    RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
 RETURN(0)

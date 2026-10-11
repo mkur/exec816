@@ -74,10 +74,6 @@ PUBLIC LONGINT FUNC Create(Pair POINTER pair)
   Backing POINTER pipe
   Handle POINTER reader,writer
 
-  IF DOSSTREAMS.ValidBuffer(BYTE POINTER(pair),LONGINT(SIZEOF(Pair)))=0 THEN
-    RETURN(0)
-  FI
-
   pair.reader=BYTE POINTER(0)
   pair.writer=BYTE POINTER(0)
   client=DOSCLIENT.Ensure()
@@ -242,7 +238,7 @@ PUBLIC LONGINT FUNC Transfer(DOSCLIENT.ClientContext POINTER client Handle
     RETURN(-1)
   FI
 
-  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+  IF DOSSTREAMS.ValidLength(length)=0 THEN
     RETURN(-1)
   FI
 

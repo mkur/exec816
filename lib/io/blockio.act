@@ -321,11 +321,6 @@ PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
     RETURN(0)
   FI
 
-  IF Mapped(source,LONGCARD(expected))=0 THEN
-    adapter.error=EXEC.IOERR_BADADDRESS
-    RETURN(0)
-  FI
-
   DiscardBuffer(adapter)
   BLOCKCACHE.Forget(@adapter.cache,volume,CARD(sector))
   IF source<>adapter.buffer THEN

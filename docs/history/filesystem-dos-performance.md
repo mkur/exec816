@@ -69,3 +69,26 @@ address case uses bank $40; bank $10 is valid in today's 4 MiB profile.
 code size and hashes. Production records/buffers and stack reservations are
 unchanged: bank-zero delta 0 fixed / 0 per-Task / 0 idle. Guards and Task
 cleanup pass; these are bounded checks, not exact worst-case stack proofs.
+
+## FP2: one transfer admission
+
+DOS still resolves an owned handle once and retains its mount before queuing.
+Write no longer calls FromHeader twice. The filesystem handler consumes that
+resolved object; it no longer searches the same ownership list or checks the
+same immutable mount binding again. Caller buffers are live objects by API
+contract. DOS, RAM/MyDOS/SDFS reads, common write admission, block staging and
+SIO no longer repeat RAM-map walks. SIO keeps direction/profile/timeout and
+wire-length validation. Geometry, busy state, read-only/offline errors, exact
+completion, references, leases, cancellation and reply collection remain.
+
+Optimized loaded IDE COPY passes with 54 reads / 61 writes, 110 frames and
+2,528 gateway calls. The queued Generic 57600 SIO fixture passes its protocol,
+concurrency, reply-reuse, cleanup and guard checks. The current-kernel DOS
+transfer fixture passes 10 assertions for NIL, negative counts, zero transfers,
+Close and context cleanup. The older headless NIL runner lacks today's generated
+console dependencies and was not used as evidence; its removed wrong-use
+assertion counts are updated. Host checks: 447 passed.
+
+Validation ownership is documented in [DOS](../reference/dos.md#transfer-ownership)
+and [block I/O](../reference/block-io.md). No record layout, buffer, fixed,
+per-Task, idle or stack reservation changes; bank-zero delta remains zero.

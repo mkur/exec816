@@ -280,5 +280,50 @@
     }
   },
   "baseline_native_routine_bytes": 910092,
-  "fp1_native_routine_bytes": 910614
+  "fp1_native_routine_bytes": 910614,
+  "fp2": {
+    "ide": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 101,
+        "endFrame": 211,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 48,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "kernelCalls": 2528,
+        "taskSwitches": 319
+      },
+      "guest_frames": 110,
+      "guest_seconds": 2.2,
+      "xex_sha256": "4a339d2c541bd94926e5d53daafaeaf3978536216e207a47f9688e68d3c3b467",
+      "guards": "intact"
+    },
+    "sio": {
+      "status": "pass",
+      "observed": {
+        "checks": [
+          277
+        ],
+        "progress": [
+          39653
+        ]
+      },
+      "xex_sha256": "77797041bbd25796f427c270e550d6022a92739cf5154a6aefa32e7ff6eca1b1",
+      "guards": "intact"
+    },
+    "buffers": {
+      "status": "pass",
+      "checks": [
+        10
+      ],
+      "xex_sha256": "5b1074a7b4086e5e9fa49cd31c078e84e75aaa7df753ac13d8d0719c95069a53",
+      "guards": "intact"
+    }
+  }
 }
