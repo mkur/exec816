@@ -18,3 +18,20 @@ cover unattempted state, admission reasons, capacity, access and retention after
 stop. Raw and optimized native layout probes cover all three generated records.
 Evidence stays in `build/ide-diagnostics/` and the layout development directory.
 These are development checks, not a physical-hardware qualification.
+
+## D2: mount failure lifetime
+
+The private DOS registry grows from 108 to 114 reserved upper-memory bytes.
+Its new six bytes retain the failed configured slot, admission phase and error
+after worker cleanup. A successful retry of that slot clears the failure.
+The worker carries its current mount phase; the block adapter records the
+existing geometry check's specific rejection rather than repeating it.
+Published mount snapshots also copy their existing offline error.
+Fixed/per-Task/idle bank-zero delta remains **0/0/0 bytes**.
+
+`tools/test_ide_diagnostics_mount.py` passed seven native development scenarios:
+normal mount plus failed/successful remount, incorrect sector count, protected
+writable mount, empty APT slot, bad SDFS header, missing controller and missing
+disk. Checks preserve IoErr, inspect failures after teardown, reject partially
+published startup state and restore heap ownership without modifying media.
+Evidence: `build/ide-diagnostics/mount/`.

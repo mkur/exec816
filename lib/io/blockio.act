@@ -121,6 +121,7 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   BYTE POINTER name
   INT error
 
+  adapter.admission=BLOCKTYPES.ADMIT_ALLOCATE
   volume.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
       EXEC.IOSIOREQ_SIZE))
   IF volume.request=NULL THEN
@@ -133,10 +134,14 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   DiscardBuffer(adapter)
   name=adapter.buffer
   BLOCKTRANSPORT.DeviceName(volume.backend,name)
+  adapter.admission=BLOCKTYPES.ADMIT_OPEN
   error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)
   IF error=0 THEN
+    adapter.admission=BLOCKTYPES.ADMIT_GEOMETRY
     error=BLOCKTRANSPORT.CheckGeometry(volume,adapter.buffer)
-    IF error<>0 THEN EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request)) FI
+    IF error<>0 THEN
+      EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request))
+    FI
   FI
   IF error<>0 THEN
     adapter.error=LONGINT(error)

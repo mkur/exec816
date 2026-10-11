@@ -257,11 +257,13 @@ PUBLIC BYTE FUNC First(BYTE POINTER raw)
 
   LET service=FSTYPES.Service POINTER(raw)
   service.error=ERROR_NO_FREE_STORE
+  service.mountStage=FSTYPES.MOUNT_CONFIG
   IF Config(service)=0 THEN
     RETURN(FSSTATUS.STOP)
   FI
 
   service.stage=1
+  service.mountStage=FSTYPES.MOUNT_RESOURCES
   LET registry=DOSCORE.GetRegistry()
   LET specs=FSTYPES.Spec POINTER(registry.config)
   FOR service.index=0 TO service.count-1 DO
@@ -290,10 +292,12 @@ PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
 
   LET service=FSTYPES.Service POINTER(raw)
   service.error=ERROR_NO_FREE_STORE
+  service.mountStage=BLOCKTYPES.ADMIT_ALLOCATE
   IF AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
     RETURN(Failed(service))
   FI
 
+  service.mountStage=BLOCKTYPES.ADMIT_OPEN
   service.nextStep=@OpenedStep
   IF service.selected.spec.format=FSFORMATS.RAM THEN
     RETURN(FSSTATUS.MORE)
@@ -308,9 +312,11 @@ BYTE FUNC OpenedStep(BYTE POINTER raw)
   service=FSTYPES.Service POINTER(raw)
   IF service.resultState=FSSTATUS.ERROR THEN
     service.error=service.adapter.error
+    service.mountStage=service.adapter.admission
     RETURN(Failed(service))
   FI
 
+  service.mountStage=FSTYPES.MOUNT_RECOGNIZE
   service.work.volume=service.selected.volume
   LET status=FSBACKEND.BeginMount(service.work)
   IF status=FSSTATUS.ERROR THEN
@@ -329,6 +335,7 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
   service=FSTYPES.Service POINTER(raw)
   IF service.resultState=FSSTATUS.ERROR THEN
     service.error=service.work.ioError
+    service.mountStage=FSTYPES.MOUNT_READ
     RETURN(Failed(service))
   FI
 
@@ -338,6 +345,16 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
   FI
 
   service.selected.writable=service.selected.spec.access
+  BEGIN
+    LET registry=DOSCORE.GetRegistry()
+    EXEC.Forbid()
+    IF registry.mountSlot=service.index THEN
+      registry.mountError=0
+      registry.mountStage=0
+    FI
+
+    EXEC.Permit()
+  END
   IF service.packet<>FSTYPES.Packet POINTER(0) THEN
     EXEC.Forbid()
     service.selected.published=1
@@ -359,6 +376,7 @@ RETURN(FSSTATUS.MORE)
 ; Startup retirement owns all mounts; a failed remount owns only its slot.
 BYTE FUNC Failed(FSTYPES.Service POINTER service)
 
+  RecordFailure(service)
   IF service.packet=NULL THEN
     RETURN(FSSTATUS.STOP)
   FI
@@ -368,6 +386,23 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service)
   service.mounts(service.index).item=NULL
 
 RETURN(FSPACKET.Error(service,error))
+
+; Capture the causal failure before startup/remount frees its private records.
+PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
+
+  EXEC.Forbid()
+  LET registry=DOSCORE.GetRegistry()
+  registry.mountSlot=$ff
+  IF service.mountStage>=BLOCKTYPES.ADMIT_ALLOCATE
+      AND service.index<registry.count THEN
+    registry.mountSlot=service.index
+  FI
+
+  registry.mountStage=service.mountStage
+  registry.mountError=service.error
+  EXEC.Permit()
+
+RETURN
 
 ; Tear down an unreferenced mount; queued packets indicate an ownership bug.
 PUBLIC PROC DestroyMount(FSTYPES.Service POINTER service FSTYPES.Mount

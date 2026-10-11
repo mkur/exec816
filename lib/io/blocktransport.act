@@ -134,10 +134,23 @@ PUBLIC INT FUNC CheckGeometry(BLOCKTYPES.Volume POINTER volume BYTE POINTER buff
   IF error=0 THEN
     BEGIN
       LET geometry=IDEPLUS.Geometry POINTER(buffer)
-      IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) OR geometry.bytes<>volume.dataBytes
-          OR geometry.sectors<>volume.sectors THEN error=EXEC.IOERR_BADLENGTH
-      ELSEIF volume.access<>0 AND ((geometry.flags & IDEPLUS.FLAG_READONLY)<>0
-          OR (geometry.flags & IDEPLUS.FLAG_DURABLE)=0) THEN error=IDEPLUS.ERROR_PROTECTED
+      LET adapter=BLOCKTYPES.Adapter POINTER(volume.adapter)
+      IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) THEN
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF geometry.bytes<>volume.dataBytes THEN
+        adapter.admission=BLOCKTYPES.ADMIT_BYTES
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF geometry.sectors<>volume.sectors THEN
+        adapter.admission=BLOCKTYPES.ADMIT_COUNT
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF volume.access<>0 THEN
+        IF (geometry.flags & IDEPLUS.FLAG_DURABLE)=0 THEN
+          adapter.admission=BLOCKTYPES.ADMIT_DURABLE
+          error=IDEPLUS.ERROR_PROTECTED
+        ELSEIF (geometry.flags & IDEPLUS.FLAG_READONLY)<>0 THEN
+          adapter.admission=BLOCKTYPES.ADMIT_PROTECTED
+          error=IDEPLUS.ERROR_PROTECTED
+        FI
       FI
     END
   FI

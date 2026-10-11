@@ -14,15 +14,20 @@ BYTE FUNC BeginService(DOSCORE.DosRegistry POINTER registry)
   FSTYPES.Service POINTER service
   BYTE POINTER worker
 
+  registry.mountError=0
+  registry.mountSlot=$ff
+  registry.mountStage=FSTYPES.MOUNT_RESOURCES
   service=FSTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.Service),
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
   IF service=FSTYPES.Service POINTER(0) THEN
     registry.error=ERROR_NO_FREE_STORE
+    registry.mountError=registry.error
     registry.state=FSTYPES.STATE_FAILED
     RETURN(0)
   FI
 
   service.arrival=255
+  service.mountStage=FSTYPES.MOUNT_RESOURCES
   service.nextStep=@FSINIT.First
   service.readyStep=@FSMUX.Take
   registry.runtime=BYTE POINTER(service)
@@ -31,6 +36,7 @@ BYTE FUNC BeginService(DOSCORE.DosRegistry POINTER registry)
     EXEC.FreeMem(BYTE POINTER(service),SIZEOF(FSTYPES.Service))
     registry.runtime=BYTE POINTER(0)
     registry.error=ERROR_NO_FREE_STORE
+    registry.mountError=registry.error
     registry.state=FSTYPES.STATE_FAILED
     RETURN(0)
   FI

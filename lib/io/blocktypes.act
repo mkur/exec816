@@ -3,6 +3,9 @@ MODULE BLOCKTYPES
 USE EXEC
 INCLUDE "block-backends.inc"
 PUBLIC CONST SECTOR_BUFFER_BYTES=512
+; One-time volume admission stages; retained by the filesystem on failure.
+PUBLIC CONST ADMIT_ALLOCATE=3, ADMIT_OPEN=4, ADMIT_GEOMETRY=5
+PUBLIC CONST ADMIT_BYTES=6, ADMIT_COUNT=7, ADMIT_PROTECTED=8, ADMIT_DURABLE=9
 
 ; Geometry is validated before attachment and fixed for this volume lifetime.
 PUBLIC TYPE Volume=[
@@ -35,7 +38,7 @@ PUBLIC TYPE Adapter=[
   Volume POINTER cached
   LONGCARD cachedGeneration,cachedSector
   CARD valid,owners
-  BYTE busy
+  BYTE busy,admission
   LONGINT error
   Cache cache
 ]
