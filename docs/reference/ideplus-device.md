@@ -109,6 +109,8 @@ and unit without probing hardware. An offline controller cannot satisfy cached
 reads and only invalidates volumes belonging to that backend.
 `MOUNT DIAGNOSTICS` and verbose boot format the copied IDE observations;
 plain `MOUNT` includes retained mount failures and offline causal errors.
+Shell boot initializes the controller when IDE mounts are configured, then
+prints verbose hardware diagnostics before starting filesystem mounting.
 See the [shell guide](../guides/shell.md) for capture instructions.
 
 Other revisions, slaves, LBA48, hot removal and partition editing

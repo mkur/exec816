@@ -44,6 +44,19 @@ supports ordinary redirection. Failed startup always explains its mount failure,
 including the specific reason behind an IDE open rejection. The renderer
 preserves causal IoErr and uses existing output/transfer buffers.
 
+The boot ordering correction initializes the controller when an IDE mount is
+configured, then prints its verbose report before the filesystem mounting
+announcement and the first filesystem lock. Subsequent filesystem device opens
+join the ready driver. SIO-only configurations do not initialize IDE, and quiet
+boot suppresses the hardware report. Interactive reporting remains observational.
+The correction adds **0 fixed, 0 per-Task and 0 idle reserved bank-zero bytes**;
+it uses the existing driver worker and shell stack without enlarging reservations.
+Focused optimized native boot checks passed with valid media and an absent
+controller. The output observer verified that the filesystem service was still
+unstarted during the IDE report and mounting announcement; the transcript also
+places mount outcomes afterward. Evidence: `build/ide-diagnostics/boot-order/`.
+The 447 host checks and documentation link/whitespace checks passed.
+
 The demo global arena grows by **2048 upper-memory bytes**, from 4352 to 6400,
 including all unused capacity. The standard/IDE image uses 5822 bytes (578
 spare); VBXE/IDE uses 5834 (566 spare). DOS registry growth is separately counted

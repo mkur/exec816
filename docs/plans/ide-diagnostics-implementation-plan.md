@@ -8,8 +8,9 @@ Status: completed (D1–D3). See the
 
 Retain the IDE Plus startup observations and show controller detection, IDENTIFY
 capacity, supported APT mappings and the exact failed mount phase and error.
-Verbose boot prints the report after filesystem startup; `MOUNT DIAGNOSTICS`
-repeats it and supports ordinary redirection for hardware reports. Plain `MOUNT`
+Boot initializes configured IDE hardware and prints the verbose report before
+filesystem startup; `MOUNT DIAGNOSTICS` repeats it and supports ordinary
+redirection for hardware reports. Plain `MOUNT`
 keeps its compact table and adds a retained mount failure when present.
 
 Reports copy existing observations. They never start a controller, probe a disk,

@@ -38,7 +38,9 @@ probe a drive. A mount's handler is MyDOS or SDFS according to its configuration
 not automatic format discovery. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
 
-Verbose boot automatically prints IDE diagnostics after filesystem startup.
+Boot initializes a configured IDE controller before mounting filesystems.
+Verbose boot prints its controller, capacity and APT diagnostics at that point,
+before the filesystem mounting and ready/failure messages.
 To capture the same observations for a hardware report:
 
 ```text

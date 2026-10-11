@@ -13,7 +13,7 @@ from test_cooperative import data
 from test_heap_api import clean_ownership
 
 
-def run(out, reuse=False):
+def run(out, reuse=False, boot_order=False):
     out.mkdir(parents=True, exist_ok=True)
     atr = sdfs_image(ROOT/'tests/fixtures/filesystem-write/sdfs-256.atr', out/'stage.atr')
     mounts = [dict(alias='IDE', device='ideplus.device', unit=2, profile=0,
@@ -29,10 +29,30 @@ def run(out, reuse=False):
     (out/'shell-observed.inc').write_text(text)
     (out/'shelldiagprobe.act').write_text('''MODULE SHELLDIAGPROBE
 USE HEAPCORE
+USE DOSCORE
 PUBLIC BYTE ARRAY writes(8192)
 PUBLIC CARD used
+PUBLIC BYTE watchBoot,seenIde,seenMount
 PUBLIC PROC Capture(BYTE POINTER bytes CARD count)
   CARD index
+
+  LET registry=DOSCORE.GetRegistry()
+  IF watchBoot<>0 AND count>=8 THEN
+    IF bytes(0)=73 AND bytes(1)=68 AND bytes(2)=69 AND bytes(4)=67 THEN
+      IF registry.state<>0 THEN
+        HEAPCORE.Abort($ff02)
+      FI
+
+      seenIde=1
+    ELSEIF count>=12 AND bytes(0)=70 AND bytes(1)=105 AND bytes(2)=108
+        AND bytes(10)=115 AND bytes(11)=58 THEN
+      IF seenIde=0 OR registry.state<>0 THEN
+        HEAPCORE.Abort($ff03)
+      FI
+
+      seenMount=1
+    FI
+  FI
 
   IF count>8192-used THEN
     HEAPCORE.Abort($ff01)
@@ -51,19 +71,23 @@ ENDMODULE
 ''')
     original = ROOT/'tests/programs/ide_diagnostics_shell.act'
     test_source = out/original.name
-    test_source.write_text(original.read_text().replace('../../examples/shell/shell-session.inc', 'shell-observed.inc'))
+    test_source.write_text(original.read_text()
+        .replace('../../examples/shell/shell-session.inc', 'shell-observed.inc')
+        .replace('../../examples/shell/shell-boot.inc', str(ROOT/'examples/shell/shell-boot.inc')))
     profile = out/'profile.json'
     memory = json.loads(PROFILE.read_text()); memory['image_data_bytes'] = 16384
     profile.write_text(json.dumps(memory))
     p = read_build(out) if reuse else build(compiler(ROOT/'build/actionc', release=True),
         test_source, out, optimize=True, tasks=True, task_capacity=8,
-        console=True, memory_profile=profile, dos_mounts=mounts)
-    for name, error, expected in [
+        console=True, memory_profile=profile, dos_mounts=mounts,
+        system_mount='IDE' if boot_order else None)
+    cases = [('valid', 0, []), ('no-controller', -1, ['controller absent', 'IDE CTRL      =NOT DETECTED'])] if boot_order else [
             ('count', -4, ['sector count mismatch', 'expected 1999 x 512B', 'actual   2000 x 512B']),
             ('protected', 4, ['partition/board protected']),
             ('empty-slot', -1, ['empty APT slot']),
             ('bad-apt', -1, ['unsupported APT revision', 'IDE FAULT LBA =0', 'APT STATUS    =FAILED']),
-            ('no-controller', -1, ['controller absent', 'IDE CTRL      =NOT DETECTED'])]:
+            ('no-controller', -1, ['controller absent', 'IDE CTRL      =NOT DETECTED'])]
+    for name, error, expected in cases:
         dest = out/name; dest.mkdir(exist_ok=True)
         raw, _ = filesystem_fixture(atr)
         configured = [dict(m) for m in mounts]
@@ -78,16 +102,28 @@ ENDMODULE
                 address = next(d['address'] for d in p['image']['data']
                                if '_IDEDIAGNOSTICSSHELL_EXPECTEDERROR_' in d['name'])
                 b.memload(address, error.to_bytes(4, 'little', signed=error < 0))
-            runtime, _ = execute(b, p, before_run=before, timeout=90, frame_limit=4500)
+                address = next(d['address'] for d in p['image']['data']
+                               if '_IDEDIAGNOSTICSSHELL_BOOTMODE_' in d['name'])
+                b.memload(address, bytes([boot_order]))
+            runtime, _ = execute(b, p, before_run=before, timeout=90, frame_limit=4500,
+                                 boot_verbose=boot_order)
             clean_ownership(b, p, out)
             used_address = next(d['address'] for d in p['image']['data'] if '_SHELLDIAGPROBE_USED_' in d['name'])
             count = int.from_bytes(b.memdump(used_address, 2), 'little')
             address = next(d['address'] for d in p['image']['data'] if '_SHELLDIAGPROBE_WRITES_' in d['name'])
             transcript = b.memdump(address, count).decode('ascii')
             checks = data(b, p['image'], 'checks', True)
-        for line in ['MOUNT FAILED  =IDE:', *expected]:
+        if boot_order:
+            require(transcript.index('IDE CTRL      =') < transcript.index('Filesystems: mounting...'),
+                    'Hardware diagnostics followed the mount announcement')
+            terminal = 'SYS: -> IDE Plus unit 2: ready' if name == 'valid' else 'MOUNT FAILED  =IDE:'
+            require(transcript.index('Filesystems: mounting...') < transcript.index(terminal),
+                    'Filesystem outcome preceded the mount announcement')
+        for line in ([] if error == 0 else ['MOUNT FAILED  =IDE:']) + expected:
             require(line in transcript, f'{name}: missing {line!r}: {transcript}')
-        require(all(len(line) <= 40 for line in transcript.splitlines()), 'Diagnostic line exceeds 40 columns')
+        diagnostic = (transcript[transcript.index('IDE CTRL      ='):transcript.index('Filesystems: mounting...')]
+                      if boot_order else transcript)
+        require(all(len(line) <= 40 for line in diagnostic.splitlines()), 'Diagnostic line exceeds 40 columns')
         require(disk.read_bytes() == raw, 'Reporting changed disk')
         (dest/'transcript.txt').write_text(transcript)
         (dest/'results.json').write_text(json.dumps(dict(status='pass', tier='development',
@@ -100,5 +136,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'build/ide-diagnostics/shell')
     parser.add_argument('--reuse', action='store_true')
+    parser.add_argument('--boot-order', action='store_true', help='Check actual boot ordering before filesystem startup')
     args = parser.parse_args()
-    run(args.output, args.reuse)
+    run(args.output, args.reuse, args.boot_order)

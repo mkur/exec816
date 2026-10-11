@@ -14,6 +14,30 @@ PROC ShellCacheStatus()
 
 RETURN
 
+; Settle configured IDE discovery before mounting filesystems. Later device
+; opens join the ready driver; an unconfigured controller is left untouched.
+PROC ShellBootIde()
+  BYTE index,ready
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  IF registry.count=0 THEN
+    RETURN
+  FI
+
+  FOR index=0 TO registry.count-1 DO
+    IF specs(index).backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+      ready=IDEPLUSDRIVER.Start()
+      IF BOOTCONFIG.Verbose()<>0 THEN
+        ShellIdeDiagnostics(shell.console,0)
+      FI
+
+      RETURN
+    FI
+  OD
+
+RETURN
+
 ; Missing startup files are optional. Other setup and execution errors retain
 ; normal EXECUTE results; the first interactive prompt must not report twice.
 PROC ShellStartupFile(BYTE POINTER path)
@@ -109,6 +133,7 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     ShellByte(shell.console,ASCII.LF)
   FI
 
+  ShellBootIde()
   ShellText(shell.console,CSTRING(EXECBUILD.mountStart))
   IF shell.status<>PROCESS.RETURN_OK THEN
     RETURN(0)
@@ -141,11 +166,6 @@ BYTE FUNC ShellBootStart(BYTE POINTER consoleName)
     ShellByte(shell.console,ASCII.LF)
     ShellMountFailure(shell.console)
     ShellText(shell.console,CSTRING(EXECBUILD.mountFailure))
-  FI
-
-  IF BOOTCONFIG.Verbose()<>0 THEN
-    ShellByte(shell.console,ASCII.LF)
-    ShellIdeDiagnostics(shell.console,0)
   FI
 
   ShellByte(shell.console,ASCII.LF)
