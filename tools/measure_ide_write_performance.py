@@ -8,7 +8,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-from native_program import ROOT,build,compiler,execute,require,sha256
+from native_program import ROOT,build,compiler,execute,require,sha256,read_build
 from test_ideplus import PIN,ide_emulator
 from test_heap_api import clean_ownership
 from test_cooperative import data
@@ -26,7 +26,7 @@ def frozen_module(path):
     return module
 
 
-def run(out,frozen=None):
+def prepare(out,frozen=None):
     out.mkdir(parents=True,exist_ok=True)
     t=compiler(ROOT/'build/actionc',release=True)
     instrument(out,frozen)
@@ -121,16 +121,40 @@ RETURN
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=4352
     (out/'profile.json').write_text(json.dumps(profile))
     p=build(t,out/'write_performance.act',out,optimize=True,tasks=True,task_capacity=8,console_deferred=True,system_mount='SYSTEM',dos_mounts=compile_mounts,memory_profile=out/'profile.json',image_data=[(0x2dffd0,bytes([0xa5])*(16384+64)),(0x320000,bytes(8192))])
+    return p,wire,mapping,content,size,command,tree
+
+
+def run(out,frozen=None,from_build=None,warm=False):
+    out.mkdir(parents=True,exist_ok=True)
+    if from_build:
+        require(frozen is None,'Choose a retained build or frozen sources')
+        p=read_build(from_build)
+        require(p['build']['optimize'],'Performance requires optimized code')
+        import shutil
+        for name in ('system.atr','work.atr','manifest.bin'):
+            shutil.copyfile(from_build/name,out/name)
+        mapping=write(out/'ideplus.img',out/'system.atr',out/'work.atr')
+        wire=None
+        content=(ROOT/'examples/demo-disk/LONG.TXT').read_bytes()
+        size=512
+        tree=from_build/'source'
+        command=tree/'COPY16'
+    else:
+        p,wire,mapping,content,size,command,tree=prepare(out,frozen)
     with ide_emulator(out,out/'ideplus.img',writable=True) as b:
         def before(b):
-            b.memload(p['build']['task_storage']['BASE']+0x900,wire)
-            for field,value in [('VARIANT',b'\1'),('ARGUMENTS',b'SYS:LONG.TXT WORK:COPY.BIN\0'),('ARGUMENTBYTES',len(b'SYS:LONG.TXT WORK:COPY.BIN').to_bytes(2,'little'))]:
+            if wire is not None:
+                b.memload(p['build']['task_storage']['BASE']+0x900,wire)
+            for field,value in [('WARM',bytes([warm])),('VARIANT',b'\1'),('ARGUMENTS',b'SYS:LONG.TXT WORK:COPY.BIN\0'),('ARGUMENTBYTES',len(b'SYS:LONG.TXT WORK:COPY.BIN').to_bytes(2,'little'))]:
                 address=next(d['address'] for d in p['image']['data'] if '_WRITEPERFORMANCE_'+field+'_' in d['name'])
                 b.memload(address,value)
-        runtime,_=execute(b,p,before_run=before,timeout=300,frame_limit=15000)
+        runtime,_=execute(b,{**p,'output':out},before_run=before,timeout=300,frame_limit=15000)
         clean_ownership(b,p,out)
         view={**p['image'],'data':[d for d in p['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
         counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions')}
+        for name in ('kernelCalls','taskSwitches'):
+            if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
+                counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
     media=out/'ideplus.img'
     if frozen:
         restored=frozen_module(frozen/'tools/ideplus_media.py').filesystem_atr(media.read_bytes(),mapping['partitions'][1],(out/'work.atr').read_bytes())
@@ -146,9 +170,13 @@ RETURN
     result=dict(status='pass',tier='development',snapshot=str(frozen) if frozen else None,build=p['build'],pin=PIN,counts=counts,guest_frames=frames,guest_seconds=frames/50,bytes=len(content),source_sha256=sha256(tree/'LONG.TXT'),command_sha256=sha256(command),sector_bytes=size,cache_blocks=p['build']['memory']['boot_config']['cache_blocks'],allocation=allocation,runtime=runtime)
     result['observer_inputs']={p.name:sha256(p) for p in out.glob('*.act')}
     result['observer_sha256']=sha256(Path(__file__))
+    result['warm_source']=warm
+    result['retained_build']=str(from_build) if from_build else None
     (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('IDE loaded COPY:',size,frames,'frames',counts,flush=True)
     return result
 
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--frozen-sources',type=Path);v=a.parse_args();run(v.output,v.frozen_sources)
+    a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--frozen-sources',type=Path)
+    a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true')
+    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source)

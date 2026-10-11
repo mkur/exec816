@@ -112,13 +112,13 @@ RETURN(result)''')
   FI
 RETURN(Reserve(bytes,EXEC.MEMF_CLEAR))''',1)
     (out/'o65memory.act').write_text(allocation)
-    shutil.copyfile(ROOT/'tests/programs/write_performance.act',out/'write_performance.act')
+    (out/'write_performance.act').write_text(read_source(ROOT/'tests/programs/write_performance.act').replace('$efff0','$2dfff0'))
 
 
 def source_image(folder, frozen):
     folder.mkdir(parents=True,exist_ok=True)
     tree=folder/'source';tree.mkdir(exist_ok=True)
-    t=compiler(ROOT/'build/actionc')
+    t=compiler(ROOT/'build/actionc',release=True)
     records={}
     for name,path in [('COPY512',frozen/'examples/commands/copy.act'),
                       ('COPY16',ROOT/'examples/commands/copy.act')]:
@@ -148,10 +148,13 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
     content=source_audit.files[selected]
     mounts=[dict(alias='D1',unit=49,sectors=source_audit.image.count,sector_bytes=source_audit.image.size,format=2,profile=4),
             dict(alias='WORK',unit=56,sectors=720,sector_bytes=size,format=1 if filesystem=='mydos' else 2,profile=4,access='readwrite')]
-    program=read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'),out/'write_performance.act',out,
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=4352
+    (out/'memory-profile.json').write_text(json.dumps(profile))
+    program=read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc',release=True),out/'write_performance.act',out,
                 optimize=True,tasks=True,task_capacity=8,console_deferred=True,
-                dos_mounts=mounts,system_mount='D1',
-                image_data=[(0xeffd0,bytes([0xa5])*(16384+64)),(0x320000,bytes(8192))])
+                dos_mounts=mounts,system_mount='D1',memory_profile=out/'memory-profile.json',
+                image_data=[(0x2dffd0,bytes([0xa5])*(16384+64)),(0x320000,bytes(8192))])
     if from_build:
         require(program['build']['source_sha256']==sha256(out/'write_performance.act'),
                 'Changed benchmark source')
@@ -213,7 +216,7 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
                     view={**program['image'],'data':[d for d in program['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
                     counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in
                             ('startFrame','endFrame','maxGroupWrites','reads','writes','readBytes','writeBytes','logicalReads','payloadVisits','cacheHits','cacheMisses','cacheEvictions')}
-                    for name in ('maxGroupRequests','maxGroupFrames'):
+                    for name in ('maxGroupRequests','maxGroupFrames','kernelCalls','taskSwitches'):
                         if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
                             counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
                     completed=int.from_bytes(bytes(data(b,view,'completedWrites')),'little')

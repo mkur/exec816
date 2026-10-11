@@ -58,7 +58,7 @@ def markers_for(program):
     require(not any(i['text'].startswith(('JSL', 'JML', 'RTL')) and head <= i['pc'] < end for i in instructions),
             'Unexpected call or escape inside byte loop')
     returns = [i['pc'] for i in instructions if i['text'] == 'RTL']
-    require(len(returns) == 2, 'Changed Consume return paths')
+    require(1 <= len(returns) <= 2, 'Changed Consume return paths')
     marks = dict(consume=routine['address'], loop=head, bookkeeping=end,
                  native_nmi=program['labels']['native_nmi'], native_irq=program['labels']['native_irq'])
     marks.update({f'return{n}': pc for n, pc in enumerate(returns)})
@@ -214,7 +214,7 @@ def main():
         return
     require(not args.analyze_only, '--analyze-only requires --hello-bundle')
     program = read_build(args.from_build) if args.from_build else build(
-        compiler(ROOT/'build/actionc'), ROOT/'tests/programs/sector_copy.act', out/'program',
+        compiler(ROOT/'build/actionc',release=True), ROOT/'tests/programs/sector_copy.act', out/'program',
         tasks=True, console=False, optimize=args.mode=='opt', stack_checks=True,
         image_data=[(0xa0000, bytes(0xc00))])
     require(program['build']['optimize'] == (args.mode=='opt'), 'Wrong NIR mode')

@@ -1,5 +1,8 @@
 # Historical records
 
+- [Filesystem and DOS performance](filesystem-dos-performance.md): shared
+  SIO/IDE optimizations, matched measurements and memory costs.
+
 - [AES UPDATE admission latency](update-admission-latency.md): logical lock,
   presenter painting and physical display handoff attribution, rejected renderer
   experiments and frozen input/cancellation comparisons.

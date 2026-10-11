@@ -132,6 +132,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [Filesystem and DOS performance](filesystem-dos-performance-implementation-plan.md):
+  planned FP0–FP6 slices for shared bulk copies, simpler validation, targeted
+  metadata invalidation, cheaper selected-file checks and fewer driver crossings;
+  cache representation, direct buffer transfers and IDE ranges have a design gate.
 - [IDE diagnostics](ide-diagnostics-implementation-plan.md): D1–D3 implemented;
   retained controller, capacity, APT and mount-failure observations for verbose
   boot and hardware reports. [Development record](../history/ide-diagnostics.md).
