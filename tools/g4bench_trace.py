@@ -21,11 +21,13 @@ APP_NAMES = ('batch', 'BenchDraw', 'BenchClockRead', 'full_canvas', 'events',
 # Measure arithmetic through its public wrappers. The compiler runtime's
 # internal call successors have no C listing in this build.
 C_NAMES = '''wind_update v_bar v_gtext objc_draw GemDrawingBorrow DisplayEnter
-DisplayLeave GemVdiPaint vdi_v_gtext vdi_vr_recfl just_draw GemWidgetText
+DisplayLeave GemVdiPaint vdi_v_gtext just_draw GemWidgetText
 vbxe_glyph vbxe_fill_rect vbxe_text_run vbxe_widget_text_run blit_glyph
 blit_glyph_run glyph_record blit_mask text_run VbxeOwnerFence idle
 VbxeOwnerSubmit VbxeOwnerRead VbxeOwnerWrite _VbxeUpload _VbxeTextUpload
 start fence_owner drain pointer_erase'''.split()
+# Optional boundaries let the same observer compare archived pre-fill images.
+FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl'.split()
 
 
 def listing_returns(image, directory):
@@ -81,6 +83,7 @@ def definition(program, foreign, app, directory):
                     task_dps=[p['dp'] for p in program['build']['memory']['task_pools']])
     entries = {foreign['symbols'][name]: name for name in C_NAMES if name in foreign['symbols']}
     require(len(entries) == len(C_NAMES), 'Missing resident trace function')
+    entries.update({foreign['symbols'][name]:name for name in FILL_NAMES if name in foreign['symbols']})
     application = {app['image']['symbols'][name]: name for name in APP_NAMES}
     return dict(timeline=timeline, resident_entries=entries, app_entries=application,
                 resident_returns=listing_returns(foreign, directory/'drawing'),
@@ -187,10 +190,10 @@ def category(names):
     if 'idle' in names: return 'completion_poll'
     if '_VbxeUpload' in names or '_VbxeTextUpload' in names: return 'upload'
     if names & {'VbxeOwnerSubmit', 'VbxeOwnerFence', 'start'}: return 'submission_fence'
-    if names & {'blit_mask', 'blit_glyph', 'blit_glyph_run', 'glyph_record', 'text_run'}:
+    if names & {'blit_mask', 'blit_glyph', 'blit_glyph_run', 'glyph_record', 'text_run', 'GemSolidFill', 'solid_record'}:
         return 'command_build'
     if names & {'borrow_callback', 'GemVdiPaint', 'just_draw', 'GemWidgetText'}: return 'renderer'
-    if 'GemDrawingBorrow' in names: return 'borrow_setup_cursor'
+    if names & {'GemDrawingBorrow','GemDrawingSolidBorrow','drawing_borrow'}: return 'borrow_setup_cursor'
     if names & {'v_bar', 'v_gtext', 'objc_draw'}: return 'vdi_aes_preparation'
     if names & {'_Mul16', '_Mod16', '_Div16', '_UDivMod16'}: return 'app_arithmetic'
     return 'app_other'
@@ -243,7 +246,8 @@ def analyze(events, d, live, benchmark):
     helpers = sorted((s for s in spans if s['kind'] in ('pointer_erase', 'fence_owner')),
                      key=lambda s:s['start'])
     helper_starts = [s['start'] for s in helpers]
-    for borrow in [s for s in spans if s['kind'] == 'GemDrawingBorrow']:
+    borrow_kind='drawing_borrow' if 'drawing_borrow' in entries.values() else 'GemDrawingBorrow'
+    for borrow in [s for s in spans if s['kind'] == borrow_kind]:
         children = helpers[bisect_left(helper_starts, borrow['start']):bisect_left(helper_starts, borrow['end'])]
         erase = [s for s in children if s['kind'] == 'pointer_erase']
         fences = sorted((s for s in children if s['kind'] == 'fence_owner'), key=lambda s:s['start'])
@@ -303,7 +307,8 @@ def analyze(events, d, live, benchmark):
                     ('elapsed_ms', 'charged_cpu_ms', 'off_cpu_ms', 'interrupt_ms')})
             samples.append(dict(sample=index, start=start, end=end, operations=len(operations),
                 **measure, exclusive_cpu_ms=partition(timeline, selected, start, end),
-                routines=routine_totals, operation_spans=operations))
+                routines=routine_totals, operation_spans=operations,
+                borrow_spans=[s for s in selected if s['kind']==borrow_kind]))
         count = sum(s['operations'] for s in samples)
         categories = sorted({k for s in samples for k in s['exclusive_cpu_ms']})
         kinds = sorted({k for s in samples for k in s['routines']})

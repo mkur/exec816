@@ -12,6 +12,8 @@ extern uint16_t GlyphClipTop;
 extern void BuilderProbe(void);
 extern void BuilderRunTests(void);
 extern void BuilderFaultProbe(void);
+extern void BuilderSolidProbe(UWORD);
+extern void BuilderSolidFault(void);
 static void paint(uint16_t left,uint16_t top,uint16_t right,uint16_t bottom,uint16_t focus)
 {
     uint16_t y;
@@ -155,6 +157,13 @@ void WidgetPixelProbe(void)
         WidgetPixelStage=stage;
         while (WidgetPixelGate<stage) ExecYield();
     }
+    for (stage=23;stage<=36;++stage) {
+        check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
+        BuilderSolidProbe(stage-23);
+        WidgetPixelStage=stage;
+        while (WidgetPixelGate<stage) ExecYield();
+    }
+    BuilderSolidFault();
     BuilderFaultProbe();
     packet.bottom=packet.top;packet.index=0;
     check(WidgetPaint(&packet)==DISPLAY_BAD_ARGUMENT && packet.index==0);

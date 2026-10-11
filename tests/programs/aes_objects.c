@@ -31,7 +31,7 @@ void ObjectListProbe(const UBYTE *p,UWORD count)
     for (i=0;i<count;++i,p+=21) {
         width=((UWORD)p[12]|((UWORD)p[13]<<8))+1;
         rows=(UWORD)p[14]+1;
-        CHECK(width<=512 && rows<=16);
+        CHECK(width<=512 && rows<=256);
         work+=(ULONG)width*rows*(p[20] ? 3:2);
     }
     CHECK(work<=8192);

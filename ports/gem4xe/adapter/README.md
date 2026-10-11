@@ -26,8 +26,13 @@ upstream code. The adapter queues records in one 4,096-byte upper-RAM constructi
 It drains at 64 records or 8,192 estimated bus accesses, before CPU staging
 reads/writes or scratch reuse, and at the command's final fence. `blit_pending`
 reports retained work; `blit_start` and `blit_run` both complete the bounded list
-synchronously. Long rectangles are split into at most sixteen-row chunks,
-further reduced by the work budget. Synchronous lists leave VBXE IRQs disabled;
+synchronously. Generic rectangles are split into at most sixteen-row chunks,
+further reduced by the work budget. The trusted solid-fill encoder instead
+chooses rows from the complete-byte and nibble-edge work cost. A 325-byte
+capacity table in the existing read-only bank supplies the height limit; no
+division occurs in the fill loop. Caller-local VDI uses a narrow solid-fill
+borrow, while uniform widget fills append records within their existing batch.
+Synchronous lists leave VBXE IRQs disabled;
 the asynchronous scroll path below owns completion IRQs. No second aperture is enabled.
 The producer establishes geometry and bounds each list while constructing it;
 the admitted driver submits these prepared records and inserts chaining itself.

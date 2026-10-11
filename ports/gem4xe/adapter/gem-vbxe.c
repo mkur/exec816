@@ -212,6 +212,55 @@ void blit_or(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,3); }
 void blit_xor(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,5); }
+
+UWORD GemSolidRows(UWORD left,UWORD right)
+{
+    UWORD bytes=(right>>1)-((left+1)>>1);
+    return GemFillRows[bytes+3*((left&1)+(right&1))];
+}
+
+/* One already reserved constant-source record. Geometry and list capacity
+ * are established once for the whole fill, not again for each nibble edge. */
+static UBYTE *solid_record(UBYTE *r,ULONG dest,UWORD bytes,UWORD rows,UBYTE mask,UBYTE value,UBYTE mode)
+{
+    r[0]=r[1]=r[2]=r[3]=r[4]=0;
+    r[6]=(UBYTE)dest;r[7]=(UBYTE)(dest>>8);r[8]=(UBYTE)(dest>>16);
+    r[9]=64;r[10]=1;
+    --bytes;r[12]=(UBYTE)bytes;r[13]=(UBYTE)(bytes>>8);
+    r[14]=(UBYTE)(rows-1);r[15]=mask;r[16]=value;r[20]=mode;
+    return r+21;
+}
+
+void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
+{
+    UWORD lo=(left+1)>>1,hi=right>>1,bytes=hi-lo;
+    UWORD edges=(left&1)+(right&1),units=bytes+3*edges;
+    UWORD records=(bytes!=0)+(edges<<1),limit=GemFillRows[units],rows,work;
+    ULONG dest;
+    UBYTE *r,ink=map_col[pen];
+    if (fault) return;
+    if (dirty) flush();
+    while (top<bottom && !fault) {
+        rows=bottom-top;if (rows>limit) rows=limit;
+        /* Height is bounded before the product, so work fits a UWORD. */
+        work=(units*rows)<<1;
+        if (commandCount+records>VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+        if (fault) return;
+        dest=GemScreenRows[top];if (stripRedirect) dest+=stripOffset;
+        r=commandNext;
+        if (left&1) {
+            r=solid_record(r,dest+lo-1,1,rows,0,0xf0,4);
+            r=solid_record(r,dest+lo-1,1,rows,0,ink,3);
+        }
+        if (bytes) r=solid_record(r,dest+lo,bytes,rows,0,(ink<<4)|ink,0);
+        if (right&1) {
+            r=solid_record(r,dest+hi,1,rows,0,0x0f,4);
+            r=solid_record(r,dest+hi,1,rows,0,ink<<4,3);
+        }
+        commandNext=r;commandCount+=records;commandWork+=work;
+        top+=rows;
+    }
+}
 void vbxe_palette(uint8_t pal,uint8_t first,const uint8_t *rgb,uint16_t count)
 {
     if (pal!=1 || first || count!=16) { latch(DISPLAY_BAD_ARGUMENT); return; }
@@ -783,17 +832,18 @@ NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
 
 /* A linked, bounded callback executes only after a delegated access grant.
  * It must return with no external wait, RPC or caller buffer retained. */
-UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+static UWORD drawing_borrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context)
 {
     UWORD status;
-    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>32)
-        return DISPLAY_BAD_ARGUMENT;
     status=DisplayEnter(grant);
     if (status!=DISPLAY_OK) return status;
     if (!fault) {
         pointer_erase(left,top,right,bottom);
-        if (!fault) draw(context);
+        if (!fault) {
+            if (draw) draw(context);
+            else GemSolidFill(left,top,right,bottom,*(const UWORD *)context);
+        }
         status=fence_owner();
         if (!fault && outlineVisible && !outlineDrawn) {
             outline_toggle();
@@ -805,4 +855,19 @@ UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     if (fault) status=DISPLAY_DEVICE_FAULT;
     DisplayLeave(grant);
     return status;
+}
+
+UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,void (*draw)(void *),void *context)
+{
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>32)
+        return DISPLAY_BAD_ARGUMENT;
+    return drawing_borrow(grant,left,top,right,bottom,draw,context);
+}
+
+UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD pen)
+{
+    /* Private VDI caller already clipped and bounded this fixed operation. */
+    return drawing_borrow(grant,left,top,right,bottom,0,&pen);
 }

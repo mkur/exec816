@@ -142,6 +142,15 @@ at most 32 rows use one callback per visible intersection. Larger objects retain
 their 64-record/8,192-access limits and may drain within a callback. Native
 presenter batches and the offscreen widget buffer remain limited to 16 rows.
 
+The private `GemDrawingSolidBorrow` entry admits only a solid replacement fill,
+using the same grant, overlay, fence and release lifecycle. Its VDI caller bounds
+each rectangle by the 8,192-access fill budget before entry; unlike arbitrary
+callbacks, it can cover more than 32 rows. The trusted `GemSolidFill` encoder
+also appends uniform widget fills inside existing batches, preserving scratch
+redirection and ordering. It reserves capacity for the entire fill fragment,
+then writes one complete-byte record and up to two AND/OR edge pairs. It drains
+only at the existing count/work limits or a caller's completion boundary.
+
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.
 The borrower acknowledges with `GrantClose`, which releases the retained Task.

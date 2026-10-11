@@ -1,0 +1,1440 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "TX5",
+  "date": "2026-10-11",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "vram_reserved_delta": 0,
+  "lookup_payload_delta_bytes": 325,
+  "lookup_payload_total_bytes": 37457,
+  "source_inputs": {
+    "c/calypsi/vdi.c": "ee99bba11fa7f29740ad6b8e17f7560f3af0621182b3aa8d026ca82579cc66c6",
+    "ports/gem4xe/adapter/README.md": "4404780c44465cf1b7812b9322d9bc6e20ca34b29ae625219e6361a791378168",
+    "ports/gem4xe/adapter/gem-drawing.h": "7acf3a1961cb963a80bdd57de9e47ae8fe3cca0d578fdb2851e66eb341429f18",
+    "ports/gem4xe/adapter/gem-vbxe.c": "948b87e5f22fcc3418345df32eb8171be27b3f47055c4f18d21e14b4d2e3e978",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "7b44ff1fc1281853ac74954572703dc2495179a1819e80288f0eb9d6d0bf6ca9",
+    "tests/programs/aes_objects.c": "ca86d8eeae1b008a01a73dc411658d434cbd60a357eb43373103751c730861e5",
+    "tests/programs/display_borrow.c": "584f4ba53fabd7358281b9b2be2fd2588a24a67470352ecf1b31a245e9629702",
+    "tests/programs/vbxe-builder-probe.h": "51ee1e3c045d8b75d65f8600f64726c1270a3f56b795abffa6d8d96079f353e7",
+    "tests/programs/vbxe_tables.c": "2b2d9dfb22759bdfca69a4bfc3244ae4f904e564a7249e8424d1a82cd296c1ce",
+    "tests/programs/widgets_pixels.c": "5e5a8fbbd75a98c69220b5ac23516b68db1e99444aa065bd282ffda4ab8bfec9",
+    "tests/test_vbxe_table_generator.py": "94fcf0671586fa27ad0e7b49e0f50072afe3fa86c1517347a29403affb4c3e50",
+    "tools/g4bench_trace.py": "10ad7cad99d43a569c3ef62b5eb898614c1d42829883e4a2e50b20f57c7316bb",
+    "tools/generate_vbxe_tables.py": "b8402317296c5dee36f7c29448defa0f2f5d93cf7cc8acdda4fe5b28b78b23fb",
+    "tools/test_display_borrow.py": "fe11dcd33b479d785f4088f9f3daa682415aeff72e0eb017a8c3119fb0df79a8",
+    "tools/test_vdi_client.py": "0cb02358f0ffd407f4f6b72e7341a57ceb1be3135a0bdb1e67271baa91be0592",
+    "tools/test_widget_pixels.py": "6dc95bcd30138289f2d0a4911f0626f314ad587e3e7d10aa7539bee7a6aacf31"
+  },
+  "compiler_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+  "compiler_profile": "release host / optimized guest",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$e4362ad0fe28df9b",
+    "actual_kernel_id": "$e4362ad0fe28df9b",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/gem-rendering-tx5/trace-idle-final/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+  "validation": {
+    "objects-opt": {
+      "path": "build/gem-rendering-tx5/objects-opt/results.json",
+      "sha256": "a8341cc092a9ad87b5848d9bf52407989092261f98e9dcf3577119526a588d3c",
+      "checks": 514,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 956,
+          "remaining_above_floor": 324
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 674,
+          "remaining_above_floor": 1630
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 281,
+          "remaining_above_floor": 999
+        }
+      },
+      "image_sha256": "725a0a00bae0fc186e2d946f809d8aa94848ebb41848360381fff6b5d92d22c3",
+      "object_units": [
+        {
+          "case": 1,
+          "borrows": 1,
+          "rows": [
+            16,
+            0,
+            0,
+            0
+          ],
+          "lists": 2,
+          "pixels": 114816
+        },
+        {
+          "case": 2,
+          "borrows": 1,
+          "rows": [
+            17,
+            0,
+            0,
+            0
+          ],
+          "lists": 2,
+          "pixels": 114816
+        },
+        {
+          "case": 3,
+          "borrows": 1,
+          "rows": [
+            31,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 4,
+          "borrows": 1,
+          "rows": [
+            32,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 5,
+          "borrows": 3,
+          "rows": [
+            16,
+            16,
+            1,
+            0
+          ],
+          "lists": 5,
+          "pixels": 114816
+        },
+        {
+          "case": 6,
+          "borrows": 1,
+          "rows": [
+            16,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 7,
+          "borrows": 1,
+          "rows": [
+            20,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 8,
+          "borrows": 1,
+          "rows": [
+            22,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 9,
+          "borrows": 1,
+          "rows": [
+            32,
+            0,
+            0,
+            0
+          ],
+          "lists": 11,
+          "pixels": 114816
+        },
+        {
+          "case": 10,
+          "borrows": 2,
+          "rows": [
+            16,
+            8,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        },
+        {
+          "case": 11,
+          "borrows": 1,
+          "rows": [
+            12,
+            0,
+            0,
+            0
+          ],
+          "lists": 3,
+          "pixels": 114816
+        }
+      ],
+      "tedinfo_pixels": [
+        {
+          "phase": 1,
+          "pixels": 14080
+        },
+        {
+          "phase": 2,
+          "pixels": 14080
+        },
+        {
+          "phase": 3,
+          "pixels": 14080
+        }
+      ],
+      "edit_pixels": [
+        {
+          "phase": 1,
+          "pixels": 1360
+        },
+        {
+          "phase": 2,
+          "pixels": 1360
+        },
+        {
+          "phase": 3,
+          "pixels": 1360
+        },
+        {
+          "phase": 4,
+          "pixels": 1360
+        }
+      ]
+    },
+    "borrow-opt": {
+      "path": "build/gem-rendering-tx5/borrow-opt/results.json",
+      "sha256": "a0fb42d8470f9c434c053eb3cd5736ae9c5a35bfa98907805214d0041b6fdb4e",
+      "checks": 120,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 342,
+          "remaining_above_floor": 938
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 176,
+          "remaining_above_floor": 880
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 227,
+          "remaining_above_floor": 829
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 677,
+          "remaining_above_floor": 1627
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 48,
+          "remaining_above_floor": 208
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "image_sha256": "2103970eb1d6e315710eded66453f041d779cbde8e4a7b742ef86fa75fe6d966",
+      "access_timing": {
+        "access_wait": {
+          "count": 48,
+          "elapsed_ms": {
+            "p50": 0.8912020231780191,
+            "p95": 59.24773640042911,
+            "maximum": 70.15452952511986
+          },
+          "charged_cpu_ms": {
+            "p50": 0.7061810400364262,
+            "p95": 2.0639883616515293,
+            "maximum": 2.1436354896324814
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 57.500292509363824,
+            "maximum": 67.42883564356994
+          },
+          "interrupt_ms": {
+            "p50": 0.186007761718348,
+            "p95": 0.5440674167123639,
+            "maximum": 0.5820583919174376
+          }
+        },
+        "borrow_unit": {
+          "count": 48,
+          "elapsed_ms": {
+            "p50": 5.047936293575084,
+            "p95": 25.32207747903448,
+            "maximum": 32.946351668149184
+          },
+          "charged_cpu_ms": {
+            "p50": 4.188381669037285,
+            "p95": 5.229996940986412,
+            "maximum": 6.331030380093011
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 20.013349704459817,
+            "maximum": 24.946678714763195
+          },
+          "interrupt_ms": {
+            "p50": 0.8565942888075344,
+            "p95": 1.2695611231795698,
+            "maximum": 1.6686425732929788
+          }
+        },
+        "scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. The first callback unit contains an injected Yield; access_wait includes arbitration and bridge costs."
+      },
+      "borrowed_renderer": {
+        "DisplayBorrows": 48,
+        "DisplayNative": 500,
+        "DisplayCopies": 3,
+        "DisplayOverlap": 0,
+        "DisplayActive": 0,
+        "exact_pixels": 2788
+      }
+    },
+    "vdi-opt": {
+      "path": "build/gem-rendering-tx5/vdi-opt/results.json",
+      "sha256": "1fa4c4d3405fe7e717b8f5fed529b200d9de5de5ad3576c09e43c11a8ab7617a",
+      "checks": 226,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 141,
+          "remaining_above_floor": 1139
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 853,
+          "remaining_above_floor": 203
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 850,
+          "remaining_above_floor": 206
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 674,
+          "remaining_above_floor": 1630
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "image_sha256": "89299f7e881fd4b61a62d32c33cdb818ef760ed42747f7ea44fa1b60e06abe31"
+    },
+    "faults": {
+      "path": "build/gem-rendering-tx5/borrow-opt/borrow-faults.json",
+      "sha256": "b7b75586ccc49df67255f919076c5fc12812e2857a57eba430a0ae40c2063a72",
+      "cases": [
+        {
+          "variant": 1,
+          "checks": 25,
+          "failures": 0,
+          "exit_status": 0
+        },
+        {
+          "variant": 2,
+          "checks": 15,
+          "failures": 0,
+          "exit_status": 65427
+        }
+      ]
+    },
+    "tables-raw": {
+      "path": "build/gem-rendering-tx5/tables-raw/results.json",
+      "sha256": "f0ea6703fc870e4833940d58580fb2e7a571b0600f269dac1b629d38706de645",
+      "status": "pass"
+    },
+    "tables-opt": {
+      "path": "build/gem-rendering-tx5/tables-opt/results.json",
+      "sha256": "3b4ccc1accdcfb4ea7da060e0d0f3998287581617b711630a57b5d9569cf18a2",
+      "status": "pass"
+    },
+    "widgets-opt": {
+      "path": "build/gem-rendering-tx5/widgets-opt/pixel-results.json",
+      "sha256": "62842e47a74ae00262ad1c01b95b01f4e44edbd923855e1cddaa6f103be0789e",
+      "status": "pass"
+    }
+  },
+  "host": {
+    "tests": 452,
+    "skipped": 4,
+    "status": "pass",
+    "sha256": "e304c06ec964dc64f00cc3895a1f8599885befc86d923bc239d58b289d33f41f"
+  },
+  "benchmark": {
+    "trace_sha256": "7888d62107a97d41960cd45d8e31861b9bd4300b8e812e0308f662f6f12a9b21",
+    "result_sha256": "68b14f24229e660a7bcb7ad93d02391f9d6612fd946dc9c06beb8f457a288f8f",
+    "rows": [
+      {
+        "name": "solid bars",
+        "tx4": {
+          "elapsed_ms": 28.125282817788513,
+          "charged_cpu_ms": 16.72223357800743,
+          "off_cpu_ms": 7.825431586406327,
+          "interrupt_ms": 3.5776176533747592
+        },
+        "tx5": {
+          "elapsed_ms": 19.664338221646446,
+          "charged_cpu_ms": 9.493979828366312,
+          "off_cpu_ms": 8.157904190378721,
+          "interrupt_ms": 2.0124542029014107
+        },
+        "tx4_median_ms": 28.0,
+        "tx5_median_ms": 19.6,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.100052769159129
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.8579045897890972
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.19492236637021018
+          },
+          "GemDrawingSolidBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.1223386934205832
+          },
+          "GemSolidFill": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.3958849923665628
+          },
+          "GemSolidRows": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.012491207098039272
+          },
+          "VbxeOwnerFence": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.29871455644068023
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.5242612435195666
+          },
+          "_Mod16": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.13984238326761858
+          },
+          "_VbxeUpload": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.1289075844271304
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.40278856577372596
+          },
+          "drain": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.542452506582048
+          },
+          "drawing_borrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.1167473005732247
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7986887122398605
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.6024323152127894
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.188415971340191
+          },
+          "idle": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.2511229305256194
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.010024730550711725
+          },
+          "solid_record": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.28351405478124764
+          },
+          "start": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04842674602246002
+          },
+          "v_bar": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.712742060309088
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6447380972183652
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13984238326761875,
+          "app_other": 2.009552603991176,
+          "borrow_setup_cursor": 0.10329445425740999,
+          "command_build": 0.39588499236656277,
+          "completion_poll": 0.251122930525619,
+          "display_ownership": 1.0528269561593075,
+          "event_poll": 0.7986887122398605,
+          "renderer": 0.006903573407163163,
+          "submission_fence": 0.18339820227738965,
+          "update": 1.6447380972183654,
+          "upload": 0.1289075844271305,
+          "vdi_aes_preparation": 1.590403366888502,
+          "visibility": 1.188415971340191
+        }
+      },
+      {
+        "name": "text even X",
+        "tx4": {
+          "elapsed_ms": 21.71133155431253,
+          "charged_cpu_ms": 11.480752648913109,
+          "off_cpu_ms": 7.772526862697279,
+          "interrupt_ms": 2.458052042702138
+        },
+        "tx5": {
+          "elapsed_ms": 21.810573050513195,
+          "charged_cpu_ms": 11.494086611905153,
+          "off_cpu_ms": 7.860779169762097,
+          "interrupt_ms": 2.4557072688459436
+        },
+        "tx4_median_ms": 21.6,
+        "tx5_median_ms": 21.8,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.107045505059119
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.7907094327103941
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.1878784119631396
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.549700042807394
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.413942570426622
+          },
+          "VbxeOwnerFence": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.4372122189501897
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04670704940518397
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09031960818311978
+          },
+          "_VbxeTextUpload": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.0850727655221446
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.423020228490929
+          },
+          "drain": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.01701159276869863
+          },
+          "drawing_borrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.5302861140988573
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7976377930556162
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.07104006931884554
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2327025938649627
+          },
+          "idle": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.3899591520658679
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.009916889749109198
+          },
+          "start": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04800936217922061
+          },
+          "text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.6889500065080396
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.708854740084873
+          },
+          "vbxe_text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.7607212317628045
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6088611776403492
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13702665758830376,
+          "app_other": 2.0090036496710586,
+          "borrow_setup_cursor": 0.10916566931546283,
+          "command_build": 0.15758196018395412,
+          "completion_poll": 0.38995915206586795,
+          "display_ownership": 0.9785878446735338,
+          "event_poll": 0.7976377930556162,
+          "renderer": 0.7340702219828906,
+          "submission_fence": 0.09526242906354267,
+          "update": 1.6088611776403492,
+          "upload": 1.0850727655221444,
+          "vdi_aes_preparation": 2.159154697277479,
+          "visibility": 1.2327025938649627
+        }
+      },
+      {
+        "name": "text odd X",
+        "tx4": {
+          "elapsed_ms": 21.948509658917633,
+          "charged_cpu_ms": 11.647735789566179,
+          "off_cpu_ms": 7.8075744183762605,
+          "interrupt_ms": 2.4931994509751956
+        },
+        "tx5": {
+          "elapsed_ms": 21.954317320736397,
+          "charged_cpu_ms": 11.662898817134423,
+          "off_cpu_ms": 7.797492125741906,
+          "interrupt_ms": 2.4939263778600718
+        },
+        "tx4_median_ms": 21.8,
+        "tx5_median_ms": 21.8,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.276296826755043
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.7855798287422285
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.19056949811031904
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.7033675463562727
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.5698199880928714
+          },
+          "VbxeOwnerFence": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.4474733064647624
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04643169119281324
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09181833688338674
+          },
+          "_VbxeTextUpload": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.230964923780753
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.5788511265957035
+          },
+          "drain": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.01691996332942851
+          },
+          "drawing_borrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.684035614248519
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.8019899564736668
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.07101704448538793
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2253416955769294
+          },
+          "idle": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.399783002692026
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.00981938662783458
+          },
+          "start": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04769359303465895
+          },
+          "text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.8449054266713092
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.866993055428293
+          },
+          "vbxe_text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.9163355084752531
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6142908092853043
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13825002807620002,
+          "app_other": 2.016033272294037,
+          "borrow_setup_cursor": 0.10951785528845256,
+          "command_build": 0.15762284101070562,
+          "completion_poll": 0.39978300269202605,
+          "display_ownership": 0.9761493268525474,
+          "event_poll": 0.8019899564736668,
+          "renderer": 0.7339456999243958,
+          "submission_fence": 0.09538389680739569,
+          "update": 1.614290809285304,
+          "upload": 1.2309649237807527,
+          "vdi_aes_preparation": 2.1636255090720202,
+          "visibility": 1.2253416955769294
+        }
+      },
+      {
+        "name": "text clipped",
+        "tx4": {
+          "elapsed_ms": 27.410641091245537,
+          "charged_cpu_ms": 16.31862939275056,
+          "off_cpu_ms": 7.608411958440645,
+          "interrupt_ms": 3.4835997400543293
+        },
+        "tx5": {
+          "elapsed_ms": 27.502247505682202,
+          "charged_cpu_ms": 16.37586395988604,
+          "off_cpu_ms": 7.627995754032753,
+          "interrupt_ms": 3.4983877917634065
+        },
+        "tx4_median_ms": 27.4,
+        "tx5_median_ms": 27.4,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 11.950510939850206
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.8116251444338406
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.19304114349781054
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 8.411486666506901
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.249781146608512
+          },
+          "VbxeOwnerFence": {
+            "calls": 6.0,
+            "charged_cpu_ms": 0.4907996994554392
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 1.06,
+            "charged_cpu_ms": 0.8281027020346905
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04668026541524347
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09088371660283148
+          },
+          "_VbxeTextUpload": {
+            "calls": 0.94,
+            "charged_cpu_ms": 0.9741835229592832
+          },
+          "_VbxeUpload": {
+            "calls": 1.06,
+            "charged_cpu_ms": 0.5768399778773641
+          },
+          "blit_mask": {
+            "calls": 14.02,
+            "charged_cpu_ms": 2.1388240042816795
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.259049581864326
+          },
+          "drain": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.8580490823664078
+          },
+          "drawing_borrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 8.39213123967113
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7972318041554655
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.07115307896061203
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2336745707630665
+          },
+          "idle": {
+            "calls": 6.0,
+            "charged_cpu_ms": 0.41966447648812083
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.01000804929381896
+          },
+          "start": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.0960490325575844
+          },
+          "text_run": {
+            "calls": 0.94,
+            "charged_cpu_ms": 1.5122045714162198
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 10.548471973373895
+          },
+          "vbxe_fill_rect": {
+            "calls": 4.22,
+            "charged_cpu_ms": 1.5861121722896598
+          },
+          "vbxe_glyph": {
+            "calls": 4.22,
+            "charged_cpu_ms": 3.964032860666395
+          },
+          "vbxe_text_run": {
+            "calls": 0.94,
+            "charged_cpu_ms": 1.5793684805066592
+          },
+          "vdi_v_gtext": {
+            "calls": 0.06,
+            "charged_cpu_ms": 1.8568271215621925
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6489619794214376
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13756398201807507,
+          "app_other": 2.00995965015411,
+          "borrow_setup_cursor": 0.10880009134750333,
+          "command_build": 2.1000811977800335,
+          "completion_poll": 0.41966447648812094,
+          "display_ownership": 1.0046662879316508,
+          "event_poll": 0.7972318041554654,
+          "renderer": 2.9664330820807288,
+          "submission_fence": 0.2608180300422344,
+          "update": 1.6489619794214376,
+          "upload": 1.5510235008366464,
+          "vdi_aes_preparation": 2.136985306866992,
+          "visibility": 1.2336745707630663
+        }
+      },
+      {
+        "name": "five-object dialog",
+        "tx4": {
+          "elapsed_ms": 130.5162872503039,
+          "charged_cpu_ms": 81.80499775155452,
+          "off_cpu_ms": 31.22490116942659,
+          "interrupt_ms": 17.486388329322782
+        },
+        "tx5": {
+          "elapsed_ms": 118.75771508131291,
+          "charged_cpu_ms": 71.5906541731101,
+          "off_cpu_ms": 31.827160328493893,
+          "interrupt_ms": 15.339900579708921
+        },
+        "tx4_median_ms": 130.0,
+        "tx5_median_ms": 118.0,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 56.237306385820084
+          },
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 6.1580116787594035
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.509963879205145
+          },
+          "GemDrawingBorrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 52.08308840079374
+          },
+          "GemSolidFill": {
+            "calls": 59.0,
+            "charged_cpu_ms": 19.705948207281768
+          },
+          "GemWidgetText": {
+            "calls": 3.0,
+            "charged_cpu_ms": 2.683287072213866
+          },
+          "VbxeOwnerFence": {
+            "calls": 32.0,
+            "charged_cpu_ms": 1.7605457261445105
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 8.0,
+            "charged_cpu_ms": 9.224982931080095
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.08991784833401233
+          },
+          "_Mul16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.01732853664966118
+          },
+          "_VbxeUpload": {
+            "calls": 8.0,
+            "charged_cpu_ms": 6.693825397519051
+          },
+          "blit_glyph_run": {
+            "calls": 3.0,
+            "charged_cpu_ms": 2.2890713802729805
+          },
+          "borrow_callback": {
+            "calls": 8.0,
+            "charged_cpu_ms": 33.927088575594524
+          },
+          "drain": {
+            "calls": 16.0,
+            "charged_cpu_ms": 9.389888902829094
+          },
+          "drawing_borrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 51.92799147799225
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.1891250422317734
+          },
+          "fence_owner": {
+            "calls": 16.0,
+            "charged_cpu_ms": 9.871293530444705
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 4.8826978714246305
+          },
+          "glyph_record": {
+            "calls": 18.0,
+            "charged_cpu_ms": 1.4254897593528988
+          },
+          "idle": {
+            "calls": 32.0,
+            "charged_cpu_ms": 1.379415422973239
+          },
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 56.1095244338123
+          },
+          "pointer_erase": {
+            "calls": 8.0,
+            "charged_cpu_ms": 0.07937106492674109
+          },
+          "solid_record": {
+            "calls": 145.0,
+            "charged_cpu_ms": 13.750174448355533
+          },
+          "start": {
+            "calls": 8.0,
+            "charged_cpu_ms": 0.38468035657478816
+          },
+          "vbxe_widget_text_run": {
+            "calls": 3.0,
+            "charged_cpu_ms": 2.472568730302607
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.514029641888657
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.10724638498367349,
+          "app_other": 0.788030798769064,
+          "borrow_setup_cursor": 0.9501820136579642,
+          "command_build": 21.99501958755419,
+          "completion_poll": 1.3794154229732418,
+          "display_ownership": 7.667975557964544,
+          "event_poll": 3.1891250422317734,
+          "renderer": 11.932068988039738,
+          "submission_fence": 1.4646014330844013,
+          "update": 6.514029641888658,
+          "upload": 6.693825397519051,
+          "vdi_aes_preparation": 4.026436033018551,
+          "visibility": 4.8826978714246305
+        }
+      }
+    ]
+  },
+  "feedback": {
+    "tx4": {
+      "path": "build/gem-rendering-tx5/../gem-rendering-tx4/feedback-final/feedback-results.json",
+      "sha256": "bfebadec613fa6d258b9be2dab8992f614f08fa137604868ce5b4ee0a5809c84",
+      "measurements": {
+        "panel": {
+          "model_address": 393482,
+          "samples_ms": [
+            100.30124940264653,
+            80.0790550608349,
+            140.21108603440473,
+            100.28771643930818,
+            80.33167037648423,
+            100.28771643930818,
+            100.28884418625304,
+            100.28771643930818,
+            100.28771643930818,
+            80.0790550608349,
+            140.21108603440473,
+            80.07849118736247,
+            100.28771643930818,
+            80.0790550608349,
+            80.0790550608349,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            120.49919718514363,
+            80.33167037648423,
+            80.07961893430733,
+            100.28884418625304,
+            80.33167037648423,
+            100.28828031278061,
+            100.28828031278061,
+            80.33167037648423,
+            140.4552432479676,
+            100.28884418625304,
+            80.33167037648423,
+            100.28828031278061,
+            100.28828031278061,
+            80.08018280777976,
+            100.28771643930818,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            120.24207088171485,
+            100.28828031278061,
+            80.08018280777976
+          ],
+          "median_ms": 100.28828031278061,
+          "max_ms": 140.4552432479676,
+          "scope": "40 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+          "count": 40,
+          "p95_ms": 140.21108603440473
+        },
+        "files": {
+          "samples_ms": [
+            100.28828031278061,
+            100.28771643930818,
+            100.2950467944498,
+            100.28828031278061,
+            100.28828031278061,
+            160.42425840065746,
+            120.24545412254945,
+            100.28828031278061,
+            100.28828031278061,
+            100.28884418625304,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            160.41072543731912,
+            120.49750556472632,
+            100.28828031278061,
+            100.28828031278061,
+            100.29448292097737,
+            100.28771643930818,
+            100.28771643930818,
+            100.28828031278061,
+            100.29448292097737,
+            100.29222742708764,
+            180.62051456273724,
+            120.24432637560457,
+            100.04525084616263,
+            100.28884418625304,
+            100.28771643930818,
+            100.28771643930818,
+            100.04581471963506,
+            100.28940805972549,
+            100.28828031278061,
+            160.41016156384669,
+            120.49750556472632,
+            100.29617454139465,
+            100.2950467944498,
+            100.28828031278061,
+            100.28997193319792,
+            100.28771643930818
+          ],
+          "count": 40,
+          "median_ms": 100.28828031278061,
+          "p95_ms": 160.41072543731912,
+          "max_ms": 180.62051456273724,
+          "scope": "Release submission to matching two-row scanout; frame-granular polling after state change."
+        }
+      }
+    },
+    "tx5": {
+      "path": "build/gem-rendering-tx5/feedback/feedback-results.json",
+      "sha256": "29f0af841d52e842e4124fa1ca83da273694b3490bf99641a19579ddd371bae5",
+      "measurements": {
+        "panel": {
+          "model_address": 393482,
+          "samples_ms": [
+            80.07792731389003,
+            80.0790550608349,
+            100.28828031278061,
+            80.07792731389003,
+            80.0790550608349,
+            100.28771643930818,
+            80.07961893430733,
+            80.0790550608349,
+            100.28884418625304,
+            80.08018280777976,
+            80.0790550608349,
+            100.04581471963506,
+            80.07849118736247,
+            80.0790550608349,
+            100.28771643930818,
+            80.0790550608349,
+            80.08525766903165,
+            100.28828031278061,
+            80.07961893430733,
+            80.0790550608349,
+            100.28828031278061,
+            80.0790550608349,
+            80.0790550608349,
+            100.28715256583575,
+            80.07849118736247,
+            80.33110650301178,
+            100.28771643930818,
+            80.08525766903165,
+            80.33110650301178,
+            100.28828031278061,
+            80.0790550608349,
+            80.33054262953935,
+            100.28884418625304,
+            80.0790550608349,
+            80.33110650301178,
+            100.28884418625304,
+            80.33167037648423,
+            80.33730911120854,
+            100.28771643930818,
+            80.33110650301178
+          ],
+          "median_ms": 80.33054262953935,
+          "max_ms": 100.28884418625304,
+          "scope": "40 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+          "count": 40,
+          "p95_ms": 100.28884418625304
+        },
+        "files": {
+          "samples_ms": [
+            100.28771643930818,
+            100.28771643930818,
+            100.28771643930818,
+            100.04355922574533,
+            100.28997193319792,
+            120.25785933894294,
+            180.61995068926484,
+            120.2482734899116,
+            100.2933551740325,
+            100.28997193319792,
+            100.29786616181195,
+            100.28828031278061,
+            100.2933551740325,
+            100.28997193319792,
+            100.28828031278061,
+            160.41072543731912,
+            120.24545412254945,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            120.24489024907702,
+            160.41692804551585,
+            120.24545412254945,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28997193319792,
+            100.28828031278061,
+            100.28828031278061,
+            100.2950467944498,
+            160.41072543731912,
+            120.4969416912539,
+            100.28884418625304,
+            100.28828031278061,
+            100.0463785931075,
+            100.2933551740325
+          ],
+          "count": 40,
+          "median_ms": 100.28884418625304,
+          "p95_ms": 160.41072543731912,
+          "max_ms": 180.61995068926484,
+          "scope": "Release submission to matching two-row scanout; frame-granular polling after state change."
+        }
+      }
+    }
+  },
+  "resident_c_payload_bytes": {
+    "tx4": {
+      "code": 155991,
+      "data": 41986
+    },
+    "tx5": {
+      "code": 157022,
+      "data": 42311
+    }
+  },
+  "artifact": {
+    "path": "build/gem-rendering-tx5/demo/exec816-demo.zip",
+    "bytes": 540260,
+    "sha256": "37554362f59cd5c6b6d2b06e5a607f00fa6c5ccbf0c9c9efc7388a920cb4084b"
+  }
+}

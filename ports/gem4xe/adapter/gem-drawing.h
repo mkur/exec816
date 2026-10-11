@@ -48,4 +48,12 @@ void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
  * renderer code, never a borrowed application function pointer. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context);
+/* Solid replacement only: the caller splits visibility intersections at the
+ * returned row capacity. These taller units share the ordinary borrow lifecycle. */
+UWORD GemSolidRows(UWORD left,UWORD right);
+UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD pen);
+/* Trusted, nonempty screen/redirected-strip geometry; append to the current
+ * batch and split at its existing work limit, without submitting each fill. */
+void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 #endif

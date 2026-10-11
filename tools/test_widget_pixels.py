@@ -23,6 +23,15 @@ def expected(stage):
     import vdiref as v
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.fill_rect(0,0,639,239,3)
+    if stage>=23:
+        cases=((20,20,120,70,4),(21,20,121,70,4),
+            (20,20,21,52,0),(21,20,22,52,2),(20,20,22,53,1),
+            (0,0,256,31,8),(0,0,256,32,0),(0,0,256,33,2),
+            (1,10,101,84,6),(1,10,101,85,6),(0,0,640,240,8),
+            (639,0,640,240,0),(0,239,640,240,1),(17,17,624,49,5))
+        l,t,r,b,pen=cases[stage-23]
+        device.dev.fill_rect(l,t,r-1,b-1,pen)
+        return bytes(device.dev.s.mem[:76800])
     if 17<=stage<=21:
         if stage>=20:device.dev.fill_rect(17,42,624,57,8)
         return bytes(device.dev.s.mem[:76800])
@@ -139,7 +148,7 @@ def run(out,mode,replay=False):
             def before(b):
                 b.profile_start()
                 previous=b.eval_expr('@clk') & 0xffffffff
-                for stage in range(1,23):
+                for stage in range(1,37):
                     marker=p['labels']['native_nmi'];condition='dw($%x)=%d'%(f['symbols']['WidgetPixelStage'],stage)
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
                     run_to(b,marker,condition=condition,frame_limit=6000,timeout=120)

@@ -174,7 +174,10 @@ void GemWidgetFill(uint16_t mode,uint16_t style,uint16_t pen,
     extern void GemWidgetStipple(uint16_t,uint16_t,uint16_t,uint16_t);
     if (mode==3) vbxe_xor_rect(left,top,right-1,bottom-1);
     else if (style==2) GemWidgetStipple(left,top,right,bottom);
-    else dev_fill_rect(left,top,right-1,bottom-1,style==0 ? 0 : pen);
+    else {
+        extern void GemSolidFill(uint16_t,uint16_t,uint16_t,uint16_t,uint16_t);
+        GemSolidFill(left,top,right,bottom,style==0 ? 0 : pen);
+    }
 }
 void GemWidgetText(int16_t x,int16_t y,const int16_t *glyphs,uint16_t count,
     uint16_t colour,uint16_t left,uint16_t top,uint16_t right,uint16_t bottom)
@@ -222,20 +225,18 @@ void GemVdiPaint(void *context)
     WORD x=u->x,middle=0;
     /* The admitted intersection lies inside this bounded text chunk. Skip
      * hidden cells arithmetically, then pack only its complete middle. */
-    if (u->operation==8) {
-        first=(UWORD)(u->left-x)>>3;
-        x+=(WORD)(first<<3);
-        middle=x+(x<u->left ? 8:0);
-        if (u->top==u->y-6 && u->bottom==u->y+2 && middle<u->right)
-            count=(UWORD)(u->right-middle)>>3;
-        if (count) {
-            extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
-            uint8_t *text=(uint8_t *)intin;
-            UWORD start=first+(x<u->left);
-            for (i=0;i<count;++i) text[i]=(uint8_t)u->glyphs[start+i];
-            vbxe_text_run(middle,u->top,text,count,u->textColor,0);
-            if (x==u->left && middle+(count<<3)==u->right) return;
-        }
+    first=(UWORD)(u->left-x)>>3;
+    x+=(WORD)(first<<3);
+    middle=x+(x<u->left ? 8:0);
+    if (u->top==u->y-6 && u->bottom==u->y+2 && middle<u->right)
+        count=(UWORD)(u->right-middle)>>3;
+    if (count) {
+        extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
+        uint8_t *text=(uint8_t *)intin;
+        UWORD start=first+(x<u->left);
+        for (i=0;i<count;++i) text[i]=(uint8_t)u->glyphs[start+i];
+        vbxe_text_run(middle,u->top,text,count,u->textColor,0);
+        if (x==u->left && middle+(count<<3)==u->right) return;
     }
     nativeWorkstation=vwk;
     vwk.clip=1;
@@ -244,27 +245,21 @@ void GemVdiPaint(void *context)
     vwk.text_color=u->textColor; vwk.fill_color=u->fillColor;
     vwk.wrt_mode=0; vwk.fill_style=1; vwk.fill_per=0;
     vwk.h_align=vwk.v_align=vwk.text_effects=0;
-    if (u->operation==8) {
-        if (count) {
-            /* The native run fences before these edges are queued. Drawing
-             * both edges afterwards lets them share a single generic list;
-             * clipped replacement glyphs clear only their own paper pixels. */
-            if (x<u->left) dev_glyph(u->glyphs[first],x,u->top,0);
-            i=first+(x<u->left)+count;
-            middle+=(WORD)(count<<3);
-            if (middle<u->right) dev_glyph(u->glyphs[i],middle,u->top,0);
-        } else {
-            /* Vertical cuts or no complete cell: retain the clipped donor
-             * path, passing only the cells that actually meet this clip. */
-            contrl[3]=((UWORD)(u->right-x)+7)>>3;
-            ptsin[0]=x; ptsin[1]=u->y;
-            for (i=0;i<contrl[3];++i) intin[i]=u->glyphs[first+i];
-            vdi_v_gtext();
-        }
+    if (count) {
+        /* The native run fences before these edges are queued. Drawing
+         * both edges afterwards lets them share a single generic list;
+         * clipped replacement glyphs clear only their own paper pixels. */
+        if (x<u->left) dev_glyph(u->glyphs[first],x,u->top,0);
+        i=first+(x<u->left)+count;
+        middle+=(WORD)(count<<3);
+        if (middle<u->right) dev_glyph(u->glyphs[i],middle,u->top,0);
     } else {
-        ptsin[0]=u->left; ptsin[1]=u->top;
-        ptsin[2]=u->right-1; ptsin[3]=u->bottom-1;
-        vdi_vr_recfl();
+        /* Vertical cuts or no complete cell: retain the clipped donor
+         * path, passing only the cells that actually meet this clip. */
+        contrl[3]=((UWORD)(u->right-x)+7)>>3;
+        ptsin[0]=x; ptsin[1]=u->y;
+        for (i=0;i<contrl[3];++i) intin[i]=u->glyphs[first+i];
+        vdi_v_gtext();
     }
     dev_flush();
     vwk=nativeWorkstation;

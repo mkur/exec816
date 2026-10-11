@@ -95,7 +95,7 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
     struct ExecVDIWorkstation *w=c->workstation;
     struct AESWindowView *v=c->view;
     struct ExecVDIUnit *u=&w->unit;
-    UWORD i,status;
+    UWORD i,status,rows;
     LONG l,t,r,b,y;
     if (w->clipped) {
         if (left<w->clip[0]) left=w->clip[0];
@@ -111,10 +111,13 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
         r=right<v->visible[i].right ? right:v->visible[i].right;
         b=bottom<v->visible[i].bottom ? bottom:v->visible[i].bottom;
         if (l>=r || t>=b) continue;
-        for (y=t;y<b;y+=EXEC_VDI_STRIP_ROWS) {
+        rows=u->operation==11 ? GemSolidRows((UWORD)l,(UWORD)r):EXEC_VDI_STRIP_ROWS;
+        for (y=t;y<b;y+=rows) {
             u->left=l; u->right=r; u->top=y;
-            u->bottom=y+EXEC_VDI_STRIP_ROWS<b ? y+EXEC_VDI_STRIP_ROWS:b;
-            status=GemDrawingBorrow(&w->grant,u->left,u->top,u->right,u->bottom,GemVdiPaint,u);
+            u->bottom=y+rows<b ? y+rows:b;
+            status=u->operation==11 ?
+                GemDrawingSolidBorrow(&w->grant,u->left,u->top,u->right,u->bottom,u->fillColor):
+                GemDrawingBorrow(&w->grant,u->left,u->top,u->right,u->bottom,GemVdiPaint,u);
             if (status!=DISPLAY_OK) { c->diagnostic=AES_DISPLAY_ERROR; return; }
         }
     }

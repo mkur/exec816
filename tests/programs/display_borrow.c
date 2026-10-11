@@ -72,8 +72,12 @@ static void worker(UWORD who)
     Forbid(); ++AESReady; Signal((struct Task *)DisplayController,DisplayWake); Permit();
     while (!DisplayGo) Wait(grants[who].mask);
     for (i = 0; i < (DisplayFaultVariant ? 1 : 24); ++i) {
-        CHECK(GemDrawingBorrow(&grants[who],563+who*40,181,597+who*40,213,paint,&who)
-            == (DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
+        UWORD status;
+        if (!who) {
+            if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
+            status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);
+        } else status=GemDrawingBorrow(&grants[who],603,181,637,213,paint,&who);
+        CHECK(status==(DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
         ++DisplayIterations[who];
     }
     SetSignal(0,grants[who].mask);

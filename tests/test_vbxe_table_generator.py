@@ -33,13 +33,21 @@ class VbxeTables(unittest.TestCase):
                 self.assertLessEqual(count*cost, remaining)
                 self.assertTrue(count==64 or (count+1)*cost>remaining)
         self.assertEqual(data['GemScreenRows'][1][240], 76800)
+        for left in range(640):
+            for right in range(left+1,641):
+                whole=(right//2)-((left+1)//2)
+                edges=left%2+right%2
+                cost=whole*2+edges*6
+                limit=data['GemFillRows'][1][cost//2]
+                self.assertLessEqual(cost*limit,8192)
+                self.assertTrue(limit==240 or cost*(limit+1)>8192)
 
     def test_reproducible_upper_memory_payload(self):
         with tempfile.TemporaryDirectory() as folder:
             p = Path(folder)/'tables.h'
             first = generate(p)
             self.assertEqual(generate(p), first)
-            self.assertEqual(first['payload_bytes'], 37132)
+            self.assertEqual(first['payload_bytes'], 37457)
             self.assertIn('static const ULONG GemScreenRows[256]', p.read_text())
 
 

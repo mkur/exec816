@@ -357,3 +357,55 @@ Reproduce with the recorded release-host wrapper and `tools/test_aes_server.py
 `tools/trace_g4bench.py --load idle`. The new `tools/measure_gem_feedback.py
 --bundle <demo> --output <fresh-directory>` applies the same physical input
 schedule to either archived package and checks clean shutdown.
+
+## TX5: direct, work-bounded solid fills
+
+Solid VDI rectangles now bypass donor workstation setup. A narrow solid-fill
+borrow shares the existing ownership, pointer, fence and cleanup lifecycle;
+generic callbacks retain their 32-row ceiling. The trusted encoder appends one
+aligned fill plus AND/OR pairs for partial bytes, at most five records per
+fragment. Uniform widget fills reuse it without changing their border algorithm.
+XOR, stipple, generic geometry and presenter scratch remain unchanged.
+
+A generated 325-byte row-capacity table bounds fragments by 8,192 accesses,
+including odd edges. Work is computed after choosing the height. The lookup
+payload is now 37,457 bytes inside its existing bank reservation.
+[TX5 evidence](../development/gem-rendering-tx5.json) records raw/optimized
+table probes, exhaustive host interval/capacity checks, optimized public VDI,
+object and 36 primitive/widget pixel scenes. They cover partial-byte widths,
+colour zero, screen edges, budget boundaries, full-screen fills, clipping,
+preemption, pointer restoration, scratch publication and failure/reopen.
+Two borrowers now mix a 50-row solid fill and a 32-row generic callback;
+ownership, stack guards, clean exit and both timeout cleanup variants pass.
+The host suite passes 452 tests with four historical-source skips.
+
+| Idle cycle-trace mean | TX4 elapsed / CPU | TX5 elapsed / CPU |
+| --- | ---: | ---: |
+| 100×50 bar | 28.125 / 16.722 ms | 19.664 / 9.494 ms |
+| Five-object dialog | 130.516 / 81.805 ms | 118.758 / 71.591 ms |
+
+The bar uses one borrow, upload and launch instead of four. Its alternating
+positions average three records (one aligned or five with two partial edges).
+The dialog still has 59 logical fills and eight borrows/uploads/launches;
+recording `GemSolidFill` prevents mistaking renamed routines for eliminated work.
+Text controls are essentially unchanged.
+
+Matched 40-sample Panel feedback median/p95 improves from 100.288/140.211 to
+80.331/100.289 ms. Files selection remains 100.289/160.411 ms. These measure
+physical input to independently matched scanout with frame-granular polling.
+Repeated-fill competition and the final combined interaction gate are measured
+in TX7; these idle application results alone do not close that gate.
+
+Reservation changes are **0 fixed, 0 per public Task and 0 idle bank-zero bytes**,
+including guards, alignment and unused capacity; VRAM growth is **0 bytes**.
+Resident C payload adds 1,031 code and 325 data bytes. The unchanged compiler
+pin uses its release host executable and optimized guest code. This is
+development validation, not hosted-system or real-hardware qualification.
+
+The intermediate OF816 ZIP is `build/gem-rendering-tx5/demo/exec816-demo.zip`
+(540,260 bytes), SHA-256
+`37554362f59cd5c6b6d2b06e5a607f00fa6c5ccbf0c9c9efc7388a920cb4084b`.
+Reproduce with the recorded release-host wrapper, `test_vbxe_tables.py` in
+raw/opt, `test_widget_pixels.py`, `test_aes_server.py --suite vdi` and
+`--suite objects`, and `test_display_borrow.py`. Matched application probes use
+`trace_g4bench.py --load idle` and `measure_gem_feedback.py` with fresh outputs.

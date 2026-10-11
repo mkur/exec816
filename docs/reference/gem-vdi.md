@@ -37,9 +37,14 @@ explicit word count. Glyph indices are 0–255, a caller obligation. Strings are
 not truncated at a fixed call-size limit.
 
 The binding releases [physical access](display.md#delegated-renderer-access)
-between at most 16-row fill strips or 80-glyph text chunks. Each admitted unit
-selects private attributes, renders through the existing backend, fences,
-restores native attributes and overlays, then releases access. Shared parameter
+between solid-fill units bounded by 8,192 estimated bus accesses or 80-glyph
+text chunks. A solid fill costs two accesses per complete packed byte and six
+per partial outer byte per row; a compact row-capacity lookup includes both
+edges before choosing its height. A 100×50 rectangle fits one unit at either
+X parity. Solid fills encode constant-source records directly, without selecting
+donor workstation state; partial bytes preserve their neighbouring pixels.
+Text selects private attributes when needed. Both paths fence, restore overlays
+and release access before the next unit. Shared parameter
 scratch and the 92-byte native-workstation save area remain protected by that
 ownership. No warm drawing/attribute call uses presenter RPC, and no physical
 unit waits for an AES reply or an application event.

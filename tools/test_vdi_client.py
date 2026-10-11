@@ -17,9 +17,9 @@ def extract_with_preemption(folder):
     needle='    vwk.h_align=vwk.v_align=vwk.text_effects=0;'
     require(source.count(needle)==1,'Private workstation selection boundary changed')
     source='extern void VDIYield(void);\nextern void VDITextYield(void);\n'+source.replace(needle,needle+'\n    VDIYield();')
-    fast='            vbxe_text_run(middle,u->top,text,count,u->textColor,0);'
+    fast='        vbxe_text_run(middle,u->top,text,count,u->textColor,0);'
     require(source.count(fast)==1,'VDI text upload boundary changed')
-    source=source.replace(fast,'            VDITextYield();\n'+fast)
+    source=source.replace(fast,'        VDITextYield();\n'+fast)
     path.write_text(source)
     device=folder/'src/vdi/dev_vbxe.c'; device_source=device.read_text()
     glyph='void dev_glyph(WORD ch, WORD cx, WORD cy, WORD overlay)\n{'
