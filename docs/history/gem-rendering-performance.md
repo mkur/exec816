@@ -195,3 +195,104 @@ The native drawing, VDI and console entrypoints are the same as TX1, using
 selected regressions use `tools/test_gem_display.py --mode opt --case map-nmi
 --case busy-timeout --case unquiesced`, through the recorded local
 `build/gem-rendering-tx2/display_current.py` manifest wrapper.
+
+## TX3: complete cells inside horizontal clips
+
+Caller-local VDI now skips hidden characters by cell offset and sends the
+complete middle of a full-height text intersection through the native uploader.
+Only the one or two partial edge cells use the existing clipped replacement
+glyph routine, including its clipped paper fill. There is no separate
+background pass over the whole string and no new per-glyph ownership or
+validation call.
+
+The native middle completes first; both edges are then queued together in a
+single generic list. Adjacent cells preserve each other's nibbles, so this
+ordering keeps correct replacement pixels while avoiding a separate launch
+for each edge. The entire operation remains inside its original display borrow,
+with the existing pointer/outline handling and synchronous completion. This
+does not make publication atomic or close the final interaction-latency gate.
+
+A clip exactly on cell boundaries uses only the native run. A vertical cut or
+an intersection with no complete cell retains the donor path, narrowed to the
+characters that actually intersect it. A one-pixel clip inside a glyph draws
+that glyph once; an empty intersection never enters the renderer. The native
+bitmap clipping entry is unchanged by this caller-local VDI slice.
+
+There is no public or private packet layout change, new buffer, lookup table,
+font atlas or reservation. Fixed bank-zero, each public Task's bank-zero
+storage, private idle storage and VRAM reservations all change by **zero bytes**,
+including guards, alignment and unused capacity. Generic list and native text
+bounds are unchanged.
+
+The optimized two-client VDI fixture passes **226 checks**, including an
+independent full-screen pixel oracle over nonuniform surrounding colours.
+Twelve focused cases cover left/right/both cuts, exact cell boundaries,
+one-pixel and two-partial-cell clips, an empty intersection, vertical clipping,
+a negative starting X, bank-crossing named input, both X parities and
+hardware-zero ink. Target counters require one native run where complete cells
+exist and only one or two device glyph calls for horizontal partial edges.
+The vertical-cut case draws twelve clipped cells through the fallback; the
+one-pixel case draws one glyph; the empty case draws none.
+
+The original 80-word parameter-block, glyph-255, multi-chunk negative-X,
+covered/exposed window, two-client preemption and pointer-restoration cases
+remain in that fixture. After moving the pointer away from the new clipped
+scene, the restored pixels also match independently. The client stack peaks
+are 826 bytes each, leaving 230 bytes above each floor; these are measured
+fixture peaks, not worst-case bounds. Ownership and OS restoration pass.
+There is no ABI/bridge/assembly change, so this slice uses optimized behavioral
+checks without duplicating the integration scene in raw mode.
+
+[TX3 development evidence](../development/gem-rendering-tx3.json) records the
+inputs, route counters, pixel comparisons, stack observations and packaged
+measurements. The compiler, guest optimization, ROM and PAL, 8× 65816, VBXE
+FX 1.26 configuration match TX2. Idle elapsed and Task CPU are cycle-trace
+means; medians are three VBI-quantized batch averages. Values below are
+milliseconds, TX2 → TX3.
+
+| Workload | Idle elapsed mean | Task CPU mean | Idle median | Counter median |
+| --- | ---: | ---: | ---: | ---: |
+| 100×50 bar | 28.003 → 28.116 | 16.654 → 16.691 | 27.8 → 28.0 | 31.6 → 31.4 |
+| 39 characters, even X | 21.624 → 21.806 | 11.469 → 11.465 | 21.6 → 21.8 | 23.8 → 23.8 |
+| 39 characters, odd X | 22.032 → 22.034 | 11.655 → 11.665 | 22.0 → 22.0 | 24.4 → 24.2 |
+| Clipped text | 38.284 → 27.415 | 25.172 → 16.300 | 38.2 → 27.4 | 43.2 → 30.4 |
+| Five-object dialog | 144.547 → 144.544 | 93.180 → 93.142 | 144.0 → 144.0 | 157.0 → 156.0 |
+
+Clipped text uses **35.2% less Task CPU** and **28.4% less idle elapsed time**.
+The unchanged workload includes 282 full-height operations and 18 vertically
+clipped operations across its three samples. Each full-height operation uses
+one native upload for 37 middle characters and one generic upload for the two
+partial edges. Vertical cuts retain all 39 donor glyphs and two generic uploads.
+Across both routes, native uploads average 0.94, generic uploads 1.06 and device
+glyph calls 4.22 per operation, down from 39 glyph calls in TX2. Donor
+`vdi_v_gtext` calls fall from 1 to 0.06. Every operation still uses one borrow.
+
+Total launches increase from 1.06 to 2 per operation: the native middle and
+generic edges are separate lists. The measured CPU and elapsed reductions
+justify that tradeoff; this result does not depend on fewer launches. The
+other workloads' Task CPU costs are essentially unchanged. TX4, small AES
+object units, is next; the combined interaction-latency and flicker gate remains
+TX7.
+
+The host suite passes 452 tests with four historical-source skips. Both
+packaged benchmark scenarios pass through normal application launch and clean
+shutdown. These are development checks, not hosted-system qualification.
+The refreshed OF816 demo is `build/gem-rendering-tx3/demo/exec816-demo.zip`
+(539,224 bytes), SHA-256
+`d7966959561c69d60bb9cf75dcb68012f83c08fd25f4a605fdc9a96dc4e3c7a9`.
+Launch with `build/gem-rendering-tx3/demo/launch-altirra.command`.
+The TX2 package remains intact for comparison.
+
+Reproduction uses the same pinned compiler's release host executable as TX2,
+through the recorded `build/gem-rendering-tx3/host_release.py` wrapper:
+
+```sh
+python3 build/gem-rendering-tx3/host_release.py tools/test_aes_server.py \
+  --suite vdi --mode opt --output build/gem-rendering-tx3/vdi-clips-opt
+python3 build/gem-rendering-tx3/host_release.py tools/build_demo.py \
+  --gem-desktop --format sdfs --sector-bytes 256 --system-kib 720 \
+  --output build/gem-rendering-tx3/demo
+python3 tools/trace_g4bench.py --bundle build/gem-rendering-tx3/demo \
+  --output build/gem-rendering-tx3/trace-idle --load idle
+python3 tools/measure_g4bench.py --bundle build/gem-rendering-tx3/demo --load counter
+```

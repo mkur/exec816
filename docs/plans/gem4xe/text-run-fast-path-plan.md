@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Drawing traces](../../history/g4bench-drawing-traces.md) ·
 [Earlier text optimization](text-viewer-performance-plan.md)
 
-Status: TX1–TX2 implemented and development-tested; TX3–TX7 pending. Continue in
+Status: TX1–TX3 implemented and development-tested; TX4–TX7 pending. Continue in
 executable slices, committing each after its focused development checks pass.
 See [slice results](../../history/gem-rendering-performance.md).
 
@@ -203,7 +203,7 @@ colour-zero behavior and drawing order. A narrow clip inside one glyph draws
 that glyph once. Retain the existing fallback if the clip cuts the glyph rows
 vertically, or if no complete middle remains.
 
-The clipped G4BENCH row currently costs 27.682 ms of Task CPU and 41.618 ms
+The original clipped G4BENCH trace costs 27.682 ms of Task CPU and 41.618 ms
 elapsed, dispatching all 39 glyphs individually. For its full-height rows,
 only the two end cells need the partial-glyph path. Avoid a new clip engine,
 per-glyph ownership calls or a separate background pass over the entire string.

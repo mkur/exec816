@@ -7,6 +7,7 @@
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD VDIPhase,VDIGo,VDIStage[2],VDICommand[2],VDIUnits[2],VDITextUnits[2];
+volatile UWORD VDIGlyphUnits[2],VDIClipNative[12],VDIClipGlyphs[12];
 static struct Task *root,*tasks[2];
 static ULONG wake,starts[2];
 static char longText[193];
@@ -38,6 +39,54 @@ void VDITextYield(void)
 {
     UWORD who=FindTask(NULL)==tasks[0] ? 0:1;
     if (++VDITextUnits[who]==1) ExecYield();
+}
+
+/* Test-only device-entry count, including the fallback's clipped cells. */
+void VDIGlyphProbe(void)
+{
+    struct Task *task=FindTask(NULL);
+    if (task==tasks[0]) ++VDIGlyphUnits[0];
+    else if (task==tasks[1]) ++VDIGlyphUnits[1];
+}
+
+/* x offset, clip left/right (half-open), native runs, device glyph calls.
+ * Row 9 starts at absolute -5 and reads the existing bank-crossing string. */
+static const WORD clipCases[12][5]={
+    {10,13,106,1,1}, {11,11,104,1,1},
+    {10,13,103,1,2}, {11,14,104,1,2},
+    {10,26,82,1,0}, {11,14,15,0,1},
+    {10,16,20,0,2}, {10,112,120,0,0},
+    {11,14,104,0,12}, {-5,13,103,1,2},
+    {10,13,103,1,2}, {11,14,104,1,2}
+};
+static void draw_clips(WORD handle,WORD window)
+{
+    WORD x,y,w,h,clip[4],all[4]={0,0,639,239};
+    UWORD i,native,glyphs;
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    vs_clip(handle,0,all);
+    /* Nonuniform surroundings distinguish untouched pixels from paper. */
+    for (i=0;i<16;++i) {
+        clip[0]=x+i*24; clip[1]=y;
+        clip[2]=x+i*24+23; clip[3]=y+h-1;
+        vsf_color(handle,i); v_bar(handle,clip);
+    }
+    for (i=0;i<12;++i) {
+        clip[0]=x+clipCases[i][1]; clip[2]=x+clipCases[i][2]-1;
+        clip[1]=y+i*9; clip[3]=y+i*9+7;
+        if (i==8) { clip[1]+=2; clip[3]-=2; }
+        vs_clip(handle,1,clip); vst_color(handle,i>=10 ? 0:6);
+        native=VDITextUnits[1]; glyphs=VDIGlyphUnits[1];
+        v_gtext(handle,i==9 ? -5:x+clipCases[i][0],y+i*9+6,
+                i==9 ? (char *)crossText:"A W09 BC DEF");
+        CHECK(ExecAESDiagnostic()==AES_OK);
+        VDIClipNative[i]=VDITextUnits[1]-native;
+        VDIClipGlyphs[i]=VDIGlyphUnits[1]-glyphs;
+        CHECK(VDIClipNative[i]==clipCases[i][3]);
+        CHECK(VDIClipGlyphs[i]==clipCases[i][4]);
+    }
+    CHECK(wind_update(END_UPDATE));
 }
 
 static void draw(UWORD who,WORD handle,WORD window)
@@ -165,6 +214,7 @@ static void worker(UWORD who)
                 CHECK(wind_update(END_UPDATE));
             }
         } else if (command==4) CHECK(wind_set(window,WF_CXYWH,201,65,400,140));
+        else if (command==6) draw_clips(handle,window);
         else if (command==9) break;
         Forbid(); VDIStage[who]=command; Signal(root,wake); Permit();
     }
@@ -220,6 +270,9 @@ UWORD AESRun(void)
     while (VDIStage[0]!=5 || VDIStage[1]!=5) Wait(wake);
     VDIPhase=5;
     while (VDIGo<5) ExecYield();
+    issue(1,6); while (VDIStage[1]!=6) Wait(wake);
+    VDIPhase=6;
+    while (VDIGo<6) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

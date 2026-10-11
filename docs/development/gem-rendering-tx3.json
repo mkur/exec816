@@ -1,0 +1,1051 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "TX3",
+  "date": "2026-10-11",
+  "scope": "Caller-local VDI complete middle under horizontal clipping; optimized independent pixels, routing counts, two-client preemption and overlay/ownership/stack checks, packaged idle/counter G4BENCH. No ABI or native assembly changes.",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "private_idle": 0,
+    "includes_guards_alignment_unused_capacity": true
+  },
+  "vram_reserved_delta": 0,
+  "memory_comparison": {
+    "status": "pass",
+    "baseline": "build/gem-rendering-tx2/demo/memory.json",
+    "candidate": "build/gem-rendering-tx3/demo/memory.json",
+    "equal": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations",
+      "phase_reservations"
+    ]
+  },
+  "validation": {
+    "host": {
+      "status": "pass",
+      "tests": 452,
+      "skipped": 4,
+      "log_sha256": "ef52a64e1d55de697f7620874668125e6a0ef82b676a2c22bf83b05393fb814a"
+    },
+    "vdi": {
+      "result_sha256": "379dec8b7e9aa7c9c2cf54a7989e1a8dfd62ecf33d3ebe985a17b79c3b9ffd39",
+      "status": "pass",
+      "checks": 226,
+      "image_sha256": "2150e8c7f7b16f878119d8e4a1bbda3ce2b14d94c55d1beb314d22a5b4fa60d1",
+      "xex_sha256": "e5e4b4952c805168c6e85c520c13f8311654200d3e51105ca8e2a682bb3527ad",
+      "compiler_profile": "release",
+      "compiler_binary_sha256": "cf0572df8649cfd37d4649fb3f7023f5b767115d5ccb0a7a3aeea4d11df64807",
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 149,
+          "remaining_above_floor": 1131
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 826,
+          "remaining_above_floor": 230
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 826,
+          "remaining_above_floor": 230
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 674,
+          "remaining_above_floor": 1630
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "fast_text_units": [
+        7,
+        7
+      ],
+      "backend_units": [
+        12,
+        12
+      ],
+      "clip_native_runs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "clip_device_glyphs": [
+        1,
+        1,
+        2,
+        2,
+        0,
+        1,
+        2,
+        0,
+        12,
+        2,
+        2,
+        2
+      ],
+      "vdi_pixels": "59c27fa66fbf0160d8fbb9a1a0f4434c602eaceb59d62d1303151a67a38a2850",
+      "covered_pixels": "dc66354691947946f56e1a99cd7ec81e0fffe5872a0c9a25a6e8c829c30d3279",
+      "exposed_pixels": "b1c585bdd71ad5d58ebb0ecdc66ef950b7002479a7bd9d2a48dab51a954f0a75",
+      "cursor_restored_pixels": "b1c585bdd71ad5d58ebb0ecdc66ef950b7002479a7bd9d2a48dab51a954f0a75",
+      "clip_pixels": "e3445e1fd02428864aad9502d47e9662c2ad8cfa7e6d359d87d670e99f93870e",
+      "clip_cursor_restored_pixels": "5ebaef3158318580e3be1ef27001f00c4d08cc04f860e15867f2928d2342685d",
+      "native_checks": 4
+    }
+  },
+  "host_compiler": {
+    "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "profile": "release",
+    "wrapper_sha256": "0f7702c2289df570f3d1f87f6261417457750c1e1fc8f64855d8afc6af6d001f",
+    "note": "Same pinned compiler and optimized host executable used by TX2; guest optimization enabled. No compiler source override."
+  },
+  "benchmark": {
+    "clipped_workload": {
+      "operations": 300,
+      "full_height_operations": 282,
+      "vertically_clipped_operations": 18,
+      "note": "Unchanged benchmark: 94% full-height rows use a native middle and two partial edges; 6% vertical cuts retain all 39 donor glyphs. Counts are averages across both routes."
+    },
+    "baseline_record": "docs/development/gem-rendering-tx2.json",
+    "baseline_record_sha256": "bd921bfae9f7df05db5e0cc06cb2c4fe95b271240122757325e1a29858a96f98",
+    "idle_trace": {
+      "path": "build/gem-rendering-tx3/trace-idle",
+      "result_sha256": "f66cbfcd67bb91fbdecaab22b84e6c3bb0fe1f259206e883432a67a487838dae",
+      "trace_sha256": "35e3ef1e76735a8423e1358464c7eb76c9a52056a586fa22b7613354f3705738"
+    },
+    "counter_run": {
+      "path": "build/gem-rendering-tx3/demo/g4bench-counter.json",
+      "sha256": "509819cd430306c7026b6db7323958e81d30aacf051eb0a0406673d00495af47"
+    },
+    "rows": [
+      {
+        "name": "solid bars",
+        "tx2_idle_mean": {
+          "elapsed_ms": 28.002529207471138,
+          "charged_cpu_ms": 16.65374809046598,
+          "off_cpu_ms": 7.7799253525501415,
+          "interrupt_ms": 3.568855764455014
+        },
+        "tx3_idle_mean": {
+          "elapsed_ms": 28.115985249069965,
+          "charged_cpu_ms": 16.690730202049963,
+          "off_cpu_ms": 7.855700314406449,
+          "interrupt_ms": 3.5695547326135486
+        },
+        "tx2_idle_median_ms": 27.8,
+        "tx3_idle_median_ms": 28.0,
+        "tx2_counter_median_ms": 31.6,
+        "tx3_counter_median_ms": 31.4,
+        "samples": [
+          {
+            "sample": 0,
+            "start": 4539657519.375,
+            "end": 4544645134.375,
+            "operations": 100,
+            "elapsed_ms": 2812.3837892015413,
+            "charged_cpu_ms": 1670.8623317013896,
+            "off_cpu_ms": 784.8303234237269,
+            "interrupt_ms": 356.6911340764246
+          },
+          {
+            "sample": 1,
+            "start": 4544804745.875,
+            "end": 4549790268.375,
+            "operations": 100,
+            "elapsed_ms": 2811.203883960478,
+            "charged_cpu_ms": 1669.734091367238,
+            "off_cpu_ms": 784.3132514495072,
+            "interrupt_ms": 357.15654114373274
+          },
+          {
+            "sample": 2,
+            "start": 4549926688.5,
+            "end": 4554912218.125,
+            "operations": 100,
+            "elapsed_ms": 2811.2079015589693,
+            "charged_cpu_ms": 1666.622637546361,
+            "off_cpu_ms": 787.5665194487009,
+            "interrupt_ms": 357.0187445639073
+          }
+        ],
+        "operations": 300,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 12.312275243558098
+          },
+          "DisplayEnter": {
+            "calls": 4.0,
+            "charged_cpu_ms": 3.0260112483359856
+          },
+          "DisplayLeave": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.7638164272318934
+          },
+          "GemDrawingBorrow": {
+            "calls": 4.0,
+            "charged_cpu_ms": 9.259175043711942
+          },
+          "GemVdiPaint": {
+            "calls": 4.0,
+            "charged_cpu_ms": 4.90135691452195
+          },
+          "VbxeOwnerFence": {
+            "calls": 16.0,
+            "charged_cpu_ms": 0.5206140394156955
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 4.0,
+            "charged_cpu_ms": 1.418752881041023
+          },
+          "_Mod16": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.1342404177926515
+          },
+          "_VbxeUpload": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.511678289508617
+          },
+          "blit_mask": {
+            "calls": 12.0,
+            "charged_cpu_ms": 1.6195019399596924
+          },
+          "borrow_callback": {
+            "calls": 4.0,
+            "charged_cpu_ms": 4.924846003805206
+          },
+          "drain": {
+            "calls": 12.0,
+            "charged_cpu_ms": 1.514450902362019
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7983158509062153
+          },
+          "fence_owner": {
+            "calls": 8.0,
+            "charged_cpu_ms": 0.28730998051347256
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2107681507346566
+          },
+          "idle": {
+            "calls": 16.0,
+            "charged_cpu_ms": 0.3288397316526145
+          },
+          "pointer_erase": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.0396546368960269
+          },
+          "start": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.19303198055388351
+          },
+          "v_bar": {
+            "calls": 1.0,
+            "charged_cpu_ms": 10.943679612731698
+          },
+          "vbxe_fill_rect": {
+            "calls": 4.0,
+            "charged_cpu_ms": 2.132336874928635
+          },
+          "vdi_vr_recfl": {
+            "calls": 4.0,
+            "charged_cpu_ms": 2.48874931454131
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6233440328324726
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.1342404177926514,
+          "app_other": 1.980382137052267,
+          "borrow_setup_cursor": 0.3852848759266942,
+          "command_build": 1.619501939959685,
+          "completion_poll": 0.3288397316526177,
+          "display_ownership": 3.7898276755678784,
+          "event_poll": 0.7983158509062152,
+          "renderer": 1.8865911828044637,
+          "submission_fence": 0.7374513482919709,
+          "update": 1.6233440328324726,
+          "upload": 0.5116782895086166,
+          "vdi_aes_preparation": 1.684504569019758,
+          "visibility": 1.2107681507346566
+        }
+      },
+      {
+        "name": "text even X",
+        "tx2_idle_mean": {
+          "elapsed_ms": 21.623853398535903,
+          "charged_cpu_ms": 11.468795946877481,
+          "off_cpu_ms": 7.697063440934488,
+          "interrupt_ms": 2.457994010723934
+        },
+        "tx3_idle_mean": {
+          "elapsed_ms": 21.805716455284596,
+          "charged_cpu_ms": 11.464856585830706,
+          "off_cpu_ms": 7.8905899855131505,
+          "interrupt_ms": 2.450269883940743
+        },
+        "tx2_idle_median_ms": 21.6,
+        "tx3_idle_median_ms": 21.8,
+        "tx2_counter_median_ms": 23.8,
+        "tx3_counter_median_ms": 23.8,
+        "samples": [
+          {
+            "sample": 0,
+            "start": 4563335825.375,
+            "end": 4567218658.375,
+            "operations": 100,
+            "elapsed_ms": 2189.4265265817003,
+            "charged_cpu_ms": 1147.8775097655837,
+            "off_cpu_ms": 796.4344165812633,
+            "interrupt_ms": 245.1146002348533
+          },
+          {
+            "sample": 1,
+            "start": 4567355016.875,
+            "end": 4571202386.625,
+            "operations": 100,
+            "elapsed_ms": 2169.429740660493,
+            "charged_cpu_ms": 1146.1773607620187,
+            "off_cpu_ms": 778.2289861977871,
+            "interrupt_ms": 245.0233937006875
+          },
+          {
+            "sample": 2,
+            "start": 4571350276.625,
+            "end": 4575221461.875,
+            "operations": 100,
+            "elapsed_ms": 2182.858669343186,
+            "charged_cpu_ms": 1145.4021052216092,
+            "off_cpu_ms": 792.5135928748948,
+            "interrupt_ms": 244.94297124668196
+          }
+        ],
+        "operations": 300,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.099110395618327
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.8040741737961419
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.18772193707453985
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.552941375484755
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.420113695687825
+          },
+          "VbxeOwnerFence": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.4404850345630944
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.0465125130571951
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09006210596404272
+          },
+          "_VbxeTextUpload": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.084568803606159
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.4257926063970503
+          },
+          "drain": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.016618760916238005
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7986060107972373
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.07081804413907564
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2253757629325557
+          },
+          "idle": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.39314597697422676
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.009908431647022724
+          },
+          "start": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04806152047542052
+          },
+          "text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.69153771585194
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.705193321670551
+          },
+          "vbxe_text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.7629767256525308
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.5836675458393892
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13657461902123777,
+          "app_other": 2.015439325569743,
+          "borrow_setup_cursor": 0.0963821878008797,
+          "command_build": 0.1573928276234094,
+          "completion_poll": 0.39314597697422726,
+          "display_ownership": 0.9917961108706815,
+          "event_poll": 0.7986060107972373,
+          "renderer": 0.7342548905451093,
+          "submission_fence": 0.09540057806428832,
+          "update": 1.5836675458393892,
+          "upload": 1.084568803606159,
+          "vdi_aes_preparation": 2.1522519461857974,
+          "visibility": 1.2253757629325557
+        }
+      },
+      {
+        "name": "text odd X",
+        "tx2_idle_mean": {
+          "elapsed_ms": 22.0316997918837,
+          "charged_cpu_ms": 11.655222854543668,
+          "off_cpu_ms": 7.883200188709655,
+          "interrupt_ms": 2.493276748630375
+        },
+        "tx3_idle_mean": {
+          "elapsed_ms": 22.034359395095336,
+          "charged_cpu_ms": 11.66498726350794,
+          "off_cpu_ms": 7.876372385800351,
+          "interrupt_ms": 2.4929997457870425
+        },
+        "tx2_idle_median_ms": 22.0,
+        "tx3_idle_median_ms": 22.0,
+        "tx2_counter_median_ms": 24.4,
+        "tx3_counter_median_ms": 24.2,
+        "samples": [
+          {
+            "sample": 0,
+            "start": 4583749528.375,
+            "end": 4587670297.5,
+            "operations": 100,
+            "elapsed_ms": 2210.8177011160465,
+            "charged_cpu_ms": 1166.497175698745,
+            "off_cpu_ms": 795.30631721548,
+            "interrupt_ms": 249.0142082018216
+          },
+          {
+            "sample": 1,
+            "start": 4587811871.625,
+            "end": 4591725028.25,
+            "operations": 100,
+            "elapsed_ms": 2206.5252143071616,
+            "charged_cpu_ms": 1168.9190122628384,
+            "off_cpu_ms": 787.4916652452356,
+            "interrupt_ms": 250.11453679908763
+          },
+          {
+            "sample": 2,
+            "start": 4591861458.75,
+            "end": 4595750566.875,
+            "operations": 100,
+            "elapsed_ms": 2192.9649031053923,
+            "charged_cpu_ms": 1164.079991090799,
+            "off_cpu_ms": 780.1137332793895,
+            "interrupt_ms": 248.7711787352036
+          }
+        ],
+        "operations": 300,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.291002881863339
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.7937801936623441
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.19381576468056333
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.7057600145103438
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.5768681715509856
+          },
+          "VbxeOwnerFence": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.4511060613109025
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04662481785712103
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.08970381136176853
+          },
+          "_VbxeTextUpload": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.230958345256908
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 2.582608403500339
+          },
+          "drain": {
+            "calls": 3.0,
+            "charged_cpu_ms": 0.017061636539376927
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7968086641038616
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.0713173071094577
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2267299990555118
+          },
+          "idle": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.4040099392097407
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.009959180259541562
+          },
+          "start": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.04777981868648493
+          },
+          "text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.8483819415761298
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.8801750075300605
+          },
+          "vbxe_text_run": {
+            "calls": 1.0,
+            "charged_cpu_ms": 1.9198806279858862
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6049652818404077
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.13632862921888966,
+          "app_other": 2.019979681759215,
+          "borrow_setup_cursor": 0.09676985081317632,
+          "command_build": 0.1573235181757565,
+          "completion_poll": 0.4040099392097413,
+          "display_ownership": 0.9875959583429074,
+          "event_poll": 0.7968086641038616,
+          "renderer": 0.734226461924207,
+          "submission_fence": 0.09487594078764691,
+          "update": 1.6049652818404077,
+          "upload": 1.230958345256908,
+          "vdi_aes_preparation": 2.174414993019717,
+          "visibility": 1.2267299990555118
+        }
+      },
+      {
+        "name": "text clipped",
+        "tx2_idle_mean": {
+          "elapsed_ms": 38.28449930620068,
+          "charged_cpu_ms": 25.172378704942396,
+          "off_cpu_ms": 7.71693904104858,
+          "interrupt_ms": 5.395181560209704
+        },
+        "tx3_idle_mean": {
+          "elapsed_ms": 27.415187321117017,
+          "charged_cpu_ms": 16.299984916384613,
+          "off_cpu_ms": 7.634099449424543,
+          "interrupt_ms": 3.4811029553078585
+        },
+        "tx2_idle_median_ms": 38.2,
+        "tx3_idle_median_ms": 27.4,
+        "tx2_counter_median_ms": 43.2,
+        "tx3_counter_median_ms": 30.4,
+        "samples": [
+          {
+            "sample": 0,
+            "start": 4606195272.875,
+            "end": 4611039006.0,
+            "operations": 100,
+            "elapsed_ms": 2731.252616725333,
+            "charged_cpu_ms": 1631.3499553835115,
+            "off_cpu_ms": 750.7090708915827,
+            "interrupt_ms": 349.19359045023884
+          },
+          {
+            "sample": 1,
+            "start": 4611185970.875,
+            "end": 4616053668.25,
+            "operations": 100,
+            "elapsed_ms": 2744.7654215870502,
+            "charged_cpu_ms": 1628.5223413718195,
+            "off_cpu_ms": 768.7121411826399,
+            "interrupt_ms": 347.5309390325905
+          },
+          {
+            "sample": 2,
+            "start": 4616200146.25,
+            "end": 4621074534.375,
+            "operations": 100,
+            "elapsed_ms": 2748.5381580227213,
+            "charged_cpu_ms": 1630.1231781600527,
+            "off_cpu_ms": 770.8086227531404,
+            "interrupt_ms": 347.6063571095282
+          }
+        ],
+        "operations": 300,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 11.875284814840397
+          },
+          "DisplayEnter": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.8017702807666988
+          },
+          "DisplayLeave": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.19017549152145752
+          },
+          "GemDrawingBorrow": {
+            "calls": 1.0,
+            "charged_cpu_ms": 8.337007203953505
+          },
+          "GemVdiPaint": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.203684490237237
+          },
+          "VbxeOwnerFence": {
+            "calls": 6.0,
+            "charged_cpu_ms": 0.49097990401933717
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 1.06,
+            "charged_cpu_ms": 0.8251487098809899
+          },
+          "_Div16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.046765786225228916
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09242332612984973
+          },
+          "_VbxeTextUpload": {
+            "calls": 0.94,
+            "charged_cpu_ms": 0.9753554399928199
+          },
+          "_VbxeUpload": {
+            "calls": 1.06,
+            "charged_cpu_ms": 0.5775133367823594
+          },
+          "blit_mask": {
+            "calls": 14.02,
+            "charged_cpu_ms": 2.0712414191379596
+          },
+          "borrow_callback": {
+            "calls": 1.0,
+            "charged_cpu_ms": 7.209547834561402
+          },
+          "drain": {
+            "calls": 4.0,
+            "charged_cpu_ms": 0.8549193496471327
+          },
+          "events": {
+            "calls": 0.25,
+            "charged_cpu_ms": 0.7968685756603076
+          },
+          "fence_owner": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.07119184526184169
+          },
+          "full_canvas": {
+            "calls": 0.25,
+            "charged_cpu_ms": 1.2386096383832432
+          },
+          "idle": {
+            "calls": 6.0,
+            "charged_cpu_ms": 0.417426368697128
+          },
+          "pointer_erase": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.00986661103115072
+          },
+          "start": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09875539027797553
+          },
+          "text_run": {
+            "calls": 0.94,
+            "charged_cpu_ms": 1.5192250310952726
+          },
+          "v_gtext": {
+            "calls": 1.0,
+            "charged_cpu_ms": 10.476158959691036
+          },
+          "vbxe_fill_rect": {
+            "calls": 4.22,
+            "charged_cpu_ms": 1.5474137708239648
+          },
+          "vbxe_glyph": {
+            "calls": 4.22,
+            "charged_cpu_ms": 3.905292986306802
+          },
+          "vbxe_text_run": {
+            "calls": 0.94,
+            "charged_cpu_ms": 1.5864629485789685
+          },
+          "vdi_v_gtext": {
+            "calls": 0.06,
+            "charged_cpu_ms": 1.8408911174421572
+          },
+          "wind_update": {
+            "calls": 0.5,
+            "charged_cpu_ms": 1.6396773328032923
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.1391891123550787,
+          "app_other": 2.009481297491664,
+          "borrow_setup_cursor": 0.0963377827649257,
+          "command_build": 2.033231883097741,
+          "completion_poll": 0.4174263686971292,
+          "display_ownership": 0.9919457722881563,
+          "event_poll": 0.7968685756603074,
+          "renderer": 2.9797914795899154,
+          "submission_fence": 0.26540514074046495,
+          "update": 1.6396773328032923,
+          "upload": 1.5528687767751799,
+          "vdi_aes_preparation": 2.139151755737531,
+          "visibility": 1.2386096383832432
+        }
+      },
+      {
+        "name": "five-object dialog",
+        "tx2_idle_mean": {
+          "elapsed_ms": 144.547085079579,
+          "charged_cpu_ms": 93.18006312563524,
+          "off_cpu_ms": 31.40291837414603,
+          "interrupt_ms": 19.964103579797726
+        },
+        "tx3_idle_mean": {
+          "elapsed_ms": 144.54364310192437,
+          "charged_cpu_ms": 93.14165511900784,
+          "off_cpu_ms": 31.45521528924125,
+          "interrupt_ms": 19.946772693675264
+        },
+        "tx2_idle_median_ms": 144.0,
+        "tx3_idle_median_ms": 144.0,
+        "tx2_counter_median_ms": 157.0,
+        "tx3_counter_median_ms": 156.0,
+        "samples": [
+          {
+            "sample": 0,
+            "start": 4631698565.5,
+            "end": 4636825275.75,
+            "operations": 20,
+            "elapsed_ms": 2890.815910817772,
+            "charged_cpu_ms": 1866.488012754818,
+            "off_cpu_ms": 624.4876857082039,
+            "interrupt_ms": 399.8402123547497
+          },
+          {
+            "sample": 1,
+            "start": 4636997176.125,
+            "end": 4642123302.75,
+            "operations": 20,
+            "elapsed_ms": 2890.486820162424,
+            "charged_cpu_ms": 1859.3488812045464,
+            "off_cpu_ms": 633.0197257037493,
+            "interrupt_ms": 398.1182132541279
+          },
+          {
+            "sample": 2,
+            "start": 4642261263.5,
+            "end": 4647388860.375,
+            "operations": 20,
+            "elapsed_ms": 2891.3158551352662,
+            "charged_cpu_ms": 1862.6624131811063,
+            "off_cpu_ms": 629.8055059425216,
+            "interrupt_ms": 398.84793601163835
+          }
+        ],
+        "operations": 60,
+        "routines_per_operation": {
+          "BenchDraw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 77.68499866314998
+          },
+          "DisplayEnter": {
+            "calls": 10.0,
+            "charged_cpu_ms": 7.643448236650178
+          },
+          "DisplayLeave": {
+            "calls": 10.0,
+            "charged_cpu_ms": 1.9049842655806464
+          },
+          "GemDrawingBorrow": {
+            "calls": 10.0,
+            "charged_cpu_ms": 73.4958498912429
+          },
+          "GemWidgetText": {
+            "calls": 5.0,
+            "charged_cpu_ms": 2.686214515324906
+          },
+          "VbxeOwnerFence": {
+            "calls": 40.0,
+            "charged_cpu_ms": 1.9616523748236134
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 10.0,
+            "charged_cpu_ms": 11.017127891672386
+          },
+          "_Mod16": {
+            "calls": 2.0,
+            "charged_cpu_ms": 0.09030081240070541
+          },
+          "_Mul16": {
+            "calls": 1.0,
+            "charged_cpu_ms": 0.017610473385876943
+          },
+          "_VbxeUpload": {
+            "calls": 10.0,
+            "charged_cpu_ms": 8.09085364335097
+          },
+          "blit_glyph_run": {
+            "calls": 3.0,
+            "charged_cpu_ms": 2.2319040080596313
+          },
+          "blit_mask": {
+            "calls": 179.0,
+            "charged_cpu_ms": 24.06379265056714
+          },
+          "borrow_callback": {
+            "calls": 10.0,
+            "charged_cpu_ms": 51.508840831205895
+          },
+          "drain": {
+            "calls": 20.0,
+            "charged_cpu_ms": 11.197949192180767
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.1881359141822165
+          },
+          "fence_owner": {
+            "calls": 20.0,
+            "charged_cpu_ms": 11.79799397313237
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 4.968248049820101
+          },
+          "glyph_record": {
+            "calls": 18.0,
+            "charged_cpu_ms": 1.3682248840182751
+          },
+          "idle": {
+            "calls": 40.0,
+            "charged_cpu_ms": 1.4866606332205117
+          },
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 77.55669630291659
+          },
+          "pointer_erase": {
+            "calls": 10.0,
+            "charged_cpu_ms": 0.09920766379232164
+          },
+          "start": {
+            "calls": 10.0,
+            "charged_cpu_ms": 0.4800560302273773
+          },
+          "vbxe_fill_rect": {
+            "calls": 75.0,
+            "charged_cpu_ms": 32.47895342264149
+          },
+          "vbxe_widget_text_run": {
+            "calls": 3.0,
+            "charged_cpu_ms": 2.4150583350601957
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.536671511279583
+          }
+        },
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.10791128578658234,
+          "app_other": 0.7839920550227731,
+          "borrow_setup_cursor": 1.031158943244742,
+          "command_build": 26.295696658626618,
+          "completion_poll": 1.4866606332205152,
+          "display_ownership": 9.548432502230817,
+          "event_poll": 3.188135914182217,
+          "renderer": 25.213144172579426,
+          "submission_fence": 1.829903337989974,
+          "update": 6.536671511279583,
+          "upload": 8.090853643350965,
+          "vdi_aes_preparation": 4.060846411673683,
+          "visibility": 4.968248049820102
+        }
+      }
+    ]
+  },
+  "artifact": {
+    "path": "build/gem-rendering-tx3/demo/exec816-demo.zip",
+    "sha256": "d7966959561c69d60bb9cf75dcb68012f83c08fd25f4a605fdc9a96dc4e3c7a9",
+    "bytes": 539224,
+    "boot_xex_sha256": "eef4d704e01887dcacb22a6c7aaa35a59de277cc88bcaa8dae433b2cd912ed5a",
+    "xex_sha256": "5df333fdbd7b944ee84c854a6f7b52cb69e0d7b1a0da8e3ef3e7b30df814b4c7",
+    "media_sha256": "b9f9e68066d7f27ba4fede146692856c7d0f158b69aa7c40c0164a083b653947",
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/gem-rendering-tx3/trace-idle/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$ae0da82d12992a00",
+      "actual_kernel_id": "$ae0da82d12992a00",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "source_inputs": {
+    "ports/gem4xe/adapter/README.md": "15b09cba6bce8ecb48a3b6dc0fcc4ddee22e4b0b3a3b26d8b2290bd1928fcec0",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "fc603b82fcfebaba6348c9fe426f1a71cb9295fd55d5cacc5f37574a1c352658",
+    "tests/programs/aes_vdi.c": "d12db3d1f1ce08db90f891e52f5b8c12a20643aa0b0291124235c53887984efa",
+    "tools/test_vdi_client.py": "78facb172d15202a0f11c29c7380d897872d0e705e3641aa55d7fcc34416b0ea"
+  }
+}

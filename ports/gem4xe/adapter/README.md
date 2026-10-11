@@ -155,10 +155,15 @@ limits. The console uses this synchronous operation for its last dirty span
 and new underline caret, avoiding a second call and launch.
 
 The fifth extraction patch selects the atlas for the ordinary text entry.
-Complete caller-local VDI text uses the same native uploader at either X parity;
-partially clipped VDI text retains its device glyph path. Public raw-list
-submission still validates every supplied record. No cached admission, new Task,
-bank-zero reservation, extra arena or completion API is introduced. The uploader
+Caller-local VDI text uses the same native uploader at either X parity for
+complete cells, including the middle of a horizontally clipped string. It skips
+hidden cells, draws the middle first, then queues at most two clipped replacement
+glyphs together for the edges. Only those edges need separate paper fills; all
+parts remain inside the original display borrow. Vertical cuts and clips with
+no complete cell use the donor path with only the intersecting characters.
+Public raw-list submission still validates every supplied record. No cached
+admission, new Task, bank-zero reservation, extra arena or completion API is
+introduced. The uploader
 uses call-clobbered Task DP scratch `$80–$A5`; its 26-byte packet layout is checked
 through emitted C, and its source reads carry across CPU bank boundaries. The
 last packet byte selects odd geometry, leaving all earlier offsets unchanged.
