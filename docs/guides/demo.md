@@ -37,6 +37,33 @@ to enter Forth and type `EXEC816` when ready. The ATR is a data disk; boot the
 XEX. A missing disk or wrong drive profile can leave the SIO driver offline
 after a timeout; correct the settings and cold-boot again.
 
+Source builds also create `launch-altirra.command` beside `exec816-demo.zip`.
+Run it (or double-click it on macOS) to launch AltirraSDL with the matching
+ROM, 4 MiB RAM and media already attached. It copies your current saved settings
+from `$XDG_CONFIG_HOME/altirra/settings.ini`, or `~/.config/altirra/settings.ini`,
+into the build's `altirra/config/` directory before each launch. Your normal
+settings stay unchanged; display, sound, input and unrelated devices are retained.
+SIO builds attach SYS read-only at the selected system drive and a writable
+WORK copy at D8. [IDE builds](ideplus.md) select the matching IDE image and BIOS;
+IDE-only builds leave all floppy slots empty.
+
+Writable media copies live in the build's `altirra/` directory and persist
+between launches. A changed source image gets a new copy, preserving earlier
+work and the original package inputs. The launcher is local development tooling
+and is excluded from release ZIPs. It requires this source checkout and Python 3.
+
+```sh
+build/demo/launch-altirra.command
+build/demo/launch-altirra.command --prepare-only
+build/demo/launch-altirra.command --altirra /path/to/AltirraSDL
+# When the package includes cartridges:
+build/demo/launch-altirra.command --cart new
+```
+
+`ALTIRRA` can also select the executable. `--config` selects another saved
+settings file; `--ide-firmware` overrides the local IDE BIOS path. Defaults find
+the local macOS AltirraSDL build, an installed application, or `AltirraSDL` on PATH.
+
 The supplied SDFS 2.1 system disk has 2,880 sectors of 256 bytes (720 KiB
 nominal capacity), equivalent to 80 tracks, two sides and 18 sectors per track. The
 disposable WORK: disk also has 2,880 sectors of 256 bytes (720 KiB nominal capacity).

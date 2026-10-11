@@ -21,6 +21,11 @@ This uses the pinned compiler, includes OF816 and keeps its five-second autoboot
 AltirraOS816 ROM, short guide, licences and checksums. The builder stops before
 packaging if the compressed boot image exceeds cartridge capacity.
 
+For local use, run the generated `launch-altirra.command` beside the ZIP.
+It copies your saved AltirraSDL configuration and attaches the correct media
+automatically; see the [local launcher instructions](demo.md#install-and-boot).
+The script and private settings stay outside the release package.
+
 The separate `ideplus/` directory contains `ideplus.img`, its checksummed fixture
 record and `mounts.json`. The disposable raw disk wraps the matching system disk
 as APT unit 2 using independently formatted 512-byte SDFS sectors. The
