@@ -4,7 +4,7 @@
 [Application VDI](../../reference/gem-vdi.md#resident-application-workstations) ·
 [AES](../../reference/aes.md) · [Timer](../../reference/timer.md)
 
-Status: G4B1–G4B2 pass focused development checks; G4B3 remains pending.
+Status: G4B1–G4B3 are implemented and pass the recorded development checks.
 See the [execution record](../../history/g4bench-port.md).
 
 Port a small, useful subset of GEM4XE's `G4BENCH` as a loadable

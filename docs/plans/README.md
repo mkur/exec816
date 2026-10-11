@@ -1,6 +1,6 @@
 # Implementation plans
 
-- [GEM4XE benchmark port](gem4xe/g4bench-port-implementation-plan.md): proposed
+- [GEM4XE benchmark port](gem4xe/g4bench-port-implementation-plan.md): implemented
   loadable G4BENCH subset, VBI batch timing and an ordinary GEM demo app.
 
 - [RAM filesystem](ram-filesystem.md): volatile files using the shared DOS worker.

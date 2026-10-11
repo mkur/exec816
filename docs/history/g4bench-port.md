@@ -63,6 +63,69 @@ The APP is 14,777 bytes, spanning 67,931 bytes, with relocation checked at all
 no VRAM reservation changes. The clock still owns only 72 upper-heap bytes,
 and results/workload state live in the private loaded image.
 
+Compared with the preceding Files-redraw demo, the shared C provider's stored
+segments and BSS are byte-for-byte unchanged: the seven I/O functions were
+already resident. The native import-address table grows from 231 to 252 bytes
+(seven three-byte addresses), within the existing upper-memory data arena.
+
 These checks establish correctness of the selected workloads. G4B3 supplies
 the normal packaged-desktop baseline; fixture measurements are not a direct
 GEM4XE comparison or an input-latency result.
+
+## G4B3 — Packaged desktop observations
+
+The OF816 package includes `C:G4BENCH.APP`, the matching ABI-12 provider/apps,
+system and writable WORK disks, pinned AltirraOS ROM, donor notices and the
+updated short guide. `tools/measure_g4bench.py` boots the exact ZIP, closes
+unneeded applications through the Windows menu, launches through the shell,
+starts with Return and closes with Escape. It reads application-owned results;
+it does not inject drawing commands or a private clock.
+
+[Development evidence](../development/g4bench-g4b3.json) preserves image,
+compiler, donor, ROM and emulator identities, raw samples, geometry, screenshots
+and stack observations. Both runs use PAL, the pinned 8× 65C816 configuration,
+VBXE FX 1.26, the same 480×160 canvas at (152,56), and the pointer at (630,230).
+Both five-second autoboots take 249 observed PAL frames. The counter case keeps
+its complete value visible above the shell and verifies that it advances.
+
+Median approximate milliseconds per operation, from three batch averages:
+
+| Workload | Idle shell | Visible counter and idle shell |
+| --- | ---: | ---: |
+| Solid bars | 28.0 | 31.4 |
+| Plain text, even X | 23.8 | 26.8 |
+| Plain text, odd X | 39.2 | 42.0 |
+| Clipped plain text | 41.2 | 45.2 |
+| Five-object dialog | 144.0 | 156.0 |
+
+These are separate initial observations. Counts are calibrated independently
+for each row/load; raw counts and VBI ticks are retained. They include UPDATE
+admission, geometry/visibility checks, event polling, scheduling and drawing
+completion. They exclude clearing, warmup and report saving. They establish
+neither click latency nor a direct GEM4XE ratio or a regression tolerance.
+Both packaged runs completed all rows without low-resolution flags; they did
+not force the calibration-cap branch.
+
+Report saving, shell use after closing (`HELLO`), normal desktop shutdown and
+stack/domain guards pass in both loads. The benchmark's ordinary Task peaks
+at 697 bytes idle and 703 bytes with the counter, leaving 359/353 bytes above
+its interrupt floor. Slice bank-zero reservation change is **0 fixed,
+0 per public Task, 0 private-idle**, with no VRAM reservation change. The APP
+remains 14,777 bytes. Twelve package tests, two application-observer tests and
+four C-image package tests also pass; the prerequisite stack scanner has two
+focused host regressions. This is development coverage, not hosted-system or
+real-hardware qualification.
+
+Reproduce with the current pinned toolchain:
+
+```sh
+python3 tools/test_g4bench.py --output build/g4bench/check
+python3 tools/build_demo.py --gem-desktop --output build/g4bench/demo
+python3 tools/measure_g4bench.py --bundle build/g4bench/demo --load both
+```
+
+The distributable is `build/g4bench/demo/exec816-demo.zip`. Close one desktop
+app if all windows are occupied, then use `RUN C:G4BENCH.APP`. Return runs or
+repeats the benchmark; Escape stops a run or closes the report. The saved file
+is `WORK:G4BENCH.TXT`. Manifests, raw observations and screenshots stay in the
+development directory.

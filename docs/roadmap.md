@@ -142,13 +142,15 @@ The file-selector follow-up adds 32 bytes per ordinary pool; the current
 [platform map](reference/platform.md#bank-zero-memory-budget) reserves 1,312
 bytes for each.
 
-## Follow-on capabilities
-
-The proposed [G4BENCH port](plans/gem4xe/g4bench-port-implementation-plan.md)
-adds repeatable application-level measurements before further GUI tuning:
+The [G4BENCH port](plans/gem4xe/g4bench-port-implementation-plan.md)
+ships as `C:G4BENCH.APP` and provides application measurements for GUI tuning:
 solid bars, even/odd/clipped plain text and a small object-tree dialog. The
 first port uses existing drawing APIs and timer.device, labels adaptations
 from GEM4XE and leaves unsupported benchmark families for later.
+See the [execution record](history/g4bench-port.md) for correctness checks and
+separate idle/counter desktop observations. No renderer speedup is claimed.
+
+## Follow-on capabilities
 
 The [IDE-only demo plan](plans/ide-only-demo-implementation-plan.md) adds a
 separate profile using IDE Plus for both SYS: and writable WORK:, excluding the

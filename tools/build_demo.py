@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,pointer_description
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description
 from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
@@ -97,7 +97,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
-        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nWindows in the top bar reaches covered windows.\nCtrl-Tab cycles; Ctrl-Escape opens the Windows menu.\nFiles: top menu offers Open, Refresh, Stop and Quit.\nCtrl-Shift-Escape enters it; Tab/arrows and Return select.\nWindows also offers Next window and Close for Files.\nOther active-window menus offer Next window and Close.\nClosing restores focus to the frontmost remaining window.\nPanel: choose Off/Mild mouse acceleration, then Apply.\nDefaults stages Mild; Cancel discards pending edits.\nSettings last for this desktop session.\nTab/Shift-Tab, Space and Return operate the controls.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp navigates; Refresh reloads and retains selection.\nDrag the size gadget; arrows/track/thumb scroll the list.\nPath (P), New Folder (N), Rename (R) open text dialogs.\nTab changes focus; Return accepts; Escape/Cancel dismisses.\nUse WORK: for writable operations; SYS: is read-only.\nFile or F opens Open/Refresh/Stop/Cancel.\nTXT entries open in the text viewer; other files launch programs.\nPrograms use no arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nRUN C:TEXT.APP opens the read-only text viewer.\nOr RUN C:TEXT.APP "SYS:VIEW.TXT" supplies a path.\nO opens; Up/Down scroll; Space/Shift-Space page.\nResize and vertical gadgets change the view.\nEscape cancels loading; Q quits. Limits: 64 KiB, 4096 lines.\nCancel and failed Open preserve the current document.\nRUN C:DIALOG.APP opens the standard-dialog example.\nClose one GEM app first. Edit (E), Alert (A), Quit (Q).\nOpen (O) and Save (S) choose a file; no file is written.\nTry SYS:SELECT/*.TXT for scrolling and filtering.\nRUN C:DIALOG.APP SELECT also chooses before its window opens.\nApply keeps editing; Done returns to the app.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nWindows in the top bar reaches covered windows.\nCtrl-Tab cycles; Ctrl-Escape opens the Windows menu.\nFiles: top menu offers Open, Refresh, Stop and Quit.\nCtrl-Shift-Escape enters it; Tab/arrows and Return select.\nWindows also offers Next window and Close for Files.\nOther active-window menus offer Next window and Close.\nClosing restores focus to the frontmost remaining window.\nPanel: choose Off/Mild mouse acceleration, then Apply.\nDefaults stages Mild; Cancel discards pending edits.\nSettings last for this desktop session.\nTab/Shift-Tab, Space and Return operate the controls.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp navigates; Refresh reloads and retains selection.\nDrag the size gadget; arrows/track/thumb scroll the list.\nPath (P), New Folder (N), Rename (R) open text dialogs.\nTab changes focus; Return accepts; Escape/Cancel dismisses.\nUse WORK: for writable operations; SYS: is read-only.\nFile or F opens Open/Refresh/Stop/Cancel.\nTXT entries open in the text viewer; other files launch programs.\nPrograms use no arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nRUN C:G4BENCH.APP opens the drawing benchmark.\nReturn runs; Escape stops/closes. Keep it uncovered.\nResults: WORK:G4BENCH.TXT; adapted subset, VBI timing.\nRUN C:TEXT.APP opens the read-only text viewer.\nOr RUN C:TEXT.APP "SYS:VIEW.TXT" supplies a path.\nO opens; Up/Down scroll; Space/Shift-Space page.\nResize and vertical gadgets change the view.\nEscape cancels loading; Q quits. Limits: 64 KiB, 4096 lines.\nCancel and failed Open preserve the current document.\nRUN C:DIALOG.APP opens the standard-dialog example.\nClose one GEM app first. Edit (E), Alert (A), Quit (Q).\nOpen (O) and Save (S) choose a file; no file is written.\nTry SYS:SELECT/*.TXT for scrolling and filtering.\nRUN C:DIALOG.APP SELECT also chooses before its window opens.\nApply keeps editing; Done returns to the app.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
         from build_gem_resource import resource
         (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
     disk_name='system.atr'
@@ -168,7 +168,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only)
     if gem_desktop:
-        for name in ('panel','counter','files','calc','dialog','text'):
+        for name in ('panel','counter','files','calc','dialog','text','g4bench'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -181,6 +181,17 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Revision: '+provenance['revision']+'\n'
             'Adaptations: flat resource; Exec window/input and Process lifetime.\n'
             'Source, pinned inputs and patches: ports/gem4xe/apps/calculator/ in Exec816.\n'
+            'Application licence: GPL-2.0-or-later.\n')
+        benchmark=output/'bitmap-console/apps/g4bench'
+        for name,source in zip(G4BENCH_NOTICES,('COPYING','COPYING.LIB','docs/licence.md')):
+            shutil.copyfile(benchmark/'source'/source,output/name)
+        benchmark_provenance=json.loads((benchmark/'g4bench.json').read_text())
+        (output/'G4BENCH-PROVENANCE.txt').write_text(
+            'GEM4XE G4BENCH subset for Exec816\nSource: https://github.com/slaapliedje/gem4xe\n'
+            'Revision: '+benchmark_provenance['revision']+'\n'
+            'Adaptations: five drawing rows, Exec windows/I/O, VBI batch timing.\n'
+            'Solid bars replace vr_recfl; text uses replace mode; dialog omits OUTLINED.\n'
+            'Source, pinned inputs and patches: ports/gem4xe/apps/g4bench/ in Exec816.\n'
             'Application licence: GPL-2.0-or-later.\n')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
@@ -307,8 +318,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-input').glob('*')))})
     if gem_desktop:
         record.update(gem_desktop=True,expected_peak_tasks=8)
-        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES})
+        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES})
         record['calculator']=provenance
+        record['g4bench']=benchmark_provenance
         record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
             ROOT/'docs/gem-desktop-distribution.txt',ROOT/'tools/build_gem_desktop.py',
             *sorted((ROOT/'examples/gem-panel').glob('*')),
@@ -318,6 +330,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-text').glob('*')),
             *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
             ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
+            ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
+            *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
     graphics=None
     if gem_vdi:
