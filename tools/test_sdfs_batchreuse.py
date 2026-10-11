@@ -25,9 +25,13 @@ def run(out):
         baselines.append(audit)
         mounts.append(dict(alias=f'D{index+1}', unit=49+index, sectors=audit.image.count,
                            sector_bytes=size, format=2, access='readwrite', profile=4))
-    program = build(compiler(ROOT/'build/actionc'), ROOT/'tests/programs/sdfs_batchreuse.act',
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes']=4352
+    (out/'memory-profile.json').write_text(json.dumps(profile))
+    program = build(compiler(ROOT/'build/actionc',release=True), ROOT/'tests/programs/sdfs_batchreuse.act',
                     out, optimize=True, tasks=True, task_capacity=8,
                     console_deferred=True, dos_mounts=mounts,
+                    memory_profile=out/'memory-profile.json',
                     image_data=[(0x30ffd0, bytes([0xa5])*(1500+64))])
     with emulator(ROOT/'build/altirra-sio-multi', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as b:
         b.config('diskemu','generic56k')

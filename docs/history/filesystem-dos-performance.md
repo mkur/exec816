@@ -92,3 +92,24 @@ assertion counts are updated. Host checks: 447 passed.
 Validation ownership is documented in [DOS](../reference/dos.md#transfer-ownership)
 and [block I/O](../reference/block-io.md). No record layout, buffer, fixed,
 per-Task, idle or stack reservation changes; bank-zero delta remains zero.
+
+## FP3: affected-sector and mount invalidation
+
+FSWRITEIO distinguishes regular payload stores from metadata publication.
+SDFS invalidates the exact changed map tag and, for metadata, only the matching
+volume incarnation's directory and extent measurements. Uncertain mutations
+still retire scratch/extent state broadly and disable the affected mount.
+BLOCKCACHE continues exact sector invalidation before submission. Namespace
+mutation epochs and successful Write settlement are unchanged.
+
+Optimized SDFS 256-byte checks retain a real measured extent and map across
+another volume's metadata publication and an unrelated payload write; touching
+the measured map forces a miss and a fresh measurement. Existing generation
+reuse, bounded cache eviction and no-cache paths also pass. Alternating settled
+128/256-byte writes across two filesystems pass persisted-byte/allocation audits
+and guards. Loaded IDE COPY is 109 frames with the same 54 reads / 61 writes;
+its retained map avoids one block-cache fetch. Host checks: 447 passed.
+
+No cache payload/record, upper buffer, Task stack or bank-zero reservation grew.
+The writer's staged map still outranks clean cache data; bitmap replacement
+drains remain in place.

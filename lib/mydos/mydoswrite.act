@@ -285,7 +285,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     FI
 
     Trailer(service,@file.entry,next,BYTE(part))
-    IF FSWRITEIO.Write(service,state.reserved(index),state.data)=0 THEN
+    IF FSWRITEIO.WritePayload(service,state.reserved(index),state.data)=0 THEN
       RETURN(0)
     FI
 
@@ -408,7 +408,7 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   FI
 
   Trailer(service,@file.entry,state.next,used)
-  IF FSWRITEIO.Write(service,sector,state.data)=0 THEN
+  IF FSWRITEIO.WritePayload(service,sector,state.data)=0 THEN
     RETURN(0)
   FI
 

@@ -91,7 +91,9 @@ RETURN(result)''')
     (out/'blockwire.act').write_text(wire)
     io=original('fswriteio.act').replace('USE EXEC\n','USE EXEC\nUSE WRITEPERFPROBE\n',1)
     io=io.replace('  LET status=BLOCKIO.BeginFetch(', '  IF WRITEPERFPROBE.active<>0 THEN WRITEPERFPROBE.logicalReads==+1 FI\n  LET status=BLOCKIO.BeginFetch(')
-    marker='\nRETURN(1)\n\nPUBLIC PROC Zero('
+    marker='\nRETURN(1)\n\nPUBLIC BYTE FUNC Write('
+    if marker not in io:
+        marker='\nRETURN(1)\n\nPUBLIC PROC Zero('
     require(io.count(marker)==1,'Stale completed-write observer')
     io=io.replace(marker,'\n  WRITEPERFPROBE.Completed()\n'+marker)
     (out/'fswriteio.act').write_text(io)

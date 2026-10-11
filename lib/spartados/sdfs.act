@@ -63,6 +63,40 @@ PUBLIC PROC DestroyVolume(FSBTYPES.Volume POINTER volume)
 
 RETURN
 
+; Retire only the changed sector and, for metadata publication, this mount's
+; completed namespace/extent measurements. Other incarnations remain tagged.
+PUBLIC PROC InvalidateSector(FSBTYPES.Workspace POINTER work CARD sector
+    BYTE metadata)
+
+  LET state=GetState(work)
+  LET volume=work.volume
+  LET generation=volume.block.generation
+  IF state.cached=volume AND state.generation=generation AND
+      state.sector=sector THEN
+    state.valid=0
+    state.allocated=0
+    state.firstEmpty=0
+    state.cached=NULL
+  FI
+
+  IF metadata<>0 THEN
+    IF state.directoryVolume=volume AND
+        state.directoryGeneration=generation THEN
+      state.directoryVolume=NULL
+    FI
+
+    IF state.extents<>NULL THEN
+      IF state.extents.volume=volume AND state.extents.generation=generation THEN
+        state.extents.volume=NULL
+        state.extents.filled=0
+        state.extents.next=0
+        state.extents.pending=0
+      FI
+    FI
+  FI
+
+RETURN
+
 ; Forget cached map and directory identities before their mounts can be
 ; reused.
 PUBLIC PROC Invalidate(FSBTYPES.Workspace POINTER work)

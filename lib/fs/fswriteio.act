@@ -59,6 +59,8 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service LONGINT error)
     service.selected.offline=1
     service.selected.writable=0
     service.selected.error=error
+    SDFS.Invalidate(service.work)
+    BLOCKIO.Invalidate(service.adapter)
   FI
 
   IF BLOCKTRANSPORT.Unavailable(service.selected.block)<>0 THEN
@@ -104,8 +106,9 @@ PUBLIC BYTE FUNC Read(FSTYPES.Service POINTER service CARD sector
 
 RETURN(1)
 
-PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
-    BYTE POINTER source)
+; The worker retains this source until the exact terminal reply is collected.
+BYTE FUNC Store(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source BYTE metadata)
   LONGINT error
 
   IF Checkpoint(service)=0 THEN
@@ -113,7 +116,7 @@ PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
   FI
 
   ; Retire completed metadata before this sector can be physically changed.
-  SDFS.Invalidate(service.work)
+  SDFS.InvalidateSector(service.work,sector,metadata)
   IF BLOCKIO.BeginStore(service.adapter,service.selected.block,LONGCARD(sector),
       source)=0 THEN
     RETURN(Failed(service,service.adapter.error))
@@ -125,12 +128,21 @@ PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
       DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
   error=BLOCKIO.FinishStore(service.adapter,service.selected.block,
       LONGCARD(sector),error)
-  SDFS.Invalidate(service.work)
   IF error<>0 THEN
     RETURN(Failed(service,error))
   FI
 
 RETURN(1)
+
+PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source)
+
+RETURN(Store(service,sector,source,1))
+
+PUBLIC BYTE FUNC WritePayload(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source)
+
+RETURN(Store(service,sector,source,0))
 
 PUBLIC PROC Zero(BYTE POINTER buffer CARD bytes)
 

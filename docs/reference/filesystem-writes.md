@@ -152,3 +152,12 @@ Formatting, repair, cross-request write-back caching, atomic replacement, cross-
 moves, recursive deletion, sparse creation, seek past EOF, SetFileSize,
 SetProtection and SetFileDate remain unsupported. MODE_NEWFILE truncates during
 Open, so a later command failure does not restore old redirected output.
+
+## Metadata cache lifetime
+
+Regular payload stores retire only an exact matching SDFS map-sector tag.
+Namespace/map/bitmap/header publication also retires completed directory and
+extent measurements for the affected volume incarnation. A different volume's
+measurements survive. The shared worker serializes these updates; ExNext still
+uses the mount-wide mutation epoch. Failed or uncertain mutation clears retained
+metadata broadly and takes the affected mount offline.

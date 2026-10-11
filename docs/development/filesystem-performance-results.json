@@ -325,5 +325,65 @@
       "xex_sha256": "5b1074a7b4086e5e9fa49cd31c078e84e75aaa7df753ac13d8d0719c95069a53",
       "guards": "intact"
     }
+  },
+  "fp3": {
+    "ide": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 101,
+        "endFrame": 210,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 47,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "kernelCalls": 2548,
+        "taskSwitches": 322
+      },
+      "guest_frames": 109,
+      "guest_seconds": 2.18,
+      "xex_sha256": "acd69d29bd28502b50d78ed4f637be622bae2c7ae56dae24b9c117a66118421c",
+      "guards": "intact"
+    },
+    "sdfs256": {
+      "status": "pass",
+      "xex_sha256": "d70518f1c18c52b9a42ddbeedec88bda38ca49d875e968f3d58706edf27db32a",
+      "guards": "intact"
+    },
+    "reuse": {
+      "status": "pass",
+      "media": [
+        {
+          "image": "volume-128.atr",
+          "sha256": "f3366d3f82268d659822d538cfaf2f24a5d7aa415430ad2be54f3fc144258321",
+          "allocation": {
+            "sectors": 720,
+            "sector_bytes": 128,
+            "allocated": 41,
+            "free": 679,
+            "files": 8,
+            "directories": 2
+          }
+        },
+        {
+          "image": "volume-256.atr",
+          "sha256": "1d3cc5fc32734e7ab1825771c8aeca8161dd0eb80b4f4ec2482136c60748e3ef",
+          "allocation": {
+            "sectors": 2000,
+            "sector_bytes": 256,
+            "allocated": 31,
+            "free": 1969,
+            "files": 8,
+            "directories": 2
+          }
+        }
+      ],
+      "xex_sha256": "2577d2aa41d1f7b327507fe81a44955051a76bf5fc7981670a387f037d03f6c5",
+      "guards": "intact"
+    }
   }
 }

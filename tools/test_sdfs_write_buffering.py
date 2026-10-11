@@ -33,7 +33,7 @@ def instrument(out, hint=0):
         path.write_text(source)
     source = read_source(library_file('fswriteio.act'))
     source = source.replace('USE EXEC\n', 'USE EXEC\nUSE SDFSBATCHPROBE\n', 1)
-    marker = '\nRETURN(1)\n\nPUBLIC PROC Zero('
+    marker = '\nRETURN(1)\n\nPUBLIC BYTE FUNC Write('
     require(source.count(marker) == 1, 'Stale completed-write observer')
     source = source.replace(marker, '\n  SDFSBATCHPROBE.Completed(service,sector)\n' + marker)
     (out/'fswriteio.act').write_text(source)
