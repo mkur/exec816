@@ -10,6 +10,51 @@ from test_heap_api import clean_ownership
 from os_boundary import run_to
 import adapter_state
 
+def read_ranges(out,mode,reuse=False,selected=None):
+    out.mkdir(parents=True,exist_ok=True)
+    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),
+        ROOT/'tests/programs/ideplus_read_ranges.act',out,optimize=mode=='opt',
+        tasks=True,task_capacity=8,heap_probe=True,
+        image_data=[(0x2dffef,bytes([0xa5])*2050)])
+    for name in ('read','mid-read','terminal-read'):
+        if selected and name not in selected:continue
+        dest=out/name;dest.mkdir(exist_ok=True)
+        original,maps=pattern_fixture();disk=dest/'ide.img';disk.write_bytes(original)
+        injected=name!='read';spans=3 if name=='mid-read' else 4
+        with ide_emulator(dest,disk) as b:
+            def before(b):
+                at=next(d['address'] for d in p['image']['data'] if '_EXPECTEDERROR_' in d['name'])
+                b.memload(at,bytes([3 if injected else 0]))
+                if injected:
+                    address=0x2dfff0+(spans-1)*512
+                    cases=[]
+                    for slot,pool in enumerate(p['build']['memory']['task_pools']):
+                        ptr=pool['dp']+0x80
+                        cases.append(f'((db(${adapter_state.CURRENT:x})={slot})&(dw(${ptr:x})=${address&65535:x})&(db(${ptr+2:x})=${address>>16:x}))')
+                    marker=adapter_state.TEST_RELOCATION_SENTINEL+128
+                    point=p['labels']['ideplus_probe_4']
+                    require(b.memdump(point,4)==b'\xea'*4,'Changed read checkpoint')
+                    b.memload(marker,bytes.fromhex('ea 6b'))
+                    b.memload(point,b'\x22'+marker.to_bytes(3,'little'))
+                    condition='('+'|'.join(cases)+')'
+                    b.bp_set(marker,condition=condition)
+                    run_to(b,marker,frame_limit=3000,timeout=30,condition=condition)
+                    ready=next(r['address'] for r in p['image']['routines'] if r['name'].startswith('M_IDEPLUSDRIVER_READY_'))
+                    b.memload(ready,bytes.fromhex('a9 03 00 6b'))
+                    b.memload(point,b'\xea'*4);b.bp_clear_all()
+            try:runtime,_=execute(b,p,before_run=before,timeout=120,frame_limit=6000)
+            except Exception:
+                print(name,'checks',data(b,p['image'],'checks',True),flush=True);raise
+            clean_ownership(b,p,out);checks=data(b,p['image'],'checks',True)
+            if injected:
+                actual=b.memdump(0x2dfff0,2048)
+                from ideplus_media import get_sector
+                wanted=b''.join(get_sector(original,maps[0]['start'],i) for i in range(spans))+bytes([0xa5])*(2048-spans*512)
+                require(actual==wanted,'Failed range changed unexpected destination bytes')
+        require(disk.read_bytes()==original,'Read range changed media')
+        (dest/'results.json').write_text(json.dumps(dict(status='pass',tier='development',mode=mode,build=p['build'],runtime=runtime,checks=checks,completed_pio_spans=spans if injected else None),indent=2)+'\n')
+        print('IDE read range passed',mode,name,flush=True)
+
 def run(out,mode,reuse=False,selected=None):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
@@ -77,5 +122,7 @@ def run(out,mode,reuse=False,selected=None):
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--mode',choices=('raw','opt'),required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true')
-    parser.add_argument('--case',action='append',choices=('writable','protected','failed','mid-range'))
-    args=parser.parse_args();run(args.output,args.mode,args.reuse,args.case)
+    parser.add_argument('--reads',action='store_true')
+    parser.add_argument('--case',action='append',choices=('writable','protected','failed','mid-range','read','mid-read','terminal-read'))
+    args=parser.parse_args()
+    (read_ranges if args.reads else run)(args.output,args.mode,args.reuse,args.case)

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.ideplus.device",
-  "revision": 3,
+  "revision": 4,
   "state_bytes": 1024,
   "pbi_id": 0,
   "hardware_revision": "e",
@@ -77,7 +77,9 @@
     "SLOT_SECTOR_SIZE": 4,
     "SLOT_READY": 5,
     "WRITE_SECTORS": 13,
-    "MAX_WRITE_SECTORS": 4
+    "MAX_WRITE_SECTORS": 4,
+    "READ_SECTORS": 14,
+    "MAX_READ_SECTORS": 4
   },
   "records": {
     "Geometry": {
@@ -240,5 +242,18 @@
     "failure_prefix": "none guaranteed; physical sectors may have changed",
     "cancellation": "queued/preparing only; issued ATA write drains its complete bounded range",
     "timeout": "existing per-wait deadline, bounded by maximum sector count"
+  },
+  "read_sectors": {
+    "command": 14,
+    "sector_bytes": 512,
+    "maximum_sectors": 4,
+    "offset": "first zero-based sector within the opened unit",
+    "length": "512 through 2048 bytes, multiple of 512",
+    "success_actual": "full requested length after all PIO sectors and terminal status",
+    "failure_actual": 0,
+    "failure_prefix": "none valid; destination may have changed",
+    "cancellation": "queued/preparing may retire; issued reads drain before aborted reply",
+    "failure_recovery": "issued range ATA error, timeout or absent media requires cold reset",
+    "timeout": "existing per-wait deadline; at most six waits for four sectors"
   }
 }

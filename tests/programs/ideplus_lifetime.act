@@ -95,6 +95,11 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
     request.io_Length=2048
     request.io_Offset=0
   FI
+  IF writing=0 AND rangeMode=2 THEN
+    request.io_Command=IDEPLUS.READ_SECTORS
+    request.io_Length=2048
+    request.io_Offset=0
+  FI
   FOR index=0 TO CARD(request.io_Length)-1 DO
     request.io_Data(index)=BYTE(index) XOR $55
   OD
@@ -174,9 +179,12 @@ PROC Main()
       request.io_Length=2048
       request.io_Offset=0
     FI
+    IF rangeMode=2 THEN
+      request.io_Command=IDEPLUS.READ_SECTORS
+    FI
     IF expectedError=2 THEN
       probe.busy=65535
-      probe.phase=1
+      probe.phase=IF rangeMode=2 THEN 2 ELSE 1 FI
     FI
 
     error=EXEC.DoIO(EXEC.IORequest POINTER(request))

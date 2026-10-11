@@ -1,0 +1,178 @@
+{
+  "tier": "development",
+  "status": "in_progress",
+  "compiler_pin": "toolchain/actionc.json",
+  "platform_pin": "toolchain/altirra-ideplus.json",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "rr1": {
+    "cases": {
+      "opt/terminal-read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          22
+        ],
+        "completed_pio_spans": 4,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "opt/read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          10270
+        ],
+        "completed_pio_spans": null,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "opt/mid-read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          22
+        ],
+        "completed_pio_spans": 3,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "raw/read/results.json": {
+        "status": "pass",
+        "mode": "raw",
+        "checks": [
+          10270
+        ],
+        "completed_pio_spans": null,
+        "image_sha256": "150e91e973d7109d5d93a34065cd7569ca17268e498c4518b2778e6b3c1d0e02",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "lifetime/nmi-7/results.json": {
+        "status": "pass",
+        "case": "nmi-7",
+        "checks": [
+          4124
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/mixed/results.json": {
+        "status": "pass",
+        "case": "mixed",
+        "checks": [
+          4128
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/timeout/results.json": {
+        "status": "pass",
+        "case": "timeout",
+        "checks": [
+          11
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/nmi-4/results.json": {
+        "status": "pass",
+        "case": "nmi-4",
+        "checks": [
+          4124
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      }
+    },
+    "host_tests": 447,
+    "worker_bound": {
+      "status": "pass",
+      "tier": "development",
+      "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+      "ordinary_call_bound": 486,
+      "interrupt_reserve": 256,
+      "dispatch_margin": 16,
+      "total_bound": 758,
+      "reservation": 1024,
+      "headroom": 266,
+      "deepest_path": [
+        "M_IDEPLUSDRIVER_WORKER_15BAA73B",
+        "M_IDEPLUSDRIVER_HARDWAREINIT_E5936689",
+        "M_IDEPLUSDRIVER_DISCOVERPARTITIONS_099B333B",
+        "M_IDEPLUSDRIVER_READTABLE_8F132069",
+        "M_IDEPLUSDRIVER_READPHYSICAL_AF100A8C",
+        "M_IDEPLUSDRIVER_READINTO_2F34BE35",
+        "M_IDEPLUSDRIVER_READY_595A9D50",
+        "M_IDEPLUSDRIVER_DELAY_7543300C",
+        "io_do_io",
+        "M_IOCORE_DOIO_173DC4A1",
+        "M_IOCORE_START_4033F51A",
+        "M_IOCORE_SUBMIT_5D7CB97A",
+        "M_IORESIDENT_BEGINIO_914C855C",
+        "M_TIMERDRIVER_BEGINIO_9C55068D",
+        "M_TIMERDRIVER_RELATIVE_61FE9928",
+        "__a816_mul_u32_v2"
+      ],
+      "unreachable_timer_binding_branches": [
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_SIODRIVER_START_4928F5B4"
+        ],
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_IDEPLUSDRIVER_START_F9A39B11"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_SIODRIVER_OPEN_9AA3F320"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_IDEPLUSDRIVER_OPEN_8E428247"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_SIODRIVER_BEGINIO_E1378755"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_IDEPLUSDRIVER_BEGINIO_7F64FCE0"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_SIODRIVER_CLOSE_01A37B96"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_IDEPLUSDRIVER_CLOSE_BC3392CF"
+        ]
+      ],
+      "visited_entries": 99,
+      "assumptions": [
+        "IDE worker opens only its immutable timer.device request",
+        "IORESIDENT callbacks on this worker therefore select timer.device",
+        "COP policy switches to the reserved kernel stack; interrupt frames use the 256-byte reserve",
+        "Emitted worker paths use direct calls; known targets match every compiler call-map entry"
+      ]
+    }
+  }
+}

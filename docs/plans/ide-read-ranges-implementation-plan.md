@@ -3,7 +3,9 @@
 [Implementation plans](README.md) · [Design](ide-read-ranges-design.md) ·
 [Roadmap](../roadmap.md) · [Testing policy](../contributing/testing.md)
 
-Status: planned. Implement and commit one executable slice at a time. The design
+Status: RR1 passes development checks; RR2–RR4 remain. See the
+[execution record](../history/ide-read-ranges.md).
+Implement and commit one executable slice at a time. The design
 sets the scope: at most four native 512-byte IDE sectors, shared staging,
 validated regular-file maps and no change to DOS Read results. Existing-file
 overwrite batching stays deferred. Demo builds and publishing are separate work.

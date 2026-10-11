@@ -76,7 +76,15 @@ physical sectors may have changed. Queued/preparing cancellation remains
 supported; an issued range drains as one bounded write. Each hardware wait has
 the existing deadline. The maximum bounds the request's total number of waits.
 The constants and completion rules are in [ideplus.json](../../abi/ideplus.json).
-Reads continue to use READ_SECTOR.
+READ_SECTORS (command 14) reads 1–4 consecutive 512-byte sectors on raw or mapped
+units. Its length and extent admission match the write range. The driver uses
+one ATA READ, drains every DRQ span and checks terminal status before reporting
+the full length. Failure/abort reports zero actual bytes; destination contents
+may have changed and are invalid. An issued read drains before an aborted reply.
+Timeout, absent media or an ATA error after read-range issue requires cold reset;
+local rejection and a successfully drained abort do not disable the controller.
+The existing READ_SECTOR command remains available. Both range contracts are
+machine-readable in ideplus.json; request layouts are unchanged.
 
 IDENTIFY with no advertised volatile write cache admits terminal-status durability.
 A cached device must advertise FLUSH CACHE support; each accepted write must

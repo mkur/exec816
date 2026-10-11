@@ -22,7 +22,7 @@ def routine(p,name):
     return next(r for r in p['image']['routines'] if r['name'].startswith('M_'+name+'_'))
 
 
-def run(out,reuse=False,selected=None,ranges=False):
+def run(out,reuse=False,selected=None,ranges=False,read_ranges=False):
     out.mkdir(parents=True,exist_ok=True)
     profile=out/'profile.json'
     value=json.loads(PROFILE.read_text());value['image_data_bytes']=4096
@@ -36,7 +36,7 @@ def run(out,reuse=False,selected=None,ranges=False):
         dest=out/name;dest.mkdir(exist_ok=True)
         media,maps=pattern_fixture(readonly=False);expected=bytearray(media)
         error={'timeout':2,'flush-error':3}.get(name,0)
-        if name not in ('busy-stop','timeout'):
+        if name not in ('busy-stop','timeout') and not (read_ranges and error):
             for sector in range(4) if ranges else (1,):
                 put_sector(expected,maps[0]['start'],sector,
                            bytes([0x55])*512 if error else bytes((i&255)^0x55 for i in range(512)))
@@ -46,7 +46,7 @@ def run(out,reuse=False,selected=None,ranges=False):
             b.config('diskemu','generic56k')
             def before(b):
                 b.mount(0,str(sio))
-                for field,value in [('EXPECTEDERROR',error),('BLOCKED',name=='slots'),('ALLOCATION',name=='allocation'),('BUSYSTOP',name=='busy-stop'),('MIXED',name=='mixed'),('RANGEMODE',ranges)]:
+                for field,value in [('EXPECTEDERROR',error),('BLOCKED',name=='slots'),('ALLOCATION',name=='allocation'),('BUSYSTOP',name=='busy-stop'),('MIXED',name=='mixed'),('RANGEMODE',2 if read_ranges else ranges)]:
                     at=next(d['address'] for d in p['image']['data'] if '_IDEPLUSLIFETIME_'+field+'_' in d['name'])
                     b.memload(at,bytes([value]))
                 if name=='allocation':
@@ -87,4 +87,5 @@ def run(out,reuse=False,selected=None,ranges=False):
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--case',action='append');a.add_argument('--output',type=__import__('pathlib').Path,default=ROOT/'build/development/ideplus-ip5')
     a.add_argument('--ranges',action='store_true')
-    v=a.parse_args();run(v.output,v.reuse,v.case,v.ranges)
+    a.add_argument('--read-ranges',action='store_true')
+    v=a.parse_args();run(v.output,v.reuse,v.case,v.ranges or v.read_ranges,v.read_ranges)

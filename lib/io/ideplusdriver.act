@@ -254,20 +254,22 @@ PROC AddressSector(LONGCARD sector)
 RETURN
 
 ; The accepted request owns its destination until terminal reply.
-BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination)
-  BYTE error
+BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination BYTE count)
+  BYTE error,index
   error=Ready(0,1)
   IF error<>0 THEN
     RETURN(error)
   FI
-  AddressSector(sector)
+  AddressRange(sector,count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_READ)
-  error=Ready($08,0)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
+  FOR index=0 TO count-1 DO
+    error=Ready($08,0)
+    IF error<>0 THEN
+      RETURN(error)
+    FI
 
-  IDEPLUSNATIVE.ReadWords(destination)
+    IDEPLUSNATIVE.ReadWords(destination+SIZE(index)*512)
+  OD
 
 RETURN(Ready(0,0))
 
@@ -276,7 +278,7 @@ PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
 
   LET c=Control()
 
-RETURN(ReadInto(sector,c.buffer))
+RETURN(ReadInto(sector,c.buffer,1))
 
 ; IDENTIFY admits only LBA28 ATA disks with supported physical sector size.
 BYTE FUNC Identify()
@@ -474,10 +476,13 @@ BYTE FUNC ValidExtent(Partition POINTER unit EXEC.IOStdReq POINTER request)
   IF request.io_Offset>=unit.sectors THEN
     RETURN(0)
   FI
-  IF request.io_Command<>IDEPLUS.WRITE_SECTORS THEN
+  IF request.io_Command<>IDEPLUS.WRITE_SECTORS
+      AND request.io_Command<>IDEPLUS.READ_SECTORS THEN
     RETURN(request.io_Length=512)
   FI
-  IF request.io_Length=0 OR request.io_Length>IDEPLUS.MAX_WRITE_SECTORS*512
+  LET limit=IF request.io_Command=IDEPLUS.READ_SECTORS
+      THEN IDEPLUS.MAX_READ_SECTORS ELSE IDEPLUS.MAX_WRITE_SECTORS FI
+  IF request.io_Length=0 OR request.io_Length>LONGCARD(limit)*512
       OR (request.io_Length & 511)<>0 THEN
     RETURN(0)
   FI
@@ -524,7 +529,8 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
   ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR
       AND request.io_Command<>IDEPLUS.WRITE_SECTOR
-      AND request.io_Command<>IDEPLUS.WRITE_SECTORS THEN
+      AND request.io_Command<>IDEPLUS.WRITE_SECTORS
+      AND request.io_Command<>IDEPLUS.READ_SECTORS THEN
     error=BYTE(EXEC.IOERR_NOCMD)
   ELSEIF ValidExtent(unit,request)=0 THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
@@ -542,7 +548,8 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
     EXEC.Permit()
     IF error=0 THEN
-      error=ReadInto(unit.start+request.io_Offset,request.io_Data)
+      error=ReadInto(unit.start+request.io_Offset,request.io_Data,
+          BYTE(request.io_Length RSH 9))
       IF error=0 AND bus.cancelled<>0 THEN
         error=BYTE(EXEC.IOERR_ABORTED)
       FI
@@ -553,7 +560,9 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
   FI
   EXEC.Forbid()
   IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT
-      OR (bus.phase=3 AND error<>0) THEN
+      OR (bus.phase=3 AND error<>0)
+      OR (request.io_Command=IDEPLUS.READ_SECTORS
+          AND bus.phase=2 AND error=IDEPLUS.ERROR_ATA) THEN
     bus.state=5
     c.offline=1
   FI

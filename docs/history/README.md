@@ -1,5 +1,8 @@
 # Historical records
 
+- [Bounded IDE read ranges](ide-read-ranges.md): device, cache and filesystem
+  grouping, memory costs and matched development measurements.
+
 - [Filesystem and DOS performance](filesystem-dos-performance.md): shared
   SIO/IDE optimizations, matched measurements and memory costs.
 
