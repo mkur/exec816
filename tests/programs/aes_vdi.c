@@ -78,10 +78,14 @@ static void draw(UWORD who,WORD handle,WORD window)
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_OK);
     CHECK(vst_color(handle,0)==0);
     units=VDITextUnits[who];
-    v_gtext(handle,x+1,y+94,who ? "012345678901234567890123456789012345678":"Zero ink       ");
+    v_gtext(handle,x+(who ? 0:1),y+94,who ? "012345678901234567890123456789012345678":"Zero ink       ");
     CHECK(ExecAESDiagnostic()==AES_OK);
     /* The top window has a single visible rectangle. */
     if (who) CHECK(VDITextUnits[who]==units+1);
+    /* Complete odd-X PB input includes glyph 255 and low-byte mapping. */
+    wordText[who][0]=0x1ff; wordText[who][1]=' '; wordText[who][2]='A';
+    control[3]=3; points[0]=x; points[1]=y+110;
+    vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_OK);
     control[0]=1; control[1]=control[3]=0;
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_UNSUPPORTED);
     vs_clip(handle,1,outside);

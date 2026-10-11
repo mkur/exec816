@@ -14,9 +14,9 @@
 #define VBXE_LIST_WORK 8192UL
 /* The trusted text generator has separate bounds from generic raw lists. */
 #define VBXE_TEXT_GLYPHS 80
-#define VBXE_TEXT_RECORDS (VBXE_TEXT_GLYPHS+2)
+#define VBXE_TEXT_RECORDS (VBXE_TEXT_GLYPHS+5+1)
 #define VBXE_TEXT_FILL_WORK 3072UL
-#define VBXE_TEXT_WORK (VBXE_TEXT_GLYPHS*160UL+VBXE_TEXT_FILL_WORK)
+#define VBXE_TEXT_WORK (VBXE_TEXT_GLYPHS*184UL+80UL+VBXE_TEXT_FILL_WORK)
 #if VBXE_TEXT_RECORDS*VBXE_RECORD_BYTES > VBXE_BCB_BYTES
 #error Text and trailing fill exceed the command arena
 #endif

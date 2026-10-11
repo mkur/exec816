@@ -91,12 +91,13 @@ _upload_mode:
               plp
               rtl
 
-; Checked opaque even-X 8x8 text. The C driver validates the complete atlas,
-; source string and destination before mapping. Generate one fill followed by
+; Checked opaque 8x8 text at either X parity. The C driver validates the complete atlas,
+; source string and destination before mapping. Generate background records and
 ; 1..80 glyphs and an optional final fill directly in the arena.
 ; All fixed fields are written every time;
 ; arbitrary glyph bytes cannot change stride, mode, chaining or raster bounds.
-; No shared scratch: $80-$99 are the caller's ABI call-clobbered DP workspace.
+; No shared scratch: $80-$a5 are the caller's ABI call-clobbered DP workspace.
+; Odd background helpers add three stack bytes while called; P is saved once.
 ; Native interrupts preserve D and never access this mapping or command arena.
               .public _VbxeTextUpload
 _VbxeTextUpload:
@@ -152,6 +153,14 @@ _text_zero_ink:
               lda ##4
 _text_mode:
               sta dp:0x98
+              ldy ##25
+              sep #0x20
+              lda [0x80],y
+              rep #0x20
+              and ##255
+              beq _text_even
+              brl _text_odd
+_text_even:
 ; Leading background fill. Source address zero is valid with AND mask zero.
               lda ##0
               sta long:0x8000
@@ -287,4 +296,160 @@ _text_fill:
               lda #0
               sta long:0x8014,x
               plp
+              rtl
+
+; Shifted atlas: five source bytes per glyph, stride 1280; destination cells
+; still advance four bytes. Clear only the run's pixels before painting ink.
+_text_odd:
+              lda dp:0x8c
+              clc
+              adc ##1
+              sta dp:0x9a
+              lda dp:0x8e
+              adc ##0
+              sta dp:0x9c
+              lda dp:0x90
+              asl a
+              asl a
+              dec a
+              dec a
+              sta dp:0x9e
+              lda ##7
+              sta dp:0xa0
+              lda dp:0x92
+              xba
+              and ##255
+              sta dp:0xa2
+              lda ##8
+              sta dp:0xa4
+              ldx ##0
+              jsl _text_background
+; Left edge: keep the high nibble; clear and colour the low nibble.
+              lda dp:0x8c
+              sta dp:0x9a
+              lda dp:0x8e
+              sta dp:0x9c
+              stz dp:0x9e
+              lda ##0xf0
+              sta dp:0xa2
+              lda ##12
+              sta dp:0xa4
+              jsl _text_background
+              lda dp:0x92
+              xba
+              and ##15
+              sta dp:0xa2
+              lda ##11
+              sta dp:0xa4
+              jsl _text_background
+; Right edge: keep the low nibble; clear and colour the high nibble.
+              lda dp:0x90
+              asl a
+              asl a
+              clc
+              adc dp:0x8c
+              sta dp:0x9a
+              lda dp:0x8e
+              adc ##0
+              sta dp:0x9c
+              lda ##15
+              sta dp:0xa2
+              lda ##12
+              sta dp:0xa4
+              jsl _text_background
+              lda dp:0x92
+              xba
+              and ##0xf0
+              sta dp:0xa2
+              lda ##11
+              sta dp:0xa4
+              jsl _text_background
+              ldy ##0
+_text_odd_record:
+              sep #0x20
+              lda [0x84],y
+              rep #0x20
+              and ##0x00ff
+              sta dp:0x9a
+              asl a
+              asl a
+              clc
+              adc dp:0x9a
+              clc
+              adc dp:0x88
+              sta long:0x8000,x
+              lda dp:0x8a
+              adc ##0
+              sta long:0x8002,x
+              lda ##0x0105
+              sta long:0x8004,x
+              lda dp:0x8c
+              sta long:0x8006,x
+              lda dp:0x8e
+              ora ##0x4000
+              sta long:0x8008,x
+              lda ##0x0101
+              sta long:0x800a,x
+              lda ##4
+              sta long:0x800c,x
+              lda dp:0x94
+              sta long:0x800e,x
+              lda dp:0x96
+              sta long:0x8010,x
+              lda ##0
+              sta long:0x8012,x
+              dec dp:0x90
+              bne _text_odd_more
+              brl _text_last
+_text_odd_more:
+              sep #0x20
+              lda dp:0x98
+              ora #8
+              sta long:0x8014,x
+              rep #0x20
+              lda dp:0x8c
+              clc
+              adc ##4
+              sta dp:0x8c
+              lda dp:0x8e
+              adc ##0
+              sta dp:0x8e
+              txa
+              clc
+              adc ##21
+              tax
+              iny
+              brl _text_odd_record
+
+; One constant-source chained background record. $9a/$9c destination,
+; $9e width minus one, $a0 height/AND, $a2 XOR/collision, $a4 mode.
+; All fields are written, including source, unused pattern and collision.
+_text_background:
+              lda ##0
+              sta long:0x8000,x
+              sta long:0x8002,x
+              sta long:0x8012,x
+              lda ##0x0100
+              sta long:0x8004,x
+              lda dp:0x9a
+              sta long:0x8006,x
+              lda dp:0x9c
+              ora ##0x4000
+              sta long:0x8008,x
+              lda ##0x0101
+              sta long:0x800a,x
+              lda dp:0x9e
+              sta long:0x800c,x
+              lda dp:0xa0
+              sta long:0x800e,x
+              lda dp:0xa2
+              sta long:0x8010,x
+              sep #0x20
+              lda dp:0xa4
+              sta long:0x8014,x
+              rep #0x20
+              txa
+              clc
+              adc ##21
+              tax
               rtl

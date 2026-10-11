@@ -4,7 +4,7 @@
 #include <exec/types.h>
 struct VbxeUpload { ULONG records; UWORD count; };
 void EXEC_CALL _VbxeUpload(const struct VbxeUpload *upload);
-/* Private validated text packet: 1..80 glyphs, even X, no clipping.
+/* Private validated text packet: 1..80 glyphs, either X parity, no clipping.
  * Nonzero fillRows appends one checked constant-source fill to the list. */
 struct VbxeTextUpload {
     ULONG text, font, destination;
@@ -12,7 +12,7 @@ struct VbxeTextUpload {
     UBYTE ink, paper;
     ULONG fillDestination;
     UWORD fillBytes,fillRows;
-    UBYTE fillValue;
+    UBYTE fillValue, odd;
 };
 void EXEC_CALL _VbxeTextUpload(const struct VbxeTextUpload *upload);
 #endif

@@ -104,6 +104,9 @@ UWORD main(void)
     /* Every byte glyph, both hardware-zero/nonzero ink, text batch
      * boundaries, bottom/right screen edges and CPU/VRAM bank crossings. */
     check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
+    /* Nonuniform surroundings expose either damaged outer nibble. */
+    for (pen=0;pen<16;++pen)
+        check(GemDrawingFill(pen*40,0,pen*40+40,240,pen)==DISPLAY_OK);
     for (i=0;i<256;i++) glyphs[i]=(UBYTE)i;
     for (i=0;i<4;i++)
         check(GemDrawingText(0,i*8,glyphs+i*64,64,i,5)==DISPLAY_OK);
@@ -112,6 +115,13 @@ UWORD main(void)
         for (i=0;i<9;++i)
             check(GemDrawingText(0,40+i*8,glyphs,lengths[i],i&1,5)==DISPLAY_OK);
     }
+    for (i=0;i<4;i++)
+        check(GemDrawingText(1,128+i*8,glyphs+i*64,64,i,1)==DISPLAY_OK);
+    {
+        static const UWORD lengths[]={1,31,32,33,39,64,79};
+        for (i=0;i<7;++i)
+            check(GemDrawingText(1,160+i*8,glyphs,lengths[i],i&1,(i+1)&1)==DISPLAY_OK);
+    }
     allocation=AllocMem(131072UL,MEMF_UPPER|MEMF_LINEAR);
     check(allocation!=NULL);
     if (allocation) {
@@ -119,9 +129,14 @@ UWORD main(void)
         for (i=0;i<80;i++) cross[i]=(UBYTE)(i*7);
         check(GemDrawingText(0,200,cross,80,1,5)==DISPLAY_OK);
         check(GemDrawingText(512,204,cross,16,0,3)==DISPLAY_OK);
+        check(GemDrawingText(1,216,cross,79,0,1)==DISPLAY_OK);
+        check(GemDrawingText(511,204,cross,16,1,0)==DISPLAY_OK);
         FreeMem(allocation,131072UL);
     }
     check(GemDrawingText(632,232,text,1,0,1)==DISPLAY_OK);
+    check(GemDrawingText(631,232,text,1,1,0)==DISPLAY_OK);
+    check(GemDrawingText(1,224,(const UBYTE *)"  ",2,0,1)==DISPLAY_OK);
+    check(GemDrawingText(1,0,text,80,1,0)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingText(640,232,NULL,0,1,0)==DISPLAY_OK);
     check(GemDrawingText(638,232,text,1,1,0)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingText(0,233,text,1,1,0)==DISPLAY_BAD_ARGUMENT);
@@ -151,6 +166,8 @@ UWORD main(void)
         check(GemDrawingTextFill(0,200,cross,33,1,5,264,207,8,1,1)==DISPLAY_OK);
         FreeMem(allocation,131072UL);
     }
+    check(GemDrawingTextFill(1,168,glyphs,79,1,0,0,184,384,8,3)==DISPLAY_OK);
+    check(GemDrawingTextFill(631,232,text,1,0,1,632,239,8,1,1)==DISPLAY_OK);
     /* Every invalid suffix must reject the text prefix before touching VRAM. */
     check(GemDrawingTextFill(8,8,text,1,0,0,1,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(8,8,text,1,0,0,0,0,7,1,1)==DISPLAY_BAD_ARGUMENT);
@@ -160,7 +177,7 @@ UWORD main(void)
     check(GemDrawingTextFill(8,8,text,1,0,0,632,239,8,2,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(8,8,text,1,0,0,0,0,640,5,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(8,8,text,1,0,0,0,0,8,1,16)==DISPLAY_BAD_ARGUMENT);
-    check(GemDrawingTextFill(1,0,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingTextFill(1,0,text,80,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(0,233,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(638,0,text,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
     check(GemDrawingTextFill(0,0,text,0,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);

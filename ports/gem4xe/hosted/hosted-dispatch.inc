@@ -116,7 +116,7 @@ uint16_t GemBitmapTextFill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
 {
     extern void vbxe_text_run_fill(uint16_t,uint16_t,const uint8_t *,uint16_t,
         uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t,uint16_t);
-    if (!count || (x&1) || !bitmap_text_valid(x,y,text,count,foreground,background))
+    if (!count || !bitmap_text_valid(x,y,text,count,foreground,background))
         return 1;
     GemDrawingPrepare(x,y,x+count*8,y+8);
     GemDrawingPrepare(fillX,fillY,fillX+width,fillY+height);
@@ -127,21 +127,11 @@ uint16_t GemBitmapTextFill(uint16_t x,uint16_t y,const uint8_t *text,uint16_t co
 uint16_t GemBitmapText(uint16_t x,uint16_t y,const uint8_t *text,uint16_t count,
                         uint16_t foreground,uint16_t background)
 {
-    WORD color,mode,clip;
-    uint16_t i;
+    extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
     if (!bitmap_text_valid(x,y,text,count,foreground,background)) return 1;
     if (!count) return 0;
     GemDrawingPrepare(x,y,x+count*8,y+8);
-    if (!(x&1)) {
-        extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
-        vbxe_text_run(x,y,text,count,foreground,background);
-        return 0;
-    }
-    color=vwk.text_color; mode=vwk.wrt_mode; clip=vwk.clip;
-    vwk.text_color=(WORD)foreground; vwk.wrt_mode=0; vwk.clip=0;
-    dev_fill_rect((WORD)x,(WORD)y,(WORD)(x+count*8-1),(WORD)(y+7),(WORD)background);
-    for (i=0;i<count;i++,x+=8) dev_glyph((WORD)text[i],(WORD)x,(WORD)y,1);
-    vwk.text_color=color; vwk.wrt_mode=mode; vwk.clip=clip;
+    vbxe_text_run(x,y,text,count,foreground,background);
     return 0;
 }
 
@@ -230,9 +220,9 @@ void GemVdiPaint(void *context)
     struct ExecVDIUnit *u=context;
     UWORD i;
     /* The caller already clipped this bounded unit and owns DISPLAY. Complete
-     * even-X cells can use the native uploader without selecting donor state.
+     * cells at either X parity can use the native uploader without selecting donor state.
      * Reuse renderer scratch; the synchronous uploader fences before return. */
-    if (u->operation==8 && !(u->x&1) && u->left==u->x &&
+    if (u->operation==8 && u->left==u->x &&
         u->right==u->x+(u->count<<3) && u->top==u->y-6 && u->bottom==u->y+2) {
         extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
         uint8_t *text=(uint8_t *)intin;

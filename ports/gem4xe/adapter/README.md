@@ -128,36 +128,44 @@ chunk replaces abandoned contents; a continuation with different bounds is rejec
 No callback pointer survives the call. Six words and one longword of state use
 16 bytes inside the existing upper C data reservation; bank-zero growth is zero.
 
-Even-X `GemDrawingText` runs use a driver-generated list instead of repeating
-the generic device and list-validation path for every glyph. The driver checks
-the entire CPU string, screen rectangle, colours and 256-glyph atlas before
-submitting any prefix. A private native uploader writes one background fill and
-up to 80 fixed 8×8 glyph records directly into the existing command arena. This
-uses at most 81 records, 1,701 arena bytes and 12,800 blitter bus accesses per batch.
-These are text-generator bounds; generic lists retain their 64-record and
-8,192-access limits. Every field, including chain termination, is written
+`GemDrawingText` runs at either X parity use a driver-generated list instead
+of repeating the generic device and list-validation path for every glyph. The
+driver checks the entire CPU string, screen rectangle, colours and 256-glyph
+atlas before submitting any prefix. A private native uploader writes background
+and fixed 8×8 glyph records directly into the existing command arena. Even X
+uses one background fill, four source bytes per glyph row and atlas stride
+1,024. Odd X uses an interior fill and two AND/OR edge pairs, preserving the
+neighbouring nibbles even when paper is zero. Its shifted atlas uses five source
+bytes per glyph row and stride 1,280; destination cells still advance four bytes.
+
+The maximum screen row holds 80 complete even-X cells or 79 odd-X cells. Those
+lists use 81 / 84 records, 1,701 / 1,764 arena bytes, and 12,800 / 14,616 blitter
+bus accesses respectively. Every field, including chain termination, is written
 anew; hardware-zero ink uses inverse-mask AND and other ink uses the stencil.
 The operation fences every batch before reusing the arena or returning.
 
-`GemDrawingTextFill` draws a nonempty even-X text run followed by a small fill
-rectangle, with one owner admission. The rectangle requires even X and width,
-nonzero dimensions, screen bounds and at most 3,072 pixels. All arguments are
-checked before drawing; the fill is appended only to the final text batch.
-That list uses at most 82 records, 1,722 arena bytes and 15,872 bus accesses.
-The fill allowance remains 3,072 accesses, independent of the larger text batch.
-The console uses this synchronous operation for its
-last dirty span and new underline caret, avoiding a second call and launch.
+`GemDrawingTextFill` draws a nonempty text run at either X parity followed by a
+small fill rectangle, with one owner admission. The trailing rectangle still
+requires even X and width, nonzero dimensions, screen bounds and at most 3,072
+pixels. All arguments are checked before drawing; the fill is appended only to
+the final text batch. The conservative text-generator capacity, including five
+background records, 80 glyphs and the trailing fill, is 86 records, 1,806 arena
+bytes and 17,872 accesses. Generic lists retain their 64-record / 8,192-access
+limits. The console uses this synchronous operation for its last dirty span
+and new underline caret, avoiding a second call and launch.
 
-The fifth extraction patch connects the ordinary text entry to this path. Odd-X
-text and clipped VDI text retain their existing device glyph path. Complete
-even-X caller-local VDI text uses the native uploader. Public raw-list
+The fifth extraction patch selects the atlas for the ordinary text entry.
+Complete caller-local VDI text uses the same native uploader at either X parity;
+partially clipped VDI text retains its device glyph path. Public raw-list
 submission still validates every supplied record. No cached admission, new Task,
 bank-zero reservation, extra arena or completion API is introduced. The uploader
-uses call-clobbered Task DP scratch `$80–$99`; its 25-byte packet layout is checked
-through emitted C, and its source reads carry across CPU bank boundaries.
-The uploader packet grows by nine bytes on the existing Task stack. Reserved
-bank-zero storage, per-Task stacks, DP, guards and alignment remain unchanged
-(0 bytes).
+uses call-clobbered Task DP scratch `$80–$A5`; its 26-byte packet layout is checked
+through emitted C, and its source reads carry across CPU bank boundaries. The
+last packet byte selects odd geometry, leaving all earlier offsets unchanged.
+Odd background helpers use three temporary return-address stack bytes in
+addition to the saved status byte. The packet grows by one live stack byte over
+TX1. Reserved bank-zero storage, per-Task stacks, DP, guards and alignment remain
+unchanged (0 bytes).
 
 Because donor callbacks return void, the backend latches the first hardware
 error. Further callbacks cannot touch hardware, and the service fence reports

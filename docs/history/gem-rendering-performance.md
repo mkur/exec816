@@ -100,3 +100,98 @@ For the recorded VDI/console builds, the local
 pin or guest options; its checksum is in the evidence record. Console trace
 assertions were then replayed against that same built image with
 `--replay --observe`.
+
+## TX2: native odd-X text
+
+Complete odd-X text now uses the native uploader through both caller-local
+VDI and the ordinary bitmap-text entry. It selects the existing shifted atlas
+once per run: five source bytes per glyph row at stride 1,280, with destination
+cells advancing four bytes. The glyph offset uses shifts and addition. The
+even-X loop retains its four-byte geometry.
+
+One interior fill and an AND/OR pair at each outer edge replace the paper
+without changing neighbouring pixels. Glyph records follow those five
+background commands; hardware-zero ink uses inverse-mask AND, and other ink
+uses the nibble stencil. The optional trailing fill remains in that same
+list, with its existing even-X/even-width and 3,072-access restrictions.
+
+A full odd-X row holds 79 cells: 84 commands, 1,764 bytes and 14,616 estimated
+accesses, or 85 commands / 1,785 bytes / 17,688 accesses including the largest
+trailing fill. The shared conservative capacity is 86 commands / 1,806 bytes /
+17,872 accesses. Generic command limits, the command arena and both font atlas
+reservations remain unchanged.
+
+The private packet grows from 25 to 26 bytes, appending the parity byte at
+offset 25. The uploader uses existing call-clobbered DP `$80–$A5`; its odd
+background helper adds a three-byte return address while active. Fixed
+bank-zero, each public Task's reserved bank-zero storage, private idle storage,
+guards, alignment, unused capacity and VRAM reservations all change by **zero
+bytes**. The drawing fixture's measured root stack peak is 384 bytes, leaving
+896 bytes above its floor; the VDI clients peak at 806 / 802 bytes, leaving
+250 / 254 bytes above their floors. These are observed fixture peaks, not
+worst-case proofs.
+
+Development validation covers 165 native drawing checks, 187 two-client VDI
+checks and 48 console checks, with independent pixel comparisons. New cases
+include all 256 glyphs at odd X, nonuniform surrounding pixels, X=1 and other
+odd positions, a full 79-cell row, both ink/paper zero cases, blank strings,
+bottom/right edges, CPU/VRAM bank crossings and combined text/fill termination.
+Launch counters require one list per complete run. The VDI fixture includes
+complete odd-X 39-character text, parameter-block glyph 255 and low-byte
+mapping, clipped 80-character calls, horizontal/vertical clipping, covered and
+exposed windows, pointer restoration and forced preemption while shared text
+scratch is in use. Partial clipping retains the existing fallback for TX3.
+
+The native mapping test observes four NMI boundaries and preserves the C
+context, underlying aperture RAM and OS display. Selected busy-timeout and
+unquiesced-DMA cases retain the driver's bounded recovery and ownership rules.
+Raw and optimized emitted packet layouts agree; the host suite passes 452
+tests with four historical-source skips. These are development checks, not
+hosted-system qualification.
+
+Builds use the same pinned compiler revision and optimized host executable as
+TX1, with unchanged guest optimization. The older display fixture's frozen
+input manifest still names a previous compiler pin; its local build copy was
+refreshed to the current compiler/platform pin hashes, retaining all donor and
+Calypsi checks. That override is recorded with the development evidence and
+does not modify the source manifest or donor checkout.
+
+[TX2 development evidence](../development/gem-rendering-tx2.json) records the
+inputs, packet layouts, checks, stack observations and packaged measurements.
+The comparison below uses the same PAL, 8× 65816, VBXE FX 1.26 configuration
+and pinned ROM as TX1. Idle elapsed and Task CPU are cycle-trace means;
+medians are three VBI-quantized batch averages. All values are milliseconds,
+TX1 → TX2.
+
+| Workload | Idle elapsed mean | Task CPU mean | Idle median | Counter median |
+| --- | ---: | ---: | ---: | ---: |
+| 100×50 bar | 28.011 → 28.003 | 16.645 → 16.654 | 27.8 → 27.8 | 31.4 → 31.6 |
+| 39 characters, even X | 21.655 → 21.624 | 11.479 → 11.469 | 21.6 → 21.6 | 24.0 → 23.8 |
+| 39 characters, odd X | 35.048 → 22.032 | 22.783 → 11.655 | 35.0 → 22.0 | 38.6 → 24.4 |
+| Clipped text | 38.322 → 38.284 | 25.230 → 25.172 | 38.2 → 38.2 | 41.2 → 43.2 |
+| Five-object dialog | 144.567 → 144.547 | 93.188 → 93.180 | 144.0 → 144.0 | 157.0 → 157.0 |
+
+Odd-X text now takes **one borrow, one native upload and one launch**, with
+zero `vdi_v_gtext` or `vbxe_glyph` calls. Task CPU falls 48.8% and idle elapsed
+time falls 37.1%. It is now close to even-X text; the remaining end-to-end cost
+includes the unchanged VDI/application protocol, scheduling and interrupts.
+
+The controls' idle CPU and elapsed means are essentially unchanged. The
+counter-loaded clipped-text median is worse in this run (41.2 → 43.2 ms),
+despite unchanged idle rendering cost; that loaded run was not cycle-traced,
+so this does not establish its cause. TX2 does not claim a clipped-text or
+interaction-latency improvement. TX3 remains the next slice, and the final
+interaction gate remains TX7.
+
+Both packaged benchmark scenarios pass through normal application launch and
+clean shutdown. The refreshed OF816 demo is
+`build/gem-rendering-tx2/demo/exec816-demo.zip` (538,935 bytes), SHA-256
+`a98487a3958103530640d6deef3f4f115bc4527fe4e67ba6fa343f92d031f5c9`.
+Launch with `build/gem-rendering-tx2/demo/launch-altirra.command`.
+The TX1 package remains intact for comparison.
+
+The native drawing, VDI and console entrypoints are the same as TX1, using
+`build/gem-rendering-tx2/host_release.py` and TX2 output directories. Additional
+selected regressions use `tools/test_gem_display.py --mode opt --case map-nmi
+--case busy-timeout --case unquiesced`, through the recorded local
+`build/gem-rendering-tx2/display_current.py` manifest wrapper.
