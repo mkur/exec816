@@ -240,6 +240,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from generate_display import expected_layout as display_layout
             renderer = instrument(out)
             extra_probes = [(ROOT/'c/calypsi/display-layout.c', display_layout())]
+        if suite=='objects':
+            from test_object_units import instrument
+            renderer=instrument(out)
         if suite=='alerts':
             extra_probes.append((ROOT/'tests/programs/aes_form_layout.c',[
                 ('Form size',319),('Form focus',209),('Form alert',311),

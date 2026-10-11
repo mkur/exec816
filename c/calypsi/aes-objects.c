@@ -42,7 +42,7 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
     struct ExecAESContext *c=ExecAESContext();
     struct ObjectPaint p;
     struct AESWindowView *v;
-    WORD obj=start,level=0,next,border,l,t,r,b,row,vl,vt,vr,vb;
+    WORD obj=start,level=0,next,border,l,t,r,b,row,rows,vl,vt,vr,vb;
     UWORD i;
     if (!c || !ExecAESEnter(c)) return 0;
     if (!c->workstation || !c->view || !c->view->shown || !c->view->updates) {
@@ -69,6 +69,9 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
             }
             l=p.x-border; t=p.y-border;
             r=p.x+tree[obj].ob_width+border; b=p.y+tree[obj].ob_height+border;
+            /* Choose from the full extent, before damage/visibility clipping.
+             * Large objects retain bounded strips even for a short exposure. */
+            rows=b-t<=32 ? 32:16;
             if (l<x) l=x;
             if (t<y) t=y;
             if (r>x+w) r=x+w;
@@ -79,8 +82,8 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
                 vr=r<v->visible[i].right ? r:v->visible[i].right;
                 vb=b<v->visible[i].bottom ? b:v->visible[i].bottom;
                 if (vl>=vr || vt>=vb) continue;
-                for (row=vt;row<vb;row+=16) {
-                    r_set(&p.clip,vl,row,vr-vl,vb-row>16 ? 16:vb-row);
+                for (row=vt;row<vb;row+=rows) {
+                    r_set(&p.clip,vl,row,vr-vl,vb-row>rows ? rows:vb-row);
                     if (GemDrawingBorrow(&c->workstation->grant,vl,row,vr,row+p.clip.g_h,draw,&p)!=DISPLAY_OK) {
                         c->diagnostic=AES_DISPLAY_ERROR; c->busy=0; return 0;
                     }

@@ -53,6 +53,8 @@ def physical(b,p,foreign,report):
                         'Editable pixels phase %d at %d,%d'%(phase,x,y))
         report['edit_pixels'].append(dict(phase=phase,pixels=68*20))
         b.poke16(sy['EditGo'],phase)
+    from test_object_units import physical as object_units
+    object_units(b,p,foreign,report,reach)
     b.bp_clear_all()
 
 

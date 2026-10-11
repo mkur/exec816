@@ -787,7 +787,7 @@ UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context)
 {
     UWORD status;
-    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>16)
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>32)
         return DISPLAY_BAD_ARGUMENT;
     status=DisplayEnter(grant);
     if (status!=DISPLAY_OK) return status;

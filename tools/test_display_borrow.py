@@ -102,22 +102,29 @@ def physical(b, p, foreign, report, fault=0):
     screen = b.rawscreen(str(path)); raw = path.read_bytes()
     for who, pen in enumerate((4,2)):
         color = bytes((v&254)+(v>>7) for v in PALETTE[pen*3:pen*3+3])[::-1]
-        for y in range(181,197):
+        for y in range(181,213):
             for x in range(563+who*40,597+who*40):
                 at = y*screen.stride+(x+16)*4
                 require(raw[at:at+3] == color, 'Borrowed fill pixel differs at '+str((x,y)))
     report['borrowed_renderer'] = {name:get(name) for name in
         ('DisplayBorrows','DisplayNative','DisplayCopies','DisplayOverlap','DisplayActive')}
-    report['borrowed_renderer']['exact_pixels'] = 2*34*16
+    report['borrowed_renderer']['exact_pixels'] = 2*34*32
     b.poke16(sy['DisplayGo'],2)
     b.bp_clear_all()
 
 
 def trace_setup(p, foreign, out):
     import os
-    from console_turn_profile import markers, flat_markers
+    from console_turn_profile import flat_markers
     from bitmap_console_performance import native_markers
-    definition = markers(p,foreign,out/'drawing')
+    # Only scheduler attribution and borrower spans are needed here. Avoid
+    # depending on instruction patterns inside unrelated driver primitives.
+    definition=dict(spans={},points={
+        **{name:p['labels'][name] for name in ('native_irq','native_nmi','interrupt_schedule')},
+        'selected':p['labels']['context_restore']+4,
+        'turn':foreign['symbols']['DisplayNativeBegin'],
+        'worker_retire':p['labels']['done']},
+        task_dps=[pool['dp'] for pool in p['build']['memory']['task_pools']])
     points = flat_markers(definition)
     spans = native_markers(p,[('DISPLAY_ENTER','access_wait')])
     spans['borrow_unit'] = dict(entry=foreign['symbols']['DisplayBorrowBegin'],

@@ -44,7 +44,7 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* Flat GEM pattern 2: black dots at odd window-relative X/Y, on white. */
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
                      UWORD originX,UWORD originY);
-/* One admitted synchronous unit, at most sixteen rows. The callback is linked
+/* One admitted synchronous unit, at most 32 rows. The callback is linked
  * renderer code, never a borrowed application function pointer. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context);

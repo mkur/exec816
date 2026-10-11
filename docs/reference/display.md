@@ -130,12 +130,17 @@ physical access until the presenter polls and retires its hardware completion.
 
 Every shared GEM drawing entry, including pointer, caret, outline, staging and
 snapshot work, uses this arbiter. The adapter's trusted `GemDrawingBorrow` helper
-runs one synchronous callback over an admitted rectangle of at most sixteen rows,
+runs one synchronous callback over an admitted rectangle of at most 32 rows,
 restores intersecting overlays, fences and releases. It is an internal renderer
 callback, not an application callback API. A borrower must not issue AES RPC,
 wait for an event or retain caller buffers within the unit. The [application VDI layer](gem-vdi.md#resident-application-workstations)
 uses this helper with private workstation state and the published visible work
 region. The helper grants no permission to draw arbitrary desktop pixels.
+Caller-local AES objects whose complete extent, including outward borders, is
+at most 32 rows use one callback per visible intersection. Larger objects retain
+16-row strips, even for short exposed portions. Internal command lists retain
+their 64-record/8,192-access limits and may drain within a callback. Native
+presenter batches and the offscreen widget buffer remain limited to 16 rows.
 
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.

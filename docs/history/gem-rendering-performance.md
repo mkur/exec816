@@ -296,3 +296,64 @@ python3 tools/trace_g4bench.py --bundle build/gem-rendering-tx3/demo \
   --output build/gem-rendering-tx3/trace-idle --load idle
 python3 tools/measure_g4bench.py --bundle build/gem-rendering-tx3/demo --load counter
 ```
+
+## TX4: complete small-object units
+
+`objc_draw` chooses its unit height from the complete object extent, including
+outward borders, before damage or visibility clipping. Extents up to 32 rows
+use one borrow per visible intersection; larger objects retain 16-row strips.
+The adapter's callback ceiling is 32 rows. Generic blitter geometry, list/work
+limits, presenter batches and the 640×16 scratch strip are unchanged.
+
+[TX4 evidence](../development/gem-rendering-tx4.json) records 512 optimized
+object checks and eleven independent pixel scenes, including 16/17/31/32/33-row
+extents, ordinary/EXIT/DEFAULT buttons, selected/disabled wide objects, odd
+coordinates, damage clipping and pointer restoration. A 33-row object uses
+16/16/1; exposing only 24 rows of it still uses 16/8. A 12-row Files-style
+selection remains one borrow. The wide 32-row cases complete multiple internal
+lists without exceeding 64 records or 8,192 accesses per list.
+
+The two-borrower fixture now uses 32-row callbacks beside native scroll/pointer
+work. Its ownership, pixels, stack guards, quiescent timeout cleanup and
+unquiesced reset-required behavior pass. Its instrumented borrow elapsed
+median/p95/maximum are 5.065/18.971/19.576 ms, including fixture assertions and
+two injected yields; these are not application feedback measurements. The
+object fixture's root stack peaks at 941 bytes, with 339 bytes above its floor.
+The host suite passes 452 tests with four historical-source skips. This is
+development validation, not hosted-system qualification.
+
+The unchanged dialog falls from ten borrows/uploads/launches to eight, with
+its 64-row root still using four strips. Logical fill calls fall from 75 to 59
+because the button borders are no longer reconstructed twice; their algorithm
+is unchanged. TX3 → TX4 idle cycle-trace means are **144.544 → 130.516 ms**
+elapsed and **93.142 → 81.805 ms** Task CPU. Bar and text controls are essentially
+unchanged. The OF816 package, compiler pin, ROM, PAL 8× CPU and VBXE 1.26
+configuration match the previous slice.
+
+The matched exact-package interaction probe performs 40 Panel presses and 40
+Files selection changes, comparing independently expected scanout. Its timings
+include input and scheduling, with frame-granular completion polling:
+
+| Feedback | TX3 median / p95 | TX4 median / p95 |
+| --- | ---: | ---: |
+| Panel button | 100.288 / 120.498 ms | 100.288 / 140.211 ms |
+| Files selection | 100.289 / 160.426 ms | 100.288 / 160.411 ms |
+
+Panel's median is unchanged and its p95 is about one PAL frame worse in this
+cohort. This is an open interaction result for TX7, not evidence of improved
+button latency. Combining rows reduces repeated setup but does not make
+publication atomic. The final combined implementation must be compared against
+this matched TX3 package before closing that gate.
+
+Reserved bank-zero changes are **0 fixed, 0 per public Task and 0 idle bytes**,
+including guards, alignment and unused capacity. VRAM reservation growth is
+**0 bytes**. Resident C payload grows by 23 code bytes and zero data bytes.
+The intermediate OF816 ZIP is `build/gem-rendering-tx4/demo/exec816-demo.zip`
+(539,309 bytes), SHA-256
+`39dc6d22ed6024c1dbad9cc9a5588fff006e0255d653efced6fc8887595b4877`.
+
+Reproduce with the recorded release-host wrapper and `tools/test_aes_server.py
+--suite objects --mode opt`, `tools/test_display_borrow.py`, and
+`tools/trace_g4bench.py --load idle`. The new `tools/measure_gem_feedback.py
+--bundle <demo> --output <fresh-directory>` applies the same physical input
+schedule to either archived package and checks clean shutdown.

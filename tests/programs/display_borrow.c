@@ -55,7 +55,7 @@ static void paint(void *context)
     UWORD who = *(UWORD *)context;
     UWORD x = 563+who*40;
     if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
-    CHECK(GemBitmapFill(x,181,x+34,197,who ? 2 : 4) == 0);
+    CHECK(GemBitmapFill(x,181,x+34,213,who ? 2 : 4) == 0);
     /* Force a scheduling boundary with renderer staging live. This is test
      * injection; production callbacks never yield or wait while admitted. */
     if (DisplayIterations[who] == 0) ExecYield();
@@ -72,7 +72,7 @@ static void worker(UWORD who)
     Forbid(); ++AESReady; Signal((struct Task *)DisplayController,DisplayWake); Permit();
     while (!DisplayGo) Wait(grants[who].mask);
     for (i = 0; i < (DisplayFaultVariant ? 1 : 24); ++i) {
-        CHECK(GemDrawingBorrow(&grants[who],563+who*40,181,597+who*40,197,paint,&who)
+        CHECK(GemDrawingBorrow(&grants[who],563+who*40,181,597+who*40,213,paint,&who)
             == (DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
         ++DisplayIterations[who];
     }
