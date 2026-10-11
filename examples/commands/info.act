@@ -1,0 +1,245 @@
+MODULE INFO
+
+USE COMMAND
+USE CSTRING AS STR
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(1)
+COMMAND.VolumeInfo info
+BYTE ARRAY line(128),digits(11)
+CARD length
+
+PROC Start()
+
+  length=0
+  line(0)=0
+
+RETURN
+
+PROC Text(CSTRING value)
+
+  length==+CARD(STR.strlcpy(@line(0)+SIZE(length),value,
+      SIZEOF(line)-SIZE(length)))
+
+RETURN
+
+PROC Number(LONGCARD value)
+
+  STR.u32toa(value,@digits(0),SIZEOF(digits))
+  Text(CSTRING(digits))
+
+RETURN
+
+; One bounded line per WriteAll, using the caller's selected output.
+BYTE FUNC Emit()
+
+  line(length)=10
+
+RETURN(BYTE(COMMAND.WriteAll(COMMAND.Output(),@line(0),LONGINT(length+1))<>0))
+
+BYTE FUNC Cancelled()
+
+  IF COMMAND.BreakPending()<>0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_BREAK)
+    RETURN(1)
+  FI
+
+RETURN(0)
+
+BYTE FUNC Heading()
+
+  Start()
+  Text(CSTRING(@info.name(0)))
+  Text(c":")
+  IF info.label(0)<>0 THEN
+    IF length+CARD(STR.strlen(CSTRING(@info.label(0))))+3>40 THEN
+      IF Emit()=0 THEN
+        RETURN(0)
+      FI
+
+      Start()
+    ELSE
+      Text(c" ")
+    FI
+
+    Text(c"(")
+    Text(CSTRING(@info.label(0)))
+    Text(c")")
+  FI
+
+RETURN(Emit())
+
+; Disk counts include filesystem metadata; K is nominal bytes divided by 1024.
+BYTE FUNC Report()
+
+  IF Heading()=0 THEN
+    RETURN(0)
+  FI
+
+  Start()
+  Text(c"  Size ")
+  IF (info.flags & COMMAND.VOLUME_BLOCKS_VALID)<>0 THEN
+    Number((info.totalBlocks*LONGCARD(info.sectorBytes)) RSH 10)
+    Text(c"K Used ")
+    Number(((info.totalBlocks-info.freeBlocks)*LONGCARD(info.sectorBytes)) RSH 10)
+    Text(c"K Free ")
+    Number((info.freeBlocks*LONGCARD(info.sectorBytes)) RSH 10)
+    Text(c"K")
+  ELSEIF (info.flags & COMMAND.VOLUME_RAM_VALID)<>0 THEN
+    Text(c"dynamic Used ")
+    Number(info.allocatedBytes RSH 10)
+    Text(c"K Free -")
+  ELSE
+    Text(c"- Used - Free -")
+  FI
+
+  IF info.readOnly<>0 THEN
+    Text(c" RO")
+  ELSE
+    Text(c" RW")
+  FI
+  IF Emit()=0 THEN
+    RETURN(0)
+  FI
+
+  Start()
+  IF info.format=COMMAND.VOLUME_RAM THEN
+    Text(c"  RAM, volatile")
+  ELSE
+    IF info.format=COMMAND.VOLUME_MYDOS THEN
+      Text(c"  MyDOS ")
+    ELSE
+      Text(c"  SpartaDOS ")
+    FI
+    Number(LONGCARD(info.sectorBytes))
+    Text(c"B ")
+    IF info.backend=COMMAND.VOLUME_IDEPLUS THEN
+      Text(c"ideplus.device/")
+      Number(LONGCARD(info.unit))
+    ELSE
+      Text(c"sio.device/D")
+      Number(LONGCARD(info.unit-48))
+    FI
+  FI
+
+RETURN(Emit())
+
+BYTE FUNC Fault(LONGINT cause)
+
+  Start()
+  Text(c"  ")
+  LET count=COMMAND.Fault(cause,NULL,@line(0)+SIZE(length),
+      CARD(SIZEOF(line)-SIZE(length)))
+  IF count<0 THEN
+    COMMAND.SetIoErr(COMMAND.ERROR_LINE_TOO_LONG)
+    RETURN(0)
+  FI
+
+  length==+CARD(count)
+
+RETURN(Emit())
+
+; Retain the query's causal error across lock cleanup.
+BYTE FUNC Query(BYTE POINTER path)
+
+  LET lock=COMMAND.Lock(path,COMMAND.SHARED_LOCK)
+  IF lock=NULL THEN
+    RETURN(0)
+  FI
+
+  LET okay=COMMAND.Info(lock,BYTE POINTER(@info))
+  LET cause=COMMAND.IoErr()
+  COMMAND.UnLock(lock)
+  COMMAND.SetIoErr(cause)
+
+RETURN(BYTE(okay<>0))
+
+LONGINT FUNC List()
+  CARD index,published
+  LONGINT firstError,status,cause
+
+  published=0
+  firstError=0
+  status=COMMAND.RETURN_OK
+  FOR index=0 TO COMMAND.VOLUME_SLOTS-1 DO
+    IF Cancelled()<>0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+
+    IF COMMAND.GetVolume(index,BYTE POINTER(@info))=0 THEN
+      IF COMMAND.IoErr()<>0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    ELSE
+      published==+1
+      cause=0
+      IF info.state=COMMAND.VOLUME_OFFLINE THEN
+        cause=COMMAND.ERROR_DEVICE_NOT_MOUNTED
+        status=COMMAND.RETURN_WARN
+      ELSE
+        Start()
+        Text(CSTRING(@info.name(0)))
+        Text(c":")
+        IF Query(@line(0))=0 THEN
+          cause=COMMAND.IoErr()
+          IF cause=COMMAND.ERROR_BREAK THEN
+            RETURN(COMMAND.RETURN_ERROR)
+          FI
+
+          IF firstError=0 THEN
+            firstError=cause
+          FI
+        FI
+      FI
+
+      IF Cancelled()<>0 OR Report()=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+
+      IF cause<>0 AND Fault(cause)=0 THEN
+        RETURN(COMMAND.RETURN_ERROR)
+      FI
+    FI
+  OD
+
+  IF published=0 THEN
+    Start()
+    Text(c"No mounted volumes")
+    IF Emit()=0 THEN
+      RETURN(COMMAND.RETURN_ERROR)
+    FI
+  FI
+
+  COMMAND.SetIoErr(firstError)
+  IF firstError<>0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+RETURN(status)
+
+LONGINT FUNC Main()
+
+  LET parsed=COMMAND.ReadArgsOrHelp(c"VOLUME",values,1,
+      arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF values(0)=0 THEN
+    RETURN(List())
+  FI
+
+  IF Cancelled()<>0 OR Query(BYTE POINTER(values(0)))=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF Cancelled()<>0 OR Report()=0 THEN
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  COMMAND.SetIoErr(0)
+
+RETURN(COMMAND.RETURN_OK)
+
+ENDMODULE

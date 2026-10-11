@@ -51,3 +51,29 @@ I1's raw/optimized ABI checks remain the small caller-facing probes. Reserved
 bank-zero delta for I2 is zero fixed, zero per Task and zero idle, including
 guards and unused capacity. The statistics routines add 3,384 resident bytes
 to FSVOLUME; the same worker and its existing guarded stack reservation are used.
+
+## I3 loadable command
+
+C:INFO uses the checked COMMAND queries, the existing ReadArgs/help and WriteAll
+providers, and CSTRING decimal conversion. One copied record and one 128-byte
+line buffer serve the whole listing. It releases each root lock before output,
+follows ordinary path/assign resolution for a named query, continues after
+offline/query failures and preserves the first real cause across cleanup.
+Offline rows return WARN/IoErr zero; cancellation and output failure stop
+immediately. Ordinary rows and long-label wrapping fit the 40-column console.
+
+The actual command body passes 26 cases each with raw and optimized emission:
+all/named/assign/relative forms, RAM, empty/sparse/offline/mixed-error lists,
+wide counts, MyDOS, long/empty labels, help and its console failures, short/zero
+writes, output failure and BREAK. The selected output capture remains separate
+from the help console, all borrowed locks/handles are balanced, and INFO consumes
+no input data. The exact standard demo also passes loaded INFO, C: resolution,
+RAM redirection/read-back and restored OS/ownership checks through physical keys.
+Evidence: build/info/i3-command and demo-standard/info-results.json.
+
+The optimized command has 6,752 routine bytes, 524 bytes of upper-RAM BSS
+including padding, and an 8,611-byte relocatable disk image including imports,
+profiles and relocation records. Maximum emitted local routine peak is 46 bytes;
+that is not a whole-call-chain stack measurement. No new allocation or Task is
+made by INFO itself. Existing loaded-Process stacks and guards remain unchanged:
+reserved bank-zero delta is zero fixed, zero per Task and zero idle.
