@@ -459,3 +459,152 @@ Reproduce with the release-host wrapper, `test_aes_server.py --suite objects
 --mode opt`, `test_widget_pixels.py --mode opt`, `trace_g4bench.py --load idle`
 and `measure_gem_feedback.py`. Build the demo using the standard `build_demo.py`
 GEM desktop/SDFS/256-byte/720-KiB profile.
+
+## TX7: combined measurements and packaged desktop
+
+[TX7 evidence](../development/gem-rendering-tx7.json) compares the unchanged
+G4BENCH against the original trace, with the same Action! compiler revision
+`81dd7dc53377c772602cc09992bdf2a694b4a43b`, release host executable, optimized
+guest, Calypsi 5.18, pinned AltirraOS ROM and PAL 8×/VBXE 1.26 emulator profile.
+The original packages and intermediate slice results remain intact.
+
+| Workload | Original elapsed / Task CPU mean | Final elapsed / Task CPU mean | Original → final counter median |
+| --- | ---: | ---: | ---: |
+| 100×50 bar | 28.102 / 16.662 ms | 19.628 / 9.491 ms | 31.4 → 20.6 ms |
+| 39 characters, even X | 24.011 / 13.277 ms | 21.798 / 11.480 ms | 26.8 → 24.0 ms |
+| 39 characters, odd X | 39.349 / 25.850 ms | 22.083 / 11.665 ms | 42.0 → 24.6 ms |
+| Clipped text | 41.618 / 27.682 ms | 27.503 / 16.370 ms | 45.2 → 30.4 ms |
+| Five-object dialog | 144.786 / 93.196 ms | 90.292 / 49.155 ms | 156.0 → 101.0 ms |
+
+Elapsed/CPU means come from passive cycle traces of the idle workload. The
+counter column contains untraced medians of three VBI-quantized batch averages;
+these are separate from individual-call p95 measurements. Final untraced idle
+medians are 19.6, 21.8, 22.0, 27.4 and 90.0 ms respectively.
+
+The complete benchmark text uses one borrow/upload/launch at either parity.
+The bar does likewise, with one aligned or five odd-edge records. The dialog
+uses eight borrows/uploads/launches and 14 logical fills, versus the original
+ten and 75. The lower fill count preserves exact pixels and does not add
+internal drains in this workload. Vertically clipped text still uses its
+existing fallback, which accounts for the longest clipped-text work units.
+
+The development-only `gem_render_load.c` app exercises public 64/80-character
+even-X and 64/79-character odd-X requests plus even/odd 100×50 fills. It runs
+beside Panel, Files and the shell, replacing Counter. Only its mode word is
+controlled by the observer. The immutable boot/SYS/ROM files come from each
+ZIP; a separate WORK fixture contains the diagnostic app. The app binary is
+identical in all comparisons. Independent scanout checks cover every load.
+Each measured call includes its own UPDATE pair, while G4BENCH amortizes that
+pair over groups. Application timer waits between calls are excluded.
+
+A framed work area exposes 624 pixels. The 80-character request at X=8 draws
+78 complete cells; the 79-character request at X=9 draws 77 complete cells and
+one partial edge. The latter needs the native upload plus its edge submission.
+Both 64-cell calls retain a single borrow/upload/launch. TX1/TX2's native tests
+cover complete 80-/79-cell screen rows. The covered-window fill diagnostic has
+two visible intersections, and therefore two direct-fill borrows; its earlier
+16-row implementation used four. The unobscured G4BENCH bar checks the
+single-intersection case.
+
+Forty steady calls per load give the following cycle-observed distributions.
+Borrow includes admission waiting; held time starts after `DisplayEnter` and
+ends before `DisplayLeave`, including any preemption during that interval.
+The maximum columns cover all captured calls, including physical-input cohorts.
+All values are milliseconds.
+
+| Request | TX3 completion median / p95 | Final completion median / p95 | Final borrow median / p95 | Maximum borrow / held |
+| --- | ---: | ---: | ---: | ---: |
+| even64 | 43.564 / 43.935 | 43.549 / 43.978 | 5.903 / 5.928 | 9.101 / 4.793 |
+| even80 | 45.071 / 45.418 | 45.002 / 47.514 | 6.813 / 9.543 | 69.508 / 26.501 |
+| odd64 | 43.811 / 46.424 | 43.752 / 44.184 | 6.088 / 6.124 | 9.127 / 5.006 |
+| odd79 | 60.048 / 60.064 | 60.025 / 60.086 | 11.976 / 12.064 | 71.812 / 27.008 |
+| even-bar | 45.801 / 48.928 | 56.086 / 56.547 | 2.034 / 2.117 | 4.769 / 0.952 |
+| odd-bar | 50.189 / 50.526 | 41.567 / 41.930 | 2.778 / 2.861 | 37.206 / 16.070 |
+
+The even-bar diagnostic illustrates the remaining scheduling cost: median
+Task CPU falls from 18.041 to 13.596 ms, while off-Task time rises from 24.006
+to 39.668 ms. Its individual UPDATE envelope therefore completes later despite
+cheaper drawing. The unchanged G4BENCH bar improves both elapsed and CPU time.
+Large borrow maxima during input include waiting for admission; they must not
+be interpreted as uninterrupted renderer CPU or uninterrupted hardware ownership.
+The maximum observed admitted hold is 27.008 ms in these captures.
+
+Matched physical input uses 40 samples per cohort and independent scanout
+comparison. Completion polling is once per frame. TX3 → final idle Panel
+median/p95 is 100.288/120.498 → 100.288/120.496 ms; Files selection is
+100.289/160.426 → 100.288/160.411 ms. TX4's intermediate one-frame Panel p95
+increase is absent in the combined implementation, while TX5's unusually low
+idle Panel median is not retained.
+
+| Repeated load | Panel median: TX3 → final | Panel p95: TX3 → final |
+| --- | ---: | ---: |
+| even80 | 140.202 → 120.245 ms | 140.455 → 140.211 ms |
+| odd79 | 140.202 → 100.288 ms | 140.458 → 120.245 ms |
+| odd-bar | 120.498 → 100.288 ms | 140.467 → 140.455 ms |
+
+The TX4 → TX5 repeated odd-fill comparison separately improves Panel p95
+from 140.455 to 120.498 ms. Its completion median falls from 50.132 to
+41.936 ms; its two visible intersections use two uploads instead of four.
+
+A fixed 15-frame inter-motion schedule initially moves even80's pointer median
+from 120.245 to 140.453 ms, with p95 unchanged near 140.454 ms. The planned
+ambiguous-case repeat cycles waits through 11–20 frames identically on both
+images. Both then measure 100.289 ms median and 140.454 ms p95. Odd79 likewise
+matches at 100.289/120.497 ms. The initial median increase is phase-sensitive
+and does not reproduce across that sweep. Both cohorts remain in the evidence.
+These pointer values include the positioning helper's scheduled 70,000-cycle
+(39.47 ms) delay; they compare progress under matched load, rather than measuring
+bare mouse-driver latency. Rendering continues throughout every input cohort.
+
+The measured development performance gates pass: primitive CPU/elapsed gains,
+expected counts, pixels, ownership/failure cleanup and matched feedback without
+a reproducible median/p95 regression. Individual call completion remains
+sensitive to UPDATE/scheduling phase, as the even-bar diagnostic shows. Drawing
+still publishes directly, so occasional flicker can remain.
+
+The exact refreshed ZIP passes the full dialog/selector/TEXT walkthrough with
+Files launch integration, Panel keyboard input, calculator/native launches,
+covered-window and close/exposure repair, cancellation, parent/child cleanup,
+heap return and clean shutdown. OF816 waits five seconds before autoboot.
+The smallest observed ordinary-Task headroom is 132 bytes (slot 5); guards and
+the 128-byte walkthrough threshold pass. Targeted emitted pixel, budget,
+ownership and fault tests are recorded separately in TX4–TX6. The final host
+suite passes 452 tests with four historical-source skips. These are development
+checks, not hosted-system or physical-hardware qualification.
+
+TX7 adds no production reservation or payload. Across TX4–TX7, bank-zero
+reservation growth is **0 fixed, 0 per public Task and 0 idle bytes**, including
+guards, alignment and unused capacity. VRAM reservation growth is **0 bytes**.
+Resident C payload grows by 1,326 code bytes and 325 table bytes relative to
+TX3, within existing upper-memory reservations. No stack reservation grows.
+
+The final OF816 ZIP is `build/gem-rendering-tx7/demo/exec816-demo.zip`
+(540,148 bytes), SHA-256
+`9972bf1c730100cddbde241d5e072be6e43e3656ec7d1bb74f6590b9265a567a`.
+It contains boot files, matching disks/ROM, a short guide, checksums and license
+notices. Development apps, build intermediates and traces remain outside it.
+Launch with `build/gem-rendering-tx7/demo/launch-altirra.command`.
+
+Reproduce the final checks with the recorded release-host build wrapper:
+
+```sh
+python3 build/gem-rendering-tx7/host_release.py tools/build_demo.py \
+  --gem-desktop --format sdfs --sector-bytes 256 --system-kib 720 \
+  --output build/gem-rendering-tx7/demo
+python3 tools/trace_g4bench.py --bundle build/gem-rendering-tx7/demo \
+  --output <fresh-trace-directory> --load idle
+python3 tools/measure_g4bench.py --bundle <separate-demo-copy> --load both
+python3 tools/measure_rendering_load.py --bundle <archived-demo> \
+  --output <fresh-load-directory>
+python3 tools/measure_rendering_load.py --bundle <archived-demo> \
+  --output <fresh-phase-directory> --modes 2,4 \
+  --pointer-waits 11,12,13,14,15,16,17,18,19,20
+python3 tools/test_text_viewer_demo.py --bundle build/gem-rendering-tx7/demo --files
+```
+
+Use the same diagnostic binary and schedules with the archived TX3 and final
+packages, and `--modes 6` with TX4/TX5 for the isolated fill comparison.
+`measure_rendering_load.py --output <capture> --analyze` reuses saved CPU
+observations. Its analyzer aligns the debugger's 32-bit sample clock with the
+extended trace clock; initial capture-analysis failures and their correction
+are retained in the evidence. They required no guest change or recapture.

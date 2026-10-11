@@ -140,6 +140,8 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             source=(distribution_root or out)/item['name']
             require(sha256(source)==item['sha256'],'Changed extracted writable media')
             shutil.copyfile(source,target)
+            if integration is not None and hasattr(integration,'prepare_work'):
+                integration.prepare_work(target,item)
             if disk_failure!='missing-work':b.mount(item['drive']-1,str(target))
             work_media.append((item,target))
         machine=verify_machine(b,rom,pin)

@@ -3,9 +3,10 @@
 [GEM plans](README.md) · [Drawing traces](../../history/g4bench-drawing-traces.md) ·
 [Earlier text optimization](text-viewer-performance-plan.md)
 
-Status: TX1–TX6 implemented and development-tested; TX7 pending. Continue in
-executable slices, committing each after its focused development checks pass.
-See [slice results](../../history/gem-rendering-performance.md).
+Status: TX1–TX7 implemented and development-tested in executable slices. The
+measured TX7 performance gates pass; scheduling-phase limits and the retained
+feedback cohorts are recorded in the [slice results](../../history/gem-rendering-performance.md).
+These checks do not establish hosted-system or real-hardware qualification.
 
 Increase text batches from 32 to 80 characters and extend the native uploader
 to fully visible odd-X text. A complete screen row should need one display

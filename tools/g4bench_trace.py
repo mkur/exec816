@@ -67,7 +67,7 @@ def listing_returns(image, directory):
     return sorted(returns)
 
 
-def definition(program, foreign, app, directory):
+def definition(program, foreign, app, directory, app_names=APP_NAMES, app_directory=None):
     collect = next(r['address'] for r in program['image']['routines']
                    if r['name'].startswith('M_CONSOLEDRIVER_COLLECT_'))
     mapped = {**program, 'labels': {**program['labels'], 'collect': collect}}
@@ -84,10 +84,10 @@ def definition(program, foreign, app, directory):
     entries = {foreign['symbols'][name]: name for name in C_NAMES if name in foreign['symbols']}
     require(len(entries) == len(C_NAMES), 'Missing resident trace function')
     entries.update({foreign['symbols'][name]:name for name in FILL_NAMES if name in foreign['symbols']})
-    application = {app['image']['symbols'][name]: name for name in APP_NAMES}
+    application = {app['image']['symbols'][name]: name for name in app_names}
     return dict(timeline=timeline, resident_entries=entries, app_entries=application,
                 resident_returns=listing_returns(foreign, directory/'drawing'),
-                app_returns=listing_returns(app['image'], directory/'apps/g4bench'),
+                app_returns=listing_returns(app['image'], app_directory or directory/'apps/g4bench'),
                 link_base=app['abi']['link_bank'] << 16, banks=app['verified_banks'])
 
 
