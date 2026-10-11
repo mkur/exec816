@@ -11,6 +11,7 @@ from build_of816 import build as build_monitor
 from make_data_disk import make
 from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,pointer_description
 from library_paths import read_source
+from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
 DEMO_IMAGE_DATA_BYTES = 4352
@@ -340,6 +341,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             text_shell=output if text_shell_only else None)
     if ide_only:
         add_ide_carts(output)
+    write_launcher(output)
     return record
 
 
@@ -396,6 +398,7 @@ def refresh_monitor(output):
         finalize_ide_media(output,record)
         package(output/'of816',output/record['distribution'],text_shell=output)
         add_ide_carts(output)
+        write_launcher(output)
         return record
     guides=[ROOT/'docs/guides/boot-monitor.md',ROOT/'docs/demo-distribution.txt']
     if record.get('shell_only'):
@@ -424,6 +427,7 @@ def refresh_monitor(output):
             output/'bitmap-console' if record.get('bitmap_console') else None,
             bitmap_shell=output if record.get('shell_only') and record.get('bitmap') else None,
             text_shell=output if record.get('shell_only') and not record.get('bitmap') else None)
+    write_launcher(output)
     return record
 
 
@@ -522,3 +526,5 @@ if __name__=='__main__':
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
         bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,desktop=args.desktop,system_kib=args.system_kib,mouse_profile=args.mouse_profile,aes_counters=args.aes_counters,text_shell_only=args.text_shell_only,aes_input=args.aes_input,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
+    if not args.cartridge_from:
+        print(f'Local Altirra launcher: {args.output}/launch-altirra.command')

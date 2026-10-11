@@ -44,6 +44,8 @@ class DemoPackageTests(unittest.TestCase):
         }
         (self.bundle/'of816.json').write_text(json.dumps(record))
         (self.bundle/'debug.lst').write_text('Not for distribution')
+        (self.bundle/'launch-altirra.command').write_text('Local developer launcher')
+        (self.root/'launch-altirra.command').write_text('Local developer launcher')
         self.archive = self.root/'demo.zip'
 
     def test_recipient_licences_and_checksums(self):
