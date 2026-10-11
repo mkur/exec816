@@ -22,6 +22,8 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
                                                        *([ROOT/'c/calypsi/file-list.c'] if name=='files' else [])])
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
+    from build_g4bench import build as g4bench
+    applications['g4bench']=g4bench(out/'apps/g4bench')
     applications['text']=application(out/'apps/text',[
         ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
         [ROOT/'c/calypsi/file-list.c'],probes=[

@@ -144,6 +144,12 @@ bytes for each.
 
 ## Follow-on capabilities
 
+The proposed [G4BENCH port](plans/gem4xe/g4bench-port-implementation-plan.md)
+adds repeatable application-level measurements before further GUI tuning:
+solid bars, even/odd/clipped plain text and a small object-tree dialog. The
+first port uses existing drawing APIs and timer.device, labels adaptations
+from GEM4XE and leaves unsupported benchmark families for later.
+
 The [IDE-only demo plan](plans/ide-only-demo-implementation-plan.md) adds a
 separate profile using IDE Plus for both SYS: and writable WORK:, excluding the
 Exec SIO driver. It follows the implemented native IDE driver with system-volume

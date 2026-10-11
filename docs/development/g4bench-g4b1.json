@@ -1,0 +1,223 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "G4B1",
+  "scope": "Optimized loaded C clock probe plus two normal benchmark window lifetimes; no compiler or full system qualification",
+  "command": "python3 tools/test_g4bench.py --output build/g4bench/g4b1 --replay",
+  "result_path": "build/g4bench/g4b1/results.json",
+  "result_sha256": "08751dcdd6b5ab6e6e09db14ac8af5ee5c58ed190ae1c63ea88690747caec7b1",
+  "cases": [
+    {
+      "cycle": 1,
+      "clock_reads": 2
+    },
+    {
+      "cycle": 2,
+      "clock_reads": 2
+    }
+  ],
+  "checks": [
+    18
+  ],
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "app": {
+    "bytes": 3867,
+    "span": 65901,
+    "sha256": "f879c0633107bb74ebe38feacf7bbd242217670ba8e20bd7c45be993aeacfa0e",
+    "verified_banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ],
+    "abi": 12
+  },
+  "clock_upper_heap_bytes": 72,
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 427,
+      "remaining_above_floor": 853
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 281,
+      "remaining_above_floor": 775
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 151,
+      "remaining_above_floor": 905
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 584,
+      "remaining_above_floor": 472
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 686,
+      "remaining_above_floor": 1618
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 62,
+      "remaining_above_floor": 194
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "bank_zero_slice_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  },
+  "notes": [
+    "Existing timer.device and public I/O; no kernel extension",
+    "Prerequisite IDE call-accounting host regression passes; completed emitted image re-admitted after repair",
+    "Historical bank-zero-compaction deltas in raw runner output are not this slice delta"
+  ]
+}

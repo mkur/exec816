@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 11,
+  "version": 12,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -87,6 +87,13 @@
     "form_do",
     "form_alert",
     "fsel_input",
-    "fsel_exinput"
+    "fsel_exinput",
+    "CreateMsgPort",
+    "DeleteMsgPort",
+    "CreateIORequest",
+    "DeleteIORequest",
+    "OpenDevice",
+    "CloseDevice",
+    "DoIO"
   ]
 }

@@ -81,7 +81,8 @@ emulators or patches to upstream projects.
   grant.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, calculator sources pinned by
-  `ports/gem4xe/apps/calculator/inputs.json`, and patches to them, retain
+  `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by
+  `ports/gem4xe/apps/g4bench/inputs.json`, and patches to them, retain
   the donor notices. Reproducible extraction copies `COPYING`, `COPYING.LIB`, the
   upstream licence note and font provenance beside the selected sources. The
   Exec MIT interface grant does not relicense this material.

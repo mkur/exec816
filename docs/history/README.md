@@ -1,5 +1,7 @@
 # Historical records
 
+- [G4BENCH port](g4bench-port.md): loadable benchmark slices and measurements.
+
 - [AES UPDATE admission latency](update-admission-latency.md): logical lock,
   presenter painting and physical display handoff attribution, rejected renderer
   experiments and frozen input/cancellation comparisons.

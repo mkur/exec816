@@ -2,7 +2,7 @@
 import json
 from native_program import ROOT,require
 
-MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32)}
+MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32),'g4bench':('g4b_ready',0,0)}
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())

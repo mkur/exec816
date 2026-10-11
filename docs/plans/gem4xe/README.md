@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [G4BENCH port plan](g4bench-port-implementation-plan.md) adds a
+loadable benchmark with solid bars, three plain-text variants and a five-object
+dialog. It uses the existing VBI clock with long batches, labels donor
+adaptations and unsupported tests, and keeps renderer changes out of the port.
+
 The [text viewer design](text-viewer-design.md) adds a loadable,
 read-only `TEXT.APP` using the standard selector, bounded DOS loading, direct
 VDI text and resizable vertical scrolling. Files-to-viewer launch follows
