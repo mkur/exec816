@@ -140,3 +140,25 @@ observed headroom, not a worst-case proof. Host checks: 447 passed.
 The sort uses at most 508 bytes of the existing 512-byte upper data buffer.
 No records, allocations, stack pools or bank-zero reservations grow:
 0 fixed / 0 per-Task / 0 idle additional bytes.
+
+## FP5: driver-owned claim transaction
+
+IDE and SIO workers now hold one Forbid/Permit pair through stop checking,
+dequeue and active-request publication. Their internal helpers require the
+worker's exclusion. A pending Stop still drains accepted work; its intermediate
+state alone does not mean the worker may exit. Physical I/O and waits remain
+outside the transaction. No public kernel operation or driver-private gateway
+was introduced.
+
+Loaded COPY retains 54 reads / 61 writes, while gateway calls fall from 2,547
+to 2,122. It takes 107 frames versus 108: crossings improve substantially;
+this workload's wall-time change is small. Optimized IDE checks pass mixed SIO
+I/O, cancellation, busy shutdown and injected NMI boundaries 1 and 7. SIO checks
+pass concurrent Open, stop with an open binding, stop/restart and last-application
+shutdown. Guards and ownership cleanup pass; busy-stop intentionally checks the
+fatal removal guard. Host checks: 447 passed.
+
+The IDE worker's emitted call-bound analysis is 732 bytes including the
+256-byte interrupt reserve and 16-byte dispatch margin, leaving 292 bytes in
+its unchanged 1,024-byte reservation. Records and buffers stay unchanged:
+bank-zero delta 0 fixed / 0 per-Task / 0 idle.

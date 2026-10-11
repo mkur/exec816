@@ -331,9 +331,15 @@ PUBLIC PROC Worker()
   Notify(bus)
   EXEC.Permit()
   bits=0
-  WHILE Stopping(bus,self,bits)=0 DO
-    bits=0
+  DO
+    EXEC.Forbid()
+    IF Stopping(bus,self,bits)<>0 THEN
+      EXEC.Permit()
+      EXIT
+    FI
     request=EXEC.IOSIOReq POINTER(Claim())
+    EXEC.Permit()
+    bits=0
     IF request=EXEC.IOSIOReq POINTER(0) THEN
       bits=EXEC.Wait(LONGCARD(WAKE_MASK))
     ELSE

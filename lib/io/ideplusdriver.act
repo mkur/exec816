@@ -445,18 +445,15 @@ PROC HardwareStop()
 
 RETURN
 
-; Take ownership atomically with dequeue; interrupts never inspect this queue.
+; Caller holds Forbid through shutdown checking, dequeue and publication.
 EXEC.IOStdReq POINTER FUNC Claim()
   EXEC.IOStdReq POINTER request
-  EXEC.Forbid()
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   request=EXEC.IOStdReq POINTER(EXEC.GetMsg(@bus.port))
   bus.active=EXEC.IORequest POINTER(request)
   bus.phase=1
   bus.cancelled=0
-  EXEC.Permit()
-
 RETURN(request)
 
 ; Complete full raw reads or copy geometry, retaining buffers until reply.
@@ -574,9 +571,15 @@ PUBLIC PROC Worker()
   Notify(bus)
   EXEC.Permit()
   bits=0
-  WHILE Stopping(bus,self,bits)=0 DO
-    bits=0
+  DO
+    EXEC.Forbid()
+    IF Stopping(bus,self,bits)<>0 THEN
+      EXEC.Permit()
+      EXIT
+    FI
     request=Claim()
+    EXEC.Permit()
+    bits=0
     IF request=NULL THEN
       bits=EXEC.Wait(LONGCARD(STOP_MASK) OR LONGCARD($80000000))
     ELSE

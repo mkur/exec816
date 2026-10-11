@@ -697,5 +697,424 @@
     }
   },
   "fp4_baseline_native_routine_bytes": 829405,
-  "fp4_native_routine_bytes": 830926
+  "fp4_native_routine_bytes": 830926,
+  "fp5": {
+    "ide": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 99,
+        "endFrame": 206,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 47,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "logicalReads": 50,
+        "kernelCalls": 2122,
+        "taskSwitches": 324
+      },
+      "guest_frames": 107,
+      "guest_seconds": 2.14,
+      "xex_sha256": "7b81b6b8773b655353a6bac29248c629920b55e70e560ad71abeb3a22df0f882",
+      "guards": "intact"
+    },
+    "ide_lifetime": [
+      {
+        "status": "pass",
+        "case": "mixed",
+        "checks": [
+          1565
+        ],
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 200,
+            "remaining_above_floor": 1080
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 361,
+            "remaining_above_floor": 695
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 297,
+            "remaining_above_floor": 759
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 285,
+            "remaining_above_floor": 771
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 165,
+            "remaining_above_floor": 891
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 131,
+            "remaining_above_floor": 125
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      },
+      {
+        "status": "pass",
+        "case": "busy-stop",
+        "checks": [
+          2
+        ],
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 200,
+            "remaining_above_floor": 1080
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 18,
+            "remaining_above_floor": 238
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      },
+      {
+        "status": "pass",
+        "case": "nmi-1",
+        "checks": [
+          1561
+        ],
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 200,
+            "remaining_above_floor": 1080
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 331,
+            "remaining_above_floor": 725
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 141,
+            "remaining_above_floor": 915
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 117,
+            "remaining_above_floor": 139
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      },
+      {
+        "status": "pass",
+        "case": "nmi-7",
+        "checks": [
+          1561
+        ],
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 200,
+            "remaining_above_floor": 1080
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 331,
+            "remaining_above_floor": 725
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 141,
+            "remaining_above_floor": 915
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 117,
+            "remaining_above_floor": 139
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        }
+      }
+    ],
+    "ide_stack_bound": {
+      "status": "pass",
+      "tier": "development",
+      "image_sha256": "39dba3f3a9508c6f00799793c1b19187216444ce12bc871e4d50aeb23c3468bf",
+      "ordinary_call_bound": 460,
+      "interrupt_reserve": 256,
+      "dispatch_margin": 16,
+      "total_bound": 732,
+      "reservation": 1024,
+      "headroom": 292,
+      "deepest_path": [
+        "M_IDEPLUSDRIVER_WORKER_15BAA73B",
+        "M_IDEPLUSDRIVER_HARDWAREINIT_E5936689",
+        "M_IDEPLUSDRIVER_DISCOVERPARTITIONS_099B333B",
+        "M_IDEPLUSDRIVER_READTABLE_8F132069",
+        "M_IDEPLUSDRIVER_READPHYSICAL_AF100A8C",
+        "M_IDEPLUSDRIVER_READY_595A9D50",
+        "M_IDEPLUSDRIVER_DELAY_7543300C",
+        "io_do_io",
+        "M_IOCORE_DOIO_173DC4A1",
+        "M_IOCORE_START_4033F51A",
+        "M_IOCORE_SUBMIT_5D7CB97A",
+        "M_IORESIDENT_BEGINIO_914C855C",
+        "M_TIMERDRIVER_BEGINIO_9C55068D",
+        "M_TIMERDRIVER_RELATIVE_61FE9928",
+        "__a816_mul_u32_v2"
+      ],
+      "unreachable_timer_binding_branches": [
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_SIODRIVER_START_4928F5B4"
+        ],
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_IDEPLUSDRIVER_START_F9A39B11"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_SIODRIVER_OPEN_9AA3F320"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_CONSOLEDRIVER_OPEN_434F52B0"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_IDEPLUSDRIVER_OPEN_8E428247"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_SIODRIVER_BEGINIO_E1378755"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_CONSOLEDRIVER_BEGINIO_76358745"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_IDEPLUSDRIVER_BEGINIO_7F64FCE0"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_SIODRIVER_CLOSE_01A37B96"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_CONSOLEDRIVER_CLOSE_60C60326"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_IDEPLUSDRIVER_CLOSE_BC3392CF"
+        ]
+      ],
+      "visited_entries": 98,
+      "assumptions": [
+        "IDE worker opens only its immutable timer.device request",
+        "IORESIDENT callbacks on this worker therefore select timer.device",
+        "COP policy switches to the reserved kernel stack; interrupt frames use the 256-byte reserve",
+        "Emitted worker paths use direct calls; known targets match every compiler call-map entry"
+      ]
+    },
+    "sio_lifetime": [
+      {
+        "name": "concurrent-open",
+        "status": "pass",
+        "checks": [
+          10
+        ],
+        "guards": "intact"
+      },
+      {
+        "name": "stop-open",
+        "status": "pass",
+        "checks": [
+          7
+        ],
+        "guards": "intact"
+      },
+      {
+        "name": "stop-restart",
+        "status": "pass",
+        "checks": [
+          6
+        ],
+        "guards": "intact"
+      },
+      {
+        "name": "last-application",
+        "status": "pass",
+        "checks": [
+          2
+        ],
+        "guards": "intact"
+      }
+    ],
+    "native_routine_bytes": 910464
+  }
 }
