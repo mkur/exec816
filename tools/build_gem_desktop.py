@@ -15,12 +15,17 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
     out.mkdir(parents=True,exist_ok=True)
     options.pop('desktop',None)
     applications={}
-    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser')]:
+    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('dialog','gem-dialog')]:
         body='browser' if name=='files' else name
         applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/'main.c',
-                                                       ROOT/'examples'/folder/(body+'.c')])
+                                                       ROOT/'examples'/folder/(body+'.c'),
+                                                       *([ROOT/'c/calypsi/file-list.c'] if name=='files' else [])])
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
+    applications['text']=application(out/'apps/text',[
+        ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
+        [ROOT/'c/calypsi/file-list.c'],probes=[
+            (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
     if 'dos_mounts' not in options:
         from make_data_disk import make
         from build_gem_resource import resource
@@ -42,16 +47,14 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
             (ROOT/'tests/programs/gem_panel_layout.c',[
                 ('Panel size',404),('Panel ready',8),('Panel actions',10),('Panel paints',14),
                 ('Panel work',34),('Panel tree',178),('Panel status',370),('Panel focus',392),('Panel armed',394)]),
-            (ROOT/'tests/programs/gem_browser_layout.c',[('Browser size',2272),('Browser ready',8),('Browser work',26),
-                ('Browser tree',170),('Browser path',178),('Browser names',306),('Browser status',1386),
-                ('Browser count',1962),('Browser selected',1966),('Browser launches',1972),('Browser child',1980),
-                ('Browser bar',2028),('Browser menuInstalled',2268),('Browser menuEnabled',2270)])])
+            (ROOT/'tests/programs/gem_browser_layout.c',__import__('browser_model').LAYOUT),
+            (ROOT/'tests/programs/gem_dialog_layout.c',__import__('dialog_model').LAYOUT)])
     binding(foreign,out)
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     text=read_source(source or ROOT/'tests/programs/gem_desktop_session.act')
     sy=foreign['symbols']
     require(not {'PanelRun','CounterRun','BrowserRun','GEMPanel','GEMCounter','GEMBrowser',
-                 'Calculator','calc_start','calc_ws','calc_panel'} & sy.keys(),
+                 'Calculator','calc_start','calc_ws','calc_panel','TextRun','GEMText','TextStep'} & sy.keys(),
             'Application body or model retained in shared GUI image')
     service=''
     if '      ShellReadStep()' in text:

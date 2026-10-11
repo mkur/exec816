@@ -45,7 +45,7 @@ def desktop(raster):
             raster.pixels[y*640+x]=PENS[8 if (x+y)&1 else 0]
 
 
-def frame(raster, bounds, title, focused, background=0, close=False):
+def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0)):
     x, y, right, bottom = bounds
     rectangle(raster, bounds, 0)
     def box(l,t,r,b):
@@ -69,7 +69,28 @@ def frame(raster, bounds, title, focused, background=0, close=False):
     if close:
         box(x+1,y+1,x+15,y+15)
         text(raster,x+4,y+4,bytes([5]))
-    rectangle(raster,(x+8,y+16,right-8,bottom-8),background)
+    wr=16 if kind&448 else 8
+    wb=16 if kind&32 else 8
+    rectangle(raster,(x+8,y+16,right-wr,bottom-wb),background)
+    if kind&448:
+        l,t,b=right-16,y+16,bottom-wb
+        rectangle(raster,(l,t,right,b),8)
+        if kind&64:
+            rectangle(raster,(l,t,right,t+16),0);box(l,t,right,t+16)
+            for dy in range(5):rectangle(raster,(l+8-dy,t+5+dy,l+9+dy,t+6+dy),1)
+            t+=16
+        if kind&128:
+            rectangle(raster,(l,b-16,right,b),0);box(l,b-16,right,b)
+            for dy in range(5):rectangle(raster,(l+8-dy,b-6-dy,l+9+dy,b-5-dy),1)
+            b-=16
+        box(l,t,right,b)
+        if kind&256:
+            t=y+slider[0];b=t+slider[1]
+            rectangle(raster,(l+1,t,right-1,b),0);box(l,t,right,b)
+    if kind&32:
+        box(right-16,bottom-16,right,bottom)
+        for distance in (3,6,9):
+            for step in range(distance):raster.pixel(right-3-step,bottom-3-distance+step,1)
 
 
 def menu_bar(raster, title=b'Exec816 Shell'):

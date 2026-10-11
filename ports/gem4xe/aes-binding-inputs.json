@@ -303,6 +303,51 @@
         1,
         0
       ]
+    },
+    "form_dial": {
+      "opcode": 51,
+      "control_counts": [
+        9,
+        1,
+        0,
+        0
+      ]
+    },
+    "form_do": {
+      "opcode": 50,
+      "control_counts": [
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    "form_alert": {
+      "opcode": 52,
+      "control_counts": [
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    "fsel_input": {
+      "opcode": 90,
+      "control_counts": [
+        0,
+        2,
+        2,
+        0
+      ]
+    },
+    "fsel_exinput": {
+      "opcode": 91,
+      "control_counts": [
+        0,
+        2,
+        3,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",

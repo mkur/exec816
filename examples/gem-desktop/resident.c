@@ -39,9 +39,9 @@ LONG EXEC_CALL GEMDesktopStart(ULONG files)
 {
     if (active) return 0;
     active=1;GEMDesktopDone=GEMDesktopFailure=0;
-    GEMDesktopChildren[0]=ExecStartProgram("SYS:C/PANEL.APP");
-    GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP");
-    if (files) GEMDesktopChildren[2]=ExecStartProgram("SYS:C/FILES.APP");
+    GEMDesktopChildren[0]=ExecStartProgram("SYS:C/PANEL.APP",NULL,0);
+    GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL,0);
+    if (files) GEMDesktopChildren[2]=ExecStartProgram("SYS:C/FILES.APP",NULL,0);
     if (!GEMDesktopChildren[0] || !GEMDesktopChildren[1] ||
         (files && !GEMDesktopChildren[2])) {
         GEMDesktopStop(0);return 0;

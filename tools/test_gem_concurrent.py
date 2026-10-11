@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_vdi import build_concurrent_probe
@@ -69,7 +70,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                 for s in foreign['segments']],zero_fill=foreign['zero_fill'],reserved_upper_bytes=131072),
             bank_zero_delta=dict(fixed=0,per_task=[0]*8,private_idle=0))
         memory=program['build']['memory']; sy=foreign['symbols']
-        baseline=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline=current_task_memory()
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[key]==baseline[key],'Bank-zero change: '+key)
         for name in cases or (['concurrent'] if production else CASES):
@@ -89,7 +90,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                     b.bp_clear_all()
                 def before(b):
                     b.memload(sy['variant'],variant.to_bytes(2,'little'))
-                    b.memload(0x6000,bytes(2))
+                    if not production: b.memload(sy['observerGo'],bytes(2))
                     saved['os']=b.memdump(0x22f,3)
                     saved['aperture']=bytes((i*37+11)&255 for i in range(4096))
                     b.memload(0x8000,saved['aperture'])
@@ -108,7 +109,7 @@ def run(output,mode,cases=None,replay=False,production=False):
                         reach('native_irq',active)
                         sample=lambda: dict(posts=b.peek16(posts),peer=read('progress'),draw=b.peek16(sy['progress']+2))
                         previous=sample(); windows=[previous]; seen=[False,False]
-                        b.memload(0x6000,b'\x01\x00')
+                        b.memload(sy['observerGo'],b'\x01\x00')
                         for n in range(100):
                             changed=(f'(dw(${posts:x})!={previous["posts"]})|'
                                 f'(dw(${sy["progress"]:x})!={previous["peer"]})|'

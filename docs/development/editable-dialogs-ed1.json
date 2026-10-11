@@ -1,0 +1,498 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "cases": [
+    {
+      "status": "pass",
+      "tier": "development",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "AESChecks": 73,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "tedinfo_pixels": [
+        {
+          "phase": 1,
+          "pixels": 14080
+        },
+        {
+          "phase": 2,
+          "pixels": 14080
+        },
+        {
+          "phase": 3,
+          "pixels": 14080
+        }
+      ],
+      "edit_pixels": [
+        {
+          "phase": 1,
+          "pixels": 1360
+        },
+        {
+          "phase": 2,
+          "pixels": 1360
+        },
+        {
+          "phase": 3,
+          "pixels": 1360
+        },
+        {
+          "phase": 4,
+          "pixels": 1360
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 941,
+          "remaining_above_floor": 339
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 696,
+          "remaining_above_floor": 1608
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "suite": "objects-final",
+      "report": "build/editable-dialogs/ed1/objects-final/results.json",
+      "report_sha256": "53dcd6f0abcd7983686d6e0bfd432abd86328afd9dfb4eecc8a7ac206c85a0b4"
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "AESChecks": 97,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 629,
+          "remaining_above_floor": 651
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 313,
+          "remaining_above_floor": 455
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 151,
+          "remaining_above_floor": 617
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 18,
+          "remaining_above_floor": 750
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 700,
+          "remaining_above_floor": 1604
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 68,
+          "remaining_above_floor": 188
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 289,
+          "remaining_above_floor": 991
+        }
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "suite": "resources-final",
+      "report": "build/editable-dialogs/ed1/resources-final/results.json",
+      "report_sha256": "197ee573d281a1e463f7bdabbc1ea43b3cb407306c005b3a3b231e20b2bfcfff"
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "raw",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "client_checks": [
+        1081,
+        1081
+      ],
+      "packet_address": 196544,
+      "bridge_words": [
+        14242,
+        22136,
+        39612,
+        10630,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10630,
+        2816,
+        0,
+        0,
+        14242,
+        22136,
+        39612,
+        10629,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10629,
+        2816,
+        0,
+        0
+      ],
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "suite": "context-raw",
+      "report": "build/editable-dialogs/ed1/context-raw/results.json",
+      "report_sha256": "b1b45cbed833cfdeda8173b68a2b84857ee42f0238af328fc6e91d5842e43e50"
+    },
+    {
+      "status": "pass",
+      "tier": "development",
+      "mode": "opt",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "client_checks": [
+        1081,
+        1081
+      ],
+      "packet_address": 196544,
+      "bridge_words": [
+        14242,
+        22136,
+        39612,
+        10644,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10644,
+        2816,
+        0,
+        0,
+        14242,
+        22136,
+        39612,
+        10643,
+        2816,
+        0,
+        23040,
+        23041,
+        23042,
+        23043,
+        23044,
+        23045,
+        23046,
+        23047,
+        23048,
+        23049,
+        10643,
+        2816,
+        0,
+        0
+      ],
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "suite": "context-opt",
+      "report": "build/editable-dialogs/ed1/context-opt/results.json",
+      "report_sha256": "ae373b33ffef408818c0ee1866fe44a2773691894e8f2a49965711aae520b30a"
+    }
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0
+  }
+}

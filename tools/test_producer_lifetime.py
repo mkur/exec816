@@ -2,6 +2,7 @@
 """Source-qualified producer admission, signal retention and retirement."""
 import argparse
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 
 from generate_tasks import ABI
@@ -34,7 +35,7 @@ def run(output, mode, selected=None, replay=False):
             tasks=True, task_capacity=8, console=False, console_test=True)
         require(program['build']['optimize'] == (mode=='opt'), 'Wrong compiler mode')
         memory = program['build']['memory']
-        baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline = current_task_memory()
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(memory[key] == baseline[key], 'Producer changed '+key)
         report.update(build=program['build'], pin=pin, harness_sha256=sha256(Path(__file__)),

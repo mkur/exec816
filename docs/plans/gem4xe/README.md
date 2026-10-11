@@ -1,5 +1,62 @@
 # GEM as a client of an Exec-like kernel
 
+The [text viewer design](text-viewer-design.md) adds a loadable,
+read-only `TEXT.APP` using the standard selector, bounded DOS loading, direct
+VDI text and resizable vertical scrolling. Files-to-viewer launch follows
+through the existing Process lifecycle with copied filename arguments.
+The [TV1–TV4 implementation plan](text-viewer-implementation-plan.md) orders
+document loading, the standalone viewer, Files launching and the OF816 package.
+TV1–TV4 are implemented and pass the recorded development checks.
+
+The [text viewer performance plan](text-viewer-performance-plan.md) is
+implemented through TVP4: native VDI text upload, smaller viewer redraws and
+matched desktop/package checks. Page median/p95 improve by 26%/27%; the twofold
+target remains open. See the [execution record](../../history/text-viewer-performance.md)
+for loaded-input results and intermediate tradeoffs.
+
+The [UPDATE admission latency plan](update-admission-latency-plan.md) has
+implemented UA1 ownership/wait attribution. All nine UA2 experiments miss at
+least one frozen gate; production remains at TVP4 and UA2/UA3 acceptance is open.
+The [execution record](../../history/update-admission-latency.md) retains the
+experimental patches, input/cancellation comparisons and stack accounting.
+
+The [standard file selector design](file-selector-design.md) adds
+caller-local `fsel_input`/`fsel_exinput`, reusing Files' directory snapshots,
+scrolling and path editing within the standard-dialog host. It returns a
+selection for the application's Open or Save operation using Exec paths.
+The [FSEL1–FSEL4 implementation plan](file-selector-implementation-plan.md)
+orders shared Files helpers, the hosted selector, standard bindings and the
+packaged example. FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP walkthrough.
+
+The [standard dialogs design](standard-dialogs-design.md) and
+[FD1–FD4 implementation plan](standard-dialogs-implementation-plan.md) add bounded
+caller-local `form_do` and `form_alert`, with the `form_dial` lifecycle, temporary
+pre-window hosts and preserved application messages. Other applications keep
+running. FD1–FD4 pass development checks, including the loadable dialog example
+and exact OF816 ZIP walkthrough. See the
+[execution record](../../history/standard-dialogs.md).
+
+The [application stack headroom plan](application-stack-headroom-implementation-plan.md)
+follows editable dialogs with call-path attribution, ordinary stack growth
+and a packaged desktop check. SH1–SH3 pass development checks; the smallest
+ordinary-pool margin is 254 bytes against a 128-byte target. See the
+[execution record](../../history/gem-application-stack-headroom.md).
+
+The [editable dialogs design](editable-dialogs-design.md) and
+[implementation plan](editable-dialogs-implementation-plan.md) add
+caller-owned text editing and Files path/folder/rename dialogs. ED1–ED3 pass
+development checks; see the [execution record](../../history/editable-dialogs.md).
+
+The [Files scrolling design](files-scrolling-design.md) and
+[implementation plan](files-scrolling-implementation-plan.md) cover
+the adaptive directory list and preserved selection. FS1–FS2 pass development
+checks; see the [execution record](../../history/files-scrolling.md).
+
+The [window gadgets design](window-gadgets-design.md) and
+[implementation plan](window-gadgets-implementation-plan.md) add
+application-acknowledged resizing and vertical scrolling. WG1–WG2 pass
+development checks; see the [execution record](../../history/window-gadgets.md).
+
 [Implementation plans](../README.md)
 
 The [classic GEM appearance design](classic-gem-appearance-design.md)

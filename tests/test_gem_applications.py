@@ -1,14 +1,16 @@
 """Pixel observers must not identify windows through transient GEM outputs."""
 import json
+import struct
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 from gem_applications import scene_symbols
-from generate_aes_server import layout
+from generate_aes_server import layout, expected_layout
 
 
 class Bridge:
@@ -44,10 +46,33 @@ class ApplicationObserverTests(unittest.TestCase):
             (directory/'c-image.json').write_text(json.dumps({'symbols': {'contexts': 64}}))
             with patch('gem_applications.instances', return_value=apps):
                 self.assertEqual(scene_symbols(bridge, {}, directory, b'Counter',
-                                               (240, 48, 440, 144)), apps[1]['symbols'])
+                                               (240, 48, 440, 144)),
+                                 {**apps[1]['symbols'], '__aes_context': 768})
                 bridge.put(3072+view['shown'], 0, 2)
                 with self.assertRaisesRegex(RuntimeError, 'No unique loaded window model'):
                     scene_symbols(bridge, {}, directory, b'Counter', (240, 48, 440, 144))
+
+    def test_backspace_retains_long_field_viewport(self):
+        from browser_model import FIELDS
+        from gem_desktop_oracle import paint
+        bridge = Bridge(); base, context = 1024, 8192
+        for field, value in (('dialog', 1), ('focus', 2), ('editIndex', 126)):
+            bridge.put(base+FIELDS[field], value, 2)
+        text = base+FIELDS['editText']
+        bridge.memory[text:text+127] = b'A'*126+b'\0'
+        field = struct.pack('<hhhHHHIhhhh', 3, -1, -1, 22, 0, 0, 0, 16, 16, 80, 16)
+        at = base+FIELDS['dialogTree']+2*24
+        bridge.memory[at:at+24] = field
+        # At index 127 a ten-column field scrolled to 118. One Backspace
+        # moves the caret left within that viewport; it does not scroll back.
+        bridge.put(context+dict(expected_layout())['C context editScroll'], 118, 2)
+        calls = []
+        raster = SimpleNamespace(apply=lambda *args: calls.append(args))
+        with patch('gem_desktop_oracle.draw'), patch('gem_desktop_oracle.rectangle') as rectangle:
+            paint(bridge, {'GEMBrowser': base, 'objc_edit': 1, '__aes_context': context},
+                  raster, b'Files', (0, 0, 200, 120))
+        self.assertEqual(calls[-1][2], b'A'*8)
+        self.assertEqual(rectangle.call_args.args[1], (88, 36, 89, 44))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,227 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$b8e24632dca00bc1",
+    "actual_kernel_id": "$b8e24632dca00bc1",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-milestones/fs1/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "bank_zero_delta": {
+    "baseline": "bank-zero-compaction",
+    "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1536,
+      1536
+    ],
+    "idle": 0,
+    "runtime": 3072,
+    "loading": 0
+  },
+  "browser": {
+    "application_menu": true,
+    "menu_keyboard": true,
+    "menu_open": true,
+    "menu_stop": true,
+    "menu_disabled": true,
+    "resource": true,
+    "navigation": true,
+    "popup_keyboard": true,
+    "popup_mouse": true,
+    "launch": "HELLO",
+    "cancel": "TICK",
+    "gem_launch": "PANEL.APP",
+    "gem_stop": true,
+    "idle_collection": true,
+    "invalid_executable": true,
+    "close_during_popup_with_child": true,
+    "popup_stacks": {
+      "0": {
+        "base": 9232,
+        "bytes": 1536,
+        "peak": 562,
+        "remaining_above_floor": 718
+      },
+      "1": {
+        "base": 12368,
+        "bytes": 1024,
+        "peak": 340,
+        "remaining_above_floor": 428
+      },
+      "2": {
+        "base": 13424,
+        "bytes": 1024,
+        "peak": 174,
+        "remaining_above_floor": 594
+      },
+      "3": {
+        "base": 14480,
+        "bytes": 1024,
+        "peak": 618,
+        "remaining_above_floor": 150
+      },
+      "4": {
+        "base": 15536,
+        "bytes": 1024,
+        "peak": 641,
+        "remaining_above_floor": 127
+      },
+      "5": {
+        "base": 16592,
+        "bytes": 1024,
+        "peak": 683,
+        "remaining_above_floor": 85
+      },
+      "6": {
+        "base": 17648,
+        "bytes": 2560,
+        "peak": 754,
+        "remaining_above_floor": 1550
+      },
+      "7": {
+        "base": 20240,
+        "bytes": 2560,
+        "peak": 339,
+        "remaining_above_floor": 1965
+      },
+      "8": {
+        "base": 22832,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      "kernel": {
+        "base": 10800,
+        "bytes": 1536,
+        "peak": 295,
+        "remaining_above_floor": 985
+      }
+    }
+  },
+  "gem_stacks": {
+    "0": {
+      "base": 9232,
+      "bytes": 1536,
+      "peak": 603,
+      "remaining_above_floor": 677
+    },
+    "1": {
+      "base": 12368,
+      "bytes": 1024,
+      "peak": 340,
+      "remaining_above_floor": 428
+    },
+    "2": {
+      "base": 13424,
+      "bytes": 1024,
+      "peak": 174,
+      "remaining_above_floor": 594
+    },
+    "3": {
+      "base": 14480,
+      "bytes": 1024,
+      "peak": 689,
+      "remaining_above_floor": 79
+    },
+    "4": {
+      "base": 15536,
+      "bytes": 1024,
+      "peak": 641,
+      "remaining_above_floor": 127
+    },
+    "5": {
+      "base": 16592,
+      "bytes": 1024,
+      "peak": 710,
+      "remaining_above_floor": 58
+    },
+    "6": {
+      "base": 17648,
+      "bytes": 2560,
+      "peak": 761,
+      "remaining_above_floor": 1543
+    },
+    "7": {
+      "base": 20240,
+      "bytes": 2560,
+      "peak": 339,
+      "remaining_above_floor": 1965
+    },
+    "8": {
+      "base": 22832,
+      "bytes": 512,
+      "peak": 131,
+      "remaining_above_floor": 125
+    },
+    "kernel": {
+      "base": 10800,
+      "bytes": 1536,
+      "peak": 305,
+      "remaining_above_floor": 975
+    }
+  },
+  "peak_tasks": 8,
+  "scope": "Files-focused OF816 ZIP walkthrough; initial panel settings/menu matrix skipped",
+  "report": "build/desktop-milestones/fs1/gem-desktop-results.json",
+  "report_sha256": "25e8d9ba4a5ae75dd11e44324bf26b29de33b016db05e32c8b2803ca1dea562e",
+  "zip_sha256": "44f6eb38c0abcbe6b795e896442704f691973cc2a86b796bcf317340aac4c570",
+  "files_scrolling": {
+    "physical_resize": true,
+    "rows": [
+      8,
+      4,
+      8
+    ],
+    "grow_work_width": 280,
+    "restored_work_width": 216,
+    "retained_selection": true,
+    "exact_pixels": true
+  },
+  "heap_restored": true,
+  "idle_collection": true,
+  "menu_quit_with_child": true,
+  "exit_with_gui_child": true
+}

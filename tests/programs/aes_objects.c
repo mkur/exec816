@@ -58,6 +58,60 @@ static void text_probe(void)
     TEDPhase=3;while (TEDGo<3) ExecYield();
     FreeMem(storage,131088UL);
 }
+volatile UWORD EditPhase,EditGo;
+static char editText[16]="ab";
+static TEDINFO editTed={(ULONG)editText,(ULONG)"__-__",(ULONG)"X",IBM,0,TE_LEFT,0x1180,0,-1,16,6};
+static OBJECT editTree[]={
+    {-1,1,3,G_BOX,0,0,0x1170,48,44,160,88},
+    {2,-1,-1,G_BOXTEXT,EDITABLE,0,(ULONG)&editTed,8,8,64,16},
+    {3,-1,-1,G_BUTTON,SELECTABLE|DEFAULT|EXIT,0,(ULONG)"OK",8,40,48,16},
+    {0,-1,-1,G_BUTTON,SELECTABLE|LASTOB,0,(ULONG)"Cancel",80,40,64,16}
+};
+static void edit_probe(void)
+{
+    WORD index,next,key,i;
+    WORD control[5]={46,4,2,1,0},global[15],args[4]={1,0,0,ED_INIT},reply[2];
+    LONG address=(LONG)(ULONG)editTree;
+    AESPB pb={control,global,args,reply,&address,0};
+    CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(editTree,0,8,0,0,640,240));CHECK(wind_update(END_UPDATE));
+    aes_call(&pb);index=reply[1];CHECK(reply[0] && index==2);
+    CHECK(form_button(editTree,1,1,&next)==1 && next==1 && editTree[1].ob_state==0);
+    CHECK(form_keybd(editTree,1,1,32,&next,&key)==1 && key==32);
+    CHECK(form_keybd(editTree,1,1,9,&next,&key)==1 && next==2 && !key);
+    CHECK(form_keybd(editTree,2,2,0x0f00,&next,&key)==1 && next==1 && !key);
+    CHECK(form_keybd(editTree,1,1,13,&next,&key)==0 && next==2 && !key);
+    CHECK(objc_edit(editTree,1,0x4b00,&index,ED_CHAR) && index==1);
+    CHECK(objc_edit(editTree,1,'Z',&index,ED_CHAR) && !strcmp(editText,"aZb") && index==2);
+    CHECK(objc_edit(editTree,1,8,&index,ED_CHAR) && !strcmp(editText,"ab") && index==1);
+    CHECK(objc_edit(editTree,1,0x5300,&index,ED_CHAR) && !strcmp(editText,"a"));
+    CHECK(objc_edit(editTree,1,0x4700,&index,ED_CHAR) && index==0);
+    CHECK(objc_edit(editTree,1,0x537f,&index,ED_CHAR) && !editText[0]);
+    CHECK(objc_edit(editTree,1,27,&index,ED_CHAR) && !editText[0] && !index);
+    editTed.te_pvalid=(ULONG)"9A";
+    CHECK(objc_edit(editTree,1,'x',&index,ED_CHAR) && !index);
+    CHECK(objc_edit(editTree,1,'2',&index,ED_CHAR) && index==1);
+    CHECK(objc_edit(editTree,1,'b',&index,ED_CHAR) && !strcmp(editText,"2B"));
+    CHECK(objc_edit(editTree,1,'c',&index,ED_CHAR) && !strcmp(editText,"2BC"));
+    editTed.te_pvalid=(ULONG)"X";editTed.te_txtlen=5;
+    CHECK(objc_edit(editTree,1,'d',&index,ED_CHAR) && !strcmp(editText,"2BCd"));
+    CHECK(objc_edit(editTree,1,'e',&index,ED_CHAR) && !strcmp(editText,"2BCd") && index==4);
+    editTree[1].ob_type=G_FBOXTEXT;editTed.te_txtlen=16;
+    CHECK(objc_edit(editTree,1,'f',&index,ED_CHAR) && !strcmp(editText,"2BCd") && index==4);
+    EditPhase=1;while (EditGo<1) ExecYield();
+    editTree[1].ob_type=G_BOXTEXT;strcpy(editText,"0123456789ab");
+    CHECK(objc_edit(editTree,1,0,&index,ED_INIT) && index==12);
+    CHECK(ExecAESContext()->editScroll==5);
+    EditPhase=2;while (EditGo<2) ExecYield();
+    CHECK(objc_edit(editTree,1,0x4700,&index,ED_CHAR) && index==0);
+    CHECK(objc_edit(editTree,1,0x4f00,&index,ED_CHAR) && index==12);
+    CHECK(objc_edit(editTree,1,0,&index,ED_END) && !ExecAESContext()->editTree);
+    EditPhase=3;while (EditGo<3) ExecYield();
+    CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(editTree,1,0,57,54,18,10));CHECK(wind_update(END_UPDATE));
+    EditPhase=4;while (EditGo<4) ExecYield();
+    editTree[1].ob_flags|=HIDETREE;
+    CHECK(form_keybd(editTree,3,3,9,&next,&key)==1 && next==2);
+    for (i=0;i<16;++i) editText[i]=0;
+}
 void AESClientOne(void) { }
 void AESClientTwo(void) { }
 UWORD AESRun(void)
@@ -92,7 +146,7 @@ UWORD AESRun(void)
     CHECK(objc_draw(tree,0,8,45,48,100,31));
     CHECK(objc_change(tree,2,0,0,0,640,240,0,1));
     CHECK(wind_update(END_UPDATE));
-    text_probe();
+    text_probe();edit_probe();
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(handle); CHECK(appl_exit()); CHECK(ExecAESDetach());
     CHECK(AvailMem(0)==available);

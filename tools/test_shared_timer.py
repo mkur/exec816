@@ -2,6 +2,7 @@
 """M1: existing emitted SIO transfers with a fixed diagnostic sampler."""
 import argparse
 import json
+from stack_budget import current_task_memory
 import os
 import re
 from pathlib import Path
@@ -133,7 +134,7 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False, repl
         capture_boundaries = [r['address'] for r in p['image']['routines']
                               if r['name'].startswith(('M_TIMERPROBE_START_', 'M_TIMERPROBE_STOP_'))]
         capture_pcs = ','+','.join(f'{v:x}' for v in capture_boundaries) if capture else ''
-        baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline = current_task_memory()
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(p['build']['memory'][key] == baseline[key], 'Bank-zero change: '+key)
         disk_image(out/'disk.atr')

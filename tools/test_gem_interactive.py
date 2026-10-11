@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 import adapter_state as adapter
 from build_gem_interactive import build_interactive
@@ -72,7 +73,7 @@ def run(output,mode,cases=None,replay=False,production=False):
         if production:
             require(not any(k in sy for k in ('UiProbe','UiInjector','UiUnusedTask','UiCursorGate','UiLossAck','UiBusy','faultNext')),
                     'Diagnostic hook in production image')
-        baseline=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline=current_task_memory()
         for k in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[k]==baseline[k],'Bank-zero change: '+k)
         report.update(build=p['build'],pin=PIN,harness_sha256=sha256(Path(__file__)),

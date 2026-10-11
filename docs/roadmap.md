@@ -94,37 +94,53 @@ kernel startup, and the existing screen text is preserved. The bitmap/no-primes
 preview includes both Atarimax forms. Remote image loading remains a later
 extension.
 
-## Next desktop milestones
+## Desktop usability milestones
 
-With [application menus and window switching](history/application-menu-bars.md)
-implemented, the next sequence focuses on window usability and reusable GEM
-application facilities:
+The three milestones following
+[application menus and window switching](history/application-menu-bars.md)
+are implemented, with a design note, implementation plan and development
+record for each:
 
 The [classic GEM appearance](history/classic-gem-appearance.md) is implemented
 through GA1–GA4: flat outlined frames, left closers, centered patterned titles,
 consistent menus/controls and a patterned desktop. The exact OF816 package
 passes development walkthroughs. Current work-area insets and font metrics are
-retained; painting and input share frame geometry. The resizing milestone below
-extends that geometry with working gadgets and revisits the actual client insets.
+retained for fixed windows; painting and input share frame geometry. Resizable
+windows extend that geometry with working gadgets and kind-dependent insets.
 
-1. **Resizable windows and vertical scrolling.** Add the GEM size gadget,
-   vertical scrollbar and arrows, with `WM_SIZED`, `WM_VSLID`, `WM_ARROWED`
-   and corresponding slider fields. The presenter handles the gadgets;
-   applications own their content and scroll position.
-2. **Use resizing and scrolling in Files.** Replace the fixed eight-row,
-   page-based list with a list that adapts to the window's work area and supports
-   continuous scrolling. Preserve selection across redraws and refreshes.
-   Exercise geometry changes, overlapping windows and repaint correctness with
-   Files running beside the calculator, counter and shell.
-3. **Editable TEDINFO and dialogs.** Add text entry and keyboard editing,
-   then use them for path entry, New Folder and Rename. Keep the interfaces
-   compatible with GEM callers to support further application ports.
+1. **Resizable windows and vertical scrolling.** Size, thumb, arrow and page
+   gestures deliver `WM_SIZED`, `WM_VSLID` and `WM_ARROWED`. Applications
+   acknowledge geometry and own their scroll position. See the
+   [design](plans/gem4xe/window-gadgets-design.md),
+   [plan](plans/gem4xe/window-gadgets-implementation-plan.md) and
+   [record](history/window-gadgets.md).
+2. **Adaptive Files.** A bounded 256-entry snapshot replaces eight-entry pages;
+   up to sixteen rows follow the work area, with continuous scrolling and
+   preserved selection. See the [design](plans/gem4xe/files-scrolling-design.md),
+   [plan](plans/gem4xe/files-scrolling-implementation-plan.md) and
+   [record](history/files-scrolling.md).
+3. **Editable TEDINFO and dialogs.** Caller-local `objc_edit` supports bounded
+   single-line fields. Files uses it for Path, New Folder and Rename while
+   continuing window events and child collection. See the
+   [design](plans/gem4xe/editable-dialogs-design.md),
+   [plan](plans/gem4xe/editable-dialogs-implementation-plan.md) and
+   [record](history/editable-dialogs.md).
 
-Start milestones 1–2 with a short design note covering window geometry,
-clipping, damage and application messages, followed by an implementation plan
-in small executable slices. Keep application state caller-owned and validation
-minimal. Record reserved bank-zero changes for each slice. Cartridge size does
-not block these milestones; compression remains separate work.
+Application state remains caller-owned. All slices add zero reserved bank-zero
+bytes. Development checks do not close HY4/PI4 or qualify the hosted system.
+Horizontal scrolling, richer editing and desktop icons remain outside this
+bounded subset. Cartridge compression remains separate work.
+
+The [application stack headroom plan](plans/gem4xe/application-stack-headroom-implementation-plan.md)
+is complete through SH1–SH3. That change grew ordinary pools to 1,280 bytes, adding 1,280
+reserved bank-zero bytes while preserving guards and interrupt reserves. The
+renderer remains unchanged. The final OF816 package passes Files, calculator
+and maximum-length editing checks; the smallest ordinary-pool margin is 254
+bytes against the 128-byte target. See the
+[execution record](history/gem-application-stack-headroom.md).
+The file-selector follow-up adds 32 bytes per ordinary pool; the current
+[platform map](reference/platform.md#bank-zero-memory-budget) reserves 1,312
+bytes for each.
 
 ## Follow-on capabilities
 
@@ -140,6 +156,54 @@ SDFS 2.1, shared 512-byte buffers and the existing cache budget. SIO retains
 128/256-byte formats. The real pinned BIOS XEX loader now reaches OF816 and the
 IDE-only kernel shell; automatic power-on boot and hardware qualification remain
 separate work.
+
+The [standard dialogs design](plans/gem4xe/standard-dialogs-design.md)
+and [FD1–FD4 plan](plans/gem4xe/standard-dialogs-implementation-plan.md) add bounded
+`form_do`/`form_alert` and the supporting `form_dial` lifecycle. Forms run in the
+caller using its window or a temporary host; application-policy messages
+interrupt the call and remain available to its event loop. This reduces custom
+form-loop code in simple ports while preserving desktop concurrency. The slices
+cover host lifetime, form interaction, alerts and an OF816 example. FD1–FD4 pass
+development checks, including the extracted ZIP walkthrough; see the
+[execution record](history/standard-dialogs.md).
+
+The [standard file selector design](plans/gem4xe/file-selector-design.md)
+adds `fsel_input`/`fsel_exinput` by reusing Files' directory enumeration, scrolling
+and path editing in the standard-dialog host. It returns an Exec path/filter
+and filename; applications own the actual Open/Save and overwrite decisions.
+The [FSEL1–FSEL4 plan](plans/gem4xe/file-selector-implementation-plan.md) orders
+shared Files helpers, the hosted selector, standard bindings and the packaged
+example. FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP
+walkthrough; see the [execution record](history/file-selector.md).
+
+The [GEM text viewer](plans/gem4xe/text-viewer-design.md):
+loadable `TEXT.APP`, standard Open selection, bounded read-only loading,
+resizable vertical scrolling and short VDI repaint units. Files integration
+then opens `.TXT` documents through a launcher carrying copied path arguments.
+The design preserves the current document after Cancel or a failed replacement.
+The [TV1–TV4 plan](plans/gem4xe/text-viewer-implementation-plan.md) orders
+document loading, the standalone viewer, Files launching and the OF816 package;
+TV1–TV4 are implemented and pass the recorded development checks. See the
+[execution record](history/text-viewer.md).
+
+The [viewer performance plan](plans/gem4xe/text-viewer-performance-plan.md)
+is implemented through TVP4. Reusing native VDI text upload and limiting viewer
+damage reduce page median/p95 from 1282/1322 to 943/965 ms, with better loaded
+Panel feedback against the original baseline. The twofold page target remains
+open; UPDATE waits and peer execution now dominate the representative trace.
+The [measurement record](history/text-viewer-performance.md) preserves the
+intermediate latency tradeoffs, exact OF816 package checks and remaining
+scanout/flicker limits.
+
+The [UPDATE admission latency plan](plans/gem4xe/update-admission-latency-plan.md)
+has implemented UA1 attribution and frozen cancellation controls. A retained
+native repaint dominates the sampled UPDATE wait. All nine UA2 experiments miss
+at least one input, cancellation or stack gate; production remains at TVP4 and
+UA2/UA3 acceptance is open. The [execution record](history/update-admission-latency.md)
+retains the candidate patches and comparisons. Before retrying the renderer,
+resolve the post-abort shell-output wait and the child Read-to-close interval
+identified by the cancellation companions. Preserve the existing lock semantics
+and bounded presenter work; no current tolerance is waived.
 
 The confirmed GUI direction is a multitasking GEM-compatible desktop over Exec816,
 using VBXE and preserving application source interfaces. The

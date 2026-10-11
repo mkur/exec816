@@ -45,7 +45,11 @@ static void client(UWORD who)
                 context->intin[j] = (WORD)(0x8100+who*256+i+j);
             for (j = 0; j < AES_GLOBAL_WORDS; ++j)
                 context->request.global[j] = (WORD)(0x4200+who*256+i+j);
+            context->editTree=0x125600UL+who;
+            context->editObject=who;context->editIndex=i;context->editScroll=j;
             ExecYield();
+            CHECK(context->editTree==0x125600UL+who && context->editObject==who &&
+                  context->editIndex==i && context->editScroll==j);
             CHECK(ExecAESContext() == context);
             for (j = 0; j < AES_INTIN_WORDS; ++j)
                 CHECK(context->intin[j] == (WORD)(0x8100+who*256+i+j));

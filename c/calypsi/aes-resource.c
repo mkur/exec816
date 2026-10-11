@@ -19,6 +19,14 @@ static UWORD string_size(const UBYTE *data,UWORD bytes,ULONG offset)
     while (n<=63 && offset+n<bytes && data[offset+n]) ++n;
     return n<=63 && offset+n<bytes ? n+1:0;
 }
+static UWORD text_capacity(const UBYTE *data,UWORD bytes,const UBYTE *ted)
+{
+    ULONG offset=wide(ted);
+    UWORD capacity=word(ted+24),n=0;
+    if (!capacity || capacity>128 || offset>=bytes || capacity>bytes-offset) return 0;
+    while (n<capacity && data[offset+n]) ++n;
+    return n<capacity ? capacity:0;
+}
 static WORD coordinate(UWORD n) { return (WORD)((n&255)<<3)+(BYTE)(n>>8); }
 WORD rsrc_obfix(OBJECT *tree,WORD obj)
 {
@@ -56,7 +64,7 @@ WORD rsrc_load(const char *name)
     BPTR file;
     UBYTE header[36],*data,*p;
     LONG length,got,at=0;
-    UWORD bytes,objects,trees,objectAt,treeAt,tedAt,teds,i,j,type;
+    UWORD bytes,objects,trees,objectAt,treeAt,tedAt,teds,i,j,type,editable,capacity;
     ULONG spec,offset;
     OBJECT *o;
     TEDINFO *ted;
@@ -89,21 +97,31 @@ WORD rsrc_load(const char *name)
     for (i=0;i<objects;++i) {
         p=data+objectAt+(ULONG)i*24;type=word(p+6);spec=wide(p+12);
         if (type!=G_BOX && type!=G_IBOX && type!=G_STRING && type!=G_TITLE && type!=G_BUTTON &&
-            type!=G_TEXT && type!=G_BOXTEXT)
+            type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT)
             goto malformed;
-        if (word(p+8)&~(SELECTABLE|DEFAULT|EXIT|RBUTTON|LASTOB|HIDETREE) ||
+        if (word(p+8)&~(SELECTABLE|DEFAULT|EXIT|EDITABLE|RBUTTON|LASTOB|HIDETREE) ||
             word(p+10)&~(SELECTED|DISABLED)) goto malformed;
+        if ((word(p+8)&EDITABLE) && type!=G_TEXT && type!=G_BOXTEXT &&
+            type!=G_FTEXT && type!=G_FBOXTEXT) goto malformed;
         if (type==G_STRING || type==G_TITLE || type==G_BUTTON) {
             if (!string_size(data,bytes,spec)) goto malformed;
-        } else if (type==G_TEXT || type==G_BOXTEXT) {
+        } else if (type==G_TEXT || type==G_BOXTEXT || type==G_FTEXT || type==G_FBOXTEXT) {
             if (spec<tedAt || spec>=(ULONG)tedAt+(ULONG)teds*28 ||
                 (spec-tedAt)%28) goto malformed;
         }
     }
     for (i=0;i<teds;++i) {
         p=data+tedAt+(ULONG)i*28;
-        if (!string_size(data,bytes,wide(p)) || !string_size(data,bytes,wide(p+4)) ||
+        editable=0;
+        for (j=0;j<objects;++j) {
+            const UBYTE *object=data+objectAt+(ULONG)j*24;
+            if ((word(object+8)&EDITABLE) && wide(object+12)==(ULONG)(p-data)) { editable=1;break; }
+        }
+        capacity=editable ? text_capacity(data,bytes,p):string_size(data,bytes,wide(p));
+        if (!capacity || !string_size(data,bytes,wide(p+4)) ||
             !string_size(data,bytes,wide(p+8))) goto malformed;
+        /* Retain the admitted capacity for relocation, in file byte order. */
+        p[24]=capacity>>8;p[25]=capacity;
     }
     for (i=0;i<trees;++i) {
         offset=wide(data+treeAt+(ULONG)i*4);
@@ -116,7 +134,7 @@ WORD rsrc_load(const char *name)
     /* Fix each TED once, including records shared by several objects. */
     for (i=0;i<teds;++i) {
         p=data+tedAt+(ULONG)i*28;ted=(TEDINFO *)p;
-        ted->te_txtlen=string_size(data,bytes,wide(p));
+        ted->te_txtlen=word(p+24);
         ted->te_tmplen=string_size(data,bytes,wide(p+4));
         ted->te_ptext=(ULONG)(data+wide(p));
         ted->te_ptmplt=(ULONG)(data+wide(p+4));

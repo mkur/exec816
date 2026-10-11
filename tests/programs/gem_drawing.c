@@ -5,7 +5,7 @@
 #include <clib/alib_protos.h>
 #include <string.h>
 volatile UWORD stage,checkpoint,gate,failures,checks,finished;
-volatile UWORD ownerChecks;
+volatile UWORD ownerChecks,failedCheck;
 static volatile UWORD peerArm,peerDone,peerRetired;
 static struct Task *peer;
 static struct TaskLease peerLease;
@@ -14,7 +14,7 @@ static struct InputLease mouse __attribute__((aligned(2)));
 static struct InputConfig config __attribute__((aligned(2)));
 static const UBYTE text[]="AB W 09";
 static UBYTE glyphs[256];
-static void check(UWORD good) { ++checks; if (!good) ++failures; }
+static void check(UWORD good) { ++checks; if (!good) { if (!failedCheck) failedCheck=checks; ++failures; } }
 
 /* Test-only pause after owner admission with queued glyph work. The owner
  * spins with IRQ/NMI enabled; VBI must preempt it so the foreign Task can run. */
@@ -165,6 +165,22 @@ UWORD main(void)
     check(GemDrawingTextFill(0,0,(UBYTE *)0x8000UL,1,1,0,0,0,8,1,1)==DISPLAY_BAD_ARGUMENT);
     checkpoint=3;
     while (gate<3) { }
+    /* Scrollbar thumbs use narrow XOR outlines, including packed odd edges. */
+    check(GemDrawingFill(0,0,640,240,5)==DISPLAY_OK);
+    check(GemDrawingOutline(248,88,263,97,1)==DISPLAY_OK);
+    check(GemDrawingFence()==DISPLAY_OK);
+    checkpoint=4;while (gate<4) { }
+    check(GemDrawingOutline(249,90,264,98,1)==DISPLAY_OK);
+    check(GemDrawingFence()==DISPLAY_OK);
+    checkpoint=5;while (gate<5) { }
+    check(GemDrawingOutline(632,232,640,240,1)==DISPLAY_OK);
+    check(GemDrawingOutline(0,0,7,8,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingOutline(0,0,8,7,1)==DISPLAY_BAD_ARGUMENT);
+    check(GemDrawingFence()==DISPLAY_OK);
+    checkpoint=6;while (gate<6) { }
+    check(GemDrawingOutline(0,0,0,0,0)==DISPLAY_OK);
+    check(GemDrawingFence()==DISPLAY_OK);
+    checkpoint=7;while (gate<7) { }
     check(InputRelease(&mouse)==INPUT_OK);
     FreeSignal(bit);
     check(GemDrawingClose()==DISPLAY_OK);

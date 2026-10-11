@@ -1,0 +1,60 @@
+--- a/lib/aes/aeswindow.act
++++ b/lib/aes/aeswindow.act
+@@ -196,6 +196,7 @@
+   BYTE status
+   BYTE POINTER title
+   CARD length,routeStatus
++  INT top,bottom
+   LONGCARD titleAddress
+   LAYERTYPES.Rect bounds
+ 
+@@ -307,15 +308,34 @@
+       IF request.intin(2)<0 OR request.intin(2)>1000 THEN
+         RETURN(AESTYPES.MALFORMED)
+       FI
++
++      REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET,
++          layer.bounds.top+window.sliderTop,layer.bounds.right,
++          layer.bounds.top+window.sliderTop+window.sliderHeight)
+       IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
+         client.view.vslide=request.intin(2)
+       ELSE
+         client.view.vsize=request.intin(2)
+       FI
+-      REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET,
+-          layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+-          layer.bounds.bottom)
+-      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
++
++      DESKGEOMETRY.Slider(window,@layer.bounds,client.view.vslide,
++          client.view.vsize)
++      top=layer.bounds.top+window.sliderTop
++      bottom=top+window.sliderHeight
++      status=LAYERTYPES.OK
++      ; Logical values still publish when rounding leaves the thumb unchanged.
++      ; Changed pixels lie within the old/new thumb union, clear of the arrows.
++      IF bounds.top<>top OR bounds.bottom<>bottom THEN
++        IF bounds.top>top THEN
++          bounds.top=top
++        FI
++
++        IF bounds.bottom<bottom THEN
++          bounds.bottom=bottom
++        FI
++
++        status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
++      FI
+     ELSE
+       RETURN(AESTYPES.UNSUPPORTED)
+     ESAC
+@@ -328,9 +348,7 @@
+   FI
+ 
+   IF request.operation=AESTYPES.OP_OPEN OR (request.operation=AESTYPES.OP_SET
+-      AND (request.intin(1)=AESTYPES.WF_CXYWH
+-      OR request.intin(1)=AESTYPES.WF_VSLIDE
+-      OR request.intin(1)=AESTYPES.WF_VSLSIZE)) THEN
++      AND request.intin(1)=AESTYPES.WF_CXYWH) THEN
+     DESKGEOMETRY.Slider(window,@layer.bounds,client.view.vslide,client.view.vsize)
+   FI
+   AESWINDOWSTATE.Snapshot(client)

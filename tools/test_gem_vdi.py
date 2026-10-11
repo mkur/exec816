@@ -3,6 +3,7 @@
 import argparse
 import copy
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 
 from gem_vdi_inputs import local_inputs, source_inputs
@@ -45,8 +46,7 @@ def run(output, mode):
                         output/'program', optimize=mode == 'opt', tasks=True,
                         task_capacity=8, console=False)
         report['build'] = program['build']
-        baseline = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())
-        before = baseline['bank_zero']['final']['8']
+        before = current_task_memory()
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(program['build']['memory'][key] == before[key], 'G0 changed '+key)
         report['baseline_budget'] = before['bank_zero_budget']

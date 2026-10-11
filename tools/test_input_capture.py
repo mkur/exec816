@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Standalone input lease/routes and physical native keyboard capture."""
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 import adapter_state as adapter
 from native_program import ROOT, build, compiler, execute, read_build, require, sha256, verify_machine
@@ -28,7 +29,7 @@ def run(output, mode, replay=False, input_diagnostics=False):
         require(not p['build'].get('console_enabled') and not p['build'].get('console_test'),
                 'Standalone capture accidentally enabled console')
         require(p['build']['optimize']==(mode=='opt'),'Wrong compiler mode')
-        baseline=json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        baseline=current_task_memory()
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(p['build']['memory'][key]==baseline[key],'Input changed '+key)
         report.update(build=p['build'],pin=PIN,harness_sha256=sha256(Path(__file__)),

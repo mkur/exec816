@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 4,
@@ -71,7 +71,17 @@
     "CLOSE_RIGHT": 15,
     "CLOSE_BOTTOM": 15,
     "CLOSE_TEXT_X": 4,
-    "CLOSE_GLYPH": 5
+    "CLOSE_GLYPH": 5,
+    "FRAME_GADGET": 16,
+    "FRAME_THUMB_MIN": 8,
+    "FRAME_MIN_WIDTH": 64,
+    "FRAME_MIN_SCROLL_HEIGHT": 80,
+    "FRAME_SIZER": 32,
+    "FRAME_UPARROW": 64,
+    "FRAME_DNARROW": 128,
+    "FRAME_VSLIDE": 256,
+    "FRAME_VERTICAL": 448,
+    "FRAME_MIN_SIZE_HEIGHT": 48
   },
   "records": {
     "Event": [
@@ -354,6 +364,18 @@
       [
         "captureAttempt",
         "LONGCARD"
+      ],
+      [
+        "frameKind",
+        "CARD"
+      ],
+      [
+        "sliderTop",
+        "INT"
+      ],
+      [
+        "sliderHeight",
+        "INT"
       ]
     ],
     "Snapshot": [

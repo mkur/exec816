@@ -2,7 +2,7 @@
 import json
 from native_program import ROOT,require
 
-MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22)}
+MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32)}
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())
@@ -39,7 +39,6 @@ def symbols(bridge,program,directory,name,identity):
     return found[0]['symbols']
 
 def scene_symbols(bridge,program,directory,title,bounds):
-    name={b'GEM Control Panel':'panel',b'Counter':'counter',b'Files':'files',b'Calculator':'calc'}[title]
     from generate_aes_server import ABI,layout
     records=layout();request=records['Request'];view=records['WindowView']
     number=lambda raw,at,size: int.from_bytes(raw[at:at+size],'little')
@@ -56,13 +55,13 @@ def scene_symbols(bridge,program,directory,title,bounds):
         rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
                                        'little',signed=True) for i in (0,2,4,6))
         if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
-            owners[number(raw,request['fields']['owner'],3)]=target
+            owners[number(raw,request['fields']['owner'],3)]=at
     # wind_get clears caller output words before filling them. The application
     # work[] buffer is scratch, not a window identity, even at an IRQ snapshot.
     # Use the published AES view and its retained Process Task instead.
     found=[]
     for item in instances(bridge,program,directory):
-        if item['name']==name and item['task'] in owners:
-            found.append(item['symbols'])
-    require(len(found)==1,'No unique loaded window model for '+name)
+        if item['task'] in owners:
+            found.append({**item['symbols'],'__aes_context':owners[item['task']]})
+    require(len(found)==1,'No unique loaded window model for '+repr(title))
     return found[0]

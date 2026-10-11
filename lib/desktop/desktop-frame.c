@@ -31,6 +31,44 @@ static void text(WORD x,WORD y,UWORD count)
                   paint->clipRight,paint->clipBottom);
 }
 
+/* Cached thumb coordinates come from the admitted window mutation. Each
+ * strip draws only its intersection; no divide or tree traversal is needed. */
+static void gadgets(WORD l,WORD t,WORD r,WORD b)
+{
+    struct ConsoleBitmapPacket *p=paint;
+    WORD k=p->fillY,g=DESKTOP_FRAME_GADGET,left=r-g;
+    WORD top=t+DESKTOP_TITLE_HEIGHT,bottom=b-(k&DESKTOP_FRAME_SIZER ? g:DESKTOP_WORK_BOTTOM);
+    WORD i,mid=left+g/2,center;
+    if (k&DESKTOP_FRAME_VERTICAL) {
+        fill(left,top,r,bottom,8);
+        if (k&DESKTOP_FRAME_UPARROW) {
+            fill(left,top,r,top+g,0);box(left,top,r,top+g);
+            center=top+5;
+            for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
+            top+=g;
+        }
+        if (k&DESKTOP_FRAME_DNARROW) {
+            fill(left,bottom-g,r,bottom,0);box(left,bottom-g,r,bottom);
+            center=bottom-6;
+            for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
+            bottom-=g;
+        }
+        box(left,top,r,bottom);
+        if (k&DESKTOP_FRAME_VSLIDE) {
+            top=t+p->fillWidth;bottom=top+p->fillHeight;
+            fill(left+1,top,r-1,bottom,0);box(left,top,r,bottom);
+        }
+    }
+    if (k&DESKTOP_FRAME_SIZER) {
+        box(left,b-g,r,b);
+        for (i=3;i<12;i+=3) {
+            WORD j;
+            for (j=0;j<i;++j) fill(r-3-j,b-3-i+j,r-2-j,b-2-i+j,1);
+        }
+    }
+    (void)l;
+}
+
 static UWORD fragment(void)
 {
     struct ConsoleBitmapPacket *p=paint;
@@ -52,6 +90,8 @@ static UWORD fragment(void)
             GemWidgetFill(1,1,1,r-1,p->clipTop,r,p->clipBottom);
         if (p->clipBottom==b)
             GemWidgetFill(1,1,1,p->clipLeft,b-1,p->clipRight,b);
+        if (p->fillY& (DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL))
+            gadgets(l,t,r,b);
         return 1;
     }
     while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;

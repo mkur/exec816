@@ -134,7 +134,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
     IF REGIONS.Empty(@area)=0 THEN
       result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
           window.id=service.focus,window.kind<>DESKTYPES.CONTENT_CONSOLE,
-          @glyphOffset)
+          window.frameKind,window.sliderTop,window.sliderHeight,@glyphOffset)
       IF result<>1 THEN
         RETURN(result)
       FI
@@ -220,7 +220,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     RETURN(CONSOLEBITMAP.Background(@strip))
   FI
 
-  DESKGEOMETRY.Work(@layer.bounds,@client)
+  DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
   IF started=PAINT_CACHE THEN
     RETURN(DESKCACHE.Restored(service))
   FI

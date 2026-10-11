@@ -280,8 +280,8 @@ existing CPU staging page and does not borrow glyph scratch. Two 65,536-byte
 `$60000` include unused capacity. VRAM leaves 281,088 bytes unassigned. CPU and
 VRAM reservations are separate.
 Fixed, per-public-Task and private-idle bank-zero increments are all zero for
-G0–G6 and I0–I7; the existing eight-Task budget includes 56,128 reserved bytes with OS
-memory and leaves 9,408 bytes free after startup.
+G0–G6 and I0–I7; the existing eight-Task budget includes 57,408 reserved bytes with OS
+memory and leaves 8,128 bytes free after startup.
 
 [G4](../development/gem-vdi-g4.json) records the primitive corpus and
 [G5](../development/gem-vdi-g5.json) records concurrent physical I/O and failure

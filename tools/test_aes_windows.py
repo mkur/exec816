@@ -92,4 +92,56 @@ def physical(b, p, foreign, report):
     require(get(busy, 1) == 0, 'Close request retains scene token')
     b.poke16(sy['AESPhysicalGo'], 6); phase(7)
     report['physical_requests'] = dict(top='deferred', move=list(words[4:8]), close='deferred', scene_token=0, outline_pixels='exact', copied_title_bytes=65)
+    # New gadgets retain the same application-acknowledged transaction.
+    phase(10); frames(100)
+    view=get(sy['AESView'],4)
+    initial=(32,32,272,192)
+    def bounds():return struct.unpack('<4h',b.memdump(view+vf['bounds'],8))
+    def message():return struct.unpack('<8h',b.memdump(sy['AESControl'],16))
+    require(bounds()==initial,'Initial resizable geometry')
+    move(264,184);frames(20);before_size=scan()
+    edge(1);move(288,200)
+    b._cmd_ok('KEY ESC down');frames(3);b._cmd_ok('KEY ESC up');edge(0);frames(15)
+    require(get(sy['AESPhysical'])==10 and bounds()==initial,'Resize Escape failed')
+    move(264,184);frames(20)
+    require(scan()==before_size,'Cancelled size outline changed pixels')
+    move(264,184);edge(1);move(304,208);edge(0);phase(11)
+    require(bounds()==initial,'Resize committed before WM_SIZED acknowledgment')
+    require(message()[0]==27 and message()[4:8]==(32,32,280,184),'Size request geometry')
+    require(get(busy,1)==0,'Resize retains a scene token')
+    b.poke16(sy['AESPhysicalGo'],11);phase(12);frames(100)
+    require(bounds()==(32,32,312,216),'Resize acceptance')
+    # Compare the complete gadget strip with an independent raster. Logical
+    # slider size 250/position 1000 gives a 30-pixel thumb at absolute Y=154.
+    from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
+    from test_desktop_presentation import frame
+    raster=Raster(font_bytes(Path(p['output']).parent/'selected/src/vdi/font8x8.c'))
+    frame(raster,(32,32,312,216),b'',True,close=True,kind=491,slider=(122,30))
+    move(600,220);frames(40);actual=scan()
+    rgb=bytes((v&254)+(v>>7) for v in PALETTE)
+    hardware={v:rgb[i*3:i*3+3][::-1] for i,v in enumerate(PENS)}
+    for y in range(48,216):
+        for x in range(296,312):
+            offset=y*640+x
+            require(actual[offset*4:offset*4+3]==hardware[raster.pixels[offset]],
+                'Gadget frame pixel differs at '+str((x,y)))
+    observations=[]
+    for start,x,y,expected in ((12,304,56,2),(14,304,192,3),(16,304,80,0)):
+        phase(start);move(x,y);edge(1);edge(0);phase(start+1)
+        words=message();require(words[0]==24 and words[4]==expected,'Arrow/page request '+str(words))
+        observations.append(list(words));b.poke16(sy['AESPhysicalGo'],start+1)
+    phase(18);move(304,166);edge(1);move(304,50);edge(0);phase(19)
+    require(message()[0]==26 and message()[4]==0,'Thumb top endpoint')
+    require(get(view+vf['vslide'])==1000,'Thumb changed client value before acknowledgment')
+    b.poke16(sy['AESPhysicalGo'],19);phase(20);frames(100)
+    require(get(view+vf['vslide'])==0,'Thumb acknowledgment')
+    move(304,130);edge(1);edge(0);phase(21)
+    require(message()[0]==24 and message()[4]==1,'Page down request')
+    b.poke16(sy['AESPhysicalGo'],21);phase(22)
+    move(304,78);edge(1);move(304,230);edge(0);phase(23)
+    require(message()[0]==26 and message()[4]==1000,'Thumb bottom endpoint')
+    b.poke16(sy['AESPhysicalGo'],23);phase(24)
+    report['gadgets']=dict(resize=[32,32,280,184],escape_cancel=True,
+        deferred_geometry=True,arrow_pages=[2,3,0,1],slider_endpoints=[0,1000],
+        deferred_slider=True,scene_token=0,frame_pixels=2688,outline_pixels="exact")
     b.bp_clear_all()

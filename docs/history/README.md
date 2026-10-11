@@ -1,5 +1,26 @@
 # Historical records
 
+- [AES UPDATE admission latency](update-admission-latency.md): logical lock,
+  presenter painting and physical display handoff attribution, rejected renderer
+  experiments and frozen input/cancellation comparisons.
+
+- [GEM text viewer performance](text-viewer-performance.md): VDI text costs and measured tuning.
+
+- [GEM text viewer](text-viewer.md): bounded document loading and application evidence.
+
+- [Standard GEM file selector](file-selector.md): shared directory helpers and
+  the file-selector implementation's development evidence.
+
+- [Standard GEM dialogs](standard-dialogs.md): host lifecycle and development
+  evidence for synchronous forms and alerts.
+
+- [GEM application stack headroom](gem-application-stack-headroom.md): attribution,
+  ordinary stack growth and packaged desktop checks.
+
+- [Editable dialogs](editable-dialogs.md): caller-local TEDINFO and Files dialogs.
+- [Files scrolling](files-scrolling.md): cached directory rows and adaptive layout.
+- [Window gadgets](window-gadgets.md): resizing and vertical scrolling.
+
 [Documentation home](../README.md)
 
 - [Classic GEM appearance](classic-gem-appearance.md): frame, menu and desktop

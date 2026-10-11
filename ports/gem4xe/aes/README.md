@@ -14,7 +14,7 @@ Object traversal, coordinates, hit testing, box geometry, text placement and
 radio selection run selected donor code. The host validates the complete tree
 before donor walks, resolves string offsets into its own retained text, and
 replaces blocking form waits with release-time selection. Unsupported drawing
-branches and direct screen mutation in ob_change are removed. No form_do,
+branches and direct screen mutation in ob_change are removed. No donor form_do,
 GEMDOS, resource loader, application callback or donor input/startup is linked.
 
 The generated native packet uses the donor's 24-byte object layout, with
@@ -96,3 +96,10 @@ cohorts without passive traces. `--comparison-only` runs the functional checks
 and matched patch/full-redraw pair without those cohorts; `--analyze-only`
 recomputes metrics from an already completed run.
 The donor repository remains untouched.
+
+The caller-local standard-dialog binding in `c/calypsi/aes-form.c` and
+`aes-alert.c` now supplies `form_do`, `form_dial` and `form_alert`; it does not
+import the donor's event loop or global screen ownership. Extraction also emits
+`alert-icons.h` from the hash-checked `tools/gemdata.py`. Its three 32x32 masks
+are donor EmuTOS GPLv2 artwork; generated horizontal runs preserve every bit.
+The pinned donor notices and licensing inventory packaged with the donor notices apply.

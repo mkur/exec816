@@ -1,0 +1,361 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "WG/FS/ED integrated OF816 XEX desktop; focused Files and calculator walkthroughs on the same exact ZIP. No new latency acceptance claim.",
+  "implementation_commit": "77c47c6",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "override": false,
+    "changes": [],
+    "host_cargo_profile_dev_opt_level": 2,
+    "optimize": true,
+    "stack_checks": true
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$ef82ce86bc54d7a5",
+    "actual_kernel_id": "$ef82ce86bc54d7a5",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom": {
+    "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-milestones/files-check/extracted/exec816-demo/altirraos-816.rom",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "override": false
+  },
+  "emulator": {
+    "path": "build/mouse-bridge/AltirraBridgeServer",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59"
+  },
+  "package": {
+    "path": "build/desktop-milestones/complete/exec816-demo.zip",
+    "sha256": "95180bf2fc44a7c1448da2b2f2ac40933561f02f35e51e17c3fd843c034eeb38",
+    "entries": 19,
+    "payload_checksums": 18,
+    "source_inputs_matched": 127,
+    "demo_manifest_sha256": "2e10d0c9e9fa56f9383ea9fe72aa333467a92bec3bbb6c1897fe28bd8c735805",
+    "build_manifest_sha256": "bc0e47b8a3fa84879e05ecdfe7ff07911abc5c64c3bed94265c187968f44fb1c",
+    "boot_manifest_bytes": 808,
+    "boot_manifest_extents": 65,
+    "boot_manifest_extent_limit": 96,
+    "cartridge_capacity": {
+      "program.xex": {
+        "bytes": 1009647,
+        "headroom": 22544,
+        "fits_uncompressed": true
+      },
+      "of816/Exec-of816.xex": {
+        "bytes": 1034621,
+        "headroom": -2430,
+        "fits_uncompressed": false
+      }
+    }
+  },
+  "files_image": {
+    "bytes": 19529,
+    "span": 69497,
+    "sha256": "e11025298011dbf4423d41ecdee7235cfe6132e016386c4b667c492714b09c8c",
+    "model_bytes": 3054,
+    "model_delta": 382,
+    "snapshot_heap_bytes": 28672,
+    "rename_transient_heap_bytes": 256,
+    "image_allocation_banks": 2
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "private_idle": 0,
+    "including_guards_alignment_and_unused_capacity": true
+  },
+  "checks": {
+    "host_tests": 419,
+    "historical_skips": 4,
+    "generated_abis": "current",
+    "focused_editor_evidence": "docs/development/editable-dialogs-ed1.json"
+  },
+  "reports": {
+    "files": {
+      "report": "build/desktop-milestones/files-check/gem-desktop-results.json",
+      "report_sha256": "4cd7b5ea332f6db7eef4ed8224291c7b2de16f3f2fe9ebc16612761fbfda93ae",
+      "status": "pass",
+      "tier": "development",
+      "scope": "Files/dialogs, resize, launch/Stop, cleanup and shutdown; initial panel/menu matrix omitted",
+      "integration": {
+        "profile": "gem-desktop",
+        "files_only": true,
+        "desktop_menu": {
+          "focus_restoration": true,
+          "window_reuse": true
+        },
+        "panel_settings": null,
+        "panel_keyboard": false,
+        "panel_drag": false,
+        "counter": true,
+        "shell": true,
+        "files_relaunch": true,
+        "idle_job_collection": true,
+        "heap_restored": true,
+        "menu_quit_with_child": true,
+        "exit_with_gui_child_and_popup": true
+      },
+      "files_scrolling": {
+        "snapshot_entries": 24,
+        "rows": [
+          8,
+          4,
+          8
+        ],
+        "continuous_scroll": true,
+        "resize": true,
+        "preserved_selection": "HELLO",
+        "pixel_repair": true
+      },
+      "files_dialogs": {
+        "path": true,
+        "new_folder": true,
+        "rename": true,
+        "duplicate_preserved": true,
+        "invalid_leaf": true,
+        "missing_path": true,
+        "file_path": true,
+        "empty_directory": true,
+        "keyboard_default": true,
+        "mouse_ok_cancel": true,
+        "escape_cancel": true,
+        "exposure_caret": true,
+        "counter_continued": true,
+        "resize_while_editing": true,
+        "bank_zero_delta": 0,
+        "child_collection_while_editing": true,
+        "close_while_editing_with_child": true,
+        "persisted_directory": "BBB"
+      },
+      "work_media": [
+        {
+          "name": "work-walkthrough.atr",
+          "sha256": "7bca0fc7cbd08ddffe971af343711f2ad47b74a169b21229b59b069577cb7c00",
+          "allocation": {
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "allocated": 11,
+            "free": 2869,
+            "files": 1,
+            "directories": 2
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0,
+        "os_busy": 0,
+        "irq_depth": 0
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 583,
+          "remaining_above_floor": 697
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 590,
+          "remaining_above_floor": 178
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 180,
+          "remaining_above_floor": 588
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 740,
+          "remaining_above_floor": 28
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 637,
+          "remaining_above_floor": 131
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 751,
+          "remaining_above_floor": 17
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 810,
+          "remaining_above_floor": 1494
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 353,
+          "remaining_above_floor": 1951
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 300,
+          "remaining_above_floor": 980
+        }
+      },
+      "autoboot_frames": 249,
+      "manifest_poison_check_run": false
+    },
+    "calculator": {
+      "report": "build/desktop-milestones/calculator-check/calculator-results.json",
+      "report_sha256": "ff55310c967fd7ee6aff6a4040cc95f6eac65978e34892ff65e2557482425599",
+      "status": "pass",
+      "tier": "development",
+      "scope": "Calculator launch/failure, two independent instances, resources, heap and shutdown",
+      "integration": {
+        "profile": "calculator",
+        "no_window_cleanup": true,
+        "files_launch": true,
+        "stop": true,
+        "relaunch": true,
+        "counter": true,
+        "shell": true,
+        "independent_instances": 2,
+        "resource_isolation": true,
+        "idle_run_collection": true,
+        "heap_restored": true,
+        "exit_with_calculator_and_popup": true
+      },
+      "files_scrolling": null,
+      "files_dialogs": null,
+      "work_media": [
+        {
+          "name": "work-walkthrough.atr",
+          "sha256": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a",
+          "allocation": {
+            "sectors": 2880,
+            "sector_bytes": 256,
+            "allocated": 9,
+            "free": 2871,
+            "files": 1,
+            "directories": 1
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0,
+        "os_busy": 0,
+        "irq_depth": 0
+      },
+      "stacks": {
+        "0": {
+          "base": 9232,
+          "bytes": 1536,
+          "peak": 592,
+          "remaining_above_floor": 688
+        },
+        "1": {
+          "base": 12368,
+          "bytes": 1024,
+          "peak": 328,
+          "remaining_above_floor": 440
+        },
+        "2": {
+          "base": 13424,
+          "bytes": 1024,
+          "peak": 180,
+          "remaining_above_floor": 588
+        },
+        "3": {
+          "base": 14480,
+          "bytes": 1024,
+          "peak": 719,
+          "remaining_above_floor": 49
+        },
+        "4": {
+          "base": 15536,
+          "bytes": 1024,
+          "peak": 707,
+          "remaining_above_floor": 61
+        },
+        "5": {
+          "base": 16592,
+          "bytes": 1024,
+          "peak": 695,
+          "remaining_above_floor": 73
+        },
+        "6": {
+          "base": 17648,
+          "bytes": 2560,
+          "peak": 834,
+          "remaining_above_floor": 1470
+        },
+        "7": {
+          "base": 20240,
+          "bytes": 2560,
+          "peak": 557,
+          "remaining_above_floor": 1747
+        },
+        "8": {
+          "base": 22832,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 10800,
+          "bytes": 1536,
+          "peak": 301,
+          "remaining_above_floor": 979
+        }
+      },
+      "autoboot_frames": 249,
+      "manifest_poison_check_run": false
+    }
+  }
+}

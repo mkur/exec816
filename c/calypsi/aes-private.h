@@ -7,6 +7,11 @@ BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
+BOOL ExecAESForms(struct ExecAESContext *,AESPB *);
+BOOL ExecAESFormFinish(struct ExecAESContext *);
+WORD ExecAESFormBegin(struct ExecAESContext *,const GRECT *,const char *);
+void ExecAESFormExtent(OBJECT *,GRECT *);
+void ExecAESDrawEdit(struct ExecAESContext *,OBJECT *,WORD,WORD,WORD);
 
 /* A reservation pins the destination until publication.
  * These helpers require an admitted caller; they do not enter GEM recursively. */
@@ -35,6 +40,8 @@ void ExecAESTimerSend(struct ExecAESContext *c, ULONG high, ULONG low);
 WORD ExecAESTimerWait(struct ExecAESContext *c, ULONG milliseconds);
 WORD ExecAESEvents(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
                    WORD *message);
+WORD ExecAESPoll(struct ExecAESContext *,UWORD,WORD *);
+BOOL ExecAESFileSelector(struct ExecAESContext *,AESPB *);
 #define AES_ALARM_IDLE 0
 #define AES_ALARM_OUTSTANDING 1
 #define AES_ALARM_RETIRING 2

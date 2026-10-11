@@ -50,7 +50,7 @@ RETURN(DOS.Seek(DOS.FileHandle POINTER(ADDRESS(file)),position,mode))
 
 ; A launched command has no keyboard loan. Clone temporary NIL/RAW selections
 ; through the normal Process path, then release the parent's temporary handles.
-LONGCARD FUNC CStartProgram(LONGCARD name,unused,unused2)
+LONGCARD FUNC CStartProgram(LONGCARD name,arguments,length)
   LONGCARD identity
 
   LET image=PROGRAMFILE.Load(BYTE POINTER(ADDRESS(name)))
@@ -65,7 +65,8 @@ LONGCARD FUNC CStartProgram(LONGCARD name,unused,unused2)
     BEGIN
       LET oldInput=DOS.SelectInput(input)
       LET oldOutput=DOS.SelectOutput(output)
-      identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+      identity=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),
+          BYTE POINTER(ADDRESS(arguments)),CARD(length))
       LET error=DOS.IoErr()
       DOS.SelectInput(oldInput)
       DOS.SelectOutput(oldOutput)
@@ -111,6 +112,14 @@ LONGCARD FUNC CProgramMask(LONGCARD identity,unused,unused2)
 
 RETURN(PROCESS.CompletionMask(identity))
 
+LONGCARD FUNC CCreateDir(LONGCARD name,unused,unused2)
+
+RETURN(LONGCARD(ADDRESS(DOS.CreateDir(BYTE POINTER(ADDRESS(name))))))
+
+LONGINT FUNC CRename(LONGCARD oldName,newName,unused)
+
+RETURN(DOS.Rename(BYTE POINTER(ADDRESS(oldName)),BYTE POINTER(ADDRESS(newName))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -133,5 +142,7 @@ PROC BindDos(BYTE unused)
   entries(15)=ADDRESS(@CWaitProgram)
   entries(16)=ADDRESS(@CGetArgStr)
   entries(17)=ADDRESS(@CProgramMask)
+  entries(18)=ADDRESS(@CCreateDir)
+  entries(19)=ADDRESS(@CRename)
 
 RETURN

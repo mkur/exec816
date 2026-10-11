@@ -79,7 +79,7 @@ Count guards, alignment and unused capacity, not only live payload bytes.
 The build's `memory.json` is authoritative for `runtime_reservations`,
 `task_pools` and `bank_zero_budget`. Loading and runtime lifetimes differ:
 loader/staging storage may be reused only after adoption retires every live
-bootstrap frame and callback. The manifest at `$6200–$69FF` remains protected
+bootstrap frame and callback. The manifest at `$6700–$6EFF` remains protected
 through memory adoption, Task initialization and boot-setting capture. The
 adapter publishes `M_RETIRED=1` at `startup_complete`, before Task dispatch;
 only then is that entire range reusable. Failed startup does not publish it.
@@ -104,13 +104,14 @@ image payload in bank zero.
 
 For a linked foreign image, native code starts above the foreign image's full
 banks. The bitmap/desktop C image uses code bank `$0C`, data bank `$0D`, and
-an optional second code bank `$0E` for composed AES applications. GEM renderer
+code banks `$0E` and `$10` as needed for composed AES applications. GEM renderer
 lookup tables occupy read-only bank `$0F`, reserving its full 64 KiB including
-unused capacity. Images with these tables start native code at `$100000`;
-other C images begin at `$0E0000` or `$0F0000`, above their linked C payload. Runtime
-renderer bindings check generated executable extents, including the second bank
-only when populated. The existing native data arena and all stack/DP reservations stay in
-place. The effective origin is recorded in `memory.json` and `layout.json`;
+unused capacity. The composed standard-dialog desktop uses `$10` and starts
+native code at `$110000`; smaller images start above their highest populated
+foreign bank. Runtime renderer bindings check generated executable extents,
+including additional code banks only when populated. The existing native data
+arena and all stack/DP reservations stay in place. The effective origin is
+recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
 The text, bitmap and desktop demos use a 4.25 KiB arena to hold their composed
@@ -123,8 +124,9 @@ Desktop menu profiles add 512 bytes of upper arena capacity for menu state and
 labels (4.75 KiB total). The GEM desktop uses the same capacity. Its shared C
 runtime and renderer lookup tables are included in the compressed boot image;
 the loader expands all initialized extents before native startup publishes C
-bindings. They remain resident for the session. The panel, counter, Files and
-calculator remain separate disk-loaded APPs with Process-owned lifetimes.
+bindings. They remain resident for the session. The panel, counter, Files,
+calculator, dialog example and text viewer remain separate disk-loaded APPs
+with Process-owned lifetimes.
 There is no shared GUI component file or native component-loader arena.
 Optional bitmap payloads inherit the matching demo’s arena size. Task pools and
 all bank-zero reservations are unchanged. Build reports record the selected
@@ -142,8 +144,8 @@ loading and runtime. Persistent Exec reservations are packed below it:
 | `$0D00–$14FF` | Public Task DPs |
 | `$1500–$15FF` | Idle DP |
 | `$1600–$25FF` | Resident platform adapter, including segment padding |
-| `$2600–$5D3F` | Root, kernel, worker and idle stacks, including guards |
-| `$5D40–$7FFF` | 8,896 unreserved bytes after startup |
+| `$2600–$62DF` | Root, kernel, worker and idle stacks, including guards |
+| `$62E0–$7FFF` | 7,456 unreserved bytes after startup |
 
 The [platform profile](../../platform/altirraos/memory-4m.json) defines physical
 placement. Kernel DP is `$0C00`; public slot `i` owns `$0D00+i*$100`, and idle
@@ -156,12 +158,12 @@ The root stack starts at `$2610`, the kernel stack at `$2C30`; each reserves
 1,536 stack bytes with 16-byte guards at both ends. Other stack bases and sizes
 are published in `task_pools`; see [Task capacity](../architecture/task-capacity.md).
 All DPs remain exactly 256 bytes without guards. In the eight-Task profile,
-slots 1–5 have 1,024-byte stacks, slots 6–7 have 2,560 bytes and private idle
+slots 1–5 have 1,312-byte stacks, slots 6–7 have 2,560 bytes and private idle
 has 512 bytes. Every stack retains checked bounds and an internal 256-byte
 interrupt reserve. Four-Task pools remain 1,536 bytes each.
 
-Temporary staging occupies `$5DF0–$61FF`, the manifest `$6200–$69FF`, and the
-loader `$6A00–$7BFF`. They form one boot arena clear of every persistent pool.
+Temporary staging occupies `$62F0–$66FF`, the manifest `$6700–$6EFF`, and the
+loader `$6F00–$7BFF`. They form one boot arena clear of every persistent pool.
 `phase_reservations` records loading, initialization and runtime ownership;
 `runtime_free_ranges` records the complement after startup. Initialization
 retains the manifest after retiring loader/staging. The full free range becomes
@@ -174,20 +176,30 @@ bytes added**, including guards, alignment and unused capacity. Expanded kernel
 storage and startup ownership phases are unchanged.
 
 Moving the start from `$0800` to `$0A00` protects 512 additional low bytes.
-Fixed Exec runtime reservations and every per-Task reservation change by **0**;
-the OS/loader reservation grows by **512**. The temporary loader capacity
-shrinks from 5,120 to 4,608 bytes, retaining its `$7C00` end, so total loading
-reservations are unchanged. The linker enforces that smaller capacity.
-Runtime reserves 56,640 bytes including OS ranges; initialization reserves
-58,688 while the manifest is live, and loading reserves 52,592. The guarded
-idle stack ends at `$5D40` exclusive, leaving 176 bytes before staging. Pools
-may not overlap any part of the boot arena, even when phase lifetimes differ.
-See the [low-memory relocation checks](../development/memory-low-a00.json).
+The OS/loader reservation grows by **512**; fixed Exec runtime and per-Task
+reservations do not change from that relocation. The
+[low-memory relocation checks](../development/memory-low-a00.json) retain the
+original relocated profile before the subsequent stack growth.
 
-The [larger-stack development record](../development/larger-task-stacks.json)
-accounts for the earlier 3,072-byte increase over the compact eight-Task map:
-fixed delta 0, slots 6 and 7 +1,536 bytes each, all other pools unchanged. Its
-addresses and totals describe that revision.
+The [larger-stack record](../development/larger-task-stacks.json) accounts for
+slots 6 and 7 growing by 1,536 bytes each. The subsequent
+[application headroom change](../history/gem-application-stack-headroom.md) and
+[file-selector change](../history/file-selector.md#fsel4-loadable-consumer-and-of816-package)
+add 256 and 32 bytes respectively to each ordinary pool. Integrating these
+changes into the current `$0A00` map adds **288 bytes per slot 1–5**, or
+**1,440 reserved bank-zero bytes** total. Fixed runtime, root, kernel, slots
+6–7 and idle add **0**. Guards, alignment and interrupt reserves are unchanged.
+
+The boot arena moves to `$62F0–$7BFF`; temporary loader capacity shrinks from
+4,608 to **3,328 bytes**, retaining its `$7C00` end and diagnostic scratch space.
+The linker bounds the emitted compressed loader. The manifest permits 96
+extents within its existing 2,048-byte reservation (1,056 bytes at 64 banks),
+with byte-sized extent indexes. Eight-Task runtime reserves **58,080 bytes**
+including OS ranges, initialization **60,128**, and loading **51,600**.
+The guarded idle stack ends at `$62E0` exclusive, leaving 16 bytes before
+staging. Four-Task runtime remains **51,904 bytes**; its loading reservation
+is **52,848**. All totals include unused reserved capacity. Pools may not
+overlap any part of the boot arena, even when phase lifetimes differ.
 
 [Bank-zero compaction](../development/bank-zero-compaction.json) combines nine
 holes into one for eight Tasks, with zero change in total reservations or

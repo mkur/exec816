@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 10,
+  "version": 11,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 5,
+    "GUI_KINDS": 8,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -88,7 +88,25 @@
     "OP_MENU": 202,
     "MENU_OBJECTS": 32,
     "MN_SELECTED": 10,
-    "GUI_MENU": 4
+    "GUI_MENU": 4,
+    "SIZER": 32,
+    "UPARROW": 64,
+    "DNARROW": 128,
+    "VSLIDE": 256,
+    "WF_VSLIDE": 9,
+    "WF_VSLSIZE": 16,
+    "WM_ARROWED": 24,
+    "WM_VSLID": 26,
+    "WM_SIZED": 27,
+    "WA_UPPAGE": 0,
+    "WA_DNPAGE": 1,
+    "WA_UPLINE": 2,
+    "WA_DNLINE": 3,
+    "GUI_SIZED": 5,
+    "GUI_VSLID": 6,
+    "GUI_ARROWED": 7,
+    "WINDOW_SUPPORTED": 491,
+    "WF_VSLSIZ": 16
   },
   "records": {
     "MenuObject": [
@@ -448,6 +466,14 @@
         "CARD"
       ],
       [
+        "vslide",
+        "INT"
+      ],
+      [
+        "vsize",
+        "INT"
+      ],
+      [
         "revision",
         "LONGCARD"
       ],
@@ -607,6 +633,20 @@
     "MU_M2",
     "MU_MESAG",
     "MU_TIMER",
-    "MN_SELECTED"
+    "MN_SELECTED",
+    "SIZER",
+    "UPARROW",
+    "DNARROW",
+    "VSLIDE",
+    "WF_VSLIDE",
+    "WF_VSLSIZE",
+    "WM_ARROWED",
+    "WM_VSLID",
+    "WM_SIZED",
+    "WA_UPPAGE",
+    "WA_DNPAGE",
+    "WA_UPLINE",
+    "WA_DNLINE",
+    "WF_VSLSIZ"
   ]
 }

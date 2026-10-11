@@ -226,6 +226,17 @@ void GemVdiPaint(void *context)
 {
     struct ExecVDIUnit *u=context;
     UWORD i;
+    /* The caller already clipped this bounded unit and owns DISPLAY. Complete
+     * even-X cells can use the native uploader without selecting donor state.
+     * Reuse renderer scratch; the synchronous uploader fences before return. */
+    if (u->operation==8 && !(u->x&1) && u->left==u->x &&
+        u->right==u->x+(u->count<<3) && u->top==u->y-6 && u->bottom==u->y+2) {
+        extern void vbxe_text_run(uint16_t,uint16_t,const uint8_t *,uint16_t,uint16_t,uint16_t);
+        uint8_t *text=(uint8_t *)intin;
+        for (i=0;i<u->count;++i) text[i]=(uint8_t)u->glyphs[i];
+        vbxe_text_run(u->x,u->top,text,u->count,u->textColor,0);
+        return;
+    }
     nativeWorkstation=vwk;
     vwk.clip=1;
     vwk.xmn_clip=u->left; vwk.ymn_clip=u->top;

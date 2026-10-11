@@ -3,7 +3,7 @@
 #include <exec816/program.h>
 
 /* The launcher installs these native entry addresses before entering C. */
-void EXEC_PTR *ExecDosEntries[18];
+void EXEC_PTR *ExecDosEntries[20];
 
 ULONG EXEC_CALL _DosCall(UWORD entry, const struct ExecDosWriteArgs *args);
 
@@ -33,9 +33,12 @@ LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info) { return call(8,lock
 LONG EXEC_CALL IoErr(void) { return call(9,0,0,0); }
 LONG EXEC_CALL Seek(BPTR file,LONG position,LONG mode) { return call(10,file,position,mode); }
 LONG EXEC_CALL ExecDOSDetach(void) { return call(11,0,0,0); }
-ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name) { return call(12,(ULONG)name,0,0); }
+ULONG EXEC_CALL ExecStartProgram(CONST_STRPTR name,CONST_STRPTR arguments,UWORD length)
+{ return call(12,(ULONG)name,(ULONG)arguments,length); }
 LONG EXEC_CALL ExecCollectProgram(ULONG id,struct ExecProgramResult *result) { return call(13,id,(ULONG)result,0); }
 LONG EXEC_CALL ExecBreakProgram(ULONG id) { return call(14,id,0,0); }
 LONG EXEC_CALL ExecWaitProgram(ULONG id,struct ExecProgramResult *result) { return call(15,id,(ULONG)result,0); }
 CONST_STRPTR EXEC_CALL ExecGetArgStr(void) { return (CONST_STRPTR)call(16,0,0,0); }
 ULONG EXEC_CALL ExecProgramMask(ULONG id) { return call(17,id,0,0); }
+BPTR EXEC_CALL CreateDir(CONST_STRPTR name) { return call(18,(ULONG)name,0,0); }
+LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName) { return call(19,(ULONG)oldName,(ULONG)newName,0); }

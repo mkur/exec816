@@ -138,7 +138,8 @@ BYTE FUNC AdmitWorker(DriverBus POINTER bus)
   bus.port.mp_SigTask=item
   result=EXEC.Task POINTER(0)
   FOR slot=1 TO TASKSTACKS.CAPACITY-1 DO
-    IF TASKSTACKS.StackUpper(slot)-TASKSTACKS.StackLower(slot)=1024 THEN
+    ; The emitted worker bound fits 1 KiB; larger existing pools also qualify.
+    IF TASKSTACKS.StackUpper(slot)-TASKSTACKS.StackLower(slot)>=1024 THEN
       item.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(slot))
       item.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(slot))
       item.tc_SPReg=item.tc_SPUpper-SIZE(2)

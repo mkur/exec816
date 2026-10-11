@@ -17,7 +17,8 @@ The current source profile in [gem.h](../../c/include/gem.h) implements
 and the corresponding `aes_call(AESPB *)` operations.
 Other opcodes return zero with `ExecAESDiagnostic() == AES_UNSUPPORTED`.
 This is a rebuilt Calypsi source interface, not a GEM binary ABI or a complete
-AES implementation. Resource and form calls are pending. Selected
+AES implementation. The object/form, resource and menu subsets are described
+below. Selected
 [private VDI workstation calls](gem-vdi.md#resident-application-workstations)
 execute directly in the caller.
 
@@ -167,22 +168,29 @@ keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
 Each registration can own one window; native and GEM windows share four desktop
-slots. The supported kind is `NAME | CLOSER | MOVER`. Create reserves a hidden
+slots. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
+`UPARROW`, `DNARROW` and `VSLIDE`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
 requires a closed window. Exit closes and deletes any remaining window. Handles
 are not reused during a service lifetime. The initial profile permits moves at
-individual pixel positions, fixed dimensions of at least 32 by 32, and bounds
-fully inside the 640 by 240 desktop. Resizing and off-screen bounds fail without
-mutation.
+individual pixel positions and bounds fully inside the 640 by 240 desktop.
+Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
+permits dimensions of at least 64 by 48; vertical gadgets require height 80.
+Off-screen bounds fail without mutation.
 
 `WF_NAME` copies at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
-the window and `WF_TOP` raises it. Work insets are left/right 8, top 16 and bottom
-8 pixels. `wind_calc` converts border/work rectangles locally; `wind_get`
+or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
+top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
+SIZER increases the bottom inset to 16. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries; a native top window is reported as zero.
+
+`WF_VSLIDE` and `WF_VSLSIZE` (`WF_VSLSIZ`) set/query 0..1000 position and
+size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
+height is eight pixels. Horizontal scrollbars are unsupported.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
 caller owns `BEG_UPDATE`. The presenter publishes the snapshot on acquisition;
@@ -195,6 +203,14 @@ Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 `WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
 application calls the corresponding set or close operation. Inactive clicks
 request top first. The existing native-window behavior is unchanged.
+
+Size release sends `WM_SIZED` with proposed outer x/y/w/h. Vertical thumb
+release sends `WM_VSLID` with 0..1000 in word 4; arrows and track clicks send
+`WM_ARROWED` with `WA_UPLINE`, `WA_DNLINE`, `WA_UPPAGE` or `WA_DNPAGE`.
+Applications accept sizes through `WF_CURRXYWH`, and publish their own slider
+values after scrolling. These gestures never change client content by themselves.
+Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
+cancels. Hold repeat, horizontal gadgets and live resizing remain unsupported.
 
 For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
@@ -250,7 +266,7 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 9 has a 112-byte request and permits init, exit, update,
+profile: version 11 has a 112-byte request and permits init, exit, update,
 window mutations, cold display delegation and session mouse preferences on the
 RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
@@ -322,10 +338,12 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 
 `gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
 `TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
-`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT` and `G_BOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/RBUTTON/LASTOB/
-HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
+`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT` and
+`G_FBOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
+RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
 with at most 32 objects, eight levels and 63 characters per label. Coordinates
-are pixels. Unsupported object types, indirect specs and user callbacks are
+are pixels. Box specs use a signed border-thickness byte; centering and drawing
+include outward borders. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
 
 `G_TEXT` and `G_BOXTEXT` use a TEDINFO addressed by `ob_spec`, with full
@@ -333,7 +351,29 @@ outside this caller contract.
 system font, left/right/center justification, the GEM color word and signed
 border thickness. A negative thickness draws the box border outward; drawing
 includes that extent in its clip. The caller owns the NUL-terminated text and
-repaints after updating it. Formatted/editable text is not supported.
+repaints after updating it.
+
+`objc_edit(tree, object, key, &index, kind)` provides caller-local single-line
+editing, also through AESPB opcode 46 (4/2/1/0). ED_START is a no-op; ED_INIT
+places the caret at the end; ED_CHAR edits; ED_END removes the caret. Text
+capacity `te_txtlen` includes NUL and is 1–128 bytes. Templates and validation
+strings are at most 63 characters. Formatted types replace underscore slots
+with text, bounded by both the slot count and capacity. Full fields reject
+additional insertion. Ordinary fields scroll horizontally to show the caret.
+The IBM 8×8 renderer shows at most 63 characters per field.
+
+Support includes insertion, Backspace, Delete (both $5300 and GEM $537F),
+left/right, Home/End and Escape-to-clear. ASCII validation classes 9/A/a/N/n,
+F/f/P/p and X/x follow GEM case folding; a short validation string repeats its
+last class. X preserves case; x folds to uppercase. The path classes also
+accept `/` for Exec paths. Extended-character classes, selection ranges,
+clipboard and multiline editing are unsupported.
+
+One edit association/index/viewport is retained per caller in upper memory;
+ordinary `objc_draw` repairs its steady caret. There is no caret timer.
+`objc_edit` takes and releases UPDATE around its complete clipped field redraw;
+recursive UPDATE ownership is supported. End editing before replacing/freeing
+the tree. Normal application teardown clears the association.
 
 `objc_draw`, `objc_find`, `objc_offset`, `objc_change`, `form_center`,
 `form_keybd` and `form_button` have named and AESPB bindings with their GEM
@@ -346,17 +386,133 @@ centers within the caller's work area.
 The form subset is windowed and event-driven: `form_button` commits an accepted
 release/keyboard action without waiting or drawing. It toggles selectable
 buttons, selects radio peers exclusively, and returns zero for a momentary EXIT
-button. `form_keybd` navigates selectable controls with Tab/Shift-Tab, activates
-focus with Space and DEFAULT with Return; it reports the next object and
+button. `form_keybd` navigates selectable and editable controls with Tab/Shift-Tab,
+activates button focus with Space and DEFAULT with Return; Space remains an
+unconsumed editing key on a field. `form_button` focuses EDITABLE without
+toggling SELECTED; it reports the next object and
 unconsumed key. These are deliberate departures from modal GEM form handling.
 The application tracks press/cancel and redraws changed objects. It continues
-handling WM_* messages in `evnt_multi`. `form_do`, text editing and modal screen
-ownership are not implemented.
+handling WM_* messages in `evnt_multi`.
+
+`form_do(tree, start)` (opcode 50, 1/1/1/0) now supplies a synchronous,
+caller-local loop. It reuses the editor and form helpers, waits through the
+existing event engine, and takes UPDATE only for painting. Zero start chooses
+an editable field, then a button; Tab/Shift-Tab traverses controls and Up/Down
+traverses fields. A press previews selection; an inside release commits and an
+outside release or Escape cancels it. Entry/loss waits for release before a new
+press. No motion/hover feedback is promised. Return activates DEFAULT; Space
+activates a focused button. Accepted EXIT returns its index with SELECTED set.
+
+A direct call creates and finishes an implicit session. START permits repeated
+calls on the same tree until FINISH. Temporary windows accept movement and
+close locally. Borrowed move/size/scroll/close, menu and ordinary application
+messages interrupt with **-1 / AES_PENDING**, preserving the exact message for
+the next wait. Check for a negative result before indexing the tree. Temporary
+close returns -1 / AES_OK; failures also return -1. GUI provenance distinguishes
+redraws from ordinary WM-shaped messages. Recursive forms, TOUCHEXIT,
+double-click result bits and desktop-wide modal ownership are unsupported.
+
+`form_dial` now provides START/FINISH host lifetime (opcode 51, 9/1/0/0).
+START borrows a shown application window or creates a temporary ordinary
+NAME/CLOSER/MOVER window when the caller has none. It opens a private workstation
+only if absent. The requested form rectangle must fit; an allocated closed
+window, existing session, edit association or held UPDATE/MCTRL prevents START.
+`form_center` can compute a desktop-centered rectangle before window creation.
+GROW/SHRINK succeed without animation inside a started session. Caller drawing
+still takes a short UPDATE section.
+
+FINISH closes only owned resources. Borrowed content receives a local WM_REDRAW
+repair on the next message wait, after any deferred message and before queued
+messages. Repair is tied to the open epoch and does not need queue capacity.
+Cleanup failure retains the session for retry; `appl_exit` also finishes an
+abandoned session. No Task, bank-zero or VRAM reservation is added. The C context
+is now 340 live / 344 heap-reserved upper bytes. See the
+[dialog development record](../history/standard-dialogs.md).
+
+`form_alert(default_button, text)` (opcode 52, 1/1/1/0) uses the same implicit
+session. It accepts `[icon][line|line][button|button]`, icons 0–3, up to five
+40-character lines, three nonempty 20-character buttons and 511 source bytes
+excluding NUL. Doubled `||` and `]]` represent literal delimiters. Default zero
+means none; otherwise it names a one-based button. Malformed syntax/default
+returns zero / AES_MALFORMED; bounds or unsupported icons return zero /
+AES_UNSUPPORTED. Fit/capacity failure returns zero / AES_RESOURCE before painting.
+
+Acceptance returns a one-based button number. Interruption, dismissal or failure
+returns **zero**; inspect `ExecAESDiagnostic()` and never interpret zero as consent.
+Return uses DEFAULT, Space uses button focus, and the temporary closer dismisses.
+The fixed monochrome donor icons use clipped fill runs; this adds no general
+G_IMAGE or raster API. Alert storage survives a failed retirement until FINISH
+or application teardown can complete. Session storage is 319 live / 320 reserved
+upper bytes; an alert adds 514 live / 520 reserved bytes. Both named calls and
+AESPB dispatch use C component ABI 11; rebuild GEMSYS and applications together.
 
 The application binding reuses the extracted GEM4XE routines with its own GSX
 scratch, protected by the existing display grant. The native retained widget
 binding remains presenter-owned. No additional bank-zero reservation is needed.
 
+
+## File selector
+
+`fsel_input(path, file, &button)` and
+`fsel_exinput(path, file, &button, title)` are synchronous caller-local calls.
+AESPB opcodes 90 and 91 use counts **0/2/2/0** and **0/2/3/0** respectively.
+Supply writable path[128] and filename[13] buffers, including their NULs.
+The extended caption shows up to 30 characters, further clipped to the host
+width; the default caption is File selector.
+
+| Completion | Return | Button | Diagnostic / strings |
+| --- | --- | --- | --- |
+| OK | 1 | FSEL_OK (1) | AES_OK; current directory/filter and literal filename |
+| Cancel, Escape or temporary closer | 1 | FSEL_CANCEL (0) | AES_OK; current edited fields, which need not be valid |
+| Application-policy interruption | 0 | FSEL_CANCEL | AES_PENDING; original strings unchanged |
+| Admission or operational failure | 0 | FSEL_CANCEL | Error diagnostic; original strings unchanged |
+
+Outputs are published after successful host retirement. A cleanup failure keeps
+the private session for FMD_FINISH retry or `appl_exit`; the caller's strings are
+still unchanged. The selector never opens a selected file for the application,
+writes a file, confirms overwrites or changes the Task's current directory.
+
+Use Exec paths such as `SYS:*.TXT`, `SYS:SELECT/*.*` and `WORK:*.C`, with `/`
+separators. An empty path starts at `SYS:*.*`; a prefix root or trailing `/`
+acquires `*.*`. The last component is the filter. GEMDOS drive translation and
+backslashes are unsupported. Path/open/read errors remain visible for correction.
+OK requires a successfully enumerated directory and a legal literal 8.3 leaf;
+the leaf need not exist and no extension is added automatically.
+
+The list keeps the first 256 directory entries in enumeration order, plus one
+read to detect truncation. `First 256 only` stays visible when that limit is hit.
+ASCII-insensitive GEM 8.3 `*`/`?` filtering operates on that snapshot; directories
+always remain visible and `*.*` includes extensionless files. Filtering and
+line/page scrolling perform no directory reads. Refresh rereads the directory
+and retains an exact-name selection. An initial open/examine failure preserves
+the old view; a later read failure clears the overwritten snapshot.
+
+Click a file to fill Filename, or a directory to enter it. Up retains the filter.
+Return in Path commits an edit; Tab/Shift-Tab visit fields, the list and controls.
+List arrows move selection; Return accepts/navigates and Space activates a
+focused noneditable control. Buttons activate on release inside; outside release
+and input loss cancel a press. Escape cancels an armed press first, then the
+selector. No double-click, hold-repeat, list dragging or drive-button grid exists.
+
+The host is the caller's shown window, or the existing temporary form host when
+it owns no handle. Work areas below **208×128** are rejected before painting.
+Closed handles, nesting, an active editor or held UPDATE/MCTRL are busy errors.
+Borrowed-window policy interrupts with the existing deferred-message/repair
+ordering. Temporary hosts handle movement and dismiss on their closer.
+
+Loading disables path, list and navigation actions while leaving Cancel usable.
+A private ready-event pass between ExNext calls keeps input interest armed;
+it submits no timer and does not wait for fresh input with a directory lock.
+Cancellation can wait for the current synchronous DOS call to finish.
+Painting uses existing visible rectangles and short UPDATE sections.
+
+Per active selector, upper-heap storage is 3,242 live / 3,248 reserved bytes
+(including the 512-byte filtered index), a 28,672-byte entry allocation, and
+the existing 320-byte form allocation. Existing host/workstation resources are
+borrowed or owned by that form. The selector adds no fixed bank-zero or VRAM
+storage. The packaged consumer required 32 more bytes per ordinary stack
+(slots 1–5), adding 160 reserved bank-zero bytes in total.
+See the [development record](../history/file-selector.md).
 
 ## Resources and popup menus
 
@@ -364,12 +520,13 @@ binding remains presenter-owned. No additional bank-zero reservation is needed.
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
 big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
 trees, using the object/string subset above. Each tree ends with LASTOB within
-32 objects. Up to 256 TEDINFO records support noneditable G_TEXT/G_BOXTEXT.
-Each record's three string offsets must identify bounded NUL-terminated strings
-of at most 63 characters. Load fixes full upper-memory addresses and normalizes
-text/template lengths to string length plus NUL, including files with zero
-length fields. Shared TEDINFO records are fixed once. Text remains writable
-within the buffer supplied by the resource; text editing is not implemented.
+32 objects. Up to 256 TEDINFO records support the text types above. Templates
+and validation strings are NUL-terminated, at most 63 characters. Load fixes full
+upper-memory addresses. Noneditable records normalize text/template lengths to
+string length plus NUL, including files with zero length fields. EDITABLE records
+preserve their declared 1–128-byte text capacity; the complete writable extent
+and its initial NUL must be present in the file. Shared TEDINFO records are fixed
+once. Text remains writable within the resource's supplied buffer.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
 Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.
@@ -427,18 +584,29 @@ Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
 Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
 
-The private C context is 308 bytes. Rebuild bindings and applications with
-C import ABI version 5.
+The private C context is 340 bytes. Rebuild bindings and applications with
+the current C component ABI (10).
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
 
 ## Small GEM desktop
 
 `tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
-the shell. Files loads `SYS:DESKTOP.RSC`, enumerates DOS directories eight entries
-at a time and launches native Exec commands or C/GEM APPs using Program/Process. Its
-application menu offers Open, Refresh, Stop and Quit; its window-scoped File
+the shell. Files loads `SYS:DESKTOP.RSC`, caches up to 256 directory entries and shows up to sixteen reusable rows,
+adapting the count and width to its work area. Arrows, page clicks and the vertical
+thumb scroll continuously; keyboard selection follows into view. Refresh preserves
+the selected filename. Directories above the limit report a truncated listing.
+Files launches native Exec commands or C/GEM APPs using Program/Process. Its
+application menu offers Open, Refresh, Stop, Quit, Path, New Folder and Rename; its window-scoped File
 popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
-and child availability, and menu Quit shares the ordinary close path. A launched command
+and child availability, and menu Quit shares the ordinary close path.
+Path (P), New Folder (N) and Rename (R) use compiled-in OBJECT/TEDINFO dialogs
+inside Files' existing window. Tab/Shift-Tab, Return, Escape and mouse OK/Cancel
+operate them. Fields use GEM uppercase folding for the current disk formats.
+The other applications keep running. Path validates a directory
+before replacing the snapshot; New Folder/Rename accept one leaf name and
+preserve operational errors and entered text. Success refreshes and selects the
+result; Cancel does not mutate the filesystem. Files continues servicing
+geometry, exposure, child completion and close while a dialog is open. A launched command
 has an empty argument tail, NIL input and RAW output in the shell; closing Files
 requests native BREAK or GEM close and collects the child before Task retirement.
 The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries
@@ -462,7 +630,7 @@ separate from standard GEM. A registered application supplies `AES_MOUSE_OFF`
 `AES_MOUSE_QUERY` (-1). The result is the chosen profile; -1 indicates failure,
 with `ExecAESDiagnostic()` supplying the cause. Valid enum use belongs to the
 caller. AES wire version 9 adds operation 201 without changing record layouts;
-C application import ABI 5 exports the binding. Rebuild the runtime and apps.
+The current C component ABI exports the binding. Rebuild the runtime and apps.
 
 The presenter serializes this infrequent request with input processing. It
 preserves pointer coordinates and clears fractional motion when the profile

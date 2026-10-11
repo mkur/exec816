@@ -84,6 +84,27 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
         Permit();
         if (!stale) return TRUE;
     }
+    /* A caller-local repair never needs space in the published queue.
+     * Promote only after an older deferred message has been consumed. */
+    if (c->repairEpoch) {
+        Forbid();
+        if (c->repairEpoch==c->endpoint->guiEpoch && c->view &&
+            c->view->shown && c->view->handle==c->repairWindow) {
+            c->deferredMessage[0]=WM_REDRAW;
+            c->deferredMessage[1]=c->deferredMessage[2]=0;
+            c->deferredMessage[3]=c->repairWindow;
+            c->deferredMessage[4]=c->repair.left;
+            c->deferredMessage[5]=c->repair.top;
+            c->deferredMessage[6]=c->repair.right-c->repair.left;
+            c->deferredMessage[7]=c->repair.bottom-c->repair.top;
+            c->deferredEpoch=c->repairEpoch;
+            c->deferredMenuEpoch=0;
+            c->messagePending=1;
+        }
+        c->repairEpoch=0;
+        Permit();
+        if (c->messagePending) return TRUE;
+    }
     for (;;) {
         Forbid();
         record = (struct AESDelivery *)c->receiving->mp_MsgList.lh_Head;

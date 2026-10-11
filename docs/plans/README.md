@@ -2,6 +2,55 @@
 
 - [RAM filesystem](ram-filesystem.md): volatile files using the shared DOS worker.
 
+The [GEM text viewer design](gem4xe/text-viewer-design.md) covers a
+loadable read-only viewer, bounded loading and line indexing, incremental
+painting and subsequent `.TXT` launch from Files. The
+[TV1–TV4 implementation plan](gem4xe/text-viewer-implementation-plan.md) orders
+document loading, the standalone viewer, Files launching and the OF816 package.
+TV1–TV4 are implemented and pass the recorded development checks.
+
+The [text viewer performance plan](gem4xe/text-viewer-performance-plan.md) is
+implemented through TVP4; the twofold page target remains open. The
+[UPDATE admission latency plan](gem4xe/update-admission-latency-plan.md) has
+implemented UA1 attribution. All nine UA2 experiments miss at least one frozen
+gate, so production remains at TVP4 and UA2/UA3 acceptance is open. The
+[execution record](../history/update-admission-latency.md) retains comparisons,
+experimental patches and cancellation-phase findings.
+
+The [standard GEM file selector design](gem4xe/file-selector-design.md)
+covers `fsel_input`/`fsel_exinput` over Files' directory/viewport helpers and the
+standard-dialog lifecycle. The
+[FSEL1–FSEL4 plan](gem4xe/file-selector-implementation-plan.md) orders shared
+helpers, hosted interaction, standard bindings and the packaged example.
+FSEL1–FSEL4 pass development checks, including the extracted OF816 ZIP walkthrough.
+
+The [standard GEM dialogs design](gem4xe/standard-dialogs-design.md) and
+[FD1–FD4 plan](gem4xe/standard-dialogs-implementation-plan.md) cover caller-local
+`form_do`/`form_alert`, the `form_dial` lifecycle and a packaged example.
+FD1–FD4 pass development checks, including the extracted OF816 ZIP walkthrough.
+See the [execution record](../history/standard-dialogs.md).
+
+The [GEM application stack headroom plan](gem4xe/application-stack-headroom-implementation-plan.md)
+addresses the narrow margins observed during editable-dialog validation.
+SH1–SH3 pass development checks: ordinary pools grow to 1,280 bytes, and the
+selected packaged desktop scenarios retain at least 254 bytes above the floor
+(128-byte target). See the [execution record](../history/gem-application-stack-headroom.md).
+
+The [editable dialogs design](gem4xe/editable-dialogs-design.md) and
+[implementation plan](gem4xe/editable-dialogs-implementation-plan.md) add
+caller-owned text editing and Files path/folder/rename dialogs. ED1–ED3 pass
+development checks; see the [execution record](../history/editable-dialogs.md).
+
+The [Files scrolling design](gem4xe/files-scrolling-design.md) and
+[implementation plan](gem4xe/files-scrolling-implementation-plan.md) cover
+the adaptive directory list and preserved selection. FS1–FS2 pass development
+checks; see the [execution record](../history/files-scrolling.md).
+
+The [window gadgets design](gem4xe/window-gadgets-design.md) and
+[implementation plan](gem4xe/window-gadgets-implementation-plan.md) add
+application-acknowledged resizing and vertical scrolling. WG1–WG2 pass
+development checks; see the [execution record](../history/window-gadgets.md).
+
 [Documentation home](../README.md) · [Open roadmap](../roadmap.md)
 
 Plans describe bounded implementation slices. This index includes completed

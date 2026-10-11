@@ -258,12 +258,22 @@ Use Off/Mild, Defaults, Apply and Cancel in the panel (see
 [mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes
 keyboard focus, Space activates it and Return activates Apply. Release outside
 or Escape cancels a press. In Files, select a directory/file and press Return;
-Up and Next navigate. The top Files menu provides Open/Refresh/Stop/Quit;
+Up navigates to the parent; Refresh reloads the directory. Drag the lower-right
+size gadget to change the view, and use arrows, track clicks or the thumb to
+scroll. Files caches at most 256 entries and adapts up to sixteen visible rows;
+Refresh preserves the selected name. The top Files menu provides
+Open/Refresh/Stop/Quit/Path/New Folder/Rename;
 File inside the window or F opens the existing popup. Tab/Up/Down and Return select;
 Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
 arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
 tiled-console mode and returns an error in this desktop. Close one GEM window
 before a two-child shell pipeline.
+Path (P), New Folder (N) and Rename (R) open a text dialog in Files' work area.
+Type into the field; Tab/Shift-Tab changes focus, Return accepts, and Escape or
+Cancel dismisses it. The mouse can also select the field and OK/Cancel. Use
+`WORK:` for writable operations; `SYS:` is read-only. Errors preserve the text
+for correction. Other windows remain usable during the dialog.
+
 Files can also launch `PANEL.APP`, `COUNTER.APP`, `FILES.APP` or `CALC.APP`. Close an existing
 GEM window first when all four application-window slots are occupied. Closing Files stops and
 collects its child before retirement. The shell collects closed initial apps
@@ -295,7 +305,8 @@ entry, overflow and division by zero leave the displayed operand unchanged.
 The [pinned donor inputs and patches](../../ports/gem4xe/apps/calculator/README.md)
 retain its arithmetic and keypad/resource IDs. The adaptation replaces the
 modal dialog with the existing windowed event loop and repaints changed objects.
-The display uses noneditable TEDINFO; no text editing API is added.
+The calculator display uses noneditable TEDINFO; the separate `objc_edit` API
+is available for application-owned editable fields.
 
 ```sh
 python3 tools/build_calculator.py --output build/calculator/app
@@ -335,4 +346,113 @@ pointer without changing geometry. These calls safely patch an installed menu;
 do not edit a live installed tree directly. Withdraw with `menu_bar(tree,0)`
 before freeing its storage or resource. `appl_exit` also withdraws it.
 See the [bounded menu contract](../reference/aes.md) for supported objects,
-counts and keyboard interaction. Rebuild APPs against C import ABI 5.
+counts and keyboard interaction. Rebuild the shared GEM boot image and APPs against the current
+C component ABI.
+
+## Standard dialogs
+
+[The dialog example](../../examples/gem-dialog/dialog.c) is a separately loaded
+`C:DIALOG.APP`. Close one existing GEM application, then run `RUN C:DIALOG.APP`.
+Continue accepts an alert before the example owns a window. Edit (E) opens a
+compiled-in editable tree; Apply repeats `form_do` inside START/FINISH and Done
+returns to the application. Alert (A) borrows its existing window. Open (O) and
+Save (S) invoke the standard file selectors and display the returned selection;
+Save does not write a file. `SYS:SELECT/` has multiple pages and a subdirectory
+for trying filters and navigation. `RUN C:DIALOG.APP SELECT` also opens the
+selector before the application owns a window. The Dialog menu and Quit (Q)
+remain ordinary application policy.
+
+Use `form_center`, `form_dial(FMD_START, ...)`, one or more `form_do` calls and
+`form_dial(FMD_FINISH, ...)` for an explicit session. An isolated `form_do` or
+`form_alert` creates and finishes an implicit session. Keep the tree and text
+buffers alive through FINISH; this includes a failed cleanup pending retry.
+End an existing `objc_edit` association and release UPDATE/MCTRL before entry.
+Drawing ownership is short-lived; all other applications continue running.
+
+`form_do` returns an EXIT index with SELECTED set. Check for a negative result
+before indexing the tree, and clear SELECTED before reusing that button:
+
+```c
+result = form_do(tree, 0);
+if (result < 0) {
+    status = ExecAESDiagnostic();
+    /* FINISH an explicit session, then handle AES_PENDING in the event loop. */
+} else {
+    tree[result].ob_state &= ~SELECTED;
+    /* Apply the accepted application action. */
+}
+```
+
+A borrowed window's move/size/scroll/close, a menu selection or an ordinary
+application message returns `AES_PENDING`. FINISH, resume the event loop and
+process the retained message. The following WM_REDRAW repairs the application's
+work area from its own model. Repaint the whole damaged area, including margins;
+a saved screen image is neither needed nor maintained. Temporary hosts accept
+movement themselves; their closer dismisses with `AES_OK`.
+
+`form_alert` returns a **one-based** button or **zero** on interruption,
+dismissal or failure. Zero is never an accepted button. The bounded syntax,
+limits, default selection and unsupported operations are in the
+[AES contract](../reference/aes.md). Files and calculator retain their existing
+event-driven loops. Rebuild the shared GEM boot image and every application
+for the current C component ABI.
+
+## Selecting a file
+
+Keep a writable 128-byte path/filter and 13-byte filename in application storage.
+Enter without an active form/editor or an UPDATE/MCTRL lock. The selector borrows
+your shown work area, or creates a temporary host before you have a window:
+
+```c
+static char path[128] = "SYS:*.TXT";
+static char file[13] = "";
+WORD button;
+
+if (!fsel_exinput(path, file, &button, "Open text")) {
+    if (ExecAESDiagnostic() == AES_PENDING) {
+        /* Resume the event loop: retained policy precedes WM_REDRAW repair. */
+    } else {
+        /* Handle failure; original path/file are unchanged. */
+    }
+} else if (button == FSEL_OK) {
+    /* Replace the final filter with file, then perform the application's I/O. */
+} else {
+    /* Normal Cancel returns the current fields, but no selection to use. */
+}
+```
+
+`fsel_input` uses the default caption. Both calls can select a new Save filename;
+the application checks existence and decides how to handle overwrites. Use Exec
+prefixes and `/`, rather than GEMDOS drive/backslash paths. Do not reopen the
+selector automatically after AES_PENDING: first handle the application message.
+The [file-selector contract](../reference/aes.md#file-selector) describes the
+bounded snapshot, filters, input controls, cancellation and cleanup rules.
+Rebuild the shared GEM boot image and all applications with C component ABI 11.
+
+## Text viewer
+
+Close one GEM application to free a window, then run `RUN C:TEXT.APP`, or
+`RUN C:TEXT.APP "SYS:STORY.TXT"`. The loadable viewer uses the existing selector,
+DOS calls and caller-local VDI drawing. It adds no startup Task. Files also
+opens `.TXT` entries in the viewer; close another GEM window first. Files owns
+that child, so File > Stop closes it, and closing Files stops and collects it.
+Other files retain normal program launching.
+
+Use File > Open or O to choose a file. Up/Down scroll one line; Space and
+Shift-Space scroll a page. The arrows, track and thumb provide vertical scrolling.
+Drag the size gadget to resize; long lines are clipped rather than wrapped.
+Escape or File > Cancel Load cancels a pending replacement. Q, File > Quit and
+the closer exit. Cancellation takes effect between synchronous DOS calls.
+
+Files must be regular files of at most 65,536 bytes and 4,096 lines. LF, CR,
+CRLF and ATASCII `$9B` end lines. Tabs use eight-column stops; unsupported bytes,
+including embedded NUL, display as dots. The viewer is read-only. Cancel and
+failed Open preserve the current document and scroll position.
+
+[The application](../../examples/gem-text/text.c) keeps a candidate separate
+from its committed document, reads at most 1 KiB per event-loop turn, and paints
+at most four text rows per UPDATE section. It polls `evnt_multi` with a zero
+timer only while work remains and blocks normally when idle. Repainting and
+scrolling use the retained line index without disk reads. The minimum work area
+also leaves enough room for the borrowed file selector. After selector policy
+interruption, the application resumes event delivery before repairing pixels.

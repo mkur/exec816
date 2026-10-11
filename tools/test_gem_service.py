@@ -2,6 +2,7 @@
 """G2: native service transport, lifetime, validation and failure rollback."""
 import argparse
 import json
+from stack_budget import current_task_memory
 from pathlib import Path
 
 import adapter_state as adapter
@@ -29,7 +30,7 @@ def run(output, mode, cases=None):
         program,foreign = build_service_probe(output,optimize=mode=='opt')
         report['build'] = program['build']
         memory = program['build']['memory']
-        before = json.loads((ROOT/'docs/development/larger-task-stacks.json').read_text())['bank_zero']['final']['8']
+        before = current_task_memory()
         for key in ('bank_zero_budget','task_pools','runtime_reservations','phase_reservations'):
             require(memory[key]==before[key],'G2 changed '+key)
         report['bank_zero_delta'] = dict(fixed=0,per_task=[0]*8,private_idle=0)

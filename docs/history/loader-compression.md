@@ -220,3 +220,35 @@ CARGO_PROFILE_DEV_OPT_LEVEL=2 python3 tools/build_demo.py --gem-desktop \
   --output build/upstream-compression-merge/gem-desktop
 python3 tools/test_gem_desktop_boot.py --bundle build/upstream-compression-merge/gem-desktop --smoke
 ```
+
+## Commands integration with upstream 0889890
+
+The next merge combines local `a9d071a` with upstream `0889890`. It retains
+the `$0A00` low-memory base, reserved first linear RAM bank, compressed shared
+GEM boot image, native 512-byte IDE media and development-only Altirra launchers.
+Upstream dialogs, file selector, text viewer and application ABI changes are
+included; dialog and text APPs join the existing disk-loaded applications.
+
+Ordinary stack pools 1–5 now reserve 1,312 bytes each, an increase of **288
+bytes per Task**, or **1,440 bank-zero bytes** in total. Fixed runtime, root,
+kernel, service pools, idle, guards, alignment and DP reservations add **0**.
+Staging moves to `$62F0`, the manifest to `$6700` and the compressed loader to
+`$6F00`. Its capacity shrinks by 1,280 bytes to **3,328**, retaining the `$7C00`
+end and diagnostic scratch. The emitted IDE fixture loader occupies **2,758
+bytes**, leaving 570 bytes. The manifest still reserves 2 KiB and now accepts
+96 extents. Current totals are in the [platform contract](../reference/platform.md).
+
+The emitted IDE SYS check exposed an integration fault: IDE admission required
+an exactly 1 KiB pool, so the enlarged ordinary pools could not start its
+worker. Admission now accepts existing pools of at least 1 KiB. The build
+continues checking the worker's emitted call bound against 1 KiB; this fixture's
+bound is **730 bytes**, including the 256-byte interrupt reserve and 16-byte
+dispatch margin. This correction adds **0** fixed or per-Task bank-zero bytes.
+
+Development checks pass: **444 host tests**, C-program/AES/desktop generated
+definitions, one optimized eight-Task capacity case and two IDE-only SYS cases
+(normal selection and rejected SIO override). These cover native startup,
+guards, register restoration and ownership cleanup on their pinned ROM and
+emulator inputs. Outputs are under `build/development/upstream-2026-10-11`;
+the compiler remains at its recorded pin, using its release build. No full GEM
+walkthrough, raw-NIR matrix, demo refresh or release qualification was run.

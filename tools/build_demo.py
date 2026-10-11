@@ -23,6 +23,18 @@ IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI
                  'The raw image and firmware are intentionally outside this boot ZIP.\n')
 
 
+def record_cartridge_capacity(output):
+    """Report the final XEX capacity; the demo builder enforces the cartridge limit."""
+    from build_cartridge import BANK_BYTES
+    capacity={}
+    for name in ('program.xex','of816/Exec-of816.xex'):
+        size=(output/name).stat().st_size
+        headroom=126*BANK_BYTES-1-size
+        capacity[name]=dict(bytes=size,headroom=headroom,fits_uncompressed=headroom>=0)
+    (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+    return capacity
+
+
 def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,desktop=False,system_kib=720,mouse_profile=None,aes_counters=False,text_shell_only=False,aes_input=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False):
     require(sum((aes_counters,aes_input,gem_desktop))<=1, 'Select one resident GEM application profile')
     if aes_counters or aes_input or gem_desktop:
@@ -85,7 +97,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if aes_input:
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
-        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nWindows in the top bar reaches covered windows.\nCtrl-Tab cycles; Ctrl-Escape opens the Windows menu.\nFiles: top menu offers Open, Refresh, Stop and Quit.\nCtrl-Shift-Escape enters it; Tab/arrows and Return select.\nWindows also offers Next window and Close for Files.\nOther active-window menus offer Next window and Close.\nClosing restores focus to the frontmost remaining window.\nPanel: choose Off/Mild mouse acceleration, then Apply.\nDefaults stages Mild; Cancel discards pending edits.\nSettings last for this desktop session.\nTab/Shift-Tab, Space and Return operate the controls.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp/Next navigate; File or F opens Open/Refresh/Stop/Cancel.\nCommands launch without arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
+        (media/'README.TXT').write_text('Exec816 GEM desktop\n\nControl Panel, counter, Files and shell.\nWindows in the top bar reaches covered windows.\nCtrl-Tab cycles; Ctrl-Escape opens the Windows menu.\nFiles: top menu offers Open, Refresh, Stop and Quit.\nCtrl-Shift-Escape enters it; Tab/arrows and Return select.\nWindows also offers Next window and Close for Files.\nOther active-window menus offer Next window and Close.\nClosing restores focus to the frontmost remaining window.\nPanel: choose Off/Mild mouse acceleration, then Apply.\nDefaults stages Mild; Cancel discards pending edits.\nSettings last for this desktop session.\nTab/Shift-Tab, Space and Return operate the controls.\nFiles loads DESKTOP.RSC; select a row and press Return.\nUp navigates; Refresh reloads and retains selection.\nDrag the size gadget; arrows/track/thumb scroll the list.\nPath (P), New Folder (N), Rename (R) open text dialogs.\nTab changes focus; Return accepts; Escape/Cancel dismisses.\nUse WORK: for writable operations; SYS: is read-only.\nFile or F opens Open/Refresh/Stop/Cancel.\nTXT entries open in the text viewer; other files launch programs.\nPrograms use no arguments/input and print in the shell.\nOpen C and launch HELLO, TICK or a GEM APP.\nStop requests native BREAK or a GEM window close.\nClose an existing window before launching another GUI app.\nRUN C:FILES.APP reopens Files after it closes.\nRUN C:TEXT.APP opens the read-only text viewer.\nOr RUN C:TEXT.APP "SYS:VIEW.TXT" supplies a path.\nO opens; Up/Down scroll; Space/Shift-Space page.\nResize and vertical gadgets change the view.\nEscape cancels loading; Q quits. Limits: 64 KiB, 4096 lines.\nCancel and failed Open preserve the current document.\nRUN C:DIALOG.APP opens the standard-dialog example.\nClose one GEM app first. Edit (E), Alert (A), Quit (Q).\nOpen (O) and Save (S) choose a file; no file is written.\nTry SYS:SELECT/*.TXT for scrolling and filtering.\nRUN C:DIALOG.APP SELECT also chooses before its window opens.\nApply keeps editing; Done returns to the app.\nPRIMES requires tiled-console mode, not this desktop.\nClose one GEM window before a two-command shell pipeline.\nClick the shell title before typing; EXIT closes all apps.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
         from build_gem_resource import resource
         (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
     disk_name='system.atr'
@@ -99,6 +111,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # D8 avoids colliding when the boot monitor selects D1..D7 for SYS.
     workspace=output/'workspace-source'
     workspace.mkdir(exist_ok=True)
+    if gem_desktop:
+        (media/'VIEW.TXT').write_bytes((ROOT/'examples/gem-text/VIEW.TXT').read_bytes())
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
     make(output/'work.atr',workspace,filesystem=filesystem,
@@ -154,7 +168,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only)
     if gem_desktop:
-        for name in ('panel','counter','files','calc'):
+        for name in ('panel','counter','files','calc','dialog','text'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -168,7 +182,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Adaptations: flat resource; Exec window/input and Process lifetime.\n'
             'Source, pinned inputs and patches: ports/gem4xe/apps/calculator/ in Exec816.\n'
             'Application licence: GPL-2.0-or-later.\n')
-    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources},'Unexpected stale file in demo media directory')
+    require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
                    sector_bytes=sector_bytes,sectors=system_sectors)
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
@@ -300,6 +314,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *sorted((ROOT/'examples/gem-panel').glob('*')),
             *sorted((ROOT/'examples/gem-counter').glob('*')),
             *sorted((ROOT/'examples/gem-desktop').glob('*')),
+            *sorted((ROOT/'examples/gem-dialog').glob('*')),
+            *sorted((ROOT/'examples/gem-text').glob('*')),
             *sorted((ROOT/'examples/gem-browser').glob('*')),ROOT/'tools/build_gem_resource.py',
             ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
@@ -327,13 +343,10 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
     if ide_only:
         finalize_ide_media(output,record)
-    from build_cartridge import segments, BANK_BYTES
-    capacity={}
+    from build_cartridge import segments
     for name in ('program.xex','of816/Exec-of816.xex'):
-        raw=(output/name).read_bytes()
-        segments(raw)
-        capacity[name]=dict(bytes=len(raw),headroom=126*BANK_BYTES-1-len(raw))
-    (output/'cartridge-capacity.json').write_text(json.dumps(capacity,indent=2)+'\n')
+        segments((output/name).read_bytes())
+    capacity=record_cartridge_capacity(output)
     require(all(item['headroom']>=0 for item in capacity.values()),
             'Compressed demo exceeds cartridge capacity; packaging stopped')
     package(output/'of816',output/record['distribution'],graphics,bitmap,
@@ -422,6 +435,8 @@ def refresh_monitor(output):
                        [Path(__file__),ROOT/'tools/build_of816.py',ROOT/'tools/banked_image.py',*guides]})
     path.write_text(json.dumps(record,indent=2)+'\n')
     build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
+    if record.get('gem_desktop'):
+        record_cartridge_capacity(output)
     package(output/'of816',output/record['distribution'],
             output/'gem-vdi' if record.get('graphics') else None,
             output/'bitmap-console' if record.get('bitmap_console') else None,

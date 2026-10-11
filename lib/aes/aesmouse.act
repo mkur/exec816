@@ -241,9 +241,13 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   BEGIN
     LET layer=LAYERS.Find(@desktop.scene,
         LAYERS.Hit(@desktop.scene,sample.x,sample.y))
-    IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0
-        AND DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0 THEN
-      manager=TITLE
+    IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0 THEN
+      client=AESWINDOWSTATE.Find(AESWINDOWSTATE.FindWindow(layer.id))
+      IF DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0
+          OR (client<>NULL AND DESKGEOMETRY.GadgetHit(client.window,
+          @layer.bounds,sample.x,sample.y)<>0) THEN
+        manager=TITLE
+      FI
     FI
   END
 

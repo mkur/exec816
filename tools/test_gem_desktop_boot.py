@@ -36,6 +36,7 @@ class DesktopSmoke:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 class DesktopBoot:
+    def __init__(self,files_only=False):self.files_only=files_only
     def exercise(self,s):
         sy=json.loads((s.p['output']/'bitmap-console/c-image.json').read_text())['symbols']
         from gem_applications import symbols
@@ -62,26 +63,35 @@ class DesktopBoot:
             move(x,y)
             s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(35)
             s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(60)
-        from desktop_menu_check import exercise as check_menus
-        s.menus=check_menus(s,sy,click,move)
-        click(458,56);click(456,104)
-        require(s.number(panel+400,2)==1 and s.number(panel+178+2*24+10,2)==0,'Packaged panel Defaults')
-        require(s.number(counter+14,4)>0,'Packaged counter did not advance')
-        from loadable_gem_feedback import measure
-        measure(s,panel,move,'initial')
-        from panel_settings_check import exercise
-        exercise(s,sy,click,move)
-        actions=s.number(panel+10,4)
-        s.b._cmd_ok('KEY RETURN down');s.frames(3)
-        s.b._cmd_ok('KEY RETURN up');s.frames(70)
-        require(s.number(panel+10,4)==actions+1,'Loaded panel keyboard activation')
-        origin=[s.number(panel+34+2*i,2) for i in range(2)]
-        for start,end,expected in [((480,56),(488,64),[v+8 for v in origin]),
-                                   ((488,64),(480,56),origin)]:
-            move(*start);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
-            move(*end);s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(90)
-            actual=[s.number(panel+34+2*i,2) for i in range(2)]
-            require(actual==expected,'Loaded panel title drag: '+str((actual,expected)))
+        if 'objc_edit' in sy:
+            from desktop_menu_check import Menus
+            from files_dialog_check import exercise as dialogs
+            s.saved['desktop_menu']={};s.menus=Menus(s,click,move)
+            s.menus.select('Files');dialogs(s,sy,click,move)
+        if self.files_only:
+            from desktop_menu_check import Menus
+            s.menus=Menus(s,click,move);s.saved['desktop_menu']={}
+        else:
+            from desktop_menu_check import exercise as check_menus
+            s.menus=check_menus(s,sy,click,move)
+            click(458,56);click(456,104)
+            require(s.number(panel+400,2)==1 and s.number(panel+178+2*24+10,2)==0,'Packaged panel Defaults')
+            require(s.number(counter+14,4)>0,'Packaged counter did not advance')
+            from loadable_gem_feedback import measure
+            measure(s,panel,move,'initial')
+            from panel_settings_check import exercise
+            exercise(s,sy,click,move)
+            actions=s.number(panel+10,4)
+            s.b._cmd_ok('KEY RETURN down');s.frames(3)
+            s.b._cmd_ok('KEY RETURN up');s.frames(70)
+            require(s.number(panel+10,4)==actions+1,'Loaded panel keyboard activation')
+            origin=[s.number(panel+34+2*i,2) for i in range(2)]
+            for start,end,expected in [((480,56),(488,64),[v+8 for v in origin]),
+                                       ((488,64),(480,56),origin)]:
+                move(*start);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+                move(*end);s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(90)
+                actual=[s.number(panel+34+2*i,2) for i in range(2)]
+                require(actual==expected,'Loaded panel title drag: '+str((actual,expected)))
         if s.manifest.get('gem_desktop') and 'GEMBrowser' in sy:
             from test_gem_files import exercise
             exercise(s,sy,click,move)
@@ -108,17 +118,14 @@ class DesktopBoot:
         browser=launch_files()
         # Launch a GUI child and leave a popup active when EXIT closes Files.
         def key(name):s.b._cmd_ok('KEY '+name+' down');s.frames(3);s.b._cmd_ok('KEY '+name+' up');s.frames(70)
-        def row(name):
-            for _ in range(12):
-                raw=s.b.memdump(browser+306,8*108)
-                names=[raw[i*108:(i+1)*108].split(b'\0')[0].decode('ascii')
-                       for i in range(s.number(browser+1962,2))]
-                if name in names:click(80,108+names.index(name)*12);return
-                click(204,88);s.frames(100)
-            raise RuntimeError('Missing relaunched Files entry '+name)
+        from browser_model import FIELDS as BF, select as select_file
+        def row(name):select_file(s,browser,name,click)
         # Quit from the application menu follows the same child-stop/collect path.
         s.menus.select('Files');row('C');key('RETURN');row('TICK');key('RETURN')
-        s.rendezvous('dw($%x)!=0'%(browser+1980));s.frames(80)
+        s.rendezvous('dw($%x)!=0'%(browser+BF['child']));s.frames(80)
+        if 'objc_edit' in sy:
+            key('N');s.rendezvous('dw($%x)=2'%(browser+BF['dialog']))
+            s.saved['files_dialogs']['close_while_editing_with_child']=True
         click(24,8);click(32,72)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         require(s.ledger()==owners,'Menu Quit retained its native child')
@@ -126,13 +133,13 @@ class DesktopBoot:
         s.saved['menu_quit_with_child']=True
         browser=launch_files()
         s.menus.select('Files');row('C');key('RETURN');row('PANEL.APP');key('RETURN')
-        s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(browser+1980,browser+1386))
-        child=s.number(browser+1980,4);require(child!=0,'Relaunched Files lost its GUI child')
+        s.rendezvous('(dw($%x)!=0)|(dw($%x)=$6143)'%(browser+BF['child'],browser+BF['status']))
+        child=s.number(browser+BF['child'],4);require(child!=0,'Relaunched Files lost its GUI child')
         loaded_panel=symbols(s.b,s.p,s.p['output']/'bitmap-console','panel',child)['GEMPanel']
         s.rendezvous('dw($%x)=1'%(loaded_panel+8));s.menus.select('Files');key('F')
         click(96,32)
         s.save_screen(s.p['output']/'boot-smoke.png')
-        s.saved['integration']=dict(profile='gem-desktop',desktop_menu=s.saved['desktop_menu'],panel_settings=s.saved['panel_settings'],panel_keyboard=True,panel_drag=True,counter=True,shell=True,
+        s.saved['integration']=dict(profile='gem-desktop',files_only=self.files_only,desktop_menu=s.saved['desktop_menu'],panel_settings=s.saved.get('panel_settings'),panel_keyboard=not self.files_only,panel_drag=not self.files_only,counter=True,shell=True,
             files_relaunch=True,idle_job_collection=True,heap_restored=True,menu_quit_with_child=True,exit_with_gui_child_and_popup=True)
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
@@ -140,9 +147,10 @@ class DesktopBoot:
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bundle',type=Path,required=True)
     parser.add_argument('--smoke',action='store_true',help='Resident GEM boot, loaded apps, shell/RAM commands and EXIT')
+    parser.add_argument('--files-only',action='store_true')
     args=parser.parse_args();out=args.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(out/'extracted')
     record=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',
-               integration=DesktopSmoke() if args.smoke else DesktopBoot(),profile_commands=False)
+               integration=DesktopSmoke() if args.smoke else DesktopBoot(args.files_only),profile_commands=False)
 
     (out/"gem-desktop-results.json").write_text(json.dumps(record,indent=2)+"\n")

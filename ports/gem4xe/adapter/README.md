@@ -211,3 +211,8 @@ attributes. CPU staging is reused only after flushing; glyph scratch stays separ
 I5 checks exact odd/even/edge pixels, stationary redraws, reopen and each fault phase.
 AES, physical mouse input, virtual workstations, external fonts, raster copies
 and dynamic loading remain unsupported. The standard OF816 demo is separate.
+
+XOR drag outlines accept screen-contained rectangles of at least 8 by 8 pixels.
+This includes 15-pixel-wide scrollbar tracks and the minimum 8-pixel thumb;
+window-only 32-pixel minima do not apply to slider capture. Packed odd edges,
+movement and removal use the same owner/fence path as window outlines.
