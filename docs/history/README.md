@@ -43,6 +43,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [IDE diagnostics](ide-diagnostics.md): retained controller, APT and mount failure evidence.
 - [IDE Plus block driver](ideplus-block-driver.md): transport separation and native ATA development evidence.
 - [IDE-only demo](ide-only-demo.md): IDE system-volume selection and separate-profile development evidence.
 - [IDE 512-byte sector refactor](ide-512-sector-refactor.md): independent media,

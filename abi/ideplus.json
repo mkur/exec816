@@ -1,6 +1,6 @@
 {
   "abi": "exec816.ideplus.device",
-  "revision": 1,
+  "revision": 2,
   "state_bytes": 1024,
   "pbi_id": 0,
   "hardware_revision": "e",
@@ -9,7 +9,8 @@
     "BUS": 16,
     "UNITS": 80,
     "TASK": 512,
-    "CONTROL": 640
+    "CONTROL": 640,
+    "DIAGNOSTICS": 704
   },
   "constants": {
     "READ_SECTOR": 10,
@@ -39,7 +40,44 @@
     "ATA_WRITE": 48,
     "ATA_IDENTIFY": 236,
     "ATA_FEATURES": 239,
-    "ATA_FLUSH": 231
+    "ATA_FLUSH": 231,
+    "STAGE_NONE": 0,
+    "STAGE_WORKER": 1,
+    "STAGE_RESOURCES": 2,
+    "STAGE_TIMER": 3,
+    "STAGE_CONTROLLER": 4,
+    "STAGE_IDENTIFY": 5,
+    "STAGE_APT": 6,
+    "STAGE_READY": 7,
+    "STAGE_TRANSFER": 8,
+    "REASON_NONE": 0,
+    "REASON_WORKER": 1,
+    "REASON_RESOURCES": 2,
+    "REASON_TIMER": 3,
+    "REASON_CONTROLLER_ABSENT": 4,
+    "REASON_DISK_ABSENT": 5,
+    "REASON_TIMEOUT": 6,
+    "REASON_ATA": 7,
+    "REASON_NOT_LBA": 8,
+    "REASON_SECTOR_SIZE": 9,
+    "REASON_CAPACITY": 10,
+    "REASON_NO_APT": 11,
+    "REASON_CONTAINER": 12,
+    "REASON_HEADER": 13,
+    "REASON_LINK": 14,
+    "REASON_CYCLE": 15,
+    "REASON_ENTRY": 16,
+    "REASON_TABLE_OVERLAP": 17,
+    "REASON_PARTITION_OVERLAP": 18,
+    "REASON_CHAIN_SHORT": 19,
+    "REASON_REVISION": 20,
+    "SLOT_EMPTY": 0,
+    "SLOT_DELETED": 1,
+    "SLOT_NOT_DOS": 2,
+    "SLOT_INACTIVE": 3,
+    "SLOT_SECTOR_SIZE": 4,
+    "SLOT_READY": 5,
+    "REASON_VERIFY": 21
   },
   "records": {
     "Geometry": {
@@ -65,6 +103,128 @@
           "generation",
           "LONGCARD",
           8
+        ]
+      ]
+    },
+    "Diagnostics": {
+      "size": 24,
+      "alignment": 2,
+      "fields": [
+        [
+          "sectors",
+          "LONGCARD",
+          0
+        ],
+        [
+          "lba",
+          "LONGCARD",
+          4
+        ],
+        [
+          "generation",
+          "LONGCARD",
+          8
+        ],
+        [
+          "attempted",
+          "BYTE",
+          12
+        ],
+        [
+          "controller",
+          "BYTE",
+          13
+        ],
+        [
+          "disk",
+          "BYTE",
+          14
+        ],
+        [
+          "apt",
+          "BYTE",
+          15
+        ],
+        [
+          "stage",
+          "BYTE",
+          16
+        ],
+        [
+          "reason",
+          "BYTE",
+          17
+        ],
+        [
+          "slot",
+          "BYTE",
+          18
+        ],
+        [
+          "status",
+          "BYTE",
+          19
+        ],
+        [
+          "ataError",
+          "BYTE",
+          20
+        ],
+        [
+          "boardStatus",
+          "BYTE",
+          21
+        ],
+        [
+          "state",
+          "BYTE",
+          22
+        ],
+        [
+          "durable",
+          "BYTE",
+          23
+        ]
+      ]
+    },
+    "PartitionInfo": {
+      "size": 16,
+      "alignment": 2,
+      "fields": [
+        [
+          "start",
+          "LONGCARD",
+          0
+        ],
+        [
+          "sectors",
+          "LONGCARD",
+          4
+        ],
+        [
+          "bytes",
+          "CARD",
+          8
+        ],
+        [
+          "flags",
+          "CARD",
+          10
+        ],
+        [
+          "offset",
+          "CARD",
+          12
+        ],
+        [
+          "unit",
+          "BYTE",
+          14
+        ],
+        [
+          "reason",
+          "BYTE",
+          15
         ]
       ]
     }

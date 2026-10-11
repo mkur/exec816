@@ -16,6 +16,23 @@ requests. One partition sector maps directly to one ATA sector.
 GET_GEOMETRY returns a 12-byte record containing sector bytes, flags, sector
 count and controller generation. Unsupported commands fail.
 
+The native driver also provides Task-only copied queries:
+`Diagnostics(info)` returns the last admission/transport observations in the
+generated 24-byte `IDEPLUS.Diagnostics` record; `PartitionStatus(unit, info)`
+copies a 16-byte `IDEPLUS.PartitionInfo` for APT slots 1–15. Callers own valid
+output storage. These queries do not open the device, select the PBI, allocate
+memory or issue I/O. Observations survive worker retirement until another
+admission starts; a starting worker exposes only its starting state. Invalid APT
+tables expose no partially parsed mappings. Empty, deleted, non-DOS, inactive and
+unsupported-sector slots have distinct reasons.
+
+Capacity is the IDENTIFY LBA28 physical sector count, distinct from partition
+or filesystem capacity. Admission failures retain their phase, reason, table
+LBA and offending slot; ATA status/error bytes are saved separately from the
+driver's logical error. A card-register response of `$FF` means no detected
+controller at the configured PBI ID; a responding board with its card-absent
+bit set reports missing media. Detection targets revision E, ID 0 only.
+
 APT may start at LBA 0 or inside a single protective MBR type $7F container.
 The driver decodes low-byte tables and follows at most sixteen headers to
 collect the normal fifteen mapping slots. Unsupported slots fail on open.

@@ -189,12 +189,16 @@ PUBLIC BYTE FUNC Start()
   FI
 
   IF PrepareWaiter(@waiter)=0 THEN
+    IF bus.state=0 THEN
+      ResetObservation()
+    FI
     EXEC.Permit()
     RETURN(0)
   FI
 
   okay=1
   IF bus.state=0 THEN
+    ResetObservation()
     okay=AdmitWorker(bus)
   FI
 
