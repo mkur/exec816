@@ -1601,5 +1601,208 @@
       },
       "scope": "Passive full-bank PCs; estimated uninterrupted aggregate times, not exclusive routine profiles or range throughput."
     }
+  },
+  "fp6_cache": {
+    "cpu": {
+      "read": {
+        "routine": {
+          "routine": "M_BLOCKCACHE_READ_6E9EB2D8",
+          "address": 299022,
+          "size": 928,
+          "transfer": "cache-read",
+          "decoder_sha256": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a"
+        },
+        "sizes": {
+          "sector128": {
+            "bytes": 128,
+            "samples": 32,
+            "uninterrupted": 31,
+            "interrupted": 1,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 378.28861581749675,
+                "median_us": 397.7422506163842,
+                "mean_us": 390.55741120959544,
+                "max_us": 399.0109659293551
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 378.28861581749675,
+                "median_us": 397.7422506163842,
+                "mean_us": 408.50870973062354,
+                "max_us": 964.9989638824944
+              }
+            }
+          },
+          "sector256": {
+            "bytes": 256,
+            "samples": 32,
+            "uninterrupted": 32,
+            "interrupted": 0,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 695.1855073240115,
+                "median_us": 729.8989679705771,
+                "mean_us": 717.9739250809511,
+                "max_us": 733.458419265301
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 695.1855073240115,
+                "median_us": 729.8989679705771,
+                "mean_us": 717.9739250809511,
+                "max_us": 733.458419265301
+              }
+            }
+          },
+          "sector512": {
+            "bytes": 512,
+            "samples": 32,
+            "uninterrupted": 32,
+            "interrupted": 0,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 1315.5872953667927,
+                "median_us": 1383.1111436904673,
+                "mean_us": 1374.108991808328,
+                "max_us": 1385.0847008439775
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 1315.5872953667927,
+                "median_us": 1383.1111436904673,
+                "mean_us": 1374.108991808328,
+                "max_us": 1385.0847008439775
+              }
+            }
+          }
+        }
+      },
+      "store": {
+        "routine": {
+          "routine": "M_BLOCKCACHE_STORE_364610B1",
+          "address": 300908,
+          "size": 437,
+          "transfer": "cache-store",
+          "decoder_sha256": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a"
+        },
+        "sizes": {
+          "sector128": {
+            "bytes": 128,
+            "samples": 32,
+            "uninterrupted": 30,
+            "interrupted": 2,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 387.0991388242392,
+                "median_us": 406.0593843347491,
+                "mean_us": 403.8532293738608,
+                "max_us": 499.168991470004
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 387.0991388242392,
+                "median_us": 406.5880157151537,
+                "mean_us": 439.6274769904381,
+                "max_us": 976.4878858832866
+              }
+            }
+          },
+          "sector256": {
+            "bytes": 256,
+            "samples": 32,
+            "uninterrupted": 29,
+            "interrupted": 3,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 723.7316018658573,
+                "median_us": 759.7490199174207,
+                "mean_us": 756.3584876155156,
+                "max_us": 947.1664653168476
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 723.7316018658573,
+                "median_us": 760.3833775739063,
+                "mean_us": 808.4800226677136,
+                "max_us": 1313.6137382132824
+              }
+            }
+          },
+          "sector512": {
+            "bytes": 512,
+            "samples": 32,
+            "uninterrupted": 32,
+            "interrupted": 0,
+            "uninterrupted_us": {
+              "total": {
+                "min_us": 1384.0274380831686,
+                "median_us": 1453.7010540204883,
+                "mean_us": 1444.4433969711536,
+                "max_us": 1736.2369058007073
+              }
+            },
+            "elapsed_us": {
+              "total": {
+                "min_us": 1384.0274380831686,
+                "median_us": 1453.7010540204883,
+                "mean_us": 1444.4433969711536,
+                "max_us": 1736.2369058007073
+              }
+            }
+          }
+        }
+      }
+    },
+    "fixture_sha256": "4d1a434ab8222645742a88f043b8817b10b3e3cb7ce9504fea68aad3e33cbc49",
+    "ide": {
+      "status": "pass",
+      "counts": {
+        "startFrame": 99,
+        "endFrame": 199,
+        "ataReads": 54,
+        "ataWrites": 61,
+        "ataFlushes": 0,
+        "prepReads": 0,
+        "verifyReads": 0,
+        "completedWrites": 61,
+        "cacheHits": 47,
+        "cacheMisses": 54,
+        "cacheEvictions": 4,
+        "logicalReads": 50,
+        "kernelCalls": 2173,
+        "taskSwitches": 328
+      },
+      "guest_frames": 100,
+      "guest_seconds": 2.0,
+      "guards": "intact"
+    },
+    "sdfs": {
+      "status": "pass",
+      "observations": {
+        "checks": [
+          2887
+        ],
+        "dataReads": [
+          562
+        ],
+        "mapReads": [
+          12
+        ],
+        "cacheBytes": [
+          2302
+        ],
+        "stateBytes": [
+          730
+        ]
+      },
+      "guards": "intact"
+    },
+    "native_routine_bytes": 910424
   }
 }

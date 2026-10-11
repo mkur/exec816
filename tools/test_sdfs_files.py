@@ -47,7 +47,7 @@ def run(t,out,mode,size):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--size',type=int,choices=(128,256),required=True);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
-    try:result=run(compiler(ROOT/'build/actionc'),out,args.case,args.size)
+    try:result=run(compiler(ROOT/'build/actionc',release=True),out,args.case,args.size)
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('SDFS files passed',args.case,args.size,flush=True)

@@ -194,3 +194,21 @@ implementing and measuring bounded write ranges for contiguous new payloads.
 
 All existing controller, mutation, cache and adapter buffers remain the same
 size. Bank-zero delta is 0 fixed / 0 per-Task / 0 idle; no Task pool grows.
+
+## FP6b: preserve cache capacity, reduce repeated hashes
+
+Read and publication compute the first piece's bucket once, then derive the
+remaining buckets without repeating the volume/geometry hash. The mapping,
+four-way replacement, generation tags and configured byte budget remain exact.
+We retain 128-byte pieces: fixed 512-byte slots would waste 48 KiB of the 64 KiB
+payload on 128-byte volumes, reducing their retained capacity by four. A packed
+variable-sector cache remains unnecessary for this improvement.
+
+Native 512-byte hit/publication medians improve from 1,493/1,554 to 1,383/1,454 µs;
+256-byte medians improve from 772/796 to 730/760 µs. The single-piece 128-byte
+path changes from 395/402 to 398/406 µs due to the extra bucket temporary/argument;
+it has no repeated hash to remove. Loaded IDE COPY remains 100 frames and
+54 reads / 61 writes. Optimized SDFS checks pass real extent/map retention,
+volume alternation, generation reuse, eviction, sparse reads and no-cache paths.
+Host checks: 447 passed. No tags, buffers, upper allocations, stack pools or
+bank-zero reservations grow; bank-zero delta stays 0 fixed / 0 per-Task / 0 idle.

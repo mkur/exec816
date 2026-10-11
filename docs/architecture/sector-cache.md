@@ -14,8 +14,12 @@ partial storage is released and the shell reports the fallback. Use the
 or `cache_blocks` in [kernel.json](../../config/kernel.json) for a build default.
 
 A four-way set-associative table limits lookup to four tags per block and uses
-round-robin replacement. Collisions can evict data before nominal capacity is
-full. Successful exact-length reads populate it; failures do not. Detach and
+round-robin replacement. Read/publication compute the sector's first bucket
+once and derive successive piece buckets by XOR with the part index. Admitted
+geometry aligns the unsalted hash to the piece count, preserving the original
+mapping and replacement policy. Invalidation still visits all four possible
+pieces. Collisions can evict data before nominal capacity is full.
+Successful exact-length reads populate it; failures do not. Detach and
 transport errors drop the affected volume. A reset-required/offline SIO bus
 drops all retained blocks and still prevents filesystem access to cached data.
 Keep mounted media unchanged until unmount/remount; there is no automatic

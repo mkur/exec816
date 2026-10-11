@@ -315,3 +315,27 @@ prefix/cancellation rules and filesystem extent plumbing. A range prototype or
 timing decomposition is development evidence only; no unqualified command is
 added to the production interface. Record the measured saving and gate decision
 in the execution page. SIO retains single-sector wire operations throughout.
+
+The measured exchange overhead justifies `WRITE_SECTORS`: a normal IOStdReq
+command for 1–4 consecutive native 512-byte sectors, with io_Offset at the first
+zero-based sector and io_Length a multiple of 512. Admission rejects empty,
+misaligned, oversized and partition-crossing spans before ATA command issue.
+The driver issues one ATA WRITE with that sector count, drains each DRQ payload,
+then checks terminal status and performs any required flush. A successful reply
+reports the full length. On failure io_Actual is zero: this command promises no
+durable partial prefix or rollback, although physical sectors may have changed.
+This preserves the single-sector failure contract. Cancellation may retire
+queued/preparing work; once the ATA command is issued it drains the entire
+bounded write. Existing per-wait deadlines apply, bounded by the four-sector
+limit. Ownership lasts through exact reply collection.
+
+The block adapter forgets every affected sector before submission and publishes
+each from the actual borrowed span only after full successful completion.
+SpartaDOS extension groups coalesce only adjacent reserved sectors whose input
+bytes are complete. Fragmented groups, final partial tails and SIO use current
+single-sector transfers. Allocation/map/length publication follows the whole
+bounded payload group; failed ranges invalidate the mount and confirm no new
+file bytes. Existing-file overwrite and filesystem reads stay single-sector.
+No cache, request, controller or mutation record grows; additional upper-RAM
+and bank-zero reserved capacity is zero. The command and maximum count belong
+in the machine-readable device ABI, with generated shared definitions.
