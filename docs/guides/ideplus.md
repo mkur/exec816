@@ -91,8 +91,9 @@ Geometry must match exactly. IDE requires format 2 (SDFS 2.1), uniform
 mounts. SYS may select a fixed IDE mount; SIO drive overrides do not apply.
 Writable admission also requires the board
 protection switch to allow it and IDENTIFY to report a supported durability
-policy. Successful writes preserve neighbours and complete verification before
-replying. Cache-free media has emulator coverage; successful FLUSH on cached
+policy. Successful writes preserve neighbours and complete ATA status checks
+and any required cache flush before replying, without automatic readback.
+Cache-free media has emulator coverage; successful FLUSH on cached
 physical devices still needs hardware evidence.
 
 A timeout or uncertain accepted write leaves IDE offline until cold reset.

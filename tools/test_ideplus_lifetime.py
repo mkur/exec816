@@ -30,18 +30,18 @@ def run(out,reuse=False,selected=None):
     mounts=[dict(alias='D1',unit=49,profile=4,sector_bytes=256,sectors=2000,format=1)]
     p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_lifetime.act',out,optimize=True,tasks=True,task_capacity=8,heap_probe=True,console_deferred=True,memory_profile=profile,dos_mounts=mounts,image_data=[(0x2dfff0,bytes([0x55])*512),(0x2e1000,bytes(128))])
     base=p['build']['memory']['ideplus_storage']['BASE']
-    cases=['mixed','slots','allocation','busy-stop','timeout','flush-error','verify-error']+[f'nmi-{i}' for i in range(1,8)]
+    cases=['mixed','slots','allocation','busy-stop','timeout','flush-error']+[f'nmi-{i}' for i in range(1,8)]
     for name in cases:
         if selected and name not in selected:continue
         dest=out/name;dest.mkdir(exist_ok=True)
         media,maps=pattern_fixture(readonly=False);expected=bytearray(media)
-        error={'timeout':2,'flush-error':3,'verify-error':6}.get(name,0)
+        error={'timeout':2,'flush-error':3}.get(name,0)
         if name not in ('busy-stop','timeout'):
             put_sector(expected,maps[0]['start'],1,
                        bytes([0x55])*512 if error else bytes((i&255)^0x55 for i in range(512)))
         disk=dest/'ide.img';disk.write_bytes(media)
         sio=dest/'sio.atr';original=(ROOT/'tests/fixtures/filesystem-write/mydos-256.atr').read_bytes();sio.write_bytes(original)
-        with ide_emulator(dest,disk,writable=True,history=name=='verify-error') as b:
+        with ide_emulator(dest,disk,writable=True) as b:
             b.config('diskemu','generic56k')
             def before(b):
                 b.mount(0,str(sio))
@@ -64,25 +64,6 @@ def run(out,reuse=False,selected=None):
                     b.memload(p['labels']['ideplus_probe_5'],b'\x22'+p['labels']['ideplus_probe_wait'].to_bytes(3,'little'))
                     reach(b,p['labels']['native_nmi'],f'db(${base+16+10:x})=3')
                     b.memload(base+640+21,b'\2')
-                    b.bp_clear_all()
-                if name=='verify-error':
-                    # After the physical reread, corrupt only the verification copy.
-                    b.memload(p['labels']['ideplus_probe_8'],b'\x22'+p['labels']['ideplus_probe_verify'].to_bytes(3,'little'))
-                    reach(b,p['labels']['native_cop'],f'db(${base+768+6:x})=1')
-                    history=b.history(256)
-                    (dest/'pio-history.json').write_text(json.dumps(history,indent=2)+'\n')
-                    lo=p['labels']['ideplus_read_words'];hi=p['labels']['ideplus_read_words_end']
-                    start=None;intervals=[]
-                    for index,entry in enumerate(history[:-1]):
-                        pc=int(entry.get('k',f'${lo>>16:x}').lstrip('$'),16)*65536+int(entry['pc'].lstrip('$'),16)
-                        if lo<=pc<hi:
-                            if entry['op']=='$78':start=entry['cycle']
-                            if entry['op']=='$28' and start is not None:
-                                intervals.append(history[index+1]['cycle']-start);start=None
-                    require(intervals,'No native PIO critical intervals in history')
-                    (dest/'pio-timing.json').write_text(json.dumps(dict(samples=len(intervals),min_base_cycles=min(intervals),max_base_cycles=max(intervals),clock_multiplier=8,including_bus_stalls=True,history_bank_inferred_from_settled_native_read=True),indent=2)+'\n')
-                    buffer=int.from_bytes(b.memdump(base+640,3),'little')
-                    b.memload(buffer,b'\0')
                     b.bp_clear_all()
             try:
                 runtime,_=execute(b,p,before_run=before,expected_status=4 if name=='busy-stop' else 0,timeout=180,frame_limit=12000)

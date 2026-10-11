@@ -64,7 +64,12 @@ native incomplete entry does not grant permission to resume writing it.
 
 Write returns the confirmed byte count, or -1 when no bytes completed. Short
 positive results retain their causal IoErr. Position advances only by this
-prefix. MyDOS sequential extension commits at most four new payload sectors
+prefix. Data and metadata use normal write completion: SIO PUT `$50` without
+drive-side verification, or IDE ATA status plus any required cache flush without
+automatic readback. Transport checksums and device errors remain checked.
+Allocation and publication ordering do not change.
+
+MyDOS sequential extension commits at most four new payload sectors
 with their VTOC, link and length updates; groups stop at a VTOC page. Existing
 sectors, overwrites and SDFS map transitions retain the single-payload path.
 
@@ -113,14 +118,15 @@ whole-volume ownership for development. Runtime validation examines touched
 metadata and the selected chain/map; it cannot prove that unrelated files are
 not cross-linked or that a falsely free sector has no owner. Neither format is
 journaled. Power loss, torn sectors and uncertain multi-sector completion can
-leave incomplete entries, lost allocation or inconsistent counts. Verified SIO
-WRITE completion does not establish power-loss durability.
+leave incomplete entries, lost allocation or inconsistent counts. SIO PUT
+completion does not establish power-loss durability.
 
 The earlier [write-performance development record](../history/write-performance.md)
 preserves a Generic 57600 timeout during 16 KiB COPY to accurately timed
 256-byte MyDOS media. The [verified-write deadline fix](../history/mydos-write-timeout.md)
-allows two seconds for that mechanical operation, including motor startup,
-seek and verification. Cold-motor writes and the accurate-media binary COPY
+introduced two seconds for that mechanical operation, including motor startup,
+seek and verification. PUT retains this allowance for motor startup, seek and
+rotation. Cold-motor writes and the accurate-media binary COPY
 now pass focused development checks. Explicit smaller deadlines and uncertain
 completion/offline behavior remain unchanged; these checks do not replace
 release or physical-drive qualification. Generic 57600 also permits two

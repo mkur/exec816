@@ -13,7 +13,7 @@ PUBLIC LONGCARD cacheHits,cacheMisses,cacheEvictions
 PUBLIC BYTE POINTER target
 PUBLIC BYTE POINTER trace
 PUBLIC CARD traceCount
-PUBLIC LONGCARD verifiedWrites
+PUBLIC LONGCARD completedWrites
 VOLATILE CARD clock=E816_VBI_COUNT
 
 PUBLIC PROC Begin()
@@ -49,7 +49,7 @@ PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
     IF request.sio_Command=$52 THEN
       reads==+1
       readBytes==+request.io_Length
-    ELSEIF request.sio_Command=$57 THEN
+    ELSEIF request.sio_Command=$50 OR request.sio_Command=$57 THEN
       IF protected=0 THEN
         groupStart=clock
         protected=1
@@ -67,10 +67,10 @@ PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
 
 RETURN
 
-PUBLIC PROC Verified()
+PUBLIC PROC Completed()
 
   IF active<>0 THEN
-    verifiedWrites==+1
+    completedWrites==+1
   FI
 
 RETURN

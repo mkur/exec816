@@ -3,6 +3,7 @@ USE EXEC
 USE IDEPLUS
 USE IDEMETA
 USE IDEPLUSDRIVER
+USE IDEWRITEPROBE
 USE HEAPCORE
 CARD checks
 BYTE protected,expectedError
@@ -16,7 +17,7 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; Full-sector writes preserve other sectors and finish with durable verification.
+; Full-sector writes preserve neighbours and settle without an automatic reread.
 PROC Change(EXEC.IOStdReq POINTER request BYTE unit,sector,seed)
   CARD index
   IDEPLUS.Diagnostics observation
@@ -30,6 +31,7 @@ PROC Change(EXEC.IOStdReq POINTER request BYTE unit,sector,seed)
   OD
 
   LET error=EXEC.DoIO(EXEC.IORequest POINTER(request))
+  Require(IDEWRITEPROBE.readbacks=0)
   IF expectedError<>0 THEN
     Require(error=INT(expectedError) AND request.io_Actual=0)
     Require(IDEPLUSDRIVER.Unavailable()<>0)

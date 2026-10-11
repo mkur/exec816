@@ -23,7 +23,6 @@
     "ERROR_ATA": 3,
     "ERROR_PROTECTED": 4,
     "ERROR_UNSUPPORTED": 5,
-    "ERROR_VERIFY": 6,
     "ERROR_OFFLINE": 7,
     "TIMEOUT_TICKS": 250,
     "REG_ERROR": 17,
@@ -76,8 +75,7 @@
     "SLOT_NOT_DOS": 2,
     "SLOT_INACTIVE": 3,
     "SLOT_SECTOR_SIZE": 4,
-    "SLOT_READY": 5,
-    "REASON_VERIFY": 21
+    "SLOT_READY": 5
   },
   "records": {
     "Geometry": {

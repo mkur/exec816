@@ -65,9 +65,6 @@ CSTRING FUNC ShellIdeReason(BYTE value)
   WHEN IDEPLUS.REASON_REVISION THEN
     RETURN(c"unsupported APT revision")
 
-  WHEN IDEPLUS.REASON_VERIFY THEN
-    RETURN(c"write verification mismatch")
-
   ELSE
     RETURN(c"unknown")
   ESAC

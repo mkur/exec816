@@ -92,8 +92,8 @@ RETURN(result)''')
     io=original('fswriteio.act').replace('USE EXEC\n','USE EXEC\nUSE WRITEPERFPROBE\n',1)
     io=io.replace('  LET status=BLOCKIO.BeginFetch(', '  IF WRITEPERFPROBE.active<>0 THEN WRITEPERFPROBE.logicalReads==+1 FI\n  LET status=BLOCKIO.BeginFetch(')
     marker='\nRETURN(1)\n\nPUBLIC PROC Zero('
-    require(io.count(marker)==1,'Stale verified-write observer')
-    io=io.replace(marker,'\n  WRITEPERFPROBE.Verified()\n'+marker)
+    require(io.count(marker)==1,'Stale completed-write observer')
+    io=io.replace(marker,'\n  WRITEPERFPROBE.Completed()\n'+marker)
     (out/'fswriteio.act').write_text(io)
     writer=original('fswrite.act').replace('USE EXEC\n','USE EXEC\nUSE WRITEPERFPROBE\n',1)
     writer=writer.replace('  done=0\n','  WRITEPERFPROBE.GroupBegin()\n  done=0\n',1)
@@ -216,8 +216,8 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
                     for name in ('maxGroupRequests','maxGroupFrames'):
                         if any('_'+name.upper()+'_' in d['name'] for d in view['data']):
                             counts[name]=int.from_bytes(bytes(data(b,view,name)),'little')
-                    verified=int.from_bytes(bytes(data(b,view,'verifiedWrites')),'little')
-                    require(verified==counts['writes'],'Submitted Write did not complete successfully')
+                    completed=int.from_bytes(bytes(data(b,view,'completedWrites')),'little')
+                    require(completed==counts['writes'],'Submitted Write did not complete successfully')
                     trace_count=int.from_bytes(bytes(data(b,view,'traceCount')),'little')
                     require(trace_count<2048,'Physical request trace overflow')
                     trace=b.memdump(0x320000,trace_count*4)
@@ -242,7 +242,7 @@ def run(out, source, filesystem, size, frozen=None, from_build=None, variants=(0
                                      effective_bytes_per_second=len(content)*50/frames if frames else None,
                                      load_failure=load_failure,
                                      host_seconds_including_boot=host_seconds,counts=counts,runtime=runtime,
-                                     verified_writes=verified,physical_breakdown=breakdown,
+                                     completed_writes=completed,physical_breakdown=breakdown,
                                      source_sha256=sha256(source),target_before_sha256=before_hash,target_after_sha256=sha256(media),allocation=allocation))
                     (out/'progress.json').write_text(json.dumps(rows,indent=2)+'\n')
                     print(label,frames,'frames',counts['reads'],'reads',counts['writes'],'writes',flush=True)

@@ -66,8 +66,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
     RETURN(1)
   FI
 
-  ; Admit only the supported double-density sector commands. PUT and arbitrary
-  ; transactions retain their smaller payload limit.
+  ; Admit only supported double-density sector reads and writes. Raw callers
+  ; may explicitly request drive verification; filesystem writes use PUT.
   IF sio.io_Length<>256 THEN
     RETURN(0)
   FI
@@ -78,7 +78,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
   FI
 
 RETURN((sio.sio_Direction=EXEC.SIODIR_READ AND sio.sio_Command=$52)
-    OR (sio.sio_Direction=EXEC.SIODIR_WRITE AND sio.sio_Command=$57))
+    OR (sio.sio_Direction=EXEC.SIODIR_WRITE
+        AND (sio.sio_Command=$50 OR sio.sio_Command=$57)))
 
 ; Generic disk operations include motor startup, seek and rotation.
 ; Keep that mechanical allowance separate from serial byte/phase timing.

@@ -39,7 +39,7 @@ describes transfer geometry, not firmware bootability.
 The ATR header is a host-container detail, not guest filesystem data. Do not infer
 geometry from VTOC free counts or probe it with mismatched wire lengths. STATUS/
 PERCOM discovery is outside the current contract. Profile-specific 256-byte READ
-and verified WRITE support is described in [device I/O](device-io.md#siodevice).
+and WRITE support is described in [device I/O](device-io.md#siodevice).
 
 ## Transfers and retained data
 
@@ -48,7 +48,9 @@ Success requires both no I/O error and exactly the expected byte count. A short
 or failed response supplies no valid sector, even if some wire bytes arrived.
 Framing and checksums remain the SIO driver's responsibility.
 
-BeginStore stages one complete sector and sends verified WRITE `$57`. It rejects
+BeginStore stages one complete sector and sends SIO PUT `$50`, without readback
+verification. IDE uses ATA WRITE with terminal status and any required cache
+flush, also without automatic readback. BeginStore rejects
 overlapping requests and invalid source extents before submission. Invalidate
 the scratch tag and all cached pieces of that sector first; FinishStore publishes
 replacement bytes only after an error-free, exact-length terminal completion.

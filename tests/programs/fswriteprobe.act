@@ -1,4 +1,4 @@
-; Test-only injection at actual verified-write boundaries.
+; Test-only injection at completed-write boundaries.
 MODULE FSWRITEPROBE
 USE EXEC
 USE DOSCORE

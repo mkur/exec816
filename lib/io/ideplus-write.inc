@@ -45,10 +45,9 @@ CARD FUNC AccessFlags(Partition POINTER partition)
 
 RETURN(flags)
 
-; Write one complete ATA sector, then confirm durable status and every byte.
+; Write one complete ATA sector and settle any required cache flush.
 BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
   BYTE error
-  CARD index
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   LET c=Control()
@@ -83,18 +82,5 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF error<>0 THEN
     RETURN(error)
   FI
-  error=FlushPhysical()
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  error=ReadPhysical(sector)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  FOR index=0 TO 511 DO
-    IF c.buffer(index)<>request.io_Data(index) THEN
-      RETURN(IDEPLUS.ERROR_VERIFY)
-    FI
-  OD
 
-RETURN(0)
+RETURN(FlushPhysical())

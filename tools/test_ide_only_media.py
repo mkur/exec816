@@ -1,4 +1,4 @@
-"""Native discovery/protection and exact verified writes on production APT."""
+"""Native discovery/protection and independently checked writes on production APT."""
 import argparse,json
 from pathlib import Path
 from native_program import ROOT,compiler,build,execute,require
@@ -25,6 +25,6 @@ def run(out):
     require((out/'ideplus.img').read_bytes()==expected,'Unexpected media/metadata/neighbour mutation')
     (out/'results.json').write_text(json.dumps(dict(status='pass',tier='development',mapping=record,
         runtime=runtime,checks=checks,build=p['build']),indent=2)+'\n')
-    print('IDE-only APT discovery and verified writes passed',flush=True)
+    print('IDE-only APT discovery and persisted writes passed',flush=True)
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,default=ROOT/'build/development/ide-only/id3');v=a.parse_args();run(v.output)

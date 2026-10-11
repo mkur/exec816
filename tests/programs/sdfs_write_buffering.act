@@ -33,7 +33,7 @@ PROC Main()
   LET file=DOS.Open(BYTE POINTER(c"D1:BATCH.BIN"),DOS.MODE_NEWFILE)
   Require(file<>NULL)
   phase=2
-  SDFSBATCHPROBE.sectors=CARD POINTER($d0000)
+  SDFSBATCHPROBE.sectors=CARD POINTER($320000)
   SDFSBATCHPROBE.active=1
   result=DOS.Write(file,buffer,amount)
   error=DOS.IoErr()

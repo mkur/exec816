@@ -61,7 +61,7 @@ RETURN
 
 ENDMODULE''')
     # The generic SIO-only request observer is unnecessary in this IDE run.
-    a=probe.index('PUBLIC PROC Submitted(');z=probe.index('PUBLIC PROC Verified()',a)
+    a=probe.index('PUBLIC PROC Submitted(');z=probe.index('PUBLIC PROC Completed()',a)
     probe=probe[:a]+'''PUBLIC PROC Submitted(EXEC.IOStdReq POINTER request)
 
 RETURN
@@ -82,11 +82,11 @@ RETURN
     start=original.index('BYTE FUNC WriteLogical(')
     finish=original.index('PROC RunRequest(',start)
     writing=original[start:finish]
-    require(writing.count('  error=ReadPhysical(sector)')==(2 if frozen else 1),'Changed write read phases')
+    require(writing.count('  error=ReadPhysical(sector)')==(2 if frozen else 0),'Changed write read phases')
     if frozen:
         writing=writing.replace('  error=ReadPhysical(sector)','  WRITEPERFPROBE.Reading(1)\n  error=ReadPhysical(sector)',1)
-    last=writing.rfind('  error=ReadPhysical(sector)')
-    writing=writing[:last]+'  WRITEPERFPROBE.Reading(0)\n'+writing[last:]
+        last=writing.rfind('  error=ReadPhysical(sector)')
+        writing=writing[:last]+'  WRITEPERFPROBE.Reading(0)\n'+writing[last:]
     original=original[:start]+writing+original[finish:]
     driver.write_text(original)
     program_source=out/'write_performance.act'
@@ -130,7 +130,7 @@ RETURN
         runtime,_=execute(b,p,before_run=before,timeout=300,frame_limit=15000)
         clean_ownership(b,p,out)
         view={**p['image'],'data':[d for d in p['image']['data'] if '_WRITEPERFPROBE_' in d['name']]}
-        counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','verifiedWrites','cacheHits','cacheMisses','cacheEvictions')}
+        counts={name:int.from_bytes(bytes(data(b,view,name)),'little') for name in ('startFrame','endFrame','ataReads','ataWrites','ataFlushes','prepReads','verifyReads','completedWrites','cacheHits','cacheMisses','cacheEvictions')}
     media=out/'ideplus.img'
     if frozen:
         restored=frozen_module(frozen/'tools/ideplus_media.py').filesystem_atr(media.read_bytes(),mapping['partitions'][1],(out/'work.atr').read_bytes())
@@ -139,8 +139,8 @@ RETURN
         restored=filesystem_atr(media.read_bytes(),mapping['partitions'][1],(out/'work.atr').read_bytes())
     audit=Audit(restored);allocation=audit.sdfs()
     require(audit.files=={'KEEP.BIN':bytes(range(256)),'COPY.BIN':content},'COPY persistence differs')
-    require(counts['verifiedWrites']==counts['ataWrites'],'A write lacked verification')
-    require(counts['verifyReads']==counts['ataWrites'],'Verification phase count differs')
+    require(counts['completedWrites']==counts['ataWrites'],'A write did not complete')
+    require(counts['verifyReads']==(counts['ataWrites'] if frozen else 0),'Verification phase count differs')
     require(counts['prepReads']==(counts['ataWrites'] if frozen else 0),'Preparation phase count differs')
     frames=(counts['endFrame']-counts['startFrame'])&65535
     result=dict(status='pass',tier='development',snapshot=str(frozen) if frozen else None,build=p['build'],pin=PIN,counts=counts,guest_frames=frames,guest_seconds=frames/50,bytes=len(content),source_sha256=sha256(tree/'LONG.TXT'),command_sha256=sha256(command),sector_bytes=size,cache_blocks=p['build']['memory']['boot_config']['cache_blocks'],allocation=allocation,runtime=runtime)

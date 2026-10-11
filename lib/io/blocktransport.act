@@ -84,7 +84,7 @@ PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volu
   sio.sio_Command=$52
   sio.sio_Direction=EXEC.SIODIR_READ
   IF writing<>0 THEN
-    sio.sio_Command=$57
+    sio.sio_Command=$50
     sio.sio_Direction=EXEC.SIODIR_WRITE
   FI
 

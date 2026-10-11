@@ -19,7 +19,7 @@ full. Successful exact-length reads populate it; failures do not. Detach and
 transport errors drop the affected volume. A reset-required/offline SIO bus
 drops all retained blocks and still prevents filesystem access to cached data.
 Keep mounted media unchanged until unmount/remount; there is no automatic
-media-change detection, prefetch or write-back. Verified writes invalidate every
+media-change detection, prefetch or write-back. Sector writes invalidate every
 piece first and cache only a complete successful replacement.
 
 ## Memory and lifetime

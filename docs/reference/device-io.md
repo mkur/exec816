@@ -92,8 +92,8 @@ io_Offset must be zero.
 
 | Profile | Supported transaction size |
 | --- | --- |
-| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
-| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
+| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ ($52), PUT ($50) or verified WRITE ($57). |
+| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52), PUT ($50) or verified WRITE ($57). |
 | STOCK810 | Up to 128 bytes. |
 | HAPPY1050 | Restricted no-data transactions. |
 
@@ -101,6 +101,10 @@ These are explicit peripheral/timing profiles, not automatic baud negotiation.
 Profile selection also bounds timeout and command forms. Disk geometry and the
 peripheral must agree; see the [block adapter](block-io.md). A nominal speed is
 not qualification for every emulator or physical drive.
+
+Filesystem writes use PUT `$50`, without drive-side readback verification.
+Transfer checksums, acknowledgements and terminal device status remain required.
+Raw callers may explicitly request verified WRITE `$57`.
 
 A zero timeout selects one second for FASTEST125/HAPPY1050 and two seconds for
 STOCK810/GENERIC57600. Those are also the maximum explicit values; the minimum

@@ -33,7 +33,7 @@ PROC Sector(CARD sector)
   request.io_Command=EXEC.SIOCMD_TRANSACTION
   request.io_Data=buffer
   request.io_Length=LONGCARD(length)
-  request.sio_Command=$57
+  request.sio_Command=$50
   request.sio_Aux1=BYTE(sector)
   request.sio_Aux2=BYTE(sector RSH 8)
   request.sio_Direction=EXEC.SIODIR_WRITE
@@ -87,7 +87,7 @@ PROC Main()
     Sector(sectors(index))
   OD
 
-  Reject($50,EXEC.SIODIR_WRITE,256,EXEC.SIO_PROFILE_FASTEST125)
+  Reject($50,EXEC.SIODIR_READ,256,EXEC.SIO_PROFILE_FASTEST125)
   Reject($57,EXEC.SIODIR_READ,256,EXEC.SIO_PROFILE_FASTEST125)
   Reject($57,EXEC.SIODIR_WRITE,256,EXEC.SIO_PROFILE_STOCK810)
   Reject($57,EXEC.SIODIR_WRITE,129,EXEC.SIO_PROFILE_FASTEST125)

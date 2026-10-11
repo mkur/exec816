@@ -181,7 +181,7 @@ continuation state for every dependent metadata write. Reads retain their
 existing resumable callbacks. Every transport wait pumps control messages; no
 Forbid or interrupt mask spans I/O. Stop drains retained handles and packets.
 
-The block layer invalidates a target before submitting verified WRITE and caches
+The block layer invalidates a target before submitting a sector write and caches
 replacement bytes only after confirmed completion. An uncertain mutation makes
 the mount unvalidated; retirement remains available. Mounting performs bounded
 header checks, with no ownership scan or resident fsck. The full

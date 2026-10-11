@@ -531,15 +531,12 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     c.offline=1
   FI
   IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT
-      OR error=IDEPLUS.ERROR_ATA OR error=IDEPLUS.ERROR_VERIFY THEN
+      OR error=IDEPLUS.ERROR_ATA THEN
     BEGIN
       LET info=Observation()
       info.stage=IDEPLUS.STAGE_TRANSFER
       info.slot=unit.number
       info.lba=unit.start+request.io_Offset
-      IF error=IDEPLUS.ERROR_VERIFY THEN
-        info.reason=IDEPLUS.REASON_VERIFY
-      FI
     END
   FI
 

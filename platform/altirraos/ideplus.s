@@ -137,7 +137,6 @@ ideplus_read_pair:
     plp
     cpy #512
     bcc ideplus_read_pair
-    ideplus_checkpoint 8
     rtl
 ideplus_read_words_end:
 
@@ -173,7 +172,7 @@ ideplus_write_pair:
 ideplus_write_words_end:
 
 .if HEAP_PROBE
-.export ideplus_probe_wait,ideplus_probe_verify
+.export ideplus_probe_wait
 ; Patched into one four-NOP boundary by the host. Await one real VBI, once.
 ; Preserve the exact interrupted widths, flags, A, X and Y.
 ideplus_probe_wait:
@@ -197,26 +196,4 @@ ideplus_probe_wait_done:
     plp
     rtl
 
-; A settled verification read rendezvous through the ordinary public gateway.
-ideplus_probe_verify:
-    php
-    rep #$30
-    pha
-    phx
-    phy
-    sep #$20
-    lda f:IP_META_BUS+10
-    cmp #3
-    bne ideplus_probe_verify_done
-    lda #1
-    sta f:IP_PROBE+6
-    rep #$30
-    jsl exec_poll
-ideplus_probe_verify_done:
-    rep #$30
-    ply
-    plx
-    pla
-    plp
-    rtl
 .endif

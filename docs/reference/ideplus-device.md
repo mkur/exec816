@@ -56,21 +56,21 @@ an active read drains before replying aborted and does not copy client bytes.
 
 ## Write completion
 
-WRITE_SECTOR stages all 512 caller bytes, writes the physical sector, waits for
-durable terminal status, then rereads and verifies every byte. There is no
-preparation read. Other physical sectors remain intact. There is one controller
-owner throughout; no zero fill or dirty physical cache.
+WRITE_SECTOR stages all 512 caller bytes, writes the physical sector and waits
+for terminal ATA status. It performs no preparation read or automatic readback.
+Other physical sectors remain intact. There is one controller owner throughout;
+no zero fill or dirty physical cache.
 
 IDENTIFY with no advertised volatile write cache admits terminal-status durability.
 A cached device must advertise FLUSH CACHE support; each accepted write must
-complete that flush before verification and reply. Otherwise writable capability
+complete that flush before reply. Otherwise writable capability
 is withheld. CMD_UPDATE flushes cached media, succeeds on cache-free media and
 rejects an unsupported durability policy. APT read-only/reserved access flags,
 the board protection switch and raw unit 0 always prohibit writes.
 
 Cancellation accepted before ATA command issue prevents mutation. Once
 the write command is issued, abort is declined and completion reports the actual
-write/flush/verification outcome. Failure publishes zero actual bytes, disables
+write/flush outcome. Failure publishes zero actual bytes, disables
 further requests and retains the controller IRQ mask until cold reset. An
 ambiguous write is never retried. An offline controller cannot be restarted by
 closing/reopening it or remounting a filesystem.

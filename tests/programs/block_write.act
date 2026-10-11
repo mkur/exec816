@@ -33,6 +33,8 @@ PROC Change(CARD sector BYTE seed)
   OD
 
   Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),adapter.buffer)=2)
+  LET sio=EXEC.IOSIOReq POINTER(adapter.request)
+  Require(sio.sio_Command=$50)
   Require(adapter.valid=0 AND adapter.busy=1 AND volume.busy=1)
   Require(BLOCKCACHE.Read(@adapter.cache,volume,sector,length,buffer)=0)
   Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),buffer)=0)

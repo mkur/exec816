@@ -195,7 +195,9 @@ their recorded hashes and measurements are preserved here as historical evidence
   option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
   lightweight mounts, file/namespace writes, bounded commit units, inherited
-  writer retirement, failure outcomes, native round trips and the OF816 demo.
+  writer retirement, failure outcomes, native round trips and the OF816 demo;
+  [normal write completion](filesystem-write-implementation.md#normal-write-completion)
+  removes mandatory SIO/IDE readback verification.
 - [Block I/O and DOS with MyDOS filesystems](block-io-dos-design.md)
 - [Block I/O and MyDOS implementation](block-io-dos-implementation.md)
 - [DOS console streams](dos-console-streams-design.md)
