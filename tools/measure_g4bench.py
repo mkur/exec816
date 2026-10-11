@@ -14,7 +14,7 @@ from test_demo import run
 
 
 class BenchmarkDesktop:
-    def __init__(self,load):self.load=load;self.result=None
+    def __init__(self,load,observer=None):self.load=load;self.result=None;self.observer=observer
 
     def exercise(self,s):
         b=s.b;directory=s.p['output']/'bitmap-console'
@@ -52,10 +52,12 @@ class BenchmarkDesktop:
             menus.select('Counter');menus.select('G4BENCH')
         move(630,230);s.frames(100)
         if peer:count=s.number(peer+14,4)
+        if self.observer:self.observer.ready(s,sy)
         key('RETURN')
         for row in range(5):
             s.rendezvous('(dw($%x)>=%d)|(dw($%x)=1)'%(sy['g4b_row'],row,sy['g4b_done']))
             print('G4BENCH',self.load,'row',row+1,flush=True)
+        if self.observer:self.observer.drawn(s,sy)
         s.rendezvous('dw($%x)=1'%sy['g4b_done']);s.frames(100)
         result=read(b,sy)
         require(all(r['status'] in ('complete','low resolution') for r in result['rows']),
@@ -68,6 +70,7 @@ class BenchmarkDesktop:
         screenshot=s.p['output']/('g4bench-'+self.load+'.png');s.save_screen(screenshot)
         result['screenshot_sha256']=sha256(screenshot)
         self.result=result
+        if self.observer:self.observer.finished(s,sy,result)
         s.saved['gem_stacks']=stack_usage(b,s.p['build']['memory'])
         key('ESC');s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
@@ -77,11 +80,11 @@ class BenchmarkDesktop:
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
-def measure(bundle,load):
+def measure(bundle,load,observer=None):
     out=Path(bundle).resolve();extracted=out/('g4bench-extracted-'+load)
     manifest=json.loads((out/'demo-manifest.json').read_text())
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(extracted)
-    exercise=BenchmarkDesktop(load)
+    exercise=BenchmarkDesktop(load,observer)
     result=run(out,boot_smoke=True,distribution_root=extracted/'exec816-demo',
                integration=exercise,profile_commands=False)
     result.update(scope='Exact OF816 package, normal shell launch, Return, five drawing rows and clean close',

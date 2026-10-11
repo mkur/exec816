@@ -129,3 +129,7 @@ app if all windows are occupied, then use `RUN C:G4BENCH.APP`. Return runs or
 repeats the benchmark; Escape stops a run or closes the report. The saved file
 is `WORK:G4BENCH.TXT`. Manifests, raw observations and screenshots stay in the
 development directory.
+
+The follow-up [drawing traces](g4bench-drawing-traces.md) separate preparation,
+ownership, renderer, command construction and completion costs in this same
+packaged image.
