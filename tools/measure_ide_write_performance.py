@@ -30,8 +30,9 @@ def driver_observer(program, enabled):
         return
     from measure_sector_copy import instructions_for
     phases={}
+    address='ADDRESSRANGE' if any(r['name'].startswith('M_IDEPLUSDRIVER_ADDRESSRANGE_') for r in program['image']['routines']) else 'ADDRESSSECTOR'
     for module,name in (('IDEPLUSDRIVER','RUNREQUEST'),('IDEPLUSDRIVER','READY'),
-                        ('IDEPLUSDRIVER','ADDRESSSECTOR'),('BLOCKWIRE','EXCHANGE')):
+                        ('IDEPLUSDRIVER',address),('BLOCKWIRE','EXCHANGE')):
         routine,instructions,_,_=instructions_for(program,'M_'+module+'_'+name+'_')
         mapping=dict(consume=routine['address'],native_nmi=program['labels']['native_nmi'],native_irq=program['labels']['native_irq'])
         mapping.update({f'return{i}':item['pc'] for i,item in enumerate(x for x in instructions if x['text']=='RTL')})

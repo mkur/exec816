@@ -5,7 +5,11 @@
 [Platform memory budget](../reference/platform.md#bank-zero-memory-budget) ·
 [Testing policy](../contributing/testing.md)
 
-Status: implementing; FP0–FP5 are complete. See the [execution record](../history/filesystem-dos-performance.md).
+Status: complete. FP0–FP5 and the selected FP6 implementations have passed
+development checks. FP6 retains piece tags with cheaper bookkeeping and adds
+bounded IDE writes for contiguous new payloads. Read ranges and a packed
+variable-sector cache remain future work. See the
+[execution record](../history/filesystem-dos-performance.md).
 Implement one executable
 slice at a time, record its development results and memory costs, and commit
 before starting the next slice. This plan does not authorize publishing a demo

@@ -212,3 +212,57 @@ it has no repeated hash to remove. Loaded IDE COPY remains 100 frames and
 volume alternation, generation reuse, eviction, sparse reads and no-cache paths.
 Host checks: 447 passed. No tags, buffers, upper allocations, stack pools or
 bank-zero reservations grow; bank-zero delta stays 0 fixed / 0 per-Task / 0 idle.
+
+## FP6c: bounded IDE writes and final checks
+
+Device ABI revision 3 adds WRITE_SECTORS with a maximum of four uniform 512-byte
+sectors. Request layouts are unchanged. The driver validates the whole span
+before command issue, drains one ATA command, checks terminal status and flushes
+when required. The adapter retires all affected tags before submission and
+publishes individual cached sectors from the borrowed source only after full
+success. SpartaDOS coalesces adjacent complete new payload reservations; partial
+tails and fragmented groups remain separate. Metadata settlement and confirmed
+file-prefix rules stay unchanged. Filesystem reads and existing-sector updates
+remain individual sector operations.
+
+Raw and optimized device fixtures pass 1/2/4-sector writes, partition edges,
+invalid lengths, queued cancellation, protected/failed media and a fault after
+three PIO spans. The latter returns zero actual bytes and requires cold reset.
+The pinned ATA model buffers the complete command before host persistence, so
+that injected failure leaves its disk image unchanged; this does not establish
+atomicity on real media. Range lifecycle checks pass mixed SIO traffic, pre-issue
+cancellation, accepted-write draining, timeouts, flush failure and NMI boundaries
+4/5/7. File mutation/map-boundary/bitmap-boundary/no-cache cases pass independent
+content/allocation audits. Alternating 128/256-byte SIO writes pass independent
+allocation audits; IDE namespace checks retain warm Examine results and
+mutation-epoch errors correctly. All observed guards and ownership cleanup
+pass. Host checks: 447 passed.
+
+| Matched workload | Baseline PAL frames | Final PAL frames | Baseline / final physical commands |
+| --- | ---: | ---: | --- |
+| IDE cold COPY | 151 | 89 | READ 54 / 54; WRITE 61 / 27 |
+| IDE warm COPY | 122 | 61 | READ 4 / 4; WRITE 61 / 27 |
+| SIO 256 cold COPY | 1,953 | 1,940 | READ 101 / 101; PUT 108 / 108 |
+| SIO 256 warm COPY | 1,043 | 1,011 | READ 4 / 4; PUT 108 / 108 |
+| Full-map writable Open | 75 | 23 | Open/Close READ 5 / 5; WRITE 2 / 2 |
+| Map-spanning writable Open | 77 | 24 | Open/Close READ 6 / 6; WRITE 2 / 2 |
+
+Cold IDE COPY is 1.78 s versus 3.02 s, with 1,582 gateway calls versus 2,580.
+Warm IDE is 1.22 s versus 2.44 s, with 764 calls. Passive identical-image timing
+confirms 61 completed write-PIO sector spans despite only 27 ATA WRITE commands;
+coalescing reduces commands, not payload bytes. Reads remain 54 sector spans.
+The COPY buffer remains 16 KiB and the cache remains 64 KiB of payload.
+
+No request, controller, adapter, cache or mutation record grows. Fixed, per-Task
+and idle reserved bank-zero deltas are all zero, including guards, alignment and
+unused capacity. Stack pools stay unchanged. The IDE worker bound remains
+752 bytes, including interrupt reserve and dispatch margin, within 1,024 bytes.
+The largest observed filesystem Task stack is 648 bytes within 1,536 bytes;
+observations do not replace a worst-case proof. Compact per-slice counts, code
+sizes and hashes are in the [results](../development/filesystem-performance-results.json).
+The matched COPY fixture's emitted routine total is 914,317 bytes versus 910,092
+(+4,225); this includes its observers and is not a standalone kernel-size report.
+
+Read-range plumbing and a packed variable-sector cache are explicit followups,
+not extra production implementations. No demo/release matrix ran and no hardware
+qualification is claimed.

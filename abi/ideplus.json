@@ -1,6 +1,6 @@
 {
   "abi": "exec816.ideplus.device",
-  "revision": 2,
+  "revision": 3,
   "state_bytes": 1024,
   "pbi_id": 0,
   "hardware_revision": "e",
@@ -75,7 +75,9 @@
     "SLOT_NOT_DOS": 2,
     "SLOT_INACTIVE": 3,
     "SLOT_SECTOR_SIZE": 4,
-    "SLOT_READY": 5
+    "SLOT_READY": 5,
+    "WRITE_SECTORS": 13,
+    "MAX_WRITE_SECTORS": 4
   },
   "records": {
     "Geometry": {
@@ -226,5 +228,17 @@
         ]
       ]
     }
+  },
+  "write_sectors": {
+    "command": 13,
+    "sector_bytes": 512,
+    "maximum_sectors": 4,
+    "offset": "first zero-based partition sector",
+    "length": "512 through 2048 bytes, multiple of 512",
+    "success_actual": "full requested length after terminal status and any required flush",
+    "failure_actual": 0,
+    "failure_prefix": "none guaranteed; physical sectors may have changed",
+    "cancellation": "queued/preparing only; issued ATA write drains its complete bounded range",
+    "timeout": "existing per-wait deadline, bounded by maximum sector count"
   }
 }

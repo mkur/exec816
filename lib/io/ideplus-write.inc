@@ -45,9 +45,9 @@ CARD FUNC AccessFlags(Partition POINTER partition)
 
 RETURN(flags)
 
-; Write one complete ATA sector and settle any required cache flush.
+; Drain one bounded ATA write and settle any required cache flush.
 BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
-  BYTE error
+  BYTE error,index,count
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   IF (AccessFlags(partition) & IDEPLUS.FLAG_READONLY)<>0 THEN
@@ -62,7 +62,8 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF bus.cancelled<>0 THEN
     RETURN(BYTE(EXEC.IOERR_ABORTED))
   FI
-  AddressSector(sector)
+  count=BYTE(request.io_Length RSH 9)
+  AddressRange(sector,count)
   EXEC.Forbid()
   IF bus.cancelled<>0 THEN
     EXEC.Permit()
@@ -71,11 +72,13 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   bus.phase=3
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_WRITE)
   EXEC.Permit()
-  error=Ready($08,0)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  IDEPLUSNATIVE.WriteWords(request.io_Data)
+  FOR index=0 TO count-1 DO
+    error=Ready($08,0)
+    IF error<>0 THEN
+      RETURN(error)
+    FI
+    IDEPLUSNATIVE.WriteWords(request.io_Data+(SIZE(index) LSH 9))
+  OD
   error=Ready(0,0)
   IF error<>0 THEN
     RETURN(error)

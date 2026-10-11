@@ -63,6 +63,15 @@ Writes reuse the same request as reads, with no write-back
 queue or additional reservation. The [filesystem writers](filesystem-writes.md)
 use these operations to commit data and metadata on explicitly writable mounts.
 
+BeginStoreRange/FinishStoreRange borrow up to four complete adjacent IDE sectors.
+Every affected cache tag is retired before submission; successful full completion
+publishes each sector from its part of the actual source span. Failed or short
+completion invalidates the volume. SIO accepts only the single-sector path.
+SpartaDOS coalesces contiguous new payload reservations within its existing
+four-sector extension group. Partial final sectors and fragmented reservations
+remain individual transfers; metadata publication and confirmed file prefixes
+are unchanged. No range staging buffer or larger request record is allocated.
+
 The filesystem service owns one reusable transfer request and 512-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that
 binding without copying Message links and cannot reuse the request or buffer

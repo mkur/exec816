@@ -22,13 +22,13 @@ def routine(p,name):
     return next(r for r in p['image']['routines'] if r['name'].startswith('M_'+name+'_'))
 
 
-def run(out,reuse=False,selected=None):
+def run(out,reuse=False,selected=None,ranges=False):
     out.mkdir(parents=True,exist_ok=True)
     profile=out/'profile.json'
     value=json.loads(PROFILE.read_text());value['image_data_bytes']=4096
     profile.write_text(json.dumps(value))
     mounts=[dict(alias='D1',unit=49,profile=4,sector_bytes=256,sectors=2000,format=1)]
-    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_lifetime.act',out,optimize=True,tasks=True,task_capacity=8,heap_probe=True,console_deferred=True,memory_profile=profile,dos_mounts=mounts,image_data=[(0x2dffef,bytes([0x55])*514),(0x2e1000,bytes(128))])
+    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_lifetime.act',out,optimize=True,tasks=True,task_capacity=8,heap_probe=True,console_deferred=True,memory_profile=profile,dos_mounts=mounts,image_data=[(0x2dffef,bytes([0x55])*2050),(0x2e1000,bytes(128))])
     base=p['build']['memory']['ideplus_storage']['BASE']
     cases=['mixed','slots','allocation','busy-stop','timeout','flush-error']+[f'nmi-{i}' for i in range(1,8)]
     for name in cases:
@@ -37,15 +37,16 @@ def run(out,reuse=False,selected=None):
         media,maps=pattern_fixture(readonly=False);expected=bytearray(media)
         error={'timeout':2,'flush-error':3}.get(name,0)
         if name not in ('busy-stop','timeout'):
-            put_sector(expected,maps[0]['start'],1,
-                       bytes([0x55])*512 if error else bytes((i&255)^0x55 for i in range(512)))
+            for sector in range(4) if ranges else (1,):
+                put_sector(expected,maps[0]['start'],sector,
+                           bytes([0x55])*512 if error else bytes((i&255)^0x55 for i in range(512)))
         disk=dest/'ide.img';disk.write_bytes(media)
         sio=dest/'sio.atr';original=(ROOT/'tests/fixtures/filesystem-write/mydos-256.atr').read_bytes();sio.write_bytes(original)
         with ide_emulator(dest,disk,writable=True) as b:
             b.config('diskemu','generic56k')
             def before(b):
                 b.mount(0,str(sio))
-                for field,value in [('EXPECTEDERROR',error),('BLOCKED',name=='slots'),('ALLOCATION',name=='allocation'),('BUSYSTOP',name=='busy-stop'),('MIXED',name=='mixed')]:
+                for field,value in [('EXPECTEDERROR',error),('BLOCKED',name=='slots'),('ALLOCATION',name=='allocation'),('BUSYSTOP',name=='busy-stop'),('MIXED',name=='mixed'),('RANGEMODE',ranges)]:
                     at=next(d['address'] for d in p['image']['data'] if '_IDEPLUSLIFETIME_'+field+'_' in d['name'])
                     b.memload(at,bytes([value]))
                 if name=='allocation':
@@ -79,10 +80,11 @@ def run(out,reuse=False,selected=None):
             checks=data(b,p['image'],'checks',True);progress=data(b,p['image'],'progress',True)
         require(disk.read_bytes()==expected,'Unexpected media change')
         require(sio.read_bytes()==original,'Concurrent SIO read changed media')
-        result=dict(status='pass',tier='development',case=name,build=p['build'],runtime=runtime,checks=checks,progress=progress,stacks=stacks,historical_bank_zero_delta=bank_zero_delta(p['build']['memory']),ide_driver_bank_zero_delta=dict(fixed=0,per_task=0,idle=0))
+        result=dict(status='pass',tier='development',case=name,ranges=ranges,build=p['build'],runtime=runtime,checks=checks,progress=progress,stacks=stacks,historical_bank_zero_delta=bank_zero_delta(p['build']['memory']),ide_driver_bank_zero_delta=dict(fixed=0,per_task=0,idle=0))
         (dest/'results.json').write_text(json.dumps(result,indent=2)+'\n')
         print('IDE lifetime passed',name,flush=True)
 
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--case',action='append');a.add_argument('--output',type=__import__('pathlib').Path,default=ROOT/'build/development/ideplus-ip5')
-    v=a.parse_args();run(v.output,v.reuse,v.case)
+    a.add_argument('--ranges',action='store_true')
+    v=a.parse_args();run(v.output,v.reuse,v.case,v.ranges)

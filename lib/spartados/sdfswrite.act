@@ -6,6 +6,7 @@ USE FSBTYPES
 USE FSWTYPES
 USE FSWRITEIO
 USE FSALLOC
+USE BLOCKTRANSPORT
 USE SDFS
 USE SDFSTYPES
 USE A816MEMORY
@@ -672,12 +673,13 @@ RETURN
 ; Initialize one bounded payload group; publication belongs to the Write step.
 LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     BYTE POINTER source LONGINT length)
-  CARD count,index,part,offset
+  CARD count,index,part,offset,run,other
   LONGINT completed
   BYTE POINTER payload
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
+  LET limit=CARD(BLOCKTRANSPORT.WriteLimit(service.selected.block))
   count=FSWTYPES.EXTENSION_SECTORS
   IF length<LONGINT(sectorBytes)*LONGINT(count) THEN
     count=CARD((length+LONGINT(sectorBytes)-1)/LONGINT(sectorBytes))
@@ -702,25 +704,41 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
 
   count=CARD(state.reservations)
   completed=0
-  FOR index=0 TO count-1 DO
+  index=0
+  WHILE index<count DO
     part=sectorBytes
     IF LONGINT(part)>length-completed THEN
       part=CARD(length-completed)
     FI
 
     payload=source+SIZE(completed)
+    run=1
+    IF part=sectorBytes THEN
+      WHILE run<limit
+          AND index+run<count
+          AND LONGINT(run+1)*LONGINT(sectorBytes)<=length-completed DO
+        IF state.reserved(index+run)<>state.reserved(index)+run THEN
+          EXIT
+        FI
+        run==+1
+      OD
+    FI
     IF part<>sectorBytes THEN
       A816MEMORY.Move(state.data,payload,SIZE(part))
       A816MEMORY.Clear(@state.data(part),SIZE(sectorBytes-part))
       payload=state.data
     FI
 
-    IF FSWRITEIO.WritePayload(service,state.reserved(index),payload)=0 THEN
+    IF FSWRITEIO.WritePayloadRange(service,state.reserved(index),payload,
+        BYTE(run))=0 THEN
       RETURN(0)
     FI
 
-    FSWRITEIO.Word(state.map,offset+index*2,state.reserved(index))
-    completed==+LONGINT(part)
+    FOR other=index TO index+run-1 DO
+      FSWRITEIO.Word(state.map,offset+other*2,state.reserved(other))
+    OD
+    completed==+LONGINT(part)*LONGINT(run)
+    index==+run
   OD
 
   ; BREAK before the first submission must leave unused reservations free.

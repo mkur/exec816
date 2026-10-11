@@ -237,13 +237,19 @@ BYTE FUNC Ready(BYTE drq,ignoreError)
 
 RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMEOUT))
 
-; Program one LBA28 transfer, without retaining a selected PBI window.
-PROC AddressSector(LONGCARD sector)
+; Program a bounded LBA28 transfer without retaining a selected PBI window.
+PROC AddressRange(LONGCARD sector BYTE count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_HEAD,$e0 OR BYTE(sector RSH 24))
-  IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COUNT,1)
+  IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COUNT,count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA0,BYTE(sector))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA1,BYTE(sector RSH 8))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA2,BYTE(sector RSH 16))
+
+RETURN
+
+PROC AddressSector(LONGCARD sector)
+
+  AddressRange(sector,1)
 
 RETURN
 
@@ -462,7 +468,23 @@ EXEC.IOStdReq POINTER FUNC Claim()
   bus.cancelled=0
 RETURN(request)
 
-; Complete full raw reads or copy geometry, retaining buffers until reply.
+; Reject a range crossing the partition before any ATA command is issued.
+BYTE FUNC ValidExtent(Partition POINTER unit EXEC.IOStdReq POINTER request)
+
+  IF request.io_Offset>=unit.sectors THEN
+    RETURN(0)
+  FI
+  IF request.io_Command<>IDEPLUS.WRITE_SECTORS THEN
+    RETURN(request.io_Length=512)
+  FI
+  IF request.io_Length=0 OR request.io_Length>IDEPLUS.MAX_WRITE_SECTORS*512
+      OR (request.io_Length & 511)<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN((request.io_Length RSH 9)<=unit.sectors-request.io_Offset)
+
+; Complete raw requests or copy geometry, retaining buffers until reply.
 PROC RunRequest(EXEC.IOStdReq POINTER request)
   BYTE error
 
@@ -500,11 +522,14 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
       EXEC.Permit()
       error=FlushPhysical()
     FI
-  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR AND request.io_Command<>IDEPLUS.WRITE_SECTOR THEN
+  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR
+      AND request.io_Command<>IDEPLUS.WRITE_SECTOR
+      AND request.io_Command<>IDEPLUS.WRITE_SECTORS THEN
     error=BYTE(EXEC.IOERR_NOCMD)
-  ELSEIF request.io_Length<>512 OR request.io_Offset>=unit.sectors THEN
+  ELSEIF ValidExtent(unit,request)=0 THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
-  ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR THEN
+  ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR
+      OR request.io_Command=IDEPLUS.WRITE_SECTORS THEN
     error=WriteLogical(unit,request)
     IF error=0 THEN
       request.io_Actual=request.io_Length
