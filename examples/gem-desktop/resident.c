@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 #include <exec816/program.h>
 
-/* The shell owns these three initial children. Files owns its launched child;
- * the shell's existing RUN job owns applications launched from the prompt. */
+/* The shell owns the desktop supervisor, or the older two-app test profile.
+ * The desktop owns applications it launches; RUN jobs remain shell-owned. */
 ULONG GEMDesktopChildren[3];
 volatile UWORD GEMDesktopDone,GEMDesktopFailure;
 static UWORD active;
@@ -39,11 +39,9 @@ LONG EXEC_CALL GEMDesktopStart(ULONG files)
 {
     if (active) return 0;
     active=1;GEMDesktopDone=GEMDesktopFailure=0;
-    GEMDesktopChildren[0]=ExecStartProgram("SYS:C/PANEL.APP",NULL,0);
-    GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL,0);
-    if (files) GEMDesktopChildren[2]=ExecStartProgram("SYS:C/FILES.APP",NULL,0);
-    if (!GEMDesktopChildren[0] || !GEMDesktopChildren[1] ||
-        (files && !GEMDesktopChildren[2])) {
+    GEMDesktopChildren[0]=ExecStartProgram(files ? "SYS:C/DESKTOP.APP":"SYS:C/PANEL.APP",NULL,0);
+    if (!files) GEMDesktopChildren[1]=ExecStartProgram("SYS:C/COUNTER.APP",NULL,0);
+    if (!GEMDesktopChildren[0] || (!files && !GEMDesktopChildren[1])) {
         GEMDesktopStop(0);return 0;
     }
     return 1;

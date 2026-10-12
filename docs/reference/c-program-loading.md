@@ -122,15 +122,15 @@ after validation/copying. The shared GUI runtime is expanded from the
 [compressed boot image](boot-loading.md) into its reserved extents before
 native startup; it needs no disk component or separate payload buffer.
 
-The desktop ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`, `C:CALC.APP`, `C:DIALOG.APP` and `C:TEXT.APP`. Each has an
-application-owned model and a small `main` wrapper; their bodies are absent from
-the shared resident GUI runtime. The shell owns the three initial Processes. Files owns
-and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
-existing background job after the initial Files window closes.
-Calculator is launched on demand with `SYS:CALC.RSC`; it does not add a startup
-Process or enlarge the fixed pools. Close an existing GEM window before launch
-when the shell and three initial apps occupy all four application-window slots. The
-[calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes its input.
+The desktop ships `C:DESKTOP.APP`, `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`,
+`C:CALC.APP`, `C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies
+and models are absent from the shared runtime. The shell owns the initial desktop
+Process; the desktop owns its launched children independently of folder windows.
+Standalone FILES.APP retains its one-child lifetime. Tools launch on demand;
+normal resource errors report exhausted Task/window capacity. The current binding
+also exposes the existing DOS `DeleteFile` operation for desktop file management.
+The [calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes
+calculator input; keep SYS:CALC.RSC mounted.
 
 `ExecStartProgram(name, arguments, length)` uses the existing native Process
 argument-copy path. Length excludes NUL and is bounded at 255 bytes. Null/zero

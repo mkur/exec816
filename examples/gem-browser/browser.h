@@ -24,7 +24,7 @@ struct Browser {
     struct ExecProgramResult result;
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
-    OBJECT bar[13];
+    OBJECT bar[19];
     WORD menuInstalled,menuEnabled;
     OBJECT dialogTree[6];
     TEDINFO dialogTed;
@@ -32,6 +32,14 @@ struct Browser {
     WORD dialog,focus,editIndex;
     LONG dialogError;
     struct FileScan scan;
+    OBJECT *stock;
+    ICONBLK icons[BROWSER_ROWS];
+    WORD iconView,sortNames,columns,armedClicks,full,restore[4];
+    ULONG totalBytes;
+    char information[65];
+    OBJECT *applicationMenu;
+    struct Desktop *desktop;
 };
 WORD BrowserRun(struct Browser *);
+WORD DesktopRun(void);
 #endif

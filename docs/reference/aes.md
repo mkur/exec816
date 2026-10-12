@@ -631,44 +631,60 @@ The server wire record remains 112 bytes; all bank-zero reservations are unchang
 
 Synchronous form calls can return `AES_PENDING` when another owned window has
 an unhandled message. Dispatch that message before resuming the form. The
-desktop client can use its normal event loop for inline confirmations.
+desktop uses its normal event loop for inline confirmations.
 
 Visible-rectangle iteration remains one cursor per application context. Restart
 `WF_FIRSTXYWH` when switching windows; interleaved `WF_NEXTXYWH` sequences are unsupported.
 
 ## Small GEM desktop
 
-`tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
-the shell. Files loads `SYS:DESKTOP.RSC`, caches up to 256 directory entries and shows up to sixteen reusable rows,
-adapting the count and width to its work area. Arrows, page clicks and the vertical
-thumb scroll continuously; keyboard selection follows into view. Refresh preserves
-the selected filename. Directories above the limit report a truncated listing.
-Files launches native Exec commands or C/GEM APPs using Program/Process. Its
-application menu offers Open, Refresh, Stop, Quit, Path, New Folder and Rename; its window-scoped File
-popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
-and child availability, and menu Quit shares the ordinary close path.
-Path (P), New Folder (N) and Rename (R) use compiled-in OBJECT/TEDINFO dialogs
-inside Files' existing window. Tab/Shift-Tab, Return, Escape and mouse OK/Cancel
-operate them. Fields use GEM uppercase folding for the current disk formats.
-The other applications keep running. Path validates a directory
-before replacing the snapshot; New Folder/Rename accept one leaf name and
-preserve operational errors and entered text. Success refreshes and selects the
-result; Cancel does not mutate the filesystem. Files continues servicing
-geometry, exposure, child completion and close while a dialog is open. A launched command
-has an empty argument tail, NIL input and RAW output in the shell; closing Files
-requests native BREAK or GEM close and collects the child before Task retirement.
-The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries
-and GEM4XE G4A files remain unsupported. Current VDI rectangles and fixed-font
-text suffice. Initial apps belong to the shell; Files owns its one launched
-child. Closed apps are collected at the idle prompt. `RUN C:FILES.APP` uses the
-shell background job to reopen Files.
+`tools/build_demo.py --gem-desktop` starts `C:DESKTOP.APP` beside the shell at
+640×240 in colour. One AES application owns the background and up to three folder
+windows. Each folder keeps its own path, snapshot, selection, scroll and OBJECT
+tree; the menu, resources and event loop are shared. Closing the last folder
+leaves the background and Desk menu usable. The shell initially leaves the volume
+icon column uncovered. Windows reaches covered ordinary windows; the background
+is excluded from cycling.
 
-Three AES registrations and four of six application-window slots are used (plus two private menu layers). Seven idle public
-Tasks leave one slot for a launched command. Close one GEM window before a
-shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
-PRIMES requires tiled-console mode and returns an error in desktop mode.
-This optional profile does not change the
-default shell/prime demo or its five-second OF816 autoboot.
+Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen OBJECTs
+for a 104×40 icon grid or a compact list. Icons have 32×20 bitmaps and labels in
+32-pixel-high objects. View chooses Icons/List and Name/Disk order; names group
+directories first. INFO shows byte/item totals and FULLER toggles full/remembered
+bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
+resize reflows; vertical arrows, page clicks and the thumb scroll. Refresh retains
+the selected filename. Larger directories report truncation.
+
+Desk opens another folder or launches Panel, Calculator, Text and Counter on
+demand. The desktop owns up to three program handles; actual Task/window limits
+can prevent admission. Closing a folder leaves launched applications running.
+TXT defaults to `C:TEXT.APP` with a copied quoted path argument. Other entries
+launch directly, with NIL input and RAW shell output. Closing the desktop requests
+stop and collects children. While children exist, a 100 ms timer bounds completion
+collection; an idle desktop with no child/copy uses no periodic timer.
+
+Path (P), New Folder (N) and Rename (R) use inline OBJECT/TEDINFO dialogs.
+Tab/Shift-Tab, Return, Escape and mouse OK/Cancel operate them. File also offers
+single-file Copy and confirmed Delete of a file or empty directory. Copy uses a
+512-byte buffer and yields to the event decision between chunks, outside UPDATE.
+Escape/Cancel removes the partial `EXECCOPY.TMP`, preserving an existing target.
+Replacement requires confirmation and commits after closing the completed copy.
+The final delete/rename is not atomic; a failed rename retains the complete
+EXECCOPY.TMP for recovery. An existing temporary filename blocks a copy. Recursive
+copy/delete, multiple selection, icon dragging and trash are unsupported.
+
+Desk > Save Settings writes `WORK:DESKTOP.CFG`; startup reads view/sort defaults,
+folder paths/geometry, mouse preference and up to two three-letter associations.
+The bounded text format starts with `EXEC816_DESKTOP 1`, followed by `MOUSE n`,
+`VIEW icons sort`, `FOLDER x y w h icons sort path` and `ASSOC TXT C:TEXT.APP`
+lines. Flags are 0/1. Valid files with no FOLDER line restore the background alone.
+Missing/invalid headers use defaults; unsupported/malformed entries are ignored.
+There is no autosave or settings service. SYS: remains read-only.
+
+`RUN C:FILES.APP` retains a standalone single-folder application and its existing
+one-child Stop/close policy. `RUN C:G4BENCH.APP` opens the drawing subset benchmark;
+`RUN C:DIALOG.APP` opens the standard-dialog example. Atari ST binaries and GEM4XE
+G4A files remain unsupported. PRIMES needs tiled-console mode. The optional GUI
+profile leaves the default shell/prime demo and five-second OF816 autoboot intact.
 
 ## Session mouse preference
 
@@ -689,7 +705,7 @@ this deferral, so acknowledgement does not promise immediate movement changes.
 Repeatedly selecting the active profile preserves fractional motion.
 
 The choice survives application close/reload until desktop input is reacquired,
-which restores the build default. There is no persistent settings file or
+which restores the build default. The desktop can explicitly save this choice to WORK:DESKTOP.CFG; there is no
 change broadcast. Multiple panels keep independent pending edits; Apply is
 last-writer-wins and Cancel reloads the current session choice. No new Task,
 signal, timer, bank-zero reservation or IRQ work is involved.

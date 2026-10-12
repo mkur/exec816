@@ -4,7 +4,10 @@ FIELDS=dict(ready=8,work=26,tree=170,menu=174,path=178,status=306,target=434,
     armed=2368,truncated=2370,launches=2372,paints=2376,child=2380,result=2384,
     bar=2428,menuInstalled=2740,menuEnabled=2742,dialogTree=2744,dialogTed=2888,
     editText=2916,dialog=3044,focus=3046,editIndex=3048,dialogError=3050)
-SIZE=3074
+SIZE=3861
+for name in ('menuInstalled','menuEnabled','dialogTree','dialogTed','editText','dialog','focus','editIndex','dialogError'):
+    FIELDS[name]+=144
+FIELDS.update(stock=3218,icons=3222,iconView=3766,sortNames=3768,columns=3770,armedClicks=3772,full=3774,restore=3776,totalBytes=3784,information=3788,applicationMenu=3853,desktop=3857)
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21
@@ -42,13 +45,23 @@ def select(session,base,name,click):
         if name in names and (status==path or not status.startswith(b'SYS:')):break
         session.frames(40)
     require(name in names,'Missing Files entry '+name+': '+repr((path,status,names)))
-    index=names.index(name)
     for _ in range(256):
+        # A mutation may finish rebuilding/sorting the retained snapshot while
+        # the first scrollbar click is in flight. Resolve the name again; an
+        # index captured from the preceding directory can become unreachable.
+        names=listing(session,base)
+        if name not in names:
+            session.frames(40);continue
+        index=names.index(name)
         first=session.number(base+FIELDS['first'],2)
         visible=session.number(base+FIELDS['visible'],2)
         x,y,w,h=[session.number(base+FIELDS['work']+i*2,2) for i in range(4)]
         if first<=index<first+visible:
-            click(x+40,y+36+(index-first)*12);return
+            if session.number(base+FIELDS["iconView"],2):
+                columns=session.number(base+FIELDS["columns"],2)
+                click(x+48+(index-first)%columns*104,y+44+(index-first)//columns*40)
+            else:click(x+40,y+36+(index-first)*12)
+            return
         click(x+w+8,y+8 if index<first else y+h-8)
         session.frames(60)
     raise RuntimeError('Files scrollbar did not reach '+name)

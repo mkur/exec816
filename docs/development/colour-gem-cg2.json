@@ -1,0 +1,218 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "milestone": "CG2",
+  "interaction": {
+    "icons": true,
+    "list": true,
+    "sort": true,
+    "double_click": true,
+    "scroll": true,
+    "full_restore": true,
+    "resize": true,
+    "native_launch": true,
+    "dialogs": true,
+    "counter": true,
+    "bank_zero_reserved_delta": 0,
+    "stacks": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 627,
+        "remaining_above_floor": 653
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 548,
+        "remaining_above_floor": 508
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 178,
+        "remaining_above_floor": 878
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 702,
+        "remaining_above_floor": 354
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 669,
+        "remaining_above_floor": 387
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 796,
+        "remaining_above_floor": 260
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 720,
+        "remaining_above_floor": 1584
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 301,
+        "remaining_above_floor": 2003
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 135,
+        "remaining_above_floor": 121
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    }
+  },
+  "latency": {
+    "panel": {
+      "model_address": 393482,
+      "samples_ms": [
+        60.12244512453851,
+        100.28828031278061,
+        100.28771643930818,
+        100.28771643930818,
+        100.28828031278061,
+        100.28828031278061,
+        100.28771643930818,
+        80.07849118736247,
+        60.37449656671539,
+        100.28828031278061,
+        80.32885100912206,
+        100.28771643930818,
+        60.12244512453851,
+        100.28828031278061,
+        100.28771643930818,
+        100.28828031278061,
+        60.37506044018782,
+        100.28884418625304,
+        80.33279812342909,
+        100.28828031278061,
+        100.28771643930818,
+        100.28771643930818,
+        60.12244512453851,
+        100.28828031278061,
+        60.12188125106607,
+        100.28771643930818,
+        80.33167037648423,
+        100.28828031278061,
+        100.28771643930818,
+        100.28828031278061,
+        100.28828031278061,
+        60.12244512453851,
+        100.28771643930818,
+        60.12244512453851,
+        100.28828031278061,
+        100.03566499713129,
+        60.12244512453851,
+        80.33167037648423,
+        100.28828031278061,
+        100.28771643930818
+      ],
+      "median_ms": 100.28771643930818,
+      "max_ms": 100.28884418625304,
+      "scope": "40 press edges, submission to matching button scanout, frame-granular polling; limited appearance comparison.",
+      "count": 40,
+      "p95_ms": 100.28828031278061
+    },
+    "files": {
+      "samples_ms": [
+        160.41072543731912,
+        180.3673353736155,
+        180.36789924708796,
+        160.66334075296845,
+        180.3673353736155,
+        180.3673353736155,
+        180.3673353736155,
+        200.3239453099119,
+        180.3673353736155,
+        180.3673353736155,
+        180.36677150014307,
+        160.41241705773643,
+        200.57656062556123,
+        180.61995068926484,
+        180.36789924708796,
+        180.36677150014307,
+        180.6193868157924,
+        180.61995068926484,
+        180.61995068926484,
+        200.5776883725061,
+        160.41185318426398,
+        180.36789924708796,
+        180.3673353736155,
+        160.41016156384669,
+        200.5759967520888,
+        160.41072543731912,
+        180.61995068926484,
+        180.61995068926484,
+        180.61995068926484,
+        200.5776883725061,
+        180.62051456273724,
+        160.4191835394056,
+        180.36620762667067,
+        180.3673353736155,
+        200.582763233758,
+        180.3673353736155,
+        180.3673353736155,
+        180.3673353736155,
+        180.61995068926484,
+        180.36789924708796
+      ],
+      "count": 40,
+      "median_ms": 180.3673353736155,
+      "p95_ms": 200.5776883725061,
+      "max_ms": 200.582763233758,
+      "view": "icons",
+      "scope": "Release submission to matching two-cell scanout; frame-granular polling after state change."
+    }
+  },
+  "pointer_checks": 141,
+  "pointer_failures": 0,
+  "abi_layout_modes": [
+    "raw",
+    "opt"
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "relative_to": "gem-rendering-tx7/demo; complete reserved-memory accounting is identical",
+  "sources": {
+    "examples/gem-browser/browser.c": "a65db788f0e20ba144bc8be8fa0673e8e9e652c9efd59f2077965f36af3ee66c",
+    "examples/gem-browser/resource.json": "84e5ef51b0b501fd7e41c47288f7d5d9a5d26ca97e78dbc8939777c9d8c7e6e7",
+    "lib/desktop/desktop-frame.c": "6d10ae6713403cd305f7f669abaa7e82047766fec9c244f04ac9ea9f6ca6493d",
+    "lib/aes/aesmouse.act": "b72806d264b33e76368cfdb552d017b86bb1b3119069311518109d7404e120b9",
+    "abi/aes-server.json": "9f6092aa4587cfcafddcce05df437f2357292486c52d90dea40b0307adf08889",
+    "abi/desktop.json": "287933b180cb54970bdb01cc8bf17444b43367281f3f368d42b47aede4189e1a",
+    "abi/c-program.json": "9c6c332d1df036e54816aabe5f7818463c474f645e78c553a6ffa53d613371cb"
+  },
+  "artifacts": {
+    "build/colour-desktop/cg2-demo/colour-desktop-results.json": "42bda8a06c6dcfab1d2bdfb18b9b0908c4c251f40377465762e7f3c4eeff017d",
+    "build/colour-desktop/cg2-feedback-32/feedback-results.json": "d4a545d08d90538403b95b4ae946e666687f8acfa177fe2684df297718770ff2",
+    "build/colour-desktop/cg2-demo/exec816-demo.zip": "a220410b943cc76882f1c685ac8f40a87b9e4ee946f7fb23db6678b3a3636dc9"
+  }
+}

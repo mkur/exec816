@@ -1,0 +1,363 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "compiler_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+  "compiler_host_build": "Same pinned actionc sources built in Rust release mode via build/gem-rendering-tx7/host_release.py; guest raw/optimized modes remain selected by each fixture.",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$a564f818ce923550",
+    "actual_kernel_id": "$a564f818ce923550",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "relative_to": "gem-rendering-tx7/demo; guards, alignment and unused reserved capacity included",
+  "vram_reserved_delta": 0,
+  "physical_walkthrough": {
+    "multiple_windows": true,
+    "shared_application": true,
+    "independent_trees": true,
+    "independent_paths": true,
+    "resize": true,
+    "full_restore": true,
+    "scroll": true,
+    "persistent_background": true,
+    "background_selection": true,
+    "independent_launch_lifetime": true,
+    "windows_menu": true,
+    "files": null,
+    "stacks": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 549,
+        "remaining_above_floor": 731
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 315,
+        "remaining_above_floor": 741
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 155,
+        "remaining_above_floor": 901
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 882,
+        "remaining_above_floor": 174
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 673,
+        "remaining_above_floor": 383
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 754,
+        "remaining_above_floor": 1550
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    }
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "live_tasks": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 549,
+        "untouched_above_floor": 731
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 315,
+        "untouched_above_floor": 741
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 155,
+        "untouched_above_floor": 901
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 882,
+        "untouched_above_floor": 174
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 673,
+        "untouched_above_floor": 383
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 289,
+        "untouched_above_floor": 767
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 754,
+        "untouched_above_floor": 1550
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 129,
+        "untouched_above_floor": 127
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "limitations": [
+    "Development tests on the pinned PAL AltirraSDL/AltirraOS configuration; no release or real-hardware qualification.",
+    "Three folder windows, six shared client windows, four AES registrations and eight public Tasks.",
+    "One regular-file copy at a time; final replacement and settings save are not atomic.",
+    "No recursive operations, multiple selection, icon dragging, horizontal scrolling or CICON."
+  ],
+  "milestone": "CG3",
+  "checks": {
+    "cg3-multiwindow": {
+      "status": "pass",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 68,
+      "AESFailures": 0,
+      "native_checks": 4
+    },
+    "cg3-pointer": {
+      "status": "pass",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 141,
+      "AESFailures": 0,
+      "native_checks": 4
+    },
+    "cg3-input-events": {
+      "status": "pass",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 398,
+      "AESFailures": 0,
+      "native_checks": 4
+    },
+    "cg3-gui": {
+      "status": "pass",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 102,
+      "AESFailures": 0,
+      "native_checks": 4
+    },
+    "cg3-windows": {
+      "status": "pass",
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "AESChecks": 252,
+      "AESFailures": 0,
+      "native_checks": 4
+    },
+    "cg3-context-raw": {
+      "status": "pass",
+      "mode": "raw",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    "cg3-context-opt": {
+      "status": "pass",
+      "mode": "opt",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    "cg3-layers": {
+      "status": "pass",
+      "mode": "opt",
+      "checks": 60043,
+      "geometry_cases": 128,
+      "scene_cases": 36,
+      "bank_crossing": {
+        "address": 1179632,
+        "bytes": 8496,
+        "region_counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          14
+        ],
+        "pixels_checked": 153600
+      }
+    }
+  },
+  "upper_memory_bytes": {
+    "scene": 8496,
+    "scene_delta": 1706,
+    "client_context": 368,
+    "window_view": 806,
+    "desktop_model": 2128,
+    "folder_model": 3861,
+    "folder_entries": 28672,
+    "folder_objects": 504
+  },
+  "sources": {
+    "abi/aes-server.json": "b635d9422b2b4fe7968c8cf743fd2d9e1fb42223a99aa09af59c00584d449637",
+    "abi/desktop.json": "f8409eae2a5b6a9d851fb07d5c8acbb41d1d121f0aac4f88c62b2be0e81356a6",
+    "abi/layers.json": "698f2827e735b066d9dc7048857e46f3ec304b7db0d581f60c3dbdbb9fd24fe0",
+    "abi/c-program.json": "47e46221b03a428f34b98cf80862c92dd74f74efdcd15488faff62ed93413628",
+    "examples/gem-browser/browser.c": "7e9299254d0736097d0aeeaf59cea8922cee264538fb0b16b23cae81f8977549",
+    "examples/gem-browser/browser.h": "dc8b1074e6165f4573d0457fd0582dbe00a9e41736b34d39496a07e396bfd6a2",
+    "examples/gem-browser/desktop.inc": "96dd7d82164c499e94200a351de155873ed1c06f4dd041f2ceeda85df275a726",
+    "examples/gem-browser/desktop.h": "47e7646c76d67c1e543c79ecc7cf00ddd2560a1025a51a9924b794962b109a5a",
+    "examples/gem-browser/settings.inc": "ae80bc82f793f85e339d7a77133337457b9deebc397380e05fed94b2a0cab2fa",
+    "examples/gem-browser/resource.json": "84e5ef51b0b501fd7e41c47288f7d5d9a5d26ca97e78dbc8939777c9d8c7e6e7",
+    "examples/gem-desktop.act": "cba30a3622a3c21a3418e4f64fbb22ce9c2c3ba48990cfbbdaeb7f1cb0dd699e",
+    "examples/gem-desktop/resident.c": "b97b2f1b99d9ab7f8aee58571f61603b1ce3a4e764290594e6450de8b1b1e95e",
+    "lib/aes/aesgui.act": "b56196925654f16f3fc24e6b1523cdbef025ddb6865e02a6978b2b59c05730e8",
+    "lib/aes/aesmouse.act": "34ab1328fc718497570071df740f31a522b0dae791394268a3d4b2ae5b41d3ec",
+    "lib/aes/aeswindow.act": "29e06073264e24132ad66c12eeca9da9cd9ed180684d02c3be1accb7bfc4cf65",
+    "lib/aes/aeswindowstate.act": "6d1a3803bcd9e692bdab795ab791bd7a12f8eb5ffb5f6f74c47fac10af47b31f",
+    "c/calypsi/aes-input.c": "f9b5ce082c17b35b80d64f9f2c405243c7281cab285255bb79dbb0904cc957ed",
+    "c/calypsi/aes-messages.c": "7b4a97dc975b00aa9786f3d9528cd184061ba46db54f2cd2ba19b241a148ca23",
+    "c/calypsi/aes-windows.c": "f25fcabe5118de32cb88f63e44bbc5e64e72ff6e60d3c504987f441a9c6e125d",
+    "tools/test_colour_desktop_session.py": "ecbf9ac325c055ab57f8b0e5ab68dbddb79220ac933f1ea58e4f4484edbd2e38",
+    "tools/colour_file_check.py": "488979e3b8f7ae5ba4c276c87b6c4de07d5ef3719a9b9289c7cbf7c26fcbed9b",
+    "tools/browser_model.py": "db22a7a7ae46b6390361cac699afc8130c28a5e3789a99baa2a9d27ef7695ccf",
+    "tools/measure_gem_feedback.py": "ccecf3366954a22ffb210191652ba28aa0f23941d7fe4224c138738773275eb5"
+  },
+  "artifacts": {
+    "build/colour-desktop/cg3-multiwindow/results.json": "bd7aaf5c95417a455c74a6a8cfeea9d49e86457cb4e7942df9011518de27e655",
+    "build/colour-desktop/cg3-pointer/results.json": "895b812986a0f4a311ca3b520851f9cb828cc2fd04571de1b8fbcb7bcd044602",
+    "build/colour-desktop/cg3-input-events/results.json": "64688643ffe24f4b62637f30784de9a2708bcbeadba6383b6ec6bc797806a3d4",
+    "build/colour-desktop/cg3-gui/results.json": "20edf450a6f962a10d10d528d6b9c5f3e4d761fd3a227d9f9c97753b8c05dfb3",
+    "build/colour-desktop/cg3-windows/results.json": "4f2e500a74dcaec4fc6f3de758d41aa4e1deb22cfe017dcc858a397599df8f4a",
+    "build/colour-desktop/cg3-context-raw/results.json": "9ece251a43944ef80664f131d4c580e9f2f8ee711dec3c6bc54ea70a42c4f17d",
+    "build/colour-desktop/cg3-context-opt/results.json": "b31b42bf6af629ccb627559442dbc0003b01d3126eb49e32bb81ff93e81c8c01",
+    "build/colour-desktop/cg3-layers/results.json": "b06363241546ecaa2fb73236f9097f4e7be2f8bd1cd445ab461e066932c6f889",
+    "build/colour-desktop/final-demo/colour-session-results.json": "1c762e67264a26644f50eea9ed00301190cd8718a09595b9ebf739aee6960f7f",
+    "build/colour-desktop/final-demo/exec816-demo.zip": "62adb485d08cbae10c0ece007b4962020b04c54db167a7e459c582d319a402f4",
+    "build/colour-desktop/release-feedback/feedback-results.json": "616ad87f2c99fba906fe494af964dd5dde8b0dd602fb734b1bd7f00467cc19d3",
+    "build/colour-desktop/final-session.log": "6fa9216eeb6cb284d6d1a10d252557bfc62d89365b24792674bc2d4767225db5",
+    "build/colour-desktop/preview/colour-session-results.json": "63f229480198949695092660b3fdca5ad52a1bd74afa5db44fc121eb4009af9c",
+    "build/colour-desktop/preview/exec816-demo.zip": "e11f80de35b973bd6cc9d83fd0ced8a4e1aaf773e513747ce77a9f8c92865df3",
+    "build/colour-desktop/preview-feedback/feedback-results.json": "a1077023595d72094688a3b5d782b18e988f0bb915f080bb6e515aa90135aa0f"
+  },
+  "validation_scope": "Native ownership/input/context/layer fixtures, then packaged desktop walkthrough including clipped background selection, independent folders, full/restore, scrolling, child survival, background/menu and orderly exit."
+}

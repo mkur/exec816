@@ -4,6 +4,16 @@ The [colour desktop roadmap](../../roadmap.md#colour-gem-desktop-roadmap) starts
 with the [CG1 icon design](colour-icons-design.md) and
 [implementation plan](colour-icons-plan.md): standard application-owned icons,
 clipped VBXE bitmap drawing and classic resource support at 640×240.
+The [CG2 Files design](colour-files-design.md) and [plan](colour-files-plan.md)
+reuse that support for icon/list views, double-click opening and fuller/info
+window furniture.
+The [CG3 desktop design](colour-desktop-design.md) and
+[plan](colour-desktop-plan.md) separate application and window lifetimes and
+reuse Files for a persistent desktop. The [CG4 launcher design](colour-launcher-design.md)
+and [plan](colour-launcher-plan.md) cover independent launches, file operations
+and saved settings.
+All four milestones are implemented and development-checked. Their plans link
+the source/artifact records, memory accounting, walkthroughs and measured limits.
 
 The [rendering performance plan](text-run-fast-path-plan.md) follows
 the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,

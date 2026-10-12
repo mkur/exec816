@@ -1,16 +1,41 @@
 MODULE SHELLAPP
 USE AESBOOT
 USE DESKBOOT
+USE DESKTOP
+USE DESKTYPES
 
 INCLUDE "shell/shell-session.inc"
 INCLUDE "shell/shell-boot.inc"
 
 LONGINT exitStatus
+DESKTYPES.Request placement
+
+; Keep the desktop's volume column visible. The shell moves its own window
+; through the ordinary desktop API before starting application children.
+PROC PlaceShell()
+  EXEC.Message POINTER message
+  DESKTYPES.Request POINTER reply
+
+  LET binding=DESKBOOT.Binding()
+  DESKTOP.Prepare(@placement,DESKTYPES.MOVE)
+  placement.window=DESKBOOT.WindowId()
+  placement.bounds.left=112
+  placement.bounds.top=40
+  IF DESKTOP.Submit(binding,@placement)<>DESKTYPES.OK THEN
+    RETURN
+  FI
+  reply=DESKTOP.Collect(binding)
+  WHILE reply=NULL DO
+    message=EXEC.WaitPort(binding.replies)
+    reply=DESKTOP.Collect(binding)
+  OD
+RETURN
 
 ; DesktopStart/Stop are linked by the resident C application builder.
 PROC Main()
 
   IF ShellBootStart(shellCon)<>0 THEN
+    PlaceShell()
     IF DesktopStart()=0 THEN
       ShellText(shell.console,c"GEM desktop unavailable")
       ShellByte(shell.console,ASCII.LF)

@@ -119,10 +119,80 @@ titles, compact scrollbars, coloured icons and Desk / File / View / Options
 menus. Design the layout for this mode; a higher-resolution display is not a
 prerequisite. Use a restrained palette with clear text and selection contrast.
 
-CG1 icon support is implemented and development-checked. The next milestones
-are Files icon/list views (CG2), a persistent desktop with multiple folder
-windows (CG3), and independent launches, file operations and saved settings
-(CG4). See the [icon design and plan](plans/gem4xe/README.md).
+The [AES application service](reference/aes.md),
+[VDI binding](reference/gem-vdi.md) and Files already provide menus, window
+switching, resizing, vertical scrolling, dialogs, resource loading, directory
+navigation and application launching. The milestones below extend that working
+system. CG1–CG4 are implemented and development-checked; release and hardware
+qualification remain separate.
+The per-milestone [design notes and plans](plans/gem4xe/README.md)
+record scope, ownership decisions and verification.
+
+1. **CG1 — Standard GEM icons and bitmap rendering.** Add `G_ICON` / `ICONBLK`
+   drawing, foreground/background colours, selected state, labels and icon
+   relocation in RSC files. Reuse suitable GEM4XE routines and the existing
+   clipped VBXE drawing path. Start with folder, application and document
+   icons; richer multicolour icon formats can follow. Completion means compiled
+   and resource-loaded icons draw correctly when selected, clipped or exposed,
+   including odd-X placement, beside other applications.
+2. **CG2 — An icon view in Files.** Reuse the bounded directory snapshot and
+   existing navigation/dialog code. Add a compact icon grid, icon/list views,
+   sorting, keyboard navigation and standard AES double-click opening. Add
+   checked View menu choices, a directory information line (`INFO` / `WF_INFO`)
+   and full/restore (`FULLER` / `WM_FULLED`). Reflow the grid on resize and reuse
+   vertical scrolling; add horizontal gadgets when content requires them.
+   Completion means one directory window provides the reference desktop's
+   appearance and basic interaction with Exec paths such as `SYS:` and `C:`.
+3. **CG3 — A persistent desktop with several directory windows.** Evolve the
+   Files code into a desktop application that owns the background, volume and
+   launcher icons, and several directory windows. Route background input and
+   show its menu when no ordinary window is active. Extend AES beyond one
+   window per registration, covering per-window events, lifetimes, visible
+   rectangles and VDI clipping. Prepare a focused ownership design note before
+   this change. Keep directory windows in one application Task, with their
+   state in upper RAM. The implementation uses six shared window slots plus two menu layers.
+   Completion means two directory windows operate independently, focus and
+   exposure restore correctly, and closing the last folder leaves a usable
+   desktop.
+4. **CG4 — Everyday launching and file management.** Let the persistent desktop
+   supervise a bounded collection of programs through the existing
+   Program/Process APIs. Closing a directory window must leave its launched
+   applications running. Launch Panel, Calculator and other applications on
+   demand; retain the shell as an accessible application. Extend the existing
+   text association into a small file-association table, add Copy/Delete with
+   error reporting and cancellation, and save view/sort and desktop preferences
+   in a simple configuration file. Follow with multiple selection and dragging
+   in separate slices. Completion means users can browse, launch independent
+   applications, manage files and restore saved preferences after restart.
+
+Keep the desktop a GEM client using standard OBJECT/RSC/AES/VDI interfaces,
+with Exec DOS paths and Exec process lifetimes. Extend the supported subset as
+these milestones require it, preserving the goal of small source changes for
+GEM applications. Reuse existing services and helpers; correct use of live
+pointers, handles and object trees remains the caller's responsibility. Check
+resource-file extents during loading and preserve operational errors and
+ownership synchronization without repeated validation in drawing paths.
+
+Selection should repaint only the previous and new icon cells. Bound exposure
+and scrolling work, and evaluate caching static icon bitmaps in VRAM. Measure
+selection, opening, scrolling and background restoration with concurrent shell
+and application activity. Record latency medians and p95 as well as rendering
+work; the [rendering performance record](history/gem-rendering-performance.md)
+provides the current starting point.
+
+Desktop copy throughput is another follow-up: profile its alternating 512-byte
+Read/Write requests on accurately timed media, including metadata publication,
+before increasing the work unit. Preserve useful Cancel and event handling;
+the larger shell COPY buffer is a throughput reference, not an automatic choice
+for a GUI event loop.
+
+Implement each milestone in executable slices with a design note and plan
+proportionate to the change. Account for upper-RAM/VRAM use and report reserved
+bank-zero changes, including zero, with per-Task costs separate. Extra directory
+windows should not require extra Tasks. Review application/window limits and
+stack headroom when increasing concurrency. Keep the standard OF816 five-second
+shell/prime autoboot; evolve the optional GEM desktop package through these
+milestones.
 
 ## Desktop usability milestones
 
@@ -496,7 +566,7 @@ The other possible milestones have no delivery order:
 - **Arithmetic in latency-sensitive paths.** Measure software multiply,
   divide and remainder helper calls in the optimized presenter and timer paths
   before attributing GUI delays to them. First candidates are the
-  [layer-selection counter](../lib/desktop/deskpaint.act) (`MOD 5`, currently
+  [layer-selection counter](../lib/desktop/deskpaint.act) (`MOD SLOT_COUNT`, now nine layer slots; currently
   a 16-iteration helper), [console cursor coordinates](../lib/console/consoledisplay.act)
   (separate division and remainder on the same operands), and repaint row
   offsets (`row*width`). Consider bounded increment/wrap, shared coordinate
