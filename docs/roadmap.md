@@ -62,6 +62,12 @@ seconds. See the [read-range results](history/ide-read-ranges.md) for cache-only
 costs, failure isolation and bounded cancellation. Existing-file overwrite
 batching is deferred; refreshing the demo packages follows the read work.
 
+The proposed [MyDOS performance plan](plans/mydos-performance-implementation-plan.md)
+addresses duplicate VTOC publication, repeated bitmap loads, metadata byte
+copies, allocation arithmetic and unnecessary seek/validation work. MP0–MP6
+retain current storage and commit limits. MyDOS size caching, grouped
+reclamation and buffer consolidation remain separate follow-ups.
+
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent
 background cancellation and bounded RUN/JOBS/BREAK support. The loadable

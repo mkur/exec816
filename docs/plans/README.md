@@ -132,6 +132,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [MyDOS performance](mydos-performance-implementation-plan.md): proposed
+  MP0–MP6 slices for fewer VTOC writes, native metadata copies, retained bitmap
+  pages, cheaper allocation scans, cursor reuse and validation of established
+  state. Shared buffer sizes and four-sector extension limits remain unchanged.
 - [Bounded IDE read ranges design](ide-read-ranges-design.md): implemented four-sector
   regular-file reads through shared staging, with cache boundaries and explicit
   failure/cancellation semantics. The [RR1–RR4 plan](ide-read-ranges-implementation-plan.md)
