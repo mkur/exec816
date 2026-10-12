@@ -62,6 +62,9 @@ A quick completion is allowed only when IOF_QUICK was supplied. It completes
 inline and sends no reply. Deferred work clears IOF_QUICK. Every non-quick request,
 including an immediate error, completes with exactly one reply.
 
+Provide a live buffer with capacity for the requested transfer. Drivers trust
+caller-owned pointers after request/binding creation; SIO validates wire lengths,
+direction, profile and timeout, without walking the buffer RAM map.
 Keep the descriptor, data buffer, reply port and device binding alive until
 collection. Publication can allow another Task to run before SendIO returns;
 do not treat return from submission as ownership returning to the sender.
@@ -92,8 +95,8 @@ io_Offset must be zero.
 
 | Profile | Supported transaction size |
 | --- | --- |
-| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
-| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52) or verified WRITE ($57). |
+| FASTEST125 | Up to 128 bytes, plus exactly 256 for READ ($52), PUT ($50) or verified WRITE ($57). |
+| GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52), PUT ($50) or verified WRITE ($57). |
 | STOCK810 | Up to 128 bytes. |
 | HAPPY1050 | Restricted no-data transactions. |
 
@@ -101,6 +104,10 @@ These are explicit peripheral/timing profiles, not automatic baud negotiation.
 Profile selection also bounds timeout and command forms. Disk geometry and the
 peripheral must agree; see the [block adapter](block-io.md). A nominal speed is
 not qualification for every emulator or physical drive.
+
+Filesystem writes use PUT `$50`, without drive-side readback verification.
+Transfer checksums, acknowledgements and terminal device status remain required.
+Raw callers may explicitly request verified WRITE `$57`.
 
 A zero timeout selects one second for FASTEST125/HAPPY1050 and two seconds for
 STOCK810/GENERIC57600. Those are also the maximum explicit values; the minimum

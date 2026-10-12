@@ -39,7 +39,7 @@ describes transfer geometry, not firmware bootability.
 The ATR header is a host-container detail, not guest filesystem data. Do not infer
 geometry from VTOC free counts or probe it with mismatched wire lengths. STATUS/
 PERCOM discovery is outside the current contract. Profile-specific 256-byte READ
-and verified WRITE support is described in [device I/O](device-io.md#siodevice).
+and WRITE support is described in [device I/O](device-io.md#siodevice).
 
 ## Transfers and retained data
 
@@ -48,15 +48,45 @@ Success requires both no I/O error and exactly the expected byte count. A short
 or failed response supplies no valid sector, even if some wire bytes arrived.
 Framing and checksums remain the SIO driver's responsibility.
 
-BeginStore stages one complete sector and sends verified WRITE `$57`. It rejects
-overlapping requests and invalid source extents before submission. Invalidate
+BeginStore borrows one complete sector and sends SIO PUT `$50`, without readback
+verification. IDE uses ATA WRITE with terminal status and any required cache
+flush, also without automatic readback. BeginStore rejects
+overlapping requests and invalid geometry before submission. Sources are live
+caller-owned complete-sector buffers and stay immutable until FinishStore
+collects the reply; the adapter does not walk their RAM map or stage another
+copy. A cancelled request retains that borrow until its terminal reply.
+Invalidate
 the scratch tag and all cached pieces of that sector first; FinishStore publishes
-replacement bytes only after an error-free, exact-length terminal completion.
-Writes use the same upper-RAM buffer and request as reads, with no write-back
+replacement bytes from the submitted source only after an error-free,
+exact-length terminal completion. Scratch is tagged only if it was the source.
+Writes reuse the same request as reads, with no write-back
 queue or additional reservation. The [filesystem writers](filesystem-writes.md)
 use these operations to commit data and metadata on explicitly writable mounts.
 
-The filesystem service owns one reusable transfer request and 512-byte upper-RAM
+BeginStoreRange/FinishStoreRange borrow up to four complete adjacent IDE sectors.
+Every affected cache tag is retired before submission; successful full completion
+publishes each sector from its part of the actual source span. Failed or short
+completion invalidates the volume. SIO accepts only the single-sector path.
+SpartaDOS coalesces contiguous new payload reservations within its existing
+four-sector extension group. Partial final sectors and fragmented reservations
+remain individual transfers; metadata publication and confirmed file prefixes
+are unchanged. No range staging buffer or larger request record is allocated.
+
+BeginFetchRange/FinishFetchRange use the shared 2048-byte staging buffer for up to
+four adjacent IDE sectors. The in/out count is reduced to one on a first-sector
+hit, or shortened before any later retained sector. Presence probes do not copy
+bytes or change cache counters; admitted misses are counted once per sector.
+Exact successful completion publishes each sector and tags only the first in
+scratch. Failure publishes none and invalidates retained data for that volume.
+Availability is checked before hits, including with the cache disabled. SIO
+remains single-sector.
+
+The filesystem Workspace carries the admitted count alongside its needed sector
+until completion and consumption. Metadata and MyDOS requests set the count to
+one; SDFS selects bounded regular-file ranges from its current validated map.
+Operation startup, retirement and payload consumption reset the count to one.
+
+The filesystem service owns one reusable transfer request and 2048-byte upper-RAM
 buffer. Each mount retains its owning device-open request. Transfers borrow that
 binding without copying Message links and cannot reuse the request or buffer
 until exact reply collection. Filesystem validation precedes copying payload to

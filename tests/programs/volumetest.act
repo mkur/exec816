@@ -1,0 +1,6 @@
+; Transport observations belong only to the focused statistics fixture.
+MODULE VOLUMETEST
+PUBLIC BYTE armed
+PUBLIC CARD reads,writes
+PUBLIC INT failure
+ENDMODULE

@@ -1,0 +1,617 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "revision": "bd8c31aec8b8178dc30bbabcb83267090b1870e2",
+  "scope": "Pinned PAL 8x 65C816 IDE Plus emulator, native 512-byte partitions, 16 KiB loaded COPY, fresh destination, no PRIMES. Source Open through target Close; program loading and driver setup excluded.",
+  "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "compiler_override": false,
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "bytes": 16384,
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+    "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+    "cop0_after_xce": 50931
+  },
+  "emulator": {
+    "revision": "4029341ac382c88d5836cb21f3bb7c6468ce9674",
+    "platform": "macOS arm64",
+    "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+    "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+    "build_record": "toolchain/altirra-build.json",
+    "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+    "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+  },
+  "ideplus": {
+    "revision": "e",
+    "pbi_id": 0,
+    "master": true,
+    "firmware": "IDE Plus BIOS 2.1 20251231",
+    "firmware_sha256": "00ee56b1cd8bc5283a6561f87beea1e8c1bfe09453a4bafbed24889bbf0e4039",
+    "firmware_url": "https://drac030.krap.pl/ideplus-bios-20251231.arc",
+    "flash_bytes": 131072
+  },
+  "source_bytes": 23872,
+  "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+  "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+  "cache_blocks": 512,
+  "matched_comparison": {
+    "previous_ide_driver": "45161d1, current remaining libraries and command",
+    "previous_seconds": 3.94,
+    "current_seconds": 3.02,
+    "previous_frames": 197,
+    "current_frames": 151,
+    "elapsed_reduction_percent": 23.3502538071066,
+    "throughput_increase_percent": 30.4635761589404,
+    "throughput_kib_per_second": 7.719370860927152,
+    "previous_counts": {
+      "startFrame": 112,
+      "endFrame": 309,
+      "ataReads": 115,
+      "ataWrites": 61,
+      "ataFlushes": 0,
+      "prepReads": 0,
+      "verifyReads": 61,
+      "completedWrites": 61,
+      "cacheHits": 48,
+      "cacheMisses": 54,
+      "cacheEvictions": 4
+    },
+    "current_counts": {
+      "startFrame": 110,
+      "endFrame": 261,
+      "ataReads": 54,
+      "ataWrites": 61,
+      "ataFlushes": 0,
+      "prepReads": 0,
+      "verifyReads": 0,
+      "completedWrites": 61,
+      "cacheHits": 48,
+      "cacheMisses": 54,
+      "cacheEvictions": 4
+    }
+  },
+  "raw_driver_baseline": {
+    "seconds": 0.98,
+    "frames": 49,
+    "reads": 47,
+    "writes": 47,
+    "bytes": 24064,
+    "scope": "Driver-only sequential sector copy, no filesystem or cache. Setup/teardown excluded; final sector copied with its padding."
+  },
+  "phase_observation": {
+    "seconds": 3.04,
+    "observer_overhead_frames": 1,
+    "counts": {
+      "startFrame": 112,
+      "endFrame": 264,
+      "ataReads": 54,
+      "ataWrites": 61,
+      "ataFlushes": 0,
+      "prepReads": 0,
+      "verifyReads": 0,
+      "completedWrites": 61,
+      "traceCount": 115,
+      "readyCalls": 345,
+      "statusReads": 345,
+      "delayCalls": 0,
+      "cacheHits": 48,
+      "cacheMisses": 54,
+      "cacheEvictions": 4
+    },
+    "breakdown": [
+      {
+        "volume": "SYS",
+        "direction": "read",
+        "phase": "directory",
+        "count": 1
+      },
+      {
+        "volume": "SYS",
+        "direction": "read",
+        "phase": "map",
+        "count": 2
+      },
+      {
+        "volume": "SYS",
+        "direction": "read",
+        "phase": "payload",
+        "count": 47
+      },
+      {
+        "volume": "WORK",
+        "direction": "read",
+        "phase": "bitmap",
+        "count": 1
+      },
+      {
+        "volume": "WORK",
+        "direction": "read",
+        "phase": "directory",
+        "count": 1
+      },
+      {
+        "volume": "WORK",
+        "direction": "read",
+        "phase": "header",
+        "count": 1
+      },
+      {
+        "volume": "WORK",
+        "direction": "read",
+        "phase": "map",
+        "count": 1
+      },
+      {
+        "volume": "WORK",
+        "direction": "write",
+        "phase": "bitmap",
+        "count": 3
+      },
+      {
+        "volume": "WORK",
+        "direction": "write",
+        "phase": "directory",
+        "count": 5
+      },
+      {
+        "volume": "WORK",
+        "direction": "write",
+        "phase": "header",
+        "count": 3
+      },
+      {
+        "volume": "WORK",
+        "direction": "write",
+        "phase": "map",
+        "count": 3
+      },
+      {
+        "volume": "WORK",
+        "direction": "write",
+        "phase": "payload",
+        "count": 47
+      }
+    ]
+  },
+  "profile_observation": {
+    "kernel_calls": 2580,
+    "task_switches": 306,
+    "os_calls": 0,
+    "instructions": 10771228,
+    "pio_word_pairs": 29440,
+    "board_selections": 30536,
+    "limitation": "Pinned bridge truncates profile addresses to 16 bits; no reliable exclusive percentages for upper-bank routines are claimed."
+  },
+  "findings": [
+    "Verification removal cuts elapsed time by 23.35% on matched inputs.",
+    "Every Ready check returns on its first status read; no timer sleeps or flushes on the cache-free emulated medium.",
+    "47 payload reads and 47 payload writes are contiguous. Metadata totals 7 reads and 14 writes.",
+    "Driver-only data copy is about one second; full filesystem copy is about three seconds. Filesystem/block-layer overhead is inferred to be substantial; these are not identical workloads because full COPY includes metadata and lifecycle operations.",
+    "COPY already uses 16 KiB and two Write requests for this file. Moving to a buffer larger than this file could save one publication sequence (four metadata writes), without reducing single-sector driver transfers."
+  ],
+  "priorities": [
+    "Profile sequential filesystem/cache paths with reliable bank-aware or scoped timing before choosing individual routine changes.",
+    "Add bounded contiguous range transfers through the block/IDE interfaces to reduce per-sector request, dispatch and map/cache work while preserving metadata publication ordering.",
+    "Evaluate short native PIO bursts to amortize board selection while retaining IRQ/NMI safety."
+  ],
+  "production_changes": false,
+  "bank_zero_reservation_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "validation": "Successful COPY and phase runs independently audit persisted file bytes/allocation; driver-only run compares the entire disk image. Guards, ownership cleanup and OS restoration pass. Development evidence only; volatile-cache hardware speed is not measured.",
+  "artifacts": {
+    "current": "build/ide-copy-performance/current/results.json",
+    "with_verification": "build/ide-copy-performance/with-verification/results.json",
+    "phases": "build/ide-copy-performance/phases/results.json",
+    "sector_trace": "build/ide-copy-performance/phases/events.json",
+    "raw_driver": "build/ide-copy-performance/raw/results.json",
+    "cpu_profile": "build/ide-copy-performance/profile/profile.json"
+  },
+  "service_observation": {
+    "artifact": "services/results.json",
+    "total": 2580,
+    "histogram": {
+      "FORBID": 851,
+      "PERMIT": 851,
+      "GET_MSG": 273,
+      "WAIT": 169,
+      "WAIT_REQUEST": 163,
+      "PUT_MSG": 123,
+      "REPLY_MSG": 123,
+      "CONTEXT": 21,
+      "ALLOC_MEM": 4,
+      "FREE_MEM": 2
+    },
+    "exclusion_pairs": 851,
+    "exclusion_entries": 1702,
+    "exclusion_share_percent": 65.97,
+    "scope": "Same emitted build and fresh media; debugger tracing matches gateway counter delta; timing unusable."
+  },
+  "warm_ide": {
+    "guest_frames": 122,
+    "guest_seconds": 2.44,
+    "counts": {
+      "startFrame": 173,
+      "endFrame": 295,
+      "ataReads": 4,
+      "ataWrites": 61,
+      "ataFlushes": 0,
+      "prepReads": 0,
+      "verifyReads": 0,
+      "completedWrites": 61,
+      "cacheHits": 98,
+      "cacheMisses": 4,
+      "cacheEvictions": 4
+    },
+    "allocation": {
+      "sectors": 1440,
+      "sector_bytes": 512,
+      "allocated": 54,
+      "free": 1386,
+      "files": 2,
+      "directories": 1
+    },
+    "warm_source": true
+  },
+  "consume_baseline": {
+    "cases": {
+      "full128": {
+        "bytes": 128,
+        "samples": 32,
+        "uninterrupted": 27,
+        "interrupted": 5,
+        "uninterrupted_us": {
+          "setup": {
+            "min_us": 66.74852229908132,
+            "median_us": 69.7088580293468,
+            "mean_us": 68.94136358075944,
+            "max_us": 72.38725702339651
+          },
+          "loop": {
+            "min_us": 2142.930647791942,
+            "median_us": 2252.251617259603,
+            "mean_us": 2221.1707026171507,
+            "max_us": 2255.000500437707
+          },
+          "bookkeeping": {
+            "min_us": 24.246559314555405,
+            "median_us": 25.021885339148746,
+            "mean_us": 25.434348342131063,
+            "max_us": 27.559315965090594
+          },
+          "total": {
+            "min_us": 2234.207666141794,
+            "median_us": 2347.2642973643146,
+            "mean_us": 2315.5464145400415,
+            "max_us": 2351.1409274872813
+          }
+        },
+        "elapsed_us": {
+          "setup": {
+            "min_us": 66.74852229908132,
+            "median_us": 69.6031317532659,
+            "mean_us": 68.7881583751422,
+            "max_us": 72.38725702339651
+          },
+          "loop": {
+            "min_us": 2142.930647791942,
+            "median_us": 2252.322101443657,
+            "mean_us": 2301.7865802342612,
+            "max_us": 2755.7906281409514
+          },
+          "bookkeeping": {
+            "min_us": 24.246559314555405,
+            "median_us": 24.986643247121776,
+            "mean_us": 25.297214183109453,
+            "max_us": 27.559315965090594
+          },
+          "total": {
+            "min_us": 2234.207666141794,
+            "median_us": 2347.828170836746,
+            "mean_us": 2395.8719527925127,
+            "max_us": 2849.9574980370153
+          }
+        }
+      },
+      "tail55": {
+        "bytes": 55,
+        "samples": 32,
+        "uninterrupted": 29,
+        "interrupted": 3,
+        "uninterrupted_us": {
+          "setup": {
+            "min_us": 71.61193099880317,
+            "median_us": 74.43129836096078,
+            "mean_us": 74.26845559090512,
+            "max_us": 76.8982448028487
+          },
+          "loop": {
+            "min_us": 921.7216748733752,
+            "median_us": 968.0297837968138,
+            "mean_us": 954.0593324195019,
+            "max_us": 969.7918883981623
+          },
+          "bookkeeping": {
+            "min_us": 57.86751510828485,
+            "median_us": 60.54591410233457,
+            "mean_us": 59.98933209721898,
+            "max_us": 62.871892176114606
+          },
+          "total": {
+            "min_us": 1051.4125735326252,
+            "median_us": 1104.62813249335,
+            "mean_us": 1088.317120107626,
+            "max_us": 1107.2360473033457
+          }
+        },
+        "elapsed_us": {
+          "setup": {
+            "min_us": 71.61193099880317,
+            "median_us": 74.43129836096078,
+            "mean_us": 74.01940641039556,
+            "max_us": 76.8982448028487
+          },
+          "loop": {
+            "min_us": 921.7216748733752,
+            "median_us": 968.8051098214071,
+            "mean_us": 987.8688789772463,
+            "max_us": 1510.9694535643146
+          },
+          "bookkeeping": {
+            "min_us": 57.86751510828485,
+            "median_us": 60.54591410233457,
+            "mean_us": 78.1999995770949,
+            "max_us": 646.6219045108468
+          },
+          "total": {
+            "min_us": 1051.4125735326252,
+            "median_us": 1104.6986166774036,
+            "mean_us": 1140.0882849647369,
+            "max_us": 1640.5898680395105
+          }
+        }
+      },
+      "full256": {
+        "bytes": 256,
+        "samples": 32,
+        "uninterrupted": 23,
+        "interrupted": 9,
+        "uninterrupted_us": {
+          "setup": {
+            "min_us": 66.74852229908132,
+            "median_us": 69.56788966123892,
+            "mean_us": 68.73433757155753,
+            "max_us": 72.03483610312682
+          },
+          "loop": {
+            "min_us": 4284.733548639021,
+            "median_us": 4504.150813598937,
+            "mean_us": 4461.140138677326,
+            "max_us": 4505.419528911907
+          },
+          "bookkeeping": {
+            "min_us": 24.246559314555405,
+            "median_us": 25.585758811580266,
+            "mean_us": 25.561242573648464,
+            "max_us": 26.50205320428149
+          },
+          "total": {
+            "min_us": 4375.728630252658,
+            "median_us": 4599.797851360134,
+            "mean_us": 4555.435718822532,
+            "max_us": 4601.630440145536
+          }
+        },
+        "elapsed_us": {
+          "setup": {
+            "min_us": 66.74852229908132,
+            "median_us": 69.63837384529286,
+            "mean_us": 68.73749786785343,
+            "max_us": 72.03483610312682
+          },
+          "loop": {
+            "min_us": 4284.733548639021,
+            "median_us": 4504.855655439475,
+            "mean_us": 4584.789125418148,
+            "max_us": 4960.8883262684685
+          },
+          "bookkeeping": {
+            "min_us": 24.246559314555405,
+            "median_us": 25.092369523202688,
+            "mean_us": 25.295011552357767,
+            "max_us": 26.50205320428149
+          },
+          "total": {
+            "min_us": 4375.728630252658,
+            "median_us": 4600.467451108646,
+            "mean_us": 4678.8216348383585,
+            "max_us": 5055.407617084802
+          }
+        }
+      }
+    },
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0
+    },
+    "scope": "Actual SDFS Consume; root only, resident upper-RAM records/buffers, IRQ/NMI enabled, no disk or other workers. Uninterrupted elapsed instruction time includes machine bus timing; not an ideal CPU-cycle model."
+  },
+  "sio_baseline": {
+    "status": "pass",
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "filesystem": "sdfs",
+    "sector_bytes": 256,
+    "bytes": 23872,
+    "source_sha256": "68b61983af36bd449d50199fc84d5d831651709fa639f2bb802cf2ce43b3aee4",
+    "rows": [
+      {
+        "case": "16384-cold-create",
+        "guest_pal_frames": 1953,
+        "guest_seconds": 39.06,
+        "counts": {
+          "startFrame": 607,
+          "endFrame": 2560,
+          "maxGroupWrites": 8,
+          "reads": 101,
+          "writes": 108,
+          "readBytes": 25728,
+          "writeBytes": 27264,
+          "logicalReads": 50,
+          "payloadVisits": 0,
+          "cacheHits": 48,
+          "cacheMisses": 101,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 66,
+          "kernelCalls": 29691,
+          "taskSwitches": 1170
+        },
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 3,
+            "header": 3,
+            "map": 3,
+            "directory": 5,
+            "payload": 94
+          }
+        },
+        "allocation": {
+          "sectors": 720,
+          "sector_bytes": 256,
+          "allocated": 103,
+          "free": 617,
+          "files": 2,
+          "directories": 1
+        }
+      },
+      {
+        "case": "16384-warm-create",
+        "guest_pal_frames": 1043,
+        "guest_seconds": 20.86,
+        "counts": {
+          "startFrame": 1452,
+          "endFrame": 2495,
+          "maxGroupWrites": 8,
+          "reads": 4,
+          "writes": 108,
+          "readBytes": 896,
+          "writeBytes": 27264,
+          "logicalReads": 50,
+          "payloadVisits": 0,
+          "cacheHits": 145,
+          "cacheMisses": 4,
+          "cacheEvictions": 4,
+          "maxGroupRequests": 8,
+          "maxGroupFrames": 66,
+          "kernelCalls": 15681,
+          "taskSwitches": 638
+        },
+        "physical_breakdown": {
+          "target-read": {
+            "directory": 2,
+            "bitmap": 1,
+            "header": 1
+          },
+          "target-write": {
+            "bitmap": 3,
+            "header": 3,
+            "map": 3,
+            "directory": 5,
+            "payload": 94
+          }
+        },
+        "allocation": {
+          "sectors": 720,
+          "sector_bytes": 256,
+          "allocated": 103,
+          "free": 617,
+          "files": 2,
+          "directories": 1
+        }
+      }
+    ]
+  },
+  "mydos_baseline": {
+    "status": "pass",
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "filesystem": "mydos",
+    "sector_bytes": 128,
+    "bytes": 23872,
+    "source_sha256": "68b61983af36bd449d50199fc84d5d831651709fa639f2bb802cf2ce43b3aee4",
+    "rows": [
+      {
+        "case": "16384-cold-create",
+        "guest_pal_frames": 3922,
+        "guest_seconds": 78.44,
+        "counts": {
+          "startFrame": 597,
+          "endFrame": 4519,
+          "maxGroupWrites": 7,
+          "reads": 99,
+          "writes": 341,
+          "readBytes": 25088,
+          "writeBytes": 43648,
+          "logicalReads": 444,
+          "payloadVisits": 98,
+          "cacheHits": 294,
+          "cacheMisses": 99,
+          "cacheEvictions": 2,
+          "maxGroupRequests": 7,
+          "maxGroupFrames": 71,
+          "kernelCalls": 50115,
+          "taskSwitches": 2452
+        },
+        "physical_breakdown": {
+          "source-read": {
+            "directory": 2,
+            "map": 1,
+            "payload": 94
+          },
+          "target-read": {
+            "directory": 1,
+            "header": 1
+          },
+          "target-write": {
+            "header": 50,
+            "payload": 241,
+            "directory": 50
+          }
+        },
+        "allocation": {
+          "sectors": 720,
+          "sector_bytes": 128,
+          "allocated": 207,
+          "free": 513,
+          "files": 2,
+          "directories": 1
+        }
+      }
+    ]
+  }
+}

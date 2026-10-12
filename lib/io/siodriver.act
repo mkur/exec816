@@ -8,7 +8,6 @@ USE EXECPRODUCER
 USE TASKSTACKS
 USE SIOADAPTER
 USE HEAPCORE
-USE EXECMEMORY
 INCLUDE "sio-storage-action.inc"
 INCLUDE "io-storage-action.inc"
 
@@ -27,34 +26,6 @@ TYPE Descriptor=[
 INCLUDE "sio-requests.inc"
 INCLUDE "sio-lifetime.inc"
 
-; Validate the entire DMA-independent transfer buffer against the RAM map.
-BYTE FUNC SIOMapped(BYTE POINTER data LONGCARD bytes)
-  EXECMEMORY.BankRecord info
-  CARD first,last,index
-
-  IF data=BYTE POINTER(0) OR bytes>LONGCARD($1000000)-LONGCARD(ADDRESS(data)) THEN
-    RETURN(0)
-  FI
-
-  first=CARD(ADDRESS(data) RSH 16)
-  last=CARD((LONGCARD(ADDRESS(data))+bytes-1) RSH 16)
-  ; Initial DMA-free profile uses physical upper RAM, with no bank-zero bounce.
-  IF first=0 THEN
-    RETURN(0)
-  FI
-
-  FOR index=first TO last DO
-    IF EXECMEMORY.Query(index,@info)<>0 THEN
-      RETURN(0)
-    FI
-
-    IF info.state=0 THEN
-      RETURN(0)
-    FI
-  OD
-
-RETURN(1)
-
 ; Derive the byte extent required by the selected SIO direction.
 BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
 
@@ -66,8 +37,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
     RETURN(1)
   FI
 
-  ; Admit only the supported double-density sector commands. PUT and arbitrary
-  ; transactions retain their smaller payload limit.
+  ; Admit only supported double-density sector reads and writes. Raw callers
+  ; may explicitly request drive verification; filesystem writes use PUT.
   IF sio.io_Length<>256 THEN
     RETURN(0)
   FI
@@ -78,7 +49,8 @@ BYTE FUNC PayloadLength(EXEC.IOSIOReq POINTER sio)
   FI
 
 RETURN((sio.sio_Direction=EXEC.SIODIR_READ AND sio.sio_Command=$52)
-    OR (sio.sio_Direction=EXEC.SIODIR_WRITE AND sio.sio_Command=$57))
+    OR (sio.sio_Direction=EXEC.SIODIR_WRITE
+        AND (sio.sio_Command=$50 OR sio.sio_Command=$57)))
 
 ; Generic disk operations include motor startup, seek and rotation.
 ; Keep that mechanical allowance separate from serial byte/phase timing.
@@ -140,10 +112,6 @@ BYTE FUNC SIOValidate(EXEC.IORequest POINTER request)
 
   IF PayloadLength(sio)=0 THEN
     RETURN(BYTE(EXEC.IOERR_BADLENGTH))
-  FI
-
-  IF SIOMapped(sio.io_Data,sio.io_Length)=0 THEN
-    RETURN(BYTE(EXEC.IOERR_BADADDRESS))
   FI
 
 RETURN(0)
@@ -363,9 +331,15 @@ PUBLIC PROC Worker()
   Notify(bus)
   EXEC.Permit()
   bits=0
-  WHILE Stopping(bus,self,bits)=0 DO
-    bits=0
+  DO
+    EXEC.Forbid()
+    IF Stopping(bus,self,bits)<>0 THEN
+      EXEC.Permit()
+      EXIT
+    FI
     request=EXEC.IOSIOReq POINTER(Claim())
+    EXEC.Permit()
+    bits=0
     IF request=EXEC.IOSIOReq POINTER(0) THEN
       bits=EXEC.Wait(LONGCARD(WAKE_MASK))
     ELSE

@@ -141,6 +141,20 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [Bounded IDE read ranges design](ide-read-ranges-design.md): implemented four-sector
+  regular-file reads through shared staging, with cache boundaries and explicit
+  failure/cancellation semantics. The [RR1–RR4 plan](ide-read-ranges-implementation-plan.md)
+  completes device, adapter, filesystem and matched measurements at the
+  development tier. See the [results](../history/ide-read-ranges.md).
+  Existing-file overwrite batching is deferred.
+- [Filesystem and DOS performance](filesystem-dos-performance-implementation-plan.md):
+  FP0–FP5 and selected FP6 changes are complete at the development tier, including
+  shared bulk copies, simpler validation, targeted metadata invalidation, cheaper
+  selected-file checks, direct sector transfers and bounded IDE writes. See the
+  [execution record](../history/filesystem-dos-performance.md).
+- [IDE diagnostics](ide-diagnostics-implementation-plan.md): D1–D3 implemented;
+  retained controller, capacity, APT and mount-failure observations for verbose
+  boot and hardware reports. [Development record](../history/ide-diagnostics.md).
 - [IDE 512-byte sector refactor](ide-512-sector-refactor-plan.md): completed
   I512-0–I512-4 slices replacing packed IDE sectors with direct 512-byte SDFS
   volumes, shared buffer/cache support and firmware-loader verification.
@@ -223,6 +237,9 @@ assuming work is pending. Current behavior belongs in the
 
 ## Programs and shell
 
+- [INFO command](info-command-implementation-plan.md): completed I1–I4;
+  copied public volume queries, metadata-based disk statistics, a loadable
+  command and distinct demo SYS/WORK labels. No filesystem scan or new Task.
 - [Background commands, console panes and primes](background-pane-primes-implementation-plan.md):
   completed foundations for positioned writes, height changes, owned panes,
   cancellable background Processes and one shell job, followed by loadable

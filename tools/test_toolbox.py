@@ -160,7 +160,7 @@ def vectors(name):
     return cases
 
 
-def fixture(out,name,cases):
+def fixture(out,name,cases,faults=False):
     out.mkdir(parents=True,exist_ok=True)
     for source,target in [('toolbox_state.act','toolboxstate.act'),('toolbox_calls.act','doscalls.act')]:
         (out/target).write_text(read_source(ROOT/'tests/programs'/source))
@@ -186,8 +186,9 @@ ENDMODULE
     api=read_source(ROOT/'lib/dos/programapi.act').replace('MODULE PROGRAMAPI','MODULE COMMAND').replace('USE EXEC\n','').replace('USE PROCESS\n','USE TOOLBOXSTATE AS T\n')
     api=api.replace('PROCESS.GetArgStr()','CSTRING(@T.scenario.arguments(0))').replace('  EXEC.Yield()','')
     declarations=read_source(ROOT/'lib/dos/command.act').split('PUBLIC EXTERNAL')[0].replace('MODULE COMMAND','')
-    api=api.replace('USE DOSFAULT\n','')
-    api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
+    if not faults:
+        api=api.replace('USE DOSFAULT\n','')
+        api=api[:api.index('PUBLIC LONGINT FUNC Fault(')]+api[api.index('PUBLIC LONGINT FUNC ReadArgsOrHelp('):]
     marker='; Explicit task-only providers.'
     require(api.count(marker)==1,'Stale command provider declaration marker')
     api=api.replace(marker,declarations+'\n'+marker)

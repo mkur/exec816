@@ -23,6 +23,7 @@ PUBLIC PROC BeginOperation(FSBTYPES.Operation POINTER op BYTE kind,stage)
 
   op.work.error=0
   op.work.ioError=0
+  op.work.neededCount=1
   op.start=op.file.position
   op.completed=0
   op.result=-1
@@ -44,6 +45,7 @@ PUBLIC BYTE FUNC FinishOperation(FSBTYPES.Operation POINTER op)
   FI
 
   op.stage=0
+  op.work.neededCount=1
 
 RETURN(FSSTATUS.DONE)
 

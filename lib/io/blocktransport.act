@@ -60,6 +60,22 @@ PUBLIC PROC DeviceName(BYTE backend BYTE POINTER name)
 
 RETURN
 
+PUBLIC BYTE FUNC WriteLimit(BLOCKTYPES.Volume POINTER volume)
+
+  IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    RETURN(IDEPLUS.MAX_WRITE_SECTORS)
+  FI
+
+RETURN(1)
+
+PUBLIC BYTE FUNC ReadLimit(BLOCKTYPES.Volume POINTER volume)
+
+  IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    RETURN(IDEPLUS.MAX_READ_SECTORS)
+  FI
+
+RETURN(1)
+
 ; Prepare the common prefix and the selected device's sector command.
 PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volume
     LONGCARD sector CARD expected BYTE POINTER buffer BYTE writing)
@@ -75,7 +91,15 @@ PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volu
   IF volume.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
     request.io_Offset=sector-1
     request.io_Command=IDEPLUS.READ_SECTOR
-    IF writing<>0 THEN request.io_Command=IDEPLUS.WRITE_SECTOR FI
+    IF expected>512 THEN
+      request.io_Command=IDEPLUS.READ_SECTORS
+    FI
+    IF writing<>0 THEN
+      request.io_Command=IDEPLUS.WRITE_SECTOR
+      IF expected>512 THEN
+        request.io_Command=IDEPLUS.WRITE_SECTORS
+      FI
+    FI
     RETURN
   FI
 ; IF SIO
@@ -84,7 +108,7 @@ PUBLIC PROC Prepare(EXEC.IOStdReq POINTER request BLOCKTYPES.Volume POINTER volu
   sio.sio_Command=$52
   sio.sio_Direction=EXEC.SIODIR_READ
   IF writing<>0 THEN
-    sio.sio_Command=$57
+    sio.sio_Command=$50
     sio.sio_Direction=EXEC.SIODIR_WRITE
   FI
 
@@ -134,10 +158,23 @@ PUBLIC INT FUNC CheckGeometry(BLOCKTYPES.Volume POINTER volume BYTE POINTER buff
   IF error=0 THEN
     BEGIN
       LET geometry=IDEPLUS.Geometry POINTER(buffer)
-      IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) OR geometry.bytes<>volume.dataBytes
-          OR geometry.sectors<>volume.sectors THEN error=EXEC.IOERR_BADLENGTH
-      ELSEIF volume.access<>0 AND ((geometry.flags & IDEPLUS.FLAG_READONLY)<>0
-          OR (geometry.flags & IDEPLUS.FLAG_DURABLE)=0) THEN error=IDEPLUS.ERROR_PROTECTED
+      LET adapter=BLOCKTYPES.Adapter POINTER(volume.adapter)
+      IF request.io_Actual<>SIZEOF(IDEPLUS.Geometry) THEN
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF geometry.bytes<>volume.dataBytes THEN
+        adapter.admission=BLOCKTYPES.ADMIT_BYTES
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF geometry.sectors<>volume.sectors THEN
+        adapter.admission=BLOCKTYPES.ADMIT_COUNT
+        error=EXEC.IOERR_BADLENGTH
+      ELSEIF volume.access<>0 THEN
+        IF (geometry.flags & IDEPLUS.FLAG_DURABLE)=0 THEN
+          adapter.admission=BLOCKTYPES.ADMIT_DURABLE
+          error=IDEPLUS.ERROR_PROTECTED
+        ELSEIF (geometry.flags & IDEPLUS.FLAG_READONLY)<>0 THEN
+          adapter.admission=BLOCKTYPES.ADMIT_PROTECTED
+          error=IDEPLUS.ERROR_PROTECTED
+        FI
       FI
     END
   FI

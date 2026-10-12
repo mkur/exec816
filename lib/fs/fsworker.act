@@ -142,6 +142,9 @@ PROC Finish(DOSCORE.DosRegistry POINTER registry FSTYPES.Service POINTER service
     BYTE action)
 
   registry.error=service.error
+  IF action=FSSTATUS.STOP THEN
+    FSINIT.RecordFailure(service)
+  FI
   FSINIT.Cleanup(service)
   EXEC.FreeMem(BYTE POINTER(service),SIZEOF(FSTYPES.Service))
   registry.runtime=BYTE POINTER(0)

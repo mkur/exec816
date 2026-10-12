@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 14,
+  "version": 15,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -454,6 +454,32 @@
         ]
       ],
       "result": "LONGINT"
+    },
+    "GetVolume": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "CARD",
+          "index"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
+    },
+    "Info": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "lock"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
     }
   },
   "limits": {

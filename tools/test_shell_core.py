@@ -82,7 +82,7 @@ ENDMODULE
 def instrument(out,source='shell_core.act'):
     cooked_observer(out)
     s=(ROOT/'examples/shell/shell-session.inc').read_text().replace('USE EXEC\n','USE EXEC\nUSE SHELLEDITPROBE\n',1).replace('PROC ShellWrite(','PROC NativeShellWrite(').replace('LONGINT FUNC ShellFinish()', 'LONGINT FUNC NativeShellFinish()')
-    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-redirection.inc','shell-path.inc'):
+    for name in ('shell-execute.inc','shell-jobs.inc','shell-commands.inc','shell-mount-diagnostics.inc','shell-redirection.inc','shell-path.inc'):
         s=s.replace('"'+name+'"','"'+str(ROOT/'examples/shell'/name)+'"')
     s=s.replace('BYTE FUNC ShellOpen(BYTE POINTER consoleName)','BYTE FUNC ShellOpen(BYTE POINTER consoleName)\n  SHELLEDITPROBE.Bind(@captureCount,@consumed,@suspend,@stage,@gate)')
     command_step='      ShellCommand()\n      ShellClear()'
@@ -157,7 +157,8 @@ def run(t,out,mode,bank=2,size=128,no_mount=False,smoke=False,eof=None,external=
     if memory_profile is None:
         # Match the demo's 4 KiB upper-RAM arena for shell/help and observers.
         profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-        profile['image_data_bytes']=4096
+        from build_demo import DEMO_IMAGE_DATA_BYTES
+        profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES
         memory_profile=out/'shell-memory.json'
         memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     p=read_build(out) if reuse else build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,

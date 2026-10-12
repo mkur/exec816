@@ -9,12 +9,12 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,pointer_description,ide_only_guide
 from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
 
-DEMO_IMAGE_DATA_BYTES = 4352
+DEMO_IMAGE_DATA_BYTES = 6400
 WORK_SECTORS = 2880
 WORK_SECTOR_BYTES = 256
 IDE_DEMO_NOTE = ('\nThis development build also requires IDE Plus 2.0 rev E, PBI ID 0,\n'
@@ -51,11 +51,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         sector_bytes=512
     system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
-    require(not release_compiler or not bitmap_shell_only,
-            'The explicit release compiler option currently supports standard-console builds')
+    require(not release_compiler or not desktop,
+            'The explicit release compiler option supports standalone text and bitmap shells')
     require(not (ideplus and ide_only),'Select mixed IDE or IDE-only storage')
-    require(not ide_only or (text_shell_only and filesystem=='sdfs' and system_kib==720),
-            'IDE-only requires --text-shell-only and 720 KiB SDFS; IDE sectors are always 512 bytes')
+    require(not ide_only or (shell_only and not desktop and filesystem=='sdfs' and system_kib==720),
+            'IDE-only requires a standalone text or bitmap shell and 720 KiB SDFS; IDE sectors are always 512 bytes')
     require(not ideplus or text_shell_only,
             'The initial IDE development profile requires --text-shell-only')
     toolchain=compiler(compiler_dir,release=release_compiler)
@@ -69,7 +69,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'EXEC816.XEX').unlink(missing_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','PRIMES')+(('TICK',) if gem_desktop else ()):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','INFO','PRIMES')+(('TICK',) if gem_desktop else ()):
         command_source=ROOT/'examples/gem-browser/tick.act' if name=='TICK' else ROOT/f'examples/commands/{name.lower()}.act'
         commands[name]=compile_command(toolchain,command_source,command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))
@@ -116,7 +116,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
     make(output/'work.atr',workspace,filesystem=filesystem,
-         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS)
+         sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
     mounts.append(dict(alias='WORK',unit=56,sectors=WORK_SECTORS,sector_bytes=WORK_SECTOR_BYTES,
                        profile=4,format=1 if filesystem=='mydos' else 2,access='readwrite'))
     if ideplus:
@@ -131,7 +131,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                      sectors=1440,sector_bytes=512,access='readwrite'),
                 dict(alias='RAM',format=3)]
         (workspace/'README.TXT').write_text('Disposable IDE WORK: partition.\nBack up ideplus.img before experimenting.\n')
-        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440)
+        make(output/'work.atr',workspace,filesystem='sdfs',sector_bytes=512,sectors=1440,label='WORK')
     # Compile from the staging directory so unrelated example filenames do not
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
@@ -160,9 +160,15 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         else:builder=build_bitmap
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
-            system_mount=mount_config.get('system_mount'),memory_profile=memory_profile)
+            system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,
+            sio_enabled=not ide_only,**({'release_compiler':release_compiler} if not desktop else {}))
         copy_notices(output/'bitmap-console/selected',output)
-        pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
+        bitmap_pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
+        if ide_only:
+            pin['devices']+=bitmap_pin['devices']
+            pin['machine']['addons']=bitmap_pin['machine']['addons']
+        else:
+            pin=bitmap_pin
     else:
         program=build(toolchain,source,output,optimize=True,tasks=True,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
@@ -195,13 +201,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             'Application licence: GPL-2.0-or-later.\n')
     require({p.relative_to(media).as_posix() for p in media.rglob('*') if p.is_file()}==binary_names|{p.relative_to(ROOT/'examples/demo-disk').as_posix() for p in sources}|({'VIEW.TXT'} if gem_desktop else set()),'Unexpected stale file in demo media directory')
     try:files=make(output/disk_name,media,binary_names=binary_names,filesystem=filesystem,
-                   sector_bytes=sector_bytes,sectors=system_sectors)
+                   sector_bytes=sector_bytes,sectors=system_sectors,label='SYS')
     except StopIteration as error:raise ValueError('Demo media does not fit the system ATR') from error
     if ideplus:
         from ideplus_media import filesystem_fixture
         fixture=output/'ideplus';fixture.mkdir(exist_ok=True)
         make(fixture/'system.atr',media,binary_names=binary_names,filesystem='sdfs',
-             sector_bytes=512,sectors=system_kib*1024//512)
+             sector_bytes=512,sectors=system_kib*1024//512,label='SYS')
         raw,mapping=filesystem_fixture((fixture/'system.atr').read_bytes())
         (fixture/'ideplus.img').write_bytes(raw)
         (fixture/'mounts.json').write_text(json.dumps(dict(system_mount=mount_config.get('system_mount'),mounts=mounts),indent=2)+'\n')
@@ -250,7 +256,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         guide=(ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@',disk_name)
         guide=guide.replace('@POINTER_DESCRIPTION@',pointer_description(program['build']['desktop_mouse']['profile']))
     if ide_only:
-        guide=(ROOT/'docs/ide-only-distribution.txt').read_text()
+        guide=ide_only_guide(bitmap_shell_only)
     (output/'README.md').write_text(guide)
     if ideplus:
         with (output/'README.md').open('a') as note:
@@ -274,7 +280,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                for name,payload in files.items()},
         source_inputs={str(path.relative_to(ROOT)):sha256(path) for path in
                        [ROOT/'examples/demo.act',ROOT/'examples/demo-session.inc',ROOT/'examples/shell/shell-session.inc',
-                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
+                        ROOT/'examples/shell/shell-commands.inc',ROOT/'examples/shell/shell-mount-diagnostics.inc',ROOT/'examples/shell/shell-redirection.inc',ROOT/'examples/shell/shell-path.inc',ROOT/'examples/shell/shell-jobs.inc',ROOT/'examples/shell/shell-execute.inc',ROOT/'examples/shell/shell-boot.inc',
                         *(ROOT/'examples/commands'/name for name in ('command-common.inc','command-files.inc','command-write.inc','command-transfer.inc','command-pattern.inc')),
                         ROOT/'docs/guides/demo.md',ROOT/'docs/demo.png',ROOT/'docs/images/demo-boot.png',ROOT/'docs/demo-distribution.txt',
                         ROOT/'tools/package_demo.py',ROOT/'LICENSE',ROOT/'LICENSE-MIT',ROOT/'LICENSING.md',
@@ -379,7 +385,7 @@ def finalize_ide_media(output,record):
     (output/'media/EXEC816.XEX').write_bytes(xex)
     binary_names={'C/'+name for name in record['commands']}|{'EXEC816.XEX'}
     files=make(output/'system.atr',output/'media',binary_names=binary_names,
-               filesystem='sdfs',sector_bytes=512,sectors=1440)
+               filesystem='sdfs',sector_bytes=512,sectors=1440,label='SYS')
     record['files']['EXEC816.XEX']=dict(bytes=len(xex),sha256=hashlib.sha256(xex).hexdigest())
     record['ide_mapping']=write(output/'ideplus.img',output/'system.atr',output/'work.atr')
     for name in ('system.atr','system.verification.json','ideplus.img'):
@@ -413,7 +419,7 @@ def refresh_monitor(output):
             'Changed native demo artifacts')
     if record.get('ide_only'):
         guide=ROOT/'docs/ide-only-distribution.txt'
-        (output/'README.md').write_text(guide.read_text())
+        (output/'README.md').write_text(ide_only_guide(record.get('bitmap',False)))
         record['artifacts']['README.md']=sha256(output/'README.md')
         record['source_inputs']['docs/ide-only-distribution.txt']=sha256(guide)
         record['monitor_refresh']=dict(native_xex_sha256=sha256(output/'program.xex'),
@@ -423,7 +429,9 @@ def refresh_monitor(output):
         path.write_text(json.dumps(record,indent=2)+'\n')
         build_monitor(output/'of816',output,ROOT/'build/of816-upstream')
         finalize_ide_media(output,record)
-        package(output/'of816',output/record['distribution'],text_shell=output)
+        package(output/'of816',output/record['distribution'],
+                bitmap_shell=output if record.get('bitmap') else None,
+                text_shell=output if not record.get('bitmap') else None)
         add_ide_carts(output)
         write_launcher(output)
         return record
@@ -516,7 +524,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
-    parser.add_argument('--release-compiler',action='store_true',help='Explicit optimized host compiler build for the standard console')
+    parser.add_argument('--release-compiler',action='store_true',help='Explicit optimized host compiler build for a standalone text or bitmap shell')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
     parser.add_argument('--ideplus',action='store_true',help='Require the optional IDE: read-only development mount; fixture stays outside the ZIP')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')

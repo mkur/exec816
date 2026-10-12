@@ -45,13 +45,11 @@ CARD FUNC AccessFlags(Partition POINTER partition)
 
 RETURN(flags)
 
-; Write one complete ATA sector, then confirm durable status and every byte.
+; Drain one bounded ATA write and settle any required cache flush.
 BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request)
-  BYTE error
-  CARD index
+  BYTE error,index,count
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
-  LET c=Control()
   IF (AccessFlags(partition) & IDEPLUS.FLAG_READONLY)<>0 THEN
     RETURN(IDEPLUS.ERROR_PROTECTED)
   FI
@@ -64,8 +62,8 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   IF bus.cancelled<>0 THEN
     RETURN(BYTE(EXEC.IOERR_ABORTED))
   FI
-  A816MEMORY.Move(c.buffer,request.io_Data,512)
-  AddressSector(sector)
+  count=BYTE(request.io_Length RSH 9)
+  AddressRange(sector,count)
   EXEC.Forbid()
   IF bus.cancelled<>0 THEN
     EXEC.Permit()
@@ -74,27 +72,16 @@ BYTE FUNC WriteLogical(Partition POINTER partition EXEC.IOStdReq POINTER request
   bus.phase=3
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_WRITE)
   EXEC.Permit()
-  error=Ready($08,0)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  IDEPLUSNATIVE.WriteWords(c.buffer)
+  FOR index=0 TO count-1 DO
+    error=Ready($08,0)
+    IF error<>0 THEN
+      RETURN(error)
+    FI
+    IDEPLUSNATIVE.WriteWords(request.io_Data+(SIZE(index) LSH 9))
+  OD
   error=Ready(0,0)
   IF error<>0 THEN
     RETURN(error)
   FI
-  error=FlushPhysical()
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  error=ReadPhysical(sector)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
-  FOR index=0 TO 511 DO
-    IF c.buffer(index)<>request.io_Data(index) THEN
-      RETURN(IDEPLUS.ERROR_VERIFY)
-    FI
-  OD
 
-RETURN(0)
+RETURN(FlushPhysical())

@@ -1,0 +1,38 @@
+; Test-only terminal completion and foreground BREAK injection.
+MODULE READRANGEPROBE
+USE FSTYPES
+USE IDEMETA
+USE IDEPLUS
+USE CONSOLEFOREGROUND
+USE DOSBREAKTYPES
+PUBLIC BYTE mode,fired
+PUBLIC CARD groups
+PUBLIC DOSBREAKTYPES.Scope POINTER target
+
+PUBLIC PROC BeforeComplete(FSTYPES.Service POINTER service)
+  BYTE POINTER state
+
+  IF mode=2 AND service.work.neededCount>1 THEN
+    service.ioResult=IDEPLUS.ERROR_ATA
+    state=BYTE POINTER(ADDRESS(IDEMETA.BUS+2))
+    state^=5
+    fired=1
+  FI
+
+RETURN
+
+PUBLIC PROC AfterComplete(FSTYPES.Service POINTER service)
+  BYTE ignored
+
+  IF service.work.neededCount<2 THEN
+    RETURN
+  FI
+  groups==+1
+  IF fired=0 AND (mode=1 OR (mode=3 AND service.operation.completed>=2048)) THEN
+    fired=1
+    ignored=CONSOLEFOREGROUND.Deliver(target.generation)
+  FI
+
+RETURN
+
+ENDMODULE

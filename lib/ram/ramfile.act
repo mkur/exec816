@@ -6,7 +6,6 @@ USE FSBTYPES
 USE FSCORE
 USE FSSTATUS
 USE A816MEMORY
-USE BLOCKIO
 INCLUDE "../dos/dos-types.inc"
 
 PUBLIC RAMTYPES.Node POINTER FUNC Node(FSBTYPES.Cursor POINTER file)
@@ -48,10 +47,6 @@ PUBLIC BYTE FUNC BeginRead(FSBTYPES.Operation POINTER op)
 
   IF op.requested=0 THEN
     RETURN(FSCORE.FinishOperation(op))
-  FI
-
-  IF BLOCKIO.Mapped(op.output,LONGCARD(op.requested))=0 THEN
-    RETURN(Fail(op,ERROR_BAD_NUMBER))
   FI
 
   LET node=Node(op.file)

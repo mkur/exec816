@@ -82,9 +82,12 @@ BYTE FUNC Bitmap(FSTYPES.Service POINTER service CARD sector BYTE cached)
 
 RETURN(FSWRITEIO.Read(service,physical,state.scratch))
 
-PUBLIC BYTE FUNC Allocated(FSTYPES.Service POINTER service CARD sector)
+; cached is valid only while the selected volume and scratch contents remain
+; unchanged. Selected-file validation owns that lifetime within one call.
+PUBLIC BYTE FUNC AllocatedCached(FSTYPES.Service POINTER service CARD sector
+    BYTE cached)
 
-  IF Bitmap(service,sector,0)=0 THEN
+  IF Bitmap(service,sector,cached)=0 THEN
     RETURN(0)
   FI
 
@@ -94,6 +97,10 @@ PUBLIC BYTE FUNC Allocated(FSTYPES.Service POINTER service CARD sector)
   FI
 
 RETURN(1)
+
+PUBLIC BYTE FUNC Allocated(FSTYPES.Service POINTER service CARD sector)
+
+RETURN(AllocatedCached(service,sector,0))
 
 ; Validate the recorded count and every requested free bit before mutation.
 BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous

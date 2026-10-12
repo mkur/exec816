@@ -1,13 +1,34 @@
 MODULE IDEPLUSLAYOUT
 USE IDEPLUS
+USE FSBTYPES
 USE HEAPCORE
+FSBTYPES.Workspace work
+CARD workspaceBytes
 IDEPLUS.Geometry result
+IDEPLUS.Diagnostics diagnostic
+IDEPLUS.PartitionInfo partition
 PROC Main()
+  workspaceBytes=CARD(SIZEOF(FSBTYPES.Workspace))
+  work.neededSector=$8123
+  work.neededCount=4
+  IF ADDRESS(@work.neededCount)-ADDRESS(@work.neededSector)<>2
+      OR work.neededSector<>$8123 OR work.neededCount<>4
+      OR IDEPLUS.READ_SECTORS<>14 OR IDEPLUS.MAX_READ_SECTORS<>4 THEN
+    HEAPCORE.Abort($f903)
+  FI
   IF SIZEOF(IDEPLUS.Geometry)<>12
       OR ADDRESS(@result.flags)-ADDRESS(@result)<>2
       OR ADDRESS(@result.sectors)-ADDRESS(@result)<>4
       OR ADDRESS(@result.generation)-ADDRESS(@result)<>8 THEN
     HEAPCORE.Abort($f901)
+  FI
+  IF SIZEOF(IDEPLUS.Diagnostics)<>24
+      OR ADDRESS(@diagnostic.attempted)-ADDRESS(@diagnostic)<>12
+      OR ADDRESS(@diagnostic.ataError)-ADDRESS(@diagnostic)<>20
+      OR SIZEOF(IDEPLUS.PartitionInfo)<>16
+      OR ADDRESS(@partition.flags)-ADDRESS(@partition)<>10
+      OR ADDRESS(@partition.reason)-ADDRESS(@partition)<>15 THEN
+    HEAPCORE.Abort($f902)
   FI
 RETURN
 ENDMODULE

@@ -5,10 +5,44 @@ from test_ideplus import ide_emulator
 from ideplus_media import pattern_fixture,put_sector
 from test_cooperative import data
 from test_heap_api import clean_ownership
+from pathlib import Path
+
+
+def observe_readbacks(out):
+    """Count physical reads issued while the worker owns an accepted write."""
+    source = ROOT/'lib/io/ideplusdriver.act'
+    text = source.read_text().replace('USE EXEC\n', 'USE EXEC\nUSE IDEWRITEPROBE\n', 1)
+    for include in source.parent.glob('ideplus-*.inc'):
+        text = text.replace('"'+include.name+'"', '"'+str(include)+'"')
+    hook = 'BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination BYTE count)\n  BYTE error,index\n'
+    require(text.count(hook) == 1, 'Stale physical read observation hook')
+    text = text.replace(hook, hook+'\n  IDEWRITEPROBE.Read()\n', 1)
+    (out/'ideplusdriver.act').write_text(text)
+    (out/'idewriteprobe.act').write_text('''MODULE IDEWRITEPROBE
+USE IDEMETA
+PUBLIC CARD readbacks
+
+; The settled driver phase distinguishes explicit reads from write readbacks.
+PUBLIC PROC Read()
+
+  LET phase=BYTE POINTER(ADDRESS(IDEMETA.BUS+10))
+  IF phase^=3 THEN
+    readbacks==+1
+  FI
+
+RETURN
+ENDMODULE
+''')
+    source = ROOT/'tests/programs/ideplus_write.act'
+    target = out/source.name
+    target.write_text(source.read_text())
+    return target
+
+
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=__import__('pathlib').Path,default=ROOT/'build/development/ideplus-ip4/sectors');v=a.parse_args()
+    a=argparse.ArgumentParser();a.add_argument('--reuse',action='store_true');a.add_argument('--output',type=Path,default=ROOT/'build/development/ideplus-ip4/sectors');v=a.parse_args()
     out=v.output;out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out) if v.reuse else build(compiler(ROOT/'build/actionc',release=True),ROOT/'tests/programs/ideplus_write.act',out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
+    p=read_build(out) if v.reuse else build(compiler(ROOT/'build/actionc',release=True),observe_readbacks(out),out,optimize=True,tasks=True,task_capacity=8,image_data=[(0x2dfff0,bytes([0xa5])*512)])
     for protected,failed in ((False,False),(True,False),(False,True)):
         dest=out/('failed-write' if failed else 'protected' if protected else 'writable');dest.mkdir(exist_ok=True)
         original,maps=pattern_fixture(readonly=protected);expected=bytearray(original);disk=dest/'ide.img';disk.write_bytes(original)

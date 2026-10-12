@@ -1,6 +1,6 @@
 {
   "abi": "exec816.ideplus.device",
-  "revision": 1,
+  "revision": 4,
   "state_bytes": 1024,
   "pbi_id": 0,
   "hardware_revision": "e",
@@ -9,7 +9,8 @@
     "BUS": 16,
     "UNITS": 80,
     "TASK": 512,
-    "CONTROL": 640
+    "CONTROL": 640,
+    "DIAGNOSTICS": 704
   },
   "constants": {
     "READ_SECTOR": 10,
@@ -22,7 +23,6 @@
     "ERROR_ATA": 3,
     "ERROR_PROTECTED": 4,
     "ERROR_UNSUPPORTED": 5,
-    "ERROR_VERIFY": 6,
     "ERROR_OFFLINE": 7,
     "TIMEOUT_TICKS": 250,
     "REG_ERROR": 17,
@@ -39,7 +39,47 @@
     "ATA_WRITE": 48,
     "ATA_IDENTIFY": 236,
     "ATA_FEATURES": 239,
-    "ATA_FLUSH": 231
+    "ATA_FLUSH": 231,
+    "STAGE_NONE": 0,
+    "STAGE_WORKER": 1,
+    "STAGE_RESOURCES": 2,
+    "STAGE_TIMER": 3,
+    "STAGE_CONTROLLER": 4,
+    "STAGE_IDENTIFY": 5,
+    "STAGE_APT": 6,
+    "STAGE_READY": 7,
+    "STAGE_TRANSFER": 8,
+    "REASON_NONE": 0,
+    "REASON_WORKER": 1,
+    "REASON_RESOURCES": 2,
+    "REASON_TIMER": 3,
+    "REASON_CONTROLLER_ABSENT": 4,
+    "REASON_DISK_ABSENT": 5,
+    "REASON_TIMEOUT": 6,
+    "REASON_ATA": 7,
+    "REASON_NOT_LBA": 8,
+    "REASON_SECTOR_SIZE": 9,
+    "REASON_CAPACITY": 10,
+    "REASON_NO_APT": 11,
+    "REASON_CONTAINER": 12,
+    "REASON_HEADER": 13,
+    "REASON_LINK": 14,
+    "REASON_CYCLE": 15,
+    "REASON_ENTRY": 16,
+    "REASON_TABLE_OVERLAP": 17,
+    "REASON_PARTITION_OVERLAP": 18,
+    "REASON_CHAIN_SHORT": 19,
+    "REASON_REVISION": 20,
+    "SLOT_EMPTY": 0,
+    "SLOT_DELETED": 1,
+    "SLOT_NOT_DOS": 2,
+    "SLOT_INACTIVE": 3,
+    "SLOT_SECTOR_SIZE": 4,
+    "SLOT_READY": 5,
+    "WRITE_SECTORS": 13,
+    "MAX_WRITE_SECTORS": 4,
+    "READ_SECTORS": 14,
+    "MAX_READ_SECTORS": 4
   },
   "records": {
     "Geometry": {
@@ -67,6 +107,153 @@
           8
         ]
       ]
+    },
+    "Diagnostics": {
+      "size": 24,
+      "alignment": 2,
+      "fields": [
+        [
+          "sectors",
+          "LONGCARD",
+          0
+        ],
+        [
+          "lba",
+          "LONGCARD",
+          4
+        ],
+        [
+          "generation",
+          "LONGCARD",
+          8
+        ],
+        [
+          "attempted",
+          "BYTE",
+          12
+        ],
+        [
+          "controller",
+          "BYTE",
+          13
+        ],
+        [
+          "disk",
+          "BYTE",
+          14
+        ],
+        [
+          "apt",
+          "BYTE",
+          15
+        ],
+        [
+          "stage",
+          "BYTE",
+          16
+        ],
+        [
+          "reason",
+          "BYTE",
+          17
+        ],
+        [
+          "slot",
+          "BYTE",
+          18
+        ],
+        [
+          "status",
+          "BYTE",
+          19
+        ],
+        [
+          "ataError",
+          "BYTE",
+          20
+        ],
+        [
+          "boardStatus",
+          "BYTE",
+          21
+        ],
+        [
+          "state",
+          "BYTE",
+          22
+        ],
+        [
+          "durable",
+          "BYTE",
+          23
+        ]
+      ]
+    },
+    "PartitionInfo": {
+      "size": 16,
+      "alignment": 2,
+      "fields": [
+        [
+          "start",
+          "LONGCARD",
+          0
+        ],
+        [
+          "sectors",
+          "LONGCARD",
+          4
+        ],
+        [
+          "bytes",
+          "CARD",
+          8
+        ],
+        [
+          "flags",
+          "CARD",
+          10
+        ],
+        [
+          "offset",
+          "CARD",
+          12
+        ],
+        [
+          "unit",
+          "BYTE",
+          14
+        ],
+        [
+          "reason",
+          "BYTE",
+          15
+        ]
+      ]
     }
+  },
+  "write_sectors": {
+    "command": 13,
+    "sector_bytes": 512,
+    "maximum_sectors": 4,
+    "offset": "first zero-based partition sector",
+    "length": "512 through 2048 bytes, multiple of 512",
+    "success_actual": "full requested length after terminal status and any required flush",
+    "failure_actual": 0,
+    "failure_prefix": "none guaranteed; physical sectors may have changed",
+    "cancellation": "queued/preparing only; issued ATA write drains its complete bounded range",
+    "timeout": "existing per-wait deadline, bounded by maximum sector count"
+  },
+  "read_sectors": {
+    "command": 14,
+    "sector_bytes": 512,
+    "maximum_sectors": 4,
+    "offset": "first zero-based sector within the opened unit",
+    "length": "512 through 2048 bytes, multiple of 512",
+    "success_actual": "full requested length after all PIO sectors and terminal status",
+    "failure_actual": 0,
+    "failure_prefix": "none valid; destination may have changed",
+    "cancellation": "queued/preparing may retire; issued reads drain before aborted reply",
+    "failure_recovery": "issued range ATA error, timeout or absent media requires cold reset",
+    "timeout": "existing per-wait deadline; at most six waits for four sectors"
   }
 }

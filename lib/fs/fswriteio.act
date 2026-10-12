@@ -59,6 +59,8 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service LONGINT error)
     service.selected.offline=1
     service.selected.writable=0
     service.selected.error=error
+    SDFS.Invalidate(service.work)
+    BLOCKIO.Invalidate(service.adapter)
   FI
 
   IF BLOCKTRANSPORT.Unavailable(service.selected.block)<>0 THEN
@@ -104,18 +106,28 @@ PUBLIC BYTE FUNC Read(FSTYPES.Service POINTER service CARD sector
 
 RETURN(1)
 
-PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
-    BYTE POINTER source)
+; The worker retains this source until the exact terminal reply is collected.
+BYTE FUNC Store(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source BYTE metadata,count)
   LONGINT error
+  BYTE index,status
 
   IF Checkpoint(service)=0 THEN
     RETURN(0)
   FI
 
   ; Retire completed metadata before this sector can be physically changed.
-  SDFS.Invalidate(service.work)
-  IF BLOCKIO.BeginStore(service.adapter,service.selected.block,LONGCARD(sector),
-      source)=0 THEN
+  FOR index=0 TO count-1 DO
+    SDFS.InvalidateSector(service.work,sector+CARD(index),metadata)
+  OD
+  IF count=1 THEN
+    status=BLOCKIO.BeginStore(service.adapter,service.selected.block,
+        LONGCARD(sector),source)
+  ELSE
+    status=BLOCKIO.BeginStoreRange(service.adapter,service.selected.block,
+        LONGCARD(sector),source,count)
+  FI
+  IF status=0 THEN
     RETURN(Failed(service,service.adapter.error))
   FI
 
@@ -123,25 +135,38 @@ PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
   service.changed=1
   error=LONGINT(BLOCKWIRE.TransferCommitted(service.adapter.request,
       DOSCORE.GetRegistry(),FSACTIVE.CurrentScope(service)))
-  error=BLOCKIO.FinishStore(service.adapter,service.selected.block,
-      LONGCARD(sector),error)
-  SDFS.Invalidate(service.work)
+  IF count=1 THEN
+    error=BLOCKIO.FinishStore(service.adapter,service.selected.block,
+        LONGCARD(sector),error)
+  ELSE
+    error=BLOCKIO.FinishStoreRange(service.adapter,service.selected.block,
+        LONGCARD(sector),count,error)
+  FI
   IF error<>0 THEN
     RETURN(Failed(service,error))
   FI
 
 RETURN(1)
 
+PUBLIC BYTE FUNC Write(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source)
+
+RETURN(Store(service,sector,source,1,1))
+
+PUBLIC BYTE FUNC WritePayload(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source)
+
+RETURN(Store(service,sector,source,0,1))
+
+; Only complete adjacent payload sectors enter this bounded commit unit.
+PUBLIC BYTE FUNC WritePayloadRange(FSTYPES.Service POINTER service CARD sector
+    BYTE POINTER source BYTE count)
+
+RETURN(Store(service,sector,source,0,count))
+
 PUBLIC PROC Zero(BYTE POINTER buffer CARD bytes)
-  CARD index
 
-  IF bytes=0 THEN
-    RETURN
-  FI
-
-  FOR index=0 TO bytes-1 DO
-    buffer(index)=0
-  OD
+  A816MEMORY.Clear(buffer,SIZE(bytes))
 
 RETURN
 

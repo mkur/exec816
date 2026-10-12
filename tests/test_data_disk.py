@@ -2,6 +2,7 @@ import json,sys,tempfile,unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'tools'))
 from make_data_disk import make
+from sector_images import ATRImage
 class DataDisk(unittest.TestCase):
     def test_sdfs_byte_readback_and_text_normalization(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -22,4 +23,12 @@ class DataDisk(unittest.TestCase):
             self.assertEqual(make(root/'mydos.atr',source,filesystem='mydos'),{'A.TXT':b'a\n'})
             for options in ({'sector_bytes':1024},{'sector_bytes':512,'filesystem':'mydos'},{'filesystem':'unknown'}):
                 with self.assertRaises(ValueError):make(root/'bad.atr',source,**options)
+    def test_sdfs_labels_readback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);source=root/'source';source.mkdir()
+            for size,label in ((128,'SYS'),(256,'WORK'),(512,'ABCDEFGH')):
+                image=root/f'{size}.atr'
+                make(image,source,sector_bytes=size,label=label)
+                self.assertEqual(bytes(ATRImage(image.read_bytes()).sector(1)[22:30]),
+                                 label.ljust(8).encode('ascii'))
 if __name__=='__main__':unittest.main()

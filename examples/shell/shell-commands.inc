@@ -387,6 +387,7 @@ PROC ShellMounts(DOS.FileHandle POINTER output)
   IF count=0 THEN
     ShellText(output,c"No mounted filesystems")
     ShellByte(output,ASCII.LF)
+    ShellMountFailure(output)
     RETURN
   FI
 
@@ -440,9 +441,16 @@ PROC ShellMounts(DOS.FileHandle POINTER output)
     FI
 
     ShellByte(output,ASCII.LF)
+    IF rows(index).offline<>0 AND rows(index).error<>0 THEN
+      ShellText(output,c"  ")
+      ShellMountError(output,rows(index).error)
+    FI
+
     IF shell.status<>PROCESS.RETURN_OK THEN
       EXIT
     FI
   OD
+
+  ShellMountFailure(output)
 
 RETURN

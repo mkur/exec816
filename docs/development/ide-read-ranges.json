@@ -1,0 +1,1364 @@
+{
+  "tier": "development",
+  "status": "complete",
+  "compiler_pin": "toolchain/actionc.json",
+  "platform_pin": "toolchain/altirra-ideplus.json",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "rr1": {
+    "cases": {
+      "opt/terminal-read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          22
+        ],
+        "completed_pio_spans": 4,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "opt/read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          10270
+        ],
+        "completed_pio_spans": null,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "opt/mid-read/results.json": {
+        "status": "pass",
+        "mode": "opt",
+        "checks": [
+          22
+        ],
+        "completed_pio_spans": 3,
+        "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "raw/read/results.json": {
+        "status": "pass",
+        "mode": "raw",
+        "checks": [
+          10270
+        ],
+        "completed_pio_spans": null,
+        "image_sha256": "150e91e973d7109d5d93a34065cd7569ca17268e498c4518b2778e6b3c1d0e02",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "b952f13a6283523df542f75f84148a19c9b72ec4600fc9783cce1ecea06729c8"
+      },
+      "lifetime/nmi-7/results.json": {
+        "status": "pass",
+        "case": "nmi-7",
+        "checks": [
+          4124
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/mixed/results.json": {
+        "status": "pass",
+        "case": "mixed",
+        "checks": [
+          4128
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/timeout/results.json": {
+        "status": "pass",
+        "case": "timeout",
+        "checks": [
+          11
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      },
+      "lifetime/nmi-4/results.json": {
+        "status": "pass",
+        "case": "nmi-4",
+        "checks": [
+          4124
+        ],
+        "image_sha256": "29ee908305564847b938cb1d5e48f650562146a8b3e1e51a8ad1bb183ac19f38",
+        "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "source_sha256": "76a35b1206d6969645972258752ee5dabe57dcf088c03bee54926bed64406189"
+      }
+    },
+    "host_tests": 447,
+    "worker_bound": {
+      "status": "pass",
+      "tier": "development",
+      "image_sha256": "ed80c518501e3a387ee1b87052684eb01ffc4399e20f3ae0a059c2268fd4412f",
+      "ordinary_call_bound": 486,
+      "interrupt_reserve": 256,
+      "dispatch_margin": 16,
+      "total_bound": 758,
+      "reservation": 1024,
+      "headroom": 266,
+      "deepest_path": [
+        "M_IDEPLUSDRIVER_WORKER_15BAA73B",
+        "M_IDEPLUSDRIVER_HARDWAREINIT_E5936689",
+        "M_IDEPLUSDRIVER_DISCOVERPARTITIONS_099B333B",
+        "M_IDEPLUSDRIVER_READTABLE_8F132069",
+        "M_IDEPLUSDRIVER_READPHYSICAL_AF100A8C",
+        "M_IDEPLUSDRIVER_READINTO_2F34BE35",
+        "M_IDEPLUSDRIVER_READY_595A9D50",
+        "M_IDEPLUSDRIVER_DELAY_7543300C",
+        "io_do_io",
+        "M_IOCORE_DOIO_173DC4A1",
+        "M_IOCORE_START_4033F51A",
+        "M_IOCORE_SUBMIT_5D7CB97A",
+        "M_IORESIDENT_BEGINIO_914C855C",
+        "M_TIMERDRIVER_BEGINIO_9C55068D",
+        "M_TIMERDRIVER_RELATIVE_61FE9928",
+        "__a816_mul_u32_v2"
+      ],
+      "unreachable_timer_binding_branches": [
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_SIODRIVER_START_4928F5B4"
+        ],
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_IDEPLUSDRIVER_START_F9A39B11"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_SIODRIVER_OPEN_9AA3F320"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_IDEPLUSDRIVER_OPEN_8E428247"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_SIODRIVER_BEGINIO_E1378755"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_IDEPLUSDRIVER_BEGINIO_7F64FCE0"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_SIODRIVER_CLOSE_01A37B96"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_IDEPLUSDRIVER_CLOSE_BC3392CF"
+        ]
+      ],
+      "visited_entries": 99,
+      "assumptions": [
+        "IDE worker opens only its immutable timer.device request",
+        "IORESIDENT callbacks on this worker therefore select timer.device",
+        "COP policy switches to the reserved kernel stack; interrupt frames use the 256-byte reserve",
+        "Emitted worker paths use direct calls; known targets match every compiler call-map entry"
+      ]
+    }
+  },
+  "rr2": {
+    "upper_buffer_delta": 1536,
+    "host_tests": 447,
+    "cases": {
+      "adapter": {
+        "status": "pass",
+        "checks": [
+          6696
+        ],
+        "image_sha256": "4623e6a3b7b3d9d2379f2e0738a7b7e9af95f93a40d607761c4c5a2ee8e56099",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      },
+      "allocation": {
+        "status": "pass",
+        "checks": [
+          2
+        ],
+        "image_sha256": "f0c3dabe62c16f33b2bb9ffc50940acc707e22f4c6be67cda95f0da1d128bebe",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      },
+      "sio": {
+        "status": "pass",
+        "checks": [
+          1876
+        ],
+        "image_sha256": "813f9cf876277880dbe4b43cd7693c72df86bb9ac1c8570fe98f934b3a9988cb",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712"
+      }
+    }
+  },
+  "rr3": {
+    "host_tests": 447,
+    "workspace": {
+      "old_bytes": 172,
+      "new_bytes": 174,
+      "old_reserved": 176,
+      "new_reserved": 176
+    },
+    "upper_total_delta": 1536,
+    "cases": {
+      "normal": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 277,
+            "remaining_above_floor": 1003
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/normal/results.json"
+      },
+      "fragmented": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/fragmented/results.json"
+      },
+      "sparse": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 5,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/sparse/results.json"
+      },
+      "no-cache": {
+        "status": "pass",
+        "checks": 45094,
+        "workspace_bytes": 174,
+        "range_completions": 7,
+        "injection_fired": 0,
+        "image_sha256": "e5717eee1eda10267ff747380df248d55f215ff1c16a2da3e0f42c6e8b309078",
+        "fixture_source_sha256": "76df2892cdedf85482ae5c375a1f57ab38611155c65bdf03c728c0c1620ddadc",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 285,
+            "remaining_above_floor": 995
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 252,
+            "remaining_above_floor": 804
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/validated/no-cache/results.json"
+      },
+      "failed": {
+        "status": "pass",
+        "checks": 4107,
+        "workspace_bytes": 174,
+        "range_completions": 0,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 275,
+            "remaining_above_floor": 1005
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/failed/results.json"
+      },
+      "break-first": {
+        "status": "pass",
+        "checks": 8210,
+        "workspace_bytes": 174,
+        "range_completions": 2,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 290,
+            "remaining_above_floor": 766
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/break-first/results.json"
+      },
+      "break-middle": {
+        "status": "pass",
+        "checks": 8210,
+        "workspace_bytes": 174,
+        "range_completions": 2,
+        "injection_fired": 1,
+        "image_sha256": "62fa9c9065dcde4da5ae51b84b411044a710f919535dabff3694e634898aa2de",
+        "fixture_source_sha256": "ceac1390fcd68d64f27e9400967c644256074ec6f34e8c3bf3f2ae53c5ab419f",
+        "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 384,
+            "remaining_above_floor": 896
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 246,
+            "remaining_above_floor": 810
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 284,
+            "remaining_above_floor": 772
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 317,
+            "remaining_above_floor": 739
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 35,
+            "remaining_above_floor": 221
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 260,
+            "remaining_above_floor": 1020
+          }
+        },
+        "artifact": "build/ide-read-ranges/rr3/final-errors/break-middle/results.json"
+      }
+    },
+    "layout": {
+      "raw": {
+        "status": "pass",
+        "image_sha256": "34f2246bdf6e01234d2aba499b97b2087ed36d9563ebd7f69ecbbee496fedc09",
+        "source_sha256": "6355486ff6118aba3e92173448ed886b10e59d09e47bb3c98e7a501161b24cbb"
+      },
+      "opt": {
+        "status": "pass",
+        "image_sha256": "5c308cb7703d46fec83e6d76e270597ed01f08005a0955dd272339c0095c9165",
+        "source_sha256": "6355486ff6118aba3e92173448ed886b10e59d09e47bb3c98e7a501161b24cbb"
+      }
+    },
+    "sdfs_256": {
+      "status": "pass",
+      "image_sha256": "bc816320e3bee25af747c4df5ec880be2bdbc6943c5ef9c96bc6928560658d83"
+    }
+  },
+  "rr4": {
+    "status": "pass",
+    "host_tests": 447,
+    "baseline_revision": "9f17b4d65ef48887aa50ff22e29323dcf4067ce0",
+    "comparisons": {
+      "cold_copy": {
+        "before": {
+          "frames": 89,
+          "seconds": 1.78,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 99,
+            "endFrame": 188,
+            "ataReads": 54,
+            "ataWrites": 27,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 27,
+            "cacheHits": 47,
+            "cacheMisses": 54,
+            "cacheEvictions": 4,
+            "logicalReads": 50,
+            "kernelCalls": 1582,
+            "taskSwitches": 270
+          },
+          "image_sha256": "b55c2fcabaddbe384ef69dfabacc94ae79dd1ee3096fce0b31f66468199a88c6",
+          "fixture_source_sha256": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 54,
+            "free": 1386,
+            "files": 2,
+            "directories": 1
+          }
+        },
+        "after": {
+          "frames": 74,
+          "seconds": 1.48,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 92,
+            "endFrame": 166,
+            "ataReads": 20,
+            "ataWrites": 27,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 27,
+            "cacheHits": 47,
+            "cacheMisses": 54,
+            "cacheEvictions": 4,
+            "logicalReads": 50,
+            "kernelCalls": 1000,
+            "taskSwitches": 166
+          },
+          "image_sha256": "afb1d1d0f18c09ae868974e9f4b5162488f2a43118afd88afc907df8e2ea4704",
+          "fixture_source_sha256": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 54,
+            "free": 1386,
+            "files": 2,
+            "directories": 1
+          }
+        },
+        "before_artifact": "build/filesystem-performance/fp6/ranges/ide/results.json",
+        "after_artifact": "build/ide-read-ranges/rr4/final-proof/results.json"
+      },
+      "warm_copy": {
+        "before": {
+          "frames": 61,
+          "seconds": 1.22,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 141,
+            "endFrame": 202,
+            "ataReads": 4,
+            "ataWrites": 27,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 27,
+            "cacheHits": 97,
+            "cacheMisses": 4,
+            "cacheEvictions": 4,
+            "logicalReads": 50,
+            "kernelCalls": 764,
+            "taskSwitches": 138
+          },
+          "image_sha256": "b55c2fcabaddbe384ef69dfabacc94ae79dd1ee3096fce0b31f66468199a88c6",
+          "fixture_source_sha256": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 54,
+            "free": 1386,
+            "files": 2,
+            "directories": 1
+          }
+        },
+        "after": {
+          "frames": 61,
+          "seconds": 1.22,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 120,
+            "endFrame": 181,
+            "ataReads": 4,
+            "ataWrites": 27,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 27,
+            "cacheHits": 97,
+            "cacheMisses": 4,
+            "cacheEvictions": 4,
+            "logicalReads": 50,
+            "kernelCalls": 718,
+            "taskSwitches": 124
+          },
+          "image_sha256": "afb1d1d0f18c09ae868974e9f4b5162488f2a43118afd88afc907df8e2ea4704",
+          "fixture_source_sha256": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 54,
+            "free": 1386,
+            "files": 2,
+            "directories": 1
+          }
+        },
+        "before_artifact": "build/filesystem-performance/fp6/ranges/warm/results.json",
+        "after_artifact": "build/ide-read-ranges/rr4/final-copy-warm/results.json"
+      },
+      "cold_read": {
+        "before": {
+          "frames": 42,
+          "seconds": 0.84,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 9,
+            "endFrame": 51,
+            "ataReads": 50,
+            "ataWrites": 0,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 0,
+            "cacheHits": 0,
+            "cacheMisses": 50,
+            "cacheEvictions": 0,
+            "logicalReads": 52,
+            "kernelCalls": 941,
+            "taskSwitches": 143
+          },
+          "image_sha256": "fa267b2ad1cb01d7f46a04f8125dfdc4e26d656d529ea8955e23d198239fc3d3",
+          "fixture_source_sha256": "bf0cfe8e292276746a21048cdd092a8cce76d84bcec9991aba736904f99cb3a4",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 6,
+            "free": 1434,
+            "files": 1,
+            "directories": 1
+          }
+        },
+        "after": {
+          "frames": 28,
+          "seconds": 0.56,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 8,
+            "endFrame": 36,
+            "ataReads": 16,
+            "ataWrites": 0,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 0,
+            "cacheHits": 0,
+            "cacheMisses": 50,
+            "cacheEvictions": 0,
+            "logicalReads": 18,
+            "kernelCalls": 354,
+            "taskSwitches": 56
+          },
+          "image_sha256": "79715d9c0b7b975b26dc791b6b71e46a558f3b99644720c3affb3a1d606e9caa",
+          "fixture_source_sha256": "bf0cfe8e292276746a21048cdd092a8cce76d84bcec9991aba736904f99cb3a4",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 6,
+            "free": 1434,
+            "files": 1,
+            "directories": 1
+          }
+        },
+        "before_artifact": "build/ide-read-ranges/rr4/read-baseline/results.json",
+        "after_artifact": "build/ide-read-ranges/rr4/final-read-phases/results.json"
+      },
+      "warm_read": {
+        "before": {
+          "frames": 12,
+          "seconds": 0.24,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 50,
+            "endFrame": 62,
+            "ataReads": 0,
+            "ataWrites": 0,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 0,
+            "cacheHits": 50,
+            "cacheMisses": 0,
+            "cacheEvictions": 0,
+            "logicalReads": 51,
+            "kernelCalls": 81,
+            "taskSwitches": 6
+          },
+          "image_sha256": "fa267b2ad1cb01d7f46a04f8125dfdc4e26d656d529ea8955e23d198239fc3d3",
+          "fixture_source_sha256": "bf0cfe8e292276746a21048cdd092a8cce76d84bcec9991aba736904f99cb3a4",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 6,
+            "free": 1434,
+            "files": 1,
+            "directories": 1
+          }
+        },
+        "after": {
+          "frames": 13,
+          "seconds": 0.26,
+          "bytes": 23872,
+          "counts": {
+            "startFrame": 35,
+            "endFrame": 48,
+            "ataReads": 0,
+            "ataWrites": 0,
+            "ataFlushes": 0,
+            "prepReads": 0,
+            "verifyReads": 0,
+            "completedWrites": 0,
+            "cacheHits": 50,
+            "cacheMisses": 0,
+            "cacheEvictions": 0,
+            "logicalReads": 51,
+            "kernelCalls": 106,
+            "taskSwitches": 8
+          },
+          "image_sha256": "79715d9c0b7b975b26dc791b6b71e46a558f3b99644720c3affb3a1d606e9caa",
+          "fixture_source_sha256": "bf0cfe8e292276746a21048cdd092a8cce76d84bcec9991aba736904f99cb3a4",
+          "compiler_binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "source_sha256": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+          "command_sha256": "b94d7c8d62c551ce8c7278aa8e7cb301a365e1cab3f79b3bb6016855f19217d6",
+          "allocation": {
+            "sectors": 1440,
+            "sector_bytes": 512,
+            "allocated": 6,
+            "free": 1434,
+            "files": 1,
+            "directories": 1
+          }
+        },
+        "before_artifact": "build/ide-read-ranges/rr4/read-baseline-warm-phases/results.json",
+        "after_artifact": "build/ide-read-ranges/rr4/final-read-warm/results.json"
+      }
+    },
+    "sio": {
+      "16384-cold-create": {
+        "before": {
+          "frames": 1940,
+          "counts": {
+            "startFrame": 605,
+            "endFrame": 2545,
+            "maxGroupWrites": 8,
+            "reads": 101,
+            "writes": 108,
+            "readBytes": 25728,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 47,
+            "cacheMisses": 101,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 29221,
+            "taskSwitches": 1063
+          }
+        },
+        "after": {
+          "frames": 1940,
+          "counts": {
+            "startFrame": 604,
+            "endFrame": 2544,
+            "maxGroupWrites": 8,
+            "reads": 101,
+            "writes": 108,
+            "readBytes": 25728,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 47,
+            "cacheMisses": 101,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 29223,
+            "taskSwitches": 1058
+          }
+        }
+      },
+      "16384-warm-create": {
+        "before": {
+          "frames": 1011,
+          "counts": {
+            "startFrame": 1450,
+            "endFrame": 2461,
+            "maxGroupWrites": 8,
+            "reads": 4,
+            "writes": 108,
+            "readBytes": 896,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 144,
+            "cacheMisses": 4,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 15385,
+            "taskSwitches": 590
+          }
+        },
+        "after": {
+          "frames": 1011,
+          "counts": {
+            "startFrame": 1449,
+            "endFrame": 2460,
+            "maxGroupWrites": 8,
+            "reads": 4,
+            "writes": 108,
+            "readBytes": 896,
+            "writeBytes": 27264,
+            "logicalReads": 50,
+            "payloadVisits": 0,
+            "cacheHits": 144,
+            "cacheMisses": 4,
+            "cacheEvictions": 4,
+            "maxGroupRequests": 8,
+            "maxGroupFrames": 67,
+            "kernelCalls": 15402,
+            "taskSwitches": 595
+          }
+        }
+      }
+    },
+    "copy_pio_spans": {
+      "pio_read": 54,
+      "pio_write": 61
+    },
+    "read_pio_spans": 50,
+    "warm_read_phases": {
+      "runrequest": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      },
+      "ready": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      },
+      "addressrange": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      },
+      "exchange": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      },
+      "consume": {
+        "samples": 49,
+        "uninterrupted": 47,
+        "interrupted": 2,
+        "uninterrupted_us": {
+          "total": {
+            "min_us": 220.96791700910234,
+            "median_us": 732.5421248725999,
+            "mean_us": 697.3510214043071,
+            "max_us": 736.8416600998902
+          }
+        },
+        "elapsed_us": {
+          "total": {
+            "min_us": 220.96791700910234,
+            "median_us": 732.6126090566537,
+            "mean_us": 721.6228301551823,
+            "max_us": 1292.0455778927767
+          }
+        },
+        "estimated_uninterrupted_total_us": 34170.20004881104
+      },
+      "payloadcount": {
+        "samples": 49,
+        "uninterrupted": 49,
+        "interrupted": 0,
+        "uninterrupted_us": {
+          "total": {
+            "min_us": 24.246559314555405,
+            "median_us": 216.3159608615423,
+            "mean_us": 197.80019724639294,
+            "max_us": 220.61549608883263
+          }
+        },
+        "elapsed_us": {
+          "total": {
+            "min_us": 24.246559314555405,
+            "median_us": 216.3159608615423,
+            "mean_us": 197.80019724639294,
+            "max_us": 220.61549608883263
+          }
+        },
+        "estimated_uninterrupted_total_us": 9692.209665073255
+      },
+      "pio_read": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      },
+      "pio_write": {
+        "samples": 0,
+        "estimated_uninterrupted_total_us": 0
+      }
+    },
+    "lookahead_hoisting": {
+      "before_us": 24277.36090298698,
+      "after_us": 9692.209665073255,
+      "before_image_sha256": "a6d2b92904ccd3f8e895e56bc7d9dead90f3f212f9735bcbf11577b97e9c9384",
+      "after_image_sha256": "79715d9c0b7b975b26dc791b6b71e46a558f3b99644720c3affb3a1d606e9caa"
+    },
+    "code_bytes": {
+      "before": 914317,
+      "after": 918742,
+      "delta": 4425
+    },
+    "upper_reserved_delta": 1536,
+    "copy_stacks": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 390,
+        "remaining_above_floor": 890
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 648,
+        "remaining_above_floor": 408
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 317,
+        "remaining_above_floor": 739
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 407,
+        "remaining_above_floor": 649
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 35,
+        "remaining_above_floor": 221
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 260,
+        "remaining_above_floor": 1020
+      }
+    },
+    "worker_bound": {
+      "status": "pass",
+      "tier": "development",
+      "image_sha256": "afb1d1d0f18c09ae868974e9f4b5162488f2a43118afd88afc907df8e2ea4704",
+      "ordinary_call_bound": 486,
+      "interrupt_reserve": 256,
+      "dispatch_margin": 16,
+      "total_bound": 758,
+      "reservation": 1024,
+      "headroom": 266,
+      "deepest_path": [
+        "M_IDEPLUSDRIVER_WORKER_15BAA73B",
+        "M_IDEPLUSDRIVER_HARDWAREINIT_E5936689",
+        "M_IDEPLUSDRIVER_DISCOVERPARTITIONS_099B333B",
+        "M_IDEPLUSDRIVER_READTABLE_8F132069",
+        "M_IDEPLUSDRIVER_READPHYSICAL_AF100A8C",
+        "M_IDEPLUSDRIVER_READINTO_2F34BE35",
+        "M_IDEPLUSDRIVER_READY_595A9D50",
+        "M_IDEPLUSDRIVER_DELAY_7543300C",
+        "io_do_io",
+        "M_IOCORE_DOIO_173DC4A1",
+        "M_IOCORE_START_4033F51A",
+        "M_IOCORE_SUBMIT_5D7CB97A",
+        "M_IORESIDENT_BEGINIO_914C855C",
+        "M_TIMERDRIVER_BEGINIO_9C55068D",
+        "M_TIMERDRIVER_RELATIVE_61FE9928",
+        "__a816_mul_u32_v2"
+      ],
+      "unreachable_timer_binding_branches": [
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_SIODRIVER_START_4928F5B4"
+        ],
+        [
+          "M_IOADMISSION_START_DAFCC20C",
+          "M_IDEPLUSDRIVER_START_F9A39B11"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_SIODRIVER_OPEN_9AA3F320"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_CONSOLEDRIVER_OPEN_434F52B0"
+        ],
+        [
+          "M_IORESIDENT_OPEN_6086F993",
+          "M_IDEPLUSDRIVER_OPEN_8E428247"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_SIODRIVER_BEGINIO_E1378755"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_CONSOLEDRIVER_BEGINIO_76358745"
+        ],
+        [
+          "M_IORESIDENT_BEGINIO_914C855C",
+          "M_IDEPLUSDRIVER_BEGINIO_7F64FCE0"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_SIODRIVER_CLOSE_01A37B96"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_CONSOLEDRIVER_CLOSE_60C60326"
+        ],
+        [
+          "M_IORESIDENT_CLOSE_FE2B0633",
+          "M_IDEPLUSDRIVER_CLOSE_BC3392CF"
+        ]
+      ],
+      "visited_entries": 100,
+      "assumptions": [
+        "IDE worker opens only its immutable timer.device request",
+        "IORESIDENT callbacks on this worker therefore select timer.device",
+        "COP policy switches to the reserved kernel stack; interrupt frames use the 256-byte reserve",
+        "Emitted worker paths use direct calls; known targets match every compiler call-map entry"
+      ]
+    },
+    "observer_sha256": "6f4e5231c256e5db387b85b337e1e9b46b9f5cd423c3d5df435c86c914f52140"
+  }
+}

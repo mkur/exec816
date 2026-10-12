@@ -167,12 +167,6 @@ PROC InvalidRequests()
   error=EXEC.DoIO(EXEC.IORequest POINTER(first))
   Require(error=EXEC.SIOERR_BADPROFILE)
   first.sio_Profile=1
-  first.io_Data=BYTE POINTER($fffff0)
-  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
-  Require(error=EXEC.IOERR_BADADDRESS)
-  first.io_Data=BYTE POINTER($110000)
-  error=EXEC.DoIO(EXEC.IORequest POINTER(first))
-  Require(error=EXEC.IOERR_BADADDRESS)
 
 RETURN
 

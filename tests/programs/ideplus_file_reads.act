@@ -1,0 +1,139 @@
+MODULE IDEPLUSFILEREADS
+USE EXEC
+USE DOS
+USE DOSCORE
+USE DOSBREAK
+USE DOSCLIENT
+USE FSOPERATION
+USE FSTYPES
+USE FSBTYPES
+USE FSBOOT
+USE BLOCKIO
+USE BLOCKCACHE
+USE A816MEMORY
+USE READRANGEPROBE
+USE HEAPCORE
+USE IDEPLUS
+
+CARD checks,workspaceBytes
+LONGINT fileBytes,readError
+BYTE noCache,scenario
+
+; Retain the failed assertion index in the termination code.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+  checks==+1
+
+RETURN
+
+; Check the visible prefix and untouched remainder independently.
+PROC CheckBytes(CARD count LONGINT position)
+  CARD index
+
+  LET output=BYTE POINTER($2cfff0)
+  LET expected=BYTE POINTER($300000)+SIZE(position)
+  IF count<>0 THEN
+    FOR index=0 TO count-1 DO
+      Require(output(index)=expected(index))
+    OD
+  FI
+  IF count<4096 THEN
+    FOR index=count TO 4095 DO
+      Require(output(index)=$a5)
+    OD
+  FI
+
+RETURN
+
+; Verify exact Read results, content and cursor position around Seek.
+PROC ReadAt(DOS.FileHandle POINTER file LONGINT position CARD count)
+
+  LET output=BYTE POINTER($2cfff0)
+  A816MEMORY.Fill(output,$a5,4096)
+  Require(DOS.Seek(file,position,DOS.OFFSET_BEGINNING)>=0)
+  LET got=DOS.Read(file,output,LONGINT(count))
+  LET expected=IF fileBytes-position<LONGINT(count)
+      THEN fileBytes-position ELSE LONGINT(count) FI
+  Require(got=expected)
+  CheckBytes(CARD(got),position)
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=position+got)
+
+RETURN
+
+PROC Main()
+  LONGINT got
+
+  workspaceBytes=CARD(SIZEOF(FSBTYPES.Workspace))
+  LET left=BYTE POINTER($2cffef)
+  LET right=BYTE POINTER($2d0ff0)
+  left^=$a5
+  right^=$5a
+  LET file=DOS.Open(BYTE POINTER(c"IDE:LARGE.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  IF noCache<>0 THEN
+    BLOCKCACHE.Destroy(@service.adapter.cache)
+  FI
+
+  IF scenario=0 THEN
+    ReadAt(file,1024,512)
+    ReadAt(file,0,4096)
+    BLOCKIO.Invalidate(service.adapter)
+    ReadAt(file,0,4096)
+    ReadAt(file,17,4096)
+    ReadAt(file,500,513)
+    ReadAt(file,0,511)
+    ReadAt(file,0,512)
+    ReadAt(file,0,513)
+    ReadAt(file,LONGINT(252)*512,4096)
+    ReadAt(file,fileBytes-3,4096)
+    ReadAt(file,fileBytes,1)
+    Require(READRANGEPROBE.groups<>0)
+  ELSE
+    BEGIN
+      LET con=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+      Require(con<>NULL)
+      IF scenario<>2 THEN
+        Require(DOS.BeginForeground(con)<>0)
+        READRANGEPROBE.target=DOSBREAK.Current()
+      FI
+      BLOCKIO.Invalidate(service.adapter)
+      A816MEMORY.Fill(BYTE POINTER($2cfff0),$a5,4096)
+      READRANGEPROBE.mode=scenario
+      got=DOS.Read(file,BYTE POINTER($2cfff0),4096)
+      readError=DOS.IoErr()
+      Require(READRANGEPROBE.fired<>0)
+      LET object=FSTYPES.FileObject POINTER(file)
+      Require(service.adapter.busy=0 AND object.common.mount.block.busy=0)
+      LET client=DOSCLIENT.Ensure()
+      Require(client.busy=0 AND EXEC.GetMsg(client.port)=NULL)
+      IF scenario=2 THEN
+        Require(got=-1 AND readError=IDEPLUS.ERROR_ATA)
+        Require(object.backing.cursor.position=0)
+        CheckBytes(0,0)
+      ELSE
+        Require(READRANGEPROBE.target.opState=FSOPERATION.COLLECTED AND
+            READRANGEPROBE.target.enqueued=0 AND READRANGEPROBE.target.packet=NULL)
+        Require(got=(IF scenario=3 THEN LONGINT(2048) ELSE LONGINT(-1) FI))
+        Require(readError=DOS.ERROR_BREAK)
+        Require(object.backing.cursor.position=(IF scenario=3 THEN LONGINT(2048) ELSE LONGINT(0) FI))
+        CheckBytes(IF scenario=3 THEN CARD(2048) ELSE CARD(0) FI,0)
+        Require(DOS.EndForeground()<>0)
+        READRANGEPROBE.mode=0
+        ReadAt(file,0,4096)
+      FI
+      Require(DOS.Close(con)<>0)
+    END
+  FI
+
+  Require(left^=$a5 AND right^=$5a)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE

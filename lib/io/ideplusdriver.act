@@ -44,6 +44,7 @@ TYPE Controller=[
   BYTE irq,status,error,owned,signals,resident,apt,durable,offline
 ]
 INCLUDE "ideplus-lifetime.inc"
+INCLUDE "ideplus-diagnostics.inc"
 ; Fixed metadata has no independent heap ownership or bank-zero reservation.
 Controller POINTER FUNC Control()
 
@@ -203,7 +204,7 @@ BYTE FUNC Ready(BYTE drq,ignoreError)
 
   LET c=Control()
   IF Clock()=0 THEN
-    RETURN(IDEPLUS.ERROR_TIMEOUT)
+    RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMER))
   FI
   started=c.timer.ticks_lo
   DO
@@ -211,12 +212,12 @@ BYTE FUNC Ready(BYTE drq,ignoreError)
       status=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_ALTSTATUS)
       c.status=status
       IF status=0 OR status=$ff THEN
-        RETURN(IDEPLUS.ERROR_ABSENT)
+        RETURN(TransportFailure(IDEPLUS.ERROR_ABSENT,IDEPLUS.REASON_DISK_ABSENT))
       FI
       IF (status & $80)=0 THEN
         IF (status & $21)<>0 AND ignoreError=0 THEN
           c.error=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_ERROR)
-          RETURN(IDEPLUS.ERROR_ATA)
+          RETURN(TransportFailure(IDEPLUS.ERROR_ATA,IDEPLUS.REASON_ATA))
         FI
         IF (status & $08)=drq THEN
           RETURN(0)
@@ -224,46 +225,60 @@ BYTE FUNC Ready(BYTE drq,ignoreError)
       FI
     OD
     IF Clock()=0 THEN
-      RETURN(IDEPLUS.ERROR_TIMEOUT)
+      RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMER))
     FI
     IF c.timer.ticks_lo-started>=IDEPLUS.TIMEOUT_TICKS THEN
-      RETURN(IDEPLUS.ERROR_TIMEOUT)
+      RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMEOUT))
     FI
     IF Delay()=0 THEN
-      RETURN(IDEPLUS.ERROR_TIMEOUT)
+      RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMER))
     FI
   OD
 
-RETURN(IDEPLUS.ERROR_TIMEOUT)
+RETURN(TransportFailure(IDEPLUS.ERROR_TIMEOUT,IDEPLUS.REASON_TIMEOUT))
 
-; Program one LBA28 transfer, without retaining a selected PBI window.
-PROC AddressSector(LONGCARD sector)
+; Program a bounded LBA28 transfer without retaining a selected PBI window.
+PROC AddressRange(LONGCARD sector BYTE count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_HEAD,$e0 OR BYTE(sector RSH 24))
-  IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COUNT,1)
+  IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COUNT,count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA0,BYTE(sector))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA1,BYTE(sector RSH 8))
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_LBA2,BYTE(sector RSH 16))
 
 RETURN
 
-; Read one physical sector into the controller's reusable upper-RAM buffer.
-PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
-  BYTE error
+PROC AddressSector(LONGCARD sector)
+
+  AddressRange(sector,1)
+
+RETURN
+
+; The accepted request owns its destination until terminal reply.
+BYTE FUNC ReadInto(LONGCARD sector BYTE POINTER destination BYTE count)
+  BYTE error,index
   error=Ready(0,1)
   IF error<>0 THEN
     RETURN(error)
   FI
-  AddressSector(sector)
+  AddressRange(sector,count)
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_COMMAND,IDEPLUS.ATA_READ)
-  error=Ready($08,0)
-  IF error<>0 THEN
-    RETURN(error)
-  FI
+  FOR index=0 TO count-1 DO
+    error=Ready($08,0)
+    IF error<>0 THEN
+      RETURN(error)
+    FI
 
-  LET c=Control()
-  IDEPLUSNATIVE.ReadWords(c.buffer)
+    IDEPLUSNATIVE.ReadWords(destination+SIZE(index)*512)
+  OD
 
 RETURN(Ready(0,0))
+
+; Discovery owns the private controller buffer independently of requests.
+PUBLIC BYTE FUNC ReadPhysical(LONGCARD sector)
+
+  LET c=Control()
+
+RETURN(ReadInto(sector,c.buffer,1))
 
 ; IDENTIFY admits only LBA28 ATA disks with supported physical sector size.
 BYTE FUNC Identify()
@@ -271,6 +286,9 @@ BYTE FUNC Identify()
   CARD POINTER words
 
   LET c=Control()
+  LET info=Observation()
+  info.stage=IDEPLUS.STAGE_IDENTIFY
+  info.reason=IDEPLUS.REASON_NONE
   IDEPLUSNATIVE.WriteRegister(IDEPLUS.REG_HEAD,$e0)
   error=Ready(0,1)
   IF error<>0 THEN
@@ -288,13 +306,16 @@ BYTE FUNC Identify()
   FI
   words=CARD POINTER(c.buffer)
   IF ((words(0) & $8000)<>0 AND words(0)<>$848a) OR (words(49) & $0200)=0 THEN
+    info.reason=IDEPLUS.REASON_NOT_LBA
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
   IF (words(106) & $d000)=$5000 THEN
+    info.reason=IDEPLUS.REASON_SECTOR_SIZE
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
   c.physical=LONGCARD(words(60)) OR (LONGCARD(words(61)) LSH 16)
   IF c.physical=0 OR c.physical>LONGCARD($10000000) THEN
+    info.reason=IDEPLUS.REASON_CAPACITY
     RETURN(IDEPLUS.ERROR_UNSUPPORTED)
   FI
 
@@ -306,6 +327,9 @@ BYTE FUNC Identify()
   unit.sectors=c.physical
   unit.enabled=1
   c.durable=Durability(words)
+  info.disk=1
+  info.sectors=c.physical
+  info.durable=c.durable
 
 RETURN(0)
 INCLUDE "ideplus-apt.inc"
@@ -316,7 +340,10 @@ BYTE FUNC HardwareInit()
   INT error
 
   LET c=Control()
-  IF SIZEOF(DriverBus)>64 OR SIZEOF(Partition)<>24 THEN
+  LET info=Observation()
+  info.stage=IDEPLUS.STAGE_RESOURCES
+  info.reason=IDEPLUS.REASON_RESOURCES
+  IF SIZEOF(DriverBus)>64 OR SIZEOF(Partition)<>24 OR SIZEOF(Controller)>64 THEN
     RETURN(0)
   FI
   IF EXEC.AllocSignal(31)<>31 THEN
@@ -342,13 +369,26 @@ BYTE FUNC HardwareInit()
   IF c.timer=NULL THEN
     RETURN(0)
   FI
+  info.stage=IDEPLUS.STAGE_TIMER
+  info.reason=IDEPLUS.REASON_TIMER
   error=EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
       @c.timer.tc_Request,0)
   IF error<>0 THEN
     RETURN(0)
   FI
   ; Rev E card-present and IRQ bits distinguish an absent selected board.
-  IF (IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_CARD) & $20)<>0 THEN
+  info.stage=IDEPLUS.STAGE_CONTROLLER
+  info.reason=IDEPLUS.REASON_CONTROLLER_ABSENT
+  info.boardStatus=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_CARD)
+  IF info.boardStatus<>$ff THEN
+    info.controller=1
+  FI
+
+  IF (info.boardStatus & $20)<>0 THEN
+    IF info.controller<>0 THEN
+      info.reason=IDEPLUS.REASON_DISK_ABSENT
+    FI
+
     RETURN(0)
   FI
   c.irq=IDEPLUSNATIVE.ReadRegister(IDEPLUS.REG_IRQ) & 1
@@ -359,6 +399,13 @@ BYTE FUNC HardwareInit()
   c.error=error
   IF error=0 THEN
     c.apt=DiscoverPartitions()
+    info.apt=c.apt
+    IF c.apt<>0 THEN
+      info.stage=IDEPLUS.STAGE_READY
+      info.reason=IDEPLUS.REASON_NONE
+      info.lba=0
+      info.slot=$ff
+    FI
     IF c.apt=0 THEN
       A816MEMORY.Clear(BYTE POINTER(ADDRESS(IDEMETA.UNITS+24)),360)
     FI
@@ -412,21 +459,37 @@ PROC HardwareStop()
 
 RETURN
 
-; Take ownership atomically with dequeue; interrupts never inspect this queue.
+; Caller holds Forbid through shutdown checking, dequeue and publication.
 EXEC.IOStdReq POINTER FUNC Claim()
   EXEC.IOStdReq POINTER request
-  EXEC.Forbid()
 
   LET bus=DriverBus POINTER(ADDRESS(IDEMETA.BUS))
   request=EXEC.IOStdReq POINTER(EXEC.GetMsg(@bus.port))
   bus.active=EXEC.IORequest POINTER(request)
   bus.phase=1
   bus.cancelled=0
-  EXEC.Permit()
-
 RETURN(request)
 
-; Complete full raw reads or copy geometry, retaining buffers until reply.
+; Reject a range crossing the partition before any ATA command is issued.
+BYTE FUNC ValidExtent(Partition POINTER unit EXEC.IOStdReq POINTER request)
+
+  IF request.io_Offset>=unit.sectors THEN
+    RETURN(0)
+  FI
+  IF request.io_Command<>IDEPLUS.WRITE_SECTORS
+      AND request.io_Command<>IDEPLUS.READ_SECTORS THEN
+    RETURN(request.io_Length=512)
+  FI
+  LET limit=IF request.io_Command=IDEPLUS.READ_SECTORS
+      THEN IDEPLUS.MAX_READ_SECTORS ELSE IDEPLUS.MAX_WRITE_SECTORS FI
+  IF request.io_Length=0 OR request.io_Length>LONGCARD(limit)*512
+      OR (request.io_Length & 511)<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN((request.io_Length RSH 9)<=unit.sectors-request.io_Offset)
+
+; Complete raw requests or copy geometry, retaining buffers until reply.
 PROC RunRequest(EXEC.IOStdReq POINTER request)
   BYTE error
 
@@ -464,11 +527,15 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
       EXEC.Permit()
       error=FlushPhysical()
     FI
-  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR AND request.io_Command<>IDEPLUS.WRITE_SECTOR THEN
+  ELSEIF request.io_Command<>IDEPLUS.READ_SECTOR
+      AND request.io_Command<>IDEPLUS.WRITE_SECTOR
+      AND request.io_Command<>IDEPLUS.WRITE_SECTORS
+      AND request.io_Command<>IDEPLUS.READ_SECTORS THEN
     error=BYTE(EXEC.IOERR_NOCMD)
-  ELSEIF request.io_Length<>512 OR request.io_Offset>=unit.sectors THEN
+  ELSEIF ValidExtent(unit,request)=0 THEN
     error=BYTE(EXEC.IOERR_BADLENGTH)
-  ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR THEN
+  ELSEIF request.io_Command=IDEPLUS.WRITE_SECTOR
+      OR request.io_Command=IDEPLUS.WRITE_SECTORS THEN
     error=WriteLogical(unit,request)
     IF error=0 THEN
       request.io_Actual=request.io_Length
@@ -481,22 +548,34 @@ PROC RunRequest(EXEC.IOStdReq POINTER request)
     FI
     EXEC.Permit()
     IF error=0 THEN
-      error=ReadPhysical(unit.start+request.io_Offset)
+      error=ReadInto(unit.start+request.io_Offset,request.io_Data,
+          BYTE(request.io_Length RSH 9))
       IF error=0 AND bus.cancelled<>0 THEN
         error=BYTE(EXEC.IOERR_ABORTED)
       FI
       IF error=0 THEN
-        A816MEMORY.Move(request.io_Data,c.buffer,512)
         request.io_Actual=request.io_Length
       FI
     FI
   FI
   EXEC.Forbid()
   IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT
-      OR (bus.phase=3 AND error<>0) THEN
+      OR (bus.phase=3 AND error<>0)
+      OR (request.io_Command=IDEPLUS.READ_SECTORS
+          AND bus.phase=2 AND error=IDEPLUS.ERROR_ATA) THEN
     bus.state=5
     c.offline=1
   FI
+  IF error=IDEPLUS.ERROR_TIMEOUT OR error=IDEPLUS.ERROR_ABSENT
+      OR error=IDEPLUS.ERROR_ATA THEN
+    BEGIN
+      LET info=Observation()
+      info.stage=IDEPLUS.STAGE_TRANSFER
+      info.slot=unit.number
+      info.lba=unit.start+request.io_Offset
+    END
+  FI
+
   request.io_Error=error
   bus.active=NULL
   bus.phase=0
@@ -531,9 +610,15 @@ PUBLIC PROC Worker()
   Notify(bus)
   EXEC.Permit()
   bits=0
-  WHILE Stopping(bus,self,bits)=0 DO
-    bits=0
+  DO
+    EXEC.Forbid()
+    IF Stopping(bus,self,bits)<>0 THEN
+      EXEC.Permit()
+      EXIT
+    FI
     request=Claim()
+    EXEC.Permit()
+    bits=0
     IF request=NULL THEN
       bits=EXEC.Wait(LONGCARD(STOP_MASK) OR LONGCARD($80000000))
     ELSE

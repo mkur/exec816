@@ -7,9 +7,12 @@ USE HEAPCORE
 USE SDFSFILE
 USE FSBTYPES
 USE BLOCKTYPES
+USE BLOCKCACHE
 
 CARD checks
 BYTE finished
+BYTE cacheMode
+BLOCKTYPES.Cache POINTER cache
 FSBTYPES.Workspace POINTER work
 FSBTYPES.Volume POINTER volume
 FSBTYPES.Cursor POINTER file
@@ -27,6 +30,28 @@ PROC Require(BYTE okay)
   FI
 
   checks==+1
+
+RETURN
+
+; Exercise real clean-cache publication and hits with all admitted sizes.
+PROC MeasureCache(CARD bytes)
+  CARD repeat,index
+
+  block.generation==+1
+  block.dataBytes=bytes
+  BLOCKCACHE.Invalidate(cache,NULL)
+  FOR repeat=0 TO 31 DO
+    FOR index=0 TO 513 DO
+      output(index)=$a5
+    OD
+
+    BLOCKCACHE.Store(cache,block,7,bytes,source)
+    Require(BLOCKCACHE.Read(cache,block,7,bytes,output+SIZE(1))<>0)
+    Require(output(0)=$a5 AND output(bytes+1)=$a5 AND output(513)=$a5)
+    FOR index=0 TO bytes-1 DO
+      Require(output(index+1)=(BYTE(index) XOR $5a))
+    OD
+  OD
 
 RETURN
 
@@ -90,13 +115,24 @@ PROC Main()
   operation.work=work
   operation.file=file
   operation.output=output+SIZE(1)
-  FOR index=0 TO 255 DO
+  FOR index=0 TO 511 DO
     source(index)=BYTE(index) XOR $5a
   OD
 
-  Measure(128,128,0)
-  Measure(128,55,1)
-  Measure(256,256,0)
+  IF cacheMode<>0 THEN
+    cache=BLOCKTYPES.Cache POINTER($a0200)
+    Require(SIZEOF(BLOCKTYPES.Cache)<=512)
+    BLOCKCACHE.Create(cache,512)
+    Require(cache.blocks=512)
+    MeasureCache(128)
+    MeasureCache(256)
+    MeasureCache(512)
+    BLOCKCACHE.Destroy(cache)
+  ELSE
+    Measure(128,128,0)
+    Measure(128,55,1)
+    Measure(256,256,0)
+  FI
   finished=1
 
 RETURN

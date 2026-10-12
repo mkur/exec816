@@ -4,7 +4,7 @@ from native_program import ROOT,build,compiler,execute,verify_machine
 from os_boundary import emulator
 from test_sio_device import PIN
 if __name__=='__main__':
-    t=compiler(ROOT/'build/actionc')
+    t=compiler(ROOT/'build/actionc',release=True)
     for mode in ('raw','opt'):
         out=ROOT/'build/development/ideplus-ip1/layout'/mode
         out.mkdir(parents=True,exist_ok=True)

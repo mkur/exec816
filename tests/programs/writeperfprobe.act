@@ -7,33 +7,42 @@ PUBLIC BYTE armed,active,finished
 PUBLIC BYTE failAllocation,allocationFailed
 PUBLIC BYTE protected
 PUBLIC CARD startFrame,endFrame,maxGroupWrites,groupWrites
+PUBLIC CARD kernelCalls,taskSwitches
 PUBLIC CARD groupRequests,maxGroupRequests,groupStart,maxGroupFrames
 PUBLIC LONGCARD reads,writes,readBytes,writeBytes,logicalReads,payloadVisits
 PUBLIC LONGCARD cacheHits,cacheMisses,cacheEvictions
 PUBLIC BYTE POINTER target
 PUBLIC BYTE POINTER trace
 PUBLIC CARD traceCount
-PUBLIC LONGCARD verifiedWrites
+PUBLIC LONGCARD completedWrites
 VOLATILE CARD clock=E816_VBI_COUNT
+VOLATILE CARD gatewayCount=E816_GATE_COUNT
+VOLATILE CARD switchCount=E816_SWITCH_COUNT
 
 PUBLIC PROC Begin()
 
   active=1
   armed=0
   startFrame=clock
+  kernelCalls=gatewayCount
+  taskSwitches=switchCount
 
 RETURN
 
 PUBLIC PROC End()
 
   endFrame=clock
+  kernelCalls=gatewayCount-kernelCalls
+  taskSwitches=switchCount-taskSwitches
   active=0
   finished=1
 
 RETURN
 
-PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
+PUBLIC PROC Submitted(EXEC.IOStdReq POINTER standard)
+  EXEC.IOSIOReq POINTER request
 
+  request=EXEC.IOSIOReq POINTER(standard)
   IF active<>0 THEN
     BEGIN
       LET offset=SIZE(traceCount)*4
@@ -49,7 +58,7 @@ PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
     IF request.sio_Command=$52 THEN
       reads==+1
       readBytes==+request.io_Length
-    ELSEIF request.sio_Command=$57 THEN
+    ELSEIF request.sio_Command=$50 OR request.sio_Command=$57 THEN
       IF protected=0 THEN
         groupStart=clock
         protected=1
@@ -67,10 +76,10 @@ PUBLIC PROC Submitted(EXEC.IOSIOReq POINTER request)
 
 RETURN
 
-PUBLIC PROC Verified()
+PUBLIC PROC Completed()
 
   IF active<>0 THEN
-    verifiedWrites==+1
+    completedWrites==+1
   FI
 
 RETURN

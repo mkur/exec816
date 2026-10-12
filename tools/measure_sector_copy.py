@@ -20,13 +20,14 @@ from test_heap_api import clean_ownership
 
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 CASES = (('full128', 128), ('tail55', 55), ('full256', 256))
+CACHE_CASES = (('sector128', 128), ('sector256', 256), ('sector512', 512))
 ENV = ('EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS', 'EXEC816_MASK_TRACE')
 
 
-def markers_for(program):
+def instructions_for(program, prefix):
     image = program['image']
-    matches = [r for r in image['routines'] if r['name'].startswith('M_SDFSFILE_CONSUME_')]
-    require(len(matches) == 1, 'Missing or ambiguous SDFS Consume')
+    matches = [r for r in image['routines'] if r['name'].startswith(prefix)]
+    require(len(matches) == 1, 'Missing or ambiguous measured routine')
     routine = matches[0]
     source = ROOT/'build/actionc/tools/disassemble65816.py'
     # Loading as source avoids leaving an untracked __pycache__ in the pinned
@@ -48,23 +49,48 @@ def markers_for(program):
         pc, rest = line.split('  ', 1)
         code, text = rest[:11].strip(), rest[12:]
         instructions.append(dict(pc=int(pc, 16), bytes=bytes.fromhex(code), text=text))
+    return routine, instructions, listing, source
+
+
+def cache_markers(program, operation):
+    routine, instructions, listing, source = instructions_for(program, 'M_BLOCKCACHE_'+operation.upper()+'_')
+    marks = dict(consume=routine['address'], native_nmi=program['labels']['native_nmi'],
+                 native_irq=program['labels']['native_irq'])
+    marks.update({f'return{n}':i['pc'] for n,i in enumerate(i for i in instructions if i['text']=='RTL')})
+    require(len(marks)>3, 'Missing cache return')
+    return marks, listing, dict(routine=routine['name'], address=routine['address'], size=routine['size'],
+                               transfer='cache-'+operation, decoder_sha256=sha256(source))
+
+
+def markers_for(program):
+    routine, instructions, listing, source = instructions_for(program, 'M_SDFSFILE_CONSUME_')
     backward = [i for i in instructions if i['text'].startswith('BRL $') and int(i['text'][5:], 16) < i['pc']]
-    require(len(backward) == 1, 'Consume must contain exactly one backward loop branch')
-    back = backward[0]
-    head = int(back['text'][5:], 16)
-    end = back['pc'] + len(back['bytes'])
-    require(any(i['text'] == f'BRL ${end:06X}' and head <= i['pc'] < back['pc'] for i in instructions),
-            'Missing loop-exit branch')
-    require(not any(i['text'].startswith(('JSL', 'JML', 'RTL')) and head <= i['pc'] < end for i in instructions),
-            'Unexpected call or escape inside byte loop')
+    bulk = not backward
+    if bulk:
+        calls = [i for i in instructions if i['bytes'][:1] == b'\x22'
+                 and int.from_bytes(i['bytes'][1:], 'little') == program['labels']['a816_memory_move']]
+        require(len(calls) == 1, 'Missing or ambiguous native Move')
+        head = calls[0]['pc']
+        end = head + len(calls[0]['bytes'])
+    else:
+        require(len(backward) == 1, 'Consume must contain exactly one backward loop branch')
+        back = backward[0]
+        head = int(back['text'][5:], 16)
+        end = back['pc'] + len(back['bytes'])
+        require(any(i['text'] == f'BRL ${end:06X}' and head <= i['pc'] < back['pc'] for i in instructions),
+                'Missing loop-exit branch')
+        require(not any(i['text'].startswith(('JSL', 'JML', 'RTL')) and head <= i['pc'] < end for i in instructions),
+                'Unexpected call or escape inside byte loop')
     returns = [i['pc'] for i in instructions if i['text'] == 'RTL']
-    require(len(returns) == 2, 'Changed Consume return paths')
+    require(1 <= len(returns) <= 2, 'Changed Consume return paths')
     marks = dict(consume=routine['address'], loop=head, bookkeeping=end,
                  native_nmi=program['labels']['native_nmi'], native_irq=program['labels']['native_irq'])
+    if bulk:
+        marks['bulk'] = head
     marks.update({f'return{n}': pc for n, pc in enumerate(returns)})
     loop_code = b''.join(i['bytes'] for i in instructions if head <= i['pc'] < end)
     return marks, listing, dict(routine=routine['name'], address=routine['address'], size=routine['size'],
-                               loop_bytes=end-head, loop_sha256=hashlib.sha256(loop_code).hexdigest(), decoder_sha256=sha256(source))
+                               transfer='native-move' if bulk else 'byte-loop', loop_bytes=end-head, loop_sha256=hashlib.sha256(loop_code).hexdigest(), decoder_sha256=sha256(source))
 
 
 def samples(events, marks):
@@ -88,21 +114,23 @@ def samples(events, marks):
             require(current is None, 'Overlapping Consume activations')
             require(not int(event[11], 16) & 4, 'Consume entered with IRQs masked')
             current = dict(begin=tick, dp=int(event[9], 16), interrupts=0, iterations=0)
-        elif current is not None and pc == marks['loop']:
+        elif current is not None and pc == marks.get('loop'):
             require(int(event[9], 16) == current['dp'], 'Loop changed Task domain')
             current.setdefault('loop', tick)
             current['iterations'] += 1
-        elif current is not None and pc == marks['bookkeeping']:
+        elif current is not None and pc == marks.get('bookkeeping'):
             require('loop' in current and 'bookkeeping' not in current, 'Unmatched loop exit')
             current['bookkeeping'] = tick
         elif current is not None and pc in returns:
-            require('bookkeeping' in current and int(event[9], 16) == current['dp'], 'Unmatched Consume return')
+            require(('loop' not in marks or 'bookkeeping' in current) and int(event[9], 16) == current['dp'], 'Unmatched routine return')
             # The marker precedes RTL; its six CPU cycles complete the routine.
             end = tick + 6/8
             row = dict(begin=current['begin'], end=end, interrupts=current['interrupts'],
-                       bytes=current['iterations']-1, dp=current['dp'])
-            points = (current['begin'], current['loop'], current['bookkeeping'], end)
-            row['microseconds'] = {name:(b-a)/BASE_HZ*1e6 for name,a,b in zip(('setup','loop','bookkeeping'),points,points[1:])}
+                       bytes=None if 'bulk' in marks or 'loop' not in marks else current['iterations']-1, dp=current['dp'])
+            row['microseconds'] = {}
+            if 'loop' in marks:
+                points = (current['begin'], current['loop'], current['bookkeeping'], end)
+                row['microseconds'] = {name:(b-a)/BASE_HZ*1e6 for name,a,b in zip(('setup','loop','bookkeeping'),points,points[1:])}
             row['microseconds']['total'] = (end-current['begin'])/BASE_HZ*1e6
             result.append(row)
             current = None
@@ -116,11 +144,11 @@ def summarize(rows):
     def stats(values):
         return dict(min_us=min(values), median_us=statistics.median(values), mean_us=statistics.mean(values), max_us=max(values))
     return dict(samples=len(rows), uninterrupted=len(clean), interrupted=len(rows)-len(clean),
-                uninterrupted_us={name:stats([r['microseconds'][name] for r in clean]) for name in ('setup','loop','bookkeeping','total')},
-                elapsed_us={name:stats([r['microseconds'][name] for r in rows]) for name in ('setup','loop','bookkeeping','total')})
+                uninterrupted_us={name:stats([r['microseconds'][name] for r in clean]) for name in rows[0]['microseconds']},
+                elapsed_us={name:stats([r['microseconds'][name] for r in rows]) for name in rows[0]['microseconds']})
 
 
-def run_fixture(program, output, observed, marks):
+def run_fixture(program, output, observed, marks, cache=False):
     previous = {key:os.environ.get(key) for key in ENV}
     try:
         for key in ENV:
@@ -130,8 +158,13 @@ def run_fixture(program, output, observed, marks):
             os.environ['EXEC816_LATENCY_PCS'] = ','.join(f'{pc:x}' for pc in marks.values())
         with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
             machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
-            runtime, _ = execute(bridge, program, timeout=180, frame_limit=3000,
-                                 before_run=(lambda b:b.profile_start()) if observed else None)
+            def before(bridge):
+                if cache:
+                    at=next(d['address'] for d in program['image']['data'] if '_CACHEMODE_' in d['name'])
+                    bridge.poke(at,1)
+                if observed:
+                    bridge.profile_start()
+            runtime, _ = execute(bridge, program, timeout=180, frame_limit=3000, before_run=before)
             if observed:
                 bridge.profile_stop()
             require(data(bridge, program['image'], 'finished') == [1], 'Incomplete byte checks')
@@ -162,6 +195,9 @@ def hello_samples(events, rows):
     require([sector(p) for p in reads[first:first+19]] == list(range(70,89)), 'Changed HELLO sector layout')
     require(len(reads) > first+19, 'Missing subsequent DIR boundary')
     selected = [r for r in rows if reads[first]['start'] <= r['begin'] < reads[first+19]['start']]
+    if selected and selected[0]['bytes'] is None:
+        for row, amount in zip(selected, [128]*18+[55]):
+            row['bytes'] = amount
     require([r['bytes'] for r in selected] == [128]*18+[55], 'Changed HELLO consume sequence')
     return selected
 
@@ -205,19 +241,24 @@ def main():
     parser.add_argument('--analyze-only', action='store_true', help='Analyze an existing HELLO replay')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--cache', action='store_true', help='Measure real cache hits and publication for 128/256/512 bytes')
     args = parser.parse_args()
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     if args.hello_bundle:
+        require(not args.cache, 'Cache measurements use the isolated fixture')
         require(args.from_build is None, 'Use --hello-bundle without --from-build')
         run_hello(args.hello_bundle.resolve(), out, args.prime_worker, args.analyze_only)
         return
     require(not args.analyze_only, '--analyze-only requires --hello-bundle')
     program = read_build(args.from_build) if args.from_build else build(
-        compiler(ROOT/'build/actionc'), ROOT/'tests/programs/sector_copy.act', out/'program',
+        compiler(ROOT/'build/actionc',release=True), ROOT/'tests/programs/sector_copy.act', out/'program',
         tasks=True, console=False, optimize=args.mode=='opt', stack_checks=True,
-        image_data=[(0xa0000, bytes(0xc00))])
+        image_data=[(0xa0000, bytes(0x1000))])
     require(program['build']['optimize'] == (args.mode=='opt'), 'Wrong NIR mode')
+    if args.cache:
+        measure_cache(program,out,args.mode)
+        return
     marks, listing, routine = markers_for(program)
     (out/'consume.asm').write_text(listing)
     (out/'markers.json').write_text(json.dumps(marks, indent=2)+'\n')
@@ -232,17 +273,47 @@ def main():
         cases = {}
         for index, (name, amount) in enumerate(CASES):
             selection = rows[32*index:32*(index+1)]
+            if 'bulk' in marks:
+                for row in selection:
+                    row['bytes'] = amount
             require(all(r['bytes'] == amount for r in selection), 'Wrong byte-loop iteration count')
             cases[name] = dict(bytes=amount, **summarize(selection))
         result.update(status='pass', observed=observed, replay=replay, identical_image_replay=True, cases=cases, samples=rows,
                       scope='Actual SDFS Consume; root only, resident upper-RAM records/buffers, IRQ/NMI enabled, no disk or other workers. Uninterrupted elapsed instruction time includes machine bus timing; not an ideal CPU-cycle model.',
-                      bank_zero_delta=dict(fixed=0,per_task=0), production_changed=False)
+                      bank_zero_delta=dict(fixed=0,per_task=0), production_changed='bulk' in marks)
         print(json.dumps(cases, indent=2), flush=True)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise
     finally:
         (out/'results.json').write_text(json.dumps(result, indent=2)+'\n')
+
+
+def measure_cache(program, out, mode):
+    selected={name:cache_markers(program,name) for name in ('read','store')}
+    marks={f'{name}_{key}':pc for name,(mapping,_,_) in selected.items() for key,pc in mapping.items()}
+    for name,(mapping,listing,_) in selected.items():
+        (out/(name+'.asm')).write_text(listing)
+    (out/'markers.json').write_text(json.dumps(marks,indent=2)+'\n')
+    result=dict(status='running',mode=mode,build=program['build'],pin=PIN,bank_zero_delta=dict(fixed=0,per_task=0,idle=0))
+    try:
+        observed=run_fixture(program,out/'observed',True,marks,cache=True)
+        replay=run_fixture(program,out/'replay',False,marks,cache=True)
+        require(observed==replay,'Identical cache-image replay differs')
+        events=read_events(out/'observed/emulator.log')
+        cases={}
+        for name,(mapping,_,routine) in selected.items():
+            rows=samples(events,mapping)
+            require(len(rows)==96,'Expected 32 cache samples per size')
+            cases[name]=dict(routine=routine, sizes={label:dict(bytes=amount,**summarize(rows[index*32:(index+1)*32]))
+                for index,(label,amount) in enumerate(CACHE_CASES)})
+        result.update(status='pass',observed=observed,replay=replay,identical_image_replay=True,cases=cases,
+                      scope='Actual clean-cache hit/publication; 64 KiB payload, 128/256/512 bytes, root only, IRQ/NMI enabled. Passive instruction timing; interrupted samples excluded from CPU medians.')
+        print(json.dumps(cases,indent=2),flush=True)
+    except Exception as error:
+        result.update(status='fail',error=str(error));raise
+    finally:
+        (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
 
 
 if __name__ == '__main__':

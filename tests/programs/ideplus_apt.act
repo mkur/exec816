@@ -6,7 +6,7 @@ USE IDEPLUSDRIVER
 USE HEAPCORE
 
 CARD checks
-BYTE expectedFailure,unsupported
+BYTE expectedFailure,unsupported,expectedReason
 PROC Require(BYTE okay)
 
   IF okay=0 THEN
@@ -21,13 +21,42 @@ PROC Main()
   BYTE unit,sector
   CARD index
   IDEPLUS.Geometry geometry
+  IDEPLUS.Diagnostics observation,retained
+  IDEPLUS.PartitionInfo partition
 
   LET before=EXEC.AvailMem(0)
+  IDEPLUSDRIVER.Diagnostics(@observation)
+  Require(observation.attempted=0 AND observation.state=0)
+  Require(IDEPLUSDRIVER.PartitionStatus(2,@partition)=0)
   LET port=EXEC.CreateMsgPort()
   LET request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(port,EXEC.IOSTDREQ_SIZE))
   Require(port<>NULL AND request<>NULL)
   LET name=BYTE POINTER(ADDRESS(IDEMETA.NAME))
   Require(EXEC.OpenDevice(name,1,EXEC.IORequest POINTER(request),0)<>0)
+  IDEPLUSDRIVER.Diagnostics(@observation)
+  Require(observation.attempted=1 AND observation.reason=expectedReason)
+  IF expectedFailure>=2 THEN
+    Require(observation.controller=(expectedFailure=3) AND observation.disk=0)
+    Require(IDEPLUSDRIVER.PartitionStatus(2,@partition)=0)
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+    EXEC.DeleteMsgPort(port)
+    Require(EXEC.AvailMem(0)=before)
+    RETURN
+  FI
+
+  Require(observation.controller=1 AND observation.disk=1 AND observation.sectors=8192)
+  Require(observation.apt=(expectedFailure=0))
+  IF expectedFailure<>0 THEN
+    Require(IDEPLUSDRIVER.PartitionStatus(2,@partition)=0)
+  ELSE
+    Require(IDEPLUSDRIVER.PartitionStatus(2,@partition)<>0)
+    IF unsupported<>0 THEN
+      Require(partition.reason=IDEPLUS.SLOT_SECTOR_SIZE AND partition.sectors=0)
+    ELSE
+      Require(partition.reason=IDEPLUS.SLOT_READY AND partition.sectors=4
+          AND partition.bytes=512 AND (partition.flags & IDEPLUS.FLAG_READONLY)<>0)
+    FI
+  FI
   FOR unit=2 TO 9 DO
     BEGIN
       LET error=EXEC.OpenDevice(name,LONGCARD(unit),EXEC.IORequest POINTER(request),0)
@@ -71,6 +100,9 @@ PROC Main()
   EXEC.CloseDevice(EXEC.IORequest POINTER(request))
   IDEPLUSDRIVER.Stop()
   Require(IDEPLUSDRIVER.State()=0)
+  IDEPLUSDRIVER.Diagnostics(@retained)
+  Require(retained.reason=observation.reason AND retained.apt=observation.apt
+      AND retained.sectors=observation.sectors AND retained.state=0)
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
   EXEC.DeleteMsgPort(port)
   Require(EXEC.AvailMem(0)=before)

@@ -151,13 +151,12 @@ PUBLIC BYTE FUNC TryCancel(EXEC.IORequest POINTER request)
 
 RETURN(accepted)
 
-; Take one queued request and establish its worker-owned cancellation state.
+; Caller holds Forbid through shutdown checking, dequeue and publication.
 EXEC.IORequest POINTER FUNC Claim()
   DriverBus POINTER bus
   EXEC.IORequest POINTER request
   BYTE POINTER cancel,offline
 
-  EXEC.Forbid()
   bus=DriverBus POINTER(ADDRESS(IS_BASE+64))
   cancel=BYTE POINTER(SD_CANCEL)
   offline=BYTE POINTER(SD_OFFLINE)
@@ -177,8 +176,6 @@ EXEC.IORequest POINTER FUNC Claim()
   IF request<>EXEC.IORequest POINTER(0) THEN
     bus.phase=1
   FI
-
-  EXEC.Permit()
 
 RETURN(request)
 

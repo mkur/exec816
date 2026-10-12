@@ -3,6 +3,18 @@ MODULE DOSCALLS
 USE WRITECOMMANDSTATE AS T
 INCLUDE "../../lib/dos/dos-types.inc"
 
+PUBLIC LONGINT FUNC GetVolume(CARD index VolumeInfo POINTER info)
+
+  T.state.error=ERROR_ACTION_NOT_KNOWN
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC Info(BYTE POINTER lock VolumeInfo POINTER info)
+
+  T.state.error=ERROR_ACTION_NOT_KNOWN
+
+RETURN(0)
+
 PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
 
 RETURN(0)

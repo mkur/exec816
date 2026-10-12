@@ -136,3 +136,35 @@ past EOF or atomic replacement. A lightweight mount cannot establish recovery
 after uncertain writes; restore or externally check the medium before writable
 remount. Maximum-volume reclamation latency, exhaustive failure/interrupt timing
 matrices, alternate configurations and physical drives need separate qualification.
+
+## Normal write completion
+
+The October 2026 follow-up removes mandatory readback verification from both
+filesystem transports. SIO data and metadata writes use PUT `$50`; raw callers
+can still explicitly request verified WRITE `$57`. IDE writes complete after
+ATA terminal status and any required FLUSH CACHE, without rereading the sector.
+This removes redundant device work while preserving transfer checksums, device
+errors, accepted-write cancellation rules, controller/mount invalidation and
+filesystem publication ordering. The two-second mechanical SIO allowance stays.
+No automatic retry or zero fill is added.
+
+The unused IDE verification error/reason and test-only verification fault hook
+are removed. Measurement tools count completed writes and recognise both SIO
+write commands; their frozen historical comparison still counts old IDE
+verification reads. Independent persisted-byte comparisons remain in the tests.
+
+Development checks in `build/write-completion/` cover optimized emitted SIO
+256-byte PUT and block stores, IDE logical stores with zero automatic readbacks,
+protected/failed writes, accepted-write cancellation and cache-flush failure.
+The SDFS ordering case writes 1 KiB as four payload sectors, followed by bitmap,
+header, map and directory publication, and independently audits the saved file
+and allocation. Its old test data/trace placement is refreshed for the current
+kernel image; those reservations are outside bank zero and production builds.
+They check exact persisted sectors and neighbours, request/heap ownership,
+stack/domain guards and OS restoration. The host suite passes 447 checks.
+These checks do not establish release or physical-drive qualification.
+
+Reserved bank-zero change is zero fixed bytes, zero per-Task bytes and zero idle
+bytes, including guards, alignment and unused capacity. Existing upper-RAM
+buffers, worker pools and metadata staging are unchanged. No demo or release
+package was rebuilt for this follow-up.

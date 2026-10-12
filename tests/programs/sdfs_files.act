@@ -410,6 +410,27 @@ PROC Extents()
   Require(file.entry.length=777 AND file.entry.count=LONGINT(config(8))
       AND file.entry.name(0)='Z AND file.entry.days=99)
 
+  ; Publishing another mount must not evict this completed measurement or map.
+  LET mapPage=state.sector
+  LET payload=SDFS.Word(state.map,4)
+  Require(SDFS.Cached(@work,mapPage)<>0)
+  otherVolume.block=@block
+  work.volume=@otherVolume
+  SDFS.InvalidateSector(@work,1,1)
+  work.volume=@volume
+  Require(SDFSEXTENTS.Lookup(@work,@file)=1 AND work.operations=prior)
+  Require(SDFS.Cached(@work,mapPage)<>0)
+
+  ; A payload update preserves the map and completed extent until publication.
+  SDFS.InvalidateSector(@work,payload,0)
+  Require(SDFSEXTENTS.Lookup(@work,@file)=1 AND work.operations=prior)
+  Require(SDFS.Cached(@work,mapPage)<>0)
+  SDFS.InvalidateSector(@work,mapPage,1)
+  Require(SDFS.Cached(@work,mapPage)=0 AND
+      SDFSEXTENTS.Lookup(@work,@file)=0)
+  Require(MeasureCurrent()=FSSTATUS.DONE)
+  SDFSEXTENTS.Store(@work,@file)
+
   work.depth=1
   work.ancestors(1)=123
   Require(SDFSEXTENTS.Lookup(@work,@file)=0)

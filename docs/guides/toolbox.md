@@ -2,7 +2,7 @@
 
 [Guides](README.md) · [Shell](shell.md) · [Writing commands](commands.md)
 
-The demo supplies nineteen loadable commands, including CAT, WC and HELLO. Command
+The demo supplies twenty loadable commands, including CAT, WC and HELLO. Command
 names and keyword names ignore case. Keywords may precede or follow positional
 arguments. Quote a word that should be data rather than a keyword. Numeric
 options are unsigned decimal; negative numbers and overflow are errors.
@@ -24,6 +24,7 @@ options are unsigned decimal; negative numbers and overflow are errors.
 | RENAME | `FROM TO` | Rename one entry within its current directory; an existing destination is an error. |
 | MAKEDIR | `NAME` | Create one directory under an existing parent. |
 | ASSIGN | `[NAME:] [TARGET]` | List, set/replace or remove a system-wide logical directory name. The target must be an existing directory. |
+| INFO | `[VOLUME]` | Report mounted volumes, labels, capacity, used/free space, sector size, backing device and access. An existing path or assign selects its containing volume. |
 | PRIMES | `[PASSES n]` | Search through 10,000 in a six-row lower pane. Zero or omitted PASSES runs until cancelled. |
 
 Commands with an optional FILE borrow Input when it is absent; CAT also accepts
@@ -79,6 +80,21 @@ bypass search.
 physical volume name. `ASSIGN DATA:` removes it, and `ASSIGN` lists current
 mappings, including the boot C: assignment. Reassigning C: redirects the default
 command search. See the [ASSIGN contract](../reference/assigns.md) for limits.
+
+`INFO` lists published mounts once, including RAM and offline volumes.
+`INFO SYS:`, `INFO WORK:`, `INFO C:` and `INFO .` select one containing volume;
+assigns do not add duplicate rows. Disk usage includes metadata and reserved
+sectors. Capacity is the nominal sector count times sector size, not the ATR
+container length. K means KiB rounded down; independently rounded used/free
+values may sum to one K less than the total.
+
+RAM shows dynamic capacity and no free-space figure. Its used value includes
+volume/node records and allocated file-buffer capacity, excluding allocator
+bookkeeping; it measures owned storage rather than file lengths or the free
+system heap. Offline rows have unavailable counts and return WARN with IoErr
+zero. Failed queries show their DOS fault and allow other rows to continue,
+then return ERROR with the first cause. BREAK and output errors stop immediately.
+Demo SpartaDOS volumes carry the on-disk labels SYS and WORK; MyDOS has no label.
 
 ## Bytes, text and limits
 

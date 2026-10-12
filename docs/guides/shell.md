@@ -22,7 +22,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | `MEM` | Report ordinary/linear available totals and largest eligible blocks; the totals overlap. |
 | `TASKS` | Snapshot live public Tasks, including workers; omit unused slots and private idle. |
 | `VER` | Print abbreviated Exec816 and compiler-pin revisions. |
-| `MOUNT` | List published runtime mounts, handler, access and mounted/offline state. |
+| `MOUNT [DIAGNOSTICS]` | List runtime mounts and retained failures; DIAGNOSTICS adds controller/capacity/APT observations. |
 | `DEVICES` | List resident drivers and runtime state, including `timer.device`. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
@@ -37,6 +37,32 @@ Command names ignore case. MOUNT only lists; it does not mount/unmount media or
 probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
 not automatic format discovery. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+Boot initializes a configured IDE controller before mounting filesystems.
+Verbose boot prints its controller, capacity and APT diagnostics at that point,
+before the filesystem mounting and ready/failure messages.
+To capture the same observations for a hardware report:
+
+```text
+MOUNT DIAGNOSTICS
+MOUNT DIAGNOSTICS >RAM:IDE.TXT
+```
+
+The report shows detection at PBI ID 0, IDENTIFY capacity in 512-byte physical
+sectors and MiB, controller state/generation, card protection, and discovered
+APT units with their data LBA, sector count and effective read/write capability.
+Skipped APT slots include their reason. An unattempted driver is labelled
+`UNATTEMPTED`; printing this report never probes or retries a disk.
+Controller states are 0 stopped, 1 starting, 2 ready, 3 stopping, 4 retiring and
+5 offline. Observations remain available after stop until a new admission.
+
+Mount failures identify the configured volume/device, failed phase and original
+error. Geometry mismatches print configured and discovered values. IDE open
+failures distinguish missing hardware/media, rejected APT tables and empty,
+inactive or unsupported slots; ATA errors include saved status/error registers.
+Startup always prints the specific mount failure, even with verbose mode off.
+Redirecting to RAM requires a successfully mounted RAM volume; after a failed
+initial mount set, read the report on the console.
 
 The resident `timer.device` appears as `ready` even with no open requests.
 It has no worker Task, so it does not appear under `TASKS`.

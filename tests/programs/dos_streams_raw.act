@@ -178,12 +178,6 @@ PROC OpenFirst()
   Require(DOS.Read(first,BYTE POINTER($ffffff),0)=0 AND DOS.Write(first,
       BYTE POINTER(0),0)=0)
   Require(client.request=EXEC.IOStdReq POINTER(0) AND EXEC.AvailMem(0)=freeBefore)
-  Require(DOS.Read(first,BYTE POINTER($400),1)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
-  Require(DOS.Write(first,BYTE POINTER(0),1)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
-  Require(DOS.Write(first,BYTE POINTER($ffffff),2)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
   Require(DOS.Write(first,nearBuffer,-1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
   Require(DOS.Seek(first,0,DOS.OFFSET_BEGINNING)=-1
       AND DOS.IoErr()=DOS.ERROR_SEEK_ERROR)

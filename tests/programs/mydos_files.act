@@ -399,10 +399,10 @@ PROC HighSectors(BYTE unused)
 
 RETURN
 
-; Reject wrapping or unmapped destination buffers before copying file payload.
+; Copy into another live caller buffer and preserve neighbouring bytes.
 PROC OutputExtents(BYTE unused)
   BYTE status,index
-  BYTE POINTER low,high
+  BYTE POINTER low
 
   OpenAt(1)
   op.output=BYTE POINTER($b0000)
@@ -414,12 +414,6 @@ PROC OutputExtents(BYTE unused)
     Require(low(index)=(index XOR 83))
   OD
 
-  op.output=BYTE POINTER($fffff0)
-  op.requested=32
-  Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
-  op.output=BYTE POINTER($100000)
-  op.requested=1
-  Require(MYDOSFILE.BeginRead(op)=0 AND work.error=115 AND file.position=16)
 
 RETURN
 

@@ -36,7 +36,7 @@ PUBLIC TYPE Workspace=[
   LONGCARD index
   CARD matchCount
   BYTE exactFound
-  CARD directory,pathOffset,pathLength,neededSector
+  CARD directory,pathOffset,pathLength,neededSector,neededCount
   BYTE POINTER path
   LONGINT error,ioError
   LONGCARD operations

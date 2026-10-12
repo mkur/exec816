@@ -22,17 +22,26 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; Change a warm cached sector using that same scratch buffer as write source.
+; Exercise scratch and external bank-crossing sources, including short boot sectors.
 PROC Change(CARD sector BYTE seed)
   CARD index
+  BYTE POINTER source
 
   LET length=BLOCKIO.SectorBytes(volume,LONGCARD(sector))
   Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
+  source=adapter.buffer
+  IF sector=4 THEN
+    source=buffer
+  FI
+
   FOR index=0 TO length-1 DO
-    adapter.buffer(index)=BYTE(index) XOR seed
+    source(index)=BYTE(index) XOR seed
   OD
 
-  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),adapter.buffer)=2)
+  Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),source)=2)
+  LET sio=EXEC.IOSIOReq POINTER(adapter.request)
+  Require(sio.sio_Command=$50)
+  Require(adapter.request.io_Data=source)
   Require(adapter.valid=0 AND adapter.busy=1 AND volume.busy=1)
   Require(BLOCKCACHE.Read(@adapter.cache,volume,sector,length,buffer)=0)
   Require(BLOCKIO.BeginStore(adapter,volume,LONGCARD(sector),buffer)=0)
@@ -41,6 +50,11 @@ PROC Change(CARD sector BYTE seed)
   Require(BLOCKIO.FinishStore(adapter,volume,LONGCARD(sector),LONGINT(error))=0)
   Require(adapter.busy=0 AND volume.busy=0 AND adapter.request.io_Data=NULL)
   Require(adapter.request.io_Device=NULL AND adapter.request.io_Unit=NULL)
+  IF source<>adapter.buffer THEN
+    Require(adapter.valid=0)
+    ; Reply collection permits reuse; the clean cache owns a separate copy.
+    source(0)=source(0) XOR $ff
+  FI
   Require(BlockFetch(adapter,volume,LONGCARD(sector)+1)=0)
   Require(BlockFetch(adapter,volume,LONGCARD(sector))=0)
   FOR index=0 TO length-1 DO
@@ -65,10 +79,6 @@ PROC FailedCompletion()
   Require(BLOCKCACHE.Read(@adapter.cache,volume,4,sectorBytes,buffer)=0)
   Require(BLOCKIO.BeginStore(adapter,volume,0,buffer)=0)
   Require(adapter.error=EXEC.IOERR_BADLENGTH)
-  Require(BLOCKIO.BeginStore(adapter,volume,4,NULL)=0)
-  Require(adapter.error=EXEC.IOERR_BADADDRESS)
-  Require(BLOCKIO.BeginStore(adapter,volume,4,BYTE POINTER($fffff0))=0)
-  Require(adapter.error=EXEC.IOERR_BADADDRESS)
 
 RETURN
 

@@ -112,7 +112,7 @@ def nil(t, out, mode, mounted=False):
         require(runtime['created']==(3 if mounted else 1),'Unexpected stream worker creation')
         require(data(b,p['image'],'phase')==[3],'Missing watch negative-control completion')
         evidence['checks']=int.from_bytes(bytes(data(b,p['image'],'checks')),'little')
-        require(evidence['checks']==(49 if mounted else 41),'Incomplete NIL assertions: '+str(evidence['checks']))
+        require(evidence['checks']==(45 if mounted else 37),'Incomplete NIL assertions: '+str(evidence['checks']))
     return dict(status='pass',build=p['build'],runtime=runtime,machine=machine,observations=evidence,mounted=mounted)
 
 

@@ -84,15 +84,8 @@ PROC Counts()
   Require(DOS.Read(file,BYTE POINTER(0),0)=0 AND DOS.IoErr()=0)
   Require(DOS.Write(file,BYTE POINTER($ffffff),0)=0 AND DOS.IoErr()=0)
   Require(DOS.Read(file,BYTE POINTER(0),-1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
-  Require(DOS.Write(file,BYTE POINTER(0),1)=-1 AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
   Require(DOS.Write(file,BYTE POINTER($bfffe),70003)=70003 AND DOS.IoErr()=0)
   Require(DOS.Read(file,BYTE POINTER($bfffe),70003)=0 AND DOS.IoErr()=0)
-  Require(DOS.Write(file,BYTE POINTER($ffffff),2)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
-  Require(DOS.Write(file,BYTE POINTER($100000),1)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
-  Require(DOS.Read(file,BYTE POINTER($d000),1)=-1
-      AND DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
   Require(DOS.Read(DOS.FileHandle POINTER($ffffff),BYTE POINTER(0),-1)=-1
       AND DOS.IoErr()=DOS.ERROR_BAD_STREAM_NAME)
   Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=-1

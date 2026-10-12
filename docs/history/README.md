@@ -5,6 +5,11 @@
   and scheduling costs in the unchanged packaged desktop.
 - [GEM rendering performance](gem-rendering-performance.md): implementation
   slices and measurements following those traces.
+- [Bounded IDE read ranges](ide-read-ranges.md): device, cache and filesystem
+  grouping, memory costs and matched development measurements.
+
+- [Filesystem and DOS performance](filesystem-dos-performance.md): shared
+  SIO/IDE optimizations, matched measurements and memory costs.
 
 - [AES UPDATE admission latency](update-admission-latency.md): logical lock,
   presenter painting and physical display handoff attribution, rejected renderer
@@ -49,6 +54,7 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Exec and project history
 
+- [IDE diagnostics](ide-diagnostics.md): retained controller, APT and mount failure evidence.
 - [IDE Plus block driver](ideplus-block-driver.md): transport separation and native ATA development evidence.
 - [IDE-only demo](ide-only-demo.md): IDE system-volume selection and separate-profile development evidence.
 - [IDE 512-byte sector refactor](ide-512-sector-refactor.md): independent media,
@@ -200,7 +206,9 @@ their recorded hashes and measurements are preserved here as historical evidence
   option, matching mount descriptors and MyDOS extended VTOC images.
 - [MyDOS and SpartaDOS write implementation](filesystem-write-implementation.md):
   lightweight mounts, file/namespace writes, bounded commit units, inherited
-  writer retirement, failure outcomes, native round trips and the OF816 demo.
+  writer retirement, failure outcomes, native round trips and the OF816 demo;
+  [normal write completion](filesystem-write-implementation.md#normal-write-completion)
+  removes mandatory SIO/IDE readback verification.
 - [Block I/O and DOS with MyDOS filesystems](block-io-dos-design.md)
 - [Block I/O and MyDOS implementation](block-io-dos-implementation.md)
 - [DOS console streams](dos-console-streams-design.md)
@@ -231,6 +239,8 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Programs and shell
 
+- [INFO command](info-command.md): copied DOS volume queries and the incremental
+  implementation of loadable volume statistics.
 - [Shell startup scripts](shell-startup.md): S: naming, optional STARTUP/USER,
   sequential execution before the prompt, compatibility and memory costs.
 - [Shell EXECUTE](shell-execute.md): bounded scripts through ordinary dispatch,

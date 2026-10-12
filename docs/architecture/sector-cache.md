@@ -8,18 +8,26 @@ every piece before any destination bytes are copied. Part tags are zero-based;
 short floppy sectors continue using every cache set.
 
 Capacity is a boot setting: zero or powers of two from 16 through 2048 blocks.
-Zero retains only the existing scratch-sector buffer. If allocation fails,
+Zero retains only the shared 2048-byte transfer buffer; its scratch tag names
+one sector. IDE range reads publish each sector only after complete success.
+Lookahead presence probes check all pieces without changing counters or
+replacement state, allowing physical ranges to stop before retained sectors.
+If allocation fails,
 partial storage is released and the shell reports the fallback. Use the
 [OF816 boot monitor](../guides/boot-monitor.md) to change the request for one boot,
 or `cache_blocks` in [kernel.json](../../config/kernel.json) for a build default.
 
 A four-way set-associative table limits lookup to four tags per block and uses
-round-robin replacement. Collisions can evict data before nominal capacity is
-full. Successful exact-length reads populate it; failures do not. Detach and
+round-robin replacement. Read/publication compute the sector's first bucket
+once and derive successive piece buckets by XOR with the part index. Admitted
+geometry aligns the unsalted hash to the piece count, preserving the original
+mapping and replacement policy. Invalidation still visits all four possible
+pieces. Collisions can evict data before nominal capacity is full.
+Successful exact-length reads populate it; failures do not. Detach and
 transport errors drop the affected volume. A reset-required/offline SIO bus
 drops all retained blocks and still prevents filesystem access to cached data.
 Keep mounted media unchanged until unmount/remount; there is no automatic
-media-change detection, prefetch or write-back. Verified writes invalidate every
+media-change detection, prefetch or write-back. Sector writes invalidate every
 piece first and cache only a complete successful replacement.
 
 ## Memory and lifetime

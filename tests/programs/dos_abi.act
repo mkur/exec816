@@ -5,7 +5,7 @@ USE DOS
 USE DOSWIRE
 USE HEAPCORE
 INCLUDE "dos-packets.inc"
-LONGCARD ARRAY seen(39),returns(25)
+LONGCARD ARRAY seen(43),returns(27)
 CARD checks
 
 ; Stop at the first failed fixture invariant and retain its check index for
@@ -79,6 +79,20 @@ LONGINT FUNC GetAssign(CARD index DOS.AssignInfo POINTER info)
 
   seen(37)=LONGCARD(index)
   seen(38)=LONGCARD(ADDRESS(info))
+
+RETURN(-1)
+
+LONGINT FUNC GetVolume(CARD index DOS.VolumeInfo POINTER info)
+
+  seen(39)=LONGCARD(index)
+  seen(40)=LONGCARD(ADDRESS(info))
+
+RETURN(-1)
+
+LONGINT FUNC Info(DOS.FileLock POINTER lock DOS.VolumeInfo POINTER info)
+
+  seen(41)=LONGCARD(ADDRESS(lock))
+  seen(42)=LONGCARD(ADDRESS(info))
 
 RETURN(-1)
 
@@ -263,6 +277,9 @@ PROC Main()
   returns(23)=LONGCARD(AssignPath(BYTE POINTER($0cfff0),
       BYTE POINTER($0dfff0)))
   returns(24)=LONGCARD(GetAssign(CARD(3),DOS.AssignInfo POINTER($0aff00)))
+  returns(25)=LONGCARD(GetVolume(CARD(8),DOS.VolumeInfo POINTER($0dfff0)))
+  returns(26)=LONGCARD(Info(DOS.FileLock POINTER($090000),
+      DOS.VolumeInfo POINTER($0dfff0)))
 
 RETURN
 

@@ -24,6 +24,11 @@ Proposed sequence for the next command and shell slices. Keep new utilities
 loadable where practical, and record resident code, upper-RAM and reserved
 bank-zero costs for each slice before moving to the next.
 
+The [INFO slice](history/info-command.md) completes copied public volume queries,
+cached allocation statistics and a loadable command. It reports disk space,
+labels, backing device and access, keeps RAM's dynamic capacity explicit, and
+gives demo SYS/WORK disks distinct filesystem labels.
+
 The [directory listing performance slice](history/directory-listing-performance.md)
 completes DL0–DL6: bulk copies, one Write per row, map summaries and a bounded
 cache of completed SpartaDOS extents. Matched warm root/SYS:C listings improve
@@ -44,6 +49,18 @@ Matched COPY, failure and cancellation checks pass at the development tier;
 see the [SB0–SB5 plan](plans/spartados-write-buffering-implementation-plan.md).
 Retaining dirty metadata between Write calls until Flush/Close remains a
 separate design decision.
+
+The [filesystem and DOS performance plan](plans/filesystem-dos-performance-implementation-plan.md)
+is complete through FP0–FP5 and the selected FP6 changes at the development tier.
+Shared bulk transfers, cheaper validation/invalidation and bounded IDE writes
+reduce matched cold/warm IDE COPY to 1.78/1.22 seconds; see the
+[execution record](history/filesystem-dos-performance.md).
+The [bounded IDE read ranges plan](plans/ide-read-ranges-implementation-plan.md)
+is also complete at the development tier. Four-sector regular-file reads through
+shared staging reduce cold IDE COPY to 1.48 seconds; warm COPY remains at 1.22
+seconds. See the [read-range results](history/ide-read-ranges.md) for cache-only
+costs, failure isolation and bounded cancellation. Existing-file overwrite
+batching is deferred; refreshing the demo packages follows the read work.
 
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent
@@ -164,6 +181,12 @@ SDFS 2.1, shared 512-byte buffers and the existing cache budget. SIO retains
 128/256-byte formats. The real pinned BIOS XEX loader now reaches OF816 and the
 IDE-only kernel shell; automatic power-on boot and hardware qualification remain
 separate work.
+
+The completed [IDE diagnostics plan](plans/ide-diagnostics-implementation-plan.md)
+adds retained controller detection, capacity, APT mappings and precise mount
+failures to verbose boot and `MOUNT DIAGNOSTICS`, without probing from reports.
+Its [development record](history/ide-diagnostics.md) covers native failure cases
+and both console variants.
 
 The [standard dialogs design](plans/gem4xe/standard-dialogs-design.md)
 and [FD1–FD4 plan](plans/gem4xe/standard-dialogs-implementation-plan.md) add bounded

@@ -13,7 +13,7 @@ TYPE ProbeState=[CARD busy BYTE phase,pad CARD nmi]
 TYPE BusPrefix=[CARD opens BYTE state,stop EXEC.Task POINTER worker
     EXEC.IORequest POINTER active BYTE phase,cancelled]
 CARD checks,progress,aborts
-BYTE done,target,expectedError,blocked,busyStop,mixed,allocation
+BYTE done,target,expectedError,blocked,busyStop,mixed,allocation,rangeMode
 EXEC.Task peer
 EXEC.Task ARRAY crowd(5)
 EXEC.IOStdReq POINTER pending
@@ -75,7 +75,7 @@ PROC AddPeer(EXEC.Task POINTER item BYTE slot)
 
 RETURN
 
-; A cancelled read must not replace client bytes; an accepted write must finish.
+; Cancelled read bytes are invalid; bounds and accepted writes stay intact.
 PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
   CARD index
   INT error,wanted
@@ -83,10 +83,24 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
 
   LET probe=ProbeState POINTER(ADDRESS(IDEMETA.BASE+768))
   request.io_Data=BYTE POINTER($2dfff0)
+  LET left=BYTE POINTER($2dffef)
+  LET right=BYTE POINTER($2e07f0)
+  left^=$a5
+  right^=$5a
   request.io_Length=512
   request.io_Offset=1
   request.io_Command=IF writing<>0 THEN IDEPLUS.WRITE_SECTOR ELSE IDEPLUS.READ_SECTOR FI
-  FOR index=0 TO 511 DO
+  IF writing<>0 AND rangeMode<>0 THEN
+    request.io_Command=IDEPLUS.WRITE_SECTORS
+    request.io_Length=2048
+    request.io_Offset=0
+  FI
+  IF writing=0 AND rangeMode=2 THEN
+    request.io_Command=IDEPLUS.READ_SECTORS
+    request.io_Length=2048
+    request.io_Offset=0
+  FI
+  FOR index=0 TO CARD(request.io_Length)-1 DO
     request.io_Data(index)=BYTE(index) XOR $55
   OD
 
@@ -97,11 +111,14 @@ PROC Transfer(EXEC.IOStdReq POINTER request BYTE phase,writing)
   Require(target=0)
   wanted=IF phase=3 THEN INT(0) ELSE INT(EXEC.IOERR_ABORTED) FI
   Require(error=wanted)
-  actual=IF phase=3 THEN LONGCARD(512) ELSE LONGCARD(0) FI
+  actual=IF phase=3 THEN request.io_Length ELSE LONGCARD(0) FI
   Require(request.io_Actual=actual)
-  FOR index=0 TO 511 DO
-    Require(request.io_Data(index)=(BYTE(index) XOR $55))
-  OD
+  Require(left^=$a5 AND right^=$5a)
+  IF writing<>0 THEN
+    FOR index=0 TO CARD(request.io_Length)-1 DO
+      Require(request.io_Data(index)=(BYTE(index) XOR $55))
+    OD
+  FI
 
 RETURN
 
@@ -157,9 +174,17 @@ PROC Main()
     request.io_Length=512
     request.io_Offset=1
     request.io_Command=IDEPLUS.WRITE_SECTOR
+    IF rangeMode<>0 THEN
+      request.io_Command=IDEPLUS.WRITE_SECTORS
+      request.io_Length=2048
+      request.io_Offset=0
+    FI
+    IF rangeMode=2 THEN
+      request.io_Command=IDEPLUS.READ_SECTORS
+    FI
     IF expectedError=2 THEN
       probe.busy=65535
-      probe.phase=1
+      probe.phase=IF rangeMode=2 THEN 2 ELSE 1 FI
     FI
 
     error=EXEC.DoIO(EXEC.IORequest POINTER(request))

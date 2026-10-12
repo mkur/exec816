@@ -250,12 +250,11 @@ PUBLIC PROC Stop()
 
 RETURN
 
-; Check shutdown readiness while protecting worker and request ownership.
+; Caller holds Forbid through shutdown checking and request claim.
 BYTE FUNC Stopping(DriverBus POINTER bus EXEC.Task POINTER self LONGCARD received)
   LONGCARD bits
   BYTE stopped
 
-  EXEC.Forbid()
   IF ((self.tc_SigRecvd OR received) & LONGCARD(STOP_MASK))<>0 THEN
     bits=EXEC.SetSignal(0,LONGCARD(STOP_MASK))
     bus.stop=1
@@ -266,8 +265,6 @@ BYTE FUNC Stopping(DriverBus POINTER bus EXEC.Task POINTER self LONGCARD receive
   IF stopped<>0 THEN
     bus.state=3
   FI
-
-  EXEC.Permit()
 
 RETURN(stopped)
 

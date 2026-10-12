@@ -33,8 +33,8 @@ def instrument(out, hint=0):
         path.write_text(source)
     source = read_source(library_file('fswriteio.act'))
     source = source.replace('USE EXEC\n', 'USE EXEC\nUSE SDFSBATCHPROBE\n', 1)
-    marker = '\nRETURN(1)\n\nPUBLIC PROC Zero('
-    require(source.count(marker) == 1, 'Stale verified-write observer')
+    marker = '\nRETURN(1)\n\nPUBLIC BYTE FUNC Write('
+    require(source.count(marker) == 1, 'Stale completed-write observer')
     source = source.replace(marker, '\n  SDFSBATCHPROBE.Completed(service,sector)\n' + marker)
     (out/'fswriteio.act').write_text(source)
 
@@ -51,12 +51,17 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
     require(before.image.size == size, 'Fixture sector size mismatch')
     mounts = [dict(alias='D1', unit=49, sectors=before.image.count,
                    sector_bytes=size, format=2, access='readwrite', profile=4)]
+    profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes'] = 4352
+    profile_path = out/'memory-profile.json'
+    profile_path.write_text(json.dumps(profile))
     program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), out/'sdfs_write_buffering.act',
                     out, optimize=mode == 'opt', tasks=True, task_capacity=8,
                     console_deferred=True,
                     dos_mounts=mounts,
+                    memory_profile=profile_path,
                     image_data=[(0x30ffd0, bytes([0xa5])*(amount+64)),
-                                (0xd0000, bytes(384*2))])
+                                (0x320000, bytes(384*2))])
     if from_build:
         record = program['build']
         require(record['optimize'] == (mode == 'opt'), 'Changed emission mode')
@@ -101,7 +106,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
                                            if '_SDFSBATCHPROBE_' in d['name']]}
         count = int.from_bytes(bytes(data(bridge, view, 'count')), 'little')
         require(count < 384, 'Physical-write trace overflow')
-        raw_trace = read(bridge, 0xd0000, count*2, out)
+        raw_trace = read(bridge, 0x320000, count*2, out)
         trace = [int.from_bytes(raw_trace[i:i+2], 'little')
                  for i in range(0, len(raw_trace), 2)]
         workspace = data(bridge, program['image'], 'workspaceBytes', True)[0]
@@ -155,7 +160,7 @@ def run(out, mode, size, amount, expected_writes=None, cache_blocks=None,
             at += 4
     return dict(status='pass', tier='development', build=program['build'],
                 runtime=runtime, machine=machine, configuration=configuration,
-                amount=amount, sector_bytes=size, verified_writes=count,
+                amount=amount, sector_bytes=size, completed_writes=count,
                 phases=phases, sectors=trace, counts=counts,
                 workspace_requested_bytes=workspace,
                 workspace_rounded_bytes=(workspace+7)//8*8,
@@ -186,7 +191,7 @@ if __name__ == '__main__':
         result = run(out, args.case, args.size, args.amount,
                      args.expected_writes, args.cache_blocks, args.ordered,
                      args.from_build, args.fixture, args.hint)
-        print('SDFS Write:', result['verified_writes'], result['counts'], flush=True)
+        print('SDFS Write:', result['completed_writes'], result['counts'], flush=True)
     except Exception as error:
         result.update(status='fail', error=str(error))
         raise

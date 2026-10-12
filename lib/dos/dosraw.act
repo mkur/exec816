@@ -233,10 +233,10 @@ PUBLIC BYTE POINTER FUNC Open(DOSCLIENT.ClientContext POINTER client LONGCARD un
 
 RETURN(OpenSized(client,DOSOBJECTS.BACKEND_RAW,SIZEOF(DOSSTREAMS.Handle),unit))
 
-; Check the complete caller buffer before submitting console I/O.
+; Check transfer length before submitting the retained caller buffer.
 PUBLIC BYTE FUNC ValidExtent(BYTE POINTER buffer LONGINT length)
 
-  IF DOSSTREAMS.ValidBuffer(buffer,length)=0 THEN
+  IF DOSSTREAMS.ValidLength(length)=0 THEN
     RETURN(0)
   FI
 

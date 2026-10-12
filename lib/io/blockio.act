@@ -78,7 +78,7 @@ PUBLIC BLOCKTYPES.Adapter POINTER FUNC Create()
     adapter.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
         EXEC.IOSIOREQ_SIZE))
     IF adapter.request<>NULL THEN
-      adapter.buffer=EXEC.AllocMem(BLOCKTYPES.SECTOR_BUFFER_BYTES,EXEC.MEMF_UPPER)
+      adapter.buffer=EXEC.AllocMem(BLOCKTYPES.TRANSFER_BUFFER_BYTES,EXEC.MEMF_UPPER)
       IF adapter.buffer<>NULL THEN
         BLOCKCACHE.Create(@adapter.cache,BOOTCONFIG.CacheBlocks())
         RETURN(adapter)
@@ -107,7 +107,7 @@ PUBLIC BYTE FUNC Destroy(BLOCKTYPES.Adapter POINTER adapter)
   FI
 
   BLOCKCACHE.Destroy(@adapter.cache)
-  EXEC.FreeMem(adapter.buffer,BLOCKTYPES.SECTOR_BUFFER_BYTES)
+  EXEC.FreeMem(adapter.buffer,BLOCKTYPES.TRANSFER_BUFFER_BYTES)
   EXEC.DeleteIORequest(EXEC.IORequest POINTER(adapter.request))
   EXEC.DeleteMsgPort(adapter.port)
   EXEC.FreeMem(BYTE POINTER(adapter),BLOCKTYPES.ADAPTER_SIZE)
@@ -121,6 +121,7 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   BYTE POINTER name
   INT error
 
+  adapter.admission=BLOCKTYPES.ADMIT_ALLOCATE
   volume.request=EXEC.IOStdReq POINTER(EXEC.CreateIORequest(adapter.port,
       EXEC.IOSIOREQ_SIZE))
   IF volume.request=NULL THEN
@@ -133,10 +134,14 @@ PUBLIC BLOCKTYPES.Volume POINTER FUNC OpenVolume(BLOCKTYPES.Adapter
   DiscardBuffer(adapter)
   name=adapter.buffer
   BLOCKTRANSPORT.DeviceName(volume.backend,name)
+  adapter.admission=BLOCKTYPES.ADMIT_OPEN
   error=EXEC.OpenDevice(name,volume.unit,EXEC.IORequest POINTER(volume.request),0)
   IF error=0 THEN
+    adapter.admission=BLOCKTYPES.ADMIT_GEOMETRY
     error=BLOCKTRANSPORT.CheckGeometry(volume,adapter.buffer)
-    IF error<>0 THEN EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request)) FI
+    IF error<>0 THEN
+      EXEC.CloseDevice(EXEC.IORequest POINTER(volume.request))
+    FI
   FI
   IF error<>0 THEN
     adapter.error=LONGINT(error)
@@ -269,15 +274,9 @@ CARD FUNC Check(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
 
 RETURN(expected)
 
-; Serve a retained sector when possible; otherwise start physical I/O.
-PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
-    POINTER volume LONGCARD sector)
-  CARD expected
-
-  expected=Check(adapter,volume,sector)
-  IF expected=0 THEN
-    RETURN(0)
-  FI
+; Serve an admitted sector or prepare its physical request without submitting.
+BYTE FUNC Fetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector CARD expected)
 
   IF BLOCKTRANSPORT.Unavailable(volume)<>0 THEN
     DiscardBuffer(adapter)
@@ -305,48 +304,137 @@ PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
 
 RETURN(2)
 
-; Stage a complete sector and retain its immutable bytes until collection.
-; Source may be the scratch sector after a read-modify-write operation.
-PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
-    POINTER volume LONGCARD sector BYTE POINTER source)
-  CARD index
+; Serve a retained sector when possible; otherwise start physical I/O.
+PUBLIC BYTE FUNC BeginFetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector)
 
   LET expected=Check(adapter,volume,sector)
   IF expected=0 THEN
     RETURN(0)
   FI
 
-  IF Mapped(source,LONGCARD(expected))=0 THEN
-    adapter.error=EXEC.IOERR_BADADDRESS
+RETURN(Fetch(adapter,volume,sector,expected))
+
+; Read only consecutive misses; return the actual count to the consumer.
+PUBLIC BYTE FUNC BeginFetchRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector CARD POINTER requested)
+  CARD count
+
+  IF requested^=1 THEN
+    RETURN(BeginFetch(adapter,volume,sector))
+  FI
+
+  LET expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+  IF expected<>512 OR requested^<2
+      OR requested^>CARD(BLOCKTRANSPORT.ReadLimit(volume)) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+  IF LONGCARD(requested^)>volume.sectors-sector+1
+      OR sector+LONGCARD(requested^)-1>LONGCARD($ffff) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
     RETURN(0)
   FI
 
-  DiscardBuffer(adapter)
-  BLOCKCACHE.Forget(@adapter.cache,volume,CARD(sector))
-  IF source<>adapter.buffer THEN
-    FOR index=0 TO expected-1 DO
-      adapter.buffer(index)=source(index)
-    OD
+  LET status=Fetch(adapter,volume,sector,expected)
+  IF status<>2 THEN
+    requested^=1
+    RETURN(status)
   FI
 
+  count=1
+  WHILE count<requested^ DO
+    IF BLOCKCACHE.Contains(@adapter.cache,volume,CARD(sector)+count,
+        expected)<>0 THEN
+      EXIT
+    FI
+    count==+1
+  OD
+  requested^=count
+  IF count>1 THEN
+    IF adapter.cache.blocks<>0 THEN
+      adapter.cache.misses==+LONGCARD(count-1)
+    FI
+    BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected*count,
+        adapter.buffer,0)
+  FI
+
+RETURN(2)
+
+; Borrow an admitted span; invalidate all sectors before command submission.
+BYTE FUNC Store(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume POINTER volume
+    LONGCARD sector BYTE POINTER source CARD expected BYTE count)
+  BYTE index
+
+  DiscardBuffer(adapter)
+  FOR index=0 TO count-1 DO
+    BLOCKCACHE.Forget(@adapter.cache,volume,CARD(sector)+CARD(index))
+  OD
   adapter.busy=1
   volume.busy=1
   adapter.request.io_Device=volume.request.io_Device
   adapter.request.io_Unit=volume.request.io_Unit
-  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,adapter.buffer,1)
+  BLOCKTRANSPORT.Prepare(adapter.request,volume,sector,expected,source,1)
 
 RETURN(2)
 
-; Retire a pending fetch and publish only valid completed sector data.
-PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
-    BLOCKTYPES.Volume POINTER volume LONGCARD sector LONGINT error)
-  CARD expected
+; Scratch or external source stays live and immutable until collection.
+PUBLIC BYTE FUNC BeginStore(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector BYTE POINTER source)
 
-  expected=SectorBytes(volume,sector)
+  LET expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Store(adapter,volume,sector,source,expected,1))
+
+; IDE ranges borrow complete sectors; SIO remains a single-sector transport.
+PUBLIC BYTE FUNC BeginStoreRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector BYTE POINTER source BYTE count)
+
+  IF count=1 THEN
+    RETURN(BeginStore(adapter,volume,sector,source))
+  FI
+  LET expected=Check(adapter,volume,sector)
+  IF expected=0 THEN
+    RETURN(0)
+  FI
+  IF volume.backend<>BLOCKTYPES.BACKEND_IDEPLUS OR expected<>512
+      OR count<2 OR count>BLOCKTRANSPORT.WriteLimit(volume) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+  IF sector+LONGCARD(count)-1>volume.sectors
+      OR sector+LONGCARD(count)-1>LONGCARD($ffff) THEN
+    adapter.error=EXEC.IOERR_BADLENGTH
+    RETURN(0)
+  FI
+
+RETURN(Store(adapter,volume,sector,source,expected*CARD(count),count))
+
+; Retire a pending fetch and publish only valid completed sector data.
+LONGINT FUNC Finish(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume
+    POINTER volume LONGCARD sector CARD expected BYTE count LONGINT error)
+  BYTE index
+  CARD bytes
+
+  LET source=adapter.request.io_Data
   adapter.error=Complete(adapter,volume,expected,error)
   IF adapter.error=0 THEN
-    BLOCKCACHE.Store(@adapter.cache,volume,CARD(sector),expected,adapter.buffer)
-    Publish(adapter,volume,sector,expected)
+    bytes=SectorBytes(volume,sector)
+    FOR index=0 TO count-1 DO
+      BLOCKCACHE.Store(@adapter.cache,volume,CARD(sector)+CARD(index),bytes,
+          source+SIZE(index)*SIZE(bytes))
+    OD
+    IF count=1 AND source=adapter.buffer THEN
+      Publish(adapter,volume,sector,expected)
+    ELSE
+      DiscardBuffer(adapter)
+    FI
   ELSE
     DiscardBuffer(adapter)
     BLOCKCACHE.Invalidate(@adapter.cache,volume)
@@ -356,10 +444,33 @@ PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
 
 RETURN(adapter.error)
 
+PUBLIC LONGINT FUNC FinishFetch(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector LONGINT error)
+
+RETURN(Finish(adapter,volume,sector,SectorBytes(volume,sector),1,error))
+
+; Publish every complete range sector; scratch retains only the first tag.
+PUBLIC LONGINT FUNC FinishFetchRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector CARD count LONGINT error)
+
+  LET result=Finish(adapter,volume,sector,SectorBytes(volume,sector)*count,
+      BYTE(count),error)
+  IF result=0 THEN
+    Publish(adapter,volume,sector,SectorBytes(volume,sector))
+  FI
+
+RETURN(result)
+
 ; Writes publish cache bytes only after complete peripheral confirmation.
 PUBLIC LONGINT FUNC FinishStore(BLOCKTYPES.Adapter POINTER adapter
     BLOCKTYPES.Volume POINTER volume LONGCARD sector LONGINT error)
 
 RETURN(FinishFetch(adapter,volume,sector,error))
+
+PUBLIC LONGINT FUNC FinishStoreRange(BLOCKTYPES.Adapter POINTER adapter
+    BLOCKTYPES.Volume POINTER volume LONGCARD sector BYTE count LONGINT error)
+
+RETURN(Finish(adapter,volume,sector,SectorBytes(volume,sector)*CARD(count),
+    count,error))
 
 ENDMODULE

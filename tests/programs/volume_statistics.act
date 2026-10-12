@@ -1,0 +1,162 @@
+MODULE VOLUMESTATISTICS
+USE EXEC
+USE DOS
+USE FSBOOT
+USE FSREGISTRY
+USE FSTYPES
+USE BLOCKIO
+USE VOLUMETEST
+USE IDEPLUSDRIVER
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks,phase
+BYTE finished
+BYTE ide
+DOS.FileLock POINTER root
+DOS.VolumeInfo POINTER info
+LONGCARD initialFree,initialTotal
+BYTE ARRAY payload(513)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f800+(checks & 255))
+  FI
+
+  checks==+1
+
+RETURN
+
+; Evict only this volume before measuring the physical header read.
+PROC Cold()
+
+  LET service=FSREGISTRY.Service()
+  BLOCKIO.Invalidate(service.adapter)
+
+RETURN
+
+; Queries publish exact counts even when the request buffer crosses a bank.
+PROC Disk()
+  LONGCARD free
+  DOS.FileHandle POINTER file
+  DOS.FileLock POINTER directory
+  BYTE POINTER bytes
+  BYTE offset
+
+  phase=1
+  root=DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)
+  Require(root<>NULL)
+  LET service=FSREGISTRY.Service()
+  LET mount=service.mounts(0).item
+  ide=mount.spec.backend=DOS.VOLUME_IDEPLUS
+  Cold()
+  VOLUMETEST.armed=1
+  Require(DOS.Info(root,info)<>0 AND DOS.IoErr()=0)
+  Require(VOLUMETEST.reads=1 AND VOLUMETEST.writes=0)
+  initialFree=info.freeBlocks
+  initialTotal=info.totalBlocks
+  Require(info.flags=DOS.VOLUME_BLOCKS_VALID AND
+      initialTotal=mount.spec.sectors AND info.sectorBytes=mount.spec.dataBytes)
+  Require(info.unit=mount.spec.unit AND info.backend=mount.spec.backend AND
+      info.readOnly=0 AND info.state=DOS.VOLUME_ONLINE)
+  Require(DOS.Info(root,info)<>0 AND VOLUMETEST.reads=1 AND
+      VOLUMETEST.writes=0 AND info.freeBlocks=initialFree)
+  VOLUMETEST.armed=0
+  Require(DOS.GetVolume(0,info)<>0 AND info.flags=0)
+  Require(DOS.GetVolume(1,info)<>0 AND info.format=DOS.VOLUME_RAM)
+  Require(DOS.AssignPath(BYTE POINTER(c"V"),BYTE POINTER(c"D1:"))<>0)
+  directory=DOS.Lock(BYTE POINTER(c"V:"),DOS.SHARED_LOCK)
+  Require(directory<>NULL AND DOS.Info(directory,info)<>0 AND
+      info.totalBlocks=initialTotal AND info.name(0)='D)
+  DOS.UnLock(directory)
+  Require(DOS.AssignPath(BYTE POINTER(c"V"),NULL)<>0)
+
+  phase=2
+  file=DOS.Open(BYTE POINTER(c"D1:INFOTEST"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Write(file,payload,SIZEOF(payload))=513)
+  Require(DOS.Close(file)<>0 AND DOS.Info(root,info)<>0)
+  free=info.freeBlocks
+  Require(free<initialFree)
+  file=DOS.Open(BYTE POINTER(c"D1:INFOTEST"),DOS.MODE_READWRITE)
+  Require(file<>NULL AND DOS.Write(file,payload,1)=1 AND DOS.Close(file)<>0)
+  Require(DOS.Info(root,info)<>0 AND info.freeBlocks=free)
+  file=DOS.Open(BYTE POINTER(c"D1:INFOTEST"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Close(file)<>0)
+  Require(DOS.Info(root,info)<>0 AND info.freeBlocks=initialFree-1)
+  Require(DOS.DeleteFile(BYTE POINTER(c"D1:INFOTEST"))<>0)
+  Require(DOS.Info(root,info)<>0 AND info.freeBlocks=initialFree)
+  directory=DOS.CreateDir(BYTE POINTER(c"D1:INFODIR"))
+  Require(directory<>NULL)
+  DOS.UnLock(directory)
+  Require(DOS.Info(root,info)<>0 AND info.freeBlocks<initialFree)
+  Require(DOS.DeleteFile(BYTE POINTER(c"D1:INFODIR"))<>0 AND
+      DOS.Info(root,info)<>0 AND info.freeBlocks=initialFree)
+
+  phase=3
+  bytes=service.adapter.buffer
+  offset=13
+  IF mount.spec.format=DOS.VOLUME_MYDOS THEN
+    offset=3
+  FI
+
+  bytes(offset)=$ff
+  bytes(offset+1)=$ff
+  A816MEMORY.Fill(BYTE POINTER(info),$a5,SIZEOF(DOS.VolumeInfo))
+  Require(DOS.Info(root,info)=0 AND DOS.IoErr()=DOS.ERROR_DISK_NOT_VALIDATED)
+  Require(info.flags=$a5 AND info.name(0)=$a5)
+  Cold()
+  VOLUMETEST.armed=1
+  VOLUMETEST.failure=DOS.ERROR_NO_DISK
+  Require(DOS.Info(root,info)=0 AND DOS.IoErr()=DOS.ERROR_NO_DISK)
+  Require(info.flags=$a5)
+  VOLUMETEST.failure=DOS.ERROR_BREAK
+  Require(DOS.Info(root,info)=0 AND DOS.IoErr()=DOS.ERROR_BREAK)
+  Require(info.flags=$a5 AND VOLUMETEST.writes=0)
+  VOLUMETEST.armed=0
+  VOLUMETEST.failure=0
+  Require(DOS.Info(root,info)<>0 AND info.freeBlocks=initialFree)
+  LET guards=BYTE POINTER($2dffef)
+  Require(guards(0)=$a5 AND guards(63)=$a5)
+  DOS.UnLock(root)
+
+RETURN
+
+; Dynamic RAM usage counts node storage and allocated capacity, not file length.
+PROC Ram()
+  DOS.FileHandle POINTER file
+  DOS.FileLock POINTER lock
+
+  phase=4
+  lock=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL AND DOS.Info(lock,info)<>0)
+  Require(info.flags=DOS.VOLUME_RAM_VALID AND info.allocatedBytes=66 AND
+      info.totalBlocks=0 AND info.freeBlocks=0 AND info.sectorBytes=0)
+  file=DOS.Open(BYTE POINTER(c"RAM:INFOTEST"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Write(file,payload,513)=513 AND DOS.Close(file)<>0)
+  Require(DOS.Info(lock,info)<>0 AND info.allocatedBytes=1142)
+  file=DOS.Open(BYTE POINTER(c"RAM:INFOTEST"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Close(file)<>0)
+  Require(DOS.Info(lock,info)<>0 AND info.allocatedBytes=118)
+  Require(DOS.DeleteFile(BYTE POINTER(c"RAM:INFOTEST"))<>0)
+  Require(DOS.Info(lock,info)<>0 AND info.allocatedBytes=66)
+  DOS.UnLock(lock)
+
+RETURN
+
+PROC Main()
+
+  LET baseline=EXEC.AvailMem(0)
+  info=DOS.VolumeInfo POINTER($2dfff0)
+  Disk()
+  Ram()
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  IF ide<>0 THEN
+    IDEPLUSDRIVER.Stop()
+  FI
+
+  Require(EXEC.AvailMem(0)=baseline)
+  finished=1
+
+RETURN
+ENDMODULE

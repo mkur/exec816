@@ -1,0 +1,136 @@
+MODULE IDEPLUSREADADAPTER
+USE EXEC
+USE IDEPLUS
+USE IDEMETA
+USE IDEPLUSDRIVER
+USE BLOCKTYPES
+USE BLOCKIO
+USE BLOCKCACHE
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks,phase
+TYPE BusPrefix=[CARD opens BYTE state]
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+(checks & 255))
+  FI
+  checks==+1
+
+RETURN
+
+PROC Pattern(BYTE POINTER bytes CARD logical)
+  CARD index
+
+  FOR index=0 TO 511 DO
+    bytes(index)=BYTE(index) XOR BYTE(index RSH 8) XOR BYTE(logical) XOR 2
+  OD
+
+RETURN
+
+PROC Fetch(BLOCKTYPES.Adapter POINTER adapter BLOCKTYPES.Volume POINTER volume
+    CARD first CARD POINTER count BYTE wanted)
+  CARD index
+
+  LET status=BLOCKIO.BeginFetchRange(adapter,volume,LONGCARD(first),count)
+  Require(status=wanted)
+  IF status=2 THEN
+    BEGIN
+      LET error=EXEC.DoIO(EXEC.IORequest POINTER(adapter.request))
+      Require(BLOCKIO.FinishFetchRange(adapter,volume,LONGCARD(first),count^,
+          LONGINT(error))=0)
+    END
+  FI
+  FOR index=0 TO count^*512-1 DO
+    Require(adapter.buffer(index)=(BYTE(index) XOR BYTE((index & 511) RSH 8)
+        XOR BYTE(first-1+(index RSH 9)) XOR 2))
+  OD
+
+RETURN
+
+PROC Main()
+  CARD count,index
+
+  LET before=EXEC.AvailMem(0)
+  LET adapter=BLOCKIO.Create()
+  LET volume=BLOCKTYPES.Volume POINTER(EXEC.AllocMem(BLOCKTYPES.VOLUME_SIZE,
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(adapter<>NULL AND volume<>NULL)
+  volume.adapter=BYTE POINTER(adapter)
+  volume.backend=BLOCKTYPES.BACKEND_IDEPLUS
+  volume.unit=2
+  volume.sectors=4
+  volume.dataBytes=512
+  volume.generation=1
+  Require(BLOCKIO.OpenVolume(adapter,volume)=volume)
+  phase=1
+  Pattern(adapter.buffer,2)
+  BLOCKCACHE.Store(@adapter.cache,volume,3,512,adapter.buffer)
+  LET hits=adapter.cache.hits
+  LET misses=adapter.cache.misses
+  Require(BLOCKCACHE.Contains(@adapter.cache,volume,3,512)<>0)
+  Require(BLOCKCACHE.Contains(@adapter.cache,volume,1,512)=0)
+  Require(adapter.cache.hits=hits AND adapter.cache.misses=misses)
+  count=4
+  Fetch(adapter,volume,1,@count,2)
+  Require(count=2 AND adapter.cache.misses=misses+2)
+  count=4
+  Fetch(adapter,volume,1,@count,1)
+  Require(count=1)
+  count=2
+  Fetch(adapter,volume,3,@count,1)
+  Require(count=1 AND adapter.cache.hits=hits+1)
+  count=1
+  Fetch(adapter,volume,4,@count,2)
+  count=4
+  Require(BLOCKIO.BeginFetchRange(adapter,volume,2,@count)=0)
+  Require(adapter.error=EXEC.IOERR_BADLENGTH AND adapter.busy=0)
+  phase=2
+  BLOCKIO.Invalidate(adapter)
+  count=4
+  Fetch(adapter,volume,1,@count,2)
+  Require(count=4)
+  FOR index=1 TO 4 DO
+    Require(BLOCKCACHE.Contains(@adapter.cache,volume,index,512)<>0)
+  OD
+  ; A partial cache sector cannot stop a range or become a hit.
+  FOR index=0 TO adapter.cache.blocks-1 DO
+    IF adapter.cache.tags(index).volume=volume
+        AND adapter.cache.tags(index).sector=3
+        AND adapter.cache.tags(index).part=0 THEN
+      adapter.cache.tags(index).volume=NULL
+    FI
+  OD
+  Require(BLOCKCACHE.Contains(@adapter.cache,volume,3,512)=0)
+  phase=3
+  BLOCKIO.Invalidate(adapter)
+  count=4
+  Require(BLOCKIO.BeginFetchRange(adapter,volume,1,@count)=2)
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(adapter.request))=0)
+  adapter.request.io_Actual=512
+  Require(BLOCKIO.FinishFetchRange(adapter,volume,1,count,0)=EXEC.IOERR_BADLENGTH)
+  Require(adapter.valid=0 AND adapter.busy=0)
+  FOR index=1 TO 4 DO
+    Require(BLOCKCACHE.Contains(@adapter.cache,volume,index,512)=0)
+  OD
+  phase=4
+  BLOCKCACHE.Destroy(@adapter.cache)
+  count=4
+  Fetch(adapter,volume,1,@count,2)
+  Require(count=4)
+  ; A retained scratch hit cannot bypass an offline controller.
+  LET bus=BusPrefix POINTER(ADDRESS(IDEMETA.BUS))
+  bus.state=5
+  count=4
+  Require(BLOCKIO.BeginFetchRange(adapter,volume,1,@count)=0)
+  Require(adapter.valid=0 AND adapter.error=EXEC.SIOERR_BUSUNAVAILABLE)
+  Require(BLOCKIO.Detach(adapter,volume)<>0)
+  Require(BLOCKIO.Destroy(adapter)<>0)
+  IDEPLUSDRIVER.Stop()
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+ENDMODULE

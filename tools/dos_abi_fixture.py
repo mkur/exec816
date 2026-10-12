@@ -12,13 +12,18 @@ PACKET=[('dp_Link','EXEC.Message POINTER',0,0x070000),('dp_Port','EXEC.MsgPort P
         (f'dp_Arg{i}','LONGINT',14+i*4,v) for i,v in enumerate([0,0xffffff,0x1000000,0xffff0000,0x80000000,0x7fffffff,0x12345678],1)]
 MSG=[('mn_Node.ln_Succ','EXECLISTS.Node POINTER',0,0x050000),('mn_Node.ln_Pred','EXECLISTS.Node POINTER',3,0x0dffff),('mn_Node.ln_Type','BYTE',6,5),('mn_Node.ln_Pri','BYTE',7,255),('mn_Node.ln_Name','BYTE POINTER',8,0x0c0000),('mn_ReplyPort','EXEC.MsgPort POINTER',11,0x090000),('mn_Length','CARD',14,62)]
 STANDARD=[('sp_Msg.'+f,k,o,v) for f,k,o,v in MSG]+[('sp_Pkt.'+f,k,16+o,v) for f,k,o,v in PACKET]
-FIXTURES=[('DateStamp',0x8fff8,12,DATE),('FileInfoBlock',0x6fff0,260,INFO),('DosPacket',0x9fff8,46,PACKET),('StandardPacket',0xbfff0,62,STANDARD)]
-WIDTH={'LONGINT':4,'CARD':2,'BYTE':1}
+VOLUME=[('name','ARRAY',0,bytes(range(32))),('label','ARRAY',32,bytes(range(9))),
+        ('format','BYTE',41,2),('backend','BYTE',42,1),('readOnly','BYTE',43,1),
+        ('state','BYTE',44,2),('flags','BYTE',45,3),('unit','CARD',46,65535),
+        ('sectorBytes','CARD',48,512),('totalBlocks','LONGCARD',50,65535),
+        ('freeBlocks','LONGCARD',54,60000),('allocatedBytes','LONGCARD',58,0x12345678)]
+FIXTURES=[('DateStamp',0x8fff8,12,DATE),('FileInfoBlock',0x6fff0,260,INFO),('DosPacket',0x9fff8,46,PACKET),('StandardPacket',0xbfff0,62,STANDARD),('VolumeInfo',0xdfff0,62,VOLUME)]
+WIDTH={'LONGCARD':4,'LONGINT':4,'CARD':2,'BYTE':1}
 
 def generate(output):
     declarations=[];routines=[];calls=[];facts=[];fact_index=0
     for number,(name,address,size,fields) in enumerate(FIXTURES):
-        kind='DOS.'+name if number<2 else name
+        kind='DOS.'+name if name not in ('DosPacket','StandardPacket') else name
         array='records'+str(number);declarations.append(f'{kind} ARRAY {array}(2)')
         layout=[(f'ADDRESS(@{array}(1))-ADDRESS(@{array}(0))',size)]+[(f'ADDRESS(@{array}(0).{f})-ADDRESS(@{array}(0))',o) for f,_,o in ABI['records'][name]['fields']]
         for part in range(0,len(layout),4):

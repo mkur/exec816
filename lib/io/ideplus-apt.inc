@@ -9,11 +9,28 @@ BYTE FUNC PartitionEntry(BYTE number BYTE POINTER entry LONGCARD low,high)
   LONGCARD start,count
 
   LET partition=UnitAt(number)
-  IF entry(0)=0 OR (entry(0) & $80)<>0 OR entry(1)<>0
-      OR (entry(12) & $40)=0 THEN
+  IF entry(0)=0 THEN
+    partition.pad=IDEPLUS.SLOT_EMPTY
     RETURN(1)
   FI
+
+  IF (entry(0) & $80)<>0 THEN
+    partition.pad=IDEPLUS.SLOT_DELETED
+    RETURN(1)
+  FI
+
+  IF entry(1)<>0 THEN
+    partition.pad=IDEPLUS.SLOT_NOT_DOS
+    RETURN(1)
+  FI
+
+  IF (entry(12) & $40)=0 THEN
+    partition.pad=IDEPLUS.SLOT_INACTIVE
+    RETURN(1)
+  FI
+
   IF (entry(0) & $0f)<>3 THEN
+    partition.pad=IDEPLUS.SLOT_SECTOR_SIZE
     RETURN(1)
   FI
   id=CARD(entry(10)) OR (CARD(entry(11)) LSH 8)
@@ -22,8 +39,10 @@ BYTE FUNC PartitionEntry(BYTE number BYTE POINTER entry LONGCARD low,high)
   offset=CARD(entry(14)) OR (CARD(entry(15)) LSH 8)
   IF id=0 OR id=$ffff OR start=0 OR start<low OR start>=high
       OR count=0 OR count>high-start OR LONGCARD(offset)>=count THEN
-    RETURN(0)
+    RETURN(RejectTable(IDEPLUS.REASON_ENTRY))
   FI
+
+  partition.pad=IDEPLUS.SLOT_READY
   partition.number=number
   partition.bytes=512
   partition.start=start+LONGCARD(offset)
@@ -48,6 +67,8 @@ RETURN(partition.start-LONGCARD(partition.offset)-LONGCARD(partition.reserved<>0
 BYTE FUNC ReadTable(LONGCARD sector BYTE even)
   CARD index
 
+  LET info=Observation()
+  info.lba=sector
   LET error=ReadPhysical(sector)
   LET c=Control()
   IF error<>0 THEN
@@ -71,6 +92,10 @@ BYTE FUNC DiscoverPartitions()
   BYTE POINTER header
 
   LET c=Control()
+  LET info=Observation()
+  info.stage=IDEPLUS.STAGE_APT
+  info.reason=IDEPLUS.REASON_NONE
+  info.slot=$ff
   low=0
   high=c.physical
   IF ReadTable(0,0)=0 THEN
@@ -82,24 +107,28 @@ BYTE FUNC DiscoverPartitions()
     even=1
   ELSEIF c.buffer(1)<>$41 OR c.buffer(2)<>$50 OR c.buffer(3)<>$54 THEN
     IF c.buffer(510)<>$55 OR c.buffer(511)<>$aa THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_NO_APT))
     FI
     ; One protective $7F container; addresses in its APT remain absolute.
     FOR index=0 TO 3 DO
       position=446+CARD(index)*16
       IF c.buffer(position+4)=$7f THEN
         IF low<>0 THEN
-          RETURN(0)
+          RETURN(RejectTable(IDEPLUS.REASON_CONTAINER))
         FI
         low=TableLong(c.buffer,position+8)
         count=TableLong(c.buffer,position+12)
         IF low=0 OR low>=c.physical OR count=0 OR count>c.physical-low THEN
-          RETURN(0)
+          RETURN(RejectTable(IDEPLUS.REASON_CONTAINER))
         FI
         high=low+count
       FI
     OD
-    IF low=0 OR ReadTable(low,0)=0 THEN
+    IF low=0 THEN
+      RETURN(RejectTable(IDEPLUS.REASON_CONTAINER))
+    FI
+
+    IF ReadTable(low,0)=0 THEN
       RETURN(0)
     FI
     IF (c.buffer(0) & $80)<>0 THEN
@@ -113,13 +142,15 @@ BYTE FUNC DiscoverPartitions()
   number=1
   links=0
   WHILE number<=15 DO
+    info.lba=sector
+    info.slot=$ff
     IF links>=16 OR sector<low OR sector>=high THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_LINK))
     FI
     IF links<>0 THEN
       FOR index=0 TO links-1 DO
         IF visited(index)=sector THEN
-          RETURN(0)
+          RETURN(RejectTable(IDEPLUS.REASON_CYCLE))
         FI
       OD
     FI
@@ -133,30 +164,37 @@ BYTE FUNC DiscoverPartitions()
       limit=16
     FI
     IF headerOffset>=limit THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_HEADER))
     FI
     position=CARD(headerOffset)*16
     header=c.buffer+SIZE(position)
     entries=header(5)
     IF entries<2 OR entries>limit-headerOffset THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_HEADER))
     FI
     IF links=1 THEN
-      IF header(1)<>$41 OR header(2)<>$50 OR header(3)<>$54
-          OR (header(0) & $6f)<>0 THEN RETURN(0) FI
+      IF header(1)<>$41 OR header(2)<>$50 OR header(3)<>$54 THEN
+        RETURN(RejectTable(IDEPLUS.REASON_HEADER))
+      FI
+
+      IF (header(0) & $6f)<>0 THEN
+        RETURN(RejectTable(IDEPLUS.REASON_REVISION))
+      FI
     ELSEIF (header(1)<>0 OR header(2)<>0 OR header(3)<>0)
-        AND (header(1)<>$41 OR header(2)<>$50 OR header(3)<>$54) THEN RETURN(0)
+        AND (header(1)<>$41 OR header(2)<>$50 OR header(3)<>$54) THEN
+      RETURN(RejectTable(IDEPLUS.REASON_HEADER))
     FI
     IF TableLong(header,12)<>previous OR header(7)<>previousOffset THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_LINK))
     FI
     next=TableLong(header,8)
     nextOffset=header(6)
     IF nextOffset>=limit THEN
-      RETURN(0)
+      RETURN(RejectTable(IDEPLUS.REASON_HEADER))
     FI
     FOR index=1 TO entries-1 DO
       IF number<=15 THEN
+        info.slot=number
         IF PartitionEntry(number,header+SIZE(CARD(index)*16),low,high)=0 THEN
           RETURN(0)
         FI
@@ -164,7 +202,8 @@ BYTE FUNC DiscoverPartitions()
       FI
     OD
     IF number<=15 AND next=0 THEN
-      RETURN(0)
+      info.slot=$ff
+      RETURN(RejectTable(IDEPLUS.REASON_CHAIN_SHORT))
     FI
     previous=sector
     previousOffset=headerOffset
@@ -176,16 +215,23 @@ BYTE FUNC DiscoverPartitions()
     BEGIN
       LET a=UnitAt(number)
       IF a.enabled<>0 THEN
+        info.slot=number
         FOR index=0 TO links-1 DO
           IF visited(index)>=ExtentStart(a)
-              AND visited(index)<a.start+a.physical THEN RETURN(0) FI
+              AND visited(index)<a.start+a.physical THEN
+            info.lba=visited(index)
+            RETURN(RejectTable(IDEPLUS.REASON_TABLE_OVERLAP))
+          FI
         OD
         IF number<15 THEN
           FOR index=number+1 TO 15 DO
             BEGIN
               LET b=UnitAt(index)
               IF b.enabled<>0 AND ExtentStart(a)<b.start+b.physical
-                  AND ExtentStart(b)<a.start+a.physical THEN RETURN(0) FI
+                  AND ExtentStart(b)<a.start+a.physical THEN
+                info.lba=b.start
+                RETURN(RejectTable(IDEPLUS.REASON_PARTITION_OVERLAP))
+              FI
             END
           OD
         FI

@@ -4,10 +4,14 @@ MODULE BLOCKWIRE
 USE EXEC
 USE DOSCORE
 USE DOSBREAKTYPES
-VOLATILE BYTE ready
-CARD sector,length,actual
-BYTE error
-BYTE ARRAY staging(256)
+; Reuse the existing test far-write and register-extension scratch. Host
+; updates stay in bank zero; no injected guest code runs at an upper-bank PC.
+VOLATILE BYTE ready=$7d00
+CARD sector=$7d02
+CARD length=$7d04
+CARD actual=$7d06
+BYTE error=$7d08
+BYTE ARRAY staging(256)=$7c00
 
 ; Supply host-controlled sector bytes while keeping all filesystem
 ; interpretation in guest code.

@@ -2,11 +2,19 @@ MODULE DOSCALLS
 
 USE TOOLBOXSTATE AS T
 INCLUDE "../../lib/dos/command-buffers.inc"
+INCLUDE "../../lib/dos/dos-types.inc"
 
-PUBLIC TYPE AssignInfo=[
-  BYTE ARRAY name(32)
-  BYTE ARRAY target(256)
-]
+PUBLIC LONGINT FUNC GetVolume(CARD index VolumeInfo POINTER info)
+
+  T.state.error=ERROR_ACTION_NOT_KNOWN
+
+RETURN(0)
+
+PUBLIC LONGINT FUNC Info(BYTE POINTER lock VolumeInfo POINTER info)
+
+  T.state.error=ERROR_ACTION_NOT_KNOWN
+
+RETURN(0)
 
 PUBLIC BYTE POINTER FUNC Selected(BYTE output)
 

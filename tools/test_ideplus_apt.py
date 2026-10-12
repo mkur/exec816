@@ -36,7 +36,10 @@ if __name__=='__main__':
         dest=out/name;dest.mkdir(exist_ok=True);disk=dest/'ide.img';disk.write_bytes(image)
         with ide_emulator(dest,disk) as b:
             def before(b):
-                for field,value in [('EXPECTEDFAILURE',invalid),('UNSUPPORTED',name.startswith('unsupported-'))]:
+                reason={'revision':20,'cycle':15,'overlap':18,'leader-overlap':18,
+                        'overflow':16,'bad-offset':16}.get(name,0)
+                for field,value in [('EXPECTEDFAILURE',invalid),('UNSUPPORTED',name.startswith('unsupported-')),
+                                    ('EXPECTEDREASON',reason)]:
                     b.memload(next(d['address'] for d in p['image']['data'] if '_'+field+'_' in d['name']),bytes([value]))
             try:runtime,_=execute(b,p,before_run=before,timeout=90,frame_limit=4500)
             except Exception:
@@ -47,3 +50,17 @@ if __name__=='__main__':
         require(disk.read_bytes()==image,'Read modified APT fixture')
         (dest/'results.json').write_text(json.dumps(dict(status='pass',tier='development',build=p['build'],runtime=runtime,checks=checks),indent=2)+'\n')
         print('APT reads passed',name,flush=True)
+    for name,absent,failure,reason in [('no-controller',True,2,4),('no-disk',False,3,5)]:
+        dest=out/name;dest.mkdir(exist_ok=True)
+        with ide_emulator(dest,disk,absent=absent,missing_disk=not absent) as b:
+            def before(b):
+                for field,value in [('EXPECTEDFAILURE',failure),('EXPECTEDREASON',reason)]:
+                    b.memload(next(d['address'] for d in p['image']['data'] if '_'+field+'_' in d['name']),bytes([value]))
+            try:runtime,_=execute(b,p,before_run=before,timeout=90,frame_limit=4500)
+            except Exception:
+                print(name,'observation',b.memdump(p['build']['memory']['ideplus_storage']['BASE']+704,24).hex(),flush=True)
+                raise
+            clean_ownership(b,p,out)
+            checks=data(b,p['image'],'checks',True)
+        (dest/'results.json').write_text(json.dumps(dict(status='pass',tier='development',runtime=runtime,checks=checks),indent=2)+'\n')
+        print('IDE detection passed',name,flush=True)

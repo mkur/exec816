@@ -6,7 +6,51 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 7; the loaded COMMAND ABI is version 11.
+The current native DOS ABI is revision 8; the loaded COMMAND ABI is version 15.
+
+## Transfer ownership
+
+Read/Write buffers and handles must remain live for the entire call. This
+single-user system has no memory protection: correct pointers, available
+buffer capacity and valid handles are caller responsibilities. DOS resolves
+its owned object and retains the mount once before queuing a file transfer;
+the filesystem handler uses that resolved object. It does not repeat ownership
+or RAM-map walks. Negative counts, read-only/offline volumes, file-size bounds,
+short transfers and physical errors remain operational errors. Mount references,
+writer leases, cancellation, exact reply collection and stack/domain guards
+still protect state transitions.
+
+## Volume information
+
+`GetVolume(index, info)` copies a published mount identity into a caller-owned
+62-byte `VolumeInfo`. Iterate `0..VOLUME_SLOTS-1`; empty slots return DOSFALSE
+with IoErr zero and a cleared record. Enumeration does not start the filesystem
+service or perform I/O. Records contain terminated names, format/transport IDs,
+unit, sector bytes and effective access/state, with no internal pointers.
+
+`Info(lock, info)` uses an owned filesystem lock to request statistics through
+the normal worker packet. Failed queries leave the caller's record unchanged.
+`VOLUME_BLOCKS_VALID` and `VOLUME_RAM_VALID` distinguish available measurements
+from unknown values; GetVolume clears both.
+
+MyDOS reads VTOC sector 360; SpartaDOS reads header sector 1. The shared cache
+serves warm queries without physical reads. Queries perform no disk writes or
+directory/bitmap scans. Total blocks are the mounted sector count, including
+boot sectors and metadata; free blocks are the recorded allocation count.
+Invalid counts return ERROR_DISK_NOT_VALIDATED. Nominal capacity is total blocks
+times sectorBytes, rather than the ATR container length. SpartaDOS labels are
+trimmed to eight printable bytes; nonprinting bytes become dots. MyDOS has no
+label.
+
+RAM leaves total/free blocks unavailable. With VOLUME_RAM_VALID, allocatedBytes
+counts its volume state, live node records and allocated file-buffer capacities,
+excluding allocator bookkeeping. It does not report file lengths or global free
+memory. The worker walks at most sixteen nodes between cancellation checkpoints,
+within RAM's existing 256-node limit. Queries retain normal BREAK and transport
+errors without publishing partial statistics.
+
+DOS and COMMAND export the same record layout. The C header also publishes the
+record and constants; C query-call wrappers are not yet provided.
 
 ## Files and directories
 

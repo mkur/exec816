@@ -1,0 +1,66 @@
+MODULE IDEDIAGNOSTICSMOUNT
+USE EXEC
+USE DOS
+USE DOSCORE
+USE FSTYPES
+USE FSINSPECT
+USE FSBOOT
+USE FSMANAGER
+USE IDEPLUSDRIVER
+USE BLOCKTYPES
+USE HEAPCORE
+
+CARD checks
+LONGINT expectedError
+BYTE expectedStage
+FSINSPECT.Failure failure
+FSINSPECT.Info ARRAY rows(9)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f900+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Causal errors survive disposable worker state; a successful remount clears it.
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  Require(SIZEOF(DOSCORE.DosRegistry)=114 AND SIZEOF(FSINSPECT.Info)*9<=512)
+  Require(FSINSPECT.LastFailure(@failure)=0)
+  LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
+  LET error=DOS.IoErr()
+  IF expectedError<>0 THEN
+    Require(lock=NULL AND error=expectedError)
+    Require(FSINSPECT.LastFailure(@failure)<>0 AND DOS.IoErr()=error)
+    Require(failure.error=error AND failure.stage=expectedStage AND failure.slot=0)
+    Require(failure.name(0)=73 AND failure.name(1)=68 AND failure.name(2)=69
+        AND failure.bytes=512 AND failure.backend=BLOCKTYPES.BACKEND_IDEPLUS)
+    Require(FSINSPECT.Snapshot(rows,9)=0)
+  ELSE
+  BEGIN
+    Require(lock<>NULL)
+    DOS.UnLock(lock)
+    Require(FSINSPECT.LastFailure(@failure)=0 AND FSINSPECT.Snapshot(rows,9)=2)
+    Require(FSMANAGER.Unmount(0)<>0)
+    LET registry=DOSCORE.GetRegistry()
+    LET specs=FSTYPES.Spec POINTER(registry.config)
+    specs(0).sectors==-1
+    Require(FSMANAGER.Mount(0)=0 AND DOS.IoErr()=EXEC.IOERR_BADLENGTH)
+    Require(FSINSPECT.LastFailure(@failure)<>0)
+    Require(failure.stage=BLOCKTYPES.ADMIT_COUNT AND failure.error=EXEC.IOERR_BADLENGTH)
+    specs(0).sectors==+1
+    Require(FSMANAGER.Mount(0)<>0 AND FSINSPECT.LastFailure(@failure)=0)
+  END
+  FI
+
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  IDEPLUSDRIVER.Stop()
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

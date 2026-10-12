@@ -5,12 +5,59 @@ USE DOSCORE
 USE FSTYPES
 USE FSREGISTRY
 USE BOOTCONFIG
+USE A816MEMORY
 PUBLIC CONST CAPACITY=9
 
 PUBLIC TYPE Info=[
   BYTE ARRAY name(32)
   BYTE offline,format,readOnly,requestedAccess,backend,unit
+  LONGINT error
 ]
+
+PUBLIC TYPE Failure=[
+  BYTE ARRAY name(32)
+  LONGINT error
+  LONGCARD sectors
+  CARD bytes
+  BYTE slot,stage,backend,unit
+]
+
+; The registry retains failed mount identity after the worker frees its state.
+PUBLIC BYTE FUNC LastFailure(Failure POINTER info)
+  BYTE present,index,value
+
+  EXEC.Forbid()
+  LET registry=DOSCORE.GetRegistry()
+  A816MEMORY.Clear(BYTE POINTER(info),SIZEOF(Failure))
+  info.error=registry.mountError
+  info.stage=registry.mountStage
+  info.slot=registry.mountSlot
+  present=info.error<>0
+  IF present<>0 AND info.slot<registry.count THEN
+    BEGIN
+      LET specs=FSTYPES.Spec POINTER(registry.config)
+      LET spec=@specs(info.slot)
+      index=0
+      WHILE index<31 DO
+        value=spec.alias(index)
+        IF value=0 THEN
+          EXIT
+        FI
+
+        info.name(index)=IF value<32 OR value>126 THEN 46 ELSE value FI
+        index==+1
+      OD
+
+      info.sectors=spec.sectors
+      info.bytes=spec.dataBytes
+      info.backend=spec.backend
+      info.unit=BYTE(spec.unit)
+    END
+  FI
+
+  EXEC.Permit()
+
+RETURN(present)
 
 PUBLIC TYPE CacheInfo=[
   CARD requested,blocks
@@ -98,6 +145,7 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
             rows(count).requestedAccess=mount.spec.access
             rows(count).backend=mount.spec.backend
             rows(count).unit=BYTE(mount.spec.unit)
+            rows(count).error=mount.error
             count==+1
           FI
         FI

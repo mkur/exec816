@@ -12,4 +12,6 @@ PUBLIC TYPE DosRegistry=[
   BYTE cancelSignal,cancelReady
   BYTE POINTER cancelHead
   ADDRESS ARRAY assigns(4)
+  LONGINT mountError
+  BYTE mountSlot,mountStage
 ]

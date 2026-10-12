@@ -13,8 +13,8 @@ PUBLIC BYTE FUNC Begin(FSTYPES.Service POINTER service)
   BYTE status
 
   service.work.operations==+1
-  status=BLOCKIO.BeginFetch(service.adapter,service.work.volume.block,
-      LONGCARD(service.work.neededSector))
+  status=BLOCKIO.BeginFetchRange(service.adapter,service.work.volume.block,
+      LONGCARD(service.work.neededSector),@service.work.neededCount)
   service.work.ioError=service.adapter.error
   IF status=FSSTATUS.ERROR THEN
     service.work.error=ERROR_DISK_NOT_VALIDATED
@@ -26,9 +26,9 @@ RETURN(status)
 ; Translate block completion into filesystem errors while preserving BREAK.
 PUBLIC BYTE FUNC Complete(FSTYPES.Service POINTER service)
 
-  service.work.ioError=BLOCKIO.FinishFetch(service.adapter,
+  service.work.ioError=BLOCKIO.FinishFetchRange(service.adapter,
       service.work.volume.block,LONGCARD(service.work.neededSector),
-      service.ioResult)
+      service.work.neededCount,service.ioResult)
   IF service.work.ioError<>0 THEN
     FSBACKEND.Invalidate(service.work)
     service.work.error=ERROR_DISK_NOT_VALIDATED

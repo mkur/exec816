@@ -9,18 +9,20 @@ from test_heap_api import clean_ownership
 PIN=json.loads((ROOT/'toolchain/altirra-ideplus.json').read_text())
 
 @contextmanager
-def ide_emulator(output,media,absent=False,writable=False,history=False):
+def ide_emulator(output,media,absent=False,writable=False,history=False,pin=None,missing_disk=False):
+    pin=pin or PIN
     firmware=ROOT/'build/firmware/ideplus-bios-2.1.rom'
     require(firmware.exists(),'Place the pinned BIOS ROM at '+str(firmware))
     require(sha256(firmware)==PIN['ideplus']['firmware_sha256'],'Unpinned IDE firmware')
     require(sha256(ROOT/'build/mouse-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned IDE emulator')
     original=os_boundary.settings
-    run_pin={**PIN,'devices':[] if absent else PIN['devices']}
+    run_pin={**pin,'devices':[] if absent else pin['devices']}
     def settings(rom,pin):
         value=14695981039346656037
         for char in str(firmware).lower(): value=((value^ord(char))*1099511628211)&((1<<64)-1)
         value|=1<<63
-        devices=[] if absent else [dict(tag='kmkjzide2',params=dict(revision='e',enablesdx=False,id=0),buses={'0':dict(children=[dict(tag='hdrawimage',params=dict(path=str(media),write_enabled=writable,solid_state=True))])})]
+        children=[] if missing_disk else [dict(tag='hdrawimage',params=dict(path=str(media),write_enabled=writable,solid_state=True))]
+        devices=[] if absent else [dict(tag='kmkjzide2',params=dict(revision='e',enablesdx=False,id=0),buses={'0':dict(children=children)})]
         return original(rom,pin)+'\n[User\\AltirraSDL\\Profiles\\00000000]\n"Devices" = '+json.dumps(json.dumps(devices))+'\n\"CPU: History enabled\" = '+str(int(history))+'\n'+rf'''
 [User\AltirraSDL\Firmware\Available\{value:016X}]
 "Name" = "IDE Plus pinned BIOS 2.1"
