@@ -28,7 +28,7 @@ RETURN($ffff)
 ; Validate each touched payload and its next link against geometry, ancestry,
 ; native file ordinal and allocation state before using its bytes.
 BYTE FUNC ReadPayload(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
-    CARD sector)
+    CARD sector BYTE cached)
   BYTE index,high
   CARD sectorBytes,next,ancestor
 
@@ -47,7 +47,7 @@ BYTE FUNC ReadPayload(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER ent
     FI
   OD
 
-  IF FSALLOC.Allocated(service,sector)=0 OR
+  IF FSALLOC.AllocatedCached(service,sector,cached)=0 OR
       FSWRITEIO.Read(service,sector,state.data)=0 THEN
     RETURN(0)
   FI
@@ -119,10 +119,12 @@ RETURN(FSWRITEIO.Write(service,sector,state.map))
 
 PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
     entry)
+  BYTE cached
   CARD sector
   LONGINT count,length
 
   LET state=FSWRITEIO.State(service)
+  cached=0
   sector=entry.start
   count=0
   length=0
@@ -131,10 +133,11 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
       RETURN(Bad(service))
     FI
 
-    IF ReadPayload(service,entry,sector)=0 THEN
+    IF ReadPayload(service,entry,sector,cached)=0 THEN
       RETURN(0)
     FI
 
+    cached=1
     length==+LONGINT(state.data(service.selected.spec.dataBytes-1))
     count==+1
     sector=state.next
@@ -291,7 +294,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     completed==+LONGINT(part)
   OD
 
-  IF ReadPayload(service,@file.entry,previous)=0 THEN
+  IF ReadPayload(service,@file.entry,previous,0)=0 THEN
     RETURN(0)
   FI
 
@@ -349,7 +352,7 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   previous=0
   hops=chain.base/LONGINT(payload)
   WHILE sector<>0 DO
-    IF ReadPayload(service,@file.entry,sector)=0 THEN
+    IF ReadPayload(service,@file.entry,sector,0)=0 THEN
       chain.valid=0
       RETURN(0)
     FI
@@ -433,7 +436,7 @@ BYTE FUNC Reclaim(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
   LET state=FSWRITEIO.State(service)
   hops=0
   WHILE sector<>0 DO
-    IF ReadPayload(service,entry,sector)=0 THEN
+    IF ReadPayload(service,entry,sector,0)=0 THEN
       RETURN(0)
     FI
 
@@ -456,7 +459,7 @@ PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
   CARD next
 
   LET state=FSWRITEIO.State(service)
-  IF ReadPayload(service,entry,entry.start)=0 THEN
+  IF ReadPayload(service,entry,entry.start,0)=0 THEN
     RETURN(0)
   FI
 

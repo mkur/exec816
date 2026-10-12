@@ -56,3 +56,22 @@ delete/truncate BREAK and real on-wire Write BREAK passed at the first physical
 write of each operation. Fault hooks now observe the common Store boundary for
 single/range I/O; the runner reserves its current diagnostic image-data extent.
 Host checks: 447. Shared separate-header SDFS regression is retained for MP6.
+
+## MP3: bitmap lifetime and arithmetic
+
+Selected-file validation retains scratch only inside that call; payload reads
+use data, and every new validation starts uncached. Bitmap addressing uses
+shifts/masks for admitted 128/256/512-byte geometry. Allocation scans retain the
+byte/mask between consecutive candidates, reset on wrap, and checkpoint at
+bounded chunks (at most 16 candidates, plus byte/page fetch boundaries).
+Emitted Bitmap, ReserveBatch and TakeBatch no longer call division/remainder.
+
+The operation fixture reduces writable Open bitmap loads 65→2: one selected
+allocation page and one CountRoom header, retaining all 64 payload checks.
+Optimized MyDOS page A/B/A traversal, allocation-bit error, fragmented directory
+reservation, partial extension and cyclic corruption passed. A 65,535-sector
+256-byte volume allocated at $FFFF, wrapped and passed saved-media auditing.
+The playground producer's previously incomplete large ATR paragraph field was
+fixed to encode its admitted maximum capacity; a host read-back/allocation test
+covers that boundary. Shared SDFS 512-byte IDE create/overwrite/append/rename/
+reclaim/remount passed. Host checks: 448.

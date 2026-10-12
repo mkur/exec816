@@ -71,6 +71,18 @@ class ShellDiskTests(unittest.TestCase):
             self.assertGreater(max(chain), 1023)
             self.assertEqual(Audit(path.read_bytes()).mydos()['sectors'], 5760)
 
+    def test_maximum_mydos_atr_preserves_capacity_and_allocation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)/'files'
+            source.mkdir()
+            (source/'KEEP.BIN').write_bytes(b'keep')
+            path = Path(directory)/'maximum.atr'
+            make(path, source, binary_names={'KEEP.BIN'}, sectors=65535, sector_bytes=256)
+            image = Image(path.read_bytes())
+            self.assertEqual((image.count, image.size), (65535, 256))
+            self.assertEqual(image.file(next(image.entries()))[0], b'keep')
+            self.assertEqual(Audit(image.data).mydos()['sectors'], 65535)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -58,16 +58,17 @@ BYTE FUNC Bitmap(FSTYPES.Service POINTER service CARD sector BYTE cached)
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
+  LET shift=IF sectorBytes=128 THEN 7 ELSE IF sectorBytes=256 THEN 8 ELSE 9 FI FI
   offset=LONGCARD(sector) RSH 3
   IF service.selected.spec.format=FSFORMATS.MYDOS THEN
     offset==+10
-    physical=360-CARD(offset/LONGCARD(sectorBytes))
+    physical=360-CARD(offset RSH shift)
   ELSE
     native=SDFSTYPES.Volume POINTER(service.work.volume.state)
-    physical=native.bitmap+CARD(offset/LONGCARD(sectorBytes))
+    physical=native.bitmap+CARD(offset RSH shift)
   FI
 
-  state.bitmapOffset=CARD(offset MOD LONGCARD(sectorBytes))
+  state.bitmapOffset=CARD(offset & LONGCARD(sectorBytes-1))
   state.bitmapMask=BYTE($80 RSH (sector & 7))
   IF cached<>0 AND state.bitmapSector=physical THEN
     RETURN(FSWRITEIO.Checkpoint(service))
@@ -159,12 +160,23 @@ BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous
   cached=0
   page=0
   WHILE visited<=limit-first DO
-    IF Allowed(service,CARD(sector))<>0 THEN
+    ; Retain the current byte/mask for consecutive candidates. Bitmap only
+    ; recomputes a position at byte boundaries or after wrapping the scan.
+    IF cached=0 OR (sector & 7)=0 THEN
       IF Bitmap(service,CARD(sector),cached)=0 THEN
         RETURN(0)
       FI
 
       cached=1
+    ELSE
+      state.bitmapMask=state.bitmapMask RSH 1
+    FI
+
+    IF (visited & 15)=0 AND FSWRITEIO.Checkpoint(service)=0 THEN
+      RETURN(0)
+    FI
+
+    IF Allowed(service,CARD(sector))<>0 THEN
       IF partial<>0 AND state.reservations<>0 AND
           state.bitmapSector<>page THEN
         RETURN(1)
@@ -188,6 +200,7 @@ BYTE FUNC Reserve(FSTYPES.Service POINTER service BYTE count,contiguous
     visited==+1
     IF sector>limit THEN
       sector=first
+      cached=0
       IF contiguous<>0 THEN
         state.reservations=0
       FI
@@ -211,10 +224,12 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
     CARD maximum)
   LONGCARD sector,limit,visited,offset
   CARD page
+  BYTE positioned
 
   LET state=FSWRITEIO.State(service)
   LET sectorBytes=service.selected.spec.dataBytes
   LET native=SDFSTYPES.Volume POINTER(service.work.volume.state)
+  LET shift=IF sectorBytes=128 THEN 7 ELSE IF sectorBytes=256 THEN 8 ELSE 9 FI FI
   state.reservations=0
   state.used=0
   IF state.freeValid=0 THEN
@@ -250,10 +265,23 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
   FI
 
   visited=0
+  positioned=0
   WHILE visited<=limit-first DO
-    IF Allowed(service,CARD(sector))<>0 THEN
+    IF positioned=0 OR (sector & 7)=0 THEN
       offset=sector RSH 3
-      page=native.bitmap+CARD(offset/LONGCARD(sectorBytes))
+      page=native.bitmap+CARD(offset RSH shift)
+      state.bitmapOffset=CARD(offset & LONGCARD(sectorBytes-1))
+      state.bitmapMask=BYTE($80 RSH (sector & 7))
+      positioned=1
+    ELSE
+      state.bitmapMask=state.bitmapMask RSH 1
+    FI
+
+    IF (visited & 15)=0 AND FSWRITEIO.Checkpoint(service)=0 THEN
+      RETURN(0)
+    FI
+
+    IF Allowed(service,CARD(sector))<>0 THEN
       IF state.bitmapValid=0 OR state.batchPage<>page THEN
         IF state.reservations<>0 THEN
           RETURN(1)
@@ -272,12 +300,6 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
         state.bitmapValid=1
       FI
 
-      IF FSWRITEIO.Checkpoint(service)=0 THEN
-        RETURN(0)
-      FI
-
-      state.bitmapOffset=CARD(offset MOD LONGCARD(sectorBytes))
-      state.bitmapMask=BYTE($80 RSH (sector & 7))
       IF (state.bitmap(state.bitmapOffset) & state.bitmapMask)<>0 THEN
         state.reserved(state.reservations)=CARD(sector)
         state.reservations==+1
@@ -291,6 +313,7 @@ BYTE FUNC ReserveBatch(FSTYPES.Service POINTER service BYTE count
     visited==+1
     IF sector>limit THEN
       sector=first
+      positioned=0
     FI
   OD
 
@@ -322,8 +345,8 @@ BYTE FUNC TakeBatch(FSTYPES.Service POINTER service)
 
   FOR index=0 TO CARD(state.reservations)-1 DO
     sector=state.reserved(index)
-    offset=CARD((LONGCARD(sector) RSH 3) MOD
-        LONGCARD(service.selected.spec.dataBytes))
+    offset=CARD((LONGCARD(sector) RSH 3) &
+        LONGCARD(service.selected.spec.dataBytes-1))
     mask=BYTE($80 RSH (sector & 7))
     IF (state.bitmap(offset) & mask)=0 THEN
       RETURN(FSWRITEIO.Error(service,ERROR_DISK_NOT_VALIDATED))

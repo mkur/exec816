@@ -89,17 +89,24 @@ def prepare(filesystem, size, name):
         return image
     fixture=ROOT/f'tests/fixtures/filesystem-write/{filesystem}-{size}.atr'
     if name in ('duplicate-far','bitmap-transition'):
-        require(filesystem=='sdfs','Map/bitmap transition cases need SDFS')
-        source=Audit(fixture.read_bytes());source.sdfs()
-        tree=ROOT/'build/filesystem-performance/fp4/edge-input'/str(size)/name
+        require(filesystem=='sdfs' or name=='bitmap-transition',
+                'Map duplicates need SDFS')
+        source=Audit(fixture.read_bytes());getattr(source,filesystem)()
+        tree=ROOT/'build/filesystem-write-edges/edge-input'/filesystem/str(size)/name
         tree.mkdir(parents=True,exist_ok=True)
         for path,payload in source.files.items():
             destination=tree/path;destination.parent.mkdir(parents=True,exist_ok=True)
             if path=='CREATE.BIN' and name=='duplicate-far':
                 payload=bytes((i*17+3)&255 for i in range(((size-4)//2)*size))
+            if filesystem=='mydos' and name=='bitmap-transition' and path=='CREATE.BIN':
+                payload=payload.ljust((size-3)*3-17,b'\x59')
             destination.write_bytes(payload)
         fixture=tree.parent/(name+'.atr')
-        sdfs_reference.make(fixture,tree,5000,size)
+        if filesystem=='mydos':
+            make_mydos(fixture,tree,binary_names={p.name for p in tree.rglob('*') if p.is_file()},
+                       sectors=5000,sector_bytes=size)
+        else:
+            sdfs_reference.make(fixture,tree,5000,size)
     image = Image(fixture.read_bytes())
     row, first, ordinal = entry(image, filesystem, 'EMPTY' if name == 'legacy-empty' else 'CREATE.BIN')
     header = image.offset(360 if filesystem == 'mydos' else 1)
@@ -140,20 +147,34 @@ def prepare(filesystem, size, name):
         last=6 if name=='duplicate' else size-2
         image.data[offset+last:offset+last+2]=image.data[offset+4:offset+6]
     elif name=='allocation-bit':
-        require(filesystem=='sdfs','Allocation-bit case needs SDFS')
-        payload=word(image.data,image.offset(first)+4)
+        payload=first if filesystem=='mydos' else word(image.data,image.offset(first)+4)
         image.data[bitmap(image,filesystem,payload)] |= 0x80 >> (payload & 7)
     elif name=='bitmap-transition':
-        offset=image.offset(first)
-        previous=word(image.data,offset+6)
-        payload=size*8+5
+        if filesystem=='mydos':
+            item=next(e for e in image.entries() if e['name']=='CREATE.BIN')
+            _,chain=image.file(item)
+            require(len(chain)>=3,'MyDOS transition needs A/B/A bitmap pages')
+            previous=chain[1]
+            payload=(size-10)*8+5
+            # Admit sixteen-bit links on both geometries before relocating.
+            image.data[row[0]] |= 4
+            for sector in chain:
+                image.data[image.offset(sector)+size-3] &= 3
+        else:
+            previous=word(image.data,image.offset(first)+6)
+            payload=size*8+5
         target=bitmap(image,filesystem,payload)
         require(image.data[target] & (0x80 >> (payload & 7)), 'High sector already allocated')
         image.data[bitmap(image,filesystem,previous)] |= 0x80 >> (previous & 7)
         image.data[target] &= ~(0x80 >> (payload & 7))
         image.data[image.offset(payload):image.offset(payload)+size]=image.sector(previous)
-        image.data[offset+6:offset+8]=payload.to_bytes(2,'little')
-        Audit(image.data).sdfs()
+        if filesystem=='mydos':
+            at=image.offset(chain[0])+size-3
+            image.data[at:at+2]=bytes((payload>>8,payload&255))
+        else:
+            offset=image.offset(first)
+            image.data[offset+6:offset+8]=payload.to_bytes(2,'little')
+        getattr(Audit(image.data),filesystem)()
     elif name == 'sparse':
         require(filesystem == 'sdfs', 'Sparse case needs SDFS')
         image.data[image.offset(first)+4:image.offset(first)+6] = b'\0\0'
@@ -251,11 +272,12 @@ def run(output, mode, filesystem, size, names, from_build, profile=4):
             else:
                 audit = Audit(media.read_bytes())
                 report = getattr(audit, filesystem)()
-                if name=='partial-group':
+                if name in ('partial-group','bitmap-transition'):
                     initial_audit=Audit(initial.data);getattr(initial_audit,filesystem)()
                     expected=dict(initial_audit.files)
                     length=(size-3)*3 if filesystem=='mydos' else size*3
-                    expected['CREATE.BIN']=bytes((i&255)^0xc3 for i in range(length))
+                    if name=='partial-group':
+                        expected['CREATE.BIN']=bytes((i&255)^0xc3 for i in range(length))
                 else:
                     expected = dict(baseline.files)
                 if name in ('normal','bitmap-transition'):

@@ -26,7 +26,9 @@ def make(path, source=SOURCE, binary_names=(), sector_bytes=128, sectors=SECTORS
         raise ValueError('MyDOS VTOC overlaps boot sectors')
     marker = 2 if sectors == 720 else logical_pages+2
     disk = bytearray(16+384+(sectors-3)*sector_bytes)
-    disk[:6] = struct.pack('<HHH', 0x296, (len(disk)-16)//16, sector_bytes)
+    paragraphs=(len(disk)-16)//16
+    disk[:8] = struct.pack('<HHHH', 0x296, paragraphs & 65535, sector_bytes,
+                           paragraphs >> 16)
     payload_bytes = sector_bytes-3
     # Retain the historical DOS-2-compatible final-sector reservation.
     legacy_last = sectors == 720
