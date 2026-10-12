@@ -102,3 +102,25 @@ root listings; ordinary namespace cases retain those assertions. A broad 71 KiB
 128-byte case was stopped during repeated listings. The Fastest 125 kbit/s variant
 wrote correct persisted bytes but failed reading sector 105 with SIO checksum
 error 4; this is not a successful transport qualification. Host checks: 448.
+
+## MP5: established admission
+
+| Removed repeated work | Established owner/lifetime | Checks retained |
+| --- | --- | --- |
+| Current read sector geometry/ancestry | Open admits start; Validate admits each next link before payload acceptance; Advance consumes that link. Restart reuses immutable start/ancestors. | Fresh trailer, ordinal, EOF/count, bounded visits/cycles and next-link admission. |
+| Pairwise directory-lock ancestry scan | Root/Decode/Descend validate resolution; CreateDir descends its reserved extent; InitLockState publishes it. Parent reconstruction uses Descend again; leases prevent removal/rename under live descendants. | Mount identity/type/live lock, constant-size depth/root/start/parent shape and corrupt on-disk descent. |
+| Current reclaim sector geometry/ancestry | Delete/Truncate finish selected-file validation and CountRoom before detaching reachability. Serialized mutation and writer/namespace leases protect that snapshot. | Newly read trailers/next links, fresh allocation bits, free-bit/count transitions and I/O completion. |
+| Preliminary full-tail read during append | A valid terminal cursor already locates full EOF. | Extend rereads the old tail after initializing reserved sectors, before publishing its new link. |
+
+No persistent admission flags or chain index were added. The geometry flag is
+an explicit private argument used only by the protected reclaim walk; normal
+validation/write paths remain conservative. Reclamation still reads successors
+and checks mutable allocation state; it does not reuse the earlier preflight
+bitmap page.
+
+Optimized 128-byte parser, maximum/deep relative paths and corrupt ancestry
+passed. Cache-disabled public write/preflight/overwrite/append/remount passed.
+Write BREAK/completion error, Delete/Truncate completion error and post-write
+BREAK passed through the real adapter with unrelated-file and allocation checks.
+Host checks: 448. The matched operation fixture reduces creation payload visits
+33→17 without changing its four-sector extension or physical write ordering.

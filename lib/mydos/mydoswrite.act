@@ -25,27 +25,30 @@ CARD FUNC Limit(FSBTYPES.Entry POINTER entry)
 
 RETURN($ffff)
 
-; Validate each touched payload and its next link against geometry, ancestry,
-; native file ordinal and allocation state before using its bytes.
+; Preflight admits geometry/ancestry once before a protected reclaim walk.
+; Allocation bits, newly read trailers and next links remain operational checks.
 BYTE FUNC ReadPayload(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
-    CARD sector BYTE cached)
+    CARD sector BYTE cached,admitted)
   BYTE index,high
   CARD sectorBytes,next,ancestor
 
   LET state=FSWRITEIO.State(service)
   sectorBytes=service.selected.spec.dataBytes
-  IF MYDOS.DataSector(service.work.volume,LONGCARD(sector))=0
-      OR sector>Limit(entry) THEN
-    RETURN(Bad(service))
-  FI
-
-  FOR index=0 TO service.work.depth DO
-    ancestor=service.work.ancestors(index)
-    IF LONGCARD(sector)>=LONGCARD(ancestor)
-        AND LONGCARD(sector)<LONGCARD(ancestor)+8 THEN
+  IF admitted=0 THEN
+    IF MYDOS.DataSector(service.work.volume,LONGCARD(sector))=0
+        OR sector>Limit(entry) THEN
       RETURN(Bad(service))
     FI
-  OD
+
+    FOR index=0 TO service.work.depth DO
+      ancestor=service.work.ancestors(index)
+      IF LONGCARD(sector)>=LONGCARD(ancestor)
+          AND LONGCARD(sector)<LONGCARD(ancestor)+8 THEN
+        RETURN(Bad(service))
+      FI
+    OD
+
+  FI
 
   IF FSALLOC.AllocatedCached(service,sector,cached)=0 OR
       FSWRITEIO.Read(service,sector,state.data)=0 THEN
@@ -133,7 +136,7 @@ PUBLIC BYTE FUNC Validate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
       RETURN(Bad(service))
     FI
 
-    IF ReadPayload(service,entry,sector,cached)=0 THEN
+    IF ReadPayload(service,entry,sector,cached,0)=0 THEN
       RETURN(0)
     FI
 
@@ -294,7 +297,7 @@ LONGINT FUNC Extend(FSTYPES.Service POINTER service FSBTYPES.Cursor POINTER file
     completed==+LONGINT(part)
   OD
 
-  IF ReadPayload(service,@file.entry,previous,0)=0 THEN
+  IF ReadPayload(service,@file.entry,previous,0,0)=0 THEN
     RETURN(0)
   FI
 
@@ -345,9 +348,16 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     MYDOSFILE.Restart(file)
   FI
 
+  ; A retained full terminal extent already locates this append. Extend
+  ; rereads the old tail after initializing new payloads, before linking it.
+  IF chain.valid<>0 AND chain.next=0 AND chain.used=payload AND
+      file.position=chain.base+LONGINT(chain.used) THEN
+    RETURN(Extend(service,file,source,length,chain.sector))
+  FI
+
   sector=chain.sector
   WHILE sector<>0 DO
-    IF ReadPayload(service,@file.entry,sector,0)=0 THEN
+    IF ReadPayload(service,@file.entry,sector,0,0)=0 THEN
       chain.valid=0
       RETURN(0)
     FI
@@ -431,7 +441,7 @@ BYTE FUNC Reclaim(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER entry
   LET state=FSWRITEIO.State(service)
   hops=0
   WHILE sector<>0 DO
-    IF ReadPayload(service,entry,sector,0)=0 THEN
+    IF ReadPayload(service,entry,sector,0,1)=0 THEN
       RETURN(0)
     FI
 
@@ -454,7 +464,7 @@ PUBLIC BYTE FUNC Truncate(FSTYPES.Service POINTER service FSBTYPES.Entry POINTER
   CARD next
 
   LET state=FSWRITEIO.State(service)
-  IF ReadPayload(service,entry,entry.start,0)=0 THEN
+  IF ReadPayload(service,entry,entry.start,0,0)=0 THEN
     RETURN(0)
   FI
 

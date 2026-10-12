@@ -388,8 +388,6 @@ RETURN(FSSTATUS.NEXT_COMPONENT)
 ; A borrowed directory lock must describe a valid, nonoverlapping ancestor path.
 PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockState
     POINTER state)
-  BYTE index,previous
-  LONGCARD low,high,ancestor
 
   LET depth=state.depth
   IF state.entry.count<>DIRECTORY_SECTORS OR depth>DIRECTORY_DEPTH
@@ -411,20 +409,9 @@ PUBLIC LONGINT FUNC ValidateBase(FSBTYPES.Workspace POINTER work FSBTYPES.LockSt
       RETURN(ERROR_INVALID_LOCK)
     FI
 
-    FOR index=1 TO depth DO
-      IF ValidDirectory(work.volume,state.ancestors(index))=0 THEN
-        RETURN(ERROR_DISK_NOT_VALIDATED)
-      FI
-
-      low=LONGCARD(state.ancestors(index))
-      high=low+DIRECTORY_SECTORS-1
-      FOR previous=0 TO index-1 DO
-        ancestor=LONGCARD(state.ancestors(previous))
-        IF low<=ancestor+DIRECTORY_SECTORS-1 AND high>=ancestor THEN
-          RETURN(ERROR_DISK_NOT_VALIDATED)
-        FI
-      OD
-    OD
+    ; Published locks carry ancestry admitted by Decode/Descend. Relative
+    ; restoration cannot change those extents; leases protect them from
+    ; concurrent removal or rename. Keep only the constant-size shape checks.
   FI
 
 RETURN(0)

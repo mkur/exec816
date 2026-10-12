@@ -172,8 +172,10 @@ PUBLIC BYTE FUNC Validate(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
     RETURN(1)
   FI
 
-  IF chain.hops>=work.volume.block.sectors
-      OR SectorAllowed(work,file,chain.sector)=0 OR Visit(file)=0
+  ; Open admits the first sector; each decoded next link is admitted below.
+  ; Advance consumes that exact link, while trailer/cycle/count checks remain
+  ; mandatory for every newly fetched sector.
+  IF chain.hops>=work.volume.block.sectors OR Visit(file)=0
       OR Trailer(work,file)=0 OR Link(file)=0 THEN
     work.error=ERROR_DISK_NOT_VALIDATED
     RETURN(0)
