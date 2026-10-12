@@ -60,6 +60,8 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     select(s,base,'BIG.BIN',click);copy_to('WORK:CANCEL.BIN');dialog(5)
     require(s.number(desk+D['copy'],4),'No incremental copy job')
     key('ESC');closed()
+    require(text('status')=='Copy cancelled' and not s.number(desk+D['error'],4),
+        'Cancel was replaced by a copy failure: '+text('status'))
     require('CANCEL.BIN' not in listing(s,base),'Cancelled copy published destination')
     require('EXECCOPY.TMP' not in listing(s,base),'Cancelled copy retained temporary')
     # Operational failure keeps the typed path and directory state available.

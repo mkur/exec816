@@ -4,6 +4,11 @@
 
 Status: implemented; focused development checks pass. This is not release qualification.
 
+The subsequent [copy-throughput slice](desktop-copy-performance-plan.md) is also
+implemented: 16 KiB chunks improve measured SIO throughput by 2.83x. The
+[execution record](../../history/desktop-copy-performance.md) supersedes the
+initial CG4 buffer size and copy-job memory accounting below.
+
 1. Move launch handles from directory windows into the desktop owner. Start
    optional tools on demand, collect completions and retain the shell. Prove a
    launched application survives its originating folder window closing.
@@ -21,8 +26,8 @@ The disk-full fixture leaves 21 free sectors on disposable 256-byte SDFS media,
 so normal small copies fit and the large copy fails after several chunks. An
 earlier, less-full fixture reached its 240-second test limit with 20,480 bytes
 in the temporary file and the original target intact; it had not reached disk
-full. This is an incomplete stress run, not a successful failure check. Profile
-desktop copy throughput separately before increasing its 512-byte event-loop
+full. This is an incomplete stress run, not a successful failure check. It
+motivated the separate throughput comparison of the initial 512-byte event-loop
 work unit. The [filesystem buffering record](../../history/spartados-write-buffering.md)
 explains why small Write requests settle metadata more often than shell COPY's
 16 KiB requests.
@@ -49,8 +54,8 @@ The execution record identifies the exact packages and source hashes for the
 file/settings walkthrough and the subsequent background-selection refinement.
 Interaction measurements use forty samples each with desktop, one folder, shell
 and on-demand Panel; they are frame-granular scanout measurements, not a matched
-comparison against CG2's different startup applications. Large-copy throughput,
-multiple selection, dragging and recursive file operations remain follow-up work.
+comparison against CG2's different startup applications. Multiple selection,
+dragging and recursive file operations remain follow-up work.
 
 The final preview measures **80.3 ms median / 100.3 ms p95** Panel press feedback
 and **180.4 / 180.6 ms** icon-selection feedback. Earlier runs of this series put

@@ -2,6 +2,10 @@
 
 [Roadmap](../../roadmap.md#colour-gem-desktop-roadmap) · [Plan](colour-launcher-plan.md)
 
+The [copy-throughput follow-up](../../history/desktop-copy-performance.md)
+replaces the initial 512-byte buffer described below with 16 KiB, prioritizing
+throughput while retaining this ownership and file-publication model.
+
 The persistent desktop owns a bounded table of program handles. Directory windows
 only request launches; closing them leaves the programs alive. Use existing
 ExecStartProgram/ExecCollectProgram. While children exist, an ordinary 100 ms

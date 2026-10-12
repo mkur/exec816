@@ -12,7 +12,8 @@ struct DesktopCopy {
     LONG error;
     WORD replacing;
     char source[256],target[256],temporary[256];
-    UBYTE buffer[512];
+    /* Match shell COPY: allow DOS to batch payload and metadata publication. */
+    UBYTE buffer[16384];
 };
 struct DesktopAssociation { char extension[4],program[64]; };
 struct DesktopFolder { WORD bounds[4],icons,sort;char path[128]; };

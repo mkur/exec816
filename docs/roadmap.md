@@ -180,11 +180,13 @@ and application activity. Record latency medians and p95 as well as rendering
 work; the [rendering performance record](history/gem-rendering-performance.md)
 provides the current starting point.
 
-Desktop copy throughput is another follow-up: profile its alternating 512-byte
-Read/Write requests on accurately timed media, including metadata publication,
-before increasing the work unit. Preserve useful Cancel and event handling;
-the larger shell COPY buffer is a throughput reference, not an automatic choice
-for a GUI event loop.
+Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
+[throughput comparison](history/desktop-copy-performance.md) measures a 2.83x
+improvement over 512-byte chunks on accurate SIO. Throughput is the priority;
+desktop-local Cancel waits longer between synchronous Read/Write pairs.
+Consider a separate copy Process if local interaction during long transfers
+becomes the next usability problem; other applications already have their own
+Tasks.
 
 Implement each milestone in executable slices with a design note and plan
 proportionate to the change. Account for upper-RAM/VRAM use and report reserved

@@ -15,6 +15,10 @@ and saved settings.
 All four milestones are implemented and development-checked. Their plans link
 the source/artifact records, memory accounting, walkthroughs and measured limits.
 
+The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
+512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,
+including throughput, cancellation delay and another application's button feedback.
+
 The [rendering performance plan](text-run-fast-path-plan.md) follows
 the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,
 fast complete cells inside horizontally clipped strings,

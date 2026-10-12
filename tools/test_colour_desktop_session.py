@@ -24,9 +24,10 @@ class ColourDesktop:
             (root/'SOURCE.TXT').write_bytes(b'Copied by the GEM desktop.\n'*37)
             (root/'DELETE.TXT').write_bytes(b'Delete fixture\n')
             (root/'BIG.BIN').write_bytes(bytes(range(256))*512)
-            # Leave 21 free sectors in this geometry. A small copy still fits;
-            # BIG.BIN reaches a real partial-write failure after several chunks.
-            (root/'FILL.BIN').write_bytes(bytes([0x5a])*590000)
+            # Leave space for one 16 KiB chunk before the disk-full case.
+            # Cancel is handled between chunks: a smaller reserve can report
+            # disk full before processing Escape and falsely "pass" cleanup.
+            (root/'FILL.BIN').write_bytes(bytes([0x5a])*(590000-16384))
             (root/'DESKTOP.CFG').write_bytes(self.restore or b'Invalid old preferences\n')
             make(target,root,item['sectors'],item['sector_bytes'])
 
