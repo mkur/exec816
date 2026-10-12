@@ -777,6 +777,40 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
     }
 }
 
+/* The icon owns no persistent hardware state. Flush before reusing the CPU
+ * page, upload just the clipped planes, and retain them until both blits fence.
+ * Transparent pixels and the two possible outside nibbles remain unchanged. */
+void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD fg,UWORD bg)
+{
+    UWORD row,sx,px,bit,mi,di,at=0,stride=(width>>4);
+    UWORD bytes=((right+1)>>1)-(left>>1),rows=bottom-top;
+    UWORD source=(top-y)*stride,index;
+    UBYTE ink=map_col[fg],paper=map_col[bg],a,o,shift;
+    flush();
+    if (fault) return;
+    for (row=0;row<rows;++row,source+=stride) {
+        sx=left-x;index=source+(sx>>4);bit=0x8000U>>(sx&15);
+        mi=mask[index];di=data[index];a=255;o=0;
+        for (px=left&~1U;px<((right+1)&~1U);++px) {
+            shift=(px&1) ? 0:4;
+            if (px>=left && px<right) {
+                if ((mi|di)&bit) {
+                    a&=~(15U<<shift);
+                    o|=((di&bit) ? ink:paper)<<shift;
+                }
+                bit>>=1;
+                if (!bit && px+1<right) { bit=0x8000U;mi=mask[++index];di=data[index]; }
+            }
+            if (px&1) { page[at]=a;page[2048+at]=o;++at;a=255;o=0; }
+        }
+    }
+    latch(VbxeOwnerWrite(&display,0x36000UL,page,at));
+    if (!fault) latch(VbxeOwnerWrite(&display,0x36800UL,page+2048,at));
+    blit_mask(0x36000UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,4);
+    blit_mask(0x36800UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,3);
+}
+
 /* GEM's flat-title dither (0000/5555 rows), expressed as constant packed
  * pixels. Scratch is already white. Each strided command covers every second
  * row, including a preserved neighbour at odd clipped byte edges. */

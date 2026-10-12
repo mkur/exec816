@@ -28,6 +28,18 @@ static UWORD text_capacity(const UBYTE *data,UWORD bytes,const UBYTE *ted)
     return n<capacity ? capacity:0;
 }
 static WORD coordinate(UWORD n) { return (WORD)((n&255)<<3)+(BYTE)(n>>8); }
+/* Fix shared planes once. Earlier ICONBLKs already hold native addresses;
+ * their descriptor offsets still identify the same original file bytes. */
+static void icon_plane(UBYTE *data,UWORD iconAt,UWORD index,ULONG offset,UWORD count)
+{
+    UWORD j;
+    const ICONBLK *previous=(const ICONBLK *)(data+iconAt);
+    ULONG address=(ULONG)(data+offset);
+    UBYTE *p=data+offset;
+    for (j=0;j<index;++j)
+        if (previous[j].ib_pmask==address || previous[j].ib_pdata==address) return;
+    for (j=0;j<count;++j,p+=2) *(UWORD *)p=word(p);
+}
 WORD rsrc_obfix(OBJECT *tree,WORD obj)
 {
     tree[obj].ob_x=coordinate(tree[obj].ob_x);
@@ -64,7 +76,7 @@ WORD rsrc_load(const char *name)
     BPTR file;
     UBYTE header[36],*data,*p;
     LONG length,got,at=0;
-    UWORD bytes,objects,trees,objectAt,treeAt,tedAt,teds,i,j,type,editable,capacity;
+    UWORD bytes,objects,trees,objectAt,treeAt,tedAt,teds,iconAt,icons,i,j,type,editable,capacity;
     ULONG spec,offset;
     OBJECT *o;
     TEDINFO *ted;
@@ -76,8 +88,10 @@ WORD rsrc_load(const char *name)
     bytes=word(header+34); objectAt=word(header+2); treeAt=word(header+18);
     objects=word(header+20); trees=word(header+22);
     tedAt=word(header+4);teds=word(header+24);
+    iconAt=word(header+6);icons=word(header+26);
     if (word(header)!=0 || bytes<36 || !objects || objects>256 || !trees || trees>8 ||
-        teds>256 || word(header+26) || word(header+28) ||
+        teds>256 || icons>256 || word(header+28) ||
+        (icons && (iconAt<36 || (iconAt&1) || (ULONG)iconAt+(ULONG)icons*34>bytes)) ||
         (teds && (tedAt<36 || (ULONG)tedAt+(ULONG)teds*28>bytes)) ||
         objectAt<36 || treeAt<36 || (ULONG)objectAt+(ULONG)objects*24>bytes ||
         (ULONG)treeAt+(ULONG)trees*4>bytes) goto malformed;
@@ -97,7 +111,7 @@ WORD rsrc_load(const char *name)
     for (i=0;i<objects;++i) {
         p=data+objectAt+(ULONG)i*24;type=word(p+6);spec=wide(p+12);
         if (type!=G_BOX && type!=G_IBOX && type!=G_STRING && type!=G_TITLE && type!=G_BUTTON &&
-            type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT)
+            type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT && type!=G_ICON)
             goto malformed;
         if (word(p+8)&~(SELECTABLE|DEFAULT|EXIT|EDITABLE|RBUTTON|LASTOB|HIDETREE) ||
             word(p+10)&~(SELECTED|DISABLED)) goto malformed;
@@ -108,6 +122,21 @@ WORD rsrc_load(const char *name)
         } else if (type==G_TEXT || type==G_BOXTEXT || type==G_FTEXT || type==G_FBOXTEXT) {
             if (spec<tedAt || spec>=(ULONG)tedAt+(ULONG)teds*28 ||
                 (spec-tedAt)%28) goto malformed;
+        } else if (type==G_ICON) {
+            if (spec<iconAt || spec>=(ULONG)iconAt+(ULONG)icons*34 ||
+                (spec-iconAt)%34) goto malformed;
+        }
+    }
+    for (i=0;i<icons;++i) {
+        UWORD width,height,planeBytes;
+        p=data+iconAt+(ULONG)i*34;width=word(p+22);height=word(p+24);
+        if (!width || width>64 || (width&15) || !height || height>64 ||
+            !string_size(data,bytes,wide(p+8))) goto malformed;
+        planeBytes=(width>>3)*height;
+        for (j=0;j<2;++j) {
+            offset=wide(p+j*4);
+            if (offset<36 || (offset&1) || offset>bytes || planeBytes>bytes-offset)
+                goto malformed;
         }
     }
     for (i=0;i<teds;++i) {
@@ -130,6 +159,18 @@ WORD rsrc_load(const char *name)
         for (j=0;j<GEM_OBJECT_LIMIT && offset+(ULONG)(j+1)*24<=(ULONG)objectAt+(ULONG)objects*24;++j)
             if (word(data+offset+(ULONG)j*24+8)&LASTOB) break;
         if (j==GEM_OBJECT_LIMIT || offset+(ULONG)(j+1)*24>(ULONG)objectAt+(ULONG)objects*24) goto malformed;
+    }
+    for (i=0;i<icons;++i) {
+        ULONG mask,bits;
+        UWORD count;
+        ICONBLK *ib;
+        p=data+iconAt+(ULONG)i*34;ib=(ICONBLK *)p;
+        mask=wide(p);bits=wide(p+4);count=(word(p+22)>>4)*word(p+24);
+        icon_plane(data,iconAt,i,mask,count);
+        if (bits!=mask) icon_plane(data,iconAt,i,bits,count);
+        ib->ib_pmask=(ULONG)(data+mask);ib->ib_pdata=(ULONG)(data+bits);
+        ib->ib_ptext=(ULONG)(data+wide(p+8));
+        for (j=12;j<34;j+=2) *(UWORD *)(p+j)=word(p+j);
     }
     /* Fix each TED once, including records shared by several objects. */
     for (i=0;i<teds;++i) {

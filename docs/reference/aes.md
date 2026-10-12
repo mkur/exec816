@@ -339,7 +339,7 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 `gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
 `TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
 `G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT` and
-`G_FBOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
+`G_FBOXTEXT` and `G_ICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
 with at most 32 objects, eight levels and 63 characters per label. Coordinates
 are pixels. Box specs use a signed border-thickness byte; centering and drawing
@@ -529,7 +529,16 @@ and its initial NUL must be present in the file. Shared TEDINFO records are fixe
 once. Text remains writable within the resource's supplied buffer.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
-Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.
+G_ICON resources contain standard 34-byte ICONBLKs and monochrome mask/data
+planes. Loading relocates their three full addresses and converts shared bitmap
+words once. Widths are 16/32/48/64 pixels, heights 1–64, labels at most 63 bytes.
+Compiled trees supply native WORD planes, with the left pixel in the high bit.
+Foreground/background pens come from ib_char; SELECTED exchanges them. Bitmap
+mask holes preserve existing pixels; the label uses the fixed 8×8 face. The
+OBJECT bounds enclose its bitmap and label. This icon subset draws normal and
+SELECTED states; callers use HIDETREE for absent items. Disabled icon stippling
+and other decorative state overlays are not implemented.
+G_IMAGE, CICON, 3D flags, extensions and indirect specs are unsupported.
 Character coordinates use the fixed 8×8 cell. File extents and string offsets are
 checked once during loading; valid object links remain the caller's responsibility.
 Already loaded coordinates are pixels and must not be passed through obfix again.

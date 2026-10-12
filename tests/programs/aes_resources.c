@@ -1,11 +1,13 @@
 #include <gem.h>
 #include <exec816/aes.h>
+#include <exec816/runtime.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <string.h>
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,ResourceStatus;
 volatile LONG ResourceError;
+volatile ULONG ResourceHeapWarm,ResourceHeapReturned;
 static void check(WORD okay) { ++AESChecks;if (!okay) { ++AESFailures;if (!AESFirstFailure) AESFirstFailure=AESChecks; } }
 #define CHECK(x) check((x)!=0)
 void AESClientOne(void) { }
@@ -80,6 +82,42 @@ static void editable_resource(void)
     }
     CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
 }
+volatile UWORD IconPhase,IconGo;
+static void icon_resource(void)
+{
+    static UWORD mask[32],bits[32];
+    static ICONBLK compiled;
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1175,8,40,624,184};
+    static OBJECT icon={-1,-1,-1,G_ICON,LASTOB,0,0,57,81,64,32};
+    const char *bad[]={"D1:ICWIDTH.RSC","D1:ICHEIGHT.RSC","D1:ICEXT.RSC"};
+    OBJECT *tree,*again;
+    ICONBLK *loaded,*shared;
+    WORD i,window,handle=1;
+    CHECK(sizeof(ICONBLK)==34);
+    CHECK(rsrc_load("D1:ICON.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    loaded=(ICONBLK *)(ULONG)tree[1].ob_spec;shared=(ICONBLK *)(ULONG)tree[2].ob_spec;
+    CHECK(loaded->ib_pmask==shared->ib_pmask && loaded->ib_pdata==shared->ib_pdata);
+    CHECK(*(const UWORD *)(ULONG)loaded->ib_pmask==0x83fe &&
+        *(const UWORD *)(ULONG)loaded->ib_pdata==0x4202);
+    for (i=0;i<3;++i) {
+        CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && tree==again);
+    }
+    compiled=*loaded;compiled.ib_pmask=(ULONG)mask;compiled.ib_pdata=(ULONG)bits;
+    for (i=0;i<32;++i) { mask[i]=(i&1) ? 0xf3c0:0x83fe;bits[i]=(i&1) ? 0xa140:0x4202; }
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,640,208);CHECK(window>0);
+    CHECK(wind_open(window,0,24,640,208));
+    for (i=0;i<8;++i) {
+        icon.ob_x=57+(i&1);icon.ob_state=(i&2) ? SELECTED:0;
+        icon.ob_spec=(ULONG)(i<4 ? &compiled:loaded);
+        CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(&background,0,0,0,0,640,240));
+        CHECK(objc_draw(&icon,0,0,i>=4 ? icon.ob_x+11:0,i>=4 ? 83:0,i>=4 ? 24:640,i>=4 ? 21:240));
+        CHECK(wind_update(END_UPDATE));
+        IconPhase=i+1;while (IconGo<IconPhase) ExecYield();
+    }
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+    CHECK(rsrc_free());
+}
 UWORD AESRun(void)
 {
     OBJECT *tree,*again,*popup;
@@ -90,7 +128,10 @@ UWORD AESRun(void)
     /* Mount/cache allocations persist until system shutdown. Warm them before
        measuring the resource/context lifetime. */
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);
-    CHECK(file && Close(file)); CHECK(ExecDOSDetach()); memory=AvailMem(0);
+    CHECK(file!=0);CHECK(Seek(file,0,OFFSET_END)>=0);CHECK(Close(file));
+    lock=Lock("D1:",SHARED_LOCK);CHECK(lock!=0);
+    CHECK(Examine(lock,&info));CHECK(ExNext(lock,&info));UnLock(lock);
+    CHECK(ExecDOSDetach()); memory=AvailMem(0);ResourceHeapWarm=memory;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
     context=ExecAESContext();
     for (x=0;x<8;++x) context->deferredMessage[x]=123+x;
@@ -107,7 +148,7 @@ UWORD AESRun(void)
     CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
     CHECK(!rsrc_load("D1:SHORT.RSC"));
     CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
-    CHECK(!rsrc_gaddr(R_TREE,2,(void **)&again) && !again);
+    CHECK(!rsrc_gaddr(R_TREE,3,(void **)&again) && !again);
     CHECK(menu_ienable(popup,1,0) && popup[1].ob_state==DISABLED);
     CHECK(menu_ienable(popup,1,1) && popup[1].ob_state==0);
     CHECK(menu_tnormal(popup,1,0) && popup[1].ob_state==SELECTED);
@@ -121,9 +162,9 @@ UWORD AESRun(void)
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);CHECK(file!=0);
     CHECK(Seek(file,36,OFFSET_BEGINNING)==0);CHECK(Seek(file,0,OFFSET_CURRENT)==36);
     CHECK(Close(file));
-    text_resource();editable_resource();
+    text_resource();editable_resource();icon_resource();
 cleanup:
     CHECK(appl_exit());CHECK(ExecAESDetach());CHECK(ExecDOSDetach());
-    CHECK(AvailMem(0)==memory);
+    ResourceHeapReturned=AvailMem(0);CHECK(ResourceHeapReturned==memory);
     return AESFailures;
 }

@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [colour desktop roadmap](../../roadmap.md#colour-gem-desktop-roadmap) starts
+with the [CG1 icon design](colour-icons-design.md) and
+[implementation plan](colour-icons-plan.md): standard application-owned icons,
+clipped VBXE bitmap drawing and classic resource support at 640×240.
+
 The [rendering performance plan](text-run-fast-path-plan.md) follows
 the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,
 fast complete cells inside horizontally clipped strings,

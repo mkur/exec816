@@ -14,6 +14,11 @@ typedef struct {
     WORD te_font,te_fontid,te_just,te_color,te_fontsize,te_thickness;
     WORD te_txtlen,te_tmplen;
 } TEDINFO;
+typedef struct {
+    ULONG ib_pmask,ib_pdata,ib_ptext;
+    WORD ib_char,ib_xchar,ib_ychar,ib_xicon,ib_yicon,ib_wicon,ib_hicon;
+    WORD ib_xtext,ib_ytext,ib_wtext,ib_htext;
+} ICONBLK;
 #pragma pack(pop)
 #define G_BOX 20
 #define G_TEXT 21
@@ -27,6 +32,8 @@ typedef struct {
 #define G_STRING 28
 #define G_FTEXT 29
 #define G_FBOXTEXT 30
+#define G_ICON 31
+#define CHECKED 4
 #define G_TITLE 32
 #define SELECTABLE 1
 #define DEFAULT 2
@@ -78,6 +85,7 @@ typedef struct {
 } MENU;
 WORD menu_bar(OBJECT *,WORD);
 WORD menu_popup(const MENU *,WORD,WORD,MENU *);
+WORD menu_icheck(OBJECT *,WORD,WORD);
 WORD menu_ienable(OBJECT *,WORD,WORD);
 WORD menu_tnormal(OBJECT *,WORD,WORD);
 WORD menu_text(OBJECT *,WORD,const char *);

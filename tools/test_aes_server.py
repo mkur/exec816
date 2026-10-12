@@ -403,12 +403,17 @@ ENDMODULE
                 cases=resource_cases(out/'calculator')
                 from test_editable_resources import cases as editable_cases
                 cases.update(editable_cases())
+                from test_icon_resources import cases as icon_cases
+                cases.update(icon_cases())
                 for name,payload in cases.items():(media/name).write_bytes(payload)
                 make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC',*cases},filesystem=filesystem,sector_bytes=128,sectors=720)
                 bridge.mount(0,str(out/'resources.atr'))
 
             try:
                 before = None
+                if suite=='resources':
+                    from test_icon_resources import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if suite=='fsel':
                     from test_aes_fsel import physical
                     before = lambda b: physical(b, program, foreign, report)
@@ -450,6 +455,7 @@ ENDMODULE
                 if suite=='resources':
                     report['resource_status']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceStatus'],2),'little')
                     report['resource_error']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceError'],4),'little')
+                    report['resource_heap']={n:int.from_bytes(bridge.memdump(foreign['symbols'][n],4),'little') for n in ('ResourceHeapWarm','ResourceHeapReturned')}
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
@@ -631,13 +637,13 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows',  'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows',  'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem)
     elif args.suite == 'console':

@@ -56,4 +56,8 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 /* Trusted, nonempty screen/redirected-strip geometry; append to the current
  * batch and split at its existing work limit, without submitting each fill. */
 void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
+/* Native-word monochrome planes, word-aligned width <=64; visible strip <=32
+ * rows. Caller holds the existing display grant; half-open clip is on screen. */
+void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD fg,UWORD bg);
 #endif

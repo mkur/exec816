@@ -111,6 +111,19 @@ kernel startup, and the existing screen text is preserved. The bitmap/no-primes
 preview includes both Atarimax forms. Remote image loading remains a later
 extension.
 
+## Colour GEM desktop roadmap
+
+The target is a classic colour GEM desktop adapted to Exec816: **640×240,
+sixteen colours and the existing 8×8 font**, with flat frames, patterned active
+titles, compact scrollbars, coloured icons and Desk / File / View / Options
+menus. Design the layout for this mode; a higher-resolution display is not a
+prerequisite. Use a restrained palette with clear text and selection contrast.
+
+CG1 icon support is implemented and development-checked. The next milestones
+are Files icon/list views (CG2), a persistent desktop with multiple folder
+windows (CG3), and independent launches, file operations and saved settings
+(CG4). See the [icon design and plan](plans/gem4xe/README.md).
+
 ## Desktop usability milestones
 
 The three milestones following

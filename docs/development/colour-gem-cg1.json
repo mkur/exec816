@@ -1,0 +1,145 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "suite": "resources",
+  "c_mode": "opt",
+  "native_mode": "opt",
+  "icons": [
+    {
+      "case": 0,
+      "source": "compiled",
+      "pixels": 3696
+    },
+    {
+      "case": 1,
+      "source": "compiled",
+      "pixels": 3696
+    },
+    {
+      "case": 2,
+      "source": "compiled",
+      "pixels": 3696
+    },
+    {
+      "case": 3,
+      "source": "compiled",
+      "pixels": 3696
+    },
+    {
+      "case": 4,
+      "source": "RSC",
+      "pixels": 3696
+    },
+    {
+      "case": 5,
+      "source": "RSC",
+      "pixels": 3696
+    },
+    {
+      "case": 6,
+      "source": "RSC",
+      "pixels": 3696
+    },
+    {
+      "case": 7,
+      "source": "RSC",
+      "pixels": 3696
+    }
+  ],
+  "AESChecks": 156,
+  "AESFailures": 0,
+  "resource_heap": {
+    "ResourceHeapWarm": 2592696,
+    "ResourceHeapReturned": 2592696
+  },
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 780,
+      "remaining_above_floor": 500
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 275,
+      "remaining_above_floor": 781
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 150,
+      "remaining_above_floor": 906
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 674,
+      "remaining_above_floor": 1630
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 58,
+      "remaining_above_floor": 198
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "milestone": "CG1",
+  "vram_reserved_delta": 0,
+  "layout_modes": [
+    "raw",
+    "opt"
+  ],
+  "source_inputs": {
+    "c/include/gem/objects.h": "66d484af98dcd7f03d9b53a0a82fa24435ec055d92f675c8e8c250096a682a82",
+    "c/calypsi/aes-objects.c": "ef58fd08819a6d9c3716ab5852e66e0b20a02fa5453d5b0c1fd321ccefb9d1fc",
+    "c/calypsi/aes-resource.c": "4db0f64d3c08add1ee0d67d7d75ac5a1e58f4caf785df63c04fa373a2a65958c",
+    "ports/gem4xe/adapter/gem-vbxe.c": "e960941846c9d7492b3f3b3625a64bdd782e7f2e2f4f0d6ee26bc3be248726d9",
+    "tools/test_icon_resources.py": "a7d440e4eaf647096ed9aa5d5a09dc8b9ffe866e4df61bbe8eba395a77895946",
+    "tests/programs/aes_resources.c": "0b0119a56c9d750de36988fab20a5f1632dfa6aea28ebad12286e349939a6de4"
+  }
+}
