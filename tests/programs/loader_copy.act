@@ -1,0 +1,16 @@
+MODULE LOADERCOPY
+USE PROGRAMPLACE
+
+BYTE finished
+CARD progress
+INCLUDE "loader-copy-cases.inc"
+
+; Exercise admitted text/data spans through the real loader copy helper.
+PROC Main()
+
+  CopyCases()
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -13,18 +13,18 @@ from test_cooperative import data
 from test_dos_stack import execute, ownership
 from banked_test_memory import read
 
-PIN = json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 
 def run(out, mode, bank):
     out.mkdir(parents=True,exist_ok=True)
-    toolchain = compiler(ROOT/'build/actionc')
+    toolchain = compiler(ROOT/'build/actionc', release=True)
     artifact = out/'command.o65'
     command_build = compile_command(toolchain,ROOT/'tests/programs/loaded_command.act',artifact,mode=='opt')
     raw = artifact.read_bytes()
     info = inspect(raw)
     ordinary = 1
-    file_base = 0x10000 if bank==3 else 0xe0000
+    file_base = 0x280000
     snapshot_base = file_base+0x8000
     (out/'o65-execution-fixture.inc').write_text(f'CONST FILE_BASE=${file_base:x}\nCONST SNAPSHOT_BASE=${snapshot_base:x}\nCONST FIXTURE_BYTES={len(raw)}\nCONST PROVIDER_SIGNATURE={info["positions"][f"import{ordinary}.signature"]}\n')
     source = read_source(ROOT/'lib/dos/o65memory.act').replace('USE EXEC\n','USE EXEC\nUSE O65CONTROL\n')
@@ -34,12 +34,19 @@ def run(out, mode, bank):
     (out/'o65control.act').write_text((ROOT/'tests/programs/o65control.act').read_text())
     fixture = out/'probe.act'
     fixture.write_text(read_source(ROOT/'tests/programs/o65_execution.act',{'o65-execution-fixture.inc':out/'o65-execution-fixture.inc'}))
+    # Current resident providers include deferred console state. Give this
+    # fixture the same upper data capacity as the shell, without starting it.
+    profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    profile['image_data_bytes'] = 6400
+    memory_profile = out/'fixture-memory.json'
+    memory_profile.write_text(json.dumps(profile, indent=2)+'\n')
     program = build(toolchain,fixture,out,optimize=mode=='opt',tasks=True,task_capacity=8,
-                    console=False,kernel_bank=bank,image_data=[(file_base,raw),(snapshot_base,bytes(16384))])
+                    console=False,console_deferred=True,kernel_bank=bank,memory_profile=memory_profile,
+                    image_data=[(file_base,raw),(snapshot_base,bytes(16384))])
     provider_manifest = json.loads((out/'providers.json').read_text())
     selected = [next(p for p in provider_manifest['providers'] if p['name']==name) for name in info['imports']]
     oracle = build_oracle(toolchain)
-    with emulator(ROOT/'build/shell-console-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as bridge:
+    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as bridge:
         machine = verify_machine(bridge,ROOT/'build/firmware/altirraos-816.rom',PIN)
         try:
             runtime,_ = execute(bridge,program,timeout=240,frame_limit=12000)
@@ -78,7 +85,7 @@ def run(out, mode, bank):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',choices=('raw','opt'),required=True)
-    parser.add_argument('--kernel-bank',type=int,default=1)
+    parser.add_argument('--kernel-bank',type=int,default=2)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     result=dict(status='running')

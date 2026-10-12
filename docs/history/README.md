@@ -1,5 +1,8 @@
 # Historical records
 
+- [Command loader refactor](command-loader-refactor.md): bulk-copy and scalar-reader
+  development slices and matched loading comparisons.
+
 - [LIST command loading](list-command-loading.md): current loader phase costs,
   scalar decoding, relocation passes and the next bounded improvements.
 

@@ -1,0 +1,64 @@
+MODULE LOADERREADERS
+USE O65READ
+USE O65TYPES
+INCLUDE "loader-reader-cases.inc"
+
+TYPE Case=[
+  BYTE width
+  BYTE POINTER bytes
+  LONGCARD at,limit
+  CARD error
+]
+
+TYPE Sample=[
+  CARD before
+  O65TYPES.Cursor cursor
+  CARD middle
+  LONGCARD value,firstAt
+  CARD firstError
+  LONGCARD again
+  CARD after
+]
+
+Sample ARRAY samples(CASE_COUNT)
+CARD caseBytes,sampleBytes
+BYTE finished
+
+; Keep both read results and cursor/error states for the independent host oracle.
+PROC Main()
+  CARD index
+
+  caseBytes=SIZEOF(Case)
+  sampleBytes=SIZEOF(Sample)
+  FOR index=0 TO CASE_COUNT-1 DO
+    BEGIN
+      LET input=Case POINTER(ADDRESS(CASE_BASE))+SIZE(index)*SIZEOF(Case)
+      LET output=@samples(index)
+      output.before=$cafe
+      output.middle=$f00d
+      output.after=$babe
+      output.cursor.bytes=input.bytes
+      output.cursor.at=input.at
+      output.cursor.limit=input.limit
+      output.cursor.error=input.error
+      IF input.width=2 THEN
+        output.value=LONGCARD(O65READ.U16(@output.cursor))
+      ELSE
+        output.value=O65READ.U32(@output.cursor)
+      FI
+
+      output.firstAt=output.cursor.at
+      output.firstError=output.cursor.error
+      IF input.width=2 THEN
+        output.again=LONGCARD(O65READ.U16(@output.cursor))
+      ELSE
+        output.again=O65READ.U32(@output.cursor)
+      FI
+    END
+  OD
+
+  finished=1
+
+RETURN
+
+ENDMODULE

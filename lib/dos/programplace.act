@@ -5,6 +5,7 @@ USE O65READ
 USE O65MEMORY
 USE PROGRAMIMAGE
 USE O65RELOCATIONS
+USE A816MEMORY
 
 ; Reserve aligned code and separate data/BSS storage for a validated image.
 PUBLIC BYTE FUNC Allocate(PROGRAMIMAGE.Image POINTER image O65TYPES.Validation
@@ -57,15 +58,10 @@ PUBLIC BYTE FUNC Patches(PROGRAMIMAGE.Image POINTER image O65TYPES.Validation
 
 RETURN(O65RELOCATIONS.Patches(validation,image,apply))
 
-; Copy a binary span across bank boundaries using explicit wide offsets.
+; Copy admitted text/data across banks without clearing alignment capacity.
 PUBLIC PROC Copy(BYTE POINTER destination,source LONGCARD bytes)
-  LONGCARD index
 
-  index=0
-  WHILE index<bytes DO
-    destination(SIZE(index))=source(SIZE(index))
-    index==+1
-  OD
+  A816MEMORY.Move(destination,source,SIZE(bytes))
 
 RETURN
 
