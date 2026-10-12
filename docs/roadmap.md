@@ -188,6 +188,11 @@ Consider a separate copy Process if local interaction during long transfers
 becomes the next usability problem; other applications already have their own
 Tasks.
 
+The next [selection and batch implementation plan](plans/gem4xe/desktop-selection-batch-plan.md)
+is proposed: per-folder multiple selection, sequential Copy/Delete using the
+16 KiB copy path, followed by focused integration and throughput checks.
+Dragging and recursive directory operations follow separately.
+
 Implement each milestone in executable slices with a design note and plan
 proportionate to the change. Account for upper-RAM/VRAM use and report reserved
 bank-zero changes, including zero, with per-Task costs separate. Extra directory

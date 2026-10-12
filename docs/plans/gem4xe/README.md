@@ -19,6 +19,11 @@ The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
 512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,
 including throughput, cancellation delay and another application's button feedback.
 
+The proposed [desktop selection and batch plan](desktop-selection-batch-plan.md)
+adds per-folder multiple selection, sequential Copy/Delete through one 16 KiB
+buffer, explicit overwrite/cancellation behavior and focused demo checks.
+Dragging and recursive operations remain separate follow-ups.
+
 The [rendering performance plan](text-run-fast-path-plan.md) follows
 the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,
 fast complete cells inside horizontally clipped strings,
