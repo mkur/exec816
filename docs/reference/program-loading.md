@@ -142,6 +142,13 @@ commands with the current ABI when changing the parser contract.
 Program ABI version 11 adds `AssignPath` and `GetAssign` for the bounded
 [ASSIGN directory table](assigns.md).
 
+Program ABI version 16 adds `COMMAND.ExamineExact` and the generated
+`FIB_SIZE_EXACT`, `FIB_SIZE_BOUND` and `FIB_BLOCKS_EXACT` constants. Ordinary
+Examine/ExNext now return cheap directory metadata; consumers must honor the
+[availability flags](dos.md#metadata-availability). The FIB remains 260 bytes,
+with 30 reserved bytes and `fib_InfoFlags` at offset 258. Rebuild commands and
+providers together. The provider manifest uses 1,624 of its reserved 1,664 bytes.
+
 `COMMAND.MODE_OLDFILE`, `MODE_NEWFILE` and `MODE_READWRITE` share the DOS
 open-mode definitions in `abi/dos.json`. They are generated compile-time
 constants and add no command imports or runtime storage.

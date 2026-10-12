@@ -1,7 +1,8 @@
 # Cheap directory metadata
 
 [Plan](../plans/directory-metadata-refactor-plan.md) ·
-[Baseline](../development/directory-metadata-baseline.json)
+[Baseline](../development/directory-metadata-baseline.json) ·
+[Final development evidence](../development/directory-metadata-final.json)
 
 ## DM0 — frozen baseline and callers
 
@@ -95,3 +96,80 @@ write-mydos,text-mydos,ide-measured,break,directory-error}`. Some old directory
 fixtures needed relocated kernel code and larger upper-RAM test data arenas;
 production reservations remain unchanged. Fixed/per-Task/idle bank-zero delta:
 0/0/0 bytes, including guards, alignment and unused capacity.
+
+## DM4 — matched measurements and final contract
+
+Both runs use the pinned release compiler, the same MyDOS media, optimized
+fixture, cache setting, observer boundaries and emulator configuration. The
+comparison control replaces only FSDIRECTORY with its DM1 exact-default source
+from `89e7df9`, adapted to the current private four-argument FSINFO.Fill. The
+rest of the current production tree and the new ABI are identical. This is a
+private build comparison, not an installed compatibility mode or a rebuild of
+the historical MP6 kernel. Historical MP6 records remain unchanged.
+
+| Sector bytes | Listing | Frames, control → cheap | Directory fetches | Selected-file fetches, control → cheap | Physical reads, control → cheap |
+| ---: | --- | --- | ---: | --- | --- |
+| 128 | First | 31 → 5 | 9 | 76 → 0 | 12 → 0 |
+| 128 | Repeat/warm | 10 → 5 | 9 | 76 → 0 | 0 → 0 |
+| 256 | First | 34 → 4 | 9 | 41 → 0 | 9 → 0 |
+| 256 | Repeat/warm | 8 → 4 | 9 | 41 → 0 | 0 → 0 |
+
+First means the first listing after the same preceding create/read/seek
+workload, not a completely empty cache. All four listings issue zero writes.
+Selected-file chain visits fall from 76/41 to zero. First metadata appears in
+1/0 frames rather than 6/7 (PAL, 50 Hz integer sampling). This measures the first
+returned FIB; it does not time the first rendered screen row. Warm first results
+remain 1/0 frames. The observer records no output calls, so these numbers do
+not include DIR/LIST formatting or console presentation. DM2 checks their
+formatting and DIR's one Write per row separately.
+
+The 8,000-byte explicit exact query still visits/fetches 64/32 MyDOS sectors.
+Read/Seek(END), writable Open, writes, truncate, delete and directory mutations
+pass in both matched workloads; final media audits preserve unrelated files.
+Ordinary SDFS selected-file Examine performs zero map fetches in the 512-byte
+IDE probe; Exact performs one. SIO SDFS and RAM retain their focused functional
+checks. Complete counters, pins, image/input hashes and runtime observations are
+in the [compact evidence](../development/directory-metadata-final.json).
+
+The final real DIR/TYPE session passes with sector-derived MyDOS bounds and
+one Write per DIR row. A focused concurrent-reader run passes 335 assertions
+with four live Tasks, file reads/seeks and cheap metadata while heap, message
+and signal work continues. That fixture needed helper procedures excluded
+from the bounded Task-entry table, relocated code and a matching Generic57600
+functional profile. Its timing observer is still limited to the older
+FASTEST125/STOCK810 profiles; no new transport qualification is claimed.
+
+The control/current instrumented emitted bodies are 850,631/850,955 bytes:
+the dispatch split costs 324 bytes in FSDIRECTORY. These include the test
+observers and ABI/caller foundation; this is not a release-kernel size delta.
+Against the DM1 emitted module bodies, FSBACKEND/FSDIRECTORY/FSINFO together
+grow 1,262 bytes (501/371/390) for admission, dispatch and availability handling.
+Workspace/Cursor/Entry remain 174/110/42 bytes; write state remains 2,214
+and SDFS backend state 730 bytes, with existing 8-byte allocator rounding.
+Service remains 466 bytes. Cache payload stays 512 × 128 bytes (64 KiB),
+shared sector scratch 512 bytes and transfer staging 2,048 bytes. Peak observed
+root/filesystem/serial stacks are 271/522/139 bytes; kernel stack 260 bytes.
+Guards remain intact and reserved Task/DP/stack capacity does not change.
+
+The appended C binding grows its table from 60 to 63 bytes. Calypsi 5.18 places
+it at `$0D0009` without new linker alignment padding; the controlled probe's
+initialized-plus-BSS extent grows 69 → 72 bytes, both rounding to 72 at eight-byte
+alignment. Other C images may cross a rounding boundary. COMMAND remains within
+its existing 1,664-byte manifest reservation; FIB/cookie capacity is unchanged.
+Additional fixed/per-Task/idle reserved bank-zero bytes remain 0/0/0, counting
+guards, alignment and unused capacity.
+
+Reproduce the matched runs with `tools/measure_mydos_operations.py --size 128`
+or `256 --output DIR`. For the control, put the DM1 FSDIRECTORY source under
+`CONTROL/lib/fs/fsdirectory.act`, change its Fill call from `(info, entry)` to
+`(info, entry, service.work.volume, 1)`, and pass `--frozen-sources CONTROL`.
+Use the current fixture/observers in both runs. Full artifacts are under
+`build/directory-metadata/dm4/{before128,after128,before256,after256}`.
+The focused concurrency command is `tools/test_dos_concurrent.py --case opt
+--size 128 --capacity 4 --profile 4 --output DIR` (run with Python 3).
+
+Development scope: affected optimized emitted-code checks, DM1 raw/optimized
+ABI probes, host/generator and documentation/link checks. The emulator uses
+Generic 57,600 serial timing with rotational delays disabled. Timings include
+observer overhead and frame quantization; they neither predict physical floppy
+throughput nor qualify a release or real hardware. No demo/release was rebuilt.

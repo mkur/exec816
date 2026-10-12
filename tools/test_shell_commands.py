@@ -55,10 +55,11 @@ def prepare(size,scenario):
         target=next(f for f in volume['files']if f['path']=='EXT.BIN');first=target['chain'][0];at=disk.offset(first)+size-3
         high=first>>8 if target['flags']&4 else (target['ordinal']<<2)|(first>>8)
         disk.data[at:at+2]=bytes([high,first&255]);derived['fault']=dict(kind='first file sector links to itself',sector=first)
-    def listing(entries):return b''.join(e['name'].encode()+(b'/'if e['flags']&16 else b' '+str(len(contents[e['path']])).encode())+b'\n'for e in entries)
+    def listing(entries):return b''.join(e['name'].encode()+(b'/'if e['flags']&16 else b' <='+str(e['count']*(size-3)).encode())+b'\n'for e in entries)
     def item(command,output=b'',error=0,kind='run',source=None):return dict(command=command,output=output,status=10 if error else 0,error=error,kind=kind,source=source)
     if scenario=='basic':
-        cases=[item('DIR',listing(rows)),item('DIR TOOLS',b'SUB/\n'),item('DIR TOOLS/SUB',b'DATA.BIN 777\n'),item('DIR EDIR'),
+        data_entry=next(e for e in volume['entries'] if e['path']=='TOOLS/SUB/DATA.BIN')
+        cases=[item('DIR',listing(rows)),item('DIR TOOLS',b'SUB/\n'),item('DIR TOOLS/SUB',listing([data_entry])),item('DIR EDIR'),
                item('DIR TEXT.TXT',diagnostic_text(212,'DIR'),212),item('TYPE MISSING',diagnostic_text(205,'TYPE'),205),item('TYPE',diagnostic_text(212,'TYPE'),212)]
         for name in ('EMPTY','TEXT.TXT','B511.BIN','B512.BIN','B513.BIN','TOOLS/SUB/DATA.BIN'):
             cases.append(item('TYPE '+name,convert(contents[name]),source=contents[name]))

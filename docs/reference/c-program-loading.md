@@ -32,6 +32,11 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
+Import ABI 12 appends `ExamineExact`. The generated C FileInfoBlock stays
+260 bytes, with 30 reserved bytes and `fib_InfoFlags` at 258. Check the
+[DOS availability flags](dos.md#metadata-availability) for ordinary metadata;
+ExamineExact preserves explicit size/allocated-sector measurement.
+
 ## File layout
 
 All integers are little-endian. The 32-byte header is followed by segment
@@ -42,7 +47,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 11 |
+| 6 | 2 | Import ABI version, 12 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

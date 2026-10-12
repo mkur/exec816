@@ -6,7 +6,7 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 8; the loaded COMMAND ABI is version 15.
+The current native DOS ABI is revision 9; the loaded COMMAND ABI is version 16.
 
 ## Transfer ownership
 
@@ -66,8 +66,9 @@ record and constants; C query-call wrappers are not yet provided.
 | `DeleteFile(path)` | Delete a file or empty directory. |
 | `Rename(old, new)` | Rename within the same parent without replacement. |
 | `Lock(name, mode)` / `UnLock(lock)` | Acquire/release a shared file or directory reference. UnLock(NULL) is harmless. |
-| `Examine(lock, info)` | Return object metadata and initialize directory enumeration. |
+| `Examine(lock, info)` | Return directory metadata for the object and initialize enumeration. |
 | `ExNext(lock, info)` | Return the next entry; false with ERROR_NO_MORE_ENTRIES ends enumeration. |
+| `ExamineExact(lock, info)` | Measure the selected object's exact byte length and allocated sectors; initialize enumeration. |
 | `CurrentDir(lock)` | Select an owned directory lock and return the previous selection; the returned lock is not automatically unlocked. |
 | `NameFromLock(lock, buffer, length)` | Copy the canonical absolute path into caller-owned storage. |
 
@@ -82,6 +83,50 @@ Seek origins are `OFFSET_BEGINNING`, `OFFSET_CURRENT` and `OFFSET_END`. Position
 must stay between zero and exact EOF; overflow and extension past EOF fail.
 Negative transfer lengths or invalid buffer ranges fail. Zero-length transfers
 do not wait or consume input.
+
+### Metadata availability
+
+Ordinary Examine/ExNext use directory metadata without measuring the selected
+file's payload or sector-map chain. Check `fib_InfoFlags` before interpreting
+`fib_Size` or `fib_NumBlocks`:
+
+| Flag | Value | Meaning |
+| --- | ---: | --- |
+| `FIB_SIZE_EXACT` | 1 | Exact byte length. |
+| `FIB_SIZE_BOUND` | 2 | Byte upper bound; it is not EOF. |
+| `FIB_BLOCKS_EXACT` | 4 | Exact allocated disk-sector count. |
+
+The size flags are mutually exclusive. An unavailable quantity is -1 with its
+flag clear. A valid empty size is zero with `FIB_SIZE_EXACT`. Directory byte
+size is zero and exact; allocated sectors describe its storage separately.
+
+| Backend | Ordinary size | Ordinary allocated sectors |
+| --- | --- | --- |
+| MyDOS file | Directory count × (sector bytes − 3), a bound; an admitted live writer may already supply an exact length | Directory sector count, exact |
+| MyDOS directory | 0, exact | 8, exact |
+| SpartaDOS file/directory | Stored file length / directory zero, exact | -1, unavailable |
+| RAM file/directory | Known file length / directory zero, exact | 0, exact; RAM has no disk sectors |
+
+MyDOS's accepted legacy zero-count/zero-start empty entry has exact size and
+sector count zero. An ordinary one-sector file still has a bound. Bounds never
+replace the internal exact EOF used by Read, Seek or Write.
+
+`ExamineExact` is an Exec816 extension to the Amiga-shaped DOS API. It uses the
+existing bounded measurement path and owned-lock packet rules. To measure one
+listed file, lock that file and use a separate FIB. Subsequent ExNext calls
+still return ordinary metadata; there is no persistent exact-enumeration mode.
+SpartaDOS exact sector counts include occupied data and map sectors, excluding
+sparse holes. Exact queries on RAM require no disk I/O.
+
+The FIB remains 260 bytes: `fib_Reserved(30)` begins at 228 and the two-byte
+`fib_InfoFlags` begins at 258. The private 22-byte enumeration cookie fits in
+the reserved area and remains tied to its lock, FIB, object ticket and mutation
+epoch. Rebuild native, COMMAND and C callers together for this ABI change.
+Failed or canceled queries preserve the prior FIB, subject to the existing
+end-of-enumeration cookie rule. Live-object, mount, lease, initial-reference,
+ancestry and directory-read checks remain. Later file-chain corruption may be
+discovered by Read, Seek, ExamineExact or mutation preflight after a cheap
+listing succeeds. Listing does not certify file integrity.
 
 ## Paths and mounts
 

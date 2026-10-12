@@ -99,8 +99,12 @@ The [toolbox](toolbox.md) uses these resident COMMAND imports:
   `reader.terminated` indicates a present delimiter. It handles CRLF across reads,
   CR, LF and ATASCII EOL. Payloads are binary-safe and not NUL-terminated.
   Capacity exhaustion is an error, never a truncated successful line.
-- Lock/UnLock/Examine/ExNext publish existing DOS directory operations using
+- Lock/UnLock/Examine/ExNext/ExamineExact publish DOS directory operations using
   opaque BYTE POINTER identities and the generated `COMMAND.FileInfoBlock`.
+  Ordinary queries avoid selected-file measurement. Check `fib_InfoFlags`:
+  `FIB_SIZE_EXACT`, `FIB_SIZE_BOUND` and `FIB_BLOCKS_EXACT` describe which fields
+  are available. Use a separate file lock/FIB with ExamineExact when exact
+  measurement is needed; see the [DOS contract](../reference/dos.md#metadata-availability).
 - IsInteractive/OpenConsole/ConsoleInfo expose the
   [foreground console contract](../reference/dos.md#foreground-console-access).
 

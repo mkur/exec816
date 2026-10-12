@@ -7,7 +7,7 @@ The shell/demo configurations enable it. Custom builds opt in with
 descriptor has no drive, geometry or SIO profile; access is always read-write.
 Eight physical disks and one RAM volume can be configured together.
 
-RAM supports Open, Read, Write, Seek, Flush, Close, Lock, Examine, ExNext,
+RAM supports Open, Read, Write, Seek, Flush, Close, Lock, Examine, ExNext, ExamineExact,
 CreateDir, DeleteFile and same-directory Rename. Existing commands, redirection,
 append, pipes and EXECUTE use these interfaces unchanged. Names follow the
 current case-insensitive 8.3 rules, with at most sixteen directory levels.
@@ -27,6 +27,11 @@ Existing contents and the mount remain usable. Read and Write commit at most
 4 KiB of payload per worker step; buffer growth copies the existing contents
 before the next payload commit. Writer leases, ancestry protection and
 enumeration invalidation follow the [DOS contract](dos.md).
+
+All metadata queries publish the node's known byte length (zero for directories),
+`fib_NumBlocks=0`, and `FIB_SIZE_EXACT | FIB_BLOCKS_EXACT`. RAM has no allocated
+disk sectors; private buffer-capacity units are not public block counts.
+ExamineExact uses the same fresh node metadata without disk I/O or new storage.
 
 Flush succeeds because completed writes already reside in RAM. Delete and
 truncate release payload storage. Unmount, filesystem-service shutdown and

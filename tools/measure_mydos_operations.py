@@ -17,7 +17,7 @@ from filesystem_audit import Audit
 
 CASES = ('create', 'warm-read', 'writable-open', 'same-sector-seeks',
          'forward-seeks', 'unknown-end', 'known-end-read', 'listing',
-         'repeat-listing', 'truncate', 'delete', 'mkdir', 'rmdir')
+         'repeat-listing', 'truncate', 'delete', 'mkdir', 'rmdir','examine-exact')
 COLUMNS = ('frames', 'kernel_calls', 'physical_reads', 'physical_writes',
            'write_logical_reads', 'payload_visits', 'read_logical_fetches',
            'cache_hits', 'chain_visits', 'bitmap_loads')
@@ -29,7 +29,8 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_b
     probe = out/'writeperfprobe.act'
     probe.write_text(probe.read_text().replace('PUBLIC BYTE armed',
         'PUBLIC LONGCARD chainVisits,bitmapLoads,directoryLoads\nPUBLIC BYTE armed', 1))
-    source = frozen/'lib/mydos/mydosfile.act' if frozen else library_file('mydosfile.act')
+    probe.write_text(probe.read_text().replace('ENDMODULE', 'PUBLIC CARD FUNC Frame()\n\nRETURN(clock)\n\nENDMODULE'))
+    source = frozen/'lib/mydos/mydosfile.act' if frozen and (frozen/'lib/mydos/mydosfile.act').exists() else library_file('mydosfile.act')
     text = read_source(source)
     require(text.count('  chain.hops==+1') == 1, 'Changed chain-visit observer')
     text = text.replace('USE FSSTATUS\n', 'USE FSSTATUS\nUSE WRITEPERFPROBE\n', 1)
@@ -50,6 +51,16 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_b
   FI
 '''+marker, 1)
     io.write_text(text)
+    fsio = out/'fsio.act'
+    text = read_source(frozen/'lib/fs/fsio.act' if frozen and (frozen/'lib/fs/fsio.act').exists() else library_file('fsio.act'))
+    text = text.replace('USE FSSTATUS\n','USE FSSTATUS\nUSE WRITEPERFPROBE\n',1)
+    require(text.count('  service.work.operations==+1') == 1,
+            'Changed directory-fetch observer')
+    text = text.replace('  service.work.operations==+1',
+        '  IF WRITEPERFPROBE.active<>0 AND service.work.neededSector>=service.work.directory\n'
+        '      AND LONGCARD(service.work.neededSector)<=LONGCARD(service.work.directory)+7 THEN\n'
+        '    WRITEPERFPROBE.directoryLoads==+1\n  FI\n  service.work.operations==+1',1)
+    fsio.write_text(text)
     fixture = out/'mydos_performance.act'
     fixture.write_text(read_source(ROOT/'tests/programs/mydos_performance.act').replace(
         'allocationHint=4', f'allocationHint={hint}'))
@@ -60,7 +71,7 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_b
     mounts = [dict(alias='D1', unit=49, sectors=initial.image.count,
                    sector_bytes=size, format=1, profile=4, access='readwrite')]
     profile = json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes'] = 4352
+    profile['image_data_bytes'] = 8192
     (out/'memory-profile.json').write_text(json.dumps(profile)+'\n')
     program = read_build(from_build) if from_build else build(
         compiler(ROOT/'build/actionc', release=True), fixture, out,
@@ -97,6 +108,17 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_b
         rows = {name: dict(zip(COLUMNS, values[index*len(COLUMNS):(index+1)*len(COLUMNS)]))
                 for index, name in enumerate(CASES)}
         layouts = data(bridge, view, 'layouts', True)
+        def wide(name):
+            raw=bytes(data(bridge,view,name))
+            return [int.from_bytes(raw[i:i+4],'little') for i in range(0,len(raw),4)]
+        first_rows=wide('firstRowFrames');directory_fetches=wide('directoryFetches')
+        for i,name in enumerate(('listing','repeat-listing')):
+            require(rows[name]['read_logical_fetches'] >= directory_fetches[i],
+                    'Directory-fetch counter exceeds total fetches')
+            if frozen is None:
+                require(rows[name]['chain_visits'] == 0 and
+                        rows[name]['read_logical_fetches'] == directory_fetches[i],
+                        'Ordinary listing measured a selected file')
         from banked_test_memory import read
         guard = read(bridge, 0x2dffd0, 16384+64, out)
         require(guard[:32] == guard[-32:] == bytes([0xa5])*32, 'Operation buffer guard changed')
@@ -108,7 +130,12 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_b
                   runtime=runtime, cache_blocks_override=cache_blocks,
                   source_sha256=sha256(template), media_sha256=sha256(media),
                   observer_inputs={p.name: sha256(p) for p in out.glob('*.act')},
-                  bank_zero_delta=dict(fixed=0, per_task=0, idle=0))
+                  bank_zero_delta=dict(fixed=0, per_task=0, idle=0),
+                  listing_details={name:dict(first_metadata_frame=first_rows[i],
+                      directory_fetches=directory_fetches[i],
+                      selected_file_fetches=rows[name]['read_logical_fetches']-directory_fetches[i],
+                      output_calls=0) for i,name in enumerate(('listing','repeat-listing'))},
+                  emitted_body_bytes=sum(r['size'] for r in program['image']['routines']))
     (out/'results.json').write_text(json.dumps(result, indent=2)+'\n')
     for name, counts in rows.items():
         print(name, counts, flush=True)

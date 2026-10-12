@@ -297,7 +297,7 @@ PROC Manual(EXEC.MsgPort POINTER port)
 
 RETURN
 
-PROC StartService()
+PROC StartService(BYTE unused)
   DOS.FileLock POINTER lock
   LONGINT okay
 
@@ -310,7 +310,7 @@ PROC StartService()
 
 RETURN
 
-PROC StartClients()
+PROC StartClients(BYTE unused)
   ClientState POINTER item
   EXEC.Task POINTER added
   BYTE slot
@@ -338,7 +338,7 @@ PROC StartClients()
 
 RETURN
 
-PROC BeginWork()
+PROC BeginWork(BYTE unused)
   ClientState POINTER item
   BYTE slot,bit
   BYTE POINTER live
@@ -361,7 +361,7 @@ PROC BeginWork()
 
 RETURN
 
-PROC HeapWork()
+PROC HeapWork(BYTE unused)
   BYTE POINTER first,second
 
   first=EXEC.AllocMem(33,EXEC.MEMF_UPPER)
@@ -374,7 +374,7 @@ PROC HeapWork()
 
 RETURN
 
-PROC PortWork()
+PROC PortWork(BYTE unused)
   EXEC.Message POINTER received
 
   message.mn_Length=EXEC.MESSAGE_SIZE
@@ -389,7 +389,7 @@ PROC PortWork()
 
 RETURN
 
-PROC Background()
+PROC Background(BYTE unused)
   BYTE POINTER phase
   LONGCARD bits
   CARD ticks
@@ -401,8 +401,8 @@ PROC Background()
     activeWork==+1
   FI
 
-  HeapWork()
-  PortWork()
+  HeapWork(0)
+  PortWork(0)
   EXEC.Signal(parent,LONGCARD($20000000))
   bits=EXEC.Wait(LONGCARD($20000000))
   Require(bits=LONGCARD($20000000))
@@ -412,7 +412,7 @@ PROC Background()
 
 RETURN
 
-PROC Progress()
+PROC Progress(BYTE unused)
   ClientState POINTER item
   BYTE slot
 
@@ -426,7 +426,7 @@ PROC Progress()
 
 RETURN
 
-PROC FinishWork()
+PROC FinishWork(BYTE unused)
   ClientState POINTER item
   BYTE slot
   CARD ticks
@@ -457,16 +457,16 @@ RETURN
 ; Exercise file and directory operations interleaved between callers.
 PROC Main()
 
-  StartService()
-  StartClients()
-  BeginWork()
+  StartService(0)
+  StartClients(0)
+  BeginWork(0)
   DO
-    Background()
-    Progress()
+    Background(0)
+    Progress(0)
   UNTIL clientsDone=TASKSTACKS.CAPACITY-3
   OD
 
-  FinishWork()
+  FinishWork(0)
 
 RETURN
 

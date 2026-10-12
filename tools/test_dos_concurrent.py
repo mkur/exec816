@@ -9,13 +9,18 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from banked_test_memory import read
 
-def run(t,out,mode,size,capacity=8,bank=2,speed=0,trace=False,program=None,key=False):
+def run(t,out,mode,size,capacity=8,bank=18,speed=0,trace=False,program=None,key=False,profile=None):
     out.mkdir(parents=True,exist_ok=True)
-    mounts=[dict(alias='D'+str(i+1),unit=49+i,sectors=720 if size==128 else 2000,sector_bytes=size,profile=1 if speed==0 else 2) for i in range(2)]
+    profile=profile if profile is not None else (1 if speed==0 else 2)
+    require(not trace or profile==(1 if speed==0 else 2),
+            'Concurrent timing observer requires the selected FASTEST125/STOCK810 speed')
+    mounts=[dict(alias='D'+str(i+1),unit=49+i,sectors=720 if size==128 else 2000,sector_bytes=size,profile=profile) for i in range(2)]
     paths=bytearray(224)
     names=('D1:TOOLS/SUB/DATA.BIN','D2:TOOLS/SUB/DATA.BIN','D1:LARGE.BIN','D1:TOOLS/SUB','D2:TOOLS/SUB','D1:','DATA.BIN')
     for i,name in enumerate(names):paths[32*i:32*i+len(name)+1]=name.encode()+b'\0'
-    p=program or build(t,ROOT/'tests/programs/dos_concurrent.act',out,tasks=True,task_capacity=capacity,kernel_bank=bank,optimize=mode=='opt',dos_mounts=mounts,image_data=[(0xd0000,bytes(2048)),(0xd1000,bytes(paths))])
+    memory_profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());memory_profile['image_data_bytes']=8192
+    memory=out/'memory.json';memory.write_text(json.dumps(memory_profile)+'\n')
+    p=program or build(t,ROOT/'tests/programs/dos_concurrent.act',out,tasks=True,task_capacity=capacity,kernel_bank=bank,optimize=mode=='opt',dos_mounts=mounts,console_deferred=True,memory_profile=memory,image_data=[(0xd0000,bytes(2048)),(0xd1000,bytes(paths))])
     machineout=out/('observed' if trace else 'replay');machineout.mkdir(exist_ok=True)
     images=[]
     for unit in range(2):
@@ -33,8 +38,14 @@ def run(t,out,mode,size,capacity=8,bank=2,speed=0,trace=False,program=None,key=F
     binary=ROOT/('build/altirra-sio-multi-observer' if trace else 'build/altirra-sio-multi')
     require(sha256(binary/'AltirraBridgeServer')==(PIN['observer']['binary_sha256'] if trace else PIN['emulator']['sha256']),'Unpinned emulator')
     with emulator(binary,ROOT/'build/firmware/altirraos-816.rom',machineout,pin=PIN) as b:
-        for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
-        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);b.config('diskemu','fastest' if speed==0 else '810')
+        configuration={**PIN['configuration']}
+        if profile==4:
+            # This is a functional Generic57600 run, not the older timed
+            # FASTEST125/STOCK810 observer. Keep rotational delays disabled.
+            configuration['accuratedisk']=False
+        for k,v in configuration.items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
+        b.config('diskemu','generic56k' if profile==4 else ('fastest' if profile==1 else '810'))
+        machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN)
         for i,(media,_) in enumerate(images):b.mount(i,str(media))
         def before(b):
             for name,value,n in [('SECTORSIZE',size,2),('LIVEADDRESS',p['build']['task_storage']['LIVE'],4)]:
@@ -82,16 +93,16 @@ def run(t,out,mode,size,capacity=8,bank=2,speed=0,trace=False,program=None,key=F
             timing=analyze(machineout/'emulator.log',marks,[v[0] for v in images],size,speed,posts,observed['totalBytes'],guest_seconds)
             require(timing['packets']['count']==21*(capacity-3)+2 and len(timing['packets']['caller_dps'])==capacity-2,'Missing caller/packet trace')
             (out/'timing.json').write_text(json.dumps(timing,indent=2)+'\n');require(timing['verdict']=='pass','DOS timing failed: '+str(timing['violations']))
-        result=dict(status='pass',build=p['build'],runtime=runtime,machine=machine,observed=observed,capacity=capacity,kernel_bank=bank,sector_bytes=size,speed=speed,key_during_active=key,hardware=hardware.hex(),wire_commands=posts,media=[v for _,v in images],timing=timing,marks=marks,limits=dict(host_seconds=host_seconds,guest_seconds=guest_seconds,sectors=sectors_bound))
+        result=dict(status='pass',build=p['build'],runtime=runtime,machine=machine,observed=observed,capacity=capacity,kernel_bank=bank,sector_bytes=size,speed=speed,profile=profile,key_during_active=key,hardware=hardware.hex(),wire_commands=posts,media=[v for _,v in images],timing=timing,marks=marks,limits=dict(host_seconds=host_seconds,guest_seconds=guest_seconds,sectors=sectors_bound))
     if trace:
-        replay=run(t,out,mode,size,capacity,bank,speed,False,p,key)
+        replay=run(t,out,mode,size,capacity,bank,speed,False,p,key,profile)
         for field in ('runtime','observed','hardware'):require(result[field]==replay[field],'Observer changed '+field)
         result['replay']=dict(status='identical',xex_sha256=sha256(p['xex']),emulator_sha256=PIN['emulator']['sha256'])
     return result
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),required=True);a.add_argument('--capacity',type=int,choices=(4,8),default=8);a.add_argument('--bank',type=int,choices=(2,3),default=2);a.add_argument('--speed',type=int,choices=(0,1),default=0);a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
+    a=argparse.ArgumentParser();a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),required=True);a.add_argument('--capacity',type=int,choices=(4,8),default=8);a.add_argument('--bank',type=int,choices=(2,3,18),default=18);a.add_argument('--speed',type=int,choices=(0,1),default=0);a.add_argument('--profile',type=int,choices=(1,2,4));a.add_argument('--trace',action='store_true');a.add_argument('--key',action='store_true');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
     require(not(args.speed and args.size!=128),'Stock profile is 128 only')
-    try:r=run(compiler(ROOT/'build/actionc'),out,args.case,args.size,args.capacity,args.bank,args.speed,args.trace,key=args.key)
+    try:r=run(compiler(ROOT/'build/actionc',release=True),out,args.case,args.size,args.capacity,args.bank,args.speed,args.trace,key=args.key,profile=args.profile)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Concurrent DOS passed',args.case,args.size,args.capacity,args.bank,flush=True)

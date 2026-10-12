@@ -1,0 +1,1855 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "scope": "DM0\u2013DM4 directory metadata; focused emitted-code checks and matched operation measurements, not release/hardware qualification.",
+  "comparison": {
+    "historical_baseline": "0f95a3569968bc69f5dd818c0162d63cd423ccec",
+    "historical_record": "docs/development/directory-metadata-baseline.json",
+    "control_source_revision": "89e7df9",
+    "control_overrides": [
+      "lib/fs/fsdirectory.act"
+    ],
+    "control_adaptation": "DM1 exact-default FSDIRECTORY with FSINFO.Fill(info,entry,service.work.volume,1); current tree/ABI/fixture everywhere else.",
+    "control_sha256": "0c262e34d14ee3201d1d9bc8c91fcfb8745a259c7ef03a69df0699578286fab5",
+    "production_inputs": {
+      "abi/dos.json": "02106388fc9e16c9e632997d8f4ca3fb93f33ea6239f73c4612ac3a7bcf77b11",
+      "abi/program.json": "a2e0beb2c21ae6843cb646b5a5ede857f3bf7378ea872c5293902939db55cf5a",
+      "abi/c-program.json": "3b3653336e5b25e91aa1bf941d7bb094efe27cb87dc03a9edb9d44feeb1c48e2",
+      "lib/fs/fsdirectory.act": "a02d2a8f53792469cf3babc36e16433e6fe5b949f43acf22013910003f17c5b1",
+      "lib/fs/fsbackend.act": "8c27a3e86fef25ededc64899c9a031b5af011e94c67de62a74dd839932fb3fbf",
+      "lib/fs/fsinfo.act": "31e342ce43828b1356cefeeb5dc1cebd419fbe24fe8cb609e4de76197f13ec06",
+      "examples/shell/shell.act": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+      "c/calypsi/dos.c": "a879d6801c970e163c1a893003cc963103243c99cb6c07d5bf1e6c28f9b87ec0"
+    },
+    "interpretation": "First listing follows the same create/read/seek workload, not an empty cache. First-result frames time the first FIB, not a rendered row. No console output in the operation window.",
+    "production_revision": "2156c40"
+  },
+  "inputs": {
+    "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "compiler_profile": "release",
+    "compiler_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "compiler_local_override": false,
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "observer": {
+        "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ]
+    },
+    "operation_emulator_pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "c2059be783b27dfa7d3af88cdb3c1bd3532a6d34c50024457d35b96ec3dc4989",
+        "source_base": "61b65720c2dc9a4d1826bffb55055bb31457091e",
+        "source_patch": "toolchain/patches/altirra-native-irq-mask.patch",
+        "build_record": "toolchain/altirra-build.json",
+        "additional_patch": "toolchain/patches/altirra-headless-mount.patch",
+        "additional_patch_sha256": "3ba17abf8b5037383457f85306bb3eaad973151701a3fa4221469c87ccefd1bd"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true
+      },
+      "scope": "Queued SIO tests; drive-specific headless MOUNT fixed without changing CPU/peripheral emulation",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "limits": {
+        "command_setup_us": [
+          750,
+          1600
+        ],
+        "command_hold_us": [
+          650,
+          950
+        ],
+        "write_delay_us": [
+          1000,
+          1800
+        ],
+        "alarm_lateness_us": 100,
+        "active_max_us": 1020000,
+        "critic_max_us": 1020000
+      },
+      "alarm": {
+        "timer1_base_cycles": 224,
+        "timer2_base_cycles": 7168,
+        "timer2_count": 250,
+        "phase_counts": {
+          "setup": 8,
+          "hold": 7,
+          "write": 10
+        },
+        "stimer": "initialization/cleanup only"
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+      },
+      "write_delay_basis": "Figure 18 (1.0\u20131.8 ms); qualified only against these pinned disk models. Page 219 prose says 10\u201318 ms and is not used for these profiles.",
+      "timeout_policy": "One 250-tick active watchdog: ACK, result and data all inherit its remaining time; receiving a byte does not restart it. No separate phase or per-byte timeout in this disposable probe.",
+      "observer": {
+        "binary_sha256": "f5bb13fff27be8e89a8cb0a499d5c56bb31e609917eef8ce8999a59286f02922",
+        "patch": "toolchain/patches/altirra-sio-observer.patch",
+        "additional_patch": "toolchain/patches/altirra-headless-mount.patch"
+      },
+      "fault_responder": {
+        "binary_sha256": "c2eb067b68eea3dfb7c7c883b1aca0be0d74b3179bfa40f98a88557e5aecf60d",
+        "patch": "toolchain/patches/altirra-sio-fault-responder.patch",
+        "patch_sha256": "47cb3ca5fb473cd7561010dd8634a8295980204a1fc9c0facf65ab05029fa160",
+        "scope": "Explicit D8 protocol/stop-bit corruption, test-only environment selector; POKEY and guest execute normally. Includes passive observer and drive-specific MOUNT patches."
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": false,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$91213499097d0042",
+      "actual_kernel_id": "$91213499097d0042",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "abi": {
+    "dos_revision": 9,
+    "command_version": 16,
+    "c_import_version": 12,
+    "fib_bytes": 260,
+    "reserved_bytes": 30,
+    "cookie_bytes": 22,
+    "info_flags_offset": 258,
+    "flags": {
+      "FIB_SIZE_EXACT": 1,
+      "FIB_SIZE_BOUND": 2,
+      "FIB_BLOCKS_EXACT": 4
+    },
+    "command_manifest_used": 1624,
+    "command_manifest_reserved": 1664
+  },
+  "storage": {
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_task": 0,
+      "idle": 0
+    },
+    "service_bytes": 466,
+    "workspace_reserved_bytes": 176,
+    "write_state_reserved_bytes": 2216,
+    "sdfs_backend_reserved_bytes": 736,
+    "shared_sector_buffer_bytes": 512,
+    "transfer_staging_bytes": 2048,
+    "default_cache_blocks_128_bytes": 512,
+    "cache_payload_bytes": 65536,
+    "c_table": {
+      "before_bytes": 60,
+      "after_bytes": 63,
+      "delta_bytes": 3,
+      "linker_padding_added": 0,
+      "probe_address": 851977,
+      "probe_data_span_before": 69,
+      "probe_data_span_after": 72,
+      "probe_data_span_rounded_8_before": 72,
+      "probe_data_span_rounded_8_after": 72,
+      "record": "build/directory-metadata/dm4/c-table-storage/results.json",
+      "sha256": "c71cbd8138343eae4a5cf4e7337cc7fbedb72333d310c17983f5d640324c3dea",
+      "scope": "Calypsi 5.18 storage-only link comparison changes table capacity 20\u219221; other C image allocation rounding depends on placement."
+    },
+    "metadata_emitted_modules": {
+      "FSBACKEND": {
+        "dm1_bytes": 6149,
+        "dm3_bytes": 6650
+      },
+      "FSDIRECTORY": {
+        "dm1_bytes": 6363,
+        "dm3_bytes": 6734
+      },
+      "FSINFO": {
+        "dm1_bytes": 1741,
+        "dm3_bytes": 2131
+      }
+    },
+    "metadata_module_body_delta_dm1_dm3": 1262
+  },
+  "matched_mydos": {
+    "128": {
+      "before": {
+        "record": "build/directory-metadata/dm4/before128/results.json",
+        "sha256": "3f1bfc3b79bf46be0cc1220114483ea75bffb1eb7b03e765c58bbeba2e5a6acc",
+        "input_media_sha256": "16e1a6c1a3384980ad05b1ec78c9a8a111b5df8ecdc65d2626bc35f031de1bda",
+        "final_media_sha256": "de0713fda263ac33d7a67952118c05c9d57a49609ede30a398e946a98a8a3f80",
+        "image_sha256": "6aa4aa4f2c2a2ef0d7c895f5ebe5ad7451fee781b2b9e89b00073642b7bd5b65",
+        "xex_sha256": "922a7ef1bb21b8f2fff878036370451c30698fda09ee466951583e43d01cf41c",
+        "fixture_sha256": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": false,
+          "diskemu": "generic56k"
+        },
+        "observer_inputs": {
+          "idemeta.act": "457ba83e2eda76afb0bfc6f8d4d9f23150f14ecda925eb8f88140ad1c608deac",
+          "calypsimeta.act": "548859aaa00f1c7ea626f8e727eef92c57568db11323bc89c26bff7bc5d6a869",
+          "blockwire.act": "5cd241474b0a5a3963e7080ae84191543413c21bc8080fee8f496e3a72154f38",
+          "write_performance.act": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "programapi.act": "fe9ad77c86e1962377e465cca47d9129817dccc7e5d5f514c712dcf46d0f2c50",
+          "ioresidentmeta.act": "d1194ac783d2ce44f659771c46b8911b3982adf605e6f83b8e05964eee6855f7",
+          "mydos_performance.act": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+          "mydoswrite.act": "996ac103a548ba61f0a80abf34d488524e2c055624285ca1493b10f219f177c5",
+          "fsdirectory.act": "fe8951da34e79479003943aea1c53ac5a1c1a28a946c3ef7317499758bf47d4f",
+          "execmemory.act": "90ee0d879e2c3eac169bdde7c7056d2df6d091880d2d23aba8e5116d69bd3c66",
+          "fsio.act": "02ff7efdff95a462f5144ab073bd604235551694b70f34e6b84be8a674999f32",
+          "ioadmission.act": "33e5947103fb5abb2cbe6283df73488e4229eaa8a60470e9249cb2a679c538a0",
+          "o65memory.act": "b8afb5fb2f014d026dad2e80318c2413b82534bf8219da7a3c448fbf3cd98ad0",
+          "fswrite.act": "3af47cce260596e5d6dc1ccfb1946f223871fe47bf82cdb1ebcf4da891e96f17",
+          "ioresident.act": "a073b58dc43145e7f398a99efb3aadb56ad7e5ac077b3622edbed5006c56895f",
+          "bootconfig.act": "ec4de4df2cabdf788cb1fb5dde122d163497126b916af3bc6b6d03b154d7bc1a",
+          "heappolicy.act": "6f2461adffb894e0800396689c673c9e9887301e1f6893999f6d03bcc44c5972",
+          "execbuild.act": "3057ffdcc82123891c3bd7dc795847ae13596a6dfbdb2a394e1fca55b637dfa8",
+          "mydosfile.act": "39171881ff66e8f9b95ffa2f60f9a9ce7d8b55412eb5c58f29d38aca7863b681",
+          "writeperfprobe.act": "fc291f0c1b4568021fb506c1a591f0dc09d4b91fbce4ccf2b1f0fe071a559d83",
+          "timermeta.act": "b4205ea5a4154c55e26ea7f38a0f7366ad1a336e0bfc55c016690bd123f8376e",
+          "fswriteio.act": "dded63ce1839a7d9c98ca453806a370ae41dc08c2092ef84df70a5096bab5c68",
+          "kernel-program.act": "15f1080bc0ead289126dcf50cbff195f9460b237d6054959e395169baf72e8b5"
+        },
+        "build_worktree": "010fb4a-dirty",
+        "listing": {
+          "listing": {
+            "frames": 31,
+            "kernel_calls": 956,
+            "physical_reads": 12,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 85,
+            "cache_hits": 72,
+            "chain_visits": 76,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 6,
+            "directory_fetches": 9,
+            "selected_file_fetches": 76,
+            "output_calls": 0
+          },
+          "repeat-listing": {
+            "frames": 10,
+            "kernel_calls": 191,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 85,
+            "cache_hits": 84,
+            "chain_visits": 76,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 1,
+            "directory_fetches": 9,
+            "selected_file_fetches": 76,
+            "output_calls": 0
+          }
+        },
+        "exact": {
+          "frames": 5,
+          "kernel_calls": 32,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 64,
+          "cache_hits": 64,
+          "chain_visits": 64,
+          "bitmap_loads": 0
+        },
+        "io_regressions": {
+          "create": {
+            "frames": 230,
+            "kernel_calls": 7443,
+            "physical_reads": 1,
+            "physical_writes": 116,
+            "write_logical_reads": 103,
+            "payload_visits": 17,
+            "read_logical_fetches": 1,
+            "cache_hits": 68,
+            "chain_visits": 64,
+            "bitmap_loads": 68
+          },
+          "warm-read": {
+            "frames": 14,
+            "kernel_calls": 152,
+            "physical_reads": 1,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 66,
+            "cache_hits": 65,
+            "chain_visits": 64,
+            "bitmap_loads": 0
+          },
+          "unknown-end": {
+            "frames": 4,
+            "kernel_calls": 18,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 47,
+            "cache_hits": 47,
+            "chain_visits": 47,
+            "bitmap_loads": 0
+          },
+          "known-end-read": {
+            "frames": 1,
+            "kernel_calls": 36,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 1,
+            "cache_hits": 0,
+            "chain_visits": 0,
+            "bitmap_loads": 0
+          },
+          "writable-open": {
+            "frames": 9,
+            "kernel_calls": 91,
+            "physical_reads": 0,
+            "physical_writes": 1,
+            "write_logical_reads": 67,
+            "payload_visits": 64,
+            "read_logical_fetches": 2,
+            "cache_hits": 69,
+            "chain_visits": 0,
+            "bitmap_loads": 2
+          },
+          "truncate": {
+            "frames": 143,
+            "kernel_calls": 4230,
+            "physical_reads": 0,
+            "physical_writes": 67,
+            "write_logical_reads": 260,
+            "payload_visits": 128,
+            "read_logical_fetches": 2,
+            "cache_hits": 262,
+            "chain_visits": 0,
+            "bitmap_loads": 129
+          },
+          "delete": {
+            "frames": 5,
+            "kernel_calls": 149,
+            "physical_reads": 0,
+            "physical_writes": 2,
+            "write_logical_reads": 7,
+            "payload_visits": 2,
+            "read_logical_fetches": 2,
+            "cache_hits": 9,
+            "chain_visits": 0,
+            "bitmap_loads": 4
+          },
+          "mkdir": {
+            "frames": 34,
+            "kernel_calls": 1088,
+            "physical_reads": 0,
+            "physical_writes": 17,
+            "write_logical_reads": 11,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 11,
+            "chain_visits": 0,
+            "bitmap_loads": 10
+          },
+          "rmdir": {
+            "frames": 19,
+            "kernel_calls": 589,
+            "physical_reads": 0,
+            "physical_writes": 9,
+            "write_logical_reads": 19,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 13,
+            "chain_visits": 0,
+            "bitmap_loads": 17
+          }
+        },
+        "emitted_body_bytes": 850631,
+        "metadata_modules": {
+          "FSBACKEND": 6650,
+          "FSDIRECTORY": 6410,
+          "FSINFO": 2131
+        },
+        "layouts": {
+          "workspace": 174,
+          "write_state": 2214,
+          "sdfs_backend": 730,
+          "cursor": 110,
+          "entry": 42
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "os_busy": 0,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 271,
+              "untouched_above_floor": 1009
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 522,
+              "untouched_above_floor": 534
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 139,
+              "untouched_above_floor": 917
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 56,
+              "untouched_above_floor": 200
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      "after": {
+        "record": "build/directory-metadata/dm4/after128/results.json",
+        "sha256": "a3c6463300ba0862f9dab48532cd881ae8464a5330a3cf39840e7b5bf046fa3a",
+        "input_media_sha256": "16e1a6c1a3384980ad05b1ec78c9a8a111b5df8ecdc65d2626bc35f031de1bda",
+        "final_media_sha256": "de0713fda263ac33d7a67952118c05c9d57a49609ede30a398e946a98a8a3f80",
+        "image_sha256": "bc8e2b5e7353def4bcef603f0b7ca646ad63d17df659cf7d617750d3c81ec78e",
+        "xex_sha256": "2228480005162a15f9792d586b1294c56fdac83575ff6ea794aecaa9ffcab84c",
+        "fixture_sha256": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": false,
+          "diskemu": "generic56k"
+        },
+        "observer_inputs": {
+          "idemeta.act": "457ba83e2eda76afb0bfc6f8d4d9f23150f14ecda925eb8f88140ad1c608deac",
+          "calypsimeta.act": "548859aaa00f1c7ea626f8e727eef92c57568db11323bc89c26bff7bc5d6a869",
+          "blockwire.act": "5cd241474b0a5a3963e7080ae84191543413c21bc8080fee8f496e3a72154f38",
+          "write_performance.act": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "programapi.act": "fe9ad77c86e1962377e465cca47d9129817dccc7e5d5f514c712dcf46d0f2c50",
+          "ioresidentmeta.act": "d1194ac783d2ce44f659771c46b8911b3982adf605e6f83b8e05964eee6855f7",
+          "mydos_performance.act": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+          "mydoswrite.act": "996ac103a548ba61f0a80abf34d488524e2c055624285ca1493b10f219f177c5",
+          "execmemory.act": "90ee0d879e2c3eac169bdde7c7056d2df6d091880d2d23aba8e5116d69bd3c66",
+          "fsio.act": "02ff7efdff95a462f5144ab073bd604235551694b70f34e6b84be8a674999f32",
+          "ioadmission.act": "33e5947103fb5abb2cbe6283df73488e4229eaa8a60470e9249cb2a679c538a0",
+          "o65memory.act": "b8afb5fb2f014d026dad2e80318c2413b82534bf8219da7a3c448fbf3cd98ad0",
+          "fswrite.act": "3af47cce260596e5d6dc1ccfb1946f223871fe47bf82cdb1ebcf4da891e96f17",
+          "ioresident.act": "a073b58dc43145e7f398a99efb3aadb56ad7e5ac077b3622edbed5006c56895f",
+          "bootconfig.act": "ec4de4df2cabdf788cb1fb5dde122d163497126b916af3bc6b6d03b154d7bc1a",
+          "heappolicy.act": "6f2461adffb894e0800396689c673c9e9887301e1f6893999f6d03bcc44c5972",
+          "execbuild.act": "3057ffdcc82123891c3bd7dc795847ae13596a6dfbdb2a394e1fca55b637dfa8",
+          "mydosfile.act": "39171881ff66e8f9b95ffa2f60f9a9ce7d8b55412eb5c58f29d38aca7863b681",
+          "writeperfprobe.act": "fc291f0c1b4568021fb506c1a591f0dc09d4b91fbce4ccf2b1f0fe071a559d83",
+          "timermeta.act": "b4205ea5a4154c55e26ea7f38a0f7366ad1a336e0bfc55c016690bd123f8376e",
+          "fswriteio.act": "dded63ce1839a7d9c98ca453806a370ae41dc08c2092ef84df70a5096bab5c68",
+          "kernel-program.act": "15f1080bc0ead289126dcf50cbff195f9460b237d6054959e395169baf72e8b5"
+        },
+        "build_worktree": "010fb4a-dirty",
+        "listing": {
+          "listing": {
+            "frames": 5,
+            "kernel_calls": 217,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 9,
+            "cache_hits": 2,
+            "chain_visits": 0,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 1,
+            "directory_fetches": 9,
+            "selected_file_fetches": 0,
+            "output_calls": 0
+          },
+          "repeat-listing": {
+            "frames": 5,
+            "kernel_calls": 191,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 9,
+            "cache_hits": 2,
+            "chain_visits": 0,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 1,
+            "directory_fetches": 9,
+            "selected_file_fetches": 0,
+            "output_calls": 0
+          }
+        },
+        "exact": {
+          "frames": 4,
+          "kernel_calls": 20,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 64,
+          "cache_hits": 64,
+          "chain_visits": 64,
+          "bitmap_loads": 0
+        },
+        "io_regressions": {
+          "create": {
+            "frames": 230,
+            "kernel_calls": 7466,
+            "physical_reads": 1,
+            "physical_writes": 116,
+            "write_logical_reads": 103,
+            "payload_visits": 17,
+            "read_logical_fetches": 1,
+            "cache_hits": 68,
+            "chain_visits": 64,
+            "bitmap_loads": 68
+          },
+          "warm-read": {
+            "frames": 14,
+            "kernel_calls": 152,
+            "physical_reads": 1,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 66,
+            "cache_hits": 65,
+            "chain_visits": 64,
+            "bitmap_loads": 0
+          },
+          "unknown-end": {
+            "frames": 4,
+            "kernel_calls": 18,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 47,
+            "cache_hits": 47,
+            "chain_visits": 47,
+            "bitmap_loads": 0
+          },
+          "known-end-read": {
+            "frames": 1,
+            "kernel_calls": 36,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 1,
+            "cache_hits": 0,
+            "chain_visits": 0,
+            "bitmap_loads": 0
+          },
+          "writable-open": {
+            "frames": 9,
+            "kernel_calls": 91,
+            "physical_reads": 0,
+            "physical_writes": 1,
+            "write_logical_reads": 67,
+            "payload_visits": 64,
+            "read_logical_fetches": 2,
+            "cache_hits": 69,
+            "chain_visits": 0,
+            "bitmap_loads": 2
+          },
+          "truncate": {
+            "frames": 143,
+            "kernel_calls": 4235,
+            "physical_reads": 0,
+            "physical_writes": 67,
+            "write_logical_reads": 260,
+            "payload_visits": 128,
+            "read_logical_fetches": 2,
+            "cache_hits": 262,
+            "chain_visits": 0,
+            "bitmap_loads": 129
+          },
+          "delete": {
+            "frames": 5,
+            "kernel_calls": 151,
+            "physical_reads": 0,
+            "physical_writes": 2,
+            "write_logical_reads": 7,
+            "payload_visits": 2,
+            "read_logical_fetches": 2,
+            "cache_hits": 9,
+            "chain_visits": 0,
+            "bitmap_loads": 4
+          },
+          "mkdir": {
+            "frames": 34,
+            "kernel_calls": 1097,
+            "physical_reads": 0,
+            "physical_writes": 17,
+            "write_logical_reads": 11,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 11,
+            "chain_visits": 0,
+            "bitmap_loads": 10
+          },
+          "rmdir": {
+            "frames": 19,
+            "kernel_calls": 587,
+            "physical_reads": 0,
+            "physical_writes": 9,
+            "write_logical_reads": 19,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 13,
+            "chain_visits": 0,
+            "bitmap_loads": 17
+          }
+        },
+        "emitted_body_bytes": 850955,
+        "metadata_modules": {
+          "FSBACKEND": 6650,
+          "FSDIRECTORY": 6734,
+          "FSINFO": 2131
+        },
+        "layouts": {
+          "workspace": 174,
+          "write_state": 2214,
+          "sdfs_backend": 730,
+          "cursor": 110,
+          "entry": 42
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "os_busy": 0,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 271,
+              "untouched_above_floor": 1009
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 522,
+              "untouched_above_floor": 534
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 134,
+              "untouched_above_floor": 922
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 61,
+              "untouched_above_floor": 195
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      }
+    },
+    "256": {
+      "before": {
+        "record": "build/directory-metadata/dm4/before256/results.json",
+        "sha256": "9c7486c3ade9ec54d4ac55d55cb703ce0782e2d3fc10aa47454e0e8637dbe5a8",
+        "input_media_sha256": "c69f7edf64a8dfd9813afd5c94d0ba673daf322aa762b9c0910d79e8d2343dda",
+        "final_media_sha256": "7a45119540bf2523c9fd7862a7b979d44ab2db016d7d56b3cdcaf60b2fa7a9e4",
+        "image_sha256": "fbf936d56c2415db4a6940bece41c9c7dd35286fb3f35961bd0c2f6c9990a51e",
+        "xex_sha256": "a6d20011d09085276457ebeb54e6876d3aae3ec6d2115ab06fecff9de20d2b11",
+        "fixture_sha256": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": false,
+          "diskemu": "generic56k"
+        },
+        "observer_inputs": {
+          "idemeta.act": "457ba83e2eda76afb0bfc6f8d4d9f23150f14ecda925eb8f88140ad1c608deac",
+          "calypsimeta.act": "548859aaa00f1c7ea626f8e727eef92c57568db11323bc89c26bff7bc5d6a869",
+          "blockwire.act": "5cd241474b0a5a3963e7080ae84191543413c21bc8080fee8f496e3a72154f38",
+          "write_performance.act": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "programapi.act": "fe9ad77c86e1962377e465cca47d9129817dccc7e5d5f514c712dcf46d0f2c50",
+          "ioresidentmeta.act": "d1194ac783d2ce44f659771c46b8911b3982adf605e6f83b8e05964eee6855f7",
+          "mydos_performance.act": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+          "mydoswrite.act": "996ac103a548ba61f0a80abf34d488524e2c055624285ca1493b10f219f177c5",
+          "fsdirectory.act": "fe8951da34e79479003943aea1c53ac5a1c1a28a946c3ef7317499758bf47d4f",
+          "execmemory.act": "90ee0d879e2c3eac169bdde7c7056d2df6d091880d2d23aba8e5116d69bd3c66",
+          "fsio.act": "02ff7efdff95a462f5144ab073bd604235551694b70f34e6b84be8a674999f32",
+          "ioadmission.act": "33e5947103fb5abb2cbe6283df73488e4229eaa8a60470e9249cb2a679c538a0",
+          "o65memory.act": "b8afb5fb2f014d026dad2e80318c2413b82534bf8219da7a3c448fbf3cd98ad0",
+          "fswrite.act": "3af47cce260596e5d6dc1ccfb1946f223871fe47bf82cdb1ebcf4da891e96f17",
+          "ioresident.act": "a073b58dc43145e7f398a99efb3aadb56ad7e5ac077b3622edbed5006c56895f",
+          "bootconfig.act": "ec4de4df2cabdf788cb1fb5dde122d163497126b916af3bc6b6d03b154d7bc1a",
+          "heappolicy.act": "6f2461adffb894e0800396689c673c9e9887301e1f6893999f6d03bcc44c5972",
+          "execbuild.act": "3057ffdcc82123891c3bd7dc795847ae13596a6dfbdb2a394e1fca55b637dfa8",
+          "mydosfile.act": "39171881ff66e8f9b95ffa2f60f9a9ce7d8b55412eb5c58f29d38aca7863b681",
+          "writeperfprobe.act": "fc291f0c1b4568021fb506c1a591f0dc09d4b91fbce4ccf2b1f0fe071a559d83",
+          "timermeta.act": "b4205ea5a4154c55e26ea7f38a0f7366ad1a336e0bfc55c016690bd123f8376e",
+          "fswriteio.act": "dded63ce1839a7d9c98ca453806a370ae41dc08c2092ef84df70a5096bab5c68",
+          "kernel-program.act": "15f1080bc0ead289126dcf50cbff195f9460b237d6054959e395169baf72e8b5"
+        },
+        "build_worktree": "010fb4a-dirty",
+        "listing": {
+          "listing": {
+            "frames": 34,
+            "kernel_calls": 1136,
+            "physical_reads": 9,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 50,
+            "cache_hits": 40,
+            "chain_visits": 41,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 7,
+            "directory_fetches": 9,
+            "selected_file_fetches": 41,
+            "output_calls": 0
+          },
+          "repeat-listing": {
+            "frames": 8,
+            "kernel_calls": 199,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 50,
+            "cache_hits": 49,
+            "chain_visits": 41,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 1,
+            "directory_fetches": 9,
+            "selected_file_fetches": 41,
+            "output_calls": 0
+          }
+        },
+        "exact": {
+          "frames": 3,
+          "kernel_calls": 18,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 32,
+          "cache_hits": 32,
+          "chain_visits": 32,
+          "bitmap_loads": 0
+        },
+        "io_regressions": {
+          "create": {
+            "frames": 189,
+            "kernel_calls": 6412,
+            "physical_reads": 1,
+            "physical_writes": 60,
+            "write_logical_reads": 55,
+            "payload_visits": 9,
+            "read_logical_fetches": 1,
+            "cache_hits": 36,
+            "chain_visits": 32,
+            "bitmap_loads": 36
+          },
+          "warm-read": {
+            "frames": 13,
+            "kernel_calls": 193,
+            "physical_reads": 1,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 34,
+            "cache_hits": 33,
+            "chain_visits": 32,
+            "bitmap_loads": 0
+          },
+          "unknown-end": {
+            "frames": 2,
+            "kernel_calls": 18,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 23,
+            "cache_hits": 23,
+            "chain_visits": 23,
+            "bitmap_loads": 0
+          },
+          "known-end-read": {
+            "frames": 1,
+            "kernel_calls": 46,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 1,
+            "cache_hits": 0,
+            "chain_visits": 0,
+            "bitmap_loads": 0
+          },
+          "writable-open": {
+            "frames": 8,
+            "kernel_calls": 134,
+            "physical_reads": 0,
+            "physical_writes": 1,
+            "write_logical_reads": 35,
+            "payload_visits": 32,
+            "read_logical_fetches": 2,
+            "cache_hits": 37,
+            "chain_visits": 0,
+            "bitmap_loads": 2
+          },
+          "truncate": {
+            "frames": 117,
+            "kernel_calls": 3699,
+            "physical_reads": 0,
+            "physical_writes": 35,
+            "write_logical_reads": 132,
+            "payload_visits": 64,
+            "read_logical_fetches": 2,
+            "cache_hits": 134,
+            "chain_visits": 0,
+            "bitmap_loads": 65
+          },
+          "delete": {
+            "frames": 8,
+            "kernel_calls": 237,
+            "physical_reads": 0,
+            "physical_writes": 2,
+            "write_logical_reads": 7,
+            "payload_visits": 2,
+            "read_logical_fetches": 2,
+            "cache_hits": 9,
+            "chain_visits": 0,
+            "bitmap_loads": 4
+          },
+          "mkdir": {
+            "frames": 52,
+            "kernel_calls": 1787,
+            "physical_reads": 0,
+            "physical_writes": 17,
+            "write_logical_reads": 11,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 11,
+            "chain_visits": 0,
+            "bitmap_loads": 10
+          },
+          "rmdir": {
+            "frames": 29,
+            "kernel_calls": 957,
+            "physical_reads": 0,
+            "physical_writes": 9,
+            "write_logical_reads": 19,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 13,
+            "chain_visits": 0,
+            "bitmap_loads": 17
+          }
+        },
+        "emitted_body_bytes": 850631,
+        "metadata_modules": {
+          "FSBACKEND": 6650,
+          "FSDIRECTORY": 6410,
+          "FSINFO": 2131
+        },
+        "layouts": {
+          "workspace": 174,
+          "write_state": 2214,
+          "sdfs_backend": 730,
+          "cursor": 110,
+          "entry": 42
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "os_busy": 0,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 271,
+              "untouched_above_floor": 1009
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 522,
+              "untouched_above_floor": 534
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 134,
+              "untouched_above_floor": 922
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 52,
+              "untouched_above_floor": 204
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      "after": {
+        "record": "build/directory-metadata/dm4/after256/results.json",
+        "sha256": "a70435d72e56d3d1590fef8c71ce32937d67ed6679ee6f5f0aca6f470e498edc",
+        "input_media_sha256": "c69f7edf64a8dfd9813afd5c94d0ba673daf322aa762b9c0910d79e8d2343dda",
+        "final_media_sha256": "7a45119540bf2523c9fd7862a7b979d44ab2db016d7d56b3cdcaf60b2fa7a9e4",
+        "image_sha256": "18ef36444cde1d56d7eb531da076172125dd222cb9865130ece656a8d1aea2c8",
+        "xex_sha256": "545555ef58fc83825c7f979e7b64d79d74b72ce6510777c47748aa3aed6d6cf0",
+        "fixture_sha256": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": false,
+          "diskemu": "generic56k"
+        },
+        "observer_inputs": {
+          "idemeta.act": "457ba83e2eda76afb0bfc6f8d4d9f23150f14ecda925eb8f88140ad1c608deac",
+          "calypsimeta.act": "548859aaa00f1c7ea626f8e727eef92c57568db11323bc89c26bff7bc5d6a869",
+          "blockwire.act": "5cd241474b0a5a3963e7080ae84191543413c21bc8080fee8f496e3a72154f38",
+          "write_performance.act": "b83a691c00ffcb85ad0384f9ea13854b22a2f454ece739fa4260f01cd70d078a",
+          "programapi.act": "fe9ad77c86e1962377e465cca47d9129817dccc7e5d5f514c712dcf46d0f2c50",
+          "ioresidentmeta.act": "d1194ac783d2ce44f659771c46b8911b3982adf605e6f83b8e05964eee6855f7",
+          "mydos_performance.act": "6f89970dd67db564bd36d7fc07ef3b456cac7c4f1f3fdb7f2c902ed84a935505",
+          "mydoswrite.act": "996ac103a548ba61f0a80abf34d488524e2c055624285ca1493b10f219f177c5",
+          "execmemory.act": "90ee0d879e2c3eac169bdde7c7056d2df6d091880d2d23aba8e5116d69bd3c66",
+          "fsio.act": "02ff7efdff95a462f5144ab073bd604235551694b70f34e6b84be8a674999f32",
+          "ioadmission.act": "33e5947103fb5abb2cbe6283df73488e4229eaa8a60470e9249cb2a679c538a0",
+          "o65memory.act": "b8afb5fb2f014d026dad2e80318c2413b82534bf8219da7a3c448fbf3cd98ad0",
+          "fswrite.act": "3af47cce260596e5d6dc1ccfb1946f223871fe47bf82cdb1ebcf4da891e96f17",
+          "ioresident.act": "a073b58dc43145e7f398a99efb3aadb56ad7e5ac077b3622edbed5006c56895f",
+          "bootconfig.act": "ec4de4df2cabdf788cb1fb5dde122d163497126b916af3bc6b6d03b154d7bc1a",
+          "heappolicy.act": "6f2461adffb894e0800396689c673c9e9887301e1f6893999f6d03bcc44c5972",
+          "execbuild.act": "3057ffdcc82123891c3bd7dc795847ae13596a6dfbdb2a394e1fca55b637dfa8",
+          "mydosfile.act": "39171881ff66e8f9b95ffa2f60f9a9ce7d8b55412eb5c58f29d38aca7863b681",
+          "writeperfprobe.act": "fc291f0c1b4568021fb506c1a591f0dc09d4b91fbce4ccf2b1f0fe071a559d83",
+          "timermeta.act": "b4205ea5a4154c55e26ea7f38a0f7366ad1a336e0bfc55c016690bd123f8376e",
+          "fswriteio.act": "dded63ce1839a7d9c98ca453806a370ae41dc08c2092ef84df70a5096bab5c68",
+          "kernel-program.act": "15f1080bc0ead289126dcf50cbff195f9460b237d6054959e395169baf72e8b5"
+        },
+        "build_worktree": "010fb4a-dirty",
+        "listing": {
+          "listing": {
+            "frames": 4,
+            "kernel_calls": 213,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 9,
+            "cache_hits": 2,
+            "chain_visits": 0,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 0,
+            "directory_fetches": 9,
+            "selected_file_fetches": 0,
+            "output_calls": 0
+          },
+          "repeat-listing": {
+            "frames": 4,
+            "kernel_calls": 221,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 9,
+            "cache_hits": 2,
+            "chain_visits": 0,
+            "bitmap_loads": 0,
+            "first_metadata_frame": 0,
+            "directory_fetches": 9,
+            "selected_file_fetches": 0,
+            "output_calls": 0
+          }
+        },
+        "exact": {
+          "frames": 3,
+          "kernel_calls": 18,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 32,
+          "cache_hits": 32,
+          "chain_visits": 32,
+          "bitmap_loads": 0
+        },
+        "io_regressions": {
+          "create": {
+            "frames": 189,
+            "kernel_calls": 6403,
+            "physical_reads": 1,
+            "physical_writes": 60,
+            "write_logical_reads": 55,
+            "payload_visits": 9,
+            "read_logical_fetches": 1,
+            "cache_hits": 36,
+            "chain_visits": 32,
+            "bitmap_loads": 36
+          },
+          "warm-read": {
+            "frames": 13,
+            "kernel_calls": 194,
+            "physical_reads": 1,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 34,
+            "cache_hits": 33,
+            "chain_visits": 32,
+            "bitmap_loads": 0
+          },
+          "unknown-end": {
+            "frames": 3,
+            "kernel_calls": 20,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 23,
+            "cache_hits": 23,
+            "chain_visits": 23,
+            "bitmap_loads": 0
+          },
+          "known-end-read": {
+            "frames": 1,
+            "kernel_calls": 36,
+            "physical_reads": 0,
+            "physical_writes": 0,
+            "write_logical_reads": 0,
+            "payload_visits": 0,
+            "read_logical_fetches": 1,
+            "cache_hits": 0,
+            "chain_visits": 0,
+            "bitmap_loads": 0
+          },
+          "writable-open": {
+            "frames": 8,
+            "kernel_calls": 132,
+            "physical_reads": 0,
+            "physical_writes": 1,
+            "write_logical_reads": 35,
+            "payload_visits": 32,
+            "read_logical_fetches": 2,
+            "cache_hits": 37,
+            "chain_visits": 0,
+            "bitmap_loads": 2
+          },
+          "truncate": {
+            "frames": 117,
+            "kernel_calls": 3702,
+            "physical_reads": 0,
+            "physical_writes": 35,
+            "write_logical_reads": 132,
+            "payload_visits": 64,
+            "read_logical_fetches": 2,
+            "cache_hits": 134,
+            "chain_visits": 0,
+            "bitmap_loads": 65
+          },
+          "delete": {
+            "frames": 8,
+            "kernel_calls": 234,
+            "physical_reads": 0,
+            "physical_writes": 2,
+            "write_logical_reads": 7,
+            "payload_visits": 2,
+            "read_logical_fetches": 2,
+            "cache_hits": 9,
+            "chain_visits": 0,
+            "bitmap_loads": 4
+          },
+          "mkdir": {
+            "frames": 52,
+            "kernel_calls": 1784,
+            "physical_reads": 0,
+            "physical_writes": 17,
+            "write_logical_reads": 11,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 11,
+            "chain_visits": 0,
+            "bitmap_loads": 10
+          },
+          "rmdir": {
+            "frames": 29,
+            "kernel_calls": 957,
+            "physical_reads": 0,
+            "physical_writes": 9,
+            "write_logical_reads": 19,
+            "payload_visits": 0,
+            "read_logical_fetches": 2,
+            "cache_hits": 13,
+            "chain_visits": 0,
+            "bitmap_loads": 17
+          }
+        },
+        "emitted_body_bytes": 850955,
+        "metadata_modules": {
+          "FSBACKEND": 6650,
+          "FSDIRECTORY": 6734,
+          "FSINFO": 2131
+        },
+        "layouts": {
+          "workspace": 174,
+          "write_state": 2214,
+          "sdfs_backend": 730,
+          "cursor": 110,
+          "entry": 42
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "os_busy": 0,
+          "os_calls": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 271,
+              "untouched_above_floor": 1009
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 522,
+              "untouched_above_floor": 534
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 134,
+              "untouched_above_floor": 922
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 53,
+              "untouched_above_floor": 203
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      }
+    }
+  },
+  "functional": {
+    "native_abi_raw_opt": {
+      "record": "build/directory-metadata/dm1/abi/results.json",
+      "sha256": "35b56defe67f8b061962121f46818802ed12e72b6885c5079299efc86dc42ea4",
+      "status": "pass",
+      "cases": [
+        {
+          "mode": "raw",
+          "status": "pass",
+          "checks": [
+            322
+          ]
+        },
+        {
+          "mode": "optimized",
+          "status": "pass",
+          "checks": [
+            322
+          ]
+        }
+      ]
+    },
+    "c_command_raw": {
+      "record": "build/directory-metadata/dm1/c-raw/results.json",
+      "sha256": "22af77dc6c615bef63466046ea79e78b872c89a36572223593eb7f14dde73561",
+      "status": "pass",
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 56,
+        "native_irq_count": 2127,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "c_command_opt": {
+      "record": "build/directory-metadata/dm1/c-opt/results.json",
+      "sha256": "193a86a1a4f048b29588d6587c7c39ec1db9899e7e16206ede422cd6b9a81b91",
+      "status": "pass",
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 51,
+        "native_irq_count": 2131,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "list_output": {
+      "record": "build/directory-metadata/dm2/list/results.json",
+      "sha256": "e52180f7727c20f106d74f4c97cdcfd39f5049ad703b1128e038302726bfad0f",
+      "status": "pass"
+    },
+    "text_mock": {
+      "record": "build/directory-metadata/dm2/text-mock/results.json",
+      "sha256": "adf7ba65fe3c3f2d2ea8b462478b6a42e132ce8da97a1e093f98f8d3170a45a4",
+      "status": "pass",
+      "checks": 144,
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 691,
+        "native_irq_count": 6764,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "resident_dir": {
+      "record": "build/directory-metadata/dm2/dir/results.json",
+      "sha256": "d4fde6208d501bd0450bfd1732a1ca5550c0ad5dfba0ca44b24f7d75f5f06fa3",
+      "status": "pass",
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 928,
+        "native_irq_count": 19276,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "mydos_128": {
+      "record": "build/directory-metadata/dm3/mydos128/results.json",
+      "sha256": "39259651463d0f3129f400cce4ddcab66788ccdde29b1c12474973e6979cb6e7",
+      "status": "pass",
+      "checks": [
+        1634
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 108,
+        "native_irq_count": 2757,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "mydos_256_later_corruption": {
+      "record": "build/directory-metadata/dm3/mydos256-chain/results.json",
+      "sha256": "4a8562b400fcdcbd9a167d3bcb26bd0e00b70ff9f0bb6e752bf296d28f415542",
+      "status": "pass",
+      "checks": [
+        1546
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 88,
+        "native_irq_count": 2822,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "legacy_empty": {
+      "record": "build/directory-metadata/dm3/legacy/results.json",
+      "sha256": "0612eadb474f60346916c5d32eafd5799465040f7723464634f36bb37705bbb6",
+      "status": "pass",
+      "checks": [
+        1522
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 68,
+        "native_irq_count": 1375,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "sdfs_sio": {
+      "record": "build/directory-metadata/dm3/sdfs/results-256.json",
+      "sha256": "ec8486059236acd09dbf9d4fc88e13eedaaaa82791f3f76275f232082eb7e80c",
+      "status": "pass",
+      "checks": [
+        124
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 224,
+        "native_irq_count": 10965,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "ram": {
+      "record": "build/directory-metadata/dm3/ram/results.json",
+      "sha256": "743d7796d7f35b59c94aa710a743a585e00f8ab6cd5670e8f995a5f8ffbce4e4",
+      "status": "pass",
+      "observed": {
+        "checks": [
+          158
+        ],
+        "phase": [
+          6
+        ],
+        "layouts": [
+          52,
+          14,
+          3,
+          42,
+          466,
+          3
+        ],
+        "partial_write_bytes": 57344
+      },
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 231,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "mydos_write_remount": {
+      "record": "build/directory-metadata/dm3/write-mydos/results.json",
+      "sha256": "c787124eb754f95ba5437fe8aa7ffe374893c3770c10e46285101c88a8c921b9",
+      "status": "pass",
+      "checks": [
+        149
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 310,
+        "native_irq_count": 22338,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "text_real_mydos": {
+      "record": "build/directory-metadata/dm3/text-mydos/results.json",
+      "sha256": "6e6a8579399088cdd991cd8f3b0ae75bcd24f25d6a560c2370a800be1bc120de",
+      "status": "pass",
+      "checks": 119,
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 5060,
+        "native_irq_count": 45130,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "sdfs_ide_c_command_fetches": {
+      "record": "build/directory-metadata/dm3/ide-measured/results.json",
+      "sha256": "d469fb1362a9bd8929a7a213673a9b8dd42fc50fae9d8ea498f6a33b99b1d7a3",
+      "status": "pass",
+      "query_fetches": {
+        "ordinary": 0,
+        "exact": 1
+      },
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 40,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "break_before_publication": {
+      "record": "build/directory-metadata/dm3/break/results.json",
+      "sha256": "11673e02a3f899bec4c757daaf6225219dbe7685aa27840447ce2da9719af2a4",
+      "status": "pass",
+      "cases": [
+        {
+          "name": "directory-scan",
+          "status": "pass"
+        },
+        {
+          "name": "directory-publication",
+          "status": "pass"
+        },
+        {
+          "name": "metadata-checkpoint",
+          "status": "pass"
+        },
+        {
+          "name": "exact-accounting",
+          "status": "pass"
+        }
+      ]
+    },
+    "directory_checksum_retry": {
+      "record": "build/directory-metadata/dm3/directory-error/results.json",
+      "sha256": "01c5d680d9e7320add6909a9d114f2c71330b4c58ff82af8f6e8573ebd06707a",
+      "status": "pass",
+      "checks": [
+        264
+      ],
+      "causal_error_bytes": [
+        4,
+        0,
+        0,
+        0
+      ],
+      "runtime": {
+        "guards": "intact",
+        "status": 0,
+        "fault_required": 0,
+        "native_nmi_count": 17,
+        "native_irq_count": 452,
+        "os_busy": 0,
+        "os_calls": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_dbr": 0,
+        "return_e": 0
+      }
+    },
+    "resident_dir_after_switch": {
+      "record": "build/directory-metadata/dm4/dir/results.json",
+      "sha256": "f3bce405243f764791d1f5114684243a939cf13821b5eae2c163dd9b2860d631",
+      "status": "pass",
+      "counts": {
+        "captureCount": 4066,
+        "checks": 77,
+        "executed": 20
+      },
+      "profile": 4,
+      "sector_bytes": 128,
+      "scenario": "basic",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "os_calls": 0
+      }
+    },
+    "concurrent_mydos": {
+      "record": "build/directory-metadata/dm3/concurrent/results.json",
+      "sha256": "392c4cd771df439f5e27066de4fd195c86e4cee53ad4c096945dba916cded779",
+      "status": "pass",
+      "observed": {
+        "checks": 335,
+        "peakTasks": 4,
+        "workRounds": 81,
+        "activeWork": 28,
+        "heapRounds": 81,
+        "portRounds": 81,
+        "signalRounds": 81,
+        "clientsDone": 1,
+        "totalBytes": 801
+      },
+      "capacity": 4,
+      "profile": 4,
+      "sector_bytes": 128,
+      "configuration": {
+        "accuratedisk": false,
+        "diskemu": "generic56k",
+        "randdelay": false,
+        "siopatch": "off"
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "os_busy": 0,
+        "os_calls": 0,
+        "native_nmi_count": 121,
+        "native_irq_count": 4437
+      }
+    }
+  },
+  "limitations": [
+    "Rotational disk delay disabled; Generic57600 serial timing retained.",
+    "Integer PAL-frame sampling and observer overhead; no overall hardware speed factor.",
+    "Formatting/output checked separately, not timed in metadata windows.",
+    "No demo refresh, release matrix or physical-hardware qualification."
+  ],
+  "verification": {
+    "host": {
+      "status": "pass",
+      "tests": 448
+    },
+    "generators": [
+      "generate_dos.py --check",
+      "generate_program.py --check",
+      "generate_calypsi.py --check",
+      "generate_c_program.py --check"
+    ],
+    "documentation": "Changed-page content, local file links and git diff whitespace checked."
+  }
+}

@@ -89,14 +89,23 @@ accept SpartaDOS CIO's `>` spelling as a new public path syntax.
 Enumeration positions are wide enough for the full 24-bit directory extent.
 Each FIB cookie retains its lock pointer, FIB pointer and object ticket; it
 cannot be reused with another lock/FIB or stale generation. The public 260-byte
-FileInfoBlock and its 32 reserved bytes remain unchanged.
+FileInfoBlock remains 260 bytes. Its cookie uses the first 22 of 30 reserved
+bytes; `fib_InfoFlags` occupies the final two bytes at offset 258.
 
 ## DOS metadata and errors
 
-`fib_Size` is the stored length for regular files, zero for directories.
-`fib_NumBlocks` counts occupied data **and map sectors**, excluding sparse
-holes. A bounded map-only walk may be needed for this count; neither size nor
-block accounting reads ordinary-file payload. Protection maps to
+Ordinary Examine/ExNext report the stored length for regular files and zero
+for directories, with `FIB_SIZE_EXACT`. `fib_NumBlocks` is -1 and
+`FIB_BLOCKS_EXACT` is clear: they do not measure each selected entry's map chain
+or infer allocation from length. Directory lookup/descent still validates the
+required maps, records and ancestry.
+
+`ExamineExact` reports exact size and counts occupied data **and map sectors**,
+excluding sparse holes, with both exact flags. It retains the bounded map-only
+walk and existing extent cache; neither size nor block accounting reads
+ordinary-file payload. Later selected-map corruption can therefore be discovered
+by Exact, file I/O or mutation preflight after ordinary metadata succeeds.
+See the [DOS metadata contract](dos.md#metadata-availability). Protection maps to
 `FIBF_WRITE | FIBF_DELETE`; mount read-only status is reported separately.
 
 Dates use day/month/year and hour/minute/second from the record. Years 50–99

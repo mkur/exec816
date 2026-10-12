@@ -17,7 +17,7 @@ Source lives in [examples/shell](../../examples/shell/).
 | `ECHO [words...]` | Print words separated by spaces, then LF. |
 | `CLS` | Clear the output console and move its cursor to the top left; writes FF when redirected. |
 | `CD [directory]` | Change directory, or print its canonical path. |
-| `DIR [directory]` | List entries in disk order, with directory markers and exact file sizes. |
+| `DIR [directory]` | List entries in disk order, with directory markers and size availability. |
 | `TYPE [file]` | Print a text view of a file, or borrow noninteractive Input when no file is given. |
 | `MEM` | Report ordinary/linear available totals and largest eligible blocks; the totals overlap. |
 | `TASKS` | Snapshot live public Tasks, including workers; omit unused slots and private idle. |
@@ -37,6 +37,11 @@ Command names ignore case. MOUNT only lists; it does not mount/unmount media or
 probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
 not automatic format discovery. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+DIR and LIST print exact byte lengths as numbers, upper bounds as `<=2530`,
+and unavailable sizes as `?`. MyDOS usually supplies a sector-derived bound;
+SpartaDOS and RAM know the byte length. Listings do not read every file to
+measure its length. LIST NAMES still prints only names.
 
 Boot initializes a configured IDE controller before mounting filesystems.
 Verbose boot prints its controller, capacity and APT diagnostics at that point,

@@ -77,7 +77,7 @@ as needed, and `<proto/exec.h>` for the function declarations.
 | Public ports | `AddPort`, `RemPort`, `FindPort` |
 | Device I/O (`<exec/io.h>`) | `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice`, `BeginIO`, `SendIO`, `DoIO`, `CheckIO`, `WaitIO`, `AbortIO` |
 | Lists | `NewList`, `IsListEmpty` |
-| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `CreateDir`, `Rename`, `IoErr`, `ExecDOSDetach` |
+| DOS (`<proto/dos.h>`) | `Output`, `Write`, `Open`, `Close`, `Read`, `Seek`, `Lock`, `UnLock`, `Examine`, `ExNext`, `ExamineExact`, `CreateDir`, `Rename`, `IoErr`, `ExecDOSDetach` |
 | Program launcher (`<exec816/program.h>`) | `ExecStartProgram`, `ExecCollectProgram`, `ExecBreakProgram`, `ExecWaitProgram`, `ExecProgramMask`, `ExecGetArgStr` |
 | Exec816 extension | `ExecYield` in `<exec816/runtime.h>` for low-level probes |
 
@@ -291,6 +291,10 @@ the limited C binding checks do not qualify all C expressions.
 The GEM desktop adds ordinary file/directory bindings over the same native call
 bridge. DateStamp and FileInfoBlock come from the machine-readable DOS ABI;
 Calypsi layout probes check their 12/260-byte sizes and every field offset.
+`fib_InfoFlags` at offset 258 distinguishes exact sizes, byte bounds and exact
+sector counts. Ordinary Examine/ExNext avoid selected-file measurement;
+ExamineExact performs it explicitly. Rebuild callers for C import ABI 12 and
+the 30-byte FIB reserved area; see the [DOS contract](../reference/dos.md#metadata-availability).
 Read accepts upper-RAM buffers and native stack buffers on MyDOS and SDFS.
 Each caller retains its handles and locks until Close/UnLock. After retiring
 all DOS resources, call ExecDOSDetach before removing a raw Task.

@@ -80,12 +80,23 @@ index is 0–63 within that file's parent directory, not its disk sector number.
 
 Validate each sector before copying: number in range, outside fixed/known
 directory metadata, valid byte count no greater than `S-3`, and correct file
-number in ten-bit mode. Derive exact file length by summing validated payload
-counts along the chain; multiplying the directory count by 125/253 is not an
-exact length. Permit a final sector with zero payload for an empty file. Also
+number in ten-bit mode. Read, Seek(END), ExamineExact and mutation preflight
+derive exact file length by summing validated payload counts along the chain.
+Ordinary Examine/ExNext instead return the directory count multiplied by
+125/253 as a byte upper bound, with `FIB_SIZE_BOUND` and `FIB_BLOCKS_EXACT`;
+they do not walk the selected file's chain. An admitted live writer's already
+known length may carry `FIB_SIZE_EXACT`. The bound is calculated in 32 bits,
+including a 65,535-sector count, and never becomes the internal cursor's EOF.
+Directories report exact size zero and eight allocated sectors.
+Permit a final sector with zero payload for an empty file. Also
 accept a legacy zero-count/zero-start empty entry. Nonzero count with zero
 start, inconsistent EOF/count, out-of-range links and unsupported trailer formats
 are corruption, not ordinary EOF.
+
+The legacy empty entry reports exact size/count zero without a chain walk.
+A one-sector entry still reports a bound until its trailer is measured.
+Cheap queries retain directory/initial-reference admission; later-chain errors
+are deferred to operations that traverse or modify that file.
 
 Retain a traversal hop count and constant-space cycle detector per file cursor
 across successive Reads. Every walk has a sector-count bound as well. This must

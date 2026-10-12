@@ -67,10 +67,12 @@ is complete through MP6 at the development tier. It reduces duplicate VTOC
 publication, repeated bitmap loads, metadata copies and seek/validation work
 while retaining current storage and commit limits. The
 [measurements](history/mydos-performance.md) identify repeated file-chain walks
-during listings. The proposed
+during listings. The completed
 [directory metadata refactor](plans/directory-metadata-refactor-plan.md)
 uses MyDOS sector-derived byte bounds and explicit exact queries to remove those
-walks without adding a length cache. Grouped directory/reclaim publication and
+walks without adding a length cache. Matched development runs halve warm MyDOS
+listing frames and eliminate selected-file chain visits; see the
+[implementation record](history/directory-metadata.md). Grouped directory/reclaim publication and
 buffer consolidation remain separate follow-ups.
 
 The [background command and primes slice](history/background-pane-primes.md)

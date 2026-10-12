@@ -14,7 +14,8 @@ USE WRITEPERFPROBE
 CONST FILE_BYTES=8000, COLUMNS=10
 CARD checks,phase
 LONGCARD priorOperations,priorHits
-LONGCARD ARRAY rows(13*COLUMNS)
+LONGCARD ARRAY rows(14*COLUMNS)
+LONGCARD ARRAY firstRowFrames(2),directoryFetches(2)
 CARD ARRAY layouts(5)
 DOS.FileHandle POINTER file
 DOS.FileLock POINTER lock
@@ -99,18 +100,39 @@ PROC SeekCases()
 RETURN
 
 PROC Listing(CARD index)
+  BYTE first
 
   lock=DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)
   Require(lock<>NULL)
   Begin(index)
+  first=1
   Require(DOS.Examine(lock,@info)<>0)
   WHILE DOS.ExNext(lock,@info)<>0 DO
+    IF first<>0 THEN
+      firstRowFrames(index-7)=LONGCARD(WRITEPERFPROBE.Frame()-WRITEPERFPROBE.startFrame)
+      first=0
+    FI
     IF info.fib_FileName(0)='M AND info.fib_FileName(1)='P THEN
-      Require(info.fib_Size=FILE_BYTES)
+      Require(info.fib_Size>=FILE_BYTES
+          AND (info.fib_InfoFlags=DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT
+          OR info.fib_InfoFlags=DOS.FIB_SIZE_EXACT+DOS.FIB_BLOCKS_EXACT))
     FI
   OD
 
   Require(DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  End()
+  directoryFetches(index-7)=WRITEPERFPROBE.directoryLoads
+  DOS.UnLock(lock)
+
+RETURN
+
+PROC Exact(BYTE unused)
+
+  lock=DOS.Lock(BYTE POINTER(c"D1:MP.BIN"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  Begin(13)
+  Require(DOS.ExamineExact(lock,@info)<>0 AND info.fib_Size=FILE_BYTES
+      AND info.fib_InfoFlags=DOS.FIB_SIZE_EXACT+DOS.FIB_BLOCKS_EXACT)
   End()
   DOS.UnLock(lock)
 
@@ -158,6 +180,7 @@ PROC Main()
   SeekCases()
   Listing(7)
   Listing(8)
+  Exact(0)
 
   Begin(9)
   file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_NEWFILE)

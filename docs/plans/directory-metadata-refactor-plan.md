@@ -5,7 +5,9 @@
 [Filesystem writes](../reference/filesystem-writes.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: DM0–DM3 complete; DM4 in progress. Commit each executable slice.
+Status: DM0–DM4 complete at the development tier; each slice committed.
+[Implementation record](../history/directory-metadata.md) ·
+[Compact evidence](../development/directory-metadata-final.json).
 
 Make ordinary Examine and ExNext return directory metadata without measuring
 each selected file's chain. MyDOS provides a sector count and therefore a byte
