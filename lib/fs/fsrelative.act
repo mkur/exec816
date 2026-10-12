@@ -11,6 +11,7 @@ USE FSLOCKS
 USE FSBACKEND
 USE FSBTYPES
 USE FSCORE
+USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 
 ; Require a directory on the selected mount before borrowing its state.
@@ -29,24 +30,17 @@ RETURN(FSBACKEND.ValidateBase(service.work,@base.state))
 ; Restore the base lock's ancestry and canonical name into the worker
 ; workspace.
 PROC Seed(FSTYPES.Service POINTER service FSTYPES.LockObject POINTER base)
-  BYTE index
-  CARD position
-  FSLOCKS.Name POINTER name
-  BYTE POINTER text
 
   FSCORE.CopyEntry(@service.work.entry,@base.state.entry)
   service.work.depth=base.state.depth
   service.work.directory=base.state.entry.start
-  FOR index=0 TO base.state.depth DO
-    service.work.ancestors(index)=base.state.ancestors(index)
-  OD
+  A816MEMORY.Move(BYTE POINTER(@service.work.ancestors(0)),
+      BYTE POINTER(@base.state.ancestors(0)),SIZE(base.state.depth+1)*2)
 
-  name=FSLOCKS.Trailer(base)
-  text=FSLOCKS.Text(base)
+  LET name=FSLOCKS.Trailer(base)
+  LET text=FSLOCKS.Text(base)
   service.nameLength=name.length
-  FOR position=0 TO name.length DO
-    service.name(position)=text(position)
-  OD
+  A816MEMORY.Move(service.name,text,SIZE(name.length)+1)
 
 RETURN
 

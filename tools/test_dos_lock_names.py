@@ -105,8 +105,12 @@ def headless(t,out,mode,source,paths,images,mounts,extra_data=(),**evidence):
     source_path=ROOT/'tests/programs'/source
     if source=='dos_lock_bounds.act':
         (out/source).write_bytes(source_path.read_bytes());source_path=out/source
+    memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    memory['image_data_bytes']=4096
+    profile=out/'memory-profile.json'
+    profile.write_text(json.dumps(memory)+'\n')
     p=build(t,source_path,out,optimize=mode=='opt',tasks=True,task_capacity=8,
-            console=False,dos_mounts=mounts,image_data=[(0xd1000,paths),(0xe0000,bytes(256)),*extra_data])
+            console=False,console_deferred=True,memory_profile=profile,kernel_bank=18,dos_mounts=mounts,image_data=[(0xd1000,paths),(0xe0000,bytes(256)),*extra_data])
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=pin) as b:
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',pin)
         b.config('diskemu','fastest')

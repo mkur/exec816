@@ -1,0 +1,35 @@
+; Copy an entire backend entry across two bank boundaries with byte guards.
+MODULE FSRECORDCOPY
+USE FSCORE
+USE FSBTYPES
+
+BYTE passed
+
+PROC Main()
+  CARD index
+  BYTE okay
+
+  LET source=BYTE POINTER($afff0)
+  LET target=BYTE POINTER($bfff0)
+  FOR index=0 TO CARD(SIZEOF(FSBTYPES.Entry))-1 DO
+    source(index)=BYTE(index) XOR $5a
+  OD
+
+  FSCORE.CopyEntry(FSBTYPES.Entry POINTER(target),FSBTYPES.Entry POINTER(source))
+  okay=1
+  FOR index=0 TO CARD(SIZEOF(FSBTYPES.Entry))-1 DO
+    IF target(index)<>source(index) THEN
+      okay=0
+    FI
+  OD
+
+  LET guard=BYTE POINTER($bffef)
+  IF guard(0)<>$a5 OR target(CARD(SIZEOF(FSBTYPES.Entry)))<>$a5 THEN
+    okay=0
+  FI
+
+  passed=okay
+
+RETURN
+
+ENDMODULE

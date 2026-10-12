@@ -23,3 +23,20 @@ truncation, deletion and directory creation. It audits persisted allocation and
 unrelated files and checks buffer and Task ownership guards. Large native images
 and frozen library inputs remain under `build/mydos-performance/mp0/`.
 Host development checks: 447 passed.
+
+## MP1: copies and directory updates
+
+FSCORE copies all 42 emitted entry bytes through native Move (63 routine bytes,
+previously 119). Seed copies known path and ancestor spans; MyDOS Open and record
+initialization use native memory operations. LoadEntry/StoreEntry retain the full
+physical map sector in Mark, Rename and Delete. Slot retains it during creation;
+allocation and payload initialization write scratch/data, never map.
+
+Optimized public write checks passed on MyDOS 128/256 and SDFS 256, with saved
+byte/allocation audits, remount, overwrite, append, rename, directory and legacy
+empty cases. The maximum 255-byte relative path/depth-16 case and a complete
+42-byte entry copy crossing both source and destination bank boundaries passed.
+Host checks: 447. The older lock-name runner now requests deferred console
+bindings and places its diagnostic kernel in bank 18 so its fixed D/E-bank
+fixtures do not overlap the enlarged current image. This changes test placement,
+not production reservations or the platform ABI.

@@ -3,18 +3,14 @@ MODULE FSCORE
 USE FSSTATUS
 
 USE FSBTYPES
+USE A816MEMORY
 
 PUBLIC CONST READ=1, SEEK=2
 
 ; Preserve the complete entry, including the backend's opaque identity.
 PUBLIC PROC CopyEntry(FSBTYPES.Entry POINTER target,source)
-  CARD index
 
-  LET destination=BYTE POINTER(target)
-  LET origin=BYTE POINTER(source)
-  FOR index=0 TO CARD(SIZEOF(FSBTYPES.Entry)-1) DO
-    destination(index)=origin(index)
-  OD
+  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(source),SIZEOF(FSBTYPES.Entry))
 
 RETURN
 

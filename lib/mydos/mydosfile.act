@@ -38,7 +38,6 @@ RETURN
 ; Validate a regular file entry and establish its independent traversal
 ; cursor.
 PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER file)
-  BYTE index
 
   work.error=0
   work.ioError=0
@@ -55,9 +54,8 @@ PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER fi
 
   FSCORE.CopyEntry(@file.entry,@work.entry)
   file.depth=work.depth
-  FOR index=0 TO work.depth DO
-    file.ancestors(index)=work.ancestors(index)
-  OD
+  A816MEMORY.Move(BYTE POINTER(@file.ancestors(0)),
+      BYTE POINTER(@work.ancestors(0)),SIZE(work.depth+1)*2)
 
   file.position=0
   file.entry.length=0
