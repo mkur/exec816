@@ -95,9 +95,9 @@ caller buffer validity is already the current API contract. Seek cancellation
 now occurs before applying an extent, without assuming a second EOF walk.
 
 A focused 66,000-byte public write/read/overwrite/append/rename/remount case
-passes persisted-byte and allocation auditing on Generic 57600. It uses a larger
-512-block test cache to bound transport time; production defaults and all timing
-comparisons remain unchanged. File-only test selection now also skips repeated
+passes persisted-byte and allocation auditing on Generic 57600. Its explicit
+512-block cache setting equals the current 64 KiB default; production settings
+and timing comparisons remain unchanged. File-only test selection also skips repeated
 root listings; ordinary namespace cases retain those assertions. A broad 71 KiB
 128-byte case was stopped during repeated listings. The Fastest 125 kbit/s variant
 wrote correct persisted bytes but failed reading sector 105 with SIO checksum
@@ -124,3 +124,114 @@ Write BREAK/completion error, Delete/Truncate completion error and post-write
 BREAK passed through the real adapter with unrelated-file and allocation checks.
 Host checks: 448. The matched operation fixture reduces creation payload visits
 33→17 without changing its four-sector extension or physical write ordering.
+
+## MP6: final measurements
+
+The [final record](../development/mydos-performance-final.json) retains paired
+counts, input/image hashes, the compiler/ROM/emulator pins, saved-media audits
+and exact execution scope. The baseline is the MP0 frozen library snapshot;
+the 256-byte and IDE comparisons rebuild those libraries with the same current
+fixtures, platform and media geometry as their final counterparts. The IDE
+runner's `--library-baseline` option selects this comparison without selecting
+the older driver's 256-byte media profile.
+
+Accurate Generic 57600 SIO COPY uses the same 23,872-byte source, 16 KiB command
+buffer, 64 KiB cache, target contents and observers on both sides. PAL frames
+exclude command loading; observer overhead is included.
+
+| COPY case | PAL frames before → after | Physical reads before → after | Physical writes before → after |
+| --- | --- | --- | --- |
+| Cold creation | 3,879 → 3,858 | 99 → 99 | 341 → 340 |
+| Warm creation | 2,982 → 2,950 | 2 → 2 | 341 → 340 |
+| Cold replacement | 9,001 → 7,010 | 290 → 290 | 720 → 530 |
+| Warm replacement | 8,066 → 6,074 | 193 → 193 | 720 → 530 |
+
+Replacement takes 22.1% less time cold and 24.7% less time warm, with 26.4%
+fewer physical writes. Fresh creation improves little: data, link and directory
+publication still dominate. COPY's gateway observer is a wrapping 16-bit
+counter, so its raw values must not be interpreted as total kernel-call counts.
+The bounded operation fixture's counts do not wrap.
+
+Operation measurements use the same 8,000-byte file, default cache and observers,
+with rotational delay disabled on both sides. These separate structural/cache
+cost from accurate floppy throughput; one-frame changes are not stable speedup
+claims. The final record includes physical reads/writes, logical fetches,
+bitmap loads, chain visits, cache hits, gateway calls and frames separately.
+
+| Operation/metric | 128-byte sectors before → after | 256-byte sectors before → after |
+| --- | --- | --- |
+| Writable Open bitmap loads, including CountRoom header | 65 → 2 | 33 → 2 |
+| 63 same-sector seeks: payload fetches/visits | 63 → 0 | 63 → 0 |
+| 100 small forward seeks: chain visits | 908 → 16 | 473 → 8 |
+| Unknown END after position 2,064: chain visits | 128 → 47 | 64 → 23 |
+| Known END then one-byte read: payload fetches | 65 → 1 | 33 → 1 |
+| Truncate physical writes | 130 → 67 | 66 → 35 |
+| Delete physical writes | 3 → 2 | 3 → 2 |
+| CreateDir physical writes | 25 → 17 | 25 → 17 |
+| Remove directory physical writes | 17 → 9 | 17 → 9 |
+| Repeated listing chain visits | 76 → 76 | 41 → 41 |
+
+The final shared SDFS 256-byte SIO mutation case passes its full namespace,
+overwrite, append, reclamation and remount audits. Matched SDFS 512-byte IDE
+COPY remains 74 PAL frames (1.48 seconds), 20 ATA reads and 27 writes, with no
+preparation/readback phases. No regression is observed in that workload.
+
+### Code and storage
+
+These are native routine-body bytes in the identical instrumented operation
+images, excluding constant data and packaged/release size. The performance
+changes increase code size; they are not a footprint reduction.
+
+| Module | Before | After | Difference |
+| --- | ---: | ---: | ---: |
+| MYDOS | 7,973 | 7,466 | −507 |
+| MYDOSFILE | 10,735 | 11,440 | +705 |
+| MYDOSWRITE | 14,831 | 15,128 | +297 |
+| FSALLOC | 13,480 | 13,935 | +455 |
+| FSCORE | 743 | 687 | −56 |
+| FSRELATIVE | 6,054 | 6,195 | +141 |
+| FS83 | 3,116 | 3,116 | 0 |
+
+All routine bodies in the diagnostic image total 847,159→848,097 bytes:
+**938 more bytes**. The three MyDOS modules together add 495 bytes.
+
+| Upper-RAM storage | Requested / heap-rounded bytes, unchanged |
+| --- | --- |
+| Shared workspace | 174 / 176 |
+| Mutation state, including four 512-byte sector buffers | 2,214 / 2,216 |
+| SDFS backend scratch, also allocated in a MyDOS-only worker | 730 / 736 |
+| Shared operation | 44 / 48 |
+| Per-file backing, including its inline 110-byte cursor | 114 / 120 |
+
+AllocMem rounds to eight bytes and adds no per-allocation prefix. The 42-byte
+entry and 28-byte backend cursor storage are inline records, not extra buffers.
+Default cache payload remains 512 blocks of 128 bytes (64 KiB); sector staging
+remains 2,048 bytes and the adapter sector buffer remains 512 bytes. No fixed,
+per-Task or idle bank-zero reservation changes, including guards, alignment and
+unused capacity. Task/DP/stack pools stay unchanged.
+
+In the matched 128-byte operation runs, the largest touched Task stack watermark
+falls from 538 to 522 bytes; the kernel watermark is 260→267 bytes, with no
+interrupt-reserve bytes touched. Domain guards, ownership cleanup and runtime
+stack checks pass. Watermarks are lower bounds on observed use, not proven
+worst-case stack depth.
+
+### Validation and follow-ups
+
+Final host checks: **448 passed**. Focused optimized emitted-code checks across
+MP1–MP6 cover both MyDOS sector sizes, bank-crossing record copies, maximum/deep
+relative paths and corrupt ancestry, trailer/link/count/cycle errors, bitmap
+page A/B/A traversal and allocation-bit rejection, partial groups, cache-disabled
+mutations, allocation at $FFFF with wraparound, files over 64 KiB, cancellation
+and completion-error ownership, and shared SDFS SIO/IDE behavior. Persisted
+successful images pass independent content/allocation audits. Raw emission was
+not repeated: this work changes neither compiler semantics nor the public ABI.
+This is development evidence, not release or real-hardware qualification. The
+unsuccessful 125 kbit/s probe and stopped broad case remain recorded under MP4.
+
+Repeated listings still walk file chains with no physical reads; a bounded
+completed-byte-length cache is the next CPU-cost opportunity. Grouped
+CreateDir/reclaim bitmap publication could further reduce physical writes, but
+needs explicit ordering and cancellation rules. Lazy SDFS scratch allocation
+could save 736 rounded bytes in MyDOS-only configurations; mutation-buffer
+consolidation remains deferred until its scratch lifetimes are audited.

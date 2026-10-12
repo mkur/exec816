@@ -5,9 +5,11 @@
 [Write contract](../reference/filesystem-writes.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: implementation underway; MP0–MP5 complete. Implement and commit
-one executable slice at a time, after
-its development checks pass. This follows the completed
+Status: MP0–MP6 complete at the development tier. Each executable slice was
+committed after its focused checks. See the
+[implementation record](../history/mydos-performance.md) and
+[final evidence](../development/mydos-performance-final.json).
+This follows the completed
 [filesystem and DOS performance work](filesystem-dos-performance-implementation-plan.md).
 
 Reduce repeated MyDOS work without adding a cache, changing the disk format or

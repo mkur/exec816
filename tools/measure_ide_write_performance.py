@@ -85,10 +85,10 @@ def frozen_module(path):
 
 
 def prepare(out,frozen=None,open_bytes=0,count_comparisons=False,validation_source=None,
-            read_only=False,read_baseline=None):
+            read_only=False,read_baseline=None,library_baseline=None):
     out.mkdir(parents=True,exist_ok=True)
     t=compiler(ROOT/'build/actionc',release=True)
-    instrument(out,read_baseline or frozen)
+    instrument(out,library_baseline or read_baseline or frozen)
     probe=(out/'writeperfprobe.act').read_text()
     probe=probe.replace('PUBLIC BYTE armed,active,finished','PUBLIC BYTE armed,active,finished\nPUBLIC LONGCARD ataReads,ataWrites,ataFlushes,prepReads,verifyReads')
     # Count only ATA commands in the measured source-open to target-close interval.
@@ -260,13 +260,15 @@ ENDMODULE
 
 
 def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparisons=False,validation_source=None,driver_timing=False,
-        read_only=False,read_baseline=None):
+        read_only=False,read_baseline=None,library_baseline=None):
     require(not count_comparisons or (open_bytes and from_build is None), 'Count comparisons in a fresh Open probe')
     require(validation_source is None or count_comparisons, 'Source overrides are comparison-count probes only')
     require(0 <= open_bytes <= 524288, 'Invalid selected-file size')
     require(not open_bytes or not (frozen or warm), 'Open timing uses current cold media')
     require(not read_only or not (frozen or open_bytes or count_comparisons), 'Choose an isolated read or write workload')
     require(read_baseline is None or (read_only and from_build is None), 'Read baseline requires a fresh isolated-read build')
+    require(library_baseline is None or not (frozen or read_baseline or from_build),
+            'Library baseline requires a fresh build with current media geometry')
     out.mkdir(parents=True,exist_ok=True)
     if from_build:
         require(frozen is None,'Choose a retained build or frozen sources')
@@ -288,7 +290,7 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
         tree=from_build/'source'
         command=tree/'COPY16'
     else:
-        p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source,read_only,read_baseline)
+        p,wire,mapping,content,size,command,tree=prepare(out,frozen,open_bytes,count_comparisons,validation_source,read_only,read_baseline,library_baseline)
     media_before=sha256(out/'ideplus.img')
     with driver_observer(p,driver_timing) as observer, ide_emulator(out,out/'ideplus.img',writable=True) as b:
         def before(b):
@@ -347,6 +349,7 @@ def run(out,frozen=None,from_build=None,warm=False,open_bytes=0,count_comparison
     result['validation_source']=str(validation_source) if validation_source else None
     result['workload']='isolated-read' if read_only else 'writable-open-close' if open_bytes else 'loaded-copy'
     result['read_baseline']=str(read_baseline) if read_baseline else None
+    result['library_baseline']=str(library_baseline) if library_baseline else None
     result['stacks']=stacks
     result['selected_file_bytes']=open_bytes
     result['warm_source']=warm
@@ -362,4 +365,5 @@ if __name__=='__main__':
     a.add_argument('--from-build',type=Path);a.add_argument('--warm-source',action='store_true');a.add_argument('--open-bytes',type=int,default=0);a.add_argument('--count-comparisons',action='store_true');a.add_argument('--validation-source',type=Path)
     a.add_argument('--driver-timing',action='store_true')
     a.add_argument('--read-only',action='store_true');a.add_argument('--read-baseline',type=Path)
-    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source,v.driver_timing,v.read_only,v.read_baseline)
+    a.add_argument('--library-baseline',type=Path,help='Compare frozen libraries on current 512-byte media and driver')
+    v=a.parse_args();run(v.output,v.frozen_sources,v.from_build,v.warm_source,v.open_bytes,v.count_comparisons,v.validation_source,v.driver_timing,v.read_only,v.read_baseline,v.library_baseline)

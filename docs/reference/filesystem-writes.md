@@ -120,9 +120,11 @@ populated references into the existing idle mutation data buffer, sorts that
 copy without recursion and rejects adjacent duplicates. The original map
 remains intact. This preserves
 the existing per-map duplicate-check scope; it adds no whole-volume scan.
-Allocation checks retain one bitmap page only during this validation walk,
-replacing it when the bitmap identity changes. A writer may reuse its leased
-current staged map until map replacement or mutation retires that identity.
+Both disk formats retain one bitmap page only during selected-file validation,
+replacing it when the bitmap identity changes. MyDOS's protected reclaim walk
+still reads successor trailers and checks mutable allocation state afresh after
+detachment. A SpartaDOS writer may reuse its leased current staged map until
+map replacement or mutation retires that identity.
 
 Runtime validation cannot prove that unrelated files are
 not cross-linked or that a falsely free sector has no owner. Neither format is

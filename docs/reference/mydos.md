@@ -90,11 +90,14 @@ are corruption, not ordinary EOF.
 Retain a traversal hop count and constant-space cycle detector per file cursor
 across successive Reads. Every walk has a sector-count bound as well. This must
 not reset on each small Read and thereby let a cyclic file produce bytes forever.
-Backward seeks restart from the first sector with a fresh bounded traversal;
-forward seeks can continue a validated cursor. Compute `OFFSET_END` by a bounded
-walk when exact size is not yet known. Validate the directory sector count when
-EOF is reached. Read-only Open does not eagerly read an entire large file. Writable Open
-validates the selected chain before marking it incomplete.
+Seeks within a retained validated sector change only the cursor offset;
+forward seeks continue from it. Seeking before its base or with an invalid
+traversal restarts from the first sector. A subsequent Read fetches the matching
+payload rather than borrowing shared adapter bytes. When exact size is unknown,
+`OFFSET_END` walks only the remaining chain and retains the terminal cursor.
+Validate the directory sector count when EOF is reached. Read-only Open does
+not eagerly read an entire large file. Writable Open validates the selected
+chain before marking it incomplete.
 
 Do not report these checks as a complete filesystem check: unrelated files may
 cross-link, and corruption later in a chain may be discovered only after earlier
@@ -131,3 +134,7 @@ See [filesystem writes](filesystem-writes.md) for the public contract and
 [the mutation protocol](../plans/filesystem-write-protocol.md) for sector ordering.
 Writable mounts use the VTOC on demand and preserve ten-bit link mode on existing
 files. Mounting remains a single header read; it does not scan file chains.
+Selected-file validation retains one bitmap page within that call, reloading
+when the page changes. Reclamation checks mutable allocation state afresh.
+An individual bit/free-count change occupying sector 360 is published by one
+sector write; a bitmap page elsewhere is written before the separate header.

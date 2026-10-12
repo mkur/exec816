@@ -73,7 +73,7 @@ treated as atomic records.
 | Create MyDOS file | Preflight directory slot and one sector; reserve VTOC bit/count; zero data plus EOF trailer; publish $47 entry with count one and first sector. Publish the preallocated handle only after entry completion. |
 | Create SDFS file | Preflight slot/growth and one map; reserve bitmap/count; zero map; prepare any directory growth; publish $88 record pointing to that map with length zero. Publish the handle after the record and directory extent complete. |
 | Open existing for update | Validate the target, preallocate handle/backing and acquire its lease; set its native incomplete flag before publishing the writable handle. Reject sparse SDFS files before mutation. |
-| Overwrite existing payload | Read the affected sector; replace only requested payload bytes; verified write; update any required entry metadata; advance cursor/completed count. The remaining suffix is preserved. |
+| Overwrite existing payload | Read the affected sector; replace only requested payload bytes; complete the normal transport write; update any required entry metadata; advance cursor/completed count. The remaining suffix is preserved. |
 | Extend MyDOS within the last sector | Update payload and used-byte trailer; write the sector; preserve the chain count; advance the confirmed cursor and length. |
 | Extend MyDOS with new sectors | Preflight up to four sectors on one VTOC page; write their allocation bits/free count together (one write when both occupy the same VTOC sector); initialize payloads with final successors and an EOF trailer; connect the old tail; publish the new directory sector count once; advance cursor/length. Preserve ten-bit ordinal encoding and its address limit. |
 | Extend SDFS within a data sector | Write changed payload; update directory byte length if EOF grows; advance the confirmed cursor/length. |
@@ -87,6 +87,13 @@ treated as atomic records.
 | Create directory | Preflight parent capacity and full child allocation; reserve and zero sectors; initialize child header where applicable; publish parent entry/extent; return the preallocated lock. MyDOS requires a contiguous eight-sector child. |
 | Delete file/empty directory | Validate target and reclaimable extent; reject live objects and nonempty directory; tombstone the parent entry to remove live reachability; release sectors and update counts. Finish reclamation before reporting success. |
 | Same-parent rename | Validate destination/collision/protection/busy state; replace the name in the same entry slot, retaining identity/allocation/flags/timestamp; update a renamed SDFS directory's own header name; finish all record sectors before success. |
+
+MyDOS single-sector allocation/free combines bit and free count before one
+write when both occupy sector 360. For a later bitmap page, publish that page
+before the separate sector-360 count. Eight-sector directory reservation and
+reclamation still perform individual changes; only file extension groups up to
+four reservations. Directory-record updates retain their loaded full physical
+sector until publication, preserving neighbouring records and unused bytes.
 
 SDFS directory growth reserves and initializes additional data/map sectors
 before connecting them. Initialize the new record area before extending record
@@ -118,10 +125,10 @@ transaction. Reads needed to finish that unit use the same policy. A terminal
 transport error always wins over pending BREAK. Normal reads retain their
 existing cancellation path. No Forbid/IRQ/NMI exclusion spans I/O.
 
-The shared worker uses three 256-byte staged sectors, one private 256-byte
-bitmap page, one 23-byte record and bounded scalar/entry/snapshot state, totaling
-1,190 requested bytes (1,192 after heap rounding), 312 reserved upper-RAM bytes
-above the earlier workspace. The existing block buffer
-is separate. File backing owns rights, lease and cursor state, not sector buffers.
-The development record measures the remaining object growth. Fixed and
-per-Task bank-zero reservation deltas remain zero, including guards and padding.
+The shared mutation state uses three 512-byte staged sectors, one private
+512-byte bitmap page, one 23-byte record and bounded scalar/entry/snapshot state.
+Current emitted and heap-rounded sizes are recorded in the
+[MyDOS performance results](../history/mydos-performance.md#code-and-storage).
+The existing block buffer is separate. File backing owns rights, lease and
+cursor state, not sector buffers. Fixed, per-Task and idle bank-zero reservation
+deltas remain zero, including guards, alignment and unused capacity.
