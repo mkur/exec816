@@ -5,7 +5,8 @@
 [Write contract](../reference/filesystem-writes.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: proposed. Implement and commit one executable slice at a time, after
+Status: implementation underway; MP0 baseline captured. Implement and commit
+one executable slice at a time, after
 its development checks pass. This follows the completed
 [filesystem and DOS performance work](filesystem-dos-performance-implementation-plan.md).
 

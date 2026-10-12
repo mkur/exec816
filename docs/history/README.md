@@ -1,5 +1,8 @@
 # Historical records
 
+- [MyDOS performance](mydos-performance.md): native copies, VTOC publication,
+  retained traversal state and matched development measurements.
+
 - [Bounded IDE read ranges](ide-read-ranges.md): device, cache and filesystem
   grouping, memory costs and matched development measurements.
 

@@ -1,0 +1,181 @@
+; Measure public MyDOS operations with the shared write-performance observers.
+MODULE MYDOSPERFORMANCE
+USE EXEC
+USE DOS
+USE FSBOOT
+USE FSTYPES
+USE FSBTYPES
+USE FSWTYPES
+USE SDFSTYPES
+USE DOSCORE
+USE HEAPCORE
+USE WRITEPERFPROBE
+
+CONST FILE_BYTES=8000, COLUMNS=10
+CARD checks,phase
+LONGCARD priorOperations,priorHits
+LONGCARD ARRAY rows(13*COLUMNS)
+CARD ARRAY layouts(5)
+DOS.FileHandle POINTER file
+DOS.FileLock POINTER lock
+DOS.FileInfoBlock info
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Begin(CARD index)
+
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  phase=index
+  priorOperations=service.work.operations
+  priorHits=service.adapter.cache.hits
+  WRITEPERFPROBE.reads=0
+  WRITEPERFPROBE.writes=0
+  WRITEPERFPROBE.logicalReads=0
+  WRITEPERFPROBE.payloadVisits=0
+  WRITEPERFPROBE.chainVisits=0
+  WRITEPERFPROBE.bitmapLoads=0
+  WRITEPERFPROBE.directoryLoads=0
+  WRITEPERFPROBE.Begin()
+
+RETURN
+
+PROC End()
+
+  WRITEPERFPROBE.End()
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  LET offset=phase*COLUMNS
+  rows(offset)=LONGCARD(WRITEPERFPROBE.endFrame-WRITEPERFPROBE.startFrame)
+  rows(offset+1)=LONGCARD(WRITEPERFPROBE.kernelCalls)
+  rows(offset+2)=WRITEPERFPROBE.reads
+  rows(offset+3)=WRITEPERFPROBE.writes
+  rows(offset+4)=WRITEPERFPROBE.logicalReads
+  rows(offset+5)=WRITEPERFPROBE.payloadVisits
+  rows(offset+6)=service.work.operations-priorOperations
+  rows(offset+7)=service.adapter.cache.hits-priorHits
+  rows(offset+8)=WRITEPERFPROBE.chainVisits
+  rows(offset+9)=WRITEPERFPROBE.bitmapLoads
+
+RETURN
+
+PROC SeekCases()
+  CARD index
+
+  file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Seek(file,1,DOS.OFFSET_BEGINNING)=0)
+  Begin(3)
+  FOR index=2 TO 64 DO
+    Require(DOS.Seek(file,LONGINT(index),DOS.OFFSET_BEGINNING)=LONGINT(index)-1)
+  OD
+
+  End()
+  Begin(4)
+  FOR index=1 TO 100 DO
+    Require(DOS.Seek(file,20,DOS.OFFSET_CURRENT)=64+LONGINT(index-1)*20)
+  OD
+
+  End()
+  Begin(5)
+  Require(DOS.Seek(file,0,DOS.OFFSET_END)=2064)
+  End()
+  Begin(6)
+  Require(DOS.Seek(file,-1,DOS.OFFSET_END)=FILE_BYTES)
+  Require(DOS.Read(file,BYTE POINTER($2dfff0),1)=1)
+  LET buffer=BYTE POINTER($2dfff0)
+  Require(buffer(0)=(BYTE(FILE_BYTES-1) XOR $5a))
+  End()
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Listing(CARD index)
+
+  lock=DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL)
+  Begin(index)
+  Require(DOS.Examine(lock,@info)<>0)
+  WHILE DOS.ExNext(lock,@info)<>0 DO
+    IF info.fib_FileName(0)='M AND info.fib_FileName(1)='P THEN
+      Require(info.fib_Size=FILE_BYTES)
+    FI
+  OD
+
+  Require(DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
+  End()
+  DOS.UnLock(lock)
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  layouts(0)=CARD(SIZEOF(FSBTYPES.Workspace))
+  layouts(1)=CARD(SIZEOF(FSWTYPES.State))
+  layouts(2)=CARD(SIZEOF(SDFSTYPES.BackendState))
+  layouts(3)=CARD(SIZEOF(FSBTYPES.Cursor))
+  layouts(4)=CARD(SIZEOF(FSBTYPES.Entry))
+  LET buffer=BYTE POINTER($2dfff0)
+  FOR index=0 TO FILE_BYTES-1 DO
+    buffer(index)=BYTE(index) XOR $5a
+  OD
+
+  Require(FSBOOT.Ensure()<>0)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSTYPES.Service POINTER(registry.runtime)
+  service.mounts(0).item.volume.allocationHint=4
+  Begin(0)
+  file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Write(file,buffer,FILE_BYTES)=FILE_BYTES)
+  Require(DOS.Close(file)<>0)
+  End()
+
+  Begin(1)
+  file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL AND DOS.Read(file,buffer,FILE_BYTES)=FILE_BYTES)
+  FOR index=0 TO FILE_BYTES-1 DO
+    IF buffer(index)<>(BYTE(index) XOR $5a) THEN
+      Require(0)
+    FI
+  OD
+
+  Require(DOS.Close(file)<>0)
+  End()
+  Begin(2)
+  file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_READWRITE)
+  Require(file<>NULL)
+  End()
+  Require(DOS.Close(file)<>0)
+  SeekCases()
+  Listing(7)
+  Listing(8)
+
+  Begin(9)
+  file=DOS.Open(BYTE POINTER(c"D1:MP.BIN"),DOS.MODE_NEWFILE)
+  Require(file<>NULL AND DOS.Close(file)<>0)
+  End()
+  Begin(10)
+  Require(DOS.DeleteFile(BYTE POINTER(c"D1:MP.BIN"))<>0)
+  End()
+  Begin(11)
+  lock=DOS.CreateDir(BYTE POINTER(c"D1:MPDIR"))
+  Require(lock<>NULL)
+  End()
+  DOS.UnLock(lock)
+  Begin(12)
+  Require(DOS.DeleteFile(BYTE POINTER(c"D1:MPDIR"))<>0)
+  End()
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+
+RETURN
+
+ENDMODULE
