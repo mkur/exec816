@@ -26,7 +26,7 @@ struct Browser {
     WORD mx,my,mb,ks,kr,br;
     OBJECT bar[21];
     WORD menuInstalled,menuEnabled;
-    OBJECT dialogTree[6];
+    OBJECT dialogTree[7];
     TEDINFO dialogTed;
     char editText[128];
     WORD dialog,focus,editIndex;

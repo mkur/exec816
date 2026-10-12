@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 from browser_model import FIELDS as F, select, wait_listing
-from colour_desktop_model import FIELDS as D, COPY_FIELDS as C, LAYOUT
+from colour_desktop_model import FIELDS as D, JOB_FIELDS as C, LAYOUT
 from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from gem_applications import symbols
@@ -36,7 +36,7 @@ def variant(out, size):
     header = source/'desktop.h'
     original = header.read_text()
     import re
-    changed, count = re.subn(r'UBYTE buffer\[\d+\];', f'UBYTE buffer[{size}];', original)
+    changed, count = re.subn(r'COPY_BUFFER_BYTES=\d+', f'COPY_BUFFER_BYTES={size}', original)
     require(count == 1, 'Expected one desktop copy buffer')
     header.write_text(changed)
     header = source/'browser.h'
@@ -45,7 +45,7 @@ def variant(out, size):
     probe = source/'layout.c'
     probe.write_text((ROOT/'tests/programs/gem_colour_desktop_layout.c').read_text().replace(
         '../../examples/gem-browser/desktop.h', str(source/'desktop.h')))
-    layout = [(name, 790+size if name == 'Copy size' else value) for name, value in LAYOUT]
+    layout = LAYOUT
     app = build(out/'bitmap-console/apps/desktop',
                 [source/'desktop-main.c', source/'browser.c', ROOT/'c/calypsi/file-list.c'],
                 probes=[(probe, layout)])
@@ -84,7 +84,7 @@ class CopyProbe:
         sy = symbols(b, s.p, directory, 'desktop', s.number(resident['GEMDesktopChildren'], 4))
         desk = sy['GEMDesk']
         base = s.number(desk+D['folders'], 4)
-        job = lambda: s.number(desk+D['copy'], 4)
+        job = lambda: s.number(desk+D['job'], 4)
         clock = lambda: b.eval_expr('@clk') & 0xffffffff
         seconds = lambda start: ((clock()-start) & 0xffffffff)/BASE_HZ
         text = lambda name: b.memdump(base+F[name],128).split(b'\0')[0].decode('ascii')
@@ -102,7 +102,7 @@ class CopyProbe:
         packet_base=abi['records']['StandardPacket']['fields'][1][2]
         def action(name):
             return '(%s!=0)&(dw(%s+%d)=%d)'%(packet,packet,packet_base+fields['dp_Type'],abi['actions']['ACTION_'+name])
-        active='((dw($%x)|dw($%x))!=0)'%(desk+D['copy'],desk+D['copy']+2)
+        active='((dw($%x)|dw($%x))!=0)'%(desk+D['job'],desk+D['job']+2)
         def wait_phase(name):s.rendezvous(active+'&'+action(name.upper()))
         b.eval_expr(active+'&'+action('READ'))
         print('Copy observer ready',hex(service),flush=True)
@@ -132,7 +132,7 @@ class CopyProbe:
                 # Copy retirement precedes the synchronous folder refresh.
                 # Wait for its published result rather than assuming the
                 # next fixed number of frames covers directory I/O.
-                value=expected.encode('ascii')+b'\0'
+                value=expected.encode('ascii')
                 condition='&'.join('(db($%x)=%d)'%(base+F['status']+i,v)
                                    for i,v in enumerate(value))
                 s.rendezvous(condition)
@@ -166,10 +166,10 @@ class CopyProbe:
         s.rendezvous('dw($%x)=%d'%(job()+C['copied'],len(SMALL)))
         transfer_seconds = seconds(start_time)
         require(s.number(job()+C['copied'],4)==len(SMALL),'Wrong desktop byte count')
-        s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['copy'],desk+D['copy']+2))
+        s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2))
         complete_seconds = seconds(start_time)
         closed('Copy complete')
-        require(text('status')=='Copy complete','Desktop copy failed: '+text('status'))
+        require(text('status').startswith('Copy complete'),'Desktop copy failed: '+text('status'))
         self.results['desktop']=dict(bytes=len(SMALL),transfer_seconds=transfer_seconds,
             finalized_seconds=complete_seconds,bytes_per_second=len(SMALL)/complete_seconds,
             scope='First active READ packet to copy job retirement after close/rename, sampled at IRQ; transfer ends when copied count reaches file size.')
@@ -183,10 +183,10 @@ class CopyProbe:
             s.rendezvous(active+'&'+action('END'))
             accepted_seconds=seconds(cancel_start)
             b._cmd_ok('KEY ESC up')
-            s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['copy'],desk+D['copy']+2))
+            s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2))
             elapsed=seconds(cancel_start)
             closed('Copy cancelled')
-            require(text('status')=='Copy cancelled','Cancellation failed: '+text('status'))
+            require(text('status').startswith('Copy cancelled'),'Cancellation failed: '+text('status'))
             record=dict(phase=phase,accepted_seconds=accepted_seconds,cleanup_seconds=elapsed,
                 scope='Escape injected during first active data packet; acceptance at first END packet, cleanup at job retirement, sampled at IRQ.')
             self.results['cancel'].append(record);print('Cancel',record,flush=True);checkpoint()
@@ -199,7 +199,7 @@ class CopyProbe:
             require(job(),'Copy completed during loaded feedback')
             self.results['copy_panel']=s.saved['loaded_panel_feedback']['copy'];checkpoint()
             menus.select('WORK:');key('ESC');closed('Copy cancelled')
-            require(text('status')=='Copy cancelled','Loaded copy was not cancelled')
+            require(text('status').startswith('Copy cancelled'),'Loaded copy was not cancelled')
 
         menus.select('Shell')
         if self.shell:

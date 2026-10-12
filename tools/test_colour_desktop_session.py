@@ -40,15 +40,18 @@ def development_media(out):
 
 
 class ColourDesktop:
-    def __init__(self,files=False,restore=None,only=False,selection=False):
-        self.files,self.restore,self.only,self.selection=files,restore,only,selection
+    def __init__(self,files=False,restore=None,only=False,selection=False,batch=False):
+        self.files,self.restore,self.only,self.selection,self.batch=files,restore,only,selection,batch
 
     def prepare_work(self,target,item):
-        if not self.files and not self.selection and self.restore is None:return
+        if not self.files and not self.selection and not self.batch and self.restore is None:return
         import tempfile
         from sdfs_reference import extract,make
         with tempfile.TemporaryDirectory(prefix='exec816-colour-') as tmp:
             root=Path(tmp);extract(target,root)
+            if self.batch:
+                from colour_batch_check import fixture
+                fixture(root)
             if self.selection:
                 (root/'ALPHA.TXT').write_bytes(b'alpha')
                 (root/'BETA.TXT').write_bytes(b'beta')
@@ -107,6 +110,13 @@ class ColourDesktop:
             shot('desktop-settings-restored')
             self.report=dict(settings_restart=True)
             menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
+            for c in 'EXIT':s.press(c)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+        if self.batch:
+            from colour_batch_check import exercise
+            exercise(s,desk,first,click,key,fill,path,desk_menu,shot)
+            self.report=dict(batch_copy=s.saved['batch_copy'],stacks=stack_usage(b,s.p['build']['memory']))
+            menus.select('Shell');s.command('HELLO',b'Hello from disk!');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
         if self.selection:
@@ -187,6 +197,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
     p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
+    p.add_argument('--batch-copy',action='store_true')
     p.add_argument('--selection-boundary',action='store_true')
     p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
     args.files=args.files or args.files_only
@@ -195,7 +206,7 @@ if __name__=='__main__':
     media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
     from native_program import sha256
     overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
-    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only)
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only,batch=args.batch_copy)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:
@@ -213,6 +224,13 @@ if __name__=='__main__':
         restart=ColourDesktop(restore=preferences)
         restored=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=restart,profile_commands=False,**overrides)
         result['settings_restart']=dict(status='pass',checks=restart.report,exit=restored.get('status'))
+    if args.batch_copy:
+        from colour_batch_check import readback
+        from sdfs_reference import extract
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix='exec816-batch-readback-') as tmp:
+            root=Path(tmp);extract(out/'work-walkthrough.atr',root);readback(root)
+        result['independent_batch_readback']=True
     result['development_media_sha256']=sha256(media) if media else None
     result['application_sha256']={name:sha256(out/'bitmap-console/apps'/name/'program.app') for name in ('desktop','files')}
     (out/'colour-session-results.json').write_text(json.dumps(result,indent=2)+'\n')

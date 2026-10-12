@@ -5,15 +5,17 @@
 #define DESKTOP_FOLDERS 3
 #define DESKTOP_CHILDREN 3
 #define DESKTOP_ICONS 7
-struct DesktopCopy {
+enum { COPY_BUFFER_BYTES=16384, FILE_COPY=1, FILE_DELETE=2,
+       JOB_NEXT=1, JOB_TRANSFER=2, JOB_REPLACE=3 };
+struct DesktopFileJob {
     struct Browser *owner;
     BPTR input,output;
     ULONG copied;
-    LONG error;
-    WORD replacing;
-    char source[256],target[256],temporary[256];
-    /* Match shell COPY: allow DOS to batch payload and metadata publication. */
-    UBYTE buffer[16384];
+    LONG error,cleanupError;
+    WORD operation,state,index,total,completed,skipped,replacing,temporaryOwned,keepComplete;
+    UBYTE pending[BROWSER_ENTRIES/8];
+    char source[256],target[256],temporary[256],destination[128];
+    UBYTE *buffer;
 };
 struct DesktopAssociation { char extension[4],program[64]; };
 struct DesktopFolder { WORD bounds[4],icons,sort;char path[128]; };
@@ -30,7 +32,7 @@ struct Desktop {
     WORD installed,quit;
     ULONG launches,paints;
     char status[65];
-    struct DesktopCopy *copy;
+    struct DesktopFileJob *job;
     struct DesktopAssociation associations[2];
     struct DesktopFolder saved[DESKTOP_FOLDERS];
     WORD savedCount,mouse,defaultIcons,defaultSort,settingsLoaded;

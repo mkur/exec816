@@ -37,3 +37,25 @@ Bank-zero reservation changes: **0 bytes fixed, 0 bytes for every public Task,
 0 bytes idle**, including guards, alignment and unused capacity. The generated
 budget remains 10,528 fixed runtime bytes, public reservations
 `[1824,1600,1600,1600,1600,1600,2848,2848]`, and 800 idle bytes.
+
+
+## MS2 — sequential batch Copy
+
+One 974-byte private job owns a frozen pending bitmap and source snapshot.
+Copy allocates one separate 16,384-byte buffer for the whole batch (17,358 bytes
+combined); an extra Skip button increases each Browser to 3,971 bytes.
+The destination directory is checked once. Each existing target offers
+Replace/Skip/default-Cancel; transfers and temporary publication remain sequential.
+Progress updates only the status strip on each chunk. Terminal results report
+done/skipped/remaining counts, and cancellation removes only the current owned
+temporary file. Owner close and desktop quit retire the job before its folder.
+
+The physical development walkthrough passes empty, short, exactly 16 KiB and
+multi-chunk binary copies with a tail; Replace/Skip/default-Cancel; all-skipped;
+cancellation after an earlier completed file; preexisting temporary conflict;
+read-only failure; and owner close/desktop quit at overwrite prompts. Independent
+ATR extraction verifies all bytes, retained old targets and temporary cleanup.
+A second batch and shell HELLO/EXIT pass. Raw/optimized layout probes and the
+451 passing host checks (four skips) pass. The final integration slice also
+covers the inherited partial-disk-full/single-copy walkthrough and measurements.
+Bank-zero reservation delta remains **0 fixed, 0 per public Task, 0 idle bytes**.

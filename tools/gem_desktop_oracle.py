@@ -69,8 +69,8 @@ def paint(bridge,symbols,r,title,bounds):
         base=symbols['GEMBrowser'];tree=int.from_bytes(bridge.memdump(base+170,4),'little')
         from browser_model import OBJECTS,FIELDS as F
         if 'objc_edit' in symbols and int.from_bytes(bridge.memdump(base+F['dialog'],2),'little'):
-            raw=bridge.memdump(base+F['dialogTree'],6*24)
-            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(6)]
+            raw=bridge.memdump(base+F['dialogTree'],7*24)
+            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(7)]
             labels={}
             for i,obj in enumerate(objects):
                 if obj[3] in (26,28):

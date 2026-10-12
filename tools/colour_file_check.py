@@ -35,9 +35,9 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
         click(x+32,y+52)
     def complete():
         for _ in range(300):
-            if not n('dialog') and text('status')=='Copy complete':break
+            if not n('dialog') and text('status').startswith('Copy complete'):break
             s.frames(40)
-        require(not n('dialog'),'Copy did not finish: '+repr((n('dialog'),text('status'),text('editText'),s.number(desk+D['copy'],4),s.number(desk+D['error'],4))))
+        require(not n('dialog'),'Copy did not finish: '+repr((n('dialog'),text('status'),text('editText'),s.number(desk+D['job'],4),s.number(desk+D['error'],4))))
         require(not s.number(desk+D['error'],4),'Copy reported an error')
         s.frames(90)
     path(base,'WORK:');print('Desktop writable folder',flush=True)
@@ -53,20 +53,20 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     require('COPY.TXT' in listing(s,base),'Completed copy missing')
     select(s,base,'SOURCE.TXT',click);copy_to('WORK:COPY.TXT')
     alert();closed()
-    require(not s.number(desk+D['copy'],4),'Default overwrite must cancel')
+    require(not s.number(desk+D['job'],4),'Default overwrite must cancel')
     copy_to('WORK:COPY.TXT');alert(True);complete()
     # An unfinished copy is cancelled after data has reached its temporary file.
     print('Desktop Copy/Replace',flush=True)
     select(s,base,'BIG.BIN',click);copy_to('WORK:CANCEL.BIN');dialog(5)
-    require(s.number(desk+D['copy'],4),'No incremental copy job')
+    require(s.number(desk+D['job'],4),'No incremental copy job')
     key('ESC');closed()
-    require(text('status')=='Copy cancelled' and not s.number(desk+D['error'],4),
+    require(text('status').startswith('Copy cancelled') and not s.number(desk+D['error'],4),
         'Cancel was replaced by a copy failure: '+text('status'))
     require('CANCEL.BIN' not in listing(s,base),'Cancelled copy published destination')
     require('EXECCOPY.TMP' not in listing(s,base),'Cancelled copy retained temporary')
     # Operational failure keeps the typed path and directory state available.
     select(s,base,'SOURCE.TXT',click);copy_to('SYS:COPY.TXT');s.frames(100)
-    require(n('dialog')==4 and s.number(desk+D['error'],4),'Read-only copy did not fail')
+    require(n('dialog')==0 and s.number(desk+D['error'],4),'Read-only copy did not fail')
     require(text('editText')=='SYS:COPY.TXT','Failed copy lost destination text')
     key('ESC');closed()
     select(s,base,'BIG.BIN',click);copy_to('WORK:SOURCE.TXT');alert(True)
@@ -75,7 +75,7 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
         s.frames(40)
     require(not n('dialog') and s.number(desk+D['error'],4)==221,
         'Partial copy did not report disk full: '+repr((n('dialog'),
-        s.number(desk+D['error'],4),text('status'),s.number(desk+D['copy'],4))))
+        s.number(desk+D['error'],4),text('status'),s.number(desk+D['job'],4))))
     require(text('status').startswith('Copy failed'),'Missing partial-copy error status')
     print('Desktop copy cancellation and failures',flush=True)
     select(s,base,'DELETE.TXT',click);menu(8);alert(True);wait_listing(s,base)

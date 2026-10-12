@@ -12,6 +12,9 @@ for name in FIELDS:
     if FIELDS[name]>FIELDS['bar']:FIELDS[name]+=48
 FIELDS.update(selection=3909,selectionCount=3941,selectionDirectories=3943,armedModifiers=3945)
 SIZE=3947
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['dialogTree']:FIELDS[name]+=24
+SIZE+=24
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21

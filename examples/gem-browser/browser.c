@@ -2,7 +2,8 @@
 #include "desktop.h"
 static ULONG desktop_launch(struct Desktop *,const char *,const char *,UWORD);
 static WORD desktop_copy_start(struct Browser *,WORD);
-static WORD desktop_copy_finish(struct Desktop *,WORD);
+static WORD desktop_job_finish(struct Desktop *,WORD);
+static WORD desktop_job_choice(struct Desktop *,WORD);
 static WORD desktop_delete(struct Browser *);
 static const char *desktop_association(struct Desktop *,const char *);
 #include <exec816/aes.h>
@@ -65,9 +66,9 @@ static WORD menu_state(struct Browser *b)
     WORD one=single_entry(b);
     WORD enabled=(!b->dialog && one>=0 && (b->entries[one].kind>0 || !b->child) ? 1:0)
         |(b->child ? 2:0)|(!b->dialog && one>=0 ? 4:0)|(!b->dialog ? 8:0)
-        |(b->desktop && !b->dialog && !b->desktop->copy && one>=0 &&
-          b->entries[one].kind<0 ? 16:0);
-    WORD changed=b->menuEnabled<0 ? 31:enabled^b->menuEnabled;
+        |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount && !b->selectionDirectories ? 16:0)
+        |(b->desktop && !b->dialog && !b->desktop->job && one>=0 ? 32:0);
+    WORD changed=b->menuEnabled<0 ? 63:enabled^b->menuEnabled;
     if ((changed&1) && !menu_ienable(b->applicationMenu,MENU_OPEN,enabled&1)) return 0;
     if ((changed&2) && !menu_ienable(b->applicationMenu,MENU_STOP,enabled&2)) return 0;
     if ((changed&4) && !menu_ienable(b->applicationMenu,MENU_RENAME,enabled&4)) return 0;
@@ -78,9 +79,9 @@ static WORD menu_state(struct Browser *b)
             !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) || !menu_ienable(b->applicationMenu,MENU_ORDER,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_ALL,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NONE,enabled&8)) return 0;
     }
-    if (b->desktop && (changed&20)) {
+    if (b->desktop && (changed&48)) {
         if (!menu_ienable(b->applicationMenu,30,(enabled&16)!=0) ||
-            !menu_ienable(b->applicationMenu,31,(enabled&4)!=0)) return 0;
+            !menu_ienable(b->applicationMenu,31,(enabled&32)!=0)) return 0;
     }
     b->menuEnabled=enabled;return 1;
 }
@@ -348,32 +349,37 @@ static WORD select_all(struct Browser *b,WORD state)
 
 enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7 };
 static const OBJECT dialogSource[]={
-    {-1,1,5,G_BOX,0,0,0x1170,0,0,216,144},
+    {-1,1,6,G_BOX,0,0,0x1170,0,0,216,144},
     {2,-1,-1,G_STRING,0,0,0,8,2,192,8},
     {3,-1,-1,G_BOXTEXT,EDITABLE,0,0,8,16,200,16},
     {4,-1,-1,G_BUTTON,SELECTABLE|DEFAULT|EXIT,0,(ULONG)"OK",8,40,64,16},
     {5,-1,-1,G_BUTTON,SELECTABLE|EXIT,0,(ULONG)"Cancel",96,40,88,16},
-    {0,-1,-1,G_STRING,LASTOB,0,0,8,134,200,8}
+    {6,-1,-1,G_STRING,0,0,0,8,134,200,8},
+    {0,-1,-1,G_BUTTON,LASTOB|HIDETREE,0,(ULONG)"Skip",80,40,56,16}
 };
 static WORD dialog_open(struct Browser *b,WORD kind)
 {
     WORD i;
     TEDINFO *ted=&b->dialogTed;
-    if (b->dialog) return 1;
-    if (kind==DIALOG_RENAME || kind==DIALOG_COPY || kind==DIALOG_DELETE) {
+    if (b->dialog || ((kind==DIALOG_COPY || kind==DIALOG_DELETE) && b->desktop->job)) return 1;
+    if (kind==DIALOG_RENAME || kind==DIALOG_DELETE) {
         i=single_entry(b);if (i<0) return 1;b->selected=i;
     }
-    for (i=0;i<6;++i) b->dialogTree[i]=dialogSource[i];
+    if (kind==DIALOG_COPY && (!b->selectionCount || b->selectionDirectories || b->desktop->job)) return 1;
+    for (i=0;i<7;++i) b->dialogTree[i]=dialogSource[i];
     if (kind==DIALOG_PATH) b->dialogTree[1].ob_spec=(ULONG)"Path";
     else if (kind==DIALOG_NEW) b->dialogTree[1].ob_spec=(ULONG)"New Folder";
-    else b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_COPY ? "Copy to (full path)":"Rename");
+    else b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_COPY ? (b->selectionCount>1 ? "Copy to directory":"Copy to (full path)"):"Rename");
     b->dialogTree[2].ob_spec=(ULONG)ted;b->dialogTree[5].ob_spec=(ULONG)b->status;
     b->dialogTed.te_ptext=(ULONG)b->editText;b->dialogTed.te_ptmplt=(ULONG)"";
     b->dialogTed.te_pvalid=(ULONG)"x";b->dialogTed.te_font=IBM;b->dialogTed.te_just=TE_LEFT;
     b->dialogTed.te_color=0x1180;b->dialogTed.te_thickness=-1;
     b->dialogTed.te_txtlen=(kind==DIALOG_PATH || kind==DIALOG_COPY) ? sizeof(b->editText):108;b->dialogTed.te_tmplen=1;
     if (kind!=DIALOG_REPLACE) strcpy(b->editText,kind==DIALOG_PATH ? b->path:kind==DIALOG_RENAME ? b->entries[b->selected].name:"");
-    if (kind==DIALOG_COPY) FileJoin(b->editText,sizeof(b->editText),"WORK:",b->entries[b->selected].name);
+    if (kind==DIALOG_COPY) {
+        if (b->selectionCount>1) strcpy(b->editText,"WORK:");
+        else FileJoin(b->editText,sizeof(b->editText),"WORK:",b->entries[single_entry(b)].name);
+    }
     b->dialog=kind;b->focus=2;b->armed=-1;b->dialogError=0;b->status[0]=0;
     if (kind==DIALOG_DELETE || kind==DIALOG_REPLACE) {
         if (kind==DIALOG_DELETE) strcpy(b->editText,b->entries[b->selected].name);
@@ -396,7 +402,7 @@ static WORD dialog_end(struct Browser *b)
 }
 static WORD dialog_cancel(struct Browser *b)
 {
-    if (b->dialog==DIALOG_COPYING) return desktop_copy_finish(b->desktop,1);
+    if (b->desktop && b->desktop->job && b->desktop->job->owner==b) return desktop_job_finish(b->desktop,1);
     if (!dialog_end(b)) return 0;
     label(b->status,b->path,63);return redraw(b,b->work);
 }
@@ -473,6 +479,7 @@ static WORD dialog_key(struct Browser *b)
     if (b->dialog==DIALOG_COPYING) return (key&255)==13 ? dialog_cancel(b):1;
     form_keybd(b->dialogTree,b->focus,b->focus,key,&next,&key);
     if (!key && next==3 && (b->kr&255)!=9 && b->kr!=0x0f00) return dialog_accept(b);
+    if (!key && next==6 && b->dialog==DIALOG_REPLACE && (b->kr&255)!=9 && b->kr!=0x0f00) return desktop_job_choice(b->desktop,0);
     if (!key && next==4 && (b->kr&255)!=9 && b->kr!=0x0f00) return dialog_cancel(b);
     if (!dialog_focus(b,next)) return 0;
     return key && b->focus==2 ? objc_edit(b->dialogTree,2,key,&b->editIndex,ED_CHAR):1;
@@ -480,6 +487,7 @@ static WORD dialog_key(struct Browser *b)
 static WORD dialog_click(struct Browser *b,WORD hit)
 {
     if (b->dialog==DIALOG_COPYING) return hit==4 ? dialog_cancel(b):1;
+    if (hit==6 && b->dialog==DIALOG_REPLACE) return desktop_job_choice(b->desktop,0);
     if (hit==3) return dialog_accept(b);
     if (hit==4) return dialog_cancel(b);
     if (hit==2 && b->dialog<DIALOG_COPYING) return dialog_focus(b,2);
@@ -562,7 +570,7 @@ static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *s
 static WORD folder_close(struct Browser *b)
 {
     b->ready=0;
-    if (b->dialog==DIALOG_COPYING && !desktop_copy_finish(b->desktop,1)) return 0;
+    if (b->desktop && b->desktop->job && b->desktop->job->owner==b && !desktop_job_finish(b->desktop,1)) return 0;
     if (b->dialog && !dialog_end(b)) return 0;
     if (b->child) {
         ExecBreakProgram(b->child);

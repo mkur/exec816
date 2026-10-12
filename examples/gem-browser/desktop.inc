@@ -1,5 +1,5 @@
 /* Persistent desktop. One event loop and one bounded array of folder models. */
-static WORD desktop_copy_step(struct Desktop *);
+static WORD desktop_job_step(struct Desktop *);
 #include "settings.inc"
 
 enum { DESK_TITLE=21,DESK_BOX=22,DESK_NEW=23,DESK_PANEL=24,DESK_CALC=25,
@@ -205,7 +205,7 @@ WORD DesktopRun(void)
 {
     struct Desktop *d=&GEMDesk;
     struct Browser *b;
-    WORD i,cw,ch,bw,bh,events,hit,busy,result=1;
+    WORD i,cw,ch,bw,bh,events,hit,busy,running,result=1;
     d->window=-1;d->armed=d->selected=-1;
     d->id=appl_init();if (d->id<0) return 1;
     if (!rsrc_load("SYS:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&d->source) ||
@@ -235,8 +235,9 @@ WORD DesktopRun(void)
     while (!d->quit) {
         busy=desktop_children(d);
         if (!desktop_status(d)) { result=2;break; }
-        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || d->copy) ? MU_TIMER:0),2,1,d->down ? 0:1,
-            0,0,0,0,0,0,0,0,0,0,d->message,d->copy ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
+        running=d->job && d->job->state!=JOB_REPLACE;
+        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || running) ? MU_TIMER:0),2,1,d->down ? 0:1,
+            0,0,0,0,0,0,0,0,0,0,d->message,running ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
         if (!events) {
             if (ExecAESDiagnostic()!=AES_INPUT_LOST) { result=2;break; }
             d->armed=-1;d->down=1;continue;
@@ -293,7 +294,7 @@ WORD DesktopRun(void)
                 if (!desktop_dispatch(d,b,MU_MESAG)) { result=2;break; }
             }
         }
-        if (d->copy && !d->quit && !desktop_copy_step(d)) { result=2;break; }
+        if (d->job && !d->quit && !desktop_job_step(d)) { result=2;break; }
     }
 finish:
     d->ready=0;
@@ -311,119 +312,202 @@ finish:
     return result;
 }
 
-/* One regular-file copy, advanced between event decisions. The temporary file
- * preserves an existing destination until the user-confirmed final replacement. */
-static void copy_error(struct DesktopCopy *job)
+/* One application-owned batch; DOS retains all device/transport policy. */
+static void job_error(struct DesktopFileJob *job)
 {
     if (!job->error) { job->error=IoErr();if (!job->error) job->error=ERROR_BAD_STREAM_NAME; }
 }
-static WORD desktop_copy_finish(struct Desktop *d,WORD cancel)
+static void job_close(struct DesktopFileJob *job)
 {
-    struct DesktopCopy *job=d->copy;
-    struct Browser *b;
-    WORD okay,keep=0;
-    LONG error;
-    if (!job) return 1;
-    b=job->owner;
-    if (job->output && !Close(job->output)) copy_error(job);
-    if (job->input && !Close(job->input)) copy_error(job);
+    if (job->output && !Close(job->output)) job_error(job);
+    if (job->input && !Close(job->input)) job_error(job);
     job->input=job->output=0;
-    if (!cancel && !job->error) {
-        if (job->replacing && !DeleteFile(job->target)) copy_error(job);
-        if (!job->error && !Rename(job->temporary,job->target)) copy_error(job);
-        /* A completed copy survives a failed final rename for manual recovery. */
-        keep=job->error!=0;
+}
+static void job_summary(struct DesktopFileJob *job,WORD cancel)
+{
+    struct Browser *b=job->owner;
+    char *p=b->status;
+    const char *name=job->source,*scan;
+    strcpy(p,job->operation==FILE_COPY ? "Copy ":"Delete ");p+=strlen(p);
+    strcpy(p,job->error ? "failed":cancel ? "cancelled":"complete");p+=strlen(p);
+    if (job->error) {
+        strcpy(p," (");p=decimal(p+2,(ULONG)job->error);strcpy(p,"): ");p+=3;
+        for (scan=name;*scan;++scan) if (*scan==':' || *scan=='/' || *scan=='\\') name=scan+1;
+        label(p,name,24);p+=strlen(p);
     }
-    if ((cancel || job->error) && !keep && !DeleteFile(job->temporary)) copy_error(job);
-    error=job->error;d->error=error;d->copy=NULL;
-    FreeMem(job,sizeof(*job));
+    strcpy(p,"; ");p=decimal(p+2,job->completed);strcpy(p," done, ");p=decimal(p+7,job->skipped);
+    strcpy(p," skipped, ");p=decimal(p+10,job->total-job->completed-job->skipped);strcpy(p," left");p+=5;
+    if (job->keepComplete) strcpy(p,"; complete temp kept");
+    else if (job->cleanupError) { strcpy(p,"; cleanup error ");decimal(p+16,(ULONG)job->cleanupError); }
+}
+static WORD desktop_job_finish(struct Desktop *d,WORD cancel)
+{
+    struct DesktopFileJob *job=d->job;
+    struct Browser *b;
+    WORD okay;
+    if (!job) return 1;
+    b=job->owner;job_close(job);
+    if (job->temporaryOwned && !job->keepComplete) {
+        if (!DeleteFile(job->temporary)) {
+            job->cleanupError=IoErr();if (!job->cleanupError) job->cleanupError=ERROR_BAD_STREAM_NAME;
+            if (!job->error) job->error=job->cleanupError;
+        } else job->temporaryOwned=0;
+    }
+    d->error=job->error;d->job=NULL;
     okay=dialog_end(b);
-    if (!error && !cancel && okay) okay=refresh(b);
-    if (keep) strcpy(b->status,"Complete copy kept as EXECCOPY.TMP; replace failed");
-    else if (error) {
-        char *p;
-        strcpy(b->status,"Copy failed, DOS error ");p=b->status+22;decimal(p,(ULONG)error);
-    } else strcpy(b->status,cancel ? "Copy cancelled":"Copy complete");
-    return okay && redraw(b,b->work) && (!d->active || menu_state(d->active));
+    if (okay && b->ready) okay=refresh(b);
+    job_summary(job,cancel);
+    if (job->buffer) FreeMem(job->buffer,COPY_BUFFER_BYTES);
+    FreeMem(job,sizeof(*job));
+    return okay && (!b->ready || redraw(b,b->work)) && (!d->active || menu_state(d->active));
+}
+static WORD job_progress(struct DesktopFileJob *job)
+{
+    struct Browser *b=job->owner;
+    WORD area[4];
+    char *p=decimal(b->status,job->completed+job->skipped+1);
+    strcpy(p,"/");p=decimal(p+1,job->total);strcpy(p,"; ");
+    p=decimal(p+2,job->copied);strcpy(p," bytes copied");
+    area[0]=b->work[0]+8;area[1]=b->work[1]+b->work[3]-10;
+    area[2]=b->work[2]-16;area[3]=8;
+    return redraw(b,area);
+}
+static WORD job_dialog(struct DesktopFileJob *job,WORD replace)
+{
+    struct Browser *b=job->owner;
+    b->dialog=replace ? DIALOG_REPLACE:DIALOG_COPYING;b->focus=4;b->armed=-1;
+    b->dialogTree[1].ob_spec=(ULONG)(replace ? "Replace this file?":"Copying (Escape cancels)");
+    b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;
+    b->dialogTree[2].ob_spec=(ULONG)job->target;
+    b->dialogTree[3].ob_flags=replace ? SELECTABLE|EXIT:HIDETREE;
+    b->dialogTree[3].ob_spec=(ULONG)"Replace";b->dialogTree[3].ob_state=0;
+    b->dialogTree[4].ob_flags=SELECTABLE|EXIT|DEFAULT;b->dialogTree[4].ob_state=SELECTED;
+    b->dialogTree[4].ob_x=144;b->dialogTree[4].ob_width=64;
+    b->dialogTree[6].ob_flags=LASTOB|(replace ? SELECTABLE|EXIT:HIDETREE);
+    b->dialogTree[6].ob_state=0;
+    return sliders(b) && redraw(b,b->work);
+}
+static WORD job_open_copy(struct Desktop *d)
+{
+    struct DesktopFileJob *job=d->job;
+    BPTR lock=Lock(job->temporary,SHARED_LOCK);
+    if (lock) { UnLock(lock);job->error=ERROR_OBJECT_EXISTS; }
+    else if (IoErr()!=ERROR_OBJECT_NOT_FOUND) job_error(job);
+    if (!job->error) {
+        job->input=Open(job->source,MODE_OLDFILE);
+        if (!job->input) job_error(job);
+        else {
+            job->output=Open(job->temporary,MODE_NEWFILE);
+            if (!job->output) job_error(job);
+            else job->temporaryOwned=1;
+        }
+    }
+    if (job->error) return desktop_job_finish(d,0);
+    job->state=JOB_TRANSFER;
+    return job_dialog(job,0) && job_progress(job);
+}
+static WORD desktop_job_choice(struct Desktop *d,WORD replace)
+{
+    struct DesktopFileJob *job=d->job;
+    if (!replace) {
+        job->pending[(UWORD)job->index>>3]&=~(1U<<(job->index&7));
+        ++job->skipped;job->state=JOB_NEXT;
+        return job_dialog(job,0);
+    }
+    return job_open_copy(d);
+}
+static WORD job_next(struct Desktop *d)
+{
+    struct DesktopFileJob *job=d->job;
+    struct Browser *b=job->owner;
+    BPTR lock;
+    do { ++job->index; } while (job->index<b->count && !(job->pending[(UWORD)job->index>>3]&(1U<<(job->index&7))));
+    if (job->index==b->count) return desktop_job_finish(d,0);
+    if (!FileJoin(job->source,sizeof(job->source),b->path,b->entries[job->index].name) ||
+        (job->total>1 && !FileJoin(job->target,sizeof(job->target),job->destination,b->entries[job->index].name))) {
+        job->error=ERROR_INVALID_COMPONENT_NAME;return desktop_job_finish(d,0);
+    }
+    strcpy(job->temporary,job->target);FileParent(job->temporary);
+    if (!FileJoin(job->temporary,sizeof(job->temporary),job->temporary,"EXECCOPY.TMP")) {
+        job->error=ERROR_INVALID_COMPONENT_NAME;return desktop_job_finish(d,0);
+    }
+    if (!strcmp(job->target,job->temporary)) { job->error=ERROR_OBJECT_EXISTS;return desktop_job_finish(d,0); }
+    job->replacing=0;
+    lock=Lock(job->target,SHARED_LOCK);
+    if (lock) {
+        if (!Examine(lock,&b->info)) job_error(job);
+        else if (b->info.fib_DirEntryType>0) job->error=ERROR_OBJECT_WRONG_TYPE;
+        else job->replacing=1;
+        UnLock(lock);
+    } else if (IoErr()!=ERROR_OBJECT_NOT_FOUND) job_error(job);
+    if (job->error) return desktop_job_finish(d,0);
+    if (job->replacing) { job->state=JOB_REPLACE;return job_dialog(job,1); }
+    return job_open_copy(d);
 }
 static WORD desktop_copy_start(struct Browser *b,WORD replace)
 {
     struct Desktop *d=b->desktop;
-    struct DesktopCopy *job;
+    struct DesktopFileJob *job;
     BPTR lock;
-    LONG error=0;
-    if (!d || b->selected<0 || b->entries[b->selected].kind>0) return 1;
-    if (d->copy) { strcpy(b->status,"Another copy is running");return redraw(b,b->work); }
-    if (!b->editText[0]) { strcpy(b->status,"Enter a full destination path");return redraw(b,b->work); }
-    job=AllocMem(sizeof(*job),MEMF_PUBLIC|MEMF_CLEAR);
-    if (!job) { strcpy(b->status,"No memory for copy");return redraw(b,b->work); }
-    job->owner=b;
-    full_name(b,b->entries[b->selected].name,job->source);strcpy(job->target,b->editText);
-    strcpy(job->temporary,job->target);FileParent(job->temporary);
-    /* FileJoin allows its output to be the directory input. */
-    FileJoin(job->temporary,sizeof(job->temporary),job->temporary,"EXECCOPY.TMP");
-    lock=Lock(job->temporary,SHARED_LOCK);
-    if (lock) { UnLock(lock);error=ERROR_OBJECT_EXISTS; }
-    else if (IoErr()!=ERROR_OBJECT_NOT_FOUND) error=IoErr();
-    if (!error) {
-        lock=Lock(job->target,SHARED_LOCK);
+    if (replace) return desktop_job_choice(d,1);
+    if (!d || b->selectionCount<1 || b->selectionDirectories || d->job) return 1;
+    d->error=0;
+    if (!b->editText[0]) { strcpy(b->status,"Enter a destination");return redraw(b,b->work); }
+    if (b->selectionCount>1) {
+        lock=Lock(b->editText,SHARED_LOCK);
         if (lock) {
-            if (!Examine(lock,&b->info)) error=IoErr();
-            else if (b->info.fib_DirEntryType>0) error=ERROR_OBJECT_WRONG_TYPE;
-            else job->replacing=1;
+            if (!Examine(lock,&b->info)) d->error=IoErr();
+            else if (b->info.fib_DirEntryType<=0) d->error=ERROR_OBJECT_WRONG_TYPE;
             UnLock(lock);
-        } else if (IoErr()!=ERROR_OBJECT_NOT_FOUND) error=IoErr();
+        } else d->error=IoErr();
+        if (d->error) { strcpy(b->status,"Destination must be a directory");return redraw(b,b->work); }
     }
-    if (!error && job->replacing && !replace) {
-        FreeMem(job,sizeof(*job));
-        if (!objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) return 0;
-        b->dialog=0;
-        return dialog_open(b,DIALOG_REPLACE);
+    job=AllocMem(sizeof(*job),MEMF_PUBLIC|MEMF_CLEAR);
+    if (job) job->buffer=AllocMem(COPY_BUFFER_BYTES,MEMF_PUBLIC);
+    if (!job || !job->buffer) {
+        if (job) FreeMem(job,sizeof(*job));
+        strcpy(b->status,"No memory for copy");return redraw(b,b->work);
     }
-    if (!error) {
-        job->input=Open(job->source,MODE_OLDFILE);
-        if (!job->input) error=IoErr();
-        else { job->output=Open(job->temporary,MODE_NEWFILE);if (!job->output) error=IoErr(); }
+    job->owner=b;job->operation=FILE_COPY;job->state=JOB_NEXT;job->index=-1;
+    job->total=b->selectionCount;memcpy(job->pending,b->selection,sizeof(job->pending));
+    if (job->total>1) strcpy(job->destination,b->editText);
+    else strcpy(job->target,b->editText);
+    if (!objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) {
+        FreeMem(job->buffer,COPY_BUFFER_BYTES);FreeMem(job,sizeof(*job));return 0;
     }
-    if (error) {
-        if (job->input) Close(job->input);
-        d->error=error;FreeMem(job,sizeof(*job));
-        strcpy(b->status,error==ERROR_OBJECT_EXISTS ? "EXECCOPY.TMP already exists":
-            error==ERROR_OBJECT_WRONG_TYPE ? "Destination must be a file":"Cannot start copy");
-        return redraw(b,b->work) && (b->focus!=2 || objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT));
-    }
-    if (b->focus==2) objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END);
-    d->copy=job;b->dialog=DIALOG_COPYING;b->focus=4;
-    b->dialogTree[1].ob_spec=(ULONG)"Copying (Escape cancels)";
-    b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;b->dialogTree[2].ob_spec=(ULONG)b->editText;
-    b->dialogTree[3].ob_flags=HIDETREE;b->dialogTree[4].ob_state=SELECTED;
-    strcpy(b->status,"0 bytes copied");return redraw(b,b->work);
+    d->job=job;b->dialog=DIALOG_COPYING;b->focus=4;
+    return job_next(d);
 }
-static WORD desktop_copy_step(struct Desktop *d)
+static WORD desktop_job_step(struct Desktop *d)
 {
-    struct DesktopCopy *job=d->copy;
+    struct DesktopFileJob *job=d->job;
     LONG count,written;
-    WORD area[4];
-    char *p;
-    if (!job) return 1;
-    count=Read(job->input,job->buffer,sizeof(job->buffer));
-    if (count<0) { copy_error(job);return desktop_copy_finish(d,0); }
-    if (!count) return desktop_copy_finish(d,0);
-    written=Write(job->output,job->buffer,count);
-    if (written!=count) { copy_error(job);return desktop_copy_finish(d,0); }
-    job->copied+=(ULONG)count;
-    /* Keep byte traffic separate from GUI work: update progress every 4 KiB. */
-    if ((job->copied&4095)!=0) return 1;
-    p=decimal(job->owner->status,job->copied);strcpy(p," bytes copied");
-    area[0]=job->owner->work[0]+8;area[1]=job->owner->work[1]+job->owner->work[3]-10;
-    area[2]=job->owner->work[2]-16;area[3]=8;
-    return redraw(job->owner,area);
+    if (!job || job->state==JOB_REPLACE) return 1;
+    if (job->state==JOB_NEXT) return job_next(d);
+    count=Read(job->input,job->buffer,COPY_BUFFER_BYTES);
+    if (count<0) { job_error(job);return desktop_job_finish(d,0); }
+    if (count) {
+        written=Write(job->output,job->buffer,count);
+        if (written!=count) { job_error(job);return desktop_job_finish(d,0); }
+        job->copied+=(ULONG)count;
+        return job_progress(job);
+    }
+    job_close(job);
+    if (job->error) return desktop_job_finish(d,0);
+    if (job->replacing && !DeleteFile(job->target)) job_error(job);
+    if (!job->error && !Rename(job->temporary,job->target)) job_error(job);
+    if (job->error) { job->keepComplete=1;return desktop_job_finish(d,0); }
+    job->temporaryOwned=0;
+    job->pending[(UWORD)job->index>>3]&=~(1U<<(job->index&7));
+    ++job->completed;job->state=JOB_NEXT;
+    return 1;
 }
 static WORD desktop_delete(struct Browser *b)
 {
     LONG error;
     if (!dialog_end(b)) return 0;
-    if (b->selected<0) return 1;
+    if (b->desktop->job || b->selectionCount!=1) return 1;
+    b->selected=single_entry(b);
     full_name(b,b->entries[b->selected].name,b->target);
     if (DeleteFile(b->target)) return refresh(b);
     error=IoErr();b->desktop->error=error;
