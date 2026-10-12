@@ -66,7 +66,8 @@ PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
     service.work.ancestors(index)=lock.state.ancestors(index)
   OD
 
-  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_OBJECT THEN
+  IF service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_OBJECT OR
+      service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_EXACT THEN
     FSCORE.CopyEntry(@service.work.entry,@lock.state.entry)
     service.enumIndex=0
     RETURN(MeasureEntry(service))

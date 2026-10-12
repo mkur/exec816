@@ -29,6 +29,9 @@
 #define VOLUME_RAM (3L)
 #define VOLUME_SIO (0L)
 #define VOLUME_IDEPLUS (1L)
+#define FIB_SIZE_EXACT (1L)
+#define FIB_SIZE_BOUND (2L)
+#define FIB_BLOCKS_EXACT (4L)
 #define ERROR_NO_FREE_STORE (103L)
 #define ERROR_BAD_TEMPLATE (114L)
 #define ERROR_BAD_NUMBER (115L)
@@ -81,7 +84,8 @@ struct FileInfoBlock {
     UBYTE fib_Comment[80];
     UWORD fib_OwnerUID;
     UWORD fib_OwnerGID;
-    UBYTE fib_Reserved[32];
+    UBYTE fib_Reserved[30];
+    UWORD fib_InfoFlags;
 };
 struct VolumeInfo {
     UBYTE name[32];

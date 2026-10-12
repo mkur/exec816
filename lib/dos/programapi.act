@@ -154,6 +154,10 @@ PUBLIC LONGINT FUNC Examine(BYTE POINTER lock,info)
 
 RETURN(DOSCALLS.Information(lock,info,23))
 
+PUBLIC LONGINT FUNC ExamineExact(BYTE POINTER lock,info)
+
+RETURN(DOSCALLS.Information(lock,info,25))
+
 PUBLIC LONGINT FUNC ExNext(BYTE POINTER lock,info)
 
 RETURN(DOSCALLS.Information(lock,info,24))

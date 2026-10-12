@@ -12,6 +12,7 @@ LONG EXEC_CALL Read(BPTR file,void *buffer,LONG length);
 BPTR EXEC_CALL Lock(CONST_STRPTR name,LONG mode);
 void EXEC_CALL UnLock(BPTR lock);
 LONG EXEC_CALL Examine(BPTR lock,struct FileInfoBlock *info);
+LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL IoErr(void);
 BPTR EXEC_CALL CreateDir(CONST_STRPTR name);

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.program",
-  "version": 15,
+  "version": 16,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
@@ -469,6 +469,19 @@
       ]
     },
     "Info": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "lock"
+        ],
+        [
+          "BYTE POINTER",
+          "info"
+        ]
+      ]
+    },
+    "ExamineExact": {
       "result": "LONGINT",
       "arguments": [
         [

@@ -94,6 +94,7 @@ const UWORD ExecCLayout[] = {
     offsetof(struct FileInfoBlock, fib_OwnerUID),
     offsetof(struct FileInfoBlock, fib_OwnerGID),
     offsetof(struct FileInfoBlock, fib_Reserved),
+    offsetof(struct FileInfoBlock, fib_InfoFlags),
     sizeof(struct VolumeInfo),
     offsetof(struct VolumeInfo, name),
     offsetof(struct VolumeInfo, label),

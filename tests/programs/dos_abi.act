@@ -3,9 +3,10 @@ USE EXEC
 USE EXECLISTS
 USE DOS
 USE DOSWIRE
+USE FSINFO
 USE HEAPCORE
 INCLUDE "dos-packets.inc"
-LONGCARD ARRAY seen(43),returns(27)
+LONGCARD ARRAY seen(45),returns(28)
 CARD checks
 
 ; Stop at the first failed fixture invariant and retain its check index for
@@ -113,6 +114,13 @@ LONGINT FUNC Examine(DOS.FileLock POINTER lock DOS.FileInfoBlock POINTER info)
 
   seen(12)=LONGCARD(ADDRESS(lock))
   seen(13)=LONGCARD(ADDRESS(info))
+
+RETURN(-1)
+
+LONGINT FUNC ExamineExact(DOS.FileLock POINTER lock DOS.FileInfoBlock POINTER info)
+
+  seen(43)=LONGCARD(ADDRESS(lock))
+  seen(44)=LONGCARD(ADDRESS(info))
 
 RETURN(-1)
 
@@ -257,7 +265,10 @@ INCLUDE "dos-abi-fields.inc"
 PROC Main()
 
   returns(22)=LONGCARD(SetIoErr(123456))
+  Require(SIZEOF(FSINFO.Enumeration)<=30)
   Fields()
+  returns(27)=LONGCARD(ExamineExact(DOS.FileLock POINTER($090000),
+      DOS.FileInfoBlock POINTER($06fff0)))
   Calls0()
   Calls1()
   seen(16)=seen(3)

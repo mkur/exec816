@@ -27,6 +27,7 @@ CALLS={
  'SetIoErr':'result=DOS.SetIoErr(123456)',
  'Lock':'lock=DOS.Lock(name,LONGINT(-2))','UnLock':'DOS.UnLock(lock)',
  'Examine':'result=DOS.Examine(lock,info)','ExNext':'result=DOS.ExNext(lock,info)',
+ 'ExamineExact':'result=DOS.ExamineExact(lock,info)',
  'ReleaseContext':'result=DOS.ReleaseContext()',
  'Input':'file=DOS.Input()','Output':'file=DOS.Output()',
  'SelectInput':'file=DOS.SelectInput(file)','SelectOutput':'file=DOS.SelectOutput(file)',
@@ -54,9 +55,9 @@ def run(t,out,optimize):
         def values(name,width):
             raw=bytes(data(b,p['image'],name));return [int.from_bytes(raw[i:i+width],'little') for i in range(0,len(raw),width)]
         actual=values('facts',2);require(actual==facts,'DOS field layout/array stride: '+str(actual))
-        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456,0xcfff0,0xdfff0,3,0xaff00,8,0xdfff0,0x90000,0xdfff0]
+        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456,0xcfff0,0xdfff0,3,0xaff00,8,0xdfff0,0x90000,0xdfff0,0x90000,0x6fff0]
         require(observed==expected,'DOS arguments: '+str(observed))
-        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90,0xffffffff,0xffffffff,0xffffffff,0xffffffff],'DOS signed/pointer results: '+str(returns))
+        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff],'DOS signed/pointer results: '+str(returns))
         for address,expected in buffers():require(far_read(b,address,len(expected),out)==expected,'DOS adjacent guard or record mismatch: '+hex(address))
         return dict(status='pass',optimize=optimize,build=p['build'],runtime=runtime,machine=machine,facts=actual,seen=observed,returns=returns,routines=routines,checks=values('checks',2),guarded_record_bytes=sum(s+32 for _,_,s,_ in FIXTURES),fixture_sha256=sha256(out/'dos-abi-fields.inc'))
 
@@ -90,7 +91,7 @@ def record(report,path):
 
 def main():
     a=argparse.ArgumentParser();a.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');a.add_argument('--case',choices=('raw','opt'));a.add_argument('--record',type=Path);a.add_argument('--output',type=Path,default=ROOT/'build/dos-abi');args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    t=compiler(args.compiler_dir)
+    t=compiler(args.compiler_dir,release=True)
     inputs=('abi/dos.json','lib/dos/dos.act','lib/dos/dos-types.inc','lib/dos/dos-packets.inc','lib/dos/doswire.act','tools/generate_dos.py','tools/generate_tasks.py','tools/native_program.py','tools/dos_abi_fixture.py','tools/test_dos_abi.py','tests/programs/dos_abi.act')
     result=dict(schema_version=2,status='running',scope='Selected emitted native DOS calls and record layout, including ASSIGN; production semantics use focused DOS fixtures',platform=PIN,inputs={p:sha256(ROOT/p) for p in inputs},cases=[],bank_zero=current(),completion_limits=dict(host_seconds=180,frames=6000))
     try:

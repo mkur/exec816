@@ -6,7 +6,7 @@ INFO=[('fib_DiskKey','LONGINT',0,0x87654321),('fib_DirEntryType','LONGINT',4,0xf
       ('fib_FileName','ARRAY',8,bytes(range(108))),('fib_Protection','LONGINT',116,5),
       ('fib_EntryType','LONGINT',120,2),('fib_Size','LONGINT',124,70001),('fib_NumBlocks','LONGINT',128,65535)]+[
       ('fib_Date.'+f,k,132+o,v) for f,k,o,v in DATE]+[
-      ('fib_Comment','ARRAY',144,bytes(range(80))),('fib_OwnerUID','CARD',224,65535),('fib_OwnerGID','CARD',226,32768),('fib_Reserved','ARRAY',228,bytes(range(32)))]
+      ('fib_Comment','ARRAY',144,bytes(range(80))),('fib_OwnerUID','CARD',224,65535),('fib_OwnerGID','CARD',226,32768),('fib_Reserved','ARRAY',228,bytes(range(30))),('fib_InfoFlags','CARD',258,5)]
 PACKET=[('dp_Link','EXEC.Message POINTER',0,0x070000),('dp_Port','EXEC.MsgPort POINTER',3,0x090000),
         ('dp_Type','LONGINT',6,1008),('dp_Res1','LONGINT',10,0xffffffff),('dp_Res2','LONGINT',14,70002)]+[
         (f'dp_Arg{i}','LONGINT',14+i*4,v) for i,v in enumerate([0,0xffffff,0x1000000,0xffff0000,0x80000000,0x7fffffff,0x12345678],1)]

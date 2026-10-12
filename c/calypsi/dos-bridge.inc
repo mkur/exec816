@@ -39,6 +39,11 @@ LONGINT FUNC CExamine(LONGCARD lock,info,unused)
 RETURN(DOS.Examine(DOS.FileLock POINTER(ADDRESS(lock)),
     DOS.FileInfoBlock POINTER(ADDRESS(info))))
 
+LONGINT FUNC CExamineExact(LONGCARD lock,info,unused)
+
+RETURN(DOS.ExamineExact(DOS.FileLock POINTER(ADDRESS(lock)),
+    DOS.FileInfoBlock POINTER(ADDRESS(info))))
+
 LONGINT FUNC CExNext(LONGCARD lock,info,unused)
 
 RETURN(DOS.ExNext(DOS.FileLock POINTER(ADDRESS(lock)),
@@ -144,5 +149,6 @@ PROC BindDos(BYTE unused)
   entries(17)=ADDRESS(@CProgramMask)
   entries(18)=ADDRESS(@CCreateDir)
   entries(19)=ADDRESS(@CRename)
+  entries(20)=ADDRESS(@CExamineExact)
 
 RETURN

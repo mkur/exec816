@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 8,
+  "revision": 9,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -35,7 +35,10 @@
     "VOLUME_SDFS": 2,
     "VOLUME_RAM": 3,
     "VOLUME_SIO": 0,
-    "VOLUME_IDEPLUS": 1
+    "VOLUME_IDEPLUS": 1,
+    "FIB_SIZE_EXACT": 1,
+    "FIB_SIZE_BOUND": 2,
+    "FIB_BLOCKS_EXACT": 4
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -90,7 +93,8 @@
     "ACTION_CREATE_DIR": 22,
     "ACTION_DELETE_OBJECT": 16,
     "ACTION_RENAME_OBJECT": 17,
-    "ACTION_INFO": 26
+    "ACTION_INFO": 26,
+    "ACTION_EXAMINE_EXACT": 25
   },
   "records": {
     "DateStamp": {
@@ -175,8 +179,13 @@
         ],
         [
           "fib_Reserved",
-          "BYTE[32]",
+          "BYTE[30]",
           228
+        ],
+        [
+          "fib_InfoFlags",
+          "CARD",
+          258
         ]
       ]
     },
@@ -836,6 +845,22 @@
       "result_bytes": 4
     },
     "Info": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "ExamineExact": {
       "arguments": [
         {
           "alignment": 1,

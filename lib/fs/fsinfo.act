@@ -88,6 +88,7 @@ PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry)
   info.fib_Date.ds_Tick=entry.ticks
   info.fib_DirEntryType=info.fib_EntryType
   info.fib_NumBlocks=entry.count
+  info.fib_InfoFlags=FIB_SIZE_EXACT OR FIB_BLOCKS_EXACT
   IF (entry.flags & $20)<>0 THEN
     info.fib_Protection=FIBF_WRITE OR FIBF_DELETE
   FI
