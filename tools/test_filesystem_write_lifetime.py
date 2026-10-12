@@ -55,10 +55,13 @@ def instrument(output):
         (output/name).write_text(read_source(ROOT/'tests/programs'/name))
     edits = {
         'fswriteio.act': [
-            ('  IF BLOCKIO.BeginStore(', '  FSWRITEPROBE.Observe(sector)\n  FSWRITEPROBE.Before(service)\n'
-             '  IF Checkpoint(service)=0 THEN RETURN(0) FI\n  IF BLOCKIO.BeginStore('),
-            ('  error=BLOCKIO.FinishStore(', '  error=FSWRITEPROBE.Completion(service,error)\n'
-             '  error=BLOCKIO.FinishStore(')],
+            ('  ; Retire completed metadata before this sector',
+             '  FSWRITEPROBE.Observe(sector)\n  FSWRITEPROBE.Before(service)\n'
+             '  IF Checkpoint(service)=0 THEN RETURN(0) FI\n'
+             '  ; Retire completed metadata before this sector'),
+            ('  IF count=1 THEN\n    error=BLOCKIO.FinishStore(',
+             '  error=FSWRITEPROBE.Completion(service,error)\n'
+             '  IF count=1 THEN\n    error=BLOCKIO.FinishStore(')],
         'blockwire.act': [
             ('  EXEC.SendIO(EXEC.IORequest POINTER(request))',
              '  EXEC.SendIO(EXEC.IORequest POINTER(request))\n'
@@ -71,7 +74,7 @@ def instrument(output):
             require(source.count(old) == 1, 'Stale write hook: ' + name + ' ' + old)
             source = source.replace(old, new)
         if name == 'fswriteio.act':
-            marker = '\nRETURN(1)\n\nPUBLIC PROC Zero('
+            marker = '\nRETURN(1)\n\nPUBLIC BYTE FUNC Write('
             require(source.count(marker) == 1, 'Stale post-write hook')
             source = source.replace(marker, '\n  FSWRITEPROBE.After(service)\n' + marker)
         (output/name).write_text(source)
@@ -125,9 +128,13 @@ def run(output, mode, filesystem, size, names, ordinal, from_build=None, path=No
     mounts = [dict(alias='D1', unit=49, sectors=baseline.image.count,
                    sector_bytes=size, format=1 if filesystem == 'mydos' else 2,
                    access='readwrite',profile=profile)]
-    program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc'), output/'filesystem_write_lifetime.act', output,
+    memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    memory['image_data_bytes']=4352
+    profile_path=output/'memory-profile.json'
+    profile_path.write_text(json.dumps(memory)+'\n')
+    program = read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc',release=True), output/'filesystem_write_lifetime.act', output,
                     optimize=mode == 'opt', tasks=True, task_capacity=8, console=True,
-                    dos_mounts=mounts, image_data=[(0x30ffd0,bytes([0xa5])*(8192+64))])
+                    dos_mounts=mounts, memory_profile=profile_path, image_data=[(0x30ffd0,bytes([0xa5])*(8192+64))])
     if from_build:
         record = program['build']
         require(sha256(output/'filesystem_write_lifetime.act') == record['source_sha256'], 'Changed test source')

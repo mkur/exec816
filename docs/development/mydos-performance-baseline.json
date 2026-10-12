@@ -35,6 +35,22 @@
         "free": 513,
         "files": 2,
         "directories": 1
+      },
+      "physical_breakdown": {
+        "source-read": {
+          "directory": 2,
+          "map": 1,
+          "payload": 94
+        },
+        "target-read": {
+          "directory": 1,
+          "header": 1
+        },
+        "target-write": {
+          "header": 50,
+          "payload": 241,
+          "directory": 50
+        }
       }
     },
     {
@@ -70,6 +86,23 @@
         "free": 513,
         "files": 2,
         "directories": 1
+      },
+      "physical_breakdown": {
+        "source-read": {
+          "directory": 2,
+          "map": 1,
+          "payload": 94
+        },
+        "target-read": {
+          "directory": 1,
+          "header": 1,
+          "payload": 191
+        },
+        "target-write": {
+          "directory": 51,
+          "payload": 241,
+          "header": 428
+        }
       }
     },
     {
@@ -105,6 +138,17 @@
         "free": 513,
         "files": 2,
         "directories": 1
+      },
+      "physical_breakdown": {
+        "target-read": {
+          "directory": 1,
+          "header": 1
+        },
+        "target-write": {
+          "header": 50,
+          "payload": 241,
+          "directory": 50
+        }
       }
     },
     {
@@ -140,6 +184,18 @@
         "free": 513,
         "files": 2,
         "directories": 1
+      },
+      "physical_breakdown": {
+        "target-read": {
+          "directory": 1,
+          "header": 1,
+          "payload": 191
+        },
+        "target-write": {
+          "directory": 51,
+          "payload": 241,
+          "header": 428
+        }
       }
     }
   ],

@@ -40,3 +40,19 @@ Host checks: 447. The older lock-name runner now requests deferred console
 bindings and places its diagnostic kernel in bank 18 so its fixed D/E-bank
 fixtures do not overlap the enlarged current image. This changes test placement,
 not production reservations or the platform ABI.
+
+## MP2: single VTOC publication
+
+Change updates bit and free count together when the bitmap page is sector 360;
+it validates both transitions before submitting the write. Distinct pages retain
+bitmap-before-header ordering. No dirty state survives an operation.
+
+The matched 128-byte operation fixture passes: CreateDir 25→17 writes, removal
+17→9, Truncate 130→67 and single-file deletion 3→2. Full namespace, overwrite,
+append and reclamation passed on 256-byte MyDOS with cache disabled and allocation
+starting at sector 1970 (a later VTOC page). Persisted contents and allocation
+passed the independent audit. Optimized create/mkdir completion errors,
+delete/truncate BREAK and real on-wire Write BREAK passed at the first physical
+write of each operation. Fault hooks now observe the common Store boundary for
+single/range I/O; the runner reserves its current diagnostic image-data extent.
+Host checks: 447. Shared separate-header SDFS regression is retained for MP6.

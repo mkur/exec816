@@ -431,10 +431,6 @@ BYTE FUNC Change(FSTYPES.Service POINTER service CARD sector BYTE release)
         & (state.bitmapMask XOR 255)
   FI
 
-  IF FSWRITEIO.Write(service,state.bitmapSector,state.scratch)=0 THEN
-    RETURN(0)
-  FI
-
   header=1
   offset=13
   IF service.selected.spec.format=FSFORMATS.MYDOS THEN
@@ -442,8 +438,14 @@ BYTE FUNC Change(FSTYPES.Service POINTER service CARD sector BYTE release)
     offset=3
   FI
 
-  IF FSWRITEIO.Read(service,header,state.scratch)=0 THEN
-    RETURN(0)
+  ; The first MyDOS bitmap page also owns the free count. Keep both edits in
+  ; scratch and validate them before one publication. Other pages retain the
+  ; existing bitmap-before-header completion order.
+  IF state.bitmapSector<>header THEN
+    IF FSWRITEIO.Write(service,state.bitmapSector,state.scratch)=0 OR
+        FSWRITEIO.Read(service,header,state.scratch)=0 THEN
+      RETURN(0)
+    FI
   FI
 
   free=SDFS.Word(state.scratch,offset)
