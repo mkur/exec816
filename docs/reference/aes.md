@@ -651,8 +651,16 @@ for a 104×40 icon grid or a compact list. Icons have 32×20 bitmaps and labels 
 32-pixel-high objects. View chooses Icons/List and Name/Disk order; names group
 directories first. INFO shows byte/item totals and FULLER toggles full/remembered
 bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
-resize reflows; vertical arrows, page clicks and the thumb scroll. Refresh retains
-the selected filename. Larger directories report truncation.
+resize reflows; vertical arrows, page clicks and the thumb scroll. Plain clicks
+replace selection; Shift-click toggles membership and Shift-arrow adds the next
+entry. View > Select All/None, Ctrl+A and Escape act on the cached snapshot,
+including offscreen entries. Open/Return/Rename require exactly one member;
+modified double-clicks never open. The status strip shows the selected count.
+Refresh and Name/Disk order changes retain selected filenames; navigation clears
+them. Larger directories report truncation. Standalone Files shares these rules.
+The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the horizontal
+cursor keys; physical Shift-arrow checks use Up/Down. Shift-click can select
+entries in either direction.
 
 Desk opens another folder or launches Panel, Calculator, Text and Counter on
 demand. The desktop owns up to three program handles; actual Task/window limits
@@ -660,17 +668,47 @@ can prevent admission. Closing a folder leaves launched applications running.
 TXT defaults to `C:TEXT.APP` with a copied quoted path argument. Other entries
 launch directly, with NIL input and RAW shell output. Closing the desktop requests
 stop and collects children. While children exist, a 100 ms timer bounds completion
-collection; an idle desktop with no child/copy uses no periodic timer.
+collection; an idle desktop with no child/running file job uses no periodic timer.
+Overwrite prompts wait for real input rather than a zero-time timer.
 
 Path (P), New Folder (N) and Rename (R) use inline OBJECT/TEDINFO dialogs.
 Tab/Shift-Tab, Return, Escape and mouse OK/Cancel operate them. File also offers
-single-file Copy and confirmed Delete of a file or empty directory. Copy uses a
-512-byte buffer and yields to the event decision between chunks, outside UPDATE.
-Escape/Cancel removes the partial `EXECCOPY.TMP`, preserving an existing target.
-Replacement requires confirmation and commits after closing the completed copy.
-The final delete/rename is not atomic; a failed rename retains the complete
-EXECCOPY.TMP for recovery. An existing temporary filename blocks a copy. Recursive
-copy/delete, multiple selection, icon dragging and trash are unsupported.
+Copy of regular-file selections and confirmed Delete of files/empty directories.
+One file keeps the full destination-path dialog; multiple files ask for a
+destination directory and retain source names. One desktop job owns the source
+snapshot until completion; another folder may browse and edit dialogs but cannot
+start a second Copy/Delete. Selecting any directory disables Copy.
+
+Copy reuses one **16 KiB** buffer and returns to the event loop between synchronous
+Read/Write pairs and files, outside UPDATE. Existing destinations offer
+Replace/Skip/Cancel, with Cancel the default. Escape, Cancel, owner close or
+Desktop quit stops the batch at an I/O boundary. Completed copies remain;
+cleanup removes only a temporary file created by this job. An existing target
+survives until publication. Final delete/rename is not atomic; a failed publication
+retains the complete `EXECCOPY.TMP` for recovery. A preexisting temporary file
+blocks that item and is never removed by admission failure. Cancellation can
+wait for a long synchronous transfer; throughput takes priority.
+
+Delete asks once, defaults to Cancel and performs one `DeleteFile` per event
+turn. Only empty directories can be deleted; no descendant scan occurs.
+Successful deletions clear their selection bits. Both operations stop at the
+first DOS error and report completed/skipped/remaining counts and the failing
+name/error. Unprocessed items stay untouched. Long status messages are clipped
+to the window width. Cleanup errors retain the original error; the desktop
+status also reports errors if the owner's window is closed.
+
+Affected folder views refresh once when the job retires. A sibling's inline
+dialog defers refresh until it ends, retaining typed input. Paths match without
+case sensitivity and ignore a trailing slash; distinct volume aliases are not
+resolved for invalidation (use Refresh for an alias view). Copy retains source
+selection; Delete retains surviving names. Recursive operations, Replace All,
+retry/skip-error, rubber-band selection, icon dragging and trash are unsupported.
+
+State is application-owned upper RAM: 3,973 bytes per Browser, a 2,176-byte
+desktop, one 974-byte file job and a separate 16,384-byte copy buffer. Delete
+allocates no payload buffer. Selection remapping uses temporary packed names,
+at most 27,648 bytes, then frees them. This work adds no bank-zero reservation,
+Task, stack, direct page, kernel operation or public ABI.
 
 Desk > Save Settings writes `WORK:DESKTOP.CFG`; startup reads view/sort defaults,
 folder paths/geometry, mouse preference and up to two three-letter associations.

@@ -1,6 +1,7 @@
 # Desktop multiple selection and batch file operations
 
-Status: implementation in progress; see the [execution record](../../history/desktop-selection-batch.md).
+Status: MS1–MS4 implemented and passing development checks; see the
+[execution record](../../history/desktop-selection-batch.md).
 
 [Roadmap](../../roadmap.md#colour-gem-desktop-roadmap) ·
 [CG4 design](colour-launcher-design.md) ·
@@ -72,8 +73,10 @@ scan/sort, then free it. Reuse `savedName` for the lead. This cold operation is
 bounded by 256 names of at most 108 bytes including terminators: 27,648 bytes in
 the worst case, with no persistent name array. Do not allocate this scratch
 when nothing is selected. Allocation failure leaves the old view intact and
-reports no memory. A failed initial directory open also leaves it intact; a
-partial enumeration remaps only names actually returned and reports the error.
+reports no memory. A failed initial directory open also leaves it intact.
+Implementation clarification: a later enumeration error retains the shared
+`FileScanNext` policy of discarding the incomplete snapshot and reporting the
+error, rather than changing that helper's semantics for one consumer.
 Navigating to another directory clears selection and lead.
 
 ## Batch behavior and ownership

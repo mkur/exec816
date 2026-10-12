@@ -1,8 +1,9 @@
 # Implementation plans
 
 - [Desktop selection and batch file operations](gem4xe/desktop-selection-batch-plan.md):
-  proposed multiple selection in icon/list views, sequential Copy/Delete,
-  overwrite and cancellation behavior, retaining 16 KiB copy throughput.
+  MS1–MS4 implemented: multiple selection in icon/list views, sequential
+  Copy/Delete, overwrite and cancellation behavior, retaining 16 KiB copy
+  throughput. See the [development results](../history/desktop-selection-batch.md).
 
 - [GEM rendering performance](gem4xe/text-run-fast-path-plan.md):
   planned 80-character uploads, native odd-X and horizontally clipped text,

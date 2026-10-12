@@ -1042,7 +1042,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         owner.startswith('AAA/') for owner in audit.owners.values()),
                         'Files New Folder/Rename did not persist the expected directory')
                     saved['files_dialogs']['persisted_directory']='BBB'
-                elif shell_only and boot_smoke and measurement_commands is None:
+                elif shell_only and boot_smoke and measurement_commands is None and integration is None:
                     require(audit.directories==1 and not any(
                         name.startswith('SMOKEDIR/') for name in audit.files),
                         'Bitmap shell write smoke retained its temporary directory')

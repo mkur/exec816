@@ -41,19 +41,29 @@ arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 Double-click SYS:, WORK: or C: to open a folder. Desk > New Window opens another;
 up to three folders share one application Task. Closing the last folder leaves
 the desktop alive. View chooses Icons/List and Name/Disk order. Select then
-Return, or double-click, to open an entry. Arrows navigate; Up goes to the parent.
+Return, or double-click, to open one entry. Shift-click toggles multiple entries;
+Shift-arrow adds an entry. Ctrl-A/View > Select All includes cached offscreen
+entries; Escape/View > Select None clears. Open and Rename need one entry.
+Arrows navigate; Up goes to the parent.
 Drag the bottom-right size gadget; vertical arrows, track and thumb scroll.
 The top-right fuller toggles full/remembered size. Listings retain 256 entries
 and reuse up to sixteen visible objects; larger listings report truncation.
 
 Path (P), New Folder (N) and Rename (R) open inline text dialogs. Tab changes
 focus, Return accepts, Escape/Cancel dismisses. Names fold to uppercase.
-Use WORK: for writes; SYS: is read-only. File > Copy copies one regular file to
-a full destination path. Cancel/Escape removes its partial EXECCOPY.TMP.
-An existing destination needs confirmation and is preserved until copying ends.
+Use WORK: for writes; SYS: is read-only. File > Copy copies a regular-file
+selection: one file asks for a full destination path, several ask for a directory.
+Existing targets offer Replace/Skip/Cancel (Cancel is the default). Copy reuses
+one 16 KiB buffer. Cancel/Escape removes the current partial EXECCOPY.TMP;
+completed files stay copied. Cancellation waits for the current disk operation.
+An existing destination is preserved until copying ends.
 The final replacement is not atomic: if rename fails, recover EXECCOPY.TMP from
 the target directory. A pre-existing EXECCOPY.TMP blocks copying.
-File > Delete asks before deleting a file or empty directory.
+File > Delete confirms the selected count, then deletes files/empty directories
+in order. Both commands stop on the first error. Completed work stays done;
+pending deletions stay selected. One batch runs at a time. Closing its folder
+or quitting cancels it. Other folders can browse; an open text dialog keeps its
+typed input when a completed batch refreshes affected views.
 
 Desk launches Control Panel, Calculator, Text or Counter. Folder closure leaves
 these applications running. The panel offers Off/Mild mouse acceleration and
@@ -81,6 +91,6 @@ RUN C:DIALOG.APP demonstrates editable forms, alerts and the standard selector.
 RUN C:G4BENCH.APP runs the adapted drawing benchmark: Return starts, Escape
 stops/closes. Keep it uncovered. Results go to WORK:G4BENCH.TXT.
 
-This is a development preview. Multiple selection, dragging icons, recursive
+This is a development preview. Dragging icons, recursive
 file operations, trash, horizontal scrolling and richer colour icons are future
 work. The standard non-GUI distribution still boots the shell/prime demo.

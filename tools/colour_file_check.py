@@ -10,7 +10,14 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     def text(name):return s.b.memdump(base+F[name],128).split(b'\0')[0].decode('ascii')
     def menu(row):click(24,8);click(40,24+row*16)
     def dialog(kind):s.rendezvous('dw($%x)=%d'%(base+F['dialog'],kind))
-    def closed():dialog(0);s.frames(90)
+    def closed():
+        dialog(0)
+        # The dialog closes before deferred enumeration publishes the outcome.
+        # A large SIO directory can take longer than a fixed frame allowance.
+        for _ in range(300):
+            if not text('status').startswith(('1/','2/')):break
+            s.frames(40)
+        s.frames(90)
     def copy_to(target):
         print('Desktop copy to',target,flush=True)
         menu(7);dialog(4);fill(base,target);key('RETURN')

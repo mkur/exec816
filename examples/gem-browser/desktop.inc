@@ -334,8 +334,15 @@ static void job_error(struct DesktopFileJob *job)
 }
 static void job_close(struct DesktopFileJob *job)
 {
-    if (job->output && !Close(job->output)) job_error(job);
-    if (job->input && !Close(job->input)) job_error(job);
+    WORD i;
+    for (i=0;i<2;++i) {
+        BPTR handle=i ? job->input:job->output;
+        if (handle && !Close(handle)) {
+            LONG error=IoErr();if (!error) error=ERROR_BAD_STREAM_NAME;
+            if (!job->cleanupError) job->cleanupError=error;
+            if (!job->error) job->error=error;
+        }
+    }
     job->input=job->output=0;
 }
 static void job_summary(struct DesktopFileJob *job,WORD cancel)

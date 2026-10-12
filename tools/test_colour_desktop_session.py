@@ -56,8 +56,9 @@ class ColourDesktop:
             if self.selection:
                 (root/'ALPHA.TXT').write_bytes(b'alpha')
                 (root/'BETA.TXT').write_bytes(b'beta')
-                (root/'SELECT').mkdir()
-                for i in range(257):(root/'SELECT'/f'E{i:03d}.TXT').write_bytes(b'')
+                if self.selection not in ('feedback','standalone'):
+                    (root/'SELECT').mkdir()
+                    for i in range(257):(root/'SELECT'/f'E{i:03d}.TXT').write_bytes(b'')
             (root/'SOURCE.TXT').write_bytes(b'Copied by the GEM desktop.\n'*37)
             (root/'DELETE.TXT').write_bytes(b'Delete fixture\n')
             (root/'BIG.BIN').write_bytes(bytes(range(256))*512)
@@ -127,9 +128,19 @@ class ColourDesktop:
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
         if self.selection:
-            from colour_selection_check import exercise
-            exercise(s,desk,first,click,key,path,desk_menu,shot,move,boundary=self.selection=='boundary')
-            self.report=dict(selection=s.saved['selection'],stacks=stack_usage(b,s.p['build']['memory']))
+            if self.selection=='standalone':
+                from colour_selection_feedback import standalone
+                standalone(s,desk,click,key,path,move,menus,shot)
+                self.report=dict(standalone_selection=s.saved['standalone_selection'])
+            elif self.selection=='feedback':
+                from colour_selection_feedback import exercise
+                exercise(s,first,click,key,path,move)
+                self.report=dict(selection_feedback=s.saved['selection_feedback'])
+            else:
+                from colour_selection_check import exercise
+                exercise(s,desk,first,click,key,path,desk_menu,shot,move,boundary=self.selection=='boundary')
+                self.report=dict(selection=s.saved['selection'])
+            self.report['stacks']=stack_usage(b,s.p['build']['memory'])
             menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
@@ -205,7 +216,7 @@ if __name__=='__main__':
     p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
     p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
     p.add_argument('--batch-copy',action='store_true');p.add_argument('--batch-delete',action='store_true')
-    p.add_argument('--selection-boundary',action='store_true')
+    p.add_argument('--standalone-selection',action='store_true');p.add_argument('--selection-boundary',action='store_true');p.add_argument('--selection-feedback',action='store_true')
     p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
     args.files=args.files or args.files_only
     out=args.bundle.resolve()
@@ -213,7 +224,7 @@ if __name__=='__main__':
     media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
     from native_program import sha256
     overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
-    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy)
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='standalone' if args.standalone_selection else 'feedback' if args.selection_feedback else 'boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:

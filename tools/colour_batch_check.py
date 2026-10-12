@@ -18,9 +18,20 @@ def fixture(root):
 
 
 def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
+    from sio_transaction_trace import BASE_HZ
+    clock=lambda:s.b.eval_expr('@clk')&0xffffffff
+    retired=0
     def n(name):return s.number(base+F[name],2)
     def text(name):return s.b.memdump(base+F[name],128).split(b'\0')[0].decode('ascii')
     def job():return s.number(desk+D['job'],4)
+    def free_bytes():
+        # Public MemHeader/mh_Free and the existing native Exec list sentinel.
+        # IRQ checkpoints cannot interrupt the heap's guarded mutation.
+        heap=s.p['build']['memory']['heap_storage'];node=s.number(heap['BASE'],3)
+        total=0
+        while node!=heap['BASE']+3:
+            total+=s.number(node+24,4);node=s.number(node,3)
+        return total
     def menu(row):click(24,8);click(40,24+row*16)
     def chosen(names):
         key('ESC')
@@ -31,9 +42,13 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
         require(n('selectionCount')==len(names),'Wrong batch selection')
     def start(names,target):
         chosen(names);menu(7);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
-        fill(base,target);key('RETURN')
+        fill(base,target);started=clock();key('RETURN')
+        s.rendezvous('((dw($%x)|dw($%x))!=0)|(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2,base+F['dialog']))
+        return started
     def wait_result(prefix):
+        nonlocal retired
         s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2))
+        retired=clock()
         s.rendezvous('dw($%x)=0'%(base+F['dialog']));s.frames(300)
         require(text('status').startswith(prefix),'Wrong batch outcome: '+text('status'))
         return text('status')
@@ -48,15 +63,26 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
             s.rendezvous('((dw($%x)|dw($%x))=0)|(dw($%x)>%d)'%
                          (desk+D['job'],desk+D['job']+2,address+J['index'],previous))
     path(base,'WORK:SRC')
+    chosen(['AEMPTY.BIN','BSHORT.BIN']);menu(7);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
+    fill(base,'MISSING:');key('RETURN');s.frames(100)
+    require(n('dialog')==4 and not job() and s.number(desk+D['error'],4),'Unavailable destination admitted')
+    key('ESC')
     print('Batch Copy: exact bytes and tail',flush=True)
-    start(list(PAYLOADS)[:4],'WORK:DST')
+    started=start(list(PAYLOADS)[:4],'WORK:DST')
     result=wait_result('Copy complete');require('4 done' in result and '0 left' in result,'Incomplete batch: '+result)
+    batch_seconds=((retired-started)&0xffffffff)/BASE_HZ
+    s.saved['batch_throughput']=dict(files=4,bytes=sum(len(PAYLOADS[k]) for k in list(PAYLOADS)[:4]),seconds=batch_seconds,
+        scope='Return submission after destination text entry through job retirement; includes admission, empty/short files, per-file opens and publication. One completed batch, sampled at IRQ.')
+    print('Batch throughput',s.saved['batch_throughput'],flush=True)
     shot('desktop-batch-copy')
+    baseline=free_bytes()
     print('Batch Copy: Replace, Skip and default Cancel',flush=True)
     start(list(PAYLOADS)[:4],'WORK:COLLIDE');choose('replace');choose('skip');choose('cancel')
     result=wait_result('Copy cancelled');require('1 done, 1 skipped, 2 left' in result,'Wrong partial batch summary: '+result)
+    require(free_bytes()==baseline,'Partial batch retained heap allocation')
     start(list(PAYLOADS)[:2],'WORK:COLLIDE');choose('skip');choose('skip')
     result=wait_result('Copy complete');require('0 done, 2 skipped, 0 left' in result,'All-skipped batch')
+    require(free_bytes()==baseline,'All-skipped batch retained job/buffer')
     print('Batch Copy: cancellation after one file',flush=True)
     start(['AEMPTY.BIN','ELARGE.BIN'],'WORK:CANCEL')
     s.rendezvous('((dw($%x)|dw($%x))!=0)|(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2,base+F['dialog']))
@@ -86,7 +112,8 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
             'Quit Desktop retained owner or job')
     s.saved['batch_copy']=dict(binary_bytes=True,empty=True,tail=True,replace_skip_cancel=True,
         all_skipped=True,cancel_after_completed=True,temp_conflict=True,read_only=True,
-        owner_close_prompt=True,desktop_quit_prompt=True)
+        owner_close_prompt=True,desktop_quit_prompt=True,unavailable=True,heap_free_baseline=baseline,
+        heap_after_partial_and_all_skipped=baseline,throughput=s.saved['batch_throughput'])
 
 
 def readback(root):
