@@ -21,7 +21,9 @@ def run(t,out,mode,size,replay=False):
         require(p['build']['source_sha256']==sha256(ROOT/'tests/programs/sdfs_dos.act'),'Stale DOS source')
         require(all(sha256(ROOT/name)==digest for name,digest in p['build']['task_inputs'].items()),'Stale DOS implementation')
     else:
-        p=build(t,ROOT/'tests/programs/sdfs_dos.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console_deferred=True,dos_mounts=mounts,
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=4352
+        memory=out/'memory.json';memory.write_text(json.dumps(profile)+'\n')
+        p=build(t,ROOT/'tests/programs/sdfs_dos.act',out,optimize=mode=='opt',tasks=True,task_capacity=8,console_deferred=True,kernel_bank=18,memory_profile=memory,dos_mounts=mounts,
             image_data=[(0xd1000,names),(0xd2000,bytes(512)),(0xd3000,bytes(260)),(0xd3200,bytes(260)),(0xd5000,bytes(280))])
     hashes=[sha256(p) for p in media]
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -39,7 +41,7 @@ def run(t,out,mode,size,replay=False):
     return dict(status='pass',mode=mode,sector_bytes=size,build=p['build'],runtime=runtime,machine=machine,checks=checks,media=hashes,mounts=mounts,replay=replay,geometry_override=size if p['build']['dos_mounts'][0]['sector_bytes']!=size else None,scope='Real emulated SIO, GENERIC57600, mixed volumes; focused development evidence')
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--size',type=int,choices=(128,256),required=True);parser.add_argument('--replay',action='store_true');parser.add_argument('--output',type=Path,required=True);args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);result=dict(status='running')
-    try:result=run(compiler(ROOT/'build/actionc'),out,args.case,args.size,args.replay)
+    try:result=run(compiler(ROOT/'build/actionc',release=True),out,args.case,args.size,args.replay)
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:(out/f'results-{args.size}.json').write_text(json.dumps(result,indent=2)+'\n')
     print('SDFS DOS passed',args.case,args.size,flush=True)

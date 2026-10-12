@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--compiler-bin', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    toolchain = compiler(ROOT/'build/actionc')
+    toolchain = compiler(ROOT/'build/actionc',release=True)
     if args.compiler_bin:
         toolchain['binary'] = args.compiler_bin.resolve()
         toolchain['binary_sha256'] = sha256(toolchain['binary'])

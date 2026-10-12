@@ -76,14 +76,15 @@ PROC ReadFile(CARD path LONGINT size BYTE seed)
 RETURN
 
 ; Check SpartaDOS names through public DOS locks and canonical-name results.
-PROC Names()
+PROC Names(BYTE unused)
 
   root=DOS.Lock(Name(0),DOS.SHARED_LOCK)
   Require(root<>DOS.FileLock POINTER(0))
   sub=DOS.Lock(Name(32),DOS.SHARED_LOCK)
   Require(sub<>DOS.FileLock POINTER(0))
   Require(DOS.Examine(root,info)<>0 AND info.fib_EntryType=DOS.ST_ROOT
-      AND info.fib_Size=0 AND info.fib_NumBlocks>0)
+      AND info.fib_Size=0 AND info.fib_NumBlocks=-1
+      AND info.fib_InfoFlags=DOS.FIB_SIZE_EXACT)
   old=DOS.CurrentDir(sub)
   Require(old=DOS.FileLock POINTER(0) AND DOS.IoErr()=0)
   ReadFile(64,259,34)
@@ -104,7 +105,7 @@ PROC Names()
 RETURN
 
 ; Enumerate metadata through caller-owned information blocks.
-PROC Entries()
+PROC Entries(BYTE unused)
   CARD count
   FSINFO.Enumeration POINTER state
 
@@ -115,7 +116,7 @@ PROC Entries()
   state=FSINFO.EnumerationState(FSINFO.FileInfoBlock POINTER(info))
   state.next=254
   Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=255 AND info.fib_Size=3
-      AND info.fib_NumBlocks=2)
+      AND info.fib_NumBlocks=-1 AND info.fib_InfoFlags=DOS.FIB_SIZE_EXACT)
   Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=256 AND info.fib_Size=4)
   state.next=299
   Require(DOS.ExNext(other,info)<>0 AND info.fib_DiskKey=300 AND info.fib_Size=4)
@@ -131,33 +132,41 @@ RETURN
 
 ; Reuse one FIB across files and directories from both backends. Publication
 ; must consume the measured entry, including a length discovered by MyDOS.
-PROC Metadata()
+PROC Metadata(BYTE unused)
   DOS.FileLock POINTER item
 
   item=DOS.Lock(Name(192),DOS.SHARED_LOCK)
   Require(item<>NULL)
-  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=777
+  Require(DOS.Examine(item,info)<>0)
+  Require(info.fib_InfoFlags=DOS.FIB_SIZE_EXACT AND info.fib_Size=777
+      AND info.fib_NumBlocks=-1 OR info.fib_InfoFlags=DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT
+      AND info.fib_Size>=777)
+  Require(DOS.ExamineExact(item,info)<>0 AND info.fib_Size=777
       AND info.fib_NumBlocks>0 AND info.fib_EntryType=DOS.ST_FILE)
   DOS.UnLock(item)
   item=DOS.Lock(Name(224),DOS.SHARED_LOCK)
   Require(item<>NULL)
-  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=777
+  Require(DOS.Examine(item,info)<>0)
+  Require(info.fib_InfoFlags=DOS.FIB_SIZE_EXACT AND info.fib_Size=777
+      AND info.fib_NumBlocks=-1 OR info.fib_InfoFlags=DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT
+      AND info.fib_Size>=777)
+  Require(DOS.ExamineExact(item,info)<>0 AND info.fib_Size=777
       AND info.fib_NumBlocks=7 AND info.fib_EntryType=DOS.ST_FILE)
   DOS.UnLock(item)
   item=DOS.Lock(BYTE POINTER(c"D2:"),DOS.SHARED_LOCK)
   Require(item<>NULL)
-  Require(DOS.Examine(item,info)<>0 AND info.fib_Size=0
+  Require(DOS.ExamineExact(item,info)<>0 AND info.fib_Size=0
       AND info.fib_NumBlocks=8 AND info.fib_EntryType=DOS.ST_ROOT)
   DOS.UnLock(item)
 
 RETURN
 
-PROC Mixed()
+PROC Mixed(BYTE unused)
 
   ReadFile(192,777,83)
   ReadFile(224,777,83)
   ReadFile(256,70003,129)
-  Metadata()
+  Metadata(0)
   handle=DOS.Open(Name(192),DOS.MODE_NEWFILE)
   Require(handle=DOS.FileHandle POINTER(0) AND DOS.IoErr()<>0)
 
@@ -175,7 +184,7 @@ LONGINT FUNC Child()
 RETURN(42)
 
 ; Use a retained SpartaDOS file or directory from a child process context.
-PROC Inherit()
+PROC Inherit(BYTE unused)
   DOS.FileHandle POINTER ignored
   PROCESS.Result result
   LONGCARD identity
@@ -196,7 +205,7 @@ PROC Inherit()
 RETURN
 
 ; Require mount and file ownership to settle across repeated service use.
-PROC Lifetime()
+PROC Lifetime(BYTE unused)
   BYTE repeat
   FSTYPES.Object POINTER item
   FSINSPECT.Info POINTER rows
@@ -227,11 +236,11 @@ PROC Main()
   output=BYTE POINTER($d2000)
   info=DOS.FileInfoBlock POINTER($d3000)
   otherInfo=DOS.FileInfoBlock POINTER($d3200)
-  Names()
-  Mixed()
-  Entries()
-  Inherit()
-  Lifetime()
+  Names(0)
+  Mixed(0)
+  Entries(0)
+  Inherit(0)
+  Lifetime(0)
 
 RETURN
 

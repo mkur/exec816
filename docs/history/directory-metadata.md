@@ -61,3 +61,37 @@ The old shell fixture needed an 8 KiB upper-RAM data arena, relocated command
 strings and the matching GENERIC57600 drive profile. Production buffers and
 fixed/per-Task/idle bank-zero reservations remain unchanged (0-byte delta).
 Artifacts: `build/directory-metadata/dm2/{list,text-mock,dir}`.
+
+## DM3 — ordinary queries use directory metadata
+
+Selection/admission and measurement now have separate paths. Ordinary MyDOS
+queries admit the initial reference without payload I/O and publish a wide
+sector-derived bound; the accepted legacy empty form and admitted live writer
+lengths remain exact. Ordinary SDFS publishes stored sizes and unavailable block
+counts. RAM refreshes node metadata and reports zero allocated disk sectors.
+Only ExamineExact enters the existing resumable extent-measurement path.
+Internal Entry length/known fields remain exact-only. No records, caches,
+transfer buffers, Task pools or bank-zero reservations grow.
+
+Optimized development checks passed for 128-byte MyDOS directories, 256-byte
+MyDOS with a corrupt later chain, legacy empty entries, SDFS over SIO, SDFS over
+512-byte IDE, RAM, and MyDOS writes/mutations/remount. Cookie identity, copied
+and stale FIBs, interleaved enumeration, ownership and 65,535-sector bound
+arithmetic remain checked. The corrupt chain permits cheap metadata but fails
+Exact and Read without corrupting the prior FIB.
+
+The real MyDOS GEM text-loader run passed 119 assertions, including a fitting
+65,536-byte file whose bound exceeds capacity and a rejected 65,537-byte file.
+The C/COMMAND IDE probe recorded zero selected-map fetches for ordinary Examine
+and one for ExamineExact. RAM passed 158 assertions. Four selected cancellation
+cases exercise scan, final publication, metadata checkpoint and exact accounting;
+pre-publication BREAK preserves all 260 FIB bytes and completion-wins behavior
+still collects one reply. A real directory-sector checksum fault passed 264
+assertions, preserves the FIB and causal SIO error 4, then retries successfully.
+Runtime/domain/transfer guards, resource cleanup and bounded completion passed.
+
+Artifacts: `build/directory-metadata/dm3/{mydos128,mydos256-chain,legacy,sdfs,ram,
+write-mydos,text-mydos,ide-measured,break,directory-error}`. Some old directory
+fixtures needed relocated kernel code and larger upper-RAM test data arenas;
+production reservations remain unchanged. Fixed/per-Task/idle bank-zero delta:
+0/0/0 bytes, including guards, alignment and unused capacity.

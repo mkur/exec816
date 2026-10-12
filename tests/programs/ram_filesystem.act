@@ -54,7 +54,9 @@ PROC Layout()
   Require(DOS.Rename(BYTE POINTER(c"RAM:SUB/TEST.BIN"),
       BYTE POINTER(c"RAM:SUB/OTHER.BIN"))<>0)
   lock=DOS.Lock(BYTE POINTER(c"RAM:SUB/OTHER.BIN"),DOS.SHARED_LOCK)
-  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0 AND info.fib_Size=3)
+  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0 AND info.fib_Size=3
+      AND info.fib_NumBlocks=0
+      AND info.fib_InfoFlags=DOS.FIB_SIZE_EXACT+DOS.FIB_BLOCKS_EXACT)
   DOS.UnLock(lock)
   Require(DOS.DeleteFile(BYTE POINTER(c"RAM:SUB/OTHER.BIN"))<>0)
   Require(DOS.DeleteFile(BYTE POINTER(c"RAM:SUB"))<>0)

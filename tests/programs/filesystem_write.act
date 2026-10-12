@@ -42,9 +42,9 @@ PROC WarmInfo()
 
   LET registry=DOSCORE.GetRegistry()
   LET service=FSTYPES.Service POINTER(registry.runtime)
-  Require(DOS.Examine(lock,@info)<>0)
+  Require(DOS.ExamineExact(lock,@info)<>0)
   prior=service.work.operations
-  Require(DOS.Examine(lock,@info)<>0)
+  Require(DOS.ExamineExact(lock,@info)<>0)
   IF service.selected.spec.format=2 AND service.adapter.cache.blocks<>0 THEN
     Require(service.work.operations=prior)
   FI
@@ -69,7 +69,7 @@ PROC FileWrites()
       DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   IF fileOnly=0 THEN
     lock=DOS.Lock(Path(6),DOS.SHARED_LOCK)
-    Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+    Require(lock<>NULL AND DOS.ExamineExact(lock,@info)<>0)
     WarmInfo()
   FI
 
@@ -93,7 +93,7 @@ PROC FileWrites()
 
   IF fileOnly=0 THEN
     Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-    Require(DOS.Examine(lock,@info)<>0)
+    Require(DOS.ExamineExact(lock,@info)<>0)
     WarmInfo()
     DO
       Require(DOS.ExNext(lock,@info)<>0)
@@ -180,7 +180,7 @@ PROC Names()
   Require(lock<>NULL)
   Require(DOS.CreateDir(Path(2))=NULL AND DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
   Require(DOS.DeleteFile(Path(2))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-  Require(DOS.Examine(lock,@info)<>0)
+  Require(DOS.ExamineExact(lock,@info)<>0)
   WarmInfo()
   LET previous=DOS.CurrentDir(lock)
   Require(DOS.IoErr()=0)
@@ -189,8 +189,15 @@ PROC Names()
   Require(DOS.Write(file,BYTE POINTER($30fff0),17)=17)
   Require(DOS.Close(file)<>0)
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.ExamineExact(lock,@info)<>0)
+  Require(DOS.ExNext(lock,@info)<>0)
+  Require((info.fib_InfoFlags & DOS.FIB_SIZE_EXACT)<>0 AND info.fib_Size=17
+      OR (info.fib_InfoFlags & DOS.FIB_SIZE_BOUND)<>0 AND info.fib_Size>=17)
+  LET child=DOS.Lock(BYTE POINTER(c"CHILD"),DOS.SHARED_LOCK)
+  Require(child<>NULL AND DOS.ExamineExact(child,@info)<>0 AND info.fib_Size=17)
+  DOS.UnLock(child)
   Require(DOS.Examine(lock,@info)<>0)
-  Require(DOS.ExNext(lock,@info)<>0 AND info.fib_Size=17)
+  Require(DOS.ExNext(lock,@info)<>0)
   Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_NO_MORE_ENTRIES)
   Require(DOS.CurrentDir(previous)=lock AND DOS.IoErr()=0)
   DOS.UnLock(lock)

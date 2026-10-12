@@ -8,6 +8,10 @@ USE HEAPCORE
 USE FSBOOT
 USE FSTYPES
 USE FSREGISTRY
+USE FSINFO
+USE FSBTYPES
+USE BLOCKTYPES
+USE A816MEMORY
 
 TYPE Expected=[
   BYTE ARRAY name(14)
@@ -46,6 +50,9 @@ PROC Compare(BYTE ordinal DOS.FileInfoBlock POINTER result)
   value=@oracle(ordinal)
   Require(result.fib_DirEntryType=value.kind AND result.fib_EntryType=value.kind)
   Require(result.fib_Size=value.size AND result.fib_NumBlocks=value.blocks)
+  Require(result.fib_InfoFlags=IF value.kind>0 OR value.blocks=0 THEN
+      DOS.FIB_SIZE_EXACT+DOS.FIB_BLOCKS_EXACT ELSE
+      DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT FI)
   Require(result.fib_Protection=value.protection)
   FOR index=0 TO 12 DO
     Require(result.fib_FileName(index)=value.name(index))
@@ -58,15 +65,15 @@ PROC Compare(BYTE ordinal DOS.FileInfoBlock POINTER result)
 
 RETURN
 
-PROC Begin()
+PROC Begin(BYTE unused)
 
   info=DOS.FileInfoBlock POINTER($cfff0)
   parallel=DOS.FileInfoBlock POINTER($d0200)
   child=DOS.FileInfoBlock POINTER($d0400)
   otherInfo=DOS.FileInfoBlock POINTER($e0000)
   oracle=Expected POINTER($e4000)
-  Require(SIZEOF(Expected)=32 AND SIZEOF(FSTYPES.Service)=454
-      AND SIZEOF(FSTYPES.Object)=16)
+  Require(SIZEOF(Expected)=32 AND SIZEOF(FSTYPES.Object)=20
+      AND SIZEOF(FSINFO.Enumeration)<=30)
   before=EXEC.AvailMem(0)
   DOS.UnLock(DOS.FileLock POINTER(0))
   Require(EXEC.AvailMem(0)=before)
@@ -83,14 +90,18 @@ PROC Begin()
   Compare(64,info)
   Require(DOS.Examine(root,parallel)<>0)
   Compare(64,parallel)
+  A816MEMORY.Move(BYTE POINTER(child),BYTE POINTER(info),SIZE(260))
+  Require(DOS.ExNext(root,child)=0 AND DOS.IoErr()=DOS.ERROR_INVALID_LOCK)
+  Compare(64,child)
 
 RETURN
 
-PROC Enumerate()
+PROC Enumerate(BYTE unused)
   BYTE index
+  LONGINT count
 
   FOR index=0 TO 63 DO
-    IF variant>=2 AND index=8 THEN
+    IF variant=2 AND index=8 THEN
       Require(DOS.ExNext(root,info)=0)
       IF variant=2 THEN
         Require(DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
@@ -104,6 +115,19 @@ PROC Enumerate()
 
     Require(DOS.ExNext(root,info)<>0)
     Compare(index,info)
+    IF variant=3 AND index=8 THEN
+      fileLock=DOS.Lock(BYTE POINTER($d1080),DOS.SHARED_LOCK)
+      Require(fileLock<>NULL AND DOS.Examine(fileLock,child)<>0)
+      Require(DOS.ExamineExact(fileLock,child)=0
+          AND DOS.IoErr()=DOS.ERROR_DISK_NOT_VALIDATED)
+      Compare(8,child)
+      DOS.UnLock(fileLock)
+      file=DOS.Open(BYTE POINTER($d1080),DOS.MODE_OLDFILE)
+      Require(file<>NULL)
+      count=DOS.Read(file,BYTE POINTER($e5000),512)
+      Require(count<512 AND DOS.IoErr()=DOS.ERROR_DISK_NOT_VALIDATED)
+      Require(DOS.Close(file)<>0)
+    FI
     IF index<8 THEN
       Require(DOS.ExNext(root,parallel)<>0)
       Compare(index,parallel)
@@ -115,7 +139,7 @@ PROC Enumerate()
 
 RETURN
 
-PROC NestedDirectories()
+PROC NestedDirectories(BYTE unused)
 
   IF variant>=2 THEN
     RETURN
@@ -146,7 +170,7 @@ PROC NestedDirectories()
 
 RETURN
 
-PROC Metadata()
+PROC Metadata(BYTE unused)
 
   IF variant<>0 THEN
     RETURN
@@ -156,6 +180,8 @@ PROC Metadata()
   Require(fileLock<>DOS.FileLock POINTER(0))
   Require(DOS.Examine(fileLock,child)<>0)
   Compare(66,child)
+  Require(DOS.ExamineExact(fileLock,child)<>0 AND child.fib_Size=777
+      AND child.fib_InfoFlags=DOS.FIB_SIZE_EXACT+DOS.FIB_BLOCKS_EXACT)
   Require(DOS.ExNext(fileLock,child)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
   DOS.UnLock(fileLock)
   Require(DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
@@ -230,7 +256,7 @@ PROC OtherEntry()
 
 RETURN
 
-PROC StartOther()
+PROC StartOther(BYTE unused)
 
   other.tc_Node.ln_Type=EXEC.NT_TASK
   other.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(3))
@@ -242,7 +268,7 @@ PROC StartOther()
 
 RETURN
 
-PROC Finish()
+PROC Finish(BYTE unused)
   CARD ticks
 
   WHILE otherDone=0 OR other.tc_State<>EXEC.TS_REMOVED DO
@@ -275,14 +301,38 @@ PROC Finish()
 RETURN
 
 ; Exercise directory enumeration, metadata and caller-local progress.
+PROC Arithmetic(BYTE unused)
+  FSBTYPES.Entry entry
+  FSBTYPES.Volume volume
+  BLOCKTYPES.Volume block
+  DOS.FileInfoBlock POINTER result
+
+  result=DOS.FileInfoBlock POINTER($d0400)
+  A816MEMORY.Clear(BYTE POINTER(@entry),SIZEOF(FSBTYPES.Entry))
+  volume.format=1
+  volume.block=@block
+  block.dataBytes=256
+  entry.count=LONGINT(CARD($ffff))
+  entry.length=0
+  entry.known=0
+  entry.flags=0
+  FSINFO.Clear(FSINFO.FileInfoBlock POINTER(result))
+  FSINFO.Fill(FSINFO.FileInfoBlock POINTER(result),@entry,@volume,0)
+  Require(result.fib_Size=16580355 AND result.fib_NumBlocks=LONGINT(CARD($ffff))
+      AND result.fib_InfoFlags=DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT)
+  Require(entry.length=0 AND entry.known=0)
+
+RETURN
+
 PROC Main()
 
-  Begin()
-  StartOther()
-  Enumerate()
-  NestedDirectories()
-  Metadata()
-  Finish()
+  Arithmetic(0)
+  Begin(0)
+  StartOther(0)
+  Enumerate(0)
+  NestedDirectories(0)
+  Metadata(0)
+  Finish(0)
 
 RETURN
 

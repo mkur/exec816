@@ -70,7 +70,7 @@ PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
       service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_EXACT THEN
     FSCORE.CopyEntry(@service.work.entry,@lock.state.entry)
     service.enumIndex=0
-    RETURN(MeasureEntry(service))
+    RETURN(SelectEntry(service))
   FI
 
   IF (lock.state.entry.flags & FSBTYPES.DIR)=0 THEN
@@ -151,16 +151,21 @@ BYTE FUNC EntryResultStep(BYTE POINTER raw)
     RETURN(FSSTATUS.MORE)
   FI
 
-RETURN(MeasureEntry(service))
+RETURN(SelectEntry(service))
 
-; Start measurement with the selected entry; the backend bounds each chunk.
-BYTE FUNC MeasureEntry(FSTYPES.Service POINTER service)
+; Ordinary queries need directory metadata; only Exact walks the file extent.
+BYTE FUNC SelectEntry(FSTYPES.Service POINTER service)
 
   IF (service.work.entry.flags & FSBTYPES.DIR)<>0 AND
       service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_NEXT THEN
     IF FSBACKEND.Descend(service.work)=0 THEN
       RETURN(FSPACKET.Error(service,service.work.error))
     FI
+  FI
+
+  IF service.packet.sp_Pkt.dp_Type<>DOS_ACTION_EXAMINE_EXACT THEN
+    RETURN(SizeResult(service,
+        FSBACKEND.Metadata(service.work,@service.measured)))
   FI
 
   LET status=FSBACKEND.Measure(service.work,@service.measured,0)
@@ -206,7 +211,8 @@ BYTE FUNC PublishStep(BYTE POINTER raw)
   FSINFO.Name(FSINFO.FileInfoBlock POINTER(service.info),
       @service.measured.entry,service.selected)
   FSINFO.Fill(FSINFO.FileInfoBlock POINTER(service.info),
-      @service.measured.entry)
+      @service.measured.entry,service.work.volume,
+      BYTE(service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_EXACT))
   FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
       FSTYPES.LockObject POINTER(service.object),
       service.enumIndex)

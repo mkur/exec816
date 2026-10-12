@@ -8,9 +8,9 @@ from os_boundary import emulator
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
-CASES={'first':1,'middle':2,'final':3,'before-send':4,'wire':5,'open-allocation':6,'lock-allocation':7,'open-publication':8,'lock-publication':9,'directory-scan':10,'directory-publication':11,'copy':12,'seek':13,'directory-accounting':14,'lookup':17,'preparing':15,'terminal':16,'extent-publication':18}
+CASES={'first':1,'middle':2,'final':3,'before-send':4,'wire':5,'open-allocation':6,'lock-allocation':7,'open-publication':8,'lock-publication':9,'directory-scan':10,'directory-publication':11,'copy':12,'seek':13,'exact-accounting':14,'lookup':17,'preparing':15,'terminal':16,'metadata-checkpoint':18}
 
-def instrument(out,filesystem):
+def instrument(out,filesystem,directory_only=False):
     for name in ('filesystem_active_cancel.act','fsactiveprobe.act'):(out/name).write_bytes((ROOT/'tests/programs'/name).read_bytes())
     source=(out/'filesystem_active_cancel.act').read_text()
     if filesystem=='sdfs':
@@ -37,6 +37,9 @@ def instrument(out,filesystem):
                              '  IF received=0 AND SDFSEXTENTS.Lookup(work,file)<>0 THEN\n    FSACTIVEPROBE.extentHits==+1')]
         del edits['mydosfile.act']
         edits['sdfsfile.act']=[('    IF sparse<>0 THEN\n      output(index)=0\n    ELSE\n      output(index)=adapter.buffer(offset+index)\n    FI','    IF sparse<>0 THEN output(index)=0 ELSE output(index)=adapter.buffer(offset+index) FI\n    IF index=amount RSH 1 THEN FSACTIVEPROBE.Point(8) FI')]
+    if directory_only:
+        edits={name:changes for name,changes in edits.items()
+               if name in ('fsworker.act','fsdirectory.act')}
     for name,changes in edits.items():
         source=read_source(library_file(name))
         if 'USE EXEC\n' in source:source=source.replace('USE EXEC\n','USE EXEC\nUSE FSACTIVEPROBE\n',1)
@@ -47,14 +50,16 @@ def instrument(out,filesystem):
     return {name:sha256(out/name) for name in (*edits,'fsactiveprobe.act')}
 
 def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
-    out.mkdir(parents=True,exist_ok=True);observers=instrument(out,filesystem)
+    out.mkdir(parents=True,exist_ok=True);observers=instrument(out,filesystem,directory_only=set(names)<=
+        {'directory-scan','directory-publication','metadata-checkpoint','exact-accounting'})
     require(filesystem=='mydos' or 'seek' not in names,'SDFS seeks complete without an active-I/O cancellation point')
-    require(filesystem=='sdfs' or 'directory-accounting' not in names,'MyDOS directory sizes complete without an accounting checkpoint')
-    require(filesystem=='sdfs' or 'extent-publication' not in names,'Extent-cache publication requires SDFS')
     require(not warm or set(names)<={'middle','final'}, 'Warm checks require progress before cancellation')
     fixture=f'sdfs/sdfs-21-{size}.atr' if filesystem=='sdfs' else f'mydos/mydos450-{size}.atr'
     media=out/'volume.atr';shutil.copyfile(ROOT/'tests/fixtures'/fixture,media);media_sha=sha256(media)
-    p=build(compiler(ROOT/'build/actionc'),out/'filesystem_active_cancel.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,
+    profile_path=out/'memory.json'
+    profile_data=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile_data['image_data_bytes']=8192
+    profile_path.write_text(json.dumps(profile_data)+'\n')
+    p=build(compiler(ROOT/'build/actionc',release=True),out/'filesystem_active_cancel.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
             dos_mounts=[dict(alias='D1',unit=49,sectors=2000 if filesystem=='sdfs' or size==256 else 720,sector_bytes=size,profile=profile,format=2 if filesystem=='sdfs' else 1)])
     def at(name):return next(d['address'] for d in p['image']['data'] if '_FILESYSTEMACTIVETEST_'+name.upper()+'_' in d['name'])
     cases=[]
@@ -80,8 +85,6 @@ def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
             require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS console not restored')
             cases.append(dict(status='pass',name=name,runtime=runtime,checks=read('checks',True),result=read('result'),error=read('error'),
                               probe={n:read(n,False,'FSACTIVEPROBE') for n in ('fired','attempts','accepted','wirePhase','committed','extentHits')}))
-            if name=='extent-publication':
-                require(cases[-1]['probe']['extentHits'][0]>0,'No completed extent cache hit')
         require(sha256(media)==media_sha,'Read-only media changed')
     return dict(status='pass',build=p['build'],cases=cases,machine=machine,pin=PIN,sector_bytes=size,profile=profile,filesystem=filesystem,warm=warm,observers=observers,media_sha256=media_sha,
                 scope='Controlled Task-side injection through the real foreground delivery function; unchanged production collection/abort/checkpoint logic. Scheduling hooks are not latency evidence.',bank_zero=dict(fixed_delta=0,per_task_delta=0))
@@ -89,7 +92,7 @@ def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
 if __name__=='__main__':
     a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--size',type=int,choices=(128,256),default=128)
     a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(2,3),default=2)
-    a.add_argument('--format',choices=('mydos','sdfs'),default='mydos');a.add_argument('--suite',default=','.join(name for name in CASES if name not in ('directory-accounting','lookup','extent-publication')));a.add_argument('--output',type=Path,required=True)
+    a.add_argument('--format',choices=('mydos','sdfs'),default='mydos');a.add_argument('--suite',default=','.join(name for name in CASES if name not in ('exact-accounting','lookup','metadata-checkpoint')));a.add_argument('--output',type=Path,required=True)
     a.add_argument('--warm',action='store_true')
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}
     try:r=run(out,args.case=='opt',args.size,args.profile,args.suite.split(','),args.bank,args.format,args.warm)

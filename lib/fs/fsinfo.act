@@ -1,6 +1,7 @@
 MODULE FSINFO
 USE FSTYPES
 USE FSBTYPES
+USE FSFORMATS
 USE A816MEMORY
 INCLUDE "../dos/dos-types.inc"
 ; Kept in the caller's FIB reserved bytes, so each lock/info pair walks alone.
@@ -71,7 +72,8 @@ PUBLIC PROC Name(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
 RETURN
 
 ; Translate backend metadata into DOS file types, dates and protection flags.
-PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry)
+PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry
+    FSBTYPES.Volume POINTER volume BYTE exact)
 
   info.fib_EntryType=ST_FILE
   info.fib_Size=entry.length
@@ -88,7 +90,23 @@ PUBLIC PROC Fill(FileInfoBlock POINTER info FSBTYPES.Entry POINTER entry)
   info.fib_Date.ds_Tick=entry.ticks
   info.fib_DirEntryType=info.fib_EntryType
   info.fib_NumBlocks=entry.count
+  IF volume.format=FSFORMATS.RAM THEN
+    ; RAM's private capacity units are not allocated disk sectors.
+    info.fib_NumBlocks=0
+  FI
+
   info.fib_InfoFlags=FIB_SIZE_EXACT OR FIB_BLOCKS_EXACT
+  IF exact=0 THEN
+    IF volume.format=FSFORMATS.SDFS THEN
+      info.fib_NumBlocks=-1
+      info.fib_InfoFlags=FIB_SIZE_EXACT
+    ELSEIF volume.format=FSFORMATS.MYDOS AND
+        (entry.flags & FSBTYPES.DIR)=0 AND entry.known=0 THEN
+      ; count is 32-bit: widen the payload width before multiplication too.
+      info.fib_Size=entry.count*LONGINT(volume.block.dataBytes-3)
+      info.fib_InfoFlags=FIB_SIZE_BOUND OR FIB_BLOCKS_EXACT
+    FI
+  FI
   IF (entry.flags & $20)<>0 THEN
     info.fib_Protection=FIBF_WRITE OR FIBF_DELETE
   FI

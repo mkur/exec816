@@ -11,6 +11,8 @@ LONG main(void)
     flags = info->fib_InfoFlags;
     if (ExamineExact(0, info) || IoErr() != ERROR_INVALID_LOCK ||
         info->fib_InfoFlags != flags || info->fib_Size != 3) return 3;
+    if (!Examine(lock, info) || info->fib_Size != 3 ||
+        info->fib_NumBlocks != -1 || info->fib_InfoFlags != FIB_SIZE_EXACT) return 4;
     UnLock(lock);
     return 0;
 }

@@ -1,0 +1,56 @@
+MODULE DIRECTORYMETADATAFAULT
+USE EXEC
+USE DOS
+USE FSBOOT
+USE A816MEMORY
+USE HEAPCORE
+
+BYTE phase,gate
+CARD checks
+LONGINT result,error
+DOS.FileInfoBlock info
+BYTE ARRAY previous(260)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f300+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Pause(BYTE stage)
+
+  phase=stage
+  gate=0
+  WHILE gate=0 DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  LET lock=DOS.Lock(BYTE POINTER(c"D1:"),DOS.SHARED_LOCK)
+  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+  A816MEMORY.Move(previous,BYTE POINTER(@info),SIZE(260))
+  Pause(1)
+  result=DOS.ExNext(lock,@info)
+  error=DOS.IoErr()
+  Require(result=0 AND error=EXEC.SIOERR_CHECKSUM)
+  LET bytes=BYTE POINTER(@info)
+  FOR index=0 TO 259 DO
+    Require(bytes(index)=previous(index))
+  OD
+
+  Pause(2)
+  Require(DOS.ExNext(lock,@info)<>0 AND info.fib_FileName(0)='T)
+  DOS.UnLock(lock)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  phase=3
+
+RETURN
+ENDMODULE

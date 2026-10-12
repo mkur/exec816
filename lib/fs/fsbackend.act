@@ -6,6 +6,7 @@ USE RAMFS
 USE RAMFILE
 USE RAMTYPES
 USE FSBTYPES
+USE FSCORE
 USE MYDOS
 USE MYDOSFILE
 USE SDFS
@@ -255,6 +256,29 @@ PUBLIC BYTE FUNC Open(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor POINTER fi
   FI
 
 RETURN(MYDOSFILE.Open(work,file))
+
+; Admit the initial reference without measuring the selected chain/map.
+; Preserve a live writer's exact length; never put a public bound in Entry.
+PUBLIC BYTE FUNC Metadata(FSBTYPES.Workspace POINTER work FSBTYPES.Cursor
+    POINTER file)
+
+  IF work.volume.format=FSFORMATS.RAM THEN
+    RETURN(RAMFS.Measure(work,file))
+  FI
+
+  IF work.volume.format=FSFORMATS.MYDOS AND
+      (work.entry.flags & FSBTYPES.DIR)=0 THEN
+    IF MYDOSFILE.Open(work,file)=0 THEN
+      RETURN(FSSTATUS.ERROR)
+    FI
+  FI
+
+  FSCORE.CopyEntry(@file.entry,@work.entry)
+  IF work.volume.format=FSFORMATS.MYDOS AND work.entry.count=0 THEN
+    file.entry.known=1
+  FI
+
+RETURN(FSSTATUS.DONE)
 
 PUBLIC BYTE FUNC Fail(FSBTYPES.Operation POINTER operation LONGINT error)
 

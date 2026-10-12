@@ -208,7 +208,8 @@ PROC Directory(BYTE slot)
   item=Client(slot)
   expected=BYTE POINTER($d10c0)
   item.phase=6
-  Assert(slot,DOS.ExNext(item.lock,item.info)<>0 AND item.info.fib_Size=777
+  Assert(slot,DOS.ExNext(item.lock,item.info)<>0 AND item.info.fib_Size=LONGINT(IF sectorSize=128 THEN 7*125 ELSE 4*253 FI)
+      AND item.info.fib_InfoFlags=DOS.FIB_SIZE_BOUND+DOS.FIB_BLOCKS_EXACT
       AND item.info.fib_DirEntryType=-3)
   FOR index=0 TO 8 DO
     Assert(slot,item.info.fib_FileName(index)=expected(index))

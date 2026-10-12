@@ -14,6 +14,7 @@ USE FSACTIVEPROBE
 USE CONSOLEFOREGROUND
 USE SIODRIVER
 USE HEAPCORE
+USE A816MEMORY
 CARD checks,scenario,sectorBytes
 BYTE phase,cleanupReached
 BYTE warm
@@ -27,6 +28,7 @@ DOSCLIENT.ClientContext POINTER client
 DOSBREAKTYPES.Scope POINTER scope
 BYTE ARRAY conName=[67 79 78 58 0]
 BYTE ARRAY path=[68 49 58 84 79 79 76 83 47 83 85 66 47 68 65 84 65 46 66 73 78 0]
+BYTE ARRAY savedInfo(260)
 BYTE ARRAY directory=[68 49 58 0]
 
 ; Stop at the first failed fixture invariant and retain its check index for
@@ -55,7 +57,7 @@ PROC StartScope(BYTE point LONGINT threshold)
 RETURN
 
 ; Check the terminal reply before allowing its request storage to be reused.
-PROC Collected()
+PROC Collected(BYTE unused)
   DOSCORE.DosRegistry POINTER registry
 
   registry=DOSCORE.GetRegistry()
@@ -68,7 +70,7 @@ PROC Collected()
 RETURN
 
 ; Interrupt a read at the selected checkpoint and verify committed progress.
-PROC ReadCase()
+PROC ReadCase(BYTE unused)
   CARD index,ticks
   LONGINT wanted,got,threshold
   BYTE point
@@ -122,7 +124,7 @@ PROC ReadCase()
   StartScope(point,threshold)
   result=DOS.Read(file,buffer+SIZE(8),777)
   error=DOS.IoErr()
-  Collected()
+  Collected(0)
   Require(error=DOS.ERROR_BREAK)
   IF warm<>0 THEN
     Require(FSINSPECT.CacheStatus(@cache)<>0)
@@ -177,7 +179,7 @@ PROC ReadCase()
 
 RETURN
 
-PROC ObjectCase()
+PROC ObjectCase(BYTE unused)
   BYTE point
 
   point=4
@@ -200,7 +202,7 @@ PROC ObjectCase()
       Require(file<>DOS.FileHandle POINTER(0) AND error=0)
     FI
 
-    Collected()
+    Collected(0)
     IF file<>DOS.FileHandle POINTER(0) THEN
       Require(DOS.Close(file)<>0)
     FI
@@ -213,7 +215,7 @@ PROC ObjectCase()
       Require(lock<>DOS.FileLock POINTER(0) AND error=0)
     FI
 
-    Collected()
+    Collected(0)
     IF lock<>DOS.FileLock POINTER(0) THEN
       DOS.UnLock(lock)
     FI
@@ -225,10 +227,17 @@ RETURN
 
 ; Cancel enumeration without publishing a partially prepared information
 ; result.
-PROC DirectoryCase()
+PROC DirectoryCase(BYTE unused)
   BYTE point
+  CARD index
+  BYTE POINTER bytes
 
-  lock=DOS.Lock(directory,DOS.SHARED_LOCK)
+  bytes=directory
+  IF scenario=14 THEN
+    bytes=path
+  FI
+
+  lock=DOS.Lock(bytes,DOS.SHARED_LOCK)
   Require(lock<>DOS.FileLock POINTER(0))
   Require(DOS.Examine(lock,info)<>0)
   point=6
@@ -245,15 +254,29 @@ PROC DirectoryCase()
     point=13
   FI
 
+  A816MEMORY.Move(savedInfo,BYTE POINTER(info),SIZE(260))
   StartScope(point,0)
-  result=DOS.ExNext(lock,info)
+  IF scenario=14 THEN
+    result=DOS.ExamineExact(lock,info)
+  ELSE
+    result=DOS.ExNext(lock,info)
+  FI
   error=DOS.IoErr()
-  Collected()
+  Collected(0)
   IF point<>7 THEN
     Require(result=0 AND error=DOS.ERROR_BREAK)
+    bytes=BYTE POINTER(info)
+    FOR index=0 TO 259 DO
+      Require(bytes(index)=savedInfo(index))
+    OD
+
     FSACTIVEPROBE.mode=0
     DOS.ClearBreak()
-    Require(DOS.ExNext(lock,info)<>0 AND info.fib_FileName(0)=84)
+    IF scenario=14 THEN
+      Require(DOS.ExamineExact(lock,info)<>0)
+    ELSE
+      Require(DOS.ExNext(lock,info)<>0 AND info.fib_FileName(0)=84)
+    FI
   ELSE
     Require(result<>0 AND error=0 AND info.fib_FileName(0)=84)
   FI
@@ -264,7 +287,7 @@ RETURN
 
 ; Cancel active seek traversal while preserving the cursor's committed
 ; position.
-PROC SeekCase()
+PROC SeekCase(BYTE unused)
 
   file=DOS.Open(path,DOS.MODE_OLDFILE)
   Require(file<>DOS.FileHandle POINTER(0))
@@ -272,7 +295,7 @@ PROC SeekCase()
   StartScope(1,0)
   result=DOS.Seek(file,0,DOS.OFFSET_END)
   error=DOS.IoErr()
-  Collected()
+  Collected(0)
   Require(result=-1 AND error=DOS.ERROR_BREAK)
   FSACTIVEPROBE.mode=0
   DOS.ClearBreak()
@@ -297,19 +320,19 @@ PROC Main()
   file=DOS.Open(path,DOS.MODE_OLDFILE)
   Require(file<>DOS.FileHandle POINTER(0) AND DOS.Close(file)<>0)
   IF scenario=17 THEN
-    ObjectCase()
+    ObjectCase(0)
   ELSEIF scenario=14 THEN
-    DirectoryCase()
+    DirectoryCase(0)
   ELSEIF scenario=18 THEN
-    DirectoryCase()
+    DirectoryCase(0)
   ELSEIF scenario<=5 OR scenario=12 OR scenario>=15 THEN
-    ReadCase()
+    ReadCase(0)
   ELSEIF scenario<=9 THEN
-    ObjectCase()
+    ObjectCase(0)
   ELSEIF scenario<=11 THEN
-    DirectoryCase()
+    DirectoryCase(0)
   ELSE
-    SeekCase()
+    SeekCase(0)
   FI
 
   Require(DOS.EndForeground()<>0 AND DOS.Close(con)<>0

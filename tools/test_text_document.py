@@ -9,7 +9,7 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from library_paths import read_source
 
-def run(out,mock,reuse=False):
+def run(out,mock,reuse=False,filesystem="sdfs"):
     out.mkdir(parents=True,exist_ok=True)
     if reuse:
         from calypsi_image import read_image
@@ -30,8 +30,8 @@ def run(out,mock,reuse=False):
         for name,payload in {'MIX.TXT':b'A\tB\r\nC\rD\n\x9b\0\x80Z','FULL.TXT':b'A'*65536,
             'LINES.TXT':b'\n'*4096,'OVER.TXT':b'A'*65537,'MANY.TXT':b'\n'*4097,
             'SPLIT.TXT':b'A'*1023+b'\r\nBB','EMPTY.TXT':b''}.items(): (media/name).write_bytes(payload)
-        make(out/'data.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,binary_names=set(p.name for p in media.iterdir()))
-        mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)]
+        make(out/'data.atr',media,filesystem=filesystem,sector_bytes=256,sectors=2880,binary_names=set(p.name for p in media.iterdir()))
+        mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2 if filesystem=="sdfs" else 1)]
         binding='CONST C_EXECDOSENTRIES=$%x\n'%f['symbols']['ExecDosEntries']
         # This fixture needs only file calls, not the program-launch table roots.
         binding+=read_source(ROOT/'c/calypsi/dos-bridge.inc').split('; A launched command')[0]
@@ -88,5 +88,6 @@ def exercise(out,mock,p,f):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--mock',action='store_true');parser.add_argument('--from-build',action='store_true')
-    args=parser.parse_args();run(args.output.resolve(),args.mock,args.from_build)
+    parser.add_argument('--mock',action='store_true')
+    parser.add_argument('--filesystem',choices=('mydos','sdfs'),default='sdfs');parser.add_argument('--from-build',action='store_true')
+    args=parser.parse_args();run(args.output.resolve(),args.mock,args.from_build,args.filesystem)

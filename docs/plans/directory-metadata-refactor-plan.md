@@ -5,7 +5,7 @@
 [Filesystem writes](../reference/filesystem-writes.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: DM0 complete; DM1–DM4 in progress. Commit each executable slice.
+Status: DM0–DM3 complete; DM4 in progress. Commit each executable slice.
 
 Make ordinary Examine and ExNext return directory metadata without measuring
 each selected file's chain. MyDOS provides a sector count and therefore a byte
