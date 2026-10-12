@@ -1897,6 +1897,1089 @@
         "reader_source": "Frozen baseline reader, emitted U16/U32 sizes 187/193 bytes; local fixture copy isolates the copy slice."
       },
       "host_checks": "9 loading observer checks and 7 program-contract checks passed."
+    },
+    "CL2": {
+      "status": "pass",
+      "readers_raw": {
+        "status": "pass",
+        "mode": "raw",
+        "suite": "readers",
+        "cases": [
+          {
+            "width": 2,
+            "address": 2686957,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "zero"
+          },
+          {
+            "width": 2,
+            "address": 2686965,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "maximum"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 3,
+            "error": 0,
+            "name": "unaligned-exact-end"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 0,
+            "name": "nonzero-position"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-three"
+          },
+          {
+            "width": 2,
+            "address": 2686974,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-two"
+          },
+          {
+            "width": 2,
+            "address": 2686975,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-one"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 9,
+            "limit": 8,
+            "error": 0,
+            "name": "past-limit"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 0,
+            "name": "addition-wrap"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967295,
+            "limit": 4294967295,
+            "error": 0,
+            "name": "maximum-empty"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 77,
+            "name": "sticky-error"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 77,
+            "name": "sticky-past-limit"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 1,
+            "error": 0,
+            "name": "short-0"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 2,
+            "error": 0,
+            "name": "short-1"
+          },
+          {
+            "width": 4,
+            "address": 2686957,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "zero"
+          },
+          {
+            "width": 4,
+            "address": 2686965,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "maximum"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 5,
+            "error": 0,
+            "name": "unaligned-exact-end"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 0,
+            "name": "nonzero-position"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-three"
+          },
+          {
+            "width": 4,
+            "address": 2686974,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-two"
+          },
+          {
+            "width": 4,
+            "address": 2686975,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-one"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 9,
+            "limit": 8,
+            "error": 0,
+            "name": "past-limit"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 0,
+            "name": "addition-wrap"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967295,
+            "limit": 4294967295,
+            "error": 0,
+            "name": "maximum-empty"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 77,
+            "name": "sticky-error"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 77,
+            "name": "sticky-past-limit"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 1,
+            "error": 0,
+            "name": "short-0"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 2,
+            "error": 0,
+            "name": "short-1"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 3,
+            "error": 0,
+            "name": "short-2"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 4,
+            "error": 0,
+            "name": "short-3"
+          }
+        ],
+        "checks": null,
+        "provider_checks": null,
+        "allocation_failures": null,
+        "native_processes": null,
+        "truncated_prefixes": null,
+        "mutations": null,
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 1,
+          "native_irq_count": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0,
+          "live_tasks": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 156,
+              "untouched_above_floor": 1124
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 146,
+            "untouched_from_base": 1390,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "hashes": {
+          "result": "4008f67e5022a672232ddf07c5dbd151fe2bff802a2e5a7fce75c51c1c1db0ab",
+          "xex": "7e737802c2482769f9d2cdf4bc7e8703978c5ac186b01aadc60455610fdd0f66",
+          "image": "2df5ee72de002eee1f01743f464496d85321d0042f258ea8e15c80d13346ad53"
+        },
+        "compiler": {
+          "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+          "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "readers_opt": {
+        "status": "pass",
+        "mode": "opt",
+        "suite": "readers",
+        "cases": [
+          {
+            "width": 2,
+            "address": 2686957,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "zero"
+          },
+          {
+            "width": 2,
+            "address": 2686965,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "maximum"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 3,
+            "error": 0,
+            "name": "unaligned-exact-end"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 0,
+            "name": "nonzero-position"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-three"
+          },
+          {
+            "width": 2,
+            "address": 2686974,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-two"
+          },
+          {
+            "width": 2,
+            "address": 2686975,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-one"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 9,
+            "limit": 8,
+            "error": 0,
+            "name": "past-limit"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 0,
+            "name": "addition-wrap"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967295,
+            "limit": 4294967295,
+            "error": 0,
+            "name": "maximum-empty"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 77,
+            "name": "sticky-error"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 77,
+            "name": "sticky-past-limit"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 1,
+            "error": 0,
+            "name": "short-0"
+          },
+          {
+            "width": 2,
+            "address": 2686973,
+            "at": 1,
+            "limit": 2,
+            "error": 0,
+            "name": "short-1"
+          },
+          {
+            "width": 4,
+            "address": 2686957,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "zero"
+          },
+          {
+            "width": 4,
+            "address": 2686965,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "maximum"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 5,
+            "error": 0,
+            "name": "unaligned-exact-end"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 0,
+            "name": "nonzero-position"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-three"
+          },
+          {
+            "width": 4,
+            "address": 2686974,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-two"
+          },
+          {
+            "width": 4,
+            "address": 2686975,
+            "at": 0,
+            "limit": 8,
+            "error": 0,
+            "name": "bank-crossing-one"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 9,
+            "limit": 8,
+            "error": 0,
+            "name": "past-limit"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 0,
+            "name": "addition-wrap"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967295,
+            "limit": 4294967295,
+            "error": 0,
+            "name": "maximum-empty"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 12,
+            "error": 77,
+            "name": "sticky-error"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 4294967294,
+            "limit": 8,
+            "error": 77,
+            "name": "sticky-past-limit"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 1,
+            "error": 0,
+            "name": "short-0"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 2,
+            "error": 0,
+            "name": "short-1"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 3,
+            "error": 0,
+            "name": "short-2"
+          },
+          {
+            "width": 4,
+            "address": 2686973,
+            "at": 1,
+            "limit": 4,
+            "error": 0,
+            "name": "short-3"
+          }
+        ],
+        "checks": null,
+        "provider_checks": null,
+        "allocation_failures": null,
+        "native_processes": null,
+        "truncated_prefixes": null,
+        "mutations": null,
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 1,
+          "native_irq_count": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0,
+          "live_tasks": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 134,
+              "untouched_above_floor": 1146
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 142,
+            "untouched_from_base": 1394,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "hashes": {
+          "result": "c3d6cec829c6dc8879443d7b9c19ed5cae01129f6de818ff3946c046a39ece3d",
+          "xex": "edfba231405b82cd79b9440005eda196cbad2ab948088b20372aa2b9e0bcb114",
+          "image": "7645f8029db7a83a31aafc181d52850bfddd6a4f13ec27ae6d2a9a70012bfe9b"
+        },
+        "compiler": {
+          "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+          "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "validation": {
+        "status": "pass",
+        "mode": "opt",
+        "suite": null,
+        "cases": null,
+        "checks": 1124,
+        "provider_checks": null,
+        "allocation_failures": 2,
+        "native_processes": null,
+        "truncated_prefixes": 344,
+        "mutations": 25,
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 188,
+          "native_irq_count": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0,
+          "live_tasks": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 280,
+              "untouched_above_floor": 1000
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 277,
+            "untouched_from_base": 1259,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "hashes": {
+          "result": "0cda6e33f9d0ba52805e53783d9dc92881b22ed4391f31f659a45c0b25ab61a6",
+          "xex": "97db46c86137d730b33946dfd025c69743ead3d52804daabe56e915578b291f6",
+          "image": "894c957bf11c04d6a5525492b686b2103d5669e2aef4ce474281a3e61b343a8a"
+        },
+        "compiler": {
+          "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+          "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "execution": {
+        "status": "pass",
+        "mode": "opt",
+        "suite": null,
+        "cases": null,
+        "checks": 98,
+        "provider_checks": 17,
+        "allocation_failures": 6,
+        "native_processes": 6,
+        "truncated_prefixes": null,
+        "mutations": null,
+        "runtime": {
+          "status": 0,
+          "native_nmi_count": 149,
+          "native_irq_count": 0,
+          "return_s": 11278,
+          "return_d": 3328,
+          "return_p": 0,
+          "return_dbr": 0,
+          "return_e": 0,
+          "live_tasks": 0,
+          "guards": "intact",
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 328,
+              "untouched_above_floor": 952
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 130,
+              "untouched_above_floor": 926
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 130,
+              "untouched_above_floor": 926
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 260,
+            "untouched_from_base": 1276,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "hashes": {
+          "result": "fdc4bc2ee9aa82c32af8591c666b73f529f4159bf1ab4eb2fe1c2924b479e9d7",
+          "xex": "cff20900b30b435b643d53a6d46defb798aa4f37019a6ab20916a9f4c6444387",
+          "image": "92c051cba9b69f0b57a6788f42a7463fa9fb878b5a05a445f59dd95a1e92ea4a"
+        },
+        "compiler": {
+          "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+          "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+          "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "on",
+          "burstio": false,
+          "accuratedisk": false,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": true,
+          "diskemu": "generic",
+          "vbxe": false,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "off",
+          "exeloadmode": "default",
+          "kernel_id": "$91213499097d0042",
+          "actual_kernel_id": "$91213499097d0042",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "routine_sizes": {
+        "PROGRAMPLACE_COPY": {
+          "size": 118,
+          "fixed_frame": 8,
+          "spill_bytes": 8,
+          "local_stack_peak": 20
+        },
+        "O65READ_U16": {
+          "size": 606,
+          "fixed_frame": 18,
+          "spill_bytes": 14,
+          "local_stack_peak": 24
+        },
+        "O65READ_U32": {
+          "size": 894,
+          "fixed_frame": 18,
+          "spill_bytes": 14,
+          "local_stack_peak": 24
+        }
+      },
+      "reader_code_delta": 1120,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      },
+      "source_sha256": "c08bcf8b9e7379b66c6e99edf668f374e606f393c31ccc5ec168c83752901b2d",
+      "ide_reader_comparison": {
+        "o65read_u32": {
+          "copy_only": {
+            "calls": 549,
+            "inclusive_ms": 177.00347768964122
+          },
+          "combined": {
+            "calls": 549,
+            "inclusive_ms": 58.055919332261034
+          }
+        },
+        "o65read_u16": {
+          "copy_only": {
+            "calls": 1237,
+            "inclusive_ms": 185.33780954891532
+          },
+          "combined": {
+            "calls": 139,
+            "inclusive_ms": 8.617819247539046
+          }
+        },
+        "o65read_u8": {
+          "copy_only": {
+            "calls": 4396,
+            "inclusive_ms": 285.5518700158871
+          },
+          "combined": {
+            "calls": 1922,
+            "inclusive_ms": 128.37263296488902
+          }
+        },
+        "o65read_take": {
+          "copy_only": {
+            "calls": 4446,
+            "inclusive_ms": 162.02072516947922
+          },
+          "combined": {
+            "calls": 1972,
+            "inclusive_ms": 72.14606014556394
+          }
+        },
+        "note": "Nested inclusive times overlap. Combined profile is retained under CL3; the copy-only and combined builds differ only in the readers."
+      }
     }
   }
 }

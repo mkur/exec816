@@ -5,7 +5,7 @@
 [Program contract](../reference/program-loading.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: CL0–CL1 complete at the development tier; CL2–CL3 pending.
+Status: CL0–CL2 complete at the development tier; CL3 evidence pending.
 [Implementation record](../history/command-loader-refactor.md).
 [Baseline inventory](../development/command-loader-refactor-baseline.json).
 

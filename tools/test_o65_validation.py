@@ -11,12 +11,12 @@ from os_boundary import emulator
 from test_cooperative import data
 from test_dos_stack import execute, ownership
 
-PIN = json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 
 def run(out, mode, abi_smoke=False):
     out.mkdir(parents=True, exist_ok=True)
-    toolchain = compiler(ROOT/'build/actionc')
+    toolchain = compiler(ROOT/'build/actionc', release=True)
     options = out/'o65-options.json'
     options.write_text(json.dumps(dict(profile='actionc.o65.compact.v3', nmi_extra_stack=0, imports=[])))
     artifact = out/'sample.o65'
@@ -41,7 +41,7 @@ def run(out, mode, abi_smoke=False):
     program = build(toolchain, fixture, out,
                     optimize=mode == 'opt', tasks=True, task_capacity=8, console=False,
                     image_data=[(0xd0000, raw+mutation_bytes(raw))])
-    with emulator(ROOT/'build/shell-console-bridge', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as bridge:
+    with emulator(ROOT/'build/shell-paced-bridge', ROOT/'build/firmware/altirraos-816.rom', out, pin=PIN) as bridge:
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
         try:
             runtime, _ = execute(bridge, program, timeout=240, frame_limit=12000)

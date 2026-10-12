@@ -5,7 +5,7 @@
 [Development evidence](../development/command-loader-refactor.json)
 
 The refactor replaces PROGRAMPLACE.Copy's byte loop with the pinned actionc
-runtime's A816MEMORY.Move. Complete-width O65 scalar decoding follows as a
+runtime's A816MEMORY.Move. Complete-width O65 scalar decoding is implemented as a
 separate slice. The o65 contract, providers, relocation passes, staging sizes,
 section ownership and BSS clearing remain unchanged.
 
@@ -47,6 +47,31 @@ bindings, a 6,400-byte upper data arena and buffers in bank $28 bring the
 fixture up to the current platform layout. These are test-only placements;
 no production reservation changes.
 
+## Scalar readers
+
+U16 and U32 check their complete width once, load bytes with explicit
+little-endian widening, and advance the cursor once. Their successful paths
+make no U8/Take calls, and U32 makes no U16 calls. The unchanged bytewise fallback
+preserves available prefixes, partial advancement and the first error on short
+input; a prelatched error returns zero without advancing.
+
+All 30 independent reader cases pass raw and optimized. The optimized corruption
+fixture passes 1,124 checks, covering all 344 truncated prefixes, 25 mutations
+and two allocation failures. The optimized execution fixture again passes its
+98 checks and 17 provider-binding regressions with independent relocated-byte
+comparison, initialized data/BSS and six loaded Process lifetimes. Guards,
+ownership, native context and OS restoration pass.
+
+The final IDE profile reduces U32 inclusive time from 177 to 58 ms. U16 calls
+fall from 1,237 to 139, U8 from 4,396 to 1,922, and Take from 4,446 to 1,972.
+These nested timings overlap; their differences must not be summed.
+
+The readers grow from 187/193 to 606/894 emitted bytes: **1,120 extra upper code
+bytes**. Their local stack peaks are both 24 bytes, compared with 14/20 before.
+This uses existing stack capacity; it reserves no new bank-zero or upper data
+storage. The runtime copy wrapper saves 122 code bytes, so the combined change
+adds 998 executable bytes to the packaged IDE kernel.
+
 ## Scope and memory
 
 This is development evidence for the pinned AltirraOS 65816 ROM and emulator.
@@ -67,6 +92,12 @@ hashes. The [original baseline inventory](../development/command-loader-refactor
 remains unchanged.
 
 ```sh
+python3 tools/test_command_loader_core.py --suite readers --case raw \
+  --output build/development/command-loader-refactor/cl2-readers-raw
+python3 tools/test_command_loader_core.py --suite readers --case opt \
+  --output build/development/command-loader-refactor/cl2-readers-opt
+python3 tools/test_o65_validation.py --case opt \
+  --output build/development/command-loader-refactor/cl2-validation
 python3 tools/test_command_loader_core.py --suite copy --case opt \
   --output build/development/command-loader-refactor/cl1-copy
 python3 tools/test_o65_execution.py --case opt \

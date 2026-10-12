@@ -38,7 +38,20 @@ RETURN(cursor.bytes(SIZE(cursor.at-1)))
 ; Decode a little-endian word while retaining the first read failure.
 PUBLIC CARD FUNC U16(O65TYPES.Cursor POINTER cursor)
   CARD value
+  SIZE at
 
+  IF cursor.error<>0 THEN
+    RETURN(0)
+  FI
+
+  IF cursor.at<=cursor.limit AND 2<=cursor.limit-cursor.at THEN
+    at=SIZE(cursor.at)
+    cursor.at==+2
+    value=cursor.bytes(at)
+    RETURN(value OR (CARD(cursor.bytes(at+1)) LSH 8))
+  FI
+
+  ; Short input retains the available prefix and the first failure.
   value=U8(cursor)
 
 RETURN(value OR (CARD(U8(cursor)) LSH 8))
@@ -46,7 +59,23 @@ RETURN(value OR (CARD(U8(cursor)) LSH 8))
 ; Decode a little-endian long word without depending on host or record layout.
 PUBLIC LONGCARD FUNC U32(O65TYPES.Cursor POINTER cursor)
   LONGCARD value
+  SIZE at
 
+  IF cursor.error<>0 THEN
+    RETURN(0)
+  FI
+
+  IF cursor.at<=cursor.limit AND 4<=cursor.limit-cursor.at THEN
+    at=SIZE(cursor.at)
+    cursor.at==+4
+    value=LONGCARD(cursor.bytes(at)) OR
+        (LONGCARD(cursor.bytes(at+1)) LSH 8) OR
+        (LONGCARD(cursor.bytes(at+2)) LSH 16) OR
+        (LONGCARD(cursor.bytes(at+3)) LSH 24)
+    RETURN(value)
+  FI
+
+  ; U16/U8 consume only the available prefix on this exceptional path.
   value=U16(cursor)
 
 RETURN(value OR (LONGCARD(U16(cursor)) LSH 16))
