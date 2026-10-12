@@ -5,7 +5,7 @@ PUBLIC TYPE TestCase=[
   LONGCARD length,otherLength,breakAt
   CARD patternBytes,otherBytes,chunk,writeChunk
   CARD readFail,writeFail,prefixError,closeError
-  CARD width,height,entries,enumerationError
+  CARD width,height,entries,enumerationError,infoFlags
   BYTE interactive,dataInteractive
   BYTE ARRAY arguments(256)
   BYTE ARRAY keys(32)

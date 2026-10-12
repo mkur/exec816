@@ -55,8 +55,25 @@ LONGINT FUNC Enumerate(BYTE POINTER lock CSTRING pattern)
             RETURN(COMMAND.RETURN_ERROR)
           FI
         ELSE
-          IF CommandText(c" ")=0 OR CommandDecimal(LONGCARD(info.fib_Size))=0 THEN
+          IF CommandText(c" ")=0 THEN
             RETURN(COMMAND.RETURN_ERROR)
+          FI
+
+          IF (info.fib_InfoFlags & (COMMAND.FIB_SIZE_EXACT OR
+              COMMAND.FIB_SIZE_BOUND))=0 THEN
+            IF CommandText(c"?")=0 THEN
+              RETURN(COMMAND.RETURN_ERROR)
+            FI
+          ELSE
+            IF (info.fib_InfoFlags & COMMAND.FIB_SIZE_BOUND)<>0 THEN
+              IF CommandText(c"<=")=0 THEN
+                RETURN(COMMAND.RETURN_ERROR)
+              FI
+            FI
+
+            IF CommandDecimal(LONGCARD(info.fib_Size))=0 THEN
+              RETURN(COMMAND.RETURN_ERROR)
+            FI
           FI
         FI
       FI

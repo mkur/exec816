@@ -65,7 +65,8 @@ WORD TextStep(struct TextLoad *l,struct TextDocument *current)
         count=Examine(lock,&l->info);error=IoErr();UnLock(lock);
         if (!count) return failed(l,error);
         if (l->info.fib_DirEntryType>=0) return failed(l,ERROR_OBJECT_WRONG_TYPE);
-        if (l->info.fib_Size>TEXT_BYTES) return failed(l,ERROR_OBJECT_TOO_LARGE);
+        if ((l->info.fib_InfoFlags & FIB_SIZE_EXACT) &&
+            l->info.fib_Size>TEXT_BYTES) return failed(l,ERROR_OBJECT_TOO_LARGE);
         d->data=AllocMem(TEXT_BYTES,MEMF_UPPER);
         d->line=AllocMem(TEXT_INDEX_BYTES,MEMF_UPPER);
         if (!d->data || !d->line) return failed(l,ERROR_NO_FREE_STORE);

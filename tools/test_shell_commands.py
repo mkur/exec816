@@ -64,7 +64,7 @@ def prepare(size,scenario):
             cases.append(item('TYPE '+name,convert(contents[name]),source=contents[name]))
         cases += [item('TYPE',kind='default'),item('MEM',kind='memory'),
                   item('signed-decimal',b'-2147483648 -1 0 2147483647\n',kind='numbers'),
-                  item('row-bounds',b'X'*31+b' -2147483648\n'+b'X'*31+b' 2147483647\n'+b'X'*31+b'/\n',kind='rows'),
+                  item('row-bounds',b'X'*31+b' -2147483648\n'+b'X'*31+b' 2147483647\n'+b'X'*31+b' <=2147483647\n'+b'X'*31+b' ?\n'+b'X'*31+b'/\n',kind='rows'),
                   item('DIR TOOLS',b'SUB/\n',kind='pipe')]
     elif scenario=='large':
         require(size==256,'Full TYPE requires 256-byte fixture');payload=contents['LARGE.BIN'];require(len(payload)==70003,'Not the full file')
@@ -80,8 +80,8 @@ def run(t,out,mode,bank=2,size=128,scenario='basic',profile=1):
     observed.write_text(observed.read_text().replace('  NativeShellWrite(handle,bytes,count)',
                                                    '  writes==+1\n  NativeShellWrite(handle,bytes,count)'))
     capture_address=None
-    command_address=0xf8000
-    source.write_text(source.read_text().replace('$e0000','$f8000'))
+    command_address=0x3e8000
+    source.write_text(source.read_text().replace('$e0000','$3e8000'))
     disk,cases,derived,original_sha=prepare(size,scenario);media=out/'volume.atr';media.write_bytes(disk.data);digest=sha256(media)
     blob=bytearray();calls=[]
     for case in cases:
@@ -94,7 +94,7 @@ def run(t,out,mode,bank=2,size=128,scenario='basic',profile=1):
     # A straight sequence of tiny dispatch helpers keeps generated fixed frames bounded.
     (out/'shell-command-cases.inc').write_text('PROC Cases()\n'+'\n'.join(calls)+'\nRETURN\n')
     fixture_profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
-    fixture_profile['image_data_bytes']=4096
+    fixture_profile['image_data_bytes']=8192
     profile_path=out/'fixture-memory.json';profile_path.write_text(json.dumps(fixture_profile)+'\n')
     p=build(t,source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
             system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=disk.count,sector_bytes=size,profile=profile)],
@@ -161,4 +161,4 @@ def run(t,out,mode,bank=2,size=128,scenario='basic',profile=1):
                 source_inputs={s:LOADED_SOURCE_SHA256 if s=='tools/test_shell_commands.py' else sha256(ROOT/s)for s in ('examples/shell/shell.act','examples/shell/shell-session.inc','examples/shell/shell-commands.inc','tests/programs/shell_commands.act','tools/test_shell_commands.py','tools/test_shell_core.py')})
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--case',choices=('raw','opt'),required=True);p.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc');p.add_argument('--bank',type=int,default=2);p.add_argument('--sector-size',type=int,default=128);p.add_argument('--profile',type=int,choices=(1,4),default=1);p.add_argument('--scenario',choices=SCENARIOS,default='basic');p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    r=run(compiler(a.compiler_dir),out,a.case,a.bank,a.sector_size,a.scenario,a.profile);(out/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell commands passed',a.case,a.scenario,a.bank,a.sector_size,flush=True)
+    r=run(compiler(a.compiler_dir,release=True),out,a.case,a.bank,a.sector_size,a.scenario,a.profile);(out/'results.json').write_text(json.dumps(r,indent=2)+'\n');print('Shell commands passed',a.case,a.scenario,a.bank,a.sector_size,flush=True)

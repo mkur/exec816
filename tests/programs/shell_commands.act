@@ -150,14 +150,19 @@ PROC Rows(CARD unused)
 
   info.fib_FileName(31)=0
   info.fib_DirEntryType=-1
+  info.fib_InfoFlags=DOS.FIB_SIZE_EXACT
   info.fib_Size=SYS.MINLONGINT
   ShellDirRow(info)
   info.fib_Size=SYS.MAXLONGINT
   ShellDirRow(info)
+  info.fib_InfoFlags=DOS.FIB_SIZE_BOUND
+  ShellDirRow(info)
+  info.fib_InfoFlags=0
+  ShellDirRow(info)
   info.fib_DirEntryType=1
   ShellDirRow(info)
   Check(shell.status=PROCESS.RETURN_OK AND EXEC.AvailMem(0)=steady
-      AND writes-rowStart=3)
+      AND writes-rowStart=5)
   executed==+1
 
 RETURN

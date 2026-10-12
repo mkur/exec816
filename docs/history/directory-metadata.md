@@ -44,3 +44,20 @@ to the pinned GENERIC57600 configuration before recording passing results.
 
 Artifacts: `build/directory-metadata/dm1/{abi,c-raw,c-opt}`. No release or
 hardware qualification is claimed.
+
+## DM2 — callers ready for cheap metadata
+
+DIR and LIST distinguish exact bytes, `<=` bounds and `?` unavailable sizes.
+DIR retains one Write per row and its existing 128-byte draw buffer; LIST NAMES
+stays name-only. The GEM text loader rejects early only on exact oversize and
+still reads to its bounded capacity plus a one-byte EOF probe. Name/type-only
+callers require no change or explicit measurement.
+
+Optimized development checks: LIST 15 controlled cases; the text-loader mock
+144 assertions (exact/bound/unknown, 65,536 fitting bytes, 65,537 rejected bytes,
+previous-document preservation and resource cleanup); real resident DIR/TYPE
+session including exact/bound/unknown row formatting and one Write per DIR row.
+The old shell fixture needed an 8 KiB upper-RAM data arena, relocated command
+strings and the matching GENERIC57600 drive profile. Production buffers and
+fixed/per-Task/idle bank-zero reservations remain unchanged (0-byte delta).
+Artifacts: `build/directory-metadata/dm2/{list,text-mock,dir}`.

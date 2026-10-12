@@ -188,6 +188,8 @@ PUBLIC LONGINT FUNC Information(BYTE POINTER lock,buffer LONGINT action)
   name(1)=0
   kind^=-3
   size^=LONGINT(T.state.entry+1)
+  LET flags=CARD POINTER(buffer+258)
+  flags^=T.scenario.infoFlags
   IF T.state.entry=1 THEN
     kind^=2
   FI

@@ -25,7 +25,10 @@ BPTR EXEC_CALL Lock(CONST_STRPTR name,LONG access)
 void EXEC_CALL UnLock(BPTR lock) { (void)lock;--locks;error=0; }
 LONG EXEC_CALL Examine(BPTR lock,struct FileInfoBlock *info)
 {
-    (void)lock;info->fib_DirEntryType=fault==3 ? 1:-3;info->fib_Size=0;
+    (void)lock;info->fib_DirEntryType=fault==3 ? 1:-3;
+    /* A sector-derived bound can exceed the cap even for a fitting file. */
+    info->fib_Size=fault==8 ? -1:fault==9 ? 65537:mode==1 || mode==3 ? 65780:0;
+    info->fib_InfoFlags=fault==8 ? 0:fault==9 ? FIB_SIZE_EXACT:mode==1 || mode==3 ? FIB_SIZE_BOUND:FIB_SIZE_EXACT;
     error=fault==2 ? ERROR_NO_DISK:0;return fault!=2;
 }
 BPTR EXEC_CALL Open(CONST_STRPTR name,LONG access)
@@ -110,11 +113,17 @@ LONG EXEC_CALL TextDocumentProbe(ULONG unused)
     TextBegin(&load,names[0]);CHECK(!TextStep(&load,&doc));CHECK(!TextStep(&load,&doc));
     CHECK(!TextStep(&load,&doc));TextCancel(&load);CHECK(doc.lines==5 && !load.file);
 #ifdef TEXT_MOCK
+    mode=1;fault=8;TextBegin(&load,names[1]);CHECK(finish()==1);
+    CHECK(doc.bytes==65536UL);
+    mode=0;fault=0;TextBegin(&load,names[0]);CHECK(finish()==1);
     for (fault=1;fault<=7;++fault) {
         mode=1;TextBegin(&load,names[1]);CHECK(finish()==-1);
         CHECK(doc.lines==5 && !strcmp(doc.path,names[0]) && !handles && !locks);
         CHECK(!load.candidate.data && !load.candidate.line);
     }
+    fault=9;mode=1;i=reads;
+    TextBegin(&load,names[1]);CHECK(finish()==-1 && load.error==ERROR_OBJECT_TOO_LARGE);
+    CHECK(reads==i && doc.lines==5 && !handles && !locks);
     fault=0;
 #endif
     TextDispose(&doc);CHECK(!doc.data && !doc.line && !handles && !locks);

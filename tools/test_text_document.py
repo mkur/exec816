@@ -55,7 +55,7 @@ ENDMODULE
         from generate_memory import PROFILE
         profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=8192
         memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
-    p=build(compiler(ROOT/'build/actionc'),source,out/'program',tasks=True,task_capacity=8,
+    p=build(compiler(ROOT/'build/actionc',release=True),source,out/'program',tasks=True,task_capacity=8,
         foreign_image=f,optimize=True,console=False,console_deferred=not mock,dos_mounts=mounts,
         memory_profile=memory)
     return exercise(out,mock,p,f)

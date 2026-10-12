@@ -121,6 +121,8 @@ def behavior_vectors(name):
                 c('break-after-entry',entries=1,breakAt=1,error=304,opens=1)]
     if name == 'list':
         return [c('empty',opens=1),c('mixed',expected=b'A 1\nB/\nC 3\n',entries=3,opens=1),
+                c('bounded',expected=b'A <=1\nB/\nC <=3\n',entries=3,infoFlags=2,opens=1),
+                c('unknown',expected=b'A ?\nB/\nC ?\n',entries=3,infoFlags=0,opens=1),
                 c('names',args=b'NAMES',expected=b'A\nB\n',entries=2,opens=1),
                 c('enumeration-error',error=226,enumerationError=226,opens=1),
                 c('missing',args=b'MISSING',error=205),
@@ -243,16 +245,16 @@ ENDMODULE
     blob=b''
     for c in cases:
         payload=c['payload'];other=c.get('other',b'')
-        blob+=struct.pack('<III12H2B256s32s1100s1100s',c.get('length',len(payload)),c.get('otherLength',len(other)),c.get('breakAt',0xffffffff),
+        blob+=struct.pack('<III13H2B256s32s1100s1100s',c.get('length',len(payload)),c.get('otherLength',len(other)),c.get('breakAt',0xffffffff),
             len(payload),len(other),c.get('chunk',512),c.get('writeChunk',512),
             *(c.get(k,0) for k in ('readFail','writeFail','prefixError','closeError')),
-            c.get('width',10),c.get('height',3),c.get('entries',0),c.get('enumerationError',0),
+            c.get('width',10),c.get('height',3),c.get('entries',0),c.get('enumerationError',0),c.get('infoFlags',1),
             c.get('interactive',0),c.get('dataInteractive',0),c['args'],c.get('keys',b''),payload,other)
     return path,blob
 
 
 def run(out,mode,names=NAMES):
-    toolchain=compiler(ROOT/'build/actionc')
+    toolchain=compiler(ROOT/'build/actionc',release=True)
     records=[]
     for name in names:
         cases=vectors(name);folder=out/name

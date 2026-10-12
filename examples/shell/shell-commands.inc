@@ -29,8 +29,8 @@ PROC ShellDirRow(DOS.FileInfoBlock POINTER info)
   LET buffer=ShellDrawBuffer()
   LET name=BYTE POINTER(@info.fib_FileName(0))
   used=STR.strnlen(name,32)
-  ; Leave room for a separator, sign, ten decimal digits, LF and a temporary NUL.
-  IF used+14>DRAW_CAPACITY THEN
+  ; Include the bound marker, sign, ten digits, LF and temporary NUL.
+  IF used+16>DRAW_CAPACITY THEN
     ShellFail(PROCESS.RETURN_FAIL,DOS.ERROR_BAD_NUMBER)
     RETURN
   FI
@@ -43,16 +43,28 @@ PROC ShellDirRow(DOS.FileInfoBlock POINTER info)
   ELSE
     buffer(used)=ASCII.SPACE
     used==+1
-    IF info.fib_Size<0 THEN
-      magnitude=LONGCARD(-(info.fib_Size+1))+1
-      buffer(used)=CHAR_MINUS
+    IF (info.fib_InfoFlags & (DOS.FIB_SIZE_EXACT OR DOS.FIB_SIZE_BOUND))=0 THEN
+      buffer(used)='?
       used==+1
-
     ELSE
-      magnitude=LONGCARD(info.fib_Size)
-    FI
+      BEGIN
+        IF (info.fib_InfoFlags & DOS.FIB_SIZE_BOUND)<>0 THEN
+          buffer(used)='<
+          buffer(used+1)='=
+          used==+2
+        FI
 
-    used==+STR.u32toa(magnitude,buffer+SIZE(used),DRAW_CAPACITY-used-1)
+        IF info.fib_Size<0 THEN
+          magnitude=LONGCARD(-(info.fib_Size+1))+1
+          buffer(used)=CHAR_MINUS
+          used==+1
+        ELSE
+          magnitude=LONGCARD(info.fib_Size)
+        FI
+
+        used==+STR.u32toa(magnitude,buffer+SIZE(used),DRAW_CAPACITY-used-1)
+      END
+    FI
   FI
 
   buffer(used)=ASCII.LF
