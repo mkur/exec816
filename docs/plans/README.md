@@ -132,6 +132,10 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
+- [Cheap directory metadata refactor](directory-metadata-refactor-plan.md):
+  proposed DM0–DM4 slices for directory-only metadata, explicit size/count
+  availability and optional exact queries, keeping the FIB size unchanged.
+  Replaces the proposed MyDOS length cache follow-up.
 - [MyDOS performance](mydos-performance-implementation-plan.md): MP0–MP6
   complete at the development tier: fewer VTOC writes, native metadata copies,
   retained bitmap pages, cheaper allocation scans, cursor reuse and validation

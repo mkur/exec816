@@ -1,5 +1,8 @@
 # Historical records
 
+- [Cheap directory metadata](directory-metadata.md): flags, explicit exact
+  queries, caller migration and listing measurements.
+
 - [MyDOS performance](mydos-performance.md): native copies, VTOC publication,
   retained traversal state and matched development measurements.
 

@@ -1,0 +1,95 @@
+{
+  "tier": "development",
+  "source_revision": "0f95a3569968bc69f5dd818c0162d63cd423ccec",
+  "compiler_pin": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act",
+    "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
+    "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  },
+  "snapshot": "build/directory-metadata/dm0/inputs.json",
+  "snapshot_sha256": "ab0978f6474c73f15f6d3a52ccede40b12a5e635f2f461871e0602342bc969ea",
+  "fib_bytes": 260,
+  "cache_blocks": 512,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "listing_baselines": {
+    "128": {
+      "record": "build/mydos-performance/mp5/operations/results.json",
+      "sha256": "28306a9746cff79c658a033c5b6ca03ab8b1bacfd72951d8b464c2d1d8a9c71d",
+      "rows": {
+        "listing": {
+          "frames": 32,
+          "kernel_calls": 975,
+          "physical_reads": 12,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 85,
+          "cache_hits": 72,
+          "chain_visits": 76,
+          "bitmap_loads": 0
+        },
+        "repeat-listing": {
+          "frames": 10,
+          "kernel_calls": 193,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 85,
+          "cache_hits": 84,
+          "chain_visits": 76,
+          "bitmap_loads": 0
+        }
+      },
+      "build_input_hashes_checked": 277,
+      "changed_inputs": [],
+      "comparison": "MP6 historical; media/observers fixed; changed inputs listed explicitly"
+    },
+    "256": {
+      "record": "build/mydos-performance/mp6/final256/results.json",
+      "sha256": "38136498fb8bb23a958e237fd5bebae3ff3c6765aa01263b20e5f66085207d0b",
+      "rows": {
+        "listing": {
+          "frames": 34,
+          "kernel_calls": 1146,
+          "physical_reads": 9,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 50,
+          "cache_hits": 40,
+          "chain_visits": 41,
+          "bitmap_loads": 0
+        },
+        "repeat-listing": {
+          "frames": 8,
+          "kernel_calls": 181,
+          "physical_reads": 0,
+          "physical_writes": 0,
+          "write_logical_reads": 0,
+          "payload_visits": 0,
+          "read_logical_fetches": 50,
+          "cache_hits": 49,
+          "chain_visits": 41,
+          "bitmap_loads": 0
+        }
+      },
+      "build_input_hashes_checked": 277,
+      "changed_inputs": [],
+      "comparison": "MP6 historical; media/observers fixed; changed inputs listed explicitly"
+    }
+  }
+}
