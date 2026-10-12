@@ -201,6 +201,20 @@ static WORD desktop_dispatch(struct Desktop *d,struct Browser *b,WORD events)
     if (!result) return desktop_close_folder(d,b);
     return b!=d->active || menu_state(b);
 }
+/* A dialog keeps its snapshot and typed input until it ends. */
+static WORD desktop_refresh_views(struct Desktop *d)
+{
+    WORD i,changed=0;
+    for (i=0;i<DESKTOP_FOLDERS;++i) {
+        struct Browser *b=d->folders[i];
+        if (b && b->ready && b->refreshPending && !b->dialog) {
+            b->refreshPending=0;
+            if (!refresh(b)) return 0;
+            changed=1;
+        }
+    }
+    return !changed || !d->active || menu_state(d->active);
+}
 WORD DesktopRun(void)
 {
     struct Desktop *d=&GEMDesk;
@@ -233,6 +247,7 @@ WORD DesktopRun(void)
     if (!desktop_menu(d,d->active)) goto finish;
     d->ready=1;result=0;
     while (!d->quit) {
+        if (!desktop_refresh_views(d)) { result=2;break; }
         busy=desktop_children(d);
         if (!desktop_status(d)) { result=2;break; }
         running=d->job && d->job->state!=JOB_REPLACE;
@@ -340,11 +355,26 @@ static void job_summary(struct DesktopFileJob *job,WORD cancel)
     if (job->keepComplete) strcpy(p,"; complete temp kept");
     else if (job->cleanupError) { strcpy(p,"; cleanup error ");decimal(p+16,(ULONG)job->cleanupError); }
 }
+/* Compare entered paths without opening locks or resolving volume aliases. */
+static WORD job_same_directory(const char *a,const char *b)
+{
+    WORD n=strlen(a),m=strlen(b),i;
+    if (n && a[n-1]=='/') --n;
+    if (m && b[m-1]=='/') --m;
+    if (n!=m) return 0;
+    for (i=0;i<n;++i) {
+        char x=a[i],y=b[i];
+        if (x>='a' && x<='z') x-='a'-'A';
+        if (y>='a' && y<='z') y-='a'-'A';
+        if (x!=y) return 0;
+    }
+    return 1;
+}
 static WORD desktop_job_finish(struct Desktop *d,WORD cancel)
 {
     struct DesktopFileJob *job=d->job;
     struct Browser *b;
-    WORD okay;
+    WORD okay,i;
     if (!job) return 1;
     b=job->owner;job_close(job);
     if (job->temporaryOwned && !job->keepComplete) {
@@ -354,10 +384,21 @@ static WORD desktop_job_finish(struct Desktop *d,WORD cancel)
         } else job->temporaryOwned=0;
     }
     d->error=job->error;d->job=NULL;
+    for (i=0;i<DESKTOP_FOLDERS;++i) {
+        struct Browser *view=d->folders[i];
+        if (view && ((job->operation==FILE_DELETE && job_same_directory(view->path,b->path)) ||
+                     (job->operation==FILE_COPY && job_same_directory(view->path,job->destination)))) view->refreshPending=1;
+    }
+    if (job->buffer) { FreeMem(job->buffer,COPY_BUFFER_BYTES);job->buffer=NULL; }
     okay=dialog_end(b);
-    if (okay && b->ready) okay=refresh(b);
+    if (okay && b->ready && b->refreshPending) { b->refreshPending=0;okay=refresh(b); }
     job_summary(job,cancel);
-    if (job->buffer) FreeMem(job->buffer,COPY_BUFFER_BYTES);
+    if (job->error) {
+        char *p;
+        strcpy(d->status,"File operation failed (");p=decimal(d->status+23,(ULONG)job->error);strcpy(p,")");
+        if (job->keepComplete) strcpy(p+1,"; complete temp kept");
+        else if (job->cleanupError) { strcpy(p+1,"; cleanup error ");decimal(p+17,(ULONG)job->cleanupError); }
+    }
     FreeMem(job,sizeof(*job));
     return okay && (!b->ready || redraw(b,b->work)) && (!d->active || menu_state(d->active));
 }
@@ -365,9 +406,15 @@ static WORD job_progress(struct DesktopFileJob *job)
 {
     struct Browser *b=job->owner;
     WORD area[4];
-    char *p=decimal(b->status,job->completed+job->skipped+1);
-    strcpy(p,"/");p=decimal(p+1,job->total);strcpy(p,"; ");
-    p=decimal(p+2,job->copied);strcpy(p," bytes copied");
+    char *p;
+    if (job->operation==FILE_DELETE) {
+        p=decimal(b->status,job->completed);strcpy(p," deleted, ");
+        p=decimal(p+10,job->total-job->completed);strcpy(p," left");
+    } else {
+        p=decimal(b->status,job->completed+job->skipped+1);
+        strcpy(p,"/");p=decimal(p+1,job->total);strcpy(p,"; ");
+        p=decimal(p+2,job->copied);strcpy(p," bytes copied");
+    }
     area[0]=b->work[0]+8;area[1]=b->work[1]+b->work[3]-10;
     area[2]=b->work[2]-16;area[3]=8;
     return redraw(b,area);
@@ -375,8 +422,11 @@ static WORD job_progress(struct DesktopFileJob *job)
 static WORD job_dialog(struct DesktopFileJob *job,WORD replace)
 {
     struct Browser *b=job->owner;
-    b->dialog=replace ? DIALOG_REPLACE:DIALOG_COPYING;b->focus=4;b->armed=-1;
-    b->dialogTree[1].ob_spec=(ULONG)(replace ? "Replace this file?":"Copying (Escape cancels)");
+    WORD kind=replace ? DIALOG_REPLACE:job->operation==FILE_DELETE ? DIALOG_DELETING:DIALOG_COPYING;
+    WORD same=b->dialog==kind && b->dialogTree[2].ob_type==G_STRING;
+    WORD area[4];
+    b->dialog=kind;b->focus=4;b->armed=-1;
+    b->dialogTree[1].ob_spec=(ULONG)(replace ? "Replace this file?":job->operation==FILE_DELETE ? "Deleting (Escape cancels)":"Copying (Escape cancels)");
     b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;
     b->dialogTree[2].ob_spec=(ULONG)job->target;
     b->dialogTree[3].ob_flags=replace ? SELECTABLE|EXIT:HIDETREE;
@@ -385,7 +435,10 @@ static WORD job_dialog(struct DesktopFileJob *job,WORD replace)
     b->dialogTree[4].ob_x=144;b->dialogTree[4].ob_width=64;
     b->dialogTree[6].ob_flags=LASTOB|(replace ? SELECTABLE|EXIT:HIDETREE);
     b->dialogTree[6].ob_state=0;
-    return sliders(b) && redraw(b,b->work);
+    if (!same) return sliders(b) && redraw(b,b->work);
+    area[0]=b->work[0]+8;area[1]=b->work[1]+16;
+    area[2]=b->work[2]-16;area[3]=16;
+    return redraw(b,area);
 }
 static WORD job_open_copy(struct Desktop *d)
 {
@@ -423,8 +476,18 @@ static WORD job_next(struct Desktop *d)
     BPTR lock;
     do { ++job->index; } while (job->index<b->count && !(job->pending[(UWORD)job->index>>3]&(1U<<(job->index&7))));
     if (job->index==b->count) return desktop_job_finish(d,0);
-    if (!FileJoin(job->source,sizeof(job->source),b->path,b->entries[job->index].name) ||
-        (job->total>1 && !FileJoin(job->target,sizeof(job->target),job->destination,b->entries[job->index].name))) {
+    if (!FileJoin(job->source,sizeof(job->source),b->path,b->entries[job->index].name)) {
+        job->error=ERROR_INVALID_COMPONENT_NAME;return desktop_job_finish(d,0);
+    }
+    if (job->operation==FILE_DELETE) {
+        strcpy(job->target,job->source);
+        if (!DeleteFile(job->source)) { job_error(job);return desktop_job_finish(d,0); }
+        mark_entry(b,job->index,0);
+        job->pending[(UWORD)job->index>>3]&=~(1U<<(job->index&7));
+        ++job->completed;
+        return job_dialog(job,0) && job_progress(job);
+    }
+    if (job->total>1 && !FileJoin(job->target,sizeof(job->target),job->destination,b->entries[job->index].name)) {
         job->error=ERROR_INVALID_COMPONENT_NAME;return desktop_job_finish(d,0);
     }
     strcpy(job->temporary,job->target);FileParent(job->temporary);
@@ -471,7 +534,7 @@ static WORD desktop_copy_start(struct Browser *b,WORD replace)
     job->owner=b;job->operation=FILE_COPY;job->state=JOB_NEXT;job->index=-1;
     job->total=b->selectionCount;memcpy(job->pending,b->selection,sizeof(job->pending));
     if (job->total>1) strcpy(job->destination,b->editText);
-    else strcpy(job->target,b->editText);
+    else { strcpy(job->target,b->editText);strcpy(job->destination,b->editText);FileParent(job->destination); }
     if (!objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) {
         FreeMem(job->buffer,COPY_BUFFER_BYTES);FreeMem(job,sizeof(*job));return 0;
     }
@@ -504,16 +567,15 @@ static WORD desktop_job_step(struct Desktop *d)
 }
 static WORD desktop_delete(struct Browser *b)
 {
-    LONG error;
-    if (!dialog_end(b)) return 0;
-    if (b->desktop->job || b->selectionCount!=1) return 1;
-    b->selected=single_entry(b);
-    full_name(b,b->entries[b->selected].name,b->target);
-    if (DeleteFile(b->target)) return refresh(b);
-    error=IoErr();b->desktop->error=error;
-    strcpy(b->status,error==ERROR_DIR_NOT_EMPTY ? "Directory is not empty":
-        error==ERROR_DISK_WRITE_PROTECTED || error==ERROR_WRITE_PROTECTED ? "Read-only volume":"Delete failed");
-    return redraw(b,b->work);
+    struct DesktopFileJob *job;
+    struct Desktop *d=b->desktop;
+    if (d->job || !b->selectionCount) return 1;
+    job=AllocMem(sizeof(*job),MEMF_PUBLIC|MEMF_CLEAR);
+    if (!job) { strcpy(b->status,"No memory for delete");return redraw(b,b->work); }
+    job->owner=b;job->operation=FILE_DELETE;job->state=JOB_NEXT;job->index=-1;
+    job->total=b->selectionCount;memcpy(job->pending,b->selection,sizeof(job->pending));
+    d->job=job;d->error=0;
+    return job_dialog(job,0);
 }
 static const char *desktop_association(struct Desktop *d,const char *name)
 {

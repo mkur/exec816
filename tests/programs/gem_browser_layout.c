@@ -48,4 +48,5 @@ const UWORD BrowserLayout[]={sizeof(struct Browser),
     offsetof(struct Browser,selectionCount),
     offsetof(struct Browser,selectionDirectories),
     offsetof(struct Browser,armedModifiers),
+    offsetof(struct Browser,refreshPending),
 };

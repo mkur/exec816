@@ -67,7 +67,7 @@ static WORD menu_state(struct Browser *b)
     WORD enabled=(!b->dialog && one>=0 && (b->entries[one].kind>0 || !b->child) ? 1:0)
         |(b->child ? 2:0)|(!b->dialog && one>=0 ? 4:0)|(!b->dialog ? 8:0)
         |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount && !b->selectionDirectories ? 16:0)
-        |(b->desktop && !b->dialog && !b->desktop->job && one>=0 ? 32:0);
+        |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount ? 32:0);
     WORD changed=b->menuEnabled<0 ? 63:enabled^b->menuEnabled;
     if ((changed&1) && !menu_ienable(b->applicationMenu,MENU_OPEN,enabled&1)) return 0;
     if ((changed&2) && !menu_ienable(b->applicationMenu,MENU_STOP,enabled&2)) return 0;
@@ -255,6 +255,7 @@ static WORD refresh_path(struct Browser *b,const char *path)
         if (names) FreeMem(names,bytes);
         strcpy(b->status,"Directory unavailable");return redraw(b,b->work);
     }
+    b->refreshPending=0;
     if (changed) { strcpy(b->path,path);b->first=0; }
     b->totalBytes=0;
     while (FileScanNext(&b->scan)) if (b->info.fib_DirEntryType<0) b->totalBytes+=b->info.fib_Size;
@@ -347,7 +348,7 @@ static WORD select_all(struct Browser *b,WORD state)
     return paint_selection(b);
 }
 
-enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7 };
+enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7,DIALOG_DELETING=8 };
 static const OBJECT dialogSource[]={
     {-1,1,6,G_BOX,0,0,0x1170,0,0,216,144},
     {2,-1,-1,G_STRING,0,0,0,8,2,192,8},
@@ -362,10 +363,11 @@ static WORD dialog_open(struct Browser *b,WORD kind)
     WORD i;
     TEDINFO *ted=&b->dialogTed;
     if (b->dialog || ((kind==DIALOG_COPY || kind==DIALOG_DELETE) && b->desktop->job)) return 1;
-    if (kind==DIALOG_RENAME || kind==DIALOG_DELETE) {
+    if (kind==DIALOG_RENAME) {
         i=single_entry(b);if (i<0) return 1;b->selected=i;
     }
     if (kind==DIALOG_COPY && (!b->selectionCount || b->selectionDirectories || b->desktop->job)) return 1;
+    if (kind==DIALOG_DELETE && !b->selectionCount) return 1;
     for (i=0;i<7;++i) b->dialogTree[i]=dialogSource[i];
     if (kind==DIALOG_PATH) b->dialogTree[1].ob_spec=(ULONG)"Path";
     else if (kind==DIALOG_NEW) b->dialogTree[1].ob_spec=(ULONG)"New Folder";
@@ -382,8 +384,11 @@ static WORD dialog_open(struct Browser *b,WORD kind)
     }
     b->dialog=kind;b->focus=2;b->armed=-1;b->dialogError=0;b->status[0]=0;
     if (kind==DIALOG_DELETE || kind==DIALOG_REPLACE) {
-        if (kind==DIALOG_DELETE) strcpy(b->editText,b->entries[b->selected].name);
-        b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_DELETE ? "Delete this entry?":"Replace this file?");
+        if (kind==DIALOG_DELETE) {
+            if (b->selectionCount==1) strcpy(b->editText,b->entries[single_entry(b)].name);
+            else { char *p=decimal(b->editText,b->selectionCount);strcpy(p," entries (empty folders only)"); }
+        }
+        b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_DELETE ? "Delete (empty folders only)?":"Replace this file?");
         b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;
         b->dialogTree[2].ob_spec=(ULONG)b->editText;
         b->dialogTree[3].ob_spec=(ULONG)(kind==DIALOG_DELETE ? "Delete":"Replace");
@@ -427,7 +432,7 @@ static WORD dialog_accept(struct Browser *b)
     WORD i,kind=b->dialog,okay=0;
     if (kind==DIALOG_COPY || kind==DIALOG_REPLACE) return desktop_copy_start(b,kind==DIALOG_REPLACE);
     if (kind==DIALOG_DELETE) return desktop_delete(b);
-    if (kind==DIALOG_COPYING) return 1;
+    if (kind==DIALOG_COPYING || kind==DIALOG_DELETING) return 1;
     if (!b->editText[0] || (kind!=DIALOG_PATH &&
         (strchr(b->editText,':') || strchr(b->editText,'/') || strchr(b->editText,'\\') ||
          !strcmp(b->editText,".") || !strcmp(b->editText,"..")))) {
@@ -476,7 +481,7 @@ static WORD dialog_key(struct Browser *b)
 {
     WORD next=b->focus,key=b->kr;
     if ((key&255)==27) return dialog_cancel(b);
-    if (b->dialog==DIALOG_COPYING) return (key&255)==13 ? dialog_cancel(b):1;
+    if ((b->dialog==DIALOG_COPYING || b->dialog==DIALOG_DELETING)) return (key&255)==13 ? dialog_cancel(b):1;
     form_keybd(b->dialogTree,b->focus,b->focus,key,&next,&key);
     if (!key && next==3 && (b->kr&255)!=9 && b->kr!=0x0f00) return dialog_accept(b);
     if (!key && next==6 && b->dialog==DIALOG_REPLACE && (b->kr&255)!=9 && b->kr!=0x0f00) return desktop_job_choice(b->desktop,0);
@@ -486,7 +491,7 @@ static WORD dialog_key(struct Browser *b)
 }
 static WORD dialog_click(struct Browser *b,WORD hit)
 {
-    if (b->dialog==DIALOG_COPYING) return hit==4 ? dialog_cancel(b):1;
+    if ((b->dialog==DIALOG_COPYING || b->dialog==DIALOG_DELETING)) return hit==4 ? dialog_cancel(b):1;
     if (hit==6 && b->dialog==DIALOG_REPLACE) return desktop_job_choice(b->desktop,0);
     if (hit==3) return dialog_accept(b);
     if (hit==4) return dialog_cancel(b);

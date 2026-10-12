@@ -50,7 +50,8 @@ class ColourDesktop:
         with tempfile.TemporaryDirectory(prefix='exec816-colour-') as tmp:
             root=Path(tmp);extract(target,root)
             if self.batch:
-                from colour_batch_check import fixture
+                if self.batch=='delete':from colour_delete_check import fixture
+                else:from colour_batch_check import fixture
                 fixture(root)
             if self.selection:
                 (root/'ALPHA.TXT').write_bytes(b'alpha')
@@ -113,9 +114,15 @@ class ColourDesktop:
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
         if self.batch:
-            from colour_batch_check import exercise
-            exercise(s,desk,first,click,key,fill,path,desk_menu,shot)
-            self.report=dict(batch_copy=s.saved['batch_copy'],stacks=stack_usage(b,s.p['build']['memory']))
+            if self.batch=='delete':
+                from colour_delete_check import exercise
+                exercise(s,desk,first,click,key,fill,path,desk_menu,shot,menus)
+                self.report=dict(batch_delete=s.saved['batch_delete'],remaining=s.saved['delete_remaining'])
+            else:
+                from colour_batch_check import exercise
+                exercise(s,desk,first,click,key,fill,path,desk_menu,shot)
+                self.report=dict(batch_copy=s.saved['batch_copy'])
+            self.report['stacks']=stack_usage(b,s.p['build']['memory'])
             menus.select('Shell');s.command('HELLO',b'Hello from disk!');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
@@ -197,7 +204,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
     p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
-    p.add_argument('--batch-copy',action='store_true')
+    p.add_argument('--batch-copy',action='store_true');p.add_argument('--batch-delete',action='store_true')
     p.add_argument('--selection-boundary',action='store_true')
     p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
     args.files=args.files or args.files_only
@@ -206,7 +213,7 @@ if __name__=='__main__':
     media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
     from native_program import sha256
     overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
-    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only,batch=args.batch_copy)
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:
@@ -230,6 +237,13 @@ if __name__=='__main__':
         import tempfile
         with tempfile.TemporaryDirectory(prefix='exec816-batch-readback-') as tmp:
             root=Path(tmp);extract(out/'work-walkthrough.atr',root);readback(root)
+        result['independent_batch_readback']=True
+    if args.batch_delete:
+        from colour_delete_check import readback
+        from sdfs_reference import extract
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix='exec816-delete-readback-') as tmp:
+            root=Path(tmp);extract(out/'work-walkthrough.atr',root);readback(root,probe.report['remaining'])
         result['independent_batch_readback']=True
     result['development_media_sha256']=sha256(media) if media else None
     result['application_sha256']={name:sha256(out/'bitmap-console/apps'/name/'program.app') for name in ('desktop','files')}

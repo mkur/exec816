@@ -40,7 +40,7 @@ struct Browser {
     OBJECT *applicationMenu;
     struct Desktop *desktop;
     UBYTE selection[BROWSER_ENTRIES/8];
-    WORD selectionCount,selectionDirectories,armedModifiers;
+    WORD selectionCount,selectionDirectories,armedModifiers,refreshPending;
 };
 WORD BrowserRun(struct Browser *);
 WORD DesktopRun(void);

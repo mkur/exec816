@@ -5,7 +5,7 @@ from native_program import ROOT, require
 from test_desktop_presentation import frame
 
 
-def draw(result, objects, labels, bounds, focus=-1):
+def draw(result, objects, labels, bounds, focus=-1, clip_strings=False):
     sys.path.insert(0, str(ROOT/'build/gem-vdi/upstream/tools'))
     import aesref as a
     import vdiref as v
@@ -19,6 +19,20 @@ def draw(result, objects, labels, bounds, focus=-1):
     aes = a.AES(device, tree, {k: a.Text(value) for k, value in labels.items()})
     aes.gsx_start()
     aes.gsx_sclip(a.Rect(left, top, right-left, bottom-top))
+    if clip_strings:
+        original=aes.just_draw
+        def clipped(index,x,y):
+            obj=tree[index]
+            if obj.ob_type!=28:return original(index,x,y)
+            previous=aes.gsx_gclip()
+            l,t=max(previous.x,x),max(previous.y,y)
+            r,bt=min(previous.x+previous.w,x+obj.ob_width),min(previous.y+previous.h,y+obj.ob_height)
+            if l<r and t<bt:
+                aes.gsx_sclip(a.Rect(l,t,r-l,bt-t));original(index,x,y)
+                aes.gsx_sclip(previous)
+        # Exec's objc_draw clips each object to its declared extent. GEM's
+        # reference ob_draw otherwise lets a long G_STRING overflow its box.
+        aes.just_draw=clipped
     aes.ob_draw(0, 7)
     if focus >= 0:
         # Find ancestry from the public tree, not the target's cached bounds.

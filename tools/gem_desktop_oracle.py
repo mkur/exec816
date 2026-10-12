@@ -77,11 +77,11 @@ def paint(bridge,symbols,r,title,bounds):
                     labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
             if objects[2][3]==28:  # Copy progress uses an ordinary string.
                 objects[0][7]=objects[0][8]=0
-                draw(r,objects,labels,(left+8,top+28,right-16,bottom-16))
+                draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
                 return
             field=objects[2][:];objects[2][3]=25;objects[2][6]=0
             objects[0][7]=objects[0][8]=0
-            draw(r,objects,labels,(left+8,top+28,right-16,bottom-16))
+            draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
             x,y=left+8+field[7],top+28+field[8];w,h=field[9:11]
             text=bridge.memdump(base+F['editText'],128).split(b'\0')[0]
             index=int.from_bytes(bridge.memdump(base+F['editIndex'],2),'little')
@@ -115,7 +115,7 @@ def paint(bridge,symbols,r,title,bounds):
                 if not obj[4]&128:icons.append(obj[:])
                 obj[3]=25;obj[5]=0;obj[6]=0
         objects[0][7]=objects[0][8]=0
-        draw(r,objects,labels,(left+8,top+28,right-16,bottom-16))
+        draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
         for obj in icons:icon(bridge,r,obj,(left+8,top+28,right-16,bottom-16))
         return
     require(title==b'GEM Control Panel','Unknown GEM desktop app: '+repr(title))

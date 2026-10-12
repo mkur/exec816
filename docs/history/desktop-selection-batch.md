@@ -59,3 +59,25 @@ A second batch and shell HELLO/EXIT pass. Raw/optimized layout probes and the
 451 passing host checks (four skips) pass. The final integration slice also
 covers the inherited partial-disk-full/single-copy walkthrough and measurements.
 Bank-zero reservation delta remains **0 fixed, 0 per public Task, 0 idle bytes**.
+
+
+## MS3 — sequential Delete and folder refresh
+
+Delete uses the same 974-byte job without a payload allocation. One confirmation
+covers the selection; each event turn deletes one entry. Nonempty-directory and
+read-only errors stop the batch. Completed deletions clear membership, while
+refresh remaps pending filenames. Each Browser adds a two-byte refresh flag
+(3,973 bytes total). Affected paths match case-insensitively; volume aliases are
+not resolved. Copy leaves its unmodified source snapshot in place and refreshes
+open destination views. Sibling dialogs defer refresh until they end.
+
+Physical checks pass mixed files/empty directories, default Cancel, a nonempty
+directory after an earlier successful deletion, read-only failure, cancellation
+between entries, surviving selection, second-batch exclusion and deferred refresh
+with typed input preserved. The refresh case uses lowercase destination spelling.
+Independent extraction verifies completed changes and untouched remaining files;
+shell HELLO/EXIT, stack/domain guards and raw/optimized layout probes pass.
+The pixel oracle now applies the existing OBJECT extent to folder G_STRINGs,
+including clipped long error summaries; target rendering semantics are unchanged.
+Host checks pass 451 tests with four skips. Bank-zero reservation change remains
+**0 fixed, 0 per public Task, 0 idle bytes**.

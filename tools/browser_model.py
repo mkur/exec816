@@ -15,6 +15,8 @@ SIZE=3947
 for name in FIELDS:
     if FIELDS[name]>FIELDS['dialogTree']:FIELDS[name]+=24
 SIZE+=24
+FIELDS['refreshPending']=SIZE
+SIZE+=2
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21
@@ -34,7 +36,7 @@ def wait_listing(session,base,limit=50):
     for _ in range(limit):
         status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
         path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
-        if status==path or b' selected' in status or status.startswith(b'First 256 entries'):
+        if status==path or b' selected' in status or status.startswith((b'First 256 entries',b'Delete complete',b'Delete cancelled',b'Delete failed')):
             session.frames(80);return
         session.frames(40)
     require(False,'Directory snapshot did not finish: '+repr((path,status)))
