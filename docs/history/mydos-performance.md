@@ -75,3 +75,30 @@ The playground producer's previously incomplete large ATR paragraph field was
 fixed to encode its admitted maximum capacity; a host read-back/allocation test
 covers that boundary. Shared SDFS 512-byte IDE create/overwrite/append/rename/
 reclaim/remount passed. Host checks: 448.
+
+## MP4: cursor reuse
+
+Target uses a retained validated extent without fetching bytes, continues with
+its successor for later targets, and restarts for earlier bases or invalid state.
+Unknown END measures only remaining extents and retains its terminal cursor.
+Reads still fetch their own matching payload. Write traverses accumulated bases
+and uses position-minus-base; its 2,552-byte emitted body no longer divides or
+reduces the whole-file position modulo payload size.
+
+Matched 128-byte observations: 63 same-sector seeks fetch/visit zero sectors;
+100 forward seeks visit 16 instead of 908; unknown END visits the remaining 47
+instead of walking all 64 twice. Optimized 256-byte file parsing passed 1,306
+checks/611 requests, including 70,003-byte reads, ten-bit/full-width references,
+short/zero payloads, cycles, seek errors, cancellation and independent handles.
+The stale NULL-output test was replaced with a real length-overflow error:
+caller buffer validity is already the current API contract. Seek cancellation
+now occurs before applying an extent, without assuming a second EOF walk.
+
+A focused 66,000-byte public write/read/overwrite/append/rename/remount case
+passes persisted-byte and allocation auditing on Generic 57600. It uses a larger
+512-block test cache to bound transport time; production defaults and all timing
+comparisons remain unchanged. File-only test selection now also skips repeated
+root listings; ordinary namespace cases retain those assertions. A broad 71 KiB
+128-byte case was stopped during repeated listings. The Fastest 125 kbit/s variant
+wrote correct persisted bytes but failed reading sector 105 with SIO checksum
+error 4; this is not a successful transport qualification. Host checks: 448.

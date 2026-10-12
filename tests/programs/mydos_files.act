@@ -196,11 +196,11 @@ PROC BadReads(BYTE unused)
 
   position=file.position+1
   Require(ReadCount(-1)=-1 AND work.error=115 AND file.position=position-1)
-  op.output=BYTE POINTER(0)
+  op.output=BYTE POINTER($afff0)
   op.requested=0
   status=MYDOSFILE.BeginRead(op)
   Require(status=FSSTATUS.DONE AND op.result=0 AND file.position=position-1)
-  op.requested=1
+  op.requested=LONGINT($7fffffff)
   status=MYDOSFILE.BeginRead(op)
   Require(status=FSSTATUS.ERROR AND op.result=-1 AND work.error=115 AND file.position=position-1)
   Require(ReadCount(4)=4)
@@ -473,7 +473,9 @@ PROC CancelAndReuse()
   status=MYDOSFILE.BeginSeek(op)
   Require(status=FSSTATUS.NEED_IO)
   Require(ReadPhysical(work,work.neededSector)<>NULL)
-  Require(MYDOSFILE.ContinueOperation(op)=FSSTATUS.NEED_IO)
+  ; Cancel before applying the fetched extent: a retained cursor may make
+  ; this very sector terminal, so continuation can legitimately finish.
+  Require(op.completed=0)
   Require(MYDOSFILE.Cancel(op)=0 AND op.result=-1)
   Require(file.position=position AND chain.valid=0 AND work.error=ERROR_BREAK)
   Require(ReadCount(10)=10)

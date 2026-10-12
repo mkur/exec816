@@ -287,9 +287,20 @@ BYTE FUNC Target(FSBTYPES.Operation POINTER op LONGINT base)
     RETURN(Fail(op,ERROR_SEEK_ERROR))
   FI
 
-  Restart(op.file)
+  LET chain=Chain(op.file)
+  IF chain.valid=0 OR op.target<chain.base THEN
+    Restart(op.file)
+  FI
+
   op.stage=LOCATING
-  IF op.target=0 THEN
+  IF chain.valid<>0 THEN
+    IF op.target<=chain.base+LONGINT(chain.used) THEN
+      chain.offset=CARD(op.target-chain.base)
+      RETURN(FSCORE.FinishOperation(op))
+    FI
+
+    Advance(op.file)
+  ELSEIF op.target=0 THEN
     RETURN(FSCORE.FinishOperation(op))
   FI
 
@@ -315,7 +326,14 @@ PUBLIC BYTE FUNC BeginSeek(FSBTYPES.Operation POINTER op)
     RETURN(Fail(op,ERROR_SEEK_ERROR))
   ESAC
 
-  Restart(op.file)
+  LET chain=Chain(op.file)
+  IF chain.valid=0 THEN
+    Restart(op.file)
+  ELSE
+    ; This sector already contributed its extent; measure only successors.
+    Advance(op.file)
+  FI
+
   op.stage=MEASURING
 
 RETURN(NeedSector(op))

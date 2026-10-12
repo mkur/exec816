@@ -49,7 +49,11 @@ def run(t,out,optimize,size):
     procedures,calls,paths,cases=mydos_file_cases.generated(size)
     text=read_source(ROOT/'tests/programs/mydos_files.act').replace('PROC Main()',procedures+'PROC Main()').replace('Setup()\n  Boundaries()\n  SeekChecks(0)\n  BadReads(0)\n  Cleanup()','Setup()\n  Boundaries()\n  SeekChecks(0)\n  BadReads(0) '+calls+' Cleanup()')
     source=out/'mydos_files.act';source.write_text(text)
-    p=build(t,source,out,optimize=optimize,tasks=True,image_data=[(0xa0000,paths),(0xa1000,b''.join(image.sector(n)[:128] for n in range(361,369))),(0xaffd0,bytes([165])*32+bytes(70004)+bytes([165])*32)])
+    memory=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+    memory['image_data_bytes']=4352
+    profile=out/'memory-profile.json';profile.write_text(json.dumps(memory)+'\n')
+    p=build(t,source,out,optimize=optimize,tasks=True,console_deferred=True,
+            memory_profile=profile,kernel_bank=18,image_data=[(0xa0000,paths),(0xa1000,b''.join(image.sector(n)[:128] for n in range(361,369))),(0xaffd0,bytes([165])*32+bytes(70004)+bytes([165])*32)])
     with emulator(ROOT/'build/altirra-sio-multi',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
         machine=verify_machine(b,ROOT/'build/firmware/altirraos-816.rom',PIN);requests=[]
         def before(b):

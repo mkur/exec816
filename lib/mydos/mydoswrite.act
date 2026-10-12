@@ -335,22 +335,17 @@ RETURN(completed)
 
 PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     POINTER file BYTE POINTER source LONGINT length)
-  CARD sector,previous,payload,within,part,index
-  LONGINT ordinal,hops
+  CARD sector,payload,within,part
   BYTE used
 
   LET state=FSWRITEIO.State(service)
   payload=service.selected.spec.dataBytes-3
-  ordinal=file.position/LONGINT(payload)
-  within=CARD(file.position MOD LONGINT(payload))
   LET chain=MYDOSFILE.Chain(file)
   IF chain.valid=0 OR chain.base>file.position THEN
     MYDOSFILE.Restart(file)
   FI
 
   sector=chain.sector
-  previous=0
-  hops=chain.base/LONGINT(payload)
   WHILE sector<>0 DO
     IF ReadPayload(service,@file.entry,sector,0)=0 THEN
       chain.valid=0
@@ -374,27 +369,28 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
     FI
 
     chain.valid=1
-    IF hops=ordinal THEN
+    IF file.position<chain.base+LONGINT(chain.used) OR
+        (chain.next=0 AND file.position=chain.base+LONGINT(chain.used)) THEN
+      within=CARD(file.position-chain.base)
+      IF within=payload THEN
+        RETURN(Extend(service,file,source,length,sector))
+      FI
+
       EXIT
     FI
 
-    previous=sector
-    MYDOSFILE.Advance(file)
-    sector=chain.sector
-    hops==+1
-    IF hops>file.entry.count THEN
+    IF chain.next=0 THEN
       Bad(service)
       RETURN(0)
     FI
+
+    MYDOSFILE.Advance(file)
+    sector=chain.sector
   OD
 
   IF sector=0 THEN
-    IF hops<>ordinal OR within<>0 OR previous=0 THEN
-      Bad(service)
-      RETURN(0)
-    FI
-
-    RETURN(Extend(service,file,source,length,previous))
+    Bad(service)
+    RETURN(0)
   FI
 
   part=payload-within
@@ -420,7 +416,6 @@ PUBLIC LONGINT FUNC Write(FSTYPES.Service POINTER service FSBTYPES.Cursor
   FI
 
   chain.sector=sector
-  chain.base=ordinal*LONGINT(payload)
   chain.offset=within+part
   chain.used=CARD(used)
   chain.next=state.next

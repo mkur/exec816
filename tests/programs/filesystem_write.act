@@ -67,9 +67,12 @@ PROC FileWrites()
       DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Lock(Path(0),DOS.SHARED_LOCK)=NULL AND
       DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-  lock=DOS.Lock(Path(6),DOS.SHARED_LOCK)
-  Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
-  WarmInfo()
+  IF fileOnly=0 THEN
+    lock=DOS.Lock(Path(6),DOS.SHARED_LOCK)
+    Require(lock<>NULL AND DOS.Examine(lock,@info)<>0)
+    WarmInfo()
+  FI
+
   phase=2
   lastResult=DOS.Write(file,buffer,amount)
   Require(lastResult=amount)
@@ -88,18 +91,21 @@ PROC FileWrites()
     FI
   END
 
-  Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
-  Require(DOS.Examine(lock,@info)<>0)
-  WarmInfo()
-  DO
-    Require(DOS.ExNext(lock,@info)<>0)
-    IF info.fib_FileName(0)='W THEN
-      EXIT
-    FI
-  OD
+  IF fileOnly=0 THEN
+    Require(DOS.ExNext(lock,@info)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+    Require(DOS.Examine(lock,@info)<>0)
+    WarmInfo()
+    DO
+      Require(DOS.ExNext(lock,@info)<>0)
+      IF info.fib_FileName(0)='W THEN
+        EXIT
+      FI
+    OD
 
-  Require(info.fib_Size=amount)
-  DOS.UnLock(lock)
+    Require(info.fib_Size=amount)
+    DOS.UnLock(lock)
+  FI
+
   Require(DOS.Flush(file)<>0)
   Require(DOS.Seek(file,0,DOS.OFFSET_BEGINNING)=amount)
   Require(DOS.Read(file,buffer,amount)=amount)

@@ -23,7 +23,7 @@ COLUMNS = ('frames', 'kernel_calls', 'physical_reads', 'physical_writes',
            'cache_hits', 'chain_visits', 'bitmap_loads')
 
 
-def run(out, size, from_build=None, frozen=None, accurate=False, hint=4):
+def run(out, size, from_build=None, frozen=None, accurate=False, hint=4, cache_blocks=None):
     out.mkdir(parents=True, exist_ok=True)
     instrument(out, frozen)
     probe = out/'writeperfprobe.act'
@@ -68,6 +68,10 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4):
         console_deferred=True, memory_profile=out/'memory-profile.json',
         image_data=[(0x2dffd0, bytes([0xa5])*(16384+64)), (0x320000, bytes(8192))])
     if from_build:
+        for group in ('platform_inputs','task_inputs','console_inputs','banked_inputs'):
+            for name,digest in program['build'].get(group,{}).items():
+                original=frozen/name if frozen and (frozen/name).exists() else ROOT/name
+                require(sha256(original)==digest,'Changed operation input: '+name)
         require(program['build']['source_sha256'] == sha256(fixture), 'Changed operation fixture')
         for path in out.glob('*.act'):
             require((from_build/path.name).exists() and sha256(path) == sha256(from_build/path.name),
@@ -79,6 +83,10 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4):
         machine = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
         def before(b):
             b.mount(0, str(media))
+            if cache_blocks is not None:
+                boot=program['build']['memory']['boot_config']
+                b.memload(boot['address']+boot['abi']['fields']['cache_blocks'],
+                          cache_blocks.to_bytes(2,'little'))
             trace = next(d['address'] for d in program['image']['data'] if '_WRITEPERFPROBE_TRACE_' in d['name'])
             b.memload(trace, (0x320000).to_bytes(3, 'little'))
         runtime, _ = execute(bridge, program, before_run=before, timeout=600, frame_limit=30000)
@@ -97,7 +105,8 @@ def run(out, size, from_build=None, frozen=None, accurate=False, hint=4):
     require(final.files == initial.files, 'Operation fixture changed unrelated files')
     result = dict(status='pass', tier='development', rows=rows, layouts=layouts,
                   build=program['build'], machine=machine, configuration=configuration,
-                  runtime=runtime, source_sha256=sha256(template), media_sha256=sha256(media),
+                  runtime=runtime, cache_blocks_override=cache_blocks,
+                  source_sha256=sha256(template), media_sha256=sha256(media),
                   observer_inputs={p.name: sha256(p) for p in out.glob('*.act')},
                   bank_zero_delta=dict(fixed=0, per_task=0, idle=0))
     (out/'results.json').write_text(json.dumps(result, indent=2)+'\n')
@@ -114,6 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('--frozen-sources', type=Path)
     parser.add_argument('--accurate-media', action='store_true')
     parser.add_argument('--hint', type=int, default=4)
+    parser.add_argument('--cache-blocks', type=int)
     args = parser.parse_args()
     run(args.output.resolve(), args.size, args.from_build, args.frozen_sources,
-        args.accurate_media, args.hint)
+        args.accurate_media, args.hint, args.cache_blocks)
