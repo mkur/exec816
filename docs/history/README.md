@@ -1,5 +1,8 @@
 # Historical records
 
+- [Desktop selection and batch operations](desktop-selection-batch.md):
+  implementation progress, focused checks and memory accounting.
+
 - [Desktop copy throughput](desktop-copy-performance.md): buffer comparison,
   shell COPY reference, cancellation and concurrent button feedback.
 

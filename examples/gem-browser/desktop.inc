@@ -2,9 +2,9 @@
 static WORD desktop_copy_step(struct Desktop *);
 #include "settings.inc"
 
-enum { DESK_TITLE=19,DESK_BOX=20,DESK_NEW=21,DESK_PANEL=22,DESK_CALC=23,
-       DESK_TEXT=24,DESK_COUNTER=25,DESK_SAVE=26,DESK_QUIT=27,
-       DESK_COPY=28,DESK_DELETE=29 };
+enum { DESK_TITLE=21,DESK_BOX=22,DESK_NEW=23,DESK_PANEL=24,DESK_CALC=25,
+       DESK_TEXT=26,DESK_COUNTER=27,DESK_SAVE=28,DESK_QUIT=29,
+       DESK_COPY=30,DESK_DELETE=31 };
 struct Desktop GEMDesk;
 static const char *desktopLabels[DESKTOP_ICONS]={"SYS:","WORK:","C:","Panel","Calculator","Text","Counter"};
 static const char *desktopPrograms[4]={"C:PANEL.APP","C:CALC.APP","C:TEXT.APP","C:COUNTER.APP"};
@@ -70,7 +70,7 @@ static WORD desktop_menu(struct Desktop *d,struct Browser *b)
     menu_ienable(d->bar,DESK_COPY,0);menu_ienable(d->bar,DESK_DELETE,0);
     for (i=MENU_OPEN;i<=MENU_RENAME;++i)
         if (!menu_ienable(d->bar,i,0)) return 0;
-    for (i=MENU_ICONS;i<=MENU_ORDER;++i)
+    for (i=MENU_ICONS;i<=MENU_NONE;++i)
         if (!menu_ienable(d->bar,i,0)) return 0;
     return 1;
 }
@@ -153,10 +153,10 @@ static WORD desktop_bar(struct Desktop *d)
 {
     WORD i;
     static const char *labels[]={"New Window","Control Panel","Calculator","Text","Counter","Save Settings","Quit Desktop"};
-    for (i=0;i<19;++i) d->bar[i]=menuSource[i];
+    for (i=0;i<21;++i) d->bar[i]=menuSource[i];
     d->bar[2].ob_tail=DESK_TITLE;d->bar[13].ob_next=DESK_TITLE;
     d->bar[4].ob_tail=DESK_BOX;d->bar[14].ob_next=DESK_BOX;
-    d->bar[18].ob_flags=0;
+    d->bar[MENU_NONE].ob_flags=0;
     d->bar[DESK_TITLE]=menuSource[13];
     d->bar[DESK_TITLE].ob_spec=(ULONG)"Desk";d->bar[DESK_TITLE].ob_x=128;
     d->bar[DESK_BOX]=menuSource[5];
@@ -187,7 +187,7 @@ static WORD desktop_dispatch(struct Desktop *d,struct Browser *b,WORD events)
     if (!b) return 1;
     memcpy(b->message,d->message,sizeof(b->message));
     b->mx=d->mx;b->my=d->my;b->mb=d->mb;b->ks=d->ks;b->kr=d->kr;b->br=d->br;
-    if ((events&MU_MESAG) && b->message[0]==MN_SELECTED && b->message[4]>=DESK_COPY) {
+    if ((events&MU_MESAG) && b->message[0]==MN_SELECTED && (b->message[4]==DESK_COPY || b->message[4]==DESK_DELETE)) {
         /* folder_event selects its own view; these commands bypass it. */
         if (!wind_get(b->window,WF_WORKXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3])) return 0;
         if (b->message[4]==DESK_COPY) result=dialog_open(b,DIALOG_COPY);

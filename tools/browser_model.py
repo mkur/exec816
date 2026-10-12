@@ -8,6 +8,10 @@ SIZE=3861
 for name in ('menuInstalled','menuEnabled','dialogTree','dialogTed','editText','dialog','focus','editIndex','dialogError'):
     FIELDS[name]+=144
 FIELDS.update(stock=3218,icons=3222,iconView=3766,sortNames=3768,columns=3770,armedClicks=3772,full=3774,restore=3776,totalBytes=3784,information=3788,applicationMenu=3853,desktop=3857)
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['bar']:FIELDS[name]+=48
+FIELDS.update(selection=3909,selectionCount=3941,selectionDirectories=3943,armedModifiers=3945)
+SIZE=3947
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
 OBJECTS=21
@@ -21,19 +25,19 @@ def listing(session,base):
     return [raw[i*ENTRY_BYTES:i*ENTRY_BYTES+108].split(b'\0')[0].decode('ascii') for i in range(count)]
 
 
-def wait_listing(session,base):
+def wait_listing(session,base,limit=50):
     """Wait for navigation to release its directory lock before heap baselines."""
     from native_program import require
-    for _ in range(50):
+    for _ in range(limit):
         status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
         path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
-        if status==path:
+        if status==path or b' selected' in status or status.startswith(b'First 256 entries'):
             session.frames(80);return
         session.frames(40)
     require(False,'Directory snapshot did not finish: '+repr((path,status)))
 
 
-def select(session,base,name,click):
+def select(session,base,name,click,stable_snapshot=False):
     """Reach a retained directory entry through the actual scrollbar, then click."""
     from native_program import require
     # Directory enumeration can span many disk turns. The application publishes
@@ -49,7 +53,7 @@ def select(session,base,name,click):
         # A mutation may finish rebuilding/sorting the retained snapshot while
         # the first scrollbar click is in flight. Resolve the name again; an
         # index captured from the preceding directory can become unreachable.
-        names=listing(session,base)
+        if not stable_snapshot:names=listing(session,base)
         if name not in names:
             session.frames(40);continue
         index=names.index(name)

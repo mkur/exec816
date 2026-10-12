@@ -24,7 +24,7 @@ struct Browser {
     struct ExecProgramResult result;
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
-    OBJECT bar[19];
+    OBJECT bar[21];
     WORD menuInstalled,menuEnabled;
     OBJECT dialogTree[6];
     TEDINFO dialogTed;
@@ -39,6 +39,8 @@ struct Browser {
     char information[65];
     OBJECT *applicationMenu;
     struct Desktop *desktop;
+    UBYTE selection[BROWSER_ENTRIES/8];
+    WORD selectionCount,selectionDirectories,armedModifiers;
 };
 WORD BrowserRun(struct Browser *);
 WORD DesktopRun(void);

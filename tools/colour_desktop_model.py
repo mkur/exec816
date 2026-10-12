@@ -7,6 +7,9 @@ FIELDS=dict(ready=8,folders=10,active=22,source=26,popup=30,stock=34,bar=38,
     launches=1416,paints=1420,status=1424,copy=1489,associations=1493,
     saved=1629,savedCount=2049,mouse=2051,defaultIcons=2053,defaultSort=2055,
     settingsLoaded=2057,error=2059,publishedStatus=2063)
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['bar']:FIELDS[name]+=48
+SIZE+=48
 COPY_SIZE=17174
 COPY_FIELDS=dict(owner=0,input=4,output=8,copied=12,error=16,replacing=20,
     source=22,target=278,temporary=534,buffer=790)

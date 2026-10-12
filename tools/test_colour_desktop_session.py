@@ -11,23 +11,56 @@ from native_program import require
 from stack_budget import stack_usage
 from test_shell_core import KEYS
 
+def development_media(out):
+    """Rebuild loadable apps against the unchanged resident image, explicitly.
+
+    The experimental disk is separate from the original packaged ZIP. Final
+    package checks omit this option and execute the exact distribution.
+    """
+    import shutil,tempfile
+    from build_c_program import build
+    from browser_model import LAYOUT as browser_layout
+    from colour_desktop_model import LAYOUT as desktop_layout
+    from native_program import ROOT
+    from sdfs_reference import extract,make
+    for name in ('desktop','files'):
+        build(out/'bitmap-console/apps'/name,
+            [ROOT/'examples/gem-browser'/('desktop-main.c' if name=='desktop' else 'main.c'),
+             ROOT/'examples/gem-browser/browser.c',ROOT/'c/calypsi/file-list.c'],
+            probes=[(ROOT/'tests/programs/gem_browser_layout.c',browser_layout),
+                    (ROOT/'tests/programs/gem_colour_desktop_layout.c',desktop_layout)])
+    media=out/'development-system.atr'
+    manifest=json.loads((out/'demo-manifest.json').read_text());geometry=manifest['mounts'][0]
+    with tempfile.TemporaryDirectory(prefix='exec816-selection-apps-') as tmp:
+        root=Path(tmp);extract(out/manifest['media'],root)
+        for name in ('desktop','files'):
+            shutil.copyfile(out/'bitmap-console/apps'/name/'program.app',root/'C'/(name.upper()+'.APP'))
+        make(media,root,geometry['sectors'],geometry['sector_bytes'])
+    return media
+
+
 class ColourDesktop:
-    def __init__(self,files=False,restore=None,only=False):
-        self.files,self.restore,self.only=files,restore,only
+    def __init__(self,files=False,restore=None,only=False,selection=False):
+        self.files,self.restore,self.only,self.selection=files,restore,only,selection
 
     def prepare_work(self,target,item):
-        if not self.files and self.restore is None:return
+        if not self.files and not self.selection and self.restore is None:return
         import tempfile
         from sdfs_reference import extract,make
         with tempfile.TemporaryDirectory(prefix='exec816-colour-') as tmp:
             root=Path(tmp);extract(target,root)
+            if self.selection:
+                (root/'ALPHA.TXT').write_bytes(b'alpha')
+                (root/'BETA.TXT').write_bytes(b'beta')
+                (root/'SELECT').mkdir()
+                for i in range(257):(root/'SELECT'/f'E{i:03d}.TXT').write_bytes(b'')
             (root/'SOURCE.TXT').write_bytes(b'Copied by the GEM desktop.\n'*37)
             (root/'DELETE.TXT').write_bytes(b'Delete fixture\n')
             (root/'BIG.BIN').write_bytes(bytes(range(256))*512)
             # Leave space for one 16 KiB chunk before the disk-full case.
             # Cancel is handled between chunks: a smaller reserve can report
             # disk full before processing Escape and falsely "pass" cleanup.
-            (root/'FILL.BIN').write_bytes(bytes([0x5a])*(590000-16384))
+            if self.files:(root/'FILL.BIN').write_bytes(bytes([0x5a])*(590000-16384))
             (root/'DESKTOP.CFG').write_bytes(self.restore or b'Invalid old preferences\n')
             make(target,root,item['sectors'],item['sector_bytes'])
 
@@ -58,7 +91,7 @@ class ColourDesktop:
             for c in value:k,shift=KEYS[c];key(k,shift)
         def path(base,value):
             key('P');s.rendezvous('dw($%x)=1'%(base+F['dialog']));fill(base,value);key('RETURN')
-            s.rendezvous('dw($%x)=0'%(base+F['dialog']));wait_listing(s,base)
+            s.rendezvous('dw($%x)=0'%(base+F['dialog']));wait_listing(s,base,limit=200 if self.selection else 50)
             require(text(base,'path')==value,'Folder path did not change')
         def desk_menu(row):click(168,8);click(176,24+row*16)
         def shot(name):
@@ -73,6 +106,13 @@ class ColourDesktop:
             require(s.number(first+F['iconView'],2)==0,'Saved List view was not restored')
             shot('desktop-settings-restored')
             self.report=dict(settings_restart=True)
+            menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
+            for c in 'EXIT':s.press(c)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+        if self.selection:
+            from colour_selection_check import exercise
+            exercise(s,desk,first,click,key,path,desk_menu,shot,move,boundary=self.selection=='boundary')
+            self.report=dict(selection=s.saved['selection'],stacks=stack_usage(b,s.p['build']['memory']))
             menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
@@ -145,12 +185,18 @@ class ColourDesktop:
 if __name__=='__main__':
     from test_demo import run
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
-    p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
+    p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
+    p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
+    p.add_argument('--selection-boundary',action='store_true')
+    p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
     args.files=args.files or args.files_only
     out=args.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(out/'extracted')
-    probe=ColourDesktop(files=args.files,only=args.files_only)
-    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False)
+    media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
+    from native_program import sha256
+    overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='boundary' if args.selection_boundary else args.selection_only)
+    result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:
         from sdfs_reference import extract
@@ -165,6 +211,8 @@ if __name__=='__main__':
             require(preferences.startswith(b'EXEC816_DESKTOP 1\n'),'Settings format')
             (out/'saved-desktop.cfg').write_bytes(preferences)
         restart=ColourDesktop(restore=preferences)
-        restored=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=restart,profile_commands=False)
+        restored=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=restart,profile_commands=False,**overrides)
         result['settings_restart']=dict(status='pass',checks=restart.report,exit=restored.get('status'))
+    result['development_media_sha256']=sha256(media) if media else None
+    result['application_sha256']={name:sha256(out/'bitmap-console/apps'/name/'program.app') for name in ('desktop','files')}
     (out/'colour-session-results.json').write_text(json.dumps(result,indent=2)+'\n')

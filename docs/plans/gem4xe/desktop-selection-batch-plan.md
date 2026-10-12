@@ -1,6 +1,6 @@
 # Desktop multiple selection and batch file operations
 
-Status: proposed; implementation has not started.
+Status: implementation in progress; see the [execution record](../../history/desktop-selection-batch.md).
 
 [Roadmap](../../roadmap.md#colour-gem-desktop-roadmap) ·
 [CG4 design](colour-launcher-design.md) ·
@@ -13,9 +13,7 @@ buffer. Throughput takes priority over short cancellation intervals. Selection
 and job state belong to the application in upper RAM; no AES, VDI, DOS or kernel
 ABI extension is needed.
 
-The current copy-throughput changes are the starting point, including their
-uncommitted source, fixtures and evidence. Preserve that work and commit it
-separately before implementation slices. Do not repeat the buffer-size study.
+The current copy-throughput changes are the starting point, committed separately as `1906104`, including source, fixtures and evidence. Do not repeat the buffer-size study.
 Implement MS1–MS4 in order, with a commit after each passing slice.
 
 ## Scope and interaction
