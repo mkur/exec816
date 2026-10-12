@@ -59,7 +59,7 @@ BOOL ExecAESFormFinish(struct ExecAESContext *c)
     } else if (f->ready && c->view && c->view->shown) {
         c->repair=c->view->work;
         c->repairWindow=c->view->handle;
-        c->repairEpoch=c->endpoint->guiEpoch;
+        c->repairEpoch=c->view->epoch;
     }
     if (f->ownView && c->view && !c->view->handle) {
         FreeMem(c->view,sizeof(*c->view)); c->view=NULL; c->request.view=NULL;

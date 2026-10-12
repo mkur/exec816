@@ -137,6 +137,7 @@ void AESClientOne(void)
     AESInputAck = 1UL << bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init() > 0);
+    CHECK(wind_create(AES_WINDOW_KIND,16,24,200,120)>0);
     produce(1); snapshot(101, 111, 0, 0);
     for (i = 0; i < 8; ++i) {
         input(AES_INPUT_KEY, 21, 31, 0, 4);
@@ -161,6 +162,7 @@ UWORD AESRun(void)
     AESInputAck = 1UL << ack;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init() > 0);
+    CHECK(wind_create(AES_WINDOW_KIND,16,24,200,120)>0);
     c = ExecAESContext(); in = c->endpoint->input;
     CHECK(!evnt_keybd() && ExecAESDiagnostic() == AES_IDENTITY);
     CHECK(!evnt_button(1, 1, 1, &x, &y, &buttons, &modifiers));
@@ -210,7 +212,7 @@ UWORD AESRun(void)
 
     input(AES_INPUT_KEY, 15, 25, 0, 2); message(c);
     before = in->keyHead;
-    CHECK(!event(MU_KEYBD | MU_BUTTON | MU_MESAG, 2, 1, 1, 0));
+    CHECK(!event(MU_KEYBD | MU_BUTTON | MU_MESAG, 3, 1, 1, 0));
     CHECK(ExecAESDiagnostic() == AES_UNSUPPORTED && in->keyHead == before);
     CHECK(!event(MU_BUTTON, 1, 0, 1, 0) && ExecAESDiagnostic() == AES_UNSUPPORTED);
     CHECK(!event(MU_BUTTON, 1, 2, 1, 0) && ExecAESDiagnostic() == AES_UNSUPPORTED);

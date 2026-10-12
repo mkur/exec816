@@ -64,10 +64,11 @@ UWORD AESRun(void)
     AESInputAck = 1UL << ack;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init() > 0);
+    CHECK(wind_create(AES_WINDOW_KIND,16,24,200,120)>0);
     c = ExecAESContext();
     input = c->endpoint->input;
     mask = 1UL << c->receiving->mp_SigBit;
-    CHECK(sizeof(*input) <= 640);
+    CHECK(sizeof(*input) <= 800);
     CHECK(input->windowEpoch == 0);
     CHECK(ExecAESInputArm(c, AES_INPUT_KEY) == AES_IDENTITY);
     produce(1);
@@ -182,6 +183,7 @@ UWORD AESRun(void)
     CHECK(appl_exit());
     allocation_failure(c);
     CHECK(appl_init() > 0);
+    CHECK(wind_create(AES_WINDOW_KIND,16,24,200,120)>0);
     CHECK(c->endpoint->input->windowEpoch == 0);
     CHECK(ExecAESDetach());
     FreeSignal(ack);

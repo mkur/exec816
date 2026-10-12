@@ -34,7 +34,7 @@ void AESClientTwo(void) {}
 
 UWORD AESRun(void)
 {
-    WORD words[8] = {0}, id, mx, my, mb, ks, kr, br;
+    WORD words[8] = {0}, id, handle, mx, my, mb, ks, kr, br;
     UWORD i;
     ULONG available = AvailMem(0);
     struct ExecAESContext *c;
@@ -42,6 +42,8 @@ UWORD AESRun(void)
     id = appl_init();
     CHECK(id > 0);
     c = ExecAESContext();
+    handle=wind_create(AES_WINDOW_KIND,16,24,200,120);
+    CHECK(handle>0);
     produce(1);
     for (i = 0; i < 16; ++i) {
         words[0] = i;
@@ -56,11 +58,11 @@ UWORD AESRun(void)
         CHECK(evnt_mesag(words));
         CHECK(words[0] == i);
     }
-    notice(AES_WM_REDRAW, 7, 10, 20, 30, 40);
-    notice(AES_WM_REDRAW, 7, 90, 25, 20, 20);
-    notice(AES_WM_TOPPED, 7, 0, 0, 0, 0);
-    notice(AES_WM_MOVED, 7, 31, 41, 100, 100);
-    notice(AES_WM_CLOSED, 7, 0, 0, 0, 0);
+    notice(AES_WM_REDRAW, handle, 10, 20, 30, 40);
+    notice(AES_WM_REDRAW, handle, 90, 25, 20, 20);
+    notice(AES_WM_TOPPED, handle, 0, 0, 0, 0);
+    notice(AES_WM_MOVED, handle, 31, 41, 100, 100);
+    notice(AES_WM_CLOSED, handle, 0, 0, 0, 0);
     CHECK(c->endpoint->freeRecords == 0xffff);
     CHECK(c->endpoint->guiFree == 1);
     CHECK(c->endpoint->guiWaiting == 0);
@@ -74,7 +76,7 @@ UWORD AESRun(void)
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, words, 0, 0,
         &mx, &my, &mb, &ks, &kr, &br) == (MU_MESAG | MU_TIMER));
     CHECK(words[0] == AES_WM_REDRAW && words[3] == 7);
-    notice(AES_WM_REDRAW, 8, 110, 120, 10, 11);
+    notice(AES_WM_REDRAW, handle, 110, 120, 10, 11);
 
     /* No consumer is needed while exit drains a queued GUI record. */
     produce(2);

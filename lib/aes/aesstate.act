@@ -33,6 +33,16 @@ PUBLIC TYPE Menu=[
   INT ARRAY box(AESTYPES.MENU_OBJECTS)
 ]
 
+; Window lifetimes are independent of their application's port and menu.
+PUBLIC TYPE Window=[
+  LONGCARD owner
+  GuiPending gui
+  AESTYPES.WindowView POINTER view
+  DESKTYPES.Window POINTER window
+  LAYERTYPES.Rect paintDamage
+  BYTE paintDirty
+]
+
 PUBLIC TYPE Client=[
   LONGCARD id
   LONGCARD sequence
@@ -44,10 +54,7 @@ PUBLIC TYPE Client=[
   AESTYPES.Request POINTER pending
   Menu POINTER menu
   GuiPending gui
-  AESTYPES.WindowView POINTER view
-  DESKTYPES.Window POINTER window
-  LAYERTYPES.Rect paintDamage
-  BYTE paintDirty,windowWaiting,closeRequested
+  BYTE guiNext,windowWaiting,closeRequested
 ]
 
 PUBLIC TYPE Service=[
@@ -67,6 +74,7 @@ PUBLIC TYPE Service=[
   LONGCARD windowRevision,windowFocus
   AESTYPES.Directory directory
   Client ARRAY clients(AESTYPES.CLIENTS)
+  Window ARRAY windows(AESTYPES.WINDOWS)
   BYTE count
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds

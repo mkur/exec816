@@ -1,6 +1,6 @@
 """Independent full recomposition from desktop retained records (no GPU reads)."""
-from generate_desktop import layout
-from generate_layers import layout as layers_layout
+from generate_desktop import layout,ABI as DESKTOP_ABI
+from generate_layers import layout as layers_layout,ABI as LAYERS_ABI
 from gem_render_oracle import Raster, PENS
 from test_desktop_presentation import desktop, frame, rectangle, text
 from test_gem_cursor import overlay
@@ -20,11 +20,11 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
     scene = service+fields['scene']
     lf = layers_layout()['Scene']['fields']
     count = number(bridge.memdump(scene+lf['count'], 1), 0, 1)
-    require(count <= 6, 'Unbounded desktop scene')
+    require(count <= LAYERS_ABI['constants']['MAX_LAYERS'], 'Unbounded desktop scene')
     order = bridge.memdump(scene+lf['order'], count)
     windows = {}
     wf = types['Window']['fields']
-    for slot in range(4):
+    for slot in range(DESKTOP_ABI['constants']['WINDOWS']):
         start = service+fields['windows']+slot*types['Window']['size']
         window = bridge.memdump(start, types['Window']['size'])
         if number(window, wf['id'], 4):
@@ -128,10 +128,12 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
             length = commands*types['Command']['size']
             content[cf['commands']:cf['commands']+length] = bridge.memdump(content_address+cf['commands'], length)
             content[cf['text']:cf['text']+text_bytes] = bridge.memdump(content_address+cf['text'], text_bytes)
-        frame(result, bounds, title, number(window, wf['id'], 4) == focused,
-              number(content, cf['background']) if kind == 2 else 0, close=kind != 1,
-              kind=number(window,wf['frameKind']),
-              slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
+        if not number(window,wf['frameKind']) & DESKTOP_ABI['constants']['FRAME_BORDERLESS']:
+            frame(result, bounds, title, number(window, wf['id'], 4) == focused,
+                  number(content, cf['background']) if kind == 2 else 0, close=kind != 1,
+                  kind=number(window,wf['frameKind']),
+                  info=window[wf['info']:wf['info']+64].split(b'\0')[0],
+                  slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
         if kind == 1:
             terminal.paint(result, (left+8)//8, (top+16)//8, number(window, wf['id'], 4) == focused)
         elif kind == 3:

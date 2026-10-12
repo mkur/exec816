@@ -32,10 +32,10 @@ class Menus:
                 visible.append(s.number(at, 4))
         result = []
         wf = self.types['Window']['fields']
-        for slot in range(4):
+        for slot in range(__import__('generate_desktop').ABI['constants']['WINDOWS']):
             at = self.service+self.types['Service']['fields']['windows']+slot*self.types['Window']['size']
             ident, layer = s.number(at+wf['id'], 4), s.number(at+wf['layer'], 4)
-            if ident and layer in visible:
+            if ident and layer in visible and not s.number(at+wf['frameKind'],2)&512:
                 title = s.b.memdump(at+wf['title'], 65).split(b'\0')[0].decode('ascii')
                 result.append(dict(id=ident, title=title, rank=visible.index(layer)))
         return result

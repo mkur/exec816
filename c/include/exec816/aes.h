@@ -47,6 +47,8 @@ struct ExecAESContext {
     ULONG repairEpoch;
     struct AESRect repair;
     WORD repairWindow;
+    struct AESWindowView *views[AES_WINDOWS];
+    WORD eventWindow,keyWindow;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);
@@ -56,5 +58,8 @@ UWORD ExecAESDiagnostic(void);
 /* Session preference: AES_MOUSE_QUERY, AES_MOUSE_OFF or AES_MOUSE_MILD.
  * Returns the chosen profile, or -1 on failure. Held gestures finish first. */
 WORD ExecAESMouseProfile(WORD profile);
+/* Exec extensions: pinned borderless background and captured input owner. */
+WORD ExecAESDesktop(WORD handle);
+WORD ExecAESInputWindow(WORD event);
 BOOL ExecAESPointer(const void *pointer, ULONG bytes);
 #endif

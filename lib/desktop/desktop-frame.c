@@ -37,7 +37,7 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
 {
     struct ConsoleBitmapPacket *p=paint;
     WORD k=p->fillY,g=DESKTOP_FRAME_GADGET,left=r-g;
-    WORD top=t+DESKTOP_TITLE_HEIGHT,bottom=b-(k&DESKTOP_FRAME_SIZER ? g:DESKTOP_WORK_BOTTOM);
+    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? g:DESKTOP_WORK_BOTTOM);
     WORD i,mid=left+g/2,center;
     if (k&DESKTOP_FRAME_VERTICAL) {
         fill(left,top,r,bottom,8);
@@ -75,26 +75,32 @@ static UWORD fragment(void)
     const UBYTE *title=(const UBYTE *)p->text;
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
     WORD nameLeft=l+(p->background ? DESKTOP_TITLE_HEIGHT:DESKTOP_FRAME_EDGE);
-    WORD nameRight=r-DESKTOP_FRAME_EDGE,x,y=t+DESKTOP_TITLE_TEXT_Y;
+    WORD nameRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET:DESKTOP_FRAME_EDGE);
+    WORD x,y=t+DESKTOP_TITLE_TEXT_Y;
     WORD pl,pt,pr,pb;
     UWORD span=nameRight-nameLeft;
-    UWORD length=0,limit=(span-2*DESKTOP_TITLE_PAD)>>3;
+    UWORD length=0,limit=span>2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
     UWORD first,n;
     /* Side/bottom fragments are admitted inside the outer bounds. They need
      * only paper and the intersecting outline, never a title scan or glyphs. */
     if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
-        GemWidgetFill(1,1,0,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
-        if (p->clipLeft==l)
-            GemWidgetFill(1,1,1,l,p->clipTop,l+1,p->clipBottom);
-        if (p->clipRight==r)
-            GemWidgetFill(1,1,1,r-1,p->clipTop,r,p->clipBottom);
-        if (p->clipBottom==b)
-            GemWidgetFill(1,1,1,p->clipLeft,b-1,p->clipRight,b);
-        if (p->fillY& (DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL))
-            gadgets(l,t,r,b);
-        return 1;
-    }
-    while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
+        if (!p->fillX) {
+            fill(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,0);
+            box(l,t,r,b);
+            if (p->fillY&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL)) gadgets(l,t,r,b);
+            if (p->fillY&DESKTOP_FRAME_INFO)
+                fill(l,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT-1,
+                     r,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT,1);
+        }
+        if (!(p->fillY&DESKTOP_FRAME_INFO) ||
+            p->clipTop>=t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT) return 1;
+        title+=DESKTOP_TITLE_BYTES;
+        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+2;
+        span=r-x-8;
+        limit=span>>3;
+        while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
+    } else {
+        while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
     x=nameLeft+((nameRight-nameLeft-(length<<3))>>1);
     if (!p->fillX) {
         fill(l,t,r,b,0);
@@ -110,12 +116,17 @@ static UWORD fragment(void)
         }
         if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
                          t+DESKTOP_TITLE_HEIGHT-1,0);
+        if (p->fillY&DESKTOP_FRAME_FULLER) {
+            box(r-DESKTOP_FRAME_GADGET,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
+            box(r-12,t+4,r-4,t+12);
+        }
         if (p->background) {
             box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
                 l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
             glyphs[0]=DESKTOP_CLOSE_GLYPH;
             text(l+DESKTOP_CLOSE_TEXT_X,y,1);
         }
+    }
     }
     first=p->fillX;
     if (p->clipLeft>x && first<((p->clipLeft-x)>>3)) first=(p->clipLeft-x)>>3;

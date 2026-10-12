@@ -120,6 +120,10 @@ LONGINT FUNC CRename(LONGCARD oldName,newName,unused)
 
 RETURN(DOS.Rename(BYTE POINTER(ADDRESS(oldName)),BYTE POINTER(ADDRESS(newName))))
 
+LONGINT FUNC CDeleteFile(LONGCARD name,unused,unused2)
+
+RETURN(DOS.DeleteFile(BYTE POINTER(ADDRESS(name))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -144,5 +148,6 @@ PROC BindDos(BYTE unused)
   entries(17)=ADDRESS(@CProgramMask)
   entries(18)=ADDRESS(@CCreateDir)
   entries(19)=ADDRESS(@CRename)
+  entries(20)=ADDRESS(@CDeleteFile)
 
 RETURN

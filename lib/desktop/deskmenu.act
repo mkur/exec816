@@ -118,7 +118,7 @@ RETURN
 
 BYTE FUNC Shown(DESKTYPES.Window POINTER window)
 
-  IF window.id=0 THEN
+  IF window.id=0 OR window.id=DESKSTATE.desktopWindow THEN
     RETURN(0)
   FI
 

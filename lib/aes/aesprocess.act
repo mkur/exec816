@@ -8,7 +8,7 @@ USE AESGUI
 ; The Process owner retains the child Task. Forbid excludes presenter mutation;
 ; IRQ/NMI do not follow AES records. A close before wind_open remains pending.
 PUBLIC PROC RequestClose(EXEC.Task POINTER owner)
-  BYTE index
+  BYTE index,slot
 
   LET service=AESSTATE.Get()
   IF service=NULL THEN
@@ -22,7 +22,11 @@ PUBLIC PROC RequestClose(EXEC.Task POINTER owner)
       IF client.id<>0 AND client.binding.owner=owner THEN
         client.closeRequested=1
         IF client.endpoint.guiEpoch<>0 THEN
-          AESGUI.Post(service,client,AESTYPES.GUI_CLOSED,0,0,0,0)
+          FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+            IF service.windows(slot).owner=client.id THEN
+              AESGUI.Post(service,@service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
+            FI
+          OD
         FI
 
         EXIT

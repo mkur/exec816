@@ -68,13 +68,11 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
     service.updateOwner=client.id
     IF service.updates=0 THEN
-      AESWINDOWSTATE.Snapshot(client)
+      AESWINDOWSTATE.SnapshotAll(client)
     FI
 
     service.updates==+1
-    IF client.view<>NULL THEN
-      client.view.updates=service.updates
-    FI
+    AESWINDOWSTATE.Updates(client,service.updates)
   ELSE
     IF service.mouseHolds=$ffff THEN
       RETURN(AESTYPES.OVERFLOW)
@@ -147,9 +145,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
 
     service.updates==-1
-    IF client.view<>NULL THEN
-      client.view.updates=service.updates
-    FI
+    AESWINDOWSTATE.Updates(client,service.updates)
     IF service.updates=0 THEN
       service.updateOwner=0
     FI

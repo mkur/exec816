@@ -49,13 +49,16 @@ def scene_symbols(bridge,program,directory,title,bounds):
         at=number(pointers,offset,4)
         if not at:continue
         raw=bridge.memdump(at,request['size'])
-        target=number(raw,request['fields']['view'],3)
-        if not target:continue
-        state=bridge.memdump(target,view['fields']['visibleCount'])
-        rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
-                                       'little',signed=True) for i in (0,2,4,6))
-        if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
-            owners[number(raw,request['fields']['owner'],3)]=at
+        from generate_aes_server import expected_layout
+        views=bridge.memdump(at+dict(expected_layout())['C context views'],4*ABI['constants']['WINDOWS'])
+        for slot in range(ABI['constants']['WINDOWS']):
+            target=number(views,slot*4,4)
+            if not target:continue
+            state=bridge.memdump(target,view['fields']['visibleCount'])
+            rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
+                                           'little',signed=True) for i in (0,2,4,6))
+            if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
+                owners[number(raw,request['fields']['owner'],3)]=at
     # wind_get clears caller output words before filling them. The application
     # work[] buffer is scratch, not a window identity, even at an IRQ snapshot.
     # Use the published AES view and its retained Process Task instead.

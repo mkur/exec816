@@ -38,6 +38,10 @@
 #define WA_UPLINE 2
 #define WA_DNLINE 3
 #define WF_VSLSIZ 16
+#define FULLER 4
+#define INFO 16
+#define WF_INFO 3
+#define WM_FULLED 23
 #define WF_WORKXYWH WF_WXYWH
 #define WF_CURRXYWH WF_CXYWH
 #endif

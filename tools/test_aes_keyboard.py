@@ -8,6 +8,7 @@ def producer(out, symbols):
 USE EXEC
 USE INPUT
 USE AESSTATE
+USE AESWINDOWSTATE
 USE DESKINPUT
 USE DESKCORE
 USE DESKSTATE
@@ -28,13 +29,14 @@ PUBLIC PROC Pump()
   LET route=LONGCARD POINTER($ROUTE)
   LET acknowledgement=LONGCARD POINTER($ACK)
   LET client=AESSTATE.Find(AESSTATE.Get(),identity^)
+  LET item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
   IF command^=1 THEN
-    savedRoute=client.window.keyRoute
+    savedRoute=item.window.keyRoute
     route^=savedRoute
   ELSEIF command^=4 THEN
-    DESKCORE.Focus(DESKSTATE.Get(),client.window.id)
+    DESKCORE.Focus(DESKSTATE.Get(),item.window.id)
   ELSE
-    captured.route=IF command^=3 THEN savedRoute ELSE client.window.keyRoute FI
+    captured.route=IF command^=3 THEN savedRoute ELSE item.window.keyRoute FI
     captured.kind=kind^
     captured.code=code^
     captured.qualifiers=(code^ RSH 6) & 3

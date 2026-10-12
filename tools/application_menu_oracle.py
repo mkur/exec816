@@ -6,19 +6,19 @@ from generate_aes_server import ABI, layout, expected_layout
 
 
 def active_tree(bridge, contexts, bounds):
-    records=layout();request=records['Request'];view=records['WindowView']
-    offset=dict(expected_layout())['C context menuTree']
+    records=layout();view=records['WindowView'];context=dict(expected_layout())
+    offset=context['C context menuTree'];views=context['C context views']
     found=[]
     for (at,) in struct.iter_unpack('<I',bridge.memdump(contexts,4*ABI['constants']['CONTEXTS'])):
         if not at:continue
-        raw=bridge.memdump(at,offset+4)
-        target=int.from_bytes(raw[request['fields']['view']:request['fields']['view']+3],'little')
-        tree=int.from_bytes(raw[offset:offset+4],'little')
-        if not target or not tree:continue
-        state=bridge.memdump(target,view['fields']['visibleCount'])
-        if struct.unpack_from('<4h',state,view['fields']['bounds'])==tuple(bounds) and \
-                int.from_bytes(state[view['fields']['shown']:view['fields']['shown']+2],'little'):
-            found.append(tree)
+        tree=int.from_bytes(bridge.memdump(at+offset,4),'little')
+        if not tree:continue
+        for (target,) in struct.iter_unpack('<I',bridge.memdump(at+views,4*ABI['constants']['WINDOWS'])):
+            if not target:continue
+            state=bridge.memdump(target,view['fields']['visibleCount'])
+            if struct.unpack_from('<4h',state,view['fields']['bounds'])==tuple(bounds) and \
+                    int.from_bytes(state[view['fields']['shown']:view['fields']['shown']+2],'little'):
+                found.append(tree)
     require(len(found)<=1,'Ambiguous menu source owner')
     return found[0] if found else 0
 
@@ -67,6 +67,8 @@ def draw(bridge,result,address,popup=False,heading=0,selected=-1,opened=False):
         if opened:objects[title][5]|=1
     objects[0][7:9]=origin
     tree=[a.Obj(*obj) for obj in objects]
+    # The hosted menu uses its compact geometric check, not the donor glyph.
+    for obj in tree:obj.ob_state&=~4
     device=v.VDI();device.call(v.V_OPNWK,(),v.WORK_IN)
     device.dev.s.mem[:76800]=result.packed()
     aes=a.AES(device,tree,{k:a.Text(value) for k,value in labels.items()})
@@ -75,4 +77,15 @@ def draw(bridge,result,address,popup=False,heading=0,selected=-1,opened=False):
     aes.gsx_sclip(a.Rect(left,top,right-left,bottom-top))
     aes.ob_draw(scope,7)
     result.pixels[:]=bytes(n for byte in device.dev.s.mem[:76800] for n in (byte>>4,byte&15))
+    if popup:
+        item=objects[box][1]
+        while item!=box:
+            obj=objects[item]
+            if obj[5]&4 and not obj[4]&128:
+                x,y=positions[item];x+=origin[0];y+=origin[1]
+                for dx,dy in enumerate((0,1,2,1,0,-1)):
+                    for yy in (y+6+dy,y+7+dy):
+                        if left<=x+2+dx<right and top<=yy<bottom:
+                            result.pixel(x+2+dx,yy,0 if obj[5]&1 else 1)
+            item=obj[0]
     return bounds

@@ -45,7 +45,7 @@ def desktop(raster):
             raster.pixels[y*640+x]=PENS[8 if (x+y)&1 else 0]
 
 
-def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0)):
+def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0), info=b''):
     x, y, right, bottom = bounds
     rectangle(raster, bounds, 0)
     def box(l,t,r,b):
@@ -56,8 +56,8 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
     box(x,y,right,bottom)
     rectangle(raster,(x,y+15,right,y+16),1)
     name_left=x+(16 if close else 1)
-    name_right=right-1
-    title=title[:min(64,(name_right-name_left-4)//8)]
+    name_right=right-(16 if kind&4 else 1)
+    title=title[:max(0,min(64,(name_right-name_left-4)//8))]
     tx=name_left+(name_right-name_left-len(title)*8)//2
     if focused:
         for py in range(y+1,y+15):
@@ -69,11 +69,17 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
     if close:
         box(x+1,y+1,x+15,y+15)
         text(raster,x+4,y+4,bytes([5]))
+    if kind&4:
+        box(right-16,y+1,right-1,y+15);box(right-12,y+4,right-4,y+12)
+    wt=28 if kind&16 else 16
+    if kind&16:
+        rectangle(raster,(x,y+27,right,y+28),1)
+        text(raster,x+8,y+18,info[:min(64,(right-x-16)//8)])
     wr=16 if kind&448 else 8
     wb=16 if kind&32 else 8
-    rectangle(raster,(x+8,y+16,right-wr,bottom-wb),background)
+    rectangle(raster,(x+8,y+wt,right-wr,bottom-wb),background)
     if kind&448:
-        l,t,b=right-16,y+16,bottom-wb
+        l,t,b=right-16,y+wt,bottom-wb
         rectangle(raster,(l,t,right,b),8)
         if kind&64:
             rectangle(raster,(l,t,right,t+16),0);box(l,t,right,t+16)

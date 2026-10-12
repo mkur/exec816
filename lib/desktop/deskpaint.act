@@ -111,17 +111,21 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
   BYTE result
 
   LET service=DESKSTATE.Get()
-  WHILE commandIndex<4 DO
+  WHILE commandIndex<5 DO
     CASE commandIndex OF
     WHEN 0 THEN
       REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top,
-          layer.bounds.right,client.top)
+          layer.bounds.right,layer.bounds.top+DESKTYPES.TITLE_HEIGHT)
 
     WHEN 1 THEN
+      REGIONS.Assign(@area,layer.bounds.left,layer.bounds.top+DESKTYPES.TITLE_HEIGHT,
+          layer.bounds.right,client.top)
+
+    WHEN 2 THEN
       REGIONS.Assign(@area,layer.bounds.left,client.bottom,
           layer.bounds.right,layer.bounds.bottom)
 
-    WHEN 2 THEN
+    WHEN 3 THEN
       REGIONS.Assign(@area,layer.bounds.left,client.top,
           client.left,client.bottom)
 
@@ -140,7 +144,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
       FI
 
       commandIndex==+1
-      IF commandIndex<>3 THEN
+      IF commandIndex<>4 THEN
         RETURN(2)
       FI
     ELSE

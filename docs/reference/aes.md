@@ -38,7 +38,7 @@ and request sequences are separately checked 32-bit values; exhaustion fails
 before reuse, reserving the last sequence for exit.
 
 Registration also publishes a caller-owned receive port, sixteen 32-byte
-application message records and one 36-byte GUI delivery record in the service's
+application message records and one 40-byte GUI delivery record in the service's
 shared endpoint directory. This directory works
 across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
@@ -87,9 +87,9 @@ request-sequence advancement. The named wrapper and parameter-block opcode use
 the same helper.
 
 `evnt_keybd()` waits for one GEM scan/ASCII word. `evnt_button(clicks, mask,
-state, ...)` waits for a left-button condition and returns one with the selected
-screen coordinates, buttons and modifiers. Supported arguments are `mask=1`,
-`state=0/1`, and `clicks=1` or `$0101`. The latter inverts the equality predicate;
+state, ...)` waits for a left-button condition and returns its click count with
+the selected screen coordinates, buttons and modifiers. Supported arguments are
+`mask=1`, `state=0/1`, and `clicks=1`, `2` or `$0101`. The last inverts the equality predicate;
 it does not request multiple clicks. Other button arguments fail as a whole
 with `AES_UNSUPPORTED`.
 
@@ -104,7 +104,15 @@ The application normally changes its next wait to release after accepting down.
 Input waits require an open application window; otherwise they return zero with
 `AES_IDENTITY`. Message/timer-only calls still work without a window. Unselected
 button and rectangle arguments are ignored. Empty/unsupported event masks,
-rectangle events, right/middle buttons and multiple clicks fail explicitly.
+rectangle events, right/middle buttons and counts above two fail explicitly.
+
+For `clicks=2`, the first accepted press/release reports one immediately; a second
+press within 25 captured VBI ticks (500 ms PAL / 417 ms NTSC) and four pixels on
+each axis reports two. This deliberately avoids GEM's delayed click aggregation.
+After a pair the next press starts at one. A different window, native gesture,
+input loss or close/reopen breaks the sequence. Counts use capture timestamps,
+not the time an application finishes drawing. Single-click callers still receive
+one; callers must alternate press/release conditions to avoid repeated levels.
 The named wrappers, `evnt_multi_moblk` and correctly sized AES parameter blocks
 use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 (3/5/0/0); multi remains 25 (16/7/1/0).
@@ -132,7 +140,8 @@ then rechecks only lifetime/loss epochs before committing consumer positions and
 detaching a message. Later arrivals remain for the next decision. Capture/FIFO
 loss returns zero with `AES_INPUT_LOST` and retires only the lost selected source;
 unrelated input/messages remain queued. Message/timer-only calls leave input
-loss pending. Close/reopen withdraws the input lifetime. Source epoch exhaustion
+loss pending. Closing a window withdraws its captured records; closing the last one withdraws
+the input session. Source epoch exhaustion
 returns `AES_OVERFLOW` until a fresh open lifetime.
 
 A clock/device failure returns zero with `AES_TIMER_ERROR` for timed waits and
@@ -167,23 +176,24 @@ gestures and damage without another input edge. Blocked paint alone does not
 keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
-Each registration can own one window; native and GEM windows share four desktop
-slots. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
-`UPARROW`, `DNARROW` and `VSLIDE`. Create reserves a hidden
+Each registration can own several windows; native and GEM windows share six
+desktop slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
+`UPARROW`, `DNARROW`, `VSLIDE`, `FULLER` and `INFO`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
-requires a closed window. Exit closes and deletes any remaining window. Handles
+requires a closed window. Exit closes and deletes all remaining windows. Handles
 are not reused during a service lifetime. The initial profile permits moves at
 individual pixel positions and bounds fully inside the 640 by 240 desktop.
 Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
-`WF_NAME` copies at most 64 characters plus terminator from the high-word,
+`WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
 top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
-SIZER increases the bottom inset to 16. `wind_calc` converts border/work rectangles locally; `wind_get`
+SIZER increases the bottom inset to 16. INFO adds a 12-pixel information line
+below the title, raising the top inset to 28. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries; a native top window is reported as zero.
@@ -193,16 +203,37 @@ size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
 height is eight pixels. Horizontal scrollbars are unsupported.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
-caller owns `BEG_UPDATE`. The presenter publishes the snapshot on acquisition;
+caller owns `BEG_UPDATE`. The presenter publishes every owned window snapshot on acquisition;
 no client reads Layers or retains a scene token. A zero-width/height result ends
 the enumeration, including a completely covered or hidden window. An owner
 mutation invalidates a previous iterator; restart with FIRST. Geometry uses
 half-open internal bounds and GEM x/y/width/height at the binding.
 
+A handle-naming query or mutation selects that window for following VDI/object
+calls. Use the normal WORK/FIRST redraw sequence when changing targets. The
+common current-view lookup is constant-time; switching targets scans at most six
+pointers. No Task or workstation is allocated for each window.
+
+Kind zero creates a borderless surface with no work insets. The Exec extension
+`ExecAESDesktop(handle)` pins one such window below ordinary windows and excludes
+it from Windows/cycling. Topping it changes focus without raising it over peers.
+The standard desktop uses `(0,16,640,224)` and ordinary clipped object drawing.
+
+`ExecAESInputWindow(MU_KEYBD)` and `ExecAESInputWindow(MU_BUTTON)` return the owning
+handles captured with the last corresponding successful event result. Query only
+bits returned by that event call. A combined result can identify two different
+windows. Closing/reopening one window withdraws only its stamped input and GUI
+records; siblings keep their port, input session and menu. Input transport closes
+when the last open window closes. These are binding extensions, not GEM opcodes.
+
 Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 `WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
 application calls the corresponding set or close operation. Inactive clicks
 request top first. The existing native-window behavior is unchanged.
+
+Fuller release sends `WM_FULLED`; the application chooses and remembers its
+full/restore bounds, accepting them through `WF_CURRXYWH`. Release outside the
+gadget cancels.
 
 Size release sends `WM_SIZED` with proposed outer x/y/w/h. Vertical thumb
 release sends `WM_VSLID` with 0..1000 in word 4; arrows and track clicks send
@@ -266,7 +297,7 @@ console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 11 has a 112-byte request and permits init, exit, update,
+profile: version 13 has a 112-byte request and permits init, exit, update,
 window mutations, cold display delegation and session mouse preferences on the
 RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
@@ -426,7 +457,7 @@ repair on the next message wait, after any deferred message and before queued
 messages. Repair is tied to the open epoch and does not need queue capacity.
 Cleanup failure retains the session for retry; `appl_exit` also finishes an
 abandoned session. No Task, bank-zero or VRAM reservation is added. The C context
-is now 340 live / 344 heap-reserved upper bytes. See the
+is now 368 live / 368 heap-reserved upper bytes. See the
 [dialog development record](../history/standard-dialogs.md).
 
 `form_alert(default_button, text)` (opcode 52, 1/1/1/0) uses the same implicit
@@ -548,8 +579,8 @@ its previous resource intact. Explicit free or successful appl_exit releases it;
 borrowed tree/string pointers then expire. Application strings assigned to an
 object remain application-owned.
 
-`menu_bar`, `menu_popup`, `menu_ienable`, `menu_tnormal` and `menu_text` have named
-and AESPB bindings (30/36/32/33/34). Popup menus have one level of direct children, no scrolling
+`menu_bar`, `menu_popup`, `menu_icheck`, `menu_ienable`, `menu_tnormal` and `menu_text` have named
+and AESPB bindings (30/36/31/32/33/34). Popup menus have one level of direct children, no scrolling
 or cascades, and must fit their owning window's work area. The caller supplies a
 valid MENU/tree and keeps strings alive; enter without an UPDATE lock. Button release, Tab/Up/Down, Return and
 Escape select or cancel. The popup acquires UPDATE only while painting and uses
@@ -566,19 +597,20 @@ installed menu uses the desktop fallback. Windows remains available at x=432.
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
 siblings under the dropdown container. Items are direct G_STRING children.
-G_IBOX containers, selected/disabled/hidden states, 32 objects, depth eight and
+G_IBOX containers, selected/checked/disabled/hidden states, 32 objects, depth eight and
 63-byte labels are supported. Titles fit x=0..431; dropdowns fit 640×224 and
 are repositioned on screen without changing their dimensions. Font is 8×8.
-Cascades, scrolling bars, accessories, icons, check marks and editable menu
+Cascades, scrolling bars, accessories, icons and editable menu
 objects are unsupported. Valid pointers, links and indices remain caller-owned.
 
 Installed-tree enable, title-state and text setters execute at a presenter paint
 boundary, including while the caller owns UPDATE/MCTRL. Uninstalled helpers act
-locally. `menu_text` replaces a borrowed string pointer within unchanged object
+locally. `menu_icheck` changes CHECKED and draws a check in the leading text
+cell of a menu item; reserve two leading spaces in its label. `menu_text` replaces a borrowed string pointer within unchanged object
 geometry; after a successful replacement returns, the old label is no longer
 borrowed. Keep current labels alive and withdraw before freeing the tree or its
-RSC. `appl_exit` withdraws before automatic resource cleanup. Window close retains the
-installation for reopen but invalidates its commands.
+RSC. `appl_exit` withdraws before automatic resource cleanup. Closing the last window retains the
+installation for reopen but invalidates its commands; sibling closes preserve it.
 
 A selection returns `MN_SELECTED` through `evnt_mesag`/`evnt_multi`:
 `[10,0,0,title,item,tree_hi,tree_lo,box]`. The command belongs to the original
@@ -593,9 +625,16 @@ Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
 Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
 
-The private C context is 340 bytes. Rebuild bindings and applications with
-the current C component ABI (10).
+The private C context is 368 bytes. Rebuild bindings and applications with
+the current C component ABI (14).
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
+
+Synchronous form calls can return `AES_PENDING` when another owned window has
+an unhandled message. Dispatch that message before resuming the form. The
+desktop client can use its normal event loop for inline confirmations.
+
+Visible-rectangle iteration remains one cursor per application context. Restart
+`WF_FIRSTXYWH` when switching windows; interleaved `WF_NEXTXYWH` sequences are unsupported.
 
 ## Small GEM desktop
 
@@ -624,7 +663,7 @@ text suffice. Initial apps belong to the shell; Files owns its one launched
 child. Closed apps are collected at the idle prompt. `RUN C:FILES.APP` uses the
 shell background job to reopen Files.
 
-Three AES registrations and all four application-window slots are used (plus two private menu layers). Seven idle public
+Three AES registrations and four of six application-window slots are used (plus two private menu layers). Seven idle public
 Tasks leave one slot for a launched command. Close one GEM window before a
 shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
 PRIMES requires tiled-console mode and returns an error in desktop mode.

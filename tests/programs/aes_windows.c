@@ -90,7 +90,7 @@ static void geometry(WORD handle, WORD field, WORD x, WORD y, WORD w, WORD h)
 
 UWORD AESRun(void)
 {
-    WORD id, handle, replacement, a, b, c, d, message[8];
+    WORD id, handle, replacement, reserve[2], a, b, c, d, message[8];
     WORD control[5] = {108, 6, 5, 0, 0}, global[15], in[6], out[5];
     AESPB pb = {control, global, in, out, NULL, NULL};
     char title[66];
@@ -108,17 +108,20 @@ UWORD AESRun(void)
     CHECK(!wind_calc(WC_WORK, AES_WINDOW_KIND, 0, 0, 16, 24, &a, &b, &c, &d));
     CHECK(a == 0 && b == 0 && c == 0 && d == 0);
     CHECK(!wind_calc(WC_BORDER, AES_WINDOW_KIND, -32768, 0, 20, 20, &a, &b, &c, &d));
-    CHECK(!wind_calc(WC_WORK, 0, 0, 0, 200, 120, &a, &b, &c, &d));
+    CHECK(wind_calc(WC_WORK, 0, 0, 0, 200, 120, &a, &b, &c, &d));
+    CHECK(a==0 && b==0 && c==200 && d==120);
     in[0] = WC_WORK; in[1] = AES_WINDOW_KIND;
     in[2] = 9; in[3] = 9; in[4] = 200; in[5] = 120;
     aes_call(&pb);
     CHECK(out[0] == 1 && out[1] == 17 && out[2] == 25 && out[3] == 184 && out[4] == 96);
     geometry(0, WF_WXYWH, 0, 16, 640, 224);
-    CHECK(wind_create(0, 9, 9, 200, 120) == -1);
+    replacement=wind_create(0,9,9,200,120);
+    CHECK(replacement>0);CHECK(wind_delete(replacement));
     CHECK(wind_create(AES_WINDOW_KIND, -1, 9, 200, 120) == -1);
     CHECK(wind_create(AES_WINDOW_KIND, 500, 9, 200, 120) == -1);
     handle = wind_create(AES_WINDOW_KIND, 9, 9, 200, 120); CHECK(handle > 0);
-    CHECK(wind_create(AES_WINDOW_KIND, 9, 9, 200, 120) == -1);
+    replacement=wind_create(AES_WINDOW_KIND,9,9,200,120);
+    CHECK(replacement>handle);CHECK(wind_delete(replacement));
     geometry(handle, WF_CXYWH, 9, 9, 200, 120);
     geometry(handle, WF_WXYWH, 17, 25, 184, 96);
     geometry(handle, WF_KIND, AES_WINDOW_KIND, 0, 0, 0);
@@ -151,7 +154,8 @@ UWORD AESRun(void)
     peer = CreateTask("AES window peer", 1, (APTR)AESClientOne, 1024UL);
     CHECK(peer != NULL);
     while (!AESReady) Wait(wake);
-    /* Native shell + three GEM windows exhaust all four desktop slots. */
+    /* Hidden sibling windows also consume the six-window bound. */
+    for (i=0;i<2;++i) { reserve[i]=wind_create(AES_WINDOW_KIND,9,9,200,120);CHECK(reserve[i]>0); }
     for (i = 0; i < 2; ++i) {
         extraTasks[i] = CreateTask("AES capacity peer", 1, (APTR)AESClientTwo, 1024UL);
         CHECK(extraTasks[i] != NULL);
@@ -159,6 +163,7 @@ UWORD AESRun(void)
     }
     for (i = 0; i < 2; ++i) Signal(extraTasks[i], extraWake[i]);
     while (extraDone != 2) Wait(wake);
+    for (i=0;i<2;++i) CHECK(wind_delete(reserve[i]));
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
     /* Restore the peer above the root through its own caller. */
     command = 5; Signal(peer, peerWake);

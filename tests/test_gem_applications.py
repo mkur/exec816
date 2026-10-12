@@ -30,13 +30,14 @@ class ApplicationObserverTests(unittest.TestCase):
         records = layout()
         request = records['Request']['fields']
         view = records['WindowView']['fields']
+        views = dict(expected_layout())['C context views']
         # Two live copies of Counter; both caller work[] outputs are zero.
         apps = []
         for index, bounds in enumerate(((24, 48, 224, 144), (240, 48, 440, 144))):
             context, target, task = 256+index*512, 2048+index*1024, 12800+index*128
             bridge.put(64+index*4, context, 4)
             bridge.put(context+request['owner'], task, 3)
-            bridge.put(context+request['view'], target, 3)
+            bridge.put(context+views, target, 4)
             bridge.put(target+view['shown'], 1, 2)
             for offset, value in enumerate(bounds):
                 bridge.put(target+view['bounds']+offset*2, value, 2)

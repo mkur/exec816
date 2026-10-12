@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 11,
+  "version": 13,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -38,7 +38,7 @@
     "ENDPOINT_RETIRED": 3,
     "RPC_INTIN_WORDS": 6,
     "RPC_INTOUT_WORDS": 5,
-    "GUI_KINDS": 8,
+    "GUI_KINDS": 9,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
     "GUI_MOVED": 2,
@@ -105,8 +105,15 @@
     "GUI_SIZED": 5,
     "GUI_VSLID": 6,
     "GUI_ARROWED": 7,
-    "WINDOW_SUPPORTED": 491,
-    "WF_VSLSIZ": 16
+    "WINDOW_SUPPORTED": 511,
+    "WF_VSLSIZ": 16,
+    "FULLER": 4,
+    "INFO": 16,
+    "WF_INFO": 3,
+    "WM_FULLED": 23,
+    "GUI_FULLED": 8,
+    "WINDOWS": 6,
+    "WF_EXEC_DESKTOP": 24576
   },
   "records": {
     "MenuObject": [
@@ -206,8 +213,12 @@
         "INT"
       ],
       [
-        "pad",
-        "CARD"
+        "window",
+        "INT"
+      ],
+      [
+        "windowEpoch",
+        "LONGCARD"
       ]
     ],
     "InputInbox": [
@@ -493,6 +504,10 @@
         "visible",
         "Rect",
         "VISIBLE_RECTS"
+      ],
+      [
+        "epoch",
+        "LONGCARD"
       ]
     ],
     "Request": [
@@ -647,6 +662,10 @@
     "WA_DNPAGE",
     "WA_UPLINE",
     "WA_DNLINE",
-    "WF_VSLSIZ"
+    "WF_VSLSIZ",
+    "FULLER",
+    "INFO",
+    "WF_INFO",
+    "WM_FULLED"
   ]
 }

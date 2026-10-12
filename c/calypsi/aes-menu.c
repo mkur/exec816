@@ -24,6 +24,14 @@ WORD menu_bar(OBJECT *tree,WORD show)
 {
     return ExecAESMenu(tree,30,show,0);
 }
+WORD menu_icheck(OBJECT *tree,WORD item,WORD check)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    if (c && c->menuTree==(ULONG)tree) return ExecAESMenu(tree,31,item,check);
+    if (check) tree[item].ob_state|=CHECKED;
+    else tree[item].ob_state&=~CHECKED;
+    return 1;
+}
 WORD menu_ienable(OBJECT *tree,WORD item,WORD enable)
 {
     struct ExecAESContext *c=ExecAESContext();
@@ -149,7 +157,7 @@ finish:
 BOOL ExecAESMenus(struct ExecAESContext *c,AESPB *pb)
 {
     WORD op=pb->control[0],ins=2,addresses=1;
-    if (op!=30 && op!=32 && op!=33 && op!=34 && op!=36) return FALSE;
+    if (op!=30 && op!=31 && op!=32 && op!=33 && op!=34 && op!=36) return FALSE;
     if (op==30) ins=1;
     if (op==34) { ins=1;addresses=2; }
     if (op==36) addresses=2;
@@ -160,6 +168,7 @@ BOOL ExecAESMenus(struct ExecAESContext *c,AESPB *pb)
     c->diagnostic=AES_OK;
     switch (op) {
     case 30:pb->int_out[0]=menu_bar((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0]);break;
+    case 31:pb->int_out[0]=menu_icheck((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
     case 32:pb->int_out[0]=menu_ienable((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
     case 33:pb->int_out[0]=menu_tnormal((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
     case 34:pb->int_out[0]=menu_text((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],(const char *)(ULONG)pb->addr_in[1]);break;

@@ -6,6 +6,15 @@ static struct WidgetPacket *paint;
 static OBJECT object;
 static WORD fragment;
 
+static void checkmark(WORD x,WORD y,UWORD pen)
+{
+    WORD i;GRECT dot;
+    for (i=0;i<6;++i) {
+        r_set(&dot,x+2+i,y+6+(i<2 ? i:4-i),1,2);
+        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,pen,&dot);
+    }
+}
+
 static UWORD quantum(void)
 {
     OBJECT *tree=(OBJECT *)paint->context;
@@ -38,6 +47,8 @@ static UWORD quantum(void)
             }
             WidgetCurrent=0; /* Menu specs are full caller addresses. */
             just_draw(&object,0,l,t);
+            if (object.ob_type==G_STRING && (object.ob_state&CHECKED))
+                checkmark(l,t,(object.ob_state&SELECTED) ? WHITE:BLACK);
             gl_clip=clip;
             drawn=1;
             if (fragment) return 0;

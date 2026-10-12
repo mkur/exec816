@@ -348,6 +348,15 @@
         3,
         0
       ]
+    },
+    "menu_icheck": {
+      "opcode": 31,
+      "control_counts": [
+        2,
+        1,
+        1,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",

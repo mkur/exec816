@@ -46,8 +46,9 @@ PUBLIC BYTE FUNC Refresh()
     RETURN(0)
   FI
   LET desktop=DESKSTATE.Get()
+  LET focused=AESWINDOWSTATE.FindRecord(desktop.focus)
   candidate=AESWINDOWSTATE.Find(desktop.focus)
-  IF candidate<>NULL AND (candidate.menu=NULL OR candidate.view.shown=0) THEN
+  IF candidate<>NULL AND (candidate.menu=NULL OR focused.view.shown=0) THEN
     candidate=NULL
   FI
   nextGeneration=IF candidate=NULL THEN LONGCARD(0) ELSE candidate.menu.generation FI

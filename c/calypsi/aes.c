@@ -230,7 +230,13 @@ WORD appl_exit(void)
         c->updateDepth=c->mouseDepth=0;
         c->menuTree=0;
         c->editTree=0;
-        if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
+        {
+            UWORD i;
+            for (i=0; i<AES_WINDOWS; ++i) {
+                if (c->views[i]) FreeMem(c->views[i],sizeof(*c->views[i]));
+                c->views[i]=NULL;
+            }
+        }
         c->view = NULL;
         c->request.view = NULL;
         DeleteMsgPort(c->receiving);
@@ -286,7 +292,7 @@ WORD evnt_keybd(void)
 static WORD button(struct ExecAESContext *c, WORD clicks, WORD mask, WORD state)
 {
     c->intin[1] = clicks; c->intin[2] = mask; c->intin[3] = state;
-    return ExecAESEvents(c, MU_BUTTON, 0, NULL) != 0;
+    return ExecAESEvents(c, MU_BUTTON, 0, NULL) ? c->intout[6] : 0;
 }
 
 WORD evnt_button(WORD clicks, WORD mask, WORD state,

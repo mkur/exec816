@@ -169,7 +169,7 @@ static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
         goto done;
     }
     if ((flags & AES_MU_BUTTON) &&
-        ((c->intin[1] != 1 && c->intin[1] != 0x101) ||
+        ((c->intin[1] != 1 && c->intin[1] != 2 && c->intin[1] != 0x101) ||
          c->intin[2] != 1 || (c->intin[3] != 0 && c->intin[3] != 1))) {
         status = AES_UNSUPPORTED;
         goto done;

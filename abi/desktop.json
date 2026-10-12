@@ -1,8 +1,8 @@
 {
-  "version": 9,
+  "version": 11,
   "constants": {
     "CLIENTS": 4,
-    "WINDOWS": 4,
+    "WINDOWS": 6,
     "EVENTS": 16,
     "COMMANDS": 32,
     "TEXT_BYTES": 256,
@@ -81,7 +81,11 @@
     "FRAME_DNARROW": 128,
     "FRAME_VSLIDE": 256,
     "FRAME_VERTICAL": 448,
-    "FRAME_MIN_SIZE_HEIGHT": 48
+    "FRAME_MIN_SIZE_HEIGHT": 48,
+    "FRAME_FULLER": 4,
+    "FRAME_INFO": 16,
+    "FRAME_INFO_HEIGHT": 12,
+    "FRAME_BORDERLESS": 512
   },
   "records": {
     "Event": [
@@ -342,6 +346,11 @@
       ],
       [
         "title",
+        "BYTE",
+        "TITLE_BYTES"
+      ],
+      [
+        "info",
         "BYTE",
         "TITLE_BYTES"
       ],
