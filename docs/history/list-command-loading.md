@@ -4,6 +4,10 @@
 [Listing measurements](spartados-listing-measurements.md) ·
 [Development evidence](../development/list-command-loading.json)
 
+This is the frozen pre-refactor profile. The completed
+[loader refactor](command-loader-refactor.md) reduces warm loading to
+766 ms on SIO and 785 ms on IDE; the original evidence below is retained.
+
 Warm LIST loading takes 1.03 seconds on SIO and 1.04 seconds on IDE even when
 every sector is cached. About 72% of that time is inside the loader, with the
 rest mostly spent opening and reading the file through DOS. The smallest useful

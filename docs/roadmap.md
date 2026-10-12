@@ -82,13 +82,13 @@ seconds. LIST row batching and its roughly one-second command-loading phase
 are the next measured opportunities. Ordinary queries never allocate the
 completed-extent cache in these runs.
 
-The [LIST loading profile](history/list-command-loading.md) attributes about
-72% of warm loading to the loader itself. Replace its payload byte loop with
-the existing memory primitive first, then evaluate bounded U16/U32 decoding.
-DOS Open/Read overhead remains a separate shared-path follow-up.
-The [CL0–CL3 refactor plan](plans/command-loader-refactor-plan.md) orders the
-copy change, scalar reader change and matched integration measurements while
-preserving existing malformed-input and image lifetime behavior.
+The [CL0–CL3 loader refactor](plans/command-loader-refactor-plan.md) is complete
+at the development tier. Bulk payload copying and complete-width U16/U32 reads
+reduce matched warm LIST loading from 1,029/1,041 ms to 766/785 ms on SIO/IDE,
+with unchanged malformed-input and image lifetime behavior. The
+[implementation record](history/command-loader-refactor.md) reports the checks,
+998-byte upper code increase and zero added bank-zero reservations.
+DOS Open/Read overhead and LIST output batching remain measured follow-ups.
 
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent

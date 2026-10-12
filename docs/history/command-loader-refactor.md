@@ -29,7 +29,8 @@ even and unaligned copies; source/destination bank crossings; 65,534 through
 65,537-byte lengths; and the 131,072-byte text limit in both address directions.
 The large buffers are read from a paused Altirra save-state, with their address
 mapping cross-checked using debugger reads. This avoids running a guest readback
-helper or issuing a debugger request for every word. The fixture completes across 30 native NMIs. Native stack/domain guards,
+helper or issuing a debugger request for every word. The fixture completes
+across 30 native NMIs. Native stack/domain guards,
 ownership and OS/context restoration retain their existing checks.
 
 The reader fixture records the unchanged readers' results before their
@@ -72,11 +73,54 @@ This uses existing stack capacity; it reserves no new bank-zero or upper data
 storage. The runtime copy wrapper saves 122 code bytes, so the combined change
 adds 998 executable bytes to the packaged IDE kernel.
 
+## Combined measurements
+
+Fresh optimized standalone VBXE demos include OF816, the pinned ROM/notices
+and five-second autoboot. Their LIST files exactly match the frozen baseline
+(SHA-256 `dad6fe0ec38106eb2065055c2ecc70930571047953ef6ed2def303389637e3d1`).
+The SIO comparison uses the IDE payloads on a 2,880-sector, 256-byte SDFS disk;
+IDE retains its 512-byte partition sectors. The root kernel XEX is refreshed,
+while command bytes and directory rows remain matched.
+
+| Warm LIST loading | SIO baseline ms | SIO final ms | IDE baseline ms | IDE final ms |
+| --- | ---: | ---: | ---: | ---: |
+| Validate input | 243 | 193 | 252 | 201 |
+| Resolve providers | 153 | 117 | 156 | 120 |
+| Copy text | 134 | 6 | 136 | 6 |
+| Preflight/apply relocations | 197 | 154 | 201 | 157 |
+| **Complete loading** | **1,029** | **766** | **1,041** | **785** |
+
+Final warm loading ranges are 766–772 ms on SIO and 784.55–784.89 ms on IDE.
+The measured total improves by about **25%** on both transports. Cold samples
+are 7,415 ms on SIO (34 reads) and 937 ms on IDE (ten ATA read commands).
+Those are single samples, with different transport/sector geometry; they are
+not a hardware speed comparison. All six warm cases retain zero physical reads
+and cache misses.
+
+The visible LIST control passes independent media-derived rows and bitmap pixel
+checks, once cold and once warm. Warm total command time is 1,548 ms at the root;
+it includes loading, Process launch/wait, enumeration and ordinary console
+Writes, and is distinct from the loading-only table. Every command returns its
+ownership baseline, media remain unchanged, and all sessions pass native
+stack/domain guards and EXIT restoration with zero live Tasks.
+
+The final IDE session's shell slot touches 476 stack bytes (baseline 510);
+its largest slot watermark remains 528 bytes in the existing 2,560-byte pool.
+The kernel watermark remains 279 bytes. Watermarks are observed lower bounds,
+not worst-case stack proofs. Fixed/per-Task/idle reservations are unchanged.
+All 457 development host tests pass. This is the development tier; no full
+release qualification matrix was run.
+
+DOS staging now makes up a larger share of warm loading: successful Open alone
+still costs 123/133 ms on SIO/IDE, and cached payload reads cost 98/88 ms.
+The four relocation walks and the provider matching policy remain unchanged.
+These shared DOS costs and LIST output batching are separate follow-ups.
+
 ## Scope and memory
 
 This is development evidence for the pinned AltirraOS 65816 ROM and emulator.
-It does not qualify a release or physical hardware. The intermediate packaged
-IDE profile executes one cold and three warm `LIST >NIL:` invocations with
+It does not qualify a release or physical hardware. Each packaged transport
+profile executes one cold and three warm `LIST >NIL:` invocations with
 OF816 and five-second autoboot. All warm samples retain zero physical reads
 and cache misses; per-command ownership, pixel results, unchanged media and
 EXIT restoration are checked by the existing listing fixture.
@@ -106,3 +150,27 @@ python3 tools/measure_list_loading.py \
   --bundle build/development/command-loader-refactor/cl1-ide-demo \
   --output build/development/command-loader-refactor/cl1-ide
 ```
+
+Rebuild and compare the combined implementation using the matched-media recipe
+in the [listing record](spartados-listing-measurements.md#reproduction), substituting
+`build/development/command-loader-refactor` and the `final-*-demo` folders:
+
+```sh
+python3 tools/build_demo.py --bitmap-shell-only --format sdfs \
+  --sector-bytes 256 --release-compiler \
+  --output build/development/command-loader-refactor/final-sio-demo
+python3 tools/build_demo.py --bitmap-shell-only --ide-only --release-compiler \
+  --output build/development/command-loader-refactor/final-ide-demo
+python3 tools/measure_list_loading.py \
+  --bundle build/development/command-loader-refactor/final-sio-demo \
+  --media build/development/command-loader-refactor/sio-matched.atr \
+  --output build/development/command-loader-refactor/final-sio
+python3 tools/measure_list_loading.py \
+  --bundle build/development/command-loader-refactor/final-ide-demo \
+  --output build/development/command-loader-refactor/final-ide
+```
+
+Use fresh measurement output directories; add `--analyze` to replay retained
+trace/run/marker records. The visible control selects only `('LIST','',False)`
+with one warm repeat through `measure_spartados_listing.run`, rather than the
+full listing matrix.

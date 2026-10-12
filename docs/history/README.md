@@ -1,10 +1,10 @@
 # Historical records
 
-- [Command loader refactor](command-loader-refactor.md): bulk-copy and scalar-reader
-  development slices and matched loading comparisons.
+- [Command loader refactor](command-loader-refactor.md): completed bulk-copy and scalar-reader
+  slices, matched timings and memory costs.
 
-- [LIST command loading](list-command-loading.md): current loader phase costs,
-  scalar decoding, relocation passes and the next bounded improvements.
+- [LIST command loading](list-command-loading.md): frozen loader phase baseline,
+  scalar decoding and relocation pass costs.
 
 - [SpartaDOS listing measurements](spartados-listing-measurements.md): current
   DIR/LIST cold/warm IDE/SIO timings, first-row drawing and remaining costs.
