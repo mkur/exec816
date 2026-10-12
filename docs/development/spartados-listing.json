@@ -1,0 +1,5768 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "source_commit": "dbadb418ed0aace1b107ae42bd7b97875e0a83e0",
+  "source_branch": "feature/exec-commands",
+  "date": "2026-10-12",
+  "host_checks": {
+    "tests": 454,
+    "status": "pass",
+    "log": "build/spartados-listing-host-tests-complete.log",
+    "sha256": "3b32409613f33528f67b65b54f6a9bb19f18e2d805f22a11f9a0a5ea2b40f382"
+  },
+  "observer": {
+    "source": "tools/measure_spartados_listing.py",
+    "sha256": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+    "host_controls": "tests/test_spartados_listing_measurement.py",
+    "host_controls_sha256": "d1bfc7e3536d3379f50b2dfc91a027bfdc4995ae2d650e7408395ad086bde5c8"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "measured_invocations": 64,
+  "warm_invocations": 48,
+  "runs": {
+    "SIO": {
+      "status": "pass",
+      "tier": "development",
+      "transport": "SIO",
+      "scope": "ShellOneCommand entry to final RTL; includes parsing, redirection, LIST load/launch/wait/cleanup; excludes typing and prompt. DOSCALLS implementations cover resident and loaded callers. Routine spans include preemption and overlap. First-row bitmap completion is the last synchronous text return before the row-ending Write returns, including newline/caret painting; this bounds fenced VRAM visibility, not monitor scanout.",
+      "cache_scope": "Cold: all read-cache tags, scratch sector and SDFS map/directory/extent identities invalidated at idle prompt; mounts and current-directory lock remain admitted. Warm: exact command repeated after CLS; no filesystem changes.",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "compiler_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+      "layout_inputs": {
+        "lib/io/blocktypes.act": "e8989c86bac3c8af9342e63788a62d7c7a623c2973a84dd82ccf7d9dcec38da1",
+        "lib/fs/fsbtypes.act": "1157a499f23b7fc73379b02286316c176dfbbe12096db1b2bae278bd81388f66",
+        "lib/spartados/sdfstypes.act": "dbfdcdac81b271a7b3f5d164dae7262bf1491e32c8f7e2ea91c26a1d283c9391"
+      },
+      "observer_sha256": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+      "xex_sha256": "970825531f47b522e1c3bd1b37709f6c37403f1823b75359f8f889a2db5fcbb0",
+      "manifest_sha256": "4211fe6985f15862f0c3a3acd35fe624daa47bd4f33431477c00c2623b00e878",
+      "system_atr_sha256": "76439cfd437ccd898e83a3894e70236f7eda9b61f774f0647a357f769d4d424a",
+      "log_sha256": "b3b709a5933c749a126f12d45ff8941156516f10aaec84414b269f006f74f5ce",
+      "sector_bytes": 256,
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input": "Prefilled empty cooked-line buffer, physical Return, ordinary cooked Drain and shell dispatch; typing excluded from timing",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      },
+      "artifacts": {
+        "build/development/spartados-listing/sio-final/results.json": "48b88f2d06fbc6a983c78111cb6b38a828e06125c7400af4c89459228215b0a5",
+        "build/development/spartados-listing/sio-final/run.json": "8b0784f4b852b9cdee0abceb97cd30063415139a9d0243ce58951219edfb0a73",
+        "build/development/spartados-listing/sio-final/markers.json": "297d5e6c15a17134093215e3d4224d5ba5b3b95b01db64c93240f52f2641726d",
+        "build/development/spartados-listing/sio-final/bundle/build.json": "60042ad2f99fdf87ee50220cd8aafe81438e6bf9caa7724b175e44d586ac6ef7",
+        "build/development/spartados-listing/sio-final/bundle/demo-manifest.json": "4211fe6985f15862f0c3a3acd35fe624daa47bd4f33431477c00c2623b00e878",
+        "build/development/spartados-listing/sio-final/bundle/program.xex": "970825531f47b522e1c3bd1b37709f6c37403f1823b75359f8f889a2db5fcbb0",
+        "build/development/spartados-listing/sio-final/bundle/emulator.log": "b3b709a5933c749a126f12d45ff8941156516f10aaec84414b269f006f74f5ce",
+        "build/development/spartados-listing/sio-final/bundle/boot-smoke.png": "e1bea00e2fd02d12834ceb322af249fb5bf2096fe41dfe126c5651f52a7333a4"
+      },
+      "source_inputs_sha256": "99ba3bc361992b70f59d722fb9d1429efd9fc49156a79a2f5acd886e24982aa8",
+      "source_inputs": {
+        "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+        "examples/demo-session.inc": "4051346a79bc37c583eeacf2955b94b78619e5b929f1ec7cb2265e308fe35a44",
+        "examples/shell/shell-session.inc": "39d0d8ad79cdf6342536727bfdc5b017a4639d6229304ba7901ffdc01c3f197b",
+        "examples/shell/shell-commands.inc": "b23f9bf65da50a4c097f54cd3f2e5803c27aa6519e469c1d2043a4fc5f78e1a7",
+        "examples/shell/shell-mount-diagnostics.inc": "e54efe84298a5487e9d2170c8edbdbd0fdb7e4084a99557d3ecdfdbdb6308b5f",
+        "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+        "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+        "examples/shell/shell-jobs.inc": "da7bfc5395f3c16779db4e89a40c9254891741e629434eb0c1c15746d60a1a23",
+        "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+        "examples/shell/shell-boot.inc": "391bb54f9854cfc549f099c2b5fad9ce7e9c9dffa910410cd714d547aa959279",
+        "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+        "examples/commands/command-files.inc": "8ee77c8038111d0c9d0173f0defad2b3e934ee961c04e8833a6faae2db52d3bb",
+        "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+        "examples/commands/command-transfer.inc": "1b3c5caab17f045cf5d4977781c9e2d2f7dd616e45145aac3185c1b9db59dfbe",
+        "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+        "docs/guides/demo.md": "4479519a57fd7abada40f7a177687b51f3a1e82e15adf13e9879963e3954d6a8",
+        "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+        "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+        "docs/demo-distribution.txt": "0f8f8c8c6090886ef179cb7b91863e7dee8d653a5fd9460b08e98b7ca04e31f3",
+        "tools/package_demo.py": "17c5f6c7dbd680a12602dcdfd552acf49bdd49600cf83fe3204e3dbad06238c3",
+        "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "LICENSING.md": "ab99e3de1a1d4d818f5c36fa9b95d392bd30061b926ed5d61bde807d21f4051e",
+        "config/shell-sdfs-256.json": "f5b91832356bdf1c3fc51214fa6573db0efe2940b07d25dbbb6cd25fec9b7091",
+        "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+        "tools/make_data_disk.py": "6da3f3fecf522138c9d9559d4f3dec0ad4a42c6ee10b5510ea6b6910f80411ba",
+        "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+        "tools/sdfs_reference.cpp": "0d67232b165a10d421fcc31cca384c59c4c6d7b855bf16f51781051cf98194b4",
+        "tools/make_shell_disk.py": "3c66d45cc35c328be33c955c4a5a5f864721cac0758a85920328ff9a84d51f30",
+        "tools/build_demo.py": "020e10c57f304350300264312e4e0bdd097bc765b289f492e28b90151ba0be2e",
+        "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+        "examples/demo-disk/README.TXT": "57f0973b6ac9e5f6b92479f651cd20fd5676babe31373b9410d53449f2df1dbd",
+        "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+        "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+        "examples/demo-disk/SELECT/A000.TXT": "78b31251b40a6aa86dda40d7a6bfc9ed18330f638676fdcd9e1f3a78fb5ccfec",
+        "examples/demo-disk/SELECT/A001.TXT": "1af71eda0b899f120ded0f8d37e744a11943f37a331e3b0bb77f20bf6859c6af",
+        "examples/demo-disk/SELECT/A002.TXT": "538094795c033f4995234f8e857642700a07a631996f2747ebff83c8e60ed905",
+        "examples/demo-disk/SELECT/A003.TXT": "c956d794c2cc743be261290a8fcdb6a47f677d3617dbeb232f9621f8d7fdd4a0",
+        "examples/demo-disk/SELECT/A004.TXT": "0b8e87575583be8f1859ae45c06839a7a1382f689dd104af5b601beb6bc6fd9a",
+        "examples/demo-disk/SELECT/A005.TXT": "563e2183cc050221b7658d94c4c24451b43a5757581dd97bc39da171b849f090",
+        "examples/demo-disk/SELECT/A006.TXT": "6db59afcda04c13332ca105b4ae7bce83bfd5c59248d802678940a975dd43337",
+        "examples/demo-disk/SELECT/A007.TXT": "550fdd536902ea032f12f21907dad64dc7faefeb31f02166171bec6bf801fb18",
+        "examples/demo-disk/SELECT/A008.TXT": "6a1a29e68a858b303162ffa64be59069db952605bc21ead3708ef5f83dbd0dad",
+        "examples/demo-disk/SELECT/A009.TXT": "6e0f85391a3ee265b6984ccad48562d454404961524852b02b15de712a8bd419",
+        "examples/demo-disk/SELECT/A010.TXT": "c85c33c4c0d23372e8c08ef668c44929a1f07b74e045ae333607aa8eff4833f8",
+        "examples/demo-disk/SELECT/A011.TXT": "3e4e5977df44c7f1d16861fafc1046a1e572b6134880ee8745b56bbb2936b73d",
+        "examples/demo-disk/SELECT/B.BIN": "7a363897c7f658dcc477d586d2546f3aea2c27be864f7e174a3cfb4fd1d40ee1",
+        "examples/demo-disk/SELECT/SUB/NOTE.TXT": "43ff94cd7b39213e4556b2b068e59c8f2ff337f10537c254f72ff681df19d4c9",
+        "examples/demo-disk/STORY.TXT": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+        "examples/demo-disk/WORK/README.TXT": "797f18216a45f58003777f1f098fa2cf11cf26362598029c7d89c4eee312ee56",
+        "lib/dos/command.act": "8ea6ef71ff6e76fd813450660a99498762e1720df77111c2efdba86cf9f8cd00",
+        "lib/dos/cookedline.act": "480ab8f0caa9e990293e4651947451198517624de78e1a6e5a0e8882bcb76cdd",
+        "lib/dos/cprogram.act": "ca1d925f332564be2165a2a388382cd2737c83190539c6cabd3eff6c85fa3611",
+        "lib/dos/cprogrambind.act": "aec463d88e845ad3754552f1072867bfbc1819f31c64a42d85c44bd74c22e4c9",
+        "lib/dos/dos.act": "9d1d11a54a240a28c918d17f899b9118a0a5fce3c7a779789ee5fe90e2628651",
+        "lib/dos/dosargs.act": "a239440218fc4df3b7209a8ff4671b0acdc3d9ec5ea71e060b2f9b8ad23d9f26",
+        "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+        "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+        "lib/dos/doscalls.act": "9f807427e5011b9de90da00fd1e13849c314f676297196b31b5d33ee1f7604dd",
+        "lib/dos/doscancel.act": "4a1e000895510d32ceac80a500d41238490f51e85c1de7547149d7b494281713",
+        "lib/dos/dosclient.act": "6c142fe3bee64cc07036c803b3072795e21157ceec0dbf36135a0ee48984e07d",
+        "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+        "lib/dos/doscooked.act": "0aa3abf087ad9001561c05997db2cefacdbf828d3b0af7088c3d6f79875cab32",
+        "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+        "lib/dos/dosdelay.act": "c0e235201c816a7e7c82f466673f9fb946c767c2080e7f7d5adc91989dca325b",
+        "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+        "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+        "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+        "lib/dos/dosobjects.act": "1a971c398e51fcb23fd4f682586f7e8df11a14e28b949d8bcc85520a204fead3",
+        "lib/dos/dospane.act": "16a072ee99641ce853429de508308a326fd26f49d2dbac1650fae16f9b0d3510",
+        "lib/dos/dospipe.act": "ef6e260163a902e64ddb676c5908554a55d7c7c69c062b89c6f123bdef13083b",
+        "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+        "lib/dos/dosraw.act": "a5e9b50b2b460a4899114980c509224d72ca83bdec05e448eeac50cabfe557ff",
+        "lib/dos/dosstreams.act": "7e35a1d6cb521499474424794a73b391d18391b8a62b90ba8d80473e2d07e59f",
+        "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+        "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+        "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+        "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+        "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+        "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+        "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+        "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+        "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+        "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+        "lib/dos/process.act": "64f0ff0b16f4d3e255a036bbc0f468b7251e5b16c6216510ce2bf9f059d7c4fd",
+        "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+        "lib/dos/program.act": "724679468537e048e8c2b85ef9403d97fe561cbed823fec1f00583eae4b82878",
+        "lib/dos/programapi.act": "a9190a09fdcfab2816b4a84b161634f99d41fd7d3eeb20148249fcfdfb62deaf",
+        "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+        "lib/dos/programimage.act": "3286a283e484330962f4f052b2594c95fb34cd85359ce7cd9525c3cff20d5826",
+        "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+        "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+        "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+        "examples/shell/shell.act": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+        "docs/bitmap-shell-distribution.txt": "33b685ef8241f566e53163a87f2bafd63987c6a2ea573abee0096b7d009d4d51",
+        "tools/build_bitmap_console.py": "79a0aa60b7a8cecf886b8999dc660707d21c35c4a33d746a4a562e4dc0dd7dcd",
+        "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6"
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4371,
+        "native_irq_count": 52013,
+        "os_busy": 0,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 28,
+        "clock_end": 47,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 5791,
+        "gateway_calls": 22398,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 4371,
+        "vbi_dispatches": 658,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "task_records": [
+          [
+            0,
+            0,
+            0,
+            0,
+            14,
+            44,
+            1,
+            44,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            13,
+            16,
+            39,
+            14,
+            44,
+            24,
+            209,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            110,
+            55,
+            97,
+            55,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            14,
+            80,
+            51,
+            110,
+            55,
+            103,
+            58,
+            28,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            174,
+            60,
+            119,
+            60,
+            0,
+            2,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            15,
+            144,
+            56,
+            174,
+            60,
+            33,
+            112,
+            17,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            238,
+            65,
+            207,
+            65,
+            0,
+            3,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            16,
+            208,
+            61,
+            238,
+            65,
+            5,
+            171,
+            29,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            46,
+            71,
+            29,
+            71,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            17,
+            16,
+            67,
+            46,
+            71,
+            24,
+            209,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            110,
+            76,
+            93,
+            76,
+            0,
+            5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            18,
+            80,
+            72,
+            110,
+            76,
+            24,
+            209,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            142,
+            86,
+            51,
+            86,
+            0,
+            6,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            19,
+            144,
+            77,
+            142,
+            86,
+            160,
+            26,
+            23,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            174,
+            96,
+            157,
+            96,
+            0,
+            7,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            20,
+            176,
+            87,
+            174,
+            96,
+            24,
+            209,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            206,
+            98,
+            189,
+            98,
+            3,
+            8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            21,
+            208,
+            97,
+            206,
+            98,
+            24,
+            209,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "ready_queue": [
+          67,
+          2,
+          63,
+          0,
+          0,
+          0,
+          64,
+          2,
+          63
+        ],
+        "live_tasks": 0,
+        "idle_runs": 21791,
+        "created": 19,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          36,
+          31,
+          2,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          44,
+          0,
+          0,
+          16,
+          38,
+          0,
+          0,
+          16,
+          44,
+          0,
+          10,
+          3,
+          63,
+          0,
+          0,
+          0,
+          7,
+          3,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 510,
+            "untouched_above_floor": 770
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 304,
+            "untouched_above_floor": 752
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 134,
+            "untouched_above_floor": 922
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 379,
+            "untouched_above_floor": 677
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 541,
+            "untouched_above_floor": 1763
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 279,
+          "untouched_from_base": 1257,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "extent_cache_allocations": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "command": "DIR",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 1326.169579308099,
+          "first_write_ms": 1065.321358540357,
+          "first_row_write_complete_ms": 1080.0486763775077,
+          "first_row_bitmap_complete_ms": 1076.753470288802,
+          "output_writes": 8,
+          "physical_sio_commands": 2,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1185,
+          "cache_hits": 0,
+          "cache_misses": 2,
+          "sio_read_sectors": [
+            6,
+            7
+          ],
+          "sio_read_payload_bytes": 512,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 259,
+          "metadata_kernel_calls": 768,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 114.72463943815647
+            },
+            "map_cache": {
+              "count": 1,
+              "inclusive_ms": 0.37349569130182875
+            },
+            "validate_map": {
+              "count": 1,
+              "inclusive_ms": 8.796567138299837
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.307425226853347
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 1142.2795148996518
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 308.3410278567592,
+          "first_write_ms": 47.950037990975204,
+          "first_row_write_complete_ms": 62.89754841911023,
+          "first_row_bitmap_complete_ms": 58.59075332086233,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 721,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 271,
+          "metadata_kernel_calls": 298,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 116.54940447912892
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 12.310767586861186
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 127.28893863505968
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 309.9707631604544,
+          "first_write_ms": 48.85879057598266,
+          "first_row_write_complete_ms": 65.34271524812547,
+          "first_row_bitmap_complete_ms": 61.03592014987757,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 711,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 275,
+          "metadata_kernel_calls": 285,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 119.53405725289302
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 16.781579381402608
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 121.23216221512055
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 307.5047330129592,
+          "first_write_ms": 53.151700289971934,
+          "first_row_write_complete_ms": 65.69034324387951,
+          "first_row_bitmap_complete_ms": 61.3835481456316,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 714,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 238,
+          "metadata_kernel_calls": 294,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 113.7377198930332
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.307425226853347
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 120.7635128753459
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 524.2127973903936,
+          "first_write_ms": 372.14923193384635,
+          "first_row_write_complete_ms": 373.1751292327515,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 2,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 779,
+          "cache_hits": 0,
+          "cache_misses": 2,
+          "sio_read_sectors": [
+            6,
+            7
+          ],
+          "sio_read_payload_bytes": 512,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 559,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.207601296345112
+            },
+            "map_cache": {
+              "count": 1,
+              "inclusive_ms": 0.3736366596699367
+            },
+            "validate_map": {
+              "count": 1,
+              "inclusive_ms": 7.077951278512614
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.812796826520097
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 426.1497732523799
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 209.6099546222823,
+          "first_write_ms": 55.06034150996858,
+          "first_row_write_complete_ms": 56.08623880887368,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 522,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 40,
+          "metadata_kernel_calls": 304,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 12.470555232111465
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.319759959062786
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 113.8413316435925
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 208.1167471830996,
+          "first_write_ms": 53.36167267426862,
+          "first_row_write_complete_ms": 54.38764045735777,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 502,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 306,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.207601296345112
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.827105115883047
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 114.14159426766228
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 207.34367665239597,
+          "first_write_ms": 52.98303163753086,
+          "first_row_write_complete_ms": 54.00892893643596,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 502,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 284,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.207601296345112
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 10.744468048814527
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 110.48029332698036
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 1544.9869533775316,
+          "first_write_ms": 675.9285938828186,
+          "first_row_write_complete_ms": 692.7838292365576,
+          "first_row_bitmap_complete_ms": 689.4882707269315,
+          "output_writes": 20,
+          "physical_sio_commands": 5,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 2181,
+          "cache_hits": 0,
+          "cache_misses": 5,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245
+          ],
+          "sio_read_payload_bytes": 1280,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 636,
+          "metadata_kernel_calls": 809,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 293.33332393544214
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7469913826036576
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 14.235056295717804
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 638.4697742673521
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 507.7414893871964
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 750.1734615769567,
+          "first_write_ms": 106.76528343804934,
+          "first_row_write_complete_ms": 120.92351197314835,
+          "first_row_bitmap_complete_ms": 117.62809443189043,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1497,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 633,
+          "metadata_kernel_calls": 660,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 291.80691844557
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7471323509717654
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 15.86859774535192
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 64.795898948235
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 289.1828627574259
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 749.751754703762,
+          "first_write_ms": 101.65750607221246,
+          "first_row_write_complete_ms": 118.5150674040252,
+          "first_row_bitmap_complete_ms": 115.2195088943992,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1507,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 645,
+          "metadata_kernel_calls": 650,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 293.80465167421085
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7472028351558193
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 14.23498581153375
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 70.27040552370453
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 286.52208480938964
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 745.5330648355816,
+          "first_write_ms": 102.51847038043134,
+          "first_row_write_complete_ms": 119.37377621835437,
+          "first_row_bitmap_complete_ms": 116.0785701296486,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1490,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 656,
+          "metadata_kernel_calls": 630,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 295.50931166555534
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7469208984196036
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 14.376095148009739
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 70.36732127677871
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 279.2294387062487
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 1971.7528993669112,
+          "first_write_ms": 1453.8884714658877,
+          "first_row_write_complete_ms": 1454.914368764793,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 5,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1885,
+          "cache_hits": 0,
+          "cache_misses": 5,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245
+          ],
+          "sio_read_payload_bytes": 1280,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 88,
+          "metadata_kernel_calls": 830,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 29.03137814905713
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7472733193398733
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 15.953954092241242
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 1408.1922357442213
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 418.7377974256357
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 466.7021437059738,
+          "first_write_ms": 107.59777213591043,
+          "first_row_write_complete_ms": 108.62373991899958,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 946,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 40,
+          "metadata_kernel_calls": 640,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 20.51879178831062
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7469913826036576
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 15.868527261167868
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 64.795898948235
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 258.8963727429202
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 477.81460967973396,
+          "first_write_ms": 107.65437093570573,
+          "first_row_write_complete_ms": 108.68033871879489,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1022,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 64,
+          "metadata_kernel_calls": 706,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 24.649658363159887
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 2.2402693059704335
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 14.23533823245402
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 64.79688572681177
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 268.6095162106575
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 470.16876733029875,
+          "first_write_ms": 107.98825451556925,
+          "first_row_write_complete_ms": 109.0142222986584,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 958,
+          "cache_hits": 5,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 88,
+          "metadata_kernel_calls": 626,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 28.78179365332213
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 0.7474142877079812
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 15.868738713720028
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 64.79596943241906
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 255.88430162155913
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "LIST",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 8400.414658454789,
+          "first_write_ms": 7754.684872261513,
+          "first_row_write_complete_ms": 7809.18916404348,
+          "first_row_bitmap_complete_ms": 7802.831138220895,
+          "output_writes": 28,
+          "physical_sio_commands": 34,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 6734,
+          "cache_hits": 2,
+          "cache_misses": 34,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245,
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319,
+            320,
+            321,
+            322,
+            323,
+            324,
+            325,
+            326,
+            327,
+            328,
+            329,
+            330,
+            331,
+            332
+          ],
+          "sio_read_payload_bytes": 8704,
+          "load_kernel_calls": 5220,
+          "write_kernel_calls": 810,
+          "metadata_kernel_calls": 300,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 7657.3549541218445
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 411.56067490015914
+            },
+            "map_cache": {
+              "count": 4,
+              "inclusive_ms": 1.4941237335754232
+            },
+            "validate_map": {
+              "count": 4,
+              "inclusive_ms": 34.65023633346913
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.528886533150827
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 136.76476185508733
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 1773.3479564520517,
+          "first_write_ms": 1129.4271468425202,
+          "first_row_write_complete_ms": 1177.7463809895698,
+          "first_row_bitmap_complete_ms": 1172.4000146607102,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1779,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 265,
+          "write_kernel_calls": 813,
+          "metadata_kernel_calls": 295,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1029.5765733127143
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 386.91348348344115
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.12090997900981
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 27.837023650263117
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.66097389406791
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 150.41155715069095
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 1763.4331577337362,
+          "first_write_ms": 1121.6106622834902,
+          "first_row_write_complete_ms": 1170.7005000148017,
+          "first_row_bitmap_complete_ms": 1165.486080078491,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1744,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 229,
+          "write_kernel_calls": 793,
+          "metadata_kernel_calls": 292,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1023.0930856425126
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 385.71158717695334
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.1205575580895402
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 24.41691958741378
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.528886533150827
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 136.45491338198622
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 1773.5007661630807,
+          "first_write_ms": 1129.4274992634403,
+          "first_row_write_complete_ms": 1177.8206008353786,
+          "first_row_bitmap_complete_ms": 1172.472965791206,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1779,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 265,
+          "write_kernel_calls": 819,
+          "metadata_kernel_calls": 295,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1029.5765733127143
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 392.7037592034723
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.120980463193864
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 27.837164618631224
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.66097389406791
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 150.9048759548845
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 7925.991606743363,
+          "first_write_ms": 7663.9949871648305,
+          "first_row_write_complete_ms": 7675.121056586113,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 34,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 5994,
+          "cache_hits": 2,
+          "cache_misses": 34,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245,
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319,
+            320,
+            321,
+            322,
+            323,
+            324,
+            325,
+            326,
+            327,
+            328,
+            329,
+            330,
+            331,
+            332
+          ],
+          "sio_read_payload_bytes": 8704,
+          "load_kernel_calls": 5196,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 297,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 7558.14423601488
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 28.89823352537924
+            },
+            "map_cache": {
+              "count": 4,
+              "inclusive_ms": 1.4946876070478545
+            },
+            "validate_map": {
+              "count": 4,
+              "inclusive_ms": 34.79162760668134
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.616145953009605
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 126.81077393043775
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 1399.975189567213,
+          "first_write_ms": 1137.2625211628763,
+          "first_row_write_complete_ms": 1144.2574420725732,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1067,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 267,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 330,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1029.355112006417
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 29.162196794661245
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.12090997900981
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 24.134348493541534
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 12.015297887307067
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 131.72570656870306
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 1391.6949895612925,
+          "first_write_ms": 1130.583510366109,
+          "first_row_write_complete_ms": 1140.035087026822,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1037,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 241,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 306,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1023.2165034487912
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 29.16191485792503
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.120769010641702
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 26.486758136341788
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.661255830804127
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 129.25213461351407
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 1390.5192428870885,
+          "first_write_ms": 1129.4645034600685,
+          "first_row_write_complete_ms": 1140.5764760445402,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1029,
+          "cache_hits": 34,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 241,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 276,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1023.2074109890481
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 28.89766965190681
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.1206280422735944
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 24.4164261981254
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.895192837679152
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 123.55510946898626
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 9381.203489249048,
+          "first_write_ms": 7696.658203865635,
+          "first_row_write_complete_ms": 7766.387290855805,
+          "first_row_bitmap_complete_ms": 7761.173434792966,
+          "output_writes": 80,
+          "physical_sio_commands": 34,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 8712,
+          "cache_hits": 5,
+          "cache_misses": 34,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245,
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319,
+            320,
+            321,
+            322,
+            323,
+            324,
+            325,
+            326,
+            327,
+            328,
+            329,
+            330,
+            331,
+            332
+          ],
+          "sio_read_payload_bytes": 8704,
+          "load_kernel_calls": 5166,
+          "write_kernel_calls": 2233,
+          "metadata_kernel_calls": 655,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 7557.5965739047815
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1122.336931315982
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8683242667177913
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 41.94915552899085
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01313120348925
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 290.6769864910013
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 2863.7469533211442,
+          "first_write_ms": 1192.0531197004705,
+          "first_row_write_complete_ms": 1253.6357856660545,
+          "first_row_bitmap_complete_ms": 1248.421365729744,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3835,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 287,
+          "write_kernel_calls": 2200,
+          "metadata_kernel_calls": 690,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1047.6654228557654
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1107.8573653857811
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8678308774294137
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 41.637122046184054
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01334265604142
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 288.9525204439376
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 2866.051856623892,
+          "first_write_ms": 1185.7760802053626,
+          "first_row_write_complete_ms": 1253.4342713838441,
+          "first_row_bitmap_complete_ms": 1247.0686332693808,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3819,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 265,
+          "write_kernel_calls": 2171,
+          "metadata_kernel_calls": 713,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1043.8956467558244
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1113.745191216543
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8678308774294137
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 43.128990285869754
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01327217185735
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 280.02111706154255
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 2864.640340354028,
+          "first_write_ms": 1180.9319136878876,
+          "first_row_write_complete_ms": 1250.9601355551827,
+          "first_row_bitmap_complete_ms": 1244.7019858214014,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3826,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 271,
+          "write_kernel_calls": 2199,
+          "metadata_kernel_calls": 698,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1047.5700577547404
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1121.5356671116567
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8677603932453597
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 39.861766418233415
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01362459277763
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 277.5384526466106
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 8306.578077445201,
+          "first_write_ms": 7705.214701873047,
+          "first_row_write_complete_ms": 7719.921861233558,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 34,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 6714,
+          "cache_hits": 5,
+          "cache_misses": 34,
+          "sio_read_sectors": [
+            6,
+            7,
+            8,
+            9,
+            245,
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319,
+            320,
+            321,
+            322,
+            323,
+            324,
+            325,
+            326,
+            327,
+            328,
+            329,
+            330,
+            331,
+            332
+          ],
+          "sio_read_payload_bytes": 8704,
+          "load_kernel_calls": 5154,
+          "write_kernel_calls": 160,
+          "metadata_kernel_calls": 742,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 7557.710476346213
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 82.96129431516862
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8676194248772517
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 40.08865500670305
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01425895043411
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 277.83540251402985
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 1791.5135632715376,
+          "first_write_ms": 1187.997741686743,
+          "first_row_write_complete_ms": 1202.705042015622,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1829,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 265,
+          "write_kernel_calls": 184,
+          "metadata_kernel_calls": 698,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1040.8179548591092
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 87.07785260065494
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 2.009786024114049
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 41.35419853139154
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01432943461818
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 271.3375360702812
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 1782.427517589328,
+          "first_write_ms": 1187.5991536259178,
+          "first_row_write_complete_ms": 1198.3215601251236,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1797,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 241,
+          "write_kernel_calls": 160,
+          "metadata_kernel_calls": 690,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1037.969266076385
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 82.82948889098775
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8678308774294137
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 40.14405557536944
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01313120348925
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 265.11448746015884
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 1790.8666594302904,
+          "first_write_ms": 1186.9821350787097,
+          "first_row_write_complete_ms": 1201.6889420183006,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1819,
+          "cache_hits": 39,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 255,
+          "write_kernel_calls": 208,
+          "metadata_kernel_calls": 698,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1040.2299757957312
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 91.19539766471802
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 1.8676899090613057
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 40.003157691445615
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 65.01341314022547
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 270.83308076500714
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        }
+      ],
+      "summary": [
+        {
+          "command": "DIR",
+          "rows": 8,
+          "cold_ms": 1326.169579308099,
+          "warm_median_ms": 308.3410278567592,
+          "warm_range_ms": [
+            307.5047330129592,
+            309.9707631604544
+          ],
+          "cold_first_row_ms": 1076.753470288802,
+          "warm_first_row_ms": 61.03592014987757,
+          "warm_first_write_ms": 48.85879057598266,
+          "output_writes": 8,
+          "warm_kernel_calls": 714,
+          "cold_sio_reads": 2,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 116.54940447912892,
+            "metadata": 121.23216221512055
+          }
+        },
+        {
+          "command": "DIR >NIL:",
+          "rows": 8,
+          "cold_ms": 524.2127973903936,
+          "warm_median_ms": 208.1167471830996,
+          "warm_range_ms": [
+            207.34367665239597,
+            209.6099546222823
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 53.36167267426862,
+          "output_writes": 8,
+          "warm_kernel_calls": 502,
+          "cold_sio_reads": 2,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 8.207601296345112,
+            "metadata": 113.8413316435925
+          }
+        },
+        {
+          "command": "DIR SYS:C",
+          "rows": 20,
+          "cold_ms": 1544.9869533775316,
+          "warm_median_ms": 749.751754703762,
+          "warm_range_ms": [
+            745.5330648355816,
+            750.1734615769567
+          ],
+          "cold_first_row_ms": 689.4882707269315,
+          "warm_first_row_ms": 116.0785701296486,
+          "warm_first_write_ms": 102.51847038043134,
+          "output_writes": 20,
+          "warm_kernel_calls": 1497,
+          "cold_sio_reads": 5,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 293.80465167421085,
+            "metadata": 286.52208480938964
+          }
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "rows": 20,
+          "cold_ms": 1971.7528993669112,
+          "warm_median_ms": 470.16876733029875,
+          "warm_range_ms": [
+            466.7021437059738,
+            477.81460967973396
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 107.65437093570573,
+          "output_writes": 20,
+          "warm_kernel_calls": 958,
+          "cold_sio_reads": 5,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 24.649658363159887,
+            "metadata": 258.8963727429202
+          }
+        },
+        {
+          "command": "LIST",
+          "rows": 8,
+          "cold_ms": 8400.414658454789,
+          "warm_median_ms": 1773.3479564520517,
+          "warm_range_ms": [
+            1763.4331577337362,
+            1773.5007661630807
+          ],
+          "cold_first_row_ms": 7802.831138220895,
+          "warm_first_row_ms": 1172.4000146607102,
+          "warm_first_write_ms": 1129.4271468425202,
+          "output_writes": 28,
+          "warm_kernel_calls": 1779,
+          "cold_sio_reads": 34,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 1029.5765733127143,
+            "write": 386.91348348344115,
+            "metadata": 150.41155715069095
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "rows": 8,
+          "cold_ms": 7925.991606743363,
+          "warm_median_ms": 1391.6949895612925,
+          "warm_range_ms": [
+            1390.5192428870885,
+            1399.975189567213
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 1130.583510366109,
+          "output_writes": 28,
+          "warm_kernel_calls": 1037,
+          "cold_sio_reads": 34,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 1023.2165034487912,
+            "write": 29.16191485792503,
+            "metadata": 129.25213461351407
+          }
+        },
+        {
+          "command": "LIST SYS:C",
+          "rows": 20,
+          "cold_ms": 9381.203489249048,
+          "warm_median_ms": 2864.640340354028,
+          "warm_range_ms": [
+            2863.7469533211442,
+            2866.051856623892
+          ],
+          "cold_first_row_ms": 7761.173434792966,
+          "warm_first_row_ms": 1247.0686332693808,
+          "warm_first_write_ms": 1185.7760802053626,
+          "output_writes": 80,
+          "warm_kernel_calls": 3826,
+          "cold_sio_reads": 34,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 1047.5700577547404,
+            "write": 1113.745191216543,
+            "metadata": 280.02111706154255
+          }
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "rows": 20,
+          "cold_ms": 8306.578077445201,
+          "warm_median_ms": 1790.8666594302904,
+          "warm_range_ms": [
+            1782.427517589328,
+            1791.5135632715376
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 1187.5991536259178,
+          "output_writes": 80,
+          "warm_kernel_calls": 1819,
+          "cold_sio_reads": 34,
+          "cold_ata_commands": 0,
+          "warm_phases_ms": {
+            "load": 1040.2299757957312,
+            "write": 87.07785260065494,
+            "metadata": 270.83308076500714
+          }
+        }
+      ]
+    },
+    "IDE": {
+      "status": "pass",
+      "tier": "development",
+      "transport": "IDE",
+      "scope": "ShellOneCommand entry to final RTL; includes parsing, redirection, LIST load/launch/wait/cleanup; excludes typing and prompt. DOSCALLS implementations cover resident and loaded callers. Routine spans include preemption and overlap. First-row bitmap completion is the last synchronous text return before the row-ending Write returns, including newline/caret painting; this bounds fenced VRAM visibility, not monitor scanout.",
+      "cache_scope": "Cold: all read-cache tags, scratch sector and SDFS map/directory/extent identities invalidated at idle prompt; mounts and current-directory lock remain admitted. Warm: exact command repeated after CLS; no filesystem changes.",
+      "compiler_revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "compiler_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+      "layout_inputs": {
+        "lib/io/blocktypes.act": "e8989c86bac3c8af9342e63788a62d7c7a623c2973a84dd82ccf7d9dcec38da1",
+        "lib/fs/fsbtypes.act": "1157a499f23b7fc73379b02286316c176dfbbe12096db1b2bae278bd81388f66",
+        "lib/spartados/sdfstypes.act": "dbfdcdac81b271a7b3f5d164dae7262bf1491e32c8f7e2ea91c26a1d283c9391"
+      },
+      "observer_sha256": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+      "xex_sha256": "600620949f1f20b4599f91a1deec5ddd194cecc31bf726deff547df6ac8e8d7a",
+      "manifest_sha256": "4be9c0f8b6b670a429daa185ab887e01c1e68409095ad6d422a3749d5e716997",
+      "system_atr_sha256": "b90573aebcf10edebbbafb0464e92737ab23a20c2283b673e665c5a5db5053eb",
+      "log_sha256": "1b2b2d41f6e018d12ad9e705eba713dda5720e84c648e5d0daf1c0bc8d6a6ccc",
+      "sector_bytes": 512,
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input": "Prefilled empty cooked-line buffer, physical Return, ordinary cooked Drain and shell dispatch; typing excluded from timing",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      },
+      "artifacts": {
+        "build/development/spartados-listing/ide-final/results.json": "2308f8161dae7499015e565689332736d471611f9bdf4dde08ee1222eb0e1448",
+        "build/development/spartados-listing/ide-final/run.json": "0d41b18e46460d4ba0ff0960c41a265e74035f5c30b2a4bfcbb74b65b9416bc1",
+        "build/development/spartados-listing/ide-final/markers.json": "4ac10f68394ffc8c39f3a249a1bf1aadaabf584578f0cc6245be0aec3bc20cbe",
+        "build/development/spartados-listing/ide-final/bundle/build.json": "84e2f629d389727c7bd3719b9d0732cfae0bed1ca60e7a3c6e77d510d03b29a0",
+        "build/development/spartados-listing/ide-final/bundle/demo-manifest.json": "4be9c0f8b6b670a429daa185ab887e01c1e68409095ad6d422a3749d5e716997",
+        "build/development/spartados-listing/ide-final/bundle/program.xex": "600620949f1f20b4599f91a1deec5ddd194cecc31bf726deff547df6ac8e8d7a",
+        "build/development/spartados-listing/ide-final/bundle/emulator.log": "1b2b2d41f6e018d12ad9e705eba713dda5720e84c648e5d0daf1c0bc8d6a6ccc",
+        "build/development/spartados-listing/ide-final/bundle/boot-smoke.png": "e1bea00e2fd02d12834ceb322af249fb5bf2096fe41dfe126c5651f52a7333a4"
+      },
+      "source_inputs_sha256": "26bce430f8c7a99f84d072cb721bcf014d7607bc41ed17fab57de82884d2c7b9",
+      "source_inputs": {
+        "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+        "examples/demo-session.inc": "4051346a79bc37c583eeacf2955b94b78619e5b929f1ec7cb2265e308fe35a44",
+        "examples/shell/shell-session.inc": "39d0d8ad79cdf6342536727bfdc5b017a4639d6229304ba7901ffdc01c3f197b",
+        "examples/shell/shell-commands.inc": "b23f9bf65da50a4c097f54cd3f2e5803c27aa6519e469c1d2043a4fc5f78e1a7",
+        "examples/shell/shell-mount-diagnostics.inc": "e54efe84298a5487e9d2170c8edbdbd0fdb7e4084a99557d3ecdfdbdb6308b5f",
+        "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+        "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+        "examples/shell/shell-jobs.inc": "da7bfc5395f3c16779db4e89a40c9254891741e629434eb0c1c15746d60a1a23",
+        "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+        "examples/shell/shell-boot.inc": "391bb54f9854cfc549f099c2b5fad9ce7e9c9dffa910410cd714d547aa959279",
+        "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+        "examples/commands/command-files.inc": "8ee77c8038111d0c9d0173f0defad2b3e934ee961c04e8833a6faae2db52d3bb",
+        "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+        "examples/commands/command-transfer.inc": "1b3c5caab17f045cf5d4977781c9e2d2f7dd616e45145aac3185c1b9db59dfbe",
+        "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+        "docs/guides/demo.md": "4479519a57fd7abada40f7a177687b51f3a1e82e15adf13e9879963e3954d6a8",
+        "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+        "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+        "docs/demo-distribution.txt": "0f8f8c8c6090886ef179cb7b91863e7dee8d653a5fd9460b08e98b7ca04e31f3",
+        "tools/package_demo.py": "17c5f6c7dbd680a12602dcdfd552acf49bdd49600cf83fe3204e3dbad06238c3",
+        "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "LICENSING.md": "ab99e3de1a1d4d818f5c36fa9b95d392bd30061b926ed5d61bde807d21f4051e",
+        "config/shell-sdfs.json": "a012ff38f2f2c7d5728256fa7038f7062e8e0447ef5337c870dfca607bda6d57",
+        "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+        "tools/make_data_disk.py": "6da3f3fecf522138c9d9559d4f3dec0ad4a42c6ee10b5510ea6b6910f80411ba",
+        "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+        "tools/sdfs_reference.cpp": "0d67232b165a10d421fcc31cca384c59c4c6d7b855bf16f51781051cf98194b4",
+        "tools/make_shell_disk.py": "3c66d45cc35c328be33c955c4a5a5f864721cac0758a85920328ff9a84d51f30",
+        "tools/build_demo.py": "020e10c57f304350300264312e4e0bdd097bc765b289f492e28b90151ba0be2e",
+        "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+        "examples/demo-disk/README.TXT": "57f0973b6ac9e5f6b92479f651cd20fd5676babe31373b9410d53449f2df1dbd",
+        "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+        "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+        "examples/demo-disk/SELECT/A000.TXT": "78b31251b40a6aa86dda40d7a6bfc9ed18330f638676fdcd9e1f3a78fb5ccfec",
+        "examples/demo-disk/SELECT/A001.TXT": "1af71eda0b899f120ded0f8d37e744a11943f37a331e3b0bb77f20bf6859c6af",
+        "examples/demo-disk/SELECT/A002.TXT": "538094795c033f4995234f8e857642700a07a631996f2747ebff83c8e60ed905",
+        "examples/demo-disk/SELECT/A003.TXT": "c956d794c2cc743be261290a8fcdb6a47f677d3617dbeb232f9621f8d7fdd4a0",
+        "examples/demo-disk/SELECT/A004.TXT": "0b8e87575583be8f1859ae45c06839a7a1382f689dd104af5b601beb6bc6fd9a",
+        "examples/demo-disk/SELECT/A005.TXT": "563e2183cc050221b7658d94c4c24451b43a5757581dd97bc39da171b849f090",
+        "examples/demo-disk/SELECT/A006.TXT": "6db59afcda04c13332ca105b4ae7bce83bfd5c59248d802678940a975dd43337",
+        "examples/demo-disk/SELECT/A007.TXT": "550fdd536902ea032f12f21907dad64dc7faefeb31f02166171bec6bf801fb18",
+        "examples/demo-disk/SELECT/A008.TXT": "6a1a29e68a858b303162ffa64be59069db952605bc21ead3708ef5f83dbd0dad",
+        "examples/demo-disk/SELECT/A009.TXT": "6e0f85391a3ee265b6984ccad48562d454404961524852b02b15de712a8bd419",
+        "examples/demo-disk/SELECT/A010.TXT": "c85c33c4c0d23372e8c08ef668c44929a1f07b74e045ae333607aa8eff4833f8",
+        "examples/demo-disk/SELECT/A011.TXT": "3e4e5977df44c7f1d16861fafc1046a1e572b6134880ee8745b56bbb2936b73d",
+        "examples/demo-disk/SELECT/B.BIN": "7a363897c7f658dcc477d586d2546f3aea2c27be864f7e174a3cfb4fd1d40ee1",
+        "examples/demo-disk/SELECT/SUB/NOTE.TXT": "43ff94cd7b39213e4556b2b068e59c8f2ff337f10537c254f72ff681df19d4c9",
+        "examples/demo-disk/STORY.TXT": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+        "examples/demo-disk/WORK/README.TXT": "797f18216a45f58003777f1f098fa2cf11cf26362598029c7d89c4eee312ee56",
+        "lib/dos/command.act": "8ea6ef71ff6e76fd813450660a99498762e1720df77111c2efdba86cf9f8cd00",
+        "lib/dos/cookedline.act": "480ab8f0caa9e990293e4651947451198517624de78e1a6e5a0e8882bcb76cdd",
+        "lib/dos/cprogram.act": "ca1d925f332564be2165a2a388382cd2737c83190539c6cabd3eff6c85fa3611",
+        "lib/dos/cprogrambind.act": "aec463d88e845ad3754552f1072867bfbc1819f31c64a42d85c44bd74c22e4c9",
+        "lib/dos/dos.act": "9d1d11a54a240a28c918d17f899b9118a0a5fce3c7a779789ee5fe90e2628651",
+        "lib/dos/dosargs.act": "a239440218fc4df3b7209a8ff4671b0acdc3d9ec5ea71e060b2f9b8ad23d9f26",
+        "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+        "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+        "lib/dos/doscalls.act": "9f807427e5011b9de90da00fd1e13849c314f676297196b31b5d33ee1f7604dd",
+        "lib/dos/doscancel.act": "4a1e000895510d32ceac80a500d41238490f51e85c1de7547149d7b494281713",
+        "lib/dos/dosclient.act": "6c142fe3bee64cc07036c803b3072795e21157ceec0dbf36135a0ee48984e07d",
+        "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+        "lib/dos/doscooked.act": "0aa3abf087ad9001561c05997db2cefacdbf828d3b0af7088c3d6f79875cab32",
+        "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+        "lib/dos/dosdelay.act": "c0e235201c816a7e7c82f466673f9fb946c767c2080e7f7d5adc91989dca325b",
+        "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+        "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+        "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+        "lib/dos/dosobjects.act": "1a971c398e51fcb23fd4f682586f7e8df11a14e28b949d8bcc85520a204fead3",
+        "lib/dos/dospane.act": "16a072ee99641ce853429de508308a326fd26f49d2dbac1650fae16f9b0d3510",
+        "lib/dos/dospipe.act": "ef6e260163a902e64ddb676c5908554a55d7c7c69c062b89c6f123bdef13083b",
+        "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+        "lib/dos/dosraw.act": "a5e9b50b2b460a4899114980c509224d72ca83bdec05e448eeac50cabfe557ff",
+        "lib/dos/dosstreams.act": "7e35a1d6cb521499474424794a73b391d18391b8a62b90ba8d80473e2d07e59f",
+        "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+        "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+        "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+        "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+        "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+        "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+        "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+        "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+        "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+        "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+        "lib/dos/process.act": "64f0ff0b16f4d3e255a036bbc0f468b7251e5b16c6216510ce2bf9f059d7c4fd",
+        "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+        "lib/dos/program.act": "724679468537e048e8c2b85ef9403d97fe561cbed823fec1f00583eae4b82878",
+        "lib/dos/programapi.act": "a9190a09fdcfab2816b4a84b161634f99d41fd7d3eeb20148249fcfdfb62deaf",
+        "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+        "lib/dos/programimage.act": "3286a283e484330962f4f052b2594c95fb34cd85359ce7cd9525c3cff20d5826",
+        "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+        "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+        "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+        "examples/shell/shell.act": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+        "docs/bitmap-shell-distribution.txt": "33b685ef8241f566e53163a87f2bafd63987c6a2ea573abee0096b7d009d4d51",
+        "tools/build_bitmap_console.py": "79a0aa60b7a8cecf886b8999dc660707d21c35c4a33d746a4a562e4dc0dd7dcd",
+        "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6",
+        "tools/build_ide_media.py": "26e5a6c5d830f5d7bbdfe14827676777a4f7a712f076b796e713d21fe219201a",
+        "docs/ide-only-distribution.txt": "f8eb35e49e17a8ae01103daf8356d1f9ae420676f75ef9e972281ae33bb41e91",
+        "toolchain/altirra-ideplus.json": "7ee98fdc9ef36a7236d1a48a5b2ad538360d49096600984997d8a6c3aa4683e9"
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 2817,
+        "native_irq_count": 65,
+        "os_busy": 0,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "fault_required": 0,
+        "fault_s": 0,
+        "clock_start": 40,
+        "clock_end": 41,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "switches": 4931,
+        "gateway_calls": 64828,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_owner": 255,
+        "tick_pending": 0,
+        "vbi_count": 2817,
+        "vbi_dispatches": 1655,
+        "irq_depth": 0,
+        "tasks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "task_records": [
+          [
+            0,
+            0,
+            0,
+            0,
+            14,
+            44,
+            1,
+            44,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            13,
+            16,
+            39,
+            14,
+            44,
+            26,
+            120,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            110,
+            55,
+            59,
+            55,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            14,
+            80,
+            51,
+            110,
+            55,
+            207,
+            178,
+            17,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            174,
+            60,
+            161,
+            60,
+            0,
+            2,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            15,
+            144,
+            56,
+            174,
+            60,
+            68,
+            227,
+            27,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            238,
+            65,
+            207,
+            65,
+            0,
+            3,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            16,
+            208,
+            61,
+            238,
+            65,
+            195,
+            85,
+            29,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            46,
+            71,
+            29,
+            71,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            17,
+            16,
+            67,
+            46,
+            71,
+            26,
+            120,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            110,
+            76,
+            93,
+            76,
+            0,
+            5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            18,
+            80,
+            72,
+            110,
+            76,
+            26,
+            120,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            142,
+            86,
+            51,
+            86,
+            0,
+            6,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            19,
+            144,
+            77,
+            142,
+            86,
+            148,
+            203,
+            22,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            174,
+            96,
+            157,
+            96,
+            0,
+            7,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            20,
+            176,
+            87,
+            174,
+            96,
+            26,
+            120,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            206,
+            98,
+            189,
+            98,
+            3,
+            8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            21,
+            208,
+            97,
+            206,
+            98,
+            26,
+            120,
+            31,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "ready_queue": [
+          67,
+          2,
+          63,
+          0,
+          0,
+          0,
+          64,
+          2,
+          63
+        ],
+        "live_tasks": 0,
+        "idle_runs": 447,
+        "created": 19,
+        "signal_nmi_checkpoints": 0,
+        "wake_queue": [
+          76,
+          2,
+          63,
+          0,
+          0,
+          0,
+          73,
+          2,
+          63
+        ],
+        "root_task": [
+          67,
+          2,
+          63,
+          64,
+          2,
+          63,
+          1,
+          0,
+          62,
+          31,
+          2,
+          0,
+          6,
+          255,
+          255,
+          0,
+          255,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          44,
+          0,
+          0,
+          16,
+          38,
+          0,
+          0,
+          16,
+          44,
+          0,
+          10,
+          3,
+          63,
+          0,
+          0,
+          0,
+          7,
+          3,
+          63,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 510,
+            "untouched_above_floor": 770
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 317,
+            "untouched_above_floor": 739
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 304,
+            "untouched_above_floor": 752
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 372,
+            "untouched_above_floor": 684
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 528,
+            "untouched_above_floor": 1776
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 117,
+            "untouched_above_floor": 139
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 277,
+          "untouched_from_base": 1259,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "extent_cache_allocations": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "command": "DIR",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 350.89120202317804,
+          "first_write_ms": 90.43586009735276,
+          "first_row_write_complete_ms": 107.04193386046106,
+          "first_row_bitmap_complete_ms": 102.14095709063844,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 2,
+          "ata_writes": 0,
+          "kernel_calls": 736,
+          "cache_hits": 0,
+          "cache_misses": 2,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 269,
+          "metadata_kernel_calls": 321,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 118.26061949959049
+            },
+            "map_cache": {
+              "count": 1,
+              "inclusive_ms": 0.6470448096151704
+            },
+            "validate_map": {
+              "count": 1,
+              "inclusive_ms": 15.64051092575337
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 10.83701378247735
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 162.8469407749595
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 308.6223302353185,
+          "first_write_ms": 53.53238536804726,
+          "first_row_write_complete_ms": 66.11895756711152,
+          "first_row_bitmap_complete_ms": 61.795387233058776,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 694,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 238,
+          "metadata_kernel_calls": 282,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 114.49803278642305
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.452270225084193
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 120.94620788041371
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 310.4845223780236,
+          "first_write_ms": 49.23947565405798,
+          "first_row_write_complete_ms": 65.8215143104039,
+          "first_row_bitmap_complete_ms": 61.497943976351145,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 697,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 273,
+          "metadata_kernel_calls": 274,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 119.43418116408859
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 16.940380248076135
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 121.58796637622484
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 308.6223302353185,
+          "first_write_ms": 53.53238536804726,
+          "first_row_write_complete_ms": 66.11895756711152,
+          "first_row_bitmap_complete_ms": 61.795387233058776,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 694,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 238,
+          "metadata_kernel_calls": 282,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 114.49803278642305
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.452270225084193
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 120.94620788041371
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 249.9323351833082,
+          "first_write_ms": 95.63315237693813,
+          "first_row_write_complete_ms": 96.66391308454295,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 2,
+          "ata_writes": 0,
+          "kernel_calls": 520,
+          "cache_hits": 0,
+          "cache_misses": 2,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 304,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.245733239918295
+            },
+            "map_cache": {
+              "count": 1,
+              "inclusive_ms": 0.6470448096151704
+            },
+            "validate_map": {
+              "count": 1,
+              "inclusive_ms": 14.539900391751095
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.937624316479624
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 152.64104237650113
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 210.0229919408384,
+          "first_write_ms": 53.68942413011944,
+          "first_row_write_complete_ms": 54.72011435354021,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 510,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 308,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.245592271550187
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 10.782952413307978
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 116.45946666027609
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 210.0229919408384,
+          "first_write_ms": 53.68942413011944,
+          "first_row_write_complete_ms": 54.72011435354021,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 510,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 308,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.245592271550187
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 10.782952413307978
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 116.45946666027609
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 210.0229919408384,
+          "first_write_ms": 53.68942413011944,
+          "first_row_write_complete_ms": 54.72011435354021,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 8,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 510,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 16,
+          "metadata_kernel_calls": 308,
+          "routines": {
+            "write": {
+              "count": 8,
+              "inclusive_ms": 8.245592271550187
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 10.782952413307978
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 116.45946666027609
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 12
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 812.844967217806,
+          "first_write_ms": 165.47691713456416,
+          "first_row_write_complete_ms": 182.75146289924004,
+          "first_row_bitmap_complete_ms": 178.4277515968192,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 4,
+          "ata_writes": 0,
+          "kernel_calls": 1569,
+          "cache_hits": 0,
+          "cache_misses": 4,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 649,
+          "metadata_kernel_calls": 640,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 296.12160777243196
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2939486508622329
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 29.579533648444624
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 127.44921966959835
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 282.1872370058882
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 766.2039614930806,
+          "first_write_ms": 121.24033838047082,
+          "first_row_write_complete_ms": 138.18269218570046,
+          "first_row_bitmap_complete_ms": 134.87331877599985,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1487,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 623,
+          "metadata_kernel_calls": 660,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 294.7411750277355
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2938076824941251
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 29.384926816271694
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 89.25602534047384
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 281.3334620844429
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 768.5361421750574,
+          "first_write_ms": 121.1514578243788,
+          "first_row_write_complete_ms": 138.1375118237219,
+          "first_row_bitmap_complete_ms": 134.8279269614691,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1504,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 645,
+          "metadata_kernel_calls": 647,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 295.992339778877
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2940896192303408
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 29.384715363719536
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 88.84848578827396
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 282.83590295173667
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 767.4898044627766,
+          "first_write_ms": 123.56356757107272,
+          "first_row_write_complete_ms": 137.11527970238757,
+          "first_row_bitmap_complete_ms": 133.8052719350305,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1504,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 621,
+          "metadata_kernel_calls": 671,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 292.53191876274883
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2938781666781791
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 29.977134930692902
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.16964556323207
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 285.2501977081363
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 540.0801264204325,
+          "first_write_ms": 171.6359661055656,
+          "first_row_write_complete_ms": 172.66665632898633,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 4,
+          "ata_writes": 0,
+          "kernel_calls": 1076,
+          "cache_hits": 0,
+          "cache_misses": 4,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 64,
+          "metadata_kernel_calls": 658,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 24.78238008173346
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2938076824941251
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 28.479275535362618
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 124.0523753874868
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 262.17825732083975
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 494.25039365416796,
+          "first_write_ms": 127.0800235135238,
+          "first_row_write_complete_ms": 132.27830257168594,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 988,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 88,
+          "metadata_kernel_calls": 624,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 29.47514657186074
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2938781666781791
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 28.479275535362618
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.16943411067992
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 256.25103083119177
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 498.1003102713782,
+          "first_write_ms": 126.6731183189804,
+          "first_row_write_complete_ms": 127.70380854240118,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1012,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 40,
+          "metadata_kernel_calls": 708,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 21.769110729243465
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 1.2939486508622329
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 28.47906408281046
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.16894072139152
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 270.07741982776486
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 490.60431729724166,
+          "first_write_ms": 126.31724367369208,
+          "first_row_write_complete_ms": 127.34800438129687,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 20,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 958,
+          "cache_hits": 4,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 0,
+          "write_kernel_calls": 64,
+          "metadata_kernel_calls": 626,
+          "routines": {
+            "write": {
+              "count": 20,
+              "inclusive_ms": 24.782239113365353
+            },
+            "map_cache": {
+              "count": 2,
+              "inclusive_ms": 2.792935793137378
+            },
+            "validate_map": {
+              "count": 2,
+              "inclusive_ms": 28.479134566994514
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.16985701578423
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 256.12035315395576
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 24
+        },
+        {
+          "command": "LIST",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 1956.5126681224,
+          "first_write_ms": 1307.1284884384793,
+          "first_row_write_complete_ms": 1357.8436914540746,
+          "first_row_bitmap_complete_ms": 1352.611086598278,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 10,
+          "ata_writes": 0,
+          "kernel_calls": 1906,
+          "cache_hits": 2,
+          "cache_misses": 19,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 403,
+          "write_kernel_calls": 821,
+          "metadata_kernel_calls": 280,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1199.9797710391765
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 401.7012062663259
+            },
+            "map_cache": {
+              "count": 4,
+              "inclusive_ms": 2.5877563333563582
+            },
+            "validate_map": {
+              "count": 4,
+              "inclusive_ms": 59.432757383570696
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.674224920670051
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 147.93516582813982
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 1809.3514891193565,
+          "first_write_ms": 1156.6073988657686,
+          "first_row_write_complete_ms": 1204.6811365997582,
+          "first_row_bitmap_complete_ms": 1198.4344757879778,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1780,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 265,
+          "write_kernel_calls": 815,
+          "metadata_kernel_calls": 298,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1045.9982604503375
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 401.89271179440044
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9407115237411876
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 46.01306212898888
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.674224920670051
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 153.9061629960853
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 1798.6933641960081,
+          "first_write_ms": 1148.4447664788497,
+          "first_row_write_complete_ms": 1199.1956344915764,
+          "first_row_bitmap_complete_ms": 1193.9619018888352,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1734,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 231,
+          "write_kernel_calls": 820,
+          "metadata_kernel_calls": 287,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1041.296260532099
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 402.991066834513
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9407115237411876
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 43.79295129965787
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.674224920670051
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 153.72924769410992
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 1799.2053613089759,
+          "first_write_ms": 1148.6816638214552,
+          "first_row_write_complete_ms": 1199.4037742870878,
+          "first_row_bitmap_complete_ms": 1194.1701121685305,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1734,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 231,
+          "write_kernel_calls": 820,
+          "metadata_kernel_calls": 287,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1041.533580779809
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 403.2665190257958
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9407115237411876
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 43.79273984710571
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.674224920670051
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 153.72875430482154
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 8,
+          "total_ms": 1577.8679662070626,
+          "first_write_ms": 1315.381411065171,
+          "first_row_write_complete_ms": 1322.4083317944287,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 10,
+          "ata_writes": 0,
+          "kernel_calls": 1181,
+          "cache_hits": 2,
+          "cache_misses": 19,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 409,
+          "write_kernel_calls": 80,
+          "metadata_kernel_calls": 294,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1200.5091777456057
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 34.3670308819404
+            },
+            "map_cache": {
+              "count": 4,
+              "inclusive_ms": 3.1808102579862103
+            },
+            "validate_map": {
+              "count": 4,
+              "inclusive_ms": 60.02531791891217
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 12.161834505955207
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 135.61107673049244
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 8,
+          "total_ms": 1431.0948026372364,
+          "first_write_ms": 1162.642536641203,
+          "first_row_write_complete_ms": 1169.6694573704606,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1065,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 267,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 306,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1047.7870080732584
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 30.184217463443375
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9407820079252418
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 45.882666388489085
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 12.162116442691424
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 138.58205557255008
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 8,
+          "total_ms": 1422.1686855686453,
+          "first_write_ms": 1157.5287681197217,
+          "first_row_write_complete_ms": 1164.5563232066356,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1019,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 231,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 298,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1040.9997335697842
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 30.184569884363647
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9409934604774035
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 45.88231396756882
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 11.63200489442174
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 136.5505604197474
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 8,
+          "total_ms": 1431.0948026372364,
+          "first_write_ms": 1162.642536641203,
+          "first_row_write_complete_ms": 1169.6694573704606,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 28,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1065,
+          "cache_hits": 19,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 267,
+          "write_kernel_calls": 56,
+          "metadata_kernel_calls": 306,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1047.7870080732584
+            },
+            "write": {
+              "count": 28,
+              "inclusive_ms": 30.184217463443375
+            },
+            "map_cache": {
+              "count": 3,
+              "inclusive_ms": 1.9407820079252418
+            },
+            "validate_map": {
+              "count": 3,
+              "inclusive_ms": 45.882666388489085
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 12.162116442691424
+            },
+            "metadata": {
+              "count": 10,
+              "inclusive_ms": 138.58205557255008
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 9,
+          "dos_packets": 20
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 3074.1081988612577,
+          "first_write_ms": 1352.7440902535882,
+          "first_row_write_complete_ms": 1419.1693720845979,
+          "first_row_bitmap_complete_ms": 1413.9355689976726,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 10,
+          "ata_writes": 0,
+          "kernel_calls": 3978,
+          "cache_hits": 4,
+          "cache_misses": 19,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 415,
+          "write_kernel_calls": 2267,
+          "metadata_kernel_calls": 672,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1194.209935732521
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1147.1062013394815
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2345896904193667
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 74.36187143966765
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.94123592607055
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 302.54476098108347
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 2934.9005961552284,
+          "first_write_ms": 1221.4126017262988,
+          "first_row_write_complete_ms": 1292.110211889554,
+          "first_row_bitmap_complete_ms": 1285.8641149512462,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3800,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 237,
+          "write_kernel_calls": 2252,
+          "metadata_kernel_calls": 669,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1068.4961071585146
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1151.8807999672954
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.234519206235313
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 74.08367036520674
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.38758266032686
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 296.80671404143624
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 2947.8595362986503,
+          "first_write_ms": 1228.8737050293287,
+          "first_row_write_complete_ms": 1295.8391776469277,
+          "first_row_bitmap_complete_ms": 1290.0150695185507,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3852,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 277,
+          "write_kernel_calls": 2266,
+          "metadata_kernel_calls": 664,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1070.2782292681345
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1141.642126423252
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2347306587874747
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 75.990478996418
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.38751217614279
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 314.2167304078638
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 2942.1656829424046,
+          "first_write_ms": 1228.8721543772795,
+          "first_row_write_complete_ms": 1295.1565383243656,
+          "first_row_bitmap_complete_ms": 1289.8485153916313,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 3848,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 277,
+          "write_kernel_calls": 2260,
+          "metadata_kernel_calls": 683,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1070.2770310370054
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 1144.0433816056016
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2347306587874747
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 75.99026754386583
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.38786459706307
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 312.4068375297267
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "rows": 20,
+          "total_ms": 1977.9813047750215,
+          "first_write_ms": 1366.4419865826308,
+          "first_row_write_complete_ms": 1381.2462026645842,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 10,
+          "ata_writes": 0,
+          "kernel_calls": 1975,
+          "cache_hits": 4,
+          "cache_misses": 19,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 409,
+          "write_kernel_calls": 160,
+          "metadata_kernel_calls": 658,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1199.798697170342
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 84.12604545665998
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.8283484568897586
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 73.96448160997154
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.38680733430226
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 263.6625132686477
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "rows": 20,
+          "total_ms": 1842.2896646221554,
+          "first_write_ms": 1233.9739405874716,
+          "first_row_write_complete_ms": 1244.609862992843,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1829,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 255,
+          "write_kernel_calls": 184,
+          "metadata_kernel_calls": 716,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1065.3441954159907
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 89.0109518325183
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2348011429715284
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 74.3616599871155
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.28488720416026
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 272.4112921301589
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "rows": 20,
+          "total_ms": 1841.7138793226188,
+          "first_write_ms": 1235.0849827807137,
+          "first_row_write_complete_ms": 1245.7207642177173,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1825,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 255,
+          "write_kernel_calls": 184,
+          "metadata_kernel_calls": 716,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1065.64932144876
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 88.77511175267381
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2348011429715284
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 74.36201240803577
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.37172371891471
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 272.64868286205257
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "rows": 20,
+          "total_ms": 1841.7138793226188,
+          "first_write_ms": 1235.0849827807137,
+          "first_row_write_complete_ms": 1245.7207642177173,
+          "first_row_bitmap_complete_ms": null,
+          "output_writes": 80,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "ata_writes": 0,
+          "kernel_calls": 1825,
+          "cache_hits": 23,
+          "cache_misses": 0,
+          "sio_read_sectors": [],
+          "sio_read_payload_bytes": 0,
+          "load_kernel_calls": 255,
+          "write_kernel_calls": 184,
+          "metadata_kernel_calls": 716,
+          "routines": {
+            "load": {
+              "count": 2,
+              "inclusive_ms": 1065.64932144876
+            },
+            "write": {
+              "count": 80,
+              "inclusive_ms": 88.77511175267381
+            },
+            "map_cache": {
+              "count": 5,
+              "inclusive_ms": 3.2348011429715284
+            },
+            "validate_map": {
+              "count": 5,
+              "inclusive_ms": 74.36201240803577
+            },
+            "lock": {
+              "count": 1,
+              "inclusive_ms": 83.37172371891471
+            },
+            "metadata": {
+              "count": 22,
+              "inclusive_ms": 272.64868286205257
+            }
+          },
+          "extent_measurement_calls": 0,
+          "fib_publications": 21,
+          "dos_packets": 32
+        }
+      ],
+      "summary": [
+        {
+          "command": "DIR",
+          "rows": 8,
+          "cold_ms": 350.89120202317804,
+          "warm_median_ms": 308.6223302353185,
+          "warm_range_ms": [
+            308.6223302353185,
+            310.4845223780236
+          ],
+          "cold_first_row_ms": 102.14095709063844,
+          "warm_first_row_ms": 61.795387233058776,
+          "warm_first_write_ms": 53.53238536804726,
+          "output_writes": 8,
+          "warm_kernel_calls": 694,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 2,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 114.49803278642305,
+            "metadata": 120.94620788041371
+          }
+        },
+        {
+          "command": "DIR >NIL:",
+          "rows": 8,
+          "cold_ms": 249.9323351833082,
+          "warm_median_ms": 210.0229919408384,
+          "warm_range_ms": [
+            210.0229919408384,
+            210.0229919408384
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 53.68942413011944,
+          "output_writes": 8,
+          "warm_kernel_calls": 510,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 2,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 8.245592271550187,
+            "metadata": 116.45946666027609
+          }
+        },
+        {
+          "command": "DIR SYS:C",
+          "rows": 20,
+          "cold_ms": 812.844967217806,
+          "warm_median_ms": 767.4898044627766,
+          "warm_range_ms": [
+            766.2039614930806,
+            768.5361421750574
+          ],
+          "cold_first_row_ms": 178.4277515968192,
+          "warm_first_row_ms": 134.8279269614691,
+          "warm_first_write_ms": 121.24033838047082,
+          "output_writes": 20,
+          "warm_kernel_calls": 1504,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 4,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 294.7411750277355,
+            "metadata": 282.83590295173667
+          }
+        },
+        {
+          "command": "DIR SYS:C >NIL:",
+          "rows": 20,
+          "cold_ms": 540.0801264204325,
+          "warm_median_ms": 494.25039365416796,
+          "warm_range_ms": [
+            490.60431729724166,
+            498.1003102713782
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 126.6731183189804,
+          "output_writes": 20,
+          "warm_kernel_calls": 988,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 4,
+          "warm_phases_ms": {
+            "load": 0,
+            "write": 24.782239113365353,
+            "metadata": 256.25103083119177
+          }
+        },
+        {
+          "command": "LIST",
+          "rows": 8,
+          "cold_ms": 1956.5126681224,
+          "warm_median_ms": 1799.2053613089759,
+          "warm_range_ms": [
+            1798.6933641960081,
+            1809.3514891193565
+          ],
+          "cold_first_row_ms": 1352.611086598278,
+          "warm_first_row_ms": 1194.1701121685305,
+          "warm_first_write_ms": 1148.6816638214552,
+          "output_writes": 28,
+          "warm_kernel_calls": 1734,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 10,
+          "warm_phases_ms": {
+            "load": 1041.533580779809,
+            "write": 402.991066834513,
+            "metadata": 153.72924769410992
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "rows": 8,
+          "cold_ms": 1577.8679662070626,
+          "warm_median_ms": 1431.0948026372364,
+          "warm_range_ms": [
+            1422.1686855686453,
+            1431.0948026372364
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 1162.642536641203,
+          "output_writes": 28,
+          "warm_kernel_calls": 1065,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 10,
+          "warm_phases_ms": {
+            "load": 1047.7870080732584,
+            "write": 30.184217463443375,
+            "metadata": 138.58205557255008
+          }
+        },
+        {
+          "command": "LIST SYS:C",
+          "rows": 20,
+          "cold_ms": 3074.1081988612577,
+          "warm_median_ms": 2942.1656829424046,
+          "warm_range_ms": [
+            2934.9005961552284,
+            2947.8595362986503
+          ],
+          "cold_first_row_ms": 1413.9355689976726,
+          "warm_first_row_ms": 1289.8485153916313,
+          "warm_first_write_ms": 1228.8721543772795,
+          "output_writes": 80,
+          "warm_kernel_calls": 3848,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 10,
+          "warm_phases_ms": {
+            "load": 1070.2770310370054,
+            "write": 1144.0433816056016,
+            "metadata": 312.4068375297267
+          }
+        },
+        {
+          "command": "LIST SYS:C >NIL:",
+          "rows": 20,
+          "cold_ms": 1977.9813047750215,
+          "warm_median_ms": 1841.7138793226188,
+          "warm_range_ms": [
+            1841.7138793226188,
+            1842.2896646221554
+          ],
+          "cold_first_row_ms": null,
+          "warm_first_row_ms": null,
+          "warm_first_write_ms": 1235.0849827807137,
+          "output_writes": 80,
+          "warm_kernel_calls": 1825,
+          "cold_sio_reads": 0,
+          "cold_ata_commands": 10,
+          "warm_phases_ms": {
+            "load": 1065.64932144876,
+            "write": 88.77511175267381,
+            "metadata": 272.64868286205257
+          }
+        }
+      ]
+    }
+  },
+  "comparison_media": {
+    "all_file_payloads_match": true,
+    "payload_manifest_sha256": "b54fc9519b6c840cece2552830fd73e37fca0841ae36dc1cd5dbb8814ecb4eff",
+    "allocation": {
+      "SIO": {
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "allocated": 2210,
+        "free": 670,
+        "files": 41,
+        "directories": 6
+      },
+      "IDE": {
+        "sectors": 1440,
+        "sector_bytes": 512,
+        "allocated": 1141,
+        "free": 299,
+        "files": 41,
+        "directories": 6
+      }
+    },
+    "rows": {
+      "": [
+        {
+          "name": "C",
+          "directory": true,
+          "bytes": 23
+        },
+        {
+          "name": "EXEC816.XEX",
+          "directory": false,
+          "bytes": 403078
+        },
+        {
+          "name": "LONG.TXT",
+          "directory": false,
+          "bytes": 23872
+        },
+        {
+          "name": "README.TXT",
+          "directory": false,
+          "bytes": 293
+        },
+        {
+          "name": "S",
+          "directory": true,
+          "bytes": 23
+        },
+        {
+          "name": "SELECT",
+          "directory": true,
+          "bytes": 23
+        },
+        {
+          "name": "STORY.TXT",
+          "directory": false,
+          "bytes": 5022
+        },
+        {
+          "name": "WORK",
+          "directory": true,
+          "bytes": 23
+        }
+      ],
+      "C": [
+        {
+          "name": "ASSIGN",
+          "directory": false,
+          "bytes": 3051
+        },
+        {
+          "name": "CAT",
+          "directory": false,
+          "bytes": 3600
+        },
+        {
+          "name": "CKSUM",
+          "directory": false,
+          "bytes": 5095
+        },
+        {
+          "name": "CMP",
+          "directory": false,
+          "bytes": 4776
+        },
+        {
+          "name": "COPY",
+          "directory": false,
+          "bytes": 13352
+        },
+        {
+          "name": "DELETE",
+          "directory": false,
+          "bytes": 6877
+        },
+        {
+          "name": "FIND",
+          "directory": false,
+          "bytes": 9312
+        },
+        {
+          "name": "GREP",
+          "directory": false,
+          "bytes": 5323
+        },
+        {
+          "name": "HEAD",
+          "directory": false,
+          "bytes": 4198
+        },
+        {
+          "name": "HELLO",
+          "directory": false,
+          "bytes": 875
+        },
+        {
+          "name": "HEXDUMP",
+          "directory": false,
+          "bytes": 5568
+        },
+        {
+          "name": "INFO",
+          "directory": false,
+          "bytes": 8611
+        },
+        {
+          "name": "LIST",
+          "directory": false,
+          "bytes": 7001
+        },
+        {
+          "name": "MAKEDIR",
+          "directory": false,
+          "bytes": 1655
+        },
+        {
+          "name": "MORE",
+          "directory": false,
+          "bytes": 7737
+        },
+        {
+          "name": "PRIMES",
+          "directory": false,
+          "bytes": 6554
+        },
+        {
+          "name": "RENAME",
+          "directory": false,
+          "bytes": 1633
+        },
+        {
+          "name": "TAIL",
+          "directory": false,
+          "bytes": 4953
+        },
+        {
+          "name": "TEE",
+          "directory": false,
+          "bytes": 4516
+        },
+        {
+          "name": "WC",
+          "directory": false,
+          "bytes": 2951
+        }
+      ]
+    },
+    "sio_sha256": "76439cfd437ccd898e83a3894e70236f7eda9b61f774f0647a357f769d4d424a",
+    "ide_atr_sha256": "b90573aebcf10edebbbafb0464e92737ab23a20c2283b673e665c5a5db5053eb"
+  },
+  "physical_input_control": {
+    "scope": "Only complete root DIR timing; original trace does not observe loaded API implementations",
+    "transport": "IDE",
+    "samples_ms": [
+      309.00576419657193,
+      310.4845223780236,
+      315.6005463933948
+    ],
+    "median_ms": 310.4845223780236,
+    "run_path": "build/development/spartados-listing/ide/run.json",
+    "run_sha256": "6186fe306b52f025066bf48cd5c6f189a6b4619983b8ae6c6346aec64180e83a",
+    "trace_sha256": "dffe153c9592ceb4dc1eb14a48c4bc6a2e4f72cde4dbf27bf9daeea2c3588ede",
+    "same_xex": true,
+    "same_media": true
+  }
+}

@@ -75,6 +75,21 @@ listing frames and eliminate selected-file chain visits; see the
 [implementation record](history/directory-metadata.md). Grouped directory/reclaim publication and
 buffer consolidation remain separate follow-ups.
 
+The [SpartaDOS DIR/LIST measurements](history/spartados-listing-measurements.md)
+cover cold/warm IDE and SIO, NIL controls and first-row drawing. Cached DIR
+lists the 20-command directory in 750–767 ms; loaded LIST takes 2.86–2.94
+seconds. LIST row batching and its roughly one-second command-loading phase
+are the next measured opportunities. Ordinary queries never allocate the
+completed-extent cache in these runs.
+
+The [LIST loading profile](history/list-command-loading.md) attributes about
+72% of warm loading to the loader itself. Replace its payload byte loop with
+the existing memory primitive first, then evaluate bounded U16/U32 decoding.
+DOS Open/Read overhead remains a separate shared-path follow-up.
+The [CL0–CL3 refactor plan](plans/command-loader-refactor-plan.md) orders the
+copy change, scalar reader change and matched integration measurements while
+preserving existing malformed-input and image lifetime behavior.
+
 The [background command and primes slice](history/background-pane-primes.md)
 implements positioned writes, height changes, an owned lower pane, independent
 background cancellation and bounded RUN/JOBS/BREAK support. The loadable

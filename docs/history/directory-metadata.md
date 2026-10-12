@@ -173,3 +173,7 @@ ABI probes, host/generator and documentation/link checks. The emulator uses
 Generic 57,600 serial timing with rotational delays disabled. Timings include
 observer overhead and frame quantization; they neither predict physical floppy
 throughput nor qualify a release or real hardware. No demo/release was rebuilt.
+
+The subsequent [SpartaDOS listing measurements](spartados-listing-measurements.md)
+time complete resident DIR and loaded LIST invocations, including output and
+first-row drawing, on cold/warm IDE and SIO configurations.

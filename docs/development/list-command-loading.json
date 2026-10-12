@@ -1,0 +1,2791 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "recorded_date": "2026-10-13",
+  "source_commit": "dbadb418ed0aace1b107ae42bd7b97875e0a83e0",
+  "scope": "Current unchanged packaged LIST loader, one cold and three warm invocations per transport; elapsed guest times, independent direct partitions and overlapping nested diagnostics.",
+  "measured_invocations": 8,
+  "warm_invocations": 6,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "observer_inputs": {
+    "tools/measure_list_loading.py": "bb3af4a54aa1922c9182fddd91e9ff119ce4d0c9b78605789eac8b8c74a6e9d0",
+    "tools/measure_spartados_listing.py": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+    "tools/bitmap_console_performance.py": "1a6cb89860f528ef51bb79a97873ac89b64ede150bae316b48d9399181ad055b",
+    "tools/native_program.py": "ed6195627df605c2c3df11de6ade2349513f6d36569ccf59c67086d78a8d07c9",
+    "tools/test_demo.py": "4934adc0f9bc7349e53ea800cb8190b7b526bb576f09b239aa680fc84ba2db53",
+    "tools/measure_read_8k.py": "a471e90c383fe2e280d14d02bc6fdf435cfd27ed03c0cd926c6eb261c301b5ed",
+    "tools/sio_transaction_trace.py": "311c88a962da6274b81282070aa5e5fd45e06dc789e10f72889f8ed5baeeb8c4",
+    "tools/measure_loading_breakdown.py": "4c8e0863709e49d404bb8c37633a67f606b92c70b4908e245ff559c539e20d53",
+    "tools/trace_command_io.py": "49ba70dec43f91f411f09a3f3ea40f4f1f78bd40e16000a9bb0f5ddadb2f16bb",
+    "tests/test_list_loading_measurement.py": "aa3c7dceea403124eaf4c51c75415ca770749e5387c33c408be115570e3d9a87"
+  },
+  "host_checks": {
+    "tests": 457,
+    "status": "pass",
+    "log": "build/list-loading-host-tests.log",
+    "sha256": "4909a736900401aa72fa43a77c4dfbe0a9ca333252104e3386c14641d581b142"
+  },
+  "program": {
+    "path": "C/LIST",
+    "file_bytes": 7001,
+    "text_bytes": 5726,
+    "data_bytes": 0,
+    "bss_bytes": 848,
+    "imports": 16,
+    "relocations": 178,
+    "sha256": "dad6fe0ec38106eb2065055c2ecc70930571047953ef6ed2def303389637e3d1"
+  },
+  "runs": {
+    "sio": {
+      "status": "pass",
+      "tier": "development",
+      "transport": "SIO",
+      "scope": "LIST >NIL: at root, one cold and repeated warm runs on the unchanged packaged VBXE shell. Elapsed guest times include interrupts/preemption. Each direct partition reconciles separately; nested reader and validation totals must not be added to their parents.",
+      "summary": {
+        "load_ms": 1029.3412971063424,
+        "command_ms": 1399.5354387429004,
+        "load_range_ms": [
+          1023.2083272834409,
+          1029.3417200114466
+        ]
+      },
+      "rows": [
+        {
+          "command": "LIST >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "command_ms": 7996.349976528767,
+          "load_ms": 7631.72182993858,
+          "load_kernel_calls": 5197,
+          "cache_misses": 34,
+          "physical_sio_commands": 34,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 1064.5440589586103,
+              "parts_ms": {
+                "dos_open": 1064.5327814891616,
+                "caller_instructions": 0.011277469448630421
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 6567.17777097997,
+              "parts_ms": {
+                "dos_open": 705.604479410865,
+                "dos_seek": 13.725596613375924,
+                "heap_alloc_mem": 1.4876391886424607,
+                "dos_breakpending": 1.8712141182640027,
+                "dos_read": 5091.999622204773,
+                "dos_close": 10.164101277314384,
+                "program_load": 739.393469499379,
+                "dos_ioerr": 0.44574197995711745,
+                "heap_free_mem": 1.8017167127868177,
+                "dosclient_seterror": 0.44581246414117137,
+                "caller_instructions": 0.23837751047042555
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 739.3924827208023,
+              "parts_ms": {
+                "o65_validate": 246.81115454503163,
+                "programproviders_resolve": 152.8142220167217,
+                "o65memory_allocate": 1.4970840693056884,
+                "programplace_allocate": 3.702675156721583,
+                "programplace_patches": 197.0121754379535,
+                "programplace_copy": 133.7402150331487,
+                "o65_release": 3.240580846063952,
+                "dosclient_seterror": 0.44581246414117137,
+                "caller_instructions": 0.12856315171438681
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 246.8101677664549,
+              "parts_ms": {
+                "dosclient_seterror": 0.8914839599142349,
+                "o65memory_allocate": 1.6213476857927849,
+                "o65wire_header": 54.540238715834555,
+                "o65relocations_read": 86.78738727816865,
+                "o65wire_exports": 6.085463482849084,
+                "o65_descriptor": 96.81080212411138,
+                "caller_instructions": 0.07344451978420562
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 96.80981534553462,
+              "parts_ms": {
+                "o65read_u32": 0.3149233343530045,
+                "o65read_u16": 0.2941305000570922,
+                "o65profile_imports": 7.927990538203132,
+                "o65relocations_read": 88.17691248260803,
+                "caller_instructions": 0.0958584903133586
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 152.8132352381449,
+              "parts_ms": {
+                "dos_control": 0.4518036197857563,
+                "o65read_u32": 31.140264935951024,
+                "o65read_u16": 7.640344583079003,
+                "o65read_u8": 3.2034356810675253,
+                "o65read_string": 46.97855448215975,
+                "o65read_extent": 0.9546377888265652,
+                "o65read_literal": 27.23833099090895,
+                "caller_instructions": 35.20586315636634
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.701688378144828,
+              "parts_ms": {
+                "o65memory_storage": 1.5132954316380947,
+                "o65read_extent": 0.04017598491074588,
+                "o65memory_allocate": 1.9998477541624433,
+                "caller_instructions": 0.14836920743354398
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 54.539251937257795,
+              "parts_ms": {
+                "o65read_u16": 0.29391904750493036,
+                "o65read_u32": 3.148387533321398,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07309209886393592,
+                "o65read_count": 0.4404556661530719,
+                "a816_mul_u24": 0.09374396479174038,
+                "o65memory_allocate": 1.6454532767392325,
+                "o65read_name": 36.343971276285316,
+                "o65read_literal": 3.230854028664508,
+                "caller_instructions": 9.205304921628635
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 246.8101677664549
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 96.80981534553462
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 54.539251937257795
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.084476704272328
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.927003759626378
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 371.896475649829
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 739.3924827208023
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 152.8132352381449
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.701688378144828
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 133.73922825457197
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 197.01020188079997
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.2395235833031424
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 173.7230732795868
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 182.1632723833099
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 279.3756229039766
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 158.12703787397146
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 40.26352626734087
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 46.93062523700307
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.48317049137344
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 23.916340912262697
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "command_ms": 1400.5519616453264,
+          "load_ms": 1029.3412971063424,
+          "load_kernel_calls": 267,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 36.626119465053236,
+              "parts_ms": {
+                "dos_open": 36.61484199560461,
+                "caller_instructions": 0.011277469448630421
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 992.7151776412891,
+              "parts_ms": {
+                "dos_open": 122.53661300940682,
+                "dos_seek": 18.79016717438774,
+                "heap_alloc_mem": 1.4876391886424607,
+                "dos_breakpending": 6.125991888680099,
+                "dos_read": 95.57105581078662,
+                "dos_close": 10.023132909206502,
+                "program_load": 735.2494223821117,
+                "dos_ioerr": 0.44574197995711745,
+                "heap_free_mem": 1.8017167127868177,
+                "dosclient_seterror": 0.4456714957730635,
+                "caller_instructions": 0.23802508955015583
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 735.248435603535,
+              "parts_ms": {
+                "o65_validate": 242.81618147703838,
+                "programproviders_resolve": 152.67332413279786,
+                "o65memory_allocate": 1.6292419144068264,
+                "programplace_allocate": 3.702816125089691,
+                "programplace_patches": 196.7308730593942,
+                "programplace_copy": 133.88083098033633,
+                "o65_release": 3.241144719536383,
+                "dosclient_seterror": 0.44581246414117137,
+                "caller_instructions": 0.1282107307941171
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 242.8151946984616,
+              "parts_ms": {
+                "dosclient_seterror": 0.8915544440982888,
+                "o65memory_allocate": 1.6216296225290006,
+                "o65wire_header": 50.40450873228556,
+                "o65relocations_read": 86.92800322535626,
+                "o65wire_exports": 6.0853929986650295,
+                "o65_descriptor": 96.81094309247948,
+                "caller_instructions": 0.07316258304798987
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 96.80995631390273,
+              "parts_ms": {
+                "o65read_u32": 0.3149233343530045,
+                "o65read_u16": 0.2941305000570922,
+                "o65profile_imports": 7.787092654279306,
+                "o65relocations_read": 88.31830375582022,
+                "caller_instructions": 0.09550606939308888
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 152.6723373542211,
+              "parts_ms": {
+                "dos_control": 0.4518036197857563,
+                "o65read_u32": 31.138714283901834,
+                "o65read_u16": 7.500010572627608,
+                "o65read_u8": 3.2035061652515795,
+                "o65read_string": 46.83688127221133,
+                "o65read_extent": 0.9542148837222415,
+                "o65read_literal": 27.374083529396838,
+                "caller_instructions": 35.213123027323896
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.7018293465129357,
+              "parts_ms": {
+                "o65memory_storage": 1.513083979085933,
+                "o65read_extent": 0.040035016542638,
+                "o65memory_allocate": 1.9999182383464973,
+                "caller_instructions": 0.14879211253786764
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 50.403521953708804,
+              "parts_ms": {
+                "o65read_u16": 0.29420098424114616,
+                "o65read_u32": 3.148739954241668,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07330355141609775,
+                "o65read_count": 0.44073760288928765,
+                "a816_mul_u24": 0.0939554173439022,
+                "o65memory_allocate": 1.6451008558189628,
+                "o65read_name": 32.06699098789223,
+                "o65read_literal": 3.2312064495847777,
+                "caller_instructions": 9.345216026975706
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 242.8151946984616
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 96.80995631390273
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 50.403521953708804
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.0843357359042205
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.786105875702551
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 371.8975329125897
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 735.248435603535
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 152.6723373542211
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.7018293465129357
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 133.87984420175957
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 196.7288995022407
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.2400874567755737
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 173.1565214081612
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 181.59855310066973
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 278.955396198647
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 157.85398214494649
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 35.98661646313184
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 46.78874057450249
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.618852545677274
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 23.914719776029457
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "command_ms": 1399.5354387429004,
+          "load_ms": 1029.3417200114466,
+          "load_kernel_calls": 267,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 36.6264718859735,
+              "parts_ms": {
+                "dos_open": 36.61519441652487,
+                "caller_instructions": 0.011277469448630421
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 992.7152481254731,
+              "parts_ms": {
+                "dos_open": 122.53682446195899,
+                "dos_seek": 18.790096690203686,
+                "heap_alloc_mem": 1.4876391886424607,
+                "dos_breakpending": 1.871989444288596,
+                "dos_read": 95.56999854802581,
+                "dos_close": 14.14518896104903,
+                "program_load": 735.2504091606884,
+                "dos_ioerr": 0.44574197995711745,
+                "heap_free_mem": 1.9337335895198475,
+                "dosclient_seterror": 0.4456714957730635,
+                "caller_instructions": 0.2379546053661019
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 735.2494223821117,
+              "parts_ms": {
+                "o65_validate": 242.81646341377458,
+                "programproviders_resolve": 152.67318316442973,
+                "o65memory_allocate": 1.6292419144068264,
+                "programplace_allocate": 3.702816125089691,
+                "programplace_patches": 196.73129596449854,
+                "programplace_copy": 133.88125388544066,
+                "o65_release": 3.2410742353523294,
+                "dosclient_seterror": 0.44581246414117137,
+                "caller_instructions": 0.12828121497817105
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 242.81547663519785,
+              "parts_ms": {
+                "dosclient_seterror": 0.8915544440982888,
+                "o65memory_allocate": 1.6215591383449466,
+                "o65wire_header": 50.40457921646962,
+                "o65relocations_read": 86.92807370954031,
+                "o65wire_exports": 6.0853929986650295,
+                "o65_descriptor": 96.81108406084758,
+                "caller_instructions": 0.07323306723204381
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 96.81009728227083,
+              "parts_ms": {
+                "o65read_u32": 0.3149233343530045,
+                "o65read_u16": 0.2941305000570922,
+                "o65profile_imports": 7.787092654279306,
+                "o65relocations_read": 88.31844472418834,
+                "caller_instructions": 0.09550606939308888
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 152.67219638585297,
+              "parts_ms": {
+                "dos_control": 0.4518036197857563,
+                "o65read_u32": 30.9976754316099,
+                "o65read_u16": 7.499799120075447,
+                "o65read_u8": 3.2034356810675253,
+                "o65read_string": 47.26013879745524,
+                "o65read_extent": 0.9543558520903495,
+                "o65read_literal": 27.37443595031711,
+                "caller_instructions": 34.93055193345165
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.7018293465129357,
+              "parts_ms": {
+                "o65memory_storage": 1.513083979085933,
+                "o65read_extent": 0.040035016542638,
+                "o65memory_allocate": 1.9999182383464973,
+                "caller_instructions": 0.14879211253786764
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 50.40359243789286,
+              "parts_ms": {
+                "o65read_u16": 0.29420098424114616,
+                "o65read_u32": 3.148739954241668,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07330355141609775,
+                "o65read_count": 0.44073760288928765,
+                "a816_mul_u24": 0.0939554173439022,
+                "o65memory_allocate": 1.6451008558189628,
+                "o65read_name": 32.20802984018417,
+                "o65read_literal": 3.2309245128485617,
+                "caller_instructions": 9.204529595604043
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 242.81547663519785
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 96.81009728227083
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 50.40359243789286
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.084406220088274
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.786105875702551
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 371.89816727024623
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 735.2494223821117
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 152.67219638585297
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.7018293465129357
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 133.8802671068639
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 196.72932240734502
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.2400874567755737
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 173.7215226275376
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 181.88098322617387
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 278.39349628336896
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 157.71230893499808
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 36.127514347055666
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 47.21206858393045
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.618923029861328
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 23.7732580186332
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "command_ms": 1391.9889790929813,
+          "load_ms": 1023.2083272834409,
+          "load_kernel_calls": 241,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 36.62675382270972,
+              "parts_ms": {
+                "dos_open": 36.6156173216292,
+                "caller_instructions": 0.011136501080522542
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 986.5815734607312,
+              "parts_ms": {
+                "dos_open": 122.5364720410387,
+                "dos_seek": 13.857683974293009,
+                "heap_alloc_mem": 1.4877801570105684,
+                "dos_breakpending": 1.8707912131596791,
+                "dos_read": 97.52678046573129,
+                "dos_close": 10.970722279627674,
+                "program_load": 735.4003995043552,
+                "dos_ioerr": 0.44574197995711745,
+                "heap_free_mem": 1.8017167127868177,
+                "dosclient_seterror": 0.4456714957730635,
+                "caller_instructions": 0.23781363699799404
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 735.3994127257785,
+              "parts_ms": {
+                "o65_validate": 242.81589954030213,
+                "programproviders_resolve": 152.81492685856222,
+                "o65memory_allocate": 1.4970840693056884,
+                "programplace_allocate": 3.702816125089691,
+                "programplace_patches": 196.8719119116861,
+                "programplace_copy": 133.88139485380876,
+                "o65_release": 3.241144719536383,
+                "dosclient_seterror": 0.44581246414117137,
+                "caller_instructions": 0.12842218334627895
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 242.8149127617254,
+              "parts_ms": {
+                "dosclient_seterror": 0.8916249282823427,
+                "o65memory_allocate": 1.6211362332406232,
+                "o65wire_header": 50.545759037129656,
+                "o65relocations_read": 86.78724630980055,
+                "o65wire_exports": 6.2266433035091255,
+                "o65_descriptor": 96.66976327181943,
+                "caller_instructions": 0.07273967794366622
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 96.66877649324267,
+              "parts_ms": {
+                "o65read_u32": 0.3149233343530045,
+                "o65read_u16": 0.29406001587303826,
+                "o65profile_imports": 7.787092654279306,
+                "o65relocations_read": 88.17719441934425,
+                "caller_instructions": 0.09550606939308888
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 152.81394007998546,
+              "parts_ms": {
+                "dos_control": 0.4518741039698102,
+                "o65read_u32": 31.138784768085888,
+                "o65read_u16": 7.639357804502248,
+                "o65read_u8": 3.2033651968834715,
+                "o65read_string": 47.2621828387928,
+                "o65read_extent": 0.9523822949368391,
+                "o65read_literal": 27.0844640171192,
+                "caller_instructions": 35.08152905569519
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.7018293465129357,
+              "parts_ms": {
+                "o65memory_storage": 1.5128020423497173,
+                "o65read_extent": 0.03996453235858406,
+                "o65memory_allocate": 2.0000592067146052,
+                "caller_instructions": 0.14900356509002943
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 50.544772258552904,
+              "parts_ms": {
+                "o65read_u16": 0.29363711076871457,
+                "o65read_u32": 3.289285417245224,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07316258304798987,
+                "o65read_count": 0.44052615033712583,
+                "a816_mul_u24": 0.09374396479174038,
+                "o65memory_allocate": 1.6454532767392325,
+                "o65read_name": 32.06670905115601,
+                "o65read_literal": 3.2302901551920766,
+                "caller_instructions": 9.347894425969757
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 242.8149127617254
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 96.66877649324267
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 50.544772258552904
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.22565652493237
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.786105875702551
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 371.7570579337702
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 735.3994127257785
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 152.81394007998546
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.7018293465129357
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 133.880408075232
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 196.86993835453262
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.240157940959628
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 173.58203442729484
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 182.02047142641663
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 279.5170141771888
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 158.5695375814621
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 36.127020957767286
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 47.21446504618829
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.32930351758369
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 23.763672169601865
+            }
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switches": 862,
+        "gateway_calls": 15313,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_busy": 0,
+        "os_owner": 255,
+        "return_s": 14190,
+        "return_d": 3584,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "fault_required": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 510,
+            "untouched_above_floor": 770
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 284,
+            "untouched_above_floor": 772
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 123,
+            "untouched_above_floor": 933
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 322,
+            "untouched_above_floor": 734
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 528,
+            "untouched_above_floor": 1776
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 54,
+            "untouched_above_floor": 202
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 279,
+          "untouched_from_base": 1257,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input": "Prefilled empty cooked line, physical Return; ordinary Drain/dispatch",
+      "source_inputs": {
+        "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+        "examples/demo-session.inc": "4051346a79bc37c583eeacf2955b94b78619e5b929f1ec7cb2265e308fe35a44",
+        "examples/shell/shell-session.inc": "39d0d8ad79cdf6342536727bfdc5b017a4639d6229304ba7901ffdc01c3f197b",
+        "examples/shell/shell-commands.inc": "b23f9bf65da50a4c097f54cd3f2e5803c27aa6519e469c1d2043a4fc5f78e1a7",
+        "examples/shell/shell-mount-diagnostics.inc": "e54efe84298a5487e9d2170c8edbdbd0fdb7e4084a99557d3ecdfdbdb6308b5f",
+        "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+        "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+        "examples/shell/shell-jobs.inc": "da7bfc5395f3c16779db4e89a40c9254891741e629434eb0c1c15746d60a1a23",
+        "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+        "examples/shell/shell-boot.inc": "391bb54f9854cfc549f099c2b5fad9ce7e9c9dffa910410cd714d547aa959279",
+        "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+        "examples/commands/command-files.inc": "8ee77c8038111d0c9d0173f0defad2b3e934ee961c04e8833a6faae2db52d3bb",
+        "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+        "examples/commands/command-transfer.inc": "1b3c5caab17f045cf5d4977781c9e2d2f7dd616e45145aac3185c1b9db59dfbe",
+        "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+        "docs/guides/demo.md": "4479519a57fd7abada40f7a177687b51f3a1e82e15adf13e9879963e3954d6a8",
+        "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+        "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+        "docs/demo-distribution.txt": "0f8f8c8c6090886ef179cb7b91863e7dee8d653a5fd9460b08e98b7ca04e31f3",
+        "tools/package_demo.py": "17c5f6c7dbd680a12602dcdfd552acf49bdd49600cf83fe3204e3dbad06238c3",
+        "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "LICENSING.md": "ab99e3de1a1d4d818f5c36fa9b95d392bd30061b926ed5d61bde807d21f4051e",
+        "config/shell-sdfs-256.json": "f5b91832356bdf1c3fc51214fa6573db0efe2940b07d25dbbb6cd25fec9b7091",
+        "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+        "tools/make_data_disk.py": "6da3f3fecf522138c9d9559d4f3dec0ad4a42c6ee10b5510ea6b6910f80411ba",
+        "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+        "tools/sdfs_reference.cpp": "0d67232b165a10d421fcc31cca384c59c4c6d7b855bf16f51781051cf98194b4",
+        "tools/make_shell_disk.py": "3c66d45cc35c328be33c955c4a5a5f864721cac0758a85920328ff9a84d51f30",
+        "tools/build_demo.py": "020e10c57f304350300264312e4e0bdd097bc765b289f492e28b90151ba0be2e",
+        "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+        "examples/demo-disk/README.TXT": "57f0973b6ac9e5f6b92479f651cd20fd5676babe31373b9410d53449f2df1dbd",
+        "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+        "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+        "examples/demo-disk/SELECT/A000.TXT": "78b31251b40a6aa86dda40d7a6bfc9ed18330f638676fdcd9e1f3a78fb5ccfec",
+        "examples/demo-disk/SELECT/A001.TXT": "1af71eda0b899f120ded0f8d37e744a11943f37a331e3b0bb77f20bf6859c6af",
+        "examples/demo-disk/SELECT/A002.TXT": "538094795c033f4995234f8e857642700a07a631996f2747ebff83c8e60ed905",
+        "examples/demo-disk/SELECT/A003.TXT": "c956d794c2cc743be261290a8fcdb6a47f677d3617dbeb232f9621f8d7fdd4a0",
+        "examples/demo-disk/SELECT/A004.TXT": "0b8e87575583be8f1859ae45c06839a7a1382f689dd104af5b601beb6bc6fd9a",
+        "examples/demo-disk/SELECT/A005.TXT": "563e2183cc050221b7658d94c4c24451b43a5757581dd97bc39da171b849f090",
+        "examples/demo-disk/SELECT/A006.TXT": "6db59afcda04c13332ca105b4ae7bce83bfd5c59248d802678940a975dd43337",
+        "examples/demo-disk/SELECT/A007.TXT": "550fdd536902ea032f12f21907dad64dc7faefeb31f02166171bec6bf801fb18",
+        "examples/demo-disk/SELECT/A008.TXT": "6a1a29e68a858b303162ffa64be59069db952605bc21ead3708ef5f83dbd0dad",
+        "examples/demo-disk/SELECT/A009.TXT": "6e0f85391a3ee265b6984ccad48562d454404961524852b02b15de712a8bd419",
+        "examples/demo-disk/SELECT/A010.TXT": "c85c33c4c0d23372e8c08ef668c44929a1f07b74e045ae333607aa8eff4833f8",
+        "examples/demo-disk/SELECT/A011.TXT": "3e4e5977df44c7f1d16861fafc1046a1e572b6134880ee8745b56bbb2936b73d",
+        "examples/demo-disk/SELECT/B.BIN": "7a363897c7f658dcc477d586d2546f3aea2c27be864f7e174a3cfb4fd1d40ee1",
+        "examples/demo-disk/SELECT/SUB/NOTE.TXT": "43ff94cd7b39213e4556b2b068e59c8f2ff337f10537c254f72ff681df19d4c9",
+        "examples/demo-disk/STORY.TXT": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+        "examples/demo-disk/WORK/README.TXT": "797f18216a45f58003777f1f098fa2cf11cf26362598029c7d89c4eee312ee56",
+        "lib/dos/command.act": "8ea6ef71ff6e76fd813450660a99498762e1720df77111c2efdba86cf9f8cd00",
+        "lib/dos/cookedline.act": "480ab8f0caa9e990293e4651947451198517624de78e1a6e5a0e8882bcb76cdd",
+        "lib/dos/cprogram.act": "ca1d925f332564be2165a2a388382cd2737c83190539c6cabd3eff6c85fa3611",
+        "lib/dos/cprogrambind.act": "aec463d88e845ad3754552f1072867bfbc1819f31c64a42d85c44bd74c22e4c9",
+        "lib/dos/dos.act": "9d1d11a54a240a28c918d17f899b9118a0a5fce3c7a779789ee5fe90e2628651",
+        "lib/dos/dosargs.act": "a239440218fc4df3b7209a8ff4671b0acdc3d9ec5ea71e060b2f9b8ad23d9f26",
+        "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+        "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+        "lib/dos/doscalls.act": "9f807427e5011b9de90da00fd1e13849c314f676297196b31b5d33ee1f7604dd",
+        "lib/dos/doscancel.act": "4a1e000895510d32ceac80a500d41238490f51e85c1de7547149d7b494281713",
+        "lib/dos/dosclient.act": "6c142fe3bee64cc07036c803b3072795e21157ceec0dbf36135a0ee48984e07d",
+        "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+        "lib/dos/doscooked.act": "0aa3abf087ad9001561c05997db2cefacdbf828d3b0af7088c3d6f79875cab32",
+        "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+        "lib/dos/dosdelay.act": "c0e235201c816a7e7c82f466673f9fb946c767c2080e7f7d5adc91989dca325b",
+        "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+        "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+        "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+        "lib/dos/dosobjects.act": "1a971c398e51fcb23fd4f682586f7e8df11a14e28b949d8bcc85520a204fead3",
+        "lib/dos/dospane.act": "16a072ee99641ce853429de508308a326fd26f49d2dbac1650fae16f9b0d3510",
+        "lib/dos/dospipe.act": "ef6e260163a902e64ddb676c5908554a55d7c7c69c062b89c6f123bdef13083b",
+        "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+        "lib/dos/dosraw.act": "a5e9b50b2b460a4899114980c509224d72ca83bdec05e448eeac50cabfe557ff",
+        "lib/dos/dosstreams.act": "7e35a1d6cb521499474424794a73b391d18391b8a62b90ba8d80473e2d07e59f",
+        "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+        "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+        "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+        "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+        "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+        "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+        "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+        "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+        "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+        "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+        "lib/dos/process.act": "64f0ff0b16f4d3e255a036bbc0f468b7251e5b16c6216510ce2bf9f059d7c4fd",
+        "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+        "lib/dos/program.act": "724679468537e048e8c2b85ef9403d97fe561cbed823fec1f00583eae4b82878",
+        "lib/dos/programapi.act": "a9190a09fdcfab2816b4a84b161634f99d41fd7d3eeb20148249fcfdfb62deaf",
+        "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+        "lib/dos/programimage.act": "3286a283e484330962f4f052b2594c95fb34cd85359ce7cd9525c3cff20d5826",
+        "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+        "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+        "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+        "examples/shell/shell.act": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+        "docs/bitmap-shell-distribution.txt": "33b685ef8241f566e53163a87f2bafd63987c6a2ea573abee0096b7d009d4d51",
+        "tools/build_bitmap_console.py": "79a0aa60b7a8cecf886b8999dc660707d21c35c4a33d746a4a562e4dc0dd7dcd",
+        "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6"
+      },
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      },
+      "hashes": {
+        "observer": "bb3af4a54aa1922c9182fddd91e9ff119ce4d0c9b78605789eac8b8c74a6e9d0",
+        "fixture": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+        "decoder": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a",
+        "xex": "970825531f47b522e1c3bd1b37709f6c37403f1823b75359f8f889a2db5fcbb0",
+        "manifest": "4211fe6985f15862f0c3a3acd35fe624daa47bd4f33431477c00c2623b00e878",
+        "media": "76439cfd437ccd898e83a3894e70236f7eda9b61f774f0647a357f769d4d424a",
+        "trace": "aba26267c6d62a12799fee1b03ab43ba9f3bd8a5392045fc20ff1c1f7b8a3852",
+        "run": "2ef2feb14abc81ca72b1efca316987b72bd2daca89dcc577bb64705b0b61ff67"
+      },
+      "artifacts": {
+        "build/development/list-loading/sio/loading.json": "f87daa922b072056e8e61894fa88856b5c45e3108ccf5ebc29e0d1459379f688",
+        "build/development/list-loading/sio/run.json": "2ef2feb14abc81ca72b1efca316987b72bd2daca89dcc577bb64705b0b61ff67",
+        "build/development/list-loading/sio/markers.json": "b11992fd6acdfb8b9be0191a258996f249887c00e660f87214ec7132e70d08a9",
+        "build/development/list-loading/sio/bundle/demo-manifest.json": "4211fe6985f15862f0c3a3acd35fe624daa47bd4f33431477c00c2623b00e878",
+        "build/development/list-loading/sio/bundle/program.xex": "970825531f47b522e1c3bd1b37709f6c37403f1823b75359f8f889a2db5fcbb0",
+        "build/development/list-loading/sio/bundle/emulator.log": "aba26267c6d62a12799fee1b03ab43ba9f3bd8a5392045fc20ff1c1f7b8a3852",
+        "build/development/list-loading/sio/bundle/boot-smoke.png": "e1bea00e2fd02d12834ceb322af249fb5bf2096fe41dfe126c5651f52a7333a4"
+      },
+      "compiler_inputs": {
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "abi_assembly_sha256": "0e5cedf40c72d086c47e28e40111a26eb62063edc57b228754ad029b93f14608",
+        "memory_runtime_inputs": {
+          "a816memory.act": "e5a6d2b6d876b69d43a8b73a388612497f1f775ffaea7d70d75663feb1f0eb61",
+          "memory.s": "c178de623ab1ab0859aba45a14908bd5e218ce21cdf6ce90e7fdb472a9bb66d7",
+          "memory.json": "79f62785d7086d12321a170beb8793363395252ac5e10564597d6b9c533aa840"
+        },
+        "build_profile": "release",
+        "override": false
+      },
+      "layout_inputs": 1,
+      "validated_pixel_snapshots": 9,
+      "ownership_baseline": null,
+      "media_integrity": {
+        "original": "76439cfd437ccd898e83a3894e70236f7eda9b61f774f0647a357f769d4d424a",
+        "unchanged": true
+      },
+      "warm_phase_medians": {
+        "program_load": {
+          "o65_validate": 242.81618147703838,
+          "programproviders_resolve": 152.67332413279786,
+          "o65memory_allocate": 1.6292419144068264,
+          "programplace_allocate": 3.702816125089691,
+          "programplace_patches": 196.73129596449854,
+          "programplace_copy": 133.88125388544066,
+          "o65_release": 3.241144719536383,
+          "dosclient_seterror": 0.44581246414117137,
+          "caller_instructions": 0.12828121497817105
+        },
+        "o65_validate": {
+          "dosclient_seterror": 0.8915544440982888,
+          "o65memory_allocate": 1.6215591383449466,
+          "o65wire_header": 50.40457921646962,
+          "o65relocations_read": 86.92800322535626,
+          "o65wire_exports": 6.0853929986650295,
+          "o65_descriptor": 96.81094309247948,
+          "caller_instructions": 0.07316258304798987
+        },
+        "o65_descriptor": {
+          "o65read_u32": 0.3149233343530045,
+          "o65read_u16": 0.2941305000570922,
+          "o65profile_imports": 7.787092654279306,
+          "o65relocations_read": 88.31830375582022,
+          "caller_instructions": 0.09550606939308888
+        },
+        "programproviders_resolve": {
+          "dos_control": 0.4518036197857563,
+          "o65read_u32": 31.138714283901834,
+          "o65read_u16": 7.500010572627608,
+          "o65read_u8": 3.2034356810675253,
+          "o65read_string": 47.26013879745524,
+          "o65read_extent": 0.9542148837222415,
+          "o65read_literal": 27.374083529396838,
+          "caller_instructions": 35.08152905569519
+        },
+        "programplace_allocate": {
+          "o65memory_storage": 1.513083979085933,
+          "o65read_extent": 0.040035016542638,
+          "o65memory_allocate": 1.9999182383464973,
+          "caller_instructions": 0.14879211253786764
+        },
+        "o65wire_header": {
+          "o65read_u16": 0.29420098424114616,
+          "o65read_u32": 3.148739954241668,
+          "o65read_u8": 0.06407012330503158,
+          "o65read_take": 0.07330355141609775,
+          "o65read_count": 0.44073760288928765,
+          "a816_mul_u24": 0.0939554173439022,
+          "o65memory_allocate": 1.6451008558189628,
+          "o65read_name": 32.06699098789223,
+          "o65read_literal": 3.2309245128485617,
+          "caller_instructions": 9.345216026975706
+        }
+      }
+    },
+    "ide": {
+      "status": "pass",
+      "tier": "development",
+      "transport": "IDE",
+      "scope": "LIST >NIL: at root, one cold and repeated warm runs on the unchanged packaged VBXE shell. Elapsed guest times include interrupts/preemption. Each direct partition reconciles separately; nested reader and validation totals must not be added to their parents.",
+      "summary": {
+        "load_ms": 1040.9983943702873,
+        "command_ms": 1422.5563485809419,
+        "load_range_ms": [
+          1040.1638616310886,
+          1047.1106418430768
+        ]
+      },
+      "rows": [
+        {
+          "command": "LIST >NIL:",
+          "temperature": "cold",
+          "sample": 0,
+          "command_ms": 1576.268821039247,
+          "load_ms": 1199.1447449106893,
+          "load_kernel_calls": 409,
+          "cache_misses": 19,
+          "physical_sio_commands": 0,
+          "ata_reads": 10,
+          "attempts": [
+            {
+              "total_ms": 79.09664650349107,
+              "parts_ms": {
+                "dos_open": 79.08536903404246,
+                "caller_instructions": 0.011277469448630421
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 1120.0480984071983,
+              "parts_ms": {
+                "dos_open": 156.47312649514575,
+                "dos_seek": 14.377434347506762,
+                "heap_alloc_mem": 1.4896832299800247,
+                "dos_breakpending": 1.8795312519823677,
+                "dos_read": 176.6084138380189,
+                "dos_close": 10.094462903469092,
+                "program_load": 756.1854100558376,
+                "dos_ioerr": 0.4480679580308975,
+                "heap_free_mem": 1.803831238308436,
+                "dosclient_seterror": 0.4480679580308975,
+                "caller_instructions": 0.2400691308877201
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 756.1843527930768,
+              "parts_ms": {
+                "o65_validate": 252.39892920427587,
+                "programproviders_resolve": 156.35957647463485,
+                "o65memory_allocate": 1.4991281106432528,
+                "programplace_allocate": 3.706622271028604,
+                "programplace_patches": 201.35942845784834,
+                "programplace_copy": 137.04007307800202,
+                "o65_release": 3.2443869920028647,
+                "dosclient_seterror": 0.4480679580308975,
+                "caller_instructions": 0.12814024661006315
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 252.39794242569909,
+              "parts_ms": {
+                "dosclient_seterror": 0.896135916061795,
+                "o65memory_allocate": 5.796337359859821,
+                "o65wire_header": 51.321789903563534,
+                "o65relocations_read": 89.17158528797724,
+                "o65wire_exports": 6.0880009134750255,
+                "o65_descriptor": 99.0510714300818,
+                "caller_instructions": 0.07302161467988198
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 99.05008465150506,
+              "parts_ms": {
+                "o65read_u32": 0.3148528501689506,
+                "o65read_u16": 0.2941305000570922,
+                "o65profile_imports": 7.783850381812825,
+                "o65relocations_read": 90.56167436588903,
+                "caller_instructions": 0.09557655357714281
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 156.35851921187404,
+              "parts_ms": {
+                "dos_control": 0.4542000820435902,
+                "o65read_u32": 30.852125591538513,
+                "o65read_u16": 8.68428583310191,
+                "o65read_u8": 3.2034356810675253,
+                "o65read_string": 49.2039516252948,
+                "o65read_extent": 0.9530166525933246,
+                "o65read_literal": 27.638328735415058,
+                "caller_instructions": 35.36917501081932
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.705635492451849,
+              "parts_ms": {
+                "o65memory_storage": 1.5154099571597128,
+                "o65read_extent": 0.040316953278853755,
+                "o65memory_allocate": 2.0018917955000077,
+                "caller_instructions": 0.1480167865132743
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 51.32080312498678,
+              "parts_ms": {
+                "o65read_u16": 0.29370759495276855,
+                "o65read_u32": 3.1476826914808584,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07281016212772017,
+                "o65read_count": 0.440385181969018,
+                "a816_mul_u24": 0.09374396479174038,
+                "o65memory_allocate": 1.647497318076797,
+                "o65read_name": 33.131866040579155,
+                "o65read_literal": 3.222254958209927,
+                "caller_instructions": 9.206785089493769
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 252.39794242569909
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 99.05008465150506
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 51.32080312498678
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.08701413489827
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.78286360323607
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 381.0126180786293
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 756.1843527930768
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 156.35851921187404
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.705635492451849
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 137.03908629942526
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 201.3573844165108
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.243400213426109
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 176.42015058241083
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 185.94340965830676
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 285.5548303516174
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 161.42633204535235
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 37.0538879780766
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 49.15602238013812
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.871044956222274
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 23.776570775283734
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 1,
+          "command_ms": 1422.5563485809419,
+          "load_ms": 1040.9983943702873,
+          "load_kernel_calls": 231,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 37.14854823726104,
+              "parts_ms": {
+                "dos_open": 37.137482220364575,
+                "caller_instructions": 0.011066016896468602
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 1003.8498461330263,
+              "parts_ms": {
+                "dos_open": 132.94487150028405,
+                "dos_seek": 13.822935271554416,
+                "heap_alloc_mem": 1.4896127457959707,
+                "dos_breakpending": 1.8807294831112848,
+                "dos_read": 84.47881879784995,
+                "dos_close": 10.094462903469092,
+                "program_load": 756.2007051237772,
+                "dos_ioerr": 0.4480679580308975,
+                "heap_free_mem": 1.803690269940328,
+                "dosclient_seterror": 0.44799747384684346,
+                "caller_instructions": 0.2379546053661019
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 756.1997183452005,
+              "parts_ms": {
+                "o65_validate": 252.41485862987207,
+                "programproviders_resolve": 156.35894211697837,
+                "o65memory_allocate": 1.4996214999316304,
+                "programplace_allocate": 3.706622271028604,
+                "programplace_patches": 201.35907603692806,
+                "programplace_copy": 136.4474420584765,
+                "o65_release": 3.244880381291242,
+                "dosclient_seterror": 0.44799747384684346,
+                "caller_instructions": 0.7202778768472142
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 252.41387185129526,
+              "parts_ms": {
+                "dosclient_seterror": 0.896135916061795,
+                "o65memory_allocate": 1.623744148050619,
+                "o65wire_header": 55.5097486674965,
+                "o65relocations_read": 89.17200819308155,
+                "o65wire_exports": 6.087930429290972,
+                "o65_descriptor": 99.0512123984499,
+                "caller_instructions": 0.07309209886393592
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 99.0501551356891,
+              "parts_ms": {
+                "o65read_u32": 0.3146413976167888,
+                "o65read_u16": 0.29363711076871457,
+                "o65profile_imports": 7.784061834364987,
+                "o65relocations_read": 90.5617448500731,
+                "caller_instructions": 0.09606994286552041
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 156.3579553384016,
+              "parts_ms": {
+                "dos_control": 0.45405911367548235,
+                "o65read_u32": 32.03414535812309,
+                "o65read_u16": 7.497614110369773,
+                "o65read_u8": 3.2034356810675253,
+                "o65read_string": 48.01847813369158,
+                "o65read_extent": 0.9547082730106192,
+                "o65read_literal": 28.225039083480056,
+                "caller_instructions": 35.97047558498349
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.705635492451849,
+              "parts_ms": {
+                "o65memory_storage": 1.5150575362394432,
+                "o65read_extent": 0.040316953278853755,
+                "o65memory_allocate": 2.0018917955000077,
+                "caller_instructions": 0.14836920743354398
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 55.50876188891975,
+              "parts_ms": {
+                "o65read_u16": 0.29420098424114616,
+                "o65read_u32": 3.148035112401128,
+                "o65read_u8": 4.2520288872379925,
+                "o65read_take": 0.07302161467988198,
+                "o65read_count": 0.44073760288928765,
+                "a816_mul_u24": 0.09423735408011796,
+                "o65memory_allocate": 1.6468629604203113,
+                "o65read_name": 31.947590780104854,
+                "o65read_literal": 3.815097430287618,
+                "caller_instructions": 9.796949162577409
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 252.41387185129526
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 99.0501551356891
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 55.50876188891975
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.0869436507142165
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.783004571604177
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 381.0129000153655
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 756.1997183452005
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 156.3579553384016
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.705635492451849
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 136.44645527989974
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 201.35710247977457
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.2438936027144867
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 177.59963291836945
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 185.9326255781465
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 289.14931228581617
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 165.041536329663
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 35.86933078086608
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 47.97090130945517
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 33.05102068146928
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 25.546640089430333
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 2,
+          "command_ms": 1429.1981437285287,
+          "load_ms": 1047.1106418430768,
+          "load_kernel_calls": 267,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 37.14854823726104,
+              "parts_ms": {
+                "dos_open": 37.13734125199646,
+                "caller_instructions": 0.011206985264576483
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 1009.9620936058158,
+              "parts_ms": {
+                "dos_open": 132.9302812741849,
+                "dos_seek": 13.822935271554416,
+                "heap_alloc_mem": 1.4896127457959707,
+                "dos_breakpending": 8.235231096494259,
+                "dos_read": 84.28865246927242,
+                "dos_close": 10.649455368709814,
+                "program_load": 755.6074397465953,
+                "dos_ioerr": 0.4480679580308975,
+                "heap_free_mem": 1.803690269940328,
+                "dosclient_seterror": 0.4480679580308975,
+                "caller_instructions": 0.2386594472066413
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 755.6063824838345,
+              "parts_ms": {
+                "o65_validate": 251.8218047052422,
+                "programproviders_resolve": 156.35943550626675,
+                "o65memory_allocate": 1.4991281106432528,
+                "programplace_allocate": 3.7068337235807656,
+                "programplace_patches": 201.35815974253538,
+                "programplace_copy": 137.03993210963392,
+                "o65_release": 3.244809897107188,
+                "dosclient_seterror": 0.4480679580308975,
+                "caller_instructions": 0.1282107307941171
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 251.82081792666543,
+              "parts_ms": {
+                "dosclient_seterror": 0.896135916061795,
+                "o65memory_allocate": 1.6231802745781874,
+                "o65wire_header": 54.91789297399557,
+                "o65relocations_read": 89.17172625634534,
+                "o65wire_exports": 6.088141881843133,
+                "o65_descriptor": 99.05114191426586,
+                "caller_instructions": 0.07259870957555835
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 99.0501551356891,
+              "parts_ms": {
+                "o65read_u32": 0.3148528501689506,
+                "o65read_u16": 0.29420098424114616,
+                "o65profile_imports": 8.375847043681867,
+                "o65relocations_read": 89.96974818820405,
+                "caller_instructions": 0.09550606939308888
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 156.35837824350594,
+              "parts_ms": {
+                "dos_control": 0.45412959785953627,
+                "o65read_u32": 32.03238325352174,
+                "o65read_u16": 7.496486363424911,
+                "o65read_u8": 3.2035061652515795,
+                "o65read_string": 49.204797435503444,
+                "o65read_extent": 0.950267769415221,
+                "o65read_literal": 28.225673441136543,
+                "caller_instructions": 34.79113421739296
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.7058469450040104,
+              "parts_ms": {
+                "o65memory_storage": 1.5149165678713352,
+                "o65read_extent": 0.03996453235858406,
+                "o65memory_allocate": 2.0021032480521694,
+                "caller_instructions": 0.14886259672192156
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 54.916835711234754,
+              "parts_ms": {
+                "o65read_u16": 0.29384856332087644,
+                "o65read_u32": 3.147753175664912,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07224628865528863,
+                "o65read_count": 0.4405966345211798,
+                "a816_mul_u24": 0.09402590152795613,
+                "o65memory_allocate": 1.647497318076797,
+                "o65read_name": 36.72839201611551,
+                "o65read_literal": 3.2211976954491184,
+                "caller_instructions": 9.207207994598091
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 251.82081792666543
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 99.0501551356891
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 54.916835711234754
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.087155103266379
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 8.374860265105113
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 380.4204099642081
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 755.6063824838345
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 156.35837824350594
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.7058469450040104
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 137.03894533105716
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 201.3561157011978
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.243823118530433
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 178.19381458994417
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 186.52574998696042
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 287.3332167994824
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 162.04962368494134
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 40.6503434694289
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 49.157150127082986
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 32.458319177759705
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 24.95196502856724
+            }
+          }
+        },
+        {
+          "command": "LIST >NIL:",
+          "temperature": "warm",
+          "sample": 3,
+          "command_ms": 1422.498974455122,
+          "load_ms": 1040.1638616310886,
+          "load_kernel_calls": 231,
+          "cache_misses": 0,
+          "physical_sio_commands": 0,
+          "ata_reads": 0,
+          "attempts": [
+            {
+              "total_ms": 37.14854823726104,
+              "parts_ms": {
+                "dos_open": 37.137482220364575,
+                "caller_instructions": 0.011066016896468602
+              },
+              "counts": {
+                "dos_open": 1
+              }
+            },
+            {
+              "total_ms": 1003.0153133938276,
+              "parts_ms": {
+                "dos_open": 132.90800827202384,
+                "dos_seek": 13.822582850634147,
+                "heap_alloc_mem": 1.4896832299800247,
+                "dos_breakpending": 1.8798131887185834,
+                "dos_read": 83.71244426463146,
+                "dos_close": 10.094533387653145,
+                "program_load": 756.1699740195298,
+                "dos_ioerr": 0.44799747384684346,
+                "heap_free_mem": 1.803690269940328,
+                "dosclient_seterror": 0.4480679580308975,
+                "caller_instructions": 0.23851847883853342
+              },
+              "counts": {
+                "dos_open": 1,
+                "dos_seek": 2,
+                "heap_alloc_mem": 1,
+                "dos_breakpending": 4,
+                "dos_read": 2,
+                "dos_close": 1,
+                "program_load": 1,
+                "dos_ioerr": 1,
+                "heap_free_mem": 1,
+                "dosclient_seterror": 1
+              }
+            }
+          ],
+          "partitions": {
+            "program_load": {
+              "total_ms": 756.168987240953,
+              "parts_ms": {
+                "o65_validate": 252.39942259356422,
+                "programproviders_resolve": 155.76680448674122,
+                "o65memory_allocate": 2.076605030597184,
+                "programplace_allocate": 3.7061993659242805,
+                "programplace_patches": 201.95149560390144,
+                "programplace_copy": 136.4477239952127,
+                "o65_release": 3.2443869920028647,
+                "dosclient_seterror": 0.44799747384684346,
+                "caller_instructions": 0.128351699162225
+              },
+              "counts": {
+                "o65_validate": 1,
+                "programproviders_resolve": 1,
+                "o65memory_allocate": 1,
+                "programplace_allocate": 1,
+                "programplace_patches": 2,
+                "programplace_copy": 1,
+                "o65_release": 1,
+                "dosclient_seterror": 1
+              }
+            },
+            "o65_validate": {
+              "total_ms": 252.3984358149875,
+              "parts_ms": {
+                "dosclient_seterror": 0.896065431877741,
+                "o65memory_allocate": 1.6232507587622413,
+                "o65wire_header": 55.494806020477064,
+                "o65relocations_read": 88.57909523681981,
+                "o65wire_exports": 6.679997575344069,
+                "o65_descriptor": 99.05135336681802,
+                "caller_instructions": 0.07386742488852925
+              },
+              "counts": {
+                "dosclient_seterror": 2,
+                "o65memory_allocate": 1,
+                "o65wire_header": 1,
+                "o65relocations_read": 1,
+                "o65wire_exports": 1,
+                "o65_descriptor": 1
+              }
+            },
+            "o65_descriptor": {
+              "total_ms": 99.05036658824126,
+              "parts_ms": {
+                "o65read_u32": 0.3146413976167888,
+                "o65read_u16": 0.29363711076871457,
+                "o65profile_imports": 7.783991350180933,
+                "o65relocations_read": 90.5618858184412,
+                "caller_instructions": 0.09621091123362828
+              },
+              "counts": {
+                "o65read_u32": 1,
+                "o65read_u16": 2,
+                "o65profile_imports": 1,
+                "o65relocations_read": 1
+              }
+            },
+            "programproviders_resolve": {
+              "total_ms": 155.76581770816446,
+              "parts_ms": {
+                "dos_control": 0.45405911367548235,
+                "o65read_u32": 30.8509273604096,
+                "o65read_u16": 8.682241791764346,
+                "o65read_u8": 3.2035061652515795,
+                "o65read_string": 48.6118844792417,
+                "o65read_extent": 0.9556950515873743,
+                "o65read_literal": 27.63332435834723,
+                "caller_instructions": 35.37417938788715
+              },
+              "counts": {
+                "dos_control": 1,
+                "o65read_u32": 98,
+                "o65read_u16": 51,
+                "o65read_u8": 50,
+                "o65read_string": 48,
+                "o65read_extent": 48,
+                "o65read_literal": 768
+              }
+            },
+            "programplace_allocate": {
+              "total_ms": 3.7052125873475252,
+              "parts_ms": {
+                "o65memory_storage": 1.5154099571597128,
+                "o65read_extent": 0.04088082675128528,
+                "o65memory_allocate": 2.0018917955000077,
+                "caller_instructions": 0.14703000793651913
+              },
+              "counts": {
+                "o65memory_storage": 1,
+                "o65read_extent": 2,
+                "o65memory_allocate": 1
+              }
+            },
+            "o65wire_header": {
+              "total_ms": 55.49381924190031,
+              "parts_ms": {
+                "o65read_u16": 0.29406001587303826,
+                "o65read_u32": 3.14789414403302,
+                "o65read_u8": 0.06407012330503158,
+                "o65read_take": 0.07273967794366622,
+                "o65read_count": 0.44073760288928765,
+                "a816_mul_u24": 0.09437832244822585,
+                "o65memory_allocate": 5.820020045701945,
+                "o65read_name": 33.131866040579155,
+                "o65read_literal": 3.222466410762089,
+                "caller_instructions": 9.205586858364851
+              },
+              "counts": {
+                "o65read_u16": 2,
+                "o65read_u32": 10,
+                "o65read_u8": 1,
+                "o65read_take": 2,
+                "o65read_count": 1,
+                "a816_mul_u24": 1,
+                "o65memory_allocate": 1,
+                "o65read_name": 16,
+                "o65read_literal": 120
+              }
+            }
+          },
+          "nested": {
+            "o65_validate": {
+              "count": 1,
+              "inclusive_ms": 252.3984358149875
+            },
+            "o65_descriptor": {
+              "count": 1,
+              "inclusive_ms": 99.05036658824126
+            },
+            "o65wire_header": {
+              "count": 1,
+              "inclusive_ms": 55.49381924190031
+            },
+            "o65wire_exports": {
+              "count": 1,
+              "inclusive_ms": 6.67894031258326
+            },
+            "o65profile_imports": {
+              "count": 1,
+              "inclusive_ms": 7.783004571604177
+            },
+            "o65relocations_walk": {
+              "count": 4,
+              "inclusive_ms": 381.01240662607717
+            },
+            "program_load": {
+              "count": 1,
+              "inclusive_ms": 756.168987240953
+            },
+            "programproviders_resolve": {
+              "count": 1,
+              "inclusive_ms": 155.76581770816446
+            },
+            "programplace_allocate": {
+              "count": 1,
+              "inclusive_ms": 3.7052125873475252
+            },
+            "programplace_copy": {
+              "count": 1,
+              "inclusive_ms": 136.44673721663597
+            },
+            "programplace_patches": {
+              "count": 2,
+              "inclusive_ms": 201.94945156256387
+            },
+            "o65_release": {
+              "count": 1,
+              "inclusive_ms": 3.243400213426109
+            },
+            "o65read_u32": {
+              "count": 549,
+              "inclusive_ms": 175.23531144846407
+            },
+            "o65read_u16": {
+              "count": 1237,
+              "inclusive_ms": 184.75758374578328
+            },
+            "o65read_u8": {
+              "count": 4396,
+              "inclusive_ms": 286.1468974976705
+            },
+            "o65read_take": {
+              "count": 4446,
+              "inclusive_ms": 162.02572954654704
+            },
+            "o65read_name": {
+              "count": 18,
+              "inclusive_ms": 37.645673187393484
+            },
+            "o65read_string": {
+              "count": 48,
+              "inclusive_ms": 48.563814265716914
+            },
+            "o65read_literal": {
+              "count": 937,
+              "inclusive_ms": 31.866393000074712
+            },
+            "o65read_equal": {
+              "count": 132,
+              "inclusive_ms": 24.362435313140086
+            }
+          }
+        }
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "switches": 531,
+        "gateway_calls": 8503,
+        "os_calls": 0,
+        "forwarded_cops": 0,
+        "os_busy": 0,
+        "os_owner": 255,
+        "return_s": 15534,
+        "return_d": 3840,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "fault_required": 0,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 510,
+            "untouched_above_floor": 770
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 317,
+            "untouched_above_floor": 739
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 290,
+            "untouched_above_floor": 766
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 322,
+            "untouched_above_floor": 734
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 528,
+            "untouched_above_floor": 1776
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 117,
+            "untouched_above_floor": 139
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 260,
+          "untouched_from_base": 1276,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-commands/build/firmware/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$91213499097d0042",
+        "actual_kernel_id": "$91213499097d0042",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "input": "Prefilled empty cooked line, physical Return; ordinary Drain/dispatch",
+      "source_inputs": {
+        "examples/demo.act": "af4f584fe2324b8466de0fbf27c205d973dff4d4738a552b05fef15981b43181",
+        "examples/demo-session.inc": "4051346a79bc37c583eeacf2955b94b78619e5b929f1ec7cb2265e308fe35a44",
+        "examples/shell/shell-session.inc": "39d0d8ad79cdf6342536727bfdc5b017a4639d6229304ba7901ffdc01c3f197b",
+        "examples/shell/shell-commands.inc": "b23f9bf65da50a4c097f54cd3f2e5803c27aa6519e469c1d2043a4fc5f78e1a7",
+        "examples/shell/shell-mount-diagnostics.inc": "e54efe84298a5487e9d2170c8edbdbd0fdb7e4084a99557d3ecdfdbdb6308b5f",
+        "examples/shell/shell-redirection.inc": "351b52614055b5e3920e50f4ace04b2928cf5abd8941f6b3d8c029cc0963c2f6",
+        "examples/shell/shell-path.inc": "20f6c0227bad4b4a1e044f6e98c7d47f385d4dfa5e8b4de2907eddd8e4e397d0",
+        "examples/shell/shell-jobs.inc": "da7bfc5395f3c16779db4e89a40c9254891741e629434eb0c1c15746d60a1a23",
+        "examples/shell/shell-execute.inc": "34239cef50827bea6c58fcd871de03c0ea527c57a23b98df502c05a5be225ca6",
+        "examples/shell/shell-boot.inc": "391bb54f9854cfc549f099c2b5fad9ce7e9c9dffa910410cd714d547aa959279",
+        "examples/commands/command-common.inc": "5157ec62658ae159b55876b447a34ecaf073a9445a1476fbf1d99ca0a0f660bd",
+        "examples/commands/command-files.inc": "8ee77c8038111d0c9d0173f0defad2b3e934ee961c04e8833a6faae2db52d3bb",
+        "examples/commands/command-write.inc": "9953f964ff137d90b92be4e281c2ed97730f4663e96161e7f31691738fb09ea1",
+        "examples/commands/command-transfer.inc": "1b3c5caab17f045cf5d4977781c9e2d2f7dd616e45145aac3185c1b9db59dfbe",
+        "examples/commands/command-pattern.inc": "49b59c982b0eec99c6dbb31526237b484ea4dc444ccdcaed519045edf80593f4",
+        "docs/guides/demo.md": "4479519a57fd7abada40f7a177687b51f3a1e82e15adf13e9879963e3954d6a8",
+        "docs/demo.png": "3bca07615e65b5ef700f91389455042e98d5d972189504b069c70e32d0bd8e63",
+        "docs/images/demo-boot.png": "ca72d49560158f01671ba7abf8684d8a8078bcc1f3146eb8f92c93fdadd3b060",
+        "docs/demo-distribution.txt": "0f8f8c8c6090886ef179cb7b91863e7dee8d653a5fd9460b08e98b7ca04e31f3",
+        "tools/package_demo.py": "17c5f6c7dbd680a12602dcdfd552acf49bdd49600cf83fe3204e3dbad06238c3",
+        "LICENSE": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "LICENSE-MIT": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "LICENSING.md": "ab99e3de1a1d4d818f5c36fa9b95d392bd30061b926ed5d61bde807d21f4051e",
+        "config/shell-sdfs.json": "a012ff38f2f2c7d5728256fa7038f7062e8e0447ef5337c870dfca607bda6d57",
+        "tools/build_command.py": "1c36b38d52925df90fa5c3493ed2f0ad3af45ad2f89fd3bbb48b6b7039387213",
+        "tools/make_data_disk.py": "6da3f3fecf522138c9d9559d4f3dec0ad4a42c6ee10b5510ea6b6910f80411ba",
+        "tools/sdfs_reference.py": "514efb3fd8a8d3d507760935588a4c43198de0bba1aef3ef19de6f4e9ff5b066",
+        "tools/sdfs_reference.cpp": "0d67232b165a10d421fcc31cca384c59c4c6d7b855bf16f51781051cf98194b4",
+        "tools/make_shell_disk.py": "3c66d45cc35c328be33c955c4a5a5f864721cac0758a85920328ff9a84d51f30",
+        "tools/build_demo.py": "020e10c57f304350300264312e4e0bdd097bc765b289f492e28b90151ba0be2e",
+        "examples/demo-disk/LONG.TXT": "33f7b26526e6a099a8dfea1cf12b53f42dfc21a6ae26e848dfd29b7eba75c043",
+        "examples/demo-disk/README.TXT": "57f0973b6ac9e5f6b92479f651cd20fd5676babe31373b9410d53449f2df1dbd",
+        "examples/demo-disk/S/STARTUP": "b88363eec5ba79f72b093b32be9dc74a79d03894167d89acd4cd42dd2ee5e928",
+        "examples/demo-disk/S/USER": "aeb3e9f09bb3f061e0386e5674ddefcfbde0bfb49c9cd47f247c3dafe1400cea",
+        "examples/demo-disk/SELECT/A000.TXT": "78b31251b40a6aa86dda40d7a6bfc9ed18330f638676fdcd9e1f3a78fb5ccfec",
+        "examples/demo-disk/SELECT/A001.TXT": "1af71eda0b899f120ded0f8d37e744a11943f37a331e3b0bb77f20bf6859c6af",
+        "examples/demo-disk/SELECT/A002.TXT": "538094795c033f4995234f8e857642700a07a631996f2747ebff83c8e60ed905",
+        "examples/demo-disk/SELECT/A003.TXT": "c956d794c2cc743be261290a8fcdb6a47f677d3617dbeb232f9621f8d7fdd4a0",
+        "examples/demo-disk/SELECT/A004.TXT": "0b8e87575583be8f1859ae45c06839a7a1382f689dd104af5b601beb6bc6fd9a",
+        "examples/demo-disk/SELECT/A005.TXT": "563e2183cc050221b7658d94c4c24451b43a5757581dd97bc39da171b849f090",
+        "examples/demo-disk/SELECT/A006.TXT": "6db59afcda04c13332ca105b4ae7bce83bfd5c59248d802678940a975dd43337",
+        "examples/demo-disk/SELECT/A007.TXT": "550fdd536902ea032f12f21907dad64dc7faefeb31f02166171bec6bf801fb18",
+        "examples/demo-disk/SELECT/A008.TXT": "6a1a29e68a858b303162ffa64be59069db952605bc21ead3708ef5f83dbd0dad",
+        "examples/demo-disk/SELECT/A009.TXT": "6e0f85391a3ee265b6984ccad48562d454404961524852b02b15de712a8bd419",
+        "examples/demo-disk/SELECT/A010.TXT": "c85c33c4c0d23372e8c08ef668c44929a1f07b74e045ae333607aa8eff4833f8",
+        "examples/demo-disk/SELECT/A011.TXT": "3e4e5977df44c7f1d16861fafc1046a1e572b6134880ee8745b56bbb2936b73d",
+        "examples/demo-disk/SELECT/B.BIN": "7a363897c7f658dcc477d586d2546f3aea2c27be864f7e174a3cfb4fd1d40ee1",
+        "examples/demo-disk/SELECT/SUB/NOTE.TXT": "43ff94cd7b39213e4556b2b068e59c8f2ff337f10537c254f72ff681df19d4c9",
+        "examples/demo-disk/STORY.TXT": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+        "examples/demo-disk/WORK/README.TXT": "797f18216a45f58003777f1f098fa2cf11cf26362598029c7d89c4eee312ee56",
+        "lib/dos/command.act": "8ea6ef71ff6e76fd813450660a99498762e1720df77111c2efdba86cf9f8cd00",
+        "lib/dos/cookedline.act": "480ab8f0caa9e990293e4651947451198517624de78e1a6e5a0e8882bcb76cdd",
+        "lib/dos/cprogram.act": "ca1d925f332564be2165a2a388382cd2737c83190539c6cabd3eff6c85fa3611",
+        "lib/dos/cprogrambind.act": "aec463d88e845ad3754552f1072867bfbc1819f31c64a42d85c44bd74c22e4c9",
+        "lib/dos/dos.act": "9d1d11a54a240a28c918d17f899b9118a0a5fce3c7a779789ee5fe90e2628651",
+        "lib/dos/dosargs.act": "a239440218fc4df3b7209a8ff4671b0acdc3d9ec5ea71e060b2f9b8ad23d9f26",
+        "lib/dos/dosbreak.act": "4e678c7a91f2f66a3e7a5b4a4d134d27719e175f59a5c8873969d72f2367c930",
+        "lib/dos/dosbreaktypes.act": "afe9ccd719707e10ea0112697cf37a88b45316ebc50939141ac8d58e8eacda0b",
+        "lib/dos/doscalls.act": "9f807427e5011b9de90da00fd1e13849c314f676297196b31b5d33ee1f7604dd",
+        "lib/dos/doscancel.act": "4a1e000895510d32ceac80a500d41238490f51e85c1de7547149d7b494281713",
+        "lib/dos/dosclient.act": "6c142fe3bee64cc07036c803b3072795e21157ceec0dbf36135a0ee48984e07d",
+        "lib/dos/doscommand.act": "2905970e2c26dcd2fd1f5f1914796f1e7a5c7eb0a33c86fce4cdc2fec93dfefd",
+        "lib/dos/doscooked.act": "0aa3abf087ad9001561c05997db2cefacdbf828d3b0af7088c3d6f79875cab32",
+        "lib/dos/doscore.act": "35236d938935373e25be30d25bf72bc74f38161b847366f8b7d3f4b5f53b35eb",
+        "lib/dos/dosdelay.act": "c0e235201c816a7e7c82f466673f9fb946c767c2080e7f7d5adc91989dca325b",
+        "lib/dos/dosfault.act": "9541e51c0469f555e7bfb838fccbef2589c038c6b99aca8369d28cd7d11874f1",
+        "lib/dos/dosgroup.act": "de07ea8918aa6a4068d79447e38906c4ac3465522de982ebff968e0133d1bc64",
+        "lib/dos/dosinherit.act": "5840bed9bbb4e2ab92506acfebaf768e1a374b6d69734f06a0d7297714268ecd",
+        "lib/dos/dosobjects.act": "1a971c398e51fcb23fd4f682586f7e8df11a14e28b949d8bcc85520a204fead3",
+        "lib/dos/dospane.act": "16a072ee99641ce853429de508308a326fd26f49d2dbac1650fae16f9b0d3510",
+        "lib/dos/dospipe.act": "ef6e260163a902e64ddb676c5908554a55d7c7c69c062b89c6f123bdef13083b",
+        "lib/dos/dosprocess.act": "71633d6158f1861914e407d158d12971395b758b5408458c724147bef1b08597",
+        "lib/dos/dosraw.act": "a5e9b50b2b460a4899114980c509224d72ca83bdec05e448eeac50cabfe557ff",
+        "lib/dos/dosstreams.act": "7e35a1d6cb521499474424794a73b391d18391b8a62b90ba8d80473e2d07e59f",
+        "lib/dos/dosutility.act": "7f58d666a4921d5159877a16dab10cdd66884a14dd2f0c1d113088ba685fa92c",
+        "lib/dos/doswire.act": "77be2691895300a4fc68423e8d7a21bc1c6e87727827d94b7e95c5477d90600b",
+        "lib/dos/o65.act": "5338c24d81d173981a6fc70d2602285e1cd0b612c320c54c2be47f4b3eea02e9",
+        "lib/dos/o65memory.act": "9b0c229328eedccd63b29f8d1b7d93d71b7edaf66cbf9db9da96db3dea1b1f36",
+        "lib/dos/o65profile.act": "c6897919226ebe7502b4ab4aacf94202bd5484d96cb7cc5911e0a479a0c89643",
+        "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3",
+        "lib/dos/o65relocations.act": "e862559fecfdc0b6ca03581f1819c0eabd7aa0c718cd5d2aba5976f2b1d29959",
+        "lib/dos/o65types.act": "8056a2396f44fb20ce5659cb09c462baa0688072233b66672e6f15e7303c0fad",
+        "lib/dos/o65wire.act": "5fcad7c688f9fce18a04853ee66e476a220bcde11410d32e4731e47b98e0adc5",
+        "lib/dos/pipeline.act": "bf0dcf6254eb1f9a22746df1504656703d114649c094b74cca22372928ac8219",
+        "lib/dos/process.act": "64f0ff0b16f4d3e255a036bbc0f468b7251e5b16c6216510ce2bf9f059d7c4fd",
+        "lib/dos/processstate.act": "7c88a2da76f4be1b2edc6b2992af02bc252698071e59211ac99c34ef700d0d4c",
+        "lib/dos/program.act": "724679468537e048e8c2b85ef9403d97fe561cbed823fec1f00583eae4b82878",
+        "lib/dos/programapi.act": "a9190a09fdcfab2816b4a84b161634f99d41fd7d3eeb20148249fcfdfb62deaf",
+        "lib/dos/programfile.act": "d5af86dcedd0be80146edbf4c1dc98b41eff18614c7a03792ed39c121ec91b91",
+        "lib/dos/programimage.act": "3286a283e484330962f4f052b2594c95fb34cd85359ce7cd9525c3cff20d5826",
+        "lib/dos/programlibraries.act": "275ebe903d0bdaa05c068742e965b5b49bebb86652b1636d004c5481a502d3a4",
+        "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+        "lib/dos/programproviders.act": "7b179e68c0cabaf9d2e417c6254837da8d1e9130e37161a741efda98ddf6fbec",
+        "examples/shell/shell.act": "7a08b1cb0a0c426eb582365fe61c3f3551600c745bf0457c32ead7c246e4df96",
+        "docs/bitmap-shell-distribution.txt": "33b685ef8241f566e53163a87f2bafd63987c6a2ea573abee0096b7d009d4d51",
+        "tools/build_bitmap_console.py": "79a0aa60b7a8cecf886b8999dc660707d21c35c4a33d746a4a562e4dc0dd7dcd",
+        "tools/build_bitmap_artifact.py": "93ab012062795691f3910971cb993e41aafc120ed6f9c9f61d01176ded8d9ec6",
+        "tools/build_ide_media.py": "26e5a6c5d830f5d7bbdfe14827676777a4f7a712f076b796e713d21fe219201a",
+        "docs/ide-only-distribution.txt": "f8eb35e49e17a8ae01103daf8356d1f9ae420676f75ef9e972281ae33bb41e91",
+        "toolchain/altirra-ideplus.json": "7ee98fdc9ef36a7236d1a48a5b2ad538360d49096600984997d8a6c3aa4683e9"
+      },
+      "compiler": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      },
+      "hashes": {
+        "observer": "bb3af4a54aa1922c9182fddd91e9ff119ce4d0c9b78605789eac8b8c74a6e9d0",
+        "fixture": "f63311cb713b725971eaa4a91ec45e2fbc4443d4a4c58528577f3156b51673d9",
+        "decoder": "ece5965348d11d691e03ad79d5cb733d8f799f90a981736139332e0f1c676d6a",
+        "xex": "600620949f1f20b4599f91a1deec5ddd194cecc31bf726deff547df6ac8e8d7a",
+        "manifest": "4be9c0f8b6b670a429daa185ab887e01c1e68409095ad6d422a3749d5e716997",
+        "media": "b90573aebcf10edebbbafb0464e92737ab23a20c2283b673e665c5a5db5053eb",
+        "trace": "1c16f5f2ba3f4d987041897b890c7dbb650b63ae2572c75a7bacd29083ce0224",
+        "run": "e3ecf02bf672d7a65a496bd7d15af5667152264a80e5133b7b757dc0f1d21206"
+      },
+      "artifacts": {
+        "build/development/list-loading/ide/loading.json": "46ee592a6bf8af7dced38f457e248ff5fd6662905c31a26fe093846b04c99e00",
+        "build/development/list-loading/ide/run.json": "e3ecf02bf672d7a65a496bd7d15af5667152264a80e5133b7b757dc0f1d21206",
+        "build/development/list-loading/ide/markers.json": "e3dad4fda18ae09700f4d652fadb9290eafc1e23223a6eb5302a0af1fec27d9b",
+        "build/development/list-loading/ide/bundle/demo-manifest.json": "4be9c0f8b6b670a429daa185ab887e01c1e68409095ad6d422a3749d5e716997",
+        "build/development/list-loading/ide/bundle/program.xex": "600620949f1f20b4599f91a1deec5ddd194cecc31bf726deff547df6ac8e8d7a",
+        "build/development/list-loading/ide/bundle/emulator.log": "1c16f5f2ba3f4d987041897b890c7dbb650b63ae2572c75a7bacd29083ce0224",
+        "build/development/list-loading/ide/bundle/boot-smoke.png": "e1bea00e2fd02d12834ceb322af249fb5bf2096fe41dfe126c5651f52a7333a4"
+      },
+      "compiler_inputs": {
+        "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+        "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "abi_assembly_sha256": "0e5cedf40c72d086c47e28e40111a26eb62063edc57b228754ad029b93f14608",
+        "memory_runtime_inputs": {
+          "a816memory.act": "e5a6d2b6d876b69d43a8b73a388612497f1f775ffaea7d70d75663feb1f0eb61",
+          "memory.s": "c178de623ab1ab0859aba45a14908bd5e218ce21cdf6ce90e7fdb472a9bb66d7",
+          "memory.json": "79f62785d7086d12321a170beb8793363395252ac5e10564597d6b9c533aa840"
+        },
+        "build_profile": "release",
+        "override": false
+      },
+      "layout_inputs": 1,
+      "validated_pixel_snapshots": 9,
+      "ownership_baseline": null,
+      "media_integrity": {
+        "original": "b90573aebcf10edebbbafb0464e92737ab23a20c2283b673e665c5a5db5053eb",
+        "unchanged": true,
+        "ide_image": "4a4421773986e8b65ee095165459cc3df1e7cf832eb2c58c32669f80bbca61f4",
+        "after_execution": "4a4421773986e8b65ee095165459cc3df1e7cf832eb2c58c32669f80bbca61f4",
+        "work_allocation_audit": {
+          "sectors": 1440,
+          "sector_bytes": 512,
+          "allocated": 6,
+          "free": 1434,
+          "files": 1,
+          "directories": 1
+        }
+      },
+      "warm_phase_medians": {
+        "program_load": {
+          "o65_validate": 252.39942259356422,
+          "programproviders_resolve": 156.35894211697837,
+          "o65memory_allocate": 1.4996214999316304,
+          "programplace_allocate": 3.706622271028604,
+          "programplace_patches": 201.35907603692806,
+          "programplace_copy": 136.4477239952127,
+          "o65_release": 3.244809897107188,
+          "dosclient_seterror": 0.44799747384684346,
+          "caller_instructions": 0.128351699162225
+        },
+        "o65_validate": {
+          "dosclient_seterror": 0.896135916061795,
+          "o65memory_allocate": 1.6232507587622413,
+          "o65wire_header": 55.494806020477064,
+          "o65relocations_read": 89.17172625634534,
+          "o65wire_exports": 6.088141881843133,
+          "o65_descriptor": 99.0512123984499,
+          "caller_instructions": 0.07309209886393592
+        },
+        "o65_descriptor": {
+          "o65read_u32": 0.3146413976167888,
+          "o65read_u16": 0.29363711076871457,
+          "o65profile_imports": 7.784061834364987,
+          "o65relocations_read": 90.5617448500731,
+          "caller_instructions": 0.09606994286552041
+        },
+        "programproviders_resolve": {
+          "dos_control": 0.45405911367548235,
+          "o65read_u32": 32.03238325352174,
+          "o65read_u16": 7.497614110369773,
+          "o65read_u8": 3.2035061652515795,
+          "o65read_string": 48.6118844792417,
+          "o65read_extent": 0.9547082730106192,
+          "o65read_literal": 28.225039083480056,
+          "caller_instructions": 35.37417938788715
+        },
+        "programplace_allocate": {
+          "o65memory_storage": 1.5150575362394432,
+          "o65read_extent": 0.040316953278853755,
+          "o65memory_allocate": 2.0018917955000077,
+          "caller_instructions": 0.14836920743354398
+        },
+        "o65wire_header": {
+          "o65read_u16": 0.29406001587303826,
+          "o65read_u32": 3.14789414403302,
+          "o65read_u8": 0.06407012330503158,
+          "o65read_take": 0.07273967794366622,
+          "o65read_count": 0.44073760288928765,
+          "a816_mul_u24": 0.09423735408011796,
+          "o65memory_allocate": 1.647497318076797,
+          "o65read_name": 33.131866040579155,
+          "o65read_literal": 3.222466410762089,
+          "caller_instructions": 9.207207994598091
+        }
+      }
+    }
+  }
+}

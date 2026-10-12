@@ -1,5 +1,11 @@
 # Historical records
 
+- [LIST command loading](list-command-loading.md): current loader phase costs,
+  scalar decoding, relocation passes and the next bounded improvements.
+
+- [SpartaDOS listing measurements](spartados-listing-measurements.md): current
+  DIR/LIST cold/warm IDE/SIO timings, first-row drawing and remaining costs.
+
 - [Cheap directory metadata](directory-metadata.md): flags, explicit exact
   queries, caller migration and listing measurements.
 

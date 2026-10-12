@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Command loader refactor](command-loader-refactor-plan.md): proposed bulk text/data
+  copying and complete-width scalar decoding, preserving malformed-input behavior
+  and measuring matched warm SIO/IDE loading.
+
 - [RAM filesystem](ram-filesystem.md): volatile files using the shared DOS worker.
 
 The [GEM text viewer design](gem4xe/text-viewer-design.md) covers a

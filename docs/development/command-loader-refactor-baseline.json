@@ -1,0 +1,190 @@
+{
+  "status": "frozen",
+  "slice": "CL0",
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0,
+    "idle": 0
+  },
+  "baseline_evidence_sha256": "488799db9f1bed561f4b25a2cc7158f0d52a035d9e0695e5883d912eb7f6675d",
+  "baseline_source_commit": "dbadb418ed0aace1b107ae42bd7b97875e0a83e0",
+  "compiler": {
+    "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+    "binary_sha256": "dc4cc85d2a9cf6a4d1047774e8748b9332e74147edd3b86d0574704539671712",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "override": false
+  },
+  "routine_sizes": {
+    "O65READ_U16": {
+      "size": 187,
+      "fixed_frame": 8,
+      "spill_bytes": 8,
+      "local_stack_peak": 14,
+      "whole_task_stack_bound": null
+    },
+    "O65READ_U32": {
+      "size": 193,
+      "fixed_frame": 14,
+      "spill_bytes": 14,
+      "local_stack_peak": 20,
+      "whole_task_stack_bound": null
+    },
+    "PROGRAMPLACE_COPY": {
+      "size": 240,
+      "fixed_frame": 14,
+      "spill_bytes": 14,
+      "local_stack_peak": 14,
+      "whole_task_stack_bound": null
+    }
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "copy_callers": [
+    "PROGRAM.Load text",
+    "PROGRAM.Load initialized data"
+  ],
+  "C_loader": "CPROGRAM already uses A816MEMORY.Move",
+  "admitted_copy_limits": {
+    "text": 131072,
+    "data": 65536
+  },
+  "size_bits": 24,
+  "source_inputs": {
+    "lib/dos/programplace.act": "a1306380847086094dd63443cb54ca9e699eaab47ebe0ace563c07ae6728b86f",
+    "lib/dos/o65read.act": "45da4ed32729c33695735b46a5cbf5c14f4f730831166a01651b7c767a3b12d3"
+  },
+  "warm_load_ms": {
+    "sio": 1029.3412971063424,
+    "ide": 1040.9983943702873
+  },
+  "runtime_stack_observations": {
+    "sio": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 510,
+        "untouched_above_floor": 770
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 284,
+        "untouched_above_floor": 772
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 123,
+        "untouched_above_floor": 933
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 322,
+        "untouched_above_floor": 734
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 528,
+        "untouched_above_floor": 1776
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 54,
+        "untouched_above_floor": 202
+      }
+    ],
+    "ide": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 510,
+        "untouched_above_floor": 770
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 317,
+        "untouched_above_floor": 739
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 290,
+        "untouched_above_floor": 766
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 322,
+        "untouched_above_floor": 734
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 528,
+        "untouched_above_floor": 1776
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 117,
+        "untouched_above_floor": 139
+      }
+    ]
+  }
+}
