@@ -13,6 +13,7 @@ struct VbxeTextUpload {
     ULONG fillDestination;
     UWORD fillBytes,fillRows;
     UBYTE fillValue, odd;
+    UWORD destinationPitch;
 };
 void EXEC_CALL _VbxeTextUpload(const struct VbxeTextUpload *upload);
 #endif

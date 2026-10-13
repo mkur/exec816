@@ -8,5 +8,5 @@ __attribute__((section("exec_layout"))) const unsigned short __exec_layout[]={
     offsetof(struct VbxeTextUpload,paper),
     offsetof(struct VbxeTextUpload,fillDestination),offsetof(struct VbxeTextUpload,fillBytes),
     offsetof(struct VbxeTextUpload,fillRows),offsetof(struct VbxeTextUpload,fillValue),
-    offsetof(struct VbxeTextUpload,odd)
+    offsetof(struct VbxeTextUpload,odd),offsetof(struct VbxeTextUpload,destinationPitch)
 };

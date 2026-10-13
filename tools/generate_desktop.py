@@ -45,7 +45,7 @@ def files():
         lines += [f'PUBLIC CONST {slot["name"].upper()}_BASE={slot["base"]}']
     assert all(r['capacity_bytes'] == 76800 for r in slots)
     lines += [f'PUBLIC CONST SNAPSHOT_BYTES={slots[0]["capacity_bytes"]}']
-    saves = [r for r in vram['regions'] if r['name'].startswith(('menu_', 'popup_'))]
+    saves = [r for r in vram['regions'] if r['name'].startswith(('menu_', 'popup_', 'shell_backing'))]
     for save in saves:
         lines += [f'PUBLIC CONST {save["name"].upper()}_BASE={save["base"]}',
                   f'PUBLIC CONST {save["name"].upper()}_BYTES={save["capacity_bytes"]}']

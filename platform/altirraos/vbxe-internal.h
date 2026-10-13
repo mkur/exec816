@@ -25,6 +25,8 @@ UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD c
 UWORD VbxeOwnerText(struct VbxeDisplay *display, ULONG font, UWORD x, UWORD y,
                     const UBYTE *text, UWORD count, UBYTE ink, UBYTE paper);
 struct VbxeTextFill { UWORD x,y,width,height; UBYTE value; };
+UWORD VbxeOwnerBackingText(struct VbxeDisplay *display,ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper);
 UWORD VbxeOwnerTextFill(struct VbxeDisplay *display, ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
     const struct VbxeTextFill *fill);

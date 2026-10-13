@@ -1,5 +1,6 @@
 /* Exec-owned FX adapter with detected I/O page and bounded completion. */
 #include "vbxe-internal.h"
+#include <hardware/vbxe-snapshots.h>
 #include <hardware/vbxe-upload.h>
 #include <hardware/vbxe-notify.h>
 #include <hardware/boot-diagnostics.h>
@@ -278,11 +279,11 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
  * All glyphs (including blank masks) follow the same checked geometry. */
 static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
-    const struct VbxeTextFill *fill)
+    const struct VbxeTextFill *fill,ULONG base,UWORD pitch,UWORD width,UWORD height)
 {
     struct VbxeTextUpload upload;
     UWORD status,n,atlasBytes=(x&1) ? 10240 : 8192;
-    if (x>640 || y>232 || count>(640-x)/8 ||
+    if (x>width || y>height-8 || count>(width-x)/8 ||
         font<VBXE_SCREEN_BYTES || font>VBXE_VRAM_BYTES-atlasBytes ||
         (font<VBXE_BCB+VBXE_BCB_BYTES && font+atlasBytes>VBXE_BCB) ||
         (ink&15)!=(ink>>4) || (paper&15)!=(paper>>4) ||
@@ -297,12 +298,13 @@ static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     if (status!=DISPLAY_OK) return status;
     upload.text=(ULONG)text;
     upload.font=font;
-    upload.destination=(ULONG)y*320+x/2;
+    upload.destination=base+(pitch==256 ? (ULONG)y<<8 : (ULONG)y*320)+x/2;
+    upload.destinationPitch=pitch;
     upload.ink=ink;
     upload.paper=paper;
     upload.odd=x&1;
     if (fill) {
-        upload.fillDestination=(ULONG)fill->y*320+fill->x/2;
+        upload.fillDestination=base+(pitch==256 ? (ULONG)fill->y<<8 : (ULONG)fill->y*320)+fill->x/2;
         upload.fillBytes=fill->width/2;
         upload.fillValue=fill->value;
     }
@@ -326,14 +328,21 @@ static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
 UWORD VbxeOwnerText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper)
 {
-    return text_run(d,font,x,y,text,count,ink,paper,0);
+    return text_run(d,font,x,y,text,count,ink,paper,0,0,320,640,240);
+}
+
+UWORD VbxeOwnerBackingText(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper)
+{
+    return text_run(d,font,x,y,text,count,ink,paper,0,
+        DESKTOP_SHELL_BACKING_BASE,256,512,160);
 }
 
 UWORD VbxeOwnerTextFill(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,const struct VbxeTextFill *fill)
 {
     if (!fill) return DISPLAY_BAD_ARGUMENT;
-    return text_run(d,font,x,y,text,count,ink,paper,fill);
+    return text_run(d,font,x,y,text,count,ink,paper,fill,0,320,640,240);
 }
 
 /* A completion record outlives each poll. No borrowed descriptor survives

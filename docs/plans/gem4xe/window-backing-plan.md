@@ -344,3 +344,11 @@ claiming the whole performance goal achieved.
   Timing gates remain for the combined comparison in WB6. Reserved bank-zero
   and VRAM deltas: 0; move continuation adds one 3-byte request pointer and one
   2-byte status in upper RAM (alignment recorded with final image metadata).
+- WB3: reserved the fixed 40,960-byte bitmap; added explicit offscreen text/fill
+  calls sharing the atlas uploader and fill producer. Packet stays 78 bytes;
+  the private C/assembly text record grows by 2 stack bytes, with no reserved
+  stack/DP growth. Development checks: 459 host tests (4 skips), raw and optimized
+  drawing fixtures (172 checks each), exact backing/screen pixel oracles, owner
+  admission, OS restoration and stack/domain guards. Reports: `wb3-drawing` and
+  `wb3-drawing-raw` under `build/window-backing`. Reserved bank zero: 0 fixed,
+  0 per public Task, 0 idle. No additional persistent CPU metadata.

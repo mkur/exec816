@@ -5,6 +5,7 @@
  * Lists are bounded by count and work; every dependency drains queued DMA.
  */
 #include "gem-drawing.h"
+#include <hardware/vbxe-snapshots.h>
 #ifndef GEM_DRAWING_ONLY
 #include "gem-vbxe.h"
 #endif
@@ -406,6 +407,25 @@ static UWORD draw_TextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     if (GemBitmapTextFill(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))
         return DISPLAY_BAD_ARGUMENT;
     return fault ? DISPLAY_DEVICE_FAULT : DISPLAY_OK;
+}
+
+/* Explicit fixed offscreen destination: never erase a screen overlay here. */
+static UWORD draw_BackingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg)
+{
+    UWORD status=fence_owner();
+    if (status!=DISPLAY_OK) return status;
+    status=VbxeOwnerBackingText(&display,(x&1) ? 0x33000UL:0x31000UL,
+        x,y,text,count,(UBYTE)(map_col[fg]*17),(UBYTE)(map_col[bg]*17));
+    if (status==DISPLAY_DEVICE_FAULT) latch(status);
+    return status;
+}
+static UWORD draw_BackingFill(UWORD x,UWORD y,UWORD width,UWORD height,UWORD pen)
+{
+    UWORD status=fence_owner();
+    if (status!=DISPLAY_OK) return status;
+    blit_fill(DESKTOP_SHELL_BACKING_BASE+((ULONG)y<<8)+(x>>1),
+        256,width>>1,height,(UBYTE)(map_col[pen]*17));
+    return fence_owner();
 }
 
 /* Called only by the admitted ordinary drawing operation. No caller pointers
@@ -896,6 +916,8 @@ NATIVE_UNIT(ScrollStart,(const struct VbxeCopy *copy,UWORD pen,ULONG *id),(copy,
 NATIVE_UNIT(CopyStart,(const struct VbxeCopy *copy,ULONG *id),(copy,id))
 NATIVE_UNIT(Poll,(ULONG id),(id))
 NATIVE_UNIT(Text,(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg),(x,y,text,count,fg,bg))
+NATIVE_UNIT(BackingText,(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg),(x,y,text,count,fg,bg))
+NATIVE_UNIT(BackingFill,(UWORD x,UWORD y,UWORD width,UWORD height,UWORD pen),(x,y,width,height,pen))
 NATIVE_UNIT(TextFill,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD fillX,UWORD fillY,UWORD fillWidth,UWORD fillHeight,
     UWORD fillPen),(x,y,text,count,fg,bg,fillX,fillY,fillWidth,fillHeight,fillPen))

@@ -19,6 +19,10 @@ UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
                      UWORD foreground,UWORD background);
+/* Presenter-owned Shell bitmap, client-local coordinates. Internal producers
+ * supply even X/width for fills within the fixed 512 by 160 surface. */
+UWORD GemDrawingBackingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg);
+UWORD GemDrawingBackingFill(UWORD x,UWORD y,UWORD width,UWORD height,UWORD pen);
 /* Nonempty text at either X parity followed by a nonempty even-X/even-width screen fill.
  * Fill area is at most VBXE_TEXT_FILL_WORK pixels. Validate both before any
  * drawing; append the fill to the final bounded text list and fence it once. */
