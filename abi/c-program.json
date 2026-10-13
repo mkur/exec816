@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 16,
+  "version": 17,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -101,6 +101,8 @@
     "DeleteFile",
     "wind_find",
     "ExecAESDragOutline",
-    "ExamineExact"
+    "ExamineExact",
+    "MountVolume",
+    "UnmountVolume"
   ]
 }

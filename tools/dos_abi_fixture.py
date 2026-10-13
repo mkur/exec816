@@ -17,7 +17,8 @@ VOLUME=[('name','ARRAY',0,bytes(range(32))),('label','ARRAY',32,bytes(range(9)))
         ('state','BYTE',44,2),('flags','BYTE',45,3),('unit','CARD',46,65535),
         ('sectorBytes','CARD',48,512),('totalBlocks','LONGCARD',50,65535),
         ('freeBlocks','LONGCARD',54,60000),('allocatedBytes','LONGCARD',58,0x12345678)]
-FIXTURES=[('DateStamp',0x8fff8,12,DATE),('FileInfoBlock',0x6fff0,260,INFO),('DosPacket',0x9fff8,46,PACKET),('StandardPacket',0xbfff0,62,STANDARD),('VolumeInfo',0xdfff0,62,VOLUME)]
+MOUNT=[('drive','CARD',0,8),('format','CARD',2,2),('profile','CARD',4,4),('access','CARD',6,1)]
+FIXTURES=[('DateStamp',0x8fff8,12,DATE),('FileInfoBlock',0x6fff0,260,INFO),('DosPacket',0x9fff8,46,PACKET),('StandardPacket',0xbfff0,62,STANDARD),('VolumeInfo',0xdfff0,62,VOLUME),('SioMountSpec',0xefffe,8,MOUNT)]
 WIDTH={'LONGCARD':4,'LONGINT':4,'CARD':2,'BYTE':1}
 
 def generate(output):

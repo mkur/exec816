@@ -129,6 +129,25 @@ LONGINT FUNC CDeleteFile(LONGCARD name,unused,unused2)
 
 RETURN(DOS.DeleteFile(BYTE POINTER(ADDRESS(name))))
 
+LONGINT FUNC CMountVolume(LONGCARD name,spec,unused)
+
+  IF name>$ffffff OR spec>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(DOS.MountVolume(BYTE POINTER(ADDRESS(name)),
+    DOS.SioMountSpec POINTER(ADDRESS(spec))))
+
+LONGINT FUNC CUnmountVolume(LONGCARD name,unused,unused2)
+
+  IF name>$ffffff THEN
+    DOS.SetIoErr(DOS.ERROR_BAD_NUMBER)
+    RETURN(0)
+  FI
+
+RETURN(DOS.UnmountVolume(BYTE POINTER(ADDRESS(name))))
+
 ; Bind once; each operation still uses the current Task's DOS context.
 PROC BindDos(BYTE unused)
 
@@ -155,5 +174,7 @@ PROC BindDos(BYTE unused)
   entries(19)=ADDRESS(@CRename)
   entries(20)=ADDRESS(@CDeleteFile)
   entries(21)=ADDRESS(@CExamineExact)
+  entries(22)=ADDRESS(@CMountVolume)
+  entries(23)=ADDRESS(@CUnmountVolume)
 
 RETURN

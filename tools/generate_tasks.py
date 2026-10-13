@@ -270,6 +270,7 @@ def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_p
     devices=select_sio(devices,sio_enabled)
     (directory/'deviceinspect.act').write_text(devices)
     (directory/'blocktransport.act').write_text(select_sio(read_source(ROOT/'lib/io/blocktransport.act'),sio_enabled))
+    (directory/'fsdiscover.act').write_text(select_sio(read_source(ROOT/'lib/fs/fsdiscover.act'),sio_enabled))
     (directory/'exec.act').write_text('MODULE EXEC\nUSE EXECLISTS\nUSE TASKPOLICY\n'+public_api()+declarations()+generate_heap.public_api()+generate_heap.declarations()+generate_ports.public_api()+generate_ports.declarations()+generate_io.public_api()+generate_io.declarations()+'''
 PUBLIC EXTERNAL CARD FUNC Version()
 PUBLIC EXTERNAL PROC Yield()

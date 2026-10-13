@@ -13,6 +13,7 @@ USE COOKEDLINE
 USE DOSBREAK
 USE DOSBREAKTYPES
 USE DOSCANCEL
+USE FSMANAGER
 USE FSBOOT
 USE FSREGISTRY
 USE FSNAMES
@@ -1426,14 +1427,10 @@ PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
   OD
 
   registry=DOSCORE.GetRegistry()
-  specs=FSTYPES.Spec POINTER(registry.config)
-  FOR slot=0 TO registry.count-1 DO
-    IF FSREGISTRY.Defined(slot)<>0 AND
-        FSSYSTEM.Matches(@specs(slot),slot,name,length)<>0 THEN
-      owner.error=ERROR_OBJECT_EXISTS
-      RETURN(0)
-    FI
-  OD
+  IF FSREGISTRY.NameReserved(name,length)<>0 THEN
+    owner.error=ERROR_OBJECT_EXISTS
+    RETURN(0)
+  FI
 
   IF target=NULL THEN
     old=NULL
@@ -1511,6 +1508,13 @@ PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
     OD
   FI
 
+  IF FSREGISTRY.NameReserved(name,length)<>0 THEN
+    EXEC.Permit()
+    EXEC.FreeMem(BYTE POINTER(item),ASSIGNINFO_SIZE)
+    owner.error=ERROR_OBJECT_EXISTS
+    RETURN(0)
+  FI
+
   IF chosen<>ASSIGN_SLOTS THEN
     old=AssignInfo POINTER(registry.assigns(chosen))
     registry.assigns(chosen)=ADDRESS(item)
@@ -1574,5 +1578,14 @@ PUBLIC LONGINT FUNC GetAssign(CARD index AssignInfo POINTER info)
   FI
 
 RETURN(0)
+
+; The shared worker owns name, slot, unit and filesystem admission together.
+PUBLIC LONGINT FUNC MountVolume(BYTE POINTER name SioMountSpec POINTER spec)
+
+RETURN(FSMANAGER.NamedMount(name,BYTE POINTER(spec)))
+
+PUBLIC LONGINT FUNC UnmountVolume(BYTE POINTER name)
+
+RETURN(FSMANAGER.NamedUnmount(name))
 
 ENDMODULE

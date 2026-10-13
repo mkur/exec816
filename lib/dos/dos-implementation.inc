@@ -159,3 +159,11 @@ PUBLIC LONGINT FUNC PrintFault(FileHandle POINTER handle LONGINT code
     CSTRING header BYTE POINTER buffer CARD capacity)
 
 RETURN(DOSFAULT.PrintFault(BYTE POINTER(handle),code,header,buffer,capacity))
+
+PUBLIC LONGINT FUNC MountVolume(BYTE POINTER name SioMountSpec POINTER spec)
+
+RETURN(DOSCALLS.MountVolume(name,DOSCALLS.SioMountSpec POINTER(spec)))
+
+PUBLIC LONGINT FUNC UnmountVolume(BYTE POINTER name)
+
+RETURN(DOSCALLS.UnmountVolume(name))

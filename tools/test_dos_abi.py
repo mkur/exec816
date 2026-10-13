@@ -13,6 +13,8 @@ from generate_dos import ABI,check_routine,generate as generate_abi
 from dos_abi_fixture import FIXTURES,generate,buffers
 from ports_budget import current
 CALLS={
+ 'MountVolume':'result=DOS.MountVolume(name,mountSpec)',
+ 'UnmountVolume':'result=DOS.UnmountVolume(name)',
  'AssignPath':'result=DOS.AssignPath(name,name)',
  'GetAssign':'result=DOS.GetAssign(CARD(3),assignInfo)',
  'GetVolume':'result=DOS.GetVolume(CARD(8),volumeInfo)',
@@ -32,7 +34,7 @@ CALLS={
  'Input':'file=DOS.Input()','Output':'file=DOS.Output()',
  'SelectInput':'file=DOS.SelectInput(file)','SelectOutput':'file=DOS.SelectOutput(file)',
  'IsInteractive':'result=DOS.IsInteractive(file)','CurrentDir':'lock=DOS.CurrentDir(lock)','NameFromLock':'result=DOS.NameFromLock(lock,name,LONGINT(70000))'}
-PRELUDE='MODULE DOSIMPORTS\nUSE DOS\nDOS.FileHandle POINTER file\nDOS.FileLock POINTER lock\nDOS.FileInfoBlock POINTER info\nDOS.AssignInfo POINTER assignInfo\nDOS.VolumeInfo POINTER volumeInfo\nBYTE POINTER name\nLONGINT result\nPROC Main()\n'
+PRELUDE='MODULE DOSIMPORTS\nUSE DOS\nDOS.FileHandle POINTER file\nDOS.FileLock POINTER lock\nDOS.FileInfoBlock POINTER info\nDOS.AssignInfo POINTER assignInfo\nDOS.VolumeInfo POINTER volumeInfo\nDOS.SioMountSpec POINTER mountSpec\nBYTE POINTER name\nLONGINT result\nPROC Main()\n'
 
 def interface_source(path,names):path.write_text(PRELUDE+'\n'.join('  '+CALLS[n] for n in names)+'\nRETURN\n\nENDMODULE\n')
 
@@ -55,9 +57,9 @@ def run(t,out,optimize):
         def values(name,width):
             raw=bytes(data(b,p['image'],name));return [int.from_bytes(raw[i:i+width],'little') for i in range(0,len(raw),width)]
         actual=values('facts',2);require(actual==facts,'DOS field layout/array stride: '+str(actual))
-        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456,0xcfff0,0xdfff0,3,0xaff00,8,0xdfff0,0x90000,0xdfff0,0x90000,0x6fff0]
+        observed=values('seen',4);expected=[0x5ffff,1005,0,0,0,0x70000,0xfffeee8e,0xffffffff,0x70000,0x5ffff,0xfffffffe,0x90000,0x90000,0x6fff0,0x90000,0x6fff0,0x9ffff,70001,0x70000,0x70000,0,0xffffffff,0x70000,0xdfffe,70003,0x90000,0x70000,0x70000,0x90000,0x90000,0xaffff,70003,0xbfffe,0x87654321,123456,0xcfff0,0xdfff0,3,0xaff00,8,0xdfff0,0x90000,0xdfff0,0x90000,0x6fff0,0xcfff0,0xefffe,0xdfff0]
         require(observed==expected,'DOS arguments: '+str(observed))
-        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff],'DOS signed/pointer results: '+str(returns))
+        returns=values('returns',4);require(returns==[0x70000,70001,0xfffeee8e,0xffffffff,70000,0x90000,0xffffffff,0,0xffffffff,0,70003,0xffffffff,0x70000,0x90000,0x70000,0x90000,0xffffffff,0x70000,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xfffeee90,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff],'DOS signed/pointer results: '+str(returns))
         for address,expected in buffers():require(far_read(b,address,len(expected),out)==expected,'DOS adjacent guard or record mismatch: '+hex(address))
         return dict(status='pass',optimize=optimize,build=p['build'],runtime=runtime,machine=machine,facts=actual,seen=observed,returns=returns,routines=routines,checks=values('checks',2),guarded_record_bytes=sum(s+32 for _,_,s,_ in FIXTURES),fixture_sha256=sha256(out/'dos-abi-fields.inc'))
 

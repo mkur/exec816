@@ -6,7 +6,7 @@
 [SIO interface](../reference/device-io.md#siodevice) ·
 [Testing policy](../contributing/testing.md)
 
-Status: UM0–UM2 implemented at the development tier; UM3–UM5 pending.
+Status: UM0–UM3 implemented at the development tier; UM4–UM5 pending.
 [Implementation record](../history/user-sio-mounts.md). Complete and commit each
 executable slice after its focused development checks.
 

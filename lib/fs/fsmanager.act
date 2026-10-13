@@ -10,7 +10,7 @@ USE FSMOUNT
 INCLUDE "../dos/dos-types.inc"
 
 ; Send a mount-management request and keep its caller context until the reply.
-PUBLIC LONGINT FUNC Call(LONGINT action,index)
+LONGINT FUNC Request(LONGINT action,index BYTE POINTER name,spec)
   DOSCLIENT.ClientContext POINTER client
   DOSCORE.DosSlot POINTER slot
   DOSCORE.DosRegistry POINTER registry
@@ -44,8 +44,8 @@ PUBLIC LONGINT FUNC Call(LONGINT action,index)
   FI
 
   client.packet.sp_Pkt.dp_Arg1=index
-  client.packet.sp_Pkt.dp_Arg2=0
-  client.packet.sp_Pkt.dp_Arg3=0
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(name))
+  client.packet.sp_Pkt.dp_Arg3=LONGINT(ADDRESS(spec))
   client.packet.sp_Pkt.dp_Arg4=0
   client.packet.sp_Pkt.dp_Arg5=0
   client.packet.sp_Pkt.dp_Arg6=0
@@ -61,6 +61,31 @@ PUBLIC LONGINT FUNC Call(LONGINT action,index)
   EXEC.Permit()
 
 RETURN(result)
+
+PUBLIC LONGINT FUNC Call(LONGINT action,index)
+
+RETURN(Request(action,index,NULL,NULL))
+
+; Named management may start an empty worker after failed automatic startup.
+LONGINT FUNC Named(LONGINT action BYTE POINTER name,spec)
+
+  IF FSBOOT.EnsureManagement()=0 THEN
+    BEGIN
+      LET registry=DOSCORE.GetRegistry()
+      DOSCLIENT.SetError(registry.error)
+      RETURN(0)
+    END
+  FI
+
+RETURN(Request(action,-1,name,spec))
+
+PUBLIC LONGINT FUNC NamedMount(BYTE POINTER name,spec)
+
+RETURN(Named(FSMOUNT.MOUNT,name,spec))
+
+PUBLIC LONGINT FUNC NamedUnmount(BYTE POINTER name)
+
+RETURN(Named(FSMOUNT.UNMOUNT,name,NULL))
 
 PUBLIC LONGINT FUNC Unmount(BYTE index)
 

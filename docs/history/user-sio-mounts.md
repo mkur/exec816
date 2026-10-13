@@ -5,8 +5,7 @@
 [Implementation plan](../plans/user-sio-mounts-implementation-plan.md) ·
 [Compact evidence](../development/user-sio-mounts.json)
 
-Status: UM0–UM2 implemented at the development tier; UM3–UM5 pending. Public user
-mount commands are not available yet.
+Status: UM0–UM3 implemented at the development tier; UM4–UM5 pending. Public DOS operations are available; resident shell forms are pending UM4.
 
 ## UM0 registry and saved definitions
 
@@ -82,3 +81,33 @@ A fastest-profile file-read failure exposed missing pinned disk timing settings
 in the new runner. Applying the pin's actual configuration fixes the regression;
 the final discovery and read/remount cases use those settings. The unchanged
 UM1 emission was also replayed as an isolation check; no driver code changed.
+
+## UM3 named public operations
+
+DOS, COMMAND and C export MountVolume/UnmountVolume together with the eight-byte
+SioMountSpec. The worker copies caller input, reserves a stable slot/name/unit,
+checks ASSIGN collisions and commits definition/publication in one protected
+interval. ASSIGN publication checks pending names again. Failure and early BREAK
+retire only private candidate state; late BREAK cannot undo a committed mount or
+detachment. Mount pointers are published/withdrawn under Task exclusion.
+
+Idle user unmount frees the definition slot. Saved boot definitions remain
+reserved while detached, and name-only remount preserves their geometry/access.
+Failed replacement leaves them unchanged; successful replacement converts the
+slot to a user definition. SYS selection remains immutable. Live references
+prevent unmount; IDE/RAM management stays internal. An SIO-disabled build returns
+error 209 without disk resources.
+
+Upper service storage is 516 bytes (520 allocated), 48 more than UM2. The C entry
+table grows by six upper bytes. New provider names increase the manifest to
+1,700 bytes, requiring a 1,728-byte reservation (+64) and moving the 160-byte
+pointer-input state by 64 within existing arena slack. No bank-zero reservation
+changes: fixed 0, per Task 0, private idle 0, including alignment/guards.
+
+Development checks include raw/optimized native signatures and cross-bank record
+layout; raw/optimized C and loaded COMMAND calls through the real shared worker;
+27 public lifecycle assertions, invalid-argument/table-full checks, saved boot
+replacement, first-writer/rollback and empty-service recovery. Final workflow
+cases use the intended GENERIC57600 default. FASTEST125 discovery and stock
+fallback have separate UM2 coverage; these development checks do not qualify
+all transfer timing across arbitrary image layouts or physical peripherals.

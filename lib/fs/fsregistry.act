@@ -3,6 +3,7 @@ USE EXEC
 USE DOSCORE
 USE DOSOBJECTS
 USE FSTYPES
+USE FS83
 USE FSNAMES
 USE FSSYSTEM
 INCLUDE "../dos/dos-types.inc"
@@ -26,6 +27,35 @@ PUBLIC FSTYPES.Service POINTER FUNC Service()
   registry=DOSCORE.GetRegistry()
 
 RETURN(FSTYPES.Service POINTER(registry.runtime))
+
+; Published and detached definitions, and an attaching name, share a namespace.
+PUBLIC BYTE FUNC NameReserved(BYTE POINTER name CARD length)
+  BYTE index,reserved
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  reserved=0
+  EXEC.Forbid()
+  FOR index=0 TO registry.count-1 DO
+    IF Defined(index)<>0 AND
+        FSSYSTEM.Matches(@specs(index),index,name,length)<>0 THEN
+      reserved=1
+      EXIT
+    FI
+  OD
+
+  IF reserved=0 AND registry.state=FSTYPES.STATE_READY AND registry.runtime<>NULL THEN
+    BEGIN
+      LET service=FSTYPES.Service POINTER(registry.runtime)
+      IF service.mountNew<>0 THEN
+        reserved=FSSYSTEM.Matches(@service.pending,service.index,name,length)
+      FI
+    END
+  FI
+
+  EXEC.Permit()
+
+RETURN(reserved)
 
 ; Keep a mount alive while a caller owns a reference to it.
 PUBLIC BYTE FUNC Retain(FSTYPES.Mount POINTER mount)

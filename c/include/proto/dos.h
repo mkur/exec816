@@ -21,4 +21,6 @@ LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName);
 LONG EXEC_CALL Seek(BPTR file,LONG position,LONG mode);
 /* Release an idle caller context after all handles/locks/selections retire. */
 LONG EXEC_CALL ExecDOSDetach(void);
+LONG EXEC_CALL MountVolume(CONST_STRPTR name,const struct SioMountSpec *spec);
+LONG EXEC_CALL UnmountVolume(CONST_STRPTR name);
 #endif

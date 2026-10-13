@@ -17,6 +17,7 @@ BYTE finished,scenario
 LONGINT expected
 BYTE fallback,format
 CARD serviceBytes,mountBytes
+DOS.SioMountSpec mountSpec
 FSTYPES.Spec decodeSpec
 FSTYPES.Discovery decodeReport
 BYTE ARRAY buffer(64)
@@ -42,7 +43,7 @@ PROC Registry(BYTE unused)
   LET file=DOS.Open(BYTE POINTER(c"D2:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
   Require(file<>NULL)
   Require(DOS.Read(file,buffer,64)=64)
-  Require(FSMANAGER.Unmount(1)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
   Require(DOS.Close(file)<>0)
 
   LET service=FSREGISTRY.Service()
@@ -53,7 +54,7 @@ PROC Registry(BYTE unused)
   FSINIT.RecordFailure(service)
   service.error=0
   service.selected=NULL
-  Require(FSMANAGER.Unmount(1)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))<>0)
   Require(registry.enabled=1 AND registry.defined=3)
   LET specs=FSTYPES.Spec POINTER(registry.config)
   specs(1).alias(0)='X
@@ -61,9 +62,9 @@ PROC Registry(BYTE unused)
   Require(failure.name(0)='D AND failure.name(1)='2 AND failure.name(2)=0)
   Require(failure.sectors=720 AND failure.bytes=128 AND failure.unit=50)
   specs(1).alias(0)='D
-  Require(FSMANAGER.Mount(1)<>0 AND registry.enabled=3)
+  Require(DOS.MountVolume(BYTE POINTER(c"D2"),NULL)<>0 AND registry.enabled=3)
   Require(FSINSPECT.LastFailure(@failure)=0)
-  Require(FSMANAGER.Unmount(1)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))<>0)
   Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
   Require(EXEC.AvailMem(0)=baseline)
   Require(registry.defined=3 AND registry.enabled=1)
@@ -100,30 +101,23 @@ PROC Lazy(BYTE unused)
   Require(ram<>NULL)
   LET service=FSREGISTRY.Service()
   Require(service.adapter=NULL AND service.work.extra=NULL AND service.mutation=NULL)
-  LET specs=FSTYPES.Spec POINTER(registry.config)
-  specs(5).alias(0)='N
-  specs(5).alias(1)='E
-  specs(5).alias(2)='W
-  specs(5).unit=50
-  specs(5).profile=1
-  specs(5).sectors=720
-  specs(5).dataBytes=128
-  specs(5).boot=1
-  specs(5).format=1
-  registry.defined=registry.defined OR 32
-  LET result=FSMANAGER.Mount(5)
+  mountSpec.drive=2
+  mountSpec.profile=EXEC.SIO_PROFILE_GENERIC57600
+  mountSpec.format=1
+  mountSpec.access=0
+  LET result=DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)
   IF expected<>0 THEN
     Require(result=0 AND DOS.IoErr()=expected)
     Require(service.adapter=NULL AND service.work.extra=NULL AND service.mutation=NULL)
-    Require(service.mounts(0).item.published<>0 AND service.mounts(5).item=NULL)
+    Require(service.mounts(0).item.published<>0 AND service.mounts(1).item=NULL)
   ELSE
     Require(result<>0 AND service.adapter<>NULL AND service.work.extra<>NULL)
-    Require(service.mutation=NULL AND service.mounts(5).item.writable=0)
-    Require(FSMANAGER.Unmount(5)<>0)
-    specs(5).access=1
-    Require(FSMANAGER.Mount(5)<>0)
-    Require(service.mutation<>NULL AND service.mounts(5).item.writable<>0)
-    Require(FSMANAGER.Unmount(5)<>0)
+    Require(service.mutation=NULL AND service.mounts(1).item.writable=0)
+    Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+    mountSpec.access=1
+    Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)<>0)
+    Require(service.mutation<>NULL AND service.mounts(1).item.writable<>0)
+    Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
   FI
 
   DOS.UnLock(ram)
@@ -223,23 +217,187 @@ PROC Discovery(BYTE unused)
   LET registry=DOSCORE.GetRegistry()
   LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
   Require(ram<>NULL)
-  LET specs=FSTYPES.Spec POINTER(registry.config)
-  specs(5).alias(0)='N
-  specs(5).alias(1)='E
-  specs(5).alias(2)='W
-  specs(5).unit=50
-  specs(5).profile=IF fallback<>0 THEN EXEC.SIO_PROFILE_STOCK810 ELSE 1 FI
-  specs(5).boot=1
-  specs(5).format=format
-  registry.defined=registry.defined OR 32
-  Require(FSMANAGER.Mount(5)<>0)
+  mountSpec.drive=2
+  mountSpec.profile=IF fallback<>0 THEN EXEC.SIO_PROFILE_STOCK810 ELSE EXEC.SIO_PROFILE_GENERIC57600 FI
+  mountSpec.format=format
+  mountSpec.access=0
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)<>0)
   LET service=FSREGISTRY.Service()
-  LET mount=service.mounts(5).item
+  LET mount=service.mounts(1).item
   Require(mount.spec.sectors=720 AND mount.spec.dataBytes=128)
   Require(mount.discovery.source=IF fallback<>0 THEN 2 ELSE 1 FI)
   Require(mount.block.sectors=720 AND mount.block.dataBytes=128)
-  Require(specs(5).sectors=0 AND specs(5).dataBytes=0)
-  Require(FSMANAGER.Unmount(5)<>0)
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  Require(specs(1).sectors=0 AND specs(1).dataBytes=0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Public names and busy references use the same mount and device ownership.
+PROC PublicMounts(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL AND SIZEOF(DOS.SioMountSpec)=8)
+  mountSpec.drive=2
+  mountSpec.format=DOS.MOUNT_MYDOS
+  mountSpec.profile=EXEC.SIO_PROFILE_GENERIC57600
+  mountSpec.access=DOS.MOUNT_READONLY
+  Require(DOS.MountVolume(BYTE POINTER(c"data"),@mountSpec)<>0)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSREGISTRY.Service()
+  LET mount=service.mounts(1).item
+  LET generation=mount.generation
+  Require(mount.spec.alias(0)='D AND mount.spec.alias(1)='A AND
+      mount.discovery.source=1 AND registry.defined=3)
+  Require(DOS.MountVolume(BYTE POINTER(c"DATA"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.MountVolume(BYTE POINTER(c"OTHER"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.MountVolume(BYTE POINTER(c"SYS"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.MountVolume(BYTE POINTER(c"RAM"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.MountVolume(BYTE POINTER(c"NIL"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"RAM"))=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_WRONG_TYPE)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"DATA:"))=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.MountVolume(BYTE POINTER(c"MISSING"),NULL)=0 AND
+      DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  LET file=DOS.Open(BYTE POINTER(c"DATA:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL AND DOS.Read(file,buffer,64)=64)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"DATA"))=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+  LET root=DOS.Lock(BYTE POINTER(c"DATA:"),DOS.SHARED_LOCK)
+  Require(root<>NULL)
+  LET previous=DOS.CurrentDir(root)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"DATA"))=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.CurrentDir(previous)=root)
+  DOS.UnLock(root)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"data"))<>0 AND registry.defined=1)
+  Require(DOS.MountVolume(BYTE POINTER(c"DATA"),NULL)=0 AND
+      DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  Require(DOS.AssignPath(BYTE POINTER(c"TAKEN"),BYTE POINTER(c"RAM:"))<>0)
+  Require(DOS.MountVolume(BYTE POINTER(c"TAKEN"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_OBJECT_EXISTS)
+  Require(DOS.AssignPath(BYTE POINTER(c"TAKEN"),NULL)<>0)
+  Require(DOS.MountVolume(BYTE POINTER(c"DATA"),@mountSpec)<>0)
+  Require(service.mounts(1).item.generation>generation)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"DATA"))<>0)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Preserve a detached boot definition until successful replacement commits.
+PROC Replacement(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))<>0)
+  mountSpec.drive=2
+  mountSpec.profile=EXEC.SIO_PROFILE_GENERIC57600
+  mountSpec.format=2
+  mountSpec.access=0
+  Require(DOS.MountVolume(BYTE POINTER(c"D2"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_NOT_A_DOS_DISK)
+  Require(registry.defined=3 AND registry.bootDefinitions=3 AND registry.enabled=1)
+  Require(specs(1).format=1 AND specs(1).sectors=720 AND specs(1).dataBytes=128)
+  Require(FSINSPECT.LastFailure(@failure)<>0 AND failure.name(0)='D AND
+      failure.name(1)='2 AND failure.source=1)
+  Require(DOS.MountVolume(BYTE POINTER(c"D2"),NULL)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))<>0)
+  mountSpec.format=1
+  Require(DOS.MountVolume(BYTE POINTER(c"D2"),@mountSpec)<>0)
+  Require(registry.bootDefinitions=1 AND specs(1).sectors=0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"D2"))<>0 AND registry.defined=1)
+  Require(DOS.MountVolume(BYTE POINTER(c"D2"),NULL)=0 AND
+      DOS.IoErr()=DOS.ERROR_DEVICE_NOT_MOUNTED)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Invalid requests and a full saved table perform no device I/O.
+PROC Bounds(BYTE unused)
+  BYTE index
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  mountSpec.drive=2
+  mountSpec.profile=EXEC.SIO_PROFILE_GENERIC57600
+  mountSpec.format=1
+  mountSpec.access=0
+  Require(DOS.MountVolume(NULL,@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  Require(DOS.MountVolume(BYTE POINTER(c""),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  FOR index=0 TO 31 DO
+    buffer(index)='X
+  OD
+
+  Require(DOS.MountVolume(buffer,@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_INVALID_COMPONENT_NAME)
+  mountSpec.drive=0
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  mountSpec.drive=9
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  mountSpec.drive=2
+  mountSpec.access=2
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  mountSpec.access=0
+  mountSpec.format=3
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_NOT_A_DOS_DISK)
+  mountSpec.format=1
+  mountSpec.profile=3
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  mountSpec.profile=EXEC.SIO_PROFILE_GENERIC57600
+  Require(DOS.MountVolume(BYTE POINTER(c"D3"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_BAD_NUMBER)
+  LET registry=DOSCORE.GetRegistry()
+  registry.defined=$1ff
+  Require(DOS.MountVolume(BYTE POINTER(c"FULL"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_NO_FREE_STORE)
+  registry.defined=1
+  LET service=FSREGISTRY.Service()
+  Require(service.adapter=NULL AND registry.enabled=1)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC NoSio(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  mountSpec.drive=2
+  mountSpec.profile=4
+  mountSpec.format=1
+  mountSpec.access=0
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@mountSpec)=0 AND
+      DOS.IoErr()=DOS.ERROR_ACTION_NOT_KNOWN)
+  LET service=FSREGISTRY.Service()
+  Require(service.adapter=NULL)
   DOS.UnLock(ram)
   Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
   Require(EXEC.AvailMem(0)=baseline)
@@ -250,7 +408,15 @@ PROC Main()
 
   serviceBytes=SIZEOF(FSTYPES.Service)
   mountBytes=SIZEOF(FSTYPES.Mount)
-  IF scenario=4 THEN
+  IF scenario=9 THEN
+    NoSio(0)
+  ELSEIF scenario=8 THEN
+    Bounds(0)
+  ELSEIF scenario=7 THEN
+    Replacement(0)
+  ELSEIF scenario=6 THEN
+    PublicMounts(0)
+  ELSEIF scenario=4 THEN
     Geometry(0)
   ELSEIF scenario=5 THEN
     Discovery(0)

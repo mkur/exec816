@@ -20,6 +20,8 @@ USE FSBTYPES
 USE FSWTYPES
 USE FSFORMATS
 USE FSDISCOVER
+USE FSOPERATION
+USE FSACTIVE
 INCLUDE "../dos/dos-types.inc"
 
 ; Reject conflicting mount descriptors before allocating or opening devices.
@@ -233,11 +235,22 @@ BYTE FUNC Arrival(FSTYPES.Service POINTER service)
 
 RETURN(service.control<>EXEC.MsgPort POINTER(0))
 
+; A private candidate keeps its unresolved definition until commit.
+FSTYPES.Spec POINTER FUNC Definition(FSTYPES.Service POINTER service)
+
+  IF service.mountNew<>0 THEN
+    RETURN(@service.pending)
+  FI
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+
+RETURN(@specs(service.index))
+
 ; Create a fresh mount identity before any caller can discover it.
 BYTE FUNC AllocateMount(FSTYPES.Service POINTER service)
   DOSCORE.DosRegistry POINTER registry
   FSTYPES.Mount POINTER mount
-  FSTYPES.Spec POINTER specs
 
   registry=DOSCORE.GetRegistry()
   IF registry.generation=LONGCARD($ffffffff) THEN
@@ -253,9 +266,10 @@ BYTE FUNC AllocateMount(FSTYPES.Service POINTER service)
 
   service.selected=mount
   service.mountOwned=1
+  EXEC.Forbid()
   service.mounts(service.index).item=mount
-  specs=FSTYPES.Spec POINTER(registry.config)
-  A816MEMORY.Move(BYTE POINTER(@mount.spec),BYTE POINTER(@specs(service.index)),
+  EXEC.Permit()
+  A816MEMORY.Move(BYTE POINTER(@mount.spec),BYTE POINTER(Definition(service)),
       SIZEOF(FSTYPES.Spec))
 
   FSSYSTEM.Apply(@mount.spec,service.index)
@@ -382,9 +396,7 @@ PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
   LET service=FSTYPES.Service POINTER(raw)
   service.error=ERROR_NO_FREE_STORE
   service.mountStage=BLOCKTYPES.ADMIT_ALLOCATE
-  LET registry=DOSCORE.GetRegistry()
-  LET specs=FSTYPES.Spec POINTER(registry.config)
-  IF MountResources(service,@specs(service.index))=0 OR
+  IF MountResources(service,Definition(service))=0 OR
       AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
     RETURN(Failed(service))
   FI
@@ -448,27 +460,43 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
     RETURN(Failed(service))
   FI
 
-  service.newResources=0
-  service.mountOwned=0
   service.selected.writable=service.selected.spec.access
-  BEGIN
-    LET registry=DOSCORE.GetRegistry()
-    EXEC.Forbid()
-    IF registry.mountSlot=service.index THEN
-      registry.mountError=0
-      registry.mountStage=0
+  LET registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
+  IF service.packet<>NULL THEN
+    IF FSOPERATION.Canceled(FSACTIVE.CurrentScope(service))<>0 THEN
+      EXEC.Permit()
+      RETURN(CancelMount(service))
     FI
 
-    EXEC.Permit()
-  END
-  IF service.packet<>FSTYPES.Packet POINTER(0) THEN
-    EXEC.Forbid()
+    service.committing=1
+    IF service.mountNew<>0 THEN
+      BEGIN
+        LET specs=FSTYPES.Spec POINTER(registry.config)
+        A816MEMORY.Move(BYTE POINTER(@specs(service.index)),
+            BYTE POINTER(@service.pending),SIZEOF(FSTYPES.Spec))
+        registry.defined=registry.defined OR (CARD(1) LSH service.index)
+        ; Successful replacement becomes a user definition; failed replacement
+        ; never overwrites the saved boot descriptor.
+        registry.bootDefinitions=registry.bootDefinitions &
+            ($ffff XOR (CARD(1) LSH service.index))
+      END
+    FI
+
     service.selected.published=1
-    BEGIN
-      LET registry=DOSCORE.GetRegistry()
-      registry.enabled=registry.enabled OR (CARD(1) LSH service.index)
-    END
-    EXEC.Permit()
+    registry.enabled=registry.enabled OR (CARD(1) LSH service.index)
+  FI
+
+  IF registry.mountSlot=service.index THEN
+    registry.mountError=0
+    registry.mountStage=0
+  FI
+
+  service.mountNew=0
+  service.newResources=0
+  service.mountOwned=0
+  EXEC.Permit()
+  IF service.packet<>NULL THEN
     service.packet.sp_Pkt.dp_Res1=-1
     FSPACKET.Reply(service)
     RETURN(FSSTATUS.MORE)
@@ -489,8 +517,10 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service)
 
   LET error=service.error
   IF service.mountOwned<>0 THEN
-    DestroyMount(service,service.selected)
+    EXEC.Forbid()
     service.mounts(service.index).item=NULL
+    EXEC.Permit()
+    DestroyMount(service,service.selected)
     service.mountOwned=0
   FI
 
@@ -515,6 +545,8 @@ PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
   spec=NULL
   IF service.selected<>NULL THEN
     spec=@service.selected.spec
+  ELSEIF service.mountNew<>0 THEN
+    spec=@service.pending
   ELSEIF service.index<registry.count AND FSREGISTRY.Defined(service.index)<>0 THEN
     BEGIN
       LET specs=FSTYPES.Spec POINTER(registry.config)

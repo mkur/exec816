@@ -6,7 +6,7 @@
 These are native pointers, not Amiga BPTRs. Names are NUL-terminated byte strings;
 I/O remains counted binary data. Exact signatures and constants come from
 [dos.act](../../lib/dos/dos.act) and [dos.json](../../abi/dos.json).
-The current native DOS ABI is revision 9; the loaded COMMAND ABI is version 16.
+The current native DOS ABI is revision 10; the loaded COMMAND ABI is version 17.
 
 ## Transfer ownership
 
@@ -143,6 +143,41 @@ and bounded header checks run at mount, without a filesystem scan. Keep media
 unchanged externally while mounted. There is no automatic disk-change detection,
 filesystem repair. [RAM:](ram-filesystem.md) supplies volatile files through
 the same DOS interface, without disk I/O.
+
+### User SIO mounts
+
+`MountVolume(name, spec)` and `UnmountVolume(name)` return DOSTRUE/DOSFALSE
+and set the calling Task's IoErr. Native DOS, loaded COMMAND and C export both
+operations. Names are case-insensitive, 1–31 legal bytes, without a colon.
+Keep caller name/spec storage live until the synchronous call returns.
+
+`SioMountSpec` is eight bytes: four CARD fields, drive at offset 0, format at
+2, profile at 4 and access at 6. Drive is 1–8. Format is `MOUNT_MYDOS` or
+`MOUNT_SPARTA`; access is `MOUNT_READONLY` or `MOUNT_READWRITE`. Profiles are
+Exec's STOCK810, FASTEST125 and GENERIC57600 constants. Geometry is not an input.
+Read-only acquisition discovers READ-sector-1 → STATUS → PERCOM geometry and
+runs only the selected format's bounded admission. Only clean unsupported
+PERCOM permits conventional 720/1,040 × 128 STATUS fallback. Double-density
+capacity requires usable PERCOM. Stock-XF551 density ambiguity remains
+unsupported; no probe negotiates speed or writes the media.
+
+Null spec remounts a detached saved SIO boot definition with its configured
+geometry and access. New definitions cannot replace SYS, RAM, streams, active
+mounts or ASSIGN names. A Dn name must agree with spec.drive. Active/pending
+physical units cannot be mounted twice. The nine slots include boot IDE/RAM
+volumes; detached boot definitions retain their slots and names. A failed
+replacement preserves the saved boot definition; a successful replacement
+becomes a user definition. Successful unmount discards user definitions, while
+boot definitions remain saved but disabled. Boot-selected SYS never changes.
+
+Unmount rejects live files, locks/current directories, inherited backings and
+accepted operations with ERROR_OBJECT_IN_USE. Idle detachment retires the cache,
+binding and mount before reply. Mount publication and unmount detachment each
+win over late BREAK; earlier BREAK cleans up an unpublished candidate. These
+calls can start an empty control service after failed automatic startup. They
+cannot create IDE/RAM mounts or bypass an offline SIO bus. Builds without
+sio.device return ERROR_ACTION_NOT_KNOWN. Observational queries never start
+workers or probe disks. See the [implementation record](../history/user-sio-mounts.md).
 
 ## Errors and partial transfers
 

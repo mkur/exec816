@@ -6,7 +6,7 @@ USE DOSWIRE
 USE FSINFO
 USE HEAPCORE
 INCLUDE "dos-packets.inc"
-LONGCARD ARRAY seen(45),returns(28)
+LONGCARD ARRAY seen(48),returns(30)
 CARD checks
 
 ; Stop at the first failed fixture invariant and retain its check index for
@@ -20,6 +20,19 @@ PROC Require(BYTE okay)
   checks==+1
 
 RETURN
+
+LONGINT FUNC MountVolume(BYTE POINTER name DOS.SioMountSpec POINTER spec)
+
+  seen(45)=LONGCARD(ADDRESS(name))
+  seen(46)=LONGCARD(ADDRESS(spec))
+
+RETURN(-1)
+
+LONGINT FUNC UnmountVolume(BYTE POINTER name)
+
+  seen(47)=LONGCARD(ADDRESS(name))
+
+RETURN(-1)
 
 ; Test-only native callees: none is a DOS production import.
 DOS.FileHandle POINTER FUNC Open(BYTE POINTER name LONGINT mode)
@@ -269,6 +282,9 @@ PROC Main()
   Fields()
   returns(27)=LONGCARD(ExamineExact(DOS.FileLock POINTER($090000),
       DOS.FileInfoBlock POINTER($06fff0)))
+  returns(28)=LONGCARD(MountVolume(BYTE POINTER($0cfff0),
+      DOS.SioMountSpec POINTER($0efffe)))
+  returns(29)=LONGCARD(UnmountVolume(BYTE POINTER($0dfff0)))
   Calls0()
   Calls1()
   seen(16)=seen(3)

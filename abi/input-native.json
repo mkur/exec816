@@ -4,7 +4,7 @@
     "state_offset": 2656,
     "capture_offset": 3072,
     "acquisitions_offset": 3920,
-    "pointer_state_offset": 18048,
+    "pointer_state_offset": 18112,
     "pointer_reserve_offset": 18432,
     "pointer_capture_offset": 18448,
     "pointer_reserved_bytes": 2560,

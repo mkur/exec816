@@ -32,6 +32,10 @@
 #define FIB_SIZE_EXACT (1L)
 #define FIB_SIZE_BOUND (2L)
 #define FIB_BLOCKS_EXACT (4L)
+#define MOUNT_MYDOS (1L)
+#define MOUNT_SPARTA (2L)
+#define MOUNT_READONLY (0L)
+#define MOUNT_READWRITE (1L)
 #define ERROR_NO_FREE_STORE (103L)
 #define ERROR_BAD_TEMPLATE (114L)
 #define ERROR_BAD_NUMBER (115L)
@@ -100,5 +104,11 @@ struct VolumeInfo {
     ULONG totalBlocks;
     ULONG freeBlocks;
     ULONG allocatedBytes;
+};
+struct SioMountSpec {
+    UWORD drive;
+    UWORD format;
+    UWORD profile;
+    UWORD access;
 };
 #endif

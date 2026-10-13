@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 9,
+  "revision": 10,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -38,7 +38,11 @@
     "VOLUME_IDEPLUS": 1,
     "FIB_SIZE_EXACT": 1,
     "FIB_SIZE_BOUND": 2,
-    "FIB_BLOCKS_EXACT": 4
+    "FIB_BLOCKS_EXACT": 4,
+    "MOUNT_MYDOS": 1,
+    "MOUNT_SPARTA": 2,
+    "MOUNT_READONLY": 0,
+    "MOUNT_READWRITE": 1
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -366,6 +370,32 @@
           "allocatedBytes",
           "LONGCARD",
           58
+        ]
+      ]
+    },
+    "SioMountSpec": {
+      "size": 8,
+      "alignment": 2,
+      "fields": [
+        [
+          "drive",
+          "CARD",
+          0
+        ],
+        [
+          "format",
+          "CARD",
+          2
+        ],
+        [
+          "profile",
+          "CARD",
+          4
+        ],
+        [
+          "access",
+          "CARD",
+          6
         ]
       ]
     }
@@ -874,6 +904,33 @@
         }
       ],
       "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "MountVolume": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
+      "result_bytes": 4
+    },
+    "UnmountVolume": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 3,
       "result_bytes": 4
     }
   },

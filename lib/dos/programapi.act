@@ -11,6 +11,14 @@ USE DOSCOMMAND
 USE DOSPANE
 USE DOSDELAY
 
+PUBLIC LONGINT FUNC MountVolume(BYTE POINTER name,spec)
+
+RETURN(DOSCALLS.MountVolume(name,DOSCALLS.SioMountSpec POINTER(spec)))
+
+PUBLIC LONGINT FUNC UnmountVolume(BYTE POINTER name)
+
+RETURN(DOSCALLS.UnmountVolume(name))
+
 ; Explicit task-only providers. Opaque handles keep the external contract free
 ; of resident implementation records. Dispatch directly to their shared
 ; implementation, retaining each checked entry and its command signature.

@@ -108,4 +108,9 @@ const UWORD ExecCLayout[] = {
     offsetof(struct VolumeInfo, totalBlocks),
     offsetof(struct VolumeInfo, freeBlocks),
     offsetof(struct VolumeInfo, allocatedBytes),
+    sizeof(struct SioMountSpec),
+    offsetof(struct SioMountSpec, drive),
+    offsetof(struct SioMountSpec, format),
+    offsetof(struct SioMountSpec, profile),
+    offsetof(struct SioMountSpec, access),
 };

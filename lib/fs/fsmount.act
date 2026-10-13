@@ -1,4 +1,4 @@
-; Private management packets. Public applications keep the ordinary DOS API.
+; Named public and internal management share the worker control queue.
 MODULE FSMOUNT
 USE FSSTATUS
 USE EXEC
@@ -7,6 +7,15 @@ USE FSTYPES
 USE FSPACKET
 USE FSREGISTRY
 USE FSINIT
+USE FSNAMES
+USE FSSYSTEM
+USE FS83
+USE FSDISCOVER
+USE BLOCKTYPES
+USE FSFORMATS
+USE A816MEMORY
+USE FSOPERATION
+USE FSACTIVE
 INCLUDE "../dos/dos-types.inc"
 PUBLIC CONST UNMOUNT=-100, MOUNT=-101, QUIESCE=-102
 
@@ -22,9 +31,186 @@ PUBLIC BYTE FUNC Dispatch(BYTE POINTER raw)
   service.packet.sp_Pkt.dp_Res2=0
   service.work.error=0
   service.work.ioError=0
+  service.index=255
+  service.mountStage=FSTYPES.MOUNT_CONFIG
+  service.mountNew=0
+  service.error=0
   service.mountOwned=0
   service.newResources=0
   service.nextStep=@SelectStep
+
+RETURN(FSSTATUS.MORE)
+
+; Copy and validate a bounded API name; no caller text survives the reply.
+BYTE FUNC CopyName(FSTYPES.Service POINTER service BYTE POINTER name)
+  BYTE index,value
+
+  IF name=NULL THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO 31 DO
+    value=name(index)
+    IF value=0 THEN
+      service.name(index)=0
+      service.nameLength=CARD(index)
+      RETURN(index<>0 AND FSNAMES.Stream(service.name,CARD(index))=0)
+    FI
+
+    IF FS83.Legal(value)=0 THEN
+      RETURN(0)
+    FI
+
+    service.name(index)=FS83.Fold(value)
+  OD
+
+RETURN(0)
+
+; Admit name, slot and drive together before opening a private binding.
+BYTE FUNC NamedSelect(FSTYPES.Service POINTER service)
+  BYTE index,chosen
+  LONGINT error
+
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  LET name=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  LET request=SioMountSpec POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg3))
+  IF CopyName(service,name)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_INVALID_COMPONENT_NAME))
+  FI
+
+  chosen=255
+  FOR index=0 TO service.count-1 DO
+    IF FSREGISTRY.Defined(index)<>0 AND
+        FSSYSTEM.Matches(@specs(index),index,service.name,service.nameLength)<>0 THEN
+      chosen=index
+      EXIT
+    FI
+  OD
+
+  IF service.packet.sp_Pkt.dp_Type=UNMOUNT OR request=NULL THEN
+    IF chosen=255 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DEVICE_NOT_MOUNTED))
+    FI
+
+    IF specs(chosen).format=FSFORMATS.RAM OR
+        specs(chosen).backend<>BLOCKTYPES.BACKEND_SIO THEN
+      RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
+    FI
+
+    IF service.packet.sp_Pkt.dp_Type=MOUNT AND
+        (registry.bootDefinitions & (CARD(1) LSH chosen))=0 THEN
+      RETURN(FSPACKET.Error(service,ERROR_DEVICE_NOT_MOUNTED))
+    FI
+  ELSE
+    IF FSNAMES.ValidAlias(service.name)=0 OR
+        (service.nameLength=3 AND service.name(0)='R AND
+        service.name(1)='A AND service.name(2)='M) THEN
+      RETURN(FSPACKET.Error(service,ERROR_INVALID_COMPONENT_NAME))
+    FI
+
+    IF request.drive<1 OR request.drive>8 OR request.access>1 OR
+        (request.profile<>EXEC.SIO_PROFILE_FASTEST125 AND
+        request.profile<>EXEC.SIO_PROFILE_GENERIC57600 AND
+        request.profile<>EXEC.SIO_PROFILE_STOCK810) THEN
+      RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+    FI
+
+    IF service.nameLength=2 AND service.name(0)='D AND
+        service.name(1)>='1 AND service.name(1)<='8 AND
+        request.drive<>CARD(service.name(1)-'0) THEN
+      RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+    FI
+
+    IF request.format<>MOUNT_MYDOS AND request.format<>MOUNT_SPARTA THEN
+      RETURN(FSPACKET.Error(service,ERROR_NOT_A_DOS_DISK))
+    FI
+
+    IF chosen<>255 THEN
+      IF FSSYSTEM.Selected(chosen)<>0 THEN
+        RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+      FI
+
+      IF specs(chosen).format=FSFORMATS.RAM OR
+          specs(chosen).backend<>BLOCKTYPES.BACKEND_SIO THEN
+        RETURN(FSPACKET.Error(service,ERROR_OBJECT_WRONG_TYPE))
+      FI
+    ELSE
+      FOR index=0 TO service.count-1 DO
+        IF FSREGISTRY.Defined(index)=0 THEN
+          chosen=index
+          EXIT
+        FI
+      OD
+
+      IF chosen=255 THEN
+        RETURN(FSPACKET.Error(service,ERROR_NO_FREE_STORE))
+      FI
+    FI
+  FI
+
+  IF FSDISCOVER.Available()=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_ACTION_NOT_KNOWN))
+  FI
+
+  service.index=chosen
+  service.selected=service.mounts(chosen).item
+  IF service.packet.sp_Pkt.dp_Type=UNMOUNT THEN
+    RETURN(FSSTATUS.MORE)
+  FI
+
+  IF service.selected<>NULL THEN
+    RETURN(FSPACKET.Error(service,ERROR_OBJECT_IN_USE))
+  FI
+
+  A816MEMORY.Clear(BYTE POINTER(@service.pending),SIZEOF(FSTYPES.Spec))
+  IF request<>NULL THEN
+    A816MEMORY.Move(service.pending.alias,service.name,SIZE(service.nameLength+1))
+    service.pending.unit=48+request.drive
+    service.pending.profile=request.profile
+    service.pending.format=BYTE(request.format)
+    service.pending.access=BYTE(request.access)
+    service.pending.boot=1
+  ELSE
+    A816MEMORY.Move(BYTE POINTER(@service.pending),BYTE POINTER(@specs(chosen)),
+        SIZEOF(FSTYPES.Spec))
+    FSSYSTEM.Apply(@service.pending,chosen)
+  FI
+
+  error=0
+  EXEC.Forbid()
+  FOR index=0 TO 3 DO
+    IF registry.assigns(index)<>ADDRESS(0) THEN
+      BEGIN
+        LET assign=AssignInfo POINTER(registry.assigns(index))
+        IF FSNAMES.AliasMatches(assign.name,service.name,service.nameLength)<>0 THEN
+          error=ERROR_OBJECT_EXISTS
+        FI
+      END
+    FI
+  OD
+
+  FOR index=0 TO service.count-1 DO
+    BEGIN
+      LET mount=service.mounts(index).item
+      IF mount<>NULL THEN
+        IF mount.spec.format<>FSFORMATS.RAM AND
+            mount.spec.backend=BLOCKTYPES.BACKEND_SIO AND
+            mount.spec.unit=service.pending.unit THEN
+          error=ERROR_OBJECT_IN_USE
+        FI
+      FI
+    END
+  OD
+
+  IF error=0 AND request<>NULL THEN
+    service.mountNew=1
+  FI
+
+  EXEC.Permit()
+  IF error<>0 THEN
+    RETURN(FSPACKET.Error(service,error))
+  FI
 
 RETURN(FSSTATUS.MORE)
 
@@ -48,6 +234,17 @@ BYTE FUNC SelectStep(BYTE POINTER raw)
   FI
 
   index=service.packet.sp_Pkt.dp_Arg1
+  IF index=-1 THEN
+    BEGIN
+      LET status=NamedSelect(service)
+      IF service.packet<>NULL THEN
+        service.nextStep=@CommandStep
+      FI
+
+      RETURN(status)
+    END
+  FI
+
   IF index<0 OR index>=LONGINT(service.count) THEN
     RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
   FI
@@ -102,11 +299,23 @@ BYTE FUNC RemoveStep(BYTE POINTER raw)
   EXEC.Forbid()
   IF service.selected.references<>0 THEN
     busy=1
+  ELSEIF FSOPERATION.Canceled(FSACTIVE.CurrentScope(service))<>0 THEN
+    EXEC.Permit()
+    RETURN(FSPACKET.Error(service,ERROR_BREAK))
   ELSE
+    service.committing=1
     service.selected.published=0
     BEGIN
       LET registry=DOSCORE.GetRegistry()
-      registry.enabled=registry.enabled & ($ffff XOR (CARD(1) LSH service.index))
+      LET mask=CARD(1) LSH service.index
+      registry.enabled=registry.enabled & ($ffff XOR mask)
+      IF (registry.bootDefinitions & mask)=0 THEN
+        BEGIN
+          LET specs=FSTYPES.Spec POINTER(registry.config)
+          registry.defined=registry.defined & ($ffff XOR mask)
+          A816MEMORY.Clear(BYTE POINTER(@specs(service.index)),SIZEOF(FSTYPES.Spec))
+        END
+      FI
     END
     service.mounts(service.index).item=FSTYPES.Mount POINTER(0)
   FI

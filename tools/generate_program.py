@@ -98,7 +98,7 @@ def command_api():
     text += f'PUBLIC CONST FAULT_BUFFER_BYTES={DOS_ABI["constants"]["FAULT_BUFFER_BYTES"]}\n'
     text += dos_types(public=True)
     text += 'PUBLIC CONST SHARED_LOCK=-2\n'
-    text += ''.join(f'PUBLIC CONST {name}={value}\n' for name, value in DOS_ABI['constants'].items() if name.startswith(('VOLUME_', 'FIB_')))
+    text += ''.join(f'PUBLIC CONST {name}={value}\n' for name, value in DOS_ABI['constants'].items() if name.startswith(('VOLUME_', 'FIB_', 'MOUNT_')))
     for name, spec in ABI['providers'].items():
         kind = 'PROC' if spec['result'] == 'PROC' else spec['result']+' FUNC'
         args = ' '.join(kind+' '+name for kind, name in spec['arguments'])

@@ -39,16 +39,17 @@ def run(output, scenario, reuse=None, trace=True):
     memory = output / 'memory.json'
     memory.write_text(json.dumps(profile, indent=2) + '\n')
     mounts = [dict(alias='RAM', format=3),
-              dict(alias='D2', format=1, unit=50, profile=1,
+              dict(alias='D2', format=1, unit=50, profile=4,
                    sectors=720, sector_bytes=128)]
     if scenario == 'empty':
         mounts = []
-    elif scenario.startswith('lazy') or scenario.startswith('discover') or scenario == 'geometry':
+    elif scenario.startswith('lazy') or scenario.startswith('discover') or scenario in ('geometry', 'public', 'bounds', 'no-sio'):
         mounts = mounts[:1]
     program = read_build(reuse) if reuse else build(compiler(ROOT / 'build/actionc', release=True),
                     ROOT / 'tests/programs/user_sio_mounts.act', output,
                     optimize=True, tasks=True, task_capacity=8,
-                    console_deferred=True, memory_profile=memory, dos_mounts=mounts)
+                    console_deferred=True, memory_profile=memory, dos_mounts=mounts,
+                    sio_enabled=scenario != 'no-sio')
     if reuse:
         for name, expected_hash in program['build'].get('task_inputs', {}).items():
             require(sha256(ROOT / name) == expected_hash, 'Stale reused mount build: ' + name)
@@ -65,7 +66,7 @@ def run(output, scenario, reuse=None, trace=True):
         for key, value in PIN['configuration'].items():
             bridge.config(key, str(value).lower() if isinstance(value, bool) else value)
         machine = verify_machine(bridge, ROOT / 'build/firmware/altirraos-816.rom', PIN)
-        bridge.config('diskemu', '810' if scenario == 'discover-fallback' else 'fastest')
+        bridge.config('diskemu', '810' if scenario == 'discover-fallback' else 'generic56k')
         bridge.mount(1, str(media))
         try:
             def before(bridge):
@@ -75,7 +76,7 @@ def run(output, scenario, reuse=None, trace=True):
                 bridge.memload(base + 0x883, bytes([len(mounts)]))
                 if mounts:
                     bridge.memload(base + 0x900, encode(mounts))
-                values = dict(scenario=5 if discovering else 4 if scenario == 'geometry' else 3 if scenario == 'recovery' else 1 if scenario == 'empty' else 2 if scenario.startswith('lazy') else 0,
+                values = dict(scenario=9 if scenario == 'no-sio' else 8 if scenario == 'bounds' else 7 if scenario == 'replacement' else 6 if scenario == 'public' else 5 if discovering else 4 if scenario == 'geometry' else 3 if scenario == 'recovery' else 1 if scenario == 'empty' else 2 if scenario.startswith('lazy') else 0,
                               expected=225 if scenario == 'lazy-failure' else 0,
                               fallback=int(scenario == 'discover-fallback'),
                               format=2 if scenario == 'discover-sparta' else 1)
@@ -126,7 +127,7 @@ def run(output, scenario, reuse=None, trace=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--scenario', choices=('registry', 'empty', 'lazy', 'lazy-failure', 'recovery', 'geometry', 'discover-mydos', 'discover-sparta', 'discover-fallback'), default='registry')
+    parser.add_argument('--scenario', choices=('registry', 'empty', 'lazy', 'lazy-failure', 'recovery', 'geometry', 'discover-mydos', 'discover-sparta', 'discover-fallback', 'public', 'replacement', 'bounds', 'no-sio'), default='registry')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--no-trace', action='store_true')

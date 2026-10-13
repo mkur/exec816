@@ -1,11 +1,11 @@
 {
   "abi": "exec816.program",
-  "version": 16,
+  "version": 17,
   "profile": "actionc.o65.compact.v3",
   "native_abi": "action65816.native.v2",
   "entry_signature": 684236356,
   "provider_offset": 16384,
-  "provider_capacity": 1664,
+  "provider_capacity": 1728,
   "provider_operation": 3,
   "result_codes": {
     "OK": 0,
@@ -491,6 +491,28 @@
         [
           "BYTE POINTER",
           "info"
+        ]
+      ]
+    },
+    "MountVolume": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
+        ],
+        [
+          "BYTE POINTER",
+          "spec"
+        ]
+      ]
+    },
+    "UnmountVolume": {
+      "result": "LONGINT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "name"
         ]
       ]
     }

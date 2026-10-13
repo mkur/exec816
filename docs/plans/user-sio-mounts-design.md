@@ -51,7 +51,9 @@ A name alone, such as MOUNT WORK:, remounts a saved, detached **boot-configured
 SIO** descriptor, preserving its configured access, geometry and profile. It
 does not reinterpret that explicit boot configuration. A detached non-system
 boot descriptor may be replaced by a new descriptor with FORMAT and automatic
-geometry discovery under the same name. An active descriptor is never replaced:
+geometry discovery under the same name. A successful replacement becomes a user definition, so unmount discards it;
+a failed replacement leaves the saved boot definition intact. An active
+descriptor is never replaced:
 unmount it first.
 User-created definitions are discarded on successful unmount, so remounting one
 requires its definition again; geometry can be discovered again. This keeps

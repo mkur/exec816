@@ -114,6 +114,22 @@ PUBLIC BYTE FUNC System(BYTE POINTER name CARD length)
 RETURN(FS83.Fold(name(0))='S AND
       FS83.Fold(name(1))='Y AND FS83.Fold(name(2))='S)
 
+; Compare a stored alias with bounded caller text, including its terminator.
+PUBLIC BYTE FUNC AliasMatches(BYTE POINTER stored,name CARD length)
+  CARD index
+
+  IF length=0 OR length>31 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO length-1 DO
+    IF FS83.Fold(stored(index))<>FS83.Fold(name(index)) THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(stored(length)=0)
+
 ; Reject malformed and reserved names before publishing a mount alias.
 PUBLIC BYTE FUNC ValidAlias(BYTE POINTER name)
   BYTE index,value

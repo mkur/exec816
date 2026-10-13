@@ -94,6 +94,8 @@ PUBLIC TYPE Service=[
   BYTE committing,changed,missing,namespacePhase
   BYTE POINTER mutation
   BYTE mountStage,newResources,mountOwned
+  Spec pending
+  BYTE mountNew
 ]
 
 PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,

@@ -42,6 +42,7 @@ PUBLIC PROC Reply(FSTYPES.Service POINTER service)
   service.packet=FSTYPES.Packet POINTER(0)
   service.object=FSTYPES.Object POINTER(0)
   service.stage=10
+  service.mountNew=0
   service.committing=0
   service.changed=0
   service.missing=0
