@@ -1,9 +1,10 @@
 # Implementation plans
 
 - [Files navigation and appearance](gem4xe/files-navigation-appearance-plan.md):
-  FR1–FR5 slices for distinct GEM window gadgets, a compact grid with
-  a top summary, the approved parent-folder icon, Esc navigation and shared
-  colour artwork. Includes the retained icon source and preview.
+  FR1–FR5 implemented: distinct GEM gadgets, a compact grid with a top summary,
+  virtual parent navigation and shared colour icons.
+  [Development results](../history/files-navigation-appearance.md) cover the
+  extracted demo, boundary selection, disk copies and standalone cleanup.
 
 - [Desktop drag and drop design](gem4xe/desktop-drag-drop-design.md) and
   [DD1–DD4 plan](gem4xe/desktop-drag-drop-plan.md): motion/target support,

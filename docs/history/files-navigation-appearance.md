@@ -73,3 +73,49 @@ Calculator, Text and Counter each launch from Files and close normally. HELLO
 and EXIT pass with guards intact. Host checks pass 455 tests and four skips.
 The resource is 7,058 bytes. Fixed, per-Task and idle reserved bank-zero deltas
 are all **zero**; Browser and OBJECT storage are unchanged from FR3.
+
+## FR5: final integration and distribution
+
+The final extracted ZIP passes actual file drops in both views, independent
+readback of README.TXT, LONG.TXT and VIEW.TXT, overwrite cancellation and Counter
+coexistence. Twelve idle and twelve loaded outline trials restore exact pixels.
+The parent is rejected as both source and destination; Esc consumes a captured
+file drag in a subdirectory, and a subsequent ordinary Esc navigates upward.
+
+Standalone Files passes independent selection, list view, resizing, parent
+navigation and upward child selection. Its before/after heap totals and ownership
+ledger match exactly. Both final runs complete orderly EXIT with guards intact.
+The selected development checks observe at least 156 bytes of ordinary-Task
+headroom and 121 idle bytes above the guarded floor. No stacks or DPs grow.
+The final host suite passes 455 tests with four existing skips.
+
+| Final storage | Bytes | Change from the committed compact Files baseline |
+| --- | ---: | ---: |
+| Desktop APP file | 70,829 | +2,591 |
+| Files APP file | 48,948 | +2,570 |
+| DESKTOP.RSC | 7,058 | +786 |
+| Browser record | 4,041 | +2 |
+| Folder OBJECT pool | 552 | −48 |
+
+The selection bitmap, 256-entry capacity, Desktop record, file job and 16 KiB
+copy buffer are unchanged. Every slice has **0 fixed, 0 per-Task and 0 idle
+reserved bank-zero bytes** of change, counting guards, alignment and unused
+capacity. No renderer, public ABI, VRAM reservation, Task, signal or timer is added.
+
+Packaging uses `tools/build_demo.py`, retains OF816 and five-second autoboot,
+the pinned ROM, system/WORK disks, guide, notices and checksums. The resident is
+rebuilt for FR1 and reused unchanged afterward; its boot banner identifies that
+resident build. Files, Desktop and their resource match the final implementation.
+The recorded compiler pin is unchanged, with an optimized host compiler at the
+same revision. These are development checks, not a compiler qualification suite
+or release/hardware qualification.
+
+The 602,771-byte ZIP contains 23 distribution files and no build intermediates
+or test output. The [evidence](../development/files-navigation-appearance.json)
+records its checksum, exact inputs and execution scope. Development artifacts
+remain under `build/files-refinement/`; the user package is
+`build/files-refinement/distribution/exec816-demo.zip`. Launch with:
+
+```sh
+./build/files-refinement/distribution/launch-altirra.command
+```

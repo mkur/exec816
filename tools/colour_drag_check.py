@@ -115,6 +115,15 @@ def exercise(s,desk,source,click,key,fill,path,desk_menu,shot,move,menus):
     result['source_paints']=s.number(source+F['paints'],4)-before
     result['press_to_armed']=distribution(result['press_to_armed_ms'])
     result['timing_scope']='Physical press submission to application armed state at IRQ checkpoints; no visual feedback is promised before threshold movement.'
+    # Source-side virtual mapping and Escape consumption in a subdirectory.
+    menus.select('SYS:');path(source,'SYS:C')
+    point=pick('..');move(*point);edge(1);move(point[0]+8,point[1]);s.frames(20)
+    require(not g('phase'),'Parent started a file drag');edge(0,60)
+    point=pick('HELLO');begin(point);cancel()
+    require(b.memdump(source+F['path'],128).split(b'\0')[0]==b'SYS:C','Drag Escape navigated out of subdirectory')
+    key('ESC');wait_listing(s,source)
+    require(b.memdump(source+F['path'],128).split(b'\0')[0]==b'SYS:','Ordinary Escape did not resume navigation')
+    result['parent_source_rejected']=True;result['subdirectory_cancel_consumed']=True
     # A separate ticking AES client exercises an ineligible peer UPDATE while
     # MCTRL is held, then prompt painting progress after every release.
     print('Drag: counter coexistence',flush=True)

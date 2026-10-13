@@ -3,8 +3,10 @@
 [Plans](../README.md) · [Current AES and desktop contract](../../reference/aes.md) ·
 [Compact Files results](../../history/compact-files.md)
 
-Status: implementation in progress. FR1–FR4 pass development checks; final
-FR5 integration and packaging are in progress. The parent-folder artwork is approved.
+Status: implemented. FR1–FR5 pass development checks. See the
+[implementation results](../../history/files-navigation-appearance.md) and
+[recorded evidence](../../development/files-navigation-appearance.json).
+This does not constitute release or hardware qualification.
 
 Make Files denser and easier to navigate at 640×240: distinct GEM window
 gadgets, a thin directory summary below the title, colour icons and an in-grid
