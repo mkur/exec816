@@ -17,6 +17,13 @@ incremental maintenance/copied moves and the measured OF816 demo.
 The shared cache paths and incremental repairs are implemented;
 [development evidence](../../history/aes-layers-vram.md) records remaining
 latency gates and the disabled optional copied-move path.
+The proposed follow-up adds [aligned AES moves](aes-layers-vram-design.md#aligned-aes-moves)
+and a [persistent Shell backing bitmap](aes-layers-vram-design.md#persistent-shell-backing-bitmap):
+40 KiB of dedicated VRAM, updated even while covered, without evicting AES
+snapshots. The [WB1–WB6 implementation plan](window-backing-plan.md) orders
+geometry alignment, copied moves, destination-aware drawing, backing repair,
+batched scrolling and measured demo delivery. These extensions remain proposed;
+they are not part of the completed AV slices.
 
 The [dropdown menu latency design](menu-latency-design.md) and
 [implementation plan](menu-latency-plan.md) cover complete-label batching,

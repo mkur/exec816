@@ -1,11 +1,14 @@
 # AES and Layers cooperation for VRAM caching
 
-[GEM designs](README.md) · [Implementation plan](aes-layers-vram-plan.md) ·
+[GEM designs](README.md) · [AV1–AV6 plan](aes-layers-vram-plan.md) ·
+[Moves/Shell backing plan](window-backing-plan.md) ·
 [Layers](../../reference/layers.md) ·
 [AES](../../reference/aes.md) · [Display](../../reference/display.md)
 
-Status: implemented at the development tier, 2026-10-13; optional copied AES
-moves remain disabled and latency acceptance remains open. See the
+Status: AV1–AV6 core implemented at the development tier, 2026-10-13; optional
+copied AES moves remain disabled and latency acceptance remains open. The
+2026-10-14 extensions below, aligned AES moves and a persistent Shell backing
+bitmap, are proposed, not implemented. See the
 [execution record](../../history/aes-layers-vram.md) for measured results.
 The design joins AES repaint tracking and Layers pixel reuse: menu backgrounds,
 popup images and completed client snapshots, using ordinary GEM calls,
@@ -34,8 +37,8 @@ whole-window repaint acknowledgement.
 The existing [DESKCACHE](../../../lib/desktop/deskcache.act) holds two 64 KiB
 client snapshots for presenter-owned content. It excludes AES and console
 windows. Menus use a reusable 640 by 16 scratch strip but retain neither their
-rendered pixels nor the background they cover. The current
-[VRAM map](../../../platform/altirraos/vbxe-vram.json) reserves 243,200 of
+rendered pixels nor the background they cover. At that baseline the
+[VRAM map](../../../platform/altirraos/vbxe-vram.json) reserved 243,200 of
 524,288 bytes, leaving 281,088 bytes unassigned before diagnostic exclusions.
 
 The missing information is whether pixels are available, which application
@@ -244,18 +247,111 @@ whose image changes too frequently may remain uncached. Retained native windows
 and eligible AES clients use the same slot lifecycle after migration; remove
 the old independent `DESKCACHE` policy.
 
-The console keeps its retained cells and existing scroll path. It does not get
-a permanent client snapshot in this work. Its visible pixels may participate
-in a menu background save; output/scrolling invalidates intersecting saves.
-Copied AES moves become eligible only after the relevant pixel-completion rules
-are implemented and tested. A flag declaring all external layers clean is not
-an acceptable shortcut.
+AV1–AV6 leaves the console on retained-cell rendering and excludes it from
+client snapshots. Its visible pixels can participate in a menu background save;
+output/scrolling invalidates intersecting saves. The following extensions add
+copied AES moves and a dedicated Shell backing image without changing the
+ordinary application's hidden-model contract.
+
+## Aligned AES moves
+
+Use even X positions and even outer widths for AES windows. Packed 4bpp stores
+two pixels per byte; the current VBXE copy path cannot shift arbitrary pixels
+by a nibble. This gives moves compatible source/destination byte alignment.
+Y positions and heights retain one-pixel precision. Keep outline dragging;
+the optimization applies when the user releases the window, not to live opaque
+dragging. Native Shell movement keeps its existing character-grid alignment.
+
+Normalize accepted AES geometry consistently at open, move and resize, not
+just in the pointer handler: round X down and width up to even values, then
+apply screen bounds without losing alignment. A pure move preserves the
+accepted width. Publish actual outer/work geometry through the existing GEM
+queries and move/size notifications so application coordinates agree with
+Layers. Do not silently alter drawing coordinates or icon positions.
+
+Start with a clean, completely painted, fully visible window, unchanged size
+and an entirely onscreen destination unobscured by higher layers. Reuse the
+[transactional move protocol](desktop-rendering-design.md#transactional-window-moves):
+remove overlays, copy the complete window including its frame with overlap-safe
+direction, then commit geometry after successful DMA. Repair the exposed old
+area separately through existing background/cache paths. Dirty, covered,
+resized or otherwise ineligible windows use the redraw fallback.
+
+The existing external-paint exclusion cannot simply be removed. Layers must
+admit the move using completed-pixel state, and AES must commit its work-area
+snapshot together with the move. Preserve client-local images and translate
+screen-coordinate completed-paint records without treating a pure copied move
+as a resize or a fresh full-client invalidation. An old paint acknowledgement
+must not clear damage for newer geometry. Preserve any outstanding application
+redraw obligation; such pending client painting prevents admission initially.
+
+A fully visible copied client has no newly exposed content of its own, so a
+successful pure move need not enqueue a redundant full-client `WM_REDRAW`.
+This does not suppress genuine exposure events for underlying external windows,
+nor those arising from a move that makes previously covered client pixels
+visible. Cached repair of those exposures still follows the hidden-model rules
+above. Preserve the move request/reply and geometry publication ordering; no
+application owns or waits on an independent copy transaction.
+
+## Persistent Shell backing bitmap
+
+Give the Shell text client one dedicated fixed VRAM surface. Its current
+64 by 20 cells at 8 by 8 pixels occupy **512 by 160 pixels**, or **40,960 bytes
+(40 KiB)** at 4bpp, with a 256-byte row pitch. It does not consume or evict either
+shared AES client-image slot. Cache text/background pixels only: the window
+frame, caret, pointer and drag outline remain separately managed overlays or
+decoration. This is a narrowly scoped backing bitmap, following the Layers
+separation in the desktop rendering design, not a general offscreen compositor.
+
+The retained character cells remain authoritative. Unlike an ordinary AES
+application, the presenter knows every console model mutation, including output
+while the Shell is fully covered. Maintain the bitmap from that model:
+
+- Render changed cell spans once into the backing surface with the existing
+  fast glyph renderer, then copy their visible portions to the screen.
+- Scroll the backing image with an overlap-safe blit and render the new rows.
+  Coalesce output through the existing console batches; publish the resulting
+  visible viewport/fragments without a separate copy for every character.
+- Keep the backing image current while partly or fully covered. A fully covered
+  Shell needs no screen copy. On exposure, restore current completed pixels
+  from the backing surface instead of rerendering the retained text.
+
+Current console drawing clips against screen visibility before rendering, so
+adding it to the snapshot admission list would be insufficient. Add narrow
+destination base/pitch support to the console's fill/text path and render in
+client-local coordinates. Reuse the font atlas, text batching and display
+submission machinery; do not add offscreen VDI workstations or a second glyph
+renderer. Establish the fixed surface once and trust its internal producers.
+
+Keep model-to-bitmap progress separate from bitmap-to-screen repair. A hidden
+output update must not disappear when visible damage is retired, and a finished
+copy must not acknowledge newer cells received while it was in flight. Reuse
+bounded dirty spans, batches and Layers damage; no per-character messages or
+general revision journal are needed. Publish completed backing regions only
+after their drawing/scroll transfers finish. Do not read dirty backing regions
+or modify a source still pinned by an active restoration copy.
+
+On exposure, Layers supplies the visible client intersections and owns the
+paint transaction; the presenter schedules copies, and Display reports DMA
+completion. Preserve ordinary input service between bounded render/copy units.
+Content changes invalidate intersecting saved menu backgrounds as before;
+geometry-only changes preserve the local bitmap. Restore the caret/pointer
+only after screen repair. Unaligned clipped edges retain a redraw fallback;
+never widen a copy into another window.
+
+Initialize or rebuild an invalid bitmap from retained cells. On transfer
+failure keep unfinished regions dirty and follow existing display recovery;
+when the backing image is unavailable, retained-cell painting remains the
+fallback. The fixed capacity covers the current Shell geometry only; a future
+larger console requires an explicit budget change. Continuous console output
+now incurs backing-to-screen copies, so scrolling throughput and concurrent
+input latency are acceptance measurements, not assumed improvements.
 
 ## Proposed VRAM budget
 
 All addresses below are VBXE-private byte addresses, unrelated to CPU banks.
-The production map changes during implementation; this note does not reserve
-the proposed ranges yet.
+The production map already reserves the AV1–AV6 surfaces. Only the Shell range
+below is new and proposed; this documentation update does not reserve it.
 
 | Use | Inclusive range | Reserved bytes |
 | --- | --- | ---: |
@@ -265,14 +361,16 @@ the proposed ranges yet.
 | Popup image 0 | `$27000–$2AFFF` | 16,384 |
 | Popup image 1 | `$2B000–$2EFFF` | 16,384 |
 | Existing XDL, fonts, glyph scratch, cursor and BCB | Existing mapped ranges | 30,208 |
+| Proposed Shell text backing | `$41000–$4AFFF` | 40,960 |
 | Client image 0 | `$50000–$62BFF` | 76,800 |
 | Client image 1 | `$62C00–$757FF` | 76,800 |
-| **Total production reservation** | | **375,296** |
+| **Proposed total production reservation** | | **416,256** |
 
-This increases production reservation by **132,096 bytes**, from about 46% to
-72% of 512 KiB, and leaves **148,992 bytes** unassigned, including alignment gaps.
+AV1–AV6 increased production reservation by 132,096 bytes to **375,296 bytes**.
+The Shell extension adds **40,960 bytes**, bringing usage to about 79% of
+512 KiB and leaving **108,032 bytes** unassigned, including alignment gaps.
 The existing 32-byte diagnostic at `$3FFF0–$4000F` stays outside every production
-range, leaving 148,960 bytes after that exclusion. A popup slot holds a compact
+range, leaving **108,000 bytes** after that exclusion. A popup slot holds a compact
 image of up to 32,768 pixels; larger menus still work through ordinary painting.
 Client and background surfaces can cross 64 KiB boundaries; qualify those
 descriptors explicitly rather than treating CPU bank boundaries as VRAM limits.
@@ -283,12 +381,15 @@ Masked edge copying can follow if measurements justify it. No new CPU aperture,
 font/glyph arena or staging page is needed.
 
 Target **0 fixed, 0 per public Task and 0 idle reserved bank-zero bytes added**,
-including guards, alignment and unused stack/DP capacity. Budget at most 2 KiB
-additional fixed upper-RAM metadata and 256 upper-RAM bytes per registered AES
-client for bounded journals; determine exact generated sizes in the plan.
+including guards, alignment and unused stack/DP capacity. The AV1–AV6 metadata
+budget was at most 2 KiB additional fixed upper RAM and 256 upper-RAM bytes per
+registered AES client for bounded journals; its plan records the resulting sizes.
 Reuse existing scene work regions and rectangle operations. Do not place
 region arrays on Task stacks. Any required stack growth must be measured and
 reported explicitly instead of being hidden within the zero-delta target.
+The follow-up adds no per-Task or per-AES-client allocation requirement: reuse
+console dirty/batch storage and budget any additional fixed upper-RAM surface
+state in its implementation plan. No CPU copy of the 40 KiB bitmap is needed.
 
 ## Completion, cost and failure rules
 
@@ -348,3 +449,31 @@ boundaries. Demo refreshes use `tools/build_demo.py`, OF816, the pinned ROM,
 matching disks and the existing five-second autoboot. Report bank-zero and
 upper-RAM/VRAM deltas per slice. No compiler-wide test run, full release matrix
 or hardware qualification follows automatically from this design.
+
+### Follow-up acceptance
+
+The [WB1–WB6 implementation plan](window-backing-plan.md) covers the aligned moves
+and Shell backing extension; the completed AV1–AV6 execution record does not.
+Implement aligned AES move transactions, then Shell backing/update/restore,
+checking each independently before combined measurements. Extend the existing diagnostics
+with matched baseline samples before changing each path.
+
+For moves, separate release-to-copied-window completion, exposed-background
+repair and any final external-application repaint. Check overlapping copies in
+all four directions, edge alignment, resize/covered/dirty fallbacks, stale
+acknowledgements and transfer failure. A successful eligible pure move should
+perform no client glyph redraw; genuine exposure messages must still arrive.
+
+For Shell, move and close Files/Panel over idle text, then repeat with output
+and scrolling while partly and fully covered. A clean aligned exposure should
+require no glyph rendering and must show the latest completed console model.
+Exercise initial fill, clear, caret blinking, menu overlap, backing rebuild,
+output arriving during DMA and quiescent/unquiesced failure. Check that pixels
+outside visible intersections stay untouched and backing source pins retire
+correctly.
+
+Report median/p95 for those interactions and concurrent button feedback, plus
+visible scrolling throughput, backing maintenance cost and cache-copy counts.
+Freeze numeric comparison gates in the follow-up plan. Extra screen copies
+must not buy faster exposure by hiding a material console or input regression;
+keep functional completion separate from measured performance acceptance.

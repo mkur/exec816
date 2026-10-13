@@ -18,6 +18,11 @@ restoration, two rendered-popup slots and two larger client-image slots usable
 by eligible AES windows. The console remains a retained-cell renderer; no
 general VRAM allocator, always-backed compositor or new kernel service is added.
 
+The 2026-10-14 design extensions for [aligned AES moves](aes-layers-vram-design.md#aligned-aes-moves)
+and a [persistent Shell backing bitmap](aes-layers-vram-design.md#persistent-shell-backing-bitmap)
+are covered by the proposed [WB1–WB6 implementation plan](window-backing-plan.md).
+The AV1–AV6 completion record below does not cover them.
+
 ## Fixed decisions
 
 - Layers owns cache identity, validity and repaint state. The presenter chooses
