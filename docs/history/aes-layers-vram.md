@@ -175,3 +175,41 @@ checked independently. Final app walkthrough/timing remains AV6 work.
 The fixed adapter counters add 20 upper-RAM bytes; caller records do not grow.
 VRAM increases by 22,528 bytes, to 375,296. Reserved bank zero changes by
 **0 fixed / 0 per public Task / 0 idle bytes**, including guards and capacity.
+
+
+## AV5: bounded client-image repairs
+
+At outer UPDATE, a matching unpinned image becomes temporarily unavailable.
+One repair rectangle per slot retains a possible base. END requires a matching
+successful completion covering the changed bounds and completed client pixels;
+otherwise it discards the base. Repeated completed changes coalesce in client
+coordinates. Idle maintenance reads only the visible acknowledged repair and
+publishes it after DMA/read-token retirement. Eviction, resize, an ambiguous
+update, an unacknowledged part or a stale revision loses eligibility. Failed
+maintenance does not trigger a full recapture loop for that revision.
+
+The optimized AES fixture passes complete client capture, two 16×8 repairs
+(64 bytes each with no whole-client recapture), and exact restored pixels after
+a subsequent move. A half-acknowledged change stays invalid until a complete
+redraw. The twelve-stage snapshot fixture passes 109 checks, including failed
+patches, unquiesced pin retention and a superseded patch revision.
+Raw/optimized record/policy probes pass 116 checks each, including
+coalescing, ambiguous updates, stale revisions, exhaustion and retained DMA pins.
+
+Two ten-byte repair records and eight counter bytes add **28 fixed upper-RAM
+bytes**. Service is 18,656 bytes. VRAM remains 375,296 bytes; bank-zero delta
+is **0 fixed / 0 per public Task / 0 idle bytes**. Caller records do not grow.
+
+Copied AES moves remain disabled and unaccepted. Client-image restoration on
+exposure is enabled; it does not substitute for the unproven screen-to-screen
+move path or waive application redraw. Final loaded maintenance/timing and
+combined desktop evidence follow in AV6.
+
+The new C fixture exposed a separate Calypsi 5.18 optimized-code defect in
+`r[2]=r[0]+15; r[3]=r[1]+7`: the listing loaded the old destination elements
+(`adc 9,s` / `adc 11,s`) instead of source elements at `5,s` / `7,s`.
+Runtime input was `(64,84,239,115)`, rather than `(64,84,79,91)`, and the
+cache correctly rejected the smaller completion claim. The fixture now forms
+screen coordinates from separate x/y values and asserts the changed bounds.
+This does not fix Calypsi or change production rendering; the third-party
+compiler defect remains a limitation for future toolchain work.

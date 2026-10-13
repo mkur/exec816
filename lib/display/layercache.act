@@ -90,6 +90,58 @@ PUBLIC PROC Released(LAYERTYPES.CacheSlot POINTER slot BYTE okay)
 
 RETURN
 
+; UPDATE temporarily withholds an existing base. A queued local repair can
+; absorb another fully reported change, but an ambiguous boundary drops it.
+PUBLIC PROC BeginChange(LAYERTYPES.CacheSlot POINTER slot
+    LAYERTYPES.CacheRepair POINTER repair LONGCARD oldRevision,newRevision)
+
+  IF slot.pinned=0 AND slot.revision=oldRevision AND newRevision<>0
+      AND (slot.valid<>0 OR repair.state=LAYERTYPES.CACHE_CHANGE_READY) THEN
+    IF slot.valid<>0 THEN
+      REGIONS.Assign(@repair.bounds,0,0,0,0)
+    FI
+    slot.valid=0
+    slot.revision=newRevision
+    repair.state=LAYERTYPES.CACHE_CHANGE_HELD
+  ELSE
+    Discard(slot)
+    repair.state=0
+  FI
+
+RETURN
+
+PUBLIC PROC EndChange(LAYERTYPES.CacheSlot POINTER slot
+    LAYERTYPES.CacheRepair POINTER repair LAYERTYPES.Rect POINTER changed
+    BYTE complete)
+
+  IF repair.state<>LAYERTYPES.CACHE_CHANGE_HELD THEN
+    RETURN
+  FI
+  IF complete=0 OR slot.revision=0 THEN
+    Discard(slot)
+    repair.state=0
+    RETURN
+  FI
+  IF REGIONS.Empty(@repair.bounds)<>0 THEN
+    REGIONS.Copy(changed,@repair.bounds)
+  ELSE
+    IF changed.left<repair.bounds.left THEN
+      repair.bounds.left=changed.left
+    FI
+    IF changed.top<repair.bounds.top THEN
+      repair.bounds.top=changed.top
+    FI
+    IF changed.right>repair.bounds.right THEN
+      repair.bounds.right=changed.right
+    FI
+    IF changed.bottom>repair.bounds.bottom THEN
+      repair.bounds.bottom=changed.bottom
+    FI
+  FI
+  repair.state=LAYERTYPES.CACHE_CHANGE_READY
+
+RETURN
+
 ; The overlay's own geometry/paint is excluded from its saved background.
 PUBLIC PROC Changed(LAYERTYPES.SavedArea POINTER save LONGCARD identity
     LAYERTYPES.Rect POINTER area)

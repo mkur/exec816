@@ -5,6 +5,7 @@ USE LAYERS
 USE LAYERTYPES
 USE REGIONS
 USE DESKTYPES
+USE LAYERCACHE
 
 CARD checks
 
@@ -25,6 +26,7 @@ PROC Main()
   LONGCARD token,id,bar,popup
   LAYERTYPES.CacheSlot snapshot
   LAYERTYPES.CacheSlot ARRAY copies(2)
+  LAYERTYPES.CacheRepair repair
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
@@ -133,6 +135,41 @@ PROC Main()
   OD
   Require(DESKTYPES.SNAPSHOT_0_BASE=$50000
       AND DESKTYPES.SNAPSHOT_1_BASE=$62c00 AND DESKTYPES.SNAPSHOT_BYTES=76800)
+  Require(SIZEOF(LAYERTYPES.CacheRepair)=LAYERTYPES.CACHEREPAIR_SIZE)
+  snapshot.identity=1
+  snapshot.revision=1
+  snapshot.valid=1
+  snapshot.pinned=0
+  repair.state=0
+  LAYERCACHE.BeginChange(@snapshot,@repair,1,2)
+  Require(snapshot.valid=0 AND snapshot.revision=2
+      AND repair.state=LAYERTYPES.CACHE_CHANGE_HELD)
+  REGIONS.Assign(@bounds,8,8,24,16)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,1)
+  Require(repair.state=LAYERTYPES.CACHE_CHANGE_READY)
+  LAYERCACHE.BeginChange(@snapshot,@repair,2,3)
+  REGIONS.Assign(@bounds,32,16,48,24)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,1)
+  Require(repair.bounds.left=8 AND repair.bounds.top=8
+      AND repair.bounds.right=48 AND repair.bounds.bottom=24)
+  LAYERCACHE.BeginChange(@snapshot,@repair,3,4)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,0)
+  Require(snapshot.valid=0 AND snapshot.revision=0 AND repair.state=0)
+  snapshot.revision=8
+  snapshot.valid=1
+  snapshot.pinned=1
+  LAYERCACHE.BeginChange(@snapshot,@repair,8,9)
+  Require(snapshot.pinned=1 AND snapshot.revision=0 AND repair.state=0)
+  LAYERCACHE.Captured(@snapshot,1)
+  Require(snapshot.valid=0 AND snapshot.pinned=0)
+  snapshot.valid=1
+  snapshot.revision=9
+  LAYERCACHE.BeginChange(@snapshot,@repair,8,10)
+  Require(snapshot.revision=0 AND repair.state=0)
+  snapshot.valid=1
+  snapshot.revision=$ffffffff
+  LAYERCACHE.BeginChange(@snapshot,@repair,$ffffffff,0)
+  Require(snapshot.revision=0 AND repair.state=0)
   Require(SIZEOF(LAYERTYPES.SavedArea)=LAYERTYPES.SAVEDAREA_SIZE)
   Require(LAYERS.Init(scene,640,240)=LAYERTYPES.OK)
   Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)

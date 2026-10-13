@@ -85,7 +85,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
         RETURN
       FI
 
-      IF command=4 THEN
+      IF command=4 OR command=8 THEN
         BEGIN
           LET binding=CONSOLEBITMAP.GetBinding()
           binding.failed=1
@@ -132,6 +132,12 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
           Require(DESKCACHE.Capture(service,window)=0)
         END
       FI
+      IF command=8 THEN
+        BEGIN
+          LET binding=CONSOLEBITMAP.GetBinding()
+          binding.failed=0
+        END
+      FI
     ELSE
       Require(DESKCACHE.Restored(service)<>0)
       WHILE LAYERS.AdvancePaint(@service.scene,token)=LAYERTYPES.OK DO
@@ -154,6 +160,21 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
     Require(LAYERS.Bounds(@service.scene,layer.id,0,0,640,240)=LAYERTYPES.OK)
     window.visualRevision=1
     phase=3
+    RETURN
+  FI
+  IF command=8 OR command=9 THEN
+    DESKCACHE.BeginChange(service,window)
+    REGIONS.Assign(@client,8,8,24,16)
+    DESKCACHE.EndChange(service,window,@client,1)
+    Require(DESKCACHE.Patch(service,window)<>0)
+    Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
+    index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI
+    Require(service.cache.slots(index).valid=0)
+    Require(DESKCACHE.Choose(service)<>index)
+    IF command=9 THEN
+      DESKCACHE.Changed(service,window)
+    FI
+    phase=1
     RETURN
   FI
   IF command=2 THEN

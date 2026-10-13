@@ -3087,5 +3087,50 @@
       "lib/display/layers-update.inc": "ee6d11528f325fb73e7a05d16e8b4b2bd8ce6062507881912e3650705cf0b530",
       "platform/altirraos/vbxe-vram.json": "63903cb8b455229780607c64474f67591c8f8cc6f4a2f5e5d3cfac5cd9d4f3ba"
     }
+  },
+  "av5": {
+    "functional": "pass: incremental repairs",
+    "copied_aes_moves": "disabled: unaccepted optional path",
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "fixed_upper_delta": 28,
+    "vram_reserved": 375296,
+    "checks": {
+      "av5-probe-raw": {
+        "path": "build/aes-layers-vram/av5-probe-raw/results.json",
+        "sha256": "48208ffe742f4a76ca3f3fc265b56e07fe13f9abb6d3c16ff482562c0c02420b",
+        "status": "pass",
+        "checks": 116
+      },
+      "av5-probe-opt": {
+        "path": "build/aes-layers-vram/av5-probe-opt/results.json",
+        "sha256": "a82e32e71f68faae90cb8b002b2cb4b9c2d84216848568d77f13d7c801ae3f41",
+        "status": "pass",
+        "checks": 116
+      },
+      "av5-cache-fixed": {
+        "path": "build/aes-layers-vram/av5-cache-fixed/results.json",
+        "sha256": "1d66022c72fe57691f6e9f98663b7c4bae158df6d9fd8983c98b78778f27c503",
+        "status": "pass",
+        "checks": 75
+      },
+      "av5-patch-faults": {
+        "path": "build/aes-layers-vram/av5-patch-faults/results.json",
+        "sha256": "fb0acc24778390716fd49cf05516dc467b3ed1b489e15cf58de34de413fd9a88",
+        "status": "pass",
+        "checks": 109
+      }
+    },
+    "source_sha256": {
+      "abi/layers.json": "c9bd4389bbfe174ba4ae8cffdf5876092560af053b09cde66dcbd2ac1244c7c9",
+      "abi/desktop.json": "df4dbbc03ebbeadd70df271cfd47c2820f19db82b460028fe139cd2c00b8cf57",
+      "lib/display/layercache.act": "ff454e1f9c390942d297a19d47422fd5148912fd16b270dfce05bf24e81a0bb9",
+      "lib/desktop/deskcache.act": "27e4de68b4c72e5c337982741bd3c4535a205274ea88f19bb8d3dfde38b1c6f6",
+      "lib/desktop/deskhost.act": "38978b9c640ea484c311d068ffc1e89d99e89d6d120e514bb31d1b9bb2c8aae6",
+      "lib/aes/aeswindowstate.act": "e8256c21a672d0c25ff03cdfa91c125d77a09236c8f27b7fb3a5a94d245e7c35"
+    }
   }
 }

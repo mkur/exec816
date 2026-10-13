@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -21,7 +21,9 @@
     "UPDATE_READ": 4,
     "UPDATE_HANDOFF": 5,
     "UPDATE_SCENE_READ": 6,
-    "UPDATE_RESTORE": 7
+    "UPDATE_RESTORE": 7,
+    "CACHE_CHANGE_HELD": 1,
+    "CACHE_CHANGE_READY": 2
   },
   "records": {
     "Rect": [
@@ -215,6 +217,16 @@
       {
         "name": "under",
         "type": "SavedArea"
+      }
+    ],
+    "CacheRepair": [
+      {
+        "name": "bounds",
+        "type": "Rect"
+      },
+      {
+        "name": "state",
+        "type": "BYTE"
       }
     ]
   }

@@ -117,7 +117,7 @@ PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
         LET window=service.windows(index).window
         service.windows(index).view.changed=0
         LAYERS.Touch(@desktop.scene,window.layer)
-        DESKCACHE.Changed(desktop,window)
+        DESKCACHE.BeginChange(desktop,window)
       END
     FI
   OD
@@ -128,7 +128,7 @@ RETURN
 ; Caller reports are frozen by the outstanding END reply. No scene token is
 ; held while the client draws; only this owner consumes and applies its journal.
 PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
-  BYTE index,report,same,accepted
+  BYTE index,report,same,accepted,complete
 
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
@@ -150,6 +150,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
               LAYERTYPES.Rect POINTER(@view.work))
         FI
         report=0
+        complete=0
         WHILE same<>0 AND request.paintFailed=0
             AND report<request.paintCount DO
           BEGIN
@@ -157,10 +158,17 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
             IF paint.handle=view.handle AND paint.epoch=view.paintEpoch THEN
               accepted=LAYERS.Painted(@desktop.scene,layer.id,layer.paintEpoch,
                   LAYERTYPES.Rect POINTER(@paint.rect))
+              IF accepted<>0 AND view.changed<>0
+                  AND REGIONS.Contains(LAYERTYPES.Rect POINTER(@paint.rect),
+                      LAYERTYPES.Rect POINTER(@view.change))<>0 THEN
+                complete=1
+              FI
             FI
           END
           report==+1
         OD
+        DESKCACHE.EndChange(desktop,item.window,
+            LAYERTYPES.Rect POINTER(@view.change),complete)
         view.changed=0
       END
     FI

@@ -391,7 +391,7 @@ Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
 first, then the least recently used unpinned slot. The shared `LAYERCACHE` policy owns the two fourteen-byte slot records; the
-presenter adapter builds transfers. The current generated Service is 18,636
+presenter adapter builds transfers. The current generated Service is 18,656
 bytes, including scene/cache capacity and alignment.
 
 Eligible AES windows use the same slots. Capture requires a fully visible
@@ -413,6 +413,12 @@ does not cause a recapture loop. The console is uncached. Accepted content/tree
 updates (including hidden updates), widget interaction and client focus styling
 invalidate revisions. Frame-only command-window focus changes damage the title
 and preserve the client snapshot. Position alone preserves local cached pixels.
+AES UPDATE can retain an unavailable base with one client-local repair per
+slot. A completed, fully acknowledged change queues a bounded idle patch; an
+ambiguous or partial update discards it. Patches use the same read/DMA
+continuation and pins as captures. Repeated changes coalesce; failed or
+superseded maintenance does not chase the same revision.
+
 Font and palette are fixed for the display lifetime; changing them while windows
 are live is unsupported and any future setter must invalidate client revisions.
 

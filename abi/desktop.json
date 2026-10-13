@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -498,6 +498,11 @@
       [
         "cache",
         "LAYERTYPES.CachePair"
+      ],
+      [
+        "repairs",
+        "LAYERTYPES.CacheRepair",
+        2
       ]
     ]
   }

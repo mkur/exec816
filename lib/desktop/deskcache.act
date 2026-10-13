@@ -10,12 +10,13 @@ USE DESKGEOMETRY
 USE CONSOLEBITMAP
 USE HEAPCORE
 
-CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2
+CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2, ACTIVE_PATCH=3
 LONGCARD readToken
 DESKTYPES.Window POINTER capturing
 BYTE active,activeSlot
 LONGCARD transferBytes
 PUBLIC LONGCARD captures,restores,capturedBytes,restoredBytes
+PUBLIC LONGCARD patches,patchedBytes
 
 PUBLIC LONGCARD FUNC SlotAddress(BYTE slot)
 
@@ -37,8 +38,52 @@ RETURN(width<>0 AND width<=640 AND (width & 1)=0
 
 ; Invalidating a pinned slot does not release the storage used by DMA.
 PUBLIC PROC Invalidate(DESKTYPES.Service POINTER service LONGCARD id)
+  BYTE index
 
   LAYERCACHE.Invalidate(@service.cache,id)
+  FOR index=0 TO 1 DO
+    IF service.cache.slots(index).identity=id THEN
+      service.repairs(index).state=0
+    FI
+  OD
+
+RETURN
+
+PUBLIC PROC BeginChange(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE index
+  LONGCARD previous
+
+  previous=window.visualRevision
+  IF previous<>0 THEN
+    window.visualRevision==+1
+  FI
+  FOR index=0 TO 1 DO
+    IF service.cache.slots(index).identity=window.id THEN
+      LAYERCACHE.BeginChange(@service.cache.slots(index),
+          @service.repairs(index),previous,window.visualRevision)
+    FI
+  OD
+
+RETURN
+
+PUBLIC PROC EndChange(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER changed
+    BYTE complete)
+  LAYERTYPES.Rect client,local
+  BYTE index
+
+  LET layer=LAYERS.Find(@service.scene,window.layer)
+  ClientBounds(window,layer,@client)
+  complete=(complete<>0 AND LAYERS.PixelsReady(layer,@client)<>0)
+  REGIONS.Assign(@local,changed.left-client.left,changed.top-client.top,
+      changed.right-client.left,changed.bottom-client.top)
+  FOR index=0 TO 1 DO
+    IF service.cache.slots(index).identity=window.id THEN
+      LAYERCACHE.EndChange(@service.cache.slots(index),
+          @service.repairs(index),@local,complete)
+    FI
+  OD
 
 RETURN
 
@@ -66,7 +111,8 @@ RETURN(LAYERCACHE.Choose(@service.cache))
 PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   BYTE status,okay
 
-  IF active<>ACTIVE_CAPTURE OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+  IF (active<>ACTIVE_CAPTURE AND active<>ACTIVE_PATCH)
+      OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN
   FI
 
@@ -81,9 +127,15 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   LAYERCACHE.Captured(slot,okay)
   IF okay<>0 THEN
     service.cache.recent=activeSlot
-    captures==+1
-    capturedBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+    IF active=ACTIVE_PATCH THEN
+      patches==+1
+      patchedBytes==+transferBytes
+    ELSE
+      captures==+1
+      capturedBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+    FI
   FI
+  service.repairs(activeSlot).state=0
 
   active=0
   readToken=0
@@ -130,6 +182,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   FI
 
   LET slot=@service.cache.slots(index)
+  service.repairs(index).state=0
   LAYERCACHE.Prepare(slot,window.id,window.visualRevision,width,height)
   LET packet=CONSOLEBITMAP.GetPacket()
   packet.copy.source.offset=0
@@ -162,6 +215,80 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   FI
 
 RETURN(1)
+
+; Idle maintenance copies a single acknowledged local rectangle. Input and
+; visible repair run first. Failure drops the base rather than chasing a tick.
+PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  LAYERTYPES.Rect client,area
+  LONGCARD token
+  BYTE index,status
+
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET slot=@service.cache.slots(index)
+      LET repair=@service.repairs(index)
+      IF slot.identity=window.id AND repair.state=LAYERTYPES.CACHE_CHANGE_READY THEN
+        BEGIN
+          LET layer=LAYERS.Find(@service.scene,window.layer)
+          window.captureAttempt=window.visualRevision
+          ClientBounds(window,layer,@client)
+          REGIONS.Assign(@area,client.left+repair.bounds.left,
+              client.top+repair.bounds.top,client.left+repair.bounds.right,
+              client.top+repair.bounds.bottom)
+          IF slot.revision<>window.visualRevision OR slot.revision=0
+              OR slot.pinned<>0 OR ((area.left OR area.right) & 1)<>0
+              OR REGIONS.Contains(@client,@area)=0
+              OR LAYERS.PixelsReady(layer,@client)=0 THEN
+            LAYERCACHE.Discard(slot)
+            repair.state=0
+            RETURN(0)
+          FI
+          status=LAYERS.BeginRead(@service.scene,window.layer,@area,@token)
+          IF status<>LAYERTYPES.OK THEN
+            LAYERCACHE.Discard(slot)
+            repair.state=0
+            RETURN(0)
+          FI
+          BEGIN
+            LET packet=CONSOLEBITMAP.GetPacket()
+            slot.pinned=1
+            packet.copy.source.offset=0
+            packet.copy.source.pitch=320
+            packet.copy.source.width=640
+            packet.copy.source.height=240
+            packet.copy.sourceX=CARD(area.left)
+            packet.copy.sourceY=CARD(area.top)
+            packet.copy.destination.offset=SlotAddress(index)
+            packet.copy.destination.pitch=slot.width RSH 1
+            packet.copy.destination.width=slot.width
+            packet.copy.destination.height=slot.height
+            packet.copy.destinationX=CARD(repair.bounds.left)
+            packet.copy.destinationY=CARD(repair.bounds.top)
+            packet.copy.width=CARD(area.right-area.left)
+            packet.copy.height=CARD(area.bottom-area.top)
+            transferBytes=LONGCARD(packet.copy.width RSH 1)*LONGCARD(packet.copy.height)
+          END
+          capturing=window
+          activeSlot=index
+          readToken=token
+          active=ACTIVE_PATCH
+          IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+            status=LAYERS.Finish(@service.scene,token,0)
+            LAYERCACHE.Captured(slot,0)
+            repair.state=0
+            capturing=NULL
+            readToken=0
+            active=0
+            RETURN(0)
+          FI
+        END
+        RETURN(1)
+      FI
+    END
+  OD
+
+RETURN(0)
 
 ; The painter already owns a paint token. It must retain that token until
 ; Restored releases this source pin; no fragment is widened for alignment.

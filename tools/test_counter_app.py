@@ -52,6 +52,11 @@ class CounterApp:
         # No guest code or state is patched. Passive shared-VDI call markers
         # check each quiet timer update, including the natural 9 -> 10 carry.
         ticks=[]
+        def cache_counts():
+            return {name:s.number(next(d['address'] for d in s.p['image']['data']
+                if '_DESKCACHE_'+name.upper()+'_' in d['name']),4)
+                for name in ('captures','capturedBytes','patches','patchedBytes')}
+        before_cache=cache_counts()
         b.profile_start()
         while s.number(app+14,4)<10:
             old=s.number(app+14,4);paints=s.number(app+18,4)
@@ -62,7 +67,14 @@ class CounterApp:
             require(count==old+1,'Wrong counter increment/carry')
             require(b.memdump(app+46,14)==('Count: %06d\0'%count).encode(),'Wrong decimal label')
             ticks.append(dict(before=old,after=count,start=start,end=end))
+            s.frames(8)  # Let idle maintenance retire before the next tick.
         b.profile_stop()
+        after_cache=cache_counts()
+        require(after_cache['captures']==before_cache['captures'],
+                'Counter recaptured whole client during quiet digit updates')
+        require(after_cache['patches']-before_cache['patches']==len(ticks) and
+                after_cache['patchedBytes']-before_cache['patchedBytes']==len(ticks)*192,
+                'Counter did not patch exactly its 48 by 8 digit area')
         require(any(t['before']==9 and t['after']==10 for t in ticks),'Decimal carry not observed')
         shot('counter-carry')
 
@@ -77,7 +89,13 @@ class CounterApp:
         menus.select('SYS:')
         from browser_model import FIELDS as F
         folder=s.number(desk+D['folders'],4)
-        fx,fy=[s.number(folder+F['work']+i*2,2) for i in range(2)]
+        fx,fy,fw,fh=[s.number(folder+F['work']+i*2,2) for i in range(4)]
+        # The current four-column default is wider than the old fixture.
+        # Shrink it first so the intended overlap can stay inside the screen.
+        if fw>320:
+            move(fx+fw+8,fy+fh+8);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+            move(fx+320+8,fy+fh+8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(120)
+            fx,fy=[s.number(folder+F['work']+i*2,2) for i in range(2)]
         delta=work()[0]+64+5-(fx-8)
         move(fx+120,fy-8);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
         move(fx+120+delta,fy-8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(120)
@@ -95,6 +113,7 @@ class CounterApp:
                 'Closed Counter retained its Process')
         shot('counter-closed')
         self.report=dict(window=[144,48],tick_area=[48,8],ticks=ticks,
+            cache_maintenance={n:after_cache[n]-before_cache[n] for n in after_cache},
             odd_x=True,partial_cover=True,full_cover=True,exposure=True,close=True,
             stacks=stack_usage(b,s.p['build']['memory']))
         s.saved['integration']=self.report

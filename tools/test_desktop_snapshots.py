@@ -91,6 +91,21 @@ def run(out,replay=False):
     EXEC.Yield()
   OD
   Pause(9)
+  SNAPSHOTPROBE.Request(8,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(10)
+  SNAPSHOTPROBE.Request(7,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(11)
+  SNAPSHOTPROBE.Request(9,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(12)
   SNAPSHOTPROBE.Request(5,panel)
   WHILE SNAPSHOTPROBE.Held()=0 DO
     EXEC.Yield()
@@ -124,7 +139,7 @@ ENDMODULE
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,10):
+                for stage in range(1,13):
                     condition=f'dw(${at("DESKTEST","CHECKPOINT"):x})={stage}'
                     marker=p['labels']['native_nmi'];b.bp_clear_all();b.bp_set(marker,condition=condition)
                     b.bp_set(p['labels']['done'],condition=adapter.STOPPED)

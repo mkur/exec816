@@ -48,6 +48,23 @@ static UWORD drain(void)
     return redraws;
 }
 
+static void patch(WORD dx,WORD pen,BOOL complete)
+{
+    WORD r[4],x,y,width,height;
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&width,&height));
+    x+=dx;y+=8;
+    r[0]=x;r[1]=y;r[2]=x+15;r[3]=y+7;
+    vs_clip(vdi,1,r);vsf_color(vdi,pen);v_bar(vdi,r);
+    CHECK(ExecAESContext()->view->change.left==x &&
+          ExecAESContext()->view->change.top==y &&
+          ExecAESContext()->view->change.right==x+16 &&
+          ExecAESContext()->view->change.bottom==y+8);
+    CHECK(ExecAESDiagnostic()==AES_OK);
+    CHECK(ExecAESPainted(window,r[0],r[1],complete?16:8,8));
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void wait_redraw(void)
 {
     WORD message[8];
@@ -81,6 +98,12 @@ UWORD AESRun(void)
     paint(); phase(6);
     CHECK(wind_set(window,WF_CXYWH,49,48,240,144)); phase(7);
     CHECK(wind_set(window,WF_CXYWH,48,48,248,152)); phase(8);
+    drain();paint();phase(9);
+    patch(8,4,1);phase(10);
+    patch(32,5,1);phase(11);
+    CHECK(wind_set(window,WF_CXYWH,64,48,248,152));phase(12);
+    drain();patch(56,6,0);phase(13);
+    paint();phase(14);
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());
     return AESFailures;
