@@ -2,6 +2,8 @@
 MODULE SCROLLPROBE
 USE CONSOLETYPES
 USE CONSOLEBITMAP
+USE DESKSTATE
+USE LAYERS
 
 PUBLIC BYTE enabled
 PUBLIC CARD feeds,overtakes
@@ -12,7 +14,7 @@ PUBLIC BYTE failFragment
 PUBLIC PROC BeforePresent()
   BYTE okay
 
-  IF failFragment<>0 THEN
+  IF failFragment<>0 AND CONSOLEBITMAP.Pending()=0 THEN
     failFragment=0
     ; Quiesced drawing error from another primitive between text fragments.
     okay=CONSOLEBITMAP.RawFill(640,0,8,8,0)
@@ -21,8 +23,17 @@ PUBLIC PROC BeforePresent()
 RETURN
 
 PUBLIC PROC Presented()
+  BYTE pending
 
-  IF armFragment<>0 AND CONSOLEBITMAP.TextPending()<>0 THEN
+  pending=CONSOLEBITMAP.TextPending()
+  LET desktop=DESKSTATE.Get()
+  IF desktop<>NULL THEN
+    BEGIN
+      LET layer=LAYERS.Find(@desktop.scene,DESKSTATE.Selected())
+      pending=pending<>0 OR layer.dirty<>0
+    END
+  FI
+  IF armFragment<>0 AND pending<>0 THEN
     armFragment=0
     holdFragment=1
     fragmentHeld=1

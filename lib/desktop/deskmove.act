@@ -52,10 +52,14 @@ PROC Rebase(LAYERTYPES.Layer POINTER layer BYTE copied)
   IF copied=0 THEN
     BEGIN
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET batch=CONSOLEBATCH.Get()
+      IF CONSOLEDISPLAY.BackingEnabled(view)=0 OR view.scrollState<>0
+          OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+        view.presentedGeneration=0
+        CONSOLECORE.Dirty(instance,0,instance.count)
+      FI
       CONSOLEBATCH.Reset()
       view.scrollState=0
-      view.presentedGeneration=0
-      CONSOLECORE.Dirty(instance,0,instance.count)
     END
   FI
 

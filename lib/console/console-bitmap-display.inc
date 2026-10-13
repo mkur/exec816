@@ -9,6 +9,10 @@ PROC BitmapEdit(CONSOLETYPES.Presentation POINTER view CONSOLETYPES.Instance
   FI
 
   LET operation=instance.operation
+  IF BackingEnabled(view)<>0 THEN
+    CONSOLECORE.EditQuantum(instance)
+    RETURN
+  FI
   synchronized=0
   IF view.claimed<>0 AND view.visible<>0 AND view.width=instance.width
       AND view.height=instance.height AND CONSOLEBITMAP.Failed()=0

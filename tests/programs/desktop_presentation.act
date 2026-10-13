@@ -207,8 +207,8 @@ PROC Main()
   Send(DESKTYPES.CLOSE,panel)
   Pause(18)
 
-  ; Cancel while the second half-row owns unfinished clipped fragments. A
-  ; queued hide must wait for that token; showing again reconstructs exactly
+  ; Cancel after a bounded output prefix while screen repair remains pending.
+  ; A queued hide waits for active drawing; showing again reconstructs exactly
   ; the accepted prefix after the caller's source has been overwritten.
   Require(DOS.Write(file,BYTE POINTER(c"\f\n\n\n\n\n\n\n\n\n\n\n\n\n"),14)=14)
   Settled()
@@ -244,7 +244,7 @@ PROC Main()
   OD
 
   cutBytes=CARD(write.io_Actual)
-  Require(cutBytes<>0 AND cutBytes<512 AND CONSOLEBITMAP.TextPending()<>0)
+  Require(cutBytes<>0 AND cutBytes<512 AND DESKPAINT.PaintPending()<>0)
   LET client=DESKBOOT.Binding()
   IF fragmentFault<>0 THEN
     SCROLLPROBE.failFragment=1

@@ -150,7 +150,7 @@ def scenes(font, accepted=None):
         yield overlay(raster, (320, 120))
 
 
-def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
+def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, observe_backing=False):
     out.mkdir(parents=True, exist_ok=True)
     profile = json.loads(PROFILE.read_text())
     profile['image_data_bytes'] = 8192  # Fixture records, separate from the demo's 4 KiB.
@@ -171,6 +171,10 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
             '\n            SCROLLPROBE.Presented()\n          FI')
         source=source.replace('IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN\n          again=0',
             'IF batch.phase=CONSOLETYPES.BATCH_GATHER OR SCROLLPROBE.holdFragment<>0 THEN\n          again=0')
+        # A backing span may already be retired while its screen copy remains
+        # pending. Inject quiesced failure before accepting another prefix.
+        source=source.replace('            completeWrite=WriteQuantum(instance,view,entry.unit)',
+            '            SCROLLPROBE.BeforePresent()\n            completeWrite=WriteQuantum(instance,view,entry.unit)')
         path.write_text(source)
         include = ROOT/'lib/console/console-batch-display.inc'
         source = include.read_text()
@@ -211,13 +215,19 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
         pcs=set(flat_markers(definition).values())
         pcs.update(p['labels'][n] for n in ('blitter_launched','blitter_irq_complete','blitter_irq_posted'))
         os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in pcs)
+    if observe_backing:
+        foreign=json.loads((out/'c-image.json').read_text())['symbols']
+        backing_marks={name:foreign[name] for name in (
+            'GemDrawingText','GemDrawingTextClip','GemDrawingBackingText','GemDrawingCopyStart')}
+        os.environ.update(EXEC816_LATENCY_TRACE='1',
+            EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in backing_marks.values()))
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
             require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'], 'Unpinned emulator')
             report['machine'] = verify_machine(bridge, ROM, PIN)
             def before(b):
                 b.memload(address('FRAGMENTFAULT'),bytes([fragment_fault]))
-                if observe_moves: b.profile_start()
+                if observe_moves or observe_backing: b.profile_start()
                 previous_clock = b.eval_expr('@clk') & 0xffffffff
                 for stage, expected in enumerate(scenes(font_bytes(out/'selected/src/vdi/font8x8.c')), 1):
                     marker = p['labels']['native_nmi']
@@ -235,7 +245,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
                     try:
                         run_to(b, marker, frame_limit=12000, timeout=600 if observe_moves else 120, condition=condition)
                     except Exception:
-                        print('Desktop stage/status/checks', stage, b.peek16(adapter.STATE), data(b,p['image'],'checks',True),b.regs(), flush=True)
+                        print('Desktop stage/status/checks', stage, b.peek16(adapter.STATE), data(b,p['image'],'checks',True),original(), flush=True)
                         raise
                     finally:
                         b.regs = original
@@ -258,7 +268,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
                 b.bp_clear_all()
             report['runtime'], _ = execute(bridge,p,before_run=before,timeout=180,frame_limit=12000)
             ownership(bridge,p,p['output'])
-            if observe_moves: bridge.profile_stop()
+            if observe_moves or observe_backing: bridge.profile_stop()
             report['stack_usage'] = stack_usage(bridge, p['build']['memory'])
             report['checks'] = data(bridge,p['image'],'checks',True)[0]
             report['continuous_scroll'] = {name: data(bridge,p['image'],name,True)[0]
@@ -270,6 +280,17 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
                     1 < report['continuous_scroll']['maxRows'] <= 4,
                     'No bounded multirow repaint behind the overlapping panel')
             report['status'] = 'pass'
+        if observe_backing:
+            from sio_transaction_trace import read_events
+            entries=[(tick & 0xffffffff,int(event[4],16)) for tick,event in read_events(out/'emulator.log')
+                     if event[0]=='cpu']
+            for row in report['observations']:
+                start,end=row['begin_cycle'],row['end_cycle']
+                row['drawing_calls']={name:sum(pc==address and ((tick-start)&0xffffffff)<((end-start)&0xffffffff)
+                    for tick,pc in entries) for name,address in backing_marks.items()}
+                if row['stage'] in (8,9,10,11,12,13,14,15):
+                    require(row['drawing_calls']['GemDrawingTextClip']==0,
+                        'Aligned restoration regenerated text: '+str(row['stage']))
         if observe_moves:
             from sio_transaction_trace import read_events,BASE_HZ
             from console_turn_profile import analyze_events
@@ -317,9 +338,10 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode', choices=('raw','opt'),default='opt')
+    parser.add_argument('--observe-backing', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--observe-moves', action='store_true')
     parser.add_argument('--fragment-fault', action='store_true')
     args=parser.parse_args()
-    run(args.output.resolve(),args.mode,args.replay,args.observe_moves,args.fragment_fault)
+    run(args.output.resolve(),args.mode,args.replay,args.observe_moves,args.fragment_fault,args.observe_backing)

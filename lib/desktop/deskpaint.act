@@ -18,6 +18,7 @@ USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLECORE
 USE CONSOLEBATCH
+USE CONSOLEDISPLAY
 USE CONSOLEBITMAP
 USE HEAPCORE
 USE AESLOCKS
@@ -31,7 +32,7 @@ CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
 CONST PAINT_FRAME=1, PAINT_CACHE=2, PAINT_CLIENT=4, PAINT_CONTENT=5
-CONST PAINT_POPUP_CACHE=6
+CONST PAINT_POPUP_CACHE=6, PAINT_BACKING=7
 LAYERTYPES.Rect strip
 
 PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
@@ -70,12 +71,17 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
+  LET batch=CONSOLEBATCH.Get()
   LET layer=DESKCORE.Layer(service,window)
   left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
   top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
   shown=layer.shown
   focused=service.focus=window.id
   IF view.left<>left OR view.top<>top OR view.visible<>shown THEN
+    IF view.scrollState<>0 OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+      view.presentedGeneration=0
+      CONSOLECORE.Dirty(instance,0,instance.count)
+    FI
     CONSOLEBATCH.Reset()
     view.scrollState=0
     view.left=left
@@ -84,8 +90,10 @@ PUBLIC PROC Sync()
     view.cursorOn=0
     view.index=$ffff
     view.generation==+1
-    view.presentedGeneration=0
-    CONSOLECORE.Dirty(instance,0,instance.count)
+    IF CONSOLEDISPLAY.BackingEnabled(view)=0 THEN
+      view.presentedGeneration=0
+      CONSOLECORE.Dirty(instance,0,instance.count)
+    FI
   FI
 
   ; DESKCORE.Focus removes the outgoing caret before changing its route.
@@ -239,6 +247,9 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   IF started=PAINT_CACHE THEN
     RETURN(DESKCACHE.Restored(service))
   FI
+  IF started=PAINT_BACKING THEN
+    RETURN(CONSOLEBITMAP.Failed()=0)
+  FI
 
   IF started=0 THEN
     commandIndex=0
@@ -302,6 +313,33 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       FI
 
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      IF CONSOLEDISPLAY.BackingReady(view,instance)<>0
+          AND ((area.left OR area.right) & 1)=0 THEN
+        BEGIN
+          LET packet=CONSOLEBITMAP.GetPacket()
+          packet.copy.source.offset=DESKTYPES.SHELL_BACKING_BASE
+          packet.copy.source.pitch=256
+          packet.copy.source.width=512
+          packet.copy.source.height=160
+          packet.copy.destination.offset=0
+          packet.copy.destination.pitch=320
+          packet.copy.destination.width=640
+          packet.copy.destination.height=240
+          packet.copy.sourceX=CARD(area.left-client.left)
+          packet.copy.sourceY=CARD(area.top-client.top)
+          packet.copy.destinationX=CARD(area.left)
+          packet.copy.destinationY=CARD(area.top)
+          packet.copy.width=CARD(area.right-area.left)
+          packet.copy.height=CARD(area.bottom-area.top)
+          IF CONSOLEBITMAP.CopyStart()=0 THEN
+            RETURN(0)
+          FI
+          started=PAINT_BACKING
+          RETURN(2)
+        END
+      FI
+
       row=(CARD(area.top-client.top) RSH 3)+commandIndex
       last=(CARD(area.bottom-client.top)+7) RSH 3
       first=CARD(area.left-client.left) RSH 3
@@ -461,7 +499,8 @@ RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
 ; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
 PUBLIC BYTE FUNC Pump()
-  BYTE count,slot,status,done,fullConsole
+  BYTE count,slot,status,done,fullConsole,backing
+  LAYERTYPES.Rect client
   DESKTYPES.Window POINTER window
   LAYERTYPES.Layer POINTER candidate
 
@@ -498,6 +537,21 @@ PUBLIC BYTE FUNC Pump()
       candidate=MenuLayer()
     FI
     IF candidate<>NULL THEN
+      window=ByLayer(candidate.id)
+      IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+        BEGIN
+          LET entry=CONSOLEWINDOWS.Find(window.console)
+          LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+          LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+          IF CONSOLEDISPLAY.BackingEnabled(view)<>0
+              AND CONSOLEDISPLAY.BackingReady(view,instance)=0 THEN
+            entry.busy=1
+            CONSOLEDISPLAY.BackingStep(view,instance,entry.unit)
+            entry.busy=0
+            RETURN(1)
+          FI
+        END
+      FI
       status=LAYERS.BeginPaint(@service.scene,candidate.id,@paintToken)
       IF status=LAYERTYPES.OK THEN
         IF candidate.id<>0 AND (candidate.id=DESKSTATE.popupLayer
@@ -531,7 +585,20 @@ PUBLIC BYTE FUNC Pump()
   window=ByLayer(paintLayer)
   REGIONS.Copy(@region.rects(regionIndex),@strip)
   strip.top=nextY
-  IF started<>PAINT_POPUP_CACHE AND strip.bottom>nextY+STRIP_HEIGHT THEN
+  backing=0
+  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    BEGIN
+      LET entry=CONSOLEWINDOWS.Find(window.console)
+      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
+      DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
+      backing=CONSOLEDISPLAY.BackingReady(view,instance)<>0
+          AND REGIONS.Contains(@client,@strip)<>0
+          AND ((strip.left OR strip.right) & 1)=0
+    END
+  FI
+  IF backing=0 AND started<>PAINT_POPUP_CACHE
+      AND strip.bottom>nextY+STRIP_HEIGHT THEN
     strip.bottom=nextY+STRIP_HEIGHT
   FI
 
@@ -587,7 +654,7 @@ PUBLIC BYTE FUNC Pump()
       LET entry=CONSOLEWINDOWS.Find(window.console)
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      IF fullConsole<>0 THEN
+      IF fullConsole<>0 AND CONSOLEDISPLAY.BackingEnabled(view)=0 THEN
         CONSOLECORE.Clean(instance)
         view.presentedGeneration=instance.generation
       FI

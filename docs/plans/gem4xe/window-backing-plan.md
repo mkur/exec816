@@ -352,3 +352,13 @@ claiming the whole performance goal achieved.
   admission, OS restoration and stack/domain guards. Reports: `wb3-drawing` and
   `wb3-drawing-raw` under `build/window-backing`. Reserved bank zero: 0 fixed,
   0 per public Task, 0 idle. No additional persistent CPU metadata.
+- WB4: dirty Shell spans maintain backing independently of coverage. Current
+  exposed pixels copy through the existing scene/DMA transaction; caret and
+  pointer remain screen overlays. Position-only idle moves preserve backing;
+  interrupted batches reconstruct from retained cells. Development: optimized
+  desktop fixture, 117 checks across 19 exact-pixel scenes, zero output overtakes;
+  quiesced failure replay, 111 checks and clean ownership/OS return. Reports:
+  `build/window-backing/wb4-success.json` and `wb4-fault.json`. Worker peak 771
+  bytes in the initial run, within its existing stack. Reserved bank zero: 0
+  fixed, 0 per public Task, 0 idle; persistent CPU metadata/VRAM delta: 0.
+  Backing scroll optimization is pending WB5.
