@@ -62,8 +62,7 @@ def paint(bridge,symbols,r,title,bounds):
     if title==b'Counter':
         count=int.from_bytes(bridge.memdump(symbols['GEMCounter']+14,4),'little')
         r.clip=(left+8,top+16,right-9,bottom-9);r.text=4
-        r.apply(8,(left+16,top+30),b'GEM counter')
-        r.apply(8,(left+16,top+46),('Count: %06d'%count).encode())
+        r.apply(8,(left+16,top+30),('Count: %06d'%count).encode())
         r.clip=(0,0,639,239);return
     if 'GEMBrowser' in symbols and title==bridge.memdump(symbols['GEMBrowser']+178,65).split(b'\0')[0][:64]:
         base=symbols['GEMBrowser'];tree=int.from_bytes(bridge.memdump(base+170,4),'little')

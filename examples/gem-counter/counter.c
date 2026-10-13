@@ -14,15 +14,21 @@ static void label(struct Counter *app)
     app->label[13]=0;
 }
 
-/* WM_REDRAW and timer changes share one ordinary GEM redraw loop. Damage and
- * enumeration use x/y/w/h; only the VDI boundary uses inclusive corners. */
+/* A null damage rectangle means a timer update: replace only the six digits.
+ * Exposure redraws restore the background and full label. Damage and visible
+ * rectangles use x/y/w/h; only the VDI boundary uses inclusive corners. */
 static WORD redraw(struct Counter *app,const WORD *damage)
 {
-    WORD x,y,w,h,l,t,r,b,clip[4],okay=1;
+    WORD x,y,w,h,l,t,r,b,clip[4],digits[4],tick=damage==NULL,okay=1;
     const struct CounterConfig *config=app->config;
     if (!wind_update(BEG_UPDATE)) return 0;
     if (!wind_get(app->window,WF_WXYWH,&app->work[0],&app->work[1],
                   &app->work[2],&app->work[3])) okay=0;
+    if (tick) {
+        digits[0]=app->work[0]+64; digits[1]=app->work[1]+8;
+        digits[2]=48; digits[3]=8;
+        damage=digits;
+    }
     if (okay) okay=wind_get(app->window,WF_FIRSTXYWH,&x,&y,&w,&h);
     label(app);
     while (okay && w>0 && h>0) {
@@ -32,11 +38,15 @@ static WORD redraw(struct Counter *app,const WORD *damage)
         if (l<r && t<b) {
             clip[0]=l; clip[1]=t; clip[2]=r-1; clip[3]=b-1;
             vs_clip(app->vdi,1,clip);
-            vsf_color(app->vdi,config->paper);
-            v_bar(app->vdi,clip);
             vst_color(app->vdi,config->ink);
-            v_gtext(app->vdi,app->work[0]+8,app->work[1]+14,"GEM counter");
-            v_gtext(app->vdi,app->work[0]+8,app->work[1]+30,app->label);
+            if (tick) {
+                /* Replace-mode text writes its own paper pixels. */
+                v_gtext(app->vdi,app->work[0]+64,app->work[1]+14,app->label+7);
+            } else {
+                vsf_color(app->vdi,config->paper);
+                v_bar(app->vdi,clip);
+                v_gtext(app->vdi,app->work[0]+8,app->work[1]+14,app->label);
+            }
         }
         okay=wind_get(app->window,WF_NEXTXYWH,&x,&y,&w,&h);
     }
@@ -47,7 +57,7 @@ static WORD redraw(struct Counter *app,const WORD *damage)
 
 WORD CounterRun(struct Counter *app)
 {
-    WORD i,cw,ch,bw,bh,events,mx,my,mb,ks,kr,br,damage[4],quit=0,result=1;
+    WORD i,cw,ch,bw,bh,events,mx,my,mb,ks,kr,br,quit=0,result=1;
     const struct CounterConfig *config=app->config;
     app->id=appl_init(); app->window=-1;
     if (app->id<0) return 1;
@@ -87,11 +97,7 @@ WORD CounterRun(struct Counter *app)
             }
         }
         if (!quit && (events & MU_TIMER)) {
-            if (!wind_get(app->window,WF_WXYWH,&damage[0],&damage[1],&damage[2],&damage[3])) result=2;
-            else {
-                damage[0]+=8; damage[1]+=24; damage[2]=104; damage[3]=8;
-                if (!redraw(app,damage)) result=2;
-            }
+            if (!redraw(app,NULL)) result=2;
         }
         if (result) break;
     }

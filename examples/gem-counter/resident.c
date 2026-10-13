@@ -9,8 +9,8 @@ ULONG GEMCountersService;
 struct Counter GEMCounters[2];
 volatile UWORD GEMCountersDone,GEMCountersFailure;
 static const struct CounterConfig config[2]={
-    {"Counter A",65,49,208,104,4,0},
-    {"Counter B",241,97,208,104,2,0}
+    {"Counter A",65,49,144,48,4,0},
+    {"Counter B",241,97,144,48,2,0}
 };
 static struct Task *controller,*workers[2];
 static BYTE bit=-1;

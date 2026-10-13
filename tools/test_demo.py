@@ -176,8 +176,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             index=int(title==b'Counter B');left,top,right,bottom=bounds
             count=number(app(index,'count'))
             r.clip=(left+8,top+16,right-9,bottom-9);r.text=2 if index else 4
-            r.apply(8,(left+16,top+30),b'GEM counter')
-            r.apply(8,(left+16,top+46),('Count: %06d'%count).encode())
+            r.apply(8,(left+16,top+30),('Count: %06d'%count).encode())
             r.clip=(0,0,639,239)
         def prime_state():
             if shell_only:

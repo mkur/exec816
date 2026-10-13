@@ -73,8 +73,7 @@ def run(out,program,counters,trace=True):
                 require(title in (b'Counter A',b'Counter B'),'Unexpected counter title')
                 i=int(title==b'Counter B');l,t,rr,bb=bounds
                 r.clip=(l+8,t+16,rr-9,bb-9);r.text=2 if i else 4
-                r.apply(8,(l+16,t+30),b'GEM counter')
-                r.apply(8,(l+16,t+46),('Count: %06d'%get(app(i,'count'),4)).encode())
+                r.apply(8,(l+16,t+30),('Count: %06d'%get(app(i,'count'),4)).encode())
                 r.clip=(0,0,639,239)
             def snapshot(name):
                 mode(0)

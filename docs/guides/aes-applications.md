@@ -17,9 +17,19 @@ See the [window contract](../reference/aes.md) for supported kinds and fields.
 
 The [counter body](../../examples/gem-counter/counter.c) uses only `<gem.h>`
 through its [model header](../../examples/gem-counter/counter.h). It opens a
-fixed 208×104 window, updates six decimal digits on a one-second timer, accepts
+fixed 144×48 window, updates six decimal digits on a one-second timer, accepts
 top/move/close requests and reconstructs exposed pixels from its current model.
 It handles both bits when `evnt_multi` returns a message and timer together.
+The window contains one `Count: 000000` line. Timer updates replace only the
+48×8 digit area without a separate background clear; exposure redraws restore
+the background and complete label. Both paths use visible-region clipping and
+ordinary VDI text. This adds no fixed or per-Task bank-zero reservation.
+
+For a packaged colour desktop, `python3 tools/test_counter_app.py --bundle DIR`
+checks the loaded Counter's pixels, decimal carry, odd-X movement, partial/full
+cover, exposure and close. Passive VDI call markers check that a quiet timer
+update uses one text call and no background fill. It also checks shell/EXIT and
+guards; this is development coverage, not full platform qualification.
 
 The separate [resident wrapper](../../examples/gem-counter/resident.c) supplies
 two upper-memory models, attaches each Task, and detaches before removal. A
