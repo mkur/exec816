@@ -8,7 +8,9 @@ from generate_aes_server import ABI, layout, expected_layout
 def active_tree(bridge, contexts, bounds):
     records=layout();view=records['WindowView'];context=dict(expected_layout())
     offset=context['C context menuTree'];views=context['C context views']
-    found=[]
+    # Several windows of one application can share both bounds and menu (for
+    # example its full-screen folder and desktop). Count distinct source trees.
+    found=set()
     for (at,) in struct.iter_unpack('<I',bridge.memdump(contexts,4*ABI['constants']['CONTEXTS'])):
         if not at:continue
         tree=int.from_bytes(bridge.memdump(at+offset,4),'little')
@@ -18,9 +20,9 @@ def active_tree(bridge, contexts, bounds):
             state=bridge.memdump(target,view['fields']['visibleCount'])
             if struct.unpack_from('<4h',state,view['fields']['bounds'])==tuple(bounds) and \
                     int.from_bytes(state[view['fields']['shown']:view['fields']['shown']+2],'little'):
-                found.append(tree)
+                found.add(tree)
     require(len(found)<=1,'Ambiguous menu source owner')
-    return found[0] if found else 0
+    return next(iter(found)) if found else 0
 
 
 def source(bridge, address):

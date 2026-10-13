@@ -150,7 +150,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             work_media.append((item,target))
         machine=verify_machine(b,rom,pin)
         def far(address,length):
-            return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
+            return b.memdump(address,length)
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
         def pointer(address):return number(address,3)
         def symbol(module,name):

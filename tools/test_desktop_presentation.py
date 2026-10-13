@@ -69,9 +69,10 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         text(raster,tx,y+4,title,fg=12 if focused else 1)
     if close:
         box(x+1,y+1,x+15,y+15)
-        box(x+4,y+4,x+12,y+12)
+        text(raster,x+4,y+4,bytes([5]))
     if kind&4:
-        box(right-16,y+1,right-1,y+15);box(right-12,y+4,right-4,y+12)
+        box(right-16,y+1,right-1,y+15)
+        text(raster,right-12,y+4,bytes([7]))
     wt=28 if kind&16 else 16
     if kind&16:
         rectangle(raster,(x,y+27,right,y+28),1)

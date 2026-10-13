@@ -1,7 +1,7 @@
 # Implementation plans
 
 - [Files navigation and appearance](gem4xe/files-navigation-appearance-plan.md):
-  proposed FR1–FR5 slices for distinct GEM window gadgets, a compact grid with
+  FR1–FR5 slices for distinct GEM window gadgets, a compact grid with
   a top summary, the approved parent-folder icon, Esc navigation and shared
   colour artwork. Includes the retained icon source and preview.
 

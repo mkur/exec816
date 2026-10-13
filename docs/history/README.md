@@ -1,5 +1,8 @@
 # Historical records
 
+- [Files navigation and appearance](files-navigation-appearance.md): distinct
+  title gadgets, compact layout and parent navigation implementation results.
+
 - [Compact Files windows](compact-files.md): navigation glyphs, one status line,
   stable window sizes and separate keyboard focus.
 

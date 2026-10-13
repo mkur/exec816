@@ -68,12 +68,17 @@ def exercise(s,desk,base,click,key,path,shot,move):
     path(base,'WORK:');require(work()==resized,'Sparse directory changed chosen size')
     path(base,'SYS:');x,y,w,h=work();click(x+w+8,y-8);s.frames(120)
     require(n('full')==1 and work()==[8,32,616,192],'Full geometry without INFO')
+    shot('compact-files-full')
     x,y,w,h=work();click(x+w+8,y-8);s.frames(120)
     require(n('full')==0 and work()==resized,'Fuller did not restore user size')
+    shot('compact-files-restored')
     path(base,'SYS:C');x,y,w,h=work();before=n('first');click(x+w+8,y+h-8)
     require(n('first')>before,'Compact scrolling')
     shot('compact-files-scrolled')
+    click(120,100);shot('compact-files-inactive')
+    x,y,w,h=work();click(x+120,y-8);s.frames(60)
+    click(x,y-8);s.frames(160);shot('compact-files-closed')
     return dict(navigation_glyph=True,parent_menu=True,parent_key=True,refresh_glyph=True,
         refresh_menu=True,refresh_key=True,status_totals=True,selection_artwork_unchanged=True,
         keyboard_focus=True,focus_click_through=True,icon_list=True,sort_toggle=True,
-        resize=True,navigation_keeps_bounds=True,full_restore=True,scroll=True)
+        resize=True,navigation_keeps_bounds=True,full_restore=True,scroll=True,distinct_gadgets=True,inactive_exposure=True,close=True)

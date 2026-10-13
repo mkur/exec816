@@ -12,8 +12,9 @@ adds no kernel gateway or resident Task by itself.
 Native and GEM windows use dark ink outlines, warm off-white frame margins and
 centered titles in the existing 8×8 Atari ST font. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
-The boxed closer is on
-the left, and is absent from the shell. Its hit rectangle matches its painted
+The boxed closer uses GEM font glyph 5 on the left and is absent from the
+shell. The full/restore gadget on the right uses glyph 7, making the two
+actions visually distinct. Its hit rectangle matches its painted
 box. Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 

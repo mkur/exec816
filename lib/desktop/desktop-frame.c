@@ -118,12 +118,14 @@ static UWORD fragment(void)
                          t+DESKTOP_TITLE_HEIGHT-1,0);
         if (p->fillY&DESKTOP_FRAME_FULLER) {
             box(r-DESKTOP_FRAME_GADGET,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
-            box(r-12,t+4,r-4,t+12);
+            glyphs[0]=7;
+            text(r-12,t+4,1,1);
         }
         if (p->background) {
             box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
                 l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
-            box(l+4,t+4,l+12,t+12);
+            glyphs[0]=DESKTOP_CLOSE_GLYPH;
+            text(l+4,t+4,1,1);
         }
     }
     }

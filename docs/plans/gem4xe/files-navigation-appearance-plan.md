@@ -3,7 +3,8 @@
 [Plans](../README.md) · [Current AES and desktop contract](../../reference/aes.md) ·
 [Compact Files results](../../history/compact-files.md)
 
-Status: proposed. The parent-folder artwork is approved; implementation is pending.
+Status: implementation in progress. FR1 passes development checks; FR2–FR5
+remain pending. The parent-folder artwork is approved.
 
 Make Files denser and easier to navigate at 640×240: distinct GEM window
 gadgets, a thin directory summary below the title, colour icons and an in-grid
