@@ -103,8 +103,8 @@ UWORD AESRun(void)
     drain();
     CHECK(wind_set_str(window,WF_NAME,"Same pixels")); phase(2);
     CHECK(wind_set(window,WF_CXYWH,48,48,240,144)); phase(3);
-    /* Restored pixels must not replace the application's exposure message. */
-    AESCacheRedraws=drain(); CHECK(AESCacheRedraws>0);
+    /* A completed pure move preserves client pixels without a redraw. */
+    AESCacheRedraws=drain(); CHECK(AESCacheRedraws==0);
     paint(); phase(4);
     /* No drawing report cannot certify an invisible model change. */
     CHECK(wind_update(BEG_UPDATE)); CHECK(wind_update(END_UPDATE)); phase(5);
@@ -134,6 +134,10 @@ UWORD AESRun(void)
     phase(15); /* An empty hidden sibling update must preserve our saved image. */
     CHECK(ExecAESBeginUpdate(window));CHECK(wind_update(END_UPDATE));
     phase(16); /* The same empty update still invalidates its own target. */
+    /* Genuine exposure still requires an application repaint. */
+    CHECK(wind_open(sibling,96,64,128,96));
+    CHECK(wind_close(sibling));
+    wait_redraw(); AESCacheRedraws=1+drain(); CHECK(AESCacheRedraws>0);
     CHECK(wind_delete(sibling));
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());

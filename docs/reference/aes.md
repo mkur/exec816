@@ -270,8 +270,13 @@ damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
 manager damage after the complete frame transaction without claiming that the
 application pixels have been drawn. Completed, fully visible clients may use
 the shared VRAM snapshots; restoration still delivers external exposure.
-Copied AES moves remain disabled. Applications reconstruct their work pixels through their private VDI workstation
-while owning `BEG_UPDATE`.
+A same-size aligned move of a clean, fully visible window with completed client
+paint uses an overlap-safe screen blit. Its accepted geometry is published only
+after completion, without a moved-client `WM_REDRAW`. Applications must rebase
+object trees from returned work geometry in their move handler. Covered/dirty
+sources, resizes and moves while owning UPDATE retain redraw. Genuine exposure
+still delivers `WM_REDRAW`; applications reconstruct those pixels through their
+private VDI workstation while owning `BEG_UPDATE`.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
 `[2]` is the application's ID, `[10]` is four display planes, and other words

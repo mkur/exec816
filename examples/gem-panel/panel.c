@@ -163,6 +163,10 @@ WORD PanelRun(struct Panel *p)
             case WM_TOPPED: if (!wind_set(p->window,WF_TOP,0,0,0,0)) result=2; break;
             case WM_MOVED:
                 if (!cancel(p) || !wind_set(p->window,WF_CXYWH,p->message[4],p->message[5],p->message[6],p->message[7])) result=2;
+                else {
+                    wind_get(p->window,WF_WXYWH,&p->work[0],&p->work[1],&p->work[2],&p->work[3]);
+                    p->tree[0].ob_x=p->work[0]; p->tree[0].ob_y=p->work[1];
+                }
                 break;
             case WM_REDRAW: if (!paint(p,0,&p->message[4])) result=2; break;
             }

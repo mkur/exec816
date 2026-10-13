@@ -1,5 +1,7 @@
 ; One presenter continuation owns copied geometry until the shared DMA retires.
 MODULE DESKMOVE
+USE AESTYPES
+USE AESWINDOWSTATE
 USE DISPLAY
 USE DESKTYPES
 USE DESKEVENTS
@@ -17,6 +19,8 @@ USE HEAPCORE
 LONGCARD moveToken
 DESKTYPES.Window POINTER moving
 DESKTYPES.Request POINTER reply
+AESTYPES.Request POINTER aesReply
+CARD aesStatus
 
 ; Restoring a caret also schedules its next presentation. A command-window
 ; move may expose no console pixels, so damage alone cannot wake that work.
@@ -81,6 +85,12 @@ PUBLIC PROC Pump()
     Rebase(LAYERS.Find(@service.scene,moving.layer),1)
   FI
 
+  IF completed<>0 AND moving.kind=DESKTYPES.CONTENT_AES THEN
+    AESWINDOWSTATE.Moved(AESWINDOWSTATE.FindRecord(moving.id))
+    AESWINDOWSTATE.Sync()
+  FI
+
+  aesStatus=IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI
   moveToken=0
   moving=NULL
   IF reply<>NULL THEN
@@ -103,7 +113,7 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
     RETURN(DESKTYPES.OK)
   FI
 
-  eligible=(DISPLAY.Blocked()=0 AND window.kind<>DESKTYPES.CONTENT_AES
+  eligible=(DISPLAY.Blocked()=0
       AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
       AND ((layer.bounds.left OR left OR
           (layer.bounds.right-layer.bounds.left)) & 1)=0)
@@ -164,5 +174,44 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
   FI
 
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
+
+; AESCORE owns the reply and retries this same retained request. Only Pump
+; publishes a completed copied move; an ordinary fallback still damages work.
+PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window INT left,top
+    AESTYPES.Request POINTER request)
+  CARD status
+
+  IF aesReply<>NULL THEN
+    IF aesReply<>request OR moveToken<>0 THEN
+      RETURN(DESKTYPES.PENDING)
+    FI
+
+    aesReply=NULL
+    RETURN(aesStatus)
+  FI
+
+  status=Start(service,window,left,top,NULL)
+  IF status=DESKTYPES.PENDING THEN
+    aesReply=request
+  ELSEIF status=DESKTYPES.OK THEN
+    BEGIN
+      LET item=AESWINDOWSTATE.FindRecord(window.id)
+      AESWINDOWSTATE.Snapshot(item)
+      AESWINDOWSTATE.Moved(item)
+      AESWINDOWSTATE.Sync()
+    END
+  FI
+
+RETURN(status)
+
+; Retirement already waits for scene/DMA quiescence before releasing a client.
+PUBLIC PROC Forget(AESTYPES.Request POINTER request)
+
+  IF aesReply=request THEN
+    aesReply=NULL
+  FI
+
+RETURN
 
 ENDMODULE

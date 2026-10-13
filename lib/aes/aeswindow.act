@@ -17,6 +17,7 @@ USE DESKCORE
 USE DESKGEOMETRY
 USE DESKMENU
 USE DESKCACHE
+USE DESKMOVE
 USE LAYERTYPES
 USE LAYERS
 USE REGIONS
@@ -191,6 +192,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
   IF Ready(service,client)=0 THEN
     RETURN(0)
   FI
+  DESKMOVE.Forget(client.binding)
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(slot).owner=client.id THEN
       BEGIN
@@ -209,7 +211,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
   BYTE POINTER title
-  CARD length,routeStatus
+  CARD length,routeStatus,moveStatus
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
@@ -342,6 +344,21 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
           AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
           OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
         RETURN(AESTYPES.MALFORMED)
+      FI
+
+      IF service.updateOwner=0
+          AND bounds.right-bounds.left=layer.bounds.right-layer.bounds.left
+          AND bounds.bottom-bounds.top=layer.bounds.bottom-layer.bounds.top THEN
+        moveStatus=DESKMOVE.Application(desktop,window,
+            bounds.left,bounds.top,request)
+        IF moveStatus=DESKTYPES.PENDING THEN
+          RETURN(AESTYPES.PENDING)
+        FI
+        IF moveStatus<>DESKTYPES.OK THEN
+          RETURN(AESTYPES.DISPLAY_ERROR)
+        FI
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
       FI
 
       status=LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,

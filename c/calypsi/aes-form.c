@@ -262,7 +262,8 @@ WORD ExecAESFormMessage(struct ExecAESContext *c)
                           f->message[6],f->message[7])) return -1;
             f->tree[0].ob_x+=c->view->work.left-x;
             f->tree[0].ob_y+=c->view->work.top-y;
-            return ExecAESFormPaint(c,1) ? 1:-1;
+            /* Copied moves preserve pixels; fallback/exposure sends WM_REDRAW. */
+            return 1;
         }
     }
     for (i=0;i<8;++i) c->deferredMessage[i]=f->message[i];

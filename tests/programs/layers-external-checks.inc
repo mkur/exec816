@@ -43,6 +43,18 @@ PROC ExternalTransactions()
     Require(LAYERS.BeginRead(scene,id,@bounds,@other)=LAYERTYPES.OK)
     Require(LAYERS.Show(scene,id,0)=LAYERTYPES.BUSY)
     Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    ; Completed external pixels move without a new client obligation.
+    epoch=layer.paintEpoch
+    Require(LAYERS.BeginMove(scene,id,8,4,@other)=LAYERTYPES.OK)
+    Require(layer.bounds.left=0)
+    Require(LAYERS.Delete(scene,id)=LAYERTYPES.BUSY)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    Require(layer.bounds.left=8 AND layer.bounds.top=4)
+    Require(layer.pending.count=0 AND layer.dirty=0)
+    Require(LAYERS.Painted(scene,id,epoch,@bounds)=0)
+    Require(LAYERS.BeginMove(scene,id,0,0,@other)=LAYERTYPES.OK)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    Require(REGIONS.Equal(@layer.bounds,@bounds)=1)
     ; Client obligations exclude title/frame pixels.
     REGIONS.Assign(@part,2,4,14,14)
     LAYERS.ExternalArea(scene,id,@part)

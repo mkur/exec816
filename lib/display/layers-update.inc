@@ -263,7 +263,9 @@ PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1 THEN
+  IF layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
+      OR (layer.externalPaint<>0
+        AND (layer.pending.count<>0 OR layer.paintEpoch=0)) THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
@@ -306,6 +308,11 @@ RETURN
 BYTE FUNC CommitMove(LAYERTYPES.Scene POINTER scene
     LAYERTYPES.Layer POINTER layer BYTE completed)
   LAYERTYPES.Rect overlap
+
+  ; A completion for the old coordinates must never acknowledge new damage.
+  IF layer.externalPaint<>0 AND layer.paintEpoch<>0 THEN
+    layer.paintEpoch==+1
+  FI
 
   IF completed=0 THEN
     DamageAll(scene,@scene.copySource)

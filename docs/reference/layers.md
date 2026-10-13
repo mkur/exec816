@@ -225,3 +225,9 @@ the transfer is complete or the driver has proved quiescence.
 
 `LAYERCACHE` supplies fixed-slot identity/revision, pinning and two-slot eviction
 policy. It owns no display transfers, queue, hardware or application lifetimes.
+
+Completed external layers may use `BeginMove` when their pending client-paint
+region is empty and the paint epoch is live. Successful completion keeps client
+pixels clean and advances the coordinate epoch, so a late old-coordinate paint
+acknowledgement cannot clear newer damage. Failure retains the old bounds and
+damages both source and destination. The owner retires hardware before Finish.

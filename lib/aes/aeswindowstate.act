@@ -55,7 +55,7 @@ RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 
 ; Called at lock grant and after an owner mutation. The caller cannot execute
 ; a query until its RPC reply; no Forbid spans construction of this region.
-PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
+PROC Publish(AESSTATE.Window POINTER client BYTE copied)
   LAYERTYPES.Rect work
   BYTE status
 
@@ -73,7 +73,9 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
         OR layer.bounds.bottom-layer.bounds.top<>view.bounds.bottom-view.bounds.top THEN
       DESKCACHE.Changed(desktop,client.window)
     FI
-    LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
+    IF copied=0 THEN
+      LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
+    FI
   FI
   status=REGIONS.Clip(@layer.visible,@work,
       LAYERTYPES.Region POINTER(@view.visibleCount))
@@ -88,6 +90,22 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
+
+  Publish(client,0)
+
+RETURN
+
+PUBLIC PROC Moved(AESSTATE.Window POINTER client)
+
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
+  DESKGEOMETRY.Slider(client.window,@layer.bounds,
+      client.view.vslide,client.view.vsize)
+  Publish(client,1)
 
 RETURN
 

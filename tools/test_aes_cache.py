@@ -49,7 +49,7 @@ def physical(b,p,foreign,report):
         if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
         if phase==15:require(row['captures']==previous['captures'],'Sibling update recaptured our image')
         if phase==2:require(row['captures']==previous['captures'],'Title-only change recaptured pixels')
-        if phase in (3,12):require(row['restores']>previous['restores'],'Aligned AES move missed its client image')
+        if phase in (3,12):require(row['restores']==previous['restores'],'Copied AES move replayed its client image')
         if phase==7:require(row['restores']==previous['restores'],'Normalized no-op move restored its client')
         if phase in (10,11):
             require(row['captures']==previous['captures'],'Small update recaptured whole client')
@@ -72,5 +72,5 @@ def physical(b,p,foreign,report):
             row['work_pixels']='exact'
         report['aes_cache'].append(row);previous=row
         b.poke16(sy['AESCacheGo'],phase)
-    require(get(sy['AESCacheRedraws'],2)>0,'Cached restoration suppressed WM_REDRAW')
+    # The emitted fixture checks genuine exposure after the final phase.
     b.bp_clear_all()

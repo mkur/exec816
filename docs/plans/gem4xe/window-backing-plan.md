@@ -336,3 +336,11 @@ claiming the whole performance goal achieved.
   with stack/domain guards intact. Reports: `build/window-backing/wb1-windows`
   and `wb1-cache`. Reserved bank-zero delta: 0 fixed, 0 per public Task, 0 idle;
   VRAM and additional persistent metadata delta: 0 bytes.
+- WB2: completed external windows use the existing move transaction; geometry
+  and coordinate epochs publish before AESCORE replies. Panel/form object roots
+  follow accepted geometry without forcing repaint. Development checks: optimized
+  Layers (60,184 checks) and AES cache (99 checks, exact moved pixels and genuine
+  exposure delivery). Reports: `build/window-backing/wb2-layers`, `wb2-cache`.
+  Timing gates remain for the combined comparison in WB6. Reserved bank-zero
+  and VRAM deltas: 0; move continuation adds one 3-byte request pointer and one
+  2-byte status in upper RAM (alignment recorded with final image metadata).
