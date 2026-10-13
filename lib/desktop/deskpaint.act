@@ -75,18 +75,24 @@ PUBLIC PROC Sync()
   top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
   shown=layer.shown
   focused=service.focus=window.id
-  IF view.left<>left OR view.top<>top OR view.visible<>shown OR view.focused<>focused THEN
+  IF view.left<>left OR view.top<>top OR view.visible<>shown THEN
     CONSOLEBATCH.Reset()
     view.scrollState=0
     view.left=left
     view.top=top
     view.visible=shown
-    view.focused=focused
     view.cursorOn=0
     view.index=$ffff
     view.generation==+1
     view.presentedGeneration=0
     CONSOLECORE.Dirty(instance,0,instance.count)
+  FI
+
+  ; DESKCORE.Focus removes the outgoing caret before changing its route.
+  ; Focus alone preserves retained text and any gathered output batch.
+  IF view.focused<>focused THEN
+    view.focused=focused
+    view.index=$ffff
   FI
 
   DESKSTATE.Select(layer.id)

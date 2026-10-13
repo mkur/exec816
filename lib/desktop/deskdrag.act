@@ -503,7 +503,7 @@ PUBLIC PROC Advance()
   FI
 
   IF focusWanted<>0 THEN
-    status=LAYERS.Order(@service.scene,layer.id,window.id<>DESKSTATE.desktopWindow)
+    status=DESKSTATE.Raise(layer.id)
     IF status<>LAYERTYPES.OK THEN
       HEAPCORE.Abort($faec)
     FI

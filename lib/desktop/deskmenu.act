@@ -552,7 +552,7 @@ PROC Execute()
     IF window.kind=DESKTYPES.CONTENT_AES THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
     ELSE
-      Check(LAYERS.Order(@service.scene,window.layer,1))
+      Check(DESKSTATE.Raise(window.layer))
       DESKCORE.Focus(service,window.id)
       DESKSTATE.TopChrome()
     FI

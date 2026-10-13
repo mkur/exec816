@@ -222,7 +222,14 @@ cancellation policy. Event flags preserve INPUT.TICK_VALID; durable notices do
 not invent capture timestamps. Delivery sequence numbers are monotonic.
 
 Pointer hit testing and click-to-focus run in the presenter. Focus changes wait
-for a live drawing token to retire. The pointer restores its saved background
+for a live drawing token to retire. Shell focus changes repaint its title and
+remove or show its caret; they preserve the retained text and any gathered
+output batch. Raising the front application ignores the menu layers above it
+and does not invalidate its client. A title click released without movement
+also leaves its placement unchanged. Actual stacking and placement changes
+still repair exposed content.
+
+The pointer restores its saved background
 before intersecting drawing and is shown after each quiescent quantum, including
 an early pass after input intake. Motion accumulates during DMA; input delivery
 continues. Both odd/even mask variants stay in VRAM, avoiding per-move mask
@@ -379,7 +386,8 @@ exposure repair or final scanout. A quiescent transfer fault returns DRAW_FAILED
 and retains the old geometry with touched pixels invalidated. An unquiesced
 fault keeps the existing reset-required retention behavior. Console moves
 preserve circular cells, dirtiness and presentation generation, updating only
-placement and caret bookkeeping; ordinary focus changes still invalidate.
+placement and caret bookkeeping. Focus alone preserves those model and
+presentation generations.
 
 ### Private client snapshots
 

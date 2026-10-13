@@ -1,5 +1,8 @@
 # Historical records
 
+- [Shell focus without full redraw](shell-focus.md): title/caret-only focus
+  changes, no-op front-window activation and physical click/pixel checks.
+
 - [Unchanged menu backgrounds](menu-switch.md): scoped desktop updates, retained
   save-under across headings, pixel checks and matched latency measurements.
 

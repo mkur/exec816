@@ -271,7 +271,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     status=LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
         bounds.right-bounds.left,bounds.bottom-bounds.top)
     status=LAYERS.Show(@desktop.scene,window.layer,1)
-    status=LAYERS.Order(@desktop.scene,window.layer,window.id<>DESKSTATE.desktopWindow)
+    status=DESKSTATE.Raise(window.layer)
     DESKCORE.Focus(desktop,window.id)
     IF client.closeRequested<>0 THEN
       AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
@@ -329,7 +329,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         RETURN(AESTYPES.MALFORMED)
       FI
 
-      status=LAYERS.Order(@desktop.scene,window.layer,window.id<>DESKSTATE.desktopWindow)
+      status=DESKSTATE.Raise(window.layer)
       DESKCORE.Focus(desktop,window.id)
     WHEN AESTYPES.WF_CXYWH THEN
       IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),request.intin(4),
