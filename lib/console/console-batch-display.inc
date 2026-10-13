@@ -1,5 +1,5 @@
-; Batch against synchronized pixels. Occluded views share the same bounded
-; gathering policy, then repaint the resulting model instead of copying.
+; Batch against synchronized pixels. The desktop scrolls its backing even
+; while covered; standalone consoles retain screen-copy admission.
 PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
     CONSOLETYPES.Instance POINTER instance LONGCARD unit)
 
@@ -13,10 +13,10 @@ PUBLIC BYTE FUNC BeginBatch(CONSOLETYPES.Presentation POINTER view
   FI
 
   ; Remember admission: exposure can repaint the gathered model before flush.
-  ; A batch which started obscured must not later copy those newer pixels.
+  ; Screen copies require visibility; backing copies require current pixels.
   batchCopyReady=DESKSTATE.CopyReady()
   IF BackingEnabled(view)<>0 THEN
-    batchCopyReady=0
+    batchCopyReady=BackingReady(view,instance)
   FI
   RemoveCursor(view)
   IF CONSOLEBITMAP.Failed()<>0

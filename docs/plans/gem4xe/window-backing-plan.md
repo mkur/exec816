@@ -362,3 +362,12 @@ claiming the whole performance goal achieved.
   bytes in the initial run, within its existing stack. Reserved bank zero: 0
   fixed, 0 per public Task, 0 idle; persistent CPU metadata/VRAM delta: 0.
   Backing scroll optimization is pending WB5.
+
+- WB5: batches scroll synchronized backing with the existing copy continuation,
+  fill new rows and publish final spans before visible repair. No additional
+  state/engine or storage reservation. Development: optimized desktop fixture
+  (117 checks, 19 pixel scenes, zero output overtakes) and standalone batch DMA
+  cancellation (49 checks), with guards intact. Reports: `wb5-presentation`
+  and `wb5-scroll` under `build/window-backing`. Matched throughput and loaded
+  latency comparisons follow in WB6. Reserved bank zero: 0 fixed, 0 per public
+  Task, 0 idle; CPU metadata and VRAM delta: 0.

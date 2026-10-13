@@ -317,3 +317,10 @@ bytes, with destination pitch at offset 26; screen text continues to use pitch
 320. Every emitted destination record uses that pitch, including background
 and trailing fills. The uploader uses call-clobbered DP bytes through `$A9`
 within the existing reservation. Targets are explicit on each call.
+
+Desktop Shell dirty spans describe pending model-to-backing work. Layers damage
+separately describes screen repair. Completed backing scrolls use the ordinary
+asynchronous copy engine, clear the newly exposed rows, then render final dirty
+spans before publishing the new generation. This works while partly or fully
+covered. Batch cancellation and view retirement retain the existing DMA lifetime
+rules. Caret and pointer pixels are screen overlays, never backing contents.
