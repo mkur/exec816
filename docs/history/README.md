@@ -18,6 +18,41 @@
 - [MyDOS performance](mydos-performance.md): native copies, VTOC publication,
   retained traversal state and matched development measurements.
 
+- [Dropdown menu latency](menu-latency.md): bounded label batching, targeted
+  damage, menu precedence and matched visible-feedback measurements.
+
+- [Loaded Process Task names](process-task-names.md): retained executable names
+  in TASKS, without changing the Task API or execution domains.
+
+- [Desktop usability](desktop-usability.md): a default 4×4 Files grid, RAM disk
+  icon, compact delete confirmation, shorter Shell title and desktop spacing.
+
+- [Files navigation and appearance](files-navigation-appearance.md): distinct
+  title gadgets, compact layout and parent navigation implementation results.
+
+- [Compact Files windows](compact-files.md): navigation glyphs, one status line,
+  stable window sizes and separate keyboard focus.
+
+- [Desktop drag and drop](desktop-drag-drop.md): captured file selections,
+  one AES completion and the existing buffered copy job.
+
+- [Exec816 desktop style](desktop-style.md): restrained palette, distinct icons,
+  window decoration and a persistent focused-window menu caption.
+
+- [Sixteen-colour GEM icons](colour-icons.md): standard CICON resources,
+  prepared VBXE pixels and the desktop disk artwork.
+
+- [Desktop selection and batch operations](desktop-selection-batch.md):
+  implementation progress, focused checks and memory accounting.
+
+- [Desktop copy throughput](desktop-copy-performance.md): buffer comparison,
+  shell COPY reference, cancellation and concurrent button feedback.
+
+- [G4BENCH port](g4bench-port.md): loadable benchmark slices and measurements.
+- [G4BENCH drawing traces](g4bench-drawing-traces.md): caller, renderer, blitter
+  and scheduling costs in the unchanged packaged desktop.
+- [GEM rendering performance](gem-rendering-performance.md): implementation
+  slices and measurements following those traces.
 - [Bounded IDE read ranges](ide-read-ranges.md): device, cache and filesystem
   grouping, memory costs and matched development measurements.
 

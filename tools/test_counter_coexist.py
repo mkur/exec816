@@ -13,8 +13,9 @@ from make_data_disk import make
 from console_model import read_cells
 from generate_console import constants
 from bitmap_console_oracle import Terminal
-from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
+from gem_render_oracle import Raster,font_bytes,DESKTOP_PALETTE as PALETTE,PENS
 from desktop_oracle import compose
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from sio_transaction_trace import read_events,BASE_HZ
 from measure_desktop import distribution
@@ -72,8 +73,7 @@ def run(out,program,counters,trace=True):
                 require(title in (b'Counter A',b'Counter B'),'Unexpected counter title')
                 i=int(title==b'Counter B');l,t,rr,bb=bounds
                 r.clip=(l+8,t+16,rr-9,bb-9);r.text=2 if i else 4
-                r.apply(8,(l+16,t+30),b'GEM counter')
-                r.apply(8,(l+16,t+46),('Count: %06d'%get(app(i,'count'),4)).encode())
+                r.apply(8,(l+16,t+30),('Count: %06d'%get(app(i,'count'),4)).encode())
                 r.clip=(0,0,639,239)
             def snapshot(name):
                 mode(0)
@@ -88,7 +88,7 @@ def run(out,program,counters,trace=True):
                 folder=out/name;folder.mkdir(exist_ok=True)
                 (folder/'expected.bin').write_bytes(packed)
                 (folder/'model.bin').write_bytes(terminal.cells)
-                report['pixels'].append(dict(name=name,digest=pixels(b,folder,packed)))
+                report['pixels'].append(dict(name=name,digest=pixels(b,folder,packed,palette=DESKTOP_PALETTE)))
                 print(name,'pixels pass',flush=True)
                 if counters:resume(0);resume(1)
             def toggle():

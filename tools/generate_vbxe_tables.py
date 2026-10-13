@@ -28,6 +28,9 @@ def tables():
         result[f'GemGlyphCapacity{cost}'] = (1, [min(count, units*8//cost)
                                                 for units in range(work//8+1)])
     result['GemScreenRows'] = (4, [y*320 for y in range(256)])
+    # Half the per-row fill cost: B complete bytes plus three per partial
+    # edge. A screen row needs at most 324 such units. Index zero is unused.
+    result['GemFillRows'] = (1, [0]+[min(240,work//(2*units)) for units in range(1,325)])
     return result
 
 

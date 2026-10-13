@@ -185,6 +185,17 @@ LONGCARD FUNC StartInternal(LONGINT FUNC POINTER entry() BYTE POINTER arguments
 
   process.breakFlags=background
   process.image=BYTE POINTER(image)
+  ; Publish a stable borrowed name with the Task. The Image reference keeps its
+  ; copied filename alive even when the loader's owner unloads before Wait.
+  LET task=EXEC.Task POINTER(@process.task(0))
+  task.tc_Node.ln_Name=BYTE POINTER(c"process")
+  IF image<>NULL THEN
+    task.tc_Node.ln_Name=BYTE POINTER(c"program")
+    IF image.name(0)<>0 THEN
+      task.tc_Node.ln_Name=@image.name(0)
+    FI
+  FI
+
   identity=process.identity
   process.length=length
   process.arguments=EXEC.AllocMem(SIZE(length)+1,EXEC.MEMF_UPPER)

@@ -4,6 +4,31 @@
   copying and complete-width scalar decoding, preserving malformed-input behavior
   and measuring matched warm SIO/IDE loading.
 
+- [Files navigation and appearance](gem4xe/files-navigation-appearance-plan.md):
+  FR1–FR5 implemented: distinct GEM gadgets, a compact grid with a top summary,
+  virtual parent navigation and shared colour icons.
+  [Development results](../history/files-navigation-appearance.md) cover the
+  extracted demo, boundary selection, disk copies and standalone cleanup.
+
+- [Desktop drag and drop design](gem4xe/desktop-drag-drop-design.md) and
+  [DD1–DD4 plan](gem4xe/desktop-drag-drop-plan.md): motion/target support,
+  bounded presenter feedback and one AES completed-drop message feeding the
+  existing 16 KiB copy job. Includes the classic GEM and Workbench comparison.
+
+- [Desktop selection and batch file operations](gem4xe/desktop-selection-batch-plan.md):
+  MS1–MS4 implemented: multiple selection in icon/list views, sequential
+  Copy/Delete, overwrite and cancellation behavior, retaining 16 KiB copy
+  throughput. See the [development results](../history/desktop-selection-batch.md).
+
+- [GEM rendering performance](gem4xe/text-run-fast-path-plan.md):
+  planned 80-character uploads, native odd-X and horizontally clipped text,
+  complete AES objects
+  up to 32 rows per drawing unit, direct solid rectangles bounded by blitter
+  work, simpler opaque box/button fills and matched latency checks.
+
+- [GEM4XE benchmark port](gem4xe/g4bench-port-implementation-plan.md): implemented
+  loadable G4BENCH subset, VBI batch timing and an ordinary GEM demo app.
+
 - [RAM filesystem](ram-filesystem.md): volatile files using the shared DOS worker.
 
 The [GEM text viewer design](gem4xe/text-viewer-design.md) covers a

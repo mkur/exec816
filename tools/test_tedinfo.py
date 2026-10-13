@@ -6,7 +6,7 @@ from native_program import ROOT,require
 
 def physical(b,p,foreign,report):
     from os_boundary import run_to
-    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from test_desktop_presentation import rectangle
     import adapter_state as adapter
     sy=foreign['symbols'];out=p['output'].parent
@@ -53,6 +53,8 @@ def physical(b,p,foreign,report):
                         'Editable pixels phase %d at %d,%d'%(phase,x,y))
         report['edit_pixels'].append(dict(phase=phase,pixels=68*20))
         b.poke16(sy['EditGo'],phase)
+    from test_object_units import physical as object_units
+    object_units(b,p,foreign,report,reach)
     b.bp_clear_all()
 
 

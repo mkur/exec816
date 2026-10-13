@@ -7,6 +7,7 @@ def producer(out, symbols):
     source = '''MODULE AESINBOXPROBE
 USE EXEC
 USE AESSTATE
+USE AESWINDOWSTATE
 USE AESTYPES
 USE AESGUI
 USE AESINBOX
@@ -31,15 +32,19 @@ PUBLIC PROC Pump()
   LET acknowledgement=LONGCARD POINTER($ACK)
   LET service=AESSTATE.Get()
   LET client=AESSTATE.Find(service,identity^)
+  LET item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
   IF client=NULL THEN
     HEAPCORE.Abort($fcc0)
   FI
 
+  sample.window=item.gui.window
+  sample.windowEpoch=item.view.epoch
   CASE command^ OF
   WHEN 1 THEN
-    IF AESGUI.Open(service,client,7)=0 THEN
+    IF AESGUI.Open(service,client,item)=0 THEN
       HEAPCORE.Abort($fcc1)
     FI
+    sample.windowEpoch=item.view.epoch
 
   WHEN 2 THEN
     total^=0
@@ -60,7 +65,7 @@ PUBLIC PROC Pump()
     AESINBOX.Lost(client,source^)
 
   WHEN 5 THEN
-    AESGUI.Close(client)
+    AESGUI.Close(item)
 
   WHEN 6 THEN
     client.endpoint.input.keyHead=250

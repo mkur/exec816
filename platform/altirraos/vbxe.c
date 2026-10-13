@@ -271,19 +271,20 @@ static UWORD submit(struct VbxeDisplay *d,const UBYTE *records,UWORD count)
 
 /* The descriptor proves every possible byte glyph stays in the atlas and
  * every destination stays on screen. Unlike Submit, no caller-supplied raw
- * records are trusted. Each generated list has a fill and at most 32 glyphs:
- * 33 records / 693 bytes, at most 5120 bus accesses, within existing limits.
- * The optional final fill adds one record and at most 3072 bus accesses.
+ * records are trusted. Even runs use one background record; odd runs use an
+ * interior fill and two AND/OR edge pairs to preserve neighbouring nibbles.
+ * The conservative 80-glyph bound, including an optional 3072-access fill,
+ * is 86 records / 1806 bytes / 17872 bus accesses. Generic limits are unchanged.
  * All glyphs (including blank masks) follow the same checked geometry. */
 static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UBYTE ink,UBYTE paper,
     const struct VbxeTextFill *fill)
 {
     struct VbxeTextUpload upload;
-    UWORD status,n;
-    if ((x&1) || x>640 || y>232 || count>(640-x)/8 ||
-        font<VBXE_SCREEN_BYTES || font>VBXE_VRAM_BYTES-8192 ||
-        (font<VBXE_BCB+VBXE_BCB_BYTES && font+8192>VBXE_BCB) ||
+    UWORD status,n,atlasBytes=(x&1) ? 10240 : 8192;
+    if (x>640 || y>232 || count>(640-x)/8 ||
+        font<VBXE_SCREEN_BYTES || font>VBXE_VRAM_BYTES-atlasBytes ||
+        (font<VBXE_BCB+VBXE_BCB_BYTES && font+atlasBytes>VBXE_BCB) ||
         (ink&15)!=(ink>>4) || (paper&15)!=(paper>>4) ||
         (count && !extent(0,text,count))) return DISPLAY_BAD_ARGUMENT;
     if (fill && (!count || (fill->x&1) || (fill->width&1) ||
@@ -299,13 +300,14 @@ static UWORD text_run(struct VbxeDisplay *d,ULONG font,UWORD x,UWORD y,
     upload.destination=(ULONG)y*320+x/2;
     upload.ink=ink;
     upload.paper=paper;
+    upload.odd=x&1;
     if (fill) {
         upload.fillDestination=(ULONG)fill->y*320+fill->x/2;
         upload.fillBytes=fill->width/2;
         upload.fillValue=fill->value;
     }
     while (count) {
-        n=count>32 ? 32 : count;
+        n=count>VBXE_TEXT_GLYPHS ? VBXE_TEXT_GLYPHS : count;
         upload.count=n;
         upload.fillRows=fill && count==n ? fill->height : 0;
         map(d,(UBYTE)(0x80|(VBXE_BCB>>12)),0x88);

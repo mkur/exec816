@@ -1,0 +1,480 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline_commit": "5734916f2426c707587caece0d84250940ecec79",
+  "baseline_bundle": "build/counter-compact/demo",
+  "baseline_build_sha256": "1e05da842c12605343b1f0d997609be9fa1908a2c9ec3c8e3b2f2cd2d63721fd",
+  "scope": "Five desktop usability items; iconification and recursive deletion excluded.",
+  "host": {
+    "command": "python3 -m unittest discover -s tests",
+    "total": 459,
+    "passed": 455,
+    "skipped": 4,
+    "sha256": "3eb5ce1fe4d7780a1b68b8c5414632235621ef1b55cf57d0e5c5bd23ae37969e"
+  },
+  "checks": {
+    "usability": {
+      "command": "python3 tools/test_colour_desktop_session.py --bundle build/desktop-usability/demo --usability",
+      "result_path": "build/desktop-usability/demo/usability-results.json",
+      "sha256": "2ae84ae098223f57856b39e15d39773cbea0470aa65e12b8888a5d548d3d63ef",
+      "status": "pass",
+      "checks": {
+        "grid_4x4": true,
+        "ram_icon": true,
+        "ram_copy_equal": true,
+        "desktop_margin": true,
+        "shell_name": true,
+        "compact_delete": true,
+        "default_cancel": true,
+        "mouse_press_cancel": true,
+        "keyboard_delete": true,
+        "mixed_delete": true,
+        "nonempty_error": true,
+        "other_apps": true,
+        "exposure": true,
+        "resize": true,
+        "list": true,
+        "bank_zero_reserved_delta": 0
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_observations": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 543,
+          "remaining_above_floor": 737
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 563,
+          "remaining_above_floor": 493
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 154,
+          "remaining_above_floor": 902
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 885,
+          "remaining_above_floor": 171
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 672,
+          "remaining_above_floor": 384
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 757,
+          "remaining_above_floor": 1547
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 295,
+          "remaining_above_floor": 985
+        }
+      },
+      "scenes": [
+        "startup",
+        "usability-grid",
+        "usability-ram",
+        "CMP SYS:README.TXT RAM:README.TXT",
+        "usability-delete-file",
+        "usability-delete-cancelled-press",
+        "TASKS",
+        "usability-delete-restored",
+        "usability-delete-mixed",
+        "usability-delete-nonempty",
+        "usability-delete-resized",
+        "usability-delete-list",
+        "usability-delete-finished",
+        "HELLO"
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$ce0e8e55244fbce7",
+        "actual_kernel_id": "$ce0e8e55244fbce7",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-usability/demo/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "autoboot_frames": 249,
+      "application_sha256": {
+        "desktop": "20ea739f0936f61c2f31b163691c56e0e598bda6548726aabf25e0e9003f8c5d",
+        "files": "6957d05e56906dff76a697f45b71fab67640e3ddf40487c91fa4a451337ccdc5"
+      },
+      "fixture": "Writable WORK copy populated by walkthrough; packaged system disk unchanged."
+    },
+    "compact_files": {
+      "command": "python3 tools/test_colour_desktop_session.py --bundle build/desktop-usability/compact --compact-files",
+      "result_path": "build/desktop-usability/compact/compact-files-results.json",
+      "sha256": "98fe865ca9f1418bc07a427b958aa18a07fe2c012a644bd5e16eb31dc091eea4",
+      "status": "pass",
+      "checks": {
+        "no_toolbar": true,
+        "parent_menu": true,
+        "parent_key": true,
+        "root_noop": true,
+        "dialog_escape": true,
+        "refresh_menu": true,
+        "refresh_key": true,
+        "status_totals": true,
+        "selection_artwork_unchanged": true,
+        "keyboard_focus": true,
+        "focus_click_through": true,
+        "icon_list": true,
+        "sort_toggle": true,
+        "resize": true,
+        "navigation_keeps_bounds": true,
+        "full_restore": true,
+        "scroll": true,
+        "distinct_gadgets": true,
+        "inactive_exposure": true,
+        "close": true,
+        "virtual_parent": true,
+        "empty_parent": true,
+        "upward_reveal": true,
+        "parent_mutation_exclusion": true,
+        "parent_refresh": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0,
+        "return_d": 3584,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_observations": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 543,
+          "remaining_above_floor": 737
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 318,
+          "remaining_above_floor": 738
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 155,
+          "remaining_above_floor": 901
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 889,
+          "remaining_above_floor": 167
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 289,
+          "remaining_above_floor": 767
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 757,
+          "remaining_above_floor": 1547
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 70,
+          "remaining_above_floor": 186
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "scenes": [
+        "startup",
+        "compact-files-initial",
+        "compact-files-keyboard-icons",
+        "compact-files-mouse-icons",
+        "compact-files-keyboard-list",
+        "compact-files-full",
+        "compact-files-restored",
+        "compact-files-scrolled",
+        "compact-files-parent",
+        "compact-files-parent-return",
+        "compact-files-inactive",
+        "compact-files-closed",
+        "HELLO"
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$b1589559da154f19",
+        "actual_kernel_id": "$b1589559da154f19",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/desktop-usability/compact/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "autoboot_frames": 249,
+      "application_sha256": {
+        "desktop": "20ea739f0936f61c2f31b163691c56e0e598bda6548726aabf25e0e9003f8c5d",
+        "files": "6957d05e56906dff76a697f45b71fab67640e3ddf40487c91fa4a451337ccdc5"
+      },
+      "fixture": "Writable WORK copy populated by walkthrough; packaged system disk unchanged."
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "compared_records": [
+      "bank_zero_budget",
+      "task_pools",
+      "runtime_reservations"
+    ],
+    "includes": "Guards, alignment and unused reserved capacity"
+  },
+  "applications": {
+    "desktop": {
+      "bytes": 74816,
+      "sha256": "20ea739f0936f61c2f31b163691c56e0e598bda6548726aabf25e0e9003f8c5d",
+      "span": 70703,
+      "relative_manifest": "bitmap-console/apps/desktop/app.json",
+      "bytes_delta": 3987
+    },
+    "files": {
+      "bytes": 52806,
+      "sha256": "6957d05e56906dff76a697f45b71fab67640e3ddf40487c91fa4a451337ccdc5",
+      "span": 71648,
+      "relative_manifest": "bitmap-console/apps/files/app.json",
+      "bytes_delta": 3858
+    }
+  },
+  "upper_memory": {
+    "desktop": 2414,
+    "desktop_delta": 62,
+    "browser": 4041,
+    "browser_delta": 0,
+    "folder_objects": 23,
+    "folder_object_bytes": 552,
+    "folder_object_delta": 0,
+    "visible_objects": 16,
+    "copy_buffer": 16384
+  },
+  "resource": {
+    "bytes": 7606,
+    "bytes_delta": 548,
+    "sha256": "617b2d6d7080e67c3104a627e67adae832494484faf9e62c376650197d4dadc9"
+  },
+  "compiler": {
+    "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "compiler_contract": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "build_profile": "release",
+    "binary_sha256": "cf0572df8649cfd37d4649fb3f7023f5b767115d5ccb0a7a3aeea4d11df64807",
+    "override": false
+  },
+  "packaging": {
+    "path": "build/desktop-usability/demo/exec816-demo.zip",
+    "bytes": 606184,
+    "sha256": "fd1623a4ae193b2c0cb4de4ab8949072cc7a8a9b64f51043a2ba545a34d04473",
+    "manifest_sha256": "79ddedad7ac1f1c734151b3228bf60a1685f7cda22d8d19726c6ad64beaff290",
+    "build_sha256": "3620d27a61d5c12537a27b4fb46f18c265df4e596dd9c67b74d4993722ae845a",
+    "files": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+      "exec816-demo/CALCULATOR-COPYING.txt",
+      "exec816-demo/CALCULATOR-LICENSING.md",
+      "exec816-demo/CALCULATOR-PROVENANCE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/G4BENCH-COPYING.LIB.txt",
+      "exec816-demo/G4BENCH-COPYING.txt",
+      "exec816-demo/G4BENCH-LICENSING.md",
+      "exec816-demo/G4BENCH-PROVENANCE.txt",
+      "exec816-demo/GEM-COPYING.LIB.txt",
+      "exec816-demo/GEM-COPYING.txt",
+      "exec816-demo/GEM-FONT-NOTICE.txt",
+      "exec816-demo/GEM-LICENSING.md",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr",
+      "exec816-demo/work.atr"
+    ],
+    "of816": true,
+    "autoboot_seconds": 5,
+    "build_script_sha256": "00fb2072ccb20ace75046310218635851196c4b652b4f0ba54fcdc90808a09b7"
+  },
+  "source_inputs": {
+    "lib/desktop/deskboot.act": "ece966dfa0a1afba072cacec5c67bd5bf78a046357914343b3795397bb9c8e33",
+    "examples/gem-browser/browser.c": "9be16c5704bc5f915f9f897a969e5b963877e6426aa34c51d53f591a4e5bc719",
+    "examples/gem-browser/desktop.h": "d953a755963c8c5252747437f768422b6dd67ba2db9a283d1c9b61228bfb37c0",
+    "examples/gem-browser/desktop.inc": "dae247d5056405806216513c209a57be9abfc1f265ac73efffa1e1b29b3e04c5",
+    "examples/gem-browser/resource.json": "c2cb47e76da9a95b4665a582e81c4e967a687c1123711196516d00cd7ef72fd1",
+    "tools/desktop_usability_check.py": "a968b0040bba4e46c32c6afd53e859158a4a69aa02121d687403934b4ed8ddcf",
+    "tools/compact_files_check.py": "b77e31dbfb4b51674900aeba36aebcba44fc3f826cc317cc05517cdf4bd68d11",
+    "tools/test_colour_desktop_session.py": "5ac3736745d533c3deda5a973907435fe926278ac3e08867fad6a0d0451a27e5",
+    "tools/colour_desktop_model.py": "73da4eaf907a9c2599bcb7e09804a0e5bdf7b41267e4d677a47c2cc30a88ad8d",
+    "tools/gem_desktop_oracle.py": "0b09dba89404f3d644653a6c106eabd3591c442206a5f9027f6b00a250ea9f2c",
+    "tools/gem_applications.py": "0ad8599ef4368a830e3121f30d49911563776b36f017e5db3f87535c29e4c6fb",
+    "docs/gem-desktop-distribution.txt": "fb20d86bb14201a77caf25c310b967d207a664b08bdd0211e9bfa008619b2ba1"
+  },
+  "screenshots": {
+    "usability-delete-cancelled-press.png": "2a98cb7a3494dd72a99b70419584a2c0f4b860fa8703a6517e1b02816ce9a02f",
+    "usability-delete-file.png": "2a98cb7a3494dd72a99b70419584a2c0f4b860fa8703a6517e1b02816ce9a02f",
+    "usability-delete-finished.png": "13a8b49facceb31b13af17d511edc49e9710b2794cf648257c69a146a4a180a9",
+    "usability-delete-list.png": "d4d6cf2b26a21f17daffe124025bfe94c18f1f760c684f6b0ca9411679495f55",
+    "usability-delete-mixed.png": "4d44ea6efc9bf8b0be34c55b4f08dbbb687f0fe7b5d686f3630855a52284540e",
+    "usability-delete-nonempty.png": "97338a608c6fde443333e214fab4ab666c95cc7278189bad1b5008b52ff0c54e",
+    "usability-delete-resized.png": "1512c2f1dc3d99626d94d7dd2919e478d04e259db30af7e511e1a05256daa5be",
+    "usability-delete-restored.png": "d95b534d936e8d45a20381494546ab62f6a23af528c1748c76437cd0c566f656",
+    "usability-grid.png": "f858547ea22c8b2cc5e67f1a1e0bf3dfc6d66d00670f884470cea2a7dbbc1975",
+    "usability-ram.png": "ec2dc5afa80dbfe5121d174cdfb5ed4690c17eadb40cab6bf76636e6d667f2a5"
+  },
+  "not_run": [
+    "Compiler qualification suite",
+    "Full hosted qualification matrix",
+    "Real hardware"
+  ]
+}

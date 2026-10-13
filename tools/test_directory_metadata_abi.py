@@ -49,7 +49,7 @@ ENDMODULE
     (media/'EXACT').write_bytes((out/'native/EXACT').read_bytes())
     make(out/'data.atr', media, filesystem='sdfs', sector_bytes=512 if ide else 256,
          sectors=2880, binary_names={'CHECK', 'EXACT'})
-    binding = read_source(ROOT/'c/calypsi/dos-bridge.inc').split('; A launched command')[0]
+    binding = read_source(ROOT/'c/calypsi/dos-bridge.inc').split('; Bind once')[0]
     binding='LONGCARD ordinaryFetches,exactFetches\n'+binding
     for name,counter in (('CExamine','ordinaryFetches'),('CExamineExact','exactFetches')):
         target='LONGINT FUNC %s(LONGCARD lock,info,unused)\n\nRETURN(DOS.%s(DOS.FileLock POINTER(ADDRESS(lock)),\n    DOS.FileInfoBlock POINTER(ADDRESS(info))))' % (name,name[1:])
@@ -57,7 +57,7 @@ ENDMODULE
         require(binding.count(target)==1,'Changed metadata bridge observer')
         binding=binding.replace(target,replacement)
     binding += 'PROC BindDos()\n  LET entries=ADDRESS POINTER($%x)\n' % foreign['symbols']['ExecDosEntries']
-    for index, name in ((5,'CLock'),(6,'CUnLock'),(7,'CExamine'),(9,'DOS.IoErr'),(20,'CExamineExact')):
+    for index, name in ((5,'CLock'),(6,'CUnLock'),(7,'CExamine'),(9,'DOS.IoErr'),(20,'CDeleteFile'),(21,'CExamineExact')):
         binding += f'  entries({index})=ADDRESS(@{name})\n'
     binding += '\nRETURN\n'
     source = out/'probe.act'

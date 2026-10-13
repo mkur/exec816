@@ -212,9 +212,65 @@ void blit_or(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,3); }
 void blit_xor(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,5); }
+
+UWORD GemSolidRows(UWORD left,UWORD right)
+{
+    UWORD bytes=(right>>1)-((left+1)>>1);
+    return GemFillRows[bytes+3*((left&1)+(right&1))];
+}
+
+/* One already reserved constant-source record. Geometry and list capacity
+ * are established once for the whole fill, not again for each nibble edge. */
+static UBYTE *solid_record(UBYTE *r,ULONG dest,UWORD bytes,UWORD rows,UBYTE mask,UBYTE value,UBYTE mode)
+{
+    r[0]=r[1]=r[2]=r[3]=r[4]=0;
+    r[6]=(UBYTE)dest;r[7]=(UBYTE)(dest>>8);r[8]=(UBYTE)(dest>>16);
+    r[9]=64;r[10]=1;
+    --bytes;r[12]=(UBYTE)bytes;r[13]=(UBYTE)(bytes>>8);
+    r[14]=(UBYTE)(rows-1);r[15]=mask;r[16]=value;r[20]=mode;
+    return r+21;
+}
+
+void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
+{
+    UWORD lo=(left+1)>>1,hi=right>>1,bytes=hi-lo;
+    UWORD edges=(left&1)+(right&1),units=bytes+3*edges;
+    UWORD records=(bytes!=0)+(edges<<1),limit=GemFillRows[units],rows,work;
+    ULONG dest;
+    UBYTE *r,ink=map_col[pen];
+    if (fault) return;
+    if (dirty) flush();
+    while (top<bottom && !fault) {
+        rows=bottom-top;if (rows>limit) rows=limit;
+        /* Height is bounded before the product, so work fits a UWORD. */
+        work=(units*rows)<<1;
+        if (commandCount+records>VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
+        if (fault) return;
+        dest=GemScreenRows[top];if (stripRedirect) dest+=stripOffset;
+        r=commandNext;
+        if (left&1) {
+            r=solid_record(r,dest+lo-1,1,rows,0,0xf0,4);
+            r=solid_record(r,dest+lo-1,1,rows,0,ink,3);
+        }
+        if (bytes) r=solid_record(r,dest+lo,bytes,rows,0,(ink<<4)|ink,0);
+        if (right&1) {
+            r=solid_record(r,dest+hi,1,rows,0,0x0f,4);
+            r=solid_record(r,dest+hi,1,rows,0,ink<<4,3);
+        }
+        commandNext=r;commandCount+=records;commandWork+=work;
+        top+=rows;
+    }
+}
+
+#ifdef EXEC_DESKTOP_STYLE
+#include "gem-desktop-palette.h"
+#endif
 void vbxe_palette(uint8_t pal,uint8_t first,const uint8_t *rgb,uint16_t count)
 {
     if (pal!=1 || first || count!=16) { latch(DISPLAY_BAD_ARGUMENT); return; }
+    #ifdef EXEC_DESKTOP_STYLE
+    rgb=desktop_rgb;
+    #endif
     if (!fault) latch(VbxeOwnerPalette(&display,rgb));
 }
 
@@ -728,6 +784,76 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
     }
 }
 
+/* The icon owns no persistent hardware state. Flush before reusing the CPU
+ * page, upload just the clipped planes, and retain them until both blits fence.
+ * Transparent pixels and the two possible outside nibbles remain unchanged. */
+void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD fg,UWORD bg)
+{
+    UWORD row,sx,px,bit,mi,di,at=0,stride=(width>>4);
+    UWORD bytes=((right+1)>>1)-(left>>1),rows=bottom-top;
+    UWORD source=(top-y)*stride,index;
+    UBYTE ink=map_col[fg],paper=map_col[bg],a,o,shift;
+    flush();
+    if (fault) return;
+    for (row=0;row<rows;++row,source+=stride) {
+        sx=left-x;index=source+(sx>>4);bit=0x8000U>>(sx&15);
+        mi=mask[index];di=data[index];a=255;o=0;
+        for (px=left&~1U;px<((right+1)&~1U);++px) {
+            shift=(px&1) ? 0:4;
+            if (px>=left && px<right) {
+                if ((mi|di)&bit) {
+                    a&=~(15U<<shift);
+                    o|=((di&bit) ? ink:paper)<<shift;
+                }
+                bit>>=1;
+                if (!bit && px+1<right) { bit=0x8000U;mi=mask[++index];di=data[index]; }
+            }
+            if (px&1) { page[at]=a;page[2048+at]=o;++at;a=255;o=0; }
+        }
+    }
+    latch(VbxeOwnerWrite(&display,0x36000UL,page,at));
+    if (!fault) latch(VbxeOwnerWrite(&display,0x36800UL,page+2048,at));
+    blit_mask(0x36000UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,4);
+    blit_mask(0x36800UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,3);
+}
+
+/* CICON pixels are already in the device format. Only clipping/alignment and
+ * the one-bit transparency mask are expanded here; no palette/plane conversion.
+ * objc_draw supplies the same bounded strips and display grant as G_ICON. */
+void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD row,px,sx,bit,mi,index,at=0,stride=width>>4;
+    UWORD bytes=((right+1)>>1)-(left>>1),rows=bottom-top;
+    UWORD source=(top-y)*stride,pixels=(top-y)*(width>>1);
+    /* Keep nibble arithmetic native-width; narrow only at the page stores. */
+    UWORD a,o,shift,value;
+    flush();
+    if (fault) return;
+    for (row=0;row<rows;++row,source+=stride,pixels+=width>>1) {
+        sx=left-x;index=source+(sx>>4);bit=0x8000U>>(sx&15);
+        mi=mask[index];a=255;o=0;
+        for (px=left&~1U;px<((right+1)&~1U);++px) {
+            shift=(px&1) ? 0:4;
+            if (px>=left && px<right) {
+                if (mi&bit) {
+                    value=data[pixels+(sx>>1)];
+                    value=(sx&1) ? value&15:value>>4;
+                    a&=~(15U<<shift);o|=value<<shift;
+                }
+                ++sx;bit>>=1;
+                if (!bit && px+1<right) { bit=0x8000U;mi=mask[++index]; }
+            }
+            if (px&1) { page[at]=a;page[2048+at]=o;++at;a=255;o=0; }
+        }
+    }
+    latch(VbxeOwnerWrite(&display,0x36000UL,page,at));
+    if (!fault) latch(VbxeOwnerWrite(&display,0x36800UL,page+2048,at));
+    blit_mask(0x36000UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,4);
+    blit_mask(0x36800UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,3);
+}
+
 /* GEM's flat-title dither (0000/5555 rows), expressed as constant packed
  * pixels. Scratch is already white. Each strided command covers every second
  * row, including a preserved neighbour at odd clipped byte edges. */
@@ -783,17 +909,18 @@ NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
 
 /* A linked, bounded callback executes only after a delegated access grant.
  * It must return with no external wait, RPC or caller buffer retained. */
-UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+static UWORD drawing_borrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context)
 {
     UWORD status;
-    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>16)
-        return DISPLAY_BAD_ARGUMENT;
     status=DisplayEnter(grant);
     if (status!=DISPLAY_OK) return status;
     if (!fault) {
         pointer_erase(left,top,right,bottom);
-        if (!fault) draw(context);
+        if (!fault) {
+            if (draw) draw(context);
+            else GemSolidFill(left,top,right,bottom,*(const UWORD *)context);
+        }
         status=fence_owner();
         if (!fault && outlineVisible && !outlineDrawn) {
             outline_toggle();
@@ -805,4 +932,19 @@ UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     if (fault) status=DISPLAY_DEVICE_FAULT;
     DisplayLeave(grant);
     return status;
+}
+
+UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,void (*draw)(void *),void *context)
+{
+    if (!draw || left>=right || right>640 || top>=bottom || bottom>240 || bottom-top>32)
+        return DISPLAY_BAD_ARGUMENT;
+    return drawing_borrow(grant,left,top,right,bottom,draw,context);
+}
+
+UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD pen)
+{
+    /* Private VDI caller already clipped and bounded this fixed operation. */
+    return drawing_borrow(grant,left,top,right,bottom,0,&pen);
 }

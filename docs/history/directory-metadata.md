@@ -177,3 +177,25 @@ throughput nor qualify a release or real hardware. No demo/release was rebuilt.
 The subsequent [SpartaDOS listing measurements](spartados-listing-measurements.md)
 time complete resident DIR and loaded LIST invocations, including output and
 first-row drawing, on cold/warm IDE and SIO configurations.
+
+## Main branch integration
+
+The merge with main at `35a75e45` combines the local exact-query binding with
+upstream device/AES imports and DeleteFile under C application ABI **16**.
+DeleteFile uses DOS bridge entry 20 and ExamineExact entry 21. Rebuild the
+resident C provider and applications together; the earlier ABI-12 measurements
+above retain their original inputs.
+
+The bridge table grows from 63 to 66 upper-memory bytes. The focused Calypsi
+probe places it at `$0D0009` without added linker alignment padding. Its shared
+literal plus table extent is 75 bytes; allocation rounding belongs to the
+containing image. This resolution adds **0 fixed, 0 per-Task and 0 private idle
+reserved bank-zero bytes**, including guards, alignment and unused capacity.
+
+The [integration evidence](../development/main-integration.json) records 469
+passing host tests, all 29 optimized shell formatter cases, and the optimized
+C/native plus loaded COMMAND exact-query probe with compiler `81dd7dc5`.
+The C probe also checks DeleteFile's read-only rejection through its separate
+bridge entry. Guard and ownership checks pass, with zero live Tasks after
+cleanup. These are development checks; earlier timing evidence is not
+requalified by this merge.

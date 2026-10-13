@@ -9,7 +9,7 @@ USE LAYERS
 CARD checks,geometryCases
 LAYERTYPES.Region POINTER first,second
 LAYERTYPES.Scene POINTER scene
-LONGCARD ARRAY handles(8)
+LONGCARD ARRAY handles(10)
 CARD sceneCases,sceneSize,scenePhase
 CARD paints,copies,redraws
 CARD maxRects,maxPaintRects
@@ -281,6 +281,8 @@ PROC SceneFailures()
   Require(LAYERS.Delete(scene,handles(5))=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,handles(6))=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,handles(7))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(8))=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,handles(9))=LAYERTYPES.OK)
   Require(scene.count=0)
   REGIONS.Assign(@bounds,0,0,8,8)
   Require(LAYERS.Create(scene,@bounds,NULL)=LAYERTYPES.BAD_ARGUMENT)

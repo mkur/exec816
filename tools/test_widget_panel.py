@@ -17,7 +17,7 @@ from generate_desktop import layout
 from generate_layers import layout as layer_layout
 from desktop_budget import delta
 from stack_budget import stack_usage
-from gem_render_oracle import Raster, font_bytes, PALETTE, PENS
+from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE as PALETTE, PENS
 from control_panel_oracle import panel
 from test_gem_cursor import overlay
 from measure_desktop import distribution

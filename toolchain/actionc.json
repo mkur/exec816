@@ -1,14 +1,12 @@
 {
   "schema_version": 1,
   "repository": "https://github.com/mkur/actionc.git",
-  "revision": "6510ea1d148c93edea595be8a5afa9630d5a75e3",
+  "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
   "binary": "actionc-65816",
   "target": "wdc-65816-native",
   "abi": "action65816.native.v2",
   "image_format_version": 3,
   "abi_json": "docs/abi/action65816-native-v2.json",
   "abi_assembly": "docs/abi/action65816-native-v2.inc",
-  "abi_action": "docs/abi/action65816-native-v2.act",
-  "local_bundle": "toolchain/actionc-pointer-arrays.bundle",
-  "bundle_base": "f1ff4ce0d16b4705e66d69aad00ca4a7be3e1d08"
+  "abi_action": "docs/abi/action65816-native-v2.act"
 }

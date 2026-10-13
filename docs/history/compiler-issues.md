@@ -109,3 +109,20 @@ adds image-v3 packaging checks and reruns native execution plus 19 hosted groups
 before advancing the pin. It also records the pre-existing host-test failure
 caused by the historical SIO source-hash mismatch; no old qualification evidence
 is rewritten.
+
+## Colour desktop: Calypsi 5.18 signed right shift
+
+During CG2 development, `WORD arithmetic(WORD value) { return value >> 3; }`
+emitted the following sequence with both `-O0` and `-O2`, large-code/huge-data
+models: `LSR; LSR; LSR; EOR #4; AND #7; SEC; SBC #4; RTL`. For positive input
+384 this computes zero instead of 48. The unsigned WORD version emits three
+LSRs and RTL. The first physical desktop comparison exposed the consequence:
+WF_INFO held the correct string, but its calculated display capacity was zero.
+
+This observation concerns the separately installed **Calypsi 5.18 C compiler**,
+not actionc or its pin. The frame now expresses its nonnegative pixel span as
+UWORD, like the existing title span. No compiler/runtime exception, wrapper or
+kernel workaround was added. An upstream Calypsi fix and a separate audit of
+signed shifts remain outside the desktop milestone; no upstream report has been
+sent. The reproduction and listings are retained under
+`build/colour-desktop/signed-shift{,-raw}.{c,lst,o}` in the development workspace.

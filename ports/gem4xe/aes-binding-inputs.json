@@ -348,6 +348,24 @@
         3,
         0
       ]
+    },
+    "menu_icheck": {
+      "opcode": 31,
+      "control_counts": [
+        2,
+        1,
+        1,
+        0
+      ]
+    },
+    "wind_find": {
+      "opcode": 106,
+      "control_counts": [
+        2,
+        1,
+        0,
+        0
+      ]
     }
   },
   "words": "WORD signed16, UWORD unsigned16, LONG signed32. Timer low/high reassembled unsigned32. C huge pointers 32bits, native pointers 24bits checked before conversion.",
@@ -358,7 +376,7 @@
     "10": "4: selected VBXE packed 4bpp display",
     "others": "zero; resources are per-context and obtained with rsrc_gaddr, no GEM system pointers exposed"
   },
-  "unsupported": "Unlisted opcodes, unsupported window fields/kinds, off-screen windows and resizing fail explicitly. evnt_multi supports all nonempty combinations of MU_KEYBD/MU_BUTTON/MU_MESAG/MU_TIMER. Button support is one left click, mask=1, state=0/1, clicks=1/0x0101; rectangle and multiple-click events are unsupported. Application VDI is confined to the visible work area under BEG_UPDATE; fixed font, solid fill and replace mode only.",
+  "unsupported": "Unlisted opcodes, unsupported window fields/kinds and off-screen windows fail explicitly. evnt_multi supports MU_KEYBD/MU_BUTTON/MU_M1/MU_MESAG/MU_TIMER; MU_M2 is unsupported. Left button mask=1, state=0/1, clicks=1/2/0x0101. Application VDI uses the visible work area under BEG_UPDATE; fixed font, solid fill and replace mode only.",
   "vdi_calls": {
     "v_opnvwk": {
       "opcode": 100,

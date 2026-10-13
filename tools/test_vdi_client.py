@@ -6,6 +6,7 @@ from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
 from test_desktop_presentation import rectangle,frame,desktop,text
 from test_gem_cursor import overlay
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 import adapter_state as adapter
 
@@ -17,35 +18,57 @@ def extract_with_preemption(folder):
     needle='    vwk.h_align=vwk.v_align=vwk.text_effects=0;'
     require(source.count(needle)==1,'Private workstation selection boundary changed')
     source='extern void VDIYield(void);\nextern void VDITextYield(void);\n'+source.replace(needle,needle+'\n    VDIYield();')
-    fast='        vbxe_text_run(u->x,u->top,text,u->count,u->textColor,0);'
+    fast='        vbxe_text_run(middle,u->top,text,count,u->textColor,0);'
     require(source.count(fast)==1,'VDI text upload boundary changed')
     source=source.replace(fast,'        VDITextYield();\n'+fast)
     path.write_text(source)
-    record['fixture_override']=dict(reason='Yield after private workstation selection and fast text scratch packing',vdi_sha256=sha256(path))
+    device=folder/'src/vdi/dev_vbxe.c'; device_source=device.read_text()
+    glyph='void dev_glyph(WORD ch, WORD cx, WORD cy, WORD overlay)\n{'
+    require(device_source.count(glyph)==1,'Device glyph boundary changed')
+    device.write_text('extern void VDIGlyphProbe(void);\n'+device_source.replace(glyph,glyph+'\n    VDIGlyphProbe();'))
+    record['fixture_override']=dict(reason='Yield after private workstation selection and fast text scratch packing',vdi_sha256=sha256(path),device_sha256=sha256(device))
     return record
 
 
 def expected(font, covered=False):
     r=Raster(font);desktop(r)
-    frame(r,(32,24,560,208),b'Exec816 Shell',False)
+    frame(r,(32,24,560,208),b'Shell',False)
     long_text=bytes(65+i%26 for i in range(192))
     for who,(x,y) in enumerate(((33,17),(33,17) if covered else (201,65))):
-        frame(r,(x,y,x+300,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)
-        l,t,right,bottom=x+8,y+16,x+292,y+132
+        frame(r,(x,y,x+400,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)
+        l,t,right,bottom=x+8,y+16,x+392,y+132
         r.clip=(l,t,right-1,bottom-1)
         r.fill=2 if who else 4;r.apply(11,(-300,-300,1000,1000))
         r.clip=(l+8,t+12,l+78,t+14);r.fill=3;r.apply(11,(-300,-300,1000,1000))
         r.text=6 if who else 1;r.apply(8,(l+4,t+15),b'ABCDEFGHIJKLMN')
         r.clip=(l,t,right-1,bottom-1)
         r.apply(8,(l-140*8,t+30),long_text)
-        r.apply(8,(l,t+46),bytes(48+i%10 for i in range(40)))
-        bank_text=bytes(65+i%26 if i%4<2 else 32 for i in range(40))
+        r.apply(8,(l,t+46),bytes(48+i%10 for i in range(80)))
+        bank_text=bytes(65+i%26 if i%4<2 else 32 for i in range(80))
         r.apply(8,(l+1,t+62),bank_text)
         r.apply(8,(l+1,t+78),bank_text)
-        r.text=0;r.apply(8,(l+1,t+94),b'Zero ink       ')
+        r.text=0;r.apply(8,(l+(0 if who else 1),t+94),b'012345678901234567890123456789012345678' if who else b'Zero ink       ')
+        r.apply(8,(l,t+110),bytes((255,32,65)))
         r.clip=(0,0,639,239)
     rectangle(r,(0,0,640,15),0);rectangle(r,(0,15,640,16),1)
-    text(r,8,4,b'VDI B');text(r,440,4,b'Windows')
+    text(r,8,4,b'VDI B');text(r,568,4,b'Windows')
+    return r
+
+
+def clipped_scene(font):
+    r=expected(font);l,t=209,81
+    r.clip=(l,t,l+383,t+115)
+    for pen in range(16):
+        r.fill=pen;r.apply(11,(l+pen*24,t,l+pen*24+23,t+115))
+    cases=((10,13,106),(11,11,104),(10,13,103),(11,14,104),
+           (10,26,82),(11,14,15),(10,16,20),(10,112,120),
+           (11,14,104),(-5,13,103),(10,13,103),(11,14,104))
+    bank_text=bytes(65+i%26 if i%4<2 else 32 for i in range(80))
+    for i,(x,left,right) in enumerate(cases):
+        r.clip=(l+left,t+i*9+(2 if i==8 else 0),l+right-1,t+i*9+(5 if i==8 else 7))
+        r.text=0 if i>=10 else 6
+        r.apply(8,(-5 if i==9 else l+x,t+i*9+6),bank_text if i==9 else b'A W09 BC DEF')
+    r.clip=(0,0,639,239)
     return r
 
 
@@ -77,15 +100,23 @@ def physical(b,p,foreign,report):
     position=schedule(b,p,position,(70,57));frames(20)
     b.poke16(sy['VDIGo'],2);phase(3);frames(160)
     model=expected(font_bytes(out/'selected/src/vdi/font8x8.c'))
-    report['vdi_pixels']=pixels(b,out,overlay(model,position))
+    report['vdi_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     report['virtual_open_pixels']='unchanged'
     report['fast_text_units']=[int.from_bytes(b.memdump(sy['VDITextUnits']+i*2,2),'little') for i in range(2)]
     require(all(report['fast_text_units']),'Both clients must use the accelerated text path')
     report['backend_units']=[int.from_bytes(b.memdump(sy['VDIUnits']+i*2,2),'little') for i in range(2)]
     position=schedule(b,p,position,(620,232));frames(80)
-    report['cursor_restored_pixels']=pixels(b,out,overlay(model,position))
+    report['cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],3);phase(4);frames(120)
-    report['covered_pixels']=pixels(b,out,overlay(expected(model.font,True),position))
+    report['covered_pixels']=pixels(b,out,overlay(expected(model.font,True),position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],4);phase(5);frames(120)
-    report['exposed_pixels']=pixels(b,out,overlay(model,position))
-    b.poke16(sy['VDIGo'],5);b.bp_clear_all()
+    report['exposed_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
+    position=schedule(b,p,position,(235,100));frames(40)
+    b.poke16(sy['VDIGo'],5);phase(6);frames(80)
+    model=clipped_scene(model.font)
+    report['clip_native_runs']=[b.peek16(sy['VDIClipNative']+i*2) for i in range(12)]
+    report['clip_device_glyphs']=[b.peek16(sy['VDIClipGlyphs']+i*2) for i in range(12)]
+    report['clip_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
+    position=schedule(b,p,position,(620,232));frames(80)
+    report['clip_cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
+    b.poke16(sy['VDIGo'],6);b.bp_clear_all()

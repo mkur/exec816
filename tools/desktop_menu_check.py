@@ -32,10 +32,10 @@ class Menus:
                 visible.append(s.number(at, 4))
         result = []
         wf = self.types['Window']['fields']
-        for slot in range(4):
+        for slot in range(__import__('generate_desktop').ABI['constants']['WINDOWS']):
             at = self.service+self.types['Service']['fields']['windows']+slot*self.types['Window']['size']
             ident, layer = s.number(at+wf['id'], 4), s.number(at+wf['layer'], 4)
-            if ident and layer in visible:
+            if ident and layer in visible and not s.number(at+wf['frameKind'],2)&512:
                 title = s.b.memdump(at+wf['title'], 65).split(b'\0')[0].decode('ascii')
                 result.append(dict(id=ident, title=title, rank=visible.index(layer)))
         return result
@@ -54,7 +54,7 @@ class Menus:
         windows = self.windows()
         row = next(i for i, window in enumerate(windows) if title in window['title'])
         target = windows[row]['id']
-        self.click(472, 8)
+        self.click(600, 8)
         require(self.s.number(self.at('DESKMENU', 'menu'), 1) == 2, 'Windows menu did not open')
         self.click(472, 24+row*16)
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, target))
@@ -70,7 +70,7 @@ class Menus:
         candidates = [w for w in self.windows() if w['id'] != owner]
         expected = min(candidates, key=lambda w: w['rank'])['id'] if candidates else 0
         if self.s.number(self.at('DESKAPPMENU', 'owner'), 3):
-            self.click(472, 8)
+            self.click(600, 8)
             self.click(472, 24+(len(self.windows())+1)*16)
         else:
             self.click(80, 8)
@@ -93,16 +93,16 @@ def exercise(s, sy, click, move):
     require(counter != shell, 'Covered Counter was not selected')
     move(632, 232); s.cells('menu-covered-counter')
     ticks = s.number(sy['GEMCounter']+14, 4)
-    click(472, 8)
+    click(600, 8)
     move(632, 232); s.cells('windows-menu-open')
     require(s.number(sy['GEMCounter']+14, 4) > ticks, 'Menu stopped Counter updates')
     menus.key('ESC')
     require(menus.focus() == counter and s.number(menus.at('DESKMENU', 'menu'), 1) == 0,
             'Escape changed focus or left menu open')
     s.cells('windows-menu-dismissed')
-    click(472, 8); click(600, 220)
+    click(600, 8); click(600, 220)
     require(menus.focus() == counter, 'Outside menu click passed through')
-    click(472, 8); move(472, 24)
+    click(600, 8); move(472, 24)
     s.b._cmd_ok('MOUSE AT 2000 0 0 1'); s.frames(25)
     menus.key('ESC')
     s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(70)
@@ -133,7 +133,7 @@ def exercise(s, sy, click, move):
     require(s.number(sy['GEMPanel']+10, 4) == panel_actions, 'Desktop menu leaked input into Panel')
     # A held application button keeps its gesture when dragged across the bar.
     move(456, 104); s.b._cmd_ok('MOUSE AT 2000 0 0 1'); s.frames(30)
-    move(472, 8); s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(70)
+    move(600, 8); s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(70)
     require(s.number(sy['GEMPanel']+10, 4) == panel_actions
             and not s.number(menus.at('DESKMENU', 'menu'), 1), 'Bar stole an application gesture')
     # The title remains reachable below the bar; restore its original position.

@@ -10,6 +10,7 @@ from test_mouse_observe import BRIDGE,ROM,PIN
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
 from test_desktop_presentation import desktop, rectangle,frame
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from generate_aes_server import ABI
@@ -64,18 +65,17 @@ def run(out,program):
                 ids=[get(app(i,'window')) for i in range(2)]
                 order=[1,0] if top==ids[0] else [0,1]
                 r=Raster(font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'))
-                desktop(r);frame(r,(32,24,560,208),b'Exec816 Shell',focused and top==0)
+                desktop(r);frame(r,(32,24,560,208),b'Shell',focused and top==0)
                 states=[]
                 for i in order:
                     if not get(app(i,'ready')):continue
                     x,y,w,h=struct.unpack('<4h',b.memdump(app(i,'work'),8));count=get(app(i,'count'),4)
                     frame(r,(x-8,y-16,x+w+8,y+h+8),b'Counter B' if i else b'Counter A',focused and top==ids[i],close=True)
                     r.clip=(x,y,x+w-1,y+h-1);r.text=2 if i else 4
-                    r.apply(8,(x+8,y+14),b'GEM counter')
-                    r.apply(8,(x+8,y+30),('Count: %06d'%count).encode())
+                    r.apply(8,(x+8,y+14),('Count: %06d'%count).encode())
                     r.clip=(0,0,639,239)
                     states.append(dict(instance=i,work=[x,y,w,h],count=count,paints=get(app(i,'paints'),4)))
-                digest=pixels(b,out,overlay(r,position))
+                digest=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
                 report['cases'].append(dict(name=name,states=states,top=top,pixels=digest))
                 print(name,'pixels pass',flush=True)
             def before(b):
@@ -104,12 +104,12 @@ def run(out,program):
                 move(620,232);snapshot('physical-move')
                 # Cover A exactly with B, keep A's model ticking without pixels.
                 ax,ay,_,_=struct.unpack('<4h',b.memdump(app(0,'work'),8))
-                resume(1);message(1,'WM_MOVED',(ax-8,ay-16,208,104));message(1,'WM_TOPPED')
+                resume(1);message(1,'WM_MOVED',(ax-8,ay-16,144,48));message(1,'WM_TOPPED')
                 frames(180);pause(1);resume(0);before_count=get(app(0,'count'),4)
                 frames(180);pause(0)
                 require(get(app(0,'count'),4)>before_count,'Covered application model stopped')
                 snapshot('fully-covered-model')
-                resume(1);message(1,'WM_MOVED',(241,97,208,104));frames(140);pause(1)
+                resume(1);message(1,'WM_MOVED',(241,97,144,48));frames(140);pause(1)
                 resume(0);frames(100);pause(0);snapshot('latest-model-exposed')
                 # Let an armed alarm expire while a redraw queues, then resume
                 # the same pending evnt_multi decision. Both bits must be handled.

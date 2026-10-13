@@ -247,7 +247,7 @@ class DemoPackageTests(unittest.TestCase):
         guide='docs/gem-desktop-distribution.txt'
         (self.root/guide).write_bytes((ROOT/guide).read_bytes())
         artifacts={'program.xex':'native-image-digest'}
-        for name in package_demo.GEM_NOTICES+package_demo.CALCULATOR_NOTICES:
+        for name in package_demo.GEM_NOTICES+package_demo.CALCULATOR_NOTICES+package_demo.G4BENCH_NOTICES:
             payload=('notice '+name).encode();(source/name).write_bytes(payload)
             artifacts[name]=hashlib.sha256(payload).hexdigest()
         manifest=source/'demo-manifest.json'
@@ -262,8 +262,9 @@ class DemoPackageTests(unittest.TestCase):
             with zipfile.ZipFile(self.archive) as archive:
                 text=archive.read('exec816-demo/README.txt')
                 self.assertIn(b'CALC.APP',text);self.assertIn(b'SYS:CALC.RSC',text)
+                self.assertIn(b'G4BENCH.APP',text);self.assertIn(b'WORK:G4BENCH.TXT',text)
                 self.assertNotIn(b'@POINTER_',text)
-                for name in package_demo.CALCULATOR_NOTICES:
+                for name in package_demo.CALCULATOR_NOTICES+package_demo.G4BENCH_NOTICES:
                     self.assertEqual(archive.read('exec816-demo/'+name),(source/name).read_bytes())
             (source/package_demo.CALCULATOR_NOTICES[0]).write_text('changed')
             with self.assertRaisesRegex(ValueError,'Changed bitmap shell notice'):

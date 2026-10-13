@@ -192,6 +192,9 @@ and stages it in upper memory using reads of at most 4,096 bytes. Seek/read use
 ordinary cancellable DOS calls. The file is closed before `PROGRAM.Load` validates
 and publishes an Image; staging is freed before return. Break is checked between
 reads and before/after validation. The first causal error survives cleanup.
+The Image copies up to 23 bytes of the leaf filename for the
+[Process Task name](process.md). The source path remains caller-owned and can
+be reused as soon as Load returns; the copied name follows the Image lifetime.
 
 The shell dispatches built-ins first. Bare tokens use the shell's bounded
 [PATH search](../guides/shell.md#path), initially CurrentDir then C:. Standard

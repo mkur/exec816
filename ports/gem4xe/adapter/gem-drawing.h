@@ -19,7 +19,7 @@ UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
                      UWORD foreground,UWORD background);
-/* Nonempty even-X text followed by a nonempty even-X/even-width screen fill.
+/* Nonempty text at either X parity followed by a nonempty even-X/even-width screen fill.
  * Fill area is at most VBXE_TEXT_FILL_WORK pixels. Validate both before any
  * drawing; append the fill to the final bounded text list and fence it once. */
 UWORD GemDrawingTextFill(UWORD x,UWORD y,const UBYTE *text,UWORD count,
@@ -44,8 +44,22 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* Flat GEM pattern 2: black dots at odd window-relative X/Y, on white. */
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
                      UWORD originX,UWORD originY);
-/* One admitted synchronous unit, at most sixteen rows. The callback is linked
+/* One admitted synchronous unit, at most 32 rows. The callback is linked
  * renderer code, never a borrowed application function pointer. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context);
+/* Solid replacement only: the caller splits visibility intersections at the
+ * returned row capacity. These taller units share the ordinary borrow lifecycle. */
+UWORD GemSolidRows(UWORD left,UWORD right);
+UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD pen);
+/* Trusted, nonempty screen/redirected-strip geometry; append to the current
+ * batch and split at its existing work limit, without submitting each fill. */
+void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
+/* Native-word monochrome planes, word-aligned width <=64; visible strip <=32
+ * rows. Caller holds the existing display grant; half-open clip is on screen. */
+void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD fg,UWORD bg);
+void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom);
 #endif

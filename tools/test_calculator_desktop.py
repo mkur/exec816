@@ -128,7 +128,7 @@ class CalculatorDesktop:
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
     def feedback(self,s,sy,move):
-        from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
+        from gem_render_oracle import Raster,font_bytes,DESKTOP_PALETTE as PALETTE,PENS
         from gem_desktop_oracle import paint
         from test_gem_cursor import overlay
         from sio_transaction_trace import BASE_HZ

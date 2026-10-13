@@ -33,7 +33,7 @@ ConsoleBridgeProbe:
               lda ##23049
               sta dp:18
               sep #0x20
-              lda #0x0c
+              lda #(.byte2 ConsoleProbeClobber)
               pha
               rep #0x20
               lda ##(.word0 ConsoleProbeClobber)
@@ -116,7 +116,7 @@ ConsoleBridgeProbe:
               lda ##23049
               sta dp:18
               sep #0x20
-              lda #0x0c
+              lda #(.byte2 ConsoleProbeClobber)
               pha
               rep #0x20
               lda ##(.word0 ConsoleProbeClobber)

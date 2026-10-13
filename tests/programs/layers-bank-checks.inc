@@ -6,6 +6,7 @@ PROC BankCrossing()
   LONGCARD id,token
   BYTE slot
 
+  scenePhase=60
   state=LAYERTYPES.Scene POINTER($11fff0)
   Require(LAYERS.Init(state,640,240)=LAYERTYPES.OK)
   REGIONS.Assign(@bounds,64,40,192,80)
@@ -29,10 +30,13 @@ PROC BankCrossing()
   Require(LAYERS.Show(state,id,1)=LAYERTYPES.OK)
 
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
-    Require(LAYERS.BeginPaint(state,state.items(slot).id,@token)=LAYERTYPES.OK)
-    Require(LAYERS.PaintRegion(state,token)=@state.work)
-    ExhaustPaint(state,token)
-    Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
+    IF state.items(slot).id<>0 OR slot=LAYERTYPES.BACKGROUND_SLOT THEN
+      Require(LAYERS.BeginPaint(state,state.items(slot).id,@token)=LAYERTYPES.OK)
+      Require(LAYERS.PaintRegion(state,token)=@state.work)
+      ExhaustPaint(state,token)
+      Require(LAYERS.Finish(state,token,1)=LAYERTYPES.OK)
+    FI
+
   OD
 
   Require(state.rebuilds=7 AND state.busy=0)

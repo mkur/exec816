@@ -98,7 +98,8 @@ PUBLIC PROC Lost(AESSTATE.Client POINTER client CARD sources)
   FI
 
   inbox.loss=inbox.loss OR sources
-  IF (inbox.interest & sources)<>0 THEN
+  IF (inbox.interest & sources)<>0 OR ((sources & AESTYPES.INPUT_BUTTON)<>0
+      AND (inbox.interest & AESTYPES.MU_M1)<>0) THEN
     Wake(endpoint)
   FI
 
@@ -157,8 +158,8 @@ PUBLIC BYTE FUNC Publish(AESSTATE.Client POINTER client CARD source
 
 RETURN(1)
 
-; Motion updates the snapshot without waking. Ownership handback can satisfy a
-; level wait without another edge, so false-to-true eligibility does wake it.
+; Wake motion interests only for a changed eligible snapshot. The caller owns
+; rectangle matching; button edges keep their separate retained FIFO.
 PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
     AESTYPES.InputRecord POINTER sample CARD eligible)
   BYTE notify
@@ -177,6 +178,11 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client
 
   notify=inbox.eligible=0 AND eligible<>0
       AND (inbox.interest & AESTYPES.INPUT_BUTTON)<>0
+  IF eligible<>0 AND (inbox.interest & AESTYPES.MU_M1)<>0
+      AND (inbox.eligible=0 OR inbox.latest.x<>sample.x
+      OR inbox.latest.y<>sample.y OR inbox.latest.windowEpoch<>sample.windowEpoch) THEN
+    notify=1
+  FI
   A816MEMORY.Move(BYTE POINTER(@inbox.latest),BYTE POINTER(sample),
       AESTYPES.INPUTRECORD_SIZE)
   inbox.latest.epoch=inbox.windowEpoch

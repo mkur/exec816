@@ -41,11 +41,11 @@ def scene(output,text=b'',focus=0,count=0,progress=2048,done=True,cursor=(320,12
     from test_gem_cursor import overlay
     return overlay(r,cursor)
 
-def pixels(b,folder,expected):
+def pixels(b,folder,expected,palette=PALETTE):
     b.screenshot(str(folder/'scene.png'))
     frame=b.rawscreen(str(folder/'scanout.bgra'));raw=(folder/'scanout.bgra').read_bytes()
     require((frame.width,frame.height)==(672,240),'Wrong geometry')
-    rgb=bytes((v&254)+(v>>7) for v in PALETTE);hardware=[None]*16
+    rgb=bytes((v&254)+(v>>7) for v in palette);hardware=[None]*16
     for pen,hw in enumerate(PENS):hardware[hw]=rgb[pen*3:pen*3+3][::-1]
     cropped=b''.join(raw[y*frame.stride+64:y*frame.stride+2624] for y in range(240))
     actual=b''.join(cropped[i:i+3] for i in range(0,len(cropped),4))

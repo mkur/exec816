@@ -49,14 +49,13 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
       IF layer.id<>DESKSTATE.barLayer THEN
         RETURN(1)
       FI
-      phase^=2
-      RETURN(2)
+      ; Finish the left caption in this turn; later turns paint Windows.
     FI
   FI
   IF layer.id<>DESKSTATE.barLayer THEN
     IF phase^=0 THEN
       menuGlyph=0
-      phase^=1
+      phase^=BYTE(CARD(clip.top-layer.bounds.top) RSH 4)+1
     FI
 
     row=phase^-1
@@ -82,7 +81,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     FI
 
     phase^==+1
-    RETURN(IF phase^>BYTE(CARD(layer.bounds.bottom-layer.bounds.top) RSH 4)
+    RETURN(IF bounds.bottom>=clip.bottom
         THEN 1 ELSE 2 FI)
   FI
 
@@ -95,14 +94,14 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     background=0
     foreground=1
     IF phase^=1 THEN
-      REGIONS.Assign(@bounds,0,0,320,15)
+      REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,15)
       IF DESKMENU.paintMenu=DESKMENU.APP_MENU THEN
         background=1
         foreground=0
       FI
       okay=Fill(@bounds,clip,background)
       IF okay<>0 THEN
-        okay=Text(8,4,@DESKMENU.title(0),foreground,background,clip,32)
+        okay=Text(8,4,@DESKMENU.title(0),foreground,background,clip,14)
       FI
       phase^=2
       RETURN(IF okay<>0 THEN 2 ELSE 0 FI)

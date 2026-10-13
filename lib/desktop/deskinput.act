@@ -148,6 +148,9 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
         IF window.kind=DESKTYPES.CONTENT_AES THEN
           BEGIN
             LET client=AESWINDOWSTATE.Find(window.id)
+            LET item=AESWINDOWSTATE.FindRecord(window.id)
+            keySample.window=item.gui.window
+            keySample.windowEpoch=item.view.epoch
             keySample.x=cursorX
             keySample.y=cursorY
             keySample.buttons=buttons
@@ -362,7 +365,7 @@ PUBLIC PROC Present()
   BYTE drawn
 
   IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
-    IF AESLOCKS.MouseBlocked()<>0 THEN
+    IF AESLOCKS.MouseBlocked()<>0 AND DESKDRAG.Application()=0 THEN
       DESKDRAG.Suspend()
     ELSE
       DESKDRAG.Present()

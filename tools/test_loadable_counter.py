@@ -58,7 +58,8 @@ def run(out,reuse=False):
                     report['cases'].append(dict(phase=phase,bases=bases,
                         counts=[number(m+14,4) for m in models]))
                     if phase==1:
-                        position=schedule(b,p,position,(392,40));frames(20)
+                        x,y=[number(models[1]+38+i*2) for i in range(2)]
+                        position=schedule(b,p,position,(x,y-8));frames(20)
                         b._cmd_ok('MOUSE AT 2000 0 0 1');frames(15)
                         b._cmd_ok('MOUSE AT 2000 0 0 0');frames(80)
                         require(any(number(m+12)==0 for m in models),'Physical close did not retire a counter')

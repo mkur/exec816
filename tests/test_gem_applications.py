@@ -30,13 +30,14 @@ class ApplicationObserverTests(unittest.TestCase):
         records = layout()
         request = records['Request']['fields']
         view = records['WindowView']['fields']
+        views = dict(expected_layout())['C context views']
         # Two live copies of Counter; both caller work[] outputs are zero.
         apps = []
         for index, bounds in enumerate(((24, 48, 224, 144), (240, 48, 440, 144))):
             context, target, task = 256+index*512, 2048+index*1024, 12800+index*128
             bridge.put(64+index*4, context, 4)
             bridge.put(context+request['owner'], task, 3)
-            bridge.put(context+request['view'], target, 3)
+            bridge.put(context+views, target, 4)
             bridge.put(target+view['shown'], 1, 2)
             for offset, value in enumerate(bounds):
                 bridge.put(target+view['bounds']+offset*2, value, 2)
@@ -56,6 +57,8 @@ class ApplicationObserverTests(unittest.TestCase):
         from browser_model import FIELDS
         from gem_desktop_oracle import paint
         bridge = Bridge(); base, context = 1024, 8192
+        path = base+FIELDS['path']
+        bridge.memory[path:path+5] = b'SYS:\0'
         for field, value in (('dialog', 1), ('focus', 2), ('editIndex', 126)):
             bridge.put(base+FIELDS[field], value, 2)
         text = base+FIELDS['editText']
@@ -66,11 +69,12 @@ class ApplicationObserverTests(unittest.TestCase):
         # At index 127 a ten-column field scrolled to 118. One Backspace
         # moves the caret left within that viewport; it does not scroll back.
         bridge.put(context+dict(expected_layout())['C context editScroll'], 118, 2)
+        bridge.put(context+dict(expected_layout())['C context editTree'], base+FIELDS['dialogTree'], 4)
         calls = []
         raster = SimpleNamespace(apply=lambda *args: calls.append(args))
         with patch('gem_desktop_oracle.draw'), patch('gem_desktop_oracle.rectangle') as rectangle:
             paint(bridge, {'GEMBrowser': base, 'objc_edit': 1, '__aes_context': context},
-                  raster, b'Files', (0, 0, 200, 120))
+                  raster, b'SYS:', (0, 0, 200, 120))
         self.assertEqual(calls[-1][2], b'A'*8)
         self.assertEqual(rectangle.call_args.args[1], (88, 36, 89, 44))
 

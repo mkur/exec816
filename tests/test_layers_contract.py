@@ -15,8 +15,8 @@ class LayersTests(unittest.TestCase):
             self.assertEqual(path.read_text(), content)
         self.assertEqual(generate_layers.layout()['Rect']['size'], 8)
         self.assertEqual(generate_layers.layout()['Region']['size'], 770)
-        self.assertEqual(generate_layers.layout()['Scene']['size'], 6790)
-        self.assertEqual(generate_layers.layout()['Scene']['fields']['busy'], 24)
+        self.assertEqual(generate_layers.layout()['Scene']['size'], 8496)
+        self.assertEqual(generate_layers.layout()['Scene']['fields']['busy'], 26)
 
     def test_oracle_rejects_hole_and_duplicate(self):
         base = (0, 0, 10, 10)
@@ -39,5 +39,5 @@ class LayersTests(unittest.TestCase):
         self.assertEqual(scenes[2][1][0], 1)
         self.assertEqual(scenes[4][1][4*32+8], 2)
         self.assertEqual(scenes[8][1][12], 4)
-        self.assertEqual(scenes[11], scenes[10])  # rejected seventh layer
-        self.assertEqual(scenes[22:], [scenes[21]]*8)
+        self.assertEqual(scenes[13], scenes[12])  # rejected ninth layer
+        self.assertEqual(scenes[24:], [scenes[23]]*8)

@@ -6,6 +6,7 @@
 ULONG AESService;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
 volatile UWORD AESPointerCommand, AESPointerButtons, AESPointerQualifiers, AESPointerKind;
+volatile UWORD AESPointerTick, AESPointerFlags;
 volatile WORD AESPointerX, AESPointerY;
 volatile ULONG AESPointerClient, AESPointerAck;
 static struct Task *controller, *peer;
@@ -214,6 +215,25 @@ UWORD AESRun(void)
     CHECK(ExecAESInputRecover(c, AES_INPUT_BUTTON) == AES_INPUT_LOST);
     edge(70, 90, 0);
     CHECK(in->eligible && in->buttonHead == in->buttonTail);
+    /* Counts use captured VBI stamps, including wrap, with no aggregation wait. */
+    AESPointerFlags=1;AESPointerTick=65530;
+    edge(80,90,1);edge(80,90,0);
+    { WORD x,y,buttons,keys;
+      CHECK(evnt_button(2,1,1,&x,&y,&buttons,&keys)==1);
+      CHECK(evnt_button(2,1,0,&x,&y,&buttons,&keys)==1);
+      AESPointerTick=5;edge(82,91,1);edge(82,91,0);
+      CHECK(evnt_button(2,1,1,&x,&y,&buttons,&keys)==2);
+      CHECK(evnt_button(2,1,0,&x,&y,&buttons,&keys)==2);
+      AESPointerTick=7;edge(82,91,1);edge(82,91,0);
+      CHECK(evnt_button(2,1,1,&x,&y,&buttons,&keys)==1);
+      CHECK(evnt_button(2,1,0,&x,&y,&buttons,&keys)==1);
+      AESPointerTick=9;edge(92,91,1);edge(92,91,0);
+      CHECK(evnt_button(2,1,1,&x,&y,&buttons,&keys)==1);
+      CHECK(evnt_button(2,1,0,&x,&y,&buttons,&keys)==1);
+      AESPointerTick=50;edge(92,91,1);edge(92,91,0);
+      CHECK(evnt_button(2,1,1,&x,&y,&buttons,&keys)==1);
+      CHECK(evnt_button(2,1,0,&x,&y,&buttons,&keys)==1);
+    }
     ExecAESInputDisarm(c);
     peerCommand = 9; Signal(peer, peerWake);
     while (!AESDone) Wait(wake);

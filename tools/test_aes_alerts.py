@@ -7,7 +7,7 @@ def physical(b,p,foreign,report):
     from os_boundary import run_to
     from desktop_mouse import schedule
     from generate_aes_server import expected_layout
-    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from control_panel_oracle import draw
     import adapter_state as adapter
     sy=foreign['symbols'];position=[320,120]

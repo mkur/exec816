@@ -108,7 +108,7 @@ def physical(b,p,foreign,report):
     require(get(sy['AESFormPhase']+2)==1,'Independent peer did not enter its form')
     # Independent full-tree pixels, including the editable-field border/caret.
     import struct
-    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from control_panel_oracle import draw
     from test_desktop_presentation import rectangle
     move(620,220);frames(30)

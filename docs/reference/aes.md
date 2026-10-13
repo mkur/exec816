@@ -38,7 +38,7 @@ and request sequences are separately checked 32-bit values; exhaustion fails
 before reuse, reserving the last sequence for exit.
 
 Registration also publishes a caller-owned receive port, sixteen 32-byte
-application message records and one 36-byte GUI delivery record in the service's
+application message records and one 40-byte GUI delivery record in the service's
 shared endpoint directory. This directory works
 across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
@@ -87,14 +87,14 @@ request-sequence advancement. The named wrapper and parameter-block opcode use
 the same helper.
 
 `evnt_keybd()` waits for one GEM scan/ASCII word. `evnt_button(clicks, mask,
-state, ...)` waits for a left-button condition and returns one with the selected
-screen coordinates, buttons and modifiers. Supported arguments are `mask=1`,
-`state=0/1`, and `clicks=1` or `$0101`. The latter inverts the equality predicate;
+state, ...)` waits for a left-button condition and returns its click count with
+the selected screen coordinates, buttons and modifiers. Supported arguments are
+`mask=1`, `state=0/1`, and `clicks=1`, `2` or `$0101`. The last inverts the equality predicate;
 it does not request multiple clicks. Other button arguments fail as a whole
 with `AES_UNSUPPORTED`.
 
-`evnt_multi` supports all fifteen nonempty combinations of `MU_KEYBD`,
-`MU_BUTTON`, `MU_MESAG` and `MU_TIMER`. At one frozen decision it selects at most
+`evnt_multi` supports all 31 nonempty combinations of `MU_KEYBD`,
+`MU_BUTTON`, `MU_M1`, `MU_MESAG` and `MU_TIMER`. At one frozen decision it selects at most
 one key, one matching button condition and one message. It scans at most sixteen
 retained button transitions before considering an eligible current level; older
 nonmatching transitions retire together with the selected match. A quick down/up
@@ -104,10 +104,27 @@ The application normally changes its next wait to release after accepting down.
 Input waits require an open application window; otherwise they return zero with
 `AES_IDENTITY`. Message/timer-only calls still work without a window. Unselected
 button and rectangle arguments are ignored. Empty/unsupported event masks,
-rectangle events, right/middle buttons and multiple clicks fail explicitly.
+`MU_M2`, right/middle buttons and counts above two fail explicitly.
+
+For `clicks=2`, the first accepted press/release reports one immediately; a second
+press within 25 captured VBI ticks (500 ms PAL / 417 ms NTSC) and four pixels on
+each axis reports two. This deliberately avoids GEM's delayed click aggregation.
+After a pair the next press starts at one. A different window, native gesture,
+input loss or close/reopen breaks the sequence. Counts use capture timestamps,
+not the time an application finishes drawing. Single-click callers still receive
+one; callers must alternate press/release conditions to avoid repeated levels.
 The named wrappers, `evnt_multi_moblk` and correctly sized AES parameter blocks
 use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 (3/5/0/0); multi remains 25 (16/7/1/0).
+
+`MU_M1` matches the latest eligible pointer against the selected rectangle:
+`m_out=0` waits inside, `m_out=1` waits outside; width/height must be positive.
+Right and bottom edges are exclusive. Motion coalesces in the existing snapshot
+and wakes the existing receive-port signal, without motion messages, polling
+or per-sample presenter RPC. The predicate is evaluated in the caller again at
+the frozen decision. An M1 result supplies that decision's pointer coordinates;
+a simultaneous retained button result takes precedence, preserving release
+coordinates even if the pointer has since moved. M1 shares button loss recovery.
 
 A button result supplies the selected button snapshot. A key-only result supplies
 the pointer snapshot captured when that key was published. When both return,
@@ -117,7 +134,7 @@ absent. Native Shift maps to GEM left-Shift (2) and Control to 4; there is no Al
 separate right Shift or standalone Control-click guarantee.
 
 Matching runs in the caller on registration-owned upper-memory scratch, using
-the existing receive-port signal and one absolute timer alarm. Interest is
+the existing receive-port signal and, only for timed waits, one absolute timer alarm. Interest is
 published before the final readiness check. Signals are hints and can arrive
 without a message; no signal is cleared between an empty observation and Wait.
 Each record copy has a short guard; the bounded FIFO scan and timer I/O run
@@ -132,7 +149,8 @@ then rechecks only lifetime/loss epochs before committing consumer positions and
 detaching a message. Later arrivals remain for the next decision. Capture/FIFO
 loss returns zero with `AES_INPUT_LOST` and retires only the lost selected source;
 unrelated input/messages remain queued. Message/timer-only calls leave input
-loss pending. Close/reopen withdraws the input lifetime. Source epoch exhaustion
+loss pending. Closing a window withdraws its captured records; closing the last one withdraws
+the input session. Source epoch exhaustion
 returns `AES_OVERFLOW` until a fresh open lifetime.
 
 A clock/device failure returns zero with `AES_TIMER_ERROR` for timed waits and
@@ -167,23 +185,24 @@ gestures and damage without another input edge. Blocked paint alone does not
 keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
-Each registration can own one window; native and GEM windows share four desktop
-slots. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
-`UPARROW`, `DNARROW` and `VSLIDE`. Create reserves a hidden
+Each registration can own several windows; native and GEM windows share six
+desktop slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
+`UPARROW`, `DNARROW`, `VSLIDE`, `FULLER` and `INFO`. Create reserves a hidden
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
-requires a closed window. Exit closes and deletes any remaining window. Handles
+requires a closed window. Exit closes and deletes all remaining windows. Handles
 are not reused during a service lifetime. The initial profile permits moves at
 individual pixel positions and bounds fully inside the 640 by 240 desktop.
 Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
-`WF_NAME` copies at most 64 characters plus terminator from the high-word,
+`WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
 top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
-SIZER increases the bottom inset to 16. `wind_calc` converts border/work rectangles locally; `wind_get`
+SIZER increases the bottom inset to 16. INFO adds a 12-pixel information line
+below the title, raising the top inset to 28. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries; a native top window is reported as zero.
@@ -193,16 +212,37 @@ size, initially 0 and 1000. Frame pixels are cached at mutation; minimum thumb
 height is eight pixels. Horizontal scrollbars are unsupported.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
-caller owns `BEG_UPDATE`. The presenter publishes the snapshot on acquisition;
+caller owns `BEG_UPDATE`. The presenter publishes every owned window snapshot on acquisition;
 no client reads Layers or retains a scene token. A zero-width/height result ends
 the enumeration, including a completely covered or hidden window. An owner
 mutation invalidates a previous iterator; restart with FIRST. Geometry uses
 half-open internal bounds and GEM x/y/width/height at the binding.
 
+A handle-naming query or mutation selects that window for following VDI/object
+calls. Use the normal WORK/FIRST redraw sequence when changing targets. The
+common current-view lookup is constant-time; switching targets scans at most six
+pointers. No Task or workstation is allocated for each window.
+
+Kind zero creates a borderless surface with no work insets. The Exec extension
+`ExecAESDesktop(handle)` pins one such window below ordinary windows and excludes
+it from Windows/cycling. Topping it changes focus without raising it over peers.
+The standard desktop uses `(0,16,640,224)` and ordinary clipped object drawing.
+
+`ExecAESInputWindow(MU_KEYBD)` and `ExecAESInputWindow(MU_BUTTON)` return the owning
+handles captured with the last corresponding successful event result. Query only
+bits returned by that event call. A combined result can identify two different
+windows. Closing/reopening one window withdraws only its stamped input and GUI
+records; siblings keep their port, input session and menu. Input transport closes
+when the last open window closes. These are binding extensions, not GEM opcodes.
+
 Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 `WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
 application calls the corresponding set or close operation. Inactive clicks
 request top first. The existing native-window behavior is unchanged.
+
+Fuller release sends `WM_FULLED`; the application chooses and remembers its
+full/restore bounds, accepting them through `WF_CURRXYWH`. Release outside the
+gadget cancels.
 
 Size release sends `WM_SIZED` with proposed outer x/y/w/h. Vertical thumb
 release sends `WM_VSLID` with 0..1000 in word 4; arrows and track clicks send
@@ -265,10 +305,30 @@ When painting releases the scene with a native control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
+`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) queries the presenter's
+current layer stack. It returns the topmost normal AES window's global handle,
+including foreign owners and borders. Background, the desktop window and native
+windows return zero; a native window occludes AES windows below it. The query
+does not focus or raise anything.
+
+`ExecAESDragOutline(window,dx,dy,width,height)` starts one pointer-followed
+outline for the caller's captured, open source window under `BEG_MCTRL`.
+Dimensions are 8..80 by 8..32 pixels; the visual is clamped below the menu bar
+and within 640x240. Passing five zeroes stops the caller's visual. A released
+capture or busy visual returns `AES_BUSY`. The presenter owns tracking and
+retires it on release, loss, source close, final MCTRL release or detach, without
+native move/size completion. No client pointer is retained. The owner may acquire
+UPDATE for feedback; the outline is suspended around drawing. Other clients'
+UPDATE requests still wait for MCTRL release, and a queued lock may pause native
+painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
+
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 11 has a 112-byte request and permits init, exit, update,
-window mutations, cold display delegation and session mouse preferences on the
-RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
+profile: version 14 has a 112-byte request and permits init, exit, update,
+window mutations, cold display delegation, menu publication, session mouse
+preferences, `wind_find` and application outline admission on the RPC endpoint.
+Other window queries and rectangle conversion remain local. The input inbox is
+754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
+uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
@@ -338,10 +398,11 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 
 `gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
 `TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
-`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT` and
-`G_FBOXTEXT`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
+`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT`,
+`G_FBOXTEXT`, `G_ICON` and `G_CICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
-with at most 32 objects, eight levels and 63 characters per label. Coordinates
+with at most 32 objects, eight levels and 63 characters per label (12 for
+`G_CICON`). Coordinates
 are pixels. Box specs use a signed border-thickness byte; centering and drawing
 include outward borders. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
@@ -426,7 +487,7 @@ repair on the next message wait, after any deferred message and before queued
 messages. Repair is tied to the open epoch and does not need queue capacity.
 Cleanup failure retains the session for retry; `appl_exit` also finishes an
 abandoned session. No Task, bank-zero or VRAM reservation is added. The C context
-is now 340 live / 344 heap-reserved upper bytes. See the
+is now 368 live / 368 heap-reserved upper bytes. See the
 [dialog development record](../history/standard-dialogs.md).
 
 `form_alert(default_button, text)` (opcode 52, 1/1/1/0) uses the same implicit
@@ -518,7 +579,8 @@ See the [development record](../history/file-selector.md).
 
 `rsrc_load`, `rsrc_free`, `rsrc_gaddr(R_TREE, index, &tree)` and `rsrc_obfix`
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
-big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
+big-endian version-zero RSC files and version-four colour-icon extensions,
+at most 65,535 bytes in total, 256 objects and eight
 trees, using the object/string subset above. Each tree ends with LASTOB within
 32 objects. Up to 256 TEDINFO records support the text types above. Templates
 and validation strings are NUL-terminated, at most 63 characters. Load fixes full
@@ -529,7 +591,37 @@ and its initial NUL must be present in the file. Shared TEDINFO records are fixe
 once. Text remains writable within the resource's supplied buffer.
 The shipped `CALC.RSC` uses this contract for its twelve-byte numeric display
 buffer. `CALC.APP` keeps the loaded tree private to each Process instance.
-Icons, bitmaps, 3D flags, extensions and indirect specs are unsupported.
+G_ICON resources contain standard 34-byte ICONBLKs and monochrome mask/data
+planes. Loading relocates their three full addresses and converts shared bitmap
+words once. Widths are 16/32/48/64 pixels, heights 1–64, labels at most 63 bytes.
+Compiled trees supply native WORD planes, with the left pixel in the high bit.
+Foreground/background pens come from ib_char; SELECTED exchanges them. Bitmap
+mask holes preserve existing pixels; the label uses the fixed 8×8 face. The
+OBJECT bounds enclose its bitmap and label. This icon subset draws normal and
+SELECTED states; callers use HIDETREE for absent items. Disabled icon stippling
+and other decorative state overlays are not implemented.
+G_CICON uses the standard 38-byte CICONBLK and 22-byte CICON. The loader reads
+the version-four extension's index table and inline mono/colour forms, selects
+the first four-plane form, and converts it once from standard planar data into
+VBXE packed hardware pixels. Other depths are skipped; a missing four-plane
+form draws the monochrome fallback. Width/height limits match G_ICON. Colour
+labels contain up to twelve bytes, including a full twelve-byte non-NUL label.
+Compiled trees provide packed four-bit hardware pixels (left nibble first),
+native WORD masks and full addresses; mainlist can be NULL for mono fallback.
+The file format's colour bits use ST hardware ordering, not GEM logical pens.
+
+Colour masks preserve the exterior and holes at either X alignment. SELECTED
+uses sel_data/sel_mask when supplied; otherwise the colour image stays unchanged.
+In either case the label and optional character exchange foreground/background
+pens. This follows GEM4XE's label-only fallback rather than synthesizing a
+darkened selected image. File extents are checked during load; drawing trusts
+the caller-owned tree and prepared data. Conversion temporarily uses 2 KiB of
+upper RAM, freed before load returns. Painting reuses the existing CPU/VRAM
+scratch and two masked blits, without persistent icon caches.
+
+G_IMAGE, 3D flags, other resource extensions, colour-depth expansion, custom
+palettes, disabled-icon stippling and indirect specs are unsupported.
+See the [colour-icon implementation record](../history/colour-icons.md).
 Character coordinates use the fixed 8×8 cell. File extents and string offsets are
 checked once during loading; valid object links remain the caller's responsibility.
 Already loaded coordinates are pixels and must not be passed through obfix again.
@@ -539,8 +631,8 @@ its previous resource intact. Explicit free or successful appl_exit releases it;
 borrowed tree/string pointers then expire. Application strings assigned to an
 object remain application-owned.
 
-`menu_bar`, `menu_popup`, `menu_ienable`, `menu_tnormal` and `menu_text` have named
-and AESPB bindings (30/36/32/33/34). Popup menus have one level of direct children, no scrolling
+`menu_bar`, `menu_popup`, `menu_icheck`, `menu_ienable`, `menu_tnormal` and `menu_text` have named
+and AESPB bindings (30/36/31/32/33/34). Popup menus have one level of direct children, no scrolling
 or cascades, and must fit their owning window's work area. The caller supplies a
 valid MENU/tree and keeps strings alive; enter without an UPDATE lock. Button release, Tab/Up/Down, Return and
 Escape select or cancel. The popup acquires UPDATE only while painting and uses
@@ -551,25 +643,29 @@ consumed by the next message wait. This adds no kernel signal or service queue.
 `menu_bar(tree,1)` installs one borrowed application tree; `menu_bar(tree,0)`
 withdraws it. Other modes fail. Installation does not focus the application and
 may precede its window. The focused shown window selects the visible bar; no
-installed menu uses the desktop fallback. Windows remains available at x=432.
+installed menu uses the desktop fallback. The focused-window caption remains
+at x=0..127, application menus occupy x=128..559, and Windows is at x=560.
 `wind_get(0,WF_WXYWH)` returns `(0,16,640,224)`.
 
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
 siblings under the dropdown container. Items are direct G_STRING children.
-G_IBOX containers, selected/disabled/hidden states, 32 objects, depth eight and
-63-byte labels are supported. Titles fit x=0..431; dropdowns fit 640×224 and
+G_IBOX containers, selected/checked/disabled/hidden states, 32 objects, depth eight and
+63-byte labels are supported. Titles fit caller coordinates x=0..431; the
+presenter translates their display and hit coordinates by 128 pixels.
+Dropdowns fit 640×224 and
 are repositioned on screen without changing their dimensions. Font is 8×8.
-Cascades, scrolling bars, accessories, icons, check marks and editable menu
+Cascades, scrolling bars, accessories, icons and editable menu
 objects are unsupported. Valid pointers, links and indices remain caller-owned.
 
 Installed-tree enable, title-state and text setters execute at a presenter paint
 boundary, including while the caller owns UPDATE/MCTRL. Uninstalled helpers act
-locally. `menu_text` replaces a borrowed string pointer within unchanged object
+locally. `menu_icheck` changes CHECKED and draws a check in the leading text
+cell of a menu item; reserve two leading spaces in its label. `menu_text` replaces a borrowed string pointer within unchanged object
 geometry; after a successful replacement returns, the old label is no longer
 borrowed. Keep current labels alive and withdraw before freeing the tree or its
-RSC. `appl_exit` withdraws before automatic resource cleanup. Window close retains the
-installation for reopen but invalidates its commands.
+RSC. `appl_exit` withdraws before automatic resource cleanup. Closing the last window retains the
+installation for reopen but invalidates its commands; sibling closes preserve it.
 
 A selection returns `MN_SELECTED` through `evnt_mesag`/`evnt_multi`:
 `[10,0,0,title,item,tree_hi,tree_lo,box]`. The command belongs to the original
@@ -584,43 +680,174 @@ Ctrl+Shift+Escape enters the application menu; Left/Right changes titles,
 Up/Down or Tab/Shift+Tab selects entries, and Return activates. Ctrl+Escape opens
 Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching.
 
-The private C context is 340 bytes. Rebuild bindings and applications with
-the current C component ABI (10).
+The private C context is 368 bytes. Rebuild bindings and applications with
+the current C component ABI (14).
 The server wire record remains 112 bytes; all bank-zero reservations are unchanged.
+
+Synchronous form calls can return `AES_PENDING` when another owned window has
+an unhandled message. Dispatch that message before resuming the form. The
+desktop uses its normal event loop for inline confirmations.
+
+Visible-rectangle iteration remains one cursor per application context. Restart
+`WF_FIRSTXYWH` when switching windows; interleaved `WF_NEXTXYWH` sequences are unsupported.
 
 ## Small GEM desktop
 
-`tools/build_demo.py --gem-desktop` runs a Control Panel, counter and Files beside
-the shell. Files loads `SYS:DESKTOP.RSC`, caches up to 256 directory entries and shows up to sixteen reusable rows,
-adapting the count and width to its work area. Arrows, page clicks and the vertical
-thumb scroll continuously; keyboard selection follows into view. Refresh preserves
-the selected filename. Directories above the limit report a truncated listing.
-Files launches native Exec commands or C/GEM APPs using Program/Process. Its
-application menu offers Open, Refresh, Stop, Quit, Path, New Folder and Rename; its window-scoped File
-popup retains Open, Refresh, Stop and Cancel. Open and Stop reflect selection
-and child availability, and menu Quit shares the ordinary close path.
-Path (P), New Folder (N) and Rename (R) use compiled-in OBJECT/TEDINFO dialogs
-inside Files' existing window. Tab/Shift-Tab, Return, Escape and mouse OK/Cancel
-operate them. Fields use GEM uppercase folding for the current disk formats.
-The other applications keep running. Path validates a directory
-before replacing the snapshot; New Folder/Rename accept one leaf name and
-preserve operational errors and entered text. Success refreshes and selects the
-result; Cancel does not mutate the filesystem. Files continues servicing
-geometry, exposure, child completion and close while a dialog is open. A launched command
-has an empty argument tail, NIL input and RAW output in the shell; closing Files
-requests native BREAK or GEM close and collects the child before Task retirement.
-The three APPs use the [C image profile](c-program-loading.md); Atari ST binaries
-and GEM4XE G4A files remain unsupported. Current VDI rectangles and fixed-font
-text suffice. Initial apps belong to the shell; Files owns its one launched
-child. Closed apps are collected at the idle prompt. `RUN C:FILES.APP` uses the
-shell background job to reopen Files.
+`tools/build_demo.py --gem-desktop` starts `C:DESKTOP.APP` beside the shell at
+640×240 in colour. One AES application owns the background and up to three folder
+windows. Each folder keeps its own path, snapshot, selection, scroll and OBJECT
+tree; the menu, resources and event loop are shared. Closing the last folder
+leaves the background and Desk menu usable. The shell initially leaves the volume
+icon column uncovered. Windows reaches covered ordinary windows; the background
+is excluded from cycling.
 
-Three AES registrations and all four application-window slots are used (plus two private menu layers). Seven idle public
-Tasks leave one slot for a launched command. Close one GEM window before a
-shell pipeline needing two children. TICK is a disk-loaded cancellation demo;
-PRIMES requires tiled-console mode and returns an error in desktop mode.
-This optional profile does not change the
-default shell/prime demo or its five-second OF816 autoboot.
+SYS: and WORK: use crisp blue floppy icons with dark outlines, grey shutters
+and light labels. The 32×16 artwork accounts for the display's tall pixels;
+transparent exteriors reveal the desktop. Selection highlights the label while
+keeping the image blue. C: uses a muted gold folder because it is the command
+directory assign. The artwork is editable pixel rows in
+`examples/gem-browser/resource.json`: hexadecimal GEM pens 0–f, `.` transparent,
+and optional `selected_pixels` with the same dimensions. The resource builder
+emits the standard four-plane extension and a monochrome fallback.
+
+Panel, Calculator, Text and Counter have distinct 32×16 colour icons: sliders,
+a keypad, a text page and a small chart. Normal desktop labels use the desktop
+grey, with a white-on-black label for selection. `RAM:` uses a blue-gray memory
+chip icon and opens the existing writable RAM filesystem. Eight desktop icons
+fit in a 96-pixel-wide column starting at the left edge, with a 28-pixel pitch;
+even the Calculator label and its selection background remain fully visible.
+File windows reuse the beige
+folder and the four matching GUI app icons. Extensionless console commands use
+a blue-gray `>_` terminal; other `.APP` files use a generic window icon.
+Ordinary files, including `.RSC`, keep the neutral document. Classification
+uses names only and does not change launching. File selection reverses only
+the paper-backed label, preserving the artwork. See the [desktop
+style](desktop.md#window-appearance).
+
+Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen
+OBJECTs for a 104×36 icon grid or a compact list. Colour artwork is 32×16;
+neutral documents retain their 32×20 bitmap. Labels sit in the same
+32-pixel-high objects. View chooses Icons/List and a checked Sort by name
+command; unchecked retains disk order. Name sorting groups directories first.
+New windows start at 456×196 and retain user-selected bounds across
+navigation. The path occupies the title; a fixed top summary shows byte/item
+totals, selection or operation feedback. There is no duplicate INFO row, File
+popup or toolbar. The default window fits four columns by four icon rows.
+File > Parent / Esc goes up in the same window; it is disabled at volume
+roots, where Esc does nothing. File > Refresh / Ctrl+L rereads the directory.
+Esc in a dialog or drag cancels that interaction without navigating; Backspace
+only edits text. FULLER toggles full/remembered bounds. Select and press
+Return, or double-click, to open. Arrow keys navigate; resize reflows;
+vertical arrows, page clicks and the thumb scroll. Plain clicks replace
+selection; Shift-click toggles membership and Shift-arrow adds the next entry.
+View > Select All/None and Ctrl+A act on the cached snapshot, including
+offscreen entries. A virtual `..` item leads each subdirectory, scrolls with
+its contents and opens the parent on Return or double-click. It is omitted at
+roots. Going up selects and reveals the directory just left. The parent can
+have a highlight and keyboard focus, but never joins file membership or
+Copy/Delete/Rename; it is neither a drag source nor a drop target. All 256
+real slots remain available, so scrolling can cover 257 display items.
+Open/Return on files and Rename require exactly one member; modified
+double-clicks never open. The status strip shows the selected count. A dotted
+border marks the keyboard lead independently of selection; mouse input removes
+it. The decoration does not intercept object hits. Refresh and sort changes
+retain selected filenames or parent focus; ordinary downward navigation clears
+them. Larger directories report truncation. Standalone Files shares these
+rules. The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the
+horizontal cursor keys; physical Shift-arrow checks use Up/Down. Shift-click
+can select entries in either direction.
+
+Desk opens another folder or launches Panel, Calculator, Text and Counter on
+demand. The desktop owns up to three program handles; actual Task/window limits
+can prevent admission. Closing a folder leaves launched applications running.
+TXT defaults to `C:TEXT.APP` with a copied quoted path argument. Other entries
+launch directly, with NIL input and RAW shell output. Closing the desktop requests
+stop and collects children. While children exist, a 100 ms timer bounds completion
+collection; an idle desktop with no child/running file job uses no periodic timer.
+Overwrite prompts wait for real input rather than a zero-time timer.
+
+Path (P), New Folder (N) and Rename (R) use inline OBJECT/TEDINFO dialogs.
+Tab/Shift-Tab, Return, Escape and mouse OK/Cancel operate them. File also offers
+Copy of regular-file selections and confirmed Delete of files/empty directories.
+One file keeps the full destination-path dialog; multiple files ask for a
+destination directory and retain source names. One desktop job owns the source
+snapshot until completion; another folder may browse and edit dialogs but cannot
+start a second Copy/Delete. Selecting any directory disables Copy.
+
+Copy reuses one **16 KiB** buffer and returns to the event loop between synchronous
+Read/Write pairs and files, outside UPDATE. Existing destinations offer
+Replace/Skip/Cancel, with Cancel the default. Escape, Cancel, owner close or
+Desktop quit stops the batch at an I/O boundary. Completed copies remain;
+cleanup removes only a temporary file created by this job. An existing target
+survives until publication. Final delete/rename is not atomic; a failed publication
+retains the complete `EXECCOPY.TMP` for recovery. A preexisting temporary file
+blocks that item and is never removed by admission failure. Cancellation can
+wait for a long synchronous transfer; throughput takes priority.
+
+Delete asks once, defaults to Cancel and performs one `DeleteFile` per event
+turn. Only empty directories can be deleted; no descendant scan occurs.
+The confirmation is a compact framed overlay inside the owning folder, whose
+contents remain visible behind it. It consumes no additional window slot and
+uses the existing desktop event loop. Other applications remain usable. The
+prompt names a single file/folder or counts selected files and folders; only
+folder selections show `Empty folders only`. Long displayed names retain their
+beginning and end around an ellipsis; deletion still uses the complete snapshot
+name. Cancel has the default outline, keyboard focus has an underline, and
+buttons invert only while pressed. Return cancels, Tab/Space can activate Delete,
+and Escape dismisses without navigating. A nonempty-directory failure reports
+`Folder is not empty`.
+Successful deletions clear their selection bits. Both operations stop at the
+first DOS error and report completed/skipped/remaining counts and the failing
+name/error. Unprocessed items stay untouched. Long status messages are clipped
+to the window width. Cleanup errors retain the original error; the desktop
+status also reports errors if the owner's window is closed.
+
+Affected folder views refresh once when the job retires. A sibling's inline
+dialog defers refresh until it ends, retaining typed input. Paths match without
+case sensitivity and ignore a trailing slash; distinct volume aliases are not
+resolved for invalidation (use Refresh for an alias view). Copy retains source
+selection; Delete retains surviving names. Recursive operations, Replace All,
+retry/skip-error, rubber-band selection, desktop-icon rearrangement and trash are unsupported.
+
+Regular-file selections can also be dragged in icon or list view to another
+folder's exposed content background or a visible directory entry. Four pixels
+of movement starts the drag. Dragging an already selected file retains the
+whole selection, including offscreen members; dragging an unselected file
+selects that file alone. Groups containing directories do not drag. The source
+snapshot stays frozen until cancellation or copy admission. Escape cancels and
+consumes the eventual release. Toolbar/status/border, file, foreign-window and
+desktop targets are rejected; common same-directory drops are no-ops.
+
+One small presenter outline follows the pointer; only a changed target's status
+strip is repainted for hover feedback. Release copies the destination path and
+sends one private eight-word `DESKTOP_DROP` (`0x6e00`) message to the desktop:
+`[opcode, desktopID, 0, targetHandle, sourceHandle, x, y, modifiers]`.
+There is one pending record, no pointer payload and no acknowledgement. Queue
+exhaustion cancels without copying. Closing either folder cancels a pending
+notification; its cancelled slot remains reserved until consumption. Delivery
+starts the same copy job as File > Copy, preserving each source filename.
+Outline/MCTRL ownership is released before DOS admission. Independent application
+receivers, directory copying, Move, auto-scroll and hover-opening are unsupported.
+
+State is application-owned upper RAM: 4,039 bytes per Browser, a 2,352-byte
+desktop, one 974-byte file job and a separate 16,384-byte copy buffer. Delete
+allocates no payload buffer. Selection remapping uses temporary packed names,
+at most 27,648 bytes, then frees them. This work adds no bank-zero reservation,
+Task, stack, direct page, kernel operation or public ABI.
+
+Desk > Save Settings writes `WORK:DESKTOP.CFG`; startup reads view/sort defaults,
+folder paths/geometry, mouse preference and up to two three-letter associations.
+The bounded text format starts with `EXEC816_DESKTOP 1`, followed by `MOUSE n`,
+`VIEW icons sort`, `FOLDER x y w h icons sort path` and `ASSOC TXT C:TEXT.APP`
+lines. Flags are 0/1. Valid files with no FOLDER line restore the background alone.
+Missing/invalid headers use defaults; unsupported/malformed entries are ignored.
+There is no autosave or settings service. SYS: remains read-only.
+
+`RUN C:FILES.APP` retains a standalone single-folder application and its existing
+one-child Stop/close policy. `RUN C:G4BENCH.APP` opens the drawing subset benchmark;
+`RUN C:DIALOG.APP` opens the standard-dialog example. Atari ST binaries and GEM4XE
+G4A files remain unsupported. PRIMES needs tiled-console mode. The optional GUI
+profile leaves the default shell/prime demo and five-second OF816 autoboot intact.
 
 ## Session mouse preference
 
@@ -641,7 +868,7 @@ this deferral, so acknowledgement does not promise immediate movement changes.
 Repeatedly selecting the active profile preserves fractional motion.
 
 The choice survives application close/reload until desktop input is reacquired,
-which restores the build default. There is no persistent settings file or
+which restores the build default. The desktop can explicitly save this choice to WORK:DESKTOP.CFG; there is no
 change broadcast. Multiple panels keep independent pending edits; Apply is
 last-writer-wins and Cancel reloads the current session choice. No new Task,
 signal, timer, bank-zero reservation or IRQ work is involved.

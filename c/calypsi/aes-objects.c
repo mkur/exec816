@@ -25,11 +25,56 @@ void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colou
 }
 
 struct ObjectPaint { struct ExecAESContext *context; OBJECT *tree; WORD object,x,y; GRECT clip; };
+/* ICONBLK storage and dimensions belong to the caller. Shared GSX text scratch
+ * and the renderer's bitmap page are protected by this callback's grant. */
+static void draw_icon(struct ObjectPaint *p)
+{
+    const ICONBLK *ib=(const ICONBLK *)(ULONG)p->tree[p->object].ob_spec;
+    const char *label=(const char *)(ULONG)ib->ib_ptext;
+    WORD fg=(ib->ib_char>>12)&15,bg=(ib->ib_char>>8)&15,swap;
+    WORD x=p->x+ib->ib_xicon,y=p->y+ib->ib_yicon;
+    WORD l=x,t=y,r=x+ib->ib_wicon,b=y+ib->ib_hicon,n,tx;
+    GRECT paper;
+    const CICON *colour=NULL;
+    if (p->tree[p->object].ob_type==G_CICON)
+        colour=(const CICON *)(ULONG)((const CICONBLK *)ib)->mainlist;
+    while (colour && colour->num_planes!=4) colour=(const CICON *)(ULONG)colour->next_res;
+    if (p->tree[p->object].ob_state&SELECTED) { swap=fg;fg=bg;bg=swap; }
+    if (l<gl_clip.g_x) l=gl_clip.g_x;
+    if (t<gl_clip.g_y) t=gl_clip.g_y;
+    if (r>gl_clip.g_x+gl_clip.g_w) r=gl_clip.g_x+gl_clip.g_w;
+    if (b>gl_clip.g_y+gl_clip.g_h) b=gl_clip.g_y+gl_clip.g_h;
+    if (l<r && t<b) {
+        if (colour) {
+            WORD selected=(p->tree[p->object].ob_state&SELECTED) && colour->sel_data;
+            GemColourIconBitmap((const UWORD *)(ULONG)(selected ? colour->sel_mask:colour->col_mask),
+                (const UBYTE *)(ULONG)(selected ? colour->sel_data:colour->col_data),
+                ib->ib_wicon,x,y,l,t,r,b);
+        } else GemIconBitmap((const UWORD *)(ULONG)ib->ib_pmask,
+            (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,fg,bg);
+    }
+    if (ib->ib_char&255) {
+        intin[0]=ib->ib_char&255;
+        WidgetText(x+ib->ib_xchar,y+ib->ib_ychar,intin,1,MD_TRANS,fg);
+    }
+    if (label && *label) {
+        if (p->tree[p->object].ob_type==G_CICON) {
+            /* The standard extension stores exactly twelve label bytes. */
+            for (n=0;n<12 && label[n];++n) intin[n]=(UBYTE)label[n];
+        } else n=expand_string(intin,label);
+        if (n>ib->ib_wtext/8) n=ib->ib_wtext/8;
+        r_set(&paper,p->x+ib->ib_xtext,p->y+ib->ib_ytext,ib->ib_wtext,ib->ib_htext);
+        WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,bg,&paper);
+        tx=paper.g_x+(paper.g_w-n*8)/2;
+        WidgetText(tx,paper.g_y,intin,n,MD_TRANS,fg);
+    }
+}
 static void draw(void *data)
 {
     struct ObjectPaint *p=data;
     gl_clip=p->clip;
-    if ((p->tree[p->object].ob_flags&EDITABLE) ||
+    if (p->tree[p->object].ob_type==G_ICON || p->tree[p->object].ob_type==G_CICON) draw_icon(p);
+    else if ((p->tree[p->object].ob_flags&EDITABLE) ||
         p->tree[p->object].ob_type==G_FTEXT || p->tree[p->object].ob_type==G_FBOXTEXT)
         ExecAESDrawEdit(p->context,p->tree,p->object,p->x,p->y);
     else just_draw(p->tree,p->object,p->x,p->y);
@@ -42,7 +87,7 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
     struct ExecAESContext *c=ExecAESContext();
     struct ObjectPaint p;
     struct AESWindowView *v;
-    WORD obj=start,level=0,next,border,l,t,r,b,row,vl,vt,vr,vb;
+    WORD obj=start,level=0,next,border,l,t,r,b,row,rows,vl,vt,vr,vb;
     UWORD i;
     if (!c || !ExecAESEnter(c)) return 0;
     if (!c->workstation || !c->view || !c->view->shown || !c->view->updates) {
@@ -69,6 +114,9 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
             }
             l=p.x-border; t=p.y-border;
             r=p.x+tree[obj].ob_width+border; b=p.y+tree[obj].ob_height+border;
+            /* Choose from the full extent, before damage/visibility clipping.
+             * Large objects retain bounded strips even for a short exposure. */
+            rows=b-t<=32 ? 32:16;
             if (l<x) l=x;
             if (t<y) t=y;
             if (r>x+w) r=x+w;
@@ -79,8 +127,8 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
                 vr=r<v->visible[i].right ? r:v->visible[i].right;
                 vb=b<v->visible[i].bottom ? b:v->visible[i].bottom;
                 if (vl>=vr || vt>=vb) continue;
-                for (row=vt;row<vb;row+=16) {
-                    r_set(&p.clip,vl,row,vr-vl,vb-row>16 ? 16:vb-row);
+                for (row=vt;row<vb;row+=rows) {
+                    r_set(&p.clip,vl,row,vr-vl,vb-row>rows ? rows:vb-row);
                     if (GemDrawingBorrow(&c->workstation->grant,vl,row,vr,row+p.clip.g_h,draw,&p)!=DISPLAY_OK) {
                         c->diagnostic=AES_DISPLAY_ERROR; c->busy=0; return 0;
                     }

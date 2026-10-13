@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/slaapliedje/gem4xe.git",
+  "revision": "fbfea9b0b1233a5d659d5ec583c63f863cceadfa",
+  "files": {
+    "src/apps/g4bench.c": "ad0b808e7015c53d7f81757182ea685b80dfc916460780243abe079eda22ecf8",
+    "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+    "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+    "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+  }
+}

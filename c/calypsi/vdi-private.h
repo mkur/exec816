@@ -13,7 +13,7 @@ struct ExecVDIWorkstation {
     WORD textColor;
     WORD clip[4];
     WORD control[12];
-    WORD intin[32];
+    WORD intin[80];
     WORD ptsin[4];
     WORD intout[45];
     WORD ptsout[12];

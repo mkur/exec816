@@ -12,6 +12,7 @@ from test_dos_stack import execute,ownership
 from test_cooperative import data
 from test_desktop_presentation import desktop, frame,rectangle,text
 from test_gem_cursor import overlay
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from gem_render_oracle import Raster,font_bytes
 from bitmap_console_oracle import Terminal
@@ -86,7 +87,7 @@ ENDMODULE
     report=dict(status='running',tier='development',qualification=False,scope='Private owner-hook capture, full restore, revision mismatch and quiescent capture failure; production driver and bitmap bridge',scenes=[])
     at=lambda module,n:next(d['address'] for d in p['image']['data'] if '_'+module+'_'+n+'_' in d['name'])
     r=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'));desktop(r)
-    frame(r,(32,24,560,208),b'Exec816 Shell',True)
+    frame(r,(32,24,560,208),b'Shell',True)
     Terminal(64,20).paint(r,5,5,True)
     frame(r,(0,0,544,208),b'Snapshot',False,3,close=True);text(r,11,19,b'XYZ',bg=3)
     expected=overlay(r,(320,120))
@@ -101,7 +102,7 @@ ENDMODULE
                     b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
                     run_to(b,marker,condition=condition,frame_limit=12000,timeout=180)
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
-                    report['scenes'].append(dict(stage=stage,pixels=pixels(b,folder,expected)))
+                    report['scenes'].append(dict(stage=stage,pixels=pixels(b,folder,expected,palette=DESKTOP_PALETTE)))
                     b.memload(at('DESKTEST','GATE'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=12000)

@@ -13,6 +13,17 @@ from native_frame_maps import validate
 from generate_sio_adapter import ABI
 
 
+def direct_calls(body,targets):
+    """Find known JSL targets without interpreting their address operands again."""
+    calls=[];offset=0
+    while offset+4<=len(body):
+        target=int.from_bytes(body[offset+1:offset+4],'little')
+        if body[offset]==0x22 and target in targets:
+            calls.append(target);offset+=4
+        else:offset+=1
+    return calls
+
+
 def record(output):
     p=read_build(output);image=p['image'];validate(image['routines'])
     routines={r['address']:r for r in image['routines']}
@@ -38,7 +49,7 @@ def record(output):
                     if other[0]>result[0]:result=(other[0],[labels.get(address,hex(address))]+other[1])
             memo[address]=result;return result
         r=routines[address];body=segments[address]
-        calls=[int.from_bytes(body[i+1:i+4],'little') for i in range(len(body)-3) if body[i]==0x22 and int.from_bytes(body[i+1:i+4],'little') in targets]
+        calls=direct_calls(body,targets)
         require(len(calls)==len(r['calls']),'Emitted direct call accounting changed: '+r['name'])
         result=(r['fixed_frame'],[r['name']])
         for target,call in zip(calls,r['calls']):

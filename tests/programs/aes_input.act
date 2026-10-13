@@ -4,12 +4,14 @@ USE EXEC
 USE INPUT
 USE AESSTATE
 USE AESINPUT
+USE AESTYPES
 USE A816MEMORY
 USE HEAPCORE
 USE DESKMOUSE
 
 CARD checks,serviceBytes
 INPUT.Event sample,result
+AESTYPES.InputInbox inbox
 
 PROC Require(BYTE okay)
 
@@ -24,6 +26,13 @@ RETURN
 PROC Main()
   BYTE index
 
+  ; The shared pointer scratch is packed exactly like the C registration.
+  Require(SIZEOF(AESTYPES.InputInbox)=754)
+  Require(ADDRESS(@inbox.selectedPointer)-ADDRESS(@inbox)=84)
+  Require(ADDRESS(@inbox.keys(0))-ADDRESS(@inbox)=114)
+  inbox.selectedPointer.x=-123
+  inbox.selectedPointer.epoch=$87654321
+  Require(inbox.selectedPointer.x=-123 AND inbox.selectedPointer.epoch=$87654321)
   LET available=EXEC.AvailMem(0)
   serviceBytes=SIZEOF(AESSTATE.Service)
   LET service=AESSTATE.Service POINTER(EXEC.AllocMem(LONGCARD(serviceBytes),

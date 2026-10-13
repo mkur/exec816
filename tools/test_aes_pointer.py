@@ -22,6 +22,7 @@ ENDMODULE
 USE EXEC
 USE INPUT
 USE AESSTATE
+USE AESWINDOWSTATE
 USE DESKINPUT
 USE DESKCORE
 USE DESKSTATE
@@ -43,13 +44,16 @@ PUBLIC PROC Pump()
   LET kind=BYTE POINTER($KIND)
   LET acknowledgement=LONGCARD POINTER($ACK)
   LET client=AESSTATE.Find(AESSTATE.Get(),identity^)
+  LET item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
   captured.x=x^
   captured.y=y^
   captured.buttons=buttons^
   captured.qualifiers=qualifiers^
   captured.kind=kind^
+  captured.tick=CARD POINTER($TICK)^
+  captured.flags=BYTE(CARD POINTER($FLAGS)^)
   IF command^=3 THEN
-    captured.route=client.window.keyRoute
+    captured.route=item.window.keyRoute
     captured.kind=INPUT.EVENT_CANCEL
     captured.code=INPUT.CANCEL_BREAK
     handled=DESKINPUT.Key(@captured)
@@ -70,7 +74,7 @@ PUBLIC PROC Pump()
 RETURN
 ENDMODULE
 '''
-    for name in ('Command', 'Client', 'X', 'Y', 'Buttons', 'Qualifiers', 'Kind', 'Ack'):
+    for name in ('Command', 'Client', 'X', 'Y', 'Buttons', 'Qualifiers', 'Kind', 'Ack', 'Tick', 'Flags'):
         source = source.replace('$'+name.upper(), f'${symbols["AESPointer"+name]:x}')
     (out/'aespointerprobe.act').write_text(source)
     host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE', 'USE AESCORE\nUSE AESPOINTERPROBE')

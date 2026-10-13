@@ -1,6 +1,13 @@
 #include "aes-private.h"
 #include <proto/exec.h>
 
+static BOOL gui_live(struct ExecAESContext *c, WORD handle, ULONG epoch, ULONG menuEpoch)
+{
+    if (menuEpoch) return epoch==c->endpoint->guiEpoch &&
+        menuEpoch==c->endpoint->menuEpoch;
+    return ExecAESWindowEpoch(c,handle,epoch);
+}
+
 struct AESDelivery *ExecAESReserve(struct ExecAESContext *c, WORD id,
                                  struct AESEndpoint **destination)
 {
@@ -78,8 +85,7 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
     if (c->messagePending) {
         Forbid();
         stale = c->deferredEpoch &&
-            (c->deferredEpoch != c->endpoint->guiEpoch ||
-             (c->deferredMenuEpoch && c->deferredMenuEpoch != c->endpoint->menuEpoch));
+            !gui_live(c,c->deferredMessage[3],c->deferredEpoch,c->deferredMenuEpoch);
         if (stale) c->messagePending=0;
         Permit();
         if (!stale) return TRUE;
@@ -88,8 +94,7 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
      * Promote only after an older deferred message has been consumed. */
     if (c->repairEpoch) {
         Forbid();
-        if (c->repairEpoch==c->endpoint->guiEpoch && c->view &&
-            c->view->shown && c->view->handle==c->repairWindow) {
+        if (ExecAESWindowEpoch(c,c->repairWindow,c->repairEpoch)) {
             c->deferredMessage[0]=WM_REDRAW;
             c->deferredMessage[1]=c->deferredMessage[2]=0;
             c->deferredMessage[3]=c->repairWindow;
@@ -113,10 +118,8 @@ BOOL ExecAESMessageReady(struct ExecAESContext *c)
             return FALSE;
         }
         stale = record == &c->endpoint->gui->delivery &&
-            (c->endpoint->guiEpoch == 0 ||
-             c->endpoint->gui->epoch != c->endpoint->guiEpoch ||
-             (c->endpoint->gui->menuEpoch &&
-              c->endpoint->gui->menuEpoch != c->endpoint->menuEpoch));
+            !gui_live(c,record->words[3],c->endpoint->gui->epoch,
+                      c->endpoint->gui->menuEpoch);
         Permit();
         if (!stale) return TRUE;
         record = (struct AESDelivery *)GetMsg(c->receiving);

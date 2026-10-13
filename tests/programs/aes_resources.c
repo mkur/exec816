@@ -1,11 +1,13 @@
 #include <gem.h>
 #include <exec816/aes.h>
+#include <exec816/runtime.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <string.h>
 ULONG AESService;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,ResourceStatus;
 volatile LONG ResourceError;
+volatile ULONG ResourceHeapWarm,ResourceHeapReturned;
 static void check(WORD okay) { ++AESChecks;if (!okay) { ++AESFailures;if (!AESFirstFailure) AESFirstFailure=AESChecks; } }
 #define CHECK(x) check((x)!=0)
 void AESClientOne(void) { }
@@ -80,6 +82,88 @@ static void editable_resource(void)
     }
     CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
 }
+volatile UWORD IconPhase,IconGo;
+static void icon_resource(void)
+{
+    static UWORD mask[32],bits[32];
+    static ICONBLK compiled;
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1175,8,40,624,184};
+    static OBJECT icon={-1,-1,-1,G_ICON,LASTOB,0,0,57,81,64,32};
+    const char *bad[]={"D1:ICWIDTH.RSC","D1:ICHEIGHT.RSC","D1:ICEXT.RSC"};
+    OBJECT *tree,*again;
+    ICONBLK *loaded,*shared;
+    WORD i,window,handle=1;
+    CHECK(sizeof(ICONBLK)==34);
+    CHECK(rsrc_load("D1:ICON.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    loaded=(ICONBLK *)(ULONG)tree[1].ob_spec;shared=(ICONBLK *)(ULONG)tree[2].ob_spec;
+    CHECK(loaded->ib_pmask==shared->ib_pmask && loaded->ib_pdata==shared->ib_pdata);
+    CHECK(*(const UWORD *)(ULONG)loaded->ib_pmask==0x83fe &&
+        *(const UWORD *)(ULONG)loaded->ib_pdata==0x4202);
+    for (i=0;i<3;++i) {
+        CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && tree==again);
+    }
+    compiled=*loaded;compiled.ib_pmask=(ULONG)mask;compiled.ib_pdata=(ULONG)bits;
+    for (i=0;i<32;++i) { mask[i]=(i&1) ? 0xf3c0:0x83fe;bits[i]=(i&1) ? 0xa140:0x4202; }
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,640,208);CHECK(window>0);
+    CHECK(wind_open(window,0,24,640,208));
+    for (i=0;i<8;++i) {
+        icon.ob_x=57+(i&1);icon.ob_state=(i&2) ? SELECTED:0;
+        icon.ob_spec=(ULONG)(i<4 ? &compiled:loaded);
+        CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(&background,0,0,0,0,640,240));
+        CHECK(objc_draw(&icon,0,0,i>=4 ? icon.ob_x+11:0,i>=4 ? 83:0,i>=4 ? 24:640,i>=4 ? 21:240));
+        CHECK(wind_update(END_UPDATE));
+        IconPhase=i+1;while (IconGo<IconPhase) ExecYield();
+    }
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+    CHECK(rsrc_free());
+}
+static void colour_resource(void)
+{
+    static UWORD mask[32],selectedMask[32];
+    static UBYTE normal[256],selected[256];
+    static CICON form;
+    static CICONBLK compiled;
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1175,8,40,624,184};
+    static OBJECT icon={-1,-1,-1,G_CICON,LASTOB,0,0,57,81,96,32};
+    const char *bad[]={"D1:CILEN.RSC","D1:CITAB.RSC","D1:CIINDEX.RSC","D1:CIWIDTH.RSC",
+        "D1:CIPLANE.RSC","D1:CICOUNT.RSC","D1:CICUT.RSC"};
+    OBJECT *tree,*again;
+    CICONBLK *loaded;
+    WORD i,row,x,window,handle=1;
+    CHECK(rsrc_load("D1:CICONS.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    CHECK(tree[1].ob_spec==tree[5].ob_spec);
+    for (i=0;i<7;++i) {
+        CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && tree==again);
+    }
+    loaded=(CICONBLK *)(ULONG)tree[1].ob_spec;compiled=*loaded;
+    form=*(CICON *)(ULONG)loaded->mainlist;
+    CHECK(form.num_planes==4 && form.col_data>65535UL && form.sel_data && !form.next_res);
+    CHECK(*(const UBYTE *)(ULONG)form.col_data==0x01 && *(const UBYTE *)(ULONG)form.sel_data==0xfe);
+    CHECK(!((CICONBLK *)(ULONG)tree[3].ob_spec)->mainlist);
+    form.col_data=(ULONG)normal;form.sel_data=(ULONG)selected;
+    form.col_mask=(ULONG)mask;form.sel_mask=(ULONG)selectedMask;compiled.mainlist=(ULONG)&form;
+    for (i=0;i<32;++i) { mask[i]=(i&1) ? 0xf3c0:0x83fe;selectedMask[i]=0x5aa5; }
+    for (row=0;row<16;++row) for (x=0;x<32;x+=2) {
+        UBYTE value=(((row+x)&15)<<4)|((row+x+1)&15);
+        normal[row*16+x/2]=value;selected[row*16+x/2]=value^255;
+    }
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,640,208);CHECK(window>0);
+    CHECK(wind_open(window,0,24,640,208));
+    for (i=0;i<18;++i) {
+        icon.ob_x=57+(i&1);icon.ob_state=(i&2) ? SELECTED:0;
+        icon.ob_height=i>=16 ? 80:32;
+        icon.ob_spec=i<4 ? (ULONG)&compiled:tree[1+(i-4)/4].ob_spec;
+        CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(&background,0,0,0,0,640,240));
+        CHECK(objc_draw(&icon,0,0,i>=4 && i<8 ? icon.ob_x+11:0,
+            i>=4 && i<8 ? 83:0,i>=4 && i<8 ? 24:640,i>=4 && i<8 ? 21:240));
+        CHECK(wind_update(END_UPDATE));
+        IconPhase=i+9;while (IconGo<IconPhase) ExecYield();
+    }
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+    /* Leave this resource to appl_exit to cover colour resource ownership. */
+}
 UWORD AESRun(void)
 {
     OBJECT *tree,*again,*popup;
@@ -90,7 +174,10 @@ UWORD AESRun(void)
     /* Mount/cache allocations persist until system shutdown. Warm them before
        measuring the resource/context lifetime. */
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);
-    CHECK(file && Close(file)); CHECK(ExecDOSDetach()); memory=AvailMem(0);
+    CHECK(file!=0);CHECK(Seek(file,0,OFFSET_END)>=0);CHECK(Close(file));
+    lock=Lock("D1:",SHARED_LOCK);CHECK(lock!=0);
+    CHECK(Examine(lock,&info));CHECK(ExNext(lock,&info));UnLock(lock);
+    CHECK(ExecDOSDetach()); memory=AvailMem(0);ResourceHeapWarm=memory;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
     context=ExecAESContext();
     for (x=0;x<8;++x) context->deferredMessage[x]=123+x;
@@ -107,7 +194,7 @@ UWORD AESRun(void)
     CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
     CHECK(!rsrc_load("D1:SHORT.RSC"));
     CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && again==tree);
-    CHECK(!rsrc_gaddr(R_TREE,2,(void **)&again) && !again);
+    CHECK(!rsrc_gaddr(R_TREE,3,(void **)&again) && !again);
     CHECK(menu_ienable(popup,1,0) && popup[1].ob_state==DISABLED);
     CHECK(menu_ienable(popup,1,1) && popup[1].ob_state==0);
     CHECK(menu_tnormal(popup,1,0) && popup[1].ob_state==SELECTED);
@@ -121,9 +208,9 @@ UWORD AESRun(void)
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);CHECK(file!=0);
     CHECK(Seek(file,36,OFFSET_BEGINNING)==0);CHECK(Seek(file,0,OFFSET_CURRENT)==36);
     CHECK(Close(file));
-    text_resource();editable_resource();
+    text_resource();editable_resource();icon_resource();colour_resource();
 cleanup:
     CHECK(appl_exit());CHECK(ExecAESDetach());CHECK(ExecDOSDetach());
-    CHECK(AvailMem(0)==memory);
+    ResourceHeapReturned=AvailMem(0);CHECK(ResourceHeapReturned==memory);
     return AESFailures;
 }

@@ -24,6 +24,12 @@ int main(void)
         check(GemStep1280[rows]==rows*1280);
     }
     for (rows=0;rows<256;rows++) check(GemScreenRows[rows]==(ULONG)rows*320);
+    check(GemFillRows[0]==0);
+    for (width=1;width<=324;width++) {
+        rows=GemFillRows[width];
+        check(rows<=240 && (ULONG)rows*width*2<=8192);
+        check(rows==240 || (ULONG)(rows+1)*width*2>8192);
+    }
     for (rows=0;rows<=64;rows++) check(GemRecordOffsets[rows]==rows*21);
     for (rows=0;rows<=1024;rows++) {
         width=GemGlyphCapacity96[rows];

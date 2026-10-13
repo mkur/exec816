@@ -5,36 +5,72 @@ USE AESTYPES
 USE AESSTATE
 USE AESINBOX
 
-; Close/reopen withdraws queued records by epoch, without removing a caller's
-; messages or waiting for that caller to consume them during an RPC.
-PUBLIC PROC Close(AESSTATE.Client POINTER client)
+; Only the closing window retires. The shared input session and menu live
+; until the last open sibling closes; immutable queued records use view epochs.
+PUBLIC PROC Close(AESSTATE.Window POINTER item)
+  BYTE slot,shown
 
-  AESINBOX.Close(client)
+  LET service=AESSTATE.Get()
+  LET client=AESSTATE.Find(service,item.owner)
   EXEC.Forbid()
-  client.endpoint.guiEpoch=0
-  client.endpoint.guiWaiting=0
-  client.gui.count=0
+  item.view.epoch=0
+  item.gui.count=0
+  shown=0
+  FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(slot).owner=client.id THEN
+      IF service.windows(slot).view.epoch<>0 THEN
+        shown=1
+      FI
+    FI
+  OD
+  IF shown=0 THEN
+    AESINBOX.Close(client)
+    client.endpoint.guiEpoch=0
+    client.gui.count=0
+  FI
   EXEC.Permit()
 
 RETURN
 
 PUBLIC BYTE FUNC Open(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client INT window)
+    AESSTATE.Client POINTER client AESSTATE.Window POINTER item)
 
   IF service.nextGuiEpoch=0 THEN
     RETURN(0)
   FI
-
   EXEC.Forbid()
-  client.gui.window=window
-  client.gui.count=0
-  client.endpoint.guiWaiting=0
-  client.endpoint.guiEpoch=service.nextGuiEpoch
-  AESINBOX.Open(client,service.nextGuiEpoch)
+  item.gui.count=0
+  item.view.epoch=service.nextGuiEpoch
+  IF client.endpoint.guiEpoch=0 THEN
+    client.endpoint.guiEpoch=service.nextGuiEpoch
+    AESINBOX.Open(client,service.nextGuiEpoch)
+  FI
   service.nextGuiEpoch==+1
   EXEC.Permit()
 
 RETURN(1)
+
+; A round-robin cursor prevents a busy sibling's redraws starving this one.
+AESSTATE.GuiPending POINTER FUNC NextPending(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client)
+  BYTE attempt,slot
+
+  IF client.gui.count<>0 THEN
+    RETURN(@client.gui)
+  FI
+  FOR attempt=0 TO AESTYPES.WINDOWS-1 DO
+    slot=client.guiNext
+    client.guiNext==+1
+    IF client.guiNext=AESTYPES.WINDOWS THEN
+      client.guiNext=0
+    FI
+    IF service.windows(slot).owner=client.id
+        AND service.windows(slot).gui.count<>0 THEN
+      RETURN(@service.windows(slot).gui)
+    FI
+  OD
+
+RETURN(NULL)
 
 ; At most one new record per call. Once PutMsg starts the producer owns only
 ; its independent endpoint hold, never the record's fields or linkage.
@@ -44,12 +80,13 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
 
   LET endpoint=client.endpoint
   EXEC.Forbid()
-  IF client.gui.count=0 OR endpoint.guiEpoch=0 THEN
+  IF endpoint.guiFree=0 THEN
     EXEC.Permit()
     RETURN
   FI
-  IF endpoint.guiFree=0 THEN
-    endpoint.guiWaiting=1
+  LET pending=NextPending(service,client)
+  IF pending=NULL OR endpoint.guiEpoch=0 THEN
+    endpoint.guiWaiting=0
     EXEC.Permit()
     RETURN
   FI
@@ -57,23 +94,33 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   endpoint.guiFree=0
   endpoint.holds==+1
 
-  kind=client.gui.order(0)
-  client.gui.count==-1
+  kind=pending.order(0)
+  pending.count==-1
   index=0
-  WHILE index<client.gui.count DO
-    client.gui.order(index)=client.gui.order(index+1)
+  WHILE index<pending.count DO
+    pending.order(index)=pending.order(index+1)
     index==+1
   OD
 
   LET delivery=endpoint.gui
-  LET notice=@client.gui.notices(kind)
+  LET notice=@pending.notices(kind)
   delivery.epoch=endpoint.guiEpoch
+  IF kind<>AESTYPES.GUI_MENU THEN
+    FOR index=0 TO AESTYPES.WINDOWS-1 DO
+      IF @service.windows(index).gui=pending THEN
+        delivery.epoch=service.windows(index).view.epoch
+        EXIT
+      FI
+    OD
+  FI
   delivery.menuEpoch=0
   delivery.delivery.message.mn_ReplyPort=NULL
   delivery.delivery.message.mn_Length=AESTYPES.GUIDELIVERY_SIZE
   delivery.delivery.words(0)=AESTYPES.WM_REDRAW
   IF kind=AESTYPES.GUI_TOPPED THEN
     delivery.delivery.words(0)=AESTYPES.WM_TOPPED
+  ELSEIF kind=AESTYPES.GUI_FULLED THEN
+    delivery.delivery.words(0)=AESTYPES.WM_FULLED
   ELSEIF kind=AESTYPES.GUI_MOVED THEN
     delivery.delivery.words(0)=AESTYPES.WM_MOVED
   ELSEIF kind=AESTYPES.GUI_SIZED THEN
@@ -88,7 +135,7 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
 
   delivery.delivery.words(1)=0
   delivery.delivery.words(2)=0
-  delivery.delivery.words(3)=client.gui.window
+  delivery.delivery.words(3)=pending.window
   delivery.delivery.words(4)=notice.x
   delivery.delivery.words(5)=notice.y
   delivery.delivery.words(6)=notice.width
@@ -103,6 +150,11 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
     delivery.delivery.words(7)=client.menu.selectedBox
   FI
   endpoint.guiWaiting=client.gui.count<>0
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id AND service.windows(index).gui.count<>0 THEN
+      endpoint.guiWaiting=1
+    FI
+  OD
   EXEC.Permit()
   EXEC.PutMsg(endpoint.port,@delivery.delivery.message)
   EXEC.Forbid()
@@ -118,8 +170,8 @@ RETURN
 
 ; Geometry is trusted on-screen work from the window manager. Bound unions can
 ; overestimate damage; the application still clips against current visibility.
-PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
-    BYTE kind INT x,y,width,height)
+PROC Queue(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESSTATE.GuiPending POINTER pending BYTE kind INT x,y,width,height)
   BYTE index
   INT right,bottom
 
@@ -130,12 +182,12 @@ PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
 
   index=0
-  WHILE index<client.gui.count AND client.gui.order(index)<>kind DO
+  WHILE index<pending.count AND pending.order(index)<>kind DO
     index==+1
   OD
 
-  LET notice=@client.gui.notices(kind)
-  IF index<client.gui.count AND kind=AESTYPES.GUI_REDRAW THEN
+  LET notice=@pending.notices(kind)
+  IF index<pending.count AND kind=AESTYPES.GUI_REDRAW THEN
     right=notice.x+notice.width
     bottom=notice.y+notice.height
     IF x+width>right THEN
@@ -161,14 +213,24 @@ PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     notice.y=y
     notice.width=width
     notice.height=height
-    IF index=client.gui.count THEN
-      client.gui.order(index)=kind
-      client.gui.count==+1
+    IF index=pending.count THEN
+      pending.order(index)=kind
+      pending.count==+1
     FI
   FI
 
+  client.endpoint.guiWaiting=1
   EXEC.Permit()
   Publish(service,client)
+
+RETURN
+
+PUBLIC PROC Post(AESSTATE.Service POINTER service AESSTATE.Window POINTER item
+    BYTE kind INT x,y,width,height)
+
+  IF item.view.epoch<>0 THEN
+    Queue(service,AESSTATE.Find(service,item.owner),@item.gui,kind,x,y,width,height)
+  FI
 
 RETURN
 
@@ -204,7 +266,7 @@ PUBLIC BYTE FUNC Select(AESSTATE.Service POINTER service
   menu.damage=menu.damage OR (LONGCARD(1) LSH CARD(title))
   EXEC.Permit()
   service.menuRevision==+1
-  Post(service,client,AESTYPES.GUI_MENU,0,0,0,0)
+  Queue(service,client,@client.gui,AESTYPES.GUI_MENU,0,0,0,0)
 
 RETURN(1)
 

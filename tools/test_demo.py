@@ -46,6 +46,10 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
     counters=manifest.get('aes_counters',False)
     input_apps=manifest.get('aes_input',False)
     gem_desktop=manifest.get("gem_desktop",False)
+    colour_desktop=gem_desktop and 'desktop' in p['build'].get('gem_applications',{})
+    if colour_desktop and integration is None:
+        from test_colour_desktop_session import ColourDesktop
+        integration=ColourDesktop()
     gem_apps=counters or input_apps or gem_desktop
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text()) if gem_apps else None
     width,height=(64,20) if desktop else (80,30) if bitmap else (40,24)
@@ -140,11 +144,13 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             source=(distribution_root or out)/item['name']
             require(sha256(source)==item['sha256'],'Changed extracted writable media')
             shutil.copyfile(source,target)
+            if integration is not None and hasattr(integration,'prepare_work'):
+                integration.prepare_work(target,item)
             if disk_failure!='missing-work':b.mount(item['drive']-1,str(target))
             work_media.append((item,target))
         machine=verify_machine(b,rom,pin)
         def far(address,length):
-            return b''.join((b.eval_expr(f'dw(${address+i:x})')&65535).to_bytes(2,'little') for i in range(0,length,2))[:length]
+            return b.memdump(address,length)
         def number(address,length=4):return int.from_bytes(far(address,length),'little')
         def pointer(address):return number(address,3)
         def symbol(module,name):
@@ -170,8 +176,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             index=int(title==b'Counter B');left,top,right,bottom=bounds
             count=number(app(index,'count'))
             r.clip=(left+8,top+16,right-9,bottom-9);r.text=2 if index else 4
-            r.apply(8,(left+16,top+30),b'GEM counter')
-            r.apply(8,(left+16,top+46),('Count: %06d'%count).encode())
+            r.apply(8,(left+16,top+30),('Count: %06d'%count).encode())
             r.clip=(0,0,639,239)
         def prime_state():
             if shell_only:
@@ -264,7 +269,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if desktop:
                     # Retained command installation precedes its final paint.
                     # Compare actual scanout with full independent recomposition.
-                    from gem_render_oracle import PALETTE,PENS
+                    from gem_render_oracle import DESKTOP_PALETTE as PALETTE,PENS
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
@@ -275,9 +280,12 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         actual=b''.join(cropped[i:i+3] for i in range(0,len(cropped),4))
                         want=b''.join(colors[v>>4]+colors[v&15] for v in packed)
                         if actual==want:break
+                        if attempt==0:
+                            (folder/'expected.bgr').write_bytes(want)
+                            (folder/'actual.bgr').write_bytes(actual)
                         frames(1)
                     require(actual==want,'Desktop scene differs: '+label)
-                    pixels(b,folder,packed)
+                    pixels(b,folder,packed,palette=PALETTE)
                     print('Desktop scene:',label,flush=True)
                 else:
                     pixels(b,folder,r.packed())
@@ -590,7 +598,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             if gem_desktop:
                 from gem_applications import symbols,MODELS
                 shared=foreign['symbols']
-                for index,name in enumerate(('panel','counter','files')):
+                for index,name in enumerate(('desktop',) if colour_desktop else ('panel','counter','files')):
                     model,offset,_=MODELS[name]
                     sy=symbols(b,p,out/'bitmap-console',name,number(shared['GEMDesktopChildren']+index*4))
                     rendezvous('dw($%x)=1'%(sy[model]+offset))
@@ -1033,7 +1041,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                         owner.startswith('AAA/') for owner in audit.owners.values()),
                         'Files New Folder/Rename did not persist the expected directory')
                     saved['files_dialogs']['persisted_directory']='BBB'
-                elif shell_only and boot_smoke and measurement_commands is None:
+                elif shell_only and boot_smoke and measurement_commands is None and integration is None:
                     require(audit.directories==1 and not any(
                         name.startswith('SMOKEDIR/') for name in audit.files),
                         'Bitmap shell write smoke retained its temporary directory')
@@ -1070,7 +1078,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
         disk_failure=disk_failure,initial_media_sha256=mounted_hash,reset_required=reset_required,
         system_drive=system_drive,sys_cache=saved.get('sys_cache'),retired_manifest_intact=retire_manifest,
         aperture_intact=aperture_pattern is not None,
-        scope='Extracted OF816 GEM desktop: panel/counter, RSC browser, popup keyboard/mouse, native command launch/cancel, deferred close, shell/pipeline, guards and EXIT' if gem_desktop else 'Extracted OF816 AES input demo: two independent key/button/timer apps, exact pixels, physical drag/top/close, native shell/disk, eight-Task pipeline, writable media and EXIT' if input_apps else 'Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
+        scope='Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT' if colour_desktop else 'Extracted OF816 GEM desktop: panel/counter, RSC browser, popup keyboard/mouse, native command launch/cancel, deferred close, shell/pipeline, guards and EXIT' if gem_desktop else 'Extracted OF816 AES input demo: two independent key/button/timer apps, exact pixels, physical drag/top/close, native shell/disk, eight-Task pipeline, writable media and EXIT' if input_apps else 'Extracted OF816 AES counter demo: two ticking GEM applications, pixel drag/top/close, accelerated pointer, native shell/disk, eight-Task pipeline, writable media and EXIT' if counters else 'Missing companion disk: bounded startup failure, required-drive diagnostic, usable console, persistent offline bus and reset-required EXIT' if disk_failure=='missing-work' else 'Desktop OF816 autoboot, widget toggle/radio/momentary/cancel/disabled/default, client drag/focus, disk commands, writable WORK media, seven-Task pipeline and EXIT' if desktop else 'Missing disk: bounded failure, usable console, persistent offline bus and reset-required EXIT' if reset_required else 'Wrong disk: offline console, CD SYS: recovery, HELLO and EXIT' if disk_failure else 'Cooked control/Atari cursor editing, prompt-only history, draft restoration, 255-byte line, BREAK and Ctrl-D exit' if editing else 'OF816 autoboot and documented commands, with boot and pipeline screenshots' if showcase else 'Repeated HELLO/CAT/WC, pipeline, cache capacity and stable heap' if cache_smoke else 'Bitmap shell OF816 autoboot, C: lookup, aliases, relative subdirectory writes/listing and invalid paths, CAT/WC, pixel oracle and EXIT' if boot_smoke and shell_only and measurement_commands is None else 'Shell boot, disk HELLO, CAT/WC pipeline and EXIT' if boot_smoke else 'Short emulator STOCK810 smoke; mount profile overridden to 2 at bootstrap' if stock_smoke else ('Disk command loading, physical BREAK during loading, recovery and heap/ownership restoration' if loading_smoke else 'Packaged optimized '+manifest.get('filesystem','mydos').upper()+' walkthrough'),bank_zero_delta=bank_zero_delta(p['build']['memory']))
 
 
 if __name__=='__main__':

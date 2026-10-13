@@ -9,10 +9,12 @@ adds no kernel gateway or resident Task by itself.
 
 ## Window appearance
 
-Native and GEM windows use flat black outlines, white frame margins and
+Native and GEM windows use dark ink outlines, warm off-white frame margins and
 centered titles in the existing 8×8 Atari ST font. The focused title carries
-a black-and-white pattern; inactive titles are plain. The boxed closer is on
-the left, and is absent from the shell. Its hit rectangle matches its painted
+a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
+The boxed closer uses GEM font glyph 5 on the left and is absent from the
+shell. The full/restore gadget on the right uses glyph 7, making the two
+actions visually distinct. Its hit rectangle matches its painted
 box. Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
@@ -21,10 +23,16 @@ are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
 `wind_calc` geometry use constants generated from `abi/desktop.json`.
 
-Exposed desktop regions use a light-grey/white stipple anchored to screen
-coordinates. Each damaged strip is composed offscreen before publication, so
-clipping, moves and popup dismissal preserve the same phase. There is no
-periodic background repaint or separate desktop framebuffer.
+Exposed desktop regions use a flat warm grey (GEM pen 8). Each damaged strip
+is composed offscreen before publication. There is no periodic background
+repaint or separate desktop framebuffer.
+
+Widget desktop builds use a fixed sixteen-colour palette with warm paper, dark
+ink and muted blue/teal accents. Logical GEM pen numbers and hardware nibble
+ordering stay unchanged; standalone VDI builds retain the standard GEM palette.
+The palette is installed during the existing display open, with no new drawing
+pass or runtime theme manager. The [style record](../history/desktop-style.md)
+records the artwork, validation and memory costs.
 
 ## Registration and lifetime
 
@@ -242,9 +250,13 @@ its normal EXIT path controls retirement.
 
 ### Desktop menus and window switching
 
-The presenter owns a persistent 16-pixel menu bar. Its left menu follows the
-focused window. An installed GEM tree supplies its application titles; otherwise
-it offers Next window and Close. Close is disabled for the shell.
+The presenter owns a persistent 16-pixel menu bar. The left 128 pixels show the
+focused window name, truncated to fourteen 8-pixel cells; unnamed windows and
+the desktop show Exec816. Clicking this caption offers Next window and Close.
+Close is disabled for the shell. Installed GEM menus occupy x=128..559, and
+Windows occupies x=560..639. Application menu coordinates remain x=0..431;
+the presenter translates drawing, damage and pointer hits together. Dropdowns
+are translated and clamped onscreen; the 208-pixel Windows popup starts at x=432.
 Windows lists all shown application windows in stable slot order, including
 covered windows and the shell. Selecting an AES entry sends `WM_TOPPED`; the
 application raises itself with `WF_TOP`. Close sends `WM_CLOSED`. Native windows
@@ -266,8 +278,19 @@ focus unchanged. No remaining owner means focus and the published route are zero
 Native fallback and Windows popups have a one-pixel black outline inside their
 allocated bounds. The outline is not an item target. Selection is black/white
 inversion; disabled text uses the GEM white stipple. Each native row is composed
-in the existing widget strip, with at most sixteen glyphs per callback. Installed
-application menus retain their own OBJECT geometry and specifications.
+in the existing widget strip, including its complete label of up to 24 glyphs.
+Installed application menus retain their own OBJECT geometry and specifications.
+Their renderer batches up to four intersecting objects and budgets 80 text
+cells from clipped widths per callback; it does not fragment labels horizontally.
+Complete 16-row strips are published from the existing offscreen buffer.
+
+Highlight changes invalidate only the old and new entries. Opening/closing a
+menu damages its changed bar heading or native segment; owner/content changes
+can still require the complete bar. These visual states and their damage are
+published together after the current scene token retires. When starting a new
+paint transaction, the presenter prefers popup then bar, allowing ready ordinary
+layers a round-robin turn after two preferred menu transactions. This does not
+change Task priorities, application update locks or live paint ownership.
 
 The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
@@ -277,9 +300,15 @@ selection of stale labels after window retirement or slot reuse. No extra Task,
 timer, signal or bank-zero reservation is needed. Installed application trees
 are borrowed at paint boundaries; the [AES contract](aes.md) defines their
 bounded shape, lifetime and `MN_SELECTED` delivery. Windows adds Next/Close below
-its window list when application titles occupy the left bar. Ctrl+Shift+Escape
+its window list when an application menu is installed. Ctrl+Shift+Escape
 enters an application menu. Accessories and submenus remain unsupported.
 Existing application `menu_popup` remains window-scoped.
+
+The [menu latency design](../plans/gem4xe/menu-latency-design.md) explains why
+dismissal retains ordinary exposure redraw instead of restoring a saved screen
+image over potentially changed application content. The
+[execution record](../history/menu-latency.md) separates median/p95 feedback,
+exact pixel checks and concurrent application progress.
 
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.
@@ -392,3 +421,18 @@ geometry defines work insets, painting and hits. The presenter delivers GEM
 requests; applications accept sizes and own their scroll position. See the
 [AES contract](aes.md) and [development record](../history/window-gadgets.md).
 The shell and native copied-content windows retain fixed sizes.
+
+## Application file drags
+
+The colour desktop uses the existing native outline slot for one captured
+application gesture. `MU_M1` performs caller-local rectangle matching; the
+presenter follows its latest pointer without per-movement requests. A changed
+target repaints only its status strip. The source selection is frozen until
+one copied AES message admits the existing 16 KiB copy job. See the
+[AES desktop contract](aes.md) and [implementation plan](../plans/gem4xe/desktop-drag-drop-plan.md).
+
+The outline owns a source open lifetime and explicit MCTRL hold. Release,
+Escape, input loss, close and detach retire it. Owner UPDATE painting suspends
+and restores the visual. Foreign UPDATE requests retain the current lock policy
+and wait until MCTRL is released. Native window gestures use the same slot and
+retain their existing move/size/slider completion semantics.

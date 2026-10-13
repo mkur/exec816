@@ -3,22 +3,60 @@
 #include <gem.h>
 #include <exec816/desktop-geometry.h>
 
+struct AESWindowView *ExecAESFindView(struct ExecAESContext *c, WORD handle)
+{
+    UWORD i;
+    if (c->view && c->view->handle==handle) return c->view;
+    for (i=0; i<AES_WINDOWS; ++i)
+        if (c->views[i] && c->views[i]->handle==handle) return c->views[i];
+    return NULL;
+}
+
+BOOL ExecAESWindowEpoch(struct ExecAESContext *c, WORD handle, ULONG epoch)
+{
+    struct AESWindowView *v=ExecAESFindView(c,handle);
+    return v && epoch && v->epoch==epoch;
+}
+
+WORD ExecAESDesktop(WORD handle)
+{ return wind_set(handle,AES_WF_EXEC_DESKTOP,0,0,0,0); }
+
+WORD ExecAESInputWindow(WORD event)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    return c ? (event==MU_KEYBD ? c->keyWindow:c->eventWindow) : 0;
+}
+
 static WORD window_call(UWORD op, WORD a, WORD b, WORD d, WORD e, WORD f, WORD g)
 {
     struct ExecAESContext *c = ExecAESContext();
-    WORD fail = op == AES_OP_CREATE ? -1 : 0;
+    struct AESWindowView *view;
+    UWORD slot=0;
+    WORD result, fail = op == AES_OP_CREATE ? -1 : 0;
     if (c == NULL) return fail;
     if (c->busy) { c->diagnostic = AES_BUSY; return fail; }
     if (c->identity == 0) { c->diagnostic = AES_IDENTITY; return fail; }
-    if (op == AES_OP_CREATE && c->view == NULL) {
-        c->view = AllocMem(sizeof(*c->view), MEMF_PUBLIC | MEMF_CLEAR);
-        if (c->view == NULL) { c->diagnostic = AES_RESOURCE; return -1; }
-        c->request.view = c->view;
+    if (op == AES_OP_CREATE) {
+        while (slot<AES_WINDOWS && c->views[slot]) ++slot;
+        if (slot==AES_WINDOWS) { c->diagnostic=AES_RESOURCE; return -1; }
+        view=AllocMem(sizeof(*view),MEMF_PUBLIC|MEMF_CLEAR);
+        if (!view) { c->diagnostic=AES_RESOURCE; return -1; }
+    } else {
+        view=ExecAESFindView(c,a);
+        if (!view) { c->diagnostic=AES_IDENTITY; return fail; }
     }
+    c->request.view=view;
     c->request.intin[0] = a; c->request.intin[1] = b;
     c->request.intin[2] = d; c->request.intin[3] = e;
     c->request.intin[4] = f; c->request.intin[5] = g;
-    return ExecAESSubmit(c, op);
+    result=ExecAESSubmit(c,op);
+    if (op==AES_OP_CREATE) {
+        if (result>0) c->views[slot]=view;
+        else { FreeMem(view,sizeof(*view)); c->request.view=c->view; return result; }
+    }
+    c->view=view;
+    c->visibleIndex=0;
+    return result;
 }
 
 WORD wind_create(WORD kind, WORD x, WORD y, WORD w, WORD h)
@@ -30,14 +68,38 @@ WORD wind_open(WORD handle, WORD x, WORD y, WORD w, WORD h)
 WORD wind_close(WORD handle)
 { return window_call(AES_OP_CLOSE, handle, 0, 0, 0, 0, 0); }
 
+WORD wind_find(WORD x, WORD y)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (!c) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0]=x;c->request.intin[1]=y;
+    return ExecAESSubmit(c,AES_OP_FIND);
+}
+
+WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (!c) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0]=window;c->request.intin[1]=dx;c->request.intin[2]=dy;
+    c->request.intin[3]=width;c->request.intin[4]=height;
+    return ExecAESSubmit(c,AES_OP_DRAG_OUTLINE);
+}
+
 WORD wind_delete(WORD handle)
 {
     WORD result = window_call(AES_OP_DELETE, handle, 0, 0, 0, 0, 0);
     if (result) {
         struct ExecAESContext *c = ExecAESContext();
+        UWORD i;
+        for (i=0; i<AES_WINDOWS; ++i)
+            if (c->views[i]==c->view) c->views[i]=NULL;
         FreeMem(c->view, sizeof(*c->view));
         c->view = NULL;
-        c->request.view = NULL;
+        for (i=0; i<AES_WINDOWS; ++i)
+            if (c->views[i]) { c->view=c->views[i]; break; }
+        c->request.view = c->view;
         c->visibleIndex = 0;
     }
     return result;
@@ -60,7 +122,8 @@ WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
     *o1 = *o2 = *o3 = *o4 = 0;
     if (c == NULL || !ExecAESEnter(c)) return 0;
     Forbid();
-    v = c->view;
+    v = ExecAESFindView(c,handle);
+    if (v) { c->view=v;c->request.view=v; }
     if (handle == 0 && field == WF_WXYWH) { *o2 = 16; *o3 = 640; *o4 = 224; }
     else if (field == WF_TOP && (handle == 0 || (v != NULL && handle == v->handle)))
         *o1 = c->directory->topWindow;
@@ -100,20 +163,23 @@ WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
 {
     struct ExecAESContext *c = ExecAESContext();
     LONG left = x, top = y, width = w, height = h;
+    WORD leftInset=kind ? DESKTOP_WORK_LEFT:0;
     WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_RIGHT;
+    WORD inset = DESKTOP_WORK_TOP + (kind & INFO ? DESKTOP_FRAME_INFO_HEIGHT:0);
     WORD bottom = kind & SIZER ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_BOTTOM;
     *ox = *oy = *ow = *oh = 0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->diagnostic = AES_UNSUPPORTED;
-    if ((kind & AES_WINDOW_KIND) != AES_WINDOW_KIND || (kind & ~AES_WINDOW_SUPPORTED) ||
+    if ((kind && (kind & AES_WINDOW_KIND) != AES_WINDOW_KIND) || (kind & ~AES_WINDOW_SUPPORTED) ||
         (type != WC_BORDER && type != WC_WORK)) return 0;
-    if (type == WC_BORDER) { left -= DESKTOP_WORK_LEFT; top -= DESKTOP_WORK_TOP;
-        width += DESKTOP_WORK_LEFT+right;
-        height += DESKTOP_WORK_TOP+bottom; }
-    else { left += DESKTOP_WORK_LEFT; top += DESKTOP_WORK_TOP;
-        width -= DESKTOP_WORK_LEFT+right;
-        height -= DESKTOP_WORK_TOP+bottom; }
+    if (!kind) right=inset=bottom=0;
+    if (type == WC_BORDER) { left -= leftInset; top -= inset;
+        width += leftInset+right;
+        height += inset+bottom; }
+    else { left += leftInset; top += inset;
+        width -= leftInset+right;
+        height -= inset+bottom; }
     c->diagnostic = AES_MALFORMED;
     if (w <= 0 || h <= 0 || left < -32768L || left > 32767 ||
         top < -32768L || top > 32767 || width <= 0 || width > 32767 ||

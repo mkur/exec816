@@ -230,7 +230,13 @@ WORD appl_exit(void)
         c->updateDepth=c->mouseDepth=0;
         c->menuTree=0;
         c->editTree=0;
-        if (c->view != NULL) FreeMem(c->view, sizeof(*c->view));
+        {
+            UWORD i;
+            for (i=0; i<AES_WINDOWS; ++i) {
+                if (c->views[i]) FreeMem(c->views[i],sizeof(*c->views[i]));
+                c->views[i]=NULL;
+            }
+        }
         c->view = NULL;
         c->request.view = NULL;
         DeleteMsgPort(c->receiving);
@@ -286,7 +292,7 @@ WORD evnt_keybd(void)
 static WORD button(struct ExecAESContext *c, WORD clicks, WORD mask, WORD state)
 {
     c->intin[1] = clicks; c->intin[2] = mask; c->intin[3] = state;
-    return ExecAESEvents(c, MU_BUTTON, 0, NULL) != 0;
+    return ExecAESEvents(c, MU_BUTTON, 0, NULL) ? c->intout[6] : 0;
 }
 
 WORD evnt_button(WORD clicks, WORD mask, WORD state,
@@ -365,10 +371,11 @@ WORD evnt_multi_moblk(UWORD flags, WORD bclk, UWORD bmsk, UWORD bst,
     const MOBLK *m1, const MOBLK *m2, WORD *msg, UWORD tlo, UWORD thi,
     WORD *mx, WORD *my, WORD *mb, WORD *ks, WORD *kr, WORD *br)
 {
-    /* Rectangle values are ignored only when their event bits are absent.
-     * Unsupported rectangle events are rejected as a whole by evnt_multi. */
+    /* Only selected rectangles are borrowed; unselected pointers are ignored. */
     return evnt_multi((WORD)flags, bclk, (WORD)bmsk, (WORD)bst,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, msg, (WORD)tlo, (WORD)thi,
+        (flags&MU_M1) ? m1->m_out:0, (flags&MU_M1) ? m1->m_x:0,
+        (flags&MU_M1) ? m1->m_y:0, (flags&MU_M1) ? m1->m_w:0,
+        (flags&MU_M1) ? m1->m_h:0, 0, 0, 0, 0, 0, msg, (WORD)tlo, (WORD)thi,
         mx, my, mb, ks, kr, br);
 }
 
@@ -391,6 +398,7 @@ void EXEC_CALL aes_call(AESPB *pb)
     if (op == AES_OP_BUTTON) { inputs = 3; outputs = 5; }
     if (op == AES_OP_TIMER) inputs = 2;
     if (op == AES_OP_UPDATE) inputs = 1;
+    if (op == AES_OP_FIND) inputs = 2;
     if (op == AES_OP_MULTI) { inputs = 16; addresses = 1; outputs = 7; }
     if (op == AES_OP_CREATE || op == AES_OP_OPEN) inputs = 5;
     if (op == AES_OP_CLOSE || op == AES_OP_DELETE) inputs = 1;
@@ -404,7 +412,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         op != AES_OP_TIMER && op != AES_OP_MULTI &&
         op != AES_OP_UPDATE && op != AES_OP_CREATE && op != AES_OP_OPEN &&
         op != AES_OP_CLOSE && op != AES_OP_DELETE && op != AES_OP_GET &&
-        op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_GRAF_HANDLE) {
+        op != AES_OP_SET && op != AES_OP_CALC && op != AES_OP_FIND && op != AES_OP_GRAF_HANDLE) {
         c->diagnostic = AES_UNSUPPORTED; pb->int_out[0] = 0; return;
     }
     if (pb->control[1] != inputs || pb->control[2] != outputs ||
@@ -439,6 +447,7 @@ void EXEC_CALL aes_call(AESPB *pb)
             pb->int_in[3], pb->int_in[4]); break;
     case AES_OP_CLOSE: result = wind_close(pb->int_in[0]); break;
     case AES_OP_DELETE: result = wind_delete(pb->int_in[0]); break;
+    case AES_OP_FIND: result = wind_find(pb->int_in[0], pb->int_in[1]); break;
     case AES_OP_GET:
         result = wind_get(pb->int_in[0], pb->int_in[1], &pb->int_out[1],
             &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;

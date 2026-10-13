@@ -12,6 +12,108 @@ static void check(WORD okay) {
     if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure=AESChecks; }
 }
 #define CHECK(x) check((x)!=0)
+volatile UWORD ObjectPhase,ObjectGo,ObjectProbe,ObjectBorrows,ObjectRows[4],ObjectLists;
+/* Test-only adapter hooks; no counters are linked into the demo. */
+void ObjectBorrowProbe(UWORD rows)
+{
+    if (ObjectProbe) {
+        if (ObjectBorrows<4) ObjectRows[ObjectBorrows]=rows;
+        ++ObjectBorrows;
+    }
+}
+void ObjectListProbe(const UBYTE *p,UWORD count)
+{
+    ULONG work=0;
+    UWORD i,width,rows;
+    if (!ObjectProbe) return;
+    ++ObjectLists;
+    CHECK(count && count<=64);
+    for (i=0;i<count;++i,p+=21) {
+        width=((UWORD)p[12]|((UWORD)p[13]<<8))+1;
+        rows=(UWORD)p[14]+1;
+        CHECK(width<=512 && rows<=256);
+        work+=(ULONG)width*rows*(p[20] ? 3:2);
+    }
+    CHECK(work<=8192);
+}
+static WORD unit_probe(WORD window)
+{
+    static const WORD heights[]={16,17,31,32,33,14,16,16,26,33,12};
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1170,8,40,624,184};
+    static OBJECT object={-1,-1,-1,G_BOX,LASTOB,0,0x1178,17,49,608,16};
+    WORD i,j;
+    CHECK(wind_close(window));CHECK(wind_delete(window));
+    window=wind_create(NAME|CLOSER|MOVER,0,0,640,208);CHECK(window>0);
+    CHECK(wind_open(window,0,24,640,208));
+    for (i=0;i<11;++i) {
+        object.ob_height=heights[i];object.ob_type=i>=5 && i<=8 ? G_BUTTON:G_BOX;
+        object.ob_flags=LASTOB|(i>=6 && i<=8 ? EXIT:0)|(i==7 || i==8 ? DEFAULT:0);
+        object.ob_state=i==8 ? SELECTED|DISABLED:i==10 ? SELECTED:0;
+        object.ob_spec=object.ob_type==G_BUTTON ? (ULONG)"Wide":0x1178;
+        CHECK(wind_update(BEG_UPDATE));
+        CHECK(objc_draw(&background,0,0,0,0,640,240));
+        ObjectBorrows=ObjectLists=0;
+        for (j=0;j<4;++j) ObjectRows[j]=0;
+        ObjectProbe=1;
+        CHECK(objc_draw(&object,0,0,i==9 ? 19:0,i==9 ? 52:0,i==9 ? 603:640,i==9 ? 24:240));
+        ObjectProbe=0;
+        CHECK(ObjectBorrows==(i==4 ? 3:i==9 ? 2:1));
+        if (i==4) CHECK(ObjectRows[0]==16 && ObjectRows[1]==16 && ObjectRows[2]==1);
+        if (i==9) CHECK(ObjectRows[0]==16 && ObjectRows[1]==8);
+        if (i==3 || i==8) CHECK(ObjectLists>1);
+        CHECK(wind_update(END_UPDATE));
+        ObjectPhase=i+1;while (ObjectGo<ObjectPhase) ExecYield();
+    }
+    return window;
+}
+static void box_probe(void)
+{
+    /* type, thickness, width, height, colour word, state, damage edge */
+    static const WORD cases[][7]={
+        {G_BOX,1,41,25,0x1178,0,0},{G_BOX,3,41,25,0x2173,0,0},
+        {G_BOX,-1,41,25,0x0172,0,0},{G_BOX,-3,41,25,0x4170,0,0},
+        {G_BOX,0,41,25,0x1189,0,0},{G_BOX,0,41,25,0x1170,0,0},
+        {G_BOX,2,5,5,0x0172,0,0},{G_BOX,3,6,6,0x1178,0,0},
+        {G_BOX,3,5,5,0x1178,0,0},{G_IBOX,2,41,25,0x1178,0,0},
+        {G_BOX,2,41,25,0x2173,SELECTED|DISABLED,0},
+        {G_BOX,-2,41,25,0x1178,SELECTED,0},
+        {G_BOX,-3,41,25,0x2173,0,1},{G_BOX,-3,41,25,0x2173,0,2},
+        {G_BOX,-3,41,25,0x2173,0,3},{G_BOX,-3,41,25,0x2173,0,4},
+        {G_BOX,3,41,33,0x2173,0,0},{G_BOX,-2,41,33,0x1178,DISABLED,0},
+        {G_BOX,2,41,25,0x1140,0,0},{G_BOX,1,90,42,0x1178,0,0},
+        {G_BOX,-3,41,25,0x2173,0,5}
+    };
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1175,8,40,624,184};
+    static OBJECT objects[3]={
+        {-1,-1,-1,G_BOX,LASTOB,0,0,57,81,41,25},
+        {2,-1,-1,G_BOX,0,0,0xff1172UL,10,8,30,16},
+        {0,-1,-1,G_BUTTON,SELECTABLE|EXIT|DEFAULT|LASTOB,SELECTED|DISABLED,0,25,12,48,16}
+    };
+    WORD i,l,t,r,b,edge;
+    struct AESWindowView *view;
+    struct AESRect visible;
+    objects[2].ob_spec=(ULONG)"Wide";
+    for (i=0;i<21;++i) {
+        objects[0].ob_type=cases[i][0];objects[0].ob_width=cases[i][2];objects[0].ob_height=cases[i][3];
+        objects[0].ob_spec=((ULONG)(UBYTE)cases[i][1]<<16)|(UWORD)cases[i][4];
+        objects[0].ob_state=cases[i][5];objects[0].ob_head=i==19 ? 1:-1;objects[0].ob_tail=i==19 ? 2:-1;
+        objects[0].ob_flags=i==19 ? 0:LASTOB;
+        edge=cases[i][6];l=edge==1 ? 58:8;t=edge==3 ? 82:40;
+        r=edge==2 ? 97:632;b=edge==4 ? 105:224;
+        CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(&background,0,0,0,0,640,240));
+        view=ExecAESContext()->view;visible=view->visible[0];
+        if (edge==5) {
+            /* Narrow the owned snapshot into two disjoint admitted regions. */
+            view->visible[1]=visible;view->visible[0].right=73;
+            view->visible[1].left=79;view->visibleCount=2;
+        }
+        ObjectBorrows=ObjectLists=0;ObjectProbe=1;
+        CHECK(objc_draw(objects,0,8,l,t,r-l,b-t));ObjectProbe=0;
+        if (edge==5) { CHECK(ObjectBorrows==2);view->visible[0]=visible;view->visibleCount=1; }
+        CHECK(wind_update(END_UPDATE));
+        ObjectPhase=12+i;while (ObjectGo<ObjectPhase) ExecYield();
+    }
+}
 static OBJECT tree[]={
     {-1,1,4,G_BOX,0,0,0x1170,48,48,160,88},
     {2,-1,-1,G_BUTTON,SELECTABLE|RBUTTON,SELECTED,0,8,8,64,16},
@@ -146,7 +248,7 @@ UWORD AESRun(void)
     CHECK(objc_draw(tree,0,8,45,48,100,31));
     CHECK(objc_change(tree,2,0,0,0,640,240,0,1));
     CHECK(wind_update(END_UPDATE));
-    text_probe();edit_probe();
+    text_probe();edit_probe();window=unit_probe(window);box_probe();
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(handle); CHECK(appl_exit()); CHECK(ExecAESDetach());
     CHECK(AvailMem(0)==available);

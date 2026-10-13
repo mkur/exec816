@@ -15,13 +15,16 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
     out.mkdir(parents=True,exist_ok=True)
     options.pop('desktop',None)
     applications={}
-    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('dialog','gem-dialog')]:
-        body='browser' if name=='files' else name
-        applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/'main.c',
+    for name,folder in [('panel','gem-panel'),('counter','gem-counter'),('files','gem-browser'),('desktop','gem-browser'),('dialog','gem-dialog')]:
+        body='browser' if name in ('files','desktop') else name
+        applications[name]=application(out/'apps'/name,[ROOT/'examples'/folder/('desktop-main.c' if name=='desktop' else 'main.c'),
                                                        ROOT/'examples'/folder/(body+'.c'),
-                                                       *([ROOT/'c/calypsi/file-list.c'] if name=='files' else [])])
+                                                       *([ROOT/'c/calypsi/file-list.c'] if name in ('files','desktop') else [])],
+            probes=[(ROOT/'tests/programs/gem_colour_desktop_layout.c',__import__('colour_desktop_model').LAYOUT)] if name=='desktop' else [])
     from build_calculator import build as calculator
     applications['calc']=calculator(out/'apps/calc')
+    from build_g4bench import build as g4bench
+    applications['g4bench']=g4bench(out/'apps/g4bench')
     applications['text']=application(out/'apps/text',[
         ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
         [ROOT/'c/calypsi/file-list.c'],probes=[

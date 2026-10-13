@@ -1,8 +1,9 @@
 """Development observers resolve private app symbols through retained Processes."""
 import json
 from native_program import ROOT,require
+from colour_desktop_model import FIELDS as DESKTOP_FIELDS
 
-MODELS={'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32)}
+MODELS={'desktop':('GEMDesk',DESKTOP_FIELDS['ready'],DESKTOP_FIELDS['work']),'panel':('GEMPanel',8,34),'counter':('GEMCounter',12,38),'files':('GEMBrowser',8,26),'calc':('Calculator',4,22),'dialog':('GEMDialog',8,40),'text':('GEMText',8,32),'g4bench':('g4b_ready',0,0),'g4clock':('g4p_ready',0,0)}
 
 def instances(bridge,program,directory):
     apps={name:json.loads((directory/'apps'/name/'app.json').read_text())
@@ -49,13 +50,16 @@ def scene_symbols(bridge,program,directory,title,bounds):
         at=number(pointers,offset,4)
         if not at:continue
         raw=bridge.memdump(at,request['size'])
-        target=number(raw,request['fields']['view'],3)
-        if not target:continue
-        state=bridge.memdump(target,view['fields']['visibleCount'])
-        rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
-                                       'little',signed=True) for i in (0,2,4,6))
-        if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
-            owners[number(raw,request['fields']['owner'],3)]=at
+        from generate_aes_server import expected_layout
+        views=bridge.memdump(at+dict(expected_layout())['C context views'],4*ABI['constants']['WINDOWS'])
+        for slot in range(ABI['constants']['WINDOWS']):
+            target=number(views,slot*4,4)
+            if not target:continue
+            state=bridge.memdump(target,view['fields']['visibleCount'])
+            rectangle=tuple(int.from_bytes(state[view['fields']['bounds']+i:view['fields']['bounds']+i+2],
+                                           'little',signed=True) for i in (0,2,4,6))
+            if number(state,view['fields']['shown'],2) and rectangle==tuple(bounds):
+                owners[number(raw,request['fields']['owner'],3)]=at
     # wind_get clears caller output words before filling them. The application
     # work[] buffer is scratch, not a window identity, even at an IRQ snapshot.
     # Use the published AES view and its retained Process Task instead.

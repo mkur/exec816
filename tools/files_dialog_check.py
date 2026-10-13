@@ -22,7 +22,7 @@ def exercise(s,sy,click,move):
         s.rendezvous('dw($%x)=%d'%(base+F['dialog'],kind));s.frames(60)
     def closed():
         s.rendezvous('dw($%x)=0'%(base+F['dialog']));s.frames(90)
-    def menu(item):click(24,8);click(40,24+(item-6)*16)
+    def menu(item):click(152,8);click(168,24+(item-6)*16)
     def path(value):
         key('P');opened(1);fill(value);key('RETURN');closed()
         require(text('path')==value,'Path dialog did not navigate')

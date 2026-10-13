@@ -56,6 +56,7 @@ def scene_commands():
             cmd(1, 4, 12, 0, 16, 24), cmd(2, 4, 1),
             cmd(6, 1, 10, 2, 18, 14),
             cmd(1, 6, 0, 0, 32, 2), cmd(1, 7, 16, 2, 32, 10),
+            cmd(1, 8, 0, 0, 4, 4), cmd(1, 9, 0, 0, 4, 4),
             cmd(1, 5, 0, 0, 8, 24, status=2),
             cmd(3, 1, 1), cmd(5, 1, 4, 2), cmd(2, 3, 0),
             cmd(6, 3, 4, 8, 20, 16), cmd(5, 3, 0, 0),
@@ -158,13 +159,13 @@ def check_bank_scene(raw):
         for y in range(t, b):
             expected[y*640+l:y*640+r] = bytes([ident])*(r-l)
     counts = []
-    for slot in range(7):
+    for slot in range(__import__('generate_layers').ABI['constants']['SLOT_COUNT']):
         at = records['Scene']['fields']['items'] + slot*records['Layer']['size']
         ident, = struct.unpack_from('<I', scene, at)
         require(ident == (slot+1 if slot < 6 else 0), 'Cross-bank identity changed')
         at += records['Layer']['fields']['visible']
         count, = struct.unpack_from('<H', scene, at)
-        require(0 < count <= 91, 'Cross-bank region count')
+        require((count==0 if 6<=slot<__import__('generate_layers').ABI['constants']['BACKGROUND_SLOT'] else 0<count<=91), 'Cross-bank region count')
         counts.append(count)
         for index in range(count):
             l, t, r, b = struct.unpack_from('<4h', scene, at+2+index*8)

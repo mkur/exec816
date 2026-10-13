@@ -13,27 +13,48 @@ USE DESKGEOMETRY
 USE A816MEMORY
 USE HEAPCORE
 
-PUBLIC AESSTATE.Client POINTER FUNC Find(LONGCARD id)
+PUBLIC AESSTATE.Window POINTER FUNC FindRecord(LONGCARD id)
   BYTE index
 
   LET service=AESSTATE.Get()
   IF service=NULL OR id=0 THEN
     RETURN(NULL)
   FI
-
-  FOR index=0 TO AESTYPES.CLIENTS-1 DO
-    IF service.clients(index).window<>NULL THEN
-      IF service.clients(index).window.id=id THEN
-        RETURN(@service.clients(index))
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner<>0 THEN
+      IF service.windows(index).window.id=id THEN
+        RETURN(@service.windows(index))
       FI
     FI
   OD
 
 RETURN(NULL)
 
+PUBLIC AESSTATE.Window POINTER FUNC Handle(AESSTATE.Client POINTER client INT handle)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id
+        AND service.windows(index).gui.window=handle THEN
+      RETURN(@service.windows(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+PUBLIC AESSTATE.Client POINTER FUNC Find(LONGCARD id)
+
+  LET item=FindRecord(id)
+  IF item=NULL THEN
+    RETURN(NULL)
+  FI
+
+RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
+
 ; Called at lock grant and after an owner mutation. The caller cannot execute
 ; a query until its RPC reply; no Forbid spans construction of this region.
-PUBLIC PROC Snapshot(AESSTATE.Client POINTER client)
+PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   LAYERTYPES.Rect work
   BYTE status
 
@@ -57,6 +78,30 @@ PUBLIC PROC Snapshot(AESSTATE.Client POINTER client)
   view.shown=layer.shown
   view.revision==+1
   EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id THEN
+      Snapshot(@service.windows(index))
+    FI
+  OD
+
+RETURN
+
+PUBLIC PROC Updates(AESSTATE.Client POINTER client CARD count)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id THEN
+      service.windows(index).view.updates=count
+    FI
+  OD
 
 RETURN
 
@@ -95,7 +140,7 @@ PUBLIC PROC Sync()
       LET layer=@desktop.scene.items(desktop.scene.order(slot))
       IF layer.shown<>0 AND FindWindow(layer.id)<>0 THEN
         BEGIN
-          LET client=Find(IF layer.externalPaint<>0 THEN
+          LET client=FindRecord(IF layer.externalPaint<>0 THEN
               FindWindow(layer.id) ELSE LONGCARD(0) FI)
           IF client<>NULL THEN
             top=client.gui.window
@@ -116,7 +161,7 @@ RETURN
 PUBLIC PROC Control(DESKTYPES.Window POINTER window BYTE kind
     INT x,y,width,height)
 
-  LET client=Find(window.id)
+  LET client=FindRecord(window.id)
   IF client<>NULL THEN
     AESGUI.Post(AESSTATE.Get(),client,kind,x,y,width,height)
   FI
@@ -131,7 +176,7 @@ PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)
     RETURN
   FI
 
-  LET client=Find(window.id)
+  LET client=FindRecord(window.id)
   IF client.paintDirty=0 THEN
     REGIONS.Copy(area,@client.paintDamage)
     client.paintDirty=1
@@ -159,7 +204,7 @@ RETURN
 
 PUBLIC PROC Handoff(DESKTYPES.Window POINTER window)
 
-  LET client=Find(window.id)
+  LET client=FindRecord(window.id)
   IF client.paintDirty<>0 THEN
     BEGIN
       LET area=@client.paintDamage

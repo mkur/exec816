@@ -4,6 +4,7 @@ USE HEAPCORE
 
 PUBLIC CONST MAGIC=LONGCARD($31474d49)
 PUBLIC CONST KIND_NATIVE=0, KIND_C=1
+PUBLIC CONST NAME_CAPACITY=24
 
 PUBLIC TYPE Image=[
   LONGCARD magic,references
@@ -12,6 +13,7 @@ PUBLIC TYPE Image=[
   LONGCARD backingBytes,textBytes,dataBytes,bssBytes
   ADDRESS text
   LONGINT FUNC POINTER entry()
+  BYTE ARRAY name(NAME_CAPACITY)
 ]
 
 ; Release all segment allocations belonging to an unloaded program image.

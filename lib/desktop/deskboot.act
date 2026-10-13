@@ -87,8 +87,8 @@ PUBLIC BYTE FUNC Attach()
 
   DESKTOP.Prepare(@request,DESKTYPES.OPEN)
   request.value=DESKTYPES.CONTENT_CONSOLE
-  request.payload=BYTE POINTER(c"Exec816 Shell")
-  request.bytes=13
+  request.payload=BYTE POINTER(c"Shell")
+  request.bytes=5
   REGIONS.Assign(@request.bounds,32,24,560,208)
   IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
     RETURN(Unwind())

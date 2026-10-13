@@ -32,10 +32,17 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 12 appends `ExamineExact`. The generated C FileInfoBlock stays
-260 bytes, with 30 reserved bytes and `fib_InfoFlags` at 258. Check the
+Import ABI 16 includes the current device/AES/file imports and appends
+`ExamineExact`. The generated C FileInfoBlock stays 260 bytes, with 30 reserved
+bytes and `fib_InfoFlags` at 258. Check the
 [DOS availability flags](dos.md#metadata-availability) for ordinary metadata;
 ExamineExact preserves explicit size/allocated-sector measurement.
+
+Loaded C applications also use the existing `CreateMsgPort`, `DeleteMsgPort`,
+`CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice` and `DoIO`
+functions. Device requests use the ordinary
+[device I/O contract](device-io.md); no new kernel operation or clock is added.
+The desktop provider and its applications must be rebuilt together.
 
 ## File layout
 
@@ -47,7 +54,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 12 |
+| 6 | 2 | Import ABI version, 16 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -121,15 +128,15 @@ after validation/copying. The shared GUI runtime is expanded from the
 [compressed boot image](boot-loading.md) into its reserved extents before
 native startup; it needs no disk component or separate payload buffer.
 
-The desktop ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`, `C:CALC.APP`, `C:DIALOG.APP` and `C:TEXT.APP`. Each has an
-application-owned model and a small `main` wrapper; their bodies are absent from
-the shared resident GUI runtime. The shell owns the three initial Processes. Files owns
-and collects the one child it launches; `RUN C:FILES.APP` uses the shell's
-existing background job after the initial Files window closes.
-Calculator is launched on demand with `SYS:CALC.RSC`; it does not add a startup
-Process or enlarge the fixed pools. Close an existing GEM window before launch
-when the shell and three initial apps occupy all four application-window slots. The
-[calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes its input.
+The desktop ships `C:DESKTOP.APP`, `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`,
+`C:CALC.APP`, `C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies
+and models are absent from the shared runtime. The shell owns the initial desktop
+Process; the desktop owns its launched children independently of folder windows.
+Standalone FILES.APP retains its one-child lifetime. Tools launch on demand;
+normal resource errors report exhausted Task/window capacity. The current binding
+also exposes the existing DOS `DeleteFile` operation for desktop file management.
+The [calculator guide](../guides/aes-applications.md#gem4xe-calculator) describes
+calculator input; keep SYS:CALC.RSC mounted.
 
 `ExecStartProgram(name, arguments, length)` uses the existing native Process
 argument-copy path. Length excludes NUL and is bounded at 255 bytes. Null/zero

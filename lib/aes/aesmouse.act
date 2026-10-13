@@ -1,6 +1,7 @@
 ; Presenter-only physical gesture ownership, independent of display borrowing.
 MODULE AESMOUSE
 USE INPUT
+USE A816MEMORY
 USE AESTYPES
 USE AESSTATE
 USE AESINBOX
@@ -12,14 +13,19 @@ USE DESKGEOMETRY
 USE LAYERS
 
 CONST NATIVE=1, TITLE=2
-LONGCARD owner,openEpoch
+LONGCARD owner,openEpoch,ownerWindow
 AESTYPES.InputRecord latest
 BYTE manager,needRelease,nativePending
+LONGCARD clickOwner,clickEpoch
+CARD clickTick
+INT clickX,clickY
+BYTE clickCount
 
 PUBLIC PROC Reset()
 
   owner=0
   openEpoch=0
+  clickCount=0
   manager=0
   nativePending=0
   needRelease=1
@@ -36,7 +42,21 @@ PUBLIC BYTE FUNC LockReady(LONGCARD client)
 
 RETURN(latest.buttons=0 OR (owner=client AND owner<>0))
 
+; Presenter-only access for a visual attached to the existing physical capture.
+PUBLIC BYTE FUNC DragReady(LONGCARD client,epoch)
+
+RETURN(owner=client AND owner<>0 AND openEpoch=epoch
+    AND latest.buttons<>0 AND needRelease=0)
+
+PUBLIC AESTYPES.InputRecord POINTER FUNC PointerSample()
+
+RETURN(@latest)
+
 PUBLIC PROC Cancel(LONGCARD client)
+
+  IF clickOwner=client THEN
+    clickCount=0
+  FI
 
   IF owner=client AND owner<>0 THEN
     owner=0
@@ -44,6 +64,19 @@ PUBLIC PROC Cancel(LONGCARD client)
     needRelease=1
   FI
 
+RETURN
+
+PUBLIC PROC CancelWindow(LONGCARD epoch)
+
+  IF epoch<>0 AND clickEpoch=epoch THEN
+    clickCount=0
+  FI
+  IF epoch<>0 AND openEpoch=epoch THEN
+    owner=0
+    ownerWindow=0
+    openEpoch=0
+    needRelease=1
+  FI
 RETURN
 
 PUBLIC BYTE FUNC NativeGesture()
@@ -63,40 +96,57 @@ RETURN
 PUBLIC PROC Refresh()
   BYTE index
   CARD eligible
+  AESSTATE.Window POINTER item
+  AESTYPES.InputRecord snapshot
 
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR desktop=NULL THEN
     RETURN
   FI
-
   IF service.pointerCount=0 THEN
     nativePending=0
   FI
-
   FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
       LET client=@service.clients(index)
       IF client.id<>0 AND client.endpoint<>NULL THEN
         eligible=0
-        IF client.window<>NULL AND client.endpoint.input.windowEpoch<>0
-            AND (client.endpoint.input.loss & AESTYPES.INPUT_BUTTON)=0
-            AND needRelease=0 AND manager=0 AND nativePending=0
-            AND DESKSTATE.menuActive=0 THEN
-          IF owner<>0 THEN
-            eligible=owner=client.id
-          ELSEIF service.mouseHolds<>0 THEN
-            eligible=service.mouseOwner=client.id
-          ELSE
-            eligible=latest.buttons=0 AND desktop.focus=client.window.id
+        item=NULL
+        IF owner=client.id THEN
+          item=AESWINDOWSTATE.FindRecord(ownerWindow)
+        ELSEIF service.mouseHolds<>0 AND service.mouseOwner=client.id THEN
+          IF client.binding.view<>NULL THEN
+            item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
+          FI
+        ELSE
+          item=AESWINDOWSTATE.FindRecord(desktop.focus)
+          IF item<>NULL AND item.owner<>client.id THEN
+            item=NULL
           FI
         FI
-
-        AESINBOX.Snapshot(client,@latest,eligible)
+        A816MEMORY.Move(BYTE POINTER(@snapshot),BYTE POINTER(@latest),AESTYPES.INPUTRECORD_SIZE)
+        snapshot.window=0
+        snapshot.windowEpoch=0
+        IF item<>NULL THEN
+          snapshot.window=item.gui.window
+          snapshot.windowEpoch=item.view.epoch
+          IF item.view.epoch<>0 AND (client.endpoint.input.loss & AESTYPES.INPUT_BUTTON)=0
+              AND needRelease=0 AND manager=0 AND nativePending=0
+              AND DESKSTATE.menuActive=0 THEN
+            IF owner<>0 THEN
+              eligible=owner=client.id
+            ELSEIF service.mouseHolds<>0 THEN
+              eligible=service.mouseOwner=client.id
+            ELSE
+              eligible=latest.buttons=0
+            FI
+          FI
+        FI
+        AESINBOX.Snapshot(client,@snapshot,eligible)
       FI
     END
   OD
-
 RETURN
 
 PUBLIC PROC Lost()
@@ -105,6 +155,7 @@ PUBLIC PROC Lost()
   LET service=AESSTATE.Get()
   owner=0
   openEpoch=0
+  clickCount=0
   manager=0
   needRelease=1
   IF service<>NULL AND service.live<>0 THEN
@@ -135,6 +186,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   CARD previous
   BYTE accepted
   AESSTATE.Client POINTER client
+  AESSTATE.Window POINTER item
 
   IF sample.kind=INPUT.EVENT_LOSS THEN
     Lost()
@@ -166,7 +218,8 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 
   IF owner<>0 THEN
     client=AESSTATE.Find(service,owner)
-    IF client=NULL OR client.endpoint.input.windowEpoch<>openEpoch THEN
+    item=AESWINDOWSTATE.FindRecord(ownerWindow)
+    IF client=NULL OR item=NULL OR item.view.epoch<>openEpoch THEN
       owner=0
       openEpoch=0
       needRelease=latest.buttons<>0
@@ -202,11 +255,15 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
   FI
 
   client=NULL
+  item=NULL
   LET desktop=DESKSTATE.Get()
   IF nativePending=0 AND DESKSTATE.menuActive=0 THEN
     IF service.mouseHolds<>0 THEN
       client=AESSTATE.Find(service,service.mouseOwner)
-      IF client.window=NULL OR client.endpoint.input.windowEpoch=0 THEN
+      IF client.binding.view<>NULL THEN
+        item=AESWINDOWSTATE.Handle(client,client.binding.view.handle)
+      FI
+      IF item=NULL OR item.view.epoch=0 THEN
         needRelease=1
         RETURN(1)
       FI
@@ -215,10 +272,11 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
         LET layer=LAYERS.Hit(@desktop.scene,sample.x,sample.y)
         LET window=AESWINDOWSTATE.FindWindow(layer)
         IF desktop.focus=window AND window<>0 THEN
+          item=AESWINDOWSTATE.FindRecord(window)
           client=AESWINDOWSTATE.Find(window)
           IF client<>NULL THEN
             BEGIN
-              LET work=@client.view.work
+              LET work=@item.view.work
               IF sample.x<work.left OR sample.x>=work.right
                   OR sample.y<work.top OR sample.y>=work.bottom THEN
                 client=NULL
@@ -232,20 +290,42 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 
   IF client<>NULL AND client.endpoint.input.windowEpoch<>0 THEN
     owner=client.id
-    openEpoch=client.endpoint.input.windowEpoch
+    openEpoch=item.view.epoch
+    ownerWindow=item.window.id
+    latest.window=item.gui.window
+    latest.windowEpoch=openEpoch
+    ; Count at capture time, not after queue or repaint latency. First clicks
+    ; remain immediate. The fixed 25-VBI interval is 500ms PAL / 417ms NTSC.
+    IF clickCount=1 AND clickOwner=owner AND clickEpoch=openEpoch
+        AND (sample.flags & INPUT.TICK_VALID)<>0
+        AND CARD(sample.tick-clickTick)<=25
+        AND sample.x>=clickX-4 AND sample.x<=clickX+4
+        AND sample.y>=clickY-4 AND sample.y<=clickY+4 THEN
+      latest.key=2
+      clickCount=0
+    ELSE
+      latest.key=1
+      clickCount=(sample.flags & INPUT.TICK_VALID)<>0
+    FI
+    clickOwner=owner
+    clickEpoch=openEpoch
+    clickTick=sample.tick
+    clickX=sample.x
+    clickY=sample.y
     accepted=Publish(client,sample)
     RETURN(1)
   FI
 
+  clickCount=0
   manager=NATIVE
   BEGIN
     LET layer=LAYERS.Find(@desktop.scene,
         LAYERS.Hit(@desktop.scene,sample.x,sample.y))
     IF layer<>NULL AND AESWINDOWSTATE.FindWindow(layer.id)<>0 THEN
-      client=AESWINDOWSTATE.Find(AESWINDOWSTATE.FindWindow(layer.id))
-      IF DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0
-          OR (client<>NULL AND DESKGEOMETRY.GadgetHit(client.window,
-          @layer.bounds,sample.x,sample.y)<>0) THEN
+      item=AESWINDOWSTATE.FindRecord(AESWINDOWSTATE.FindWindow(layer.id))
+      IF item<>NULL AND item.window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+          AND (DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)<>0
+          OR DESKGEOMETRY.GadgetHit(item.window,@layer.bounds,sample.x,sample.y)<>0) THEN
         manager=TITLE
       FI
     FI

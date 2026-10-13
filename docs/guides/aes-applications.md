@@ -17,9 +17,19 @@ See the [window contract](../reference/aes.md) for supported kinds and fields.
 
 The [counter body](../../examples/gem-counter/counter.c) uses only `<gem.h>`
 through its [model header](../../examples/gem-counter/counter.h). It opens a
-fixed 208×104 window, updates six decimal digits on a one-second timer, accepts
+fixed 144×48 window, updates six decimal digits on a one-second timer, accepts
 top/move/close requests and reconstructs exposed pixels from its current model.
 It handles both bits when `evnt_multi` returns a message and timer together.
+The window contains one `Count: 000000` line. Timer updates replace only the
+48×8 digit area without a separate background clear; exposure redraws restore
+the background and complete label. Both paths use visible-region clipping and
+ordinary VDI text. This adds no fixed or per-Task bank-zero reservation.
+
+For a packaged colour desktop, `python3 tools/test_counter_app.py --bundle DIR`
+checks the loaded Counter's pixels, decimal carry, odd-X movement, partial/full
+cover, exposure and close. Passive VDI call markers check that a quiet timer
+update uses one text call and no background fill. It also checks shell/EXIT and
+guards; this is development coverage, not full platform qualification.
 
 The separate [resident wrapper](../../examples/gem-counter/resident.c) supplies
 two upper-memory models, attaches each Task, and detaches before removal. A
@@ -214,7 +224,7 @@ Distribute `build/gem-input-demo/exec816-demo.zip`. Follow its short guide for
 machine setup, D1/D8 disks and ST mouse capture. At the prompt there are six
 Tasks; a two-command pipeline uses all eight public slots. The two application
 registrations plus the controller use three of four AES slots. The shell and
-two windows use three of four application-window slots. The existing `--aes-counters` profile and
+two windows use three of the six shared window slots. The existing `--aes-counters` profile and
 no-option five-second shell/PRIMES autoboot remain available.
 
 For focused cost measurements, the separate development root supplies continuous
@@ -254,43 +264,51 @@ Distribute `build/gem-desktop-demo/exec816-demo.zip`, including OF816, its pinne
 ROM, matching D1/D8 disks, notices and guide. Boot retains the five-second delay.
 The no-option build still starts the standard shell/prime demo.
 
-Use Off/Mild, Defaults, Apply and Cancel in the panel (see
-[mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes
-keyboard focus, Space activates it and Return activates Apply. Release outside
-or Escape cancels a press. In Files, select a directory/file and press Return;
-Up navigates to the parent; Refresh reloads the directory. Drag the lower-right
-size gadget to change the view, and use arrows, track clicks or the thumb to
-scroll. Files caches at most 256 entries and adapts up to sixteen visible rows;
-Refresh preserves the selected name. The top Files menu provides
-Open/Refresh/Stop/Quit/Path/New Folder/Rename;
-File inside the window or F opens the existing popup. Tab/Up/Down and Return select;
-Escape cancels. HELLO in SYS:C is a simple launch example. Commands have empty
-arguments, NIL input and shell output; Stop requests native BREAK or a GEM close. TICK prints periodically until Stop, without a private pane. PRIMES requires
-tiled-console mode and returns an error in this desktop. Close one GEM window
-before a two-child shell pipeline.
-Path (P), New Folder (N) and Rename (R) open a text dialog in Files' work area.
-Type into the field; Tab/Shift-Tab changes focus, Return accepts, and Escape or
-Cancel dismisses it. The mouse can also select the field and OK/Cancel. Use
-`WORK:` for writable operations; `SYS:` is read-only. Errors preserve the text
-for correction. Other windows remain usable during the dialog.
+The optional profile starts a persistent desktop and the shell. Desk launches
+Control Panel, Calculator, Text and Counter on demand; New Window opens another
+folder. Double-click a volume or launcher icon, or select it and press Return.
+Closing a folder leaves programs launched from it running. The desktop owns up
+to three child handles and collects their completion; quitting the desktop or
+shell stops and collects those children.
 
-Files can also launch `PANEL.APP`, `COUNTER.APP`, `FILES.APP` or `CALC.APP`. Close an existing
-GEM window first when all four application-window slots are occupied. Closing Files stops and
-collects its child before retirement. The shell collects closed initial apps
-even at an idle prompt. Use `RUN C:FILES.APP` to reopen Files; this uses the
-shell's one background job. EXIT closes the desktop and any owned GUI child.
+Folder windows share one Task, workstation and menu. Each has its own path,
+selection, directory snapshot and scroll position. View selects Icons/List and
+Name/Disk order. The information line gives the directory totals. Drag the lower
+right gadget to resize, use arrows/track/thumb to scroll, and click the upper
+right gadget for full/restore. Each snapshot holds at most 256 entries and the
+view reuses at most sixteen visible objects. Default 456×196 windows show a
+4×4 grid. The desktop includes `RAM:` for temporary writable storage.
 
-This profile uses four application-window slots, two private menu layers, three
-AES registrations and seven idle Tasks. The desktop bar follows the active
-window and supplies Next window, Close and the Windows list. Ctrl+Tab cycles;
-Ctrl+Escape opens Windows, then Tab/arrows and Return select, or Escape cancels.
-Applications can install bounded GEM menu bars (see below). Atari ST binaries
-remain unsupported. See the [current AES contract](../reference/aes.md)
-and [desktop plan](../plans/gem4xe/desktop-facilities-implementation-plan.md).
+Path (P), New Folder (N) and Rename (R) use inline editable dialogs. Tab/Shift-Tab
+changes focus, Return accepts, and Escape cancels. File > Copy copies one file
+with a full destination path, progress and Cancel. Replacing a file and Delete
+require confirmation, with Cancel as the default. Delete uses a compact framed
+overlay over the folder, with contextual file/folder wording. Use WORK: or RAM:
+for writes; SYS: is read-only. Copy first writes EXECCOPY.TMP in the destination directory. Its final
+replacement is not atomic; a failed final rename leaves that completed temporary
+file for recovery. Recursive operations are unsupported; selected files can be
+copied in a batch, and Delete also accepts empty folders.
+Desk > Save Settings explicitly saves folder geometry/paths, view/sort, mouse
+preference and two extension associations to WORK:DESKTOP.CFG for the next boot.
+
+The desktop has six shared window slots (including the shell and desktop
+background), two private menu layers, four AES registrations and the unchanged
+eight-Task pool. The Windows menu and Ctrl+Tab reach covered windows; Ctrl+Escape
+opens the Windows list. Closing the last folder leaves the background usable.
+The [AES contract](../reference/aes.md) describes capacity limits and extensions.
+The [colour desktop roadmap](../roadmap.md#colour-gem-desktop-roadmap) links the
+per-milestone ownership and implementation notes.
+
+Control Panel retains Off/Mild, Defaults, Apply and Cancel (see
+[mouse settings](#mouse-settings-in-control-panel)). Tab/Shift-Tab changes focus,
+Space activates it and Return activates Apply. Releasing outside or Escape
+cancels a press. Standalone `RUN C:FILES.APP` remains available: that application
+owns one child and stops/collects it when its window closes. Standard Atari ST
+binaries remain unsupported; these are recompiled GEM applications.
 
 ## GEM4XE calculator
 
-Close Panel, open C in Files, select CALC.APP and press Return. Alternatively,
+Choose Desk > Calculator, or open C in a folder and launch CALC.APP. Alternatively,
 use `RUN C:CALC.APP` from the shell. Calculator loads `SYS:CALC.RSC` regardless
 of the launcher's current directory. It is an ordinary private loaded Process;
 Quit, X and Files' Stop release its window, resource and workstation.
@@ -324,7 +342,8 @@ the exact development checks.
 or Mild (the existing acceleration curve), then Apply. Defaults stages Mild;
 Cancel reloads the active choice. Closing discards unapplied edits. Reopening
 reads the current preference, including a choice applied by another panel.
-Settings are session-only. Tab/Shift-Tab, Space and Return operate the controls;
+Apply changes the current session; Desk > Save Settings also preserves it for
+the next desktop boot. Tab/Shift-Tab, Space and Return operate the controls;
 Escape cancels an armed press, and releasing outside a button cancels it too.
 
 The application uses standard GEM object/form/redraw calls and the small
@@ -433,9 +452,10 @@ Rebuild the shared GEM boot image and all applications with C component ABI 11.
 
 Close one GEM application to free a window, then run `RUN C:TEXT.APP`, or
 `RUN C:TEXT.APP "SYS:STORY.TXT"`. The loadable viewer uses the existing selector,
-DOS calls and caller-local VDI drawing. It adds no startup Task. Files also
-opens `.TXT` entries in the viewer; close another GEM window first. Files owns
-that child, so File > Stop closes it, and closing Files stops and collects it.
+DOS calls and caller-local VDI drawing. It adds no startup Task. Desktop folders
+open `.TXT` entries through the default association. The desktop owns the launched
+viewer, so closing its folder leaves the viewer running. Standalone Files retains
+its own single-child Stop/close policy.
 Other files retain normal program launching.
 
 Use File > Open or O to choose a file. Up/Down scroll one line; Space and

@@ -82,6 +82,25 @@ static void interact(OBJECT *tree,WORD who)
         else if (action==3) CHECK(menu_bar(tree,1));
         else if (action==4) { CHECK(menu_ienable(tree,6,0));CHECK(menu_ienable(tree,7,0)); }
         else if (action==5) { CHECK(menu_ienable(tree,6,1));CHECK(menu_ienable(tree,7,1)); }
+        else if (action==6 || action==7) {
+            WORD i;
+            CHECK(wind_update(BEG_UPDATE));
+            for (i=5;i<=7;++i) tree[i]=source[i];
+            if (action==6) {
+                /* Complete long runs at odd X, with a partial last glyph,
+                 * checked ink and a disabled vertically clipped second row. */
+                tree[5].ob_x=9;tree[5].ob_width=498;tree[5].ob_height=31;
+                /* Both labels intersect the second strip, forcing the text
+                 * budget continuation rather than a one-callback shortcut. */
+                tree[6].ob_y=1;tree[6].ob_height=25;tree[6].ob_width=498;
+                tree[7].ob_height=15;tree[7].ob_width=498;
+                tree[6].ob_state=CHECKED;tree[7].ob_state=DISABLED;
+                tree[6].ob_spec=(ULONG)"  23456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!";
+                tree[7].ob_spec=(ULONG)"Disabled label longer than the old twelve character paint chunk";
+            }
+            CHECK(menu_bar(tree,1));
+            CHECK(wind_update(END_UPDATE));
+        }
         AESMenuMutation=0;
     }
     evnt_timer(20,0);

@@ -8,7 +8,7 @@ from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,ROM,PIN
 from desktop_mouse import schedule
-from gem_render_oracle import PALETTE,PENS
+from gem_render_oracle import DESKTOP_PALETTE as PALETTE,PENS
 from stack_budget import stack_usage
 
 

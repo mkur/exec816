@@ -142,7 +142,7 @@ PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER clien
       source==+1
     OD
     client.gui.count=target
-    client.endpoint.guiWaiting=target<>0
+    client.endpoint.guiWaiting=1
     client.endpoint.menuConsumed=1
     client.endpoint.menuNormal=1
     EXEC.Permit()
@@ -234,6 +234,12 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     BEGIN
       LET object=Object(client.menu,item)
       CASE operation OF
+      WHEN 31 THEN
+        IF value<>0 THEN
+          object.state=object.state OR 4
+        ELSE
+          object.state=object.state & $fffb
+        FI
       WHEN 32 THEN
         IF value<>0 THEN
           object.state=object.state & $fff7

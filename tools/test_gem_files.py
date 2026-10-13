@@ -17,7 +17,7 @@ def exercise(s,sy,click,move):
             for _ in range(enabled.index(item)+1):s.menus.key('TAB')
             s.menus.key('RETURN')
         else:
-            click(24,8);click(32,24+(item-6)*16)
+            click(152,8);click(160,24+(item-6)*16)
         s.frames(100)
     def names():return listing(s,base)
     def row(name):select(s,base,name,click)
@@ -27,7 +27,7 @@ def exercise(s,sy,click,move):
     s.cells('browser-front');s.save_screen(s.p['output']/'browser.png')
     initial=names();require('C' in initial,'Directory entries did not come from SYS')
     require(num(F['bar']+6*24+10)==8 and num(F['bar']+8*24+10)==8,'Initial menu availability')
-    click(24,8);move(632,232);s.cells('files-menu-disabled');s.menus.key('ESC')
+    click(152,8);move(632,232);s.cells('files-menu-disabled');s.menus.key('ESC')
     row('C');bar(6,True);require(string(178)=='SYS:C','Menu Open directory')
     row('HELLO')
     old=num(F['launches'],4);bar(6)

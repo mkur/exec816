@@ -47,6 +47,7 @@ WORD wind_create(WORD kind, WORD x, WORD y, WORD w, WORD h);
 WORD wind_open(WORD handle, WORD x, WORD y, WORD w, WORD h);
 WORD wind_close(WORD handle);
 WORD wind_delete(WORD handle);
+WORD wind_find(WORD x, WORD y);
 WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4);
 WORD wind_set(WORD handle, WORD field, WORD w1, WORD w2, WORD w3, WORD w4);
 WORD wind_set_str(WORD handle, WORD field, const char *str);

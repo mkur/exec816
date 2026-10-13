@@ -18,7 +18,7 @@ static void BuilderListProbe(const UBYTE *p,UWORD count)
     for (i=0;i<count;i++,p+=21) {
         bytes=((UWORD)p[12]|((UWORD)p[13]<<8))+1;
         rows=(UWORD)p[14]+1;
-        builder_check(bytes<=512 && rows<=16);
+        builder_check(bytes<=512 && rows<=256);
         work+=(ULONG)bytes*rows*(p[20] ? 3 : 2);
     }
     builder_check(work<=8192);
@@ -142,4 +142,41 @@ void BuilderFaultProbe(void)
     builder_check(GemDrawingClose()==DISPLAY_DEVICE_FAULT);
     builder_check(GemDrawingOpen(workout)==DISPLAY_OK);
     builder_check(!fault && !commandCount && commandNext==commands);
+}
+
+/* Exercise the fixed-operation encoder directly under owner admission, with
+ * no arbitrary callback claiming a taller drawing rectangle. */
+static const UWORD solidCases[][5]={
+    {20,20,120,70,4},{21,20,121,70,4},
+    {20,20,21,52,0},{21,20,22,52,2},{20,20,22,53,1},
+    {0,0,256,31,8},{0,0,256,32,0},{0,0,256,33,2},
+    {1,10,101,84,6},{1,10,101,85,6},{0,0,640,240,8},
+    {639,0,640,240,0},{0,239,640,240,1},{17,17,624,49,5}
+};
+void BuilderSolidProbe(UWORD index)
+{
+    const UWORD *p=solidCases[index];
+    UWORD width=p[2]-p[0],rows=p[3]-p[1],edge=(p[0]&1)+(p[2]&1);
+    UWORD bytes=(width-edge)>>1,cost=bytes*2+edge*6,limit=8192/cost;
+    if (limit>240) limit=240;
+    builder_check(render_enter()==DISPLAY_OK);
+    builderCase=30+index;builderLists=0;builderActive=1;
+    builder_check(GemSolidRows(p[0],p[2])==limit);
+    GemSolidFill(p[0],p[1],p[2],p[3],p[4]);
+    builder_check(fence_owner()==DISPLAY_OK);
+    builder_check(builderLists==(rows+limit-1)/limit);
+    builderActive=0;render_exit(DISPLAY_OK);
+}
+void BuilderSolidFault(void)
+{
+    WORD workout[57];
+    builder_check(render_enter()==DISPLAY_OK);
+    builderCase=99;builderLists=0;builderActive=1;builderFailAt=2;
+    GemSolidFill(1,0,639,240,2);
+    builder_check(builderLists==2 && fault==DISPLAY_DEVICE_FAULT && !commandCount);
+    GemSolidFill(0,0,640,240,0);
+    builder_check(builderLists==2 && !commandCount && fence_owner()==DISPLAY_DEVICE_FAULT);
+    builderActive=builderFailAt=0;render_exit(DISPLAY_DEVICE_FAULT);
+    builder_check(GemDrawingClose()==DISPLAY_DEVICE_FAULT);
+    builder_check(GemDrawingOpen(workout)==DISPLAY_OK);
 }

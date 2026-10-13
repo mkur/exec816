@@ -97,7 +97,7 @@ def run(out,reuse=False):
                     report['cases'].append(dict(keys=sequence,shown=value(),acc=get(sy['acc'],4,True),
                                                pending=get(sy['pending']),fresh=get(sy['fresh'])))
                 def display(label):
-                    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+                    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
                     from test_desktop_presentation import rectangle
                     move(630,230);frames(60)
                     x,y,w,h=obj(2);r=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))

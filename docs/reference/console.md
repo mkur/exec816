@@ -211,7 +211,8 @@ from 52 ms on that historical image. Subsequent validation and asynchronous
 scroll results are recorded in the
 [drawing implementation plan](../plans/drawing-validation-implementation-plan.md).
 Aligned bitmap text now uses the shared library's checked run generator, with
-up to 32 glyphs and one background fill per hardware list. The operation remains
+up to 80 glyphs and one background fill per hardware list. The console's own
+32-glyph presentation step remains unchanged. The operation remains
 synchronous and retains the existing worker and ownership boundaries. See the
 [drawing adapter](../../ports/gem4xe/adapter/README.md) for its limits and the
 [responsiveness measurements](../history/console-responsiveness.md) for measured

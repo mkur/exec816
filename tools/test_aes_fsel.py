@@ -16,7 +16,7 @@ def physical(b,p,foreign,report):
     from desktop_mouse import schedule
     from generate_aes_server import expected_layout
     from test_shell_core import KEYS
-    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from file_selector_oracle import paint
     import adapter_state as adapter
     sy=foreign['symbols'];position=[320,120];context_offset=dict(expected_layout())['C context form']

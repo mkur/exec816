@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 PENS=(0,15,1,2,4,6,3,5,7,8,9,10,12,14,11,13)
+DESKTOP_PALETTE=bytes.fromhex('f6f6ee 202728 b35e4f 71966b 628caa 9fc5c6 d8bf7b aa7a9b b4b7b0 727a78 813d36 49684d 35566d 47777c 998151 72536c')
 PALETTE=bytes.fromhex('ffffff 000000 ff0000 00ff00 0000ff 00ffff ffff00 ff00ff bbbbbb 777777 bb0000 00bb00 0000bb 00bbbb bbbb00 bb00bb')
 
 class Raster:

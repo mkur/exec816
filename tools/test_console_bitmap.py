@@ -18,7 +18,15 @@ from generate_console import constants
 
 def run(out,mode,replay=False,observe=False,performance=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if replay else build_bitmap(ROOT/'tests/programs/console_bitmap.act',out,mode=='opt',probe=True)
+    if replay:
+        p=read_build(out/'program')
+    else:
+        # The current DOS diagnostics exceed the default 2 KiB image arena.
+        # This is upper data for the fixture; production reservations are unchanged.
+        from generate_memory import PROFILE
+        profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=4096
+        memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
+        p=build_bitmap(ROOT/'tests/programs/console_bitmap.act',out,mode=='opt',probe=True,memory_profile=memory)
     foreign=json.loads((out/'c-image.json').read_text());sy=foreign['symbols']
     require(p['build']['optimize']==(mode=='opt') and sha256(p['xex'])==p['build']['xex_sha256'],'Changed replay image')
     result=dict(status='running',tier='development',mode=mode,build=p['build'],pin=PIN,
@@ -113,15 +121,18 @@ def run(out,mode,replay=False,observe=False,performance=False):
                     require(not sample['calls'],'Settled caret submitted work: '+str(sample))
                 elif sample['stage'] in (5,6,7,8):
                     combined=sample['stage'] in (5,8)
-                    expected=0 if combined else 2 if sample['stage']==7 else 1
+                    expected=0 if combined else 1
+                    # CR+Z ends at the existing caret, outside the dirty cell:
+                    # keep that caret in place; only backspace redraws it.
+                    caret=int(sample['stage']==6)
                     require(sample['calls'].get('GemDrawingText',0)==expected,
                             'Unexpected caret/text redraws: '+str(sample))
                     require(sample['calls'].get('GemDrawingTextFill',0)==int(combined),
                             'Missing combined text/caret drawing: '+str(sample))
-                    require(sample['calls'].get('GemDrawingFill',0)==int(not combined),
+                    require(sample['calls'].get('GemDrawingFill',0)==caret,
                             'Missing new caret: '+str(sample))
-                    require(sample['calls'].get('DisplayCheck',0)==expected+1 and
-                            sample['calls'].get('start',0)==expected+1,
+                    require(sample['calls'].get('DisplayOwnerEnter',0)==1+caret and
+                            sample['calls'].get('start',0)==1+caret,
                             'Unexpected owner checks or list launches: '+str(sample))
         if observe and performance:
             result['performance']=summarize(out/'emulator.log',timing,result['operations'])

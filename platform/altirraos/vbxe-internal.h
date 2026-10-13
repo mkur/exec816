@@ -18,8 +18,10 @@ UWORD VbxeOwnerRead(struct VbxeDisplay *display, ULONG address, void *destinatio
  * occurs here. Zero count is a no-op; nonempty lists retain both fences and
  * timeout recovery. Caller-supplied raw records must use public VbxeSubmit. */
 UWORD VbxeOwnerSubmit(struct VbxeDisplay *display, const UBYTE *records, UWORD count);
-/* Opaque even-X 8x8 text from a 256-glyph mask atlas, stride 1024. Validates
- * the whole run before generating bounded lists in the private command arena. */
+/* Opaque 8x8 text from a 256-glyph mask atlas selected for X parity:
+ * even stride 1024 / four bytes, odd stride 1280 / five bytes. Validates
+ * the whole run before generating up to VBXE_TEXT_GLYPHS cells per list in the
+ * private command arena; text-only bounds are separate from generic lists. */
 UWORD VbxeOwnerText(struct VbxeDisplay *display, ULONG font, UWORD x, UWORD y,
                     const UBYTE *text, UWORD count, UBYTE ink, UBYTE paper);
 struct VbxeTextFill { UWORD x,y,width,height; UBYTE value; };

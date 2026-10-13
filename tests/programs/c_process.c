@@ -1,11 +1,14 @@
 #include <gem.h>
 #include <exec816/program.h>
+#include <proto/exec.h>
+#include <string.h>
 static UWORD runs;
 static ULONG initialized=0x12345678UL;
 int main(void)
 {
     const char *args=ExecGetArgStr();
     WORD window;
+    if (strcmp(FindTask(NULL)->tc_Node.ln_Name,"PROBE.APP")) return 56;
     if (!args || args[1] || initialized!=0x12345678UL+runs) return 51;
     if (args[0]=='F') return -321;
     if (appl_init()<0) return 52;
@@ -15,6 +18,7 @@ int main(void)
         !wind_open(window,32+(WORD)runs*8,32,128,64)) return 54;
     ++runs;++initialized;
     if (!evnt_timer(args[0]=='B' ? 1000:20,0)) return 55;
+    if (strcmp(FindTask(NULL)->tc_Node.ln_Name,"PROBE.APP")) return 57;
     /* Leave the window, resource and timer context to shared teardown. */
     return -123-(int)runs;
 }

@@ -15,7 +15,7 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 from test_dos_stack import execute, ownership
 from generate_desktop import layout as desktop_layout
 from generate_layers import layout as layer_layout
-from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
+from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
 from bitmap_console_oracle import Terminal
 from test_gem_cursor import overlay
 from test_desktop_presentation import desktop, frame, rectangle, menu_bar, text as paint_text
@@ -112,7 +112,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     draw_panel(model, focused == 3)
                 if app_live and app_behind_shell:
                     application()
-                frame(model, shell, b'Exec816 Shell', focused == 1)
+                frame(model, shell, b'Shell', focused == 1)
                 terminal = Terminal(64, 20)
                 text = bytes(10 if i & 63 == 63 else 65+i % 26 for i in range(512))
                 for _ in range(1+read('DESKTEST', 'writes')):
@@ -130,7 +130,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     for y in range(t+1, bot-1):
                         model.pixels[y*640+l] ^= 15
                         model.pixels[y*640+r-1] ^= 15
-                menu_bar(model, {1:b'Exec816 Shell',2:b'Input',3:b'Control Panel'}.get(focused,b'Desktop'))
+                menu_bar(model, {1:b'Shell',2:b'Input',3:b'Control Panel'}.get(focused,b'Desktop'))
                 return overlay(model, position)
             colors = {hw: bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen, hw in enumerate(PENS)}
             def visible(outline=None, whole=True):

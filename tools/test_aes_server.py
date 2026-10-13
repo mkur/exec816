@@ -240,10 +240,16 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from generate_display import expected_layout as display_layout
             renderer = instrument(out)
             extra_probes = [(ROOT/'c/calypsi/display-layout.c', display_layout())]
+        if suite=='objects':
+            from test_object_units import instrument
+            renderer=instrument(out)
         if suite=='alerts':
             extra_probes.append((ROOT/'tests/programs/aes_form_layout.c',[
                 ('Form size',319),('Form focus',209),('Form alert',311),
                 ('Alert size',514),('Alert icon',508)]))
+        if suite=='resources':
+            from test_icon_resources import LAYOUT
+            extra_probes.append((ROOT/'tests/programs/icon_layout.c',LAYOUT))
         if suite=='fsel':
             from file_selector_model import LAYOUT
             extra_probes.append((ROOT/'tests/programs/aes_fsel_layout.c',LAYOUT))
@@ -400,12 +406,17 @@ ENDMODULE
                 cases=resource_cases(out/'calculator')
                 from test_editable_resources import cases as editable_cases
                 cases.update(editable_cases())
+                from test_icon_resources import cases as icon_cases
+                cases.update(icon_cases())
                 for name,payload in cases.items():(media/name).write_bytes(payload)
                 make(out/'resources.atr',media,binary_names={'DESKTOP.RSC','BAD.RSC','SHORT.RSC',*cases},filesystem=filesystem,sector_bytes=128,sectors=720)
                 bridge.mount(0,str(out/'resources.atr'))
 
             try:
                 before = None
+                if suite=='resources':
+                    from test_icon_resources import physical
+                    before = lambda b: physical(b, program, foreign, report)
                 if suite=='fsel':
                     from test_aes_fsel import physical
                     before = lambda b: physical(b, program, foreign, report)
@@ -436,7 +447,7 @@ ENDMODULE
                 report['runtime'], _ = execute(bridge, program, before_run=before,
                                               timeout=120, frame_limit=6000)
             finally:
-                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('objects','resources','mouse_profile', 'menus','forms','alerts','fsel') else
+                for name in (('AESChecks', 'AESFailures') if gui or inbox or input_events or suite in ('multiwindow','objects','resources','mouse_profile', 'menus','forms','alerts','fsel') else
                              ('AESChecks', 'AESFailures', 'AESReady', 'AESDone')):
                     report[name] = int.from_bytes(bridge.memdump(foreign['symbols'][name], 2), 'little')
                 if 'AESFirstFailure' in foreign['symbols']:
@@ -447,12 +458,13 @@ ENDMODULE
                 if suite=='resources':
                     report['resource_status']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceStatus'],2),'little')
                     report['resource_error']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceError'],4),'little')
+                    report['resource_heap']={n:int.from_bytes(bridge.memdump(foreign['symbols'][n],4),'little') for n in ('ResourceHeapWarm','ResourceHeapReturned')}
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('objects','resources','mouse_profile', 'menus','forms','alerts','fsel') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
+            require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','resources','mouse_profile', 'menus','forms','alerts','fsel') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
@@ -628,13 +640,13 @@ if __name__ == '__main__':
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
-    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--suite', choices=('context', 'intake', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'multiwindow', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--failure', type=int, choices=(0, 1, 2, 3), default=0)
     args = parser.parse_args()
     if args.suite == 'context':
         run(args.output.resolve(), args.mode, args.replay)
-    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
+    elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'multiwindow', 'display', 'objects', 'resources', 'mouse_profile', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem)
     elif args.suite == 'console':

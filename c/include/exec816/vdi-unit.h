@@ -9,7 +9,7 @@
 #define EXEC_VDI_FONT_WIDTH 8
 #define EXEC_VDI_FONT_HEIGHT 8
 #define EXEC_VDI_FONT_TOP 6
-#define EXEC_VDI_TEXT_CHUNK 32
+#define EXEC_VDI_TEXT_CHUNK 80
 #define EXEC_VDI_STRIP_ROWS 16
 struct ExecVDIUnit {
     uint16_t operation;

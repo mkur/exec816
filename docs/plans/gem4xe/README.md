@@ -1,5 +1,58 @@
 # GEM as a client of an Exec-like kernel
 
+The [dropdown menu latency design](menu-latency-design.md) and
+[implementation plan](menu-latency-plan.md) cover complete-label batching,
+targeted highlight damage and bounded menu precedence in the existing
+presenter. Save-under remains a separate correctness decision.
+All four slices are [implemented and development-checked](../../history/menu-latency.md).
+
+The [colour desktop roadmap](../../roadmap.md#colour-gem-desktop-roadmap) starts
+with the [CG1 icon design](colour-icons-design.md) and
+[implementation plan](colour-icons-plan.md): standard application-owned icons,
+clipped VBXE bitmap drawing and classic resource support at 640×240.
+The [CG2 Files design](colour-files-design.md) and [plan](colour-files-plan.md)
+reuse that support for icon/list views, double-click opening and fuller/info
+window furniture.
+The [CG3 desktop design](colour-desktop-design.md) and
+[plan](colour-desktop-plan.md) separate application and window lifetimes and
+reuse Files for a persistent desktop. The [CG4 launcher design](colour-launcher-design.md)
+and [plan](colour-launcher-plan.md) cover independent launches, file operations
+and saved settings.
+All four milestones are implemented and development-checked. Their plans link
+the source/artifact records, memory accounting, walkthroughs and measured limits.
+
+The [desktop usability refactor plan](desktop-usability-refactor-plan.md)
+covers a default 4×4 Files grid, a `RAM:` desktop icon,
+compact, contextual delete confirmations, the shorter `Shell` name and a
+smaller left margin for desktop icons. All five items are implemented and
+[development-checked](../../history/desktop-usability.md); iconification remains
+a separate follow-up.
+
+The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
+512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,
+including throughput, cancellation delay and another application's button feedback.
+
+The proposed [desktop selection and batch plan](desktop-selection-batch-plan.md)
+adds per-folder multiple selection, sequential Copy/Delete through one 16 KiB
+buffer, explicit overwrite/cancellation behavior and focused demo checks.
+Dragging and recursive operations remain separate follow-ups.
+
+The [rendering performance plan](text-run-fast-path-plan.md) follows
+the G4BENCH traces with 80-character uploads, native shifted-atlas rendering,
+fast complete cells inside horizontally clipped strings,
+one drawing unit for AES objects up to 32 rows, direct solid rectangles bounded
+by blitter work, simpler opaque box/button fills and matched desktop latency
+checks. TX1–TX7 are implemented and development-tested; measured performance gates pass.
+Larger AES objects keep 16-row strips, with
+unchanged generic blit-list limits and VRAM reservations.
+
+The implemented [G4BENCH port plan](g4bench-port-implementation-plan.md) adds a
+loadable benchmark with solid bars, three plain-text variants and a five-object
+dialog. It uses the existing VBI clock with long batches, labels donor
+adaptations and unsupported tests, and keeps renderer changes out of the port.
+See the [execution record](../../history/g4bench-port.md) for development checks
+and the packaged desktop measurements.
+
 The [text viewer design](text-viewer-design.md) adds a loadable,
 read-only `TEXT.APP` using the standard selector, bounded DOS loading, direct
 VDI text and resizable vertical scrolling. Files-to-viewer launch follows

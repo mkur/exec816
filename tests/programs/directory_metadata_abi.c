@@ -14,5 +14,6 @@ LONG main(void)
     if (!Examine(lock, info) || info->fib_Size != 3 ||
         info->fib_NumBlocks != -1 || info->fib_InfoFlags != FIB_SIZE_EXACT) return 4;
     UnLock(lock);
+    if (DeleteFile("D1:CHECK") || IoErr() != ERROR_DISK_WRITE_PROTECTED) return 5;
     return 0;
 }

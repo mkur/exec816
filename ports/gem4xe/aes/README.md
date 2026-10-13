@@ -103,3 +103,10 @@ import the donor's event loop or global screen ownership. Extraction also emits
 `alert-icons.h` from the hash-checked `tools/gemdata.py`. Its three 32x32 masks
 are donor EmuTOS GPLv2 artwork; generated horizontal runs preserve every bit.
 The pinned donor notices and licensing inventory packaged with the donor notices apply.
+
+TX6's [opaque-fill patch](patches/0004-opaque-box-fills.patch) uses an outer
+border-colour rectangle and an interior rectangle for uniform `G_BOX` and
+`G_BUTTON` objects. Hollow interiors retain the hosted white fill. Geometry is
+derived before clipping; text and state overlays retain their order. Transparent
+frames, patterns, TEDINFO and empty/negative interiors keep their previous
+construction. Both caller-local and retained widgets use this extraction.

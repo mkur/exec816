@@ -1,0 +1,930 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "bf7af7517e98968ced12bfd84d02b6f3fcdc1105",
+  "source_inputs": {
+    "ports/gem4xe/aes/menu-render.c": "14f8b8c6d88927ffca99defc5e581c93264cdce3b56510d9918494e8ca0ce400",
+    "lib/desktop/desktop-frame.c": "bc5d1e08b0157e09f9639d37ac99847da367ebb110761e923e7ceae599e967cf",
+    "lib/desktop/deskmenupaint.act": "f6cf7a331008a8ac606749dcf1c5e9152c812663fd770e3f05c4a2f3907d6315",
+    "lib/desktop/deskmenu.act": "2888d877baa2aa90c8ed967a2203e421ab074a34b4ba4be322ed0f1f17ec6d46",
+    "lib/desktop/deskappmenu.act": "777a11bf34082bd0d5c28263d337f973a546c3549341b55d517bf440c0735aad",
+    "lib/desktop/deskpaint.act": "64f9af715e1eb88d6030669d745b0cacead2b48696efadabf2bd44d0453d85a3",
+    "tools/measure_menu_feedback.py": "ec07ac39725fd0e85abb08d395570dd2f9a78723addbd29db52ed757cd5ceb30",
+    "tools/test_aes_menus.py": "14680ae3e93811f58823e39d217be40ef9e07a3ea2b16ba36222862b14407a25",
+    "tests/programs/aes_menus.c": "98e1b1c938bf40496c56ea9d667f3430601820dda9fe8756c45dd5c52b9f5121"
+  },
+  "compiler": {
+    "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "binary_sha256": "cf0572df8649cfd37d4649fb3f7023f5b767115d5ccb0a7a3aeea4d11df64807",
+    "build_profile": "release",
+    "changes": [],
+    "override": false
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$87582e984e426811",
+    "actual_kernel_id": "$87582e984e426811",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "platform_pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "scope": "Idle desktop; keyboard submission to whole-region scanout equality, one-frame polling. Settled reference images; independent pixels checked separately. No sub-frame precision or loaded latency claim.",
+  "host": {
+    "run": 459,
+    "passed": 455,
+    "skipped": 4,
+    "log": "build/menu-latency/host.log",
+    "log_sha256": "043d29125ff585ee122660fa63d1a32831a15bf2e0c7e4ed0b9d3cbb85ca31db"
+  },
+  "menus": {
+    "AESChecks": 290,
+    "AESFailures": 0,
+    "AESFirstFailure": 0,
+    "menu_pixels": [
+      {
+        "phase": 1,
+        "pixels": 10240
+      },
+      {
+        "phase": 2,
+        "pixels": 13824
+      },
+      {
+        "phase": 3,
+        "pixels": 13824
+      },
+      {
+        "phase": 4,
+        "pixels": 10240
+      },
+      {
+        "phase": 5,
+        "pixels": 10240
+      },
+      {
+        "phase": 6,
+        "pixels": 17920
+      },
+      {
+        "phase": 7,
+        "pixels": 10240
+      }
+    ],
+    "native_popup": {
+      "pixels": "exact",
+      "border_hits": "excluded",
+      "highlight_transitions": 3
+    },
+    "long_menu": {
+      "pixels": "exact",
+      "odd_x": true,
+      "checked": true,
+      "disabled": true,
+      "partial_glyph": true,
+      "partial_row": true
+    },
+    "physical_menus": {
+      "pointer": true,
+      "keyboard": true,
+      "commands": [
+        5,
+        2
+      ],
+      "identical_titles": true,
+      "disabled": true,
+      "held_replacement": true,
+      "held_disable": true,
+      "cancel": true,
+      "heading_switch": true,
+      "hidden": true,
+      "multiple_titles": true
+    },
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 573,
+        "remaining_above_floor": 707
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 318,
+        "remaining_above_floor": 738
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 148,
+        "remaining_above_floor": 908
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 481,
+        "remaining_above_floor": 575
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 797,
+        "remaining_above_floor": 1507
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 287,
+        "remaining_above_floor": 993
+      }
+    }
+  },
+  "timing": {
+    "before": {
+      "application": {
+        "open": {
+          "samples_ms": [
+            721.9740082522883,
+            721.9751359992331,
+            722.2266235679375,
+            721.9734443788159,
+            721.9751359992331,
+            721.9751359992331,
+            721.9751359992331,
+            722.2266235679375,
+            721.9734443788159,
+            721.9751359992331,
+            721.9751359992331,
+            721.9751359992331,
+            722.2266235679375,
+            721.9734443788159,
+            721.9751359992331,
+            721.9751359992331,
+            721.9751359992331,
+            722.2266235679375,
+            721.9734443788159,
+            721.9751359992331
+          ],
+          "count": 20,
+          "median_ms": 721.9751359992331,
+          "p95_ms": 722.2266235679375,
+          "max_ms": 722.2266235679375
+        },
+        "highlight": {
+          "samples_ms": [
+            100.28771643930818,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061
+          ],
+          "count": 20,
+          "median_ms": 100.28828031278061,
+          "p95_ms": 100.28828031278061,
+          "max_ms": 100.28828031278061
+        },
+        "switch": {
+          "samples_ms": [
+            942.7597941297953,
+            922.8031841934989,
+            942.5083065610908,
+            942.5077426876182,
+            942.507178814146,
+            922.5505688778495,
+            922.8031841934989,
+            942.5083065610908,
+            942.5077426876182,
+            942.507178814146,
+            922.5505688778495,
+            922.8031841934989,
+            942.5083065610908,
+            942.5077426876182,
+            942.507178814146,
+            922.5505688778495,
+            922.8031841934989,
+            942.5083065610908,
+            942.5077426876182,
+            942.507178814146
+          ],
+          "count": 20,
+          "median_ms": 942.507178814146,
+          "p95_ms": 942.5083065610908,
+          "max_ms": 942.7597941297953
+        },
+        "close": {
+          "samples_ms": [
+            441.0669049971877,
+            441.0669049971877,
+            441.0669049971877,
+            441.31895643936457,
+            441.3183925658921,
+            441.0669049971877,
+            441.0669049971877,
+            441.0669049971877,
+            441.31952031283697,
+            441.3183925658921,
+            441.0669049971877,
+            441.0669049971877,
+            441.0669049971877,
+            441.31952031283697,
+            441.3183925658921,
+            441.0669049971877,
+            441.0669049971877,
+            441.0669049971877,
+            441.31952031283697,
+            441.3183925658921
+          ],
+          "count": 20,
+          "median_ms": 441.0669049971877,
+          "p95_ms": 441.31952031283697,
+          "max_ms": 441.31952031283697
+        }
+      },
+      "native": {
+        "open": {
+          "samples_ms": [
+            280.6561795598685,
+            280.907667128573,
+            280.6561795598685,
+            280.90823100204545,
+            280.90823100204545,
+            280.6556156863961,
+            280.6561795598685,
+            280.6556156863961,
+            280.907667128573,
+            280.90823100204545,
+            280.6556156863961,
+            280.6556156863961,
+            280.6556156863961,
+            280.907667128573,
+            280.90823100204545,
+            280.6556156863961,
+            280.6556156863961,
+            280.6556156863961,
+            280.907667128573,
+            280.90823100204545
+          ],
+          "count": 20,
+          "median_ms": 280.6561795598685,
+          "p95_ms": 280.90823100204545,
+          "max_ms": 280.90823100204545
+        },
+        "highlight": {
+          "samples_ms": [
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28771643930818,
+            100.28884418625304,
+            100.28828031278061,
+            100.28884418625304,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061,
+            100.28828031278061
+          ],
+          "count": 20,
+          "median_ms": 100.28828031278061,
+          "p95_ms": 100.28884418625304,
+          "max_ms": 100.28884418625304
+        },
+        "next_row": {
+          "samples_ms": [
+            140.45411550102273,
+            140.45467937449516,
+            140.20150018537342,
+            140.20262793231828,
+            140.4535516275503,
+            140.20206405884582,
+            140.20206405884582,
+            140.4552432479676,
+            140.4535516275503,
+            140.45411550102273,
+            140.20150018537342,
+            140.200936311901,
+            140.4552432479676,
+            140.4535516275503,
+            140.45411550102273,
+            140.20150018537342,
+            140.200936311901,
+            140.4552432479676,
+            140.4535516275503,
+            140.45411550102273
+          ],
+          "count": 20,
+          "median_ms": 140.4535516275503,
+          "p95_ms": 140.4552432479676,
+          "max_ms": 140.4552432479676
+        },
+        "close": {
+          "samples_ms": [
+            561.5638466884416,
+            561.5638466884416,
+            561.5632828149692,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            521.6494990689039,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            561.5638466884416,
+            521.6494990689039,
+            561.5638466884416,
+            561.5638466884416
+          ],
+          "count": 20,
+          "median_ms": 561.5638466884416,
+          "p95_ms": 561.5638466884416,
+          "max_ms": 561.5638466884416
+        }
+      }
+    },
+    "after": {
+      "application": {
+        "open": {
+          "samples_ms": [
+            401.15312125112246,
+            401.15255737765006,
+            401.15312125112246,
+            401.15312125112246,
+            401.15368512459486,
+            401.15312125112246,
+            400.9010698089456,
+            401.15312125112246,
+            401.15312125112246,
+            401.15255737765006,
+            401.15312125112246,
+            401.15312125112246,
+            401.15312125112246,
+            401.15255737765006,
+            400.9010698089456,
+            401.15312125112246,
+            401.15368512459486,
+            401.15312125112246,
+            401.15312125112246,
+            401.15312125112246
+          ],
+          "count": 20,
+          "median_ms": 401.15312125112246,
+          "p95_ms": 401.15368512459486,
+          "max_ms": 401.15368512459486
+        },
+        "highlight": {
+          "samples_ms": [
+            80.07961893430733,
+            80.07961893430733,
+            80.33054262953935,
+            80.0790550608349,
+            80.33167037648423,
+            80.0790550608349,
+            80.0790550608349,
+            80.33110650301178,
+            80.33110650301178,
+            80.33223424995666,
+            80.33223424995666,
+            80.33223424995666,
+            80.07849118736247,
+            80.33110650301178,
+            80.07961893430733,
+            80.33167037648423,
+            80.33167037648423,
+            80.0790550608349,
+            80.0790550608349,
+            80.33167037648423
+          ],
+          "count": 20,
+          "median_ms": 80.33110650301178,
+          "p95_ms": 80.33223424995666,
+          "max_ms": 80.33223424995666
+        },
+        "switch": {
+          "samples_ms": [
+            782.0970172502992,
+            782.0970172502992,
+            782.3490686924761,
+            782.0964533768267,
+            782.0964533768267,
+            782.0964533768267,
+            782.3490686924761,
+            782.3496325659485,
+            782.0964533768267,
+            782.098144997244,
+            782.103219858496,
+            782.0964533768267,
+            782.0975811237715,
+            782.0964533768267,
+            782.0970172502992,
+            782.3490686924761,
+            782.0964533768267,
+            782.1026559850235,
+            782.3490686924761,
+            782.3490686924761
+          ],
+          "count": 20,
+          "median_ms": 782.0975811237715,
+          "p95_ms": 782.3490686924761,
+          "max_ms": 782.3496325659485
+        },
+        "close": {
+          "samples_ms": [
+            401.15312125112246,
+            401.15368512459486,
+            401.15312125112246,
+            401.15312125112246,
+            401.15255737765006,
+            401.15312125112246,
+            401.15368512459486,
+            401.15255737765006,
+            401.15368512459486,
+            400.9010698089456,
+            401.15312125112246,
+            401.15312125112246,
+            401.15255737765006,
+            401.15312125112246,
+            401.15312125112246,
+            401.15312125112246,
+            401.15312125112246,
+            400.9010698089456,
+            400.9010698089456,
+            401.15368512459486
+          ],
+          "count": 20,
+          "median_ms": 401.15312125112246,
+          "p95_ms": 401.15368512459486,
+          "max_ms": 401.15368512459486
+        }
+      },
+      "native": {
+        "open": {
+          "samples_ms": [
+            180.36677150014307,
+            180.61995068926484,
+            180.3673353736155,
+            180.6193868157924,
+            180.3673353736155,
+            180.6193868157924,
+            180.61995068926484,
+            180.6193868157924,
+            180.36677150014307,
+            180.3673353736155,
+            180.6193868157924,
+            180.62051456273724,
+            180.36677150014307,
+            180.6193868157924,
+            180.3673353736155,
+            180.61995068926484,
+            180.61995068926484,
+            180.36789924708796,
+            180.61995068926484,
+            180.6193868157924
+          ],
+          "count": 20,
+          "median_ms": 180.6193868157924,
+          "p95_ms": 180.61995068926484,
+          "max_ms": 180.62051456273724
+        },
+        "highlight": {
+          "samples_ms": [
+            100.28828031278061,
+            80.07849118736247,
+            80.07961893430733,
+            80.07849118736247,
+            100.28771643930818,
+            80.33110650301178,
+            80.07961893430733,
+            100.03566499713129,
+            100.28828031278061,
+            80.07961893430733,
+            100.28828031278061,
+            80.33167037648423,
+            80.07792731389003,
+            80.07792731389003,
+            100.03566499713129,
+            80.07849118736247,
+            80.07961893430733,
+            100.28828031278061,
+            100.28828031278061,
+            80.07792731389003
+          ],
+          "count": 20,
+          "median_ms": 80.33110650301178,
+          "p95_ms": 100.28828031278061,
+          "max_ms": 100.28828031278061
+        },
+        "next_row": {
+          "samples_ms": [
+            100.28828031278061,
+            100.28884418625304,
+            80.07961893430733,
+            80.33167037648423,
+            100.28828031278061,
+            100.28771643930818,
+            100.28771643930818,
+            100.28771643930818,
+            100.28828031278061,
+            100.28771643930818,
+            100.28828031278061,
+            100.28828031278061,
+            80.33223424995666,
+            80.33110650301178,
+            100.28828031278061,
+            100.28828031278061,
+            100.03566499713129,
+            100.28828031278061,
+            100.28771643930818,
+            100.28771643930818
+          ],
+          "count": 20,
+          "median_ms": 100.28771643930818,
+          "p95_ms": 100.28828031278061,
+          "max_ms": 100.28884418625304
+        },
+        "close": {
+          "samples_ms": [
+            501.18822237478133,
+            501.44140156390307,
+            501.44083769043067,
+            501.44140156390307,
+            501.44083769043067,
+            501.4402738169582,
+            501.44083769043067,
+            501.18822237478133,
+            501.44083769043067,
+            501.4402738169582,
+            501.44140156390307,
+            501.44140156390307,
+            501.44196543737553,
+            501.4402738169582,
+            501.44196543737553,
+            501.18935012172614,
+            501.18822237478133,
+            501.18935012172614,
+            501.44140156390307,
+            501.44196543737553
+          ],
+          "count": 20,
+          "median_ms": 501.44083769043067,
+          "p95_ms": 501.44196543737553,
+          "max_ms": 501.44196543737553
+        }
+      }
+    }
+  },
+  "counter_coexistence": {
+    "application": {
+      "ticks": 2,
+      "paints": 2,
+      "visible_digits_changed": true,
+      "highlights": 30
+    },
+    "native": {
+      "ticks": 2,
+      "paints": 2,
+      "visible_digits_changed": true,
+      "highlights": 30
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "relative_to": "bf7af75 task-names demo",
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "runtime": 0,
+    "loading": 0
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 51600,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 26848,
+    "runtime_including_os": 58080
+  },
+  "stack_pools_unchanged": true,
+  "runtime_reservations_unchanged": true,
+  "vram_reservations_delta": 0,
+  "baseline_zip_sha256": "d521d46794814e3b8e32752a0091799cfc29c11d101f1e685d4c2bfe837def99",
+  "zip_sha256": "81c339570194b9041be0407fa85c096d79d596236bc133795c23ccfc3d95b2a2",
+  "demo": {
+    "path": "build/menu-latency/demo/exec816-demo.zip",
+    "bytes": 607911,
+    "autoboot_frames": 249,
+    "guards": "intact",
+    "status": 0,
+    "tasks_remaining": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "launch": "build/menu-latency/demo/launch-altirra.command"
+  },
+  "artifacts": {
+    "build/menu-latency/baseline-checked/menu-results.json": "cfdef83b971876ac457c5a32387534c36b76714a19d13168da52a47c5b27a894",
+    "build/menu-latency/verified/menu-results.json": "1058e493cb4183503e5e4377d8b36f758524be35e534e4e13b35e444b7568bf1",
+    "build/menu-latency/menus-bounds/results.json": "af8359014029974ec37e36d880d5fd31a83c6da3279b6d3604a3ac0e24ab90aa",
+    "build/menu-latency/demo/exec816-demo.zip": "81c339570194b9041be0407fa85c096d79d596236bc133795c23ccfc3d95b2a2"
+  },
+  "limits": [
+    "Frame-sampled keyboard latency on an idle desktop; 20 samples per cohort.",
+    "Counter test proves progress during input, not a loaded latency distribution.",
+    "Save-under remains deferred; closing and switching still repair exposed application content.",
+    "No compiler suite, full qualification matrix or real-hardware qualification."
+  ]
+}

@@ -1,0 +1,1205 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "G4B3",
+  "commands": [
+    "python3 tools/build_demo.py --gem-desktop --output build/g4bench/demo",
+    "python3 tools/measure_g4bench.py --bundle build/g4bench/demo --load both",
+    "python3 tools/measure_g4bench.py --bundle build/g4bench/demo --load counter"
+  ],
+  "scope": "Two exact OF816 ZIP walkthroughs: shell launch, physical Return/Escape, five rows, saved results, resumed shell and normal shutdown",
+  "runs": [
+    {
+      "benchmark": {
+        "workload": "Exec816 subset v1",
+        "rate": 50,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "rows": [
+          {
+            "name": "solid bars",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 140,
+                "start": [
+                  0,
+                  6333,
+                  50
+                ],
+                "end": [
+                  0,
+                  6473,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 140,
+                "start": [
+                  0,
+                  6477,
+                  50
+                ],
+                "end": [
+                  0,
+                  6617,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 140,
+                "start": [
+                  0,
+                  6621,
+                  50
+                ],
+                "end": [
+                  0,
+                  6761,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 28.0
+          },
+          {
+            "name": "text even X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 119,
+                "start": [
+                  0,
+                  7021,
+                  50
+                ],
+                "end": [
+                  0,
+                  7140,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 119,
+                "start": [
+                  0,
+                  7145,
+                  50
+                ],
+                "end": [
+                  0,
+                  7264,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 120,
+                "start": [
+                  0,
+                  7269,
+                  50
+                ],
+                "end": [
+                  0,
+                  7389,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 23.8
+          },
+          {
+            "name": "text odd X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 196,
+                "start": [
+                  0,
+                  7801,
+                  50
+                ],
+                "end": [
+                  0,
+                  7997,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 196,
+                "start": [
+                  0,
+                  8002,
+                  50
+                ],
+                "end": [
+                  0,
+                  8198,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 196,
+                "start": [
+                  0,
+                  8202,
+                  50
+                ],
+                "end": [
+                  0,
+                  8398,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 39.2
+          },
+          {
+            "name": "text clipped",
+            "status": "complete",
+            "clip": [
+              155,
+              59,
+              464,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 50,
+                "ticks": 103,
+                "start": [
+                  0,
+                  8619,
+                  50
+                ],
+                "end": [
+                  0,
+                  8722,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 103,
+                "start": [
+                  0,
+                  8727,
+                  50
+                ],
+                "end": [
+                  0,
+                  8830,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 104,
+                "start": [
+                  0,
+                  8835,
+                  50
+                ],
+                "end": [
+                  0,
+                  8939,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 41.2
+          },
+          {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 144,
+                "start": [
+                  0,
+                  9240,
+                  50
+                ],
+                "end": [
+                  0,
+                  9384,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 144,
+                "start": [
+                  0,
+                  9388,
+                  50
+                ],
+                "end": [
+                  0,
+                  9532,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 145,
+                "start": [
+                  0,
+                  9536,
+                  50
+                ],
+                "end": [
+                  0,
+                  9681,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 144.0
+          }
+        ],
+        "save": 1,
+        "runs": 1,
+        "load": "idle",
+        "pointer": [
+          630,
+          230
+        ],
+        "other_apps": [
+          "idle shell"
+        ],
+        "counter_advanced": false,
+        "bank_zero_slice_delta": {
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0
+        },
+        "screenshot_sha256": "b8b1442804893579b741f0c766e30540ba78bab5dc086cc6335210d3b8a1a025"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$a775083467fda2de",
+        "actual_kernel_id": "$a775083467fda2de",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/g4bench/demo/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "autoboot_frames": 249,
+      "gem_stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 584,
+          "remaining_above_floor": 696
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 567,
+          "remaining_above_floor": 489
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 178,
+          "remaining_above_floor": 878
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 697,
+          "remaining_above_floor": 359
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 636,
+          "remaining_above_floor": 420
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 639,
+          "remaining_above_floor": 417
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 752,
+          "remaining_above_floor": 1552
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 129,
+          "remaining_above_floor": 127
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 301,
+          "remaining_above_floor": 979
+        }
+      },
+      "runner_sha256": "5299d084baaa8c7128f38640079cb75f7e895e0863c6c02c721b32ddf7a3624e",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "actionc_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+      "result_path": "build/g4bench/demo/g4bench-idle.json",
+      "result_sha256": "13a14607cd6116fd7ea19ff63eec61b2f72d924ead7a508d381ba02bdbc2af2b",
+      "guards": "intact",
+      "scope": "Exact OF816 package, normal shell launch, Return, five drawing rows and clean close",
+      "screenshot_path": "build/g4bench/demo/g4bench-idle.png"
+    },
+    {
+      "benchmark": {
+        "workload": "Exec816 subset v1",
+        "rate": 50,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "rows": [
+          {
+            "name": "solid bars",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 155,
+                "start": [
+                  0,
+                  6907,
+                  50
+                ],
+                "end": [
+                  0,
+                  7062,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 157,
+                "start": [
+                  0,
+                  7067,
+                  50
+                ],
+                "end": [
+                  0,
+                  7224,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 157,
+                "start": [
+                  0,
+                  7229,
+                  50
+                ],
+                "end": [
+                  0,
+                  7386,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 31.4
+          },
+          {
+            "name": "text even X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 134,
+                "start": [
+                  0,
+                  7674,
+                  50
+                ],
+                "end": [
+                  0,
+                  7808,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 133,
+                "start": [
+                  0,
+                  7813,
+                  50
+                ],
+                "end": [
+                  0,
+                  7946,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 135,
+                "start": [
+                  0,
+                  7951,
+                  50
+                ],
+                "end": [
+                  0,
+                  8086,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 26.8
+          },
+          {
+            "name": "text odd X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 50,
+                "ticks": 105,
+                "start": [
+                  0,
+                  8319,
+                  50
+                ],
+                "end": [
+                  0,
+                  8424,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 103,
+                "start": [
+                  0,
+                  8432,
+                  50
+                ],
+                "end": [
+                  0,
+                  8535,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 108,
+                "start": [
+                  0,
+                  8540,
+                  50
+                ],
+                "end": [
+                  0,
+                  8648,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 42.0
+          },
+          {
+            "name": "text clipped",
+            "status": "complete",
+            "clip": [
+              155,
+              59,
+              464,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 50,
+                "ticks": 113,
+                "start": [
+                  0,
+                  8888,
+                  50
+                ],
+                "end": [
+                  0,
+                  9001,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 112,
+                "start": [
+                  0,
+                  9005,
+                  50
+                ],
+                "end": [
+                  0,
+                  9117,
+                  50
+                ]
+              },
+              {
+                "operations": 50,
+                "ticks": 113,
+                "start": [
+                  0,
+                  9122,
+                  50
+                ],
+                "end": [
+                  0,
+                  9235,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 45.2
+          },
+          {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 158,
+                "start": [
+                  0,
+                  9567,
+                  50
+                ],
+                "end": [
+                  0,
+                  9725,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 155,
+                "start": [
+                  0,
+                  9730,
+                  50
+                ],
+                "end": [
+                  0,
+                  9885,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 156,
+                "start": [
+                  0,
+                  9892,
+                  50
+                ],
+                "end": [
+                  0,
+                  10048,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 156.0
+          }
+        ],
+        "save": 1,
+        "runs": 1,
+        "load": "counter",
+        "pointer": [
+          630,
+          230
+        ],
+        "other_apps": [
+          "idle shell",
+          "counter"
+        ],
+        "counter_advanced": true,
+        "bank_zero_slice_delta": {
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0
+        },
+        "screenshot_sha256": "6f95157f007dbc39426081b2bcd359fcfbe8902dd0d1b7c66af90ef0446e874b"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c09b3444a1b60d8e",
+        "actual_kernel_id": "$c09b3444a1b60d8e",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/g4bench/demo/g4bench-extracted-counter/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "autoboot_frames": 249,
+      "gem_stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 584,
+          "remaining_above_floor": 696
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 582,
+          "remaining_above_floor": 474
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 179,
+          "remaining_above_floor": 877
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 703,
+          "remaining_above_floor": 353
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 636,
+          "remaining_above_floor": 420
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 639,
+          "remaining_above_floor": 417
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 752,
+          "remaining_above_floor": 1552
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 302,
+          "remaining_above_floor": 978
+        }
+      },
+      "runner_sha256": "7a1b3a0edc8b8c0934a6ad1af5f2e111ecfa2551b46fefd2fdce8c981d1732b7",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "actionc_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+      "result_path": "build/g4bench/demo/g4bench-counter.json",
+      "result_sha256": "d52218a86f6551472035e4e0a7f9793b45748e223bbd426f8ac2ae65f3547778",
+      "guards": "intact",
+      "scope": "Exact OF816 package, normal shell launch, Return, five drawing rows and clean close",
+      "screenshot_path": "build/g4bench/demo/g4bench-counter.png"
+    }
+  ],
+  "bank_zero_slice_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "bank_zero_reserved": {
+    "fixed_runtime": 10528,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "idle": 800,
+    "runtime_excluding_os": 26848,
+    "loading_excluding_os": 20368,
+    "runtime_including_os": 58080,
+    "loading_including_os": 51600
+  },
+  "provider": {
+    "baseline": "build/files-redraw/demo/bitmap-console/c-image.json",
+    "baseline_sha256": "5ee78adb45d593bac956b5e64e5a9b0a14e7ee585c779adf517be50996f39777",
+    "current_sha256": "015ac59833cc8e5d8a7bedf1671c66eeb620c6d61a86eab5920520405fc57efe",
+    "stored_bytes": 197313,
+    "stored_byte_delta": 0,
+    "bss_bytes": 12867,
+    "bss_byte_delta": 0,
+    "native_import_table_bytes_before": 231,
+    "native_import_table_bytes_after": 252,
+    "upper_data_table_growth": 21
+  },
+  "application": {
+    "bytes": 14777,
+    "span": 67931,
+    "sha256": "aa1cbe3521557bd8d2e7346d1e09cd9d37b45dd4af16fbb930cdbf7d7df9551a",
+    "verified_banks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ]
+  },
+  "calypsi": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "donor": {
+    "revision": "fbfea9b0b1233a5d659d5ec583c63f863cceadfa",
+    "inputs": {
+      "src/apps/g4bench.c": "ad0b808e7015c53d7f81757182ea685b80dfc916460780243abe079eda22ecf8",
+      "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+    },
+    "patches": {
+      "0001-exec-drawing-subset.patch": "3b6ffdf8ca3ef8d395fc728c78040b6054ee2fa27c9628fbd33ea161bf17c07f"
+    },
+    "adapters": {
+      "bench.c": "0e62214f4bac15db0049ab8d425e86b1b8c78bf660de3bfbe80a2f55e73cd95f",
+      "clock.c": "994c30fd2dc64db91c17b57d424d44ee118205ae90a5ffa829d6ecaab6cf2f41",
+      "clock.h": "f212681a686ae2f8faf63c297caf1c663a4c0034ffab5ad913df5f4c32d3adbb",
+      "workload.h": "5144b8fd2d6f8791728bb607c2c1f2a7aeaa1a06163336b8764ead2e60a34065"
+    }
+  },
+  "pin": {
+    "schema_version": 1,
+    "rom": {
+      "name": "AltirraOS 3.44 for 65C816",
+      "bytes": 16384,
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+      "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+      "cop0_after_xce": 50931
+    },
+    "emulator": {
+      "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+      "platform": "macOS arm64",
+      "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "source_patch": "toolchain/patches/altirra-console-probe.patch",
+      "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+      "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+      "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+      "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+      "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+      "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd"
+    },
+    "machine": {
+      "model": "800XL",
+      "cpu": "65C816",
+      "clock_multiplier": 8,
+      "memory": "64K",
+      "high_banks": 63,
+      "video": "PAL",
+      "basic": false,
+      "dli": false,
+      "shadow_rom": true,
+      "addons": "custom"
+    },
+    "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+    "peripherals": [
+      {
+        "name": "fastest-125k",
+        "diskemu": "fastest",
+        "divisor": 0,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "stock-810",
+        "diskemu": "810",
+        "divisor": 40,
+        "source": "src/Altirra/source/diskprofile.cpp",
+        "firmware": "built-in high-level model"
+      },
+      {
+        "name": "happy-none",
+        "diskemu": "happy1050",
+        "divisor": 40,
+        "source": "src/Altirra/source/disk.cpp",
+        "firmware": "built-in high-level model; quiet command only"
+      }
+    ],
+    "configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true
+    },
+    "source_sha256": {
+      "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+      "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+      "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+      "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+      "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+      "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+    },
+    "observer": {
+      "binary_sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8",
+      "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+    },
+    "keyboard_input": {
+      "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+      "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+      "initialization": "KEY ALL up enables scan mode before modifier changes",
+      "added_keys": {
+        "ASTERISK": 7,
+        "LESS": 54,
+        "GREATER": 55
+      },
+      "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+      "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+    },
+    "serial_regression_pins": [
+      "toolchain/altirra-sio-queued.json",
+      "toolchain/altirra-sio-sectors.json"
+    ],
+    "devices": [
+      {
+        "tag": "vbxe",
+        "settings": {
+          "version": 126,
+          "alt_page": false,
+          "shared_mem": false
+        },
+        "readback": [
+          {
+            "address": 54848,
+            "bytes": [
+              16,
+              38
+            ]
+          }
+        ],
+        "vram_bytes": 524288,
+        "register_base": 54784
+      }
+    ],
+    "startup_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "disk_workload": {
+      "format": "SDFS",
+      "unit": 49,
+      "sectors": 720,
+      "sector_bytes": 128,
+      "exec_profile": 4,
+      "nominal_baud": 57600
+    },
+    "mouse_input": {
+      "model": "ST mouse",
+      "port": 1,
+      "internal_port": 0,
+      "map": "Mouse -> ST Mouse (port 1)",
+      "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+      "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+      "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+      "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+      "commands": [
+        "MOUSE ST",
+        "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+        "MOUSE CLEAR"
+      ],
+      "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+      "tooling": {
+        "binary": "build/mouse-bridge/AltirraBridgeServer",
+        "sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "patch_sha256": "2e4bd6ba4a072684ca5b33fe68bb6d23f6db7eb29b0f91d1f6eeb8cdb90a05d7",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "source_sha256": {
+          "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "82f5cbcd16f76c7ebe35cbbd68dd8aaa82bb6862d6b37e79f1eb90f6b9fdd462",
+          "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+          "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+        }
+      },
+      "initial_acceptance": {
+        "transitions_per_second_per_axis": 1000,
+        "minimum_transition_spacing_us": 1000,
+        "minimum_button_level_us": 10000,
+        "required_max_sample_gap_us_exclusive": 1000,
+        "visible_response_pal_ticks": 12
+      },
+      "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+    }
+  },
+  "artifacts": {
+    "exec816-demo.zip": "b482e1f755748b6335ab501690cee6d5ef14d5aee7b1fc1bd0b6081bc7c9aa2a",
+    "demo-manifest.json": "8d9bba1e885edc0c3e93554edfa333e7e80bd85ca9b0ea9e310323ae30c415a9",
+    "of816/Exec-of816.xex": "90b30e6537f76d82941716521f31b5d66cf20cae2b4508785d630369a571cac1",
+    "program.xex": "6b55d95fa118fa2d3cb6a1be21a7ae8dcd7bb8d68d451d4ec5abdb97c2ab9336",
+    "system.atr": "b9f9e68066d7f27ba4fede146692856c7d0f158b69aa7c40c0164a083b653947",
+    "work.atr": "ca51b794d9946ee1a5c4bdcee66293aa7229afc4c39fd77bf73482151b24b69a"
+  },
+  "host_checks": {
+    "demo_package": 12,
+    "application_observer": 2,
+    "c_program_package": 4,
+    "ide_stack_scanner": 2
+  },
+  "notes": [
+    "The first counter scene left its value behind the shell; only the repeated run with the complete count visible is retained as the counter baseline.",
+    "Idle and counter are separate observations, not a combined score or regression threshold.",
+    "Optimized PAL development coverage; no compiler qualification or real-hardware qualification.",
+    "Calibration-cap and forced low-resolution cases were not exercised by these packaged runs."
+  ]
+}

@@ -19,7 +19,7 @@ USE A816MEMORY
 USE HEAPCORE
 
 PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=6, LABEL_BYTES=25
-PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=432
+PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=560, WINDOWS_POPUP_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
   BYTE enabled,action
@@ -33,6 +33,8 @@ PUBLIC BYTE menu,count
 PUBLIC INT selected
 PUBLIC INT paintSelection
 LONGCARD revision,focusSeen,pendingWindow,menuOwner
+; Dirty bits: 1 replaces bar contents, 2 replaces popup contents. Selection
+; transitions are compared with the last published paint state separately.
 BYTE pendingMenu,pendingAction,dirty,down,opening,blocked
 INT armed,pendingHeading
 CONST ACT_TOP=1, ACT_CLOSE=2, NO_ROW=-1
@@ -118,7 +120,7 @@ RETURN
 
 BYTE FUNC Shown(DESKTYPES.Window POINTER window)
 
-  IF window.id=0 THEN
+  IF window.id=0 OR window.id=DESKSTATE.desktopWindow THEN
     RETURN(0)
   FI
 
@@ -173,9 +175,6 @@ PUBLIC PROC Cancel()
 
   pendingMenu=0
   pendingAction=0
-  IF menu<>0 THEN
-    dirty=1
-  FI
   menu=0
   selected=NO_ROW
   armed=NO_ROW
@@ -213,7 +212,6 @@ PROC Choose(INT row)
 
   menu=0
   selected=NO_ROW
-  dirty=1
   DESKSTATE.menuActive=Active()
 
 RETURN
@@ -230,7 +228,6 @@ PROC Highlight(INT row)
   FI
   IF selected<>row THEN
     selected=row
-    dirty=1
   FI
 
 RETURN
@@ -241,7 +238,7 @@ INT FUNC Hit(INT x,y)
   IF menu=GEM_MENU THEN
     RETURN(DESKAPPMENU.EntryAt(x,y))
   FI
-  left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI
+  left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_POPUP_LEFT) ELSE INT(0) FI
   IF x<=left OR x>=left+207 OR y<=BAR_HEIGHT
       OR y>=BAR_HEIGHT+INT(count)*ROW_HEIGHT
       OR (count>=4 AND y=BAR_HEIGHT+INT(count)*ROW_HEIGHT-1) THEN
@@ -257,6 +254,10 @@ PROC Heading(INT x)
   IF x>=WINDOWS_LEFT THEN
     IF menu<>WINDOWS_MENU THEN
       pendingMenu=WINDOWS_MENU
+    FI
+  ELSEIF x<DESKAPPMENU.BAR_LEFT THEN
+    IF menu<>APP_MENU THEN
+      pendingMenu=APP_MENU
     FI
   ELSEIF DESKAPPMENU.Current()<>0 THEN
     hit=DESKAPPMENU.TitleAt(x)
@@ -476,7 +477,7 @@ PROC Open(BYTE kind)
     DESKAPPMENU.selected=-1
     DESKAPPMENU.PopupBounds(@bounds)
     Popup(@bounds)
-    dirty=1
+    dirty=dirty OR 2
     RETURN
   FI
   IF menu=WINDOWS_MENU THEN
@@ -512,11 +513,11 @@ PROC Open(BYTE kind)
 
   selected=IF count<>0 THEN INT(0) ELSE NO_ROW FI
   REGIONS.Assign(@bounds,
-      IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI,BAR_HEIGHT,0,0)
+      IF menu=WINDOWS_MENU THEN INT(WINDOWS_POPUP_LEFT) ELSE INT(0) FI,BAR_HEIGHT,0,0)
   bounds.right=bounds.left+208
   bounds.bottom=BAR_HEIGHT+INT(IF count>4 THEN count ELSE 4 FI)*ROW_HEIGHT
   Popup(@bounds)
-  dirty=1
+  dirty=dirty OR 2
 
 RETURN
 
@@ -568,15 +569,45 @@ PUBLIC PROC Renamed(LONGCARD window)
 
 RETURN
 
+PROC DamageTitle(BYTE kind)
+  LAYERTYPES.Rect bounds
+
+  LET service=DESKSTATE.Get()
+  IF kind=APP_MENU THEN
+    REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,BAR_HEIGHT)
+  ELSEIF kind=WINDOWS_MENU THEN
+    REGIONS.Assign(@bounds,WINDOWS_LEFT,0,640,BAR_HEIGHT)
+  ELSE
+    RETURN
+  FI
+  Check(LAYERS.Invalidate(@service.scene,DESKSTATE.barLayer,@bounds))
+
+RETURN
+
+PROC DamageRow(INT row)
+  LAYERTYPES.Rect bounds
+
+  IF row<0 THEN
+    RETURN
+  FI
+  LET service=DESKSTATE.Get()
+  LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+  REGIONS.Assign(@bounds,popup.bounds.left,BAR_HEIGHT+row*ROW_HEIGHT,
+      popup.bounds.right,BAR_HEIGHT+(row+1)*ROW_HEIGHT)
+  Check(LAYERS.Invalidate(@service.scene,DESKSTATE.popupLayer,@bounds))
+
+RETURN
+
 ; Paint and scene changes obey the same gates as existing native gestures.
 PUBLIC PROC Advance()
-  BYTE changed
+  BYTE changed,chromeChanged
 
   LET service=DESKSTATE.Get()
   IF DESKSTATE.barLayer=0 THEN
     RETURN
   FI
   IF pendingAction=0 AND pendingMenu=0 AND dirty=0
+      AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
       AND DESKAPPMENU.VisualChanged()=0 THEN
@@ -598,7 +629,8 @@ PUBLIC PROC Advance()
     Cancel()
     dirty=1
   FI
-  IF menu<>0 AND (focusSeen<>service.focus OR revision<>service.scene.rebuilds) THEN
+  chromeChanged=focusSeen<>service.focus OR revision<>service.scene.rebuilds
+  IF menu<>0 AND chromeChanged<>0 THEN
     ; Do not select a stale label after its window closes, moves or is reused.
     Cancel()
   FI
@@ -609,13 +641,15 @@ PUBLIC PROC Advance()
   IF menu=0 THEN
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
   FI
-  IF focusSeen<>service.focus OR revision<>service.scene.rebuilds THEN
+  IF chromeChanged<>0 THEN
     DESKSTATE.TopChrome()
     activeWindow=service.focus
     BEGIN
       LET window=DESKCORE.Find(service,activeWindow)
       IF window=NULL THEN
-        Label(@title(0),BYTE POINTER(c"Desktop"),32)
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
+      ELSEIF window.title(0)=0 THEN
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
       ELSE
         Label(@title(0),@window.title(0),32)
       FI
@@ -624,19 +658,29 @@ PUBLIC PROC Advance()
   FI
 
   DESKAPPMENU.Snapshot(menu=GEM_MENU)
-  IF dirty<>0 THEN
+  IF dirty<>0 OR paintMenu<>menu OR paintSelection<>selected THEN
     ; Input may arrive between paint steps. Publish visual state only after
     ; the current scene token retires, alongside its matching damage.
-    paintMenu=menu
-    paintSelection=selected
     BEGIN
       LET bar=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
       LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-      Check(LAYERS.Invalidate(@service.scene,DESKSTATE.barLayer,@bar.bounds))
+      IF (dirty & 1)<>0 THEN
+        Check(LAYERS.Invalidate(@service.scene,DESKSTATE.barLayer,@bar.bounds))
+      ELSEIF paintMenu<>menu THEN
+        DamageTitle(paintMenu)
+        DamageTitle(menu)
+      FI
       IF menu<>0 THEN
-        Check(LAYERS.Invalidate(@service.scene,DESKSTATE.popupLayer,@popup.bounds))
+        IF dirty<>0 THEN
+          Check(LAYERS.Invalidate(@service.scene,DESKSTATE.popupLayer,@popup.bounds))
+        ELSEIF menu<>GEM_MENU AND paintSelection<>selected THEN
+          DamageRow(paintSelection)
+          DamageRow(selected)
+        FI
       FI
     END
+    paintMenu=menu
+    paintSelection=selected
     dirty=0
   FI
   focusSeen=service.focus
@@ -652,6 +696,7 @@ PUBLIC BYTE FUNC Runnable()
   LET service=DESKSTATE.Get()
 
 RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
+    OR paintMenu<>menu OR paintSelection<>selected
     OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
     OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0
     OR DESKAPPMENU.VisualChanged()<>0)

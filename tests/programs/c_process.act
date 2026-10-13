@@ -12,6 +12,7 @@ USE AESCORE
 USE O65CONTROL
 USE O65TYPES
 USE HEAPCORE
+USE CSTRING.IMPL AS STR
 
 CARD checks,completed
 LONGCARD baseline
@@ -37,10 +38,14 @@ PUBLIC PROC Collected(LONGCARD id LONGINT expected)
 RETURN
 
 PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load()
+  BYTE ARRAY path(32)
 
-  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PROBE.APP"))
+  STR.strlcpy(path,c"SYS:PROBE.APP",SIZEOF(path))
+  LET image=PROGRAMFILE.Load(path)
+  STR.strlcpy(path,c"overwritten",SIZEOF(path))
   Require(image<>NULL)
   Require(image.kind=PROGRAMIMAGE.KIND_C)
+  Require(STR.strcmp(CSTRING(@image.name(0)),c"PROBE.APP")=0)
 
 RETURN(image)
 
@@ -106,6 +111,7 @@ PROC Main()
 
   first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:HELLO"))
   Require(first<>NULL AND first.kind=PROGRAMIMAGE.KIND_NATIVE)
+  Require(STR.strcmp(CSTRING(@first.name(0)),c"HELLO")=0)
   one=PROCESS.StartLoaded(BYTE POINTER(first),NULL,0,0)
   PROGRAM.Unload(first)
   Collected(one,0)

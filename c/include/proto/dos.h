@@ -16,6 +16,7 @@ LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL ExNext(BPTR lock,struct FileInfoBlock *info);
 LONG EXEC_CALL IoErr(void);
 BPTR EXEC_CALL CreateDir(CONST_STRPTR name);
+LONG EXEC_CALL DeleteFile(CONST_STRPTR name);
 LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName);
 LONG EXEC_CALL Seek(BPTR file,LONG position,LONG mode);
 /* Release an idle caller context after all handles/locks/selections retire. */

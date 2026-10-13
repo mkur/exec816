@@ -2,6 +2,8 @@
 #define EXEC816_AES_PRIVATE_H
 #include <exec816/aes.h>
 #include <gem.h>
+struct AESWindowView *ExecAESFindView(struct ExecAESContext *, WORD);
+BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
@@ -28,7 +30,7 @@ UWORD ExecAESInputRecover(struct ExecAESContext *c, UWORD flags);
 UWORD ExecAESInputState(struct ExecAESContext *c, UWORD flags);
 UWORD ExecAESInputSelect(struct ExecAESContext *c, UWORD flags);
 BOOL ExecAESInputStable(struct ExecAESContext *c, UWORD flags);
-UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready);
+UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready, UWORD flags);
 UWORD ExecAESInputCommitState(struct ExecAESContext *c, UWORD flags);
 void ExecAESInputResult(struct ExecAESContext *c, UWORD ready);
 BOOL ExecAESEnter(struct ExecAESContext *c);
