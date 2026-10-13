@@ -361,6 +361,93 @@ PROC ShellNumber(DOS.FileHandle POINTER handle LONGINT number)
 
 RETURN
 
+; Assemble report rows in the existing draw buffer. Oversized rows stream in
+; bounded chunks; callers finish each row explicitly, through ShellWrite.
+; Sources must not borrow the draw buffer while a row is being assembled.
+CARD FUNC ShellRowBytes(DOS.FileHandle POINTER output CARD used
+    BYTE POINTER bytes CARD length)
+  CARD offset,count
+
+  LET buffer=ShellDrawBuffer()
+  offset=0
+  WHILE offset<length DO
+    IF used=DRAW_CAPACITY THEN
+      ShellWrite(output,buffer,used)
+      used=0
+    FI
+
+    count=length-offset
+    IF count>DRAW_CAPACITY-used THEN
+      count=DRAW_CAPACITY-used
+    FI
+
+    A816MEMORY.Move(buffer+SIZE(used),bytes+SIZE(offset),count)
+    used==+count
+    offset==+count
+  OD
+
+RETURN(used)
+
+CARD FUNC ShellRowText(DOS.FileHandle POINTER output CARD used CSTRING text)
+
+RETURN(ShellRowBytes(output,used,BYTE POINTER(text),
+    ShellLength(BYTE POINTER(text))))
+
+CARD FUNC ShellRowByte(DOS.FileHandle POINTER output CARD used BYTE value)
+
+  LET buffer=ShellDrawBuffer()
+  IF used=DRAW_CAPACITY THEN
+    ShellWrite(output,buffer,used)
+    used=0
+  FI
+
+  buffer(used)=value
+
+RETURN(used+1)
+
+; Ten decimal digits and the terminator fit even for MAXLONGCARD.
+CARD FUNC ShellRowUnsigned(DOS.FileHandle POINTER output CARD used
+    LONGCARD number)
+
+  IF used>DRAW_CAPACITY-11 THEN
+    ShellWrite(output,ShellDrawBuffer(),used)
+    used=0
+  FI
+
+RETURN(used+CARD(STR.u32toa(number,ShellDrawBuffer()+SIZE(used),
+    DRAW_CAPACITY-used)))
+
+CARD FUNC ShellRowNumber(DOS.FileHandle POINTER output CARD used LONGINT number)
+  LONGCARD magnitude
+
+  IF number<0 THEN
+    IF used>DRAW_CAPACITY-12 THEN
+      ShellWrite(output,ShellDrawBuffer(),used)
+      used=0
+    FI
+
+    used=ShellRowByte(output,used,CHAR_MINUS)
+    ; Avoid negating MINLONGINT directly.
+    magnitude=LONGCARD(-(number+1))+1
+  ELSE
+    magnitude=LONGCARD(number)
+  FI
+
+RETURN(ShellRowUnsigned(output,used,magnitude))
+
+PROC ShellRowEnd(DOS.FileHandle POINTER output CARD used)
+
+  used=ShellRowByte(output,used,ASCII.LF)
+  ShellWrite(output,ShellDrawBuffer(),used)
+
+RETURN
+
+PROC ShellLineText(DOS.FileHandle POINTER output CSTRING text)
+
+  ShellRowEnd(output,ShellRowText(output,0,text))
+
+RETURN
+
 ; Explain a recoverable command failure on the shell's own console.
 ; User cancellation needs no error message.
 PROC ShellDiagnostic()
@@ -903,12 +990,13 @@ BYTE FUNC ShellAliasIndex(BYTE POINTER name)
 RETURN(ALIAS_CAPACITY)
 
 PROC ShellAliasShow(BYTE index)
+  CARD used
 
   LET output=DOS.Output()
-  ShellText(output,CSTRING(@aliases(index).name(0)))
-  ShellText(output,c" -> ")
-  ShellText(output,CSTRING(@aliases(index).text(0)))
-  ShellByte(output,ASCII.LF)
+  used=ShellRowText(output,0,CSTRING(@aliases(index).name(0)))
+  used=ShellRowText(output,used,c" -> ")
+  used=ShellRowText(output,used,CSTRING(@aliases(index).text(0)))
+  ShellRowEnd(output,used)
 
 RETURN
 
@@ -1238,13 +1326,12 @@ RETURN
 
 ; Carry out a validated command using the streams selected for this invocation.
 PROC ShellDispatch()
-  CARD index
+  CARD index,used
 
   CASE shell.command OF
   WHEN CMD_HELP THEN
-    ShellText(DOS.Output(),
+    ShellLineText(DOS.Output(),
         c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
-    ShellByte(DOS.Output(),ASCII.LF)
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
     ShellText(DOS.Output(),c"Ctrl-L clear screen\n")
@@ -1252,17 +1339,18 @@ PROC ShellDispatch()
     ShellText(DOS.Output(),c"Atari left/right move the cursor\n")
 
   WHEN CMD_ECHO THEN
+    used=0
     IF shell.argc>1 THEN
       FOR index=1 TO CARD(shell.argc)-1 DO
         IF index<>1 THEN
-          ShellByte(DOS.Output(),ASCII.SPACE)
+          used=ShellRowByte(DOS.Output(),used,ASCII.SPACE)
         FI
 
-        ShellText(DOS.Output(),CSTRING(shell.words(index).text))
+        used=ShellRowText(DOS.Output(),used,CSTRING(shell.words(index).text))
       OD
     FI
 
-    ShellByte(DOS.Output(),ASCII.LF)
+    ShellRowEnd(DOS.Output(),used)
 
   WHEN CMD_CLS THEN
     ShellByte(DOS.Output(),ASCII.FF)
@@ -1279,8 +1367,7 @@ PROC ShellDispatch()
       ShellFail(PROCESS.RETURN_ERROR,DOS.IoErr())
 
     ELSE
-      ShellText(DOS.Output(),CSTRING(ShellScratch()))
-      ShellByte(DOS.Output(),ASCII.LF)
+      ShellLineText(DOS.Output(),CSTRING(ShellScratch()))
     FI
 
   WHEN CMD_EXIT THEN

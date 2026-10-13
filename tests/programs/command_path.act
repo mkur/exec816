@@ -76,6 +76,13 @@ PROC ShellByte(DOS.FileHandle POINTER handle BYTE value)
 
 RETURN
 
+PROC ShellLineText(DOS.FileHandle POINTER handle CSTRING text)
+
+  ShellText(handle,text)
+  ShellByte(handle,ASCII.LF)
+
+RETURN
+
 INCLUDE "../../examples/shell/shell-path.inc"
 
 ; Reset transport observations without changing the selected shell's PATH.

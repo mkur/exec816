@@ -1,0 +1,146 @@
+MODULE SHELLREPORTS
+USE HEAPCORE
+INCLUDE "shell-observed.inc"
+
+CONST CAPTURE_CAPACITY=8192,CASE_CAPACITY=40
+TYPE Mark=[CARD offset,writes]
+Mark ARRAY marks(CASE_CAPACITY)
+BYTE ARRAY captured(CAPTURE_CAPACITY),longText(256)
+CARD capturedCount,writeCount,caseCount,checks
+BYTE finished,failurePresent
+TASKINSPECT.Info ARRAY taskRows(5)
+DEVICEINSPECT.Info ARRAY deviceRows(4)
+FSINSPECT.Info ARRAY mountRows(4)
+CARD taskCount,deviceCount,mountCount
+FSINSPECT.Failure mountFailure
+IDEPLUS.Diagnostics ideInfo
+IDEPLUS.PartitionInfo ARRAY partitions(16)
+LONGCARD ARRAY memoryValues(4)
+BYTE POINTER allocation
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ed00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Capture the emitted formatter's actual bytes, not a host reimplementation.
+; The packaged measurement separately exercises the unchanged real Write path.
+PROC ShellWrite(DOS.FileHandle POINTER output BYTE POINTER bytes CARD count)
+
+  Require(count>0 AND count<=DRAW_CAPACITY)
+  Require(capturedCount+count<=CAPTURE_CAPACITY)
+  A816MEMORY.Move(@captured(0)+SIZE(capturedCount),bytes,count)
+  capturedCount==+count
+  writeCount==+1
+
+RETURN
+
+; Controlled inspection inputs exercise display bounds and uncommon states.
+CARD FUNC ReportTasks(TASKINSPECT.Info POINTER rows CARD capacity)
+
+  Require(capacity>=taskCount)
+  A816MEMORY.Move(BYTE POINTER(rows),BYTE POINTER(taskRows),
+      SIZE(taskCount)*SIZEOF(TASKINSPECT.Info))
+
+RETURN(taskCount)
+
+CARD FUNC ReportDevices(DEVICEINSPECT.Info POINTER rows CARD capacity)
+
+  Require(capacity>=deviceCount)
+  A816MEMORY.Move(BYTE POINTER(rows),BYTE POINTER(deviceRows),
+      SIZE(deviceCount)*SIZEOF(DEVICEINSPECT.Info))
+
+RETURN(deviceCount)
+
+CARD FUNC ReportMounts(FSINSPECT.Info POINTER rows CARD capacity)
+
+  Require(capacity>=mountCount)
+  A816MEMORY.Move(BYTE POINTER(rows),BYTE POINTER(mountRows),
+      SIZE(mountCount)*SIZEOF(FSINSPECT.Info))
+
+RETURN(mountCount)
+
+BYTE FUNC ReportFailure(FSINSPECT.Failure POINTER info)
+
+  A816MEMORY.Move(BYTE POINTER(info),BYTE POINTER(@mountFailure),
+      SIZEOF(FSINSPECT.Failure))
+
+RETURN(failurePresent)
+
+PROC ReportIde(IDEPLUS.Diagnostics POINTER info)
+
+  A816MEMORY.Move(BYTE POINTER(info),BYTE POINTER(@ideInfo),
+      SIZEOF(IDEPLUS.Diagnostics))
+
+RETURN
+
+BYTE FUNC ReportPartition(BYTE unit IDEPLUS.PartitionInfo POINTER info)
+
+  A816MEMORY.Move(BYTE POINTER(info),BYTE POINTER(@partitions(unit)),
+      SIZEOF(IDEPLUS.PartitionInfo))
+
+RETURN(1)
+
+PROC MarkCase()
+
+  Require(caseCount<CASE_CAPACITY)
+  marks(caseCount).offset=capturedCount
+  marks(caseCount).writes=writeCount
+  caseCount==+1
+
+RETURN
+
+PROC Boundary(CARD length)
+  CARD index,used
+
+  ; Draw neighbours are live shell storage, not newly allocated guards.
+  LET line=ShellLine()
+  LET scratch=ShellScratch()
+  LET transfer=ShellTransfer()
+  line(LINE_LIMIT)=$a5
+  scratch(0)=$5a
+  A816MEMORY.Fill(ShellTransfer(),$3c,TRANSFER_CAPACITY)
+  used=ShellRowBytes(NULL,0,longText,length)
+  ShellRowEnd(NULL,used)
+  Require(line(LINE_LIMIT)=$a5 AND scratch(0)=$5a)
+  FOR index=0 TO TRANSFER_CAPACITY-1 DO
+    Require(transfer(index)=$3c)
+  OD
+
+RETURN
+
+PROC Main()
+  CARD index,used
+
+  allocation=EXEC.AllocMem(SHELL_BYTES+8,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+  Require(allocation<>NULL)
+  allocation(0)=$a5
+  allocation(SHELL_BYTES+7)=$5a
+  shell=ShellState POINTER(allocation+SIZE(4))
+  aliases=ShellAlias POINTER(EXEC.AllocMem(
+      ALIAS_CAPACITY*SIZEOF(ShellAlias),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(aliases<>NULL)
+  FOR index=0 TO 254 DO
+    longText(index)=88
+  OD
+  longText(255)=0
+
+  INCLUDE "report-cases.inc"
+
+  MarkCase()
+  Require(allocation(0)=$a5 AND allocation(SHELL_BYTES+7)=$5a)
+  Require(SIZEOF(ShellState)=HEADER_SIZE)
+  EXEC.FreeMem(BYTE POINTER(aliases),ALIAS_CAPACITY*SIZEOF(ShellAlias))
+  aliases=NULL
+  EXEC.FreeMem(allocation,SHELL_BYTES+8)
+  shell=NULL
+  finished=1
+
+RETURN
+
+ENDMODULE

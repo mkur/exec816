@@ -1,5 +1,8 @@
 # Historical records
 
+- [Resident shell report output](shell-report-output.md): bounded row batching,
+  builtin latency, formatting checks and memory costs.
+
 - [Command loader refactor](command-loader-refactor.md): completed bulk-copy and scalar-reader
   slices, matched timings and memory costs.
 

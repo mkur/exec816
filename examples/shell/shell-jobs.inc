@@ -1,28 +1,25 @@
 ; One owned Process; collection changes job state before later reporting.
-PROC ShellJobNumber(DOS.FileHandle POINTER handle LONGCARD number)
-
-  LET buffer=ShellDrawBuffer()
-  LET length=STR.u32toa(number,buffer,DRAW_CAPACITY)
-  ShellWrite(handle,buffer,CARD(length))
-
-RETURN
-
 PROC ShellJobReport(DOS.FileHandle POINTER handle)
+  CARD used
 
-  ShellText(handle,c"Job ")
-  ShellJobNumber(handle,job.identity)
+  used=ShellRowText(handle,0,c"Job ")
+  used=ShellRowUnsigned(handle,used,job.identity)
   CASE job.state OF
   WHEN JOB_RUNNING THEN
-    ShellText(handle,c" running\n")
+    used=ShellRowText(handle,used,c" running")
+
   WHEN JOB_STOPPING THEN
-    ShellText(handle,c" stopping\n")
+    used=ShellRowText(handle,used,c" stopping")
+
   WHEN JOB_DONE THEN
-    ShellText(handle,c" finished (")
-    ShellNumber(handle,job.outcome.primary)
-    ShellText(handle,c", ")
-    ShellNumber(handle,job.outcome.secondary)
-    ShellText(handle,c")\n")
+    used=ShellRowText(handle,used,c" finished (")
+    used=ShellRowNumber(handle,used,job.outcome.primary)
+    used=ShellRowText(handle,used,c", ")
+    used=ShellRowNumber(handle,used,job.outcome.secondary)
+    used=ShellRowText(handle,used,c")")
   ESAC
+
+  ShellRowEnd(handle,used)
 
 RETURN
 

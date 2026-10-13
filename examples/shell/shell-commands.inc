@@ -242,85 +242,74 @@ PROC ShellType()
 RETURN
 
 ; Show free memory and the largest ordinary and linear allocations available.
+PROC ShellMemRow(DOS.FileHandle POINTER output CSTRING label LONGCARD flags)
+
+  LET used=ShellRowText(output,0,label)
+  ShellRowEnd(output,ShellRowNumber(output,used,LONGINT(EXEC.AvailMem(flags))))
+
+RETURN
+
 PROC ShellMem()
 
-  ShellText(DOS.Output(),c"ordinary total ")
-  ShellNumber(DOS.Output(),LONGINT(EXEC.AvailMem(0)))
-  ShellByte(DOS.Output(),ASCII.LF)
-
-  ShellText(DOS.Output(),c"ordinary largest ")
-  ShellNumber(DOS.Output(),LONGINT(EXEC.AvailMem(EXEC.MEMF_LARGEST)))
-  ShellByte(DOS.Output(),ASCII.LF)
-
-  ShellText(DOS.Output(),c"linear total ")
-  ShellNumber(DOS.Output(),LONGINT(EXEC.AvailMem(EXEC.MEMF_LINEAR)))
-  ShellByte(DOS.Output(),ASCII.LF)
-
-  ShellText(DOS.Output(),c"linear largest ")
-  ShellNumber(DOS.Output(),
-      LONGINT(EXEC.AvailMem(EXEC.MEMF_LINEAR OR EXEC.MEMF_LARGEST)))
-  ShellByte(DOS.Output(),ASCII.LF)
+  LET output=DOS.Output()
+  ShellMemRow(output,c"ordinary total ",0)
+  ShellMemRow(output,c"ordinary largest ",EXEC.MEMF_LARGEST)
+  ShellMemRow(output,c"linear total ",EXEC.MEMF_LINEAR)
+  ShellMemRow(output,c"linear largest ",EXEC.MEMF_LINEAR OR EXEC.MEMF_LARGEST)
 
 RETURN
 
 ; Give task states readable, consistently sized labels for the TASKS listing.
-PROC ShellTaskState(DOS.FileHandle POINTER output BYTE state)
-  SYS.CSTRING label
+CSTRING FUNC ShellTaskState(BYTE state)
 
   CASE state OF
   WHEN TASKINSPECT.STATE_RUNNING THEN
-    label=c"RUNNING "
+    RETURN(c"RUNNING ")
 
   WHEN TASKINSPECT.STATE_READY THEN
-    label=c"READY   "
+    RETURN(c"READY   ")
 
   WHEN TASKINSPECT.STATE_SIGNAL_WAIT THEN
-    label=c"WAITING "
+    RETURN(c"WAITING ")
 
   WHEN TASKINSPECT.STATE_SLEEPING THEN
-    label=c"SLEEPING"
+    RETURN(c"SLEEPING")
 
   ELSE
-    label=c"UNKNOWN "
+    RETURN(c"UNKNOWN ")
   ESAC
 
-  ShellText(output,label)
-
-RETURN
+RETURN(c"UNKNOWN ")
 
 ; Show a snapshot of live tasks without holding up scheduling during output.
 PROC ShellTasks(DOS.FileHandle POINTER output)
-  CARD index
+  CARD index,used
 
   ; 26 bytes per slot, at most 16 configured slots: fits the existing 512 bytes.
   ; Snapshot releases Forbid before any DOS output can block.
   LET rows=TASKINSPECT.Info POINTER(ShellTransfer())
   LET count=TASKINSPECT.Snapshot(rows,TASKINSPECT.CAPACITY)
-  ShellText(output,c"SLOT STATE    NAME")
-  ShellByte(output,ASCII.LF)
+  ShellLineText(output,c"SLOT STATE    NAME")
   IF count=0 THEN
     RETURN
   FI
 
   FOR index=0 TO count-1 DO
-    ShellNumber(output,rows(index).slot)
+    used=ShellRowNumber(output,0,rows(index).slot)
     IF rows(index).slot<10 THEN
-      ShellByte(output,ASCII.SPACE)
+      used=ShellRowByte(output,used,ASCII.SPACE)
     FI
 
-    ShellByte(output,ASCII.SPACE)
-    ShellByte(output,ASCII.SPACE)
-    ShellByte(output,ASCII.SPACE)
-    ShellTaskState(output,rows(index).state)
-    ShellByte(output,ASCII.SPACE)
+    used=ShellRowText(output,used,c"   ")
+    used=ShellRowText(output,used,ShellTaskState(rows(index).state))
+    used=ShellRowByte(output,used,ASCII.SPACE)
     IF rows(index).name(0)=ASCII.NUL THEN
-      ShellText(output,c"(unnamed)")
-
+      used=ShellRowText(output,used,c"(unnamed)")
     ELSE
-      ShellText(output,CSTRING(@rows(index).name(0)))
+      used=ShellRowText(output,used,CSTRING(@rows(index).name(0)))
     FI
 
-    ShellByte(output,ASCII.LF)
+    ShellRowEnd(output,used)
     IF shell.status<>PROCESS.RETURN_OK THEN
       EXIT
     FI
@@ -330,30 +319,30 @@ RETURN
 
 ; Show which resident devices are available and their lifecycle state.
 PROC ShellDevices(DOS.FileHandle POINTER output)
-  CARD index
-  SYS.CSTRING label
+  CARD index,used
+  CSTRING label
 
   LET rows=DEVICEINSPECT.Info POINTER(ShellTransfer())
   LET count=DEVICEINSPECT.Snapshot(rows,DEVICEINSPECT.CAPACITY)
-  ShellText(output,c"DEVICE          STATE")
-  ShellByte(output,ASCII.LF)
+  ShellLineText(output,c"DEVICE          STATE")
   IF count=0 THEN
     RETURN
   FI
 
   FOR index=0 TO count-1 DO
+    used=0
     CASE rows(index).kind OF
     WHEN DEVICEINSPECT.CONSOLE THEN
-      ShellText(output,c"console.device  ")
+      used=ShellRowText(output,used,c"console.device  ")
 
     WHEN DEVICEINSPECT.SIO THEN
-      ShellText(output,c"sio.device      ")
+      used=ShellRowText(output,used,c"sio.device      ")
 
     WHEN DEVICEINSPECT.IDEPLUS THEN
-      ShellText(output,c"ideplus.device  ")
+      used=ShellRowText(output,used,c"ideplus.device  ")
 
     WHEN DEVICEINSPECT.TIMER THEN
-      ShellText(output,c"timer.device    ")
+      used=ShellRowText(output,used,c"timer.device    ")
     ESAC
 
     CASE rows(index).state OF
@@ -379,8 +368,8 @@ PROC ShellDevices(DOS.FileHandle POINTER output)
       label=c"unknown"
     ESAC
 
-    ShellText(output,label)
-    ShellByte(output,ASCII.LF)
+    used=ShellRowText(output,used,label)
+    ShellRowEnd(output,used)
     IF shell.status<>PROCESS.RETURN_OK THEN
       EXIT
     FI
@@ -390,72 +379,66 @@ RETURN
 
 ; Show mounted filesystems, their access mode and whether they are online.
 PROC ShellMounts(DOS.FileHandle POINTER output)
-  CARD index,width
+  CARD index,used
 
   LET rows=FSINSPECT.Info POINTER(ShellTransfer())
   LET count=FSINSPECT.Snapshot(rows,FSINSPECT.CAPACITY)
-  ShellText(output,c"MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT")
-  ShellByte(output,ASCII.LF)
+  ShellLineText(output,c"MOUNT FILESYSTEM ACCESS    STATE DEVICE/UNIT")
   IF count=0 THEN
-    ShellText(output,c"No mounted filesystems")
-    ShellByte(output,ASCII.LF)
+    ShellLineText(output,c"No mounted filesystems")
     ShellMountFailure(output)
     RETURN
   FI
 
   FOR index=0 TO count-1 DO
-    ShellText(output,CSTRING(@rows(index).name(0)))
-    ShellByte(output,CHAR_COLON)
-    width=ShellLength(rows(index).name)+1
-    WHILE width<5 DO
-      ShellByte(output,ASCII.SPACE)
-      width==+1
+    used=ShellRowText(output,0,CSTRING(@rows(index).name(0)))
+    used=ShellRowByte(output,used,CHAR_COLON)
+    WHILE used<5 DO
+      used=ShellRowByte(output,used,ASCII.SPACE)
     OD
 
-    ShellByte(output,ASCII.SPACE)
+    used=ShellRowByte(output,used,ASCII.SPACE)
     CASE rows(index).format OF
     WHEN FSFORMATS.MYDOS THEN
-      ShellText(output,c"MyDOS      ")
+      used=ShellRowText(output,used,c"MyDOS      ")
 
     WHEN FSFORMATS.SDFS THEN
-      ShellText(output,c"SDFS       ")
+      used=ShellRowText(output,used,c"SDFS       ")
 
     WHEN FSFORMATS.RAM THEN
-      ShellText(output,c"RAM        ")
+      used=ShellRowText(output,used,c"RAM        ")
 
     ELSE
-      ShellText(output,c"unknown    ")
+      used=ShellRowText(output,used,c"unknown    ")
     ESAC
 
     IF rows(index).readOnly<>0 THEN
-      ShellText(output,c"read-only ")
-
+      used=ShellRowText(output,used,c"read-only ")
     ELSE
-      ShellText(output,c"writable  ")
+      used=ShellRowText(output,used,c"writable  ")
     FI
 
     IF rows(index).offline<>0 THEN
-      ShellText(output,c"offline")
-
+      used=ShellRowText(output,used,c"offline")
     ELSE
-      ShellText(output,c"mounted")
+      used=ShellRowText(output,used,c"mounted")
     FI
 
     IF rows(index).format<>FSFORMATS.RAM THEN
-      ShellByte(output,ASCII.SPACE)
+      used=ShellRowByte(output,used,ASCII.SPACE)
       IF rows(index).backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
-        ShellText(output,c"ideplus.device/")
-        ShellNumber(output,LONGINT(rows(index).unit))
+        used=ShellRowText(output,used,c"ideplus.device/")
+        used=ShellRowNumber(output,used,LONGINT(rows(index).unit))
       ELSE
-        ShellText(output,c"sio.device/D")
-        ShellNumber(output,LONGINT(rows(index).unit-48))
+        used=ShellRowText(output,used,c"sio.device/D")
+        used=ShellRowNumber(output,used,LONGINT(rows(index).unit-48))
       FI
     FI
 
-    ShellByte(output,ASCII.LF)
+    ShellRowEnd(output,used)
     IF rows(index).offline<>0 AND rows(index).error<>0 THEN
-      ShellText(output,c"  ")
-      ShellMountError(output,rows(index).error)
+      used=ShellRowText(output,0,c"  ")
+      ShellMountError(output,used,rows(index).error)
     FI
 
     IF shell.status<>PROCESS.RETURN_OK THEN

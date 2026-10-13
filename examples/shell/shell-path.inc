@@ -159,8 +159,7 @@ PROC ShellPath()
     ShellText(DOS.Output(),c"Current directory\n")
     index=0
     WHILE index<shell.pathCount DO
-      ShellText(DOS.Output(),CSTRING(ShellPathEntry(index)))
-      ShellByte(DOS.Output(),ASCII.LF)
+      ShellLineText(DOS.Output(),CSTRING(ShellPathEntry(index)))
       index==+1
     OD
 
