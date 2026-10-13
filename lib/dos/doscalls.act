@@ -314,7 +314,8 @@ BYTE FUNC Configured(BYTE POINTER name CARD colon)
 
   specs=FSTYPES.Spec POINTER(registry.config)
   FOR index=0 TO registry.count-1 DO
-    IF FSSYSTEM.Matches(@specs(index),index,name,colon)<>0 THEN
+    IF FSREGISTRY.Enabled(index)<>0 AND
+        FSSYSTEM.Matches(@specs(index),index,name,colon)<>0 THEN
       RETURN(1)
     FI
   OD
@@ -1427,7 +1428,8 @@ PUBLIC LONGINT FUNC AssignPath(BYTE POINTER name,target)
   registry=DOSCORE.GetRegistry()
   specs=FSTYPES.Spec POINTER(registry.config)
   FOR slot=0 TO registry.count-1 DO
-    IF FSSYSTEM.Matches(@specs(slot),slot,name,length)<>0 THEN
+    IF FSREGISTRY.Defined(slot)<>0 AND
+        FSSYSTEM.Matches(@specs(slot),slot,name,length)<>0 THEN
       owner.error=ERROR_OBJECT_EXISTS
       RETURN(0)
     FI

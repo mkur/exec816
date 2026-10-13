@@ -8,6 +8,7 @@ USE FSTYPES
 USE FSPACKET
 USE HEAPCORE
 USE FSNAMES
+USE FSREGISTRY
 USE FSSYSTEM
 USE BOOTCONFIG
 USE FS83
@@ -26,78 +27,81 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
 
   LET registry=DOSCORE.GetRegistry()
   LET specs=FSTYPES.Spec POINTER(registry.config)
-  IF registry.count=0 OR registry.count>9 OR
+  IF registry.count<>9 OR registry.bootCount>9 OR
       (BOOTCONFIG.B_SYSTEM_SLOT<>255
-          AND BOOTCONFIG.B_SYSTEM_SLOT>=registry.count) THEN
+          AND BOOTCONFIG.B_SYSTEM_SLOT>=registry.bootCount) THEN
     service.error=ERROR_DEVICE_NOT_MOUNTED
     RETURN(0)
   FI
 
   service.count=registry.count
   FOR index=0 TO service.count-1 DO
-    BEGIN
-      LET spec=@specs(index)
-      IF FSNAMES.ValidAlias(spec.alias)=0 THEN
-        service.error=ERROR_BAD_STREAM_NAME
-        RETURN(0)
-      FI
+    IF FSREGISTRY.Enabled(index)<>0 THEN
+      BEGIN
+        LET spec=@specs(index)
+        IF FSNAMES.ValidAlias(spec.alias)=0 THEN
+          service.error=ERROR_BAD_STREAM_NAME
+          RETURN(0)
+        FI
 
-      IF spec.access>1 THEN
-        service.error=ERROR_BAD_NUMBER
-        RETURN(0)
-      FI
-
-      IF FSSYSTEM.Selected(index)<>0 AND
-          spec.backend=BLOCKTYPES.BACKEND_SIO THEN
-        ; The immutable descriptor must still match the packaged physical drive.
-        IF spec.unit<>48+BOOTCONFIG.B_DEFAULT_DRIVE OR
-            FS83.Fold(spec.alias(0))<>'D OR
-            spec.alias(1)<>'0+BOOTCONFIG.B_DEFAULT_DRIVE
-                OR spec.alias(2)<>0 THEN
+        IF spec.access>1 THEN
           service.error=ERROR_BAD_NUMBER
           RETURN(0)
         FI
-      FI
 
-      IF FSBACKEND.Available(spec.format)=0 THEN
-        service.error=ERROR_NOT_A_DOS_DISK
-        RETURN(0)
-      FI
+        IF FSSYSTEM.Selected(index)<>0 AND
+            spec.backend=BLOCKTYPES.BACKEND_SIO THEN
+          ; The immutable descriptor must still match the packaged physical drive.
+          IF spec.unit<>48+BOOTCONFIG.B_DEFAULT_DRIVE OR
+              FS83.Fold(spec.alias(0))<>'D OR
+              spec.alias(1)<>'0+BOOTCONFIG.B_DEFAULT_DRIVE
+                  OR spec.alias(2)<>0 THEN
+            service.error=ERROR_BAD_NUMBER
+            RETURN(0)
+          FI
+        FI
 
-      LET unit=FSSYSTEM.Unit(spec,index)
-      IF spec.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
-        IF spec.format<>FSFORMATS.SDFS THEN
+        IF FSBACKEND.Available(spec.format)=0 THEN
           service.error=ERROR_NOT_A_DOS_DISK
           RETURN(0)
         FI
-      FI
-      IF spec.format=FSFORMATS.RAM THEN
-        IF FS83.Fold(spec.alias(0))<>'R OR FS83.Fold(spec.alias(1))<>'A OR
-            FS83.Fold(spec.alias(2))<>'M OR spec.alias(3)<>0 OR
-            spec.unit<>0 OR spec.profile<>0 OR spec.sectors<>0 OR
-            spec.dataBytes<>0 OR spec.boot<>0 OR spec.access<>1 OR spec.backend<>0 OR
-            FSSYSTEM.Selected(index)<>0 THEN
+
+        LET unit=FSSYSTEM.Unit(spec,index)
+        IF spec.backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+          IF spec.format<>FSFORMATS.SDFS THEN
+            service.error=ERROR_NOT_A_DOS_DISK
+            RETURN(0)
+          FI
+        FI
+        IF spec.format=FSFORMATS.RAM THEN
+          IF FS83.Fold(spec.alias(0))<>'R OR FS83.Fold(spec.alias(1))<>'A OR
+              FS83.Fold(spec.alias(2))<>'M OR spec.alias(3)<>0 OR
+              spec.unit<>0 OR spec.profile<>0 OR spec.sectors<>0 OR
+              spec.dataBytes<>0 OR spec.boot<>0 OR spec.access<>1 OR spec.backend<>0 OR
+              FSSYSTEM.Selected(index)<>0 THEN
+            service.error=ERROR_BAD_NUMBER
+            RETURN(0)
+          FI
+        ELSEIF BLOCKIO.Geometry(spec.backend,unit,spec.profile,
+            spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
           service.error=ERROR_BAD_NUMBER
           RETURN(0)
         FI
-      ELSEIF BLOCKIO.Geometry(spec.backend,unit,spec.profile,
-          spec.sectors,spec.dataBytes,spec.boot,1)=0 THEN
-        service.error=ERROR_BAD_NUMBER
-        RETURN(0)
-      FI
 
-      other=0
-      WHILE other<index DO
-        IF (unit<>0 AND specs(other).backend=spec.backend AND
-            FSSYSTEM.Unit(@specs(other),other)=unit) OR
-            FSSYSTEM.SameName(@specs(other),spec,other,index)<>0 THEN
-          service.error=ERROR_OBJECT_IN_USE
-          RETURN(0)
-        FI
+        other=0
+        WHILE other<index DO
+          IF FSREGISTRY.Enabled(other)<>0 AND
+              ((unit<>0 AND specs(other).backend=spec.backend AND
+              FSSYSTEM.Unit(@specs(other),other)=unit) OR
+              FSSYSTEM.SameName(@specs(other),spec,other,index)<>0) THEN
+            service.error=ERROR_OBJECT_IN_USE
+            RETURN(0)
+          FI
 
-        other==+1
-      OD
-    END
+          other==+1
+        OD
+      END
+    FI
   OD
 
 RETURN(1)
@@ -126,7 +130,9 @@ BYTE FUNC Workspace(FSTYPES.Service POINTER service)
   LET specs=FSTYPES.Spec POINTER(registry.config)
   writable=0
   FOR index=0 TO service.count-1 DO
-    writable=writable OR specs(index).access
+    IF FSREGISTRY.Enabled(index)<>0 THEN
+      writable=writable OR specs(index).access
+    FI
   OD
 
   IF writable<>0 THEN
@@ -241,7 +247,9 @@ PROC Publish(FSTYPES.Service POINTER service)
 
   registry=DOSCORE.GetRegistry()
   FOR index=0 TO service.count-1 DO
-    service.mounts(index).item.published=1
+    IF service.mounts(index).item<>NULL THEN
+      service.mounts(index).item.published=1
+    FI
   OD
 
   service.error=0
@@ -267,7 +275,8 @@ PUBLIC BYTE FUNC First(BYTE POINTER raw)
   LET registry=DOSCORE.GetRegistry()
   LET specs=FSTYPES.Spec POINTER(registry.config)
   FOR service.index=0 TO service.count-1 DO
-    IF specs(service.index).format<>FSFORMATS.RAM THEN
+    IF FSREGISTRY.Enabled(service.index)<>0 AND
+        specs(service.index).format<>FSFORMATS.RAM THEN
       service.adapter=BLOCKIO.Create()
       IF service.adapter=NULL THEN
         RETURN(FSSTATUS.STOP)
@@ -283,7 +292,23 @@ PUBLIC BYTE FUNC First(BYTE POINTER raw)
     RETURN(FSSTATUS.STOP)
   FI
 
-  service.nextStep=@MountStep
+  service.nextStep=@NextMountStep
+
+RETURN(FSSTATUS.MORE)
+
+; Skip disabled and unused definitions without moving their stable slots.
+BYTE FUNC NextMountStep(BYTE POINTER raw)
+
+  LET service=FSTYPES.Service POINTER(raw)
+  WHILE service.index<service.count DO
+    IF FSREGISTRY.Enabled(service.index)<>0 THEN
+      RETURN(MountStep(raw))
+    FI
+
+    service.index==+1
+  OD
+
+  Publish(service)
 
 RETURN(FSSTATUS.MORE)
 
@@ -358,6 +383,10 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
   IF service.packet<>FSTYPES.Packet POINTER(0) THEN
     EXEC.Forbid()
     service.selected.published=1
+    BEGIN
+      LET registry=DOSCORE.GetRegistry()
+      registry.enabled=registry.enabled OR (CARD(1) LSH service.index)
+    END
     EXEC.Permit()
     service.packet.sp_Pkt.dp_Res1=-1
     FSPACKET.Reply(service)
@@ -365,11 +394,7 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
   FI
 
   service.index==+1
-  IF service.index<service.count THEN
-    service.nextStep=@MountStep
-  ELSE
-    Publish(service)
-  FI
+  service.nextStep=@NextMountStep
 
 RETURN(FSSTATUS.MORE)
 
@@ -384,18 +409,49 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service)
   LET error=service.error
   DestroyMount(service,service.mounts(service.index).item)
   service.mounts(service.index).item=NULL
+  service.selected=NULL
 
 RETURN(FSPACKET.Error(service,error))
 
 ; Capture the causal failure before startup/remount frees its private records.
 PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
+  FSTYPES.Spec POINTER spec
+  BYTE index,value
+
+  LET registry=DOSCORE.GetRegistry()
+  spec=NULL
+  IF service.selected<>NULL THEN
+    spec=@service.selected.spec
+  ELSEIF service.index<registry.count AND FSREGISTRY.Defined(service.index)<>0 THEN
+    BEGIN
+      LET specs=FSTYPES.Spec POINTER(registry.config)
+      spec=@specs(service.index)
+    END
+  FI
 
   EXEC.Forbid()
-  LET registry=DOSCORE.GetRegistry()
   registry.mountSlot=$ff
-  IF service.mountStage>=BLOCKTYPES.ADMIT_ALLOCATE
-      AND service.index<registry.count THEN
+  registry.failureName(0)=0
+  registry.failureSectors=0
+  registry.failureBytes=0
+  registry.failureBackend=0
+  registry.failureUnit=0
+  IF spec<>NULL THEN
     registry.mountSlot=service.index
+    FOR index=0 TO 31 DO
+      value=FSSYSTEM.NameByte(spec,service.index,index)
+      registry.failureName(index)=IF value=0 OR (value>=32 AND value<=126)
+          THEN value ELSE 46 FI
+      IF value=0 THEN
+        EXIT
+      FI
+    OD
+
+    registry.failureName(31)=0
+    registry.failureSectors=spec.sectors
+    registry.failureBytes=spec.dataBytes
+    registry.failureBackend=spec.backend
+    registry.failureUnit=BYTE(FSSYSTEM.Unit(spec,service.index))
   FI
 
   registry.mountStage=service.mountStage

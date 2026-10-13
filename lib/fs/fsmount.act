@@ -50,6 +50,10 @@ BYTE FUNC SelectStep(BYTE POINTER raw)
     RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
   FI
 
+  IF FSREGISTRY.Defined(BYTE(index))=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_DEVICE_NOT_MOUNTED))
+  FI
+
   service.index=BYTE(index)
   service.selected=service.mounts(service.index).item
   service.nextStep=@CommandStep
@@ -98,6 +102,10 @@ BYTE FUNC RemoveStep(BYTE POINTER raw)
     busy=1
   ELSE
     service.selected.published=0
+    BEGIN
+      LET registry=DOSCORE.GetRegistry()
+      registry.enabled=registry.enabled & ($ffff XOR (CARD(1) LSH service.index))
+    END
     service.mounts(service.index).item=FSTYPES.Mount POINTER(0)
   FI
 
@@ -116,6 +124,7 @@ BYTE FUNC DestroyStep(BYTE POINTER raw)
 
   service=FSTYPES.Service POINTER(raw)
   FSINIT.DestroyMount(service,service.selected)
+  service.selected=NULL
   service.packet.sp_Pkt.dp_Res1=-1
   FSPACKET.Reply(service)
 

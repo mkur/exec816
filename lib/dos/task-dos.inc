@@ -67,7 +67,7 @@ TYPE DosControlArgs=[
 PROC DosInit()
   DosRegistry POINTER registry
   BYTE POINTER bytes,boot
-  BYTE index
+  CARD index
 
   registry=DosRegistry POINTER(ADDRESS(DS_SHARED))
   bytes=BYTE POINTER(registry)
@@ -83,8 +83,20 @@ PROC DosInit()
   boot=BYTE POINTER(ADDRESS(T_BASE+$880))
   registry.entry=ADDRESS(LONGCARD(boot(0))+(LONGCARD(boot(1)) LSH 8)+(LONGCARD(
       boot(2)) LSH 16))
-  registry.count=boot(3)
-  registry.config=ADDRESS(T_BASE+$900)
+  registry.bootCount=boot(3)
+  registry.count=DS_MOUNT_SLOTS
+  registry.config=ADDRESS(@registry.definitions(0))
+  IF registry.bootCount<=DS_MOUNT_SLOTS THEN
+    registry.defined=(CARD(1) LSH registry.bootCount)-1
+    registry.bootDefinitions=registry.defined
+    registry.enabled=registry.defined
+    IF registry.bootCount<>0 THEN
+      bytes=BYTE POINTER(ADDRESS(T_BASE+$900))
+      FOR index=0 TO CARD(registry.bootCount)*DS_MOUNT_SPEC_BYTES-1 DO
+        registry.definitions(index)=bytes(index)
+      OD
+    FI
+  FI
 
 RETURN
 

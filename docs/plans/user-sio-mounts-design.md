@@ -203,9 +203,10 @@ A failed new mount does not install its definition. A failed replacement leaves
 the previous detached boot definition unchanged. Successful unmount removes a
 user definition or disables a boot definition. Service restart restores only
 enabled definitions; explicitly detached boot disks must not silently return.
-The registry owns the definition table and retained failure copy, releasing
-both at final DOS shutdown rather than on each worker stop. They survive a
-worker restart within one boot, but not reboot. Cold boot imports the build
+The kernel-owned upper DOS registry reserves the definition table and retained
+failure copy. Their lifetime follows the kernel image, so worker stop requires
+no heap teardown for this state. They survive a worker restart within one boot,
+but not reboot. Cold boot imports the build
 definitions again. Users can put complete MOUNT commands in
 S:USER; no mount-list file parser or settings-save mechanism is needed.
 

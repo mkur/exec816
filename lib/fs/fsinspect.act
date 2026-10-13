@@ -24,35 +24,21 @@ PUBLIC TYPE Failure=[
 
 ; The registry retains failed mount identity after the worker frees its state.
 PUBLIC BYTE FUNC LastFailure(Failure POINTER info)
-  BYTE present,index,value
+  BYTE present
 
-  EXEC.Forbid()
   LET registry=DOSCORE.GetRegistry()
+  EXEC.Forbid()
   A816MEMORY.Clear(BYTE POINTER(info),SIZEOF(Failure))
   info.error=registry.mountError
   info.stage=registry.mountStage
   info.slot=registry.mountSlot
   present=info.error<>0
-  IF present<>0 AND info.slot<registry.count THEN
-    BEGIN
-      LET specs=FSTYPES.Spec POINTER(registry.config)
-      LET spec=@specs(info.slot)
-      index=0
-      WHILE index<31 DO
-        value=spec.alias(index)
-        IF value=0 THEN
-          EXIT
-        FI
-
-        info.name(index)=IF value<32 OR value>126 THEN 46 ELSE value FI
-        index==+1
-      OD
-
-      info.sectors=spec.sectors
-      info.bytes=spec.dataBytes
-      info.backend=spec.backend
-      info.unit=BYTE(spec.unit)
-    END
+  IF present<>0 THEN
+    A816MEMORY.Move(@info.name(0),@registry.failureName(0),32)
+    info.sectors=registry.failureSectors
+    info.bytes=registry.failureBytes
+    info.backend=registry.failureBackend
+    info.unit=registry.failureUnit
   FI
 
   EXEC.Permit()

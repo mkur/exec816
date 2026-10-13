@@ -1,0 +1,67 @@
+MODULE USERMOUNTS
+USE EXEC
+USE DOS
+USE DOSCORE
+USE FSTYPES
+USE FSBOOT
+USE FSINIT
+USE FSREGISTRY
+USE FSMANAGER
+USE FSINSPECT
+USE HEAPCORE
+
+CARD checks
+BYTE finished
+BYTE ARRAY buffer(64)
+FSINSPECT.Failure failure
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Exercise saved definitions and copied failures through real SIO admission.
+PROC Main()
+
+  LET baseline=EXEC.AvailMem(0)
+  LET registry=DOSCORE.GetRegistry()
+  Require(SIZEOF(DOSCORE.DosRegistry)=576 AND SIZEOF(FSTYPES.Spec)=46)
+  Require(registry.count=9 AND registry.bootCount=2 AND registry.defined=3)
+  LET file=DOS.Open(BYTE POINTER(c"D2:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,buffer,64)=64)
+  Require(FSMANAGER.Unmount(1)=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  Require(DOS.Close(file)<>0)
+
+  LET service=FSREGISTRY.Service()
+  service.selected=service.mounts(1).item
+  service.index=1
+  service.error=DOS.ERROR_NOT_A_DOS_DISK
+  service.mountStage=FSTYPES.MOUNT_RECOGNIZE
+  FSINIT.RecordFailure(service)
+  service.error=0
+  service.selected=NULL
+  Require(FSMANAGER.Unmount(1)<>0)
+  Require(registry.enabled=1 AND registry.defined=3)
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  specs(1).alias(0)='X
+  Require(FSINSPECT.LastFailure(@failure)<>0)
+  Require(failure.name(0)='D AND failure.name(1)='2 AND failure.name(2)=0)
+  Require(failure.sectors=720 AND failure.bytes=128 AND failure.unit=50)
+  specs(1).alias(0)='D
+  Require(FSMANAGER.Mount(1)<>0 AND registry.enabled=3)
+  Require(FSINSPECT.LastFailure(@failure)=0)
+  Require(FSMANAGER.Unmount(1)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  Require(registry.defined=3 AND registry.enabled=1)
+  finished=1
+
+RETURN
+
+ENDMODULE

@@ -57,7 +57,7 @@ PUBLIC BYTE FUNC Ensure()
   ELSEIF registry.state=0 OR ((registry.state=FSTYPES.STATE_FAILED
       OR registry.state=FSTYPES.STATE_STOPPED)
       AND registry.worker=BYTE POINTER(0)) THEN
-    IF registry.count=0 THEN
+    IF registry.enabled=0 THEN
       registry.error=ERROR_DEVICE_NOT_MOUNTED
     ELSE
       registry.state=FSTYPES.STATE_STARTING

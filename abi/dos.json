@@ -1182,5 +1182,10 @@
     "ERROR_DISK_FULL": "Disk full",
     "ERROR_DELETE_PROTECTED": "Object is delete protected",
     "ERROR_WRITE_PROTECTED": "Object is write protected"
+  },
+  "registry_storage": {
+    "mount_slots": 9,
+    "spec_bytes": 46,
+    "service_bytes": 576
   }
 }

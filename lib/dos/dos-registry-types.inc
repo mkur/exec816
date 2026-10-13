@@ -14,4 +14,11 @@ PUBLIC TYPE DosRegistry=[
   ADDRESS ARRAY assigns(4)
   LONGINT mountError
   BYTE mountSlot,mountStage
+  BYTE ARRAY definitions(414)
+  CARD defined,bootDefinitions,enabled
+  BYTE bootCount,management
+  BYTE ARRAY failureName(32)
+  LONGCARD failureSectors
+  CARD failureBytes
+  BYTE failureBackend,failureUnit
 ]

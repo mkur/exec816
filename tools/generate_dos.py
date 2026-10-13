@@ -177,14 +177,16 @@ def reserve_metadata(memory,capacity):
     shared=start+size
     stream_bytes=ABI['streams']['slots']*ABI['streams']['slot_bytes']
     require(ABI['streams']==dict(slots=4,slot_bytes=16),'Invalid stream registry capacity')
-    service_bytes=114
+    service_bytes=ABI['registry_storage']['service_bytes']
+    require(ABI['registry_storage']==dict(mount_slots=9,spec_bytes=46,service_bytes=576),'Invalid DOS registry reservation')
     require(shared+service_bytes+stream_bytes<=(memory['constants']['KERNEL_BANK']+1)*65536,'DOS service metadata exceeds kernel bank')
     memory['upper_reservations'].append(dict(name='dos-service',address=shared,size=service_bytes))
     streams=shared+service_bytes
     memory['upper_reservations'].append(dict(name='dos-streams',address=streams,size=stream_bytes))
     memory['profile']['code_origin']=streams+stream_bytes
     memory['dos_storage']=dict(BASE=start,BYTES=size,CAPACITY=capacity,SHARED=shared,SERVICE_BYTES=service_bytes,
-                               STREAMS=streams,STREAM_BYTES=stream_bytes,STREAM_SLOTS=ABI['streams']['slots'])
+                               STREAMS=streams,STREAM_BYTES=stream_bytes,STREAM_SLOTS=ABI['streams']['slots'],
+                               MOUNT_SLOTS=ABI['registry_storage']['mount_slots'],MOUNT_SPEC_BYTES=ABI['registry_storage']['spec_bytes'])
 
 def registration_include(output,memory):
     write(Path(output)/'dos-storage-action.inc',HEADER+''.join(f'CONST DS_{k}=${v:x}\n' for k,v in memory['dos_storage'].items()),False)

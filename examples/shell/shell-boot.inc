@@ -26,7 +26,8 @@ PROC ShellBootIde()
   FI
 
   FOR index=0 TO registry.count-1 DO
-    IF specs(index).backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
+    IF (registry.enabled & (CARD(1) LSH index))<>0 AND
+        specs(index).backend=BLOCKTYPES.BACKEND_IDEPLUS THEN
       ready=IDEPLUSDRIVER.Start()
       IF BOOTCONFIG.Verbose()<>0 THEN
         ShellIdeDiagnostics(shell.console,0)

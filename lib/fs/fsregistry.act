@@ -7,6 +7,19 @@ USE FSNAMES
 USE FSSYSTEM
 INCLUDE "../dos/dos-types.inc"
 
+; Definition masks belong to the registry, independently of worker lifetime.
+PUBLIC BYTE FUNC Defined(BYTE index)
+
+  LET registry=DOSCORE.GetRegistry()
+
+RETURN((registry.defined & (CARD(1) LSH index))<>0)
+
+PUBLIC BYTE FUNC Enabled(BYTE index)
+
+  LET registry=DOSCORE.GetRegistry()
+
+RETURN((registry.enabled & (CARD(1) LSH index))<>0)
+
 PUBLIC FSTYPES.Service POINTER FUNC Service()
   DOSCORE.DosRegistry POINTER registry
 

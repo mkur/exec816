@@ -6,7 +6,8 @@
 [SIO interface](../reference/device-io.md#siodevice) ·
 [Testing policy](../contributing/testing.md)
 
-Status: proposed; implementation has not started. Complete and commit each
+Status: UM0 implemented at the development tier; UM1–UM5 pending.
+[Implementation record](../history/user-sio-mounts.md). Complete and commit each
 executable slice after its focused development checks.
 
 ## Outcome and boundaries
@@ -73,8 +74,11 @@ existing slot-index contract: callers inspect all nine slots and skip empty
 records. Guard zero-count loops and publication of an empty set.
 
 Make definitions and copied failure storage survive filesystem worker stop and
-restart. Release them at final DOS shutdown; adjust lifecycle baselines to
-distinguish persistent registry ownership from disposable worker allocations.
+restart. Reserve them in the kernel-owned upper DOS registry so their lifetime follows
+the kernel image. UM0 reserves 576 bytes instead of 114: 414 for nine definitions,
+eight for masks/control state and 40 for copied failure identity. Worker stop
+requires no heap teardown for these fields. Keep lifecycle baselines focused on
+disposable worker allocations.
 Keep existing build-time mount encoding unchanged.
 
 Validation: boot a focused MyDOS/SDFS configuration and RAM-only configuration;
@@ -270,7 +274,9 @@ Every slice targets **0 additional fixed, per-Task and private-idle reserved
 bank-zero bytes**, including guards, alignment and unused capacity. Report the
 actual three deltas at each slice. Reuse the existing filesystem/SIO Task pools,
 shared cache/transfer buffers and shell storage. New definitions, pending mount
-state and retained reports belong in bounded upper RAM. Measure record sizes,
+state and retained reports belong in bounded upper RAM. The definition and
+failure identity reservation uses kernel-owned storage; disposable per-operation
+state uses the existing upper heap. Measure record sizes,
 nine-slot table capacity, masks, allocation rounding, provider reservations,
 upper executable growth and stack headroom; enlarge no reservation without
 evidence. A newly active existing worker consumes a Task slot but introduces
