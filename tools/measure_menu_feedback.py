@@ -65,6 +65,11 @@ class Feedback:
         cache_at = {name: next((d['address'] for d in s.p['image']['data']
                     if '_DESKMENUCACHE_'+name.upper()+'_' in d['name']), None)
                     for name in cache_fields}
+        for name in ('captures','restores','capturedBytes','restoredBytes','patches','patchedBytes'):
+            cache_at['client_'+name]=next((d['address'] for d in s.p['image']['data']
+                if '_DESKCACHE_'+name.upper()+'_' in d['name']),None)
+        cache_at['explicit_discards']=next((d['address'] for d in s.p['image']['data']
+            if '_LAYERCACHE_DISCARDS_' in d['name']),None)
         def cache_counts():
             return {name: s.number(address, 4) for name, address in cache_at.items()
                     if address is not None}

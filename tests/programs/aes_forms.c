@@ -57,11 +57,13 @@ void AESClientOne(void)
 {
     UWORD who=ready;
     BYTE bit=AllocSignal(-1);
-    WORD w;
+    WORD w,i;
     CHECK(bit>=0); peerWake[who]=1UL<<bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); CHECK(appl_init()>0);
-    w=wind_create(NAME|CLOSER|MOVER,32+who*96,32,96,64); CHECK(w>0);
-    CHECK(wind_open(w,32+who*96,32,96,64));
+    for (i=0;i<(who ? 1:3);++i) {
+        w=wind_create(NAME|CLOSER|MOVER,32+who*96,32+i*32,96,64); CHECK(w>0);
+        CHECK(wind_open(w,32+who*96,32+i*32,96,64));
+    }
     ++ready; Signal(controller,wake);
     Wait(peerWake[who]);
     CHECK(ExecAESDetach()); FreeSignal(bit);
@@ -261,7 +263,7 @@ UWORD AESRun(void)
     CHECK(wind_close(window)); CHECK(wind_open(window,32,32,240,160));
     drain(); CHECK(!c->repairEpoch && !c->messagePending);
     CHECK(wind_close(window)); CHECK(wind_delete(window)); v_clsvwk(handle);
-    /* Three other application windows plus the native shell fill the desktop. */
+    /* Five windows across three peers plus the shell fill all six slots. */
     for (i=0;i<3;++i) {
         peers[i]=CreateTask("Form capacity",0,(APTR)AESClientOne,1024UL);
         CHECK(peers[i]!=NULL); while (ready<=i) Wait(wake);

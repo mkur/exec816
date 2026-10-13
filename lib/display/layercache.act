@@ -4,9 +4,13 @@ USE LAYERTYPES
 USE REGIONS
 
 PUBLIC CONST NO_SLOT=255
+PUBLIC LONGCARD discards
 
 PUBLIC PROC Discard(LAYERTYPES.CacheSlot POINTER slot)
 
+  IF slot.revision<>0 THEN
+    discards==+1
+  FI
   slot.valid=0
   slot.revision=0
 

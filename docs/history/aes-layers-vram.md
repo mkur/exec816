@@ -4,9 +4,11 @@
 [Design](../plans/gem4xe/aes-layers-vram-design.md) ·
 [Layers contract](../reference/layers.md) · [AES contract](../reference/aes.md)
 
-Implementation in progress. Development checks below do not qualify a release
-matrix or real hardware. AV1/AV2 used the original compiler pin; the AV3
-compiler dependency is recorded below.
+The shared cache paths and incremental repairs are implemented. Optional copied
+AES moves remain disabled; numeric latency acceptance is separate from functional
+completion. Development checks below do not qualify a release matrix or real
+hardware. AV1/AV2 used the original compiler pin; the AV3 compiler dependency
+and final matched baseline are recorded below.
 
 ## AV1: external repaint bookkeeping
 
@@ -100,11 +102,6 @@ application work is a failed fallback gate, not an accepted latency result.
 Cold File opening is 421.1 / 421.4 ms; Windows opening 220.5 / 240.7 ms.
 Both menu types retain Counter progress under 30 highlight changes. This is
 coexistence evidence, not the required loaded pointer-latency cohort.
-
-## Remaining slices
-
-AV4–AV6 remain in progress. Numeric performance gates remain separate from
-functional completion; no acceptance is inferred from correct cached pixels.
 
 ## Compiler dependency found during AV3
 
@@ -213,3 +210,164 @@ cache correctly rejected the smaller completion claim. The fixture now forms
 screen coordinates from separate x/y values and asserts the changed bounds.
 This does not fix Calypsi or change production rendering; the third-party
 compiler defect remains a limitation for future toolchain work.
+
+
+## AV6: combined desktop and measured limits
+
+The final desktop enables shared save-under transactions, two exact-key popup
+images, two completed client snapshots and bounded idle patches. Screen-to-screen
+AES copied moves remain disabled. Cache restoration preserves exposure messages;
+applications still reconstruct their current model. A failed or unquiesced
+transfer cannot release a live pin or publish a valid image.
+
+Counter's eight measured six-digit updates produced eight 192-byte patches
+(1,536 bytes total), no whole-client captures and no captured bytes. Its existing
+exact-pixel test also passes odd X, partial/full coverage, exposure and close.
+That maintenance record uses the AV5 ZIP; AV6 adds only the explicit-discard
+counter to production code. It does not claim a maintenance saving for every
+application or an entire-window cache hit for every redraw.
+
+The forms fixture still assumed four desktop slots. It now fills the current
+six slots with five windows across three peer Tasks plus the shell, retaining
+its resource-exhaustion and cleanup checks. This is a stale fixture correction,
+not a change to desktop capacity.
+
+Final development checks pass: 459 host tests (four skips), 290 emitted AES
+menu assertions and 198 form assertions, plus four native checks in each
+suite. AV1–AV5 record/call probes, Layers, cache and fault checks above are
+reused. The exact final ZIP walkthrough passes Files, Panel pointer/keyboard
+activation, Counter progress, Text document hash/scrolling, file-selector
+cancellation, close/focus restoration, disk HELLO and orderly EXIT. Final
+retained pixels and stack/domain guards pass. No broader qualification matrix
+was run.
+
+### Memory and supported behavior
+
+Added fixed upper-RAM metadata/counters total **897 bytes**, including alignment;
+added per-client storage is at most **198 bytes** (114 in the request/context and
+14 for each of six published window views). AV6 contributes four bytes for
+explicit discards. These fit the 2 KiB fixed and 256-byte caller budgets.
+Production VRAM is **375,296 bytes**, up 132,096 bytes, with 148,960 bytes free
+after the unchanged 32-byte diagnostic exclusion. Reserved bank-zero delta is
+**0 fixed / 0 per public Task / 0 idle bytes**, including guards, alignment and
+unused reserved capacity; no Task stack, DP or kernel API grows.
+
+`explicit_discards` counts calls that retire a nonzero cache revision. It is not
+an eviction count or a count of every temporary UPDATE hold. Transfer counters
+count completed captures/restores/patches and their bytes. The measurement tools
+read these outside timed intervals. An observer-disabled development build
+removes only diagnostic counter increments from the three cache modules;
+cache decisions, data transfers and completion checks remain enabled.
+
+Pending paint and exact lifetime/revision matching remain correctness conditions.
+The conservative empty-UPDATE rule added in AV4 invalidates all owned windows
+that lack drawing/completion reports. In the combined desktop this also makes
+menu-background saves frequently ineligible. The earlier AV3 save-under timing
+is therefore historical, not the final combined result. A future improvement
+needs more precise application update attribution without treating an
+unreported hidden model change as completed painting.
+
+The first restored image and final application repaint are distinct endpoints.
+The timings below do not certify flicker-free intermediate frames: a subsequent
+application redraw remains possible even when restoration gives correct initial
+pixels. No whole-system release or real-hardware qualification is claimed.
+
+### Final latency comparison
+
+The original `35a75e4` tree was rebuilt with the same corrected actionc pin as
+AV6; that compiler pin is its only source change. Its idle timings reproduce
+the original baseline. Calypsi 5.18, PAL 8× 65C816, 63 upper banks, VBXE,
+AltirraOS ROM and emulator/media profiles are recorded by hash in the JSON.
+Each idle cohort has 20 samples per interaction, polled every PAL frame
+(about 20.1 ms). Numbers are **median / p95 milliseconds**; decimal places do
+not imply sub-frame resolution. Cold control explicitly clears only unpinned
+popup validity before each opening/switch. A duplicate warm run whose directory
+was initially named `final-cold` is labelled warm in the evidence and is not
+used as cold evidence.
+
+| Interaction | Matched baseline | Final warm | Final cold |
+| --- | ---: | ---: | ---: |
+| File open | 401.2 / 401.2 | 160.4 / 160.7 | 401.1 / 401.1 |
+| Application highlight | 80.3 / 80.3 | 80.3 / 80.3 | 80.3 / 80.3 |
+| File → View | 782.1 / 782.3 | 702.0 / 702.0 | 822.3 / 822.3 |
+| View close: first pixels | 401.2 / 401.2 | 421.1 / 421.4 | 421.4 / 441.3 |
+| View close: final repaint | 401.2 / 401.2 | 421.1 / 421.4 | 421.4 / 441.3 |
+| Windows open | 180.6 / 180.6 | 140.5 / 140.5 | 180.6 / 200.6 |
+| Native highlight | 80.3 / 100.3 | 100.3 / 100.3 | 100.3 / 100.3 |
+| Native next row | 100.3 / 100.3 | 100.3 / 100.3 | 100.3 / 100.3 |
+| Windows close: first pixels | 501.4 / 501.4 | 521.4 / 521.6 | 521.4 / 521.7 |
+| Windows close: final repaint | 501.4 / 501.4 | 541.4 / 541.6 | 541.6 / 541.6 |
+
+Warm File opens and warm Windows opens each record **20/20 rendered-popup
+hits**, transferring 259,200 and 133,120 bytes respectively across their twenty
+samples. The twenty warm heading switches reuse 118,080 popup bytes. Background
+save-under records no successful capture/restore in this final cohort; the
+visible sources do not satisfy completed-paint admission. Client captures and
+patches are also zero during these measured menu interactions. The emitted
+cache fixtures separately demonstrate eligible background/client restoration,
+so zero activity here is not a claim that these paths are disabled.
+
+The File half-time gate passes. The Windows half-time and heading-switch gates
+remain open. Cold switching and View dismissal regress; Windows final repaint
+adds about two frames. The original AV1 overhead gate is not closed. There is
+no final valid-save dismissal cohort meeting the 100 ms target. These limits
+are retained rather than waived on the basis of correct screenshots.
+
+### Loaded feedback and observer control
+
+Thirty physical Panel presses and thirty physical pointer motions run beside
+Counter and continuous `CAT WORK:LOAD.TXT`, with 0/2/4/6/8-frame phase offsets.
+The boot XEX and SYS disk come from each exact ZIP. WORK uses the same 66,560-byte
+load fixture and identical disk hash in all three runs. Button pixels are
+reconstructed independently; pointer completion checks the actual arrow pixels.
+After ordinary BREAK/retirement, the complete desktop matches its retained
+model and EXIT releases Tasks without guard failures.
+
+| Interaction | Matched baseline | Final | Diagnostic increments disabled |
+| --- | ---: | ---: | ---: |
+| Button feedback | 100.3 / 140.5 | 120.2 / 140.5 | 120.2 / 160.4 |
+| Pointer feedback | 100.3 / 120.2 | 100.3 / 120.2 | 100.3 / 120.2 |
+
+The loaded p95 gate passes for both interactions. Button median is one frame
+higher; the p95 does not worsen. Counter ticks/paints advance, and console
+content generation advances 38 times in the baseline, 40 in the final build and
+37 with diagnostic increments disabled. CAT remains active at every sample.
+Final correctness and progress are checked in addition to the timing counts.
+
+With diagnostic increments removed, warm opening/switch timing is effectively
+unchanged at this resolution; View-close p95 is one frame higher. Loaded button
+p95 is also one frame higher and pointer p95 is unchanged. All observer-control
+counters remain zero while popup reuse still accelerates opening. Code-layout
+and phase differences prevent treating those differences as a precise counter
+cost; there is no observed diagnostic penalty beyond the frame-level allowance.
+The development-only observer build is not the distributed demo.
+
+### Reproduction and demo
+
+The exact final ZIP is built with `tools/build_demo.py --gem-desktop`, using the
+pinned compiler and the release-built compiler executable. OF816, its notices,
+the pinned ROM, matching disks and five-second autoboot are included; manifests,
+test output and intermediates remain outside the archive.
+
+ZIP SHA-256: `4bce7e01482af1176361d9ebc53b67ecd8e2c125b69e617956720de36137c12b`.
+
+Launch locally:
+
+```sh
+build/aes-layers-vram/final-demo/launch-altirra.command
+```
+
+Focused measurement commands (choose fresh output directories):
+
+```sh
+python3 tools/measure_menu_feedback.py --bundle build/aes-layers-vram/final-demo --output build/cache-warm --count 20
+python3 tools/measure_menu_feedback.py --bundle build/aes-layers-vram/final-demo --output build/cache-cold --count 20 --cold
+python3 tools/measure_cache_load.py --bundle build/aes-layers-vram/final-demo --output build/cache-loaded --count 30
+python3 tools/test_cache_desktop.py --bundle build/aes-layers-vram/final-demo
+```
+
+For old baseline binaries, both timing tools accept `--layout-revision 35a75e4`
+to interpret that revision's recorded ABI layouts. This is host evidence support,
+not a second production ABI. The compiler fix is a clean **local, unpushed**
+commit on `fix/nir-copy-address-promotion`; the public pin cannot be fetched
+from upstream until that compiler commit is published separately.

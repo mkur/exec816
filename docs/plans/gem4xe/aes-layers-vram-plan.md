@@ -3,12 +3,15 @@
 [Design note](aes-layers-vram-design.md) · [GEM plans](README.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: implementing, 2026-10-13. AV1 functional checks pass; its overhead gate
-remains open. See the [execution record](../../history/aes-layers-vram.md).
-Implement AV1–AV6 in order. Keep each slice
-executable, validate its changed behavior and commit it separately. AV2–AV4 and AV5 incremental repairs are implemented. Optional copied AES moves
-remain disabled/unaccepted; AV6 validation is in progress. The existing GEM API, caller-local drawing,
-presenter Task and display completion path remain the foundation.
+Status: shared cache implementation and AV6 development validation complete,
+2026-10-13. AV1–AV4 and AV5 incremental repairs pass functional checks.
+Optional copied AES moves remain disabled/unaccepted. File-menu opening and
+loaded p95 gates pass; overhead, Windows opening, switching, dismissal and final
+repaint gates remain open. See the
+[execution record](../../history/aes-layers-vram.md) for the exact scope and demo.
+The slices below were implemented and committed separately. The existing GEM
+API, caller-local drawing, presenter Task and display completion path remain
+the foundation.
 
 The result is shared AES/Layers repaint bookkeeping, fast menu background
 restoration, two rendered-popup slots and two larger client-image slots usable

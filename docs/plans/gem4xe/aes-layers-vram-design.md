@@ -4,17 +4,18 @@
 [Layers](../../reference/layers.md) ·
 [AES](../../reference/aes.md) · [Display](../../reference/display.md)
 
-Status: proposed, 2026-10-13. Design AES repaint tracking and Layers pixel reuse
-together. Start with restoring the background beneath menus, then retain popup
-images and extend window snapshots to AES clients. Spend available VBXE RAM to
-reduce input-to-visible latency while keeping ordinary GEM calls, caller-local
-drawing and the existing presenter Task.
+Status: implemented at the development tier, 2026-10-13; optional copied AES
+moves remain disabled and latency acceptance remains open. See the
+[execution record](../../history/aes-layers-vram.md) for measured results.
+The design joins AES repaint tracking and Layers pixel reuse: menu backgrounds,
+popup images and completed client snapshots, using ordinary GEM calls,
+caller-local drawing and the existing presenter Task.
 
 This extends the [desktop rendering design](desktop-rendering-design.md) and
 the [menu latency work](../../history/menu-latency.md). It proposes changes to
-their cache ownership and external-paint contracts; current reference documents
-remain authoritative until implementation. There are no new performance results
-or implementation changes in this note.
+their cache ownership and external-paint contracts. The reference documents
+describe the implemented contracts; the existing-boundary discussion below
+describes the pre-AV1 baseline.
 
 ## Existing boundary and the missing information
 

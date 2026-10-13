@@ -472,6 +472,13 @@ redraw. [Development measurements and the refreshed preview](history/desktop-ren
 pass correctness checks; pointer, outline and move-repair latency acceptance
 remains open.
 
+[AES/Layers VRAM caching](plans/gem4xe/aes-layers-vram-plan.md) adds explicit
+application repaint completion, shared menu saves, two popup images and two
+75 KiB client snapshots. Small acknowledged changes patch the saved client at
+idle. [Development evidence](history/aes-layers-vram.md) separates working cache
+paths from remaining menu latency gates. Optional copied AES moves remain
+disabled; no bank-zero reservations are added.
+
 [AES widgets](plans/gem4xe/aes-widgets-implementation-plan.md) are implemented
 through AW6 at the development tier. Selected GEM4XE object, drawing and form
 routines run in the existing presenter, with retained trees, bounded patches

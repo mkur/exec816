@@ -347,13 +347,13 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 14,210 bytes in upper RAM, including the
-6,790-byte Layers scene, four 668-byte client records, four 818-byte windows,
+The generated service occupies 18,656 bytes in upper RAM, including the
+9,184-byte Layers scene, four 668-byte client records, six 884-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
-fourteen-byte snapshot records. Public
+fourteen-byte snapshot records and two ten-byte repair records. Public
 client handles are 18 bytes and requests are
 92 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 14,216 bytes at Exec’s eight-byte alignment; unused window/queue/list
+is already at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at
