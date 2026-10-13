@@ -3,7 +3,9 @@
 [Design basis](aes-layers-vram-design.md) · [GEM plans](README.md) ·
 [Previous measurements](../../history/aes-layers-vram.md)
 
-Status: implementing, 2026-10-13.
+Status: implemented and development-checked, 2026-10-13. The 300 ms warm
+keyboard-switch gate passes; the 100 ms dismissal gate remains open. See the
+[results and limits](../../history/menu-switch.md).
 
 The reported case is an idle Files window and switching File/View headings,
 without selecting a command. The AV6 warm switch takes 702 ms even with a
@@ -45,7 +47,8 @@ assertion failures; a control using the pre-change C UPDATE implementation and
 native lock/window-state/service sources reproduces that timeout. This is not
 claimed as a passing lock regression. The new contended/nested scoped case passes.
 The active scope adds one 16-bit service field (1,812 → 1,814 bytes;
-both round to 1,816 heap bytes); no client,
+both round to 1,816 heap bytes). The C import table grows by three bytes
+(four including alignment); no client,
 window, direct-page, stack or VRAM reservation grows. Reserved bank-zero delta:
 **0 fixed / 0 per public Task / 0 idle bytes**.
 
@@ -115,6 +118,18 @@ remaining limits and a demo launch command. Build with `tools/build_demo.py
 --gem-desktop`; preserve pinned ROM, notices, matching disks and five-second
 OF816 autoboot. Commit the final evidence and tooling.
 
+MS3 complete: 20-sample warm/cold cohorts, 20 repeated keyboard and physical
+transitions each, Counter progress during menu activity, independent pixel
+regressions and the exact ZIP walkthrough pass. Warm keyboard File→View is
+220.5 / 220.8 ms median/p95, versus 702.0 / 702.0. Each repeated interaction
+records 20 background restores, zero recaptures and zero intervening Files
+repaints. Final repaint remains delivered. Opening costs roughly 40 ms more;
+final application repaint after dismissal is about 180 ms later. Physical
+movement plus switching is 421.1 / 561.6 ms; this has no matched baseline and
+is distinct from the keyboard gate. Snapshot failure/pinning checks pass 109;
+expanded Layers checks pass 60,174. The existing lock-fixture limitation above
+remains recorded. No hosted qualification claim is made.
+
 ## Memory budget
 
 No VRAM reservations change. Production remains 375,296 bytes; the background
@@ -122,4 +137,6 @@ union must fit the existing 76,800-byte slot. Target less than 64 added fixed
 upper-RAM metadata bytes; report generated/actual aligned growth per slice.
 No added per-client journal storage is required. Reserved bank-zero delta is
 **0 fixed / 0 per public Task / 0 idle bytes**, including guards, alignment and
-unused capacity. No stack or direct-page reservation grows.
+unused capacity. No stack or direct-page reservation grows. Actual complete fixed upper-data
+span growth is 14 bytes: 10 menu metadata, three C import table bytes and one
+alignment byte. The two-byte AES service field fits existing heap rounding.

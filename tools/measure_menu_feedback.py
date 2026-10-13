@@ -124,6 +124,7 @@ class Feedback:
             samples = {name: [] for name, _ in sequence}
             final_repaint = []
             transfers = {name: [] for name, _ in sequence}
+            repaints = {name: [] for name, _ in sequence}
             for iteration in range(self.count):
                 for (name, keys), want in zip(sequence, reference):
                     if name in ('open', 'switch'):
@@ -149,13 +150,72 @@ class Feedback:
                     after_cache = cache_counts()
                     transfers[name].append({k: after_cache[k]-v for k,v in before_cache.items()})
                     s.frames(7+iteration % 5)
+                    repaints[name].append(s.number(folder+F['paints'],4)-before_paint)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
             self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
                 **distribution(final_repaint))
             self.results[kind]['transfers'] = transfers
-            print(kind, json.dumps(self.results[kind]), flush=True)
+            self.results[kind]['files_repaints'] = repaints
+            print(kind, {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
+                         for name,row in self.results[kind].items()
+                         if isinstance(row,dict) and 'median_ms' in row}, flush=True)
             (s.p['output']/'menu-samples.json').write_text(json.dumps(self.results, indent=2)+'\n')
+        # One interaction, repeated unequal footprints. Exclude the pointer and
+        # title bar and cursor tail from physical-reference comparison; the emitted menu oracle
+        # checks both separately. No writes to production state in this cohort.
+        repeat_area = (128,32,640,208)
+        references = []
+        press('ESC',True,True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ASTERISK',True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ASTERISK',True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ESC'); s.frames(100)
+        require(references[0] != references[1], 'Identical heading references')
+        repeated = {}
+        for source in ('keyboard','pointer'):
+            move(160,8) if source == 'pointer' else move(632,232)
+            press('ESC',True,True); s.frames(100)
+            before_paint = s.number(folder+F['paints'],4)
+            before_cache = cache_counts()
+            values=[]
+            for index in range(self.count):
+                heading=(index+1)%3 if source == 'keyboard' else (1 if index%2==0 else 0)
+                if source == 'keyboard':
+                    # The pinned bridge exposes the right-arrow key only.
+                    # Cycle File/View/Desk; the pointer case alternates File/View.
+                    start=press('ASTERISK',True)
+                else:
+                    old=[s.number(at('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+                    start=b.eval_expr('@clk') & 0xffffffff
+                    s.saved['pointer']=schedule(b,s.p,old,(224 if heading else 160,8))
+                for _ in range(100):
+                    if capture(repeat_area) == references[heading]: break
+                    s.frames(1)
+                else:
+                    raise RuntimeError('Repeated heading pixels: '+source+'/'+str(index))
+                values.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                s.frames(8)
+                require(s.number(folder+F['paints'],4)==before_paint,
+                        'Unchanged Files repainted during '+source+' heading switch')
+            after_cache=cache_counts()
+            transfers={k:after_cache[k]-v for k,v in before_cache.items()}
+            require(transfers.get('restores',0)==self.count,
+                    'Repeated headings did not reuse every background')
+            require(transfers.get('captures',0)==0,
+                    'Repeated headings recaptured the same background')
+            press('ESC'); s.frames(100)
+            require(s.number(folder+F['paints'],4)>before_paint,
+                    'Final repeated-heading dismissal lost Files exposure')
+            repeated[source]=dict(samples_ms=values,**distribution(values),
+                                  transfers=transfers,files_repaints_during_switch=0,
+                                  final_repaint=True)
+        self.results['repeated_headings']=repeated
+        print('Repeated headings:', {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
+                                    for name,row in repeated.items()},flush=True)
+        move(632,232)
         if self.load_check:
             # Put Counter left of Files, so its digits stay visible under both
             # menus. Check real drawing progress while selection keeps moving.

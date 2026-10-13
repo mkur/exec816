@@ -1,5 +1,8 @@
 # Historical records
 
+- [Unchanged menu backgrounds](menu-switch.md): scoped desktop updates, retained
+  save-under across headings, pixel checks and matched latency measurements.
+
 - [AES and Layers VRAM caching](aes-layers-vram.md): repaint completion,
   shared caches, incremental repairs, matched timing and memory accounting.
 

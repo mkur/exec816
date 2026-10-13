@@ -3,6 +3,8 @@
 The [menu-switch fix](menu-switch-plan.md) scopes desktop painting to its actual
 window and retains one interaction background across File/View headings. It
 targets idle menu transitions without directory refresh or renderer changes.
+It is implemented; [measurements and remaining limits](../../history/menu-switch.md)
+distinguish cached restoration, final app repaint and physical pointer latency.
 
 The [AES and Layers VRAM design](aes-layers-vram-design.md) joins
 application repaint tracking with Layers-owned cache validity. It starts with
