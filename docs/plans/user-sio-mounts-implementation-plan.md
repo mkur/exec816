@@ -1,12 +1,12 @@
 # User mounted SIO filesystems implementation plan
 
 [Plans index](README.md#filesystems-and-dos) ·
-[Design](user-sio-mounts-design.md) · [Roadmap](../roadmap.md) ·
+[Design](../history/user-sio-mounts-design.md) · [Roadmap](../roadmap.md) ·
 [DOS contract](../reference/dos.md) ·
 [SIO interface](../reference/device-io.md#siodevice) ·
 [Testing policy](../contributing/testing.md)
 
-Status: UM0–UM4 implemented at the development tier; UM5 pending.
+Status: UM0–UM5 implemented and checked at the development tier.
 [Implementation record](../history/user-sio-mounts.md). Complete and commit each
 executable slice after its focused development checks.
 

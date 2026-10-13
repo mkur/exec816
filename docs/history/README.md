@@ -238,9 +238,10 @@ their recorded hashes and measurements are preserved here as historical evidence
 
 ## Filesystems and DOS
 
-- [User mounted SIO filesystems](user-sio-mounts.md): runtime registry,
-  geometry discovery and named mount-management development.
-
+- [User mounted SIO filesystems](user-sio-mounts.md): completed UM0–UM5,
+  bounded automatic geometry, named mounts, busy/cancellation semantics,
+  audited writes, disk swaps and public ABI checks.
+  [Completed design](user-sio-mounts-design.md).
 - [Directory listing performance](directory-listing-performance.md): DL0–DL6,
   matched warm root/SYS:C gains, one Write per row, exact extent caching,
   invalidation/lifetime checks and upper-RAM costs.

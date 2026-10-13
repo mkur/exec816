@@ -5,7 +5,8 @@
     "UM1",
     "UM2",
     "UM3",
-    "UM4"
+    "UM4",
+    "UM5"
   ],
   "host_tests": 469,
   "compiler_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
@@ -2656,6 +2657,605 @@
           "untouched_above_floor": 206
         }
       ]
+    },
+    "um5-boundary-mydos-128-13": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 13,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-14": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 14,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-20": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 20,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 213
+    },
+    "um5-boundary-mydos-128-21": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        11
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 21,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-22": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        11
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 22,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-23": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        11
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 23,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-30": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 30,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 214
+    },
+    "um5-boundary-mydos-128-31": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 31,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 230
+    },
+    "um5-boundary-mydos-128-32": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 32,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 230
+    },
+    "um5-boundary-mydos-128-40": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 40,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-41": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 41,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-42": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 42,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-43": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        12
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 43,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-44": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 44,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-45": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 45,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-boundary-mydos-128-50": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 50,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 208
+    },
+    "um5-bridges-opt": {
+      "status": "pass",
+      "tier": "development",
+      "image_sha256": "56270cbcd5a9ff05fe0fd6d049ffbb37771ed2ba2f4bc6a8622c0d6b9daa6a83",
+      "guards": "intact",
+      "max_stack_touched": 465,
+      "min_stack_headroom": 202
+    },
+    "um5-cancel-seed": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        13
+      ],
+      "scenario": "boundary",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 12,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 382,
+      "min_stack_headroom": 232
+    },
+    "um5-concurrent-mydos-128-60": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        10
+      ],
+      "scenario": "concurrent",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 60,
+      "audit": null,
+      "media_sha256": "52a51bc954c1a235ec638832e40c1d6a5cc4b6d3c27c57111697941abc0627dd",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 280,
+      "min_stack_headroom": 206
+    },
+    "um5-shell-workflow": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        31
+      ],
+      "image_sha256": "a6171b32ab2fc14d9616f3dad2954bae2fbc022726e1c118008088a4e55943cf",
+      "guards": "intact",
+      "max_stack_touched": 507,
+      "min_stack_headroom": 206
+    },
+    "um5-swap-final-mydos": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        14
+      ],
+      "scenario": "swap",
+      "filesystem": "mydos",
+      "sector_bytes": 256,
+      "point": 0,
+      "audit": null,
+      "media_sha256": "05a20c716f5b00909a5fb6117ad8a05b3048615a1ac3a08502c78d5979b56ad8",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "691624708d72534bfb3459e8379b4989aba5f995f10f152b448e8dea51979ea7",
+      "guards": "intact",
+      "max_stack_touched": 288,
+      "min_stack_headroom": 202
+    },
+    "um5-swap-final-sdfs": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        14
+      ],
+      "scenario": "swap",
+      "filesystem": "sdfs",
+      "sector_bytes": 256,
+      "point": 0,
+      "audit": null,
+      "media_sha256": "eac3a51e2277d2466b1bb2413282d381fe5dbfc9323b0074de0dd3418353508a",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "691624708d72534bfb3459e8379b4989aba5f995f10f152b448e8dea51979ea7",
+      "guards": "intact",
+      "max_stack_touched": 280,
+      "min_stack_headroom": 202
+    },
+    "um5-writes-mydos-128-0": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        84
+      ],
+      "scenario": "writes",
+      "filesystem": "mydos",
+      "sector_bytes": 128,
+      "point": 0,
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 128,
+        "allocated": 22,
+        "free": 698,
+        "files": 1,
+        "directories": 2
+      },
+      "media_sha256": "936ef1286774a9e77edf3c078d2b8c2412495b89b44ecf6cf012bf1dec24e99b",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 428,
+      "min_stack_headroom": 206
+    },
+    "um5-writes-mydos-256-0": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        84
+      ],
+      "scenario": "writes",
+      "filesystem": "mydos",
+      "sector_bytes": 256,
+      "point": 0,
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 256,
+        "allocated": 22,
+        "free": 698,
+        "files": 1,
+        "directories": 2
+      },
+      "media_sha256": "13948c7b1d75ddd2bf3e32b185a922af110a395d3b7f70b779622423c3077944",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 428,
+      "min_stack_headroom": 204
+    },
+    "um5-writes-sdfs-128-0": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        84
+      ],
+      "scenario": "writes",
+      "filesystem": "sdfs",
+      "sector_bytes": 128,
+      "point": 0,
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 128,
+        "allocated": 10,
+        "free": 710,
+        "files": 1,
+        "directories": 2
+      },
+      "media_sha256": "4d6b6ee82085ce1959b8cfc11fcb0d0bef83b03566c7575fee24e876fffdb303",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 592,
+      "min_stack_headroom": 198
+    },
+    "um5-writes-sdfs-256-0": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        84
+      ],
+      "scenario": "writes",
+      "filesystem": "sdfs",
+      "sector_bytes": 256,
+      "point": 0,
+      "audit": {
+        "sectors": 720,
+        "sector_bytes": 256,
+        "allocated": 10,
+        "free": 710,
+        "files": 1,
+        "directories": 2
+      },
+      "media_sha256": "e4e1b51e53c36bc1a08a00645ca62dba5c79e8955b3b70c24281b53788f0f5fc",
+      "observers": {
+        "blockwire.act": "b6ca29001d64f5f2783832906b72f56ee96e0f401098dfe2e3e669bc383d6056",
+        "fsinit.act": "4d15d57086ec01640808e954d5a21caebad29be76b129ae12791e5c57223ebf5",
+        "fsmount.act": "ce8d579040340b239210f9a55eb6a721248e8dc86afaa89a301ae558bec54fa5",
+        "mountprobe.act": "737b89e70d8b67531c88b3f30ccac416b9e7564870d06a5266a253e216911cc2"
+      },
+      "image_sha256": "5d12d35a4947364ae564331342f3fa0198af196c4574054698281fb6ab02e6a1",
+      "guards": "intact",
+      "max_stack_touched": 592,
+      "min_stack_headroom": 198
     }
   },
   "upper_service_bytes": 516,
@@ -2753,5 +3353,16 @@
     }
   ],
   "inspection_row_bytes": 52,
-  "shell_transfer_used": 468
+  "shell_transfer_used": 468,
+  "tier": "development",
+  "final_native_assertions": 619,
+  "final_native_cases": 25,
+  "unsupported": [
+    "stock XF551 ambiguous DD detection",
+    "BIOS ATR slots",
+    "forced unmount",
+    "filesystem checking/repair",
+    "runtime IDE/RAM creation"
+  ],
+  "timing_followup": "FASTEST125 broader transfer timing; final workflow GENERIC57600"
 }

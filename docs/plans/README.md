@@ -161,13 +161,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Filesystems and DOS
 
-- [User mounted SIO filesystems design](user-sio-mounts-design.md): proposed
-  MOUNT/UNMOUNT for named MyDOS and SpartaDOS disks, automatic geometry discovery
-  with user-selected filesystem types, busy-volume rules and
-  a bounded runtime registry without new Tasks or bank-zero reservations.
 - [User mounted SIO filesystems implementation](user-sio-mounts-implementation-plan.md):
-  proposed UM0–UM5 slices for mutable definitions, empty-service startup,
-  SIO discovery, public DOS/COMMAND/C calls, resident commands and focused validation.
+  UM0–UM5 complete at the development tier; named MOUNT/UNMOUNT, read-only
+  geometry discovery, native/COMMAND/C calls and focused lifecycle/transport tests.
+  [Design](../history/user-sio-mounts-design.md) and
+  [implementation record](../history/user-sio-mounts.md).
 
 - [Cheap directory metadata refactor](directory-metadata-refactor-plan.md):
   DM0–DM4 complete at the development tier: directory-only metadata, explicit size/count

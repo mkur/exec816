@@ -1,0 +1,256 @@
+MODULE MOUNTINTEGRATION
+USE EXEC
+USE EXECTASKS
+USE DOS
+USE DOSCORE
+USE DOSCLIENT
+USE FSBOOT
+USE FSREGISTRY
+USE FSINSPECT
+USE FSTYPES
+USE FSOPERATION
+USE FSMOUNT
+USE MOUNTPROBE
+USE HEAPCORE
+
+CARD checks
+BYTE finished,scenario,format,swapPhase
+CARD wantedBytes
+BYTE ARRAY buffer(64)
+DOS.SioMountSpec spec
+FSINSPECT.Failure failure
+DOS.VolumeInfo volume
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; The second caller sees the pending name, then queues a duplicate drive.
+PROC Peer()
+
+  DO
+    BEGIN
+      LET service=FSREGISTRY.Service()
+      IF service<>NULL THEN
+        IF service.mountNew<>0 THEN
+          EXIT
+        FI
+      FI
+
+      EXEC.Yield()
+    END
+  OD
+
+  DOS.AssignPath(BYTE POINTER(c"NEW"),BYTE POINTER(c"RAM:"))
+  MOUNTPROBE.namespaceError=DOS.IoErr()
+  MOUNTPROBE.namespaceDone=1
+  MOUNTPROBE.peerResult=DOS.MountVolume(BYTE POINTER(c"OTHER"),@spec)
+  MOUNTPROBE.peerError=DOS.IoErr()
+  DOS.ReleaseContext()
+  MOUNTPROBE.peerDone=1
+
+RETURN
+
+; No automatic filesystem service exists when both management callers start.
+PROC Concurrent(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  MOUNTPROBE.mode=60
+  LET peer=EXEC.CreateTask(c"mount-peer",0,
+      @Peer,1024)
+  Require(peer<>NULL)
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@spec)<>0)
+  WHILE MOUNTPROBE.peerDone=0 DO
+    EXEC.Yield()
+  OD
+
+  EXECTASKS.Sleep(1)
+  Require(MOUNTPROBE.namespaceError=DOS.ERROR_OBJECT_EXISTS)
+  Require(MOUNTPROBE.peerResult=0 AND MOUNTPROBE.peerError=DOS.ERROR_OBJECT_IN_USE)
+  LET registry=DOSCORE.GetRegistry()
+  Require(registry.management<>0 AND registry.enabled=2)
+  LET service=FSREGISTRY.Service()
+  Require(service.controls=0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Foreground cancellation uses the normal console delivery and exact replies.
+PROC Boundaries(BYTE unused)
+  LONGINT result,cause
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  LET console=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(console<>NULL AND DOS.BeginForeground(console)<>0)
+  LET point=MOUNTPROBE.mode
+  IF point=22 OR point=23 THEN
+    MOUNTPROBE.mode=0
+    Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@spec)<>0)
+    MOUNTPROBE.mode=point
+    result=DOS.UnmountVolume(BYTE POINTER(c"NEW"))
+  ELSE
+    result=DOS.MountVolume(BYTE POINTER(c"NEW"),@spec)
+  FI
+
+  cause=DOS.IoErr()
+  Require(MOUNTPROBE.fired<>0)
+  LET registry=DOSCORE.GetRegistry()
+  LET service=FSREGISTRY.Service()
+  IF point=21 OR point=23 OR point=43 THEN
+    Require(result<>0 AND cause=0)
+    IF point<>23 THEN
+      Require(service.mounts(1).item.published<>0)
+      IF point=43 THEN
+        Require(service.mounts(1).item.discovery.source=2)
+      FI
+    ELSE
+      Require(registry.defined=1 AND service.mounts(1).item=NULL)
+    FI
+  ELSEIF point=22 THEN
+    Require(result=0 AND cause=DOS.ERROR_BREAK AND service.mounts(1).item.published<>0)
+  ELSE
+    Require(result=0)
+    IF point=31 OR point=32 THEN
+      Require(cause=DOS.ERROR_NO_FREE_STORE)
+    ELSEIF point=40 THEN
+      Require(cause=EXEC.IOERR_BADLENGTH)
+    ELSEIF point=41 THEN
+      Require(cause=EXEC.SIOERR_TIMEOUT)
+    ELSEIF point=42 THEN
+      Require(cause=EXEC.SIOERR_DEVICE)
+    ELSEIF point=44 OR point=45 OR point=50 THEN
+      Require(cause=DOS.ERROR_NOT_A_DOS_DISK)
+    ELSE
+      Require(cause=DOS.ERROR_BREAK AND DOS.BreakPending()<>0)
+    FI
+
+    Require(registry.defined=1 AND registry.enabled=1 AND service.mounts(1).item=NULL)
+    Require(service.adapter=NULL AND service.work.extra=NULL)
+    Require(FSINSPECT.LastFailure(@failure)<>0 AND failure.error=cause AND
+        failure.name(0)='N AND failure.name(1)='E AND failure.name(2)='W)
+  FI
+
+  MOUNTPROBE.mode=0
+  DOS.ClearBreak()
+  IF service.mounts(1).item<>NULL THEN
+    Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+  FI
+
+  Require(DOS.EndForeground()<>0)
+  Require(DOS.Close(console)<>0)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+; Persist writes, retire the cache and read the same media through a new mount.
+PROC Writes(BYTE unused)
+  BYTE index
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  Require(DOS.MountVolume(BYTE POINTER(c"WRITE"),@spec)<>0)
+  Require(DOS.Open(BYTE POINTER(c"WRITE:TEST.TXT"),DOS.MODE_NEWFILE)=NULL AND
+      DOS.IoErr()=DOS.ERROR_DISK_WRITE_PROTECTED)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"WRITE"))<>0)
+  spec.access=DOS.MOUNT_READWRITE
+  Require(DOS.MountVolume(BYTE POINTER(c"WRITE"),@spec)<>0)
+  Require(DOS.GetVolume(1,@volume)<>0 AND volume.sectorBytes=wantedBytes)
+  LET directory=DOS.CreateDir(BYTE POINTER(c"WRITE:SUBDIR"))
+  Require(directory<>NULL)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"WRITE"))=0 AND DOS.IoErr()=DOS.ERROR_OBJECT_IN_USE)
+  DOS.UnLock(directory)
+  FOR index=0 TO 63 DO
+    buffer(index)=index+1
+  OD
+
+  LET file=DOS.Open(BYTE POINTER(c"WRITE:TEST.TXT"),DOS.MODE_NEWFILE)
+  Require(file<>NULL)
+  Require(DOS.Write(file,buffer,64)=64)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"WRITE"))<>0)
+  Require(DOS.MountVolume(BYTE POINTER(c"WRITE"),@spec)<>0)
+  LET reader=DOS.Open(BYTE POINTER(c"WRITE:TEST.TXT"),DOS.MODE_OLDFILE)
+  Require(reader<>NULL)
+  Require(DOS.Read(reader,buffer,64)=64)
+  FOR index=0 TO 63 DO
+    Require(buffer(index)=index+1)
+  OD
+
+  Require(DOS.Read(reader,buffer,64)=0 AND DOS.Close(reader)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"WRITE"))<>0)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC SwapMark(BYTE unused)
+
+  swapPhase=1
+  WHILE swapPhase=1 DO
+    EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; The host changes the actual SIO disk after the old binding/cache retire.
+PROC Swap(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@spec)<>0)
+  LET file=DOS.Open(BYTE POINTER(c"NEW:SWAP.BIN"),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  Require(DOS.Read(file,buffer,64)=64 AND buffer(0)=$55)
+  Require(DOS.Close(file)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+  SwapMark(0)
+  Require(DOS.MountVolume(BYTE POINTER(c"NEW"),@spec)<>0)
+  LET reader=DOS.Open(BYTE POINTER(c"NEW:SWAP.BIN"),DOS.MODE_OLDFILE)
+  Require(reader<>NULL)
+  Require(DOS.Read(reader,buffer,64)=64 AND buffer(0)=$aa)
+  Require(DOS.Close(reader)<>0)
+  Require(DOS.UnmountVolume(BYTE POINTER(c"NEW"))<>0)
+  DOS.UnLock(ram)
+  Require(swapPhase=2 AND DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
+PROC Main()
+
+  spec.drive=2
+  spec.format=CARD(format)
+  spec.profile=DOS.MOUNT_PROFILE_GENERIC57600
+  spec.access=DOS.MOUNT_READONLY
+  Require(FSOPERATION.Cancellable(FSMOUNT.MOUNT)<>0 AND
+      FSOPERATION.Cancellable(FSMOUNT.UNMOUNT)<>0)
+  IF scenario=3 THEN
+    Swap(0)
+  ELSEIF scenario=1 THEN
+    Writes(0)
+  ELSEIF scenario=2 THEN
+    Concurrent(0)
+  ELSE
+    Boundaries(0)
+  FI
+
+  finished=1
+
+RETURN
+
+ENDMODULE

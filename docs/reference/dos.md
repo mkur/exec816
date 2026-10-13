@@ -153,8 +153,8 @@ Keep caller name/spec storage live until the synchronous call returns.
 
 `SioMountSpec` is eight bytes: four CARD fields, drive at offset 0, format at
 2, profile at 4 and access at 6. Drive is 1–8. Format is `MOUNT_MYDOS` or
-`MOUNT_SPARTA`; access is `MOUNT_READONLY` or `MOUNT_READWRITE`. Profiles are
-Exec's STOCK810, FASTEST125 and GENERIC57600 constants. Geometry is not an input.
+`MOUNT_SPARTA`; access is `MOUNT_READONLY` or `MOUNT_READWRITE`. Profiles use `MOUNT_PROFILE_STOCK810`, `MOUNT_PROFILE_FASTEST125` and
+`MOUNT_PROFILE_GENERIC57600`, matching the Exec SIO profile IDs. Geometry is not an input.
 Read-only acquisition discovers READ-sector-1 → STATUS → PERCOM geometry and
 runs only the selected format's bounded admission. Only clean unsupported
 PERCOM permits conventional 720/1,040 × 128 STATUS fallback. Double-density

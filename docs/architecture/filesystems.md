@@ -103,15 +103,28 @@ not hold the filesystem worker, and a pipe has no filesystem mount or worker.
 
 ## Mounting, stopping and media identity
 
-Mount descriptors are supplied with the image: names, SIO units, geometry,
-profiles, filesystem formats and access policy. The first filesystem operation starts the shared
-service if necessary. An empty mount configuration creates no filesystem Task.
+The kernel owns nine stable upper-RAM definition slots, with defined, boot and
+enabled masks. Boot imports packaged descriptors; successful user SIO mounts
+add copied definitions at commit. Published mounts hold their effective geometry
+and monotonic generation. SYS remains attached to its boot-selected slot.
+The first ordinary filesystem operation starts the enabled set if necessary.
+Explicit management can start an empty control service, including after failed
+startup; it waits for the previous worker's actual retirement, disables saved
+boot entries and does not implicitly retry that failed set. RAM-only/empty
+services acquire disk workspace lazily on the first physical/writable mount.
 
 Startup validates the complete descriptor set, allocates shared and per-mount
 resources, opens devices and recognizes volumes. It publishes the initial set
-only after every mount succeeds. Failure retires the partial service. Later
-mount/unmount operations use the management port; a failed remount cleans up
-its own unpublished resources while other mounted volumes remain usable.
+only after every mount succeeds. Failure retires the partial service. Later named mount/unmount operations use the same management port. Dequeue
+and foreground ownership claim occur together under Task exclusion. Candidates
+reserve names/units before opening, then run read-only READ/STATUS/PERCOM and
+selected-format admission. A failed or cancelled candidate releases private
+state and newly acquired resources without changing existing definitions or
+mounts. Copied failure identity/responses survive destruction and slot reuse.
+Definitions/publication commit together; late BREAK cannot undo the commit.
+Unmount withdraws publication before cache/binding teardown and acknowledges
+after teardown. User definitions free their slots; boot entries remain saved
+but disabled. Pending names also exclude concurrent ASSIGN publication.
 
 Open files and locks retain their mount. An unmount with live references is
 rejected. Successful remount gives the volume a fresh generation so old

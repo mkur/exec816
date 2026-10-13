@@ -4,17 +4,26 @@ USE EXEC
 USE FSTYPES
 USE FSHANDLER
 USE FSMOUNT
+USE FSPACKET
+USE FSOPERATION
+USE DOSBREAKTYPES
 
 ; Claim one management packet and hand it to the mount state machine.
 BYTE FUNC Control(FSTYPES.Service POINTER service)
   EXEC.Message POINTER message
 
+  EXEC.Forbid()
   message=EXEC.GetMsg(service.control)
   IF message=EXEC.Message POINTER(0) THEN
+    EXEC.Permit()
     RETURN(0)
   FI
 
   service.packet=FSTYPES.Packet POINTER(message)
+  FSPACKET.Identity(service)
+  FSOPERATION.Claim(DOSBREAKTYPES.Scope POINTER(service.client.foreground),
+      FSOPERATION.WirePacket POINTER(service.packet))
+  EXEC.Permit()
   service.selected=FSTYPES.Mount POINTER(0)
   service.nextStep=@FSMOUNT.Dispatch
   service.stage=11

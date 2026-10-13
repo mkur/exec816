@@ -1,11 +1,11 @@
 # User mounted SIO filesystems development
 
 [History index](README.md#filesystems-and-dos) ·
-[Design](../plans/user-sio-mounts-design.md) ·
+[Design](user-sio-mounts-design.md) ·
 [Implementation plan](../plans/user-sio-mounts-implementation-plan.md) ·
 [Compact evidence](../development/user-sio-mounts.json)
 
-Status: UM0–UM4 implemented at the development tier; UM5 pending. Public DOS operations and resident shell forms are available.
+Status: UM0–UM5 implemented at the development tier. Public DOS operations and resident shell forms are available.
 
 ## UM0 registry and saved definitions
 
@@ -135,3 +135,49 @@ assertions) covering busy current directory, detach/redefine, redirection,
 observational diagnostics and an EXECUTE script. Disk admission leaves media
 unchanged; resource baselines and stack/domain/ownership guards pass. No demo
 or release qualification was run for this slice.
+
+## UM5 integration and completion
+
+Management operations now register for ordinary foreground cancellation, using
+machine-readable private packet opcodes. The worker claims the foreground
+operation in the same protected interval as dequeue, so cancellation cannot
+mistake an active control packet for one still queued. Caller-context admission
+precedes management startup. Allocation stages use separate early-return checks:
+Action! logical expressions do not provide a safe sequencing boundary for
+resource acquisition. Injected mount/block allocation failures verify cleanup.
+
+The final integration batch records 619 native assertions over 25 native cases,
+plus an optimized C/loaded-COMMAND bridge replay. Earlier slices additionally
+cover raw/optimized signatures, record layouts and both bridges. Coverage:
+
+- BREAK before READ, STATUS, PERCOM and publication, during wire activity, and
+  before/after unmount detachment; late publication/detachment returns success.
+- Mount and block allocation failures; short replies, timeout and device errors,
+  clean unsupported PERCOM fallback, invalid size/capacity and stale density.
+- Independently audited MyDOS/SpartaDOS writes on 128/256-byte media, directory
+  creation, busy references, close, unmount and fresh remount/readback.
+- Actual 256-byte disk replacements on both formats after cache/binding retirement.
+- Two management callers joining one empty worker; pending-name ASSIGN exclusion,
+  duplicate-drive rejection and control-reference collection.
+- The real standard-console workflow rerun with cancellable control packets,
+  including redirection, diagnostics and EXECUTE.
+
+All successful final cases verify stack/domain/ownership guards, bounded
+completion and final memory baselines. Read-only cases verify unchanged media;
+write cases reconstruct allocation ownership and stored payloads independently.
+Host checks remain 469; generated bindings and current documentation links pass.
+New public profile constants match the machine-readable SIO IDs. Memory remains
+594 fixed upper registry bytes, 516/520 service record/allocation bytes, 96 per
+mount, and 468/512 shell inspection bytes. UM5 changes bank-zero reservations by
+fixed 0, per Task 0 and private idle 0. No new Task pool, buffer or kernel gateway
+operation was introduced.
+
+Scope remains development validation under pinned AltirraOS/SIO configurations.
+Additional FASTEST125 file-read trials in larger emitted layouts exposed
+transport timeout/checksum and reset-recovery failures; the final workflow uses
+GENERIC57600, matching the shell default. FASTEST125 discovery had passed the
+UM2 probes, but broader transfer-timing qualification remains a separate follow-up.
+No baud fallback/retry workaround was added. Stock-XF551 ambiguity, physical
+peripheral qualification, forced unmount, filesystem checking/repair, image-backed
+BIOS ATR devices and runtime IDE/RAM mount creation remain outside this feature.
+No demo refresh or release matrix was run.

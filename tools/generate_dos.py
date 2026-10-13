@@ -60,6 +60,10 @@ def constants(abi=ABI):
         identifiers=json.loads((ROOT/'abi'/source).read_text())[group]
         for name,value in identifiers.items():
             require(abi['constants']['VOLUME_'+name]==value,'Inconsistent volume identifier: '+name)
+    sio=json.loads((ROOT/'abi/sio.json').read_text())
+    for name in ('FASTEST125','STOCK810','GENERIC57600'):
+        require(abi['constants']['MOUNT_PROFILE_'+name]==sio['profiles'][name], 'Inconsistent mount profile: '+name)
+    require(abi['management_actions']==dict(UNMOUNT_VOLUME=-100,MOUNT_VOLUME=-101,QUIESCE=-102), 'Invalid management protocol')
     require(set(abi['imports'])==set(DECLARATIONS),'Incomplete DOS calls')
     for namespace in ('process','program'):
         for name, value in json.loads((ROOT/'abi'/f'{namespace}.json').read_text())['errors'].items():
@@ -118,7 +122,8 @@ def types(public=False,private=False):
 def private_api():
     constants()
     return (HEADER+''.join(f'CONST DOS_ERROR_{k}=${v:x}\n' for k,v in ABI['errors'].items())
-            +''.join(f'CONST DOS_{k}={v}\n' for k,v in ABI['actions'].items())+types(private=True))
+            +''.join(f'CONST DOS_{k}={v}\n' for k,v in ABI['actions'].items())
+            +''.join(f'CONST DOS_MANAGEMENT_{k}={v}\n' for k,v in ABI['management_actions'].items())+types(private=True))
 
 def public_api():
     constants()

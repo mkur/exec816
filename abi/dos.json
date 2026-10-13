@@ -42,7 +42,10 @@
     "MOUNT_MYDOS": 1,
     "MOUNT_SPARTA": 2,
     "MOUNT_READONLY": 0,
-    "MOUNT_READWRITE": 1
+    "MOUNT_READWRITE": 1,
+    "MOUNT_PROFILE_FASTEST125": 1,
+    "MOUNT_PROFILE_STOCK810": 2,
+    "MOUNT_PROFILE_GENERIC57600": 4
   },
   "dos_errors": {
     "ERROR_NO_FREE_STORE": 103,
@@ -1244,5 +1247,10 @@
     "mount_slots": 9,
     "spec_bytes": 46,
     "service_bytes": 594
+  },
+  "management_actions": {
+    "UNMOUNT_VOLUME": -100,
+    "MOUNT_VOLUME": -101,
+    "QUIESCE": -102
   }
 }

@@ -24,6 +24,16 @@ LONGINT FUNC Request(LONGINT action,index BYTE POINTER name,spec)
     RETURN(0)
   FI
 
+  IF index=-1 THEN
+    IF FSBOOT.EnsureManagement()=0 THEN
+      BEGIN
+        LET current=DOSCORE.GetRegistry()
+        DOSCLIENT.SetError(current.error)
+        RETURN(0)
+      END
+    FI
+  FI
+
   registry=DOSCORE.GetRegistry()
   service=FSTYPES.Service POINTER(0)
   EXEC.Forbid()
@@ -66,26 +76,13 @@ PUBLIC LONGINT FUNC Call(LONGINT action,index)
 
 RETURN(Request(action,index,NULL,NULL))
 
-; Named management may start an empty worker after failed automatic startup.
-LONGINT FUNC Named(LONGINT action BYTE POINTER name,spec)
-
-  IF FSBOOT.EnsureManagement()=0 THEN
-    BEGIN
-      LET registry=DOSCORE.GetRegistry()
-      DOSCLIENT.SetError(registry.error)
-      RETURN(0)
-    END
-  FI
-
-RETURN(Request(action,-1,name,spec))
-
 PUBLIC LONGINT FUNC NamedMount(BYTE POINTER name,spec)
 
-RETURN(Named(FSMOUNT.MOUNT,name,spec))
+RETURN(Request(FSMOUNT.MOUNT,-1,name,spec))
 
 PUBLIC LONGINT FUNC NamedUnmount(BYTE POINTER name)
 
-RETURN(Named(FSMOUNT.UNMOUNT,name,NULL))
+RETURN(Request(FSMOUNT.UNMOUNT,-1,name,NULL))
 
 PUBLIC LONGINT FUNC Unmount(BYTE index)
 

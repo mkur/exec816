@@ -366,7 +366,11 @@ PUBLIC BYTE FUNC First(BYTE POINTER raw)
 
   service.index=0
 
-  IF Workspace(service)=0 OR Arrival(service)=0 THEN
+  IF Workspace(service)=0 THEN
+    RETURN(FSSTATUS.STOP)
+  FI
+
+  IF Arrival(service)=0 THEN
     RETURN(FSSTATUS.STOP)
   FI
 
@@ -396,8 +400,15 @@ PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
   LET service=FSTYPES.Service POINTER(raw)
   service.error=ERROR_NO_FREE_STORE
   service.mountStage=BLOCKTYPES.ADMIT_ALLOCATE
-  IF MountResources(service,Definition(service))=0 OR
-      AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
+  IF MountResources(service,Definition(service))=0 THEN
+    RETURN(Failed(service))
+  FI
+
+  IF AllocateMount(service)=0 THEN
+    RETURN(Failed(service))
+  FI
+
+  IF AllocateBlock(service)=0 THEN
     RETURN(Failed(service))
   FI
 

@@ -8,9 +8,9 @@ Exec816 implements the filesystem, not SpartaDOS CIO or its executable ABI.
 ## Media and mounts
 
 Exec backend ID 2 means SDFS; ID 1 remains MyDOS. These IDs are separate from
-on-disk revision bytes `$20` (2.0) and `$21` (2.1). A mount explicitly supplies
-its format, sector count, sector size, unit and SIO profile. There is no format
-fallback, baud-rate guessing or media-change detection.
+on-disk revision bytes `$20` (2.0) and `$21` (2.1). Boot descriptors supply format, geometry, unit and profile. [User SIO mounts](dos.md#user-sio-mounts)
+supply the format and discover geometry with READ sector 1, STATUS and PERCOM.
+There is no format fallback, baud-rate guessing or media-change detection.
 
 Support 128- and 256-byte SIO sectors with three initial 128-byte boot sectors,
 and uniform 512-byte IDE sectors with only sector 1 reserved for boot. Sector

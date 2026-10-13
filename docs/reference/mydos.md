@@ -3,6 +3,10 @@
 [Reference index](README.md) · [DOS API](dos.md)
 
 
+[User SIO mounts](dos.md#user-sio-mounts) require FORMAT MYDOS and discover
+128/256-byte geometry before the existing bounded VTOC admission. Mounting
+does not scan files or validate ownership. Unmount before changing media.
+
 Use the authors' technical documentation and source as the format reference,
 not filename extensions or a newly invented filesystem. The technical guide
 describes boot sectors 1–3, VTOC at 360 growing toward lower sector numbers,

@@ -1,12 +1,13 @@
 # User mounted SIO filesystems
 
-[Plans index](README.md#filesystems-and-dos) · [DOS contract](../reference/dos.md#paths-and-mounts) ·
+[Plans index](../plans/README.md#filesystems-and-dos) · [DOS contract](../reference/dos.md#paths-and-mounts) ·
 [Filesystem architecture](../architecture/filesystems.md) ·
 [SIO interface](../reference/device-io.md#siodevice)
 
-Status: UM0–UM4 implemented; integration coverage and final documentation (UM5)
-are in progress.
-[Implementation plan](user-sio-mounts-implementation-plan.md).
+Status: implemented at the development tier. See the
+[implementation record](user-sio-mounts.md) and current
+[DOS contract](../reference/dos.md#user-sio-mounts).
+[Implementation plan](../plans/user-sio-mounts-implementation-plan.md).
 
 Let users attach their own MyDOS and SpartaDOS disks without rebuilding Exec816.
 Extend the resident MOUNT command and add resident UNMOUNT. Use named volumes,

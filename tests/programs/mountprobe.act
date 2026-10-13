@@ -1,0 +1,117 @@
+; Test-only stimuli at existing allocation, transfer and commit boundaries.
+MODULE MOUNTPROBE
+USE EXEC
+USE FSREGISTRY
+USE FSTYPES
+USE FSACTIVE
+USE CONSOLEFOREGROUND
+PUBLIC BYTE mode,fired,wire
+PUBLIC BYTE namespaceDone,peerDone
+PUBLIC LONGINT namespaceError,peerResult,peerError
+INCLUDE "sio-storage-action.inc"
+
+PUBLIC PROC Point(BYTE point)
+
+  IF fired<>0 OR mode<>point THEN
+    RETURN
+  FI
+
+  LET service=FSREGISTRY.Service()
+  LET scope=FSACTIVE.CurrentScope(service)
+  IF scope=NULL THEN
+    RETURN
+  FI
+
+  fired=CONSOLEFOREGROUND.Deliver(scope.generation)
+
+RETURN
+
+PUBLIC BYTE POINTER FUNC Allocate(BYTE point LONGCARD count,flags)
+
+  IF mode=point AND fired=0 THEN
+    BEGIN
+      LET service=FSREGISTRY.Service()
+      IF service<>NULL THEN
+        IF service.packet<>NULL THEN
+          fired=1
+          RETURN(NULL)
+        FI
+      FI
+    END
+  FI
+
+RETURN(EXEC.AllocMem(count,flags))
+
+PUBLIC PROC BeforeSend(BYTE unused)
+
+  LET service=FSREGISTRY.Service()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  IF mode=60 AND service.mountStage=FSTYPES.MOUNT_BOOT_READ THEN
+    WHILE namespaceDone=0 OR service.controls<2 DO
+      EXEC.Yield()
+    OD
+  FI
+
+  Point(service.mountStage)
+
+RETURN
+
+PUBLIC PROC OnWire(EXEC.IORequest POINTER request)
+
+  IF mode<>30 OR fired<>0 THEN
+    RETURN
+  FI
+
+  LET phase=BYTE POINTER(SD_PHASE)
+  LET started=BYTE POINTER(SD_STARTED)
+  WHILE EXEC.CheckIO(request)=NULL DO
+    IF started^<>0 AND phase^>=1 AND phase^<13 THEN
+      wire=phase^
+      Point(30)
+      RETURN
+    FI
+
+    EXEC.Yield()
+  OD
+
+  wire=phase^
+  Point(30)
+
+RETURN
+
+PUBLIC INT FUNC AfterTransfer(EXEC.IOStdReq POINTER request INT error)
+
+  LET service=FSREGISTRY.Service()
+  IF service=NULL OR fired<>0 THEN
+    RETURN(error)
+  FI
+
+  IF service.mountStage=FSTYPES.MOUNT_STATUS AND mode=50 THEN
+    request.io_Data(0)=$20
+    fired=1
+  ELSEIF service.mountStage=FSTYPES.MOUNT_PERCOM THEN
+    IF mode>=40 AND mode<=45 THEN
+      fired=1
+      CASE mode OF
+      WHEN 40 THEN
+        request.io_Actual=11
+      WHEN 41 THEN
+        RETURN(EXEC.SIOERR_TIMEOUT)
+      WHEN 42 THEN
+        RETURN(EXEC.SIOERR_DEVICE)
+      WHEN 43 THEN
+        RETURN(EXEC.SIOERR_NAK)
+      WHEN 44 THEN
+        request.io_Data(6)=2
+      WHEN 45 THEN
+        request.io_Data(0)=0
+      ESAC
+    FI
+  FI
+
+RETURN(error)
+
+ENDMODULE
