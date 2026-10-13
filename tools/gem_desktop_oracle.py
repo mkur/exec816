@@ -116,7 +116,7 @@ def paint(bridge,symbols,r,title,bounds):
                 obj[3]=25;obj[5]=0;obj[6]=0
         # The focus decoration follows the icons in the real OBJECT tree.
         # Rasterize it last too, including the edge beside a selected label.
-        focus=[obj[:] for obj in (objects[1],*objects[21:25])]
+        focus=[obj[:] for obj in (objects[1],*objects[-4:])]
         objects[1][4]|=128
         objects[0][7]=objects[0][8]=0
         draw(r,objects,labels,(left+8,top+16,right-16,bottom-16),clip_strings=True)

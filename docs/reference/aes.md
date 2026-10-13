@@ -716,17 +716,19 @@ grey, with a white-on-black label for selection. File-window icons keep their
 monochrome artwork in colour-icon records, reversing only the label. See the [desktop style](desktop.md#window-appearance).
 
 Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen OBJECTs
-for a 104×40 icon grid or a compact list. Icons have 32×20 bitmaps and labels in
+for a 104×36 icon grid or a compact list. Icons have 32×20 bitmaps and labels in
 32-pixel-high objects. View chooses Icons/List and a checked Sort by name command; unchecked retains
 disk order. Name sorting groups directories first. New windows start at 360×184
 and retain user-selected bounds across navigation. The path occupies the title;
-one bottom status line shows byte/item totals, selection or operation feedback.
-There is no duplicate INFO row or File popup. Two 24×12 mouse targets contain
-small Up/Refresh glyphs. File > Parent / Backspace and File > Refresh / Ctrl+L
-provide the same operations. FULLER toggles full/remembered bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
+a fixed top summary shows byte/item totals, selection or operation feedback.
+There is no duplicate INFO row, File popup or toolbar. The default window fits
+three columns by three icon rows. File > Parent / Esc goes up in the same
+window; it is disabled at volume roots, where Esc does nothing. File > Refresh /
+Ctrl+L rereads the directory. Esc in a dialog or drag cancels that interaction
+without navigating; Backspace only edits text. FULLER toggles full/remembered bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
 resize reflows; vertical arrows, page clicks and the thumb scroll. Plain clicks
 replace selection; Shift-click toggles membership and Shift-arrow adds the next
-entry. View > Select All/None, Ctrl+A and Escape act on the cached snapshot,
+entry. View > Select All/None and Ctrl+A act on the cached snapshot,
 including offscreen entries. Open/Return/Rename require exactly one member;
 modified double-clicks never open. The status strip shows the selected count.
 A dotted border marks the keyboard lead independently of selection; mouse input

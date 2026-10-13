@@ -1,5 +1,5 @@
 """Physical folder selection checks using the existing packaged desktop session."""
-from browser_model import FIELDS as F, listing, select, wait_listing
+from browser_model import FIELDS as F, ROW_FIRST, listing, select, wait_listing
 from colour_desktop_model import FIELDS as D
 from native_program import require
 
@@ -19,7 +19,7 @@ def exercise(s, desk, base, click, key, path, desk_menu, shot, move, boundary=Fa
         require(len(result)==n('selectionCount'),'Selection count differs from membership: '+repr((len(result),n('selectionCount'),len(names),len(set(names)),bits.hex(),names[:4],names[-4:])))
         first=n('first');tree=s.number(base+F['tree'],4)
         for i in range(min(n('visible'),len(names)-first)):
-            require(bool(s.number(tree+(4+i)*24+10,2)&1)==(names[first+i] in result),
+            require(bool(s.number(tree+(ROW_FIRST+i)*24+10,2)&1)==(names[first+i] in result),
                     'Visible OBJECT selection disagrees with membership')
         return result
     def pick(name,shift=False):
@@ -44,13 +44,13 @@ def exercise(s, desk, base, click, key, path, desk_menu, shot, move, boundary=Fa
         view(1);require(n('iconView')==0 and members()=={'ALPHA.TXT','BETA.TXT'},'List lost selection')
         view(2);wait_listing(s,base);require(members()=={'ALPHA.TXT','BETA.TXT'},'Disk order lost selected names')
         view(2);wait_listing(s,base);require(members()=={'ALPHA.TXT','BETA.TXT'},'Name sort lost selected names')
-        x,y,w,h=work();click(x+48,y+8);wait_listing(s,base) # Refresh toolbar.
+        s.b._cmd_ok('KEY CTRL down');key('L');s.b._cmd_ok('KEY CTRL up');wait_listing(s,base)
         require(members()=={'ALPHA.TXT','BETA.TXT'},'Refresh lost selection')
         view(3);require(members()==set(names),'Select All menu')
         require(n('selectionDirectories')>0,'Directory selection count')
         view(4);require(not members(),'Select None menu')
         all_key();require(members()==set(names),'Ctrl+A did not select cached entries')
-        key('ESC');require(not members(),'Escape did not clear')
+        view(4);require(not members(),'Select None did not clear')
         pick('ALPHA.TXT');desk_menu(0);s.frames(150)
         peer=s.number(desk+D['folders']+4,4);require(peer and not s.number(peer+F['selectionCount'],2),'New folder inherited selection')
         require(members()=={'ALPHA.TXT'},'Sibling changed original selection')
@@ -69,7 +69,7 @@ def exercise(s, desk, base, click, key, path, desk_menu, shot, move, boundary=Fa
     require(n('first')<=255<n('first')+n('visible'),'Thumb did not expose final entry')
     pick('E255.TXT',True);require(len(members())==255 and 'E255.TXT' not in members(),'Index 255 toggle')
     view(1);require(len(members())==255,'Offscreen selections lost switching view')
-    key('ESC');pick('E000.TXT');require(members()=={'E000.TXT'},'Plain click did not replace set')
+    view(4);pick('E000.TXT');require(members()=={'E000.TXT'},'Plain click did not replace set')
     shot('desktop-selection-boundary')
     path(base,'WORK:');require(not members(),'Directory navigation did not reset selection')
     s.saved['selection']=dict(boundary_only=boundary,all_clear=True,icon_list=True,boundary_255=True,truncated=True)

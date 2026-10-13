@@ -4,7 +4,7 @@ static WORD drag_status(struct Browser *b)
     WORD area[4];
     if (!b || !b->ready) return 1;
     if (!wind_get(b->window,WF_WORKXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3])) return 0;
-    area[0]=b->work[0]+8;area[1]=b->work[1]+b->work[3]-12;
+    area[0]=b->work[0]+8;area[1]=b->work[1];
     area[2]=b->work[2]-16;area[3]=12;
     return redraw(b,area);
 }

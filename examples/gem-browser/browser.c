@@ -30,7 +30,7 @@ static const OBJECT menuSource[] = {
     {16,-1,-1,G_STRING,0,0,(ULONG)"  Icons",1,1,142,16},
     {17,-1,-1,G_STRING,0,0,(ULONG)"  List",1,17,142,16},
     {19,-1,-1,G_STRING,0,0,(ULONG)"  Sort by name",1,33,142,16},
-    {5,-1,-1,G_STRING,0,0,(ULONG)"Parent   Bksp",1,113,158,16},
+    {5,-1,-1,G_STRING,0,0,(ULONG)"Parent   Esc",1,113,158,16},
     {20,-1,-1,G_STRING,0,0,(ULONG)"Select All",1,49,142,16},
     {14,-1,-1,G_STRING,LASTOB,0,(ULONG)"Select None",1,65,142,16}
 };
@@ -61,22 +61,28 @@ static WORD single_entry(struct Browser *b)
     for (i=0;i<b->count;++i) if (selected_entry(b,i)) return i;
     return -1;
 }
+static WORD has_parent(const struct Browser *b)
+{
+    const char *p=strchr(b->path,':');
+    return p && p[1] && (p[1]!='/' || p[2]);
+}
 static WORD menu_state(struct Browser *b)
 {
     WORD one=single_entry(b);
     WORD enabled=(!b->dialog && one>=0 && (b->entries[one].kind>0 || !b->child) ? 1:0)
         |(b->child ? 2:0)|(!b->dialog && one>=0 ? 4:0)|(!b->dialog ? 8:0)
         |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount && !b->selectionDirectories ? 16:0)
-        |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount ? 32:0);
-    WORD changed=b->menuEnabled<0 ? 63:enabled^b->menuEnabled;
+        |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount ? 32:0)|(!b->dialog && has_parent(b) ? 64:0);
+    WORD changed=b->menuEnabled<0 ? 127:enabled^b->menuEnabled;
     if ((changed&1) && !menu_ienable(b->applicationMenu,MENU_OPEN,enabled&1)) return 0;
     if ((changed&2) && !menu_ienable(b->applicationMenu,MENU_STOP,enabled&2)) return 0;
     if ((changed&4) && !menu_ienable(b->applicationMenu,MENU_RENAME,enabled&4)) return 0;
+    if ((changed&64) && !menu_ienable(b->applicationMenu,MENU_PARENT,enabled&64)) return 0;
     if (changed&8) {
         if (!menu_ienable(b->applicationMenu,MENU_REFRESH,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_PATH,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NEW,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_ICONS,enabled&8) || !menu_ienable(b->applicationMenu,MENU_LIST,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) || !menu_ienable(b->applicationMenu,MENU_PARENT,enabled&8) ||
+            !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_ALL,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NONE,enabled&8)) return 0;
     }
     if (b->desktop && (changed&48)) {
@@ -148,7 +154,7 @@ static void layout(struct Browser *b)
     b->columns=b->iconView ? (b->work[2]-16)/104:1;
     if (b->columns<1) b->columns=1;
     if (b->columns>BROWSER_ROWS) b->columns=BROWSER_ROWS;
-    rows=(b->work[3]-BROWSER_CONTENT_TOP-BROWSER_CONTENT_BOTTOM)/(b->iconView ? 40:12);
+    rows=(b->work[3]-BROWSER_CONTENT_TOP-BROWSER_CONTENT_BOTTOM)/(b->iconView ? 36:12);
     if (rows<1) rows=1;
     if (rows>BROWSER_ROWS/b->columns) rows=BROWSER_ROWS/b->columns;
     b->visible=rows*b->columns;
@@ -161,7 +167,7 @@ static void layout(struct Browser *b)
         index=b->first+i;
         row->ob_type=b->iconView ? G_CICON:G_BUTTON;
         row->ob_x=8+(i%b->columns)*104;
-        row->ob_y=BROWSER_CONTENT_TOP+(i/b->columns)*(b->iconView ? 40:12);
+        row->ob_y=BROWSER_CONTENT_TOP+(i/b->columns)*(b->iconView ? 36:12);
         row->ob_width=b->iconView ? 104:b->work[2]-16;
         row->ob_height=b->iconView ? 32:10;
         row->ob_spec=(ULONG)b->labels[i];
@@ -183,7 +189,7 @@ static void layout(struct Browser *b)
     }
     b->tree[BROWSER_STATUS].ob_spec=(ULONG)b->status;
     b->tree[BROWSER_STATUS].ob_width=b->work[2]-16;
-    b->tree[BROWSER_STATUS].ob_y=b->work[3]-12;
+    b->tree[BROWSER_STATUS].ob_y=2;
     layout_focus(b);
 }
 static WORD sliders(struct Browser *b)
@@ -318,7 +324,7 @@ static WORD scroll(struct Browser *b,WORD first)
     if (first==b->first) return 1;
     b->first=first;
     /* Include the row buttons' one-pixel borders and the gaps between rows.
-     * The root clears old labels inside this clip; toolbar/status stay put. */
+     * The root clears old labels inside this clip; summary stays put. */
     damage[0]=b->work[0]+top->ob_x-1;
     damage[1]=b->work[1]+top->ob_y-1;
     damage[2]=b->work[2]-14;
@@ -351,7 +357,7 @@ static WORD paint_selection(struct Browser *b)
         }
     }
     selection_status(b);
-    area[0]=b->work[0]+8;area[1]=b->work[1]+b->work[3]-12;
+    area[0]=b->work[0]+8;area[1]=b->work[1];
     area[2]=b->work[2]-16;area[3]=12;
     if (okay) okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
     if (!wind_update(END_UPDATE)) okay=0;
@@ -542,6 +548,7 @@ static WORD dialog_click(struct Browser *b,WORD hit)
 }
 static WORD up(struct Browser *b)
 {
+    if (!has_parent(b)) return 1;
     strcpy(b->target,b->path);FileParent(b->target);
     return refresh_path(b,b->target);
 }
@@ -631,8 +638,6 @@ static WORD folder_event(struct Browser *b,WORD events)
                 b->down=0;
                 if (hit==b->armed) {
                     if (b->dialog) { if (!dialog_click(b,hit)) result=2; }
-                    else if (hit==2) { if (!up(b)) result=2; }
-                    else if (hit==3) { if (!refresh(b)) result=2; }
                     else if (hit>=BROWSER_ROW_FIRST && hit<BROWSER_ROW_FIRST+b->visible &&
                              b->first+hit-BROWSER_ROW_FIRST<b->count) {
                         i=b->first+hit-BROWSER_ROW_FIRST;
@@ -650,13 +655,12 @@ static WORD folder_event(struct Browser *b,WORD events)
         if (events&MU_KEYBD) {
             if (b->dialog) { if (!dialog_key(b)) result=2; }
             else if ((b->kr&255)==1 || ((b->ks&4) && ((b->kr&255)=='a' || (b->kr&255)=='A'))) { if (!select_all(b,1)) result=2; }
-            else if ((b->kr&255)==27) { if (!select_all(b,0)) result=2; }
+            else if ((b->kr&255)==27) { if (!up(b)) result=2; }
             else if ((b->kr&255)=='p' || (b->kr&255)=='P') { if (!dialog_open(b,DIALOG_PATH)) result=2; }
             else if ((b->kr&255)=='n' || (b->kr&255)=='N') { if (!dialog_open(b,DIALOG_NEW)) result=2; }
             else if ((b->kr&255)=='r' || (b->kr&255)=='R') { if (!dialog_open(b,DIALOG_RENAME)) result=2; }
             else if ((b->kr&255)==13) { if (!open_item(b)) result=2; }
             else if ((b->kr&255)==12 || ((b->ks&4) && ((b->kr&255)=='l' || (b->kr&255)=='L'))) { if (!refresh(b)) result=2; }
-            else if ((b->kr&255)==8) { if (!up(b)) result=2; }
             else if ((b->kr>>8)==0x48 || (b->kr>>8)==0x50 || (b->kr>>8)==0x4b || (b->kr>>8)==0x4d) {
                 hit=b->kr>>8;b->keyboardFocus=1;
                 i=b->selected<0 ? 0:b->selected+(hit==0x48 ? -b->columns:hit==0x50 ? b->columns:hit==0x4b ? -1:1);

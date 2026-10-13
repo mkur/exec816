@@ -1,5 +1,5 @@
 """Completed-release to matching folder scanout; reuses the GEM pixel oracle."""
-from browser_model import FIELDS as F
+from browser_model import FIELDS as F, CONTENT_TOP
 from gem_desktop_oracle import paint
 from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
 from measure_desktop import distribution
@@ -33,7 +33,7 @@ def exercise(s,base,click,key,path,move,count=40):
         return actual==want
     def point(index):
         x,y,w,h=[s.number(base+F['work']+i*2,2) for i in range(4)]
-        return (x+48+index*104,y+32) if n('iconView') else (x+40,y+24+index*12)
+        return (x+48+index*104,y+CONTENT_TOP+12) if n('iconView') else (x+40,y+CONTENT_TOP+4+index*12)
     def arrow(name,shift=False):
         b._cmd_ok('KEY ALL up');s.frames(3)
         b._cmd_ok('KEY CTRL down')
@@ -42,7 +42,7 @@ def exercise(s,base,click,key,path,move,count=40):
         b._cmd_ok('KEY '+name+' up');s.frames(3)
         b._cmd_ok('KEY ALL up');s.frames(35)
     for mode,row in [('icons',0),('list',1)]:
-        click(216,8);click(224,24+row*16);key('ESC')
+        click(216,8);click(224,24+row*16);click(216,8);click(224,88)
         arrow('ASTERISK');require(n('selected')==0 and n('selectionCount')==1,'Arrow without lead')
         # Ctrl+Shift+asterisk/plus conflict in the Atari keyboard matrix.
         # Vertical cursor chords remain physically representable.
@@ -80,7 +80,7 @@ def exercise(s,base,click,key,path,move,count=40):
         before=s.number(base+F['paints'],4)
         b._cmd_ok('KEY CTRL down');key('A');b._cmd_ok('KEY CTRL up')
         require(n('selectionCount')==n('count') and s.number(base+F['paints'],4)==before+1,'Select All rebuilt the folder')
-        key('ESC')
+        click(216,8);click(224,88)
     result['scope']='40 completed release edges per case to matching whole work-area scanout, including status; PAL frame polling, fixed 3-frame hold and 15-frame settling interval. No disk I/O. Not HY4 qualification.'
     result['keyboard_arrows']=True;result['repeat_no_paint']=True;result['select_all_one_transaction']=True
     s.saved['selection_feedback']=result

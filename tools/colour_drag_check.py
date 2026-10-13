@@ -2,7 +2,7 @@
 import json
 import tempfile
 from pathlib import Path
-from browser_model import FIELDS as F, listing, select, wait_listing
+from browser_model import FIELDS as F, CONTENT_TOP, ICON_PITCH, listing, select, wait_listing
 from colour_desktop_model import FIELDS as D, DRAG_FIELDS as G
 from native_program import require
 from sio_transaction_trace import BASE_HZ
@@ -95,7 +95,7 @@ def exercise(s,desk,source,click,key,fill,path,desk_menu,shot,move,menus):
     require(n(source,'selectionCount')==2,'Multi-selection setup')
     begin(point)
     names=listing(s,target);index=names.index('SUB')-n(target,'first');columns=n(target,'columns')
-    sub=(tx+48+index%columns*104,ty+32+index//columns*40)
+    sub=(tx+48+index%columns*104,ty+CONTENT_TOP+12+index//columns*ICON_PITCH)
     hover(sub,target)
     require(b.memdump(drag+G['destination'],128).split(b'\0')[0]==b'WORK:DROP/SUB','Subdirectory targeting')
     print('Drag: copy selected files into subdirectory',flush=True)

@@ -7,11 +7,11 @@
 #include "../../c/calypsi/file-list.h"
 #define BROWSER_ENTRIES FILE_LIST_LIMIT
 #define BROWSER_ROWS 16
-#define BROWSER_ROW_FIRST 4
+#define BROWSER_ROW_FIRST 2
 #define BROWSER_STATUS (BROWSER_ROW_FIRST+BROWSER_ROWS)
 #define BROWSER_OBJECTS (BROWSER_STATUS+5)
-#define BROWSER_CONTENT_TOP 20
-#define BROWSER_CONTENT_BOTTOM 16
+#define BROWSER_CONTENT_TOP 16
+#define BROWSER_CONTENT_BOTTOM 2
 #define BROWSER_FOCUS 1
 struct Browser {
     WORD id,vdi,window,opened;

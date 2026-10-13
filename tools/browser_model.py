@@ -23,10 +23,12 @@ SIZE+=64
 FIELDS['keyboardFocus']=SIZE
 SIZE+=2
 FIELDS['scan']=FIELDS['stock']-20
-CONTENT_TOP=20
+CONTENT_TOP=16
+ICON_PITCH=36
+ROW_FIRST=2
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
-OBJECTS=25
+OBJECTS=23
 ENTRY_BYTES=112
 
 
@@ -79,7 +81,7 @@ def select(session,base,name,click,stable_snapshot=False):
         if first<=index<first+visible:
             if session.number(base+FIELDS["iconView"],2):
                 columns=session.number(base+FIELDS["columns"],2)
-                click(x+48+(index-first)%columns*104,y+CONTENT_TOP+12+(index-first)//columns*40)
+                click(x+48+(index-first)%columns*104,y+CONTENT_TOP+12+(index-first)//columns*ICON_PITCH)
             else:click(x+40,y+CONTENT_TOP+4+(index-first)*12)
             return
         click(x+w+8,y+8 if index<first else y+h-8)

@@ -47,11 +47,11 @@ up to three folders share one application Task. Closing the last folder leaves
 the desktop alive. View chooses Icons/List; Sort by name toggles name/disk order. Select then
 Return, or double-click, to open one entry. Shift-click toggles multiple entries;
 Shift-arrow adds an entry. Ctrl-A/View > Select All includes cached offscreen
-entries; Escape/View > Select None clears. Open and Rename need one entry.
+entries; View > Select None clears. Open and Rename need one entry.
 Arrows navigate; a dotted outline marks keyboard focus. Selection reverses the
-label without changing the icon. The small Up glyph, File > Parent or Backspace
-goes to the parent; the Refresh glyph, File > Refresh or Ctrl-L reloads it.
-The bottom line shows totals, selection counts or operation feedback. The path
+label without changing the icon. File > Parent or Esc goes to the parent in the same window; at a volume root
+Esc does nothing. File > Refresh or Ctrl-L reloads the directory.
+The thin top line shows totals, selection counts or operation feedback. The path
 is in the title. New windows start smaller; navigation preserves their size.
 Drag the bottom-right size gadget; vertical arrows, track and thumb scroll.
 The top-right fuller toggles full/remembered size. Listings retain 256 entries
