@@ -45,6 +45,10 @@ BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     RETURN(0)
   FI
 
+  ; Packed pixels share bytes. Normalize once at geometry admission; work
+  ; rectangles and fixed-size comparisons use the accepted dimensions.
+  x=x & $fffe
+  width=(width+1) & $fffe
   REGIONS.Assign(rect,x,y,x+width,y+height)
 
 RETURN(1)
@@ -251,8 +255,8 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     IF ValidBounds(window.frameKind,request.intin(1),request.intin(2),request.intin(3),
         request.intin(4),@bounds)=0
         OR ((window.frameKind & AESTYPES.SIZER)=0
-        AND (request.intin(3)<>layer.bounds.right-layer.bounds.left
-        OR request.intin(4)<>layer.bounds.bottom-layer.bounds.top)) THEN
+        AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
+        OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
       RETURN(AESTYPES.MALFORMED)
     FI
 
@@ -335,8 +339,8 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),request.intin(4),
           request.intin(5),@bounds)=0
           OR ((window.frameKind & AESTYPES.SIZER)=0
-          AND (request.intin(4)<>layer.bounds.right-layer.bounds.left
-          OR request.intin(5)<>layer.bounds.bottom-layer.bounds.top)) THEN
+          AND (bounds.right-bounds.left<>layer.bounds.right-layer.bounds.left
+          OR bounds.bottom-bounds.top<>layer.bounds.bottom-layer.bounds.top)) THEN
         RETURN(AESTYPES.MALFORMED)
       FI
 

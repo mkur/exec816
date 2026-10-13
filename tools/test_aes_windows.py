@@ -83,9 +83,9 @@ def physical(b, p, foreign, report):
     require(scan() == before_outline, 'Odd-coordinate outline did not restore exact pixels')
     require(b.memdump(view+vf['bounds'], 8) == old_bounds, 'Move committed before WM_MOVED acknowledgment')
     words = struct.unpack('<8h', b.memdump(sy['AESControl'], 16))
-    require(words[4:8] == (26, 20, 200, 120), 'Drag lost pixel coordinates: '+str(words))
+    require(words[4:8] == (24, 20, 200, 120), 'Drag lost aligned coordinates: '+str(words))
     b.poke16(sy['AESPhysicalGo'], 4); phase(5); frames(100)
-    require(struct.unpack('<4h', b.memdump(view+vf['bounds'], 8)) == (26, 20, 226, 140),
+    require(struct.unpack('<4h', b.memdump(view+vf['bounds'], 8)) == (24, 20, 224, 140),
             'Move acknowledgment did not change geometry')
     move(34, 26); edge(1); edge(0); phase(6)
     require(get(view+vf['shown']) == 1, 'Close committed before WM_CLOSED acknowledgment')

@@ -3,7 +3,7 @@
 [Design note](aes-layers-vram-design.md#aligned-aes-moves) ·
 [GEM plans](README.md) · [Testing policy](../../contributing/testing.md)
 
-Status: proposed, 2026-10-14. Implements the aligned AES move and persistent
+Status: implementation in progress, 2026-10-14. Implements the aligned AES move and persistent
 Shell backing extensions to the AES/Layers design. The completed
 [AV1–AV6 plan](aes-layers-vram-plan.md) remains its own historical scope.
 
@@ -327,3 +327,12 @@ completion/ownership rules, references describe actual behavior, and the final
 demo and performance results are recorded. Functional completion alone does not
 close a missed latency/throughput gate; list those separately rather than
 claiming the whole performance goal achieved.
+
+## Execution record
+
+- WB1: accepted geometry and physical drag/resize proposals use even X/width;
+  `wind_calc` retains unsnapped conversion semantics. Development checks: 459
+  host tests (4 skips), optimized AES windows (268 checks) and cache (96 checks),
+  with stack/domain guards intact. Reports: `build/window-backing/wb1-windows`
+  and `wb1-cache`. Reserved bank-zero delta: 0 fixed, 0 per public Task, 0 idle;
+  VRAM and additional persistent metadata delta: 0 bytes.

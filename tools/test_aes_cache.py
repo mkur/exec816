@@ -50,7 +50,7 @@ def physical(b,p,foreign,report):
         if phase==15:require(row['captures']==previous['captures'],'Sibling update recaptured our image')
         if phase==2:require(row['captures']==previous['captures'],'Title-only change recaptured pixels')
         if phase in (3,12):require(row['restores']>previous['restores'],'Aligned AES move missed its client image')
-        if phase==7:require(row['restores']==previous['restores'],'Odd-X move restored a widened image')
+        if phase==7:require(row['restores']==previous['restores'],'Normalized no-op move restored its client')
         if phase in (10,11):
             require(row['captures']==previous['captures'],'Small update recaptured whole client')
             require(row['patches']==previous['patches']+1 and

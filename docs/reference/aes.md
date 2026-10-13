@@ -200,8 +200,10 @@ desktop slots, with two additional layers reserved for menus. The base kind is `
 window and returns a positive handle, or minus one on failure. Open shows it;
 close hides it and retires the open epoch without deleting the handle. Delete
 requires a closed window. Exit closes and deletes all remaining windows. Handles
-are not reused during a service lifetime. The initial profile permits moves at
-individual pixel positions and bounds fully inside the 640 by 240 desktop.
+are not reused during a service lifetime. Accepted outer X positions are rounded
+down to an even pixel and widths up to an even pixel at create/open/set. Drag
+and resize proposals use the same alignment; Y and height retain single-pixel
+precision. Bounds must fit fully inside the 640 by 240 desktop.
 Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
@@ -213,6 +215,8 @@ top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
 SIZER increases the bottom inset to 16. INFO adds a 12-pixel information line
 below the title, raising the top inset to 28. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
+Use those accepted rectangles after open/set; `wind_calc` itself remains an
+unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
 top queries; a native top window is reported as zero.
 

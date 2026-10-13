@@ -119,6 +119,8 @@ PROC Position(INT x,y)
   IF pixelMotion=0 THEN
     left=(left+4) & $fff8
     top=(top+4) & $fff8
+  ELSE
+    left=left & $fffe
   FI
 
   limit=640-width
@@ -253,6 +255,7 @@ PROC SizePosition(INT x,y CARD kind)
   IF width>640-origin.left THEN
     width=640-origin.left
   FI
+  width=(width+1) & $fffe
   IF height>240-origin.top THEN
     height=240-origin.top
   FI
