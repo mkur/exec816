@@ -25,7 +25,7 @@ USE AESWINDOWSTATE
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex,glyphOffset
 INT nextY
-BYTE nextSlot,started
+BYTE nextSlot,started,menuTurns
 CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
@@ -374,6 +374,23 @@ BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
 
 RETURN(0)
 
+; Menu precedence applies only between transactions. Two menu transactions
+; are followed by an ordinary round-robin turn when one is ready.
+LAYERTYPES.Layer POINTER FUNC MenuLayer()
+  LAYERTYPES.Layer POINTER layer
+
+  LET service=DESKSTATE.Get()
+  layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+  IF DESKSTATE.popupLayer<>0 AND layer<>NULL AND Damaged(layer)<>0 THEN
+    RETURN(layer)
+  FI
+  layer=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
+  IF DESKSTATE.barLayer<>0 AND layer<>NULL AND Damaged(layer)<>0 THEN
+    RETURN(layer)
+  FI
+
+RETURN(NULL)
+
 ; Painting work only, independent of pending control messages.
 PUBLIC BYTE FUNC PaintPending()
   BYTE slot
@@ -434,6 +451,7 @@ RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
 PUBLIC BYTE FUNC Pump()
   BYTE count,slot,status,done,fullConsole
   DESKTYPES.Window POINTER window
+  LAYERTYPES.Layer POINTER candidate
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
@@ -445,23 +463,43 @@ PUBLIC BYTE FUNC Pump()
       RETURN(0)
     FI
 
-    FOR count=0 TO LAYERTYPES.SLOT_COUNT-1 DO
-      slot=nextSlot
-      nextSlot=(nextSlot+1) MOD LAYERTYPES.SLOT_COUNT
-      BEGIN
-        LET layer=@service.scene.items(slot)
-        IF Damaged(layer)<>0 THEN
-          status=LAYERS.BeginPaint(@service.scene,layer.id,@paintToken)
-          IF status=LAYERTYPES.OK THEN
-            paintLayer=layer.id
-            regionIndex=0
-            nextY=service.scene.work.rects(0).top
-            started=0
+    candidate=NULL
+    IF menuTurns<2 THEN
+      candidate=MenuLayer()
+    FI
+    IF candidate=NULL THEN
+      FOR count=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+        slot=nextSlot
+        nextSlot=(nextSlot+1) MOD LAYERTYPES.SLOT_COUNT
+        BEGIN
+          LET layer=@service.scene.items(slot)
+          IF (layer.id<>DESKSTATE.barLayer OR layer.id=0)
+              AND (layer.id<>DESKSTATE.popupLayer OR layer.id=0)
+              AND Damaged(layer)<>0 THEN
+            candidate=layer
             EXIT
           FI
+        END
+      OD
+    FI
+    IF candidate=NULL THEN
+      candidate=MenuLayer()
+    FI
+    IF candidate<>NULL THEN
+      status=LAYERS.BeginPaint(@service.scene,candidate.id,@paintToken)
+      IF status=LAYERTYPES.OK THEN
+        IF candidate.id<>0 AND (candidate.id=DESKSTATE.popupLayer
+            OR candidate.id=DESKSTATE.barLayer) THEN
+          IF menuTurns<2 THEN menuTurns==+1 FI
+        ELSE
+          menuTurns=0
         FI
-      END
-    OD
+        paintLayer=candidate.id
+        regionIndex=0
+        nextY=service.scene.work.rects(0).top
+        started=0
+      FI
+    FI
   FI
 
   IF paintToken=0 THEN

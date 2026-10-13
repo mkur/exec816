@@ -141,26 +141,42 @@ def physical(b,p,foreign,report):
             # it from retained windows, then compare only its opaque bounds.
             from desktop_oracle import compose
             from bitmap_console_oracle import Terminal
-            packed=compose(b,p,font,Terminal(64,20),pointer=position,
-                           external=lambda raster,title,bounds:None,
-                           menu_contexts=sy['contexts'])
             bottom=16+max(4,get(at('DESKMENU','count'),1))*16
-            path=out/'native-menu.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
-            for yy in range(16,bottom):
-                for xx in range(432,640):
-                    byte=packed[yy*320+xx//2];pen=byte&15 if xx&1 else byte>>4
-                    pixel=yy*capture.stride+64+xx*4
-                    require(pixels[pixel:pixel+3]==hardware[pen],f'Native menu pixel {xx},{yy}')
+            def native_pixels():
+                packed=compose(b,p,font,Terminal(64,20),pointer=position,
+                               external=lambda raster,title,bounds:None,
+                               menu_contexts=sy['contexts'])
+                path=out/'native-menu.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
+                for yy in range(bottom):
+                    for xx in range(432,640):
+                        byte=packed[yy*320+xx//2];pen=byte&15 if xx&1 else byte>>4
+                        pixel=yy*capture.stride+64+xx*4
+                        require(pixels[pixel:pixel+3]==hardware[pen],f'Native menu pixel {xx},{yy}')
+            native_pixels()
+            for xx,yy in [(472,24),(472,40),(432,24)]:
+                move(xx,yy);frames();native_pixels()
             for xx,yy in [(432,24),(639,24),(472,16),(472,bottom-1)]:
                 move(xx,yy);frames()
                 require(get(at('DESKMENU','selected'))==65535,'Popup border selected an item')
-            report['native_popup']=dict(pixels='exact',border_hits='excluded')
+            report['native_popup']=dict(pixels='exact',border_hits='excluded',highlight_transitions=3)
             move(152,8);frames();click(160,40);actions(0,4,7)
             click(152,8);move(160,24);edge(1);mutation(1);edge(0);actions(0,4)
             key('ESC');mutation(2)
             click(152,8);move(160,24);edge(1);mutation(3);edge(0);actions(0,4)
             mutation(4);key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,4)
             key('ESC');mutation(5)
+            mutation(6);click(152,8);move(632,232);frames()
+            wide=Raster(font)
+            area=draw(b,wide,tree,True)
+            path=out/'wide-menu.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
+            for yy in range(area[1],area[3]):
+                for xx in range(area[0],area[2]):
+                    pixel=yy*capture.stride+(xx+16)*4
+                    require(pixels[pixel:pixel+3]==hardware[wide.pixels[yy*640+xx]],
+                            f'Long checked/clipped menu pixel {xx},{yy}')
+            report['long_menu']=dict(pixels='exact',odd_x=True,checked=True,disabled=True,
+                                     partial_glyph=True,partial_row=True)
+            key('ESC');mutation(7)
             actions(1,0)
         elif phase==3:
             click(160,24);actions(0,4)

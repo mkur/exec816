@@ -1,5 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
+The [dropdown menu latency design](menu-latency-design.md) and
+[implementation plan](menu-latency-plan.md) cover complete-label batching,
+targeted highlight damage and bounded menu precedence in the existing
+presenter. Save-under remains a separate correctness decision.
+All four slices are [implemented and development-checked](../../history/menu-latency.md).
+
 The [colour desktop roadmap](../../roadmap.md#colour-gem-desktop-roadmap) starts
 with the [CG1 icon design](colour-icons-design.md) and
 [implementation plan](colour-icons-plan.md): standard application-owned icons,

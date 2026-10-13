@@ -278,8 +278,19 @@ focus unchanged. No remaining owner means focus and the published route are zero
 Native fallback and Windows popups have a one-pixel black outline inside their
 allocated bounds. The outline is not an item target. Selection is black/white
 inversion; disabled text uses the GEM white stipple. Each native row is composed
-in the existing widget strip, with at most sixteen glyphs per callback. Installed
-application menus retain their own OBJECT geometry and specifications.
+in the existing widget strip, including its complete label of up to 24 glyphs.
+Installed application menus retain their own OBJECT geometry and specifications.
+Their renderer batches up to four intersecting objects and budgets 80 text
+cells from clipped widths per callback; it does not fragment labels horizontally.
+Complete 16-row strips are published from the existing offscreen buffer.
+
+Highlight changes invalidate only the old and new entries. Opening/closing a
+menu damages its changed bar heading or native segment; owner/content changes
+can still require the complete bar. These visual states and their damage are
+published together after the current scene token retires. When starting a new
+paint transaction, the presenter prefers popup then bar, allowing ready ordinary
+layers a round-robin turn after two preferred menu transactions. This does not
+change Task priorities, application update locks or live paint ownership.
 
 The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
@@ -292,6 +303,12 @@ bounded shape, lifetime and `MN_SELECTED` delivery. Windows adds Next/Close belo
 its window list when an application menu is installed. Ctrl+Shift+Escape
 enters an application menu. Accessories and submenus remain unsupported.
 Existing application `menu_popup` remains window-scoped.
+
+The [menu latency design](../plans/gem4xe/menu-latency-design.md) explains why
+dismissal retains ordinary exposure redraw instead of restoring a saved screen
+image over potentially changed application content. The
+[execution record](../history/menu-latency.md) separates median/p95 feedback,
+exact pixel checks and concurrent application progress.
 
 Pointer and move-repair response targets have not all passed. The execution
 record separates exact capture/pixel correctness from measured responsiveness.

@@ -55,7 +55,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF layer.id<>DESKSTATE.barLayer THEN
     IF phase^=0 THEN
       menuGlyph=0
-      phase^=1
+      phase^=BYTE(CARD(clip.top-layer.bounds.top) RSH 4)+1
     FI
 
     row=phase^-1
@@ -81,7 +81,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     FI
 
     phase^==+1
-    RETURN(IF phase^>BYTE(CARD(layer.bounds.bottom-layer.bounds.top) RSH 4)
+    RETURN(IF bounds.bottom>=clip.bottom
         THEN 1 ELSE 2 FI)
   FI
 

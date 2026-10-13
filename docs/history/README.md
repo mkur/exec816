@@ -1,5 +1,8 @@
 # Historical records
 
+- [Dropdown menu latency](menu-latency.md): bounded label batching, targeted
+  damage, menu precedence and matched visible-feedback measurements.
+
 - [Loaded Process Task names](process-task-names.md): retained executable names
   in TASKS, without changing the Task API or execution domains.
 

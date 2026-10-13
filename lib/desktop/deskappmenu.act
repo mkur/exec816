@@ -19,6 +19,7 @@ PUBLIC AESSTATE.Client POINTER owner
 PUBLIC INT heading,selected,paintHeading,paintSelected
 LONGCARD generation,revision
 CARD paintIndex
+BYTE paintOpened
 TYPE PendingSelection=[
   AESSTATE.Client POINTER client
   LONGCARD menuEpoch,windowEpoch
@@ -61,6 +62,7 @@ PUBLIC BYTE FUNC Refresh()
     selected=-1
     paintHeading=0
     paintSelected=-1
+    paintOpened=0
     change=1
   ELSEIF revision<>service.menuRevision THEN
     change=2
@@ -305,6 +307,8 @@ PUBLIC PROC Snapshot(BYTE popup)
   IF paintHeading<>heading THEN
     DamageObject(menu.title(paintHeading),0)
     DamageObject(menu.title(heading),0)
+  ELSEIF paintOpened<>popup THEN
+    DamageObject(menu.title(heading),0)
   FI
   IF paintSelected<>selected THEN
     IF paintSelected>=0 THEN DamageObject(paintSelected,popup) FI
@@ -320,6 +324,7 @@ PUBLIC PROC Snapshot(BYTE popup)
   menu.damage=0
   paintHeading=heading
   paintSelected=selected
+  paintOpened=popup
 
 RETURN
 

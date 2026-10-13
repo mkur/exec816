@@ -8,7 +8,7 @@
 extern void GemWidgetFill(UWORD,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 static struct ConsoleBitmapPacket *paint;
-static WORD glyphs[16];
+static WORD glyphs[24];
 
 static void fill(WORD l,WORD t,WORD r,WORD b,UWORD pen)
 {
@@ -169,7 +169,7 @@ static UWORD menu_row(void)
         fill(l+1,row>t ? row:t+1,r-1,row+16<b ? row+16:b-1,selected);
         box(l,t,r,b);
     }
-    while (n<16 && first+n<24 && label[first+n]) {
+    while (first+n<24 && label[first+n]) {
         glyphs[n]=label[first+n];++n;
     }
     if (n) GemWidgetText(l+8+(first<<3),row+4,glyphs,n,!selected,
