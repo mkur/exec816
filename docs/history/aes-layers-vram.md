@@ -5,7 +5,8 @@
 [Layers contract](../reference/layers.md) · [AES contract](../reference/aes.md)
 
 Implementation in progress. Development checks below do not qualify a release
-matrix or real hardware. The compiler pin is unchanged.
+matrix or real hardware. AV1/AV2 used the original compiler pin; the AV3
+compiler dependency is recorded below.
 
 ## AV1: external repaint bookkeeping
 
@@ -91,10 +92,31 @@ geometry, failure and external pending-paint cases remain covered.
 
 An intermediate exact demo showed real saves/restores: Windows dismissal fell
 from 501.4 to 240.7 ms (median/p95), while final Files repaint was 361.0 ms.
-This predates the repaired menu-heading/exposure ordering and is not acceptance
-evidence for the final slice. The 100 ms gate remains open until remeasurement.
+After fixing menu-heading/exposure ordering, 20-sample median/p95 Windows
+visible dismissal is 140.5 / 140.5 ms; final Files repaint is 361.0 / 380.9 ms.
+The 100 ms gate remains open. File-to-View drops to 341.0 / 341.0 ms, but its
+following uncached View dismissal regresses to 661.9 / 682.1 ms. This shift of
+application work is a failed fallback gate, not an accepted latency result.
+Cold File opening is 421.1 / 421.4 ms; Windows opening 220.5 / 240.7 ms.
+Both menu types retain Counter progress under 30 highlight changes. This is
+coexistence evidence, not the required loaded pointer-latency cohort.
 
 ## Remaining slices
 
 AV3–AV6 remain in progress. Numeric performance gates remain separate from
 functional completion; no acceptance is inferred from correct cached pixels.
+
+## Compiler dependency found during AV3
+
+Popup-key record assignment exposed an existing NIR promotion defect: a promoted
+loop index was rewritten in ordinary loads/stores but not in `CopyBytes` source
+and destination addresses. Raw compilation worked; optimized compilation failed
+verification. The fix belongs to actionc, on `fix/nir-copy-address-promotion`;
+Exec now pins that clean local commit. It has not been pushed upstream.
+
+The focused regression covers both copy directions and all three target layouts,
+including native promotion policy and optimizer idempotence. The failing full
+Exec input also passes interface emission with the fix. No compiler-wide tests
+or release qualification were run. The compiler ABI is unchanged; reserved bank
+zero remains **0 fixed / 0 per public Task / 0 idle bytes** relative to baseline.
+The baseline used `81dd7dc5`; final comparisons must record this dependency.
