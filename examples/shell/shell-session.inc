@@ -12,6 +12,9 @@ USE BOOTCONFIG
 USE BOOTDIAG
 USE FSINSPECT
 USE FSTYPES
+USE FSDISCOVER
+USE FSNAMES
+USE FS83
 USE IDEPLUS
 USE IDEPLUSDRIVER
 USE BLOCKTYPES
@@ -82,6 +85,7 @@ CONST CMD_RUN=17
 CONST CMD_JOBS=18
 CONST CMD_BREAK=19
 CONST CMD_EXECUTE=20
+CONST CMD_UNMOUNT=21
 CONST JOB_RUNNING=1,JOB_STOPPING=2,JOB_DONE=3
 
 TYPE ShellWord=[BYTE POINTER text]
@@ -584,6 +588,8 @@ BYTE FUNC ShellClassify(BYTE POINTER word)
   ELSEIF ShellEqual(word,c"VER")<>0 THEN
     RETURN(CMD_VER)
 
+  ELSEIF ShellEqual(word,c"UNMOUNT")<>0 THEN
+    RETURN(CMD_UNMOUNT)
   ELSEIF ShellEqual(word,c"MOUNT")<>0 THEN
     RETURN(CMD_MOUNT)
 
@@ -892,16 +898,8 @@ BYTE FUNC ShellParse()
     RETURN(0)
   FI
 
-  IF shell.command=CMD_MOUNT THEN
-    IF shell.argc>2 THEN
-      RETURN(0)
-    FI
-
-    IF shell.argc=2 THEN
-      IF ShellEqual(shell.words(1).text,c"DIAGNOSTICS")=0 THEN
-        RETURN(0)
-      FI
-    FI
+  IF shell.command=CMD_UNMOUNT AND shell.argc<>2 THEN
+    RETURN(0)
   FI
 
   IF shell.command=CMD_BREAK AND shell.argc<>2 THEN
@@ -1242,6 +1240,7 @@ RETURN
 
 INCLUDE "shell-mount-diagnostics.inc"
 INCLUDE "shell-commands.inc"
+INCLUDE "shell-mounts.inc"
 INCLUDE "shell-redirection.inc"
 INCLUDE "shell-path.inc"
 INCLUDE "shell-jobs.inc"
@@ -1331,7 +1330,7 @@ PROC ShellDispatch()
   CASE shell.command OF
   WHEN CMD_HELP THEN
     ShellLineText(DOS.Output(),
-        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
+        c"HELP ECHO CLS CD DIR TYPE MEM TASKS VER MOUNT UNMOUNT DEVICES PATH ALIAS UNALIAS RUN JOBS BREAK EXECUTE EXIT")
     ShellText(DOS.Output(),c"Edit: Ctrl-A/E home/end, B/F left/right\n")
     ShellText(DOS.Output(),c"Ctrl-U clear, K cut end, W cut word\n")
     ShellText(DOS.Output(),c"Ctrl-L clear screen\n")
@@ -1389,10 +1388,10 @@ PROC ShellDispatch()
     ShellText(DOS.Output(),CSTRING(EXECBUILD.version))
 
   WHEN CMD_MOUNT THEN
-    ShellMounts(DOS.Output())
-    IF shell.argc=2 THEN
-      ShellIdeDiagnostics(DOS.Output(),1)
-    FI
+    ShellMountCommand()
+
+  WHEN CMD_UNMOUNT THEN
+    ShellUnmountCommand()
 
   WHEN CMD_DEVICES THEN
     ShellDevices(DOS.Output())

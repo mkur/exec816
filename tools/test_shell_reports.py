@@ -108,6 +108,33 @@ def cases():
          b'MOUNT FAILED  =\nABCDEFGHIJKLMNOPQRSTUVWXYZ12345:\nMOUNT PHASE   =sector size mismatch\n'
          b'MOUNT ERROR   ='+f'{fault_messages()[205]} (205)\n'.encode()+
          b'MOUNT DEVICE  =ideplus.device/15\n  expected 12345 x 256B\n  actual   1440 x 512B\n')
+    case('mount-discovery-conflict', """  STR.strlcpy(mountFailure.name,c"DATA",32)
+  mountFailure.backend=0
+  mountFailure.unit=50
+  mountFailure.stage=FSTYPES.MOUNT_DISCOVERY
+  mountFailure.error=225
+  mountFailure.reason=FSDISCOVER.BAD_DENSITY
+  mountFailure.status(0)=$20
+  mountFailure.percom(0)=40
+  mountFailure.percom(3)=18
+  mountFailure.percom(7)=128
+  ShellMountFailureReport(NULL)
+  mountFailure.reason=0
+  mountFailure.source=0""",
+         b'MOUNT FAILED  =DATA:\nMOUNT PHASE   =disk geometry\n'
+         b'MOUNT ERROR   ='+f'{fault_messages()[225]} (225)\n'.encode()+
+         b'MOUNT DEVICE  =sio.device/D2\nMOUNT REASON  =STATUS/PERCOM conflict\n'
+         b'MOUNT STATUS  =20 00 00 00 \nMOUNT PERCOM  =28 00 00 12 00 00 \n'
+         b'MOUNT PERCOM  =00 80 00 00 00 00 \n')
+    case('mount-effective-geometry', """  STR.strlcpy(mountRows(0).name,c"DATA",32)
+  mountRows(0).unit=50
+  mountRows(0).format=FSFORMATS.SDFS
+  mountRows(0).sectors=2880
+  mountRows(0).bytes=256
+  mountRows(0).profile=EXEC.SIO_PROFILE_GENERIC57600
+  mountRows(0).source=FSDISCOVER.PERCOM
+  ShellMountDetails(NULL,@mountRows(0))""",
+         b'DATA:\n  D2 SpartaDOS read-only\n  2880 x 256B GENERIC57600\n  geometry: PERCOM\n')
     case('mount-open-reason', '''  mountFailure.stage=BLOCKTYPES.ADMIT_OPEN
   partitions(15).reason=IDEPLUS.SLOT_DELETED
   ShellMountOpenReason(NULL,15)''', b'MOUNT REASON  =deleted APT slot\n')

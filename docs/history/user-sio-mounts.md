@@ -5,7 +5,7 @@
 [Implementation plan](../plans/user-sio-mounts-implementation-plan.md) ·
 [Compact evidence](../development/user-sio-mounts.json)
 
-Status: UM0–UM3 implemented at the development tier; UM4–UM5 pending. Public DOS operations are available; resident shell forms are pending UM4.
+Status: UM0–UM4 implemented at the development tier; UM5 pending. Public DOS operations and resident shell forms are available.
 
 ## UM0 registry and saved definitions
 
@@ -111,3 +111,27 @@ replacement, first-writer/rollback and empty-service recovery. Final workflow
 cases use the intended GENERIC57600 default. FASTEST125 discovery and stock
 fallback have separate UM2 coverage; these development checks do not qualify
 all transfer timing across arbitrary image layouts or physical peripherals.
+
+## UM4 resident commands and retained diagnostics
+
+MOUNT accepts mandatory FORMAT for new definitions, DRIVE or Dn inference,
+PROFILE and explicit READWRITE; UNMOUNT accepts a name. Duplicate/unknown
+options, missing values, disagreement with Dn and removed geometry arguments
+fail before dispatch. Name-only remount and observational MOUNT/DIAGNOSTICS
+remain distinct forms. Both new commands run through the resident dispatcher,
+redirection and EXECUTE, without external command loading.
+
+Successful mounting prints name, drive, selected filesystem, effective access,
+geometry, fixed profile and geometry source. Diagnostics display retained
+READ/STATUS/PERCOM/admission phases, precise geometry rejection reasons and raw
+responses, without probing. PERCOM bytes split into six-byte rows for the
+standard console. Private inspection records grow from 42 to 52 bytes; nine
+rows use 468 of the existing 512-byte shell transfer area. No shell allocation
+or bank-zero reservation increases; fixed/per-Task/private-idle deltas are zero.
+
+Development checks: 469 host cases, 31 optimized emitted report cases with exact
+Write counts and 21 parser cases, plus a real standard-console workflow (31
+assertions) covering busy current directory, detach/redefine, redirection,
+observational diagnostics and an EXECUTE script. Disk admission leaves media
+unchanged; resource baselines and stack/domain/ownership guards pass. No demo
+or release qualification was run for this slice.

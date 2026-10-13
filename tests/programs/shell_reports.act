@@ -7,6 +7,8 @@ TYPE Mark=[CARD offset,writes]
 Mark ARRAY marks(CASE_CAPACITY)
 BYTE ARRAY captured(CAPTURE_CAPACITY),longText(256)
 CARD capturedCount,writeCount,caseCount,checks
+DOS.SioMountSpec parsedSpec
+BYTE ARRAY parsedName(32)
 BYTE finished,failurePresent
 TASKINSPECT.Info ARRAY taskRows(5)
 DEVICEINSPECT.Info ARRAY deviceRows(4)
@@ -114,6 +116,46 @@ PROC Boundary(CARD length)
 
 RETURN
 
+PROC MountCase(CSTRING line LONGINT error CARD drive,format,profile,access)
+
+  STR.strlcpy(ShellLine(),line,LINE_CAPACITY)
+  Require(ShellParse()<>0 AND shell.command=CMD_MOUNT)
+  Require(ShellMountParse(parsedName,@parsedSpec)=error)
+  IF error=0 THEN
+    Require(parsedSpec.drive=drive AND parsedSpec.format=format AND
+        parsedSpec.profile=profile AND parsedSpec.access=access)
+  FI
+
+RETURN
+
+PROC MountParser(BYTE unused)
+
+  Require(ShellClassify(BYTE POINTER(c"unmount"))=CMD_UNMOUNT)
+  Require(SIZEOF(FSINSPECT.Info)*FSINSPECT.CAPACITY<=TRANSFER_CAPACITY)
+  MountCase(c"MOUNT D2: FORMAT MYDOS",0,2,1,4,0)
+  MountCase(c"mount data: drive 3 format sparta readwrite profile stock810",0,3,2,2,1)
+  MountCase(c"MOUNT D2: FORMAT MYDOS PROFILE FASTEST125",0,2,1,1,0)
+  MountCase(c"MOUNT WORK:",0,0,0,4,0)
+  MountCase(c"MOUNT SYS:",0,0,0,4,0)
+  MountCase(c"MOUNT DATA: FORMAT MYDOS",116,0,0,0,0)
+  MountCase(c"MOUNT D2: DRIVE 2",116,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS DRIVE 3",115,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS DRIVE 0",115,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS DRIVE 9",115,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS FORMAT SPARTA",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS READWRITE READWRITE",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS PROFILE HAPPY",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS PROFILE",116,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT OTHER",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS SECTORS 720",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS BYTES 128",311,0,0,0,0)
+  MountCase(c"MOUNT D2: FORMAT MYDOS UNKNOWN",311,0,0,0,0)
+  MountCase(c"MOUNT : FORMAT MYDOS DRIVE 2",210,0,0,0,0)
+  MountCase(c"MOUNT DATA:FILE FORMAT MYDOS DRIVE 2",210,0,0,0,0)
+  MountCase(c"MOUNT ABCDEFGHIJKLMNOPQRSTUVWXYZ123456 FORMAT MYDOS DRIVE 2",210,0,0,0,0)
+
+RETURN
+
 PROC Main()
   CARD index,used
 
@@ -130,6 +172,7 @@ PROC Main()
   OD
   longText(255)=0
 
+  MountParser(0)
   INCLUDE "report-cases.inc"
 
   MarkCase()

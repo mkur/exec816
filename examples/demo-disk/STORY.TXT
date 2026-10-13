@@ -163,3 +163,24 @@ The foreground command stops and the
 shell returns to its prompt. EXIT or
 Ctrl-D closes the shell. A useful
 system should also know how to stop.
+
+Attach your own SIO disks
+-------------------------
+Mount a disk in D2 with:
+  mount d2: format mydos
+For SpartaDOS use FORMAT SPARTA.
+Geometry is discovered, not typed.
+Read-only is the default; add READWRITE
+when you want to change the disk.
+A custom name also needs DRIVE:
+  mount data: drive 3 format sparta
+  dir data:
+Close files and leave that directory
+before using UNMOUNT DATA:.
+Unmount before changing media. Supply
+FORMAT again for the replacement disk.
+MOUNT WORK: remounts a saved SIO boot
+mount. Plain MOUNT lists; MOUNT
+DIAGNOSTICS reports retained details.
+These commands also work in S:USER.
+IDE BIOS ATR slots are not true SIO.

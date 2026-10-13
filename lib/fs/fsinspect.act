@@ -12,6 +12,9 @@ PUBLIC TYPE Info=[
   BYTE ARRAY name(32)
   BYTE offline,format,readOnly,requestedAccess,backend,unit
   LONGINT error
+  LONGCARD sectors
+  CARD bytes,profile
+  BYTE source,slot
 ]
 
 PUBLIC TYPE Failure=[
@@ -138,6 +141,11 @@ PUBLIC CARD FUNC Snapshot(Info POINTER rows CARD limit)
             rows(count).backend=mount.spec.backend
             rows(count).unit=BYTE(mount.spec.unit)
             rows(count).error=mount.error
+            rows(count).sectors=mount.spec.sectors
+            rows(count).bytes=mount.spec.dataBytes
+            rows(count).profile=mount.spec.profile
+            rows(count).source=mount.discovery.source
+            rows(count).slot=slot
             count==+1
           FI
         FI

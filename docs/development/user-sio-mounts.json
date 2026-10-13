@@ -4,7 +4,8 @@
     "UM0",
     "UM1",
     "UM2",
-    "UM3"
+    "UM3",
+    "UM4"
   ],
   "host_tests": 469,
   "compiler_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
@@ -2526,6 +2527,135 @@
           "untouched_above_floor": 202
         }
       ]
+    },
+    "um4-shell-reports": {
+      "status": "pass",
+      "tier": "development",
+      "case_count": 31,
+      "image_sha256": "3b8a37b02b02603f32302db13a57c81150ffbe92bc7ee3cd4c33a333280e8ba4",
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 298,
+          "untouched_above_floor": 982
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 230,
+          "untouched_above_floor": 826
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ]
+    },
+    "um4-shell-workflow": {
+      "status": "pass",
+      "tier": "development",
+      "checks": [
+        31
+      ],
+      "case_count": 0,
+      "image_sha256": "8faa8d94346e5f84220a33c8e86310d7cc0cf3bf80210685d4b6746ec2dca367",
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 507,
+          "untouched_above_floor": 773
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 232,
+          "untouched_above_floor": 824
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 280,
+          "untouched_above_floor": 776
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 123,
+          "untouched_above_floor": 933
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 50,
+          "untouched_above_floor": 206
+        }
+      ]
     }
   },
   "upper_service_bytes": 516,
@@ -2621,5 +2751,7 @@
       },
       "image_sha256": "d870105200147d30022421dc6816213982b409489fc0c1ac9d7c0c291728a4d3"
     }
-  ]
+  ],
+  "inspection_row_bytes": 52,
+  "shell_transfer_used": 468
 }

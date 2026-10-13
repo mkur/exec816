@@ -168,6 +168,18 @@ CSTRING FUNC ShellMountPhase(BYTE value)
   WHEN BLOCKTYPES.ADMIT_DURABLE THEN
     RETURN(c"durable writes unavailable")
 
+  WHEN FSTYPES.MOUNT_BOOT_READ THEN
+    RETURN(c"read sector 1")
+
+  WHEN FSTYPES.MOUNT_STATUS THEN
+    RETURN(c"disk STATUS")
+
+  WHEN FSTYPES.MOUNT_PERCOM THEN
+    RETURN(c"PERCOM GET")
+
+  WHEN FSTYPES.MOUNT_DISCOVERY THEN
+    RETURN(c"disk geometry")
+
   WHEN FSTYPES.MOUNT_RECOGNIZE THEN
     RETURN(c"filesystem recognition")
 
@@ -217,11 +229,31 @@ PROC ShellMountOpenReason(DOS.FileHandle POINTER output BYTE unit)
 
 RETURN
 
+CSTRING FUNC ShellDiscoveryReason(BYTE reason)
+
+  CASE reason OF
+  WHEN FSDISCOVER.BAD_SIZE THEN
+    RETURN(c"unsupported sector size")
+  WHEN FSDISCOVER.BAD_DENSITY THEN
+    RETURN(c"STATUS/PERCOM conflict")
+  WHEN FSDISCOVER.BAD_CAPACITY THEN
+    RETURN(c"invalid PERCOM capacity")
+  WHEN FSDISCOVER.BAD_LENGTH THEN
+    RETURN(c"short discovery reply")
+  WHEN FSDISCOVER.NO_FALLBACK THEN
+    RETURN(c"DD capacity needs PERCOM")
+  WHEN FSDISCOVER.BAD_PROFILE THEN
+    RETURN(c"profile/geometry conflict")
+  ESAC
+
+RETURN(c"none")
+
 ; Retained startup/remount failures survive destruction of their mount objects.
 PROC ShellMountFailureReport(DOS.FileHandle POINTER output)
   FSINSPECT.Failure failure
   IDEPLUS.PartitionInfo partition
   CARD used
+  BYTE index,part
 
   IF FSINSPECT.LastFailure(@failure)=0 THEN
     RETURN
@@ -268,6 +300,30 @@ PROC ShellMountFailureReport(DOS.FileHandle POINTER output)
   IF failure.backend=BLOCKTYPES.BACKEND_IDEPLUS
       AND failure.stage=BLOCKTYPES.ADMIT_OPEN THEN
     ShellMountOpenReason(output,failure.unit)
+  FI
+
+  IF failure.reason<>0 THEN
+    used=ShellRowText(output,0,c"MOUNT REASON  =")
+    ShellRowEnd(output,ShellRowText(output,used,ShellDiscoveryReason(failure.reason)))
+  FI
+
+  IF failure.stage>=FSTYPES.MOUNT_BOOT_READ OR failure.source<>0 THEN
+    used=ShellRowText(output,0,c"MOUNT STATUS  =")
+    FOR index=0 TO 3 DO
+      used=ShellRowHexByte(output,used,failure.status(index))
+      used=ShellRowByte(output,used,ASCII.SPACE)
+    OD
+
+    ShellRowEnd(output,used)
+    FOR part=0 TO 1 DO
+      used=ShellRowText(output,0,c"MOUNT PERCOM  =")
+      FOR index=0 TO 5 DO
+        used=ShellRowHexByte(output,used,failure.percom(part*6+index))
+        used=ShellRowByte(output,used,ASCII.SPACE)
+      OD
+
+      ShellRowEnd(output,used)
+    OD
   FI
 
   IF failure.stage=BLOCKTYPES.ADMIT_BYTES OR failure.stage=BLOCKTYPES.ADMIT_COUNT THEN

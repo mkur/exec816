@@ -4,7 +4,8 @@
 [Filesystem architecture](../architecture/filesystems.md) ·
 [SIO interface](../reference/device-io.md#siodevice)
 
-Status: proposed design. The commands and interfaces below are not implemented.
+Status: UM0–UM4 implemented; integration coverage and final documentation (UM5)
+are in progress.
 [Implementation plan](user-sio-mounts-implementation-plan.md).
 
 Let users attach their own MyDOS and SpartaDOS disks without rebuilding Exec816.

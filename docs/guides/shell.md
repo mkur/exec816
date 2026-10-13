@@ -22,7 +22,10 @@ Source lives in [examples/shell](../../examples/shell/).
 | `MEM` | Report ordinary/linear available totals and largest eligible blocks; the totals overlap. |
 | `TASKS` | Snapshot live public Tasks, including workers; omit unused slots and private idle. |
 | `VER` | Print abbreviated Exec816 and compiler-pin revisions. |
-| `MOUNT [DIAGNOSTICS]` | List runtime mounts and retained failures; DIAGNOSTICS adds controller/capacity/APT observations. |
+| `MOUNT [DIAGNOSTICS]` | Inspect mounts and retained geometry/transport diagnostics without probing. |
+| `MOUNT name: [DRIVE n] FORMAT MYDOS/SPARTA [PROFILE name] [READWRITE]` | Discover a SIO disk and mount the selected filesystem; read-only by default. |
+| `MOUNT name:` | Remount a detached saved SIO boot definition. |
+| `UNMOUNT name:` | Detach an idle SIO volume; live files and directory locks make it busy. |
 | `DEVICES` | List resident drivers and runtime state, including `timer.device`. |
 | `PATH [ADD directory / SET directory / CLEAR / RESET]` | Inspect or change the shell's command search directories. |
 | `ALIAS [name ["command arguments"]]` | List, inspect, set or replace a session-local command alias. |
@@ -33,10 +36,44 @@ Source lives in [examples/shell](../../examples/shell/).
 | `EXECUTE file` | Run a script through the ordinary command dispatcher. |
 | `EXIT` | Stop and collect the job, then release shell resources. |
 
-Command names ignore case. MOUNT only lists; it does not mount/unmount media or
-probe a drive. A mount's handler is MyDOS or SDFS according to its configuration,
-not automatic format discovery. A failed mount leaves a usable prompt; an offline
+Command names and options ignore case. Plain MOUNT and MOUNT DIAGNOSTICS remain
+observational. New mounts require an explicit filesystem; there is no automatic
+format selection. A failed mount leaves a usable prompt; an offline
 SIO bus can require a cold boot after correcting the disk/profile setup.
+
+For a real or emulator SIO disk in D2:
+
+```text
+MOUNT D2: FORMAT MYDOS
+CD D2:
+DIR
+CD RAM:
+UNMOUNT D2:
+```
+
+A custom name needs DRIVE: `MOUNT DATA: DRIVE 3 FORMAT SPARTA READWRITE`.
+FORMAT accepts MYDOS/SPARTA. PROFILE defaults to GENERIC57600; STOCK810 is
+128-byte only, and FASTEST125 requires a matching peripheral. These fixed
+profiles do not negotiate speed. Geometry comes from READ sector 1, STATUS and
+PERCOM; there are no SECTORS/BYTES/track overrides. Only unsupported PERCOM
+permits conventional 720/1,040 × 128 STATUS fallback. Contradictory geometry,
+unknown DD capacity and stock-XF551 density ambiguity reject mounting. See
+[user mounts](../reference/dos.md#user-sio-mounts) for the bounds and exclusions.
+
+Unmount the disk before replacing its media. User definitions are discarded on
+unmount, so supply FORMAT again after a disk change. Saved SIO boot definitions
+can be remounted by name alone, preserving access and geometry. SYS's boot
+selection stays fixed. Successful replacement of a detached non-SYS boot
+mount becomes a user definition; failed replacement preserves the saved one.
+Nine slots are shared with boot IDE/RAM volumes. New names cannot collide with
+ASSIGNs; an active drive cannot be mounted under two names. Change directory and
+close files before unmount. Directory ASSIGNs keep path text rather than locks.
+
+These resident commands work in EXECUTE/S:USER scripts and with redirection,
+under the existing rules for built-ins (no RUN or pipeline stages). New mounts
+support only true SIO D1–D8. IDE-only builds reject them; IDE Plus BIOS ATR slots
+are not true SIO drives. MOUNT DIAGNOSTICS copies retained STATUS/PERCOM bytes,
+geometry source and the failing discovery/admission phase; it does no new I/O.
 
 DIR and LIST print exact byte lengths as numbers, upper bounds as `<=2530`,
 and unavailable sizes as `?`. MyDOS usually supplies a sector-derived bound;
