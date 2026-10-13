@@ -7,7 +7,7 @@
 static struct Desktop d;
 static struct Browser a,b;
 static struct FileEntry entries[2];
-static OBJECT tree[24];
+static OBJECT tree[BROWSER_OBJECTS];
 static WORD held,visual,writes,admitted,accept,hit,found,words[8];
 static char destination[128];
 static struct Browser *desktop_folder(struct Desktop *desk,WORD handle)
@@ -76,5 +76,11 @@ int main(void)
  assert(drag_target(&d) && d.drag.target==2 && !strcmp(d.drag.destination,"WORK:/FILE.TXT"));
  reset();tracking();a.selectionDirectories=1;d.drag.entry=0;d.down=1;
  assert(drag_start(&d) && d.drag.phase==DRAG_RELEASE && !held && !visual);
+ reset();tracking();b.parent=1;hit=BROWSER_ROW_FIRST;
+ assert(drag_target(&d) && !d.drag.target && !d.drag.destination[0]);
+ reset();a.parent=1;d.down=1;hit=BROWSER_ROW_FIRST;
+ assert(desktop_drag_input(&d,MU_BUTTON)==MU_BUTTON && !d.drag.phase);
+ hit=BROWSER_ROW_FIRST+1;a.visible=2;
+ assert(desktop_drag_input(&d,MU_BUTTON)==MU_BUTTON && d.drag.phase==DRAG_ARMED && d.drag.entry==0);
  return 0;
 }

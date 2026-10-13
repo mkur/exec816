@@ -729,11 +729,17 @@ without navigating; Backspace only edits text. FULLER toggles full/remembered bo
 resize reflows; vertical arrows, page clicks and the thumb scroll. Plain clicks
 replace selection; Shift-click toggles membership and Shift-arrow adds the next
 entry. View > Select All/None and Ctrl+A act on the cached snapshot,
-including offscreen entries. Open/Return/Rename require exactly one member;
+including offscreen entries. A virtual `..` item leads each subdirectory, scrolls with its contents and
+opens the parent on Return or double-click. It is omitted at roots. Going up
+selects and reveals the directory just left. The parent can have a highlight
+and keyboard focus, but never joins file membership or Copy/Delete/Rename;
+it is neither a drag source nor a drop target. All 256 real slots remain
+available, so scrolling can cover 257 display items.
+Open/Return on files and Rename require exactly one member;
 modified double-clicks never open. The status strip shows the selected count.
 A dotted border marks the keyboard lead independently of selection; mouse input
-removes it. The decoration does not intercept object hits. Refresh and sort changes retain selected filenames; navigation clears
-them. Larger directories report truncation. Standalone Files shares these rules.
+removes it. The decoration does not intercept object hits. Refresh and sort changes retain selected filenames or parent focus; ordinary
+downward navigation clears them. Larger directories report truncation. Standalone Files shares these rules.
 The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the horizontal
 cursor keys; physical Shift-arrow checks use Up/Down. Shift-click can select
 entries in either direction.

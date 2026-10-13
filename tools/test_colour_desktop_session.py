@@ -45,7 +45,7 @@ class ColourDesktop:
         self.drag=drag;self.compact=compact
 
     def prepare_work(self,target,item):
-        if not self.files and not self.selection and not self.batch and self.restore is None:return
+        if not self.files and not self.selection and not self.batch and not self.compact and self.restore is None:return
         import tempfile
         from sdfs_reference import extract,make
         with tempfile.TemporaryDirectory(prefix='exec816-colour-') as tmp:
@@ -54,6 +54,9 @@ class ColourDesktop:
                 if self.batch=='delete':from colour_delete_check import fixture
                 else:from colour_batch_check import fixture
                 fixture(root)
+            if self.compact:
+                for name in [*(f'A{i:02d}' for i in range(12)),'ZLAST']:(root/'NAV'/name).mkdir(parents=True)
+            if self.selection=='standalone':(root/'EMPTY').mkdir()
             if self.selection:
                 (root/'ALPHA.TXT').write_bytes(b'alpha')
                 (root/'BETA.TXT').write_bytes(b'beta')

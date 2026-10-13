@@ -50,7 +50,10 @@ Shift-arrow adds an entry. Ctrl-A/View > Select All includes cached offscreen
 entries; View > Select None clears. Open and Rename need one entry.
 Arrows navigate; a dotted outline marks keyboard focus. Selection reverses the
 label without changing the icon. File > Parent or Esc goes to the parent in the same window; at a volume root
-Esc does nothing. File > Refresh or Ctrl-L reloads the directory.
+Esc does nothing. The first item in a subdirectory is a parent-folder icon
+labelled ..; double-click or Return goes up and reveals the directory just left.
+The parent does not join selections for Copy/Delete and cannot be dragged or
+used as a drop target. File > Refresh or Ctrl-L reloads the directory.
 The thin top line shows totals, selection counts or operation feedback. The path
 is in the title. New windows start smaller; navigation preserves their size.
 Drag the bottom-right size gadget; vertical arrows, track and thumb scroll.

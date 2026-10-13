@@ -17,7 +17,7 @@ def exercise(s,desk,base,click,key,path,shot,move):
         b._cmd_ok('KEY ALL up');s.frames(35)
     def icon_pixels(index=None):
         # Compare just the bitmap, excluding its independently selected label.
-        at=s.number(base+F['tree'],4)+(ROW_FIRST+(n('selected') if index is None else index)-n('first'))*24
+        at=s.number(base+F['tree'],4)+(ROW_FIRST+(n('selected') if index is None else index)+n('parent')-n('first'))*24
         x,y,w,h=work();x+=s.number(at+16,2)+32;y+=s.number(at+18,2)+2
         frame=b.rawscreen(str(s.p['output']/'compact-icon.bgra'))
         raw=(s.p['output']/'compact-icon.bgra').read_bytes()
@@ -76,6 +76,28 @@ def exercise(s,desk,base,click,key,path,shot,move):
     path(base,'SYS:C');x,y,w,h=work();before=n('first');click(x+w+8,y+h-8)
     require(n('first')>before,'Compact scrolling')
     shot('compact-files-scrolled')
+    # Parent is a navigation item, never part of file membership. Up reveals
+    # the directory just left even when it lies beyond the first page.
+    path(base,'WORK:NAV/ZLAST')
+    require(n('count')==0 and n('parent')==1,'Empty directory omitted parent')
+    select(s,base,'..',click)
+    require(n('selected')==65534 and not n('selectionCount'),'Parent joined selection bitmap')
+    require(n('menuEnabled')&1 and not n('menuEnabled')&52,'Parent mutation commands enabled')
+    key('R');require(n('dialog')==0,'Parent Rename opened a dialog')
+    b._cmd_ok('KEY CTRL down');key('L');b._cmd_ok('KEY CTRL up');wait_listing(s,base)
+    require(n('selected')==65534,'Refresh lost parent focus')
+    shot('compact-files-parent')
+    key('RETURN');wait_listing(s,base)
+    require(text('path')=='WORK:NAV' and n('first')>0 and listing(s,base)[n('selected')]=='ZLAST','Up did not reveal child')
+    shot('compact-files-parent-return')
+    view(2);wait_listing(s,base)
+    select(s,base,'ZLAST',click);key('RETURN');wait_listing(s,base);key('ESC');wait_listing(s,base)
+    require(text('path')=='WORK:NAV' and listing(s,base)[n('selected')]=='ZLAST','Disk-order upward selection')
+    select(s,base,'..',click);b._cmd_ok('KEY SHIFT down');select(s,base,'..',click);b._cmd_ok('KEY SHIFT up')
+    require(not n('selectionCount') and n('selected')==65534,'Modified parent joined file selection')
+    view(3);require(n('selectionCount')==n('count'),'Select All included parent')
+    require(n('selected')!=65534,'Select All retained parent action')
+    path(base,'SYS:');require(n('parent')==0,'Volume root includes parent')
     click(120,100);shot('compact-files-inactive')
     x,y,w,h=work();click(x+120,y-8);s.frames(60)
     click(x,y-8);s.frames(160);shot('compact-files-closed')
@@ -83,4 +105,4 @@ def exercise(s,desk,base,click,key,path,shot,move):
         refresh_menu=True,refresh_key=True,status_totals=True,selection_artwork_unchanged=True,
         keyboard_focus=True,focus_click_through=True,icon_list=True,sort_toggle=True,
         resize=True,navigation_keeps_bounds=True,full_restore=True,scroll=True,
-        distinct_gadgets=True,inactive_exposure=True,close=True)
+        distinct_gadgets=True,inactive_exposure=True,close=True,virtual_parent=True,empty_parent=True,upward_reveal=True,parent_mutation_exclusion=True,parent_refresh=True)

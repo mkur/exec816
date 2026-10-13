@@ -50,9 +50,9 @@ static WORD drag_target(struct Desktop *d)
             d->my>=b->work[1]+BROWSER_CONTENT_TOP && d->my<b->work[1]+b->work[3]-BROWSER_CONTENT_BOTTOM) {
             hit=objc_find(b->tree,0,MAX_DEPTH,d->mx,d->my);
             if (hit>=BROWSER_ROW_FIRST && hit<BROWSER_ROW_FIRST+b->visible &&
-                b->first+hit-BROWSER_ROW_FIRST<b->count) {
-                hit=b->first+hit-BROWSER_ROW_FIRST;
-                if (b->entries[hit].kind>0) {
+                b->first+hit-BROWSER_ROW_FIRST<b->count+b->parent) {
+                hit=display_entry(b,b->first+hit-BROWSER_ROW_FIRST);
+                if (hit>=0 && b->entries[hit].kind>0) {
                     if (FileJoin(g->destination,sizeof(g->destination),b->path,b->entries[hit].name)) target=handle;
                     else if (!d->down) strcpy(d->status,"Drop path is too long");
                 }
@@ -90,7 +90,7 @@ static WORD drag_start(struct Desktop *d)
     if (d->down) {
         if (!wind_update(BEG_MCTRL)) return 0;
         g->held=1;
-        row=&b->tree[BROWSER_ROW_FIRST+g->entry-b->first];
+        row=&b->tree[BROWSER_ROW_FIRST+display_index(b,g->entry)-b->first];
         if (!ExecAESDragOutline(b->window,-8,-4,
             row->ob_width>80 ? 80:row->ob_width,row->ob_height>32 ? 32:row->ob_height) &&
             ExecAESDiagnostic()!=AES_BUSY) return 0;
@@ -138,8 +138,8 @@ static WORD desktop_drag_input(struct Desktop *d,WORD events)
         if (!b || b->dialog) return events;
         hit=objc_find(b->tree,0,MAX_DEPTH,d->mx,d->my);
         if (hit<BROWSER_ROW_FIRST || hit>=BROWSER_ROW_FIRST+b->visible) return events;
-        hit=b->first+hit-BROWSER_ROW_FIRST;
-        if (hit>=b->count || b->entries[hit].kind>0) return events;
+        hit=display_entry(b,b->first+hit-BROWSER_ROW_FIRST);
+        if (hit<0 || hit>=b->count || b->entries[hit].kind>0) return events;
         g->phase=DRAG_ARMED;g->source=b->window;g->entry=hit;g->target=0;g->hover=-1;
         g->pressX=g->lastX=d->mx;g->pressY=g->lastY=d->my;
         return events;

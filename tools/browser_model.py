@@ -22,6 +22,8 @@ for name in FIELDS:
 SIZE+=64
 FIELDS['keyboardFocus']=SIZE
 SIZE+=2
+FIELDS['parent']=SIZE
+SIZE+=2
 FIELDS['scan']=FIELDS['stock']-20
 CONTENT_TOP=16
 ICON_PITCH=36
@@ -64,17 +66,19 @@ def select(session,base,name,click,stable_snapshot=False):
         names=listing(session,base)
         status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
         path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
-        if name in names and (status==path or not status.startswith(b'SYS:')):break
+        parent=session.number(base+FIELDS['parent'],2)
+        if (name in names or (name=='..' and parent)) and (status==path or not status.startswith(b'SYS:')):break
         session.frames(40)
-    require(name in names,'Missing Files entry '+name+': '+repr((path,status,names)))
+    require(name in names or (name=='..' and parent),'Missing Files entry '+name+': '+repr((path,status,names)))
     for _ in range(256):
         # A mutation may finish rebuilding/sorting the retained snapshot while
         # the first scrollbar click is in flight. Resolve the name again; an
         # index captured from the preceding directory can become unreachable.
         if not stable_snapshot:names=listing(session,base)
-        if name not in names:
+        parent=session.number(base+FIELDS['parent'],2)
+        if name not in names and not (name=='..' and parent):
             session.frames(40);continue
-        index=names.index(name)
+        index=0 if name=='..' else names.index(name)+parent
         first=session.number(base+FIELDS['first'],2)
         visible=session.number(base+FIELDS['visible'],2)
         x,y,w,h=[session.number(base+FIELDS['work']+i*2,2) for i in range(4)]

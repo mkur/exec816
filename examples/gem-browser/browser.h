@@ -13,6 +13,7 @@
 #define BROWSER_CONTENT_TOP 16
 #define BROWSER_CONTENT_BOTTOM 2
 #define BROWSER_FOCUS 1
+#define BROWSER_PARENT (-2)
 struct Browser {
     WORD id,vdi,window,opened;
     volatile WORD ready;
@@ -45,8 +46,18 @@ struct Browser {
     struct Desktop *desktop;
     UBYTE selection[BROWSER_ENTRIES/8];
     WORD selectionCount,selectionDirectories,armedModifiers,refreshPending;
-    WORD keyboardFocus;
+    WORD keyboardFocus,parent;
 };
+/* Only display positions include the virtual parent. Membership and file jobs
+ * always address the unchanged real-entry snapshot. */
+static inline WORD display_entry(const struct Browser *b,WORD position)
+{
+    return b->parent && position==0 ? BROWSER_PARENT:position-b->parent;
+}
+static inline WORD display_index(const struct Browser *b,WORD entry)
+{
+    return entry==BROWSER_PARENT ? 0:entry<0 ? -1:entry+b->parent;
+}
 WORD BrowserRun(struct Browser *);
 WORD DesktopRun(void);
 #endif

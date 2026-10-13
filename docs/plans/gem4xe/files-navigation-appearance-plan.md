@@ -3,7 +3,7 @@
 [Plans](../README.md) · [Current AES and desktop contract](../../reference/aes.md) ·
 [Compact Files results](../../history/compact-files.md)
 
-Status: implementation in progress. FR1–FR2 pass development checks; FR3–FR5
+Status: implementation in progress. FR1–FR3 pass development checks; FR4–FR5
 remain pending. The parent-folder artwork is approved.
 
 Make Files denser and easier to navigate at 640×240: distinct GEM window

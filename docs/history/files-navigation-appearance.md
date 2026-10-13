@@ -35,3 +35,24 @@ Parent/Refresh input checks and orderly EXIT. Host checks pass 455 tests with
 four existing skips. The Browser remains 4,039 upper-memory bytes; removing
 two OBJECTs saves 48 heap bytes per folder (552 instead of 600). Fixed,
 per-Task and idle reserved bank-zero deltas are all **zero**.
+
+## FR3: virtual parent and upward selection
+
+Subdirectories have a scrolling `..` item using the approved 32×16 artwork.
+Display positions map to the existing snapshot; its 256 entries and 32-byte
+bitmap are unchanged. Parent selection clears file membership, and file
+operations and drag admission exclude it. Up reuses the existing edit buffer
+to remember the child name, then selects and reveals it after a successful scan.
+An unsuccessful scan does not change the path.
+
+The optimized desktop passes the compact walkthrough with empty-directory
+parent selection, refresh, Return/Esc/menu navigation, offscreen child reveal,
+name/disk order, mutation exclusion and root omission. A separate real-directory
+run passes 256 real entries plus parent, Select All, the final bitmap bit,
+scrollbar access and list switching. Both complete EXIT with guards intact.
+The host drag fixture also rejects the parent as a source and destination.
+The final integration slice exercises actual disk copies and standalone Files.
+
+The Browser grows by two upper-memory bytes to 4,041. O0/O2 emitted layout
+probes pass; the host suite passes 455 tests with four existing skips. Fixed,
+per-Task and idle reserved bank-zero deltas are all **zero**.

@@ -77,6 +77,11 @@ def exercise(s,desk,source,click,key,fill,path,desk_menu,shot,move,menus):
     from colour_drag_timing import exercise as timing
     result['idle_timing']=timing(s,point,begin,cancel,move)
     begin(point);hover(background,target);cancel()
+    require(b.memdump(source+F['path'],128).split(b'\0')[0]==b'SYS:','Drag Escape navigated')
+    begin(point);move(tx+48,ty+CONTENT_TOP+12);s.frames(30)
+    require(not g('target'),'Parent accepted a drop or fell through to background')
+    edge(0,60);ready();require(not s.number(desk+D['job'],4),'Parent drop admitted a copy')
+    result['parent_drop_rejected']=True
     result['escape_and_rearm']=True
     begin(point);move(639,235);s.frames(30)
     require(not g('target'),'Desktop edge accepted as folder')
@@ -94,7 +99,7 @@ def exercise(s,desk,source,click,key,fill,path,desk_menu,shot,move,menus):
     key('ESC');pick('LONG.TXT');point=pick('VIEW.TXT',True)
     require(n(source,'selectionCount')==2,'Multi-selection setup')
     begin(point)
-    names=listing(s,target);index=names.index('SUB')-n(target,'first');columns=n(target,'columns')
+    names=listing(s,target);index=names.index('SUB')+n(target,'parent')-n(target,'first');columns=n(target,'columns')
     sub=(tx+48+index%columns*104,ty+CONTENT_TOP+12+index//columns*ICON_PITCH)
     hover(sub,target)
     require(b.memdump(drag+G['destination'],128).split(b'\0')[0]==b'WORK:DROP/SUB','Subdirectory targeting')

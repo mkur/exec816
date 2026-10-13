@@ -116,6 +116,9 @@ def standalone(s,desk,click,key,path,move,menus,shot):
     move(x+w-56,y+h-24);s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
     require(s.number(base+F['selectionCount'],2)==2,'Resize lost membership')
     shot('standalone-multiple-selection')
+    path(base,'WORK:EMPTY');select(s,base,'..',click);key('RETURN');wait_listing(s,base)
+    require(s.b.memdump(base+F['path'],128).split(b'\0')[0]==b'WORK:','Standalone parent navigation')
+    require(listing(s,base)[s.number(base+F['selected'],2)]=='EMPTY','Standalone upward selection')
     x,y=[s.number(base+F['work']+2*i,2) for i in range(2)]
     click(x,y-8);s.ready(previous);menus.select('Shell')
     after=memory();require(after==before and s.ledger()==ledger,'Standalone Files retained heap/ownership')
