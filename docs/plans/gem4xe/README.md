@@ -1,5 +1,14 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [AES and Layers VRAM design](aes-layers-vram-design.md) joins
+application repaint tracking with Layers-owned cache validity. It starts with
+menu background restoration, then rendered popup reuse and larger client
+snapshots, using fixed VRAM slots and existing AES update exchanges. External
+applications retain exposure redraw messages; cached pixels do not certify
+unreported model changes. The [AV1–AV6 implementation plan](aes-layers-vram-plan.md)
+orders repaint cooperation, menu save-under, popup images, AES snapshots,
+incremental maintenance/copied moves and the measured OF816 demo.
+
 The [dropdown menu latency design](menu-latency-design.md) and
 [implementation plan](menu-latency-plan.md) cover complete-label batching,
 targeted highlight damage and bounded menu precedence in the existing
