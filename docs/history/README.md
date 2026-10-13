@@ -1,5 +1,8 @@
 # Historical records
 
+- [Loaded Process Task names](process-task-names.md): retained executable names
+  in TASKS, without changing the Task API or execution domains.
+
 - [Desktop usability](desktop-usability.md): a default 4×4 Files grid, RAM disk
   icon, compact delete confirmation, shorter Shell title and desktop spacing.
 

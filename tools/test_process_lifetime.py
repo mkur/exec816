@@ -11,7 +11,7 @@ from os_boundary import emulator, run_to
 from test_cooperative import data
 from test_dos_stack import execute, ownership
 
-PIN = json.loads((ROOT/'toolchain/altirra-shell-console.json').read_text())
+PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 
 
 def overrides(out):
@@ -33,11 +33,11 @@ def overrides(out):
              '  IF PROCESSCONTROL.fault=2 THEN client=ClientContext POINTER(0)\n'
              '  ELSE client=ClientContext POINTER(EXEC.AllocMem(CLIENT_SIZE,EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)) FI')],
         'portcore.act': [
-            ('  port=EXEC.MsgPort POINTER(EXEC.AllocMem(EXEC.MSGPORT_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))',
+            ('  port=EXEC.MsgPort POINTER(EXEC.AllocMem(EXEC.MSGPORT_SIZE,EXEC.MEMF_PUBLIC\n      OR EXEC.MEMF_CLEAR))',
              '  IF PROCESSCONTROL.fault=3 THEN port=EXEC.MsgPort POINTER(0)\n'
              '  ELSE port=EXEC.MsgPort POINTER(EXEC.AllocMem(EXEC.MSGPORT_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR)) FI'),
-            ('  bit=EXEC.AllocSignal($ff)',
-             '  IF PROCESSCONTROL.fault=5 THEN bit=$ff\n  ELSE bit=EXEC.AllocSignal($ff) FI')],
+            ('  LET bit=EXEC.AllocSignal($ff)',
+             '  LET bit=IF PROCESSCONTROL.fault=5 THEN BYTE($ff) ELSE EXEC.AllocSignal($ff) FI')],
     }
     hashes = {}
     for name, replacements in edits.items():
@@ -56,7 +56,7 @@ def run(out, mode):
     out.mkdir(parents=True,exist_ok=True)
     modified = overrides(out)
     program = build(compiler(ROOT/'build/actionc'),ROOT/'tests/programs/process_lifetime.act',out,
-                    optimize=mode == 'opt',tasks=True,task_capacity=8,console=False)
+                    optimize=mode == 'opt',tasks=True,task_capacity=8,console=False,console_deferred=True)
     return exercise(program,mode,modified)
 
 
@@ -72,7 +72,7 @@ def exercise(program, mode, modified):
             require(int(registers['P'].lstrip('$'),16)&0x3c == 0, 'Invalid Process entry/return width, decimal or IRQ state')
             snapshots.append(dict(routine=label,address=address,registers=registers))
             bridge.bp_clear_all()
-    with emulator(ROOT/'build/shell-console-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as bridge:
+    with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as bridge:
         machine = verify_machine(bridge,ROOT/'build/firmware/altirraos-816.rom',PIN)
         try:
             runtime,_ = execute(bridge,program,before_run=inspect_entries,timeout=180,frame_limit=9000)

@@ -1,0 +1,434 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "baseline_commit": "5734916f2426c707587caece0d84250940ecec79",
+  "checks": {
+    "resident": {
+      "result_path": "build/task-names/lifetime/results.json",
+      "sha256": "c6712076bc09c60034722709eb7e11bd2246a7f458b4b39f69dd62dc58942aee",
+      "status": "pass",
+      "checks": [
+        8437
+      ],
+      "completed": null,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 188,
+          "untouched_above_floor": 1092
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 149,
+          "untouched_above_floor": 907
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 138,
+          "untouched_above_floor": 2166
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 138,
+          "untouched_above_floor": 2166
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    "loaded": {
+      "result_path": "build/task-names/loaded/results.json",
+      "sha256": "e9cea54da35689d8f902c68ca338ba177ada39afafafb5df25a831be2d07b470",
+      "status": "pass",
+      "checks": [
+        96
+      ],
+      "completed": [
+        12
+      ],
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 463,
+          "untouched_above_floor": 817
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 305,
+          "untouched_above_floor": 751
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 149,
+          "untouched_above_floor": 907
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 608,
+          "untouched_above_floor": 448
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 609,
+          "untouched_above_floor": 447
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 677,
+          "untouched_above_floor": 1627
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      }
+    },
+    "packaged": {
+      "result_path": "build/task-names/demo/task-names-results.json",
+      "sha256": "97bd0d37e0c43bc18fa3dc3d7cadab69c24f6b9de16291fbe4a5f4680894c606",
+      "status": "pass",
+      "checks": null,
+      "completed": null,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "fault_required": 0,
+        "live_tasks": 0
+      },
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 547,
+          "untouched_above_floor": 733
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 381,
+          "untouched_above_floor": 675
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 189,
+          "untouched_above_floor": 867
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 799,
+          "untouched_above_floor": 257
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 666,
+          "untouched_above_floor": 390
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 339,
+          "untouched_above_floor": 717
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 751,
+          "untouched_above_floor": 1553
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 129,
+          "untouched_above_floor": 127
+        }
+      ],
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$8082241e90f1e2b4",
+        "actual_kernel_id": "$8082241e90f1e2b4",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "task_names": {
+        "initial": ">  TASKS                                                        SLOT STATE    NAME                                              0    RUNNING  shell                                             1    WAITING  dos.filesystem                                    2    WAITING  sio.device                                        3    WAITING  DESKTOP.APP                                       6    READY    console.device                                    >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ",
+        "running": ">  TASKS                                                        SLOT STATE    NAME                                              0    RUNNING  shell                                             1    WAITING  dos.filesystem                                    2    WAITING  sio.device                                        3    WAITING  DESKTOP.APP                                       4    WAITING  COUNTER.APP                                       5    WAITING  TICK                                              6    READY    console.device                                    >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ",
+        "after_collection": "Job 3 finished (10, 304)                                        >  TASKS                                                        SLOT STATE    NAME                                              0    RUNNING  shell                                             1    WAITING  dos.filesystem                                    2    WAITING  sio.device                                        3    WAITING  DESKTOP.APP                                       6    READY    console.device                                    >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ",
+        "gui_names": true,
+        "native_name": true,
+        "retirement": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/task-names/demo/extracted/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "autoboot_frames": 249
+    }
+  },
+  "host": {
+    "total": 459,
+    "passed": 455,
+    "skipped": 4,
+    "command": "python3 -m unittest discover -s tests",
+    "sha256": "334551012b6c2506674b64ef666f6abd410a14149f330009c978129f63e7725f"
+  },
+  "compiler": {
+    "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "build_profile": "release",
+    "binary_sha256": "cf0572df8649cfd37d4649fb3f7023f5b767115d5ccb0a7a3aeea4d11df64807",
+    "override": false
+  },
+  "memory": {
+    "image_before": 42,
+    "image_after": 66,
+    "image_allocation_before": 48,
+    "image_allocation_after": 72,
+    "upper_bytes_per_image_delta": 24,
+    "process_record_bytes": 128,
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "bank_zero_scope": "Includes guards, alignment and unused reserved capacity; generated budgets, Task pools and reservations equal the previous desktop-usability bundle."
+  },
+  "source_inputs": {
+    "lib/dos/programimage.act": "1327dbd392a96a0afdc02ac9b094327d175e094ac1d9257a5a767f2eb436ee15",
+    "lib/dos/programfile.act": "1919b4178bf342dba3f969ad24c16954fde1dba7b13fca8663d72822f3aad27c",
+    "lib/dos/process.act": "5780693195aea0efed7735a088ba4528e0fc6c0988217ea8d208877ea8aaa3f3",
+    "tests/programs/process_lifetime.act": "3641ba3c9ae235121da3725fe6dcfd4bb438e80a34f4c5b2676204642602504a",
+    "tests/programs/c_process.act": "6eb24976480cf2a07baafffe13fc3f96fa5ba4db6c52fadd1bdf0784c5e5605d",
+    "tests/programs/c_process.c": "d33bee30247ed20566f29b8447d6a1619fe43f9b7f96bbc781f59461b3553574",
+    "tools/test_process_lifetime.py": "0cf739281d89e65932803b039dd2577b5bc4e3934c67213587820552a0a8d86d",
+    "tools/test_c_process.py": "7afef853c7040b77a21cb6c80ff1dcf3b1e34de188271cb8393e377769e3f0f6",
+    "tools/task_names_check.py": "e46a1c4bd487f78ba360ddc5c972c4d09aaab95df24b967020530f41a71e2348",
+    "tools/test_colour_desktop_session.py": "3dda554ba11f01e4d5f3918eff16a736125b575fffd81f8eb9305e48219545fa"
+  },
+  "distribution": {
+    "path": "build/task-names/demo/exec816-demo.zip",
+    "sha256": "d521d46794814e3b8e32752a0091799cfc29c11d101f1e685d4c2bfe837def99",
+    "bytes": 606587,
+    "manifest_sha256": "e2222785fc2086855d9808b87aee1e17dacd56808aa8e0c85cafd3294293d046",
+    "of816": true,
+    "autoboot_seconds": 5,
+    "files": [
+      "exec816-demo/ALTIRRAOS-LICENSE.txt",
+      "exec816-demo/CALCULATOR-COPYING.LIB.txt",
+      "exec816-demo/CALCULATOR-COPYING.txt",
+      "exec816-demo/CALCULATOR-LICENSING.md",
+      "exec816-demo/CALCULATOR-PROVENANCE.txt",
+      "exec816-demo/EXEC816-GPL-3.0.txt",
+      "exec816-demo/EXEC816-LICENSING.md",
+      "exec816-demo/EXEC816-MIT.txt",
+      "exec816-demo/Exec-of816.xex",
+      "exec816-demo/G4BENCH-COPYING.LIB.txt",
+      "exec816-demo/G4BENCH-COPYING.txt",
+      "exec816-demo/G4BENCH-LICENSING.md",
+      "exec816-demo/G4BENCH-PROVENANCE.txt",
+      "exec816-demo/GEM-COPYING.LIB.txt",
+      "exec816-demo/GEM-COPYING.txt",
+      "exec816-demo/GEM-FONT-NOTICE.txt",
+      "exec816-demo/GEM-LICENSING.md",
+      "exec816-demo/OF816-LICENSE.txt",
+      "exec816-demo/README.txt",
+      "exec816-demo/SHA256SUMS",
+      "exec816-demo/altirraos-816.rom",
+      "exec816-demo/system.atr",
+      "exec816-demo/work.atr"
+    ]
+  },
+  "screenshot": {
+    "path": "build/task-names/demo/named-tasks.png",
+    "sha256": "1c67fe14fa8041b39b6239abcba7a16dff6373874a7760dd4cab3306c1b96d75"
+  },
+  "not_run": [
+    "Compiler qualification suite",
+    "Full hosted qualification matrix",
+    "Real hardware"
+  ]
+}

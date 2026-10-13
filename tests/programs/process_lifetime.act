@@ -49,6 +49,7 @@ LONGINT FUNC Child()
 
   client=DOSCLIENT.Ensure()
   self=EXEC.FindTask(BYTE POINTER(0))
+  Require(STR.strcmp(CSTRING(self.tc_Node.ln_Name),c"process")=0)
   Require(client<>DOSCLIENT.ClientContext POINTER(0))
   Require(client.owner=self AND client.owner<>root)
   Require(client.input=BYTE POINTER(0) AND client.output=BYTE POINTER(0))

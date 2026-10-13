@@ -5,13 +5,16 @@ USE DOSCLIENT
 USE O65TYPES
 USE PROGRAM
 USE PROGRAMIMAGE
+USE CSTRING.IMPL AS STR
+
+CONST CHAR_COLON=58, CHAR_SLASH=47, CHAR_BACKSLASH=92
 
 ; The complete, immutable file is staged before validation. Ordinary DOS calls
 ; retain their cancellation/retirement protocol; no loader worker is created.
 PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER path)
   DOS.FileHandle POINTER file
   PROGRAMIMAGE.Image POINTER image
-  BYTE POINTER bytes
+  BYTE POINTER bytes,leaf,scan
   LONGINT length,count,position,error,closed
 
   file=DOS.Open(path,DOS.MODE_OLDFILE)
@@ -86,6 +89,22 @@ PUBLIC PROGRAMIMAGE.Image POINTER FUNC Load(BYTE POINTER path)
     PROGRAM.Unload(image)
     image=PROGRAMIMAGE.Image POINTER(0)
     error=DOS.ERROR_BREAK
+  FI
+
+  IF image<>NULL THEN
+    ; Retain the diagnostic leaf name before the caller reuses its path buffer.
+    ; Truncation affects only the Task label, never filesystem lookup.
+    leaf=path
+    scan=path
+    WHILE scan^<>0 DO
+      IF scan^=CHAR_COLON OR scan^=CHAR_SLASH OR scan^=CHAR_BACKSLASH THEN
+        leaf=scan+1
+      FI
+
+      scan==+1
+    OD
+
+    STR.strlcpy(@image.name(0),CSTRING(leaf),PROGRAMIMAGE.NAME_CAPACITY)
   FI
 
   DOSCLIENT.SetError(error)

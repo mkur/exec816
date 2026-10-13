@@ -31,6 +31,13 @@ preserves `IoErr()`, performs no allocation or copy, and borrows text until the
 Process retires. Use `STR.strlen()` (with `USE CSTRING AS STR`) when the caller
 needs a length.
 
+Processes started from `PROGRAMFILE.Load` use the executable's leaf filename as
+their Exec Task name (up to 23 bytes). The Image retains this diagnostic name;
+reusing the source path buffer or unloading the owner's Image reference while
+the child runs cannot invalidate it. Resident entries default to `process`, and
+Images loaded directly from memory default to `program`. These names are also
+shown by `TASKS`; no Process or Task ABI change is required.
+
 Only the starting Task can wait or collect. Collection succeeds once. Identities
 are monotonically assigned for the boot session and never wrap; stale identities
 cannot name a reused slot. Errors are 103 (capacity/storage/signal exhaustion),
