@@ -209,6 +209,10 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
         if (f->focusLine.ob_width>0) okay=draw_object(c,&f->focusLine,0,0);
     }
     status=c->diagnostic;
+    if (okay && full)
+        ExecAESPainted(f->window,c->view->work.left,c->view->work.top,
+                      c->view->work.right-c->view->work.left,
+                      c->view->work.bottom-c->view->work.top);
     if (!wind_update(END_UPDATE)) return 0;
     c->diagnostic=status;
     return okay;

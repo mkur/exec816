@@ -43,7 +43,7 @@ def files():
     assert len(slots) == ABI['constants']['SNAPSHOTS'] == 2
     for slot in slots:
         lines += [f'PUBLIC CONST {slot["name"].upper()}_BASE={slot["base"]}']
-    assert all(r['capacity_bytes'] == 65536 for r in slots)
+    assert all(r['capacity_bytes'] == 76800 for r in slots)
     lines += [f'PUBLIC CONST SNAPSHOT_BYTES={slots[0]["capacity_bytes"]}']
     saves = [r for r in vram['regions'] if r['name'].startswith(('menu_', 'popup_'))]
     for save in saves:

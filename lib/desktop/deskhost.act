@@ -276,7 +276,7 @@ PUBLIC PROC Cache()
           AND window.captureAttempt<>window.visualRevision THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
-          DESKCACHE.ClientBounds(layer,@client)
+          DESKCACHE.ClientBounds(window,layer,@client)
           visible=0
           rect=0
           WHILE rect<layer.visible.count DO
@@ -288,6 +288,7 @@ PUBLIC PROC Cache()
           OD
 
           IF layer.dirty=0 AND layer.shown<>0 AND visible<>0
+              AND LAYERS.PixelsReady(layer,@client)<>0
               AND (client.left & 1)=0
               AND DESKCACHE.Fits(CARD(client.right-client.left),
                   CARD(client.bottom-client.top))<>0 THEN

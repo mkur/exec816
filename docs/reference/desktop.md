@@ -383,14 +383,23 @@ placement and caret bookkeeping; ordinary focus changes still invalidate.
 
 ### Private client snapshots
 
-The VRAM map reserves two 64 KiB compact snapshot slots at `$50000` and `$60000`.
+The VRAM map reserves two 75 KiB compact snapshot slots at `$50000–$62BFF`
+and `$62C00–$757FF`.
 `DESKCACHE` stores client pixels only; frames and console content remain retained
 drawing. Even-width images must fit one slot and the 640 by 240 copy limit.
 Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
-first, then the least recently used unpinned slot. The generated Service is
-14,210 bytes, including the two fourteen-byte slot records and alignment.
+first, then the least recently used unpinned slot. The shared `LAYERCACHE` policy owns the two fourteen-byte slot records; the
+presenter adapter builds transfers. The current generated Service is 18,636
+bytes, including scene/cache capacity and alignment.
+
+Eligible AES windows use the same slots. Capture requires a fully visible
+client with completed repaint obligations, measured using its actual frame
+kind (including INFO, scrollbar, size and borderless insets). A title or
+position-only change preserves its client image; resize and UPDATE invalidate it.
+Ordinary applications without completion reports continue through `WM_REDRAW`.
+Restoration never acknowledges external repaint on behalf of the application.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.

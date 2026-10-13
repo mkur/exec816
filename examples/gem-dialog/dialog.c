@@ -49,6 +49,7 @@ static WORD paint(struct DialogApp *a)
     }
     if (!wind_update(BEG_UPDATE)) return 0;
     okay=objc_draw(a->home,0,MAX_DEPTH,a->work[0],a->work[1],a->work[2],a->work[3]);
+    if (okay) ExecAESPainted(a->window,a->work[0],a->work[1],a->work[2],a->work[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++a->paints;
     return okay;

@@ -210,7 +210,8 @@ PUBLIC BYTE FUNC BeginRead(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 THEN
+  IF layer.dirty<>0 OR layer.shown=0
+      OR (layer.externalPaint<>0 AND PixelsReady(layer,source)=0) THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 

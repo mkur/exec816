@@ -185,8 +185,8 @@ retain their usual traversal. After exhaustion and durable damage delivery,
 Ordinary `Finish(...,1)` rejects this transaction; `Finish(...,0)` aborts it while
 preserving damage for retry. No token remains live while waiting for the app.
 
-The external flag persists across handoff, exposure and moves. `BeginCopy`,
-`BeginMove` and `BeginRead` return REDRAW for these layers, even when manager
+The external flag persists across handoff, exposure and moves. `BeginCopy` and
+`BeginMove` return REDRAW for these layers, even when manager
 damage is empty. Handoff is not evidence that application pixels are valid.
 Deleting and recreating a layer resets the flag.
 
@@ -195,14 +195,16 @@ Layers also retains a separate bounded `pending` repaint region after handoff.
 and advances `paintEpoch`. `Painted` subtracts only the supplied completed
 rectangle for the current nonzero epoch. An old epoch, active transaction or
 fragment overflow leaves the obligation intact. `PixelsReady` tests both
-manager damage and pending external paint. These facts alone do not change the
-copy admission rules above. Pending application repaint neither retains a
+manager damage and pending external paint. `BeginRead` admits an external
+source only when `PixelsReady` certifies its
+requested rectangle and that rectangle is fully visible. External copied moves
+remain disabled. Pending application repaint neither retains a
 transaction nor makes the presenter runnable.
 
 The [resident counter example](../guides/aes-applications.md#counter-example)
 uses this external-paint path. Shell plus two counters consume three layers;
 adding the native panel fills the fourth. Neither delayed redraw delivery nor
-fully covered timer updates make an external layer copy/cache eligible.
+fully covered timer updates make an external layer cache eligible.
 
 ## Saved scene rectangles
 

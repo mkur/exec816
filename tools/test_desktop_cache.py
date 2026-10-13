@@ -51,14 +51,6 @@ def run(out, forced_miss=False, replay=False, production=False):
     out.mkdir(parents=True, exist_ok=True)
     require(not (production and forced_miss), 'Production control cannot force misses')
     cache = read_source(ROOT/'lib/desktop/deskcache.act')
-    observations = (
-        ('BYTE active,activeSlot', 'BYTE active,activeSlot\nLONGCARD captures,restores'),
-        ('  active=ACTIVE_CAPTURE', '  captures==+1\n  active=ACTIVE_CAPTURE'),
-        ('  active=ACTIVE_RESTORE', '  restores==+1\n  active=ACTIVE_RESTORE'),
-    )
-    for before, after in (() if production else observations):
-        require(cache.count(before) == 1, 'Cache observation boundary changed')
-        cache = cache.replace(before, after)
     if forced_miss:
         cached = 'RETURN(LAYERCACHE.Lookup(@service.cache,window.id,window.visualRevision,width,height))'
         require(cache.count(cached) == 1, 'Missing cache lookup boundary')

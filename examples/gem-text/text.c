@@ -131,6 +131,7 @@ static WORD paint(struct TextApp *a)
         }
         if (!wind_get(a->window,WF_NEXTXYWH,&visible[0],&visible[1],&visible[2],&visible[3])) okay=0;
     }
+    if (okay) ExecAESPainted(a->window,a->damage[0],y,a->damage[2],end-y);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) {
         a->damage[3]-=end-y;a->damage[1]=end;a->dirty=a->damage[3]!=0;++a->paints;

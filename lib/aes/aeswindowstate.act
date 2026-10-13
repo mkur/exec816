@@ -69,6 +69,10 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   DESKGEOMETRY.Work(client.window.frameKind,@layer.bounds,@work)
   IF REGIONS.Equal(@layer.bounds,
       LAYERTYPES.Rect POINTER(@view.bounds))=0 THEN
+    IF layer.bounds.right-layer.bounds.left<>view.bounds.right-view.bounds.left
+        OR layer.bounds.bottom-layer.bounds.top<>view.bounds.bottom-view.bounds.top THEN
+      DESKCACHE.Changed(desktop,client.window)
+    FI
     LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
   FI
   status=REGIONS.Clip(@layer.visible,@work,
@@ -139,6 +143,11 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
         IF view.changed<>0 THEN
           LAYERS.RequirePaint(@desktop.scene,layer.id,
               LAYERTYPES.Rect POINTER(@view.change))
+        ELSE
+          ; An unreported model change must not become a new idle capture of
+          ; the old pixels. Explicit completion reports may still retire it.
+          LAYERS.RequirePaint(@desktop.scene,layer.id,
+              LAYERTYPES.Rect POINTER(@view.work))
         FI
         report=0
         WHILE same<>0 AND request.paintFailed=0

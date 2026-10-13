@@ -14,15 +14,18 @@ CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2
 LONGCARD readToken
 DESKTYPES.Window POINTER capturing
 BYTE active,activeSlot
+LONGCARD transferBytes
+PUBLIC LONGCARD captures,restores,capturedBytes,restoredBytes
 
 PUBLIC LONGCARD FUNC SlotAddress(BYTE slot)
 
 RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
     ELSE DESKTYPES.SNAPSHOT_1_BASE FI)
 
-PUBLIC PROC ClientBounds(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
+PUBLIC PROC ClientBounds(DESKTYPES.Window POINTER window
+    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
-  DESKGEOMETRY.Work(0,@layer.bounds,area)
+  DESKGEOMETRY.Work(window.frameKind,@layer.bounds,area)
 
 RETURN
 
@@ -78,6 +81,8 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   LAYERCACHE.Captured(slot,okay)
   IF okay<>0 THEN
     service.cache.recent=activeSlot
+    captures==+1
+    capturedBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
   FI
 
   active=0
@@ -96,8 +101,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   IF DISPLAY.Blocked()<>0 OR active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
       OR window.id=0 OR window.visualRevision=0
-      OR window.kind=DESKTYPES.CONTENT_CONSOLE
-      OR window.kind=DESKTYPES.CONTENT_AES THEN
+      OR window.kind=DESKTYPES.CONTENT_CONSOLE THEN
     RETURN(0)
   FI
 
@@ -106,7 +110,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     RETURN(0)
   FI
 
-  ClientBounds(layer,@client)
+  ClientBounds(window,layer,@client)
   width=CARD(client.right-client.left)
   height=CARD(client.bottom-client.top)
   IF Fits(width,height)=0 OR (client.left & 1)<>0 THEN
@@ -142,16 +146,20 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   packet.copy.destinationY=0
   packet.copy.width=width
   packet.copy.height=height
-  IF CONSOLEBITMAP.CopyStart()=0 THEN
-    status=LAYERS.Finish(@service.scene,token,0)
-    slot.pinned=0
-    RETURN(0)
-  FI
-
+  ; Publish the continuation before starting, including a driver fault whose
+  ; hardware has not quiesced. Its pin and token must survive that outcome.
   capturing=window
   activeSlot=index
   readToken=token
   active=ACTIVE_CAPTURE
+  IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+    status=LAYERS.Finish(@service.scene,token,0)
+    LAYERCACHE.Captured(slot,0)
+    capturing=NULL
+    readToken=0
+    active=0
+    RETURN(0)
+  FI
 
 RETURN(1)
 
@@ -162,7 +170,8 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   BYTE index
 
   IF DISPLAY.Blocked()<>0 OR active<>0 OR CONSOLEBITMAP.Pending()<>0
-      OR service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
+      OR (service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
+          AND service.scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF)
       OR service.scene.activeId<>window.layer OR service.scene.busy=0
       OR REGIONS.Empty(area)<>0 OR REGIONS.Contains(client,area)=0
       OR ((area.left OR area.right OR client.left) & 1)<>0 THEN
@@ -192,26 +201,31 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   packet.copy.destinationY=CARD(area.top)
   packet.copy.width=CARD(area.right-area.left)
   packet.copy.height=CARD(area.bottom-area.top)
-  IF CONSOLEBITMAP.CopyStart()=0 THEN
-    slot.pinned=0
-    RETURN(DESKTYPES.CACHE_FAILED)
-  FI
-
+  transferBytes=LONGCARD(packet.copy.width RSH 1)*LONGCARD(packet.copy.height)
   service.cache.recent=index
   activeSlot=index
   active=ACTIVE_RESTORE
+  IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+    LAYERCACHE.Released(slot,0)
+    active=0
+    RETURN(DESKTYPES.CACHE_FAILED)
+  FI
 
 RETURN(DESKTYPES.CACHE_PENDING)
 
 PUBLIC BYTE FUNC Restored(DESKTYPES.Service POINTER service)
   BYTE okay
 
-  IF active<>ACTIVE_RESTORE OR CONSOLEBITMAP.Pending()<>0 THEN
+  IF active<>ACTIVE_RESTORE OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
 
   okay=(CONSOLEBITMAP.Failed()=0)
   LAYERCACHE.Released(@service.cache.slots(activeSlot),okay)
+  IF okay<>0 THEN
+    restores==+1
+    restoredBytes==+transferBytes
+  FI
 
   active=0
 

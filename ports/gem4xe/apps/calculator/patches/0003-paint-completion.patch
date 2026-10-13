@@ -1,0 +1,11 @@
+--- a/src/apps/calc.c
++++ b/src/apps/calc.c
+@@ -192,6 +192,8 @@
+         mark[2]=x+tree[Calculator.focus].ob_width-4;mark[3]=mark[1];
+         v_bar(Calculator.vdi,mark);
+     }
++    if (okay && object==ROOT)
++        ExecAESPainted(Calculator.window,damage[0],damage[1],damage[2],damage[3]);
+     if (!wind_update(END_UPDATE)) okay=FALSE;
+     return okay;
+ }

@@ -30,6 +30,8 @@ static WORD paint(struct Panel *p,WORD object,const WORD *damage)
         mark[0]=x+3; mark[1]=y+13; mark[2]=x+76; mark[3]=y+13;
         v_bar(p->vdi,mark);
     }
+    if (okay && object==0)
+        ExecAESPainted(p->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++p->paints;
     return okay;

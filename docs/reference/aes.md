@@ -255,8 +255,9 @@ cancels. Hold repeat, horizontal gadgets and live resizing remain unsupported.
 For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
 manager damage after the complete frame transaction without claiming that the
-application pixels have been drawn. Such windows remain ineligible for pixel
-copy, copied move and VRAM-cache reuse. Applications reconstruct their work pixels through their private VDI workstation
+application pixels have been drawn. Completed, fully visible clients may use
+the shared VRAM snapshots; restoration still delivers external exposure.
+Copied AES moves remain disabled. Applications reconstruct their work pixels through their private VDI workstation
 while owning `BEG_UPDATE`.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,
@@ -885,5 +886,8 @@ claims. A drawing failure remains sticky until the next outer UPDATE.
 Only the outer END publishes the journal. Layers subtracts matching-generation
 claims from pending external repaint; neither ending UPDATE nor exhausting
 `WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper
-and continue receiving ordinary exposure redraws. Counter, Files and desktop
-use it in their complete redraw paths. It adds no per-draw RPC or kernel call.
+and continue receiving ordinary exposure redraws. Counter, Files, desktop,
+Text, Panel, Calculator and shared dialogs use it in complete redraw paths.
+It adds no per-draw RPC or kernel call. An UPDATE without drawing reports
+leaves a full client repaint obligation, preventing idle recapture of old pixels
+after an unreported model change.

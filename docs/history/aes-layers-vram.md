@@ -144,4 +144,34 @@ control invalidates only unpinned rendered-popup entries before opening.
 Fixed upper-RAM metadata/counters grow by 130 bytes including alignment.
 VRAM grows by 32,768 bytes to 352,768. Reserved bank zero changes by
 **0 fixed / 0 per public Task / 0 idle bytes**. No caller journal growth.
-Latency gates remain pending measurement.
+Warm File opening is 200.6 / 200.6 ms (median/p95), with 20/20 observed popup
+hits; controlled cold opening is 421.1 / 421.4 ms. Warm File-to-View is
+240.7 / 240.8 ms, compared with 341.0 / 341.0 ms cold and the original
+782.1 / 782.3 ms. Windows opening improves less: 180.6 / 180.6 ms warm
+versus 220.5 / 240.7 ms cold. Its half-time gate remains open. Windows
+dismissal stays at 140.5 ms; final Files repaint is 361.2 / 381.2 ms.
+Uncached View dismissal remains regressed at 641.6 / 681.8 ms. Counter
+progress during highlight changes is not a loaded latency measurement.
+
+
+## AV4: completed AES client images
+
+Both client slots now hold 76,800 bytes, including a full 640×240 image.
+Capture uses actual client geometry and completed application pixels. Native
+and AES restoration share the same policy and DMA continuation; AES still
+receives `WM_REDRAW`. Title and position changes preserve images; resize,
+ambiguous UPDATE and drawing failures do not. An empty UPDATE now leaves a
+full repaint obligation, preventing an immediate idle recapture of old pixels.
+Text, Panel, Calculator and shared dialog full redraws report completion.
+
+Development checks pass: 459 host tests (four skips), 60,142 Layers checks,
+107 checks in each raw/optimized boundary probe, twelve native cache scenes
+(53 checks), full-screen capture/restore through both slots including VRAM bank
+crossings and failed/unquiesced transfer retention (83 checks), and the new
+AES fixture covering complete paint, title, aligned move, empty UPDATE, odd-X
+fallback, resize and retained exposure notification. Exact client pixels are
+checked independently. Final app walkthrough/timing remains AV6 work.
+
+The fixed adapter counters add 20 upper-RAM bytes; caller records do not grow.
+VRAM increases by 22,528 bytes, to 375,296. Reserved bank zero changes by
+**0 fixed / 0 per public Task / 0 idle bytes**, including guards and capacity.

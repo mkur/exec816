@@ -113,22 +113,22 @@
     {
       "name": "snapshot_0",
       "base": 327680,
-      "reserved_bytes": 65536,
-      "capacity_bytes": 65536,
+      "reserved_bytes": 76800,
+      "capacity_bytes": 76800,
       "g3_used_bytes": 0,
       "g4_used_bytes": 0
     },
     {
       "name": "snapshot_1",
-      "base": 393216,
-      "reserved_bytes": 65536,
-      "capacity_bytes": 65536,
+      "base": 404480,
+      "reserved_bytes": 76800,
+      "capacity_bytes": 76800,
       "g3_used_bytes": 0,
       "g4_used_bytes": 0
     }
   ],
-  "reserved_bytes": 352768,
-  "unassigned_bytes": 171520,
+  "reserved_bytes": 375296,
+  "unassigned_bytes": 148992,
   "diagnostics": [
     {
       "name": "cross_page_transfer",
@@ -136,5 +136,5 @@
       "bytes": 32
     }
   ],
-  "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage. DR5 reserves two compact client snapshot slots, including unused slot capacity; snapshots add no bank-zero storage. Widget repaint uses the former 5120-byte screen padding for a 640 by 16 offscreen strip; total reservation is unchanged."
+  "note": "Exclusive display ownership. B1 uses a 4096-byte command arena with at most 64 records and 8192 estimated bus accesses per submission. DT3 retains even and odd pointer masks in VRAM; cursor reservation grows by 256 bytes, with no new CPU aperture or bank-zero storage. DR5 reserves two compact client snapshot slots, including unused slot capacity; snapshots add no bank-zero storage. Widget repaint uses the former 5120-byte screen padding for a 640 by 16 offscreen strip; total reservation is unchanged. AV4 expands each client image to 76800 bytes; menu saves and popup images share Layers cache validity. No new bank-zero storage."
 }
