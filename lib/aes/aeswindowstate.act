@@ -112,7 +112,9 @@ PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
   client.binding.paintCount=0
   client.binding.paintFailed=0
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id THEN
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
         LET window=service.windows(index).window
         service.windows(index).view.changed=0
@@ -134,7 +136,9 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   LET request=client.binding
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id THEN
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
         LET item=@service.windows(index)
         LET view=item.view
@@ -182,7 +186,9 @@ PUBLIC PROC Updates(AESSTATE.Client POINTER client CARD count)
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id THEN
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
       service.windows(index).view.updates=count
     FI
   OD

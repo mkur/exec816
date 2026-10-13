@@ -78,6 +78,7 @@ PUBLIC TYPE Service=[
   BYTE count
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds
+  INT updateWindow
   BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
   BYTE lockCount
   INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)

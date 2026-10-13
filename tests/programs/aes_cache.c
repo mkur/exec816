@@ -3,7 +3,10 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService;
+ULONG AESService,AESLockCount;
+static struct Task *scopeCaller;
+static ULONG scopeWake;
+static volatile UWORD scopeDone;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD AESCachePhase,AESCacheGo,AESCacheRedraws;
 WORD AESCacheWork[4];
@@ -72,13 +75,23 @@ static void wait_redraw(void)
     while (message[0]!=WM_REDRAW || message[3]!=window);
 }
 
-void AESClientOne(void) { RemTask(NULL); }
+/* Make a scoped UPDATE wait behind a real mouse owner, then release it. */
+void AESClientOne(void)
+{
+    CHECK(ExecAESAttach((struct MsgPort *)AESService)); CHECK(appl_init()>0);
+    CHECK(wind_update(BEG_MCTRL)); Signal(scopeCaller,scopeWake);
+    while (!*(volatile UBYTE *)AESLockCount) ExecYield();
+    CHECK(wind_update(END_MCTRL)); CHECK(ExecAESDetach());
+    scopeDone=1;RemTask(NULL);
+}
 void AESClientTwo(void) { RemTask(NULL); }
 
 UWORD AESRun(void)
 {
     WORD input[11]={1,1,1,1,1,1,1,1,1,1,2},output[57];
-    WORD kind=NAME|CLOSER|MOVER|INFO|SIZER|UPARROW|DNARROW|VSLIDE;
+    WORD kind=NAME|CLOSER|MOVER|INFO|SIZER|UPARROW|DNARROW|VSLIDE,sibling;
+    BYTE bit;
+    struct AESWindowView *original,*other;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init()>0);
     vdi=1; v_opnvwk(input,&vdi,output); CHECK(vdi>0);
@@ -104,6 +117,24 @@ UWORD AESRun(void)
     CHECK(wind_set(window,WF_CXYWH,64,48,248,152));phase(12);
     drain();patch(56,6,0);phase(13);
     paint();phase(14);
+    original=ExecAESContext()->view;
+    sibling=wind_create(kind,320,32,128,96);CHECK(sibling>0);
+    other=ExecAESContext()->view;
+    bit=AllocSignal(-1);CHECK(bit>=0);scopeWake=1UL<<bit;scopeCaller=FindTask(NULL);
+    CHECK(CreateTask("Scoped update blocker",0,(APTR)AESClientOne,1024UL)!=NULL);
+    Wait(scopeWake);
+    CHECK(ExecAESBeginUpdate(sibling));
+    CHECK(!original->updates && other->updates==1);
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(!original->updates && other->updates==2);
+    CHECK(wind_update(END_UPDATE)); CHECK(other->updates==1);
+    CHECK(wind_update(END_UPDATE)); CHECK(!other->updates);
+    while (!scopeDone) ExecYield();
+    FreeSignal(bit);
+    phase(15); /* An empty hidden sibling update must preserve our saved image. */
+    CHECK(ExecAESBeginUpdate(window));CHECK(wind_update(END_UPDATE));
+    phase(16); /* The same empty update still invalidates its own target. */
+    CHECK(wind_delete(sibling));
     CHECK(wind_close(window)); CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());
     return AESFailures;

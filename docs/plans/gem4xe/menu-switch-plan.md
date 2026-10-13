@@ -37,6 +37,17 @@ Validate the new C/native call boundary, sibling eligibility, nested and empty
 updates, delayed lock grant and cleanup. Retain the ordinary-caller tests.
 Commit this executable slice after focused checks pass.
 
+MS1 implemented: the cache fixture exercises a contended scoped grant, nested
+ordinary BEGIN, an empty hidden sibling update, and an empty target update.
+Host checks passed (459 tests, four skips); focused emitted cache and raw/optimized
+context checks passed. The older lock fixture times out at 118 checks without
+assertion failures; a control using the pre-change C UPDATE implementation and
+native lock/window-state/service sources reproduces that timeout. This is not
+claimed as a passing lock regression. The new contended/nested scoped case passes.
+The active scope adds one 16-bit service field; no client,
+window, direct-page, stack or VRAM reservation grows. Reserved bank-zero delta:
+**0 fixed / 0 per public Task / 0 idle bytes**.
+
 ## MS2 Retain one menu-interaction background across headings
 
 For an application menu, compute the union of its admitted popup bounds once at

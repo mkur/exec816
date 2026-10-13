@@ -303,6 +303,8 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
   Require(run()=0)
 ''' if registration else ''
         setup = '  LET service=AESSTATE.Get()\n'
+        if suite == 'cache':
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuNext"]:x})\n    item^=LONGCARD(ADDRESS(@service.nextMenuEpoch))\n  END\n'
         if timers or events:

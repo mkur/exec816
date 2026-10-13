@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 15,
+  "version": 16,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -116,7 +116,8 @@
     "WF_EXEC_DESKTOP": 24576,
     "OP_FIND": 106,
     "OP_DRAG_OUTLINE": 203,
-    "PAINT_REPORTS": 8
+    "PAINT_REPORTS": 8,
+    "UPDATE_WINDOW": 512
   },
   "records": {
     "MenuObject": [

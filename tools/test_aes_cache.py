@@ -20,7 +20,7 @@ def physical(b,p,foreign,report):
         run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
     slot=layers_layout()['CacheSlot'];cache=layout()['Service']['fields']['cache']
     previous=None;report['aes_cache']=[]
-    for phase in range(1,15):
+    for phase in range(1,17):
         reach('dw($%x)=%d'%(sy['AESCachePhase'],phase))
         reach('@frame>=%d'%(b.eval_expr('@frame')+100))
         service=get(at('DESKSTATE','service'),3)
@@ -45,8 +45,9 @@ def physical(b,p,foreign,report):
                  patches=get(at('DESKCACHE','patches')),
                  patched_bytes=get(at('DESKCACHE','patchedBytes')))
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
-        if phase in (1,2,3,4,6,7,9,10,11,12,14):require(valid,'Missing eligible AES image at phase '+str(phase))
-        if phase in (5,8,13):require(not valid,'Ambiguous update/resize retained a usable image')
+        if phase in (1,2,3,4,6,7,9,10,11,12,14,15):require(valid,'Missing eligible AES image at phase '+str(phase))
+        if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
+        if phase==15:require(row['captures']==previous['captures'],'Sibling update recaptured our image')
         if phase==2:require(row['captures']==previous['captures'],'Title-only change recaptured pixels')
         if phase in (3,12):require(row['restores']>previous['restores'],'Aligned AES move missed its client image')
         if phase==7:require(row['restores']==previous['restores'],'Odd-X move restored a widened image')

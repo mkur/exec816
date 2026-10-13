@@ -169,6 +169,15 @@ if unavailable. A normal contended BEGIN waits in arrival order among eligible
 callers; an existing mouse owner can upgrade without waiting behind a dependent
 peer. Exit releases every owned hold. Message and timer service continue.
 
+`ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
+tracking, repaint obligations and cache holds to one caller-owned window. End
+it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model changes
+to that window. Nested calls keep the outer scope, including nested ordinary
+`BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
+hidden scoped updates invalidate their target, while untouched siblings remain
+eligible for caching. The helper uses wire version 16's UPDATE_WINDOW flag and
+C program import version 17; rebuild programs and their matching host.
+
 Update ownership also excludes native console painting/scrolling, widget
 feedback, background repair and cache capture. Mouse ownership defers native
 widget gestures, focus and geometry changes; an explicit mouse hold alone

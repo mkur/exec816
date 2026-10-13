@@ -247,7 +247,7 @@ static WORD sliders(struct Browser *b)
 static WORD redraw(struct Browser *b,const WORD *damage)
 {
     WORD okay;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(b->window)) return 0;
     okay=wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]);
     if (okay) {
         layout(b);
@@ -393,7 +393,7 @@ static WORD paint_selection(struct Browser *b)
     WORD i,index,state,focus,okay=1,area[4];
     WORD oldX=b->tree[BROWSER_FOCUS].ob_x,oldY=b->tree[BROWSER_FOCUS].ob_y;
     WORD oldFlags=b->tree[BROWSER_FOCUS].ob_flags;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(b->window)) return 0;
     layout_focus(b);
     for (i=0;i<b->visible && okay;++i) {
         OBJECT *row=&b->tree[BROWSER_ROW_FIRST+i];
@@ -555,7 +555,7 @@ static WORD dialog_press(struct Browser *b,WORD object,WORD pressed)
     if (object!=3 && object!=4) return 1;
     if (pressed) b->dialogTree[object].ob_state|=SELECTED;
     else b->dialogTree[object].ob_state&=~SELECTED;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(b->window)) return 0;
     okay=objc_draw(b->dialogTree,object,0,b->work[0],b->work[1],b->work[2],b->work[3]);
     if (okay && object==b->focus) {
         b->dialogTree[6].ob_spec=pressed ? 0x1170:0x1171;

@@ -22,7 +22,7 @@ static struct Browser *desktop_folder(struct Desktop *d,WORD handle)
 static WORD desktop_draw(struct Desktop *d,const WORD *damage)
 {
     WORD okay;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(d->window)) return 0;
     okay=wind_get(d->window,WF_WORKXYWH,&d->work[0],&d->work[1],&d->work[2],&d->work[3]);
     if (okay) okay=objc_draw(d->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
     if (okay) okay=ExecAESPainted(d->window,damage[0],damage[1],damage[2],damage[3]);
