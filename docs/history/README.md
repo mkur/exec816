@@ -1,5 +1,17 @@
 # Historical records
 
+- [Compact Files windows](compact-files.md): navigation glyphs, one status line,
+  stable window sizes and separate keyboard focus.
+
+- [Desktop drag and drop](desktop-drag-drop.md): captured file selections,
+  one AES completion and the existing buffered copy job.
+
+- [Exec816 desktop style](desktop-style.md): restrained palette, distinct icons,
+  window decoration and a persistent focused-window menu caption.
+
+- [Sixteen-colour GEM icons](colour-icons.md): standard CICON resources,
+  prepared VBXE pixels and the desktop disk artwork.
+
 - [Desktop selection and batch operations](desktop-selection-batch.md):
   implementation progress, focused checks and memory accounting.
 

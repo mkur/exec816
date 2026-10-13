@@ -30,7 +30,7 @@ UWORD ExecAESInputRecover(struct ExecAESContext *c, UWORD flags);
 UWORD ExecAESInputState(struct ExecAESContext *c, UWORD flags);
 UWORD ExecAESInputSelect(struct ExecAESContext *c, UWORD flags);
 BOOL ExecAESInputStable(struct ExecAESContext *c, UWORD flags);
-UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready);
+UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready, UWORD flags);
 UWORD ExecAESInputCommitState(struct ExecAESContext *c, UWORD flags);
 void ExecAESInputResult(struct ExecAESContext *c, UWORD ready);
 BOOL ExecAESEnter(struct ExecAESContext *c);

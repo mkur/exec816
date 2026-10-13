@@ -57,13 +57,13 @@ def draw(bridge,result,address,popup=False,heading=0,selected=-1,opened=False):
     for _ in range(heading):title=objects[title][0];box=objects[box][0]
     if popup:
         width,height=objects[box][9:11]
-        x=max(0,min(positions[box][0],640-width))
+        x=max(0,min(128+positions[box][0],640-width))
         y=max(16,min(positions[box][1],240-height))
         bounds=(x,y,x+width,y+height);scope=box
         origin=(x-positions[box][0],y-positions[box][1])
         if selected>=0:objects[selected][5]|=1
     else:
-        bounds=(0,0,432,16);scope=bar;origin=(0,-positions[bar][1])
+        bounds=(128,0,560,16);scope=bar;origin=(128,-positions[bar][1])
         if opened:objects[title][5]|=1
     objects[0][7:9]=origin
     tree=[a.Obj(*obj) for obj in objects]

@@ -69,7 +69,7 @@ class DialogDemo:
         require(s.number(counter+14,4)>count,'Form blocked the peer counter')
         menus.select('Dialog example');move(630,230);s.cells('form-exposed')
         interrupted=s.number(app+20,4)
-        click(24,8);click(32,40);phase(app,3)
+        click(152,8);click(160,40);phase(app,3)
         require(s.number(app+20,4)==interrupted+1,'Menu policy did not interrupt the form')
         key('RETURN');phase(app,1);s.cells('menu-alert-repair')
         key('E');phase(app,2)

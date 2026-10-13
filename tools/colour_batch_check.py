@@ -32,7 +32,7 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
         while node!=heap['BASE']+3:
             total+=s.number(node+24,4);node=s.number(node,3)
         return total
-    def menu(row):click(24,8);click(40,24+row*16)
+    def menu(row):click(152,8);click(168,24+row*16)
     def chosen(names):
         key('ESC')
         for i,name in enumerate(names):
@@ -41,7 +41,7 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
             if i:s.b._cmd_ok('KEY SHIFT up')
         require(n('selectionCount')==len(names),'Wrong batch selection')
     def start(names,target):
-        chosen(names);menu(7);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
+        chosen(names);menu(8);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
         fill(base,target);started=clock();key('RETURN')
         s.rendezvous('((dw($%x)|dw($%x))!=0)|(dw($%x)=0)'%(desk+D['job'],desk+D['job']+2,base+F['dialog']))
         return started
@@ -63,7 +63,7 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
             s.rendezvous('((dw($%x)|dw($%x))=0)|(dw($%x)>%d)'%
                          (desk+D['job'],desk+D['job']+2,address+J['index'],previous))
     path(base,'WORK:SRC')
-    chosen(['AEMPTY.BIN','BSHORT.BIN']);menu(7);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
+    chosen(['AEMPTY.BIN','BSHORT.BIN']);menu(8);s.rendezvous('dw($%x)=4'%(base+F['dialog']))
     fill(base,'MISSING:');key('RETURN');s.frames(100)
     require(n('dialog')==4 and not job() and s.number(desk+D['error'],4),'Unavailable destination admitted')
     key('ESC')
@@ -98,7 +98,7 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot):
     start(['AEMPTY.BIN','BSHORT.BIN'],'WORK:COLLIDE')
     s.rendezvous('dw($%x)=7'%(base+F['dialog']))
     x,y=[s.number(base+F['work']+i*2,2) for i in range(2)]
-    click(x,y-20);s.frames(100)
+    click(x,y-8);s.frames(100)
     require(not job() and not s.number(desk+D['folders'],4),'Owner close retained batch')
     click(600,236);desk_menu(0)
     s.rendezvous('(dw($%x)|dw($%x))!=0'%(desk+D['folders'],desk+D['folders']+2))

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 14,
+  "version": 15,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -98,6 +98,8 @@
     "menu_icheck",
     "ExecAESDesktop",
     "ExecAESInputWindow",
-    "DeleteFile"
+    "DeleteFile",
+    "wind_find",
+    "ExecAESDragOutline"
   ]
 }

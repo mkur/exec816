@@ -111,7 +111,7 @@ class DesktopBoot:
             screen=s.command('MEM').decode('ascii')
             return [int(v) for v in re.findall(r'(?:ordinary|linear) (?:total|largest) +(\d+)',screen)][-4:]
         baseline=memory();owners=s.ledger()
-        browser=launch_files();click(24,8);click(32,72)
+        browser=launch_files();click(152,8);click(160,72)
         s.rendezvous('db($%x)=3'%(job+12))
         require(s.ledger()==owners,'Idle RUN completion retained ownership')
         click(96,32);require(memory()==baseline,'Files restart leaked heap storage')
@@ -126,7 +126,7 @@ class DesktopBoot:
         if 'objc_edit' in sy:
             key('N');s.rendezvous('dw($%x)=2'%(browser+BF['dialog']))
             s.saved['files_dialogs']['close_while_editing_with_child']=True
-        click(24,8);click(32,72)
+        click(152,8);click(160,72)
         s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
         require(s.ledger()==owners,'Menu Quit retained its native child')
         click(96,32);require(memory()==baseline,'Menu Quit with child leaked heap storage')

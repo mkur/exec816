@@ -17,6 +17,7 @@ from stack_budget import stack_usage
 from test_desktop_presentation import desktop, frame, rectangle, text
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_mouse_observe import BRIDGE, PIN, ROM
 
@@ -87,7 +88,7 @@ def run(out, forced_miss=False, replay=False, production=False):
                     directory.mkdir(exist_ok=True)
                     clock = b.eval_expr('@clk') & 0xffffffff
                     row = dict(stage=stage, elapsed_cycles=(clock-previous) & 0xffffffff,
-                               pixels=pixels(b, directory, scene(stage, font)))
+                               pixels=pixels(b, directory, scene(stage, font),palette=DESKTOP_PALETTE))
                     if not production:
                         row.update(captures=read('DESKCACHE', 'captures'),
                                    restores=read('DESKCACHE', 'restores'))

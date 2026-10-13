@@ -13,7 +13,7 @@ from native_program import ROOT, read_build, require, verify_machine
 from os_boundary import emulator, run_to
 from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
-from gem_render_oracle import Raster, font_bytes, PALETTE, PENS
+from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE as PALETTE, PENS
 from bitmap_console_oracle import Terminal
 from test_desktop_presentation import desktop, rectangle, text, frame
 from test_gem_cursor import overlay
@@ -90,7 +90,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                         panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
                               radio=5 if read('DESKAPP', 'updates') else 4,
                               focus=5 if read('DESKAPP', 'updates') else 2)
-                    menu_bar(raster, {1:b'Exec816 Shell',2:b'Control Panel'}.get(focused,b'Desktop'))
+                    menu_bar(raster, {1:b'Exec816 Shell',2:b'Control Panel'}.get(focused,b'Exec816'))
                     expected = overlay(raster, position)
                     golden = b''.join(colors[v >> 4]+colors[v & 15] for v in expected)
                     for n in range(1500):

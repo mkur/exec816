@@ -365,7 +365,7 @@ PUBLIC PROC Present()
   BYTE drawn
 
   IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
-    IF AESLOCKS.MouseBlocked()<>0 THEN
+    IF AESLOCKS.MouseBlocked()<>0 AND DESKDRAG.Application()=0 THEN
       DESKDRAG.Suspend()
     ELSE
       DESKDRAG.Present()

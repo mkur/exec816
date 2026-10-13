@@ -17,7 +17,7 @@ def exercise(s,base,click,key,path,move,count=40):
     def expected(mode,mask):
         x,y,w,h=[s.number(base+F['work']+i*2,2) for i in range(4)]
         if (mode,mask) not in models:
-            raster=Raster(font);paint(b,{'GEMBrowser':base},raster,b'WORK:',(x-8,y-28,x+w+16,y+h+16))
+            raster=Raster(font);paint(b,{'GEMBrowser':base},raster,b'WORK:',(x-8,y-16,x+w+16,y+h+16))
             models[mode,mask]=raster
         raster=models[mode,mask]
         packed=overlay(raster,s.saved['pointer'])
@@ -33,7 +33,7 @@ def exercise(s,base,click,key,path,move,count=40):
         return actual==want
     def point(index):
         x,y,w,h=[s.number(base+F['work']+i*2,2) for i in range(4)]
-        return (x+48+index*104,y+44) if n('iconView') else (x+40,y+36+index*12)
+        return (x+48+index*104,y+32) if n('iconView') else (x+40,y+24+index*12)
     def arrow(name,shift=False):
         b._cmd_ok('KEY ALL up');s.frames(3)
         b._cmd_ok('KEY CTRL down')
@@ -42,7 +42,7 @@ def exercise(s,base,click,key,path,move,count=40):
         b._cmd_ok('KEY '+name+' up');s.frames(3)
         b._cmd_ok('KEY ALL up');s.frames(35)
     for mode,row in [('icons',0),('list',1)]:
-        click(88,8);click(96,24+row*16);key('ESC')
+        click(216,8);click(224,24+row*16);key('ESC')
         arrow('ASTERISK');require(n('selected')==0 and n('selectionCount')==1,'Arrow without lead')
         # Ctrl+Shift+asterisk/plus conflict in the Atari keyboard matrix.
         # Vertical cursor chords remain physically representable.
@@ -109,7 +109,7 @@ def standalone(s,desk,click,key,path,move,menus,shot):
     require(s.number(base+F['selectionCount'],2)==2,'Standalone multiple selection')
     peer=s.number(desk+D['folders'],4)
     require(not s.number(peer+F['selectionCount'],2),'Standalone selection changed desktop')
-    click(88,8);click(96,40);key('R')
+    click(216,8);click(224,40);key('R')
     require(not s.number(base+F['dialog'],2),'Standalone multi-Rename acted')
     x,y,w,h=[s.number(base+F['work']+2*i,2) for i in range(4)]
     move(x+w+8,y+h+8);s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
@@ -117,7 +117,7 @@ def standalone(s,desk,click,key,path,move,menus,shot):
     require(s.number(base+F['selectionCount'],2)==2,'Resize lost membership')
     shot('standalone-multiple-selection')
     x,y=[s.number(base+F['work']+2*i,2) for i in range(2)]
-    click(x,y-20);s.ready(previous);menus.select('Shell')
+    click(x,y-8);s.ready(previous);menus.select('Shell')
     after=memory();require(after==before and s.ledger()==ledger,'Standalone Files retained heap/ownership')
     s.saved['standalone_selection']=dict(multiple=True,list=True,resize=True,independent=True,
         command_gate=True,collected=True,heap_before=before,heap_after=after)

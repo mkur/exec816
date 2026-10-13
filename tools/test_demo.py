@@ -270,7 +270,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                 if desktop:
                     # Retained command installation precedes its final paint.
                     # Compare actual scanout with full independent recomposition.
-                    from gem_render_oracle import PALETTE,PENS
+                    from gem_render_oracle import DESKTOP_PALETTE as PALETTE,PENS
                     rgb=bytes((v&254)+(v>>7) for v in PALETTE)
                     colors={hw:rgb[pen*3:pen*3+3][::-1] for pen,hw in enumerate(PENS)}
                     for attempt in range(200):
@@ -286,7 +286,7 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
                             (folder/'actual.bgr').write_bytes(actual)
                         frames(1)
                     require(actual==want,'Desktop scene differs: '+label)
-                    pixels(b,folder,packed)
+                    pixels(b,folder,packed,palette=PALETTE)
                     print('Desktop scene:',label,flush=True)
                 else:
                     pixels(b,folder,r.packed())

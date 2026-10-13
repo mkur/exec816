@@ -100,13 +100,14 @@ def drawing(out,optimize,probe=False,fault=False,widgets=False,widget_probe=Fals
     foreign=emit(out/'drawing',sources,assembly,client_entries,
         optimize=optimize,roots=['ConsoleBitmapEntry']+(['ConsoleBridgeProbe'] if probe else [])+extra_roots+list(client_roots),includes=[src,ad]+extra_includes,definitions={
             'dev_vbxe.c':['-DGEM4XE_DEV_IMPL','-DGEM4XE_DEV_PREFIX=vbxe_'],
-            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']},
+            'gem-vbxe.c':['-DGEM_DRAWING_ONLY']+(['-DEXEC_DESKTOP_STYLE'] if widgets else [])},
         probes=[(ROOT/'c/calypsi/console-bitmap-layout.c',expected_layout())]+extra_probes+list(client_probes),
         source_optimization=client_optimization)
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
     if widgets or widget_probe:foreign['provenance']['aes_extraction']=aes_record
+    if widgets:foreign['provenance']['desktop_palette_sha256']=sha256(ad/'gem-desktop-palette.h')
     if widget_probe:foreign['provenance']['builder_probe_sha256']=sha256(probe_source)
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign

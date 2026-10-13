@@ -1,0 +1,256 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "status": "pass",
+  "suite": "resources",
+  "c_mode": "opt",
+  "native_mode": "opt",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "checks": 253,
+  "failures": 0,
+  "monochrome_scenes": 8,
+  "colour_scenes": 18,
+  "colour_pixels": 176472,
+  "resource_heap": {
+    "ResourceHeapWarm": 2586816,
+    "ResourceHeapReturned": 2586816
+  },
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 776,
+      "remaining_above_floor": 504
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 321,
+      "remaining_above_floor": 735
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 157,
+      "remaining_above_floor": 899
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 674,
+      "remaining_above_floor": 1630
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 64,
+      "remaining_above_floor": 192
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": 0,
+    "idle": 0
+  },
+  "icon_layout_modes": [
+    "raw",
+    "opt"
+  ],
+  "host_tests": {
+    "run": 458,
+    "passed": 454,
+    "skipped": 4
+  },
+  "report": "build/colour-icons/resources-word/results.json",
+  "report_sha256": "bd1c4ccbd4a538881a4a3d332166b9513362f0dd8435fda7430991b9699003a9",
+  "source_inputs": {
+    "c/include/gem/objects.h": "cf06672402f374b5cbfc48884335f09678e81f3505d17a88385da524c9b9525d",
+    "c/calypsi/aes-resource.c": "7f51bffc93eb5766584fc0d006c59f96563b107c78a0f0216bf2f216f490e0e4",
+    "c/calypsi/aes-objects.c": "2c6d612af1d969e2d2fc8697d86aef88e4121f306feb7a35bafdd8e592e623bb",
+    "ports/gem4xe/adapter/gem-vbxe.c": "6a76dc5916c263cc1fe89385a239713326f2f0e70fcc326473eee4b076205a24",
+    "ports/gem4xe/adapter/gem-drawing.h": "d65ecd169e3c20a02b5a115193a3f7f8673d9169c62797cb3a5a06b38aa02b72",
+    "examples/gem-browser/resource.json": "b1c6ff88bef0f8d3aac202b5bf1ea1e50ed50c119d4ea9aa58ba38869f11185d",
+    "examples/gem-browser/desktop.inc": "1583731adb281681d3d3190e6c47756109619a4c6d80efedc4256adf2450f75d",
+    "examples/gem-browser/desktop.h": "34441c0896b110c52624e1f835336de00e7f897c1cd5d1a2206d85ad19383d1e",
+    "tools/build_gem_resource.py": "88076b81473b62fea252050845595411f6ed4f7b773fb748e6cfa1c13087cb9a",
+    "tests/programs/aes_resources.c": "4e6051c3f217a34d20d0b39cc7678f50b289a886368fd47ea88d6edb0862036b",
+    "tools/test_icon_resources.py": "dbfad968b70ddf38174eb78fc9a0c15b35b57bdab21b4e6201566d09d6537d49"
+  },
+  "compiler": {
+    "actionc_revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+    "actionc_host_build_profile": "release",
+    "actionc_host_binary_sha256": "cf0572df8649cfd37d4649fb3f7023f5b767115d5ccb0a7a3aeea4d11df64807",
+    "calypsi_version": "5.18"
+  },
+  "desktop_demo": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "report": "build/colour-icons/demo/colour-session-results.json",
+    "report_sha256": "7e520785694533aa953c5f3b18f5ecb9df6408501ccb47102a2ebfe2677d829e",
+    "package": "build/colour-icons/demo/exec816-demo.zip",
+    "package_sha256": "90469a46ed19c373cc7c4dc599e58a52242823db5d2c58aae6a7471e9d804e07",
+    "bundle_manifest_sha256": "a01dbfb2a9f3b8a4c0286476512bf5af1d02b8271f626b5e99f97ce304be5d9b",
+    "boot_xex_sha256": "72cb2a71708292dcdaca027c1018ca277b2e077564b51bb098aa86455324515a",
+    "system_media_sha256": "ffc98eee39fc2b2e083eb3f0f2f9c4f399680284514d5a28bfaddbb5b7df02d8",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "measurement_media_override": false,
+    "scenarios": {
+      "multiple_windows": true,
+      "shared_application": true,
+      "independent_trees": true,
+      "independent_paths": true,
+      "resize": true,
+      "full_restore": true,
+      "scroll": true,
+      "persistent_background": true,
+      "background_selection": true,
+      "independent_launch_lifetime": true,
+      "windows_menu": true
+    },
+    "desktop_scene_sha256": {
+      "desktop-folder-reopened.png": "3abdf35744dc16926d1113233ab3c02dfc0c5690a0299a0515ef42c2476b95f0",
+      "desktop-initial.png": "3a824729a96a3a6c3e25fd4fc34e1159dcfb5d16dd423d57778084a96e618689",
+      "desktop-no-folders.png": "f6d3faad692e9c11bf38eb1c35362e0c412b310a4219696944e3b75ceee115da",
+      "desktop-selection.png": "505240984ba13118d57cd262d9c4d65055dd205366ded5263b09eba43b073d4f",
+      "desktop-two-folders.png": "f1f0faaa581b34b0a0f4df78a664cb5180c6916dfcdae4255d40238a509a78a1"
+    },
+    "guards": "intact",
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 557,
+        "remaining_above_floor": 723
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 359,
+        "remaining_above_floor": 697
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 149,
+        "remaining_above_floor": 907
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 879,
+        "remaining_above_floor": 177
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 668,
+        "remaining_above_floor": 388
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 300,
+        "remaining_above_floor": 756
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 759,
+        "remaining_above_floor": 1545
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 135,
+        "remaining_above_floor": 121
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 303,
+        "remaining_above_floor": 977
+      }
+    },
+    "shutdown_status": 0,
+    "memory_reservations_match": {
+      "baseline": "build/desktop-selection-ms4/demo/memory.json",
+      "fields": [
+        "bank_zero_budget",
+        "task_pools",
+        "runtime_reservations"
+      ]
+    }
+  }
+}

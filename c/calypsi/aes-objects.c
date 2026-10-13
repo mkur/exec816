@@ -35,19 +35,33 @@ static void draw_icon(struct ObjectPaint *p)
     WORD x=p->x+ib->ib_xicon,y=p->y+ib->ib_yicon;
     WORD l=x,t=y,r=x+ib->ib_wicon,b=y+ib->ib_hicon,n,tx;
     GRECT paper;
+    const CICON *colour=NULL;
+    if (p->tree[p->object].ob_type==G_CICON)
+        colour=(const CICON *)(ULONG)((const CICONBLK *)ib)->mainlist;
+    while (colour && colour->num_planes!=4) colour=(const CICON *)(ULONG)colour->next_res;
     if (p->tree[p->object].ob_state&SELECTED) { swap=fg;fg=bg;bg=swap; }
     if (l<gl_clip.g_x) l=gl_clip.g_x;
     if (t<gl_clip.g_y) t=gl_clip.g_y;
     if (r>gl_clip.g_x+gl_clip.g_w) r=gl_clip.g_x+gl_clip.g_w;
     if (b>gl_clip.g_y+gl_clip.g_h) b=gl_clip.g_y+gl_clip.g_h;
-    if (l<r && t<b) GemIconBitmap((const UWORD *)(ULONG)ib->ib_pmask,
-        (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,fg,bg);
+    if (l<r && t<b) {
+        if (colour) {
+            WORD selected=(p->tree[p->object].ob_state&SELECTED) && colour->sel_data;
+            GemColourIconBitmap((const UWORD *)(ULONG)(selected ? colour->sel_mask:colour->col_mask),
+                (const UBYTE *)(ULONG)(selected ? colour->sel_data:colour->col_data),
+                ib->ib_wicon,x,y,l,t,r,b);
+        } else GemIconBitmap((const UWORD *)(ULONG)ib->ib_pmask,
+            (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,fg,bg);
+    }
     if (ib->ib_char&255) {
         intin[0]=ib->ib_char&255;
         WidgetText(x+ib->ib_xchar,y+ib->ib_ychar,intin,1,MD_TRANS,fg);
     }
     if (label && *label) {
-        n=expand_string(intin,label);
+        if (p->tree[p->object].ob_type==G_CICON) {
+            /* The standard extension stores exactly twelve label bytes. */
+            for (n=0;n<12 && label[n];++n) intin[n]=(UBYTE)label[n];
+        } else n=expand_string(intin,label);
         if (n>ib->ib_wtext/8) n=ib->ib_wtext/8;
         r_set(&paper,p->x+ib->ib_xtext,p->y+ib->ib_ytext,ib->ib_wtext,ib->ib_htext);
         WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,bg,&paper);
@@ -59,7 +73,7 @@ static void draw(void *data)
 {
     struct ObjectPaint *p=data;
     gl_clip=p->clip;
-    if (p->tree[p->object].ob_type==G_ICON) draw_icon(p);
+    if (p->tree[p->object].ob_type==G_ICON || p->tree[p->object].ob_type==G_CICON) draw_icon(p);
     else if ((p->tree[p->object].ob_flags&EDITABLE) ||
         p->tree[p->object].ob_type==G_FTEXT || p->tree[p->object].ob_type==G_FBOXTEXT)
         ExecAESDrawEdit(p->context,p->tree,p->object,p->x,p->y);

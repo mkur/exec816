@@ -9,6 +9,10 @@
 #define BROWSER_ROWS 16
 #define BROWSER_ROW_FIRST 4
 #define BROWSER_STATUS (BROWSER_ROW_FIRST+BROWSER_ROWS)
+#define BROWSER_OBJECTS (BROWSER_STATUS+5)
+#define BROWSER_CONTENT_TOP 20
+#define BROWSER_CONTENT_BOTTOM 16
+#define BROWSER_FOCUS 1
 struct Browser {
     WORD id,vdi,window,opened;
     volatile WORD ready;
@@ -33,7 +37,7 @@ struct Browser {
     LONG dialogError;
     struct FileScan scan;
     OBJECT *stock;
-    ICONBLK icons[BROWSER_ROWS];
+    CICONBLK icons[BROWSER_ROWS];
     WORD iconView,sortNames,columns,armedClicks,full,restore[4];
     ULONG totalBytes;
     char information[65];
@@ -41,6 +45,7 @@ struct Browser {
     struct Desktop *desktop;
     UBYTE selection[BROWSER_ENTRIES/8];
     WORD selectionCount,selectionDirectories,armedModifiers,refreshPending;
+    WORD keyboardFocus;
 };
 WORD BrowserRun(struct Browser *);
 WORD DesktopRun(void);

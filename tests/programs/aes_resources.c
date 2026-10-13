@@ -118,6 +118,52 @@ static void icon_resource(void)
     CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
     CHECK(rsrc_free());
 }
+static void colour_resource(void)
+{
+    static UWORD mask[32],selectedMask[32];
+    static UBYTE normal[256],selected[256];
+    static CICON form;
+    static CICONBLK compiled;
+    static OBJECT background={-1,-1,-1,G_BOX,LASTOB,0,0x1175,8,40,624,184};
+    static OBJECT icon={-1,-1,-1,G_CICON,LASTOB,0,0,57,81,96,32};
+    const char *bad[]={"D1:CILEN.RSC","D1:CITAB.RSC","D1:CIINDEX.RSC","D1:CIWIDTH.RSC",
+        "D1:CIPLANE.RSC","D1:CICOUNT.RSC","D1:CICUT.RSC"};
+    OBJECT *tree,*again;
+    CICONBLK *loaded;
+    WORD i,row,x,window,handle=1;
+    CHECK(rsrc_load("D1:CICONS.RSC"));CHECK(rsrc_gaddr(R_TREE,0,(void **)&tree));
+    CHECK(tree[1].ob_spec==tree[5].ob_spec);
+    for (i=0;i<7;++i) {
+        CHECK(!rsrc_load(bad[i]));CHECK(rsrc_gaddr(R_TREE,0,(void **)&again) && tree==again);
+    }
+    loaded=(CICONBLK *)(ULONG)tree[1].ob_spec;compiled=*loaded;
+    form=*(CICON *)(ULONG)loaded->mainlist;
+    CHECK(form.num_planes==4 && form.col_data>65535UL && form.sel_data && !form.next_res);
+    CHECK(*(const UBYTE *)(ULONG)form.col_data==0x01 && *(const UBYTE *)(ULONG)form.sel_data==0xfe);
+    CHECK(!((CICONBLK *)(ULONG)tree[3].ob_spec)->mainlist);
+    form.col_data=(ULONG)normal;form.sel_data=(ULONG)selected;
+    form.col_mask=(ULONG)mask;form.sel_mask=(ULONG)selectedMask;compiled.mainlist=(ULONG)&form;
+    for (i=0;i<32;++i) { mask[i]=(i&1) ? 0xf3c0:0x83fe;selectedMask[i]=0x5aa5; }
+    for (row=0;row<16;++row) for (x=0;x<32;x+=2) {
+        UBYTE value=(((row+x)&15)<<4)|((row+x+1)&15);
+        normal[row*16+x/2]=value;selected[row*16+x/2]=value^255;
+    }
+    v_opnvwk(work_in,&handle,work_out);CHECK(handle>0);
+    window=wind_create(NAME|CLOSER|MOVER,0,0,640,208);CHECK(window>0);
+    CHECK(wind_open(window,0,24,640,208));
+    for (i=0;i<18;++i) {
+        icon.ob_x=57+(i&1);icon.ob_state=(i&2) ? SELECTED:0;
+        icon.ob_height=i>=16 ? 80:32;
+        icon.ob_spec=i<4 ? (ULONG)&compiled:tree[1+(i-4)/4].ob_spec;
+        CHECK(wind_update(BEG_UPDATE));CHECK(objc_draw(&background,0,0,0,0,640,240));
+        CHECK(objc_draw(&icon,0,0,i>=4 && i<8 ? icon.ob_x+11:0,
+            i>=4 && i<8 ? 83:0,i>=4 && i<8 ? 24:640,i>=4 && i<8 ? 21:240));
+        CHECK(wind_update(END_UPDATE));
+        IconPhase=i+9;while (IconGo<IconPhase) ExecYield();
+    }
+    CHECK(wind_close(window));CHECK(wind_delete(window));v_clsvwk(handle);
+    /* Leave this resource to appl_exit to cover colour resource ownership. */
+}
 UWORD AESRun(void)
 {
     OBJECT *tree,*again,*popup;
@@ -162,7 +208,7 @@ UWORD AESRun(void)
     file=Open("D1:DESKTOP.RSC",MODE_OLDFILE);CHECK(file!=0);
     CHECK(Seek(file,36,OFFSET_BEGINNING)==0);CHECK(Seek(file,0,OFFSET_CURRENT)==36);
     CHECK(Close(file));
-    text_resource();editable_resource();icon_resource();
+    text_resource();editable_resource();icon_resource();colour_resource();
 cleanup:
     CHECK(appl_exit());CHECK(ExecAESDetach());CHECK(ExecDOSDetach());
     ResourceHeapReturned=AvailMem(0);CHECK(ResourceHeapReturned==memory);

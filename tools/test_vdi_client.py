@@ -6,6 +6,7 @@ from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
 from test_desktop_presentation import rectangle,frame,desktop,text
 from test_gem_cursor import overlay
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 import adapter_state as adapter
 
@@ -50,7 +51,7 @@ def expected(font, covered=False):
         r.apply(8,(l,t+110),bytes((255,32,65)))
         r.clip=(0,0,639,239)
     rectangle(r,(0,0,640,15),0);rectangle(r,(0,15,640,16),1)
-    text(r,8,4,b'VDI B');text(r,440,4,b'Windows')
+    text(r,8,4,b'VDI B');text(r,568,4,b'Windows')
     return r
 
 
@@ -99,23 +100,23 @@ def physical(b,p,foreign,report):
     position=schedule(b,p,position,(70,57));frames(20)
     b.poke16(sy['VDIGo'],2);phase(3);frames(160)
     model=expected(font_bytes(out/'selected/src/vdi/font8x8.c'))
-    report['vdi_pixels']=pixels(b,out,overlay(model,position))
+    report['vdi_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     report['virtual_open_pixels']='unchanged'
     report['fast_text_units']=[int.from_bytes(b.memdump(sy['VDITextUnits']+i*2,2),'little') for i in range(2)]
     require(all(report['fast_text_units']),'Both clients must use the accelerated text path')
     report['backend_units']=[int.from_bytes(b.memdump(sy['VDIUnits']+i*2,2),'little') for i in range(2)]
     position=schedule(b,p,position,(620,232));frames(80)
-    report['cursor_restored_pixels']=pixels(b,out,overlay(model,position))
+    report['cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],3);phase(4);frames(120)
-    report['covered_pixels']=pixels(b,out,overlay(expected(model.font,True),position))
+    report['covered_pixels']=pixels(b,out,overlay(expected(model.font,True),position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],4);phase(5);frames(120)
-    report['exposed_pixels']=pixels(b,out,overlay(model,position))
+    report['exposed_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     position=schedule(b,p,position,(235,100));frames(40)
     b.poke16(sy['VDIGo'],5);phase(6);frames(80)
     model=clipped_scene(model.font)
     report['clip_native_runs']=[b.peek16(sy['VDIClipNative']+i*2) for i in range(12)]
     report['clip_device_glyphs']=[b.peek16(sy['VDIClipGlyphs']+i*2) for i in range(12)]
-    report['clip_pixels']=pixels(b,out,overlay(model,position))
+    report['clip_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     position=schedule(b,p,position,(620,232));frames(80)
-    report['clip_cursor_restored_pixels']=pixels(b,out,overlay(model,position))
+    report['clip_cursor_restored_pixels']=pixels(b,out,overlay(model,position),palette=DESKTOP_PALETTE)
     b.poke16(sy['VDIGo'],6);b.bp_clear_all()

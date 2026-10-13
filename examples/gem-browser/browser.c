@@ -10,29 +10,29 @@ static const char *desktop_association(struct Desktop *,const char *);
 #include <string.h>
 #include <proto/exec.h>
 
-enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU_PATH=10, MENU_NEW=11, MENU_RENAME=12, MENU_ICONS=15, MENU_LIST=16, MENU_NAME=17, MENU_ORDER=18, MENU_ALL=19, MENU_NONE=20 };
+enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU_PATH=10, MENU_NEW=11, MENU_RENAME=12, MENU_ICONS=15, MENU_LIST=16, MENU_NAME=17, MENU_PARENT=18, MENU_ALL=19, MENU_NONE=20 };
 static const OBJECT menuSource[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
     {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
     {1,3,13,G_IBOX,0,0,0,8,0,424,16},
     {13,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,64,16},
     {0,5,14,G_IBOX,0,0,0,0,16,640,224},
-    {14,6,12,G_BOX,0,0,0x00011100,8,0,112,114},
-    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,110,16},
-    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh",1,17,110,16},
-    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,33,110,16},
-    {10,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,49,110,16},
-    {11,-1,-1,G_STRING,0,0,(ULONG)"Path...",1,65,110,16},
-    {12,-1,-1,G_STRING,0,0,(ULONG)"New Folder",1,81,110,16},
-    {5,-1,-1,G_STRING,0,DISABLED,(ULONG)"Rename...",1,97,110,16},
+    {14,6,18,G_BOX,0,0,0x00011100,8,0,160,130},
+    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,158,16},
+    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh  Ctrl+L",1,17,158,16},
+    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,33,158,16},
+    {10,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,49,158,16},
+    {11,-1,-1,G_STRING,0,0,(ULONG)"Path...",1,65,158,16},
+    {12,-1,-1,G_STRING,0,0,(ULONG)"New Folder",1,81,158,16},
+    {18,-1,-1,G_STRING,0,DISABLED,(ULONG)"Rename...",1,97,158,16},
     {2,-1,-1,G_TITLE,0,0,(ULONG)"View",64,0,64,16},
-    {4,15,20,G_BOX,0,0,0x00011100,72,0,144,98},
+    {4,15,20,G_BOX,0,0,0x00011100,72,0,144,82},
     {16,-1,-1,G_STRING,0,0,(ULONG)"  Icons",1,1,142,16},
     {17,-1,-1,G_STRING,0,0,(ULONG)"  List",1,17,142,16},
-    {18,-1,-1,G_STRING,0,0,(ULONG)"  Name",1,33,142,16},
-    {19,-1,-1,G_STRING,0,0,(ULONG)"  Disk order",1,49,142,16},
-    {20,-1,-1,G_STRING,0,0,(ULONG)"Select All",1,65,142,16},
-    {14,-1,-1,G_STRING,LASTOB,0,(ULONG)"Select None",1,81,142,16}
+    {19,-1,-1,G_STRING,0,0,(ULONG)"  Sort by name",1,33,142,16},
+    {5,-1,-1,G_STRING,0,0,(ULONG)"Parent   Bksp",1,113,158,16},
+    {20,-1,-1,G_STRING,0,0,(ULONG)"Select All",1,49,142,16},
+    {14,-1,-1,G_STRING,LASTOB,0,(ULONG)"Select None",1,65,142,16}
 };
 /* Membership belongs to the snapshot, not the reused visible OBJECTs. */
 static WORD selected_entry(const struct Browser *b,UWORD index)
@@ -76,7 +76,7 @@ static WORD menu_state(struct Browser *b)
         if (!menu_ienable(b->applicationMenu,MENU_REFRESH,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_PATH,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NEW,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_ICONS,enabled&8) || !menu_ienable(b->applicationMenu,MENU_LIST,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) || !menu_ienable(b->applicationMenu,MENU_ORDER,enabled&8) ||
+            !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) || !menu_ienable(b->applicationMenu,MENU_PARENT,enabled&8) ||
             !menu_ienable(b->applicationMenu,MENU_ALL,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NONE,enabled&8)) return 0;
     }
     if (b->desktop && (changed&48)) {
@@ -113,6 +113,27 @@ static WORD icon_kind(const struct FileEntry *entry)
     if (!strchr(entry->name,'.') || (n>=4 && !strcmp(entry->name+n-4,".APP"))) return 2;
     return 3;
 }
+/* The freed File slot owns four decorative edges. Existing black fill and
+ * white disabled stipple give a dotted border without a new drawing operation. */
+static void layout_focus(struct Browser *b)
+{
+    OBJECT *focus=&b->tree[BROWSER_FOCUS],*row,*edge;
+    WORD index=b->selected-b->first,i;
+    focus->ob_flags=HIDETREE;
+    if (!b->keyboardFocus || index<0 || index>=b->visible) return;
+    row=&b->tree[BROWSER_ROW_FIRST+index];
+    focus->ob_flags=0;
+    focus->ob_x=row->ob_x;focus->ob_y=row->ob_y;
+    /* A zero-sized container keeps its decorative children out of hit testing. */
+    focus->ob_width=focus->ob_height=0;
+    for (i=0;i<4;++i) {
+        edge=&b->tree[BROWSER_STATUS+1+i];
+        edge->ob_x=i==3 ? row->ob_width-1:0;
+        edge->ob_y=i==1 ? row->ob_height-1:0;
+        edge->ob_width=i<2 ? row->ob_width:1;
+        edge->ob_height=i<2 ? 1:row->ob_height;
+    }
+}
 /* Reuse the visible object pool and three stock bitmaps for every directory. */
 static void layout(struct Browser *b)
 {
@@ -127,7 +148,7 @@ static void layout(struct Browser *b)
     b->columns=b->iconView ? (b->work[2]-16)/104:1;
     if (b->columns<1) b->columns=1;
     if (b->columns>BROWSER_ROWS) b->columns=BROWSER_ROWS;
-    rows=(b->work[3]-48)/(b->iconView ? 40:12);
+    rows=(b->work[3]-BROWSER_CONTENT_TOP-BROWSER_CONTENT_BOTTOM)/(b->iconView ? 40:12);
     if (rows<1) rows=1;
     if (rows>BROWSER_ROWS/b->columns) rows=BROWSER_ROWS/b->columns;
     b->visible=rows*b->columns;
@@ -138,9 +159,9 @@ static void layout(struct Browser *b)
     for (i=0;i<BROWSER_ROWS;++i) {
         OBJECT *row=&b->tree[BROWSER_ROW_FIRST+i];
         index=b->first+i;
-        row->ob_type=b->iconView ? G_ICON:G_BUTTON;
+        row->ob_type=b->iconView ? G_CICON:G_BUTTON;
         row->ob_x=8+(i%b->columns)*104;
-        row->ob_y=32+(i/b->columns)*(b->iconView ? 40:12);
+        row->ob_y=BROWSER_CONTENT_TOP+(i/b->columns)*(b->iconView ? 40:12);
         row->ob_width=b->iconView ? 104:b->work[2]-16;
         row->ob_height=b->iconView ? 32:10;
         row->ob_spec=(ULONG)b->labels[i];
@@ -149,9 +170,10 @@ static void layout(struct Browser *b)
         b->labels[i][0]=0;
         if (index<b->count) {
             if (b->iconView) {
-                b->icons[i]=*(const ICONBLK *)(ULONG)b->stock[icon_kind(&b->entries[index])].ob_spec;
+                b->icons[i]=*(const CICONBLK *)(ULONG)b->stock[icon_kind(&b->entries[index])].ob_spec;
                 label(b->labels[i],b->entries[index].name,12);
-                b->icons[i].ib_ptext=(ULONG)b->labels[i];
+                b->icons[i].monoblk.ib_ptext=(ULONG)b->labels[i];
+                b->icons[i].monoblk.ib_yicon=2;
                 row->ob_spec=(ULONG)&b->icons[i];
             } else {
                 b->labels[i][0]=b->entries[index].kind>0 ? '>':' ';
@@ -162,6 +184,7 @@ static void layout(struct Browser *b)
     b->tree[BROWSER_STATUS].ob_spec=(ULONG)b->status;
     b->tree[BROWSER_STATUS].ob_width=b->work[2]-16;
     b->tree[BROWSER_STATUS].ob_y=b->work[3]-12;
+    layout_focus(b);
 }
 static WORD sliders(struct Browser *b)
 {
@@ -189,7 +212,7 @@ static WORD redraw(struct Browser *b,const WORD *damage)
 static WORD view_checks(struct Browser *b)
 {
     return menu_icheck(b->applicationMenu,MENU_ICONS,b->iconView) && menu_icheck(b->applicationMenu,MENU_LIST,!b->iconView)
-        && menu_icheck(b->applicationMenu,MENU_NAME,b->sortNames) && menu_icheck(b->applicationMenu,MENU_ORDER,!b->sortNames);
+        && menu_icheck(b->applicationMenu,MENU_NAME,b->sortNames);
 }
 static char *decimal(char *to,ULONG value)
 {
@@ -203,7 +226,7 @@ static void selection_status(struct Browser *b)
     char *p;
     if (!b->selectionCount) {
         if (b->truncated) strcpy(b->status,"First 256 entries (list full)");
-        else label(b->status,b->path,63);
+        else strcpy(b->status,b->information);
         return;
     }
     p=decimal(b->status,b->selectionCount);strcpy(p," selected");
@@ -211,11 +234,18 @@ static void selection_status(struct Browser *b)
 }
 static WORD describe(struct Browser *b)
 {
-    char *p=decimal(b->information,b->totalBytes);
+    char *p,*read,*write;
+    WORD length,i;
+    decimal(b->information,b->totalBytes);
+    length=strlen(b->information);read=b->information+length;
+    p=write=read+(length-1)/3;*write=0;
+    for (i=0;read>b->information;) {
+        *--write=*--read;
+        if (++i==3 && read>b->information) { *--write=',';i=0; }
+    }
     strcpy(p," bytes in ");p=decimal(p+10,b->count);strcpy(p," items");
     label(b->target,b->path,64);
-    return wind_set_str(b->window,WF_INFO,b->information) &&
-        wind_set_str(b->window,WF_NAME,b->target);
+    return wind_set_str(b->window,WF_NAME,b->target);
 }
 static void sort_entries(struct Browser *b)
 {
@@ -260,6 +290,7 @@ static WORD refresh_path(struct Browser *b,const char *path)
     b->totalBytes=0;
     while (FileScanNext(&b->scan)) if (b->info.fib_DirEntryType<0) b->totalBytes+=b->info.fib_Size;
     b->count=b->scan.count;b->truncated=b->scan.truncated;b->selected=-1;
+    if (changed) b->keyboardFocus=0;
     clear_selection(b);
     if (b->sortNames) sort_entries(b);
     for (i=0;i<b->count;++i) {
@@ -297,16 +328,26 @@ static WORD scroll(struct Browser *b,WORD first)
 /* Model changes redraw only changed visible cells and the opaque status strip. */
 static WORD paint_selection(struct Browser *b)
 {
-    WORD i,index,state,okay=1,area[4];
+    WORD i,index,state,focus,okay=1,area[4];
+    WORD oldX=b->tree[BROWSER_FOCUS].ob_x,oldY=b->tree[BROWSER_FOCUS].ob_y;
+    WORD oldFlags=b->tree[BROWSER_FOCUS].ob_flags;
     if (!wind_update(BEG_UPDATE)) return 0;
+    layout_focus(b);
     for (i=0;i<b->visible && okay;++i) {
         OBJECT *row=&b->tree[BROWSER_ROW_FIRST+i];
         index=b->first+i;
         if (index>=b->count) break;
         state=selected_entry(b,index) ? SELECTED:0;
-        if (row->ob_state!=state) {
+        focus=(b->keyboardFocus && index==b->selected) ||
+            (!(oldFlags&HIDETREE) && row->ob_x==oldX && row->ob_y==oldY);
+        if (row->ob_state!=state || focus) {
             row->ob_state=state;
-            okay=objc_draw(b->tree,BROWSER_ROW_FIRST+i,0,b->work[0],b->work[1],b->work[2],b->work[3]);
+            if (focus) {
+                area[0]=b->work[0]+row->ob_x-1;area[1]=b->work[1]+row->ob_y-1;
+                area[2]=row->ob_width+2;area[3]=row->ob_height+2;
+                okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
+            } else okay=objc_draw(b->tree,BROWSER_ROW_FIRST+i,0,
+                b->work[0],b->work[1],b->work[2],b->work[3]);
         }
     }
     selection_status(b);
@@ -327,7 +368,8 @@ static WORD select_entry(struct Browser *b,WORD index,WORD mode)
     if (index<first) first=index/b->columns*b->columns;
     if (index>=first+b->visible) first=(index/b->columns-b->visible/b->columns+1)*b->columns;
     first=first_entry(b,first);was=selected_entry(b,index);b->selected=index;
-    if (mode==0 && was && b->selectionCount==1 && first==b->first) return 1;
+    if (mode==0 && was && b->selectionCount==1 && first==b->first &&
+        !b->keyboardFocus && (b->tree[BROWSER_FOCUS].ob_flags&HIDETREE)) return 1;
     if (!mode) clear_selection(b);
     mark_entry(b,index,mode==1 ? !was:1);
     selection_status(b);
@@ -409,7 +451,7 @@ static WORD dialog_cancel(struct Browser *b)
 {
     if (b->desktop && b->desktop->job && b->desktop->job->owner==b) return desktop_job_finish(b->desktop,1);
     if (!dialog_end(b)) return 0;
-    label(b->status,b->path,63);return redraw(b,b->work);
+    selection_status(b);return redraw(b,b->work);
 }
 static WORD dialog_focus(struct Browser *b,WORD focus)
 {
@@ -534,38 +576,20 @@ static WORD open_item(struct Browser *b)
     }
     return redraw(b,b->work);
 }
-static WORD file_menu(struct Browser *b)
-{
-    WORD okay;
-    b->popupInput.mn_tree=(LONG)(ULONG)b->menu;
-    b->popupInput.mn_menu=0;b->popupInput.mn_item=1;
-    b->popupInput.mn_scroll=0;b->popupInput.mn_keystate=0;
-    menu_ienable(b->menu,1,b->selectionCount==1);
-    menu_ienable(b->menu,3,b->child!=0);
-    okay=menu_popup(&b->popupInput,b->work[0]+8,b->work[1]+32,&b->popupOutput);
-    if (okay) {
-        if (b->popupOutput.mn_item==1) return open_item(b);
-        if (b->popupOutput.mn_item==2) return refresh(b);
-        if (b->popupOutput.mn_item==3 && b->child) {
-            stop(b);
-        }
-    }
-    return redraw(b,b->work);
-}
 static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *stock,
                         OBJECT *bar,WORD vdi,WORD x,WORD y,const char *path)
 {
     b->window=-1;b->selected=b->armed=-1;b->iconView=b->sortNames=1;
     if (b->desktop) { b->iconView=b->desktop->defaultIcons;b->sortNames=b->desktop->defaultSort; }
     b->menu=popup;b->stock=stock;b->applicationMenu=bar;b->vdi=vdi;
-    b->tree=AllocMem((ULONG)(BROWSER_STATUS+1)*sizeof(OBJECT),MEMF_PUBLIC);
+    b->tree=AllocMem((ULONG)BROWSER_OBJECTS*sizeof(OBJECT),MEMF_PUBLIC);
     b->entries=AllocMem((ULONG)sizeof(*b->entries)*BROWSER_ENTRIES,MEMF_PUBLIC);
     if (!b->tree || !b->entries) return 0;
-    memcpy(b->tree,source,(BROWSER_STATUS+1)*sizeof(OBJECT));
+    memcpy(b->tree,source,BROWSER_OBJECTS*sizeof(OBJECT));
     label(b->path,path,127);
-    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|INFO|FULLER,x,y,400,208);
+    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,360,184);
     if (b->window<0 || !wind_set_str(b->window,WF_NAME,"Files")) return 0;
-    if (!wind_open(b->window,x,y,400,208)) return 0;
+    if (!wind_open(b->window,x,y,360,184)) return 0;
     b->opened=1;
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]) ||
         !refresh(b)) return 0;
@@ -585,7 +609,7 @@ static WORD folder_close(struct Browser *b)
     if (b->opened) { if (!wind_close(b->window)) return 0;b->opened=0; }
     if (b->window>0) { if (!wind_delete(b->window)) return 0;b->window=-1; }
     if (b->entries) { FreeMem(b->entries,(ULONG)sizeof(*b->entries)*BROWSER_ENTRIES);b->entries=NULL; }
-    if (b->tree) { FreeMem(b->tree,(ULONG)(BROWSER_STATUS+1)*sizeof(OBJECT));b->tree=NULL; }
+    if (b->tree) { FreeMem(b->tree,(ULONG)BROWSER_OBJECTS*sizeof(OBJECT));b->tree=NULL; }
     return 1;
 }
 
@@ -596,12 +620,17 @@ static WORD folder_event(struct Browser *b,WORD events)
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3])) return -1;
         if (events&MU_BUTTON) {
             hit=objc_find(b->dialog ? b->dialogTree:b->tree,0,MAX_DEPTH,b->mx,b->my);
-            if (b->mb&1) { b->down=1;b->armed=hit;b->armedClicks=b->br;b->armedModifiers=b->ks; }
+            if (b->mb&1) {
+                if (b->keyboardFocus && !b->dialog) {
+                    b->keyboardFocus=0;
+                    if (!paint_selection(b)) result=2;
+                }
+                b->down=1;b->armed=hit;b->armedClicks=b->br;b->armedModifiers=b->ks;
+            }
             else {
                 b->down=0;
                 if (hit==b->armed) {
                     if (b->dialog) { if (!dialog_click(b,hit)) result=2; }
-                    else if (hit==1) { if (!file_menu(b)) result=2; }
                     else if (hit==2) { if (!up(b)) result=2; }
                     else if (hit==3) { if (!refresh(b)) result=2; }
                     else if (hit>=BROWSER_ROW_FIRST && hit<BROWSER_ROW_FIRST+b->visible &&
@@ -609,8 +638,8 @@ static WORD folder_event(struct Browser *b,WORD events)
                         i=b->first+hit-BROWSER_ROW_FIRST;
                         hit=b->selected==i && b->armedClicks==2 && !b->armedModifiers;
                         if (!select_entry(b,i,(b->armedModifiers&3) ? 1:0) || (hit && !open_item(b))) result=2;
-                    } else if (!(b->armedModifiers&3) && b->my>=b->work[1]+32 &&
-                               b->my<b->work[1]+b->work[3]-16 &&
+                    } else if (!(b->armedModifiers&3) && b->my>=b->work[1]+BROWSER_CONTENT_TOP &&
+                               b->my<b->work[1]+b->work[3]-BROWSER_CONTENT_BOTTOM &&
                                (hit==0 || (hit>=BROWSER_ROW_FIRST && hit<BROWSER_STATUS))) {
                         if (!select_all(b,0)) result=2;
                     }
@@ -626,10 +655,10 @@ static WORD folder_event(struct Browser *b,WORD events)
             else if ((b->kr&255)=='n' || (b->kr&255)=='N') { if (!dialog_open(b,DIALOG_NEW)) result=2; }
             else if ((b->kr&255)=='r' || (b->kr&255)=='R') { if (!dialog_open(b,DIALOG_RENAME)) result=2; }
             else if ((b->kr&255)==13) { if (!open_item(b)) result=2; }
-            else if ((b->kr&255)=='f' || (b->kr&255)=='F') { if (!file_menu(b)) result=2; }
+            else if ((b->kr&255)==12 || ((b->ks&4) && ((b->kr&255)=='l' || (b->kr&255)=='L'))) { if (!refresh(b)) result=2; }
             else if ((b->kr&255)==8) { if (!up(b)) result=2; }
             else if ((b->kr>>8)==0x48 || (b->kr>>8)==0x50 || (b->kr>>8)==0x4b || (b->kr>>8)==0x4d) {
-                hit=b->kr>>8;
+                hit=b->kr>>8;b->keyboardFocus=1;
                 i=b->selected<0 ? 0:b->selected+(hit==0x48 ? -b->columns:hit==0x50 ? b->columns:hit==0x4b ? -1:1);
                 if (!select_entry(b,i,(b->ks&3) ? 2:0)) result=2;
             }
@@ -645,11 +674,12 @@ static WORD folder_event(struct Browser *b,WORD events)
             case MENU_ICONS:case MENU_LIST:
                 b->iconView=b->message[4]==MENU_ICONS;b->first=0;layout(b);
                 if (!view_checks(b) || !sliders(b) || !redraw(b,b->work)) result=2;break;
-            case MENU_NAME:case MENU_ORDER:
-                b->sortNames=b->message[4]==MENU_NAME;
+            case MENU_NAME:
+                b->sortNames=!b->sortNames;
                 if (!view_checks(b) || !refresh(b)) result=2;break;
             case MENU_OPEN:if (!open_item(b)) result=2;break;
             case MENU_REFRESH:if (!refresh(b)) result=2;break;
+            case MENU_PARENT:if (!up(b)) result=2;break;
             case MENU_STOP:stop(b);if (!redraw(b,b->work)) result=2;break;
             case MENU_QUIT:quit=1;break;
             case MENU_PATH:if (!dialog_open(b,DIALOG_PATH)) result=2;break;

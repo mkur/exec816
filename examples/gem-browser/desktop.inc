@@ -1,5 +1,8 @@
 /* Persistent desktop. One event loop and one bounded array of folder models. */
 static WORD desktop_job_step(struct Desktop *);
+static WORD desktop_copy_admit(struct Browser *,const char *,WORD);
+static WORD desktop_drag_cancel(struct Desktop *,WORD);
+static WORD job_same_directory(const char *,const char *);
 #include "settings.inc"
 
 enum { DESK_TITLE=21,DESK_BOX=22,DESK_NEW=23,DESK_PANEL=24,DESK_CALC=25,
@@ -38,8 +41,12 @@ static WORD desktop_select(struct Desktop *d,WORD selected)
     WORD previous=d->selected,i,area[4];
     OBJECT *object;
     if (selected==previous) return 1;
-    if (previous>0) d->tree[previous].ob_state=0;
+    if (previous>0) {
+        d->tree[previous].ob_state=0;
+        d->icons[previous-1].monoblk.ib_char=0x1800;
+    }
     d->selected=selected;d->tree[selected].ob_state=SELECTED;
+    d->icons[selected-1].monoblk.ib_char=0x1000;
     for (i=0;i<2;++i) {
         WORD index=i ? selected:previous;
         if (index<1) continue;
@@ -77,6 +84,8 @@ static WORD desktop_menu(struct Desktop *d,struct Browser *b)
 static WORD desktop_close_folder(struct Desktop *d,struct Browser *b)
 {
     WORD i;
+    if ((d->drag.source==b->window || d->drag.target==b->window) &&
+        !desktop_drag_cancel(d,d->down)) return 0;
     if (!folder_close(b)) return 0;
     for (i=0;i<DESKTOP_FOLDERS;++i) if (d->folders[i]==b) d->folders[i]=NULL;
     if (d->active==b) d->active=NULL;
@@ -129,18 +138,22 @@ static void desktop_tree(struct Desktop *d)
 {
     WORD i,kind;
     OBJECT *o;
+    ICONBLK *ib;
     static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,16,640,224};
     static const OBJECT icon={0,-1,-1,G_ICON,0,0,0,8,0,104,32};
     d->tree[0]=root;
     for (i=0;i<DESKTOP_ICONS;++i) {
-        kind=i<3 ? 1:2;
-        d->icons[i]=*(ICONBLK *)d->stock[kind].ob_spec;
-        d->icons[i].ib_ptext=(ULONG)desktopLabels[i];
-        d->icons[i].ib_xicon=32;d->icons[i].ib_yicon=0;
-        d->icons[i].ib_xtext=0;d->icons[i].ib_ytext=22;
-        d->icons[i].ib_wtext=104;d->icons[i].ib_htext=8;
+        kind=i<2 ? 4:i+3;
+        d->icons[i]=*(CICONBLK *)d->stock[kind].ob_spec;
+        ib=&d->icons[i].monoblk;
+        ib->ib_ptext=(ULONG)desktopLabels[i];
+        ib->ib_xicon=36;
+        ib->ib_wtext=strlen(desktopLabels[i])*8+8;
+        ib->ib_xtext=(104-ib->ib_wtext)/2;ib->ib_ytext=22;
+        ib->ib_htext=8;
         o=&d->tree[i+1];
         *o=icon;
+        o->ob_type=G_CICON;
         o->ob_next=i+2;
         o->ob_flags=0;
         o->ob_spec=(ULONG)&d->icons[i];o->ob_y=i*32;
@@ -172,19 +185,28 @@ static WORD desktop_bar(struct Desktop *d)
     }
     /* File > Quit closes the active folder; Desk > Quit ends this Task. */
     d->bar[MENU_QUIT].ob_spec=(ULONG)"Close Window";
-    d->bar[5].ob_width=128;
-    for (i=MENU_OPEN;i<=MENU_RENAME;++i) d->bar[i].ob_width=126;
-    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=146;d->bar[MENU_RENAME].ob_next=DESK_COPY;
+    d->bar[5].ob_width=160;
+    for (i=MENU_OPEN;i<=MENU_RENAME;++i) d->bar[i].ob_width=158;
+    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=162;d->bar[MENU_PARENT].ob_next=DESK_COPY;
     d->bar[DESK_COPY]=menuSource[7];d->bar[DESK_COPY].ob_next=DESK_DELETE;
-    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=113;d->bar[DESK_COPY].ob_width=126;
+    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=129;d->bar[DESK_COPY].ob_width=158;
     d->bar[DESK_DELETE]=d->bar[DESK_COPY];d->bar[DESK_DELETE].ob_next=5;
-    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=129;d->bar[DESK_DELETE].ob_flags=LASTOB;
+    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=145;d->bar[DESK_DELETE].ob_flags=LASTOB;
     return menu_bar(d->bar,1);
 }
+#include "desktop-drag.inc"
+
 static WORD desktop_dispatch(struct Desktop *d,struct Browser *b,WORD events)
 {
     WORD result;
     if (!b) return 1;
+    if (d->drag.source==b->window && d->drag.phase) {
+        if (events&MU_KEYBD) return 1;
+        if ((events&MU_MESAG) && d->message[0]==MN_SELECTED)
+            return menu_tnormal(d->bar,d->message[3],1);
+        if ((events&MU_MESAG) && d->message[0]!=WM_REDRAW && d->message[0]!=WM_CLOSED)
+            return 1;
+    }
     memcpy(b->message,d->message,sizeof(b->message));
     b->mx=d->mx;b->my=d->my;b->mb=d->mb;b->ks=d->ks;b->kr=d->kr;b->br=d->br;
     if ((events&MU_MESAG) && b->message[0]==MN_SELECTED && (b->message[4]==DESK_COPY || b->message[4]==DESK_DELETE)) {
@@ -207,7 +229,8 @@ static WORD desktop_refresh_views(struct Desktop *d)
     WORD i,changed=0;
     for (i=0;i<DESKTOP_FOLDERS;++i) {
         struct Browser *b=d->folders[i];
-        if (b && b->ready && b->refreshPending && !b->dialog) {
+        if (b && b->ready && b->refreshPending && !b->dialog &&
+            b->window!=d->drag.source && b->window!=d->drag.target) {
             b->refreshPending=0;
             if (!refresh(b)) return 0;
             changed=1;
@@ -251,12 +274,19 @@ WORD DesktopRun(void)
         busy=desktop_children(d);
         if (!desktop_status(d)) { result=2;break; }
         running=d->job && d->job->state!=JOB_REPLACE;
-        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || running) ? MU_TIMER:0),2,1,d->down ? 0:1,
-            0,0,0,0,0,0,0,0,0,0,d->message,running ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
+        hit=d->drag.phase==DRAG_ARMED ? 3:0;
+        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || running) ? MU_TIMER:0)|
+            ((d->drag.phase==DRAG_ARMED || d->drag.phase==DRAG_TRACKING) ? MU_M1:0),2,1,d->down ? 0:1,
+            1,d->drag.lastX-hit,d->drag.lastY-hit,hit*2+1,hit*2+1,
+            0,0,0,0,0,d->message,running ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
         if (!events) {
             if (ExecAESDiagnostic()!=AES_INPUT_LOST) { result=2;break; }
+            if (!desktop_drag_cancel(d,1)) { result=2;break; }
             d->armed=-1;d->down=1;continue;
         }
+        if (events&MU_BUTTON) d->down=(d->mb&1)!=0;
+        events=desktop_drag_input(d,events);
+        if (events<0) { result=2;break; }
         if (events&MU_BUTTON) {
             d->down=(d->mb&1)!=0;
             i=ExecAESInputWindow(MU_BUTTON);b=desktop_folder(d,i);
@@ -287,7 +317,9 @@ WORD DesktopRun(void)
             }
         }
         if (events&MU_MESAG) {
-            if (d->message[0]==MN_SELECTED && d->message[3]==DESK_TITLE) {
+            if (d->message[0]==DESKTOP_DROP) {
+                if (!desktop_drag_deliver(d)) { result=2;break; }
+            } else if (d->message[0]==MN_SELECTED && d->message[3]==DESK_TITLE) {
                 i=d->message[4];
                 if (i==DESK_NEW) desktop_new(d,d->active ? d->active->path:"SYS:");
                 else if (i>=DESK_PANEL && i<=DESK_COUNTER) desktop_launch(d,desktopPrograms[i-DESK_PANEL],NULL,0);
@@ -313,6 +345,7 @@ WORD DesktopRun(void)
     }
 finish:
     d->ready=0;
+    if (!desktop_drag_cancel(d,0)) result=3;
     for (i=0;i<DESKTOP_CHILDREN;++i) if (d->children[i]) ExecBreakProgram(d->children[i]);
     for (i=0;i<DESKTOP_CHILDREN;++i) if (d->children[i]) {
         if (!ExecWaitProgram(d->children[i],&d->result)) return 3;
@@ -517,7 +550,6 @@ static WORD job_next(struct Desktop *d)
 static WORD desktop_copy_start(struct Browser *b,WORD replace)
 {
     struct Desktop *d=b->desktop;
-    struct DesktopFileJob *job;
     BPTR lock;
     if (replace) return desktop_job_choice(d,1);
     if (!d || b->selectionCount<1 || b->selectionDirectories || d->job) return 1;
@@ -532,6 +564,15 @@ static WORD desktop_copy_start(struct Browser *b,WORD replace)
         } else d->error=IoErr();
         if (d->error) { strcpy(b->status,"Destination must be a directory");return redraw(b,b->work); }
     }
+    return desktop_copy_admit(b,b->editText,0);
+}
+/* Both entry points publish one existing job; only menu Copy has an editor. */
+static WORD desktop_copy_admit(struct Browser *b,const char *destination,WORD directory)
+{
+    struct Desktop *d=b->desktop;
+    struct DesktopFileJob *job;
+    if (d->job || !b->selectionCount || b->selectionDirectories) return 1;
+    d->error=0;
     job=AllocMem(sizeof(*job),MEMF_PUBLIC|MEMF_CLEAR);
     if (job) job->buffer=AllocMem(COPY_BUFFER_BYTES,MEMF_PUBLIC);
     if (!job || !job->buffer) {
@@ -540,10 +581,21 @@ static WORD desktop_copy_start(struct Browser *b,WORD replace)
     }
     job->owner=b;job->operation=FILE_COPY;job->state=JOB_NEXT;job->index=-1;
     job->total=b->selectionCount;memcpy(job->pending,b->selection,sizeof(job->pending));
-    if (job->total>1) strcpy(job->destination,b->editText);
-    else { strcpy(job->target,b->editText);strcpy(job->destination,b->editText);FileParent(job->destination); }
-    if (!objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) {
+    if (directory && job->total==1) {
+        if (!FileJoin(job->target,sizeof(job->target),destination,b->entries[single_entry(b)].name)) {
+            FreeMem(job->buffer,COPY_BUFFER_BYTES);FreeMem(job,sizeof(*job));
+            strcpy(d->status,"Drop path is too long");return 1;
+        }
+        strcpy(job->destination,destination);
+    } else if (job->total>1) strcpy(job->destination,destination);
+    else { strcpy(job->target,destination);strcpy(job->destination,destination);FileParent(job->destination); }
+    if (!directory && !objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) {
         FreeMem(job->buffer,COPY_BUFFER_BYTES);FreeMem(job,sizeof(*job));return 0;
+    }
+    if (directory) {
+        WORD i;
+        for (i=0;i<7;++i) b->dialogTree[i]=dialogSource[i];
+        b->dialogTree[5].ob_spec=(ULONG)b->status;
     }
     d->job=job;b->dialog=DIALOG_COPYING;b->focus=4;
     return job_next(d);

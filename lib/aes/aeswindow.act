@@ -209,6 +209,23 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
+  ; A presenter query observes one coherent stack without waiting for drawing
+  ; or mouse ownership. A native/topmost non-window hit never falls through.
+  IF request.operation=AESTYPES.OP_FIND THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      LET hit=AESWINDOWSTATE.FindWindow(LAYERS.Hit(@desktop.scene,
+          request.intin(0),request.intin(1)))
+      LET found=AESWINDOWSTATE.FindRecord(hit)
+      request.intout(0)=0
+      IF found<>NULL AND hit<>DESKSTATE.desktopWindow THEN
+        request.intout(0)=found.gui.window
+      FI
+    END
+
+    RETURN(AESTYPES.OK)
+  FI
+
   IF Ready(service,client)=0 THEN
     RETURN(AESTYPES.PENDING)
   FI

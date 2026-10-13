@@ -113,7 +113,7 @@ def physical(b, p, foreign, report):
     require(bounds()==(32,32,312,216),'Resize acceptance')
     # Compare the complete gadget strip with an independent raster. Logical
     # slider size 250/position 1000 gives a 30-pixel thumb at absolute Y=154.
-    from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
+    from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
     from test_desktop_presentation import frame
     raster=Raster(font_bytes(Path(p['output']).parent/'selected/src/vdi/font8x8.c'))
     frame(raster,(32,32,312,216),b'',True,close=True,kind=491,slider=(122,30))

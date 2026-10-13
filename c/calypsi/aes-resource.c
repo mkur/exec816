@@ -1,6 +1,7 @@
 #include "aes-private.h"
 #include <proto/dos.h>
 #include <proto/exec.h>
+#include <string.h>
 
 /* Standard RSC words/longs are big endian, independent of host pointer order. */
 struct ExecAESResource {
@@ -11,6 +12,97 @@ struct ExecAESResource {
 };
 static UWORD word(const UBYTE *p) { return ((UWORD)p[0]<<8)|p[1]; }
 static ULONG wide(const UBYTE *p) { return ((ULONG)word(p)<<16)|word(p+2); }
+static void native_plane(UBYTE *p,UWORD bytes)
+{
+    UWORD i;
+    for (i=0;i<bytes;i+=2) *(UWORD *)(p+i)=word(p+i);
+}
+/* Standard RSC colour planes contain hardware colour bits, plane zero first.
+ * Transform once into packed device pixels, using load-time upper-RAM scratch. */
+static void colour_data(UBYTE *data,UWORD bytes,UBYTE *scratch)
+{
+    UWORD i,bit,at=0;
+    UBYTE pixel,pair=0;
+    for (i=0;i<bytes;++i) for (bit=128;bit;bit>>=1) {
+        pixel=(data[i]&bit ? 1:0) | (data[bytes+i]&bit ? 2:0) |
+            (data[bytes*2+i]&bit ? 4:0) | (data[bytes*3+i]&bit ? 8:0);
+        if (bit&0x55) scratch[at++]=pair|pixel;
+        else pair=pixel<<4;
+    }
+    memcpy(data,scratch,bytes*4);
+}
+/* Atari's version-4 extension: length/table/terminator, index table ending in
+ * -1, then CICONBLKs with inline mono data/mask/text and colour forms. Keep the
+ * first four-plane form (or mono fallback), and fix only the admitted copy. */
+static WORD colour_icons(UBYTE *data,UWORD bytes,UWORD classic,UWORD *table,UWORD *count)
+{
+    ULONG at,forms,form,end,block,selected,span;
+    UWORD i,j,width,height,planeBytes,planes;
+    UBYTE *scratch=NULL,*p;
+    CICONBLK *icon;
+    CICON *colour;
+    WORD result=0;
+    *count=0;*table=0;
+    if ((classic&1) || (ULONG)classic+12>bytes || wide(data+classic)!=bytes ||
+        wide(data+classic+8)) return 0;
+    at=wide(data+classic+4);
+    if (!at || at==0xffffffffUL) return 1;
+    if ((at&1) || at<(ULONG)classic+12 || at>bytes) return 0;
+    *table=(UWORD)at;
+    while (at+4<=bytes && wide(data+at)!=0xffffffffUL && *count<256) {
+        ++*count;at+=4;
+    }
+    if (at+4>bytes || wide(data+at)!=0xffffffffUL) return 0;
+    at+=4;
+    for (i=0;i<*count;++i) {
+        if (at+38>bytes) goto finish;
+        block=at;p=data+at;icon=(CICONBLK *)p;
+        width=word(p+22);height=word(p+24);forms=wide(p+34);
+        if (!width || width>64 || (width&15) || !height || height>64 || forms>256) goto finish;
+        planeBytes=(width>>3)*height;
+        at+=38;
+        if (at+(ULONG)planeBytes*2+12>bytes) goto finish;
+        icon->monoblk.ib_pdata=(ULONG)(data+at);native_plane(data+at,planeBytes);at+=planeBytes;
+        icon->monoblk.ib_pmask=(ULONG)(data+at);native_plane(data+at,planeBytes);at+=planeBytes;
+        icon->monoblk.ib_ptext=(ULONG)(data+at);at+=12;
+        for (j=12;j<34;j+=2) *(UWORD *)(p+j)=word(p+j);
+        icon->mainlist=0;
+        for (form=0;form<forms;++form) {
+            if (at+22>bytes) goto finish;
+            colour=(CICON *)(data+at);planes=word(data+at);selected=wide(data+at+10);
+            if (!planes || planes>16) goto finish;
+            span=(ULONG)planeBytes*(planes+1);
+            end=at+22+span*(selected ? 2:1);
+            if (end>bytes) goto finish;
+            at+=22;
+            if (planes==4 && !icon->mainlist) {
+                if (!scratch) {
+                    scratch=AllocMem(2048,MEMF_PUBLIC);
+                    if (!scratch) { result=-1;goto finish; }
+                }
+                colour->num_planes=4;colour->next_res=0;
+                colour->col_data=(ULONG)(data+at);
+                colour->col_mask=(ULONG)(data+at+planeBytes*4);
+                colour_data(data+at,planeBytes,scratch);
+                native_plane(data+at+planeBytes*4,planeBytes);
+                colour->sel_data=colour->sel_mask=0;
+                if (selected) {
+                    colour->sel_data=(ULONG)(data+at+span);
+                    colour->sel_mask=(ULONG)(data+at+span+planeBytes*4);
+                    colour_data(data+at+span,planeBytes,scratch);
+                    native_plane(data+at+span+planeBytes*4,planeBytes);
+                }
+                icon->mainlist=(ULONG)colour;
+            }
+            at=end;
+        }
+        *(ULONG *)(data+*table+(ULONG)i*4)=(ULONG)(data+block);
+    }
+    result=1;
+finish:
+    if (scratch) FreeMem(scratch,2048);
+    return result;
+}
 /* Resource admission only; drawing trusts the relocated caller-owned strings. */
 static UWORD string_size(const UBYTE *data,UWORD bytes,ULONG offset)
 {
@@ -76,7 +168,7 @@ WORD rsrc_load(const char *name)
     BPTR file;
     UBYTE header[36],*data,*p;
     LONG length,got,at=0;
-    UWORD bytes,objects,trees,objectAt,treeAt,tedAt,teds,iconAt,icons,i,j,type,editable,capacity;
+    UWORD bytes,classic,version,colours=0,colourAt=0,objects,trees,objectAt,treeAt,tedAt,teds,iconAt,icons,i,j,type,editable,capacity;
     ULONG spec,offset;
     OBJECT *o;
     TEDINFO *ted;
@@ -86,10 +178,11 @@ WORD rsrc_load(const char *name)
     if (!file) { c->diagnostic=AES_RESOURCE; c->busy=0; return 0; }
     if (Read(file,header,36)!=36) goto malformed;
     bytes=word(header+34); objectAt=word(header+2); treeAt=word(header+18);
+    classic=bytes;version=word(header);
     objects=word(header+20); trees=word(header+22);
     tedAt=word(header+4);teds=word(header+24);
     iconAt=word(header+6);icons=word(header+26);
-    if (word(header)!=0 || bytes<36 || !objects || objects>256 || !trees || trees>8 ||
+    if ((version!=0 && version!=4) || bytes<36 || !objects || objects>256 || !trees || trees>8 ||
         teds>256 || icons>256 || word(header+28) ||
         (icons && (iconAt<36 || (iconAt&1) || (ULONG)iconAt+(ULONG)icons*34>bytes)) ||
         (teds && (tedAt<36 || (ULONG)tedAt+(ULONG)teds*28>bytes)) ||
@@ -97,7 +190,8 @@ WORD rsrc_load(const char *name)
         (ULONG)treeAt+(ULONG)trees*4>bytes) goto malformed;
     if (Seek(file,0,OFFSET_END)<0) goto malformed;
     length=Seek(file,0,OFFSET_BEGINNING);
-    if (length!=bytes) goto malformed;
+    if ((!version && length!=bytes) || (version && (length<bytes || length>65535))) goto malformed;
+    bytes=(UWORD)length;
     r=AllocMem((ULONG)sizeof(*r)+bytes,MEMF_PUBLIC);
     if (!r) { c->diagnostic=AES_RESOURCE; goto finish; }
     r->bytes=(ULONG)sizeof(*r)+bytes; r->trees=trees; r->objects=objects;
@@ -107,11 +201,16 @@ WORD rsrc_load(const char *name)
         if (got<=0) goto malformed;
         at+=got;
     }
+    if (version) {
+        WORD status=colour_icons(data,bytes,classic,&colourAt,&colours);
+        if (!status) goto malformed;
+        if (status<0) { c->diagnostic=AES_RESOURCE;goto finish; }
+    }
     /* Validate all file extents before relocation. No repeated draw-time audit. */
     for (i=0;i<objects;++i) {
         p=data+objectAt+(ULONG)i*24;type=word(p+6);spec=wide(p+12);
         if (type!=G_BOX && type!=G_IBOX && type!=G_STRING && type!=G_TITLE && type!=G_BUTTON &&
-            type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT && type!=G_ICON)
+            type!=G_TEXT && type!=G_BOXTEXT && type!=G_FTEXT && type!=G_FBOXTEXT && type!=G_ICON && type!=G_CICON)
             goto malformed;
         if (word(p+8)&~(SELECTABLE|DEFAULT|EXIT|EDITABLE|RBUTTON|LASTOB|HIDETREE) ||
             word(p+10)&~(SELECTED|DISABLED)) goto malformed;
@@ -125,6 +224,8 @@ WORD rsrc_load(const char *name)
         } else if (type==G_ICON) {
             if (spec<iconAt || spec>=(ULONG)iconAt+(ULONG)icons*34 ||
                 (spec-iconAt)%34) goto malformed;
+        } else if (type==G_CICON && spec>=colours) {
+            goto malformed;
         }
     }
     for (i=0;i<icons;++i) {
@@ -190,7 +291,8 @@ WORD rsrc_load(const char *name)
         o->ob_type=word(p+6);o->ob_flags=word(p+8);o->ob_state=word(p+10);
         o->ob_x=coordinate(word(p+16));o->ob_y=coordinate(word(p+18));
         o->ob_width=coordinate(word(p+20));o->ob_height=coordinate(word(p+22));
-        o->ob_spec=(o->ob_type==G_BOX || o->ob_type==G_IBOX) ? spec:(ULONG)(data+spec);
+        o->ob_spec=o->ob_type==G_CICON ? *(ULONG *)(data+colourAt+spec*4):
+            (o->ob_type==G_BOX || o->ob_type==G_IBOX) ? spec:(ULONG)(data+spec);
     }
     for (i=0;i<trees;++i) {
         offset=wide(data+treeAt+(ULONG)i*4);r->tree[i]=(OBJECT *)(data+offset);

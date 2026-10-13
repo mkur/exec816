@@ -10,6 +10,13 @@ FIELDS=dict(ready=8,folders=10,active=22,source=26,popup=30,stock=34,bar=38,
 for name in FIELDS:
     if FIELDS[name]>FIELDS['bar']:FIELDS[name]+=48
 SIZE+=48
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['icons']:FIELDS[name]+=28
+SIZE+=28
+FIELDS["drag"]=SIZE
+DRAG_SIZE=148
+DRAG_FIELDS=dict(phase=0,source=2,target=4,entry=6,pressX=8,pressY=10,lastX=12,lastY=14,hover=16,held=18,destination=20)
+SIZE+=DRAG_SIZE
 JOB_SIZE=974
 JOB_FIELDS=dict(owner=0,input=4,output=8,copied=12,error=16,cleanupError=20,
     operation=24,state=26,index=28,total=30,completed=32,skipped=34,replacing=36,
@@ -17,3 +24,5 @@ JOB_FIELDS=dict(owner=0,input=4,output=8,copied=12,error=16,cleanupError=20,
     destination=842,buffer=970)
 LAYOUT=[('Desktop size',SIZE)]+[('Desktop '+n,v) for n,v in FIELDS.items()]+[
     ('Job size',JOB_SIZE)]+[('Job '+n,v) for n,v in JOB_FIELDS.items()]
+
+LAYOUT+=[("Drag size",DRAG_SIZE)]+[("Drag "+n,v) for n,v in DRAG_FIELDS.items()]

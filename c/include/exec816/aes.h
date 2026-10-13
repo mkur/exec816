@@ -61,5 +61,7 @@ WORD ExecAESMouseProfile(WORD profile);
 /* Exec extensions: pinned borderless background and captured input owner. */
 WORD ExecAESDesktop(WORD handle);
 WORD ExecAESInputWindow(WORD event);
+/* One presenter-followed outline under BEG_MCTRL; all zero arguments stop it. */
+WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height);
 BOOL ExecAESPointer(const void *pointer, ULONG bytes);
 #endif

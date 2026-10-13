@@ -17,9 +17,16 @@ for name in FIELDS:
 SIZE+=24
 FIELDS['refreshPending']=SIZE
 SIZE+=2
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['icons']:FIELDS[name]+=64
+SIZE+=64
+FIELDS['keyboardFocus']=SIZE
+SIZE+=2
+FIELDS['scan']=FIELDS['stock']-20
+CONTENT_TOP=20
 LAYOUT=[('Browser size',SIZE)]+[('Browser '+n,v) for n,v in FIELDS.items()]
 ROWS=16
-OBJECTS=21
+OBJECTS=25
 ENTRY_BYTES=112
 
 
@@ -31,12 +38,16 @@ def listing(session,base):
 
 
 def wait_listing(session,base,limit=50):
-    """Wait for navigation to release its directory lock before heap baselines."""
+    """Wait for navigation to release its directory lock before heap baselines.
+
+    FileScan is the 20-byte public helper immediately before stock. The status
+    can still describe the previous directory while the new scan owns its lock.
+    """
     from native_program import require
     for _ in range(limit):
         status=session.b.memdump(base+FIELDS['status'],128).split(b'\0')[0]
         path=session.b.memdump(base+FIELDS['path'],128).split(b'\0')[0]
-        if status==path or b' selected' in status or status.startswith((b'First 256 entries',b'Delete complete',b'Delete cancelled',b'Delete failed')):
+        if not session.number(base+FIELDS['scan'],4) and (b' bytes in ' in status or b' selected' in status or status.startswith((b'First 256 entries',b'Delete complete',b'Delete cancelled',b'Delete failed'))):
             session.frames(80);return
         session.frames(40)
     require(False,'Directory snapshot did not finish: '+repr((path,status)))
@@ -68,8 +79,8 @@ def select(session,base,name,click,stable_snapshot=False):
         if first<=index<first+visible:
             if session.number(base+FIELDS["iconView"],2):
                 columns=session.number(base+FIELDS["columns"],2)
-                click(x+48+(index-first)%columns*104,y+44+(index-first)//columns*40)
-            else:click(x+40,y+36+(index-first)*12)
+                click(x+48+(index-first)%columns*104,y+CONTENT_TOP+12+(index-first)//columns*40)
+            else:click(x+40,y+CONTENT_TOP+4+(index-first)*12)
             return
         click(x+w+8,y+8 if index<first else y+h-8)
         session.frames(60)

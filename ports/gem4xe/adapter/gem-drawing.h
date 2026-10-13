@@ -60,4 +60,6 @@ void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
  * rows. Caller holds the existing display grant; half-open clip is on screen. */
 void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
     WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD fg,UWORD bg);
+void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom);
 #endif

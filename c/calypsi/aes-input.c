@@ -11,7 +11,7 @@ UWORD ExecAESInputArm(struct ExecAESContext *c, UWORD flags)
     if (input->windowEpoch == 0) status = AES_IDENTITY;
     else {
         input->selectedWindow = input->windowEpoch;
-        input->interest = flags & (AES_INPUT_KEY | AES_INPUT_BUTTON);
+        input->interest = flags & (AES_INPUT_KEY | AES_INPUT_BUTTON | AES_MU_M1);
     }
     Permit();
     return status;
@@ -23,6 +23,7 @@ UWORD ExecAESInputState(struct ExecAESContext *c, UWORD flags)
 {
     struct AESInputInbox *in = c->endpoint->input;
     if (!flags) return AES_OK;
+    if (flags & AES_MU_M1) flags |= AES_INPUT_BUTTON;
     if (c->endpoint->state != AES_ENDPOINT_ACCEPTING ||
         !in->selectedWindow || in->windowEpoch != in->selectedWindow)
         return AES_IDENTITY;
@@ -35,6 +36,22 @@ static BOOL matches(struct ExecAESContext *c, UWORD buttons)
 {
     return (((buttons & 1) == (UWORD)c->intin[3]) !=
             ((c->intin[1] & 0x100) != 0));
+}
+
+/* Guard held. Rectangle waits share the captured pointer lifetime and latest
+ * sample, but consume no button FIFO entry. Far bounds avoid signed wrap. */
+static UWORD rectangle(struct ExecAESContext *c)
+{
+    struct AESInputInbox *in = c->endpoint->input;
+    struct AESInputRecord *p = &in->selectedPointer;
+    BOOL inside;
+    *p = in->latest;
+    p->epoch = in->buttonEpoch;
+    if (!in->eligible || !ExecAESWindowEpoch(c,p->window,p->windowEpoch)) return 0;
+    inside = p->x >= c->intin[5] && p->y >= c->intin[6] &&
+        (LONG)p->x < (LONG)c->intin[5]+c->intin[7] &&
+        (LONG)p->y < (LONG)c->intin[6]+c->intin[8];
+    return inside != (c->intin[4] != 0) ? AES_MU_M1 : 0;
 }
 
 /* Freeze only a bounded selection, without moving consumer heads. Each copy
@@ -54,6 +71,7 @@ UWORD ExecAESInputSelect(struct ExecAESContext *c, UWORD flags)
     in->buttonTailSeen = in->buttonTail;
     in->selectedKey.epoch = in->keyEpoch;
     in->selectedButton.epoch = in->buttonEpoch;
+    if (flags & AES_MU_M1) ready |= rectangle(c);
     in->nextKey = in->keyHead;
     in->nextButton = in->buttonHead;
     while ((flags & AES_INPUT_KEY) && in->nextKey != in->keyTailSeen) {
@@ -107,10 +125,10 @@ BOOL ExecAESInputStable(struct ExecAESContext *c, UWORD flags)
 /* Reconcile level eligibility at the actual frozen decision. A queued edge
  * is historical and keeps its recipient; an earlier level hint may have
  * changed with focus/locks while the timer clock was being read. Guard held. */
-UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready)
+UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready, UWORD flags)
 {
     struct AESInputInbox *in = c->endpoint->input;
-    if (!(ready & AES_MU_BUTTON) || in->selectionFlags) {
+    if ((flags & AES_MU_BUTTON) && (!(ready & AES_MU_BUTTON) || in->selectionFlags)) {
         ready &= ~AES_MU_BUTTON;
         if (in->eligible && ExecAESWindowEpoch(c,in->latest.window,in->latest.windowEpoch) &&
         matches(c, in->latest.buttons)) {
@@ -121,6 +139,7 @@ UWORD ExecAESInputLevel(struct ExecAESContext *c, UWORD ready)
             ready |= AES_MU_BUTTON;
         }
     }
+    if (flags & AES_MU_M1) ready = (ready & ~AES_MU_M1) | rectangle(c);
     return ready;
 }
 
@@ -130,7 +149,11 @@ UWORD ExecAESInputCommitState(struct ExecAESContext *c, UWORD flags)
     UWORD status = ExecAESInputState(c, flags);
     if (status != AES_OK) return status;
     if (((flags & AES_INPUT_KEY) && in->selectedKey.epoch != in->keyEpoch) ||
-        ((flags & AES_INPUT_BUTTON) && in->selectedButton.epoch != in->buttonEpoch))
+        ((flags & AES_INPUT_BUTTON) && in->selectedButton.epoch != in->buttonEpoch) ||
+        ((flags & AES_MU_M1) && in->selectedPointer.epoch != in->buttonEpoch))
+        return AES_INPUT_LOST;
+    if ((flags & AES_MU_M1) && in->selectedPointer.windowEpoch &&
+        !ExecAESWindowEpoch(c,in->selectedPointer.window,in->selectedPointer.windowEpoch))
         return AES_INPUT_LOST;
     return AES_OK;
 }
@@ -142,6 +165,7 @@ void ExecAESInputResult(struct ExecAESContext *c, UWORD ready)
     struct AESInputInbox *in = c->endpoint->input;
     struct AESInputRecord *sample = &in->latest;
     if (ready & AES_MU_KEYBD) sample = &in->selectedKey;
+    if (ready & AES_MU_M1) sample = &in->selectedPointer;
     if (ready & AES_MU_BUTTON) sample = &in->selectedButton;
     c->eventWindow=sample->window;
     c->keyWindow=in->selectedKey.window;
@@ -171,6 +195,7 @@ UWORD ExecAESInputRecover(struct ExecAESContext *c, UWORD flags)
 {
     struct AESInputInbox *input = c->endpoint->input;
     UWORD lost, status = AES_OK;
+    if (flags & AES_MU_M1) flags |= AES_INPUT_BUTTON;
     Forbid();
     lost = input->loss & flags;
     if (!input->windowEpoch) status = AES_IDENTITY;

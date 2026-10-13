@@ -37,7 +37,7 @@ class DesktopContractTests(unittest.TestCase):
 
     def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
         import generate_aes_server as aes
-        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET', 'OP_DISPLAY', 'OP_MOUSE_PROFILE', 'OP_MENU'])
+        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_UPDATE', 'OP_CREATE', 'OP_OPEN', 'OP_CLOSE', 'OP_DELETE', 'OP_SET', 'OP_DISPLAY', 'OP_MOUSE_PROFILE', 'OP_MENU', 'OP_FIND', 'OP_DRAG_OUTLINE'])
         self.assertEqual(aes.layout()['Request']['size'], 112)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)

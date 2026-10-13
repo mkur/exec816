@@ -19,7 +19,7 @@ def instrument(out):
 
 def physical(b,p,foreign,report,reach):
     from desktop_mouse import schedule
-    from gem_render_oracle import PALETTE,PENS
+    from gem_render_oracle import DESKTOP_PALETTE as PALETTE,PENS
     from test_gem_cursor import overlay
     from types import SimpleNamespace
     sys.path.insert(0,str(ROOT/'build/gem-vdi/upstream/tools'))

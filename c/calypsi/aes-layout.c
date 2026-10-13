@@ -48,6 +48,7 @@ const UWORD AESLayout[] = {
     offsetof(struct AESInputInbox, latest),
     offsetof(struct AESInputInbox, selectedKey),
     offsetof(struct AESInputInbox, selectedButton),
+    offsetof(struct AESInputInbox, selectedPointer),
     offsetof(struct AESInputInbox, selectedWindow),
     offsetof(struct AESInputInbox, nextKey),
     offsetof(struct AESInputInbox, nextButton),

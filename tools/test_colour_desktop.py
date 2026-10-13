@@ -34,7 +34,7 @@ class ColourFiles:
             b._cmd_ok('KEY '+name+' down');s.frames(3);b._cmd_ok('KEY '+name+' up')
             if shift:b._cmd_ok('KEY SHIFT up')
             s.frames(35)
-        def view(item):click(96,8);click(100,24+(item-15)*16)
+        def view(item):click(224,8);click(228,24+(item-15)*16)
         def fill(value):
             for _ in text('editText'):key('BACKSPACE')
             for c in value:
@@ -53,7 +53,7 @@ class ColourFiles:
         shot('colour-files-icons')
         # Ordinary clicks select immediately. Paired captured edges open a folder.
         names=listing(s,base);index=names.index('C');x,y,w,h=work()
-        move(x+48+(index%3)*104,y+44+(index//3)*40)
+        move(x+48+(index%3)*104,y+32+(index//3)*40)
         for button,frames in ((1,4),(0,4),(1,4),(0,160)):
             b._cmd_ok('MOUSE AT 2000 0 0 '+str(button));s.frames(frames)
         wait_listing(s,base);require(text('path')=='SYS:C','Physical double-click did not open folder')
@@ -66,7 +66,7 @@ class ColourFiles:
         select(s,base,'HELLO',click);key('RETURN')
         s.rendezvous('dw($%x)=0'%(base+F['child']));s.frames(80)
         require(s.number(base+F['launches'],4)==1,'Native launch from list')
-        view(18);require(n('sortNames')==0,'Disk order menu')
+        view(17);require(n('sortNames')==0,'Disk order menu')
         view(17);require(n('sortNames')==1,'Name order menu')
         view(15);require(n('iconView')==1,'Icon view restore')
         old=work();click(408,32);s.frames(120)
@@ -81,7 +81,7 @@ class ColourFiles:
         require(n('columns')==2 and n('visible')==2,'Shrink icon reflow')
         require(listing(s,base)[n('selected')]==selected,'Resize lost selection')
         shot('colour-files-shrunk')
-        # Existing editing and filesystem operations still work with INFO insets.
+        # Existing editing and filesystem operations still work with compact insets.
         path('WORK:');key('N');s.rendezvous('dw($%x)=2'%(base+F['dialog']))
         fill('COLOUR');key('RETURN');s.rendezvous('dw($%x)=0'%(base+F['dialog']));wait_listing(s,base)
         select(s,base,'COLOUR',click);key('R');fill('RENAMED');key('RETURN')

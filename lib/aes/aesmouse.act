@@ -42,6 +42,16 @@ PUBLIC BYTE FUNC LockReady(LONGCARD client)
 
 RETURN(latest.buttons=0 OR (owner=client AND owner<>0))
 
+; Presenter-only access for a visual attached to the existing physical capture.
+PUBLIC BYTE FUNC DragReady(LONGCARD client,epoch)
+
+RETURN(owner=client AND owner<>0 AND openEpoch=epoch
+    AND latest.buttons<>0 AND needRelease=0)
+
+PUBLIC AESTYPES.InputRecord POINTER FUNC PointerSample()
+
+RETURN(@latest)
+
 PUBLIC PROC Cancel(LONGCARD client)
 
   IF clickOwner=client THEN

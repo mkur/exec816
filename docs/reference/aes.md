@@ -93,8 +93,8 @@ the selected screen coordinates, buttons and modifiers. Supported arguments are
 it does not request multiple clicks. Other button arguments fail as a whole
 with `AES_UNSUPPORTED`.
 
-`evnt_multi` supports all fifteen nonempty combinations of `MU_KEYBD`,
-`MU_BUTTON`, `MU_MESAG` and `MU_TIMER`. At one frozen decision it selects at most
+`evnt_multi` supports all 31 nonempty combinations of `MU_KEYBD`,
+`MU_BUTTON`, `MU_M1`, `MU_MESAG` and `MU_TIMER`. At one frozen decision it selects at most
 one key, one matching button condition and one message. It scans at most sixteen
 retained button transitions before considering an eligible current level; older
 nonmatching transitions retire together with the selected match. A quick down/up
@@ -104,7 +104,7 @@ The application normally changes its next wait to release after accepting down.
 Input waits require an open application window; otherwise they return zero with
 `AES_IDENTITY`. Message/timer-only calls still work without a window. Unselected
 button and rectangle arguments are ignored. Empty/unsupported event masks,
-rectangle events, right/middle buttons and counts above two fail explicitly.
+`MU_M2`, right/middle buttons and counts above two fail explicitly.
 
 For `clicks=2`, the first accepted press/release reports one immediately; a second
 press within 25 captured VBI ticks (500 ms PAL / 417 ms NTSC) and four pixels on
@@ -117,6 +117,15 @@ The named wrappers, `evnt_multi_moblk` and correctly sized AES parameter blocks
 use this same implementation. Key/button opcodes are 20 (0/1/0/0) and 21
 (3/5/0/0); multi remains 25 (16/7/1/0).
 
+`MU_M1` matches the latest eligible pointer against the selected rectangle:
+`m_out=0` waits inside, `m_out=1` waits outside; width/height must be positive.
+Right and bottom edges are exclusive. Motion coalesces in the existing snapshot
+and wakes the existing receive-port signal, without motion messages, polling
+or per-sample presenter RPC. The predicate is evaluated in the caller again at
+the frozen decision. An M1 result supplies that decision's pointer coordinates;
+a simultaneous retained button result takes precedence, preserving release
+coordinates even if the pointer has since moved. M1 shares button loss recovery.
+
 A button result supplies the selected button snapshot. A key-only result supplies
 the pointer snapshot captured when that key was published. When both return,
 modifiers are ORed; when neither returns, the result uses the last coherent
@@ -125,7 +134,7 @@ absent. Native Shift maps to GEM left-Shift (2) and Control to 4; there is no Al
 separate right Shift or standalone Control-click guarantee.
 
 Matching runs in the caller on registration-owned upper-memory scratch, using
-the existing receive-port signal and one absolute timer alarm. Interest is
+the existing receive-port signal and, only for timed waits, one absolute timer alarm. Interest is
 published before the final readiness check. Signals are hints and can arrive
 without a message; no signal is cleared between an empty observation and Wait.
 Each record copy has a short guard; the bounded FIFO scan and timer I/O run
@@ -296,10 +305,30 @@ When painting releases the scene with a native control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
+`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) queries the presenter's
+current layer stack. It returns the topmost normal AES window's global handle,
+including foreign owners and borders. Background, the desktop window and native
+windows return zero; a native window occludes AES windows below it. The query
+does not focus or raise anything.
+
+`ExecAESDragOutline(window,dx,dy,width,height)` starts one pointer-followed
+outline for the caller's captured, open source window under `BEG_MCTRL`.
+Dimensions are 8..80 by 8..32 pixels; the visual is clamped below the menu bar
+and within 640x240. Passing five zeroes stops the caller's visual. A released
+capture or busy visual returns `AES_BUSY`. The presenter owns tracking and
+retires it on release, loss, source close, final MCTRL release or detach, without
+native move/size completion. No client pointer is retained. The owner may acquire
+UPDATE for feedback; the outline is suspended around drawing. Other clients'
+UPDATE requests still wait for MCTRL release, and a queued lock may pause native
+painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
+
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 13 has a 112-byte request and permits init, exit, update,
-window mutations, cold display delegation and session mouse preferences on the
-RPC endpoint. Queries and rectangle conversion are local. Public GEM arrays remain private to each caller. Rebuild
+profile: version 14 has a 112-byte request and permits init, exit, update,
+window mutations, cold display delegation, menu publication, session mouse
+preferences, `wind_find` and application outline admission on the RPC endpoint.
+Other window queries and rectangle conversion remain local. The input inbox is
+754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
+uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
@@ -369,10 +398,11 @@ includes the optional `--aes-input` OF816 build. The application object/form and
 
 `gem.h` declares the standard 24-byte `OBJECT`, 8-byte `GRECT` and 28-byte
 `TEDINFO` layouts. Application-owned trees support `G_BOX`, `G_IBOX`,
-`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT` and
-`G_FBOXTEXT` and `G_ICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
+`G_STRING`, `G_TITLE`, `G_BUTTON`, `G_TEXT`, `G_BOXTEXT`, `G_FTEXT`,
+`G_FBOXTEXT`, `G_ICON` and `G_CICON`; SELECTED/DISABLED state; SELECTABLE/DEFAULT/EXIT/EDITABLE/
 RBUTTON/LASTOB/HIDETREE flags. The caller supplies valid links, indices and huge string pointers,
-with at most 32 objects, eight levels and 63 characters per label. Coordinates
+with at most 32 objects, eight levels and 63 characters per label (12 for
+`G_CICON`). Coordinates
 are pixels. Box specs use a signed border-thickness byte; centering and drawing
 include outward borders. Unsupported object types, indirect specs and user callbacks are
 outside this caller contract.
@@ -549,7 +579,8 @@ See the [development record](../history/file-selector.md).
 
 `rsrc_load`, `rsrc_free`, `rsrc_gaddr(R_TREE, index, &tree)` and `rsrc_obfix`
 provide named and AESPB bindings (110/111/112/114). Load accepts classic
-big-endian version-zero RSC files, at most 65,535 bytes, 256 objects and eight
+big-endian version-zero RSC files and version-four colour-icon extensions,
+at most 65,535 bytes in total, 256 objects and eight
 trees, using the object/string subset above. Each tree ends with LASTOB within
 32 objects. Up to 256 TEDINFO records support the text types above. Templates
 and validation strings are NUL-terminated, at most 63 characters. Load fixes full
@@ -569,7 +600,28 @@ mask holes preserve existing pixels; the label uses the fixed 8×8 face. The
 OBJECT bounds enclose its bitmap and label. This icon subset draws normal and
 SELECTED states; callers use HIDETREE for absent items. Disabled icon stippling
 and other decorative state overlays are not implemented.
-G_IMAGE, CICON, 3D flags, extensions and indirect specs are unsupported.
+G_CICON uses the standard 38-byte CICONBLK and 22-byte CICON. The loader reads
+the version-four extension's index table and inline mono/colour forms, selects
+the first four-plane form, and converts it once from standard planar data into
+VBXE packed hardware pixels. Other depths are skipped; a missing four-plane
+form draws the monochrome fallback. Width/height limits match G_ICON. Colour
+labels contain up to twelve bytes, including a full twelve-byte non-NUL label.
+Compiled trees provide packed four-bit hardware pixels (left nibble first),
+native WORD masks and full addresses; mainlist can be NULL for mono fallback.
+The file format's colour bits use ST hardware ordering, not GEM logical pens.
+
+Colour masks preserve the exterior and holes at either X alignment. SELECTED
+uses sel_data/sel_mask when supplied; otherwise the colour image stays unchanged.
+In either case the label and optional character exchange foreground/background
+pens. This follows GEM4XE's label-only fallback rather than synthesizing a
+darkened selected image. File extents are checked during load; drawing trusts
+the caller-owned tree and prepared data. Conversion temporarily uses 2 KiB of
+upper RAM, freed before load returns. Painting reuses the existing CPU/VRAM
+scratch and two masked blits, without persistent icon caches.
+
+G_IMAGE, 3D flags, other resource extensions, colour-depth expansion, custom
+palettes, disabled-icon stippling and indirect specs are unsupported.
+See the [colour-icon implementation record](../history/colour-icons.md).
 Character coordinates use the fixed 8×8 cell. File extents and string offsets are
 checked once during loading; valid object links remain the caller's responsibility.
 Already loaded coordinates are pixels and must not be passed through obfix again.
@@ -591,14 +643,17 @@ consumed by the next message wait. This adds no kernel signal or service queue.
 `menu_bar(tree,1)` installs one borrowed application tree; `menu_bar(tree,0)`
 withdraws it. Other modes fail. Installation does not focus the application and
 may precede its window. The focused shown window selects the visible bar; no
-installed menu uses the desktop fallback. Windows remains available at x=432.
+installed menu uses the desktop fallback. The focused-window caption remains
+at x=0..127, application menus occupy x=128..559, and Windows is at x=560.
 `wind_get(0,WF_WXYWH)` returns `(0,16,640,224)`.
 
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
 siblings under the dropdown container. Items are direct G_STRING children.
 G_IBOX containers, selected/checked/disabled/hidden states, 32 objects, depth eight and
-63-byte labels are supported. Titles fit x=0..431; dropdowns fit 640×224 and
+63-byte labels are supported. Titles fit caller coordinates x=0..431; the
+presenter translates their display and hit coordinates by 128 pixels.
+Dropdowns fit 640×224 and
 are repositioned on screen without changing their dimensions. Font is 8×8.
 Cascades, scrolling bars, accessories, icons and editable menu
 objects are unsupported. Valid pointers, links and indices remain caller-owned.
@@ -646,17 +701,36 @@ leaves the background and Desk menu usable. The shell initially leaves the volum
 icon column uncovered. Windows reaches covered ordinary windows; the background
 is excluded from cycling.
 
+SYS: and WORK: use crisp blue floppy icons with dark outlines, grey shutters
+and light labels. The 32×16 artwork accounts for the display's tall pixels;
+transparent exteriors reveal the desktop. Selection highlights the label while
+keeping the image blue. C: uses a muted gold folder because it is the command
+directory assign. The artwork is editable pixel rows in
+`examples/gem-browser/resource.json`: hexadecimal GEM pens 0–f, `.` transparent,
+and optional `selected_pixels` with the same dimensions. The resource builder
+emits the standard four-plane extension and a monochrome fallback.
+
+Panel, Calculator, Text and Counter have distinct 32×16 colour icons: sliders,
+a keypad, a text page and a small chart. Normal desktop labels use the desktop
+grey, with a white-on-black label for selection. File-window icons keep their
+monochrome artwork in colour-icon records, reversing only the label. See the [desktop style](desktop.md#window-appearance).
+
 Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen OBJECTs
 for a 104×40 icon grid or a compact list. Icons have 32×20 bitmaps and labels in
-32-pixel-high objects. View chooses Icons/List and Name/Disk order; names group
-directories first. INFO shows byte/item totals and FULLER toggles full/remembered
-bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
+32-pixel-high objects. View chooses Icons/List and a checked Sort by name command; unchecked retains
+disk order. Name sorting groups directories first. New windows start at 360×184
+and retain user-selected bounds across navigation. The path occupies the title;
+one bottom status line shows byte/item totals, selection or operation feedback.
+There is no duplicate INFO row or File popup. Two 24×12 mouse targets contain
+small Up/Refresh glyphs. File > Parent / Backspace and File > Refresh / Ctrl+L
+provide the same operations. FULLER toggles full/remembered bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
 resize reflows; vertical arrows, page clicks and the thumb scroll. Plain clicks
 replace selection; Shift-click toggles membership and Shift-arrow adds the next
 entry. View > Select All/None, Ctrl+A and Escape act on the cached snapshot,
 including offscreen entries. Open/Return/Rename require exactly one member;
 modified double-clicks never open. The status strip shows the selected count.
-Refresh and Name/Disk order changes retain selected filenames; navigation clears
+A dotted border marks the keyboard lead independently of selection; mouse input
+removes it. The decoration does not intercept object hits. Refresh and sort changes retain selected filenames; navigation clears
 them. Larger directories report truncation. Standalone Files shares these rules.
 The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the horizontal
 cursor keys; physical Shift-arrow checks use Up/Down. Shift-click can select
@@ -702,9 +776,29 @@ dialog defers refresh until it ends, retaining typed input. Paths match without
 case sensitivity and ignore a trailing slash; distinct volume aliases are not
 resolved for invalidation (use Refresh for an alias view). Copy retains source
 selection; Delete retains surviving names. Recursive operations, Replace All,
-retry/skip-error, rubber-band selection, icon dragging and trash are unsupported.
+retry/skip-error, rubber-band selection, desktop-icon rearrangement and trash are unsupported.
 
-State is application-owned upper RAM: 3,973 bytes per Browser, a 2,176-byte
+Regular-file selections can also be dragged in icon or list view to another
+folder's exposed content background or a visible directory entry. Four pixels
+of movement starts the drag. Dragging an already selected file retains the
+whole selection, including offscreen members; dragging an unselected file
+selects that file alone. Groups containing directories do not drag. The source
+snapshot stays frozen until cancellation or copy admission. Escape cancels and
+consumes the eventual release. Toolbar/status/border, file, foreign-window and
+desktop targets are rejected; common same-directory drops are no-ops.
+
+One small presenter outline follows the pointer; only a changed target's status
+strip is repainted for hover feedback. Release copies the destination path and
+sends one private eight-word `DESKTOP_DROP` (`0x6e00`) message to the desktop:
+`[opcode, desktopID, 0, targetHandle, sourceHandle, x, y, modifiers]`.
+There is one pending record, no pointer payload and no acknowledgement. Queue
+exhaustion cancels without copying. Closing either folder cancels a pending
+notification; its cancelled slot remains reserved until consumption. Delivery
+starts the same copy job as File > Copy, preserving each source filename.
+Outline/MCTRL ownership is released before DOS admission. Independent application
+receivers, directory copying, Move, auto-scroll and hover-opening are unsupported.
+
+State is application-owned upper RAM: 4,039 bytes per Browser, a 2,352-byte
 desktop, one 974-byte file job and a separate 16,384-byte copy buffer. Delete
 allocates no payload buffer. Selection remapping uses temporary packed names,
 at most 27,648 bytes, then frees them. This work adds no bank-zero reservation,

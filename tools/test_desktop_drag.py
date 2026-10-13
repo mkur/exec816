@@ -15,7 +15,7 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 from test_dos_stack import execute, ownership
 from generate_desktop import layout as desktop_layout
 from generate_layers import layout as layer_layout
-from gem_render_oracle import Raster, font_bytes, PENS, PALETTE
+from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
 from bitmap_console_oracle import Terminal
 from test_gem_cursor import overlay
 from test_desktop_presentation import desktop, frame, rectangle, menu_bar, text as paint_text

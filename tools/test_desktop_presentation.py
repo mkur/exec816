@@ -14,6 +14,7 @@ from test_dos_stack import execute, ownership
 from test_cooperative import data
 from gem_render_oracle import Raster, font_bytes, PENS
 from bitmap_console_oracle import Terminal
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from desktop_budget import delta as desktop_delta
@@ -39,10 +40,10 @@ def text(raster, x, y, value, fg=1, bg=0):
 
 
 def desktop(raster):
-    # The independent raster computes phase from absolute screen coordinates.
+    # The desktop is a flat neutral field; titles retain their own pattern.
     for y in range(240):
         for x in range(640):
-            raster.pixels[y*640+x]=PENS[8 if (x+y)&1 else 0]
+            raster.pixels[y*640+x]=PENS[8]
 
 
 def frame(raster, bounds, title, focused, background=0, close=False, kind=0, slider=(0,0), info=b''):
@@ -54,7 +55,7 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         rectangle(raster,(l,t+1,l+1,b-1),1)
         rectangle(raster,(r-1,t+1,r,b-1),1)
     box(x,y,right,bottom)
-    rectangle(raster,(x,y+15,right,y+16),1)
+    rectangle(raster,(x,y+15,right,y+16),12 if focused else 1)
     name_left=x+(16 if close else 1)
     name_right=right-(16 if kind&4 else 1)
     title=title[:max(0,min(64,(name_right-name_left-4)//8))]
@@ -65,10 +66,10 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
                 if (px-x)&1 and (py-y)&1: raster.pixel(px,py,1)
     if title:
         rectangle(raster,(tx-2,y+1,tx+len(title)*8+2,y+15),0)
-        text(raster,tx,y+4,title)
+        text(raster,tx,y+4,title,fg=12 if focused else 1)
     if close:
         box(x+1,y+1,x+15,y+15)
-        text(raster,x+4,y+4,bytes([5]))
+        box(x+4,y+4,x+12,y+12)
     if kind&4:
         box(right-16,y+1,right-1,y+15);box(right-12,y+4,right-4,y+12)
     wt=28 if kind&16 else 16
@@ -101,8 +102,8 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
 
 def menu_bar(raster, title=b'Exec816 Shell'):
     rectangle(raster,(0,0,640,16),0)
-    text(raster,8,4,title[:32])
-    text(raster,440,4,b'Windows')
+    text(raster,8,4,title[:14])
+    text(raster,568,4,b'Windows')
     rectangle(raster,(0,15,640,16),1)
 
 
@@ -250,7 +251,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False):
                         stimulus_to_settled_cycles=(clock-previous_clock) & 0xffffffff,
                         timing_scope='Includes request, all repair, caret and two PAL settling frames; not DMA duration',
                         pixels='quiesced drawing failure' if fragment_fault and stage==19
-                               else pixels(b,folder,expected)))
+                               else pixels(b,folder,expected,palette=DESKTOP_PALETTE)))
                     previous_clock = clock
                     b.memload(address('GATE'), stage.to_bytes(2,'little'))
                 b.bp_clear_all()

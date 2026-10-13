@@ -67,16 +67,15 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         rectangle(result, bounds, 0)
         if ident == chrome['barLayer']:
             inverse = chrome['menu'] == 1
-            rectangle(result, (0, 0, 320, 15), int(inverse))
-            title = active[wf['title']:wf['title']+32].split(b'\0')[0] if active else b'Desktop'
+            rectangle(result, (0, 0, 128, 15), int(inverse))
+            title = (active[wf['title']:wf['title']+14].split(b'\0')[0] if active else b'') or b'Exec816'
             if menu_source:
                 from application_menu_oracle import draw
                 draw(bridge,result,menu_source,heading=menu_heading,opened=chrome['menu']==3)
-            else:
-                text(result, 8, 4, title, int(not inverse), int(inverse))
+            text(result, 8, 4, title, int(not inverse), int(inverse))
             inverse = chrome['menu'] == 2
-            rectangle(result, (432, 0, 640, 15), int(inverse))
-            text(result, 440, 4, b'Windows', int(not inverse), int(inverse))
+            rectangle(result, (560, 0, 640, 15), int(inverse))
+            text(result, 568, 4, b'Windows', int(not inverse), int(inverse))
             rectangle(result, (0, 15, 640, 16), 1)
         else:
             if chrome['menu']==3 and menu_source:

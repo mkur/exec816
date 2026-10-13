@@ -14,6 +14,7 @@ USE AESMENU
 USE AESWINDOW
 USE AESINBOX
 USE DESKMOUSE
+USE DESKDRAG
 
 PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
 
@@ -358,6 +359,9 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
   ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
     request.intout(0)=DESKMOUSE.Profile(request.intin(0))
     AESSTATE.Reply(request,AESTYPES.OK)
+  ELSEIF request.operation=AESTYPES.OP_DRAG_OUTLINE THEN
+    status=DESKDRAG.Outline(service,client,request)
+    AESSTATE.Reply(request,status)
   ELSEIF request.operation=AESTYPES.OP_DISPLAY THEN
     BEGIN
       LET grant=DISPLAY.Grant POINTER(request.displayGrant)

@@ -3,7 +3,7 @@ from pathlib import Path
 from library_paths import read_source
 from native_program import ROOT, require
 from os_boundary import run_to
-from gem_render_oracle import PALETTE
+from gem_render_oracle import DESKTOP_PALETTE as PALETTE
 import adapter_state as adapter
 
 

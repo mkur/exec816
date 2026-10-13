@@ -49,7 +49,7 @@ class Feedback:
         menus=Menus(s,click,move)
         if colour:
             menus.select('SYS:')
-            click(168,8);click(176,40);s.frames(500)
+            click(296,8);click(304,40);s.frames(500)
             child=s.number(sy['GEMDesk']+D['children'],4)
             require(child,'Panel launch: '+repr(b.memdump(sy['GEMDesk']+D['status'],65)))
             sy.update(symbols(b,s.p,directory,'panel',child))

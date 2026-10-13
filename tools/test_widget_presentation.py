@@ -11,6 +11,7 @@ from os_boundary import emulator,run_to
 from test_mouse_observe import PIN,BRIDGE,ROM
 from test_dos_stack import execute,ownership
 from test_cooperative import data
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from test_desktop_presentation import rectangle,frame
@@ -101,7 +102,7 @@ def run(out,mode,replay=False,aligned=False,cache_miss=False,cache_observe=False
                         raise
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
                     clock=b.eval_expr('@clk') & 0xffffffff
-                    row=dict(stage=stage,stimulus_to_settled_cycles=(clock-previous)&0xffffffff,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c'),aligned)))
+                    row=dict(stage=stage,stimulus_to_settled_cycles=(clock-previous)&0xffffffff,pixels=pixels(b,folder,scene(stage,font_bytes(out/'selected/src/vdi/font8x8.c'),aligned),palette=DESKTOP_PALETTE))
                     if cache_observe or cache_miss:
                         for name in ('captures','restores'):
                             address=next(d['address'] for d in p['image']['data'] if '_DESKCACHE_'+name.upper()+'_' in d['name'])

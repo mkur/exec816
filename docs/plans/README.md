@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Desktop drag and drop design](gem4xe/desktop-drag-drop-design.md) and
+  [DD1–DD4 plan](gem4xe/desktop-drag-drop-plan.md): motion/target support,
+  bounded presenter feedback and one AES completed-drop message feeding the
+  existing 16 KiB copy job. Includes the classic GEM and Workbench comparison.
+
 - [Desktop selection and batch file operations](gem4xe/desktop-selection-batch-plan.md):
   MS1–MS4 implemented: multiple selection in icon/list views, sequential
   Copy/Delete, overwrite and cancellation behavior, retaining 16 KiB copy

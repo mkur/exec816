@@ -25,9 +25,9 @@ static void box(WORD l,WORD t,WORD r,WORD b)
     fill(l,t+1,l+1,b-1,1); fill(r-1,t+1,r,b-1,1);
 }
 
-static void text(WORD x,WORD y,UWORD count)
+static void text(WORD x,WORD y,UWORD count,UWORD pen)
 {
-    GemWidgetText(x,y,glyphs,count,1,paint->clipLeft,paint->clipTop,
+    GemWidgetText(x,y,glyphs,count,pen,paint->clipLeft,paint->clipTop,
                   paint->clipRight,paint->clipBottom);
 }
 
@@ -105,7 +105,7 @@ static UWORD fragment(void)
     if (!p->fillX) {
         fill(l,t,r,b,0);
         box(l,t,r,b);
-        fill(l,t+DESKTOP_TITLE_HEIGHT-1,r,t+DESKTOP_TITLE_HEIGHT,1);
+        fill(l,t+DESKTOP_TITLE_HEIGHT-1,r,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
         if (p->foreground) {
             pl=nameLeft>p->clipLeft ? nameLeft:p->clipLeft;
             pt=t+1>p->clipTop ? t+1:p->clipTop;
@@ -123,8 +123,7 @@ static UWORD fragment(void)
         if (p->background) {
             box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
                 l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
-            glyphs[0]=DESKTOP_CLOSE_GLYPH;
-            text(l+DESKTOP_CLOSE_TEXT_X,y,1);
+            box(l+4,t+4,l+12,t+12);
         }
     }
     }
@@ -137,7 +136,7 @@ static UWORD fragment(void)
     if (n) {
         UWORD i;
         for (i=0;i<n;++i) glyphs[i]=title[first+i];
-        text(x+(first<<3),y,n);
+        text(x+(first<<3),y,n,p->foreground && y==t+DESKTOP_TITLE_TEXT_Y ? 12:1);
     }
     first+=n;
     p->fillX=first<length && x+(first<<3)<p->clipRight ? first:0;
@@ -196,13 +195,11 @@ UWORD DesktopMenuRow(struct ConsoleBitmapPacket *p)
     return status;
 }
 
-/* The fixed desktop pattern is screen-anchored, unlike the active title.
- * Fill/stipple stay offscreen until this complete <=16-row fragment is ready. */
+/* Neutral desktop paper; publish each complete bounded fragment once. */
 static UWORD background(void)
 {
     struct ConsoleBitmapPacket *p=paint;
     GemWidgetFill(1,1,8,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
-    GemWidgetStipple(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
     return 1;
 }
 

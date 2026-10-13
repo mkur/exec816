@@ -73,13 +73,19 @@ void AESBeforeWait(struct ExecAESContext *c, ULONG mask)
         Signal(FindTask(NULL), mask); /* Input wake hint without a message. */
     } else if (phase == 9) { phase = 0; message(c); }
     else if (phase == 10) { phase = 0; produce(5); }
+    else if (phase == 18) { phase = 0; snapshot(40,50,0,1); }
+    else if (phase == 19) { phase = 0; AESInputSource=AES_INPUT_BUTTON;produce(4); }
+    else if (phase == 20 || phase == 21) { phase += 2;snapshot(45,55,0,1); }
     else if (phase == 15) {
         phase = 16;
         AESInputSource = AES_INPUT_KEY; produce(4);
     } else if (phase == 12 || phase == 13) {
         UWORD source = phase == 12 ? AES_INPUT_KEY : AES_INPUT_BUTTON;
         phase = 0;
-        Wait(1UL << c->timer.port->mp_SigBit);
+        /* A cancelled earlier wait may leave a signal hint. Observe this
+         * alarm's completion before publishing the simultaneous input. */
+        while (!CheckIO(&c->timer.alarm->tc_Request))
+            Wait(1UL << c->timer.port->mp_SigBit);
         input(source, 34, 44, 1, 2);
     }
 }
@@ -111,6 +117,8 @@ void AESBeforeSend(struct ExecAESContext *c)
 void AESBeforeCancel(struct ExecAESContext *c)
 {
     ++cancels;
+    if (phase == 22) { phase=0;AESInputSource=AES_INPUT_BUTTON;produce(4); }
+    if (phase == 23) { phase=0;produce(5); }
     if (phase == 16) { phase = 0; produce(5); }
     if (phase == 2 || phase == 4 || phase == 6) {
         UWORD saved = phase;
@@ -125,7 +133,7 @@ void AESBeforeCancel(struct ExecAESContext *c)
 
 static WORD event(UWORD flags, UWORD count, UWORD mask, UWORD state, ULONG ms)
 {
-    return evnt_multi(flags, count, mask, state, 99, 0, 0, 0, 0, 99, 0, 0, 0, 0,
+    return evnt_multi(flags, count, mask, state, (flags&MU_M1) ? 0:99, 40, 50, 10, 10, 99, 0, 0, 0, 0,
         words, (WORD)ms, (WORD)(ms >> 16), &x, &y, &buttons, &modifiers, &key, &clicks);
 }
 
@@ -171,6 +179,40 @@ UWORD AESRun(void)
     produce(1);
     snapshot(101, 111, 0, 0);
     sequence = c->sequence;
+    /* Rectangle-only motion wakes use the existing signal and no alarm. */
+    snapshot(39,50,0,1);phase=18;before=sends;waits=0;
+    CHECK(event(MU_M1,0,0,0,0)==MU_M1);
+    CHECK(x==40 && y==50 && !key && !clicks && waits==1 && sends==before);
+    CHECK(in->interest==0 && c->sequence==sequence);
+    {
+        MOBLK rect={1,40,50,10,10};
+        snapshot(50,59,0,1);
+        CHECK(evnt_multi_moblk(MU_M1,0,0,0,&rect,NULL,NULL,0,0,
+            &x,&y,&buttons,&modifiers,&key,&clicks)==MU_M1);
+        CHECK(x==50 && y==59);
+        snapshot(49,60,0,1);
+        CHECK(evnt_multi_moblk(MU_M1,0,0,0,&rect,NULL,NULL,0,0,
+            &x,&y,&buttons,&modifiers,&key,&clicks)==MU_M1);
+    }
+    snapshot(39,50,0,1);phase=19;
+    CHECK(!event(MU_M1,0,0,0,0) && ExecAESDiagnostic()==AES_INPUT_LOST);
+    CHECK(in->loss==0 && in->interest==0);
+    for (i=1;i<32;++i) {
+        flags=(i&7)|((i&24)<<1);
+        snapshot(45,55,0,1);
+        input(AES_INPUT_KEY,21,31,0,4);
+        input(AES_INPUT_BUTTON,22,32,1,2);
+        message(c);kh=in->keyHead;bh=in->buttonHead;before=sends;
+        CHECK(event(flags,1,1,1,0)==flags);
+        CHECK(x==((flags&MU_BUTTON) ? 22:(flags&MU_M1) ? 45:(flags&MU_KEYBD) ? 21:45));
+        CHECK(in->keyHead==(UBYTE)(kh+((flags&MU_KEYBD)!=0)));
+        CHECK(in->buttonHead==(UBYTE)(bh+((flags&MU_BUTTON)!=0)));
+        CHECK(in->interest==0 && sends==before && c->sequence==sequence);
+        if (!(flags&MU_KEYBD)) CHECK(evnt_keybd()==0x1e61);
+        if (!(flags&MU_BUTTON)) CHECK(evnt_button(1,1,1,&x,&y,&buttons,&modifiers));
+        if (!(flags&MU_MESAG)) CHECK(evnt_mesag(words) && words[0]==777);
+    }
+    snapshot(101,111,0,0);
     for (i = 1; i < 16; ++i) {
         flags = (i & 3) | ((i & 12) << 2);
         input(AES_INPUT_KEY, 11, 21, 0, 4);
@@ -217,7 +259,7 @@ UWORD AESRun(void)
     CHECK(!event(MU_BUTTON, 1, 0, 1, 0) && ExecAESDiagnostic() == AES_UNSUPPORTED);
     CHECK(!event(MU_BUTTON, 1, 2, 1, 0) && ExecAESDiagnostic() == AES_UNSUPPORTED);
     CHECK(!event(MU_BUTTON, 1, 1, 2, 0) && ExecAESDiagnostic() == AES_UNSUPPORTED);
-    CHECK(!event(MU_KEYBD | MU_M1, 1, 1, 1, 0));
+    CHECK(!event(MU_KEYBD | MU_M2, 1, 1, 1, 0));
     CHECK(ExecAESDiagnostic() == AES_UNSUPPORTED && in->keyHead == before);
     CHECK(evnt_keybd() == 0x1e61 && evnt_mesag(words) && words[0] == 777);
 
@@ -245,7 +287,19 @@ UWORD AESRun(void)
         CHECK(evnt_multi_moblk(MU_KEYBD | MU_TIMER, 0, 0, 0, NULL, NULL, NULL,
             0, 0, &x, &y, &buttons, &modifiers, &key, &clicks) == (MU_KEYBD | MU_TIMER));
         CHECK(x == 19 && key == 0x1e61);
+        snapshot(45,55,0,1);
+        args[0]=MU_M1;args[4]=0;args[5]=40;args[6]=50;args[7]=10;args[8]=10;
+        aes_call(&pb);CHECK(out[0]==MU_M1 && out[1]==45 && out[2]==55 && !out[5] && !out[6]);
+        args[7]=0;aes_call(&pb);CHECK(!out[0] && ExecAESDiagnostic()==AES_MALFORMED);
+        snapshot(101,111,0,0);
     }
+    phase=20;
+    CHECK(!event(MU_M1|MU_TIMER,0,0,0,1000) && ExecAESDiagnostic()==AES_INPUT_LOST);
+    CHECK(in->interest==0 && in->loss==0 && c->timer.state==AES_ALARM_IDLE);
+    snapshot(101,111,0,0);phase=21;
+    CHECK(!event(MU_M1|MU_TIMER,0,0,0,1000) && ExecAESDiagnostic()==AES_IDENTITY);
+    CHECK(in->interest==0 && c->timer.state==AES_ALARM_IDLE);
+    produce(1);snapshot(101,111,0,0);
 
     produce(9);
     for (i = 0; i < 8; ++i) {

@@ -74,7 +74,7 @@ class FileSelectorDemo(DialogDemo):
         require(s.number(counter+14,4)>count,'Selector blocked counter progress')
         menus.select('Dialog example');move(630,230);s.cells('selector-exposed')
         interrupted=s.number(app+D['interruptions'],4)
-        click(24,8);click(32,40);phase(app,3)
+        click(152,8);click(160,40);phase(app,3)
         require(s.number(app+D['interruptions'],4)==interrupted+1,'Selector swallowed menu policy')
         key('RETURN');phase(app,1);move(630,230);s.cells('selector-menu-repair')
         key('O');phase(app,4);ready(app)

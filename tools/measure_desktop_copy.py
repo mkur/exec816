@@ -140,7 +140,7 @@ class CopyProbe:
         menus = Menus(s,click,move)
         menus.select('SYS:')
         # Start the same independent panel before every throughput comparison.
-        click(168,8);click(176,40);s.frames(500)
+        click(296,8);click(304,40);s.frames(500)
         panel = symbols(b,s.p,directory,'panel',s.number(desk+D['children'],4))['GEMPanel']
         menus.select('Control Panel')
         if self.count:
@@ -154,7 +154,7 @@ class CopyProbe:
         def start(source,target):
             print('Starting desktop copy',source,target,flush=True)
             select(s,base,source,click)
-            click(24,8);click(40,24+7*16)
+            click(152,8);click(168,24+7*16)
             s.rendezvous('dw($%x)=4'%(base+F['dialog']))
             fill('WORK:'+target)
             b._cmd_ok('KEY RETURN down');s.frames(3);b._cmd_ok('KEY RETURN up')

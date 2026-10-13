@@ -13,8 +13,9 @@ from make_data_disk import make
 from console_model import read_cells
 from generate_console import constants
 from bitmap_console_oracle import Terminal
-from gem_render_oracle import Raster,font_bytes,PALETTE,PENS
+from gem_render_oracle import Raster,font_bytes,DESKTOP_PALETTE as PALETTE,PENS
 from desktop_oracle import compose
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from sio_transaction_trace import read_events,BASE_HZ
 from measure_desktop import distribution
@@ -88,7 +89,7 @@ def run(out,program,counters,trace=True):
                 folder=out/name;folder.mkdir(exist_ok=True)
                 (folder/'expected.bin').write_bytes(packed)
                 (folder/'model.bin').write_bytes(terminal.cells)
-                report['pixels'].append(dict(name=name,digest=pixels(b,folder,packed)))
+                report['pixels'].append(dict(name=name,digest=pixels(b,folder,packed,palette=DESKTOP_PALETTE)))
                 print(name,'pixels pass',flush=True)
                 if counters:resume(0);resume(1)
             def toggle():

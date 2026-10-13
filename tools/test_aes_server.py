@@ -247,6 +247,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             extra_probes.append((ROOT/'tests/programs/aes_form_layout.c',[
                 ('Form size',319),('Form focus',209),('Form alert',311),
                 ('Alert size',514),('Alert icon',508)]))
+        if suite=='resources':
+            from test_icon_resources import LAYOUT
+            extra_probes.append((ROOT/'tests/programs/icon_layout.c',LAYOUT))
         if suite=='fsel':
             from file_selector_model import LAYOUT
             extra_probes.append((ROOT/'tests/programs/aes_fsel_layout.c',LAYOUT))

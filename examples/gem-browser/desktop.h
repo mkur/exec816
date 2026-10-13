@@ -19,12 +19,18 @@ struct DesktopFileJob {
 };
 struct DesktopAssociation { char extension[4],program[64]; };
 struct DesktopFolder { WORD bounds[4],icons,sort;char path[128]; };
+enum { DRAG_ARMED=1,DRAG_TRACKING=2,DRAG_QUEUED=3,DRAG_CANCELLED=4,DRAG_RELEASE=5,
+       DESKTOP_DROP=0x6e00 };
+struct DesktopDrag {
+    WORD phase,source,target,entry,pressX,pressY,lastX,lastY,hover,held;
+    char destination[128];
+};
 struct Desktop {
     WORD id,vdi,window,opened,ready;
     struct Browser *folders[DESKTOP_FOLDERS],*active;
     OBJECT *source,*popup,*stock;
     OBJECT bar[32],tree[DESKTOP_ICONS+2];
-    ICONBLK icons[DESKTOP_ICONS];
+    CICONBLK icons[DESKTOP_ICONS];
     ULONG children[DESKTOP_CHILDREN];
     struct ExecProgramResult result;
     WORD message[8],work[4],input[11],output[57];
@@ -38,6 +44,7 @@ struct Desktop {
     WORD savedCount,mouse,defaultIcons,defaultSort,settingsLoaded;
     LONG error;
     char publishedStatus[65];
+    struct DesktopDrag drag;
 };
 extern struct Desktop GEMDesk;
 #endif

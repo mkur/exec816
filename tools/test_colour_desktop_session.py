@@ -40,8 +40,9 @@ def development_media(out):
 
 
 class ColourDesktop:
-    def __init__(self,files=False,restore=None,only=False,selection=False,batch=False):
+    def __init__(self,files=False,restore=None,only=False,selection=False,batch=False,drag=False,compact=False):
         self.files,self.restore,self.only,self.selection,self.batch=files,restore,only,selection,batch
+        self.drag=drag;self.compact=compact
 
     def prepare_work(self,target,item):
         if not self.files and not self.selection and not self.batch and self.restore is None:return
@@ -98,7 +99,7 @@ class ColourDesktop:
             key('P');s.rendezvous('dw($%x)=1'%(base+F['dialog']));fill(base,value);key('RETURN')
             s.rendezvous('dw($%x)=0'%(base+F['dialog']));wait_listing(s,base,limit=200 if self.selection else 50)
             require(text(base,'path')==value,'Folder path did not change')
-        def desk_menu(row):click(168,8);click(176,24+row*16)
+        def desk_menu(row):click(296,8);click(304,24+row*16)
         def shot(name):
             move(632,232);s.frames(140);s.cells(name);s.save_screen(s.p['output']/(name+'.png'))
             print(name,flush=True)
@@ -112,6 +113,20 @@ class ColourDesktop:
             shot('desktop-settings-restored')
             self.report=dict(settings_restart=True)
             menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
+            for c in 'EXIT':s.press(c)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+        if self.compact:
+            from compact_files_check import exercise
+            self.report=exercise(s,desk,first,click,key,path,shot,move)
+            self.report['stacks']=stack_usage(b,s.p['build']['memory'])
+            menus.select('Shell');s.command('HELLO',b'Hello from disk!');s.save_screen(s.p['output']/'boot-smoke.png')
+            for c in 'EXIT':s.press(c)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+        if self.drag:
+            from colour_drag_check import exercise
+            self.report=exercise(s,desk,first,click,key,fill,path,desk_menu,shot,move,menus)
+            self.report['stacks']=stack_usage(b,s.p['build']['memory'])
+            menus.select('Shell');s.command('HELLO',b'Hello from disk!');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
         if self.batch:
@@ -171,9 +186,9 @@ class ColourDesktop:
         move(x+w-56,y+h-24);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
         require(work(second)[2:] == [w-64,h-32] and work(first)==peer,'Independent folder resize')
         x,y,w,h=work(second)
-        click(x+w+8,y-20);s.frames(120)
+        click(x+w+8,y-8);s.frames(120)
         require(s.number(second+F['full'],2)==1,'Full gadget')
-        x,y,w,h=work(second);click(x+w+8,y-20);s.frames(120)
+        x,y,w,h=work(second);click(x+w+8,y-8);s.frames(120)
         require(s.number(second+F['full'],2)==0,'Full restore')
         path(second,'SYS:C')
         require(text(first,'path')=='SYS:','Second folder changed first folder')
@@ -184,10 +199,10 @@ class ColourDesktop:
         child=s.number(desk+D['children'],4);require(child,'Counter launch failed')
         counter=symbols(b,s.p,directory,'counter',child)['GEMCounter']
         s.rendezvous('dw($%x)=1'%(counter+12));before=s.number(counter+14,4)
-        menus.select('SYS:C');x,y,w,h=work(second);click(x,y-20)
+        menus.select('SYS:C');x,y,w,h=work(second);click(x,y-8)
         s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['folders']+4,desk+D['folders']+6))
         require(s.number(desk+D['children'],4)==child,'Closing folder retired its child')
-        menus.select('SYS:');x,y,w,h=work(first);click(x,y-20)
+        menus.select('SYS:');x,y,w,h=work(first);click(x,y-8)
         s.rendezvous('(dw($%x)=0)&(dw($%x)=0)'%(desk+D['folders'],desk+D['folders']+2))
         require(dn('ready')==1 and not any(folders()),'Last folder closed the desktop')
         require(s.number(counter+14,4)>before,'Counter stopped with folder closure')
@@ -206,6 +221,7 @@ class ColourDesktop:
             independent_launch_lifetime=True,windows_menu=True,files=s.saved.get('colour_files'),
             stacks=stack_usage(b,s.p['build']['memory']))
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
+        shot('desktop-shell')
         s.save_screen(s.p['output']/'boot-smoke.png')
         for c in 'EXIT':s.press(c)
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
@@ -215,6 +231,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
     p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
+    p.add_argument('--drag-drop',action='store_true');p.add_argument('--compact-files',action='store_true')
     p.add_argument('--batch-copy',action='store_true');p.add_argument('--batch-delete',action='store_true')
     p.add_argument('--standalone-selection',action='store_true');p.add_argument('--selection-boundary',action='store_true');p.add_argument('--selection-feedback',action='store_true')
     p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
@@ -224,7 +241,7 @@ if __name__=='__main__':
     media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
     from native_program import sha256
     overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
-    probe=ColourDesktop(files=args.files,only=args.files_only,selection='standalone' if args.standalone_selection else 'feedback' if args.selection_feedback else 'boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy)
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='standalone' if args.standalone_selection else 'feedback' if args.selection_feedback else 'boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy,drag=args.drag_drop,compact=args.compact_files)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:
@@ -256,6 +273,10 @@ if __name__=='__main__':
         with tempfile.TemporaryDirectory(prefix='exec816-delete-readback-') as tmp:
             root=Path(tmp);extract(out/'work-walkthrough.atr',root);readback(root,probe.report['remaining'])
         result['independent_batch_readback']=True
+    if args.drag_drop:
+        from colour_drag_check import readback
+        readback(out)
+        result['independent_drag_readback']=True
     result['development_media_sha256']=sha256(media) if media else None
     result['application_sha256']={name:sha256(out/'bitmap-console/apps'/name/'program.app') for name in ('desktop','files')}
-    (out/'colour-session-results.json').write_text(json.dumps(result,indent=2)+'\n')
+    (out/('compact-files-results.json' if args.compact_files else 'drag-session-results.json' if args.drag_drop else 'colour-session-results.json')).write_text(json.dumps(result,indent=2)+'\n')

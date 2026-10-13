@@ -71,7 +71,7 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     select(s,browser,'C',click);key('RETURN');wait_listing(s,browser)
     require(s.b.memdump(a+T['document']+14,128).split(b'\0')[0]==b'SYS:STORY.TXT','Files lent path storage')
     menus.select('STORY.TXT');key('O');s.frames(100)
-    menus.select('Files');click(24,8);click(32,56)
+    menus.select('Files');click(152,8);click(160,56)
     s.rendezvous('dw($%x)=0'%(browser+B['child']));s.frames(80)
     require(num('result',4)==0,'Selector Stop did not close viewer cleanly')
     menus.select('Shell');after=memory()
@@ -97,7 +97,7 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     s.rendezvous('dw($%x)=%d'%(browser+B['launches'],previous+1))
     calc=symbols(s.b,s.p,directory,'calc',num('child',4))['Calculator']
     s.rendezvous('dw($%x)=1'%(calc+4));menus.select('Calculator');key('1');key('2')
-    menus.select('Files');click(24,8);click(32,56)
+    menus.select('Files');click(152,8);click(160,56)
     s.rendezvous('dw($%x)=0'%(browser+B['child']));s.frames(80)
     require(num('result',4)==0,'Ordinary GEM Files launch/Stop changed')
     menus.select('Shell');require(s.ledger()==file_owners and memory()==file_baseline,'Calculator Files launch leaked')
@@ -112,15 +112,15 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     # the ordinary helper's long observation waits consuming the whole load.
     windows=menus.windows();row=next(i for i,w in enumerate(windows) if w['title']=='Files')
     files_id=windows[row]['id']
-    fast_click(472,8);s.rendezvous('db($%x)=2'%menus.at('DESKMENU','menu'))
+    fast_click(600,8);s.rendezvous('db($%x)=2'%menus.at('DESKMENU','menu'))
     fast_click(472,24+row*16);s.rendezvous('dw($%x)=%d'%(menus.focus_address,files_id))
-    fast_click(24,8);s.rendezvous('db($%x)=3'%menus.at('DESKMENU','menu'))
+    fast_click(152,8);s.rendezvous('db($%x)=3'%menus.at('DESKMENU','menu'))
     require(s.number(a+T['load']+LOAD_PHASE,2)==3 and not s.number(a+T['loads'],4),
         'Read completed before physical Stop submission')
     if s.saved.get('fixed_cancellation'):
         from text_cancellation import at_offset
         from sio_transaction_trace import BASE_HZ
-        move(32,56)
+        move(160,56)
         (s.p['output']/'fixed-stop-offer.json').write_text(json.dumps(dict(start=load_start,
             setup_ms=(s.b.eval_expr('@clk')-load_start)*1000/BASE_HZ,offset_ms=6500),indent=2)+'\n')
         offered=at_offset(s,load_start,6500)
@@ -128,7 +128,7 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
         s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(3)
         s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(3)
     else:
-        fast_click(32,56)
+        fast_click(160,56)
     s.rendezvous('dw($%x)=0'%(browser+B['child']))
     if s.saved.get('fixed_cancellation'):
         retired=s.b.eval_expr('@clk')
@@ -148,7 +148,7 @@ def exercise(s,shared,menus,move,click,key,collected,memory):
     expected=min((w for w in windows if w['id'] not in retiring),key=lambda w:w['rank'])['id']
     # The ordinary close helper expects one retiring window; this action closes
     # both the Files parent and its child before focus settles on a survivor.
-    click(472,8);click(472,24+(len(windows)+1)*16);collected()
+    click(600,8);click(472,24+(len(windows)+1)*16);collected()
     require(not any(w['id'] in retiring for w in menus.windows()),'Parent close left a window behind')
     require(menus.focus()==expected,'Parent close did not restore surviving focus')
     menus.select('Shell')

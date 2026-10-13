@@ -162,9 +162,9 @@ static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     struct AESInputInbox *input;
     if (!ExecAESEnter(c)) return 0;
     for (i = 0; i < AES_INTOUT_WORDS; ++i) c->intout[i] = 0;
-    inputFlags = flags & (AES_MU_KEYBD | AES_MU_BUTTON);
+    inputFlags = flags & (AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_M1);
     input = c->endpoint->input;
-    if (flags == 0 || (flags & ~(AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_MESAG | AES_MU_TIMER))) {
+    if (flags == 0 || (flags & ~(AES_MU_KEYBD | AES_MU_BUTTON | AES_MU_M1 | AES_MU_MESAG | AES_MU_TIMER))) {
         status = AES_UNSUPPORTED;
         goto done;
     }
@@ -176,6 +176,11 @@ static WORD events(struct ExecAESContext *c, UWORD flags, ULONG milliseconds,
     }
     if (flags & AES_MU_MESAG) {
         if (!ExecAESPointer(message, 16)) { status = AES_MALFORMED; goto done; }
+    }
+    if ((flags & AES_MU_M1) && (c->intin[4] < 0 || c->intin[4] > 1 ||
+        c->intin[7] <= 0 || c->intin[8] <= 0)) {
+        status = AES_MALFORMED;
+        goto done;
     }
     if (inputFlags) {
         status = ExecAESInputArm(c, inputFlags);
@@ -227,11 +232,11 @@ decide:
             continue;
         }
         i = ready;
-        if (inputFlags & AES_MU_BUTTON) ready = ExecAESInputLevel(c, ready);
-        if ((ready & AES_MU_BUTTON) && !(i & AES_MU_BUTTON) &&
+        if (inputFlags) ready = ExecAESInputLevel(c, ready, inputFlags);
+        if ((ready & ~i & (AES_MU_BUTTON | AES_MU_M1)) &&
             (flags & AES_MU_TIMER) && !timerReady) {
             Permit();
-            continue; /* Newly eligible level also needs the clock decision. */
+            continue; /* New pointer readiness also needs the clock decision. */
         }
         if (ready) {
             record = (ready & AES_MU_MESAG) && !c->messagePending ?

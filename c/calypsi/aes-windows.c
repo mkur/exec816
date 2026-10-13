@@ -68,6 +68,25 @@ WORD wind_open(WORD handle, WORD x, WORD y, WORD w, WORD h)
 WORD wind_close(WORD handle)
 { return window_call(AES_OP_CLOSE, handle, 0, 0, 0, 0, 0); }
 
+WORD wind_find(WORD x, WORD y)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (!c) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0]=x;c->request.intin[1]=y;
+    return ExecAESSubmit(c,AES_OP_FIND);
+}
+
+WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height)
+{
+    struct ExecAESContext *c = ExecAESContext();
+    if (!c) return 0;
+    if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    c->request.intin[0]=window;c->request.intin[1]=dx;c->request.intin[2]=dy;
+    c->request.intin[3]=width;c->request.intin[4]=height;
+    return ExecAESSubmit(c,AES_OP_DRAG_OUTLINE);
+}
+
 WORD wind_delete(WORD handle)
 {
     WORD result = window_call(AES_OP_DELETE, handle, 0, 0, 0, 0, 0);

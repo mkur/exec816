@@ -5,6 +5,7 @@ USE DISPLAY
 USE EXEC
 USE AESLOCKS
 USE AESMOUSE
+USE AESSTATE
 USE AESTYPES
 USE AESWINDOWSTATE
 USE INPUT
@@ -22,6 +23,8 @@ USE CONSOLEBITMAP
 USE HEAPCORE
 
 LONGCARD windowId,lossEpoch
+LONGCARD appOwner,appEpoch
+BYTE appVisual
 LAYERTYPES.Rect origin,target
 INT pressX,pressY,sliderMin,sliderTravel,sliderValue
 BYTE gadget
@@ -32,11 +35,14 @@ CONST CLOSING=3
 CONST CLOSE_PENDING=4
 CONST SIZING=5, SIZE_PENDING=6, SLIDING=7, SLIDE_PENDING=8
 CONST ARROWING=9, ARROW_PENDING=10
+CONST APP_DRAG=11
 CONST ESC_SCAN=28
 
 PUBLIC PROC Reset()
 
   escapePending=0
+  appOwner=0
+  appVisual=0
   windowId=0
   phase=0
   blocked=0
@@ -50,9 +56,16 @@ RETURN
 PUBLIC PROC Cancel()
 
   escapePending=0
+  appOwner=0
   windowId=0
   phase=0
   blocked=1
+  IF appVisual<>0 THEN
+    BEGIN
+      LET samplePointer=AESMOUSE.PointerSample()
+      blocked=samplePointer.buttons<>0
+    END
+  FI
   dirty=1
   focusWanted=0
   lossEpoch=DESKSTATE.LossEpoch()
@@ -60,6 +73,11 @@ PUBLIC PROC Cancel()
 RETURN
 
 PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
+
+  ; The AES application consumes Escape and its eventual button release.
+  IF appVisual<>0 THEN
+    RETURN(0)
+  FI
 
   IF (phase<>0 OR AESMOUSE.NativeGesture()<>0)
       AND ((sample.kind=INPUT.EVENT_KEY
@@ -130,7 +148,93 @@ RETURN
 BYTE FUNC Outlined()
 
 RETURN(phase=DRAGGING OR phase=MOVE_PENDING OR phase=SIZING
-    OR phase=SIZE_PENDING OR phase=SLIDING OR phase=SLIDE_PENDING)
+    OR phase=SIZE_PENDING OR phase=SLIDING OR phase=SLIDE_PENDING
+    OR phase=APP_DRAG)
+
+PUBLIC BYTE FUNC Application()
+
+RETURN(appVisual)
+
+; Admit geometry once; tracking below follows capture without application RPC.
+PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+
+  IF request.intin(0)=0 THEN
+    IF appOwner=client.id THEN
+      Cancel()
+    FI
+    request.intout(0)=1
+    RETURN(AESTYPES.OK)
+  FI
+
+  LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
+  IF item=NULL OR service.mouseOwner<>client.id OR service.mouseHolds=0 THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+
+  IF phase<>0 OR AESMOUSE.DragReady(client.id,item.view.epoch)=0 THEN
+    RETURN(AESTYPES.BUSY)
+  FI
+
+  IF request.intin(3)<8 OR request.intin(3)>80
+      OR request.intin(4)<8 OR request.intin(4)>32 THEN
+    RETURN(AESTYPES.MALFORMED)
+  FI
+
+  appOwner=client.id
+  appEpoch=item.view.epoch
+  appVisual=1
+  windowId=item.window.id
+  lossEpoch=DESKSTATE.LossEpoch()
+  phase=APP_DRAG
+  blocked=0
+  focusWanted=0
+  pixelMotion=1
+  pressX=-request.intin(1)
+  pressY=-request.intin(2)
+  REGIONS.Assign(@origin,0,0,request.intin(3),request.intin(4))
+  dirty=1
+  BEGIN
+    LET samplePointer=AESMOUSE.PointerSample()
+    Position(samplePointer.x,samplePointer.y)
+  END
+  request.intout(0)=1
+
+RETURN(AESTYPES.OK)
+
+; Capture and MCTRL own the lifetime. This remains cheap on each presenter turn.
+PUBLIC PROC Track()
+
+  IF appOwner=0 THEN
+    RETURN
+  FI
+
+  LET service=AESSTATE.Get()
+  IF service.mouseOwner<>appOwner OR service.mouseHolds=0
+      OR AESMOUSE.DragReady(appOwner,appEpoch)=0 THEN
+    Cancel()
+    RETURN
+  FI
+
+  LET samplePointer=AESMOUSE.PointerSample()
+  Position(samplePointer.x,samplePointer.y)
+
+RETURN
+
+; An ineligible peer UPDATE must not erase or spin the owner's visual. The
+; existing mouse owner may upgrade; suspend as soon as its request is pending.
+BYTE FUNC ApplicationReady()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL OR appOwner=0 OR service.updateOwner<>0
+      OR service.windowPending<>0 THEN
+    RETURN(0)
+  FI
+
+  LET client=AESSTATE.Find(service,appOwner)
+
+RETURN(client<>NULL AND client.pending=NULL AND service.mouseOwner=appOwner
+    AND service.mouseHolds<>0)
 
 ; Resizing keeps its upper-left anchor. Applications may request larger minima.
 PROC SizePosition(INT x,y CARD kind)
@@ -354,6 +458,11 @@ PUBLIC PROC Advance()
     RETURN
   FI
 
+  IF appVisual<>0 THEN
+    Track()
+    RETURN
+  FI
+
   IF AESLOCKS.MouseBlocked()<>0 THEN
     RETURN
   FI
@@ -470,6 +579,10 @@ RETURN
 PUBLIC PROC Suspend()
   BYTE drawn
 
+  IF phase=APP_DRAG AND ApplicationReady()<>0 THEN
+    RETURN
+  FI
+
   IF DISPLAY.Blocked()<>0 THEN
     RETURN
   FI
@@ -491,6 +604,14 @@ PUBLIC PROC Present()
     RETURN
   FI
 
+  IF appVisual<>0 THEN
+    Track()
+    IF phase<>0 AND ApplicationReady()=0 THEN
+      Suspend()
+      RETURN
+    FI
+  FI
+
   IF lossEpoch<>DESKSTATE.LossEpoch() THEN
     Cancel()
   FI
@@ -503,6 +624,9 @@ PUBLIC PROC Present()
       IF drawn<>0 THEN
         DESKSTATE.outlineVisible=Outlined()
         dirty=0
+        IF phase=0 THEN
+          appVisual=0
+        FI
       FI
     FI
   FI
@@ -513,6 +637,11 @@ PUBLIC BYTE FUNC Runnable()
 
   IF DISPLAY.Blocked()<>0 THEN
     RETURN(0)
+  FI
+
+  IF appVisual<>0 THEN
+    RETURN(dirty<>0 AND (phase=0 OR ApplicationReady()<>0)
+        AND CONSOLEBITMAP.Pending()=0)
   FI
 
   IF AESLOCKS.MouseBlocked()<>0 THEN

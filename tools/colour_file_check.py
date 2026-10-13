@@ -8,7 +8,7 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     confirmation_checked=False
     def n(name, size=2):return s.number(base+F[name],size)
     def text(name):return s.b.memdump(base+F[name],128).split(b'\0')[0].decode('ascii')
-    def menu(row):click(24,8);click(40,24+row*16)
+    def menu(row):click(152,8);click(168,24+row*16)
     def dialog(kind):s.rendezvous('dw($%x)=%d'%(base+F['dialog'],kind))
     def closed():
         dialog(0)
@@ -20,7 +20,7 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
         s.frames(90)
     def copy_to(target):
         print('Desktop copy to',target,flush=True)
-        menu(7);dialog(4);fill(base,target);key('RETURN')
+        menu(8);dialog(4);fill(base,target);key('RETURN')
         print('Copy submitted',n('dialog'),text('editText'),text('status'),flush=True)
     def alert(confirm=False):
         nonlocal confirmation_checked
@@ -34,7 +34,7 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
             peer=s.number(desk+D['folders']+4,4)
             require(peer and peer!=base,'Cannot open a sibling beside confirmation')
             x,y=[s.number(peer+F['work']+i*2,2) for i in range(2)]
-            click(x,y-20);s.frames(100)
+            click(x,y-8);s.frames(100)
             require(n('dialog')==6,'Sibling closure dismissed confirmation')
             confirmation_checked=True
         if not confirm:key('RETURN');return
@@ -52,9 +52,9 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     select(s,base,'AAA',click)
     key('R');dialog(3);fill(base,'BBB');key('RETURN');closed()
     require('BBB' in listing(s,base) and 'AAA' not in listing(s,base),'Folder rename')
-    select(s,base,'BBB',click);menu(8);alert();s.frames(100)
+    select(s,base,'BBB',click);menu(9);alert();s.frames(100)
     require('BBB' in listing(s,base),'Default Delete must cancel: '+repr((text('path'),text('status'),listing(s,base))))
-    menu(8);alert(True);wait_listing(s,base)
+    menu(9);alert(True);wait_listing(s,base)
     require('BBB' not in listing(s,base),'Confirmed empty-folder delete');print('Desktop New/Rename/Delete',flush=True)
     select(s,base,'SOURCE.TXT',click);copy_to('WORK:COPY.TXT');complete()
     require('COPY.TXT' in listing(s,base),'Completed copy missing')
@@ -85,7 +85,7 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
         s.number(desk+D['error'],4),text('status'),s.number(desk+D['job'],4))))
     require(text('status').startswith('Copy failed'),'Missing partial-copy error status')
     print('Desktop copy cancellation and failures',flush=True)
-    select(s,base,'DELETE.TXT',click);menu(8);alert(True);wait_listing(s,base)
+    select(s,base,'DELETE.TXT',click);menu(9);alert(True);wait_listing(s,base)
     require('DELETE.TXT' not in listing(s,base),'Confirmed file delete')
     from gem_applications import instances
     from text_model import FIELDS as T
@@ -99,10 +99,10 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
     s.rendezvous('dw($%x)=1'%(viewer+T['loads']))
     require(s.b.memdump(viewer+T['document']+14,128).split(b'\0')[0]==b'WORK:SOURCE.TXT','Association lost copied path arguments')
     x,y=[s.number(viewer+T['work']+i*2,2) for i in range(2)]
-    click(x,y-8);s.frames(200)
+    click(x,y-20);s.frames(200)
     require(not any(a['name']=='text' for a in instances(s.b,s.p,s.p['output']/'bitmap-console')),'Viewer completion was not collected')
     # Save an independently identifiable folder state, then inspect it after EXIT.
-    click(88,8);click(96,40);s.frames(80)  # View > List
+    click(216,8);click(224,40);s.frames(80)  # View > List
     require(n('iconView')==0,'List mode was not selected')
     desk_menu(5);s.frames(120)
     require(not s.number(desk+D['error'],4),'Save Settings failed')

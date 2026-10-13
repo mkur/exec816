@@ -154,6 +154,13 @@ UWORD AESRun(void)
     peer = CreateTask("AES window peer", 1, (APTR)AESClientOne, 1024UL);
     CHECK(peer != NULL);
     while (!AESReady) Wait(wake);
+    CHECK(wind_find(100,70)==peerHandle);
+    CHECK(wind_find(17,25)==handle);
+    CHECK(wind_find(9,20)==handle);
+    CHECK(wind_find(639,239)==0 && ExecAESDiagnostic()==AES_OK);
+    control[0]=106;control[1]=2;control[2]=1;in[0]=100;in[1]=70;
+    aes_call(&pb);CHECK(out[0]==peerHandle);
+    control[0]=108;control[1]=6;control[2]=5;
     /* Hidden sibling windows also consume the six-window bound. */
     for (i=0;i<2;++i) { reserve[i]=wind_create(AES_WINDOW_KIND,9,9,200,120);CHECK(reserve[i]>0); }
     for (i = 0; i < 2; ++i) {

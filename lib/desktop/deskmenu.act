@@ -19,7 +19,7 @@ USE A816MEMORY
 USE HEAPCORE
 
 PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=6, LABEL_BYTES=25
-PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=432
+PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=560, WINDOWS_POPUP_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
   BYTE enabled,action
@@ -241,7 +241,7 @@ INT FUNC Hit(INT x,y)
   IF menu=GEM_MENU THEN
     RETURN(DESKAPPMENU.EntryAt(x,y))
   FI
-  left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI
+  left=IF menu=WINDOWS_MENU THEN INT(WINDOWS_POPUP_LEFT) ELSE INT(0) FI
   IF x<=left OR x>=left+207 OR y<=BAR_HEIGHT
       OR y>=BAR_HEIGHT+INT(count)*ROW_HEIGHT
       OR (count>=4 AND y=BAR_HEIGHT+INT(count)*ROW_HEIGHT-1) THEN
@@ -257,6 +257,10 @@ PROC Heading(INT x)
   IF x>=WINDOWS_LEFT THEN
     IF menu<>WINDOWS_MENU THEN
       pendingMenu=WINDOWS_MENU
+    FI
+  ELSEIF x<DESKAPPMENU.BAR_LEFT THEN
+    IF menu<>APP_MENU THEN
+      pendingMenu=APP_MENU
     FI
   ELSEIF DESKAPPMENU.Current()<>0 THEN
     hit=DESKAPPMENU.TitleAt(x)
@@ -512,7 +516,7 @@ PROC Open(BYTE kind)
 
   selected=IF count<>0 THEN INT(0) ELSE NO_ROW FI
   REGIONS.Assign(@bounds,
-      IF menu=WINDOWS_MENU THEN INT(WINDOWS_LEFT) ELSE INT(0) FI,BAR_HEIGHT,0,0)
+      IF menu=WINDOWS_MENU THEN INT(WINDOWS_POPUP_LEFT) ELSE INT(0) FI,BAR_HEIGHT,0,0)
   bounds.right=bounds.left+208
   bounds.bottom=BAR_HEIGHT+INT(IF count>4 THEN count ELSE 4 FI)*ROW_HEIGHT
   Popup(@bounds)
@@ -615,7 +619,9 @@ PUBLIC PROC Advance()
     BEGIN
       LET window=DESKCORE.Find(service,activeWindow)
       IF window=NULL THEN
-        Label(@title(0),BYTE POINTER(c"Desktop"),32)
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
+      ELSEIF window.title(0)=0 THEN
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
       ELSE
         Label(@title(0),@window.title(0),32)
       FI

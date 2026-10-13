@@ -25,6 +25,7 @@ from stack_budget import stack_usage
 from test_desktop_presentation import desktop, rectangle, frame, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
+from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
 from test_mouse_observe import BRIDGE, ROM, PIN
 
@@ -186,7 +187,7 @@ def run(out, replay=False, painter=None, observe=True):
                     report['scenes'].append(dict(stage=stage, name=name, begin_cycle=previous, end_cycle=end,
                         settled_ms=((end-previous) & 0xffffffff)/BASE_HZ*1000, fills=fills,
                         fill_pixels=sum((f['bounds'][2]-f['bounds'][0])*(f['bounds'][3]-f['bounds'][1]) for f in fills),
-                        pixels=pixels(b, folder, scene(stage, font_bytes(out/'selected/src/vdi/font8x8.c')))))
+                        pixels=pixels(b, folder, scene(stage, font_bytes(out/'selected/src/vdi/font8x8.c')),palette=DESKTOP_PALETTE)))
                     previous = end
                     b.memload(at('gate'), stage.to_bytes(2, 'little'))
                 b.bp_clear_all()

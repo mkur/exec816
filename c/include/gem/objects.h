@@ -19,6 +19,13 @@ typedef struct {
     WORD ib_char,ib_xchar,ib_ychar,ib_xicon,ib_yicon,ib_wicon,ib_hicon;
     WORD ib_xtext,ib_ytext,ib_wtext,ib_htext;
 } ICONBLK;
+/* Loaded/compiled colour data uses packed hardware pixels, left nibble first.
+ * RSC files contain standard plane-oriented data, converted once at load. */
+typedef struct {
+    WORD num_planes;
+    ULONG col_data,col_mask,sel_data,sel_mask,next_res;
+} CICON;
+typedef struct { ICONBLK monoblk; ULONG mainlist; } CICONBLK;
 #pragma pack(pop)
 #define G_BOX 20
 #define G_TEXT 21
@@ -35,6 +42,7 @@ typedef struct {
 #define G_ICON 31
 #define CHECKED 4
 #define G_TITLE 32
+#define G_CICON 33
 #define SELECTABLE 1
 #define DEFAULT 2
 #define EXIT 4

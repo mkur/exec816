@@ -193,7 +193,13 @@ is implemented through MS4: per-folder multiple selection, sequential
 Copy/Delete using the 16 KiB copy path, and deferred affected-view refresh.
 The [development results](history/desktop-selection-batch.md) include exact OF816
 package checks, selection feedback and matched throughput measurements.
-Dragging and recursive directory operations follow separately.
+The [drag and drop design](plans/gem4xe/desktop-drag-drop-design.md) compares
+classic GEM with Intuition/Workbench. Regular-file selections now copy between
+folder windows through one completed-drop AES message and the existing job.
+The [DD1–DD4 plan](plans/gem4xe/desktop-drag-drop-plan.md) implements `MU_M1`,
+`wind_find`, a presenter-followed outline and icon/list gestures.
+[Development evidence](history/desktop-drag-drop.md) records the actual scope.
+Recursive directory operations and drops into other applications remain separate.
 
 Implement each milestone in executable slices with a design note and plan
 proportionate to the change. Account for upper-RAM/VRAM use and report reserved

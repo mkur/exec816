@@ -15,7 +15,7 @@ USE DESKMENU
 USE DESKAPPMENU
 
 PUBLIC PROC Pump()
-  BYTE accepted
+  BYTE accepted,slot
 
   LET command=CARD POINTER($COMMAND)
   IF command^=0 OR AESLOCKS.NativeReady()=0 THEN
@@ -31,7 +31,12 @@ PUBLIC PROC Pump()
     IF DESKAPPMENU.Current()=0 THEN RETURN FI
     DESKMENU.Application(0)
   ELSEIF command^=2 THEN
-    AESGUI.Post(service,client,AESTYPES.GUI_CLOSED,0,0,0,0)
+    FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+      IF service.windows(slot).owner=client.id THEN
+        AESGUI.Post(service,@service.windows(slot),AESTYPES.GUI_CLOSED,0,0,0,0)
+        EXIT
+      FI
+    OD
   FI
   LET result=CARD POINTER($RESULT)
   result^=CARD(accepted)
@@ -56,7 +61,7 @@ ENDMODULE
 
 def physical(b,p,foreign,report):
     from os_boundary import run_to
-    from gem_render_oracle import Raster,font_bytes,PENS,PALETTE
+    from gem_render_oracle import Raster,font_bytes,PENS,DESKTOP_PALETTE as PALETTE
     from test_desktop_presentation import rectangle,text
     from application_menu_oracle import draw
     import adapter_state as adapter
@@ -104,7 +109,7 @@ def physical(b,p,foreign,report):
         model=Raster(font);rectangle(model,(0,0,640,16),0)
         tree=int.from_bytes(b.memdump(sy['AESMenuPeerTree' if phase in (5,6) else 'AESMenuTree'],4),'little')
         if phase not in (4,7):draw(b,model,tree,opened=phase in (2,3,6))
-        text(model,440,4,b'Windows');rectangle(model,(0,15,640,16),1)
+        text(model,8,4,b'Exec816');text(model,568,4,b'Windows');rectangle(model,(0,15,640,16),1)
         areas=[(0,0,640,16)]
         if phase in (2,3,6):
             areas.append(draw(b,model,tree,True))
@@ -119,15 +124,18 @@ def physical(b,p,foreign,report):
         report['menu_pixels'].append(dict(phase=phase,pixels=sum((r-l)*(bt-t) for l,t,r,bt in areas)))
         if phase==1:
             print('Public menu pointer/keyboard checks',flush=True)
-            click(24,8);click(32,24);actions(0,1,6)
+            click(56,8)
+            require(get(at('DESKMENU','menu'),1)==1,'Focused-window menu did not open')
+            key('ESC');actions(0,0)
+            click(152,8);click(160,24);actions(0,1,6)
             key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)
             require(get(at('DESKAPPMENU','heading'))==1,'Right did not switch application title')
             key('ASTERISK',ctrl=True);require(get(at('DESKAPPMENU','heading'))==0,'Title navigation did not wrap')
             key('TAB');key('TAB');key('RETURN');actions(0,2,7)
-            click(24,8);click(600,220);actions(0,2)
-            click(24,8);move(32,24);edge(1);key('ESC');edge(0);actions(0,2)
-            move(24,8);edge(1);move(32,24);edge(0);actions(0,3,6)
-            click(24,8);move(472,8);frames()
+            click(152,8);click(600,220);actions(0,2)
+            click(152,8);move(160,24);edge(1);key('ESC');edge(0);actions(0,2)
+            move(152,8);edge(1);move(160,24);edge(0);actions(0,3,6)
+            click(152,8);move(600,8);frames()
             require(get(at('DESKMENU','menu'),1)==2,'Heading switch to Windows failed')
             # The native popup uses the same monochrome conventions. Rebuild
             # it from retained windows, then compare only its opaque bounds.
@@ -147,18 +155,18 @@ def physical(b,p,foreign,report):
                 move(xx,yy);frames()
                 require(get(at('DESKMENU','selected'))==65535,'Popup border selected an item')
             report['native_popup']=dict(pixels='exact',border_hits='excluded')
-            move(24,8);frames();click(32,40);actions(0,4,7)
-            click(24,8);move(32,24);edge(1);mutation(1);edge(0);actions(0,4)
+            move(152,8);frames();click(160,40);actions(0,4,7)
+            click(152,8);move(160,24);edge(1);mutation(1);edge(0);actions(0,4)
             key('ESC');mutation(2)
-            click(24,8);move(32,24);edge(1);mutation(3);edge(0);actions(0,4)
+            click(152,8);move(160,24);edge(1);mutation(3);edge(0);actions(0,4)
             mutation(4);key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,4)
             key('ESC');mutation(5)
             actions(1,0)
         elif phase==3:
-            click(32,24);actions(0,4)
+            click(160,24);actions(0,4)
             key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,5,7)
         elif phase==5:
-            click(168,8);click(176,24);actions(1,1,6);actions(0,5)
+            click(296,8);click(304,24);actions(1,1,6);actions(0,5)
             key('ESC',ctrl=True,shift=True);key('TAB');key('TAB');key('TAB');key('RETURN');actions(1,2,6)
         b.poke16(sy['AESMenuGo'],phase)
     report['physical_menus']=dict(pointer=True,keyboard=True,commands=[5,2],identical_titles=True,disabled=True,held_replacement=True,held_disable=True,cancel=True,heading_switch=True,hidden=True,multiple_titles=True)

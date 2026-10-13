@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 13,
+  "version": 14,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -113,7 +113,9 @@
     "WM_FULLED": 23,
     "GUI_FULLED": 8,
     "WINDOWS": 6,
-    "WF_EXEC_DESKTOP": 24576
+    "WF_EXEC_DESKTOP": 24576,
+    "OP_FIND": 106,
+    "OP_DRAG_OUTLINE": 203
   },
   "records": {
     "MenuObject": [
@@ -276,6 +278,10 @@
       ],
       [
         "selectedButton",
+        "InputRecord"
+      ],
+      [
+        "selectedPointer",
         "InputRecord"
       ],
       [
@@ -623,7 +629,9 @@
     "OP_SET",
     "OP_DISPLAY",
     "OP_MOUSE_PROFILE",
-    "OP_MENU"
+    "OP_MENU",
+    "OP_FIND",
+    "OP_DRAG_OUTLINE"
   ],
   "public_constants": [
     "NAME",

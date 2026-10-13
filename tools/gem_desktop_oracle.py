@@ -18,10 +18,10 @@ def paint(bridge,symbols,r,title,bounds):
         if title==b'':
             raw=bridge.memdump(base+D['tree'],9*24)
             objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(9)]
-            icons=[o[:] for o in objects if o[3]==31]
+            icons=[o[:] for o in objects if o[3] in (31,33)]
             labels={}
             for i,o in enumerate(objects):
-                if o[3]==31:o[3]=25;o[5]=0;o[6]=0
+                if o[3] in (31,33):o[3]=25;o[5]=0;o[6]=0
                 elif o[3]==28:
                     labels[i]=bridge.memdump(o[6],65).split(b'\0')[0].decode('ascii');o[6]=i
             objects[0][7]=objects[0][8]=0
@@ -32,7 +32,7 @@ def paint(bridge,symbols,r,title,bounds):
             folder=int.from_bytes(bridge.memdump(base+D['folders']+slot*4,4),'little')
             if folder and title==bridge.memdump(folder+B['path'],65).split(b'\0')[0][:64]:
                 work=struct.unpack('<4h',bridge.memdump(folder+B['work'],8))
-                if work[0]==left+8 and work[1]==top+28:
+                if work[0]==left+8 and work[1]==top+16:
                     return paint(bridge,{**symbols,'GEMBrowser':folder,'GEMDesk':0},r,title,bounds)
         require(False,'No desktop folder model for '+repr(title))
     if 'GEMText' in symbols:
@@ -77,12 +77,12 @@ def paint(bridge,symbols,r,title,bounds):
                     labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
             if objects[2][3]==28:  # Copy progress uses an ordinary string.
                 objects[0][7]=objects[0][8]=0
-                draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
+                draw(r,objects,labels,(left+8,top+16,right-16,bottom-16),clip_strings=True)
                 return
             field=objects[2][:];objects[2][3]=25;objects[2][6]=0
             objects[0][7]=objects[0][8]=0
-            draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
-            x,y=left+8+field[7],top+28+field[8];w,h=field[9:11]
+            draw(r,objects,labels,(left+8,top+16,right-16,bottom-16),clip_strings=True)
+            x,y=left+8+field[7],top+16+field[8];w,h=field[9:11]
             text=bridge.memdump(base+F['editText'],128).split(b'\0')[0]
             index=int.from_bytes(bridge.memdump(base+F['editIndex'],2),'little')
             from generate_aes_server import expected_layout
@@ -97,7 +97,7 @@ def paint(bridge,symbols,r,title,bounds):
                 start=int.from_bytes(bridge.memdump(symbols['__aes_context']+offset,2),'little')
                 require(start<=index<start+columns,'Caret outside the editable viewport')
             visible=text[start:start+columns]
-            r.clip=(left+8,top+28,right-17,bottom-17)
+            r.clip=(left+8,top+16,right-17,bottom-17)
             rectangle(r,(x-1,y-1,x+w+1,y+h+1),1);rectangle(r,(x,y,x+w,y+h),0)
             r.text=1;r.apply(8,(x,y+(h-8)//2+6),visible)
             if active:rectangle(r,(x+(index-start)*8,y+(h-8)//2,x+(index-start)*8+1,y+(h-8)//2+8),1)
@@ -111,12 +111,20 @@ def paint(bridge,symbols,r,title,bounds):
                 labels[i]=bridge.memdump(obj[6],64).split(b'\0')[0].decode('ascii');obj[6]=i
         icons=[]
         for obj in objects:
-            if obj[3]==31:
+            if obj[3] in (31,33):
                 if not obj[4]&128:icons.append(obj[:])
                 obj[3]=25;obj[5]=0;obj[6]=0
+        # The focus decoration follows the icons in the real OBJECT tree.
+        # Rasterize it last too, including the edge beside a selected label.
+        focus=[obj[:] for obj in (objects[1],*objects[21:25])]
+        objects[1][4]|=128
         objects[0][7]=objects[0][8]=0
-        draw(r,objects,labels,(left+8,top+28,right-16,bottom-16),clip_strings=True)
-        for obj in icons:icon(bridge,r,obj,(left+8,top+28,right-16,bottom-16))
+        draw(r,objects,labels,(left+8,top+16,right-16,bottom-16),clip_strings=True)
+        for obj in icons:icon(bridge,r,obj,(left+8,top+16,right-16,bottom-16))
+        if not focus[0][4]&128:
+            focus[0][0:3]=[-1,1,4]
+            for i in range(1,5):focus[i][0]=i+1 if i<4 else 0
+            draw(r,focus,{},(left+8,top+16,right-16,bottom-16))
         return
     require(title==b'GEM Control Panel','Unknown GEM desktop app: '+repr(title))
     base=symbols['GEMPanel'];raw=bridge.memdump(base+178,192)
@@ -136,23 +144,37 @@ def icon(bridge,r,obj,bounds):
     l,t,right,bottom=bounds;x=l+obj[7];y=t+obj[8]
     fields=struct.unpack('<IIIH10h',bridge.memdump(obj[6],34))
     mask,data,label,char,xc,yc,xi,yi,width,height,xt,yt,wt,ht=fields
+    colour=None
+    if obj[3]==33:
+        address=int.from_bytes(bridge.memdump(obj[6]+34,4),'little')
+        while address:
+            planes,normal,nmask,selected,smask,address=struct.unpack('<hIIIII',bridge.memdump(address,22))
+            if planes==4:
+                data,mask=(selected,smask) if obj[5]&1 and selected else (normal,nmask)
+                colour=bridge.memdump(data,width//2*height)
+                break
     fg,bg=char>>12,(char>>8)&15
     if obj[5]&1:fg,bg=bg,fg
     count=width//16*height
     mask=struct.unpack('<%dH'%count,bridge.memdump(mask,count*2))
-    data=struct.unpack('<%dH'%count,bridge.memdump(data,count*2))
+    if colour is None:data=struct.unpack('<%dH'%count,bridge.memdump(data,count*2))
     def pixel(px,py,pen):
         if l<=px<right and t<=py<bottom:r.pixel(px,py,pen)
     for yy in range(height):
         for xx in range(width):
             index=yy*(width//16)+xx//16;bit=0x8000>>(xx%16)
-            if (mask[index]|data[index])&bit:pixel(x+xi+xx,y+yi+yy,fg if data[index]&bit else bg)
+            if colour is None:
+                if (mask[index]|data[index])&bit:pixel(x+xi+xx,y+yi+yy,fg if data[index]&bit else bg)
+            elif mask[index]&bit:
+                from gem_render_oracle import PENS
+                value=colour[(yy*width+xx)//2]
+                pixel(x+xi+xx,y+yi+yy,PENS.index(value&15 if xx&1 else value>>4))
     def glyph(code,gx,gy):
         for yy in range(8):
             for xx in range(8):
                 if r.font[yy*256+code]&(128>>xx):pixel(gx+xx,gy+yy,fg)
     if char&255:glyph(char&255,x+xi+xc,y+yi+yc)
-    label=bridge.memdump(label,64).split(b'\0')[0][:wt//8]
+    label=bridge.memdump(label,12 if obj[3]==33 else 64).split(b'\0')[0][:wt//8]
     if not label:return
     for yy in range(ht):
         for xx in range(wt):pixel(x+xt+xx,y+yt+yy,bg)

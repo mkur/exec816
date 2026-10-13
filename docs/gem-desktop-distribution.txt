@@ -2,6 +2,8 @@ Exec816 colour GEM desktop
 =========================
 
 A 640x240 colour desktop, folder windows and the native shell.
+Warm grey surfaces, blue-teal icons and patterned active titles give it an
+Exec816 identity inspired by GEM and Workbench.
 Panel, Calculator, Text and Counter launch on demand. No prime Task is started.
 
 Boot in AltirraSDL
@@ -33,18 +35,24 @@ Press a key during the countdown for OF816; EXEC816 resumes desktop startup.
 Use the desktop
 ---------------
 
-Click a window to focus it; drag its title to move it. Windows in the top bar
+Click a window to focus it; drag its title to move it. The focused window's
+name stays at the left of the menu bar; click it for Next window and Close.
+Application menus follow it. Windows at the far right of the top bar
 reaches covered windows. Ctrl-Tab cycles; Ctrl-Escape opens Windows.
 The active application's menu is at the left. Ctrl-Shift-Escape enters it;
 arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 
 Double-click SYS:, WORK: or C: to open a folder. Desk > New Window opens another;
 up to three folders share one application Task. Closing the last folder leaves
-the desktop alive. View chooses Icons/List and Name/Disk order. Select then
+the desktop alive. View chooses Icons/List; Sort by name toggles name/disk order. Select then
 Return, or double-click, to open one entry. Shift-click toggles multiple entries;
 Shift-arrow adds an entry. Ctrl-A/View > Select All includes cached offscreen
 entries; Escape/View > Select None clears. Open and Rename need one entry.
-Arrows navigate; Up goes to the parent.
+Arrows navigate; a dotted outline marks keyboard focus. Selection reverses the
+label without changing the icon. The small Up glyph, File > Parent or Backspace
+goes to the parent; the Refresh glyph, File > Refresh or Ctrl-L reloads it.
+The bottom line shows totals, selection counts or operation feedback. The path
+is in the title. New windows start smaller; navigation preserves their size.
 Drag the bottom-right size gadget; vertical arrows, track and thumb scroll.
 The top-right fuller toggles full/remembered size. Listings retain 256 entries
 and reuse up to sixteen visible objects; larger listings report truncation.
@@ -53,6 +61,9 @@ Path (P), New Folder (N) and Rename (R) open inline text dialogs. Tab changes
 focus, Return accepts, Escape/Cancel dismisses. Names fold to uppercase.
 Use WORK: for writes; SYS: is read-only. File > Copy copies a regular-file
 selection: one file asks for a full destination path, several ask for a directory.
+Drag a selected file to another folder window to copy the selection. Drop on
+empty content or a directory icon/row. Move four pixels to start; Escape cancels.
+Directories cannot be dragged. The target status strip names the destination.
 Existing targets offer Replace/Skip/Cancel (Cancel is the default). Copy reuses
 one 16 KiB buffer. Cancel/Escape removes the current partial EXECCOPY.TMP;
 completed files stay copied. Cancellation waits for the current disk operation.
@@ -92,5 +103,5 @@ RUN C:G4BENCH.APP runs the adapted drawing benchmark: Return starts, Escape
 stops/closes. Keep it uncovered. Results go to WORK:G4BENCH.TXT.
 
 This is a development preview. Dragging icons, recursive
-file operations, trash, horizontal scrolling and richer colour icons are future
+file operations, trash, horizontal scrolling and additional icon artwork are future
 work. The standard non-GUI distribution still boots the shell/prime demo.

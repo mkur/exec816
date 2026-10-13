@@ -22,9 +22,9 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot,menus):
     def job():return s.number(desk+D['job'],4)
     def all_entries():
         s.b._cmd_ok('KEY CTRL down');key('A');s.b._cmd_ok('KEY CTRL up')
-    def menu(row):click(24,8);click(40,24+row*16)
+    def menu(row):click(152,8);click(168,24+row*16)
     def delete(confirm=True):
-        menu(8);s.rendezvous('dw($%x)=6'%(base+F['dialog']))
+        menu(9);s.rendezvous('dw($%x)=6'%(base+F['dialog']))
         if confirm:
             x,y=[s.number(base+F['work']+i*2,2) for i in range(2)];click(x+32,y+52)
         else:key('RETURN')
@@ -59,10 +59,10 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot,menus):
     s.rendezvous('(dw($%x)|dw($%x))!=0'%(desk+D['folders']+4,desk+D['folders']+6))
     peer=s.number(desk+D['folders']+4,4);wait_listing(s,peer);path(peer,'WORK:DST')
     select(s,peer,'OLD.TXT',click);menus.select('WORK:SRC')
-    menu(7);s.rendezvous('dw($%x)=4'%(base+F['dialog']));fill(base,'work:dst');key('RETURN')
+    menu(8);s.rendezvous('dw($%x)=4'%(base+F['dialog']));fill(base,'work:dst');key('RETURN')
     s.rendezvous('((dw($%x)|dw($%x))!=0)|((dw($%x)=4)&(dw($%x)!=0))'%(desk+D['job'],desk+D['job']+2,base+F['dialog'],desk+D['error']))
     require(job(),'Deferred copy failed admission: '+repr((n('dialog'),text('status'),text('editText'),n('selectionCount'),n('selectionDirectories'),s.number(desk+D['error'],4))))
-    address=job();menus.select('WORK:DST');menu(7)
+    address=job();menus.select('WORK:DST');menu(8)
     require(not s.number(peer+F['dialog'],2) and job()==address,'Sibling started another batch')
     key('N');s.rendezvous('dw($%x)=2'%(peer+F['dialog']));fill(peer,'TYPED')
     s.rendezvous('(dw($%x)|dw($%x))=0'%(desk+D['job'],desk+D['job']+2));s.frames(100)

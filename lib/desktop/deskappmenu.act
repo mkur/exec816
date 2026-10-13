@@ -14,6 +14,7 @@ USE LAYERS
 USE REGIONS
 USE HEAPCORE
 
+PUBLIC CONST BAR_LEFT=128, BAR_RIGHT=560
 PUBLIC AESSTATE.Client POINTER owner
 PUBLIC INT heading,selected,paintHeading,paintSelected
 LONGCARD generation,revision
@@ -132,6 +133,7 @@ PUBLIC INT FUNC TitleAt(INT x)
     RETURN(-1)
   FI
   LET menu=owner.menu
+  x==-BAR_LEFT
   FOR index=0 TO menu.titles-1 DO
     BEGIN
       LET title=menu.title(index)
@@ -186,7 +188,7 @@ PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
   LET menu=owner.menu
   box=menu.box(heading)
   LET object=AESMENU.Object(menu,box)
-  left=menu.x(box)
+  left=BAR_LEFT+menu.x(box)
   top=menu.y(box)
   IF left<0 THEN left=0 FI
   IF left+object.width>640 THEN left=640-object.width FI
@@ -271,7 +273,8 @@ PROC DamageObject(INT index BYTE popup)
   LET object=AESMENU.Object(menu,index)
   active=menu.parent(menu.title(0))
   IF menu.parent(index)=active THEN
-    REGIONS.Assign(@bounds,menu.x(index),0,menu.x(index)+object.width,16)
+    REGIONS.Assign(@bounds,BAR_LEFT+menu.x(index),0,
+        BAR_LEFT+menu.x(index)+object.width,16)
     status=LAYERS.Invalidate(@desktop.scene,DESKSTATE.barLayer,@bounds)
   ELSEIF popup<>0 THEN
     box=menu.box(heading)
@@ -346,8 +349,10 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     BEGIN
       LET root=AESMENU.Object(menu,0)
       scope=root.head
+      packet.originX=BAR_LEFT
       packet.originY=-menu.y(scope)
-      IF packet.right>432 THEN packet.right=432 FI
+      IF packet.left<BAR_LEFT THEN packet.left=BAR_LEFT FI
+      IF packet.right>BAR_RIGHT THEN packet.right=BAR_RIGHT FI
       IF opened<>0 THEN packet.qualifiers=CARD(menu.title(paintHeading)) FI
     END
   ELSE

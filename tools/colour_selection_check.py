@@ -26,7 +26,7 @@ def exercise(s, desk, base, click, key, path, desk_menu, shot, move, boundary=Fa
         if shift:s.b._cmd_ok('KEY SHIFT down')
         select(s,base,name,click,stable_snapshot=name.startswith('E') and name.endswith('.TXT'))
         if shift:s.b._cmd_ok('KEY SHIFT up')
-    def view(row):click(88,8);click(96,24+row*16)
+    def view(row):click(216,8);click(224,24+row*16)
     def all_key():
         s.b._cmd_ok('KEY CTRL down');key('A');s.b._cmd_ok('KEY CTRL up');s.frames(30)
     # A small writable directory also contains folders: Copy must not accept
@@ -42,20 +42,20 @@ def exercise(s, desk, base, click, key, path, desk_menu, shot, move, boundary=Fa
         require(s.b.memdump(base+F['editText'],128).split(b'\0')[0]==b'BETA.TXT','Rename used deselected lead')
         key('ESC');pick('ALPHA.TXT',True)
         view(1);require(n('iconView')==0 and members()=={'ALPHA.TXT','BETA.TXT'},'List lost selection')
-        view(3);wait_listing(s,base);require(members()=={'ALPHA.TXT','BETA.TXT'},'Disk order lost selected names')
+        view(2);wait_listing(s,base);require(members()=={'ALPHA.TXT','BETA.TXT'},'Disk order lost selected names')
         view(2);wait_listing(s,base);require(members()=={'ALPHA.TXT','BETA.TXT'},'Name sort lost selected names')
-        x,y,w,h=work();click(x+200,y+8);wait_listing(s,base) # Refresh toolbar.
+        x,y,w,h=work();click(x+48,y+8);wait_listing(s,base) # Refresh toolbar.
         require(members()=={'ALPHA.TXT','BETA.TXT'},'Refresh lost selection')
-        view(4);require(members()==set(names),'Select All menu')
+        view(3);require(members()==set(names),'Select All menu')
         require(n('selectionDirectories')>0,'Directory selection count')
-        view(5);require(not members(),'Select None menu')
+        view(4);require(not members(),'Select None menu')
         all_key();require(members()==set(names),'Ctrl+A did not select cached entries')
         key('ESC');require(not members(),'Escape did not clear')
         pick('ALPHA.TXT');desk_menu(0);s.frames(150)
         peer=s.number(desk+D['folders']+4,4);require(peer and not s.number(peer+F['selectionCount'],2),'New folder inherited selection')
         require(members()=={'ALPHA.TXT'},'Sibling changed original selection')
         px,py=[s.number(peer+F['work']+i*2,2) for i in range(2)]
-        click(px,py-20);s.frames(100)
+        click(px,py-8);s.frames(100)
         view(0);pick('BETA.TXT',True);shot('desktop-multiple-selection')
     # The scan cap and byte 31 of the bitmap are exercised with actual files.
     print('Selection: full directory and offscreen bitmap',flush=True)

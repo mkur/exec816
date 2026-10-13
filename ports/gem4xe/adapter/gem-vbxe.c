@@ -261,9 +261,16 @@ void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
         top+=rows;
     }
 }
+
+#ifdef EXEC_DESKTOP_STYLE
+#include "gem-desktop-palette.h"
+#endif
 void vbxe_palette(uint8_t pal,uint8_t first,const uint8_t *rgb,uint16_t count)
 {
     if (pal!=1 || first || count!=16) { latch(DISPLAY_BAD_ARGUMENT); return; }
+    #ifdef EXEC_DESKTOP_STYLE
+    rgb=desktop_rgb;
+    #endif
     if (!fault) latch(VbxeOwnerPalette(&display,rgb));
 }
 
@@ -801,6 +808,42 @@ void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
                 }
                 bit>>=1;
                 if (!bit && px+1<right) { bit=0x8000U;mi=mask[++index];di=data[index]; }
+            }
+            if (px&1) { page[at]=a;page[2048+at]=o;++at;a=255;o=0; }
+        }
+    }
+    latch(VbxeOwnerWrite(&display,0x36000UL,page,at));
+    if (!fault) latch(VbxeOwnerWrite(&display,0x36800UL,page+2048,at));
+    blit_mask(0x36000UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,4);
+    blit_mask(0x36800UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,3);
+}
+
+/* CICON pixels are already in the device format. Only clipping/alignment and
+ * the one-bit transparency mask are expanded here; no palette/plane conversion.
+ * objc_draw supplies the same bounded strips and display grant as G_ICON. */
+void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD row,px,sx,bit,mi,index,at=0,stride=width>>4;
+    UWORD bytes=((right+1)>>1)-(left>>1),rows=bottom-top;
+    UWORD source=(top-y)*stride,pixels=(top-y)*(width>>1);
+    /* Keep nibble arithmetic native-width; narrow only at the page stores. */
+    UWORD a,o,shift,value;
+    flush();
+    if (fault) return;
+    for (row=0;row<rows;++row,source+=stride,pixels+=width>>1) {
+        sx=left-x;index=source+(sx>>4);bit=0x8000U>>(sx&15);
+        mi=mask[index];a=255;o=0;
+        for (px=left&~1U;px<((right+1)&~1U);++px) {
+            shift=(px&1) ? 0:4;
+            if (px>=left && px<right) {
+                if (mi&bit) {
+                    value=data[pixels+(sx>>1)];
+                    value=(sx&1) ? value&15:value>>4;
+                    a&=~(15U<<shift);o|=value<<shift;
+                }
+                ++sx;bit>>=1;
+                if (!bit && px+1<right) { bit=0x8000U;mi=mask[++index]; }
             }
             if (px&1) { page[at]=a;page[2048+at]=o;++at;a=255;o=0; }
         }
