@@ -259,7 +259,12 @@ PUBLIC PROC Cache()
   IF service=NULL OR service.live<>1 OR service.scene.busy<>0
       OR AESLOCKS.PaintBlocked()<>0
       OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
-      OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0 THEN
+      OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0
+      OR DESKMENU.Runnable()<>0 THEN
+    RETURN
+  FI
+
+  IF DESKMENUCACHE.CapturePopup()<>0 THEN
     RETURN
   FI
 

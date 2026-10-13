@@ -127,6 +127,23 @@ def physical(b,p,foreign,report):
             click(56,8)
             require(get(at('DESKMENU','menu'),1)==1,'Focused-window menu did not open')
             key('ESC');actions(0,0)
+            # The normal File image survives a close/reopen. Exact owner,
+            # lifetime, source revision and selection must all match.
+            click(152,8);move(632,232);frames()
+            key('ESC')
+            restores=get(at('DESKMENUCACHE','popupRestores'),4)
+            click(152,8);move(632,232);frames()
+            require(get(at('DESKMENUCACHE','popupRestores'),4)==restores+1,
+                    'Repeated File opening missed its rendered popup')
+            cached=Raster(font);area=draw(b,cached,tree,True)
+            path=out/'cached-menu.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
+            for yy in range(area[1],area[3]):
+                for xx in range(area[0],area[2]):
+                    pixel=yy*capture.stride+(xx+16)*4
+                    require(pixels[pixel:pixel+3]==hardware[cached.pixels[yy*640+xx]],
+                            f'Cached File menu pixel {xx},{yy}')
+            report['popup_cache']=dict(warm_file='exact',restore_delta=1)
+            key('ESC')
             click(152,8);click(160,24);actions(0,1,6)
             key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)
             require(get(at('DESKAPPMENU','heading'))==1,'Right did not switch application title')

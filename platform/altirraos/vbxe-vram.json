@@ -23,6 +23,30 @@
       "widget_used_bytes": 5120
     },
     {
+      "name": "menu_under",
+      "base": 81920,
+      "reserved_bytes": 76800,
+      "capacity_bytes": 76800,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
+    },
+    {
+      "name": "popup_0",
+      "base": 159744,
+      "reserved_bytes": 16384,
+      "capacity_bytes": 16384,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
+    },
+    {
+      "name": "popup_1",
+      "base": 176128,
+      "reserved_bytes": 16384,
+      "capacity_bytes": 16384,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
+    },
+    {
       "name": "xdl",
       "base": 196608,
       "reserved_bytes": 256,
@@ -103,8 +127,8 @@
       "g4_used_bytes": 0
     }
   ],
-  "reserved_bytes": 243200,
-  "unassigned_bytes": 281088,
+  "reserved_bytes": 352768,
+  "unassigned_bytes": 171520,
   "diagnostics": [
     {
       "name": "cross_page_transfer",

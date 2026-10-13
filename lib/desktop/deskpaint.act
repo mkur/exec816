@@ -31,6 +31,7 @@ CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
 CONST PAINT_FRAME=1, PAINT_CACHE=2, PAINT_CLIENT=4, PAINT_CONTENT=5
+CONST PAINT_POPUP_CACHE=6
 LAYERTYPES.Rect strip
 
 PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
@@ -219,6 +220,9 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   LET service=DESKSTATE.Get()
   IF window=NULL THEN
+    IF started=PAINT_POPUP_CACHE THEN
+      RETURN(DESKMENUCACHE.PopupRestored())
+    FI
     IF layer.id<>0 AND (layer.id=DESKSTATE.barLayer OR layer.id=DESKSTATE.popupLayer) THEN
       RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
     FI
@@ -499,6 +503,14 @@ PUBLIC BYTE FUNC Pump()
         regionIndex=0
         nextY=service.scene.work.rects(0).top
         started=0
+        IF candidate.id=DESKSTATE.popupLayer AND service.scene.work.count=1
+            AND REGIONS.Equal(@service.scene.work.rects(0),@candidate.bounds)<>0 THEN
+          status=DESKMENUCACHE.RestorePopup(candidate)
+          IF status=DESKTYPES.CACHE_PENDING THEN
+            started=PAINT_POPUP_CACHE
+            RETURN(2)
+          FI
+        FI
       FI
     FI
   FI
@@ -512,7 +524,7 @@ PUBLIC BYTE FUNC Pump()
   window=ByLayer(paintLayer)
   REGIONS.Copy(@region.rects(regionIndex),@strip)
   strip.top=nextY
-  IF strip.bottom>nextY+STRIP_HEIGHT THEN
+  IF started<>PAINT_POPUP_CACHE AND strip.bottom>nextY+STRIP_HEIGHT THEN
     strip.bottom=nextY+STRIP_HEIGHT
   FI
 

@@ -103,7 +103,7 @@ coexistence evidence, not the required loaded pointer-latency cohort.
 
 ## Remaining slices
 
-AV3–AV6 remain in progress. Numeric performance gates remain separate from
+AV4–AV6 remain in progress. Numeric performance gates remain separate from
 functional completion; no acceptance is inferred from correct cached pixels.
 
 ## Compiler dependency found during AV3
@@ -120,3 +120,28 @@ Exec input also passes interface emission with the fix. No compiler-wide tests
 or release qualification were run. The compiler ABI is unchanged; reserved bank
 zero remains **0 fixed / 0 per public Task / 0 idle bytes** relative to baseline.
 The baseline used `81dd7dc5`; final comparisons must record this dependency.
+
+## AV3: rendered popup images
+
+Two fixed 16 KiB images reuse the shared slot and display-transfer policy.
+The key includes owner, menu lifetime, source revision, heading, dimensions
+and exact selection. Native menu revisions change with their retained window
+contents; application menus use the installed menu generation and mutation
+revision. There is no hot-path string hash. Only the initial selection is
+captured at idle, once per unchanged state; highlighted rows still use targeted
+painting. Full matching popups restore in one transfer rather than 16-row steps.
+Odd edges, oversized menus and misses retain normal rendering. Restart drops
+old popup identities.
+
+Development checks: raw/optimized far-record probes pass 107 checks each,
+including both indexed record-copy directions; the emitted AES menu suite
+compares a demonstrated warm File hit with independent pixels, then exercises
+identical titles in different owners, replacement/disable while pressed,
+selection changes, long labels and odd clipping. Host checks pass (459, four
+skips). Idle and explicitly cold timing cohorts are recorded separately; cold
+control invalidates only unpinned rendered-popup entries before opening.
+
+Fixed upper-RAM metadata/counters grow by 130 bytes including alignment.
+VRAM grows by 32,768 bytes to 352,768. Reserved bank zero changes by
+**0 fixed / 0 per public Task / 0 idle bytes**. No caller journal growth.
+Latency gates remain pending measurement.

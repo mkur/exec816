@@ -24,6 +24,7 @@ PROC Main()
   LAYERTYPES.Rect bounds
   LONGCARD token,id,bar,popup
   LAYERTYPES.CacheSlot snapshot
+  LAYERTYPES.CacheSlot ARRAY copies(2)
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
@@ -122,6 +123,14 @@ PROC Main()
   Require(snapshot.identity=$12345678 AND snapshot.revision=$87654321)
   Require(snapshot.width=528 AND snapshot.height=184
       AND snapshot.valid=1 AND snapshot.pinned=1)
+  ; Exercise both indexed record-copy addresses through emitted code. Scalar
+  ; promotion must retain the index in copy operands as well as ordinary loads.
+  FOR index=0 TO 1 DO
+    copies(index)=snapshot
+    copies(index).width==+CARD(index)
+    snapshot=copies(index)
+    Require(snapshot.identity=$12345678 AND snapshot.width=528+CARD(index))
+  OD
   Require(DESKTYPES.SNAPSHOT_0_BASE=$50000
       AND DESKTYPES.SNAPSHOT_1_BASE=$60000 AND DESKTYPES.SNAPSHOT_BYTES=65536)
   Require(SIZEOF(LAYERTYPES.SavedArea)=LAYERTYPES.SAVEDAREA_SIZE)

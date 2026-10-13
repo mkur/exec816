@@ -8,6 +8,7 @@ USE DESKMENUCACHE
 USE AESLOCKS
 USE AESMOUSE
 USE AESTYPES
+USE AESSTATE
 USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
@@ -27,6 +28,7 @@ PUBLIC TYPE Item=[
   BYTE ARRAY label(LABEL_BYTES)
 ]
 PUBLIC LONGCARD activeWindow
+PUBLIC LONGCARD contentRevision
 PUBLIC BYTE ARRAY title(33)
 PUBLIC BYTE paintMenu
 PUBLIC Item ARRAY items(ROWS)
@@ -58,6 +60,7 @@ PUBLIC BYTE FUNC Start()
 
   LET service=DESKSTATE.Get()
   DESKSTATE.barLayer=0
+  DESKMENUCACHE.Reset()
   DESKSTATE.popupLayer=0
   menu=0
   count=0
@@ -75,6 +78,7 @@ PUBLIC BYTE FUNC Start()
   revision=$ffffffff
   focusSeen=$ffffffff
   activeWindow=0
+  contentRevision=1
   title(0)=0
   DESKSTATE.menuActive=0
   REGIONS.Assign(@bounds,0,0,640,BAR_HEIGHT)
@@ -675,6 +679,9 @@ PUBLIC PROC Advance()
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
   FI
   IF chromeChanged<>0 THEN
+    IF contentRevision<>0 THEN
+      contentRevision==+1
+    FI
     DESKSTATE.TopChrome()
     activeWindow=service.focus
     BEGIN
@@ -721,6 +728,18 @@ PUBLIC PROC Advance()
   AESWINDOWSTATE.Sync()
   DESKSTATE.menuActive=Active()
   AESMOUSE.Refresh()
+  IF menu=GEM_MENU THEN
+    BEGIN
+      LET owner=DESKAPPMENU.owner
+      LET aes=AESSTATE.Get()
+      DESKMENUCACHE.SelectPopup(menu,owner.id,owner.menu.generation,
+          aes.menuRevision,DESKAPPMENU.paintHeading,DESKAPPMENU.paintSelected,
+          DESKAPPMENU.paintSelected=-1)
+    END
+  ELSE
+    DESKMENUCACHE.SelectPopup(menu,activeWindow,1,contentRevision,0,
+        paintSelection,paintSelection=0)
+  FI
   DESKMENUCACHE.Notify()
 
 RETURN

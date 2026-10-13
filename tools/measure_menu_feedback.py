@@ -20,7 +20,8 @@ from test_demo import run
 
 
 class Feedback:
-    def __init__(self, count, load_check=False):
+    def __init__(self, count, load_check=False, cold=False):
+        self.cold = cold
         self.count = count
         self.load_check = load_check
         self.results = {}
@@ -58,13 +59,28 @@ class Feedback:
         require(folder, 'No active folder for final repaint observation')
         menu = at('DESKMENU', 'menu')
         path = s.p['output']/'menu-feedback.bgra'
-        cache_fields = ('captures','restores','misses','capturedBytes','restoredBytes')
+        cache_fields = ('captures','restores','misses','capturedBytes','restoredBytes',
+                        'popupCaptures','popupRestores','popupMisses',
+                        'popupCapturedBytes','popupRestoredBytes')
         cache_at = {name: next((d['address'] for d in s.p['image']['data']
                     if '_DESKMENUCACHE_'+name.upper()+'_' in d['name']), None)
                     for name in cache_fields}
         def cache_counts():
             return {name: s.number(address, 4) for name, address in cache_at.items()
                     if address is not None}
+
+        popup_cache = next((d['address'] for d in s.p['image']['data']
+                            if '_DESKMENUCACHE_POPUPS_' in d['name']), None)
+        def discard_popups():
+            if not self.cold or popup_cache is None:
+                return
+            from generate_layers import layout
+            slot = layout()['CacheSlot']
+            for index in range(2):
+                address = popup_cache+index*slot['size']
+                require(s.number(address+slot['fields']['pinned'], 1) == 0,
+                        'Cannot make a pinned popup cold')
+                b.memload(address+slot['fields']['valid'], b'\x00')
 
         def capture(area):
             frame = b.rawscreen(str(path)); raw = path.read_bytes()
@@ -105,6 +121,8 @@ class Feedback:
             transfers = {name: [] for name, _ in sequence}
             for iteration in range(self.count):
                 for (name, keys), want in zip(sequence, reference):
+                    if name in ('open', 'switch'):
+                        discard_popups()
                     before_paint = s.number(folder+F['paints'], 4)
                     before_cache = cache_counts()
                     start = press(*keys)
@@ -185,6 +203,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
     parser.add_argument('--layout-revision', help='Use recorded native ABI layouts for an older baseline executable')
     args = parser.parse_args()
     if args.layout_revision:
@@ -201,11 +220,11 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check)
+    probe = Feedback(args.count, args.load_check, args.cold)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),
-                  menus=probe.results, scope='Idle desktop; keyboard submission to whole-region '
+                  menus=probe.results, cold_popup_control=args.cold, scope='Idle desktop; keyboard submission to whole-region '
                   'scanout equality, one-frame polling. Settled reference images; independent '
                   'pixels checked separately. No sub-frame precision or loaded latency claim.')
     (out/'menu-results.json').write_text(json.dumps(result, indent=2)+'\n')

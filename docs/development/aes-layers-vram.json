@@ -2193,5 +2193,47 @@
         }
       }
     }
+  },
+  "av3": {
+    "functional": "pass",
+    "performance_gate": "pending",
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "fixed_upper_delta": 130,
+    "vram_reserved": 352768,
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "checks": {
+      "av3-menus": {
+        "path": "build/aes-layers-vram/av3-menus/results.json",
+        "sha256": "641657883ada32c62ea627f05e0a113eed24a9905552cb8c496e7175861cdddd",
+        "status": "pass",
+        "checks": 290
+      },
+      "av3-probe-opt": {
+        "path": "build/aes-layers-vram/av3-probe-opt/results.json",
+        "sha256": "b1128a6a82be0015a35c987e8069b72e6aee72f2466b9d15ee1e5c04526b2983",
+        "status": "pass",
+        "checks": 107
+      },
+      "av3-probe-raw": {
+        "path": "build/aes-layers-vram/av3-probe-raw/results.json",
+        "sha256": "059b2b2381c9ff645f688fef66819be4223e6da146ba089e4fd1a37f130d1e59",
+        "status": "pass",
+        "checks": 107
+      }
+    },
+    "source_sha256": {
+      "lib/desktop/deskhost.act": "2596be262128a2cb6daa9ad7abfe8a016e19bc48529ee72cdd297b3e5b2df09a",
+      "lib/desktop/deskmenu.act": "885ccd2b2e535256bff5af897470dfa2d612e6f32e5b77cad188a58fcd2f8f04",
+      "lib/desktop/deskmenucache.act": "fe3b7435fc41901e56a92ed94961b11463ca788ae6799453545f8530f81721ec",
+      "lib/desktop/deskpaint.act": "c4a3341e134d359e415674f4081d2c6b7a6dc7eb85c9c3f685f402ad1722fcf7",
+      "lib/desktop/desktypes.act": "7486d1de4133e7aadb0d04c17d88b7647ab08de99188551da1310a36059daf8b",
+      "platform/altirraos/vbxe-vram.json": "15378d3622c6062b7c3b78288e6c5e76b1bf951e79689d95f65754a383d06e4a",
+      "tools/measure_menu_feedback.py": "2b47219b55d36229b28755800cef6a67c16a9df351e23827fd1042fd1159989d",
+      "tools/test_aes_menus.py": "b80e630de1a47c0d75a94ec0ae229ec19bedf7d2d29cc064e302c593cd28ab30"
+    }
   }
 }

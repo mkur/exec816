@@ -20,6 +20,183 @@ LONGCARD token
 BYTE restoring,notifyPending
 PUBLIC LONGCARD captures,restores,misses,capturedBytes,restoredBytes
 
+; Popup images share the same transfer path and fixed-slot policy. Identity
+; is the owner, lifetime distinguishes menu replacement, and selection is exact.
+TYPE PopupKey=[
+  LONGCARD owner,lifetime,revision
+  INT heading,selected
+  BYTE kind
+]
+LAYERTYPES.CachePair popups
+PopupKey ARRAY keys(2)
+PopupKey attempt,current
+BYTE popupOperation,popupSlot,normalSelection
+CONST POPUP_CAPTURE=1, POPUP_RESTORE=2
+PUBLIC LONGCARD popupCaptures,popupRestores,popupMisses,popupCapturedBytes,popupRestoredBytes
+
+PUBLIC PROC Reset()
+
+  LAYERCACHE.Discard(@popups.slots(0))
+  LAYERCACHE.Discard(@popups.slots(1))
+  attempt.kind=0
+  current.kind=0
+  notifyPending=0
+
+RETURN
+
+PUBLIC PROC SelectPopup(BYTE kind LONGCARD owner,lifetime,revision
+    INT heading,selected BYTE normal)
+
+  current.kind=kind
+  current.owner=owner
+  current.lifetime=lifetime
+  current.revision=revision
+  current.heading=heading
+  current.selected=selected
+  normalSelection=normal
+
+RETURN
+
+BYTE FUNC Same(PopupKey POINTER left,right)
+
+RETURN(left.owner=right.owner AND left.lifetime=right.lifetime
+    AND left.revision=right.revision AND left.heading=right.heading
+    AND left.selected=right.selected AND left.kind=right.kind)
+
+LONGCARD FUNC PopupAddress(BYTE index)
+
+RETURN(IF index=0 THEN DESKTYPES.POPUP_0_BASE ELSE DESKTYPES.POPUP_1_BASE FI)
+
+BYTE FUNC PopupTransfer(LAYERTYPES.Layer POINTER layer BYTE restore)
+
+  LET slot=@popups.slots(popupSlot)
+  LET packet=CONSOLEBITMAP.GetPacket()
+  packet.copy.source.offset=0
+  packet.copy.source.pitch=320
+  packet.copy.source.width=640
+  packet.copy.source.height=240
+  packet.copy.sourceX=CARD(layer.bounds.left)
+  packet.copy.sourceY=CARD(layer.bounds.top)
+  packet.copy.destination.offset=PopupAddress(popupSlot)
+  packet.copy.destination.pitch=slot.width RSH 1
+  packet.copy.destination.width=slot.width
+  packet.copy.destination.height=slot.height
+  packet.copy.destinationX=0
+  packet.copy.destinationY=0
+  IF restore<>0 THEN
+    packet.copy.source=packet.copy.destination
+    packet.copy.sourceX=0
+    packet.copy.sourceY=0
+    packet.copy.destination.offset=0
+    packet.copy.destination.pitch=320
+    packet.copy.destination.width=640
+    packet.copy.destination.height=240
+    packet.copy.destinationX=CARD(layer.bounds.left)
+    packet.copy.destinationY=CARD(layer.bounds.top)
+  FI
+  packet.copy.width=slot.width
+  packet.copy.height=slot.height
+
+RETURN(CONSOLEBITMAP.CopyStart())
+
+; Idle-only: never capture every highlighted row or chase an evicted image.
+PUBLIC BYTE FUNC CapturePopup()
+  PopupKey key
+  BYTE index,status
+  CARD width,height
+
+  IF current.kind=0 OR popupOperation<>0 THEN
+    RETURN(0)
+  FI
+  key=current
+  IF key.revision=0 OR Same(@key,@attempt)<>0
+      OR normalSelection=0 THEN
+    RETURN(0)
+  FI
+  LET service=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+  width=CARD(layer.bounds.right-layer.bounds.left)
+  height=CARD(layer.bounds.bottom-layer.bounds.top)
+  IF layer.shown=0 OR layer.dirty<>0 OR (layer.bounds.left & 1)<>0
+      OR (width & 1)<>0 OR LONGCARD(width RSH 1)*LONGCARD(height)>DESKTYPES.POPUP_0_BYTES THEN
+    RETURN(0)
+  FI
+  attempt=key
+  FOR index=0 TO 1 DO
+    IF popups.slots(index).valid<>0 AND Same(@key,@keys(index))<>0 THEN
+      RETURN(0)
+    FI
+  OD
+  index=LAYERCACHE.Choose(@popups)
+  IF index=LAYERCACHE.NO_SLOT THEN
+    RETURN(0)
+  FI
+  status=LAYERS.BeginRead(@service.scene,layer.id,@layer.bounds,@token)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+  popupSlot=index
+  popupOperation=POPUP_CAPTURE
+  keys(index)=key
+  LAYERCACHE.Prepare(@popups.slots(index),key.owner,key.revision,width,height)
+  IF PopupTransfer(layer,0)=0 AND DISPLAY.Blocked()=0 THEN
+    status=LAYERS.Finish(@service.scene,token,0)
+    LAYERCACHE.Captured(@popups.slots(index),0)
+    token=0
+    popupOperation=0
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Called once for a complete popup paint. The painter retains its own token.
+PUBLIC BYTE FUNC RestorePopup(LAYERTYPES.Layer POINTER layer)
+  PopupKey key
+  BYTE index
+
+  key=current
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET slot=@popups.slots(index)
+      IF slot.valid<>0 AND slot.pinned=0 AND Same(@key,@keys(index))<>0
+          AND INT(slot.width)=layer.bounds.right-layer.bounds.left
+          AND INT(slot.height)=layer.bounds.bottom-layer.bounds.top
+          AND (layer.bounds.left & 1)=0 THEN
+        slot.pinned=1
+        popupSlot=index
+        popupOperation=POPUP_RESTORE
+        IF PopupTransfer(layer,1)=0 AND DISPLAY.Blocked()=0 THEN
+          LAYERCACHE.Released(slot,0)
+          popupOperation=0
+          RETURN(DESKTYPES.CACHE_FAILED)
+        FI
+        RETURN(DESKTYPES.CACHE_PENDING)
+      FI
+    END
+  OD
+  popupMisses==+1
+
+RETURN(DESKTYPES.CACHE_MISS)
+
+PUBLIC BYTE FUNC PopupRestored()
+  BYTE okay
+
+  IF popupOperation<>POPUP_RESTORE OR CONSOLEBITMAP.Pending()<>0
+      OR DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
+  LET slot=@popups.slots(popupSlot)
+  okay=(CONSOLEBITMAP.Failed()=0)
+  LAYERCACHE.Released(slot,okay)
+  IF okay<>0 THEN
+    popups.recent=popupSlot
+    popupRestores==+1
+    popupRestoredBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+  FI
+  popupOperation=0
+
+RETURN(okay)
+
 ; Inspect retained model damage before the console renderer can retire it.
 ; Cursor updates alone are overlays and do not invalidate the saved scene.
 PUBLIC PROC ConsoleChanged(CONSOLETYPES.Instance POINTER instance
@@ -220,6 +397,21 @@ PUBLIC PROC Pump()
   FI
   LET service=DESKSTATE.Get()
   okay=(CONSOLEBITMAP.Failed()=0)
+  IF popupOperation=POPUP_CAPTURE THEN
+    BEGIN
+      LET slot=@popups.slots(popupSlot)
+      status=LAYERS.Finish(@service.scene,token,okay)
+      LAYERCACHE.Captured(slot,okay)
+      IF okay<>0 THEN
+        popups.recent=popupSlot
+        popupCaptures==+1
+        popupCapturedBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+      FI
+      token=0
+      popupOperation=0
+      RETURN
+    END
+  FI
   bytes=LONGCARD(service.scene.under.slot.width RSH 1)
       *LONGCARD(service.scene.under.slot.height)
   status=LAYERS.FinishSave(@service.scene,token,okay)
