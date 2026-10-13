@@ -4,6 +4,7 @@
 #include <gem.h>
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *, WORD);
 BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
+void ExecAESChanged(struct ExecAESContext *,LONG,LONG,LONG,LONG);
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);

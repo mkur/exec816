@@ -147,7 +147,28 @@ static void draw(UWORD who,WORD handle,WORD window)
     CHECK(vsf_interior(handle,2)==0 && ExecAESDiagnostic()==AES_UNSUPPORTED);
     CHECK(vswr_mode(handle,1)==1 && vsf_interior(handle,1)==1);
     CHECK(c->sequence==sequence); /* Every warm VDI call is caller-local. */
+    CHECK(c->view->changed && c->request.paintCount==0 && !c->request.paintFailed);
+    CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(c->request.paintCount>0);
+    i=c->request.paintCount;
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(c->request.paintCount==i); /* Nested grants preserve the journal. */
     CHECK(wind_update(END_UPDATE));
+    CHECK(c->request.paintCount==i);
+    for (i=0;i<10;++i) CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(c->request.paintCount==AES_PAINT_REPORTS);
+    vs_clip(handle,0,huge);
+    clip[0]=x;clip[1]=y;clip[2]=x+3;clip[3]=y+3;
+    vsf_color(handle,who ? 2:4);
+    v_bar(handle,clip);
+    vsf_color(handle,3);
+    CHECK(c->request.paintCount<AES_PAINT_REPORTS); /* New writes revoke old claims. */
+    c->request.paintFailed=1; /* A later successful getter cannot clear failure. */
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    CHECK(!ExecAESPainted(window,x,y,w,h));
+    CHECK(c->request.paintFailed);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(c->request.paintCount==0);
 }
 
 static void worker(UWORD who)

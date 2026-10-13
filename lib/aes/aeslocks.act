@@ -68,7 +68,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
     service.updateOwner=client.id
     IF service.updates=0 THEN
-      AESWINDOWSTATE.SnapshotAll(client)
+      AESWINDOWSTATE.BeginUpdate(client)
     FI
 
     service.updates==+1
@@ -147,6 +147,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     service.updates==-1
     AESWINDOWSTATE.Updates(client,service.updates)
     IF service.updates=0 THEN
+      AESWINDOWSTATE.EndUpdate(client)
       service.updateOwner=0
     FI
   ELSE

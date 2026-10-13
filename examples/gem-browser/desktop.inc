@@ -25,6 +25,7 @@ static WORD desktop_draw(struct Desktop *d,const WORD *damage)
     if (!wind_update(BEG_UPDATE)) return 0;
     okay=wind_get(d->window,WF_WORKXYWH,&d->work[0],&d->work[1],&d->work[2],&d->work[3]);
     if (okay) okay=objc_draw(d->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
+    if (okay) okay=ExecAESPainted(d->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++d->paints;
     return okay;

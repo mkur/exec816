@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include "counter.h"
+#include <exec816/aes.h>
 
 static void label(struct Counter *app)
 {
@@ -50,6 +51,7 @@ static WORD redraw(struct Counter *app,const WORD *damage)
         }
         okay=wind_get(app->window,WF_NEXTXYWH,&x,&y,&w,&h);
     }
+    if (okay) okay=ExecAESPainted(app->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++app->paints;
     return okay;

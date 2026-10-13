@@ -872,3 +872,18 @@ which restores the build default. The desktop can explicitly save this choice to
 change broadcast. Multiple panels keep independent pending edits; Apply is
 last-writer-wins and Cancel reloads the current session choice. No new Task,
 signal, timer, bank-zero reservation or IRQ work is involved.
+
+## Optional repaint completion
+
+`ExecAESPainted(window,x,y,width,height)` records completed client pixels during
+UPDATE. Call it after reconstructing the entire requested region and before
+the matching `END_UPDATE`. It clips claims to the published visible work area;
+eight rectangles fit the caller-local journal. Overflow discards excess claims,
+without failing the application's paint. Later drawing revokes intersecting
+claims. A drawing failure remains sticky until the next outer UPDATE.
+
+Only the outer END publishes the journal. Layers subtracts matching-generation
+claims from pending external repaint; neither ending UPDATE nor exhausting
+`WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper
+and continue receiving ordinary exposure redraws. Counter, Files and desktop
+use it in their complete redraw paths. It adds no per-draw RPC or kernel call.

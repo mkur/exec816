@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -90,6 +90,18 @@
       {
         "name": "externalPaint",
         "type": "BYTE"
+      },
+      {
+        "name": "pending",
+        "type": "Damage"
+      },
+      {
+        "name": "paintEpoch",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "contentRevision",
+        "type": "LONGCARD"
       }
     ],
     "Scene": [

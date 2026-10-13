@@ -18,6 +18,61 @@ BOOL ExecAESWindowEpoch(struct ExecAESContext *c, WORD handle, ULONG epoch)
     return v && epoch && v->epoch==epoch;
 }
 
+/* Invalidation may overestimate changed pixels; completion never does. */
+void ExecAESChanged(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
+{
+    struct AESWindowView *v=c->view;
+    struct AESRect *r=&v->change;
+    struct AESRequest *q=&c->request;
+    UWORD i=0;
+    if (left<v->work.left) left=v->work.left;
+    if (top<v->work.top) top=v->work.top;
+    if (right>v->work.right) right=v->work.right;
+    if (bottom>v->work.bottom) bottom=v->work.bottom;
+    if (left>=right || top>=bottom) return;
+    while (i<q->paintCount) {
+        struct AESPaintReport *p=&q->paints[i];
+        if (p->handle==v->handle && left<p->rect.right && right>p->rect.left &&
+            top<p->rect.bottom && bottom>p->rect.top)
+            *p=q->paints[--q->paintCount];
+        else ++i;
+    }
+    if (!v->changed) {
+        r->left=left;r->top=top;r->right=right;r->bottom=bottom;v->changed=1;
+    } else {
+        if (left<r->left) r->left=left;
+        if (top<r->top) r->top=top;
+        if (right>r->right) r->right=right;
+        if (bottom>r->bottom) r->bottom=bottom;
+    }
+}
+
+/* The caller promises complete pixels inside this clip. A journal miss only
+ * loses cache eligibility; it must not turn a successful GEM paint into error. */
+WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct AESWindowView *v;
+    UWORD i;
+    LONG right=(LONG)x+width,bottom=(LONG)y+height,l,t,r,b;
+    if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
+    if (c->request.paintFailed || c->diagnostic!=AES_OK) {
+        c->request.paintFailed=1;return 0;
+    }
+    if (width<=0 || height<=0) return 1;
+    for (i=0;i<v->visibleCount && c->request.paintCount<AES_PAINT_REPORTS;++i) {
+        struct AESPaintReport *p;
+        struct AESRect *a=&v->visible[i];
+        l=x>a->left ? x:a->left;t=y>a->top ? y:a->top;
+        r=right<a->right ? right:a->right;b=bottom<a->bottom ? bottom:a->bottom;
+        if (l>=r || t>=b) continue;
+        p=&c->request.paints[c->request.paintCount++];
+        p->handle=window;p->epoch=v->paintEpoch;
+        p->rect.left=l;p->rect.top=t;p->rect.right=r;p->rect.bottom=b;
+    }
+    return 1;
+}
+
 WORD ExecAESDesktop(WORD handle)
 { return wind_set(handle,AES_WF_EXEC_DESKTOP,0,0,0,0); }
 

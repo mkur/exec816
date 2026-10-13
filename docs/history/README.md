@@ -1,5 +1,8 @@
 # Historical records
 
+- [AES and Layers VRAM caching](aes-layers-vram.md): repaint completion,
+  cache implementation progress, validation and memory accounting.
+
 - [Dropdown menu latency](menu-latency.md): bounded label batching, targeted
   damage, menu precedence and matched visible-feedback measurements.
 

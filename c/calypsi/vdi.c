@@ -90,6 +90,18 @@ static BOOL drawing(struct ExecAESContext *c)
 
 /* The update snapshot supplies screen/work clipping even when user clipping
  * is off. No shared Layers traversal, RPC or event wait occurs here. */
+static void changed(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
+{
+    struct ExecVDIWorkstation *w=c->workstation;
+    if (w->clipped) {
+        if (left<w->clip[0]) left=w->clip[0];
+        if (top<w->clip[1]) top=w->clip[1];
+        if (right>(LONG)w->clip[2]+1) right=(LONG)w->clip[2]+1;
+        if (bottom>(LONG)w->clip[3]+1) bottom=(LONG)w->clip[3]+1;
+    }
+    ExecAESChanged(c,left,top,right,bottom);
+}
+
 static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
 {
     struct ExecVDIWorkstation *w=c->workstation;
@@ -118,7 +130,9 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
             status=u->operation==11 ?
                 GemDrawingSolidBorrow(&w->grant,u->left,u->top,u->right,u->bottom,u->fillColor):
                 GemDrawingBorrow(&w->grant,u->left,u->top,u->right,u->bottom,GemVdiPaint,u);
-            if (status!=DISPLAY_OK) { c->diagnostic=AES_DISPLAY_ERROR; return; }
+            if (status!=DISPLAY_OK) {
+                c->request.paintFailed=1;c->diagnostic=AES_DISPLAY_ERROR;return;
+            }
         }
     }
 }
@@ -130,6 +144,7 @@ static void bar(struct ExecAESContext *c,const WORD *points)
     if (l>r) { swap=l; l=r; r=swap; }
     if (t>b) { swap=t; t=b; b=swap; }
     c->workstation->unit.operation=11;
+    changed(c,l,t,r+1,b+1);
     paint(c,l,t,r+1,b+1);
 }
 
@@ -158,9 +173,10 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
         if (!count) break;
         w->unit.count=count; w->unit.x=(WORD)at;
         paint(c,at,top,at+((LONG)count<<3),top+EXEC_VDI_FONT_HEIGHT);
-        if (c->diagnostic!=AES_OK) break;
         at+=(LONG)count<<3;
+        if (c->diagnostic!=AES_OK) break;
     }
+    if (at>x) changed(c,x,top,at,top+EXEC_VDI_FONT_HEIGHT);
 }
 
 /* Parameter counts are checked once at the public call boundary. Caller

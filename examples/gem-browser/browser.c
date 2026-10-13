@@ -256,6 +256,7 @@ static WORD redraw(struct Browser *b,const WORD *damage)
         if (okay && b->dialog==DIALOG_DELETE)
             okay=objc_draw(b->dialogTree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
     }
+    if (okay) okay=ExecAESPainted(b->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++b->paints;
     return okay;

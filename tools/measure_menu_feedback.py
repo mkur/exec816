@@ -44,6 +44,18 @@ class Feedback:
         menus = Menus(s, click, move)
         menus.select('SYS:')
         move(632, 232); s.frames(100)
+        # The shipped Files counter advances only after its complete redraw
+        # and outer END_UPDATE. Observe it outside drawing; pixel equality
+        # alone will become an earlier endpoint when saved pixels are restored.
+        from gem_applications import symbols
+        from colour_desktop_model import FIELDS as D
+        from browser_model import FIELDS as F
+        directory = s.p['output']/'bitmap-console'
+        resident = json.loads((directory/'c-image.json').read_text())['symbols']
+        desk = symbols(b, s.p, directory, 'desktop',
+                       s.number(resident['GEMDesktopChildren'], 4))['GEMDesk']
+        folder = s.number(desk+D['active'], 4)
+        require(folder, 'No active folder for final repaint observation')
         menu = at('DESKMENU', 'menu')
         path = s.p['output']/'menu-feedback.bgra'
 
@@ -82,8 +94,10 @@ class Feedback:
             require(all(reference[i] != reference[i-1] for i in range(4)),
                     'Reference interaction did not change visible pixels: '+kind)
             samples = {name: [] for name, _ in sequence}
+            final_repaint = []
             for iteration in range(self.count):
                 for (name, keys), want in zip(sequence, reference):
+                    before_paint = s.number(folder+F['paints'], 4)
                     start = press(*keys)
                     for _ in range(100):
                         if capture(area) == want:
@@ -92,9 +106,19 @@ class Feedback:
                     else:
                         raise RuntimeError('Menu did not match settled pixels: '+kind+'/'+name)
                     samples[name].append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                    if name == 'close':
+                        for _ in range(100):
+                            if s.number(folder+F['paints'], 4) > before_paint and capture(area) == want:
+                                break
+                            s.frames(1)
+                        else:
+                            raise RuntimeError('No final Files repaint after '+kind+' dismissal')
+                        final_repaint.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
                     s.frames(7+iteration % 5)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
+            self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
+                **distribution(final_repaint))
             print(kind, json.dumps(self.results[kind]), flush=True)
             (s.p['output']/'menu-samples.json').write_text(json.dumps(self.results, indent=2)+'\n')
         if self.load_check:
@@ -149,7 +173,15 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--layout-revision', help='Use recorded native ABI layouts for an older baseline executable')
     args = parser.parse_args()
+    if args.layout_revision:
+        import subprocess
+        import generate_layers, generate_desktop, generate_aes_server
+        for module, name in ((generate_layers, 'layers'), (generate_desktop, 'desktop'),
+                             (generate_aes_server, 'aes-server')):
+            module.ABI = json.loads(subprocess.check_output(
+                ['git', 'show', args.layout_revision+':abi/'+name+'.json'], text=True))
     out = args.output.resolve()
     require(not out.exists(), 'Use a fresh measurement directory')
     require(args.count > 0, 'Positive sample count required')

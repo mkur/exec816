@@ -14,6 +14,7 @@ from test_cooperative import data
 from generate_layers import layout
 
 INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
+               'lib/display/layers-repaint.inc',
                'lib/display/regions.act', 'lib/display/layers.act',
                'lib/display/layers-update.inc', 'tests/programs/layers-damage-checks.inc', 'tools/generate_layers.py',
                'tools/test_layers.py', 'tests/programs/native_layers.act',

@@ -190,6 +190,15 @@ The external flag persists across handoff, exposure and moves. `BeginCopy`,
 damage is empty. Handoff is not evidence that application pixels are valid.
 Deleting and recreating a layer resets the flag.
 
+Layers also retains a separate bounded `pending` repaint region after handoff.
+`ExternalArea` establishes its client extent; `RequirePaint` adds an obligation
+and advances `paintEpoch`. `Painted` subtracts only the supplied completed
+rectangle for the current nonzero epoch. An old epoch, active transaction or
+fragment overflow leaves the obligation intact. `PixelsReady` tests both
+manager damage and pending external paint. These facts alone do not change the
+copy admission rules above. Pending application repaint neither retains a
+transaction nor makes the presenter runnable.
+
 The [resident counter example](../guides/aes-applications.md#counter-example)
 uses this external-paint path. Shell plus two counters consume three layers;
 adding the native panel fills the fourth. Neither delayed redraw delivery nor

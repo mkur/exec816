@@ -10,6 +10,7 @@ USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE DESKGEOMETRY
+USE DESKCACHE
 USE A816MEMORY
 USE HEAPCORE
 
@@ -66,6 +67,10 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   LET view=client.view
   DESKGEOMETRY.Work(client.window.frameKind,@layer.bounds,@work)
+  IF REGIONS.Equal(@layer.bounds,
+      LAYERTYPES.Rect POINTER(@view.bounds))=0 THEN
+    LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
+  FI
   status=REGIONS.Clip(@layer.visible,@work,
       LAYERTYPES.Region POINTER(@view.visibleCount))
   IF status<>LAYERTYPES.OK THEN
@@ -76,6 +81,7 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(@layer.bounds),8)
   A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
   view.shown=layer.shown
+  view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()
 
@@ -90,6 +96,67 @@ PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
       Snapshot(@service.windows(index))
     FI
   OD
+
+RETURN
+
+; Invalidate cached images even when an update has no visible drawing calls.
+PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  client.binding.paintCount=0
+  client.binding.paintFailed=0
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id THEN
+      BEGIN
+        LET window=service.windows(index).window
+        service.windows(index).view.changed=0
+        LAYERS.Touch(@desktop.scene,window.layer)
+        DESKCACHE.Changed(desktop,window)
+      END
+    FI
+  OD
+  SnapshotAll(client)
+
+RETURN
+
+; Caller reports are frozen by the outstanding END reply. No scene token is
+; held while the client draws; only this owner consumes and applies its journal.
+PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
+  BYTE index,report,same,accepted
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  LET request=client.binding
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id THEN
+      BEGIN
+        LET item=@service.windows(index)
+        LET view=item.view
+        LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+        same=(view.paintEpoch=layer.paintEpoch)
+        IF view.changed<>0 THEN
+          LAYERS.RequirePaint(@desktop.scene,layer.id,
+              LAYERTYPES.Rect POINTER(@view.change))
+        FI
+        report=0
+        WHILE same<>0 AND request.paintFailed=0
+            AND report<request.paintCount DO
+          BEGIN
+            LET paint=@request.paints(report)
+            IF paint.handle=view.handle AND paint.epoch=view.paintEpoch THEN
+              accepted=LAYERS.Painted(@desktop.scene,layer.id,layer.paintEpoch,
+                  LAYERTYPES.Rect POINTER(@paint.rect))
+            FI
+          END
+          report==+1
+        OD
+        view.changed=0
+      END
+    FI
+  OD
+  request.paintCount=0
 
 RETURN
 
@@ -175,6 +242,9 @@ PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)
   IF REGIONS.Empty(area)<>0 THEN
     RETURN
   FI
+
+  LET desktop=DESKSTATE.Get()
+  LAYERS.RequirePaint(@desktop.scene,window.layer,area)
 
   LET client=FindRecord(window.id)
   IF client.paintDirty=0 THEN
