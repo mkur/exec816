@@ -1,5 +1,9 @@
 # GEM as a client of an Exec-like kernel
 
+The [menu-switch fix](menu-switch-plan.md) scopes desktop painting to its actual
+window and retains one interaction background across File/View headings. It
+targets idle menu transitions without directory refresh or renderer changes.
+
 The [AES and Layers VRAM design](aes-layers-vram-design.md) joins
 application repaint tracking with Layers-owned cache validity. It starts with
 menu background restoration, then rendered popup reuse and larger client
