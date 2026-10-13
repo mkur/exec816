@@ -14,9 +14,6 @@ BYTE FUNC BeginService(DOSCORE.DosRegistry POINTER registry)
   FSTYPES.Service POINTER service
   BYTE POINTER worker
 
-  registry.mountError=0
-  registry.mountSlot=$ff
-  registry.mountStage=FSTYPES.MOUNT_RESOURCES
   service=FSTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(FSTYPES.Service),
       EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
   IF service=FSTYPES.Service POINTER(0) THEN
@@ -43,40 +40,76 @@ BYTE FUNC BeginService(DOSCORE.DosRegistry POINTER registry)
 
 RETURN(1)
 
-; Start or join service startup, retaining the caller while it waits.
-PUBLIC BYTE FUNC Ensure()
-  DOSCORE.DosRegistry POINTER registry
-  BYTE start
+; Start or join the ordinary boot path or an explicit empty control service.
+BYTE FUNC EnsureMode(BYTE management)
+  BYTE start,wait,attempted
   CARD ticks
 
-  registry=DOSCORE.GetRegistry()
-  start=0
-  EXEC.Forbid()
-  IF registry.stop<>0 THEN
-    registry.error=ERROR_OBJECT_IN_USE
-  ELSEIF registry.state=0 OR ((registry.state=FSTYPES.STATE_FAILED
-      OR registry.state=FSTYPES.STATE_STOPPED)
-      AND registry.worker=BYTE POINTER(0)) THEN
-    IF registry.enabled=0 THEN
-      registry.error=ERROR_DEVICE_NOT_MOUNTED
-    ELSE
-      registry.state=FSTYPES.STATE_STARTING
-      start=1
-    FI
-  FI
+  LET registry=DOSCORE.GetRegistry()
+  attempted=0
+  DO
+    start=0
+    wait=0
+    EXEC.Forbid()
+    IF registry.stop<>0 THEN
+      registry.error=ERROR_OBJECT_IN_USE
+    ELSEIF attempted<>0 AND registry.state<>FSTYPES.STATE_STARTING
+        AND registry.state<>FSTYPES.STATE_READY THEN
+      EXEC.Permit()
+      RETURN(0)
+    ELSEIF registry.state=FSTYPES.STATE_STARTING THEN
+      IF management=0 THEN
+        attempted=1
+      FI
 
-  EXEC.Permit()
-  IF start<>0 THEN
-    IF BeginService(registry)=0 THEN
+      wait=1
+    ELSEIF registry.state=FSTYPES.STATE_READY THEN
+      EXEC.Permit()
+      RETURN(1)
+    ELSEIF registry.worker<>NULL THEN
+      wait=management
+    ELSEIF registry.state=0 OR registry.state=FSTYPES.STATE_FAILED
+        OR registry.state=FSTYPES.STATE_STOPPED THEN
+      IF management<>0 AND registry.state<>FSTYPES.STATE_STOPPED THEN
+        registry.enabled=0
+        registry.management=1
+      FI
+
+      IF registry.enabled=0 AND registry.management=0 THEN
+        registry.error=ERROR_DEVICE_NOT_MOUNTED
+      ELSE
+        registry.state=FSTYPES.STATE_STARTING
+        start=1
+      FI
+    FI
+
+    EXEC.Permit()
+    IF start<>0 THEN
+      attempted=1
+      IF BeginService(registry)=0 THEN
+        RETURN(0)
+      FI
+
+      wait=1
+    FI
+
+    IF wait=0 THEN
       RETURN(0)
     FI
-  FI
 
-  WHILE registry.state=FSTYPES.STATE_STARTING DO
     ticks=EXECTASKS.Sleep(1)
   OD
 
-RETURN(registry.state=FSTYPES.STATE_READY AND registry.stop=0)
+RETURN(0)
+
+PUBLIC BYTE FUNC Ensure()
+
+RETURN(EnsureMode(0))
+
+; A management caller may recover from a failed boot set without retrying it.
+PUBLIC BYTE FUNC EnsureManagement()
+
+RETURN(EnsureMode(1))
 
 ; Busy stop leaves publication unchanged. Quiesce separately stops new opens
 ; while allowing clients to drain existing objects and accepted packets.

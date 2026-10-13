@@ -86,7 +86,7 @@ PUBLIC TYPE Service=[
   BYTE FUNC POINTER resolveReady(BYTE POINTER raw)
   BYTE committing,changed,missing,namespacePhase
   BYTE POINTER mutation
-  BYTE mountStage
+  BYTE mountStage,newResources
 ]
 
 PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,

@@ -130,7 +130,7 @@ BYTE FUNC Workspace(FSTYPES.Service POINTER service)
   LET specs=FSTYPES.Spec POINTER(registry.config)
   writable=0
   FOR index=0 TO service.count-1 DO
-    IF FSREGISTRY.Enabled(index)<>0 THEN
+    IF FSREGISTRY.Enabled(index)<>0 AND specs(index).format<>FSFORMATS.RAM THEN
       writable=writable OR specs(index).access
     FI
   OD
@@ -146,6 +146,60 @@ BYTE FUNC Workspace(FSTYPES.Service POINTER service)
   service.operation.work=service.work
 
 RETURN(1)
+
+; Acquire disk resources only when this mount needs them.
+PUBLIC BYTE FUNC MountResources(FSTYPES.Service POINTER service
+    FSTYPES.Spec POINTER spec)
+
+  service.newResources=0
+  IF spec.format=FSFORMATS.RAM THEN
+    RETURN(1)
+  FI
+
+  IF service.adapter=NULL THEN
+    service.adapter=BLOCKIO.Create()
+    IF service.adapter=NULL THEN
+      RETURN(0)
+    FI
+
+    service.newResources=1
+    IF FSBACKEND.CreateWork(service.work)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF spec.access<>0 AND service.mutation=NULL THEN
+    service.mutation=EXEC.AllocMem(SIZEOF(FSWTYPES.State),
+        EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR)
+    IF service.mutation=NULL THEN
+      RETURN(0)
+    FI
+
+    service.newResources=service.newResources OR 2
+  FI
+
+RETURN(1)
+
+; Failed admission releases only resources acquired for that candidate.
+PUBLIC PROC RollbackResources(FSTYPES.Service POINTER service)
+
+  IF (service.newResources & 2)<>0 THEN
+    EXEC.FreeMem(service.mutation,SIZEOF(FSWTYPES.State))
+    service.mutation=NULL
+  FI
+
+  IF (service.newResources & 1)<>0 THEN
+    FSBACKEND.DestroyWork(service.work)
+    IF BLOCKIO.Destroy(service.adapter)=0 THEN
+      HEAPCORE.Abort($ff94)
+    FI
+
+    service.adapter=NULL
+  FI
+
+  service.newResources=0
+
+RETURN
 
 ; Reserve the worker's request/cancellation signals and management port.
 BYTE FUNC Arrival(FSTYPES.Service POINTER service)
@@ -318,7 +372,10 @@ PUBLIC BYTE FUNC MountStep(BYTE POINTER raw)
   LET service=FSTYPES.Service POINTER(raw)
   service.error=ERROR_NO_FREE_STORE
   service.mountStage=BLOCKTYPES.ADMIT_ALLOCATE
-  IF AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
+  LET registry=DOSCORE.GetRegistry()
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  IF MountResources(service,@specs(service.index))=0 OR
+      AllocateMount(service)=0 OR AllocateBlock(service)=0 THEN
     RETURN(Failed(service))
   FI
 
@@ -369,6 +426,7 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
     RETURN(Failed(service))
   FI
 
+  service.newResources=0
   service.selected.writable=service.selected.spec.access
   BEGIN
     LET registry=DOSCORE.GetRegistry()
@@ -410,6 +468,7 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service)
   DestroyMount(service,service.mounts(service.index).item)
   service.mounts(service.index).item=NULL
   service.selected=NULL
+  RollbackResources(service)
 
 RETURN(FSPACKET.Error(service,error))
 
