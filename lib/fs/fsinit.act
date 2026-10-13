@@ -19,6 +19,7 @@ USE FSBACKEND
 USE FSBTYPES
 USE FSWTYPES
 USE FSFORMATS
+USE FSDISCOVER
 INCLUDE "../dos/dos-types.inc"
 
 ; Reject conflicting mount descriptors before allocating or opening devices.
@@ -79,6 +80,14 @@ BYTE FUNC Config(FSTYPES.Service POINTER service)
               spec.unit<>0 OR spec.profile<>0 OR spec.sectors<>0 OR
               spec.dataBytes<>0 OR spec.boot<>0 OR spec.access<>1 OR spec.backend<>0 OR
               FSSYSTEM.Selected(index)<>0 THEN
+            service.error=ERROR_BAD_NUMBER
+            RETURN(0)
+          FI
+        ELSEIF spec.sectors=0 AND spec.dataBytes=0 THEN
+          IF spec.backend<>BLOCKTYPES.BACKEND_SIO OR spec.boot<>1 OR
+              unit<49 OR unit>56 OR (spec.profile<>EXEC.SIO_PROFILE_FASTEST125
+                  AND spec.profile<>EXEC.SIO_PROFILE_STOCK810
+                  AND spec.profile<>EXEC.SIO_PROFILE_GENERIC57600) THEN
             service.error=ERROR_BAD_NUMBER
             RETURN(0)
           FI
@@ -243,6 +252,7 @@ BYTE FUNC AllocateMount(FSTYPES.Service POINTER service)
   FI
 
   service.selected=mount
+  service.mountOwned=1
   service.mounts(service.index).item=mount
   specs=FSTYPES.Spec POINTER(registry.config)
   A816MEMORY.Move(BYTE POINTER(@mount.spec),BYTE POINTER(@specs(service.index)),
@@ -398,6 +408,14 @@ BYTE FUNC OpenedStep(BYTE POINTER raw)
     RETURN(Failed(service))
   FI
 
+  IF service.selected.spec.format<>FSFORMATS.RAM AND
+      service.selected.spec.sectors=0 AND
+      service.selected.spec.backend=BLOCKTYPES.BACKEND_SIO THEN
+    IF FSDISCOVER.Run(service)=0 THEN
+      RETURN(Failed(service))
+    FI
+  FI
+
   service.mountStage=FSTYPES.MOUNT_RECOGNIZE
   service.work.volume=service.selected.volume
   LET status=FSBACKEND.BeginMount(service.work)
@@ -407,6 +425,10 @@ BYTE FUNC OpenedStep(BYTE POINTER raw)
   FI
 
   service.nextStep=@MountedStep
+  IF service.selected.discovery.source<>FSDISCOVER.CONFIGURED AND
+      status=FSSTATUS.NEED_IO AND service.work.neededSector=1 THEN
+    RETURN(FSSTATUS.MORE)
+  FI
 
 RETURN(status)
 
@@ -427,6 +449,7 @@ BYTE FUNC MountedStep(BYTE POINTER raw)
   FI
 
   service.newResources=0
+  service.mountOwned=0
   service.selected.writable=service.selected.spec.access
   BEGIN
     LET registry=DOSCORE.GetRegistry()
@@ -465,12 +488,23 @@ BYTE FUNC Failed(FSTYPES.Service POINTER service)
   FI
 
   LET error=service.error
-  DestroyMount(service,service.mounts(service.index).item)
-  service.mounts(service.index).item=NULL
+  IF service.mountOwned<>0 THEN
+    DestroyMount(service,service.selected)
+    service.mounts(service.index).item=NULL
+    service.mountOwned=0
+  FI
+
   service.selected=NULL
   RollbackResources(service)
 
 RETURN(FSPACKET.Error(service,error))
+
+; Cancel only the unpublished candidate owned by this mount operation.
+PUBLIC BYTE FUNC CancelMount(FSTYPES.Service POINTER service)
+
+  service.error=ERROR_BREAK
+
+RETURN(Failed(service))
 
 ; Capture the causal failure before startup/remount frees its private records.
 PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
@@ -495,6 +529,10 @@ PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
   registry.failureBytes=0
   registry.failureBackend=0
   registry.failureUnit=0
+  registry.failureSource=0
+  registry.failureReason=0
+  A816MEMORY.Clear(registry.failureStatus,4)
+  A816MEMORY.Clear(registry.failurePercom,12)
   IF spec<>NULL THEN
     registry.mountSlot=service.index
     FOR index=0 TO 31 DO
@@ -511,6 +549,12 @@ PUBLIC PROC RecordFailure(FSTYPES.Service POINTER service)
     registry.failureBytes=spec.dataBytes
     registry.failureBackend=spec.backend
     registry.failureUnit=BYTE(FSSYSTEM.Unit(spec,service.index))
+    IF service.selected<>NULL THEN
+      registry.failureSource=service.selected.discovery.source
+      registry.failureReason=service.selected.discovery.reason
+      A816MEMORY.Move(registry.failureStatus,service.selected.discovery.status,4)
+      A816MEMORY.Move(registry.failurePercom,service.selected.discovery.percom,12)
+    FI
   FI
 
   registry.mountStage=service.mountStage

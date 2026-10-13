@@ -9,10 +9,16 @@ USE FSREGISTRY
 USE FSMANAGER
 USE FSINSPECT
 USE HEAPCORE
+USE FSDISCOVER
+USE A816MEMORY
 
 CARD checks
 BYTE finished,scenario
 LONGINT expected
+BYTE fallback,format
+CARD serviceBytes,mountBytes
+FSTYPES.Spec decodeSpec
+FSTYPES.Discovery decodeReport
 BYTE ARRAY buffer(64)
 FSINSPECT.Failure failure
 
@@ -31,7 +37,7 @@ PROC Registry(BYTE unused)
 
   LET baseline=EXEC.AvailMem(0)
   LET registry=DOSCORE.GetRegistry()
-  Require(SIZEOF(DOSCORE.DosRegistry)=576 AND SIZEOF(FSTYPES.Spec)=46)
+  Require(SIZEOF(DOSCORE.DosRegistry)=594 AND SIZEOF(FSTYPES.Spec)=46)
   Require(registry.count=9 AND registry.bootCount=2 AND registry.defined=3)
   LET file=DOS.Open(BYTE POINTER(c"D2:TOOLS/SUB/DATA.BIN"),DOS.MODE_OLDFILE)
   Require(file<>NULL)
@@ -145,9 +151,110 @@ PROC Recovery(BYTE unused)
 
 RETURN
 
+; Reset a conventional single-density PERCOM response for decoder cases.
+PROC PrepareGeometry(BYTE unused)
+
+  A816MEMORY.Clear(BYTE POINTER(@decodeSpec),SIZEOF(FSTYPES.Spec))
+  A816MEMORY.Clear(BYTE POINTER(@decodeReport),SIZEOF(FSTYPES.Discovery))
+  decodeSpec.unit=50
+  decodeSpec.profile=1
+  decodeSpec.boot=1
+  decodeSpec.format=1
+  decodeReport.percom(0)=40
+  decodeReport.percom(3)=18
+  decodeReport.percom(7)=128
+
+RETURN
+
+; Assert the emitted decoder's parameters and rejection boundaries.
+PROC Geometry(BYTE unused)
+
+  PrepareGeometry(0)
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)<>0)
+  Require(decodeSpec.sectors=720 AND decodeSpec.dataBytes=128 AND decodeReport.source=1)
+  PrepareGeometry(0)
+  decodeReport.status(0)=$20
+  decodeReport.percom(5)=4
+  decodeReport.percom(6)=1
+  decodeReport.percom(7)=0
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)<>0 AND decodeSpec.dataBytes=256)
+  decodeReport.percom(0)=80
+  decodeReport.percom(4)=1
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)<>0 AND decodeSpec.sectors=2880)
+  decodeSpec.profile=EXEC.SIO_PROFILE_STOCK810
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_PROFILE)
+  PrepareGeometry(0)
+  decodeReport.status(0)=$80
+  decodeReport.percom(3)=26
+  decodeReport.percom(5)=4
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)<>0 AND decodeSpec.sectors=1040)
+  decodeReport.percom(3)=18
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_DENSITY)
+  PrepareGeometry(0)
+  decodeReport.percom(0)=0
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_CAPACITY)
+  PrepareGeometry(0)
+  decodeReport.percom(0)=2
+  decodeReport.percom(2)=255
+  decodeReport.percom(3)=255
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_CAPACITY)
+  PrepareGeometry(0)
+  decodeReport.percom(4)=2
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_CAPACITY)
+  PrepareGeometry(0)
+  decodeReport.percom(6)=2
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_SIZE)
+  PrepareGeometry(0)
+  decodeReport.status(0)=$20
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,1)=0 AND decodeReport.reason=FSDISCOVER.BAD_DENSITY)
+  PrepareGeometry(0)
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,0)<>0 AND decodeSpec.sectors=720 AND decodeReport.source=2)
+  decodeReport.status(0)=$80
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,0)<>0 AND decodeSpec.sectors=1040)
+  decodeReport.status(0)=$20
+  Require(FSDISCOVER.Decode(@decodeSpec,@decodeReport,0)=0 AND decodeReport.reason=FSDISCOVER.NO_FALLBACK)
+
+RETURN
+
+; Mount one disk whose definition supplies no geometry.
+PROC Discovery(BYTE unused)
+
+  LET baseline=EXEC.AvailMem(0)
+  LET registry=DOSCORE.GetRegistry()
+  LET ram=DOS.Lock(BYTE POINTER(c"RAM:"),DOS.SHARED_LOCK)
+  Require(ram<>NULL)
+  LET specs=FSTYPES.Spec POINTER(registry.config)
+  specs(5).alias(0)='N
+  specs(5).alias(1)='E
+  specs(5).alias(2)='W
+  specs(5).unit=50
+  specs(5).profile=IF fallback<>0 THEN EXEC.SIO_PROFILE_STOCK810 ELSE 1 FI
+  specs(5).boot=1
+  specs(5).format=format
+  registry.defined=registry.defined OR 32
+  Require(FSMANAGER.Mount(5)<>0)
+  LET service=FSREGISTRY.Service()
+  LET mount=service.mounts(5).item
+  Require(mount.spec.sectors=720 AND mount.spec.dataBytes=128)
+  Require(mount.discovery.source=IF fallback<>0 THEN 2 ELSE 1 FI)
+  Require(mount.block.sectors=720 AND mount.block.dataBytes=128)
+  Require(specs(5).sectors=0 AND specs(5).dataBytes=0)
+  Require(FSMANAGER.Unmount(5)<>0)
+  DOS.UnLock(ram)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+
 PROC Main()
 
-  IF scenario=3 THEN
+  serviceBytes=SIZEOF(FSTYPES.Service)
+  mountBytes=SIZEOF(FSTYPES.Mount)
+  IF scenario=4 THEN
+    Geometry(0)
+  ELSEIF scenario=5 THEN
+    Discovery(0)
+  ELSEIF scenario=3 THEN
     Recovery(0)
   ELSEIF scenario=1 THEN
     Empty(0)

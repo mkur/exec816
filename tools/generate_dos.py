@@ -178,7 +178,7 @@ def reserve_metadata(memory,capacity):
     stream_bytes=ABI['streams']['slots']*ABI['streams']['slot_bytes']
     require(ABI['streams']==dict(slots=4,slot_bytes=16),'Invalid stream registry capacity')
     service_bytes=ABI['registry_storage']['service_bytes']
-    require(ABI['registry_storage']==dict(mount_slots=9,spec_bytes=46,service_bytes=576),'Invalid DOS registry reservation')
+    require(ABI['registry_storage']==dict(mount_slots=9,spec_bytes=46,service_bytes=594),'Invalid DOS registry reservation')
     require(shared+service_bytes+stream_bytes<=(memory['constants']['KERNEL_BANK']+1)*65536,'DOS service metadata exceeds kernel bank')
     memory['upper_reservations'].append(dict(name='dos-service',address=shared,size=service_bytes))
     streams=shared+service_bytes

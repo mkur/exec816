@@ -5,7 +5,7 @@
 [Implementation plan](../plans/user-sio-mounts-implementation-plan.md) ·
 [Compact evidence](../development/user-sio-mounts.json)
 
-Status: UM0–UM1 implemented at the development tier; UM2–UM5 pending. Public user
+Status: UM0–UM2 implemented at the development tier; UM3–UM5 pending. Public user
 mount commands are not available yet.
 
 ## UM0 registry and saved definitions
@@ -52,3 +52,33 @@ registry/remount (17), and failed-boot retirement/recovery (10). Final cases
 reuse one checked emitted build with explicit boot-descriptor stimuli; the runner
 rejects stale production inputs. Guard, ownership and unchanged-media checks
 passed. The recovery case found and verifies the bounded startup-attempt fix.
+
+## UM2 bounded disk discovery
+
+New SIO definitions issue READ sector 1 (128 bytes), STATUS (four bytes) and
+PERCOM GET (12 bytes) on one opened binding through the existing queued,
+cancellable transfer boundary. The retained boot sector feeds SpartaDOS
+admission directly; MyDOS reads its VTOC afterwards. RAM and known boot geometry
+skip discovery. Only a clean PERCOM NAK permits the conventional 720/1,040-sector
+STATUS fallback; malformed or contradictory reports and transport failures
+remain failures. No admission command writes to disk.
+
+The upper registry reserves 594 bytes, 18 more than UM0/UM1, for copied raw
+STATUS/PERCOM observations and their source/reason. Emitted upper-heap records
+are 468 bytes for the service and 96 for each mount; the heap rounds the service
+to 472 bytes. Discovery reuses the existing transfer buffer and request, with
+no additional sector buffer, Task or bank-zero reservation. Fixed, per-Task and
+private-idle bank-zero deltas are all zero.
+
+Development checks: 469 host cases, 15 optimized emitted decoder assertions,
+and nine assertions each for real MyDOS, SpartaDOS and stock-810 PERCOM fallback.
+The pinned observer verifies READ → STATUS → PERCOM wire order, one subsequent
+MyDOS VTOC read, no second SpartaDOS boot-sector read and no writes. Focused
+registry, failed boot recovery and lazy-resource rollback remain covered.
+Stack/domain guards, final ownership and unchanged media are checked by the
+runner. These cases do not establish stock-XF551 or physical-drive compatibility.
+
+A fastest-profile file-read failure exposed missing pinned disk timing settings
+in the new runner. Applying the pin's actual configuration fixes the regression;
+the final discovery and read/remount cases use those settings. The unchanged
+UM1 emission was also replayed as an isolation check; no driver code changed.

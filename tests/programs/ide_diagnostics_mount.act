@@ -30,7 +30,7 @@ RETURN
 PROC Main()
 
   LET before=EXEC.AvailMem(0)
-  Require(SIZEOF(DOSCORE.DosRegistry)=576 AND SIZEOF(FSINSPECT.Info)*9<=512)
+  Require(SIZEOF(DOSCORE.DosRegistry)=594 AND SIZEOF(FSINSPECT.Info)*9<=512)
   Require(FSINSPECT.LastFailure(@failure)=0)
   LET lock=DOS.Lock(BYTE POINTER(c"IDE:"),DOS.SHARED_LOCK)
   LET error=DOS.IoErr()

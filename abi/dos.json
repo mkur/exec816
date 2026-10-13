@@ -1186,6 +1186,6 @@
   "registry_storage": {
     "mount_slots": 9,
     "spec_bytes": 46,
-    "service_bytes": 576
+    "service_bytes": 594
   }
 }

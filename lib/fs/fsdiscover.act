@@ -1,0 +1,180 @@
+; Read-only disk discovery before logical block geometry is admitted.
+MODULE FSDISCOVER
+USE EXEC
+USE FSTYPES
+USE DOSCORE
+USE BLOCKIO
+USE BLOCKWIRE
+USE BLOCKTRANSPORT
+USE FSACTIVE
+USE FSIO
+USE A816MEMORY
+INCLUDE "../dos/dos-types.inc"
+
+PUBLIC CONST CONFIGURED=0, PERCOM=1, STATUS=2
+PUBLIC CONST BAD_SIZE=1, BAD_DENSITY=2, BAD_CAPACITY=3, BAD_LENGTH=4,
+    NO_FALLBACK=5, BAD_PROFILE=6
+
+; Multibyte PERCOM fields use the drive's big-endian convention.
+CARD FUNC Word(BYTE POINTER bytes BYTE offset)
+
+RETURN((CARD(bytes(offset)) LSH 8) OR CARD(bytes(offset+1)))
+
+; Decode into the candidate only after all disk parameters agree.
+PUBLIC BYTE FUNC Decode(FSTYPES.Spec POINTER spec
+    FSTYPES.Discovery POINTER report BYTE supported)
+  CARD size,sectors,sides
+  LONGCARD count
+  BYTE density
+
+  report.reason=0
+  IF supported<>0 THEN
+    size=Word(report.percom,6)
+    sectors=Word(report.percom,2)
+    sides=CARD(report.percom(4))+1
+    density=report.percom(5)
+    IF size<>128 AND size<>256 THEN
+      report.reason=BAD_SIZE
+      RETURN(0)
+    FI
+
+    IF report.percom(0)=0 OR sectors=0 OR sides>2 THEN
+      report.reason=BAD_CAPACITY
+      RETURN(0)
+    FI
+
+    count=LONGCARD(report.percom(0))*LONGCARD(sectors)*LONGCARD(sides)
+    IF count=0 OR count>LONGCARD($ffff) THEN
+      report.reason=BAD_CAPACITY
+      RETURN(0)
+    FI
+
+    IF (density<>0 AND density<>4) OR
+        (size=256 AND (density<>4 OR (report.status(0) & $20)=0)) OR
+        (size=128 AND (report.status(0) & $20)<>0) OR
+        ((report.status(0) & $80)<>0 AND (size<>128 OR sectors<>26
+            OR density<>4)) OR (density=4 AND size=128
+            AND (report.status(0) & $80)=0) THEN
+      report.reason=BAD_DENSITY
+      RETURN(0)
+    FI
+
+    report.source=PERCOM
+  ELSE
+    IF (report.status(0) & $20)<>0 THEN
+      report.reason=NO_FALLBACK
+      RETURN(0)
+    FI
+
+    size=128
+    count=720
+    IF (report.status(0) & $80)<>0 THEN
+      count=1040
+    FI
+
+    report.source=STATUS
+  FI
+
+  IF BLOCKIO.Geometry(spec.backend,spec.unit,spec.profile,count,size,1,1)=0 THEN
+    report.reason=BAD_PROFILE
+    RETURN(0)
+  FI
+
+  spec.sectors=count
+  spec.dataBytes=size
+
+RETURN(1)
+
+; Borrow the opened unit for exactly one queued transaction and collect it.
+INT FUNC Read(FSTYPES.Service POINTER service BYTE command,aux
+    BYTE POINTER buffer CARD length)
+  INT result
+
+  LET adapter=service.adapter
+  LET binding=service.selected.block.request
+  LET request=EXEC.IOSIOReq POINTER(adapter.request)
+  adapter.valid=0
+  adapter.cached=NULL
+  adapter.busy=1
+  request.io_Device=binding.io_Device
+  request.io_Unit=binding.io_Unit
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Flags=0
+  request.io_Offset=0
+  request.io_Data=buffer
+  request.io_Length=LONGCARD(length)
+  request.io_Actual=0
+  request.sio_Profile=service.selected.spec.profile
+  request.sio_Command=command
+  request.sio_Direction=EXEC.SIODIR_READ
+  request.sio_Aux1=aux
+  request.sio_Aux2=0
+  request.sio_TimeoutUS=0
+  result=BLOCKWIRE.Transfer(adapter.request,DOSCORE.GetRegistry(),
+      FSACTIVE.CurrentScope(service))
+  IF result=0 AND request.io_Actual<>LONGCARD(length) THEN
+    result=EXEC.IOERR_BADLENGTH
+    service.selected.discovery.reason=BAD_LENGTH
+  FI
+
+  request.io_Device=NULL
+  request.io_Unit=NULL
+  request.io_Data=NULL
+  request.io_Length=0
+  adapter.busy=0
+
+RETURN(result)
+
+; Preserve the boot sector in the first 128 scratch bytes through all probes.
+PUBLIC BYTE FUNC Run(FSTYPES.Service POINTER service)
+  INT result
+  BYTE supported
+
+  LET mount=service.selected
+  LET report=@mount.discovery
+  LET scratch=service.adapter.buffer
+  service.work.volume=mount.volume
+  service.mountStage=FSTYPES.MOUNT_BOOT_READ
+  result=Read(service,$52,1,scratch,128)
+  IF result=0 THEN
+    service.mountStage=FSTYPES.MOUNT_STATUS
+    result=Read(service,$53,0,BYTE POINTER(ADDRESS(scratch)+SIZE(128)),4)
+    IF result=0 THEN
+      A816MEMORY.Move(report.status,BYTE POINTER(ADDRESS(scratch)+SIZE(128)),4)
+      service.mountStage=FSTYPES.MOUNT_PERCOM
+      result=Read(service,$4e,0,BYTE POINTER(ADDRESS(scratch)+SIZE(132)),12)
+    FI
+  FI
+
+  supported=1
+  IF result=EXEC.SIOERR_NAK AND service.mountStage=FSTYPES.MOUNT_PERCOM THEN
+    supported=0
+    result=0
+  FI
+
+  IF result<>0 THEN
+    service.error=LONGINT(result)
+    service.work.ioError=service.error
+    IF BLOCKTRANSPORT.Unavailable(mount.block)<>0 THEN
+      FSIO.Offline(service)
+    FI
+
+    RETURN(0)
+  FI
+
+  IF supported<>0 THEN
+    A816MEMORY.Move(report.percom,BYTE POINTER(ADDRESS(scratch)+SIZE(132)),12)
+  FI
+
+  service.mountStage=FSTYPES.MOUNT_DISCOVERY
+  IF Decode(@mount.spec,report,supported)=0 THEN
+    service.error=ERROR_NOT_A_DOS_DISK
+    RETURN(0)
+  FI
+
+  mount.block.sectors=mount.spec.sectors
+  mount.block.dataBytes=mount.spec.dataBytes
+
+RETURN(1)
+
+ENDMODULE

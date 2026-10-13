@@ -6,6 +6,7 @@ USE DOSOBJECTS
 USE BLOCKTYPES
 USE FSBTYPES
 PUBLIC CONST MOUNT_CONFIG=1, MOUNT_RESOURCES=2, MOUNT_RECOGNIZE=10, MOUNT_READ=11
+PUBLIC CONST MOUNT_BOOT_READ=12, MOUNT_STATUS=13, MOUNT_PERCOM=14, MOUNT_DISCOVERY=15
 INCLUDE "../dos/dos-packets.inc"
 
 PUBLIC TYPE Spec=[
@@ -16,8 +17,14 @@ PUBLIC TYPE Spec=[
   BYTE boot,format,access,backend
 ]
 
+PUBLIC TYPE Discovery=[
+  BYTE source,reason
+  BYTE ARRAY status(4),percom(12)
+]
+
 PUBLIC TYPE Mount=[
   Spec spec
+  Discovery discovery
   BLOCKTYPES.Volume POINTER block
   FSBTYPES.Volume POINTER volume
   EXEC.MsgPort POINTER port
@@ -86,7 +93,7 @@ PUBLIC TYPE Service=[
   BYTE FUNC POINTER resolveReady(BYTE POINTER raw)
   BYTE committing,changed,missing,namespacePhase
   BYTE POINTER mutation
-  BYTE mountStage,newResources
+  BYTE mountStage,newResources,mountOwned
 ]
 
 PUBLIC CONST STATE_STARTING=1, STATE_READY=2, STATE_STOPPING=3, STATE_STOPPED=4,

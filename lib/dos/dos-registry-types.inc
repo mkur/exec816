@@ -21,4 +21,6 @@ PUBLIC TYPE DosRegistry=[
   LONGCARD failureSectors
   CARD failureBytes
   BYTE failureBackend,failureUnit
+  BYTE failureSource,failureReason
+  BYTE ARRAY failureStatus(4),failurePercom(12)
 ]

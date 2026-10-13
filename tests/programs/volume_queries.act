@@ -30,7 +30,7 @@ PROC Main()
 
   baseline=EXEC.AvailMem(0)
   LET registry=DOSCORE.GetRegistry()
-  Require(SIZEOF(DOSCORE.DosRegistry)=576 AND SIZEOF(FSTYPES.Spec)=46)
+  Require(SIZEOF(DOSCORE.DosRegistry)=594 AND SIZEOF(FSTYPES.Spec)=46)
   Require(registry.bootCount=1 AND registry.count=9 AND registry.defined=1
       AND registry.bootDefinitions=1 AND registry.enabled=1)
   Require(registry.config=ADDRESS(@registry.definitions(0)))

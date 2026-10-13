@@ -22,6 +22,8 @@ PUBLIC BYTE FUNC Dispatch(BYTE POINTER raw)
   service.packet.sp_Pkt.dp_Res2=0
   service.work.error=0
   service.work.ioError=0
+  service.mountOwned=0
+  service.newResources=0
   service.nextStep=@SelectStep
 
 RETURN(FSSTATUS.MORE)

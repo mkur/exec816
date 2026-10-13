@@ -20,6 +20,8 @@ PUBLIC TYPE Failure=[
   LONGCARD sectors
   CARD bytes
   BYTE slot,stage,backend,unit
+  BYTE source,reason
+  BYTE ARRAY status(4),percom(12)
 ]
 
 ; The registry retains failed mount identity after the worker frees its state.
@@ -39,6 +41,10 @@ PUBLIC BYTE FUNC LastFailure(Failure POINTER info)
     info.bytes=registry.failureBytes
     info.backend=registry.failureBackend
     info.unit=registry.failureUnit
+    info.source=registry.failureSource
+    info.reason=registry.failureReason
+    A816MEMORY.Move(info.status,registry.failureStatus,4)
+    A816MEMORY.Move(info.percom,registry.failurePercom,12)
   FI
 
   EXEC.Permit()
