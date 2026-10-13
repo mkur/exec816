@@ -58,6 +58,13 @@ class Feedback:
         require(folder, 'No active folder for final repaint observation')
         menu = at('DESKMENU', 'menu')
         path = s.p['output']/'menu-feedback.bgra'
+        cache_fields = ('captures','restores','misses','capturedBytes','restoredBytes')
+        cache_at = {name: next((d['address'] for d in s.p['image']['data']
+                    if '_DESKMENUCACHE_'+name.upper()+'_' in d['name']), None)
+                    for name in cache_fields}
+        def cache_counts():
+            return {name: s.number(address, 4) for name, address in cache_at.items()
+                    if address is not None}
 
         def capture(area):
             frame = b.rawscreen(str(path)); raw = path.read_bytes()
@@ -95,9 +102,11 @@ class Feedback:
                     'Reference interaction did not change visible pixels: '+kind)
             samples = {name: [] for name, _ in sequence}
             final_repaint = []
+            transfers = {name: [] for name, _ in sequence}
             for iteration in range(self.count):
                 for (name, keys), want in zip(sequence, reference):
                     before_paint = s.number(folder+F['paints'], 4)
+                    before_cache = cache_counts()
                     start = press(*keys)
                     for _ in range(100):
                         if capture(area) == want:
@@ -114,11 +123,14 @@ class Feedback:
                         else:
                             raise RuntimeError('No final Files repaint after '+kind+' dismissal')
                         final_repaint.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                    after_cache = cache_counts()
+                    transfers[name].append({k: after_cache[k]-v for k,v in before_cache.items()})
                     s.frames(7+iteration % 5)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
             self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
                 **distribution(final_repaint))
+            self.results[kind]['transfers'] = transfers
             print(kind, json.dumps(self.results[kind]), flush=True)
             (s.p['output']/'menu-samples.json').write_text(json.dumps(self.results, indent=2)+'\n')
         if self.load_check:

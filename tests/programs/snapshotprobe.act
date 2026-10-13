@@ -76,7 +76,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
 
       DESKCACHE.Pump(service)
       Require(layer.dirty=0)
-      Require(service.snapshots(0).pinned=0 AND service.snapshots(1).pinned=0)
+      Require(service.cache.slots(0).pinned=0 AND service.cache.slots(1).pinned=0)
       IF command=1 OR command=5 THEN
         Require(DESKCACHE.Lookup(service,window,528,184)<>255)
       ELSE
@@ -87,19 +87,19 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
         BEGIN
           LET binding=CONSOLEBITMAP.GetBinding()
           binding.failed=0
-          service.snapshots(0).pinned=1
-          service.snapshots(1).pinned=1
+          service.cache.slots(0).pinned=1
+          service.cache.slots(1).pinned=1
           Require(DESKCACHE.Choose(service)=255)
-          service.snapshots(0).pinned=0
-          service.snapshots(1).pinned=0
-          service.snapshots(0).valid=1
-          service.snapshots(1).valid=1
-          service.cacheRecent=1
+          service.cache.slots(0).pinned=0
+          service.cache.slots(1).pinned=0
+          service.cache.slots(0).valid=1
+          service.cache.slots(1).valid=1
+          service.cache.recent=1
           Require(DESKCACHE.Choose(service)=0)
-          service.cacheRecent=0
+          service.cache.recent=0
           Require(DESKCACHE.Choose(service)=1)
-          service.snapshots(0).valid=0
-          service.snapshots(1).valid=0
+          service.cache.slots(0).valid=0
+          service.cache.slots(1).valid=0
           window.visualRevision=$ffffffff
           DESKCACHE.Changed(service,window)
           Require(window.visualRevision=0)
@@ -141,8 +141,8 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
     Require(DESKCACHE.Capture(service,window)<>0)
     Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
     Require(LAYERS.Delete(@service.scene,layer.id)=LAYERTYPES.BUSY)
-    index=IF service.snapshots(0).pinned<>0 THEN 0 ELSE 1 FI
-    Require(service.snapshots(index).valid=0)
+    index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI
+    Require(service.cache.slots(index).valid=0)
     Require(DESKCACHE.Choose(service)<>index)
     IF command=3 THEN
       DESKCACHE.Changed(service,window)

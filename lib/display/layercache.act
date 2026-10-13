@@ -1,0 +1,105 @@
+; Fixed caller-owned slots. Pixel transfers and scheduling belong to the owner.
+MODULE LAYERCACHE
+USE LAYERTYPES
+USE REGIONS
+
+PUBLIC CONST NO_SLOT=255
+
+PUBLIC PROC Discard(LAYERTYPES.CacheSlot POINTER slot)
+
+  slot.valid=0
+  slot.revision=0
+
+RETURN
+
+PUBLIC PROC Invalidate(LAYERTYPES.CachePair POINTER cache LONGCARD identity)
+  BYTE index
+
+  FOR index=0 TO 1 DO
+    IF cache.slots(index).identity=identity THEN
+      Discard(@cache.slots(index))
+    FI
+  OD
+
+RETURN
+
+PUBLIC BYTE FUNC Lookup(LAYERTYPES.CachePair POINTER cache LONGCARD identity,
+    revision CARD width,height)
+  BYTE index
+
+  IF revision=0 THEN
+    RETURN(NO_SLOT)
+  FI
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET slot=@cache.slots(index)
+      IF slot.valid<>0 AND slot.pinned=0 AND slot.identity=identity
+          AND slot.revision=revision AND slot.width=width AND slot.height=height THEN
+        RETURN(index)
+      FI
+    END
+  OD
+
+RETURN(NO_SLOT)
+
+PUBLIC BYTE FUNC Choose(LAYERTYPES.CachePair POINTER cache)
+  BYTE index
+
+  FOR index=0 TO 1 DO
+    IF cache.slots(index).pinned=0 AND cache.slots(index).valid=0 THEN
+      RETURN(index)
+    FI
+  OD
+  index=cache.recent XOR 1
+  IF cache.slots(index).pinned=0 THEN
+    RETURN(index)
+  FI
+  index=cache.recent
+  IF cache.slots(index).pinned=0 THEN
+    RETURN(index)
+  FI
+
+RETURN(NO_SLOT)
+
+PUBLIC PROC Prepare(LAYERTYPES.CacheSlot POINTER slot LONGCARD identity,
+    revision CARD width,height)
+
+  slot.valid=0
+  slot.pinned=1
+  slot.identity=identity
+  slot.revision=revision
+  slot.width=width
+  slot.height=height
+
+RETURN
+
+; Invalidation cannot release storage before DMA is quiescent.
+PUBLIC PROC Captured(LAYERTYPES.CacheSlot POINTER slot BYTE okay)
+
+  slot.valid=(okay<>0 AND slot.revision<>0)
+  slot.pinned=0
+
+RETURN
+
+PUBLIC PROC Released(LAYERTYPES.CacheSlot POINTER slot BYTE okay)
+
+  IF okay=0 THEN
+    Discard(slot)
+  FI
+  slot.pinned=0
+
+RETURN
+
+; The overlay's own geometry/paint is excluded from its saved background.
+PUBLIC PROC Changed(LAYERTYPES.SavedArea POINTER save LONGCARD identity
+    LAYERTYPES.Rect POINTER area)
+
+  IF save.slot.revision<>0 AND identity<>save.slot.identity
+      AND area.left<save.bounds.right AND area.right>save.bounds.left
+      AND area.top<save.bounds.bottom AND area.bottom>save.bounds.top THEN
+    Discard(@save.slot)
+  FI
+
+RETURN
+
+ENDMODULE

@@ -5,6 +5,7 @@ USE A816MEMORY
 USE LAYERTYPES
 USE REGIONS
 USE LAYERS
+USE LAYERCACHE
 
 CARD checks,geometryCases
 LAYERTYPES.Region POINTER first,second
@@ -309,6 +310,7 @@ INCLUDE "layers-update-checks.inc"
 INCLUDE "layers-damage-checks.inc"
 INCLUDE "layers-bank-checks.inc"
 INCLUDE "layers-external-checks.inc"
+INCLUDE "layers-save-checks.inc"
 
 PROC Main()
 
@@ -325,6 +327,7 @@ PROC Main()
   DamageTransactions()
   BankCrossing()
   ExternalTransactions()
+  SavedScene()
   scenePhase=50
   FreeGuarded(canvas,768)
   FreeGuarded(model,LAYERTYPES.MAX_LAYERS*768)

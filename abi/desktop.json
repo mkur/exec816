@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -387,32 +387,6 @@
         "INT"
       ]
     ],
-    "Snapshot": [
-      [
-        "window",
-        "LONGCARD"
-      ],
-      [
-        "revision",
-        "LONGCARD"
-      ],
-      [
-        "width",
-        "CARD"
-      ],
-      [
-        "height",
-        "CARD"
-      ],
-      [
-        "valid",
-        "BYTE"
-      ],
-      [
-        "pinned",
-        "BYTE"
-      ]
-    ],
     "Service": [
       [
         "port",
@@ -522,13 +496,8 @@
         "LONGCARD"
       ],
       [
-        "snapshots",
-        "Snapshot",
-        "SNAPSHOTS"
-      ],
-      [
-        "cacheRecent",
-        "BYTE"
+        "cache",
+        "LAYERTYPES.CachePair"
       ]
     ]
   }

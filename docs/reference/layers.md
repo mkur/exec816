@@ -203,3 +203,16 @@ The [resident counter example](../guides/aes-applications.md#counter-example)
 uses this external-paint path. Shell plus two counters consume three layers;
 adding the native panel fills the fourth. Neither delayed redraw delivery nor
 fully covered timer updates make an external layer copy/cache eligible.
+
+## Saved scene rectangles
+
+`BeginSave` stabilizes a completed visible footprint beneath a hidden overlay.
+`BeginRestore` hides that overlay and pins the saved image under post-hide
+visibility. The presenter removes overlays and retires the display transfer
+before `FinishSave`. Successful restore retires only matching manager damage;
+external repaint and normal exposure delivery remain required. An invalid save
+or incomplete capture source returns `REDRAW`. A pin survives invalidation until
+the transfer is complete or the driver has proved quiescence.
+
+`LAYERCACHE` supplies fixed-slot identity/revision, pinning and two-slot eviction
+policy. It owns no display transfers, queue, hardware or application lifetimes.

@@ -676,5 +676,77 @@
         }
       }
     }
+  },
+  "av2": {
+    "functional": "pass",
+    "performance_gate": "open",
+    "bank_zero_delta": {
+      "fixed": 0,
+      "per_public_task": 0,
+      "idle": 0
+    },
+    "fixed_upper_delta": 49,
+    "vram_reserved": 320000,
+    "checks": {
+      "av2-layers": {
+        "path": "build/aes-layers-vram/av2-layers/results.json",
+        "sha256": "e944eecfc0cb86ec910f9ebc79255d56f16333655a624b6fc95df8eae3704c35",
+        "status": "pass",
+        "checks": 60136
+      },
+      "av2-probe-opt": {
+        "path": "build/aes-layers-vram/av2-probe-opt/results.json",
+        "sha256": "e0b81e1a6cb30228b51a80fe2d0320b513ed62a2f1b8914e34089dfc66a71444",
+        "status": "pass",
+        "checks": 105
+      },
+      "av2-probe-raw": {
+        "path": "build/aes-layers-vram/av2-probe-raw/results.json",
+        "sha256": "50978bf4569f4f34a79a49a5f4b4664cce916deb450b09463c1bf77dfaa87c08",
+        "status": "pass",
+        "checks": 105
+      },
+      "av2-final-probe": {
+        "path": "build/aes-layers-vram/av2-final-probe/results.json",
+        "sha256": "8eb06d2749a363ba403b788d1a9a5f87bed2209c08a9273db1ac59540c4878e9",
+        "status": "pass",
+        "checks": 105
+      },
+      "av2-menus": {
+        "path": "build/aes-layers-vram/av2-menus/results.json",
+        "sha256": "5ce5b30272008e9cc0fd3c12e1352fdc51a46c1f672d3ad2a5f34fd54253322f",
+        "status": "pass",
+        "checks": null
+      },
+      "av2-final-cache": {
+        "path": "build/aes-layers-vram/av2-final-cache/results.json",
+        "sha256": "6a8c0cadd1db3abc02bf05d7d5b1293e72a15d5162610fad848858675aa0d55b",
+        "status": "pass",
+        "checks": 53
+      }
+    },
+    "source_sha256": {
+      "abi/desktop.json": "fbd11e69ea975e59f13855f8e152ae26eff3b9891e1e660dc06f05d6233658d3",
+      "abi/layers.json": "456d960851f1797d1d7ed6bf01cecc9266b7db9bdc60a76e03da0e75436d6484",
+      "lib/console/consoledriver.act": "ec375a0263bf7586f160cc6d9f2badd3b02d56e3e3bb4f73648bbb6a4afe27ff",
+      "lib/desktop/deskcache.act": "0d772f64b6e06d00011cd30afd1b8236593cca87b1834ad666177dca4c3a7ac0",
+      "lib/desktop/deskhost.act": "22755de9817400b2509819166f2ab2272e59cadad7463bfe22729237ad4e2997",
+      "lib/desktop/deskmenu.act": "3d200cadaffcce8ff899ec8224f65b6345cbcf8654c826b7daf9d1d342eb1241",
+      "lib/desktop/deskpaint.act": "5efdb24482bb746701bd1826b944bd0e043aca17b26d3ccbc28817ee3ed3c6d0",
+      "lib/desktop/desktypes.act": "3f7cdcbf5c0fa291068a0814577582b766a1176ebc29c77d545fd772e744a320",
+      "lib/display/layers-repaint.inc": "eedc89d333435145c73494fbe7d06e898e186d545561f5b393b01c295f383ab2",
+      "lib/display/layers-update.inc": "e71cff1b4bb7f65356dda6af44d28d68c0e0b3b4b3125486bb05a44422c05f8a",
+      "lib/display/layers.act": "dad99711e96a1a3787fe8a88659739b2cf16fa41e6cbbab5a6e0cb5c067f95e9",
+      "lib/display/layertypes.act": "e92684f05f76f23c486e4ba6e9a28256f9ad48365c494128cb972d1beb785621",
+      "platform/altirraos/vbxe-vram.json": "90e9ef4febeab5a2db305f218aa27700cc4a1023aae76ff0bb4905a48a3fa421",
+      "tools/generate_desktop.py": "f8c90a6f52828adf89172a05bec0030478417b347a70b0bdb5ab3f0255082767",
+      "tools/generate_tasks.py": "1866fba6af14b1f5c07c590cd05afd05e7c1146c12703f01b8fab97fff0785d1",
+      "tools/measure_menu_feedback.py": "9146ea10ecdb1b884fa3fd7a5bdfd0a528d786e4f0aa8750c873c82c586ce594",
+      "tools/test_desktop_cache.py": "5faa20a5362706982fb74bf112f8895819aaae1df13da5144b454458d60684d9",
+      "tools/test_layers.py": "127effe15f00c5ed0f7aecd676cfceab3315ab9fb53ac12e96e8c995a8e6dc2d",
+      "lib/desktop/deskmenucache.act": "3fbc8204ac1484e880252b57b84a89960d8c6bd8129b3df20d0a5bdc6eb9bd21",
+      "lib/display/layercache.act": "dd499d5be5783240156b47346cf09c6f8a143d41938b1a00ea128c33b65387d1",
+      "lib/display/layers-save.inc": "fca14360c61006ffa753c0f02244973858dc4a31f4f5f8b5a1c44060bb3012d2"
+    }
   }
 }

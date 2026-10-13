@@ -14,7 +14,7 @@ from library_paths import read_source
 from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from stack_budget import stack_usage
-from test_desktop_presentation import desktop, frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
@@ -32,7 +32,7 @@ def scene(stage, font):
     terminal.paint(raster, 5, 5, shell_focus)
     panels = []
     if stage < 12:
-        panels.append((0, 3, False))
+        panels.append((0, 3, stage == 11))
     if 2 <= stage < 12:
         panels.append((192, 7 if stage == 11 else 6 if stage >= 9 else 4,
                        4 <= stage <= 10))
@@ -42,6 +42,7 @@ def scene(stage, font):
     for x, pen, focused in panels:
         frame(raster, (x, 0, x+160, 80), b'Cache', focused, pen, close=True)
         text(raster, x+11, 19, b'XYZ', bg=pen)
+    menu_bar(raster, b'Shell' if shell_focus else b'Cache')
     return overlay(raster, (320, 120))
 
 
@@ -59,9 +60,9 @@ def run(out, forced_miss=False, replay=False, production=False):
         require(cache.count(before) == 1, 'Cache observation boundary changed')
         cache = cache.replace(before, after)
     if forced_miss:
-        start = cache.index('  BYTE index', cache.index('PUBLIC BYTE FUNC Lookup'))
-        end = cache.index('; With exactly two slots', start)
-        cache = cache[:start]+'\nRETURN(NO_SLOT)\n\n'+cache[end:]
+        cached = 'RETURN(LAYERCACHE.Lookup(@service.cache,window.id,window.visualRevision,width,height))'
+        require(cache.count(cached) == 1, 'Missing cache lookup boundary')
+        cache = cache.replace(cached, 'RETURN(NO_SLOT)')
     (out/'deskcache.act').write_text(cache)
     p = read_build(out/'program') if replay else build_bitmap(
         ROOT/'tests/programs/desktop_cache.act', out, desktop=True, stack_checks=True)
@@ -98,12 +99,31 @@ def run(out, forced_miss=False, replay=False, production=False):
                     raw = b.memdump(read('DESKSTATE', 'service', 3), structures['Service']['size'])
                     row['slots'] = []
                     for index in range(2):
-                        offset = structures['Service']['fields']['snapshots'] + index*structures['Snapshot']['size']
-                        fields = structures['Snapshot']['fields']
+                        from generate_layers import layout as cache_layout
+                        slot = cache_layout()['CacheSlot']
+                        offset = structures['Service']['fields']['cache'] + index*slot['size']
+                        fields = {**slot['fields'], 'window': slot['fields']['identity']}
                         row['slots'].append({name: int.from_bytes(
                             raw[offset+fields[name]:offset+fields[name]+size], 'little')
                             for name, size in [('window', 4), ('revision', 4), ('valid', 1), ('pinned', 1)]})
                     report['scenes'].append(row)
+                    if stage == 3:
+                        # The Windows footprint spans a command client, shell
+                        # and desktop. A real save/restore must repair all three.
+                        def frames(count):
+                            condition = '@frame>=%d' % (b.eval_expr('@frame')+count)
+                            b.bp_clear_all();b.bp_set(marker, condition=condition)
+                            b.bp_set(p['labels']['done'], condition=adapter.STOPPED)
+                            run_to(b, marker, condition=condition, frame_limit=12000, timeout=180)
+                        captured=read('DESKMENUCACHE','captures')
+                        restored=read('DESKMENUCACHE','restores')
+                        b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY ESC down');frames(3)
+                        b._cmd_ok('KEY ESC up');b._cmd_ok('KEY CTRL up');frames(100)
+                        require(read('DESKMENU','menu',1)==2, 'Native cache menu did not open')
+                        require(read('DESKMENUCACHE','captures')==captured+1, 'Missing composite capture')
+                        b._cmd_ok('KEY ESC down');frames(3);b._cmd_ok('KEY ESC up');frames(100)
+                        require(read('DESKMENUCACHE','restores')==restored+1, 'Missing composite restore')
+                        row['menu_restore_pixels']=pixels(b,directory,scene(stage,font),palette=DESKTOP_PALETTE)
                     previous = clock
                     b.memload(at('CACHEPOLICY', 'gate'), stage.to_bytes(2, 'little'))
                 b.bp_clear_all()

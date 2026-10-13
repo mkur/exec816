@@ -4,6 +4,7 @@ MODULE DESKMENU
 USE INPUT
 USE AESKEYS
 USE DESKAPPMENU
+USE DESKMENUCACHE
 USE AESLOCKS
 USE AESMOUSE
 USE AESTYPES
@@ -36,6 +37,7 @@ LONGCARD revision,focusSeen,pendingWindow,menuOwner
 ; Dirty bits: 1 replaces bar contents, 2 replaces popup contents. Selection
 ; transitions are compared with the last published paint state separately.
 BYTE pendingMenu,pendingAction,dirty,down,opening,blocked
+BYTE showPending
 INT armed,pendingHeading
 CONST ACT_TOP=1, ACT_CLOSE=2, NO_ROW=-1
 
@@ -67,6 +69,7 @@ PUBLIC BYTE FUNC Start()
   opening=0
   dirty=1
   blocked=0
+  showPending=0
   selected=NO_ROW
   armed=NO_ROW
   revision=$ffffffff
@@ -101,6 +104,7 @@ PUBLIC PROC Stop()
   DESKSTATE.popupLayer=0
   menu=0
   pendingMenu=0
+  showPending=0
   pendingAction=0
   DESKSTATE.menuActive=0
 
@@ -452,8 +456,12 @@ PROC Popup(LAYERTYPES.Rect POINTER bounds)
   ELSE
     Check(LAYERS.Move(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top))
   FI
-  Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
-  DESKSTATE.TopChrome()
+  showPending=1
+  IF DESKMENUCACHE.Capture(bounds)=0 THEN
+    showPending=0
+    Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
+    DESKSTATE.TopChrome()
+  FI
 
 RETURN
 
@@ -606,7 +614,7 @@ PUBLIC PROC Advance()
   IF DESKSTATE.barLayer=0 THEN
     RETURN
   FI
-  IF pendingAction=0 AND pendingMenu=0 AND dirty=0
+  IF pendingAction=0 AND pendingMenu=0 AND dirty=0 AND showPending=0
       AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
@@ -617,6 +625,20 @@ PUBLIC PROC Advance()
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN
   FI
+
+  ; Retire the old popup before applying a command or preparing a new save.
+  ; Own hide/show rebuilds are published here so they cannot cancel the gesture.
+  BEGIN
+    LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+    IF popup.shown<>0 AND (menu=0 OR pendingMenu<>0 OR pendingAction<>0) THEN
+      IF DESKMENUCACHE.Restore()<>0 THEN
+        revision=service.scene.rebuilds
+        RETURN
+      FI
+      Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
+      revision=service.scene.rebuilds
+    FI
+  END
 
   DESKAPPMENU.Finish()
   ; A native focus command must select its bar before focusSeen is published.
@@ -637,6 +659,17 @@ PUBLIC PROC Advance()
   IF pendingMenu<>0 THEN
     Open(pendingMenu)
     pendingMenu=0
+    IF service.scene.busy<>0 THEN
+      revision=service.scene.rebuilds
+      RETURN
+    FI
+  FI
+  IF showPending<>0 THEN
+    showPending=0
+    IF menu<>0 THEN
+      Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
+      DESKSTATE.TopChrome()
+    FI
   FI
   IF menu=0 THEN
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
@@ -688,6 +721,7 @@ PUBLIC PROC Advance()
   AESWINDOWSTATE.Sync()
   DESKSTATE.menuActive=Active()
   AESMOUSE.Refresh()
+  DESKMENUCACHE.Notify()
 
 RETURN
 
@@ -695,7 +729,7 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
+RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0 OR showPending<>0
     OR paintMenu<>menu OR paintSelection<>selected
     OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
     OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0

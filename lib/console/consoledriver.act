@@ -25,6 +25,7 @@ USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
 USE DESKHOST
+USE DESKMENUCACHE
 USE DESKSTATE
 USE DESKPAINT
 USE DESKINPUT
@@ -712,9 +713,15 @@ PUBLIC PROC Worker()
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
+            IF entry.unit=0 THEN
+              DESKMENUCACHE.ConsoleChanged(instance,view)
+            FI
             completeWrite=WriteQuantum(instance,view,entry.unit)
           FI
 
+          IF entry.unit=0 THEN
+            DESKMENUCACHE.ConsoleChanged(instance,view)
+          FI
           CONSOLEDISPLAY.Present(view,instance)
           ; Resume repair on a fresh worker turn without a voluntary Task
           ; round trip per segment. Controls, input and registry rotation keep
@@ -738,6 +745,9 @@ PUBLIC PROC Worker()
             AND CONSOLEBITMAP.TextPending()=0
             AND instance.write<>NULL AND instance.writeCancel<>0 THEN
           CONSOLECORE.EditQuantum(instance)
+          IF entry.unit=0 THEN
+            DESKMENUCACHE.ConsoleChanged(instance,view)
+          FI
           IF instance.operation=CONSOLETYPES.OP_IDLE THEN
             FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
           FI

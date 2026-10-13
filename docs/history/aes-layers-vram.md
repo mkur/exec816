@@ -62,7 +62,39 @@ Raw samples, source hashes and check artifacts are in the
 [machine-readable record](../development/aes-layers-vram.json). No loaded or
 cold-cache latency acceptance is claimed by this idle comparison.
 
+## AV2: shared cache policy and menu backgrounds
+
+Layers now owns a single saved-scene rectangle and shared two-slot identity,
+revision and pinning policy. Native client snapshots use that policy too. A
+menu captures only completed visible contributions. Its own drawing is exempt
+from invalidation; underlying content, console damage and geometry changes
+invalidate intersecting saves. Unsupported alignment and incomplete source
+paint use ordinary rendering without waiting for an application.
+
+The coordinated hide/restore transaction pins its storage through display
+completion. Successful restoration subtracts only that footprint from manager
+damage. AES exposure is retained and published after the selected menu heading
+has been repaired, so an application UPDATE cannot delay that repair. Failed
+or unquiesced transfers cannot publish a valid save or release a live pin.
+
+Scene gains 22 bytes (9,184 total); cache records replace the old native
+metadata without increasing their size. Adapter state adds 26 bytes, plus the
+one-byte pending-show state. VRAM gains 76,800 bytes, for 320,000 total.
+Reserved bank zero changes by **0 fixed / 0 per public Task / 0 idle bytes**.
+
+Development checks: 459 host tests (four skips), 60,136 optimized Layers checks,
+raw/optimized far-record probes (105 each), the AES menu fixture and twelve
+native cache scenes. The native fixture also opens and dismisses a real Windows
+menu whose saved background spans several owners, then compares every pixel
+against an independent oracle. Identity reuse, native eviction, odd exposure,
+geometry, failure and external pending-paint cases remain covered.
+
+An intermediate exact demo showed real saves/restores: Windows dismissal fell
+from 501.4 to 240.7 ms (median/p95), while final Files repaint was 361.0 ms.
+This predates the repaired menu-heading/exposure ordering and is not acceptance
+evidence for the final slice. The 100 ms gate remains open until remeasurement.
+
 ## Remaining slices
 
-AV2–AV6 remain in progress. No menu-cache or window-cache performance gate is
-accepted by the AV1 bookkeeping results.
+AV3–AV6 remain in progress. Numeric performance gates remain separate from
+functional completion; no acceptance is inferred from correct cached pixels.

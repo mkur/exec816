@@ -20,6 +20,7 @@ PUBLIC BYTE FUNC Invalidate(LAYERTYPES.Scene POINTER scene LONGCARD id
   FI
 
   Mark(layer,rect)
+  LAYERCACHE.Changed(@scene.under,id,rect)
 
 RETURN(LAYERTYPES.OK)
 
@@ -311,6 +312,8 @@ BYTE FUNC CommitMove(LAYERTYPES.Scene POINTER scene
     RETURN(LAYERTYPES.OK)
   FI
 
+  LAYERCACHE.Changed(@scene.under,layer.id,@scene.copySource)
+  LAYERCACHE.Changed(@scene.under,layer.id,@scene.copyTarget)
   REGIONS.Copy(@scene.copyTarget,@layer.bounds)
   LET old=@scene.copySource
   REGIONS.Intersect(old,@scene.copyTarget,@overlap)
@@ -363,7 +366,9 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     IF status<>LAYERTYPES.OK THEN
       RETURN(status)
     FI
-  ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ THEN
+  ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ
+      AND scene.activeKind<>LAYERTYPES.UPDATE_SCENE_READ
+      AND scene.activeKind<>LAYERTYPES.UPDATE_RESTORE THEN
     Mark(layer,@layer.bounds)
   FI
 

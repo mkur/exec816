@@ -2,6 +2,7 @@
 MODULE LAYERS
 USE LAYERTYPES
 USE REGIONS
+USE LAYERCACHE
 USE A816MEMORY
 
 ; A transaction retains geometry until its caller has finished drawing.
@@ -297,6 +298,7 @@ PUBLIC BYTE FUNC Show(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE shown)
   FI
 
   layer.shown=shown
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
@@ -330,10 +332,12 @@ PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
   FI
 
   IF layer.shown<>0 THEN
+    LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
     DamageAll(scene,@layer.bounds)
   FI
 
   REGIONS.Assign(@layer.bounds,left,top,left+width,top+height)
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   layer.dirty=0
   Mark(layer,@layer.bounds)
   IF layer.shown=0 THEN
@@ -401,6 +405,7 @@ PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)
     RETURN(LAYERTYPES.OK)
   FI
 
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
@@ -431,6 +436,7 @@ PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
 
   scene.count==-1
   shown=layer.shown
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   IF shown<>0 THEN
     DamageAll(scene,@layer.bounds)
   FI
@@ -464,5 +470,6 @@ PUBLIC LONGCARD FUNC Hit(LAYERTYPES.Scene POINTER scene INT x,y)
 RETURN(0)
 
 INCLUDE "layers-update.inc"
+INCLUDE "layers-save.inc"
 
 ENDMODULE

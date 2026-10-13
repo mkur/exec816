@@ -7,6 +7,7 @@ USE DESKTYPES
 USE DESKCORE
 USE DESKMOVE
 USE DESKCACHE
+USE DESKMENUCACHE
 USE CONSOLEBITMAP
 USE LAYERS
 USE LAYERTYPES
@@ -168,6 +169,7 @@ PUBLIC PROC Controls()
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
     priorToken=service.scene.busy
+    DESKMENUCACHE.Pump()
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
     IF priorToken<>0 AND service.scene.busy=0 THEN

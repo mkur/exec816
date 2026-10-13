@@ -4,6 +4,7 @@ USE DISPLAY
 USE DESKTYPES
 USE LAYERTYPES
 USE LAYERS
+USE LAYERCACHE
 USE REGIONS
 USE DESKGEOMETRY
 USE CONSOLEBITMAP
@@ -33,14 +34,8 @@ RETURN(width<>0 AND width<=640 AND (width & 1)=0
 
 ; Invalidating a pinned slot does not release the storage used by DMA.
 PUBLIC PROC Invalidate(DESKTYPES.Service POINTER service LONGCARD id)
-  BYTE index
 
-  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
-    IF service.snapshots(index).window=id THEN
-      service.snapshots(index).valid=0
-      service.snapshots(index).revision=0
-    FI
-  OD
+  LAYERCACHE.Invalidate(@service.cache,id)
 
 RETURN
 
@@ -57,67 +52,32 @@ RETURN
 
 PUBLIC BYTE FUNC Lookup(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window CARD width,height)
-  BYTE index
 
-  IF window.visualRevision=0 THEN
-    RETURN(NO_SLOT)
-  FI
+RETURN(LAYERCACHE.Lookup(@service.cache,window.id,window.visualRevision,width,height))
 
-  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
-    BEGIN
-      LET slot=@service.snapshots(index)
-      IF slot.valid<>0 AND slot.pinned=0 AND slot.window=window.id
-          AND slot.revision=window.visualRevision
-          AND slot.width=width AND slot.height=height THEN
-        RETURN(index)
-      FI
-    END
-  OD
-
-RETURN(NO_SLOT)
-
-; With exactly two slots the most recent index defines exact LRU ordering.
 PUBLIC BYTE FUNC Choose(DESKTYPES.Service POINTER service)
-  BYTE index
 
-  FOR index=0 TO DESKTYPES.SNAPSHOTS-1 DO
-    IF service.snapshots(index).pinned=0 AND service.snapshots(index).valid=0 THEN
-      RETURN(index)
-    FI
-  OD
-
-  index=service.cacheRecent XOR 1
-  IF service.snapshots(index).pinned=0 THEN
-    RETURN(index)
-  FI
-
-  index=service.cacheRecent
-  IF service.snapshots(index).pinned=0 THEN
-    RETURN(index)
-  FI
-
-RETURN(NO_SLOT)
+RETURN(LAYERCACHE.Choose(@service.cache))
 
 ; Capture publishes pixels only after both DMA and the read transaction retire.
 PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   BYTE status,okay
 
-  IF active<>ACTIVE_CAPTURE OR CONSOLEBITMAP.Pending()<>0 THEN
+  IF active<>ACTIVE_CAPTURE OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN
   FI
 
-  LET slot=@service.snapshots(activeSlot)
-  okay=(CONSOLEBITMAP.Failed()=0 AND capturing.id=slot.window
+  LET slot=@service.cache.slots(activeSlot)
+  okay=(CONSOLEBITMAP.Failed()=0 AND capturing.id=slot.identity
       AND capturing.visualRevision=slot.revision AND slot.revision<>0)
   status=LAYERS.Finish(@service.scene,readToken,okay)
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($faee)
   FI
 
-  slot.valid=okay
-  slot.pinned=0
+  LAYERCACHE.Captured(slot,okay)
   IF okay<>0 THEN
-    service.cacheRecent=activeSlot
+    service.cache.recent=activeSlot
   FI
 
   active=0
@@ -165,13 +125,8 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     RETURN(0)
   FI
 
-  LET slot=@service.snapshots(index)
-  slot.valid=0
-  slot.pinned=1
-  slot.window=window.id
-  slot.revision=window.visualRevision
-  slot.width=width
-  slot.height=height
+  LET slot=@service.cache.slots(index)
+  LAYERCACHE.Prepare(slot,window.id,window.visualRevision,width,height)
   LET packet=CONSOLEBITMAP.GetPacket()
   packet.copy.source.offset=0
   packet.copy.source.pitch=320
@@ -220,7 +175,7 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
     RETURN(DESKTYPES.CACHE_MISS)
   FI
 
-  LET slot=@service.snapshots(index)
+  LET slot=@service.cache.slots(index)
   LET packet=CONSOLEBITMAP.GetPacket()
   slot.pinned=1
   packet.copy.source.offset=SlotAddress(index)
@@ -242,7 +197,7 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
     RETURN(DESKTYPES.CACHE_FAILED)
   FI
 
-  service.cacheRecent=index
+  service.cache.recent=index
   activeSlot=index
   active=ACTIVE_RESTORE
 
@@ -256,10 +211,7 @@ PUBLIC BYTE FUNC Restored(DESKTYPES.Service POINTER service)
   FI
 
   okay=(CONSOLEBITMAP.Failed()=0)
-  service.snapshots(activeSlot).pinned=0
-  IF okay=0 THEN
-    service.snapshots(activeSlot).valid=0
-  FI
+  LAYERCACHE.Released(@service.cache.slots(activeSlot),okay)
 
   active=0
 

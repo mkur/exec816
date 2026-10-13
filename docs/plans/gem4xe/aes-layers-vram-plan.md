@@ -6,7 +6,7 @@
 Status: implementing, 2026-10-13. AV1 functional checks pass; its overhead gate
 remains open. See the [execution record](../../history/aes-layers-vram.md).
 Implement AV1–AV6 in order. Keep each slice
-executable, validate its changed behavior and commit it separately. AV2–AV6 remain to be completed. The existing GEM API, caller-local drawing,
+executable, validate its changed behavior and commit it separately. AV2 functional implementation is complete; AV3–AV6 remain to be completed. The existing GEM API, caller-local drawing,
 presenter Task and display completion path remain the foundation.
 
 The result is shared AES/Layers repaint bookkeeping, fast menu background
