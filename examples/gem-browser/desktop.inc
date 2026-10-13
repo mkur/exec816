@@ -9,7 +9,7 @@ enum { DESK_TITLE=21,DESK_BOX=22,DESK_NEW=23,DESK_PANEL=24,DESK_CALC=25,
        DESK_TEXT=26,DESK_COUNTER=27,DESK_SAVE=28,DESK_QUIT=29,
        DESK_COPY=30,DESK_DELETE=31 };
 struct Desktop GEMDesk;
-static const char *desktopLabels[DESKTOP_ICONS]={"SYS:","WORK:","C:","Panel","Calculator","Text","Counter"};
+static const char *desktopLabels[DESKTOP_ICONS]={"SYS:","WORK:","RAM:","C:","Panel","Calculator","Text","Counter"};
 static const char *desktopPrograms[4]={"C:PANEL.APP","C:CALC.APP","C:TEXT.APP","C:COUNTER.APP"};
 
 static struct Browser *desktop_folder(struct Desktop *d,WORD handle)
@@ -136,27 +136,27 @@ static WORD desktop_children(struct Desktop *d)
 }
 static void desktop_tree(struct Desktop *d)
 {
-    WORD i,kind;
+    WORD i;
     OBJECT *o;
     ICONBLK *ib;
     static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,16,640,224};
-    static const OBJECT icon={0,-1,-1,G_ICON,0,0,0,8,0,104,32};
+    static const OBJECT icon={0,-1,-1,G_ICON,0,0,0,0,0,96,26};
+    static const WORD kinds[DESKTOP_ICONS]={4,4,12,5,6,7,8,9};
     d->tree[0]=root;
     for (i=0;i<DESKTOP_ICONS;++i) {
-        kind=i<2 ? 4:i+3;
-        d->icons[i]=*(CICONBLK *)d->stock[kind].ob_spec;
+        d->icons[i]=*(CICONBLK *)d->stock[kinds[i]].ob_spec;
         ib=&d->icons[i].monoblk;
         ib->ib_ptext=(ULONG)desktopLabels[i];
-        ib->ib_xicon=36;
+        ib->ib_xicon=32;ib->ib_yicon=0;
         ib->ib_wtext=strlen(desktopLabels[i])*8+8;
-        ib->ib_xtext=(104-ib->ib_wtext)/2;ib->ib_ytext=22;
+        ib->ib_xtext=(96-ib->ib_wtext)/2;ib->ib_ytext=18;
         ib->ib_htext=8;
         o=&d->tree[i+1];
         *o=icon;
         o->ob_type=G_CICON;
         o->ob_next=i+2;
         o->ob_flags=0;
-        o->ob_spec=(ULONG)&d->icons[i];o->ob_y=i*32;
+        o->ob_spec=(ULONG)&d->icons[i];o->ob_y=i*28;
     }
     d->tree[DESKTOP_ICONS+1]=menuSource[7];
     o=&d->tree[DESKTOP_ICONS+1];o->ob_next=0;o->ob_flags=LASTOB;
@@ -300,8 +300,8 @@ WORD DesktopRun(void)
                     if (hit>0 && hit<=DESKTOP_ICONS && hit==d->armed) {
                         if (!desktop_select(d,hit)) { result=2;break; }
                         if (d->clicks==2) {
-                            if (hit<=3) desktop_new(d,desktopLabels[hit-1]);
-                            else desktop_launch(d,desktopPrograms[hit-4],NULL,0);
+                            if (hit<=DESKTOP_VOLUMES) desktop_new(d,desktopLabels[hit-1]);
+                            else desktop_launch(d,desktopPrograms[hit-DESKTOP_VOLUMES-1],NULL,0);
                         }
                     }
                     d->armed=-1;
@@ -312,8 +312,8 @@ WORD DesktopRun(void)
             i=ExecAESInputWindow(MU_KEYBD);b=desktop_folder(d,i);
             if (b) { if (!desktop_dispatch(d,b,MU_KEYBD)) { result=2;break; } }
             else if ((d->kr&255)==13 && d->selected>0) {
-                if (d->selected<=3) desktop_new(d,desktopLabels[d->selected-1]);
-                else desktop_launch(d,desktopPrograms[d->selected-4],NULL,0);
+                if (d->selected<=DESKTOP_VOLUMES) desktop_new(d,desktopLabels[d->selected-1]);
+                else desktop_launch(d,desktopPrograms[d->selected-DESKTOP_VOLUMES-1],NULL,0);
             }
         }
         if (events&MU_MESAG) {
@@ -387,6 +387,7 @@ static void job_summary(struct DesktopFileJob *job,WORD cancel)
     strcpy(p,job->error ? "failed":cancel ? "cancelled":"complete");p+=strlen(p);
     if (job->error) {
         strcpy(p," (");p=decimal(p+2,(ULONG)job->error);strcpy(p,"): ");p+=3;
+        if (job->error==ERROR_DIR_NOT_EMPTY) { strcpy(p,"Folder is not empty; ");p+=21; }
         for (scan=name;*scan;++scan) if (*scan==':' || *scan=='/' || *scan=='\\') name=scan+1;
         label(p,name,24);p+=strlen(p);
     }
@@ -438,6 +439,7 @@ static WORD desktop_job_finish(struct Desktop *d,WORD cancel)
         strcpy(d->status,"File operation failed (");p=decimal(d->status+23,(ULONG)job->error);strcpy(p,")");
         if (job->keepComplete) strcpy(p+1,"; complete temp kept");
         else if (job->cleanupError) { strcpy(p+1,"; cleanup error ");decimal(p+17,(ULONG)job->cleanupError); }
+        if (job->error==ERROR_DIR_NOT_EMPTY) strcpy(d->status,"Folder is not empty");
     }
     FreeMem(job,sizeof(*job));
     return okay && (!b->ready || redraw(b,b->work)) && (!d->active || menu_state(d->active));
@@ -464,7 +466,11 @@ static WORD job_dialog(struct DesktopFileJob *job,WORD replace)
     struct Browser *b=job->owner;
     WORD kind=replace ? DIALOG_REPLACE:job->operation==FILE_DELETE ? DIALOG_DELETING:DIALOG_COPYING;
     WORD same=b->dialog==kind && b->dialogTree[2].ob_type==G_STRING;
-    WORD area[4];
+    WORD area[4],i;
+    if (!same) {
+        for (i=0;i<7;++i) b->dialogTree[i]=dialogSource[i];
+        b->dialogTree[5].ob_spec=(ULONG)b->status;
+    }
     b->dialog=kind;b->focus=4;b->armed=-1;
     b->dialogTree[1].ob_spec=(ULONG)(replace ? "Replace this file?":job->operation==FILE_DELETE ? "Deleting (Escape cancels)":"Copying (Escape cancels)");
     b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;

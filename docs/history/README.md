@@ -1,5 +1,8 @@
 # Historical records
 
+- [Desktop usability](desktop-usability.md): a default 4×4 Files grid, RAM disk
+  icon, compact delete confirmation, shorter Shell title and desktop spacing.
+
 - [Files navigation and appearance](files-navigation-appearance.md): distinct
   title gadgets, compact layout and parent navigation implementation results.
 

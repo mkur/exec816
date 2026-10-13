@@ -87,7 +87,7 @@ ENDMODULE
     report=dict(status='running',tier='development',qualification=False,scope='Private owner-hook capture, full restore, revision mismatch and quiescent capture failure; production driver and bitmap bridge',scenes=[])
     at=lambda module,n:next(d['address'] for d in p['image']['data'] if '_'+module+'_'+n+'_' in d['name'])
     r=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'));desktop(r)
-    frame(r,(32,24,560,208),b'Exec816 Shell',True)
+    frame(r,(32,24,560,208),b'Shell',True)
     Terminal(64,20).paint(r,5,5,True)
     frame(r,(0,0,544,208),b'Snapshot',False,3,close=True);text(r,11,19,b'XYZ',bg=3)
     expected=overlay(r,(320,120))

@@ -112,7 +112,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     draw_panel(model, focused == 3)
                 if app_live and app_behind_shell:
                     application()
-                frame(model, shell, b'Exec816 Shell', focused == 1)
+                frame(model, shell, b'Shell', focused == 1)
                 terminal = Terminal(64, 20)
                 text = bytes(10 if i & 63 == 63 else 65+i % 26 for i in range(512))
                 for _ in range(1+read('DESKTEST', 'writes')):
@@ -130,7 +130,7 @@ def run(out, program, count=30, loads=('idle', 'scroll', 'disk')):
                     for y in range(t+1, bot-1):
                         model.pixels[y*640+l] ^= 15
                         model.pixels[y*640+r-1] ^= 15
-                menu_bar(model, {1:b'Exec816 Shell',2:b'Input',3:b'Control Panel'}.get(focused,b'Desktop'))
+                menu_bar(model, {1:b'Shell',2:b'Input',3:b'Control Panel'}.get(focused,b'Desktop'))
                 return overlay(model, position)
             colors = {hw: bytes((v & 254)+(v >> 7) for v in PALETTE[pen*3:pen*3+3])[::-1] for pen, hw in enumerate(PENS)}
             def visible(outline=None, whole=True):

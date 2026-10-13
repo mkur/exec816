@@ -38,8 +38,10 @@ def exercise(s, desk, base, click, key, fill, path, desk_menu, shot):
             require(n('dialog')==6,'Sibling closure dismissed confirmation')
             confirmation_checked=True
         if not confirm:key('RETURN');return
-        x,y=[s.number(base+F['work']+i*2,2) for i in range(2)]
-        click(x+32,y+52)
+        tree=base+F['dialogTree']
+        x,y=[s.number(tree+16+i*2,2) for i in range(2)]
+        bx,by,bw,bh=[s.number(tree+3*24+16+i*2,2) for i in range(4)]
+        click(x+bx+bw//2,y+by+bh//2)
     def complete():
         for _ in range(300):
             if not n('dialog') and text('status').startswith('Copy complete'):break

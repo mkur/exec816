@@ -11,6 +11,7 @@ static const char *desktop_association(struct Desktop *,const char *);
 #include <proto/exec.h>
 
 enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU_PATH=10, MENU_NEW=11, MENU_RENAME=12, MENU_ICONS=15, MENU_LIST=16, MENU_NAME=17, MENU_PARENT=18, MENU_ALL=19, MENU_NONE=20 };
+enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7,DIALOG_DELETING=8 };
 static const OBJECT menuSource[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
     {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
@@ -151,7 +152,7 @@ static void layout_focus(struct Browser *b)
 static void layout(struct Browser *b)
 {
     WORD i,index,columns=(b->work[2]-16)/8,rows;
-    if (b->dialog) {
+    if (b->dialog && b->dialog!=DIALOG_DELETE) {
         b->dialogTree[0].ob_x=b->work[0];b->dialogTree[0].ob_y=b->work[1];
         b->dialogTree[0].ob_width=b->work[2];b->dialogTree[0].ob_height=b->work[3];
         b->dialogTree[2].ob_width=b->work[2]-16;
@@ -200,10 +201,39 @@ static void layout(struct Browser *b)
     b->tree[BROWSER_STATUS].ob_width=b->work[2]-16;
     b->tree[BROWSER_STATUS].ob_y=2;
     layout_focus(b);
+    if (b->dialog==DIALOG_DELETE) {
+        OBJECT *form=b->dialogTree;
+        WORD width=b->work[2]-8,limit,length;
+        if (width>360) width=360;
+        form[0].ob_x=b->work[0]+(b->work[2]-width)/2;
+        form[0].ob_y=b->work[1]+(b->work[3]-72)/2;
+        form[0].ob_width=width;form[0].ob_height=72;
+        form[0].ob_spec=0x00011170;
+        form[1].ob_y=8;form[1].ob_width=width-16;
+        form[2].ob_y=22;form[2].ob_width=width-16;
+        form[3].ob_x=(width-144)/2;form[3].ob_y=50;
+        form[4].ob_x=form[3].ob_x+80;form[4].ob_y=50;form[4].ob_width=64;
+        form[5].ob_y=36;form[5].ob_width=width-16;
+        form[6].ob_type=G_BOX;form[6].ob_flags=LASTOB;
+        form[6].ob_spec=(form[b->focus].ob_state&SELECTED) ? 0x1170:0x1171;
+        form[6].ob_x=form[b->focus].ob_x+3;
+        form[6].ob_y=form[b->focus].ob_y+form[b->focus].ob_height-3;
+        form[6].ob_width=form[b->focus].ob_width-6;form[6].ob_height=1;
+        /* Abbreviate only the displayed name; the snapshot retains the full
+         * name used by DeleteFile. Keep both ends visible after resizing. */
+        limit=(width-16)/8;length=strlen(b->editText);
+        if (length<=limit) strcpy(b->target,b->editText);
+        else {
+            WORD first=(limit-3)/2,last=limit-3-first;
+            memcpy(b->target,b->editText,first);memcpy(b->target+first,"...",3);
+            strcpy(b->target+first+3,b->editText+length-last);
+        }
+        form[2].ob_spec=(ULONG)b->target;
+    }
 }
 static WORD sliders(struct Browser *b)
 {
-    WORD extent=b->dialog ? 0:first_entry(b,b->count+b->parent);
+    WORD extent=b->dialog && b->dialog!=DIALOG_DELETE ? 0:first_entry(b,b->count+b->parent);
     WORD position=extent ? (LONG)b->first*1000/extent:0;
     WORD size=extent ? (LONG)b->visible*1000/(b->count+b->parent):1000;
     WORD current,unused;
@@ -219,7 +249,13 @@ static WORD redraw(struct Browser *b,const WORD *damage)
     WORD okay;
     if (!wind_update(BEG_UPDATE)) return 0;
     okay=wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]);
-    if (okay) { layout(b);okay=objc_draw(b->dialog ? b->dialogTree:b->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]); }
+    if (okay) {
+        layout(b);
+        okay=objc_draw(b->dialog && b->dialog!=DIALOG_DELETE ? b->dialogTree:b->tree,
+                      0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
+        if (okay && b->dialog==DIALOG_DELETE)
+            okay=objc_draw(b->dialogTree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
+    }
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++b->paints;
     return okay;
@@ -422,7 +458,6 @@ static WORD select_all(struct Browser *b,WORD state)
     return paint_selection(b);
 }
 
-enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7,DIALOG_DELETING=8 };
 static const OBJECT dialogSource[]={
     {-1,1,6,G_BOX,0,0,0x1170,0,0,216,144},
     {2,-1,-1,G_STRING,0,0,0,8,2,192,8},
@@ -456,18 +491,29 @@ static WORD dialog_open(struct Browser *b,WORD kind)
         if (b->selectionCount>1) strcpy(b->editText,"WORK:");
         else FileJoin(b->editText,sizeof(b->editText),"WORK:",b->entries[single_entry(b)].name);
     }
-    b->dialog=kind;b->focus=2;b->armed=-1;b->dialogError=0;b->status[0]=0;
+    b->dialog=kind;b->focus=2;b->armed=-1;b->dialogError=0;
+    if (kind!=DIALOG_DELETE) b->status[0]=0;
     if (kind==DIALOG_DELETE || kind==DIALOG_REPLACE) {
         if (kind==DIALOG_DELETE) {
             if (b->selectionCount==1) strcpy(b->editText,b->entries[single_entry(b)].name);
-            else { char *p=decimal(b->editText,b->selectionCount);strcpy(p," entries (empty folders only)"); }
+            else {
+                char *p=decimal(b->editText,b->selectionCount-b->selectionDirectories);
+                strcpy(p,b->selectionCount-b->selectionDirectories==1 ? " file, ":" files, ");
+                p=decimal(p+strlen(p),b->selectionDirectories);
+                strcpy(p,b->selectionDirectories==1 ? " folder":" folders");
+            }
         }
-        b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_DELETE ? "Delete (empty folders only)?":"Replace this file?");
+        b->dialogTree[1].ob_spec=(ULONG)(kind==DIALOG_DELETE ?
+            (b->selectionCount>1 ? "Delete selected items?":b->selectionDirectories ? "Delete folder?":"Delete file?"):"Replace this file?");
         b->dialogTree[2].ob_type=G_STRING;b->dialogTree[2].ob_flags=0;
         b->dialogTree[2].ob_spec=(ULONG)b->editText;
         b->dialogTree[3].ob_spec=(ULONG)(kind==DIALOG_DELETE ? "Delete":"Replace");
         b->dialogTree[3].ob_flags=SELECTABLE|EXIT;
-        b->dialogTree[4].ob_flags|=DEFAULT;b->dialogTree[4].ob_state=SELECTED;b->focus=4;
+        b->dialogTree[4].ob_flags|=DEFAULT;b->dialogTree[4].ob_state=kind==DIALOG_DELETE ? 0:SELECTED;b->focus=4;
+        if (kind==DIALOG_DELETE) {
+            b->dialogTree[5].ob_spec=(ULONG)"Empty folders only";
+            b->dialogTree[5].ob_flags=b->selectionDirectories ? 0:HIDETREE;
+        }
     }
     layout(b);
     return sliders(b) && redraw(b,b->work) &&
@@ -485,16 +531,37 @@ static WORD dialog_cancel(struct Browser *b)
     if (!dialog_end(b)) return 0;
     selection_status(b);return redraw(b,b->work);
 }
+static WORD dialog_press(struct Browser *,WORD,WORD);
 static WORD dialog_focus(struct Browser *b,WORD focus)
 {
+    WORD old=b->focus;
     if (b->focus==focus) return 1;
     if (b->focus==2 && !objc_edit(b->dialogTree,2,0,&b->editIndex,ED_END)) return 0;
     if (b->focus!=2) b->dialogTree[b->focus].ob_state=0;
     b->focus=focus;
-    if (focus!=2) b->dialogTree[focus].ob_state=SELECTED;
+    if (focus!=2) b->dialogTree[focus].ob_state=b->dialog==DIALOG_DELETE ? 0:SELECTED;
+    if (b->dialog==DIALOG_DELETE) {
+        layout(b);
+        return dialog_press(b,old,0) && dialog_press(b,focus,0);
+    }
     if (!redraw(b,b->work)) return 0;
     if (focus==2) return objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT);
     return 1;
+}
+static WORD dialog_press(struct Browser *b,WORD object,WORD pressed)
+{
+    WORD okay;
+    if (object!=3 && object!=4) return 1;
+    if (pressed) b->dialogTree[object].ob_state|=SELECTED;
+    else b->dialogTree[object].ob_state&=~SELECTED;
+    if (!wind_update(BEG_UPDATE)) return 0;
+    okay=objc_draw(b->dialogTree,object,0,b->work[0],b->work[1],b->work[2],b->work[3]);
+    if (okay && object==b->focus) {
+        b->dialogTree[6].ob_spec=pressed ? 0x1170:0x1171;
+        okay=objc_draw(b->dialogTree,6,0,b->work[0],b->work[1],b->work[2],b->work[3]);
+    }
+    if (!wind_update(END_UPDATE)) okay=0;
+    return okay;
 }
 static void full_name(struct Browser *b,const char *leaf,char *target)
 {
@@ -627,9 +694,9 @@ static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *s
     if (!b->tree || !b->entries) return 0;
     memcpy(b->tree,source,BROWSER_OBJECTS*sizeof(OBJECT));
     label(b->path,path,127);
-    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,360,184);
+    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,456,196);
     if (b->window<0 || !wind_set_str(b->window,WF_NAME,"Files")) return 0;
-    if (!wind_open(b->window,x,y,360,184)) return 0;
+    if (!wind_open(b->window,x,y,456,196)) return 0;
     b->opened=1;
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]) ||
         !refresh(b)) return 0;
@@ -660,15 +727,18 @@ static WORD folder_event(struct Browser *b,WORD events)
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3])) return -1;
         if (events&MU_BUTTON) {
             hit=objc_find(b->dialog ? b->dialogTree:b->tree,0,MAX_DEPTH,b->mx,b->my);
+            if (b->dialog==DIALOG_DELETE && hit==6) hit=b->focus;
             if (b->mb&1) {
                 if (b->keyboardFocus && !b->dialog) {
                     b->keyboardFocus=0;
                     if (!paint_selection(b)) result=2;
                 }
                 b->down=1;b->armed=hit;b->armedClicks=b->br;b->armedModifiers=b->ks;
+                if (b->dialog==DIALOG_DELETE && !dialog_press(b,hit,1)) result=2;
             }
             else {
                 b->down=0;
+                if (b->dialog==DIALOG_DELETE && !dialog_press(b,b->armed,0)) result=2;
                 if (hit==b->armed) {
                     if (b->dialog) { if (!dialog_click(b,hit)) result=2; }
                     else if (hit>=BROWSER_ROW_FIRST && hit<BROWSER_ROW_FIRST+b->visible &&

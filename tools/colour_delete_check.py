@@ -26,7 +26,7 @@ def exercise(s,desk,base,click,key,fill,path,desk_menu,shot,menus):
     def delete(confirm=True):
         menu(9);s.rendezvous('dw($%x)=6'%(base+F['dialog']))
         if confirm:
-            x,y=[s.number(base+F['work']+i*2,2) for i in range(2)];click(x+32,y+52)
+            tree=base+F['dialogTree'];x,y=[s.number(tree+16+i*2,2) for i in range(2)];click(x+s.number(tree+3*24+16,2)+32,y+58)
         else:key('RETURN')
     def finished(prefix):
         s.rendezvous('(dw($%x)|dw($%x))=0'%(desk+D['job'],desk+D['job']+2))

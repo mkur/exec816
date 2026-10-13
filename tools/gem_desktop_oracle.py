@@ -12,12 +12,12 @@ def paint(bridge,symbols,r,title,bounds):
         dialog(bridge,symbols,r,bounds)
         return
     if symbols.get('GEMDesk'):
-        from colour_desktop_model import FIELDS as D
+        from colour_desktop_model import FIELDS as D,ICONS
         from browser_model import FIELDS as B
         base=symbols['GEMDesk']
         if title==b'':
-            raw=bridge.memdump(base+D['tree'],9*24)
-            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(9)]
+            raw=bridge.memdump(base+D['tree'],(ICONS+2)*24)
+            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(ICONS+2)]
             icons=[o[:] for o in objects if o[3] in (31,33)]
             labels={}
             for i,o in enumerate(objects):
@@ -67,7 +67,8 @@ def paint(bridge,symbols,r,title,bounds):
     if 'GEMBrowser' in symbols and title==bridge.memdump(symbols['GEMBrowser']+178,65).split(b'\0')[0][:64]:
         base=symbols['GEMBrowser'];tree=int.from_bytes(bridge.memdump(base+170,4),'little')
         from browser_model import OBJECTS,FIELDS as F
-        if 'objc_edit' in symbols and int.from_bytes(bridge.memdump(base+F['dialog'],2),'little'):
+        dialog=int.from_bytes(bridge.memdump(base+F['dialog'],2),'little')
+        if 'objc_edit' in symbols and dialog and dialog!=6:
             raw=bridge.memdump(base+F['dialogTree'],7*24)
             objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(7)]
             labels={}
@@ -124,6 +125,15 @@ def paint(bridge,symbols,r,title,bounds):
             focus[0][0:3]=[-1,1,4]
             for i in range(1,5):focus[i][0]=i+1 if i<4 else 0
             draw(r,focus,{},(left+8,top+16,right-16,bottom-16))
+        if dialog==6:
+            raw=bridge.memdump(base+F['dialogTree'],7*24)
+            objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(7)]
+            labels={}
+            for i,obj in enumerate(objects):
+                if obj[3] in (26,28):
+                    labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
+            objects[0][7]-=left+8;objects[0][8]-=top+16
+            draw(r,objects,labels,(left+8,top+16,right-16,bottom-16),clip_strings=True)
         return
     require(title==b'GEM Control Panel','Unknown GEM desktop app: '+repr(title))
     base=symbols['GEMPanel'];raw=bridge.memdump(base+178,192)

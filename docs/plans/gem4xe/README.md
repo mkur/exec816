@@ -15,6 +15,13 @@ and saved settings.
 All four milestones are implemented and development-checked. Their plans link
 the source/artifact records, memory accounting, walkthroughs and measured limits.
 
+The [desktop usability refactor plan](desktop-usability-refactor-plan.md)
+covers a default 4×4 Files grid, a `RAM:` desktop icon,
+compact, contextual delete confirmations, the shorter `Shell` name and a
+smaller left margin for desktop icons. All five items are implemented and
+[development-checked](../../history/desktop-usability.md); iconification remains
+a separate follow-up.
+
 The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
 512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,
 including throughput, cancellation delay and another application's button feedback.

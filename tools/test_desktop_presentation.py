@@ -101,7 +101,7 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
             for step in range(distance):raster.pixel(right-3-step,bottom-3-distance+step,1)
 
 
-def menu_bar(raster, title=b'Exec816 Shell'):
+def menu_bar(raster, title=b'Shell'):
     rectangle(raster,(0,0,640,16),0)
     text(raster,8,4,title[:14])
     text(raster,568,4,b'Windows')
@@ -132,7 +132,7 @@ def scenes(font, accepted=None):
         raster = Raster(font)
         desktop(raster)
         left, top = (32, 24) if stage < 3 else (80, 48)
-        frame(raster, (left, top, left+528, top+184), b'Exec816 Shell', True)
+        frame(raster, (left, top, left+528, top+184), b'Shell', True)
         terminal.paint(raster, (left+8)//8, (top+16)//8, True)
         if stage in (4, 5):
             frame(raster, (113, 93, 273, 173), b'Clip', False, 3, close=True)

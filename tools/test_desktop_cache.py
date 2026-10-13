@@ -26,7 +26,7 @@ def scene(stage, font):
     raster = Raster(font)
     desktop(raster)
     shell_focus = stage < 4 or stage == 12
-    frame(raster, (32, 24, 560, 208), b'Exec816 Shell', shell_focus)
+    frame(raster, (32, 24, 560, 208), b'Shell', shell_focus)
     terminal = Terminal(64, 20)
     terminal.feed(b'ABC')
     terminal.paint(raster, 5, 5, shell_focus)

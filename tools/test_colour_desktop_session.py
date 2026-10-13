@@ -40,16 +40,19 @@ def development_media(out):
 
 
 class ColourDesktop:
-    def __init__(self,files=False,restore=None,only=False,selection=False,batch=False,drag=False,compact=False,icons=False):
+    def __init__(self,files=False,restore=None,only=False,selection=False,batch=False,drag=False,compact=False,icons=False,usability=False):
         self.files,self.restore,self.only,self.selection,self.batch=files,restore,only,selection,batch
-        self.drag=drag;self.compact=compact;self.icons=icons
+        self.drag=drag;self.compact=compact;self.icons=icons;self.usability=usability
 
     def prepare_work(self,target,item):
-        if not self.files and not self.selection and not self.batch and not self.compact and self.restore is None:return
+        if not self.files and not self.selection and not self.batch and not self.compact and not self.usability and self.restore is None:return
         import tempfile
         from sdfs_reference import extract,make
         with tempfile.TemporaryDirectory(prefix='exec816-colour-') as tmp:
             root=Path(tmp);extract(target,root)
+            if self.usability:
+                from colour_delete_check import fixture
+                fixture(root)
             if self.batch:
                 if self.batch=='delete':from colour_delete_check import fixture
                 else:from colour_batch_check import fixture
@@ -116,6 +119,13 @@ class ColourDesktop:
             shot('desktop-settings-restored')
             self.report=dict(settings_restart=True)
             menus.select('Shell');s.save_screen(s.p['output']/'boot-smoke.png')
+            for c in 'EXIT':s.press(c)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
+        if self.usability:
+            from desktop_usability_check import exercise
+            self.report=exercise(s,desk,first,click,key,fill,path,desk_menu,shot,move,menus)
+            self.report['stacks']=stack_usage(b,s.p['build']['memory'])
+            menus.select('Shell');s.command('HELLO',b'Hello from disk!');s.save_screen(s.p['output']/'boot-smoke.png')
             for c in 'EXIT':s.press(c)
             b._cmd_ok('KEY RETURN down');b.bp_clear_all();return
         if self.icons:
@@ -242,6 +252,7 @@ if __name__=='__main__':
     p.add_argument('--development-media',type=Path,help='Reuse an explicitly identified development disk')
     p.add_argument('--rebuild-apps',action='store_true',help='Use an explicit development disk; leave the ZIP unchanged')
     p.add_argument('--drag-drop',action='store_true');p.add_argument('--compact-files',action='store_true');p.add_argument('--file-icons',action='store_true')
+    p.add_argument('--usability',action='store_true')
     p.add_argument('--batch-copy',action='store_true');p.add_argument('--batch-delete',action='store_true')
     p.add_argument('--standalone-selection',action='store_true');p.add_argument('--selection-boundary',action='store_true');p.add_argument('--selection-feedback',action='store_true')
     p.add_argument('--selection-only',action='store_true');p.add_argument('--files',action='store_true');p.add_argument('--files-only',action='store_true');args=p.parse_args()
@@ -251,7 +262,7 @@ if __name__=='__main__':
     media=development_media(out) if args.rebuild_apps else args.development_media.resolve() if args.development_media else None
     from native_program import sha256
     overrides=dict(media_path=media,measurement_media_sha256=sha256(media),measurement_commands=[]) if media else {}
-    probe=ColourDesktop(files=args.files,only=args.files_only,selection='standalone' if args.standalone_selection else 'feedback' if args.selection_feedback else 'boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy,drag=args.drag_drop,compact=args.compact_files,icons=args.file_icons)
+    probe=ColourDesktop(files=args.files,only=args.files_only,selection='standalone' if args.standalone_selection else 'feedback' if args.selection_feedback else 'boundary' if args.selection_boundary else args.selection_only,batch='delete' if args.batch_delete else args.batch_copy,drag=args.drag_drop,compact=args.compact_files,icons=args.file_icons,usability=args.usability)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False,**overrides)
     result.update(tier='development',qualification=False,colour_desktop=probe.report)
     if args.files:
@@ -289,4 +300,4 @@ if __name__=='__main__':
         result['independent_drag_readback']=True
     result['development_media_sha256']=sha256(media) if media else None
     result['application_sha256']={name:sha256(out/'bitmap-console/apps'/name/'program.app') for name in ('desktop','files')}
-    (out/('file-icons-results.json' if args.file_icons else 'compact-files-results.json' if args.compact_files else 'drag-session-results.json' if args.drag_drop else 'colour-session-results.json')).write_text(json.dumps(result,indent=2)+'\n')
+    (out/('usability-results.json' if args.usability else 'file-icons-results.json' if args.file_icons else 'compact-files-results.json' if args.compact_files else 'drag-session-results.json' if args.drag_drop else 'colour-session-results.json')).write_text(json.dumps(result,indent=2)+'\n')

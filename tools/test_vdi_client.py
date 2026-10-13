@@ -32,7 +32,7 @@ def extract_with_preemption(folder):
 
 def expected(font, covered=False):
     r=Raster(font);desktop(r)
-    frame(r,(32,24,560,208),b'Exec816 Shell',False)
+    frame(r,(32,24,560,208),b'Shell',False)
     long_text=bytes(65+i%26 for i in range(192))
     for who,(x,y) in enumerate(((33,17),(33,17) if covered else (201,65))):
         frame(r,(x,y,x+400,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)

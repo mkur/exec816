@@ -26,7 +26,7 @@ def scene(stage,font,aligned=False):
     import vdiref as v
     terminal=Terminal(64,20);terminal.feed(b'ABC')
     r=Raster(font);rectangle(r,(0,0,640,240),8)
-    frame(r,(32,24,560,208),b'Exec816 Shell',stage!=9)
+    frame(r,(32,24,560,208),b'Shell',stage!=9)
     terminal.paint(r,5,5,stage!=9)
     if stage==10:return overlay(r,(320,120))
     x,y=(113,85) if stage<6 else (273,53)

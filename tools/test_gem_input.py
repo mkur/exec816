@@ -66,7 +66,7 @@ def run(out,program):
                 ids=[get(app(i,'window')) for i in range(2)]
                 order=[1,0] if top==ids[0] else [0,1]
                 r=Raster(font_bytes(p['output'].parent/'selected/src/vdi/font8x8.c'))
-                desktop(r);frame(r,(32,24,560,208),b'Exec816 Shell',focused and top==0)
+                desktop(r);frame(r,(32,24,560,208),b'Shell',focused and top==0)
                 states=[]
                 for i in order:
                     if not get(app(i,'ready')):continue

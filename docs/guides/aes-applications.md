@@ -276,15 +276,18 @@ selection, directory snapshot and scroll position. View selects Icons/List and
 Name/Disk order. The information line gives the directory totals. Drag the lower
 right gadget to resize, use arrows/track/thumb to scroll, and click the upper
 right gadget for full/restore. Each snapshot holds at most 256 entries and the
-view reuses at most sixteen visible objects.
+view reuses at most sixteen visible objects. Default 456×196 windows show a
+4×4 grid. The desktop includes `RAM:` for temporary writable storage.
 
 Path (P), New Folder (N) and Rename (R) use inline editable dialogs. Tab/Shift-Tab
 changes focus, Return accepts, and Escape cancels. File > Copy copies one file
 with a full destination path, progress and Cancel. Replacing a file and Delete
-require confirmation, with Cancel as the default. Use WORK: for writes; SYS: is
-read-only. Copy first writes EXECCOPY.TMP in the destination directory. Its final
+require confirmation, with Cancel as the default. Delete uses a compact framed
+overlay over the folder, with contextual file/folder wording. Use WORK: or RAM:
+for writes; SYS: is read-only. Copy first writes EXECCOPY.TMP in the destination directory. Its final
 replacement is not atomic; a failed final rename leaves that completed temporary
-file for recovery. Recursive operations and multiple selection are unsupported.
+file for recovery. Recursive operations are unsupported; selected files can be
+copied in a batch, and Delete also accepts empty folders.
 Desk > Save Settings explicitly saves folder geometry/paths, view/sort, mouse
 preference and two extension associations to WORK:DESKTOP.CFG for the next boot.
 

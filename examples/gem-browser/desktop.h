@@ -4,7 +4,8 @@
 #include "browser.h"
 #define DESKTOP_FOLDERS 3
 #define DESKTOP_CHILDREN 3
-#define DESKTOP_ICONS 7
+#define DESKTOP_ICONS 8
+#define DESKTOP_VOLUMES 4
 enum { COPY_BUFFER_BYTES=16384, FILE_COPY=1, FILE_DELETE=2,
        JOB_NEXT=1, JOB_TRANSFER=2, JOB_REPLACE=3 };
 struct DesktopFileJob {

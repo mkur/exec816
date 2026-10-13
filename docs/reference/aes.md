@@ -712,7 +712,11 @@ emits the standard four-plane extension and a monochrome fallback.
 
 Panel, Calculator, Text and Counter have distinct 32×16 colour icons: sliders,
 a keypad, a text page and a small chart. Normal desktop labels use the desktop
-grey, with a white-on-black label for selection. File windows reuse the beige
+grey, with a white-on-black label for selection. `RAM:` uses a blue-gray memory
+chip icon and opens the existing writable RAM filesystem. Eight desktop icons
+fit in a 96-pixel-wide column starting at the left edge, with a 28-pixel pitch;
+even the Calculator label and its selection background remain fully visible.
+File windows reuse the beige
 folder and the four matching GUI app icons. Extensionless console commands use
 a blue-gray `>_` terminal; other `.APP` files use a generic window icon.
 Ordinary files, including `.RSC`, keep the neutral document. Classification
@@ -725,10 +729,10 @@ OBJECTs for a 104×36 icon grid or a compact list. Colour artwork is 32×16;
 neutral documents retain their 32×20 bitmap. Labels sit in the same
 32-pixel-high objects. View chooses Icons/List and a checked Sort by name
 command; unchecked retains disk order. Name sorting groups directories first.
-New windows start at 360×184 and retain user-selected bounds across
+New windows start at 456×196 and retain user-selected bounds across
 navigation. The path occupies the title; a fixed top summary shows byte/item
 totals, selection or operation feedback. There is no duplicate INFO row, File
-popup or toolbar. The default window fits three columns by three icon rows.
+popup or toolbar. The default window fits four columns by four icon rows.
 File > Parent / Esc goes up in the same window; it is disabled at volume
 roots, where Esc does nothing. File > Refresh / Ctrl+L rereads the directory.
 Esc in a dialog or drag cancels that interaction without navigating; Backspace
@@ -782,6 +786,16 @@ wait for a long synchronous transfer; throughput takes priority.
 
 Delete asks once, defaults to Cancel and performs one `DeleteFile` per event
 turn. Only empty directories can be deleted; no descendant scan occurs.
+The confirmation is a compact framed overlay inside the owning folder, whose
+contents remain visible behind it. It consumes no additional window slot and
+uses the existing desktop event loop. Other applications remain usable. The
+prompt names a single file/folder or counts selected files and folders; only
+folder selections show `Empty folders only`. Long displayed names retain their
+beginning and end around an ellipsis; deletion still uses the complete snapshot
+name. Cancel has the default outline, keyboard focus has an underline, and
+buttons invert only while pressed. Return cancels, Tab/Space can activate Delete,
+and Escape dismisses without navigating. A nonempty-directory failure reports
+`Folder is not empty`.
 Successful deletions clear their selection bits. Both operations stop at the
 first DOS error and report completed/skipped/remaining counts and the failing
 name/error. Unprocessed items stay untouched. Long status messages are clipped

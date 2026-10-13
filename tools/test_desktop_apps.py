@@ -84,13 +84,13 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                     raster = Raster(font)
                     desktop(raster)
                     if shell_live:
-                        frame(raster, (32, 24, 560, 208), b'Exec816 Shell', focused == 1)
+                        frame(raster, (32, 24, 560, 208), b'Shell', focused == 1)
                         terminal.paint(raster, 5, 5, focused == 1)
                     if panel_live:
                         panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
                               radio=5 if read('DESKAPP', 'updates') else 4,
                               focus=5 if read('DESKAPP', 'updates') else 2)
-                    menu_bar(raster, {1:b'Exec816 Shell',2:b'Control Panel'}.get(focused,b'Exec816'))
+                    menu_bar(raster, {1:b'Shell',2:b'Control Panel'}.get(focused,b'Exec816'))
                     expected = overlay(raster, position)
                     golden = b''.join(colors[v >> 4]+colors[v & 15] for v in expected)
                     for n in range(1500):
