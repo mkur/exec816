@@ -42,23 +42,27 @@ reaches covered windows. Ctrl-Tab cycles; Ctrl-Escape opens Windows.
 The active application's menu is at the left. Ctrl-Shift-Escape enters it;
 arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 
-Double-click SYS:, WORK: or C: to open a folder. Desk > New Window opens another;
-up to three folders share one application Task. Closing the last folder leaves
-the desktop alive. View chooses Icons/List; Sort by name toggles name/disk order. Select then
-Return, or double-click, to open one entry. Shift-click toggles multiple entries;
-Shift-arrow adds an entry. Ctrl-A/View > Select All includes cached offscreen
-entries; View > Select None clears. Open and Rename need one entry.
-Arrows navigate; a dotted outline marks keyboard focus. Selection reverses the
-label without changing the icon. File > Parent or Esc goes to the parent in the same window; at a volume root
-Esc does nothing. The first item in a subdirectory is a parent-folder icon
-labelled ..; double-click or Return goes up and reveals the directory just left.
-The parent does not join selections for Copy/Delete and cannot be dragged or
-used as a drop target. File > Refresh or Ctrl-L reloads the directory.
-The thin top line shows totals, selection counts or operation feedback. The path
-is in the title. New windows start smaller; navigation preserves their size.
-Drag the bottom-right size gadget; vertical arrows, track and thumb scroll.
-The top-right fuller toggles full/remembered size. Listings retain 256 entries
-and reuse up to sixteen visible objects; larger listings report truncation.
+Double-click SYS:, WORK: or C: to open a folder. Desk > New Window opens
+another; up to three folders share one application Task. Closing the last
+folder leaves the desktop alive. View chooses Icons/List; Sort by name toggles
+name/disk order. Select then Return, or double-click, to open one entry.
+Shift-click toggles multiple entries; Shift-arrow adds an entry. Ctrl-A/View >
+Select All includes cached offscreen entries; View > Select None clears. Open
+and Rename need one entry. Arrows navigate; a dotted outline marks keyboard
+focus. Selection reverses the label without changing the icon. Folders use
+beige icons; Panel, Calculator, Text and Counter use their own artwork.
+Console commands use a >_ terminal, other .APP files a generic window, and
+documents a neutral page. File > Parent or Esc goes to the parent in the same
+window; at a volume root Esc does nothing. The first item in a subdirectory is
+a parent-folder icon labelled ..; double-click or Return goes up and reveals
+the directory just left. The parent does not join selections for Copy/Delete
+and cannot be dragged or used as a drop target. File > Refresh or Ctrl-L
+reloads the directory. The thin top line shows totals, selection counts or
+operation feedback. The path is in the title. New windows start smaller;
+navigation preserves their size. Drag the bottom-right size gadget; vertical
+arrows, track and thumb scroll. The top-right fuller toggles full/remembered
+size. Listings retain 256 entries and reuse up to sixteen visible objects;
+larger listings report truncation.
 
 Path (P), New Folder (N) and Rename (R) open inline text dialogs. Tab changes
 focus, Return accepts, Escape/Cancel dismisses. Names fold to uppercase.

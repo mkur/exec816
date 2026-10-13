@@ -114,9 +114,16 @@ static WORD first_entry(struct Browser *b,WORD first)
 }
 static WORD icon_kind(const struct FileEntry *entry)
 {
-    WORD n=strlen(entry->name);
-    if (entry->kind>0) return 1;
-    if (!strchr(entry->name,'.') || (n>=4 && !strcmp(entry->name+n-4,".APP"))) return 2;
+    static const struct { const char *name;WORD icon; } apps[]={
+        {"PANEL.APP",6},{"CALC.APP",7},{"TEXT.APP",8},{"COUNTER.APP",9}
+    };
+    WORD i;
+    if (entry->kind>0) return 5;
+    if (!strchr(entry->name,'.')) return 11;
+    if (FileMatch("*.APP",entry->name)) {
+        for (i=0;i<4;++i) if (FileMatch(apps[i].name,entry->name)) return apps[i].icon;
+        return 2;
+    }
     return 3;
 }
 /* The freed File slot owns four decorative edges. Existing black fill and
@@ -180,6 +187,8 @@ static void layout(struct Browser *b)
                 label(b->labels[i],index==BROWSER_PARENT ? "..":b->entries[index].name,12);
                 b->icons[i].monoblk.ib_ptext=(ULONG)b->labels[i];
                 b->icons[i].monoblk.ib_yicon=2;
+                b->icons[i].monoblk.ib_char&=0xf0ff;
+                b->icons[i].monoblk.ib_wtext=96;
                 row->ob_spec=(ULONG)&b->icons[i];
             } else {
                 b->labels[i][0]=index==BROWSER_PARENT || b->entries[index].kind>0 ? '>':' ';

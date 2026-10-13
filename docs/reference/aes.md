@@ -712,37 +712,46 @@ emits the standard four-plane extension and a monochrome fallback.
 
 Panel, Calculator, Text and Counter have distinct 32×16 colour icons: sliders,
 a keypad, a text page and a small chart. Normal desktop labels use the desktop
-grey, with a white-on-black label for selection. File-window icons keep their
-monochrome artwork in colour-icon records, reversing only the label. See the [desktop style](desktop.md#window-appearance).
+grey, with a white-on-black label for selection. File windows reuse the beige
+folder and the four matching GUI app icons. Extensionless console commands use
+a blue-gray `>_` terminal; other `.APP` files use a generic window icon.
+Ordinary files, including `.RSC`, keep the neutral document. Classification
+uses names only and does not change launching. File selection reverses only
+the paper-backed label, preserving the artwork. See the [desktop
+style](desktop.md#window-appearance).
 
-Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen OBJECTs
-for a 104×36 icon grid or a compact list. Icons have 32×20 bitmaps and labels in
-32-pixel-high objects. View chooses Icons/List and a checked Sort by name command; unchecked retains
-disk order. Name sorting groups directories first. New windows start at 360×184
-and retain user-selected bounds across navigation. The path occupies the title;
-a fixed top summary shows byte/item totals, selection or operation feedback.
-There is no duplicate INFO row, File popup or toolbar. The default window fits
-three columns by three icon rows. File > Parent / Esc goes up in the same
-window; it is disabled at volume roots, where Esc does nothing. File > Refresh /
-Ctrl+L rereads the directory. Esc in a dialog or drag cancels that interaction
-without navigating; Backspace only edits text. FULLER toggles full/remembered bounds. Select and press Return, or double-click, to open. Arrow keys navigate;
-resize reflows; vertical arrows, page clicks and the thumb scroll. Plain clicks
-replace selection; Shift-click toggles membership and Shift-arrow adds the next
-entry. View > Select All/None and Ctrl+A act on the cached snapshot,
-including offscreen entries. A virtual `..` item leads each subdirectory, scrolls with its contents and
-opens the parent on Return or double-click. It is omitted at roots. Going up
-selects and reveals the directory just left. The parent can have a highlight
-and keyboard focus, but never joins file membership or Copy/Delete/Rename;
-it is neither a drag source nor a drop target. All 256 real slots remain
-available, so scrolling can cover 257 display items.
-Open/Return on files and Rename require exactly one member;
-modified double-clicks never open. The status strip shows the selected count.
-A dotted border marks the keyboard lead independently of selection; mouse input
-removes it. The decoration does not intercept object hits. Refresh and sort changes retain selected filenames or parent focus; ordinary
-downward navigation clears them. Larger directories report truncation. Standalone Files shares these rules.
-The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the horizontal
-cursor keys; physical Shift-arrow checks use Up/Down. Shift-click can select
-entries in either direction.
+Folders load `SYS:DESKTOP.RSC`, cache up to 256 entries and reuse sixteen
+OBJECTs for a 104×36 icon grid or a compact list. Colour artwork is 32×16;
+neutral documents retain their 32×20 bitmap. Labels sit in the same
+32-pixel-high objects. View chooses Icons/List and a checked Sort by name
+command; unchecked retains disk order. Name sorting groups directories first.
+New windows start at 360×184 and retain user-selected bounds across
+navigation. The path occupies the title; a fixed top summary shows byte/item
+totals, selection or operation feedback. There is no duplicate INFO row, File
+popup or toolbar. The default window fits three columns by three icon rows.
+File > Parent / Esc goes up in the same window; it is disabled at volume
+roots, where Esc does nothing. File > Refresh / Ctrl+L rereads the directory.
+Esc in a dialog or drag cancels that interaction without navigating; Backspace
+only edits text. FULLER toggles full/remembered bounds. Select and press
+Return, or double-click, to open. Arrow keys navigate; resize reflows;
+vertical arrows, page clicks and the thumb scroll. Plain clicks replace
+selection; Shift-click toggles membership and Shift-arrow adds the next entry.
+View > Select All/None and Ctrl+A act on the cached snapshot, including
+offscreen entries. A virtual `..` item leads each subdirectory, scrolls with
+its contents and opens the parent on Return or double-click. It is omitted at
+roots. Going up selects and reveals the directory just left. The parent can
+have a highlight and keyboard focus, but never joins file membership or
+Copy/Delete/Rename; it is neither a drag source nor a drop target. All 256
+real slots remain available, so scrolling can cover 257 display items.
+Open/Return on files and Rename require exactly one member; modified
+double-clicks never open. The status strip shows the selected count. A dotted
+border marks the keyboard lead independently of selection; mouse input removes
+it. The decoration does not intercept object hits. Refresh and sort changes
+retain selected filenames or parent focus; ordinary downward navigation clears
+them. Larger directories report truncation. Standalone Files shares these
+rules. The pinned Atari keyboard matrix cannot produce Ctrl+Shift with the
+horizontal cursor keys; physical Shift-arrow checks use Up/Down. Shift-click
+can select entries in either direction.
 
 Desk opens another folder or launches Panel, Calculator, Text and Counter on
 demand. The desktop owns up to three program handles; actual Task/window limits

@@ -106,3 +106,60 @@ def exercise(s,desk,base,click,key,path,shot,move):
         keyboard_focus=True,focus_click_through=True,icon_list=True,sort_toggle=True,
         resize=True,navigation_keeps_bounds=True,full_restore=True,scroll=True,
         distinct_gadgets=True,inactive_exposure=True,close=True,virtual_parent=True,empty_parent=True,upward_reveal=True,parent_mutation_exclusion=True,parent_refresh=True)
+
+
+def colour_icons(s,desk,base,click,key,path,shot,move,menus):
+    """Shared artwork pointers, real painting and ordinary app launching."""
+    from gem_applications import instances,MODELS
+    b=s.b;n=lambda name:s.number(base+F[name],2)
+    def stock(name,index):
+        select(s,base,name,click)
+        cell=n('selected')+n('parent')-n('first')
+        actual=b.memdump(base+F['icons']+cell*38,38)
+        source=s.number(s.number(base+F['stock'],4)+index*24+12,4)
+        expected=b.memdump(source,38)
+        require(actual[:8]==expected[:8] and actual[34:]==expected[34:],'Wrong icon for '+name)
+        require(int.from_bytes(actual[12:14],'little')&0xf00==0,'Desktop grey leaked into file label')
+        require(int.from_bytes(actual[30:32],'little')==96,'File label width')
+    stock('C',5);shot('files-colour-folders')
+    stock('CALC.RSC',3);shot('files-colour-document')
+    select(s,base,'C',click);key('RETURN');wait_listing(s,base)
+    point=[]
+    def parent_click(x,y):point[:]=[x,y];click(x,y)
+    select(s,base,'..',parent_click)
+    b._cmd_ok('KEY CTRL down');key('ASTERISK');b._cmd_ok('KEY CTRL up')
+    require(n('selected')==0 and n('selectionCount')==1,'Arrow from parent skipped first file')
+    b._cmd_ok('KEY CTRL down');key('MINUS');b._cmd_ok('KEY CTRL up')
+    require(n('selected')==65534 and not n('selectionCount') and n('keyboardFocus'),'Arrow to parent joined membership')
+    shot('files-parent-keyboard')
+    move(*point)
+    for _ in range(2):
+        b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(2)
+        b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(2)
+    s.frames(100);wait_listing(s,base)
+    require(b.memdump(base+F['path'],128).split(b'\0')[0]==b'SYS:','Parent double-click')
+    require(listing(s,base)[n('selected')]=='C','Parent double-click did not reveal C')
+    key('RETURN');wait_listing(s,base)
+    stock('HELLO',11);shot('files-colour-console')
+    stock('DESKTOP.APP',2);shot('files-colour-generic')
+    for file,name,index in [('PANEL.APP','panel',6),('CALC.APP','calc',7),('TEXT.APP','text',8),('COUNTER.APP','counter',9)]:
+        stock(file,index)
+        # Selection must preserve artwork; the pixel oracle checks clipped
+        # rows while select() also scrolls these entries into view.
+        shot('files-colour-'+name)
+        key('RETURN')
+        for _ in range(60):
+            found=[a for a in instances(b,s.p,s.p['output']/'bitmap-console') if a['name']==name]
+            if found:break
+            s.frames(20)
+        require(found,'GUI icon launch failed: '+file)
+        model,ready,work=MODELS[name];app=found[0]['symbols'][model]
+        s.rendezvous('dw($%x)=1'%(app+ready));s.frames(100)
+        x,y=[s.number(app+work+i*2,2) for i in range(2)]
+        click(x,y-8);s.frames(120)
+        require(not [a for a in instances(b,s.p,s.p['output']/'bitmap-console') if a['name']==name],'GUI app did not close: '+name)
+        menus.select('SYS:C')
+    path(base,'SYS:')
+    shot('files-refinement-desktop')
+    return dict(folder=True,document=True,console=True,generic_gui=True,shared_app_artwork=True,
+        paper_labels=True,selected_pixels=True,scroll_and_clip=True,gui_launch_close=True,parent_arrows=True,parent_double_click=True)

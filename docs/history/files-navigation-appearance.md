@@ -56,3 +56,20 @@ The final integration slice exercises actual disk copies and standalone Files.
 The Browser grows by two upper-memory bytes to 4,041. O0/O2 emitted layout
 probes pass; the host suite passes 455 tests with four existing skips. Fixed,
 per-Task and idle reserved bank-zero deltas are all **zero**.
+
+## FR4: colour file icons
+
+Folders reuse the beige desktop icon. The four known GUI programs share their
+desktop artwork; extensionless commands use a `>_` terminal, other `.APP`
+programs a generic window, and data files the existing neutral page. A four-row
+filename table and existing wildcard matcher select these stock assets without
+reading executables. Per-cell descriptors retain paper labels and shared bitmap
+pointers. Selection preserves artwork; no renderer, palette or resource-format
+extension is added.
+
+The packaged run passes independent pixel comparisons for every category,
+selected/clipped/scrolled views, parent keyboard focus and double-click. Panel,
+Calculator, Text and Counter each launch from Files and close normally. HELLO
+and EXIT pass with guards intact. Host checks pass 455 tests and four skips.
+The resource is 7,058 bytes. Fixed, per-Task and idle reserved bank-zero deltas
+are all **zero**; Browser and OBJECT storage are unchanged from FR3.
