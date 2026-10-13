@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,

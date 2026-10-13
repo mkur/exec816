@@ -209,10 +209,17 @@ fully covered timer updates make an external layer cache eligible.
 ## Saved scene rectangles
 
 `BeginSave` stabilizes a completed visible footprint beneath a hidden overlay.
-`BeginRestore` hides that overlay and pins the saved image under post-hide
-visibility. The presenter removes overlays and retires the display transfer
-before `FinishSave`. Successful restore retires only matching manager damage;
-external repaint and normal exposure delivery remain required. An invalid save
+`BeginRestore` accepts an overlay contained in the saved rectangle, hides it,
+and pins the saved image under post-hide visibility. Its actual destination is
+`Scene.copyTarget`; the saved bounds and pitch remain the original capture's.
+The presenter removes overlays and retires the display transfer before
+`FinishSave(scene,token,okay,keep)`. A successful restore retires manager damage
+only within `copyTarget`. `keep` retains a valid image for another contained
+overlay; failure or invalidation always prevents reuse. Capture ignores `keep`.
+External repaint and normal exposure delivery remain required. The menu presenter
+accumulates restored exposure across headings and publishes it after dismissal
+and bar repair, without waking an unchanged application between headings.
+Layers API version 11 changes this call but adds no record storage. An invalid save
 or incomplete capture source returns `REDRAW`. A pin survives invalidation until
 the transfer is complete or the driver has proved quiescence.
 

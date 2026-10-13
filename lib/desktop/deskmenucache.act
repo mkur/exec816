@@ -17,7 +17,8 @@ USE CONSOLEBATCH
 USE HEAPCORE
 
 LONGCARD token
-BYTE restoring,notifyPending
+BYTE restoring,notifyPending,retainSave,exposurePending
+LAYERTYPES.Rect exposure
 PUBLIC LONGCARD captures,restores,misses,capturedBytes,restoredBytes
 
 ; Popup images share the same transfer path and fixed-slot policy. Identity
@@ -41,6 +42,8 @@ PUBLIC PROC Reset()
   attempt.kind=0
   current.kind=0
   notifyPending=0
+  exposurePending=0
+  retainSave=0
 
 RETURN
 
@@ -255,21 +258,33 @@ BYTE FUNC Transfer(BYTE restore)
   packet.copy.destination.height=save.slot.height
   packet.copy.destinationX=0
   packet.copy.destinationY=0
+  packet.copy.width=save.slot.width
+  packet.copy.height=save.slot.height
   IF restore<>0 THEN
     packet.copy.source=packet.copy.destination
-    packet.copy.sourceX=0
-    packet.copy.sourceY=0
+    packet.copy.sourceX=CARD(service.scene.copyTarget.left-save.bounds.left)
+    packet.copy.sourceY=CARD(service.scene.copyTarget.top-save.bounds.top)
     packet.copy.destination.offset=0
     packet.copy.destination.pitch=320
     packet.copy.destination.width=640
     packet.copy.destination.height=240
-    packet.copy.destinationX=CARD(save.bounds.left)
-    packet.copy.destinationY=CARD(save.bounds.top)
+    packet.copy.destinationX=CARD(service.scene.copyTarget.left)
+    packet.copy.destinationY=CARD(service.scene.copyTarget.top)
+    packet.copy.width=CARD(service.scene.copyTarget.right-service.scene.copyTarget.left)
+    packet.copy.height=CARD(service.scene.copyTarget.bottom-service.scene.copyTarget.top)
   FI
-  packet.copy.width=save.slot.width
-  packet.copy.height=save.slot.height
 
 RETURN(CONSOLEBITMAP.CopyStart())
+
+PUBLIC BYTE FUNC Reusable(LAYERTYPES.Rect POINTER bounds)
+
+  LET service=DESKSTATE.Get()
+  LET save=@service.scene.under
+  ConsolePending()
+
+RETURN(save.slot.valid<>0 AND save.slot.pinned=0
+    AND save.slot.identity=DESKSTATE.popupLayer
+    AND REGIONS.Contains(@save.bounds,bounds)<>0)
 
 ; Capture is optional. Incomplete source pixels open the menu immediately.
 PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
@@ -290,7 +305,7 @@ PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
   ConsolePending()
   restoring=0
   IF service.scene.under.slot.revision=0 THEN
-    status=LAYERS.FinishSave(@service.scene,token,0)
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
     token=0
     misses==+1
     RETURN(0)
@@ -299,7 +314,7 @@ PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
     IF DISPLAY.Blocked()<>0 THEN
       RETURN(1)
     FI
-    status=LAYERS.FinishSave(@service.scene,token,0)
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
     token=0
     misses==+1
     RETURN(0)
@@ -308,7 +323,7 @@ PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
 RETURN(1)
 
 ; A valid saved footprint is hidden and stabilized by the same scene token.
-PUBLIC BYTE FUNC Restore()
+PUBLIC BYTE FUNC Restore(BYTE keep)
   BYTE status
 
   LET service=DESKSTATE.Get()
@@ -324,11 +339,12 @@ PUBLIC BYTE FUNC Restore()
     RETURN(0)
   FI
   restoring=1
+  retainSave=keep
   IF Transfer(1)=0 THEN
     IF DISPLAY.Blocked()<>0 THEN
       RETURN(1)
     FI
-    status=LAYERS.FinishSave(@service.scene,token,0)
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
     token=0
     RETURN(0)
   FI
@@ -349,7 +365,7 @@ PROC Exposed()
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
           DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)
-          REGIONS.Intersect(@work,@service.scene.under.bounds,@area)
+          REGIONS.Intersect(@work,@exposure,@area)
           rect=0
           WHILE rect<layer.visible.count DO
             REGIONS.Intersect(@area,@layer.visible.rects(rect),@visible)
@@ -360,6 +376,40 @@ PROC Exposed()
       FI
     END
   OD
+
+RETURN
+
+; Historical pixels repair the transition immediately. Publish exposure once
+; the interaction ends, so heading replacement cannot wake an unchanged owner.
+PUBLIC PROC End()
+
+  LET service=DESKSTATE.Get()
+  IF exposurePending<>0 THEN
+    Exposed()
+    exposurePending=0
+    notifyPending=1
+  FI
+  IF service.scene.under.slot.valid<>0 THEN
+    LAYERCACHE.Discard(@service.scene.under.slot)
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC Pending()
+
+RETURN(notifyPending)
+
+PROC Remember(LAYERTYPES.Rect POINTER area)
+
+  IF exposurePending=0 THEN
+    REGIONS.Copy(area,@exposure)
+    exposurePending=1
+  ELSE
+    IF area.left<exposure.left THEN exposure.left=area.left FI
+    IF area.top<exposure.top THEN exposure.top=area.top FI
+    IF area.right>exposure.right THEN exposure.right=area.right FI
+    IF area.bottom>exposure.bottom THEN exposure.bottom=area.bottom FI
+  FI
 
 RETURN
 
@@ -414,7 +464,12 @@ PUBLIC PROC Pump()
   FI
   bytes=LONGCARD(service.scene.under.slot.width RSH 1)
       *LONGCARD(service.scene.under.slot.height)
-  status=LAYERS.FinishSave(@service.scene,token,okay)
+  okay=(okay<>0 AND service.scene.under.slot.revision<>0)
+  IF restoring<>0 THEN
+    bytes=LONGCARD((service.scene.copyTarget.right-service.scene.copyTarget.left) RSH 1)
+        *LONGCARD(service.scene.copyTarget.bottom-service.scene.copyTarget.top)
+  FI
+  status=LAYERS.FinishSave(@service.scene,token,okay,retainSave)
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($faee)
   FI
@@ -423,8 +478,7 @@ PUBLIC PROC Pump()
     IF restoring<>0 THEN
       restores==+1
       restoredBytes==+bytes
-      Exposed()
-      notifyPending=1
+      Remember(@service.scene.copyTarget)
     ELSE
       captures==+1
       capturedBytes==+bytes

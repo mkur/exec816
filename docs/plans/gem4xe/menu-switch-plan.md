@@ -44,7 +44,8 @@ context checks passed. The older lock fixture times out at 118 checks without
 assertion failures; a control using the pre-change C UPDATE implementation and
 native lock/window-state/service sources reproduces that timeout. This is not
 claimed as a passing lock regression. The new contended/nested scoped case passes.
-The active scope adds one 16-bit service field; no client,
+The active scope adds one 16-bit service field (1,812 → 1,814 bytes;
+both round to 1,816 heap bytes); no client,
 window, direct-page, stack or VRAM reservation grows. Reserved bank-zero delta:
 **0 fixed / 0 per public Task / 0 idle bytes**.
 
@@ -74,6 +75,15 @@ Keep one background slot, two existing popup slots, one scene token and one
 active display transfer. Do not add a general compositor or a second production
 cache path. Add only the bounded restore rectangle/continuation state needed by
 this transition. Commit after emitted transaction/pixel/failure checks pass.
+
+MS2 implemented: one capture covers application headings; restore copies only
+the retiring popup, retaining its layer identity and background while switching.
+Exposure is accumulated until dismissal. Optimized Layers passes 60,162 checks;
+raw/optimized boundary probes pass 124 each; AES menu pixels/input/mutation/exit
+and the 53-check native cache regression pass. Host checks: 459, four skips.
+Added fixed upper metadata is 10 bytes (two bytes plus an aligned eight-byte
+rectangle); `Scene.copyTarget` is reused. No VRAM, per-client or reserved bank-zero
+growth: **0 fixed / 0 per public Task / 0 idle bank-zero bytes**.
 
 ## MS3 Measure and package the corrected transition
 

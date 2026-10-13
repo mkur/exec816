@@ -49,7 +49,7 @@ PUBLIC BYTE FUNC BeginRestore(LAYERTYPES.Scene POINTER scene LONGCARD overlay
   LET save=@scene.under
   LET layer=Find(scene,overlay)
   IF save.slot.valid=0 OR save.slot.pinned<>0 OR save.slot.identity<>overlay
-      OR REGIONS.Equal(@save.bounds,@layer.bounds)=0 THEN
+      OR REGIONS.Contains(@save.bounds,@layer.bounds)=0 THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
   status=Show(scene,overlay,0)
@@ -58,6 +58,7 @@ PUBLIC BYTE FUNC BeginRestore(LAYERTYPES.Scene POINTER scene LONGCARD overlay
   FI
   status=Claim(scene,overlay,LAYERTYPES.UPDATE_RESTORE,token)
   IF status=LAYERTYPES.OK THEN
+    REGIONS.Copy(@layer.bounds,@scene.copyTarget)
     save.slot.pinned=1
   FI
 
@@ -65,13 +66,14 @@ RETURN(status)
 
 ; The presenter has removed overlays and established DMA completion/quiescence.
 ; Exposure notification to external owners remains its responsibility.
-PUBLIC BYTE FUNC FinishSave(LAYERTYPES.Scene POINTER scene LONGCARD token BYTE okay)
+PUBLIC BYTE FUNC FinishSave(LAYERTYPES.Scene POINTER scene LONGCARD token BYTE okay,keep)
   BYTE index,accepted
 
   IF token=0 OR token<>scene.busy OR (scene.activeKind<>LAYERTYPES.UPDATE_SCENE_READ
       AND scene.activeKind<>LAYERTYPES.UPDATE_RESTORE) THEN
     RETURN(LAYERTYPES.BAD_TOKEN)
   FI
+  okay=(okay<>0 AND scene.under.slot.revision<>0)
   IF scene.activeKind=LAYERTYPES.UPDATE_SCENE_READ THEN
     LAYERCACHE.Captured(@scene.under.slot,okay)
   ELSE
@@ -80,13 +82,15 @@ PUBLIC BYTE FUNC FinishSave(LAYERTYPES.Scene POINTER scene LONGCARD token BYTE o
         BEGIN
           LET layer=@scene.items(index)
           IF layer.dirty<>0 THEN
-            accepted=SubtractDamage(scene,@layer.damage,@scene.under.bounds)
+            accepted=SubtractDamage(scene,@layer.damage,@scene.copyTarget)
             layer.dirty=(layer.damage.count<>0)
           FI
         END
       OD
     FI
-    LAYERCACHE.Discard(@scene.under.slot)
+    IF keep=0 THEN
+      LAYERCACHE.Discard(@scene.under.slot)
+    FI
     LAYERCACHE.Released(@scene.under.slot,okay)
   FI
 

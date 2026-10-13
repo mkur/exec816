@@ -449,19 +449,20 @@ PUBLIC PROC Application(INT heading)
 RETURN
 
 PROC Popup(LAYERTYPES.Rect POINTER bounds)
+  LAYERTYPES.Rect background
 
   LET service=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-  IF layer.bounds.right-layer.bounds.left<>bounds.right-bounds.left
-      OR layer.bounds.bottom-layer.bounds.top<>bounds.bottom-bounds.top THEN
-    Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
-    Check(LAYERS.Delete(@service.scene,DESKSTATE.popupLayer))
-    Check(LAYERS.Create(@service.scene,bounds,@DESKSTATE.popupLayer))
-  ELSE
-    Check(LAYERS.Move(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top))
-  FI
+  Check(LAYERS.Bounds(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top,
+      CARD(bounds.right-bounds.left),CARD(bounds.bottom-bounds.top)))
   showPending=1
-  IF DESKMENUCACHE.Capture(bounds)=0 THEN
+  IF DESKMENUCACHE.Reusable(bounds)<>0 THEN
+    RETURN
+  FI
+  REGIONS.Copy(bounds,@background)
+  IF menu=GEM_MENU THEN
+    DESKAPPMENU.BackgroundBounds(@background)
+  FI
+  IF DESKMENUCACHE.Capture(@background)=0 THEN
     showPending=0
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
     DESKSTATE.TopChrome()
@@ -622,7 +623,7 @@ PUBLIC PROC Advance()
       AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
-      AND DESKAPPMENU.VisualChanged()=0 THEN
+      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0 THEN
     RETURN
   FI
   IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
@@ -635,7 +636,8 @@ PUBLIC PROC Advance()
   BEGIN
     LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
     IF popup.shown<>0 AND (menu=0 OR pendingMenu<>0 OR pendingAction<>0) THEN
-      IF DESKMENUCACHE.Restore()<>0 THEN
+      IF DESKMENUCACHE.Restore(menu=GEM_MENU AND pendingMenu=GEM_MENU
+          AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Current()<>0)<>0 THEN
         revision=service.scene.rebuilds
         RETURN
       FI
@@ -677,6 +679,7 @@ PUBLIC PROC Advance()
   FI
   IF menu=0 THEN
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
+    DESKMENUCACHE.End()
   FI
   IF chromeChanged<>0 THEN
     IF contentRevision<>0 THEN
@@ -752,7 +755,7 @@ RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
     OR paintMenu<>menu OR paintSelection<>selected
     OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
     OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0
-    OR DESKAPPMENU.VisualChanged()<>0)
+    OR DESKAPPMENU.VisualChanged()<>0 OR DESKMENUCACHE.Pending()<>0)
     AND AESLOCKS.NativeReady()<>0 AND AESLOCKS.MouseBlocked()=0
     AND AESLOCKS.PaintBlocked()=0)
 

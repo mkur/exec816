@@ -184,11 +184,11 @@ PUBLIC PROC Finish()
 
 RETURN
 
-PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
+PROC HeadingBounds(INT title LAYERTYPES.Rect POINTER bounds)
   INT left,top,box
 
   LET menu=owner.menu
-  box=menu.box(heading)
+  box=menu.box(title)
   LET object=AESMENU.Object(menu,box)
   left=BAR_LEFT+menu.x(box)
   top=menu.y(box)
@@ -197,6 +197,29 @@ PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
   IF top<16 THEN top=16 FI
   IF top+object.height>240 THEN top=240-object.height FI
   REGIONS.Assign(bounds,left,top,left+object.width,top+object.height)
+
+RETURN
+
+PUBLIC PROC PopupBounds(LAYERTYPES.Rect POINTER bounds)
+
+  HeadingBounds(heading,bounds)
+
+RETURN
+
+; One bounded background covers every heading in this menu interaction.
+PUBLIC PROC BackgroundBounds(LAYERTYPES.Rect POINTER bounds)
+  BYTE index
+  LAYERTYPES.Rect next
+
+  LET menu=owner.menu
+  HeadingBounds(0,bounds)
+  FOR index=1 TO menu.titles-1 DO
+    HeadingBounds(INT(index),@next)
+    IF next.left<bounds.left THEN bounds.left=next.left FI
+    IF next.top<bounds.top THEN bounds.top=next.top FI
+    IF next.right>bounds.right THEN bounds.right=next.right FI
+    IF next.bottom>bounds.bottom THEN bounds.bottom=next.bottom FI
+  OD
 
 RETURN
 
