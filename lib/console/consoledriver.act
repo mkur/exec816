@@ -26,6 +26,7 @@ USE DISPLAY
 USE DISPLAYADAPTER
 USE DESKHOST
 USE DESKMENUCACHE
+USE DESKMENU
 USE DESKSTATE
 USE DESKPAINT
 USE DESKINPUT
@@ -623,6 +624,7 @@ PUBLIC PROC Worker()
     FI
 
     CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
+    DESKHOST.MenuContinuation()
     IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
       accepted=RequestStop(service)
@@ -656,7 +658,7 @@ PUBLIC PROC Worker()
     bits=0
 
     ; Commit visible GUI feedback before starting another console-output
-    ; quantum. Drain at most four steps of the same strip, with input between
+    ; quantum. Drain at most four steps of a strip or ready menu, with input between
     ; C calls. This never renews the turn's control or output budgets.
     deferOutput=0
     paintSteps=0
@@ -676,7 +678,11 @@ PUBLIC PROC Worker()
         deferOutput=1
       FI
 
-      IF paintProgress<>2 OR paintSteps=PAINT_STEPS OR deferOutput<>0
+      IF paintProgress=1 THEN
+        DESKMENU.Advance()
+      FI
+      IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
+          OR paintSteps=PAINT_STEPS OR deferOutput<>0
           OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
         EXIT
       FI

@@ -22,6 +22,7 @@ from generate_layers import layout as layer_layout
 from native_program import require, sha256
 from sio_transaction_trace import BASE_HZ, read_events
 from test_demo import run
+import window_response_trace as response_trace
 
 
 class Probe:
@@ -187,7 +188,8 @@ def main():
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text())['symbols']
     if 'GemDrawingFrameBatch' in foreign:
         points[foreign['GemDrawingFrameBatch']]='GemDrawingFrameBatch'
-    os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
+    tracing=response_trace.setup(out)
+    os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response_trace.pcs(tracing)))
     probe=Probe(a.count,a.conventional)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False)
     events=read_events(out/'emulator.log',kinds={'cpu'})
@@ -202,6 +204,7 @@ def main():
                         'Warm SYS: reconstructed frame sides')
                 require(sample['delta']['restoredBytes']==462*185//2,
                         'Warm SYS: did not restore exactly the body below its title')
+    response_trace.report(out,events,tracing,probe.samples,'window-preservation')
     summary={}
     for name in sorted({s['action'] for s in probe.samples}):
         rows=[s for s in probe.samples if s['action']==name]

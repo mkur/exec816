@@ -93,3 +93,22 @@ measurements follow in the combined packaged-image observations.
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
 guards, alignment and unused capacity. No further VRAM or persistent state is
 reserved.
+
+## UI3 Bounded menu continuation
+
+A completed foreground save/restore retires before unrelated control admissions.
+Ready menu strips continue within the worker's existing four-step allowance,
+with input between units and unchanged control/output budgets. The existing
+two-menu-transaction fairness rule remains. Idle captures use their old path.
+No additional hardware polling, completion identity, Task or priority is added.
+
+The optimized menu fixture passes its seven physical phases, acknowledgement,
+menu replacement, disabled entry, ownership and guard checks
+(`build/window-menu-response/ui3-menus`). The passive observer now records
+C call returns and native completion/continuation boundaries, separating Task
+CPU charge from elapsed time. The observed baseline View transition has about
+8 ms from blitter IRQ completion to polling; this alone does not justify an
+extra immediate probe. Combined latency acceptance follows in UI5.
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
+guards/alignment/capacity. No additional persistent state or VRAM is allocated.

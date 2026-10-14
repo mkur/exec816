@@ -519,6 +519,19 @@ PUBLIC BYTE FUNC Ready()
 RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
     AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
 
+; Continue completed menu strips within the same existing four-step allowance.
+; Ordinary windows retain their usual boundary and menu transaction fairness.
+PUBLIC BYTE FUNC MenuReady()
+
+  IF Ready()=0 THEN
+    RETURN(0)
+  FI
+  IF paintToken<>0 THEN
+    RETURN(paintLayer=DESKSTATE.popupLayer OR paintLayer=DESKSTATE.barLayer)
+  FI
+
+RETURN(menuTurns<2 AND MenuLayer()<>NULL)
+
 ; Visit the title band, client, then remaining frame pieces. Partition before
 ; limiting frame height: a full client copy never enters the frame scratch.
 BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
@@ -590,7 +603,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
         FI
         whole=(whole<>0 AND ((strip.left OR strip.right) & 1)=0)
       ELSEIF partIndex>=3 THEN
-        ; Solid-only sides fit in the existing scratch at a compact pitch.
+        ; Solid/atlas sides fit in the existing scratch at a compact pitch.
         whole=(strip.right-strip.left<=DESKTYPES.FRAME_GADGET_WIDTH)
       FI
     FI

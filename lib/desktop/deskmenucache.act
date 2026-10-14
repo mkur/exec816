@@ -399,6 +399,11 @@ PUBLIC PROC End()
 
 RETURN
 
+; Foreground transfers only. Idle popup capture retains its ordinary retirement.
+PUBLIC BYTE FUNC Foreground()
+
+RETURN(popupOperation=POPUP_RESTORE OR (token<>0 AND popupOperation=0))
+
 PUBLIC BYTE FUNC Pending()
 
 RETURN(notifyPending)

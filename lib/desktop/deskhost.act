@@ -162,6 +162,18 @@ PUBLIC PROC Events()
 
 RETURN
 
+; Retire a notified foreground save/restore before unrelated control work.
+; This neither polls hardware nor admits requests or renews a worker budget.
+PUBLIC PROC MenuContinuation()
+
+  IF DESKMENUCACHE.Foreground()<>0 AND CONSOLEBITMAP.Pending()=0
+      AND DISPLAY.Blocked()=0 THEN
+    DESKMENUCACHE.Pump()
+    DESKMENU.Advance()
+  FI
+
+RETURN
+
 PUBLIC PROC Controls()
   BYTE count,admitted,selected,aesRemaining,limit
   LONGCARD priorToken

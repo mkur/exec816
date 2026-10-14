@@ -4,6 +4,7 @@ import argparse,json,os,statistics,struct,zipfile
 from collections import Counter
 from pathlib import Path
 from test_demo import run
+import window_response_trace as response_trace
 from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from gem_applications import instances
@@ -139,7 +140,8 @@ def main():
     points={r['address']:n for r in image['routines'] for n in names if r['name'].startswith('M_'+n+'_')}
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text())['symbols']
     points.update({foreign[n]:n for n in ('VbxeOwnerSubmit','VbxeOwnerFence','GemDrawingFrameBatch') if n in foreign})
-    os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
+    tracing=response_trace.setup(out)
+    os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response_trace.pcs(tracing)))
     probe=Frames(a.count,a.baseline)
     if a.analyze_only:
         probe.samples=json.loads((out/'frame-exposure-samples.json').read_text())
@@ -157,6 +159,7 @@ def main():
             require(row['calls'].get('CONSOLEBITMAP_FRAME')==4,
                     'Expected four cold frame batches without a later title repaint')
             require(row['calls'].get('GemDrawingFrameBatch')==2,'Expected two complete frame sides')
+    response_trace.report(out,events,tracing,probe.samples,'frame-exposure')
     summary={}
     for name in sorted({r['action'] for r in probe.samples}):
         rows=[r for r in probe.samples if r['action']==name]
