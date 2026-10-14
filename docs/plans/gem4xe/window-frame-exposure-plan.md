@@ -17,7 +17,9 @@ eviction and conventional/preserved exposure. See
 `build/frame-exposure/aes-cache/results.json`. This also found and corrected
 a tall-side offset that exceeded the old sixteen-row work table: sides now
 use an 8/16-byte power-of-two pitch. FE2 adds no persistent storage or reserved
-bank-zero/VRAM bytes.
+bank-zero/VRAM bytes. The packaged focus observer also found that a pinned
+restore must retain the selected body partition across presenter steps; FE2's
+whole-window fixture now requires exactly one completed copy, and passes.
 FE3's unchanged-package trace confirmed false borderless title damage:
 `[0,11,640,22]` joined the real `[120,24,582,220]` exposure into a full-width
 redraw. Focus now skips title invalidation for a non-iconified borderless owner.

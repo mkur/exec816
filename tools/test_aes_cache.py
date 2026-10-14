@@ -58,6 +58,9 @@ def physical(b,p,foreign,report):
             require(row['captures']==previous['captures']+1,'Changed frame was not recaptured')
         if phase in (28,30,31):
             require(row['captures']==previous['captures'],'Unchanged frame/exposure recaptured pixels')
+        if phase==31:
+            require(row['restores']==previous['restores']+1,
+                    'Whole-window exposure did not retire exactly one body copy')
         if phase in (19,31):
             require(row['restores']>previous['restores'],'Preserved exposure missed its image')
             require(row['captures']==previous['captures'] and row['patches']==previous['patches'],

@@ -531,7 +531,8 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
   IF window<>NULL AND window.iconified=0
       AND window.kind<>DESKTYPES.CONTENT_CONSOLE
       AND ((damage.left OR damage.right OR layer.bounds.left) & 1)=0 THEN
-    saved=(DESKCACHE.Lookup(service,window,
+    ; A pinned restore is still the selected body partition until retirement.
+    saved=(started=PAINT_CACHE OR DESKCACHE.Lookup(service,window,
         CARD(layer.bounds.right-layer.bounds.left),
         CARD(layer.bounds.bottom-layer.bounds.top))<>LAYERCACHE.NO_SLOT)
   FI
