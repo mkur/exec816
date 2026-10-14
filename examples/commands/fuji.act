@@ -10,6 +10,8 @@ CONST OP_STATUS=1
 CONST OP_HOSTS=2
 CONST OP_DISKS=3
 CONST OP_DIRECTORY=4
+CONST OP_ATTACH=5
+CONST OP_EJECT=6
 CONST DRIVE_FIRST=$31
 
 BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
@@ -18,7 +20,7 @@ BYTE ARRAY scratch(512),line(128),digits(11)
 SIO.Session control,disk
 SIO.Transaction packet
 CARD used,operation,host,drive
-BYTE directoryOpen,committed,wifi
+BYTE directoryOpen,committed,wifi,diskOpen
 INT wireError
 LONGINT cause
 CSTRING phase
@@ -57,7 +59,7 @@ BYTE FUNC Emit()
     RETURN(0)
   FI
 
-  line(used)=10
+  line(used)=ASCII.LF
   IF COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used+1))=0 THEN
     cause=COMMAND.IoErr()
     RETURN(0)
@@ -273,40 +275,40 @@ BYTE FUNC Disks()
 
   IF drive<>0 THEN
     BEGIN
-    index=drive-DRIVE_FIRST
-    IF DiskRow(index)=0 THEN
-      RETURN(0)
-    FI
+      index=drive-DRIVE_FIRST
+      IF DiskRow(index)=0 THEN
+        RETURN(0)
+      FI
 
-    IF scratch(index*FUJINET.DISK_BYTES+FUJINET.DISK_FILE)=0 THEN
-      RETURN(1)
-    FI
+      IF scratch(index*FUJINET.DISK_BYTES+FUJINET.DISK_FILE)=0 THEN
+        RETURN(1)
+      FI
 
-    IF Frame(FUJINET.CMD_GET_PATH,FUJINET.PATH_BYTES,SIO.SIODIR_READ,
-        index,0,c"image path")=0 THEN
-      RETURN(0)
-    FI
+      IF Frame(FUJINET.CMD_GET_PATH,FUJINET.PATH_BYTES,SIO.SIODIR_READ,
+          index,0,c"image path")=0 THEN
+        RETURN(0)
+      FI
 
-    IF ValidText(scratch,FUJINET.PATH_BYTES)=0 THEN
-      RETURN(0)
-    FI
+      IF ValidText(scratch,FUJINET.PATH_BYTES)=0 THEN
+        RETURN(0)
+      FI
 
-    StartRow()
-    Text(c"Path ")
-    ; Paths can exceed a row: stream their bounded bytes as one output entry.
-    IF COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used))=0 THEN
-      cause=COMMAND.IoErr()
-      RETURN(0)
-    FI
+      StartRow()
+      Text(c"Path ")
+      ; Paths can exceed a row: stream their bounded bytes as one output entry.
+      IF COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used))=0 THEN
+        cause=COMMAND.IoErr()
+        RETURN(0)
+      FI
 
-    LET length=STR.strlen(CSTRING(scratch))
-    IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
-      cause=COMMAND.IoErr()
-      RETURN(0)
-    FI
+      LET length=STR.strlen(CSTRING(scratch))
+      IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
+        cause=COMMAND.IoErr()
+        RETURN(0)
+      FI
 
-    StartRow()
-    RETURN(Emit())
+      StartRow()
+      RETURN(Emit())
     END
   FI
 
@@ -322,15 +324,9 @@ BYTE FUNC Disks()
 
 RETURN(1)
 
-; Paths retain case and spaces; the wire frame reserves the final NUL(s).
-BYTE FUNC PathFrame(CSTRING path CARD nulBytes)
+; Parsing has admitted the path and reserved its final NUL(s).
+PROC PathFrame(CSTRING path)
   CARD index
-
-  LET length=STR.strlen(path)
-  IF length=0 OR length+SIZE(nulBytes)>SIZE(FUJINET.PATH_BYTES) THEN
-    cause=COMMAND.ERROR_LINE_TOO_LONG
-    RETURN(0)
-  FI
 
   FOR index=0 TO FUJINET.PATH_BYTES-1 DO
     scratch(index)=0
@@ -338,7 +334,7 @@ BYTE FUNC PathFrame(CSTRING path CARD nulBytes)
 
   STR.strlcpy(scratch,path,FUJINET.PATH_BYTES)
 
-RETURN(1)
+RETURN
 
 BYTE FUNC Directory()
   BYTE okay
@@ -349,13 +345,9 @@ BYTE FUNC Directory()
   FI
 
   IF values(3)=0 THEN
-    IF PathFrame(c"/",2)=0 THEN
-      RETURN(0)
-    FI
+    PathFrame(c"/")
   ELSE
-    IF PathFrame(CSTRING(BYTE POINTER(values(3))),2)=0 THEN
-      RETURN(0)
-    FI
+    PathFrame(CSTRING(BYTE POINTER(values(3))))
   FI
 
   IF Frame(FUJINET.CMD_OPEN_DIRECTORY,FUJINET.PATH_BYTES,SIO.SIODIR_WRITE,
@@ -367,140 +359,46 @@ BYTE FUNC Directory()
   okay=1
   DO
     BEGIN
-    IF Cancelled()<>0 THEN
-      okay=0
-      EXIT
-    FI
+      IF Cancelled()<>0 THEN
+        okay=0
+        EXIT
+      FI
 
-    IF Frame(FUJINET.CMD_READ_DIRECTORY,FUJINET.DIRECTORY_BYTES,
-        SIO.SIODIR_READ,FUJINET.DIRECTORY_BYTES,0,c"directory entry")=0 THEN
-      okay=0
-      EXIT
-    FI
+      IF Frame(FUJINET.CMD_READ_DIRECTORY,FUJINET.DIRECTORY_BYTES,
+          SIO.SIODIR_READ,FUJINET.DIRECTORY_BYTES,0,c"directory entry")=0 THEN
+        okay=0
+        EXIT
+      FI
 
-    IF scratch(0)=FUJINET.DIRECTORY_END AND
-        scratch(1)=FUJINET.DIRECTORY_END THEN
-      EXIT
-    FI
+      IF scratch(0)=FUJINET.DIRECTORY_END AND
+          scratch(1)=FUJINET.DIRECTORY_END THEN
+        EXIT
+      FI
 
-    IF ValidText(scratch,FUJINET.DIRECTORY_BYTES)=0 THEN
-      okay=0
-      EXIT
-    FI
+      IF ValidText(scratch,FUJINET.DIRECTORY_BYTES)=0 THEN
+        okay=0
+        EXIT
+      FI
 
-    LET length=STR.strlen(CSTRING(scratch))
-    IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
-      cause=COMMAND.IoErr()
-      okay=0
-      EXIT
-    FI
+      LET length=STR.strlen(CSTRING(scratch))
+      IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
+        cause=COMMAND.IoErr()
+        okay=0
+        EXIT
+      FI
 
-    StartRow()
-    IF Emit()=0 THEN
-      okay=0
-      EXIT
-    FI
+      StartRow()
+      IF Emit()=0 THEN
+        okay=0
+        EXIT
+      FI
     END
   OD
 
 RETURN(okay)
 
-; Normalize only the operation word; image paths remain unchanged.
-CARD FUNC ParseOperation()
-  CARD index
-
-  IF values(0)=0 THEN
-    RETURN(OP_STATUS)
-  FI
-
-  LET word=BYTE POINTER(values(0))
-  index=0
-  WHILE word(index)<>0 DO
-    IF word(index)>='a AND word(index)<='z THEN
-      word(index)==-32
-    FI
-
-    index==+1
-  OD
-
-  IF STR.strcmp(CSTRING(word),c"STATUS")=0 THEN
-    RETURN(OP_STATUS)
-  ELSEIF STR.strcmp(CSTRING(word),c"HOSTS")=0 THEN
-    RETURN(OP_HOSTS)
-  ELSEIF STR.strcmp(CSTRING(word),c"DISKS")=0 THEN
-    RETURN(OP_DISKS)
-  ELSEIF STR.strcmp(CSTRING(word),c"DIR")=0 THEN
-    RETURN(OP_DIRECTORY)
-  FI
-
-RETURN(0)
-
-BYTE FUNC Parse()
-  CARD index
-
-  operation=ParseOperation()
-  IF operation=0 THEN
-    cause=COMMAND.ERROR_BAD_ARGUMENTS
-    RETURN(0)
-  FI
-
-  IF operation=OP_STATUS OR operation=OP_HOSTS THEN
-    FOR index=1 TO 5 DO
-      IF values(index)<>0 THEN
-        cause=COMMAND.ERROR_BAD_ARGUMENTS
-        RETURN(0)
-      FI
-    OD
-  ELSEIF operation=OP_DISKS THEN
-    FOR index=2 TO 5 DO
-      IF values(index)<>0 THEN
-        cause=COMMAND.ERROR_BAD_ARGUMENTS
-        RETURN(0)
-      FI
-    OD
-
-    IF values(1)<>0 THEN
-      BEGIN
-        LET name=BYTE POINTER(values(1))
-        IF (name(0)<>'D AND name(0)<>'d) OR name(1)<'1 OR name(1)>'8 THEN
-          cause=COMMAND.ERROR_BAD_ARGUMENTS
-          RETURN(0)
-        FI
-
-        IF name(2)<>0 THEN
-          IF name(2)<>': OR name(3)<>0 THEN
-            cause=COMMAND.ERROR_BAD_ARGUMENTS
-            RETURN(0)
-          FI
-        FI
-
-        drive=DRIVE_FIRST+CARD(name(1)-'1)
-      END
-    FI
-  ELSE
-    BEGIN
-    IF values(1)<>0 OR values(2)=0 OR values(4)<>0 OR values(5)<>0 THEN
-      cause=COMMAND.ERROR_BAD_ARGUMENTS
-      RETURN(0)
-    FI
-
-    LET number=LONGCARD POINTER(values(2))
-    IF number^<1 OR number^>FUJINET.SLOTS THEN
-      cause=COMMAND.ERROR_BAD_ARGUMENTS
-      RETURN(0)
-    FI
-
-    host=CARD(number^-1)
-    IF values(3)<>0 THEN
-      IF STR.strlen(CSTRING(BYTE POINTER(values(3))))=0 THEN
-        cause=COMMAND.ERROR_BAD_ARGUMENTS
-        RETURN(0)
-      FI
-    FI
-    END
-  FI
-
-RETURN(1)
+INCLUDE "fuji-arguments.inc"
+INCLUDE "fuji-images.inc"
 
 ; Report the original wire failure even if cleanup performs another command.
 PROC WireFault(INT error CARD commandByte LONGCARD actual CSTRING failedPhase)
@@ -520,7 +418,7 @@ PROC WireFault(INT error CARD commandByte LONGCARD actual CSTRING failedPhase)
   Number(LONGCARD(commandByte))
   Text(c", actual ")
   Number(actual)
-  line(used)=10
+  line(used)=ASCII.LF
   COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used+1))
 
 RETURN
@@ -532,6 +430,9 @@ LONGINT FUNC Main()
   wireError=0
   directoryOpen=0
   committed=0
+  diskOpen=0
+  packet.command=0
+  packet.actual=0
   drive=0
   LET parsed=COMMAND.ReadArgsOrHelp(
       c"COMMAND,DRIVE,HOST/K/N,PATH/K,IMAGE/K,READWRITE/S",
@@ -567,8 +468,12 @@ LONGINT FUNC Main()
     okay=Hosts()
   WHEN OP_DISKS THEN
     okay=Disks()
-  ELSE
+  WHEN OP_DIRECTORY THEN
     okay=Directory()
+  WHEN OP_ATTACH THEN
+    okay=Attach()
+  ELSE
+    okay=Eject()
   ESAC
 
   LET originalCause=cause
@@ -582,6 +487,10 @@ LONGINT FUNC Main()
         c"directory close")=0 AND originalCause=0 THEN
       okay=0
     FI
+  FI
+
+  IF diskOpen<>0 THEN
+    SIO.Close(BYTE POINTER(@disk))
   FI
 
   SIO.Close(BYTE POINTER(@control))

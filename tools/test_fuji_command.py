@@ -8,13 +8,15 @@ from build_command import compile_command
 from fujinet_peer import make_peer
 from make_data_disk import make
 from native_program import ROOT, build, compiler, require, verify_machine, sha256, read_build
-from os_boundary import emulator
+from os_boundary import emulator, run_to
+from filesystem_audit import Audit
 from test_dos_stack import execute, ownership
 from test_cooperative import data
 from test_sio_device import PIN
 
 
-def run(output, reuse=None, absent=False):
+def run(output, reuse=None, absent=False, images=False, workflow=False,
+        filesystem='mydos', size=128):
     output.mkdir(parents=True, exist_ok=True)
     t = compiler(ROOT / 'build/actionc', release=True)
     peer = make_peer(output / 'peer', discovery=False, commands=True)
@@ -25,8 +27,19 @@ def run(output, reuse=None, absent=False):
         path.unlink()
     make(output / 'commands.atr', contents, filesystem='sdfs', sectors=720,
          sector_bytes=128, binary_names={'FUJI'})
+    if workflow:
+        selected = output / 'selected'; selected.mkdir(exist_ok=True)
+        (selected / 'SWAP.BIN').write_bytes(b'\x55' * 64)
+        make(output / 'first.atr', selected, filesystem=filesystem,
+             sectors=720, sector_bytes=size, binary_names={'SWAP.BIN'})
+        (selected / 'SWAP.BIN').write_bytes(b'\xaa' * 64)
+        make(output / 'second.atr', selected, filesystem=filesystem,
+             sectors=720, sector_bytes=size, binary_names={'SWAP.BIN'})
+        first_digest = sha256(output / 'first.atr')
     profile = json.loads((ROOT / 'platform/altirraos/memory-4m.json').read_text())
-    profile['image_data_bytes'] = 6400
+    # The native workflow fixture carries its own 2 KiB readback buffer and
+    # metadata snapshots. This is test arena capacity, not a demo reservation.
+    profile['image_data_bytes'] = 8192
     memory = output / 'memory.json'; memory.write_text(json.dumps(profile, indent=2) + '\n')
     p = read_build(reuse) if reuse else build(t, ROOT / 'tests/programs/fuji_command.act', output / 'program',
               tasks=True, task_capacity=8, optimize=True, console_deferred=True,
@@ -37,6 +50,15 @@ def run(output, reuse=None, absent=False):
             require(sha256(ROOT / name) == digest, 'Stale FUJI input: ' + name)
         require(sha256(ROOT / 'tests/programs/fuji_command.act') ==
                 p['build']['source_sha256'], 'Stale FUJI test source')
+        inputs = json.loads((reuse / 'fuji-test-inputs.json').read_text())
+        for name in ('images', 'workflow'):
+            source = ROOT / ('tests/programs/fuji-images-test.inc' if name == 'images'
+                             else 'tests/programs/fuji-workflow.inc')
+            require(sha256(source) == inputs[name], 'Stale FUJI test: ' + name)
+    else:
+        (output / 'program/fuji-test-inputs.json').write_text(json.dumps(dict(
+            images=sha256(ROOT / 'tests/programs/fuji-images-test.inc'),
+            workflow=sha256(ROOT / 'tests/programs/fuji-workflow.inc')))+'\n')
     digest = sha256(output / 'commands.atr')
     with emulator(ROOT / 'build/altirra-sio-multi',
                   ROOT / 'build/firmware/altirraos-816.rom', output, pin=PIN) as b:
@@ -50,7 +72,23 @@ def run(output, reuse=None, absent=False):
         machine = verify_machine(b, ROOT / 'build/firmware/altirraos-816.rom', PIN)
         def before(bridge):
             flag = next(d for d in p['image']['data'] if '_FUJICOMMANDTEST_SCENARIO_' in d['name'])
-            bridge.memload(flag['address'], bytes([int(absent)]))
+            bridge.memload(flag['address'], bytes([1 if absent else 2 if images else 3 if workflow else 0]))
+            if workflow:
+                def symbol(name):
+                    return next(d['address'] for d in p['image']['data']
+                                if '_FUJICOMMANDTEST_' + name + '_' in d['name'])
+                bridge.poke(symbol('TESTFORMAT'), 1 if filesystem == 'mydos' else 2)
+                bridge.memload(symbol('WANTEDBYTES'), size.to_bytes(2, 'little'))
+                phase = symbol('MEDIAPHASE')
+                marker = p['labels']['native_nmi']
+                condition = f'db(${phase:x})!=0'
+                bridge.bp_set(marker, condition=condition)
+                for index, media in enumerate(('first.atr', 'second.atr'), 1):
+                    run_to(bridge, marker, 12000, 240, condition)
+                    require(bridge.memdump(phase, 1) == bytes([index]), 'Wrong image rendezvous')
+                    bridge.mount(1, str(output / media))
+                    bridge.poke(phase, 0)
+                bridge.bp_clear_all()
         try:
             runtime, _ = execute(b, p, before_run=before, timeout=240, frame_limit=12000,
                                  expected_status=0xff93 if absent else 0)
@@ -66,7 +104,16 @@ def run(output, reuse=None, absent=False):
             require(data(b, p['image'], 'completed') == [1], 'FUJI workflow incomplete')
             ownership(b, p, p['output'])
     require(sha256(output / 'commands.atr') == digest, 'Commands disk changed')
-    return dict(status='pass', tier='development', absent=absent, checks=checks, build=p['build'],
+    audit = None
+    if workflow:
+        require(sha256(output / 'first.atr') == first_digest, 'Readonly image changed')
+        oracle = Audit((output / 'second.atr').read_bytes())
+        audit = getattr(oracle, filesystem)()
+        require(oracle.files.get('SWAP.BIN') == b'\xaa' * 64 and
+                oracle.files.get('NEW.BIN') == bytes(range(1, 65)), 'Wrong persisted image data')
+    return dict(status='pass', tier='development', absent=absent, images=images,
+                workflow=workflow, filesystem=filesystem if workflow else None,
+                sector_bytes=size if workflow else None, audit=audit, checks=checks, build=p['build'],
                 machine=machine, runtime=runtime, peer_sha256=sha256(peer),
                 command_sha256=sha256(contents / 'FUJI'))
 
@@ -76,7 +123,13 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=ROOT / 'build/fujinet/fn3')
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--absent', action='store_true')
+    parser.add_argument('--images', action='store_true')
+    parser.add_argument('--workflow', action='store_true')
+    parser.add_argument('--filesystem', choices=('mydos', 'sdfs'), default='mydos')
+    parser.add_argument('--size', type=int, choices=(128, 256), default=128)
     args = parser.parse_args()
-    result = run(args.output.resolve(), args.from_build, args.absent)
+    require(sum((args.absent, args.images, args.workflow)) <= 1, 'Select one FUJI test scope')
+    result = run(args.output.resolve(), args.from_build, args.absent, args.images,
+                 args.workflow, args.filesystem, args.size)
     (args.output / 'results.json').write_text(json.dumps(result, indent=2) + '\n')
     print('FUJI command workflow passed', result['checks'])

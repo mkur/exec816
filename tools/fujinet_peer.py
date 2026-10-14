@@ -97,6 +97,7 @@ int fault_mode;
     } },
     { id: $f9, script: function {
       $sio.ack();
+      if (fault_mode == 10) $sio.delay(5400000);
       if ($aux1 < 2 && fault_mode != 9) $sio.complete(); else $sio.error();
     } },
     { id: $f7, script: function {
@@ -115,6 +116,48 @@ int fault_mode;
     { id: $f5, script: function {
       $sio.ack(); directory_open = 0;
       counters.write_byte(1, counters.read_byte(1) + 1); $sio.complete();
+    } },
+    { id: $e2, script: function {
+      $sio.ack(); $sio.recv_frame(256);
+      if (fault_mode == 6) $sio.delay(5400000);
+      int mode = $aux2 & 15;
+      int host = $aux2 >> 4;
+      if (fault_mode == 4 || $aux1 >= 8 || host >= 2 || (mode != 1 && mode != 2))
+        $sio.error();
+      else {
+        paths.copy($aux1 * 256, $sio_frame, 0, 256);
+        disks.write_byte($aux1 * 38, host);
+        disks.write_byte($aux1 * 38 + 1, mode);
+        disks.copy($aux1 * 38 + 2, $sio_frame, 0, 35);
+        disks.write_byte($aux1 * 38 + 37, 0);
+        counters.write_byte(2, counters.read_byte(2) + 1);
+        counters.write_byte(6, $aux1);
+        counters.write_byte(7, host);
+        if ($aux1 == 1) counters.write_byte(5, mode);
+        $sio.complete();
+      }
+    } },
+    { id: $f8, script: function {
+      $sio.ack();
+      if (fault_mode == 7) $sio.delay(5400000);
+      if (fault_mode == 5) $sio.error();
+      else {
+        disks.write_byte($aux1 * 38 + 1, $aux2 | $40);
+        counters.write_byte(3, counters.read_byte(3) + 1);
+        if ($aux1 == 1) counters.write_byte(5, $aux2 | $40);
+        $sio.complete();
+      }
+    } },
+    { id: $e9, script: function {
+      $sio.ack();
+      if (fault_mode == 8) $sio.delay(5400000);
+      disks.write_byte($aux1 * 38, 255);
+      disks.write_byte($aux1 * 38 + 1, 0);
+      disks.write_byte($aux1 * 38 + 2, 0);
+      paths.write_byte($aux1 * 256, 0);
+      counters.write_byte(4, counters.read_byte(4) + 1);
+      if ($aux1 == 1) counters.write_byte(5, 0);
+      $sio.complete();
     } },
 '''
         at = text.index('commands: [', text.index('SIODevice control_probe:')) + len('commands: [')

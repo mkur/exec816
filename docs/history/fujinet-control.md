@@ -89,3 +89,36 @@ alignment. Sessions request the existing 27-byte port and 52-byte request while
 open. Full reserved bank-zero changes are fixed 0, per Task 0 and private idle 0,
 including guards, alignment and capacity; the descriptor remains 128 upper bytes.
 Stack observations and exact inputs are retained in the development record.
+
+## FN4 guarded image changes
+
+ATTACH/EJECT retain both exclusive control and target-drive bindings. An
+occupied configured slot must be ejected before attachment. The host table is
+read without changing host names/prefixes; ATTACH defaults to read-only, with
+READWRITE setting the same mode in configuration and attachment. A failed second
+stage reports the configured slot. After configuration is submitted, collection
+and final attachment finish despite BREAK; successful mutation suppresses the
+optional report when interrupted instead of returning a false cancellation.
+
+Development checks pass: 201 optimized image-control assertions, 120 report
+regression assertions, and 263 MyDOS/128 workflow assertions with an independent
+persisted-disk audit. Cases cover raw/filesystem busy bindings before mutation,
+repeated attach, selected-host/path/mount failures, configured-state inspection,
+late BREAK during configuration/attachment/ejection and pre-mutation BREAK.
+Another caller attempts control/drive opens and MOUNT during delayed attachment;
+all reject busy before disk traffic. Final heap/ownership and guards pass.
+
+The workflow uses real serial control frames, then a host rendezvous connects
+the selected ATR to Altirra's disk peripheral before native filesystem I/O.
+It proves the control/admission/cache lifecycle together, not FujiNet firmware's
+internal image-backed disk implementation. The first image remains byte-identical;
+the replacement is read independently, written, unmounted and remounted.
+
+FUJI is 20,180 bytes on disk with 1,047 private BSS bytes. The existing native
+loader additionally reserves 65,535 upper bytes for bank alignment of its text;
+this is part of its temporary loaded-image footprint, not resident kernel code.
+Each live SIO session requests a 27-byte port and 52-byte request through the
+existing allocator. The complete reserved bank-zero delta remains fixed 0,
+per Task 0, private idle 0, including guards/alignment/unused capacity. The
+workflow fixture's 8,192-byte upper arena is test capacity only; demo capacity
+stays at 6,400. Exact command sizes, inputs and stack observations are recorded.

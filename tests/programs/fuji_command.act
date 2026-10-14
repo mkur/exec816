@@ -18,6 +18,12 @@ CARD checks
 BYTE completed
 BYTE POINTER image
 BYTE interrupted,scenario
+BYTE contested
+DOS.SioMountSpec mountSpec
+BYTE mediaPhase,testFormat,peerStop,peerDone
+CARD wantedBytes
+LONGCARD peerTurns
+DOS.VolumeInfo volume
 SIO.Session session
 SIO.Transaction transaction
 BYTE ARRAY snapshot(16)
@@ -43,6 +49,17 @@ PROC Run(CSTRING arguments,path LONGINT expected,error)
   Require(identity<>0)
   IF interrupted<>0 THEN
     EXECTASKS.Sleep(60)
+    IF contested<>0 THEN
+      Require(SIOCLIENT.Open($70,0,BYTE POINTER(@session))=EXEC.IOERR_UNITBUSY)
+      Require(SIOCLIENT.Open($32,0,BYTE POINTER(@session))=EXEC.IOERR_UNITBUSY)
+      mountSpec.drive=2
+      mountSpec.profile=SIO.SIO_PROFILE_GENERIC57600
+      mountSpec.format=1
+      Require(DOS.MountVolume(BYTE POINTER(c"RACE"),@mountSpec)=0 AND
+          DOS.IoErr()=EXEC.IOERR_UNITBUSY)
+      contested=0
+    FI
+
     Require(PROCESS.RequestBreak(identity)<>0)
     interrupted=0
   FI
@@ -89,6 +106,9 @@ PROC TextResult(CSTRING path,expected)
 
 RETURN
 
+INCLUDE "fuji-images-test.inc"
+INCLUDE "fuji-workflow.inc"
+
 PROC Main()
 
   LET baseline=EXEC.AvailMem(0)
@@ -96,63 +116,67 @@ PROC Main()
   Require(image<>NULL)
   IF scenario=1 THEN
     Run(c"STATUS",c"RAM:ABSENT",10,SIO.SIOERR_TIMEOUT)
+  ELSEIF scenario=2 THEN
+    Images()
+  ELSEIF scenario=3 THEN
+    Workflow()
   ELSE
-  BEGIN
-  Run(c"status",c"RAM:STATUS",0,0)
-  TextResult(c"RAM:STATUS",c"FujiNet fixture-1\nHost exec816-fuji\nIP 192.0.2.1\nWi-Fi connected\n")
-  Run(c"HOSTS",c"RAM:HOSTS",0,0)
-  Run(c"DISKS",c"RAM:DISKS",0,0)
-  Run(c"DISKS d1:",c"RAM:PATH",0,0)
-  TextResult(c"RAM:PATH",c"D1: host 1 RO attached\n  system.atr\nPath /boot/system.atr\n")
-  Run(c"DIR HOST 1 PATH \"/disks\"",c"RAM:DIR",0,0)
-  LET directory=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
-  Require(directory<>NULL)
-  Require(DOS.Read(directory,bytes,2048)=30)
-  Require(bytes(0)='t AND bytes(10)='n AND bytes(18)='r)
-  Require(DOS.Close(directory)<>0)
-  Run(c"DIR HOST 0",c"RAM:BADHOST",10,DOS.ERROR_BAD_ARGUMENTS)
-  Run(c"DISKS D9:",c"RAM:BADDRIVE",10,DOS.ERROR_BAD_ARGUMENTS)
-  Run(c"HOSTS READWRITE",c"RAM:BADOPT",10,DOS.ERROR_BAD_ARGUMENTS)
-  Require(SIOCLIENT.Open($70,0,BYTE POINTER(@session))=0)
-  Run(c"STATUS",c"RAM:BUSY",10,EXEC.IOERR_UNITBUSY)
-  SIOCLIENT.Close(BYTE POINTER(@session))
-  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
-  transaction.command=9
-  transaction.aux1=0
-  transaction.aux2=0
-  transaction.direction=SIO.SIODIR_READ
-  transaction.profile=SIO.SIO_PROFILE_STOCK810
-  transaction.data=bytes
-  transaction.length=128
-  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
-      BYTE POINTER(@transaction))=SIO.SIOERR_DEVICE)
-  Require(transaction.actual=128 AND bytes(0)=11 AND bytes(1)=48)
-  SIOCLIENT.Close(BYTE POINTER(@session))
-  Peer(1)
-  Run(c"STATUS",c"RAM:BADTEXT",10,EXEC.IOERR_BADLENGTH)
-  Peer(2)
-  LET closed=snapshot(1)
-  Run(c"DIR HOST 1",c"RAM:ENTRYERR",10,SIO.SIOERR_DEVICE)
-  Peer(0)
-  Require(snapshot(0)=0 AND snapshot(1)=closed+1)
-  Run(c"DIR HOST 3",c"RAM:HOSTERR",10,SIO.SIOERR_DEVICE)
-  LET readonly=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
-  Require(readonly<>NULL)
-  LET oldOutput=DOS.SelectOutput(readonly)
-  LET writer=PROCESS.StartBackgroundLoaded(image,
-      BYTE POINTER(c"DIR HOST 1"),10)
-  Require(writer<>0 AND PROCESS.Wait(writer,@outcome)<>0)
-  Require(outcome.primary=10 AND outcome.secondary=DOS.ERROR_WRITE_PROTECTED)
-  DOS.SelectOutput(oldOutput)
-  Require(DOS.Close(readonly)<>0)
-  Peer(3)
-  interrupted=1
-  Run(c"DIR HOST 1",c"RAM:BREAK",10,DOS.ERROR_BREAK)
-  Peer(0)
-  Require(snapshot(0)=0)
-  Run(c"DIR HOST 1 PATH \"/disks with spaces\"",c"RAM:AGAIN",0,0)
-  TextResult(c"RAM:AGAIN",c"tools.atr\nnested/\nread me.atr\n")
-  END
+    BEGIN
+      Run(c"status",c"RAM:STATUS",0,0)
+      TextResult(c"RAM:STATUS",c"FujiNet fixture-1\nHost exec816-fuji\nIP 192.0.2.1\nWi-Fi connected\n")
+      Run(c"HOSTS",c"RAM:HOSTS",0,0)
+      Run(c"DISKS",c"RAM:DISKS",0,0)
+      Run(c"DISKS d1:",c"RAM:PATH",0,0)
+      TextResult(c"RAM:PATH",c"D1: host 1 RO attached\n  system.atr\nPath /boot/system.atr\n")
+      Run(c"DIR HOST 1 PATH \"/disks\"",c"RAM:DIR",0,0)
+      LET directory=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
+      Require(directory<>NULL)
+      Require(DOS.Read(directory,bytes,2048)=30)
+      Require(bytes(0)='t AND bytes(10)='n AND bytes(18)='r)
+      Require(DOS.Close(directory)<>0)
+      Run(c"DIR HOST 0",c"RAM:BADHOST",10,DOS.ERROR_BAD_ARGUMENTS)
+      Run(c"DISKS D9:",c"RAM:BADDRIVE",10,DOS.ERROR_BAD_ARGUMENTS)
+      Run(c"HOSTS READWRITE",c"RAM:BADOPT",10,DOS.ERROR_BAD_ARGUMENTS)
+      Require(SIOCLIENT.Open($70,0,BYTE POINTER(@session))=0)
+      Run(c"STATUS",c"RAM:BUSY",10,EXEC.IOERR_UNITBUSY)
+      SIOCLIENT.Close(BYTE POINTER(@session))
+      Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+      transaction.command=9
+      transaction.aux1=0
+      transaction.aux2=0
+      transaction.direction=SIO.SIODIR_READ
+      transaction.profile=SIO.SIO_PROFILE_STOCK810
+      transaction.data=bytes
+      transaction.length=128
+      Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+          BYTE POINTER(@transaction))=SIO.SIOERR_DEVICE)
+      Require(transaction.actual=128 AND bytes(0)=11 AND bytes(1)=48)
+      SIOCLIENT.Close(BYTE POINTER(@session))
+      Peer(1)
+      Run(c"STATUS",c"RAM:BADTEXT",10,EXEC.IOERR_BADLENGTH)
+      Peer(2)
+      LET closed=snapshot(1)
+      Run(c"DIR HOST 1",c"RAM:ENTRYERR",10,SIO.SIOERR_DEVICE)
+      Peer(0)
+      Require(snapshot(0)=0 AND snapshot(1)=closed+1)
+      Run(c"DIR HOST 3",c"RAM:HOSTERR",10,SIO.SIOERR_DEVICE)
+      LET readonly=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
+      Require(readonly<>NULL)
+      LET oldOutput=DOS.SelectOutput(readonly)
+      LET writer=PROCESS.StartBackgroundLoaded(image,
+          BYTE POINTER(c"DIR HOST 1"),10)
+      Require(writer<>0 AND PROCESS.Wait(writer,@outcome)<>0)
+      Require(outcome.primary=10 AND outcome.secondary=DOS.ERROR_WRITE_PROTECTED)
+      DOS.SelectOutput(oldOutput)
+      Require(DOS.Close(readonly)<>0)
+      Peer(3)
+      interrupted=1
+      Run(c"DIR HOST 1",c"RAM:BREAK",10,DOS.ERROR_BREAK)
+      Peer(0)
+      Require(snapshot(0)=0)
+      Run(c"DIR HOST 1 PATH \"/disks with spaces\"",c"RAM:AGAIN",0,0)
+      TextResult(c"RAM:AGAIN",c"tools.atr\nnested/\nread me.atr\n")
+    END
   FI
   PROGRAM.Unload(PROGRAMIMAGE.Image POINTER(image))
   Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)

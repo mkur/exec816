@@ -6,7 +6,7 @@
 [Platform contract](../reference/platform.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: FN0–FN3 implemented at the development tier; FN4–FN5 pending.
+Status: FN0–FN4 implemented at the development tier; FN5 demo/documentation refresh pending.
 [Implementation record](../history/fujinet-control.md). Complete and commit each executable slice after its
 focused development checks. The FASTEST125 timing investigation is separate;
 FujiNet control starts at standard SIO speed.

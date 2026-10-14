@@ -75,7 +75,7 @@ support only true SIO D1–D8. IDE-only builds reject them; IDE Plus BIOS ATR sl
 are not true SIO drives. MOUNT DIAGNOSTICS copies retained STATUS/PERCOM bytes,
 geometry source and the failing discovery/admission phase; it does no new I/O.
 
-## FujiNet reports and browsing
+## FujiNet control
 
 The loadable `C:FUJI` command uses FujiNet's control device at standard 19,200
 baud. It uses hosts already configured by FujiNet's own tools:
@@ -100,6 +100,35 @@ client receives busy; an absent device returns a bounded transport error.
 Transport diagnostics retain the operation, command number and actual reply
 length. FUJI does not edit Wi-Fi settings or configured hosts, negotiate HSIO
 or provide N: network streams. SIO-disabled builds reject control access.
+
+Attach an image to an empty drive slot, then mount its filesystem separately:
+
+```text
+FUJI ATTACH D2: HOST 1 IMAGE "/disks/tools.atr"
+MOUNT DATA: DRIVE 2 FORMAT MYDOS PROFILE STOCK810
+DIR DATA:
+UNMOUNT DATA:
+FUJI EJECT D2:
+```
+
+This example uses a 128-byte image at standard disk speed. STOCK810 is 128-byte
+only. For 256-byte images choose a supported disk profile and configure FujiNet
+to match that speed; GENERIC57600 and FASTEST125 are fixed rates. Control still
+uses 19,200 baud. FUJI does not change the peripheral's HSIO setting.
+
+ATTACH defaults to read-only; add READWRITE to allow image writes, and add
+READWRITE to MOUNT independently to allow filesystem writes. ATTACH/EJECT refuse
+a drive held by a filesystem or another raw client. Close files, leave that
+volume and UNMOUNT before changing its image. To replace an image, EJECT first;
+ATTACH does not overwrite an occupied slot. It never implicitly mounts a
+filesystem or changes configured host prefixes.
+
+If configuration succeeds but attachment fails, the error explicitly says the
+slot is configured. Inspect `FUJI DISKS D2:` and EJECT before retrying. A late
+BREAK collects an in-flight mutation; successful attachment/ejection wins over
+that interruption, with its optional confirmation suppressed. Changes made
+through FujiNet's web UI or physical controls are outside Exec's drive exclusion;
+UNMOUNT first for those changes too.
 
 ## File listings
 
