@@ -1,13 +1,16 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [window and menu response plan](window-menu-response-plan.md)
+The implemented [window and menu response plan](window-menu-response-plan.md)
 removes redundant shared-menu RPCs and false cache invalidations, raises folders
 before updating their menus, supplies the correct initial path title, shortens
 menu continuations and adds cheap monochrome selection feedback. UI1–UI5
 integrate the gadget atlas below, with one final measurement/demo pass and no
 additional bank-zero reservations.
+[Measured results](../../history/window-menu-response.md) show faster SYS:
+focus, initial frames and menu-row highlights; warm dropdown completion is
+unchanged within the sampling interval.
 
-The proposed [window gadget atlas plan](frame-gadget-atlas-plan.md) replaces
+The implemented [window gadget atlas plan](frame-gadget-atlas-plan.md) replaces
 procedural fixed marks with persistent VRAM images. GAT1–GAT4 cover upload,
 title/scrollbar integration and focused measurements, retaining current pixels,
 the strided title pattern and frame batches. It reserves one additional 4 KiB

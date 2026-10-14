@@ -6,7 +6,7 @@
 [Desktop contract](../../reference/desktop.md) ·
 [VRAM map](../../../platform/altirraos/vbxe-vram.json)
 
-Status: GAT1–GAT3 implemented and development-checked; GAT4 pending. See the
+Status: GAT1–GAT4 implemented with focused development checks. See the
 [combined development record](../../history/window-menu-response.md).
 
 Render fixed window gadgets from a small permanent VRAM atlas, as we already

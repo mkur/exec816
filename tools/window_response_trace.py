@@ -70,7 +70,9 @@ def report(out, events, d, samples, name):
         for frame in (s for s in spans if s['kind']=='CONSOLEBITMAP_FRAME'):
             nested=[s for s in spans if frame['start']<=s['start']<s['end']<=frame['end']]
             counts={kind:sum(s['kind']==kind for s in nested) for kind in DRAWING}
-            frames.append(dict(frame,counts=counts))
+            frames.append(dict(frame,counts=counts,
+                blitter_records=sum(s['argument'] for s in nested if s['kind']=='VbxeOwnerSubmit')))
+        require(boundaries,'No response trace events for '+sample['action'])
         rows.append(dict(action=sample['action'],start=start,end=end,frames=frames,
                          spans=spans,boundaries=boundaries))
     result=dict(tier='development',qualification=False,

@@ -89,8 +89,8 @@ STOP leaves the lease FAULTED and enters reset-required park. The launcher also
 parks on any normal/fault exit with VBXE ownership still live, including a
 rejected attempt to remove its retained Task; it cannot reclaim DMA storage.
 
-The current [VRAM map](vbxe-vram.json) reserves 243,200 bytes, including 2,293
-bytes beyond payload capacity. The screen uses 76,800 bytes. Its former
+The current [VRAM map](vbxe-vram.json) reserves 420,352 bytes, including unused
+reserved capacity. The screen uses 76,800 bytes. Its former
 5,120-byte padding at `$12C00` now holds one 640 × 16 widget strip, with no
 increase in the total reservation. Widget continuations draw there and publish
 the clipped strip only after reconstruction finishes. XDL uses 12 of 256 bytes;
@@ -102,8 +102,11 @@ bytes / 15,872 estimated bus accesses. Its larger bound does not change the
 generic submission contract or VRAM reservation.
 The font atlases reserve 20,480 bytes (18,432 used), clipped glyph scratch reserves
 4,096 bytes, pointer storage reserves 1,280 bytes, and two desktop snapshot slots
-reserve 65,536 bytes each. The remaining 281,088 bytes are unassigned within the
-exclusively owned 512 KiB. The
+reserve 76,800 bytes each. Menu save-under uses 76,800 bytes, two popup images
+use 16,384 bytes each, and the Shell backing uses 40,960 bytes. Fixed window
+gadgets reserve 4,096 bytes at `$39000` (2,688 used), uploaded once per display
+session; clipped copies share the ordinary frame list and scratch. The remaining
+103,936 bytes are unassigned within the exclusively owned 512 KiB. The
 32-byte cross-page test at `$3FFF0` is diagnostic borrowing, not a production
 reservation. CPU and VRAM address spaces are accounted separately.
 

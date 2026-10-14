@@ -1,11 +1,12 @@
 # Implementation plans
 
-- [Window and menu response](gem4xe/window-menu-response-plan.md): proposed
+- [Window and menu response](gem4xe/window-menu-response-plan.md): implemented
   UI1–UI5 slices for prompt raising, changed-only menu updates, the correct
   initial title, shorter menu continuations and cheap selection feedback.
   Integrates the gadget atlas below and shares its final measurements/demo.
+  [Measured results](../history/window-menu-response.md).
 
-- [Window gadget atlas](gem4xe/frame-gadget-atlas-plan.md): proposed GAT1–GAT4
+- [Window gadget atlas](gem4xe/frame-gadget-atlas-plan.md): implemented GAT1–GAT4
   slices for prerendered fixed gadgets, clipped VRAM copies in existing frame
   batches and focused cost/pixel checks.
 

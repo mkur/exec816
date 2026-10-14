@@ -147,9 +147,11 @@ operations; use window controls for desktop placement and visual focus.
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One
 update token spans the repaint. Painting uses sixteen-scanline strips and up
-to four ready steps of the same strip per worker turn. Title fragments compose
+to four ready steps of a strip or foreground menu per worker turn. Title fragments compose
 their background, pattern, closer and at most sixteen glyphs per callback in
-scratch; publication waits for the complete fragment. Flat side/bottom strips
+scratch; publication waits for the complete fragment. Fixed close, full-size,
+iconify, arrow, resize and tile marks copy from an immutable VRAM atlas, including
+odd-X and clipped placements. The title pattern remains a strided fill. Flat side/bottom strips
 skip title processing, and the two narrow side borders share a paint step.
 Console exposure and retained text paint
 at most 32 glyphs from one row or command per step, reduced to 16 for vertically
@@ -337,17 +339,27 @@ Their renderer batches up to four intersecting objects and budgets 80 text
 cells from clipped widths per callback; it does not fragment labels horizontally.
 Complete 16-row strips are published from the existing offscreen buffer.
 
-Highlight changes invalidate only the old and new entries. Opening/closing a
+Highlight changes invalidate only the old and new entries. A clean, fully
+visible application popup can invert two enabled, unadorned `G_STRING` rows
+without redrawing labels. Each row is at most 16 scanlines, inside the popup
+border, on ordinary white paper. Changed source state, checked/disabled/styled
+rows or unfinished pixels use the normal renderer. The synchronous paint token
+commits the selection only after completion; normal cached popup images remain
+unchanged. Opening/closing a
 menu damages its changed bar heading or native segment; owner/content changes
 can still require the complete bar. These visual states and their damage are
 published together after the current scene token retires. When starting a new
 paint transaction, the presenter prefers popup then bar, allowing ready ordinary
 layers a round-robin turn after two preferred menu transactions. This does not
 change Task priorities, application update locks or live paint ownership.
+Completed foreground menu transfers retire before unrelated control admissions.
+Ready menu work continues within the same four-step allowance, with input
+between units and no extra polling or renewed output/control budget.
 
 The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
-and repaint, with no saved-under framebuffer. Labels and window IDs are copied
+and repaint; Layers owns the saved-under and popup cache lifetimes described
+below. Labels and window IDs are copied
 into upper-memory state. A scene/focus change dismisses an open menu, preventing
 selection of stale labels after window retirement or slot reuse. No extra Task,
 timer, signal or bank-zero reservation is needed. Installed application trees

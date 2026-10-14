@@ -3,7 +3,8 @@
 [History](README.md) · [Implementation plan](../plans/gem4xe/window-menu-response-plan.md) ·
 [Gadget atlas plan](../plans/gem4xe/frame-gadget-atlas-plan.md)
 
-2026-10-14. Development work in progress; no hardware qualification claim.
+2026-10-14. Implemented in executable slices with focused development checks;
+no hardware qualification claim.
 
 ## UI1 Menu state and folder focus
 
@@ -136,3 +137,120 @@ definitions and the focused widget contract host checks pass.
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
 guards/alignment/capacity. No persistent selection storage, new CPU staging or
 VRAM reservation is added; the existing widget packet carries two rectangles.
+
+## UI5 / GAT4 Packaged measurements
+
+The final executable source is `40a9fd4`; documentation/observer edits account
+for its `-dirty` build label. Compare the frozen FE4 package from
+[window frame/exposure](window-frame-exposure.md), without changing the
+`05c01f39ff3beef97af0e65b0a16666f5a1bd805` actionc pin, Calypsi 5.18,
+AltirraOS 3.44 ROM, emulator, PAL, 65C816 ×8, 4 MiB RAM, VBXE 512 KiB at `$D600`
+or default 462×196 Files geometry. Physical completion is sampled once per
+PAL frame. Three samples give the following medians/maxima, not p95 estimates.
+
+| Completed visible action | FE4 median / max, ms | Response work median / max, ms |
+| --- | ---: | ---: |
+| New Window, correct path frame | 942.8 / 962.7 | 782.3 / 802.3 |
+| New Window, complete folder | 1404.0 / 1424.0 | 1323.7 / 1343.7 |
+| Close folder wholly right of icons | 601.7 / 601.7 | 521.4 / 521.4 |
+| Warm SYS: focus | 641.6 / 641.9 | 280.9 / 280.9 |
+| Warm Shell focus | 280.7 / 280.9 | 280.9 / 280.9 |
+| Warm File opening | 200.6 / 200.6 | 200.6 / 200.6 |
+| Warm File → View | 220.5 / 220.5 | 220.8 / 220.8 |
+| Warm dismissal | 140.5 / 140.5 | 140.5 / 140.5 |
+| Plain application-row highlight, separate cohort | 100.3 / 100.3 | 80.3 / 80.3 |
+
+The New Window/close baseline uses the retained FE4 three-sample record; one
+additional frozen-package New Window run supplies the richer CPU/record trace
+and reproduces its 942.8/1404.0 ms endpoints. Focus, warm menus and highlight
+have fresh matched three-sample comparisons. The first File/View/dismiss cycle
+is recorded separately: 361/361/261 ms before, 261/361/261 ms after. These first
+responses are not included in the warm medians. The separate highlight cohort
+includes ordinary open/switch/close and remains within the same sampling band
+for those actions.
+
+SYS: still uses one 42,735-byte body restore, with no Files repaint, cache
+capture/patch or side-frame reconstruction. Its first frame call moves from
+about 531.5 to 197.0 ms after input, consistent with raising before publishing
+menu state and removing unchanged enable/check exchanges. Clicking an already
+focused title still does no work. Exact desktop exposure on close remains:
+icons outside the closed window do not change, while actually covered icons
+are restored.
+
+### Renderer work and remaining menu costs
+
+The passive observer matches native/C entries and returns and separates the
+presenter's conservative CPU charge from peer-Task time and native interrupts.
+VBXE completion is observed at its IRQ handler; this is not an independent
+measurement of the hardware BUSY falling edge. `VbxeOwnerSubmit`'s emitted
+entry receives the record count in A, supplying frame-local record totals.
+
+| Frame fragment | CPU charge before / after, ms | Records before / after | Fill calls before / after |
+| --- | ---: | ---: | ---: |
+| Matching `SYS:` title | 26.09 / 13.59 | 110 / 44 | 42 / 9 |
+| Bottom | 10.19 / 7.86 | 25 / 14 | 20 / 8 |
+| Left side | 6.13 / 6.73 | 14 / 14 | 2 / 2 |
+| Right side | 20.12 / 16.91 | 80 / 58 | 25 / 15 |
+
+Before values are one representative frozen-package trace; after CPU values
+are medians of three opens. The matching-title comparison uses the baseline's
+later `SYS:` title, not its initial `Files` title. The left side has no fixed
+mark to optimize; its small CPU variation does not establish an improvement.
+All frame calls perform **zero atlas uploads**. Total frame CPU charge falls
+from 93.72 to 45.17 ms per open, including removal of the extra title update;
+this combined number is not an atlas-only gain. The independent frame fixture
+establishes unchanged gadget pixels, clipping, packed edges and scratch bounds.
+
+Warm View's completion-adoption → next-copy interval decreases from a median
+61.56 to 60.44 ms; scene-token retirement → next-copy decreases from 57.59 to
+56.51 ms. UI3 therefore has a small measured continuation benefit, but **no
+established whole-dropdown speedup**. IRQ completion → adoption remains around
+9–12 ms. No immediate-poll optimization or pointer-lifetime change was retained.
+The much larger remaining interval contains state-machine/scene work; it must
+not be reported as DMA time or an obligatory VBI wait. Warm opening, switching
+and dismissal remain useful future targets.
+
+### Scope, memory and delivery
+
+Checks are development tier only: two atlas host checks, four widget contract
+host checks, five desktop contract checks, generated widget definitions, the
+optimized frame/atlas fixture, optimized menu fixtures, and the selected exact
+package interactions above. No release qualification or compiler matrix ran.
+The package's frame and selection observers check normal EXIT, ownership and
+stack/context restoration. Supplemental two-folder checks cover independent
+view/selection state and parent/subdirectory titles.
+
+The first combined observer completed its timing samples, then its supplemental
+folder check used an obsolete menu-row coordinate. The observer also initially
+assumed a public AES Service layout for a private record. These host-only
+assumptions were corrected; the supplemental checks run separately, reusing the
+completed timing samples. They read the presenter's settled revision directly.
+No production code was changed for these observer corrections.
+
+Relative to FE4, `runtime_reservations`, every Task pool and the complete
+bank-zero budget are identical: **0 fixed, 0 per public Task, 0 idle bytes**,
+including guards, alignment and unused capacity. No stack/DP enlargement.
+The emitted native program's executable segments grow by 5,770 bytes; the C
+image's executable segments grow by 559 bytes and its initialized data by
+2,970 bytes. The atlas's 2,688 bytes plus 42 descriptor bytes are immutable upper
+image data. VRAM grows once by **4,096 bytes**, including 1,408 unused atlas
+bytes; total reservations are 420,352, leaving 103,936 unassigned bytes.
+
+Final ZIP: `build/window-menu-response/demo/exec816-demo.zip`, 634,203 bytes,
+SHA-256 `75380ddaaa2b1da3070cd6080c433cf2c5378e303414376ac51daef644231485`.
+It retains OF816, five-second autoboot, matching SYS/WORK disks, the pinned ROM,
+license notices and checksums. Traces, manifests and intermediate files stay
+outside the ZIP. OF816 development inputs remain in the demo's `of816/` folder.
+
+```sh
+python3 tools/build_demo.py --gem-desktop --release-compiler --output build/window-menu-response/demo
+open /Users/michalkurcewicz/action/exec816-public/build/window-menu-response/demo/launch-altirra.command
+```
+
+Evidence: `build/window-menu-response/gat3/results.json`,
+`ui4-menus/results.json`, `frame-observer/frame-exposure-results.json` and
+`frame-exposure-trace.json`, `demo/window-preservation-results.json` and
+`window-preservation-trace.json`, `selection/menu-results.json`, and
+`contracts/response-contract.json` / `window-preservation-runtime.json` under
+that same development directory. The matching baseline selection and archived
+passive logs are retained alongside them.

@@ -20,8 +20,9 @@ from test_demo import run
 
 
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False):
         self.conventional = conventional
+        self.selection_only = selection_only
         self.headings_only = headings_only
         self.cold = cold
         self.count = count
@@ -110,7 +111,7 @@ class Feedback:
         # caret and parked pointer are outside it. Reference state is warmed
         # before timing, with no writes to guest state or executable observers.
         area = (128, 0, 640, 208)
-        for kind in (() if self.headings_only else ('application', 'native')):
+        for kind in (() if self.headings_only else ('application',) if self.selection_only else ('application', 'native')):
             sequence = [('open', ('ESC', True, kind == 'application')),
                         ('highlight', ('TAB',)),
                         ('switch' if kind == 'application' else 'next_row',
@@ -167,6 +168,12 @@ class Feedback:
                          for name,row in self.results[kind].items()
                          if isinstance(row,dict) and 'median_ms' in row}, flush=True)
             (s.p['output']/'menu-samples.json').write_text(json.dumps(self.results, indent=2)+'\n')
+        if self.selection_only:
+            s.save_screen(s.p['output']/'boot-smoke.png')
+            menus.select('Shell')
+            for char in 'EXIT':s.press(char)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all()
+            return
         # One interaction, repeated unequal footprints. Exclude the pointer and
         # title bar and cursor tail from physical-reference comparison; the emitted menu oracle
         # checks both separately. No writes to production state in this cohort.
@@ -284,6 +291,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--selection-only',action='store_true',help='Only the application open/highlight/switch/close cohort')
     parser.add_argument('--headings-only', action='store_true', help='Only repeated heading transitions')
     parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
     parser.add_argument('--conventional', action='store_true', help='Require conventional redraws when measuring a pre-preservation baseline')
@@ -303,7 +311,7 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional)
+    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional, args.selection_only)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),

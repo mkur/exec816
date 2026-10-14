@@ -5,7 +5,7 @@
 [Current measurements](../../history/window-frame-exposure.md) ·
 [Desktop contract](../../reference/desktop.md)
 
-Status: implementation in progress. See the
+Status: UI1–UI5 implemented with focused development checks. See the
 [development record](../../history/window-menu-response.md) for completed
 slices, selected checks and memory accounting.
 
