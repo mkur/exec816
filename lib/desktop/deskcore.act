@@ -143,9 +143,14 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
         BEGIN
           LET layer=Layer(service,@service.windows(index))
           IF layer<>NULL THEN
-            REGIONS.Copy(@layer.bounds,@frame)
-            frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
-            status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
+            ; Borderless owners have no title pixels to change on focus.
+            ; Otherwise this disjoint strip can widen a genuine exposure.
+            IF service.windows(index).frameKind<>DESKTYPES.FRAME_BORDERLESS
+                OR service.windows(index).iconified<>0 THEN
+              REGIONS.Copy(@layer.bounds,@frame)
+              frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
+              status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
+            FI
             IF service.windows(index).kind=DESKTYPES.CONTENT_WIDGETS THEN
               DESKWIDGETS.FocusDamage(service,@service.windows(index))
             FI
