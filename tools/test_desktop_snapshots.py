@@ -10,7 +10,7 @@ from os_boundary import emulator,run_to
 from test_mouse_observe import BRIDGE,ROM,PIN
 from test_dos_stack import execute,ownership
 from test_cooperative import data
-from test_desktop_presentation import desktop, frame,rectangle,text
+from test_desktop_presentation import desktop, frame,rectangle,text,menu_bar
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
@@ -31,8 +31,12 @@ def run(out,replay=False):
         start=host.index('PUBLIC PROC Cache()');end=host.index('PUBLIC PROC Stop()',start)
         host=host[:start]+'PUBLIC PROC Cache()\n\nRETURN\n\n'+host[end:]
     (out/'deskhost.act').write_text(host)
+    display=read_source(ROOT/'lib/display/display.act').replace('ENDMODULE',
+        'PUBLIC PROC ProbeBlocked(BYTE value)\n  physical=value\nRETURN\nENDMODULE')
+    (out/'display.act').write_text(display)
     (out/'snapshotprobe.act').write_text(read_source(ROOT/'tests/programs/snapshotprobe.act'))
     source=read_source(ROOT/'tests/programs/desktop_presentation.act').split('PROC Main()')[0]
+    source=source.replace('USE SCROLLPROBE\n','').replace('      OR view.cursorOn=0','')
     source=source.replace('USE DESKPAINT','USE DESKPAINT\nUSE SNAPSHOTPROBE',1)
     source+='''PROC Main()
   BYTE operation
@@ -67,6 +71,41 @@ def run(out,replay=False):
     OD
     Pause(CARD(operation)+1)
   OD
+  SNAPSHOTPROBE.Request(6,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(6)
+  SNAPSHOTPROBE.Request(2,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(7)
+  SNAPSHOTPROBE.Request(7,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(8)
+  SNAPSHOTPROBE.Request(2,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(9)
+  SNAPSHOTPROBE.Request(8,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(10)
+  SNAPSHOTPROBE.Request(7,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(11)
+  SNAPSHOTPROBE.Request(9,panel)
+  WHILE SNAPSHOTPROBE.Done()=0 DO
+    EXEC.Yield()
+  OD
+  Pause(12)
   SNAPSHOTPROBE.Request(5,panel)
   WHILE SNAPSHOTPROBE.Held()=0 DO
     EXEC.Yield()
@@ -79,30 +118,34 @@ RETURN
 ENDMODULE
 '''
     # Poll the test hook while idle; the production worker sleeps instead.
-    host=(out/'deskhost.act').read_text().replace('RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable())',
-        'RETURN(DESKPAINT.Runnable() OR DESKINPUT.Runnable() OR SNAPSHOTPROBE.Done()=0)')
+    host=(out/'deskhost.act').read_text().replace('RETURN(AESHOST.Runnable() OR DESKPAINT.Runnable() OR DESKINPUT.Runnable())',
+        'RETURN(AESHOST.Runnable() OR DESKPAINT.Runnable() OR DESKINPUT.Runnable() OR SNAPSHOTPROBE.Done()=0)')
     (out/'deskhost.act').write_text(host)
     (out/'fixture.act').write_text(source)
     p=read_build(out/'program') if replay else build_bitmap(out/'fixture.act',out,True,desktop=True)
-    report=dict(status='running',tier='development',qualification=False,scope='Private owner-hook capture, full restore, revision mismatch and quiescent capture failure; production driver and bitmap bridge',scenes=[])
+    report=dict(status='running',tier='development',qualification=False,scope='Private owner-hook capture, 76800-byte capture/restore across VRAM banks, revision mismatch, quiescent failure and simulated unquiesced pin retention; production driver and bitmap bridge',scenes=[])
     at=lambda module,n:next(d['address'] for d in p['image']['data'] if '_'+module+'_'+n+'_' in d['name'])
     r=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'));desktop(r)
     frame(r,(32,24,560,208),b'Shell',True)
     Terminal(64,20).paint(r,5,5,True)
     frame(r,(0,0,544,208),b'Snapshot',False,3,close=True);text(r,11,19,b'XYZ',bg=3)
+    menu_bar(r,b'Shell')
     expected=overlay(r,(320,120))
+    full=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))
+    rectangle(full,(0,0,640,240),3);text(full,3,3,b'XYZ',bg=3)
+    full=overlay(full,(320,120))
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')
             report['machine']=verify_machine(b,ROM,PIN)
             def before(b):
-                for stage in range(1,6):
+                for stage in range(1,13):
                     condition=f'dw(${at("DESKTEST","CHECKPOINT"):x})={stage}'
                     marker=p['labels']['native_nmi'];b.bp_clear_all();b.bp_set(marker,condition=condition)
                     b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
                     run_to(b,marker,condition=condition,frame_limit=12000,timeout=180)
                     folder=out/f'stage-{stage}';folder.mkdir(exist_ok=True)
-                    report['scenes'].append(dict(stage=stage,pixels=pixels(b,folder,expected,palette=DESKTOP_PALETTE)))
+                    report['scenes'].append(dict(stage=stage,pixels=pixels(b,folder,expected if stage<6 else full,palette=DESKTOP_PALETTE)))
                     b.memload(at('DESKTEST','GATE'),stage.to_bytes(2,'little'))
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=12000)

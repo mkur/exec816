@@ -185,12 +185,52 @@ retain their usual traversal. After exhaustion and durable damage delivery,
 Ordinary `Finish(...,1)` rejects this transaction; `Finish(...,0)` aborts it while
 preserving damage for retry. No token remains live while waiting for the app.
 
-The external flag persists across handoff, exposure and moves. `BeginCopy`,
-`BeginMove` and `BeginRead` return REDRAW for these layers, even when manager
-damage is empty. Handoff is not evidence that application pixels are valid.
-Deleting and recreating a layer resets the flag.
+The external flag persists across handoff, exposure and moves. `BeginCopy`
+returns REDRAW for these layers. `BeginMove` additionally requires a nonzero
+paint epoch and no pending external repaint, as well as its ordinary clean,
+fully visible source and unobscured destination checks. Handoff alone is not
+evidence that application pixels are valid. Deleting and recreating a layer
+resets the flag.
+
+Layers also retains a separate bounded `pending` repaint region after handoff.
+`ExternalArea` establishes its client extent; `RequirePaint` adds an obligation
+and advances `paintEpoch`. `Painted` subtracts only the supplied completed
+rectangle for the current nonzero epoch. An old epoch, active transaction or
+fragment overflow leaves the obligation intact. `PixelsReady` tests both
+manager damage and pending external paint. `BeginRead` admits an external
+source only when `PixelsReady` certifies its
+requested rectangle and that rectangle is fully visible. A completed external
+move advances the coordinate epoch; an acknowledgement for the old location
+cannot retire newer paint. Pending application repaint neither retains a
+transaction nor makes the presenter runnable.
 
 The [resident counter example](../guides/aes-applications.md#counter-example)
 uses this external-paint path. Shell plus two counters consume three layers;
 adding the native panel fills the fourth. Neither delayed redraw delivery nor
-fully covered timer updates make an external layer copy/cache eligible.
+fully covered timer updates make an external layer cache eligible.
+
+## Saved scene rectangles
+
+`BeginSave` stabilizes a completed visible footprint beneath a hidden overlay.
+`BeginRestore` accepts an overlay contained in the saved rectangle, hides it,
+and pins the saved image under post-hide visibility. Its actual destination is
+`Scene.copyTarget`; the saved bounds and pitch remain the original capture's.
+The presenter removes overlays and retires the display transfer before
+`FinishSave(scene,token,okay,keep)`. A successful restore retires manager damage
+only within `copyTarget`. `keep` retains a valid image for another contained
+overlay; failure or invalidation always prevents reuse. Capture ignores `keep`.
+External repaint and normal exposure delivery remain required. The menu presenter
+accumulates restored exposure across headings and publishes it after dismissal
+and bar repair, without waking an unchanged application between headings.
+Layers API version 11 changes this call but adds no record storage. An invalid save
+or incomplete capture source returns `REDRAW`. A pin survives invalidation until
+the transfer is complete or the driver has proved quiescence.
+
+`LAYERCACHE` supplies fixed-slot identity/revision, pinning and two-slot eviction
+policy. It owns no display transfers, queue, hardware or application lifetimes.
+
+Completed external layers may use `BeginMove` when their pending client-paint
+region is empty and the paint epoch is live. Successful completion keeps client
+pixels clean and advances the coordinate epoch, so a late old-coordinate paint
+acknowledgement cannot clear newer damage. Failure retains the old bounds and
+damages both source and destination. The owner retires hardware before Finish.

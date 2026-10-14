@@ -19,6 +19,10 @@ UWORD GemDrawingFence(void);
 UWORD GemDrawingFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);
 UWORD GemDrawingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,
                      UWORD foreground,UWORD background);
+/* Presenter-owned Shell bitmap, client-local coordinates. Internal producers
+ * supply even X/width for fills within the fixed 512 by 160 surface. */
+UWORD GemDrawingBackingText(UWORD x,UWORD y,const UBYTE *text,UWORD count,UWORD fg,UWORD bg);
+UWORD GemDrawingBackingFill(UWORD x,UWORD y,UWORD width,UWORD height,UWORD pen);
 /* Nonempty text at either X parity followed by a nonempty even-X/even-width screen fill.
  * Fill area is at most VBXE_TEXT_FILL_WORK pixels. Validate both before any
  * drawing; append the fill to the final bounded text list and fence it once. */
@@ -36,14 +40,26 @@ UWORD GemDrawingPointer(UWORD x,UWORD y,UWORD visible);
 /* Internal renderer closure: callback is linked trusted code, never a client
  * pointer. One owner check and fence cover the complete bounded paint quantum. */
 UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void));
+/* At most two disjoint, plain monochrome menu rows, each <=16 scanlines.
+ * Coordinates are admitted by the presenter; exchange hardware white/black. */
+UWORD GemDrawingInvertRows(const WORD *rectangles,UWORD count);
 /* Widget-only strip buffer; first resets it, draw returns nonzero on completion.
  * The complete clipped strip replaces screen pixels only after the final chunk. */
 UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void));
+/* Private solid/atlas frame side, width <=16, height <=240. Uses the same
+ * scratch allocation at a compact pitch and publishes once on completion. */
+UWORD GemDrawingFrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                           UWORD (*draw)(void));
 void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* Flat GEM pattern 2: black dots at odd window-relative X/Y, on white. */
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
                      UWORD originX,UWORD originY);
+enum { GEM_GADGET_CLOSE,GEM_GADGET_FULL,GEM_GADGET_ICONIFY,GEM_GADGET_TILE,
+       GEM_GADGET_UP,GEM_GADGET_DOWN,GEM_GADGET_SIZE };
+/* Fixed opaque interior image. Caller owns the current frame batch/clip. */
+void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
+                    UWORD right,UWORD bottom);
 /* One admitted synchronous unit, at most 32 rows. The callback is linked
  * renderer code, never a borrowed application function pointer. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,

@@ -235,9 +235,11 @@ def run(out,stock_smoke=False,loading_smoke=False,boot_smoke=False,bootstrap=Non
             # Positioned writes settle before independent pixel comparison.
             write=console['INSTANCE_WRITE']
             condition=f'(db(${windows+console["WINDOWS_PRESENTING"]:x})=0)&'+ '&'.join(f'(dw(${i+write:x})=0)&(db(${i+write+2:x})=0)&'
-                f'(db(${i+console["INSTANCE_DIRTYROWS"]:x})=0)&(db(${i+console["INSTANCE_OPERATION"]:x})=0)&'
+                f'(db(${i+console["INSTANCE_OPERATION"]:x})=0)&'
                 f'(db(${v+console["PRESENTATION_SCROLLSTATE"]:x})=0)&'
-                f'(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))'
+                f'((db(${v+console["PRESENTATION_VISIBLE"]:x})=0)|'
+                f'((db(${i+console["INSTANCE_DIRTYROWS"]:x})=0)&'
+                f'(dw(${v+10:x})=dw(${i+54:x})+dw(${i+10:x}))))'
                 for i,v in zip(instances,views))
             if desktop:
                 # Console generations can settle while a widget repaint is

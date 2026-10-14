@@ -2,11 +2,14 @@
 ; a presenter turn; application code receives the existing top/close notices.
 MODULE DESKMENU
 USE INPUT
+USE ASCII
 USE AESKEYS
 USE DESKAPPMENU
+USE DESKMENUCACHE
 USE AESLOCKS
 USE AESMOUSE
 USE AESTYPES
+USE AESSTATE
 USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
@@ -18,7 +21,8 @@ USE REGIONS
 USE A816MEMORY
 USE HEAPCORE
 
-PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=6, LABEL_BYTES=25
+PUBLIC CONST BAR_HEIGHT=DESKTYPES.MENU_BAR_HEIGHT
+PUBLIC CONST ROW_HEIGHT=DESKTYPES.MENU_ROW_HEIGHT, ROWS=9, LABEL_BYTES=25
 PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=560, WINDOWS_POPUP_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
@@ -26,6 +30,7 @@ PUBLIC TYPE Item=[
   BYTE ARRAY label(LABEL_BYTES)
 ]
 PUBLIC LONGCARD activeWindow
+PUBLIC LONGCARD contentRevision
 PUBLIC BYTE ARRAY title(33)
 PUBLIC BYTE paintMenu
 PUBLIC Item ARRAY items(ROWS)
@@ -36,8 +41,9 @@ LONGCARD revision,focusSeen,pendingWindow,menuOwner
 ; Dirty bits: 1 replaces bar contents, 2 replaces popup contents. Selection
 ; transitions are compared with the last published paint state separately.
 BYTE pendingMenu,pendingAction,dirty,down,opening,blocked
+BYTE showPending
 INT armed,pendingHeading
-CONST ACT_TOP=1, ACT_CLOSE=2, NO_ROW=-1
+CONST ACT_TOP=1, ACT_CLOSE=2, ACT_ICONIFY=3, NO_ROW=-1
 
 PUBLIC BYTE FUNC Active()
 
@@ -56,6 +62,7 @@ PUBLIC BYTE FUNC Start()
 
   LET service=DESKSTATE.Get()
   DESKSTATE.barLayer=0
+  DESKMENUCACHE.Reset()
   DESKSTATE.popupLayer=0
   menu=0
   count=0
@@ -67,11 +74,13 @@ PUBLIC BYTE FUNC Start()
   opening=0
   dirty=1
   blocked=0
+  showPending=0
   selected=NO_ROW
   armed=NO_ROW
   revision=$ffffffff
   focusSeen=$ffffffff
   activeWindow=0
+  contentRevision=1
   title(0)=0
   DESKSTATE.menuActive=0
   REGIONS.Assign(@bounds,0,0,640,BAR_HEIGHT)
@@ -101,6 +110,7 @@ PUBLIC PROC Stop()
   DESKSTATE.popupLayer=0
   menu=0
   pendingMenu=0
+  showPending=0
   pendingAction=0
   DESKSTATE.menuActive=0
 
@@ -162,7 +172,8 @@ PROC Cycle(BYTE reverse)
       slot=IF slot=DESKTYPES.WINDOWS-1 THEN 0 ELSE slot+1 FI
     FI
 
-    IF Shown(@service.windows(slot))<>0 THEN
+    IF Shown(@service.windows(slot))<>0
+        AND service.windows(slot).iconified=0 THEN
       pendingWindow=service.windows(slot).id
       pendingAction=ACT_TOP
       RETURN
@@ -202,12 +213,12 @@ PROC Choose(INT row)
     Cycle(0)
   ELSEIF menu=WINDOWS_MENU THEN
     pendingWindow=menuOwner
-    pendingAction=ACT_CLOSE
+    pendingAction=IF items(row).action=3 THEN ACT_ICONIFY ELSE ACT_CLOSE FI
   ELSEIF row=0 THEN
     Cycle(0)
   ELSE
     pendingWindow=menuOwner
-    pendingAction=ACT_CLOSE
+    pendingAction=IF row=2 THEN ACT_ICONIFY ELSE ACT_CLOSE FI
   FI
 
   menu=0
@@ -232,6 +243,18 @@ PROC Highlight(INT row)
 
 RETURN
 
+; At most nine native rows; pointer motion needs no general division.
+PUBLIC BYTE FUNC RowAt(INT offset)
+  BYTE row
+
+  row=0
+  WHILE offset>=ROW_HEIGHT DO
+    offset==-ROW_HEIGHT
+    row==+1
+  OD
+
+RETURN(row)
+
 INT FUNC Hit(INT x,y)
   INT left,row
 
@@ -244,7 +267,7 @@ INT FUNC Hit(INT x,y)
       OR (count>=4 AND y=BAR_HEIGHT+INT(count)*ROW_HEIGHT-1) THEN
     RETURN(NO_ROW)
   FI
-  row=(y-BAR_HEIGHT) RSH 4
+  row=RowAt(y-BAR_HEIGHT)
 
 RETURN(row)
 
@@ -441,19 +464,24 @@ PUBLIC PROC Application(INT heading)
 RETURN
 
 PROC Popup(LAYERTYPES.Rect POINTER bounds)
+  LAYERTYPES.Rect background
 
   LET service=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-  IF layer.bounds.right-layer.bounds.left<>bounds.right-bounds.left
-      OR layer.bounds.bottom-layer.bounds.top<>bounds.bottom-bounds.top THEN
-    Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
-    Check(LAYERS.Delete(@service.scene,DESKSTATE.popupLayer))
-    Check(LAYERS.Create(@service.scene,bounds,@DESKSTATE.popupLayer))
-  ELSE
-    Check(LAYERS.Move(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top))
+  Check(LAYERS.Bounds(@service.scene,DESKSTATE.popupLayer,bounds.left,bounds.top,
+      CARD(bounds.right-bounds.left),CARD(bounds.bottom-bounds.top)))
+  showPending=1
+  IF DESKMENUCACHE.Reusable(bounds)<>0 THEN
+    RETURN
   FI
-  Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
-  DESKSTATE.TopChrome()
+  REGIONS.Copy(bounds,@background)
+  IF menu=GEM_MENU THEN
+    DESKAPPMENU.BackgroundBounds(@background)
+  FI
+  IF DESKMENUCACHE.Capture(@background)=0 THEN
+    showPending=0
+    Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
+    DESKSTATE.TopChrome()
+  FI
 
 RETURN
 
@@ -487,28 +515,43 @@ PROC Open(BYTE kind)
         IF Shown(window)<>0 THEN
           items(count).window=window.id
           items(count).enabled=1
-          Label(@items(count).label(0),@window.title(0),LABEL_BYTES-1)
+          IF window.iconified<>0 THEN
+            items(count).label(0)='*
+            items(count).label(1)=ASCII.SPACE
+            Label(@items(count).label(2),@window.title(0),LABEL_BYTES-3)
+          ELSE
+            Label(@items(count).label(0),@window.title(0),LABEL_BYTES-1)
+          FI
           count==+1
         FI
       END
     OD
-    IF DESKAPPMENU.Current()<>0 THEN
+    BEGIN
       items(count).enabled=1
       items(count).action=1
       Label(@items(count).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
       count==+1
       items(count).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+          AND menuOwner<>DESKSTATE.desktopWindow
       items(count).action=2
       Label(@items(count).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
       count==+1
-    FI
+      items(count).enabled=menuOwner<>0 AND menuOwner<>DESKSTATE.desktopWindow
+      items(count).action=3
+      Label(@items(count).label(0),BYTE POINTER(c"Iconify"),LABEL_BYTES-1)
+      count==+1
+    END
   ELSE
-    count=2
+    count=3
     items(0).enabled=1
     Label(@items(0).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
     items(1).window=menuOwner
     items(1).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+        AND menuOwner<>DESKSTATE.desktopWindow
     Label(@items(1).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
+    items(2).window=menuOwner
+    items(2).enabled=menuOwner<>0 AND menuOwner<>DESKSTATE.desktopWindow
+    Label(@items(2).label(0),BYTE POINTER(c"Iconify"),LABEL_BYTES-1)
   FI
 
   selected=IF count<>0 THEN INT(0) ELSE NO_ROW FI
@@ -532,14 +575,20 @@ PROC Execute()
     RETURN
   FI
 
-  IF action=ACT_TOP THEN
+  IF action=ACT_ICONIFY THEN
+    DESKCORE.Iconify(service,window)
+  ELSEIF action=ACT_TOP THEN
+    IF window.iconified<>0 THEN
+      DESKCORE.RestoreIcon(service,window)
+      RETURN
+    FI
     IF service.focus=window.id THEN
       RETURN
     FI
     IF window.kind=DESKTYPES.CONTENT_AES THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
     ELSE
-      Check(LAYERS.Order(@service.scene,window.layer,1))
+      Check(DESKSTATE.Raise(window.layer))
       DESKCORE.Focus(service,window.id)
       DESKSTATE.TopChrome()
     FI
@@ -606,17 +655,32 @@ PUBLIC PROC Advance()
   IF DESKSTATE.barLayer=0 THEN
     RETURN
   FI
-  IF pendingAction=0 AND pendingMenu=0 AND dirty=0
+  IF pendingAction=0 AND pendingMenu=0 AND dirty=0 AND showPending=0
       AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
-      AND DESKAPPMENU.VisualChanged()=0 THEN
+      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0 THEN
     RETURN
   FI
   IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
       OR AESLOCKS.PaintBlocked()<>0 THEN
     RETURN
   FI
+
+  ; Retire the old popup before applying a command or preparing a new save.
+  ; Own hide/show rebuilds are published here so they cannot cancel the gesture.
+  BEGIN
+    LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+    IF popup.shown<>0 AND (menu=0 OR pendingMenu<>0 OR pendingAction<>0) THEN
+      IF DESKMENUCACHE.Restore(menu=GEM_MENU AND pendingMenu=GEM_MENU
+          AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Current()<>0)<>0 THEN
+        revision=service.scene.rebuilds
+        RETURN
+      FI
+      Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
+      revision=service.scene.rebuilds
+    FI
+  END
 
   DESKAPPMENU.Finish()
   ; A native focus command must select its bar before focusSeen is published.
@@ -637,11 +701,26 @@ PUBLIC PROC Advance()
   IF pendingMenu<>0 THEN
     Open(pendingMenu)
     pendingMenu=0
+    IF service.scene.busy<>0 THEN
+      revision=service.scene.rebuilds
+      RETURN
+    FI
+  FI
+  IF showPending<>0 THEN
+    showPending=0
+    IF menu<>0 THEN
+      Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,1))
+      DESKSTATE.TopChrome()
+    FI
   FI
   IF menu=0 THEN
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
+    DESKMENUCACHE.End()
   FI
   IF chromeChanged<>0 THEN
+    IF contentRevision<>0 THEN
+      contentRevision==+1
+    FI
     DESKSTATE.TopChrome()
     activeWindow=service.focus
     BEGIN
@@ -688,6 +767,19 @@ PUBLIC PROC Advance()
   AESWINDOWSTATE.Sync()
   DESKSTATE.menuActive=Active()
   AESMOUSE.Refresh()
+  IF menu=GEM_MENU THEN
+    BEGIN
+      LET owner=DESKAPPMENU.owner
+      LET aes=AESSTATE.Get()
+      DESKMENUCACHE.SelectPopup(menu,owner.id,owner.menu.generation,
+          aes.menuRevision,DESKAPPMENU.paintHeading,DESKAPPMENU.paintSelected,
+          DESKAPPMENU.paintSelected=-1)
+    END
+  ELSE
+    DESKMENUCACHE.SelectPopup(menu,activeWindow,1,contentRevision,0,
+        paintSelection,paintSelection=0)
+  FI
+  DESKMENUCACHE.Notify()
 
 RETURN
 
@@ -695,11 +787,11 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0
+RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0 OR showPending<>0
     OR paintMenu<>menu OR paintSelection<>selected
     OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
     OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0
-    OR DESKAPPMENU.VisualChanged()<>0)
+    OR DESKAPPMENU.VisualChanged()<>0 OR DESKMENUCACHE.Pending()<>0)
     AND AESLOCKS.NativeReady()<>0 AND AESLOCKS.MouseBlocked()=0
     AND AESLOCKS.PaintBlocked()=0)
 

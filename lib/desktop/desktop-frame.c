@@ -31,27 +31,37 @@ static void text(WORD x,WORD y,UWORD count,UWORD pen)
                   paint->clipRight,paint->clipBottom);
 }
 
+static void gadget(UWORD image,WORD x,WORD y)
+{
+    GemFrameGadget(image,x,y,paint->clipLeft,paint->clipTop,
+                   paint->clipRight,paint->clipBottom);
+}
+
 /* Cached thumb coordinates come from the admitted window mutation. Each
  * strip draws only its intersection; no divide or tree traversal is needed. */
 static void gadgets(WORD l,WORD t,WORD r,WORD b)
 {
     struct ConsoleBitmapPacket *p=paint;
-    WORD k=p->fillY,g=DESKTOP_FRAME_GADGET,left=r-g;
-    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? g:DESKTOP_WORK_BOTTOM);
-    WORD i,mid=left+g/2,center;
-    if (k&DESKTOP_FRAME_VERTICAL) {
-        fill(left,top,r,bottom,8);
+    WORD k=p->fillY,gw=DESKTOP_FRAME_GADGET_WIDTH,gh=DESKTOP_FRAME_GADGET_HEIGHT,left=r-gw;
+    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? gh:DESKTOP_WORK_BOTTOM);
+    WORD mid=left+gw/2,center;
+    if (paint->clipRight<=left || paint->clipLeft>=r) return;
+    if ((k&DESKTOP_FRAME_VERTICAL) && paint->clipTop<bottom && paint->clipBottom>top) {
+        /* The window supplies the outer edge; the track and sizer supply
+         * shared horizontal separators for the unboxed arrow cells. */
+        fill(left+1,top,r-1,bottom,8);
+        fill(left,top,left+1,bottom,1);
         if (k&DESKTOP_FRAME_UPARROW) {
-            fill(left,top,r,top+g,0);box(left,top,r,top+g);
-            center=top+5;
-            for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
-            top+=g;
+            fill(left+1,top,r-1,top+gh,0);
+            center=top+(gh-5)/2;
+            gadget(GEM_GADGET_UP,mid-5,center);
+            top+=gh;
         }
         if (k&DESKTOP_FRAME_DNARROW) {
-            fill(left,bottom-g,r,bottom,0);box(left,bottom-g,r,bottom);
-            center=bottom-6;
-            for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
-            bottom-=g;
+            fill(left+1,bottom-gh,r-1,bottom,0);
+            center=bottom-1-(gh-5)/2;
+            gadget(GEM_GADGET_DOWN,mid-5,center-4);
+            bottom-=gh;
         }
         box(left,top,r,bottom);
         if (k&DESKTOP_FRAME_VSLIDE) {
@@ -59,12 +69,9 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
             fill(left+1,top,r-1,bottom,0);box(left,top,r,bottom);
         }
     }
-    if (k&DESKTOP_FRAME_SIZER) {
-        box(left,b-g,r,b);
-        for (i=3;i<12;i+=3) {
-            WORD j;
-            for (j=0;j<i;++j) fill(r-3-j,b-3-i+j,r-2-j,b-2-i+j,1);
-        }
+    if ((k&DESKTOP_FRAME_SIZER) && paint->clipBottom>b-gh) {
+        box(left,b-gh,r,b);
+        gadget(GEM_GADGET_SIZE,r-14,b-8);
     }
     (void)l;
 }
@@ -74,13 +81,23 @@ static UWORD fragment(void)
     struct ConsoleBitmapPacket *p=paint;
     const UBYTE *title=(const UBYTE *)p->text;
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
-    WORD nameLeft=l+(p->background ? DESKTOP_TITLE_HEIGHT:DESKTOP_FRAME_EDGE);
-    WORD nameRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET:DESKTOP_FRAME_EDGE);
+    WORD nameLeft=l+(p->background ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
+    WORD iconRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET_WIDTH:0);
+    WORD hasIcon=iconRight-nameLeft>=DESKTOP_FRAME_GADGET_WIDTH+8+2*DESKTOP_TITLE_PAD;
+    WORD nameRight=iconRight-(hasIcon ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
     WORD x,y=t+DESKTOP_TITLE_TEXT_Y;
     WORD pl,pt,pr,pb;
     UWORD span=nameRight-nameLeft;
-    UWORD length=0,limit=span>2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
+    UWORD length=0,limit=nameRight>nameLeft+2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
     UWORD first,n;
+    if (p->fillY&DESKTOP_FRAME_ICONIFIED) {
+        fill(l,t,r,b,0);box(l,t,r,b);
+        gadget(GEM_GADGET_TILE,l+3,t+2);
+        for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
+        text(l+20,y,n,1);
+        p->fillX=0;
+        return 1;
+    }
     /* Side/bottom fragments are admitted inside the outer bounds. They need
      * only paper and the intersecting outline, never a title scan or glyphs. */
     if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
@@ -95,7 +112,7 @@ static UWORD fragment(void)
         if (!(p->fillY&DESKTOP_FRAME_INFO) ||
             p->clipTop>=t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT) return 1;
         title+=DESKTOP_TITLE_BYTES;
-        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+2;
+        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+1;
         span=r-x-8;
         limit=span>>3;
         while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
@@ -105,7 +122,7 @@ static UWORD fragment(void)
     if (!p->fillX) {
         fill(l,t,r,b,0);
         box(l,t,r,b);
-        fill(l,t+DESKTOP_TITLE_HEIGHT-1,r,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
+        fill(l+1,t+DESKTOP_TITLE_HEIGHT-1,r-1,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
         if (p->foreground) {
             pl=nameLeft>p->clipLeft ? nameLeft:p->clipLeft;
             pt=t+1>p->clipTop ? t+1:p->clipTop;
@@ -116,16 +133,21 @@ static UWORD fragment(void)
         }
         if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
                          t+DESKTOP_TITLE_HEIGHT-1,0);
+        if (hasIcon) {
+            fill(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,
+                 iconRight-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
+            gadget(GEM_GADGET_ICONIFY,iconRight-13,t+2);
+        }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
-            box(r-DESKTOP_FRAME_GADGET,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
-            glyphs[0]=7;
-            text(r-12,t+4,1,1);
+            fill(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,
+                 r-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
+            gadget(GEM_GADGET_FULL,r-13,t+2);
         }
         if (p->background) {
-            box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
-                l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
-            glyphs[0]=DESKTOP_CLOSE_GLYPH;
-            text(l+4,t+4,1,1);
+            /* At minimum width, the fuller already supplies this divider. */
+            if (nameLeft<iconRight)
+                fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
+            gadget(GEM_GADGET_CLOSE,l+DESKTOP_CLOSE_TEXT_X,t+2);
         }
     }
     }
@@ -149,8 +171,11 @@ UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
 {
     UWORD status;
     paint=p;
-    status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
-                                !p->fillX,fragment);
+    if (p->clipBottom-p->clipTop>16)
+        status=GemDrawingFrameBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,fragment);
+    else
+        status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
+                                    !p->fillX,fragment);
     paint=0;
     return status;
 }
@@ -165,21 +190,21 @@ static UWORD menu_row(void)
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height,row=p->fillY;
     UWORD first=p->fillX,n=0,selected=p->foreground && p->background;
     if (!first) {
-        fill(l,row,r,row+16,0);
-        fill(l+1,row>t ? row:t+1,r-1,row+16<b ? row+16:b-1,selected);
+        fill(l,row,r,row+DESKTOP_MENU_ROW_HEIGHT,0);
+        fill(l+1,row>t ? row:t+1,r-1,row+DESKTOP_MENU_ROW_HEIGHT<b ? row+DESKTOP_MENU_ROW_HEIGHT:b-1,selected);
         box(l,t,r,b);
     }
     while (first+n<24 && label[first+n]) {
         glyphs[n]=label[first+n];++n;
     }
-    if (n) GemWidgetText(l+8+(first<<3),row+4,glyphs,n,!selected,
+    if (n) GemWidgetText(l+8+(first<<3),row+DESKTOP_MENU_TEXT_Y,glyphs,n,!selected,
                          p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
     first+=n;
     p->fillX=first<24 && label[first] ? first:0;
     if (!p->fillX && !p->foreground) {
         WORD pl=l+1>p->clipLeft ? l+1:p->clipLeft;
         WORD pt=row>t ? row:t+1,pr=r-1<p->clipRight ? r-1:p->clipRight;
-        WORD pb=row+16<b ? row+16:b-1;
+        WORD pb=row+DESKTOP_MENU_ROW_HEIGHT<b ? row+DESKTOP_MENU_ROW_HEIGHT:b-1;
         if (pt<p->clipTop) pt=p->clipTop;
         if (pb>p->clipBottom) pb=p->clipBottom;
         if (pl<pr && pt<pb) GemWidgetStipple(pl,pt,pr,pb);

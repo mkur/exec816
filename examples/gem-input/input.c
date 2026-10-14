@@ -149,7 +149,9 @@ WORD InputRun(struct InputApp *app)
                 break;
             case WM_MOVED:
                 if (!wind_set(app->window,WF_CXYWH,app->message[4],app->message[5],
-                              app->message[6],app->message[7])) result=2;
+                              app->message[6],app->message[7]) ||
+                    !wind_get(app->window,WF_WXYWH,&app->work[0],&app->work[1],
+                              &app->work[2],&app->work[3])) result=2;
                 break;
             case WM_REDRAW:
                 if (!redraw(app,&app->message[4])) result=2;

@@ -2,7 +2,7 @@
 from generate_desktop import layout,ABI as DESKTOP_ABI
 from generate_layers import layout as layers_layout,ABI as LAYERS_ABI
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import desktop, frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text, tile
 from test_gem_cursor import overlay
 from native_program import require
 
@@ -67,16 +67,16 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         rectangle(result, bounds, 0)
         if ident == chrome['barLayer']:
             inverse = chrome['menu'] == 1
-            rectangle(result, (0, 0, 128, 15), int(inverse))
+            rectangle(result, (0, 0, 128, 10), int(inverse))
             title = (active[wf['title']:wf['title']+14].split(b'\0')[0] if active else b'') or b'Exec816'
             if menu_source:
                 from application_menu_oracle import draw
                 draw(bridge,result,menu_source,heading=menu_heading,opened=chrome['menu']==3)
-            text(result, 8, 4, title, int(not inverse), int(inverse))
+            text(result, 8, 1, title, int(not inverse), int(inverse))
             inverse = chrome['menu'] == 2
-            rectangle(result, (560, 0, 640, 15), int(inverse))
-            text(result, 568, 4, b'Windows', int(not inverse), int(inverse))
-            rectangle(result, (0, 15, 640, 16), 1)
+            rectangle(result, (560, 0, 640, 10), int(inverse))
+            text(result, 568, 1, b'Windows', int(not inverse), int(inverse))
+            rectangle(result, (0, 10, 640, 11), 1)
         else:
             if chrome['menu']==3 and menu_source:
                 from application_menu_oracle import draw
@@ -84,19 +84,23 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 require(expected==bounds,'Menu layer differs from source geometry')
                 return
             if chrome['menu'] == 2:
-                entries = [(w[wf['title']:wf['title']+24].split(b'\0')[0], True)
-                           for ident, (w, _) in windows.items() if ident in shown]
-                if menu_source:
-                    entries += [(b'Next window', True), (b'Close', True)]
+                entries = [(((b'* ' if w[wf['iconified']] else b'')+
+                            w[wf['title']:wf['title']+24].split(b'\0')[0])[:24], True)
+                           for ident, (w, _) in windows.items() if ident in shown
+                           and not number(w,wf['frameKind'])&512]
             else:
-                entries = [(b'Next window', True), (b'Close', active is not None and active[wf['kind']] != 1)]
+                entries = []
+            ordinary=active is not None and not number(active,wf['frameKind'])&512
+            entries += [(b'Next window', True),
+                        (b'Close', ordinary and active[wf['kind']] != 1),
+                        (b'Iconify', ordinary)]
             for row, (label, enabled) in enumerate(entries):
                 inverse = enabled and row == chrome['selected']
-                rectangle(result, (left+1, max(top+1,top+row*16), right-1, min(bottom-1,top+(row+1)*16)), int(inverse))
-                text(result, left+8, top+row*16+4, label,
+                rectangle(result, (left+1, max(top+1,top+row*11), right-1, min(bottom-1,top+(row+1)*11)), int(inverse))
+                text(result, left+8, top+row*11+1, label,
                      int(not inverse), int(inverse))
                 if not enabled:
-                    for yy in range(top+row*16+4,top+row*16+12):
+                    for yy in range(top+row*11+1,top+row*11+9):
                         for xx in range(left+8,left+8+len(label)*8):
                             if (xx+yy)%2==0:result.pixels[yy*640+xx]=PENS[0]
             for edge in [(left,top,right,top+1),(left,bottom-1,right,bottom),
@@ -118,6 +122,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         left, top, right, bottom = bounds
         kind = window[wf['kind']]
         title = window[wf['title']:wf['title']+64].split(b'\0')[0]
+        if window[wf['iconified']]:
+            tile(result,bounds,title)
+            continue
         cf = types['Content']['fields']
         content = bytearray(types['Content']['size'])
         if kind == 2:
@@ -134,12 +141,12 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                   info=window[wf['info']:wf['info']+64].split(b'\0')[0],
                   slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
         if kind == 1:
-            terminal.paint(result, (left+8)//8, (top+16)//8, number(window, wf['id'], 4) == focused)
+            terminal.paint(result, (left+8)//8, (top+11)//8, number(window, wf['id'], 4) == focused)
         elif kind == 3:
             from control_panel_oracle import retained
             context = number(bridge.memdump(content_address-wf['content']+wf['widgets'], 3), 0, 3)
             retained(bridge, result, context,
-                     (left+8, top+16, right-8, bottom-8),
+                     (left+8, top+11, right-8, bottom-2),
                      number(window, wf['id'], 4) == focused)
         elif kind == 4:
             require(external is not None, "External application needs an independent painter")
@@ -152,9 +159,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 l, t, r, b = rect(command, df['bounds'])
                 pen = command[df['pen']]
                 if command[df['kind']] == 1:
-                    rectangle(result, (left+8+l, top+16+t, left+8+r, top+16+b), pen)
+                    rectangle(result, (left+8+l, top+11+t, left+8+r, top+11+b), pen)
                 else:
                     offset, length = number(command, df['offset']), number(command, df['count'])
                     value = content[cf['text']+offset:cf['text']+offset+length]
-                    text(result, left+8+l, top+16+t, value, pen, number(content, cf['background']))
+                    text(result, left+8+l, top+11+t, value, pen, number(content, cf['background']))
     return overlay(result, pointer)

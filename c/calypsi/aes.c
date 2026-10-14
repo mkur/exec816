@@ -319,14 +319,15 @@ WORD evnt_timer(UWORD lo, UWORD hi)
     return ExecAESTimerWait(c, (ULONG)lo | ((ULONG)hi << 16));
 }
 
-WORD wind_update(WORD code)
+static WORD update(WORD code,WORD window)
 {
     struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0] = code;
+    c->request.intin[1] = window;
     if (!ExecAESSubmit(c, AES_OP_UPDATE)) return 0;
-    switch (code & ~BEG_CHECK) {
+    switch (code & ~(BEG_CHECK|AES_UPDATE_WINDOW)) {
     case BEG_UPDATE: ++c->updateDepth; break;
     case END_UPDATE: --c->updateDepth; break;
     case BEG_MCTRL: ++c->mouseDepth; break;
@@ -334,6 +335,20 @@ WORD wind_update(WORD code)
     }
     return 1;
 }
+
+WORD wind_update(WORD code)
+{ return update(code,0); }
+
+/* The outermost scope is a caller promise: no other owned window changes. */
+WORD ExecAESBeginUpdate(WORD window)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct AESWindowView *view;
+    if (!c || !(view=ExecAESFindView(c,window))) return 0;
+    c->view=view;
+    return update(BEG_UPDATE|AES_UPDATE_WINDOW,window);
+}
+
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
 {

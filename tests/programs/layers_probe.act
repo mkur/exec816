@@ -5,6 +5,7 @@ USE LAYERS
 USE LAYERTYPES
 USE REGIONS
 USE DESKTYPES
+USE LAYERCACHE
 
 CARD checks
 
@@ -23,7 +24,9 @@ PROC Main()
   LAYERTYPES.Layer POINTER layer
   LAYERTYPES.Rect bounds
   LONGCARD token,id,bar,popup
-  DESKTYPES.Snapshot snapshot
+  LAYERTYPES.CacheSlot snapshot
+  LAYERTYPES.CacheSlot ARRAY copies(2)
+  LAYERTYPES.CacheRepair repair
   BYTE index
 
   scene=LAYERTYPES.Scene POINTER($11fff0)
@@ -112,18 +115,88 @@ PROC Main()
   Require(LAYERS.BeginMove(scene,id,64,112,@token)=LAYERTYPES.REDRAW)
   Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
   Require(LAYERS.BeginRead(scene,id,@layer.bounds,@token)=LAYERTYPES.REDRAW)
-  Require(SIZEOF(DESKTYPES.Snapshot)=DESKTYPES.SNAPSHOT_SIZE)
-  snapshot.window=$12345678
+  Require(SIZEOF(LAYERTYPES.CacheSlot)=LAYERTYPES.CACHESLOT_SIZE)
+  snapshot.identity=$12345678
   snapshot.revision=$87654321
   snapshot.width=528
   snapshot.height=184
   snapshot.valid=1
   snapshot.pinned=1
-  Require(snapshot.window=$12345678 AND snapshot.revision=$87654321)
+  Require(snapshot.identity=$12345678 AND snapshot.revision=$87654321)
   Require(snapshot.width=528 AND snapshot.height=184
       AND snapshot.valid=1 AND snapshot.pinned=1)
+  ; Exercise both indexed record-copy addresses through emitted code. Scalar
+  ; promotion must retain the index in copy operands as well as ordinary loads.
+  FOR index=0 TO 1 DO
+    copies(index)=snapshot
+    copies(index).width==+CARD(index)
+    snapshot=copies(index)
+    Require(snapshot.identity=$12345678 AND snapshot.width=528+CARD(index))
+  OD
   Require(DESKTYPES.SNAPSHOT_0_BASE=$50000
-      AND DESKTYPES.SNAPSHOT_1_BASE=$60000 AND DESKTYPES.SNAPSHOT_BYTES=65536)
+      AND DESKTYPES.SNAPSHOT_1_BASE=$62c00 AND DESKTYPES.SNAPSHOT_BYTES=76800)
+  Require(SIZEOF(LAYERTYPES.CacheRepair)=LAYERTYPES.CACHEREPAIR_SIZE)
+  snapshot.identity=1
+  snapshot.revision=1
+  snapshot.valid=1
+  snapshot.pinned=0
+  repair.state=0
+  LAYERCACHE.BeginChange(@snapshot,@repair,1,2)
+  Require(snapshot.valid=0 AND snapshot.revision=2
+      AND repair.state=LAYERTYPES.CACHE_CHANGE_HELD)
+  REGIONS.Assign(@bounds,8,8,24,16)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,1)
+  Require(repair.state=LAYERTYPES.CACHE_CHANGE_READY)
+  LAYERCACHE.BeginChange(@snapshot,@repair,2,3)
+  REGIONS.Assign(@bounds,32,16,48,24)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,1)
+  Require(repair.bounds.left=8 AND repair.bounds.top=8
+      AND repair.bounds.right=48 AND repair.bounds.bottom=24)
+  LAYERCACHE.BeginChange(@snapshot,@repair,3,4)
+  LAYERCACHE.EndChange(@snapshot,@repair,@bounds,0)
+  Require(snapshot.valid=0 AND snapshot.revision=0 AND repair.state=0)
+  snapshot.revision=8
+  snapshot.valid=1
+  snapshot.pinned=1
+  LAYERCACHE.BeginChange(@snapshot,@repair,8,9)
+  Require(snapshot.pinned=1 AND snapshot.revision=0 AND repair.state=0)
+  LAYERCACHE.Captured(@snapshot,1)
+  Require(snapshot.valid=0 AND snapshot.pinned=0)
+  snapshot.valid=1
+  snapshot.revision=9
+  LAYERCACHE.BeginChange(@snapshot,@repair,8,10)
+  Require(snapshot.revision=0 AND repair.state=0)
+  snapshot.valid=1
+  snapshot.revision=$ffffffff
+  LAYERCACHE.BeginChange(@snapshot,@repair,$ffffffff,0)
+  Require(snapshot.revision=0 AND repair.state=0)
+  Require(SIZEOF(LAYERTYPES.SavedArea)=LAYERTYPES.SAVEDAREA_SIZE)
+  Require(LAYERS.Init(scene,640,240)=LAYERTYPES.OK)
+  Require(LAYERS.BeginPaint(scene,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.AdvancePaint(scene,token)=LAYERTYPES.EMPTY)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  REGIONS.Assign(@bounds,32,16,240,96)
+  Require(LAYERS.Create(scene,@bounds,@popup)=LAYERTYPES.OK)
+  Require(LAYERS.BeginSave(scene,popup,@bounds,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(scene.under.slot.pinned=1 AND scene.under.slot.width=208)
+  Require(scene.under.slot.identity=popup AND scene.under.bounds.bottom=96)
+  Require(LAYERS.FinishSave(scene,token,1,0)=LAYERTYPES.OK)
+  Require(scene.under.slot.valid=1 AND scene.under.slot.pinned=0)
+  Require(LAYERS.Bounds(scene,popup,48,24,96,32)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRestore(scene,popup,@token)=LAYERTYPES.OK)
+  EXEC.Yield()
+  Require(scene.under.slot.pinned=1 AND scene.activeKind=LAYERTYPES.UPDATE_RESTORE)
+  Require(scene.copyTarget.left=48 AND scene.copyTarget.top=24)
+  Require(scene.copyTarget.right=144 AND scene.copyTarget.bottom=56)
+  Require(LAYERS.FinishSave(scene,token,1,1)=LAYERTYPES.OK)
+  Require(scene.busy=0 AND scene.under.slot.valid=1 AND scene.under.slot.pinned=0)
+  Require(LAYERS.Bounds(scene,popup,32,16,208,80)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginRestore(scene,popup,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSave(scene,token,1,0)=LAYERTYPES.OK)
+  Require(scene.busy=0 AND scene.under.slot.valid=0 AND scene.under.slot.pinned=0)
 
 RETURN
 

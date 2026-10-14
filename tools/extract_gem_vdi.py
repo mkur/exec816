@@ -67,8 +67,10 @@ def extract(output, upstream=None):
         json.loads((ROOT/'abi/gem-vdi.json').read_text())))
     from generate_vbxe_tables import generate
     tables = generate(output/'src/gem-vbxe-tables.h')
+    from generate_frame_gadgets import generate as frame_gadgets
+    gadgets = frame_gadgets(output/'src/gem-frame-gadgets.h')
     record = dict(upstream=sources, selection_sha256=sha256(PORT/'selection.json'),
-                  builder_tables=tables,
+                  builder_tables=tables, frame_gadgets=gadgets,
                   patches={p.name:sha256(p) for p in patches}, selected=selected,
                   adapted={p.relative_to(output).as_posix():sha256(p)
                            for p in sorted(output.rglob('*')) if p.is_file() and

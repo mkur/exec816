@@ -10,6 +10,7 @@ USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE DESKGEOMETRY
+USE DESKCACHE
 USE A816MEMORY
 USE HEAPCORE
 
@@ -54,7 +55,7 @@ RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 
 ; Called at lock grant and after an owner mutation. The caller cannot execute
 ; a query until its RPC reply; no Forbid spans construction of this region.
-PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
+PROC Publish(AESSTATE.Window POINTER client BYTE copied)
   LAYERTYPES.Rect work
   BYTE status
 
@@ -65,19 +66,63 @@ PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
   LET view=client.view
+  IF client.window.iconified<>0 THEN
+    DESKGEOMETRY.Work(client.window.frameKind,
+        @client.window.normalBounds,@work)
+    EXEC.Forbid()
+    A816MEMORY.Move(BYTE POINTER(@view.bounds),
+        BYTE POINTER(@client.window.normalBounds),8)
+    A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
+    view.visibleCount=0
+    view.shown=0
+    view.pixelsReady=0
+    view.paintEpoch=layer.paintEpoch
+    view.revision==+1
+    EXEC.Permit()
+    RETURN
+  FI
   DESKGEOMETRY.Work(client.window.frameKind,@layer.bounds,@work)
+  IF REGIONS.Equal(@layer.bounds,
+      LAYERTYPES.Rect POINTER(@view.bounds))=0 THEN
+    IF layer.bounds.right-layer.bounds.left<>view.bounds.right-view.bounds.left
+        OR layer.bounds.bottom-layer.bounds.top<>view.bounds.bottom-view.bounds.top THEN
+      DESKCACHE.Changed(desktop,client.window)
+    FI
+    IF copied=0 THEN
+      LAYERS.ExternalArea(@desktop.scene,layer.id,@work)
+    FI
+  FI
   status=REGIONS.Clip(@layer.visible,@work,
       LAYERTYPES.Region POINTER(@view.visibleCount))
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb3)
   FI
+  status=LAYERS.PixelsReady(layer,@work)
 
   EXEC.Forbid()
   A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(@layer.bounds),8)
   A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
   view.shown=layer.shown
+  view.pixelsReady=status
+  view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Snapshot(AESSTATE.Window POINTER client)
+
+  Publish(client,0)
+
+RETURN
+
+PUBLIC PROC Moved(AESSTATE.Window POINTER client)
+
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@desktop.scene,client.window.layer)
+  DESKGEOMETRY.Slider(client.window,@layer.bounds,
+      client.view.vslide,client.view.vsize)
+  Publish(client,1)
 
 RETURN
 
@@ -93,12 +138,92 @@ PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
 
 RETURN
 
+; Invalidate cached images even when an update has no visible drawing calls.
+PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  client.binding.paintCount=0
+  client.binding.paintFailed=0
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
+      BEGIN
+        LET window=service.windows(index).window
+        service.windows(index).view.changed=0
+        LAYERS.Touch(@desktop.scene,window.layer)
+        DESKCACHE.BeginChange(desktop,window)
+      END
+    FI
+  OD
+  SnapshotAll(client)
+
+RETURN
+
+; Caller reports are frozen by the outstanding END reply. No scene token is
+; held while the client draws; only this owner consumes and applies its journal.
+PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
+  BYTE index,report,same,accepted,complete
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+  LET request=client.binding
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
+      BEGIN
+        LET item=@service.windows(index)
+        LET view=item.view
+        LET layer=LAYERS.Find(@desktop.scene,item.window.layer)
+        same=(view.paintEpoch=layer.paintEpoch)
+        IF view.changed<>0 THEN
+          LAYERS.RequirePaint(@desktop.scene,layer.id,
+              LAYERTYPES.Rect POINTER(@view.change))
+        ELSE
+          ; An unreported model change must not become a new idle capture of
+          ; the old pixels. Explicit completion reports may still retire it.
+          LAYERS.RequirePaint(@desktop.scene,layer.id,
+              LAYERTYPES.Rect POINTER(@view.work))
+        FI
+        report=0
+        complete=0
+        WHILE same<>0 AND request.paintFailed=0
+            AND report<request.paintCount DO
+          BEGIN
+            LET paint=@request.paints(report)
+            IF paint.handle=view.handle AND paint.epoch=view.paintEpoch THEN
+              accepted=LAYERS.Painted(@desktop.scene,layer.id,layer.paintEpoch,
+                  LAYERTYPES.Rect POINTER(@paint.rect))
+              IF accepted<>0 AND view.changed<>0
+                  AND REGIONS.Contains(LAYERTYPES.Rect POINTER(@paint.rect),
+                      LAYERTYPES.Rect POINTER(@view.change))<>0 THEN
+                complete=1
+              FI
+            FI
+          END
+          report==+1
+        OD
+        DESKCACHE.EndChange(desktop,item.window,
+            LAYERTYPES.Rect POINTER(@view.change),complete)
+        view.changed=0
+      END
+    FI
+  OD
+  request.paintCount=0
+
+RETURN
+
 PUBLIC PROC Updates(AESSTATE.Client POINTER client CARD count)
   BYTE index
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id THEN
+    IF service.windows(index).owner=client.id
+        AND (service.updateWindow=0
+          OR service.windows(index).gui.window=service.updateWindow) THEN
       service.windows(index).view.updates=count
     FI
   OD
@@ -137,15 +262,24 @@ PUBLIC PROC Sync()
   slot=0
   WHILE slot<desktop.scene.count DO
     BEGIN
+      BYTE index
       LET layer=@desktop.scene.items(desktop.scene.order(slot))
-      IF layer.shown<>0 AND FindWindow(layer.id)<>0 THEN
+      FOR index=0 TO DESKTYPES.WINDOWS-1 DO
         BEGIN
-          LET client=FindRecord(IF layer.externalPaint<>0 THEN
-              FindWindow(layer.id) ELSE LONGCARD(0) FI)
-          IF client<>NULL THEN
-            top=client.gui.window
+          LET window=@desktop.windows(index)
+          IF window.id<>0 AND window.layer=layer.id AND layer.shown<>0
+              AND window.iconified=0 THEN
+            BEGIN
+              LET client=FindRecord(window.id)
+              IF client<>NULL THEN
+                top=client.gui.window
+              FI
+            END
+            EXIT
           FI
         END
+      OD
+      IF index<DESKTYPES.WINDOWS THEN
         EXIT
       FI
     END
@@ -168,6 +302,12 @@ PUBLIC PROC Control(DESKTYPES.Window POINTER window BYTE kind
 
 RETURN
 
+PUBLIC BYTE FUNC Preserves(DESKTYPES.Window POINTER window)
+
+  LET item=FindRecord(window.id)
+
+RETURN(item.preserve)
+
 ; Accumulate work while the frame transaction is active. Publication happens
 ; once its last strip finishes, so an initial draw is not one message per strip.
 PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)
@@ -175,6 +315,9 @@ PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)
   IF REGIONS.Empty(area)<>0 THEN
     RETURN
   FI
+
+  LET desktop=DESKSTATE.Get()
+  LAYERS.RequirePaint(@desktop.scene,window.layer,area)
 
   LET client=FindRecord(window.id)
   IF client.paintDirty=0 THEN

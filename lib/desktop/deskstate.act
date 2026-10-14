@@ -38,6 +38,30 @@ PUBLIC DESKTYPES.Service POINTER FUNC Get()
 
 RETURN(service)
 
+; Chrome occupies the first two ranks. Raising the front application past it
+; and restoring chrome would damage an unchanged window on every title click.
+PUBLIC BYTE FUNC Raise(LONGCARD id)
+  BYTE rank,status
+
+  IF id<>desktopLayer THEN
+    FOR rank=0 TO service.scene.count-1 DO
+      BEGIN
+        LET layer=@service.scene.items(service.scene.order(rank))
+        IF layer.id<>barLayer AND layer.id<>popupLayer THEN
+          IF layer.id=id THEN
+            RETURN(LAYERTYPES.OK)
+          FI
+          EXIT
+        FI
+      END
+    OD
+  FI
+
+  status=LAYERS.Order(@service.scene,id,id<>desktopLayer)
+  TopChrome()
+
+RETURN(status)
+
 ; Startup/retirement only, before publishing clients or after their final reply.
 PUBLIC PROC Bind(DESKTYPES.Service POINTER value)
 

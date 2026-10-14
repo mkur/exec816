@@ -1,0 +1,1780 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "baseline": "ff5911e",
+  "slices": {
+    "CF1": {
+      "status": "pass",
+      "host_tests": 459,
+      "host_skips": 4,
+      "native": {
+        "path": "build/compact-window-geometry/cf1-native/results.json",
+        "sha256": "ff0a8eac5284f62aaae664c908216c5bc4031fde323b223533e150dbc5879b87",
+        "status": "pass",
+        "checks": 362,
+        "guards": "intact",
+        "stack_usage": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 181,
+            "remaining_above_floor": 1099
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 133,
+            "remaining_above_floor": 923
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 398,
+            "remaining_above_floor": 1906
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 258,
+            "remaining_above_floor": 1022
+          }
+        },
+        "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "host_compiler_profile": "release",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "presentation": {
+        "path": "build/compact-window-geometry/cf1-presentation/presentation-results.json",
+        "sha256": "507b998b5f6bfffb22abaec5918d0ecd89acf4dfd9dce9d6530a3a870702b0ed",
+        "status": "pass",
+        "checks": 117,
+        "guards": "intact",
+        "stack_usage": {},
+        "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "host_compiler_profile": "release",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "pixel_scenes": 19,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "source_sha256": {
+        "abi/desktop.json": "6cd9f05035682421e5ae75bcf4aa38438e49556032ddddd7bb6746c596e27b2b",
+        "c/calypsi/aes-windows.c": "43973a49b320e0bc694f93cdd0ef311e2acec754d43f98533a901d5bcd925181",
+        "c/include/exec816/desktop-geometry.h": "3cd68086dc5e888a9367c974fb7182d4895075a43f29c08d6cf2f11f0ae2f4ba",
+        "lib/aes/aesmenu.act": "6d0c827525e41e49f45da6b4c4051c00e5a8490ee1940248efc6584d7293919f",
+        "lib/aes/aeswindow.act": "021e173aa9465b603eb314f6b4d5fafb792a256a8d23745efff0413f3cb8d32b",
+        "lib/desktop/deskappmenu.act": "174b06e9dd8c311e688b243ec32882401f3e08d5fa984350ca614a00f277546f",
+        "lib/desktop/deskcore.act": "0b0f57cf3f4ff9b72100d60bc6fef2f67a51aa62b25d7c06ddc67979a300d856",
+        "lib/desktop/deskdrag.act": "5452a76adb3ff58532f0b3c7a95ece183b9fcd0a8a930a8d4b98ee3f35297e07",
+        "lib/desktop/deskgeometry.act": "e5387559a325332912d9efe333f018be6a506829a5cd1d860410b9e01ac14774",
+        "lib/desktop/deskmenu.act": "9838c37a93ed737d824181f506ccd32ed96e33d4a279ddda03aef1584d2444d4",
+        "lib/desktop/deskmenupaint.act": "70c11b523690743c04679b85590ead843f2b97d9b97aadada00033bdfec2c8fe",
+        "lib/desktop/desktop-frame.c": "80cca535f6a495a7e7c7e517c7af254bb6465763219d36fbb8d4558843fdd2f1",
+        "lib/desktop/desktypes.act": "aa39f5a54bec150c8c54c1e81051c93081298061ce9c6e05f6dec225415d8cb3",
+        "tools/generate_desktop.py": "82a062e3c1791a602ee8a74687ff038d5d20d8ec4b0bc1edb8ab58ba24145608"
+      }
+    },
+    "CF2": {
+      "status": "pass",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "reports": {
+        "native": {
+          "path": "build/compact-window-geometry/cf2-native/results.json",
+          "sha256": "fd7e58cd5157d489c4071315693165bc95292482cd3eb2fe8c1a3f03306ead6d",
+          "status": "pass",
+          "checks": 362,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 181,
+              "remaining_above_floor": 1099
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 133,
+              "remaining_above_floor": 923
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 398,
+              "remaining_above_floor": 1906
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 258,
+              "remaining_above_floor": 1022
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "return_e": 0,
+            "return_dbr": 0
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          }
+        },
+        "presentation": {
+          "path": "build/compact-window-geometry/cf2-presentation/presentation-results.json",
+          "sha256": "5f67d253011551ac87c4b9acbdc89b73dcf02f495003a5d66308e71a7bf44660",
+          "status": "pass",
+          "checks": 117,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 358,
+              "remaining_above_floor": 922
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 778,
+              "remaining_above_floor": 1526
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 54,
+              "remaining_above_floor": 202
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 285,
+              "remaining_above_floor": 995
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "return_e": 0,
+            "return_dbr": 0
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "pixel_scenes": 19
+        },
+        "aes": {
+          "path": "build/compact-window-geometry/cf2-aes/results.json",
+          "sha256": "7c6aebbd45f7af2c4b7eb6cf7d3bc531d8894f54ecf903c7245f0e95fe67f44f",
+          "status": "pass",
+          "AESChecks": 280,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 517,
+              "remaining_above_floor": 763
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 177,
+              "remaining_above_floor": 879
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 156,
+              "remaining_above_floor": 900
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 181,
+              "remaining_above_floor": 875
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 718,
+              "remaining_above_floor": 1586
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 117,
+              "remaining_above_floor": 139
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 285,
+              "remaining_above_floor": 995
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "return_e": 0,
+            "return_dbr": 0
+          },
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          }
+        },
+        "apps": {
+          "path": "build/compact-window-geometry/cf2-apps/results.json",
+          "sha256": "210a43c1c13c24e75389c0e2f0e02cdbc8205eb603128c3c99d31a2c42a259d6",
+          "status": "pass",
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$c017f1e4033f056f",
+            "actual_kernel_id": "$c017f1e4033f056f",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "cases": [
+            {
+              "reverse": false,
+              "scenes": [
+                {
+                  "label": "overlapping app, focused shell",
+                  "sha256": "edc1f271e1cc1fe77729c14c7b00855a3db10979a4ebac383ff32eb3588148c9",
+                  "observations": 24
+                },
+                {
+                  "label": "semantic action and status patch",
+                  "sha256": "d39324feee629d023ae38da4cc6e46d61482a2a040adfd352758be9c2e9fd318",
+                  "observations": 17
+                },
+                {
+                  "label": "graphical keyboard route",
+                  "sha256": "d39324feee629d023ae38da4cc6e46d61482a2a040adfd352758be9c2e9fd318",
+                  "observations": 2
+                },
+                {
+                  "label": "console output behind app",
+                  "sha256": "0f957f28658409b95d1bf03f05eb606d96160c88ab01d7bd60f234f50eae1b6c",
+                  "observations": 4
+                },
+                {
+                  "label": "cooperative app close exposes shell",
+                  "sha256": "56f2124d56040fbbccafa3188d755c1d58dacd633e0d9a7ef82e6aefbb0cb312",
+                  "observations": 27
+                },
+                {
+                  "label": "retirement settled",
+                  "sha256": "56f2124d56040fbbccafa3188d755c1d58dacd633e0d9a7ef82e6aefbb0cb312",
+                  "observations": 3
+                }
+              ],
+              "runtime": {
+                "status": 0,
+                "guards": "intact",
+                "live_tasks": 0,
+                "os_busy": 0,
+                "irq_depth": 0,
+                "switching": 0,
+                "return_e": 0,
+                "return_dbr": 0
+              },
+              "checks": 6
+            },
+            {
+              "reverse": true,
+              "scenes": [
+                {
+                  "label": "overlapping app, focused shell",
+                  "sha256": "edc1f271e1cc1fe77729c14c7b00855a3db10979a4ebac383ff32eb3588148c9",
+                  "observations": 24
+                },
+                {
+                  "label": "semantic action and status patch",
+                  "sha256": "d39324feee629d023ae38da4cc6e46d61482a2a040adfd352758be9c2e9fd318",
+                  "observations": 17
+                },
+                {
+                  "label": "graphical keyboard route",
+                  "sha256": "d39324feee629d023ae38da4cc6e46d61482a2a040adfd352758be9c2e9fd318",
+                  "observations": 2
+                },
+                {
+                  "label": "console output behind app",
+                  "sha256": "0f957f28658409b95d1bf03f05eb606d96160c88ab01d7bd60f234f50eae1b6c",
+                  "observations": 4
+                },
+                {
+                  "label": "shell retired, app remains live",
+                  "sha256": "1bfec2b33b8944d115549fbcf46c26d6f04000ba3b81cb944804f83fa6329f6c",
+                  "observations": 2
+                },
+                {
+                  "label": "app works after shell retirement",
+                  "sha256": "1bfec2b33b8944d115549fbcf46c26d6f04000ba3b81cb944804f83fa6329f6c",
+                  "observations": 1
+                },
+                {
+                  "label": "retirement settled",
+                  "sha256": "fa290891e10a8ae4b71bcf14274ba99bcad44db5a4cea133bddf432d875daf02",
+                  "observations": 8
+                }
+              ],
+              "runtime": {
+                "status": 0,
+                "guards": "intact",
+                "live_tasks": 0,
+                "os_busy": 0,
+                "irq_depth": 0,
+                "switching": 0,
+                "return_e": 0,
+                "return_dbr": 0
+              },
+              "checks": 6
+            }
+          ]
+        }
+      },
+      "source_sha256": {
+        "abi/desktop.json": "464c7bd56af0f023f03c95a722100aef6a0c0ae13448854af7b5a411f1a9d149",
+        "c/include/exec816/desktop-geometry.h": "dc04479b8cc07132bcbe456022f243a881e5e352cd6fb9b82f5327da6bfa88a6",
+        "lib/aes/aeswindow.act": "01999237e16a84d67d7b8c85b99f2b09c0a0b4293df73085a73381ef9b8bc45c",
+        "lib/desktop/deskapp.act": "2e07ef703ddf2803ecad53a16a1b0e52b3c1adfb03358b439087ec4094ebb946",
+        "lib/desktop/deskboot.act": "1bbfa58c1ea3e0219d95a7f0cd5b3a7821dbec90850e23de5f3e49154e239f34",
+        "lib/desktop/deskcore.act": "bf508629d1cd96ac5ceec6691cd686f5c41ff596715d4c21db61407e3b6e7acf",
+        "lib/desktop/deskdrag.act": "bc5d790319e0ebaf3eef6e2fb06baf8ec43c7432c2e7793dc66225b5a1b928d6",
+        "lib/desktop/deskgeometry.act": "cb9dd24c6a6a8d93ad14ffa08d4988ef8458366644a5b1ad0c0a9140f1db2648",
+        "lib/desktop/desktop-frame.c": "b01ae20e49276f455aca4501f5a42f0e3f3ba5c78d6204ba4cb69797eae908bc",
+        "lib/desktop/desktypes.act": "6a5beb126f28a2ae12ce94f24c6195ca700a94c6c90286f5f65d263a81c4193f",
+        "ports/gem4xe/aes/widgets-model.c": "1b5257011fcc9a12a90b6a63c32c816cb0ec7c3d0bf179f64eb06fed52f43223",
+        "tests/programs/aes_windows.c": "c6beffd0f2de31976a28223f75bed5a17d8c4d8632f104e04299967d9c747daa",
+        "tests/programs/desktop_presentation.act": "f9c85dfcce9d0b9f75615f761ed5ddfda7a3ee78973c6d1a8118c9816864cd08",
+        "tests/programs/native_desktop.act": "7b701690267859023577fe62ab9967180e39facd63dd0a3c84a47d0da7e638bf",
+        "tools/control_panel_oracle.py": "0d41df528ea8f42f38ec64410a84abe247509d1c7445af79b9992ac028afbc14",
+        "tools/desktop_oracle.py": "102383ff3b342adc8d59aa059ef346d4f0fc10680f6cbbc506b67ca37af32256",
+        "tools/test_aes_server.py": "ed94a3fc661a5a8f0c1738bd4f0b7b728ca27a10535faa3d089f4f03543e0703",
+        "tools/test_aes_windows.py": "00ae9a85f6de8bd3eed3e82e4b9daa559c1772221a79d0c64856b3d5b53beeda",
+        "tools/test_desktop_apps.py": "5a4f978fca9ca994b39df00e4bdb72c607d7fcdf4367f152d7e66bd07ec2b0cf",
+        "tools/test_desktop_presentation.py": "c38f48e3b5414e7840c1eb06183ab4f539b804c9601be66534ca3067f3e3f5a0",
+        "tools/test_window_iconification.py": "cf373c648588245ffe95391055d5d1ac2826aafe4ee6225f69f2929cd3c3209b"
+      }
+    },
+    "CF3": {
+      "status": "pass",
+      "host_tests": 459,
+      "host_skips": 4,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "reports": {
+        "menus": {
+          "path": "build/compact-window-geometry/cf3-menus/results.json",
+          "sha256": "b3f301c1970af8743be7e0050559edbbfe5ce4d17e6acde5943efb4a43e621f9",
+          "status": "pass",
+          "AESChecks": 291,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 569,
+              "remaining_above_floor": 711
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 305,
+              "remaining_above_floor": 751
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 143,
+              "remaining_above_floor": 913
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 479,
+              "remaining_above_floor": 577
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 838,
+              "remaining_above_floor": 1466
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 129,
+              "remaining_above_floor": 127
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 297,
+              "remaining_above_floor": 983
+            }
+          },
+          "menu_pixels": [
+            {
+              "phase": 1,
+              "pixels": 7040
+            },
+            {
+              "phase": 2,
+              "pixels": 9504
+            },
+            {
+              "phase": 3,
+              "pixels": 9504
+            },
+            {
+              "phase": 4,
+              "pixels": 7040
+            },
+            {
+              "phase": 5,
+              "pixels": 7040
+            },
+            {
+              "phase": 6,
+              "pixels": 14720
+            },
+            {
+              "phase": 7,
+              "pixels": 7040
+            }
+          ],
+          "native_popup": {
+            "pixels": "exact",
+            "border_hits": "excluded",
+            "highlight_transitions": 3
+          },
+          "long_menu": {
+            "pixels": "exact",
+            "odd_x": true,
+            "checked": true,
+            "disabled": true,
+            "partial_glyph": true,
+            "partial_row": true
+          },
+          "physical_menus": {
+            "pointer": true,
+            "keyboard": true,
+            "commands": [
+              5,
+              2
+            ],
+            "identical_titles": true,
+            "disabled": true,
+            "held_replacement": true,
+            "held_disable": true,
+            "cancel": true,
+            "heading_switch": true,
+            "hidden": true,
+            "multiple_titles": true
+          },
+          "popup_cache": {
+            "warm_file": "exact",
+            "restore_delta": 1
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0
+          }
+        },
+        "forms": {
+          "path": "build/compact-window-geometry/cf3-forms/results.json",
+          "sha256": "520a4536ccbc6111787d6cc8f37468a5e7c776fb8871c3956db393bfb5687d22",
+          "status": "pass",
+          "AESChecks": 198,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 505,
+              "remaining_above_floor": 775
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 780,
+              "remaining_above_floor": 276
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 839,
+              "remaining_above_floor": 217
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 160,
+              "remaining_above_floor": 896
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 831,
+              "remaining_above_floor": 1473
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 52,
+              "remaining_above_floor": 204
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "form_pixels": 35332,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0
+          }
+        }
+      },
+      "source_sha256": {
+        "abi/desktop.json": "4938bcc83138406eb3feabedcb52009ffa47e86bed7cc35582bf3c3a8c3ad6fc",
+        "c/calypsi/aes-form.c": "b51c86d81115727cde8d280999c58f6cd184ac43ec8b182c06f953204a74e8bd",
+        "c/include/exec816/desktop-geometry.h": "c63708a4021ed4ef710ae7c6c54c5e0559a6120703035ff1958446a97cc62e84",
+        "examples/gem-browser/browser.c": "def2cb9fd99cff52767ffa53f69ad2f15b789e65620c9a62f0d9fefb18667901",
+        "examples/gem-dialog/dialog.c": "83b80f5843af31e1328984b0d35ed5e18025b8dabfb62ae35b82364ec8537920",
+        "examples/gem-text/text.c": "97a3c5a2103d48411647e13d0db47156c88620e4f72ebda15f4daaf6bcbf572d",
+        "lib/desktop/deskmenu.act": "11ad85535d738a430ae53c7c8f5c2e5d9eb11eb02723c4a12e82fd57292e52d0",
+        "lib/desktop/deskmenupaint.act": "c746dee908819d7abcfd71210f48a2f22cb05c5039a6510a76fa46be69c2d294",
+        "lib/desktop/deskpaint.act": "e1bb120229dc075c0ab403fc75dec6d59084be983bb3133fe6af6bb5ecc26f60",
+        "lib/desktop/desktypes.act": "6bbd8867aa8024c479915977aedfdae7201e65d868329cf28a4818bccf7c521e"
+      }
+    },
+    "CF4": {
+      "status": "pass",
+      "host_tests": 459,
+      "host_skips": 4,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "reports": {
+        "native": {
+          "path": "build/compact-window-geometry/cf4-native/results.json",
+          "sha256": "298ab20904f417258dfead777b97fd7b2e4e481c407957404a66dc0106dd678e",
+          "status": "pass",
+          "checks": 377,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 181,
+              "remaining_above_floor": 1099
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 133,
+              "remaining_above_floor": 923
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 398,
+              "remaining_above_floor": 1906
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 258,
+              "remaining_above_floor": 1022
+            }
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 181,
+                "untouched_above_floor": 1099
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 133,
+                "untouched_above_floor": 923
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 398,
+                "untouched_above_floor": 1906
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 24,
+                "untouched_above_floor": 232
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 258,
+              "untouched_from_base": 1278,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        "presentation": {
+          "path": "build/compact-window-geometry/cf4-presentation/presentation-results.json",
+          "sha256": "a8f86157c8e234cc81d1061ae75e7a0a10e146a8658c6764fcd6fcfe059696f5",
+          "status": "pass",
+          "checks": 117,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 371,
+              "remaining_above_floor": 909
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 773,
+              "remaining_above_floor": 1531
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 54,
+              "remaining_above_floor": 202
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 283,
+              "remaining_above_floor": 997
+            }
+          },
+          "pixel_scenes": 19,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 371,
+                "untouched_above_floor": 909
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 773,
+                "untouched_above_floor": 1531
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 54,
+                "untouched_above_floor": 202
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 283,
+              "untouched_from_base": 1253,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        "aes": {
+          "path": "build/compact-window-geometry/cf4-aes/results.json",
+          "sha256": "0fd8121e0a283399b095576749401a56073cc876aa5f231c921357e9fe193039",
+          "status": "pass",
+          "AESChecks": 285,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 531,
+              "remaining_above_floor": 749
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 164,
+              "remaining_above_floor": 892
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 156,
+              "remaining_above_floor": 900
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 156,
+              "remaining_above_floor": 900
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 718,
+              "remaining_above_floor": 1586
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 117,
+              "remaining_above_floor": 139
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "iconification": {
+            "empty_visible_region": true,
+            "normal_geometry": true,
+            "hidden_move": true,
+            "wf_top_restore": true,
+            "close_reopen": true
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 531,
+                "untouched_above_floor": 749
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 164,
+                "untouched_above_floor": 892
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 156,
+                "untouched_above_floor": 900
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 156,
+                "untouched_above_floor": 900
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 718,
+                "untouched_above_floor": 1586
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 117,
+                "untouched_above_floor": 139
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 287,
+              "untouched_from_base": 1249,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        "geometry": {
+          "path": "build/compact-window-geometry/demo/compact-geometry-results.json",
+          "sha256": "a88b970c8fe3066aea148f2fda15774eb86c17baa64546e15c529da90940c9cd",
+          "status": "pass",
+          "geometry": {
+            "default_work": [
+              432,
+              174
+            ],
+            "maximized_work": [
+              610,
+              207
+            ],
+            "grid": [
+              4,
+              4
+            ],
+            "icon_pixels": [
+              32,
+              16
+            ],
+            "small_work": [
+              270,
+              122
+            ],
+            "clean_move_repaints": 0,
+            "warm_heading_recaptures": 0,
+            "folder_drop": true,
+            "shell_top": [
+              0,
+              13,
+              528,
+              186
+            ],
+            "shell_bottom": [
+              112,
+              61,
+              640,
+              234
+            ]
+          },
+          "iconification": {
+            "aes_geometry": true,
+            "empty_visible_region": true,
+            "tile_cancel": true,
+            "menu_restore": true,
+            "tile_restore": true,
+            "windows_iconify": true,
+            "counter_background_progress": true,
+            "shell_background_output": true,
+            "shell_gadget_and_menu": true,
+            "slot_reuse_and_teardown": true
+          },
+          "zip_sha256": "b2e407d7594c16c2b560d5454d6c1fc1197c0d36ad39c8fd004417d46d29a61e",
+          "autoboot_frames": 249,
+          "pixel_scenes": 19,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 547,
+                "untouched_above_floor": 733
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 321,
+                "untouched_above_floor": 735
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 155,
+                "untouched_above_floor": 901
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 873,
+                "untouched_above_floor": 183
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 696,
+                "untouched_above_floor": 360
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 18,
+                "untouched_above_floor": 1038
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 848,
+                "untouched_above_floor": 1456
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 129,
+                "untouched_above_floor": 127
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 287,
+              "untouched_from_base": 1249,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        },
+        "packaged_clients": {
+          "path": "build/compact-window-geometry/final/cache-desktop-results.json",
+          "sha256": "9a412b52bda2b010c120f2f8546f1e2dc6125be562e329a9473e0531e4204478",
+          "status": "pass",
+          "pixel_scenes": 11,
+          "zip_sha256": "86f7250c27e38ca51c9441877047873eb5922a846df8a6854683a8150ffa0a6a",
+          "cache_desktop": {
+            "files": true,
+            "panel_pointer": true,
+            "panel_keyboard": true,
+            "panel_moved_hit_test": true,
+            "calculator_moved_input": 42,
+            "text_moved": true,
+            "text_sha256": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+            "text_scroll": true,
+            "selector_cancel": true,
+            "counter_progress": true,
+            "close_restore": true
+          },
+          "autoboot_frames": 249,
+          "machine": {
+            "ok": true,
+            "basic": false,
+            "machine": "800XL",
+            "memory": "64K",
+            "video": "pal",
+            "selftest": false,
+            "fastboot": false,
+            "fppatch": false,
+            "stereo": false,
+            "stereomono": false,
+            "siopatch": "off",
+            "burstio": false,
+            "accuratedisk": true,
+            "casautoboot": true,
+            "casautobasicboot": false,
+            "artifact": "none",
+            "axlonmemsize": "none",
+            "highbanks": 63,
+            "highbanks_overridden": false,
+            "randmem": false,
+            "randdelay": false,
+            "diskemu": "generic56k",
+            "vbxe": true,
+            "covox": false,
+            "soundboard": false,
+            "rapidus": false,
+            "slightsid": false,
+            "addons": "custom",
+            "exeloadmode": "default",
+            "kernel_id": "$9f05ce3698bc66b6",
+            "actual_kernel_id": "$9f05ce3698bc66b6",
+            "basic_id": "$0000000000000000",
+            "actual_basic_id": "$0000000000000005",
+            "debugbrkrun": true
+          },
+          "rom": {
+            "path": "/Users/michalkurcewicz/action/exec816-public/build/compact-window-geometry/final/extracted/exec816-demo/altirraos-816.rom",
+            "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+            "override": false
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0,
+            "stack_observations": [
+              {
+                "slot": 0,
+                "reserved_bytes": 1536,
+                "touched_bytes": 587,
+                "untouched_above_floor": 693
+              },
+              {
+                "slot": 1,
+                "reserved_bytes": 1312,
+                "touched_bytes": 381,
+                "untouched_above_floor": 675
+              },
+              {
+                "slot": 2,
+                "reserved_bytes": 1312,
+                "touched_bytes": 197,
+                "untouched_above_floor": 859
+              },
+              {
+                "slot": 3,
+                "reserved_bytes": 1312,
+                "touched_bytes": 823,
+                "untouched_above_floor": 233
+              },
+              {
+                "slot": 4,
+                "reserved_bytes": 1312,
+                "touched_bytes": 686,
+                "untouched_above_floor": 370
+              },
+              {
+                "slot": 5,
+                "reserved_bytes": 1312,
+                "touched_bytes": 959,
+                "untouched_above_floor": 97
+              },
+              {
+                "slot": 6,
+                "reserved_bytes": 2560,
+                "touched_bytes": 839,
+                "untouched_above_floor": 1465
+              },
+              {
+                "slot": 7,
+                "reserved_bytes": 2560,
+                "touched_bytes": 18,
+                "untouched_above_floor": 2286
+              },
+              {
+                "slot": 8,
+                "reserved_bytes": 512,
+                "touched_bytes": 135,
+                "untouched_above_floor": 121
+              }
+            ],
+            "kernel_stack_observation": {
+              "reserved_bytes": 1536,
+              "touched_bytes": 303,
+              "untouched_from_base": 1233,
+              "interrupt_reserve_bytes_touched": 0
+            }
+          }
+        }
+      },
+      "image_bytes": {
+        "cf1-presentation": {
+          "action_code": 862937,
+          "action_data": 10397,
+          "c_image": 112669,
+          "c_bss": 12445
+        },
+        "cf2-presentation": {
+          "action_code": 863486,
+          "action_data": 10397,
+          "c_image": 112841,
+          "c_bss": 12445
+        },
+        "cf4-presentation": {
+          "action_code": 864036,
+          "action_data": 10397,
+          "c_image": 112838,
+          "c_bss": 12445
+        }
+      },
+      "package_equivalence": {
+        "native_routines_unchanged": 1836,
+        "shared_c_runtime_unchanged": true,
+        "unchanged_geometry_apps": [
+          "DESKTOP.APP",
+          "FILES.APP",
+          "COUNTER.APP"
+        ],
+        "panel_app_bytes_before": 7715,
+        "panel_app_bytes_after": 7820,
+        "note": "Final package changes Panel, Calculator, the build banner and guide. Every native routine and the shared C runtime match the complete geometry walkthrough; other commands are byte-identical.",
+        "calculator_app_bytes_before": 6995,
+        "calculator_app_bytes_after": 7070
+      },
+      "icon_resource_sha256": "617b2d6d7080e67c3104a627e67adae832494484faf9e62c376650197d4dadc9",
+      "icon_resource_unchanged_from": "build/window-iconification/demo/media/DESKTOP.RSC",
+      "final_package": {
+        "path": "build/compact-window-geometry/final/exec816-demo.zip",
+        "sha256": "86f7250c27e38ca51c9441877047873eb5922a846df8a6854683a8150ffa0a6a",
+        "bytes": 626370,
+        "launch_command": "build/compact-window-geometry/final/launch-altirra.command",
+        "build_revision": "71557b6-dirty",
+        "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805"
+      },
+      "checksums_verified": 22,
+      "launcher_prepare_only": "pass",
+      "local_markdown_targets_checked": 530,
+      "visual_review": {
+        "raw": "build/compact-window-geometry/demo/compact-files-4x4.png",
+        "aspect_4_to_3": "build/compact-window-geometry/demo/geometry-4x3.png",
+        "display_size": [
+          640,
+          480
+        ],
+        "framebuffer_size": [
+          640,
+          240
+        ],
+        "gadget_framebuffer_size": [
+          22,
+          11
+        ],
+        "font_pixels": [
+          8,
+          8
+        ]
+      },
+      "source_sha256": {
+        "examples/gem-panel/panel.c": "5c5b6b4fb31b133a3d5458355a3319c7d847dc4a660dac4e1c77ed542b7d694a",
+        "ports/gem4xe/apps/calculator/patches/0004-copied-move.patch": "250c16abcc0a34e3690dfa10968ff43d008509133fa2a7d0ee0f25ad91d55893",
+        "tools/test_compact_window_geometry.py": "b28a487774726d20d8692e1e4a7be91e21e67815819f6065c348c8895161ac98",
+        "tools/test_cache_desktop.py": "804d75ac1ca435358e9187e6511f187c711e86de94b81e43cd49c55676e05a67"
+      },
+      "same_fixture_reserved_bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26848,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 58080,
+        "loading_including_os": 51600
+      }
+    }
+  }
+}

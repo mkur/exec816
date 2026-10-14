@@ -1,5 +1,72 @@
 # GEM as a client of an Exec-like kernel
 
+The implemented [window and menu response plan](window-menu-response-plan.md)
+removes redundant shared-menu RPCs and false cache invalidations, raises folders
+before updating their menus, supplies the correct initial path title, shortens
+menu continuations and adds cheap monochrome selection feedback. UI1–UI5
+integrate the gadget atlas below, with one final measurement/demo pass and no
+additional bank-zero reservations.
+[Measured results](../../history/window-menu-response.md) show faster SYS:
+focus, initial frames and menu-row highlights; warm dropdown completion is
+unchanged within the sampling interval.
+
+The implemented [window gadget atlas plan](frame-gadget-atlas-plan.md) replaces
+procedural fixed marks with persistent VRAM images. GAT1–GAT4 cover upload,
+title/scrollbar integration and focused measurements, retaining current pixels,
+the strided title pattern and frame batches. It reserves one additional 4 KiB
+VRAM page and targets no bank-zero growth.
+
+The implemented [window frame and exposure plan](window-frame-exposure-plan.md)
+follows preservation with faster initial frame construction, frame-inclusive
+snapshots and precise desktop repaint after closing a folder. FE1–FE4 reuse the
+existing scratch/cache reservations. [Measured results](../../history/window-frame-exposure.md)
+record faster complete frames and precise close exposure with focused checks.
+
+The implemented [window preservation plan](window-preservation-plan.md) combines
+large visible-rectangle cache restores with a per-window application contract.
+Participating applications report hidden changes through existing AES update
+boundaries; successful current-image restoration then satisfies exposure without
+a duplicate redraw. Ordinary GEM callers keep conventional notifications.
+WP1–WP4 cover the presenter, opt-in policy, shipped apps and focused checks.
+[Measurements](../../history/window-preservation.md) separate faster client
+restoration from the remaining frame work.
+
+The implemented [compact window geometry refactor](compact-window-geometry-plan.md)
+reduces titles and menus to eleven rows, separates gadget width from height,
+and preserves Shell alignment and the default Files 4×4 grid.
+All four slices have [development evidence](../../history/compact-window-geometry.md).
+
+The [window iconification design](window-iconification-design.md) and
+[implementation plan](window-iconification-plan.md) add presenter-owned tiles,
+Shell/AES restoration and Windows-menu recovery without changing client apps.
+All three slices are [implemented and development-checked](../../history/window-iconification.md).
+
+The [menu-switch fix](menu-switch-plan.md) scopes desktop painting to its actual
+window and retains one interaction background across File/View headings. It
+targets idle menu transitions without directory refresh or renderer changes.
+It is implemented; [measurements and remaining limits](../../history/menu-switch.md)
+distinguish cached restoration, final app repaint and physical pointer latency.
+
+The [AES and Layers VRAM design](aes-layers-vram-design.md) joins
+application repaint tracking with Layers-owned cache validity. It starts with
+menu background restoration, then rendered popup reuse and larger client
+snapshots, using fixed VRAM slots and existing AES update exchanges. External
+applications retain exposure redraw messages; cached pixels do not certify
+unreported model changes. The [AV1–AV6 implementation plan](aes-layers-vram-plan.md)
+orders repaint cooperation, menu save-under, popup images, AES snapshots,
+incremental maintenance/copied moves and the measured OF816 demo.
+The shared cache paths and incremental repairs are implemented;
+[development evidence](../../history/aes-layers-vram.md) records remaining
+latency gates and the scope of the original AV slices.
+The implemented follow-up adds [aligned AES moves](aes-layers-vram-design.md#aligned-aes-moves)
+and a [persistent Shell backing bitmap](aes-layers-vram-design.md#persistent-shell-backing-bitmap):
+40 KiB of dedicated VRAM, updated even while covered, without evicting AES
+snapshots. The [WB1–WB6 implementation plan](window-backing-plan.md) orders
+geometry alignment, copied moves, destination-aware drawing, backing repair,
+batched scrolling and measured demo delivery. [Results](../../history/window-backing.md)
+record their development evidence and remaining performance gates separately
+from the original AV slices.
+
 The [dropdown menu latency design](menu-latency-design.md) and
 [implementation plan](menu-latency-plan.md) cover complete-label batching,
 targeted highlight damage and bounded menu precedence in the existing
@@ -25,8 +92,8 @@ The [desktop usability refactor plan](desktop-usability-refactor-plan.md)
 covers a default 4×4 Files grid, a `RAM:` desktop icon,
 compact, contextual delete confirmations, the shorter `Shell` name and a
 smaller left margin for desktop icons. All five items are implemented and
-[development-checked](../../history/desktop-usability.md); iconification remains
-a separate follow-up.
+[development-checked](../../history/desktop-usability.md); iconification is
+implemented in the separate plan linked above.
 
 The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
 512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,

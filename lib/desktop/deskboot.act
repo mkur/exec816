@@ -89,7 +89,9 @@ PUBLIC BYTE FUNC Attach()
   request.value=DESKTYPES.CONTENT_CONSOLE
   request.payload=BYTE POINTER(c"Shell")
   request.bytes=5
-  REGIONS.Assign(@request.bounds,32,24,560,208)
+  REGIONS.Assign(@request.bounds,32,40-DESKTYPES.WORK_TOP,
+      32+DESKTYPES.WORK_LEFT+512+DESKTYPES.WORK_RIGHT,
+      40+160+DESKTYPES.WORK_BOTTOM)
   IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
     RETURN(Unwind())
   FI

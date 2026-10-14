@@ -508,6 +508,58 @@ redraw. [Development measurements and the refreshed preview](history/desktop-ren
 pass correctness checks; pointer, outline and move-repair latency acceptance
 remains open.
 
+[AES/Layers VRAM caching](plans/gem4xe/aes-layers-vram-plan.md) adds explicit
+application repaint completion, shared menu saves, two popup images and two
+75 KiB client snapshots. Small acknowledged changes patch the saved client at
+idle. [Development evidence](history/aes-layers-vram.md) separates working cache
+paths from remaining menu latency gates. No bank-zero reservations are added.
+
+The implemented [window preservation plan](plans/gem4xe/window-preservation-plan.md)
+restores whole visible client rectangles and lets participating applications
+report content changes through existing AES update boundaries. Valid cache
+restoration then avoids duplicate exposure redraws; conventional GEM windows
+retain their current behavior. Focused visual completion takes precedence over
+background repair, with no new Task priorities or VRAM reservations.
+[Development results](history/window-preservation.md) confirm one-copy client
+restores and no duplicate Files repaint; frame completion remains slower.
+
+The implemented [window frame and exposure follow-up](plans/gem4xe/window-frame-exposure-plan.md)
+addresses that remaining work: larger cold frame batches, cached non-title
+decorations, and closing folders without repainting unrelated desktop icons.
+It retains the existing VRAM reservations and application preservation contract.
+[Measurements](history/window-frame-exposure.md) show about 33% faster cold
+frames, 25% faster complete folder opens and 45% faster warm SYS: completion.
+
+The implemented [window and menu response follow-up](plans/gem4xe/window-menu-response-plan.md)
+first removes redundant menu requests and false popup invalidations, raises
+folders promptly and sets their path title before opening. It then combines
+the gadget atlas below with bounded menu continuations and cheap monochrome
+selection changes. UI1–UI5 retain current AES/Layers contracts, add no bank-zero
+reservations and share one final measurement/demo pass with GAT4.
+[Measurements](history/window-menu-response.md) show SYS: focus improving from
+642 to 281 ms, the first correct frame from 943 to 782 ms, and plain menu-row
+highlights from 100 to 80 ms. Warm dropdown completion remains unchanged.
+
+The implemented [window gadget atlas follow-up](plans/gem4xe/frame-gadget-atlas-plan.md)
+replaces repeated tiny fills for fixed frame marks with persistent VRAM images.
+It retains the current appearance, title-pattern fill and frame batches;
+GAT1–GAT4 add one 4 KiB VRAM page with no bank-zero growth and measure
+frame-renderer cost separately from the complete New Window action.
+
+The [window iconification design](plans/gem4xe/window-iconification-design.md)
+and [plan](plans/gem4xe/window-iconification-plan.md) add presenter-owned
+Shell/AES tiles and Windows-menu restoration without suspending applications.
+
+The proposed [compact window geometry refactor](plans/gem4xe/compact-window-geometry-plan.md)
+reclaims vertical work space with eleven-row titles/menus and 22×11 gadgets,
+including Shell cell alignment, iconified tiles and the unchanged Files 4×4 grid.
+
+The [window moves and Shell backing plan](plans/gem4xe/window-backing-plan.md)
+implements even-X AES geometry, completed-window copies and a dedicated 40 KiB
+Shell bitmap maintained while covered, including batched backing scrolls.
+[Development results](history/window-backing.md) separate functional completion
+from remaining latency gates. Bank-zero reservation growth is zero.
+
 [AES widgets](plans/gem4xe/aes-widgets-implementation-plan.md) are implemented
 through AW6 at the development tier. Selected GEM4XE object, drawing and form
 routines run in the existing presenter, with retained trees, bounded patches

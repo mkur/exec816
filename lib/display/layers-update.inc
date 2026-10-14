@@ -20,6 +20,7 @@ PUBLIC BYTE FUNC Invalidate(LAYERTYPES.Scene POINTER scene LONGCARD id
   FI
 
   Mark(layer,rect)
+  LAYERCACHE.Changed(@scene.under,id,rect)
 
 RETURN(LAYERTYPES.OK)
 
@@ -209,7 +210,8 @@ PUBLIC BYTE FUNC BeginRead(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 THEN
+  IF layer.dirty<>0 OR layer.shown=0
+      OR (layer.externalPaint<>0 AND PixelsReady(layer,source)=0) THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
@@ -261,7 +263,9 @@ PUBLIC BYTE FUNC BeginMove(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.EMPTY)
   FI
 
-  IF layer.externalPaint<>0 OR layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1 THEN
+  IF layer.dirty<>0 OR layer.shown=0 OR layer.visible.count<>1
+      OR (layer.externalPaint<>0
+        AND (layer.pending.count<>0 OR layer.paintEpoch=0)) THEN
     RETURN(LAYERTYPES.REDRAW)
   FI
 
@@ -305,12 +309,19 @@ BYTE FUNC CommitMove(LAYERTYPES.Scene POINTER scene
     LAYERTYPES.Layer POINTER layer BYTE completed)
   LAYERTYPES.Rect overlap
 
+  ; A completion for the old coordinates must never acknowledge new damage.
+  IF layer.externalPaint<>0 AND layer.paintEpoch<>0 THEN
+    layer.paintEpoch==+1
+  FI
+
   IF completed=0 THEN
     DamageAll(scene,@scene.copySource)
     DamageAll(scene,@scene.copyTarget)
     RETURN(LAYERTYPES.OK)
   FI
 
+  LAYERCACHE.Changed(@scene.under,layer.id,@scene.copySource)
+  LAYERCACHE.Changed(@scene.under,layer.id,@scene.copyTarget)
   REGIONS.Copy(@scene.copyTarget,@layer.bounds)
   LET old=@scene.copySource
   REGIONS.Intersect(old,@scene.copyTarget,@overlap)
@@ -363,7 +374,9 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     IF status<>LAYERTYPES.OK THEN
       RETURN(status)
     FI
-  ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ THEN
+  ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ
+      AND scene.activeKind<>LAYERTYPES.UPDATE_SCENE_READ
+      AND scene.activeKind<>LAYERTYPES.UPDATE_RESTORE THEN
     Mark(layer,@layer.bounds)
   FI
 

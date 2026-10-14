@@ -7,14 +7,14 @@
 
 static const OBJECT menu[]={
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
-    {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
-    {1,3,3,G_IBOX,0,0,0,8,0,424,16},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,48,16},
-    {0,5,5,G_IBOX,0,0,0,0,16,640,224},
-    {4,6,8,G_BOX,0,0,0x1100,8,0,120,48},
-    {7,-1,-1,G_STRING,0,0,(ULONG)"Open        O",0,0,120,16},
-    {8,-1,-1,G_STRING,0,DISABLED,(ULONG)"Cancel Load",0,16,120,16},
-    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit        Q",0,32,120,16}
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,3,G_IBOX,0,0,0,8,0,424,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,48,11},
+    {0,5,5,G_IBOX,0,0,0,0,11,640,229},
+    {4,6,8,G_BOX,0,0,0x1100,8,0,120,33},
+    {7,-1,-1,G_STRING,0,0,(ULONG)"Open        O",0,0,120,11},
+    {8,-1,-1,G_STRING,0,DISABLED,(ULONG)"Cancel Load",0,11,120,11},
+    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit        Q",0,22,120,11}
 };
 
 static WORD minimum(WORD a,WORD b) { return a<b ? a:b; }
@@ -33,6 +33,7 @@ static void damage(struct TextApp *a,const WORD *r)
         x=minimum(x,a->damage[0]);y=minimum(y,a->damage[1]);
     }
     a->damage[0]=x;a->damage[1]=y;a->damage[2]=endx-x;a->damage[3]=endy-y;a->dirty=1;
+    a->publishDamage=1;
 }
 
 static void status(struct TextApp *a,const char *text)
@@ -103,7 +104,7 @@ static WORD paint(struct TextApp *a)
     y=a->damage[1];textY=a->work[1]+4;
     start=maximum(0,(y-textY)/a->cellh);
     end=minimum(a->damage[1]+a->damage[3],textY+(start+4)*a->cellh);
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(a->window)) return 0;
     if (!wind_get(a->window,WF_FIRSTXYWH,&visible[0],&visible[1],&visible[2],&visible[3])) okay=0;
     while (okay && visible[2] && visible[3]) {
         clip[0]=maximum(a->damage[0],visible[0]);clip[1]=maximum(y,visible[1]);
@@ -131,6 +132,7 @@ static WORD paint(struct TextApp *a)
         }
         if (!wind_get(a->window,WF_NEXTXYWH,&visible[0],&visible[1],&visible[2],&visible[3])) okay=0;
     }
+    if (okay) ExecAESPainted(a->window,a->damage[0],y,a->damage[2],end-y);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) {
         a->damage[3]-=end-y;a->damage[1]=end;a->dirty=a->damage[3]!=0;++a->paints;
@@ -202,6 +204,7 @@ WORD TextRun(struct TextApp *a)
     if (!wind_calc(WC_BORDER,kind,0,0,208,128,&x,&y,&a->minw,&a->minh)) goto finish;
     a->window=wind_create(kind,0,0,480,192);
     if (a->window<0 || !wind_set_str(a->window,WF_NAME,"Text viewer") ||
+        !wind_set(a->window,AES_WF_EXEC_PRESERVE,1,0,0,0) ||
         !wind_open(a->window,32,32,480,192)) goto finish;
     a->opened=1;
     memcpy(a->menu,menu,sizeof(menu));
@@ -214,6 +217,15 @@ WORD TextRun(struct TextApp *a)
     else if (*a->target) begin(a);
     a->ready=1;result=0;
     while (!quit && !result) {
+        /* Rendering is sliced across event waits. Publish the pending model
+         * once before waiting, so a partially repaired old image is never
+         * captured as the complete new document or viewport. */
+        if (a->publishDamage) {
+            if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) {
+                result=20;break;
+            }
+            a->publishDamage=0;
+        }
         events=evnt_multi(MU_KEYBD|MU_MESAG|((a->dirty || a->load.phase) ? MU_TIMER:0),
             1,1,1,0,0,0,0,0,0,0,0,0,0,a->message,0,0,&mx,&my,&buttons,&mods,&key,&clicks);
         if (!events) {
@@ -235,7 +247,11 @@ WORD TextRun(struct TextApp *a)
                     /* Fall through: accept and restart damage in new geometry. */
                 case WM_MOVED:
                     if (!wind_set(a->window,WF_CXYWH,a->message[4],a->message[5],a->message[6],a->message[7])) result=20;
-                    a->dirty=0;if (!viewport(a)) result=20;damage(a,a->work);break;
+                    /* A clean pure move keeps the copied client. Resize or
+                     * pre-existing damage still needs new-coordinate repair. */
+                    i=a->dirty || a->message[0]!=WM_MOVED;
+                    a->dirty=0;if (!viewport(a)) result=20;
+                    if (i) damage(a,a->work);break;
                 case WM_REDRAW:damage(a,&a->message[4]);break;
                 case WM_VSLID:
                     if (!scroll(a,(LONG)a->message[4]*maximum(0,a->document.lines-a->rows)/1000)) result=20;break;
@@ -266,6 +282,12 @@ WORD TextRun(struct TextApp *a)
             if (!menu_ienable(a->menu,6,!a->menuLoading) || !menu_ienable(a->menu,7,a->menuLoading)) result=20;
         }
         if (result) break;
+        if (a->publishDamage) {
+            if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) {
+                result=20;break;
+            }
+            a->publishDamage=0;
+        }
         /* First finish the Loading paint; subsequently alternate with disk units. */
         if (a->dirty && (!a->load.phase || !a->turn || a->load.phase==1)) {
             if (!paint(a)) result=20;a->turn=1;

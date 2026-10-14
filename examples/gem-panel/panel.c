@@ -17,7 +17,7 @@ static const OBJECT initial[8]={
 static WORD paint(struct Panel *p,WORD object,const WORD *damage)
 {
     WORD okay,x,y,clip[4],mark[4];
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(p->window)) return 0;
     okay=wind_get(p->window,WF_WXYWH,&p->work[0],&p->work[1],&p->work[2],&p->work[3]);
     p->tree[0].ob_x=p->work[0]; p->tree[0].ob_y=p->work[1];
     if (okay) okay=objc_draw(p->tree,object,object ? 0:MAX_DEPTH,
@@ -30,6 +30,8 @@ static WORD paint(struct Panel *p,WORD object,const WORD *damage)
         mark[0]=x+3; mark[1]=y+13; mark[2]=x+76; mark[3]=y+13;
         v_bar(p->vdi,mark);
     }
+    if (okay && object==0)
+        ExecAESPainted(p->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++p->paints;
     return okay;
@@ -107,9 +109,13 @@ WORD PanelRun(struct Panel *p)
     for (i=0;i<10;++i) p->input[i]=1;
     p->input[10]=2; v_opnvwk(p->input,&p->vdi,p->output);
     if (!p->vdi) goto finish;
-    p->window=wind_create(NAME|CLOSER|MOVER,0,0,208,160);
-    if (p->window<0 || !wind_set_str(p->window,WF_NAME,"GEM Control Panel")) goto finish;
-    if (!wind_open(p->window,416,48,208,160)) goto finish;
+    /* Fit the fixed tree instead of retaining space from an older frame. */
+    if (!wind_calc(WC_BORDER,NAME|CLOSER|MOVER,0,0,
+        p->tree[0].ob_width,p->tree[0].ob_height,&cw,&ch,&bw,&bh)) goto finish;
+    p->window=wind_create(NAME|CLOSER|MOVER,0,0,bw,bh);
+    if (p->window<0 || !wind_set_str(p->window,WF_NAME,"Control Panel")) goto finish;
+    if (!wind_set(p->window,AES_WF_EXEC_PRESERVE,1,0,0,0)) goto finish;
+    if (!wind_open(p->window,416,48,bw,bh)) goto finish;
     p->opened=1;
     wind_get(p->window,WF_WXYWH,&p->work[0],&p->work[1],&p->work[2],&p->work[3]);
     p->tree[0].ob_x=p->work[0]; p->tree[0].ob_y=p->work[1];
@@ -161,6 +167,10 @@ WORD PanelRun(struct Panel *p)
             case WM_TOPPED: if (!wind_set(p->window,WF_TOP,0,0,0,0)) result=2; break;
             case WM_MOVED:
                 if (!cancel(p) || !wind_set(p->window,WF_CXYWH,p->message[4],p->message[5],p->message[6],p->message[7])) result=2;
+                else {
+                    wind_get(p->window,WF_WXYWH,&p->work[0],&p->work[1],&p->work[2],&p->work[3]);
+                    p->tree[0].ob_x=p->work[0]; p->tree[0].ob_y=p->work[1];
+                }
                 break;
             case WM_REDRAW: if (!paint(p,0,&p->message[4])) result=2; break;
             }

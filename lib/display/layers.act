@@ -2,6 +2,7 @@
 MODULE LAYERS
 USE LAYERTYPES
 USE REGIONS
+USE LAYERCACHE
 USE A816MEMORY
 
 ; A transaction retains geometry until its caller has finished drawing.
@@ -73,42 +74,50 @@ BYTE FUNC Mergeable(LAYERTYPES.Rect POINTER a,b)
 RETURN(0)
 
 ; Overflow conservatively collapses every entry, including the new rectangle.
-PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
+PROC AddDamage(LAYERTYPES.Damage POINTER damage LAYERTYPES.Rect POINTER area)
   LAYERTYPES.Rect clipped
   BYTE index
 
-  REGIONS.Intersect(@layer.bounds,rect,@clipped)
+  REGIONS.Copy(area,@clipped)
   IF REGIONS.Empty(@clipped)<>0 THEN
     RETURN
   FI
 
-  IF layer.dirty=0 THEN
-    layer.damage.count=0
-  FI
-
   index=0
-  WHILE index<layer.damage.count DO
-    IF Mergeable(@clipped,@layer.damage.rects(index))<>0 THEN
-      Bound(@clipped,@layer.damage.rects(index))
-      layer.damage.count==-1
-      REGIONS.Copy(@layer.damage.rects(layer.damage.count),
-          @layer.damage.rects(index))
+  WHILE index<damage.count DO
+    IF Mergeable(@clipped,@damage.rects(index))<>0 THEN
+      Bound(@clipped,@damage.rects(index))
+      damage.count==-1
+      REGIONS.Copy(@damage.rects(damage.count),@damage.rects(index))
       index=0
     ELSE
       index==+1
     FI
   OD
 
-  IF layer.damage.count=LAYERTYPES.MAX_DAMAGE THEN
+  IF damage.count=LAYERTYPES.MAX_DAMAGE THEN
     FOR index=0 TO LAYERTYPES.MAX_DAMAGE-1 DO
-      Bound(@clipped,@layer.damage.rects(index))
+      Bound(@clipped,@damage.rects(index))
     OD
-
-    layer.damage.count=0
+    damage.count=0
   FI
 
-  REGIONS.Copy(@clipped,@layer.damage.rects(layer.damage.count))
-  layer.damage.count==+1
+  REGIONS.Copy(@clipped,@damage.rects(damage.count))
+  damage.count==+1
+
+RETURN
+
+PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
+  LAYERTYPES.Rect clipped
+
+  REGIONS.Intersect(@layer.bounds,rect,@clipped)
+  IF REGIONS.Empty(@clipped)<>0 THEN
+    RETURN
+  FI
+  IF layer.dirty=0 THEN
+    layer.damage.count=0
+  FI
+  AddDamage(@layer.damage,@clipped)
   layer.dirty=1
 
 RETURN
@@ -183,6 +192,8 @@ PUBLIC BYTE FUNC Init(LAYERTYPES.Scene POINTER scene INT width,height)
   LET background=@scene.items(LAYERTYPES.BACKGROUND_SLOT)
   REGIONS.Copy(@scene.screen,@background.bounds)
   background.shown=1
+  background.contentRevision=1
+  background.paintEpoch=1
   Mark(background,@scene.screen)
 
 RETURN(Rebuild(scene))
@@ -221,6 +232,8 @@ PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
 
   layer=@scene.items(slot)
   A816MEMORY.Clear(BYTE POINTER(layer),LAYERTYPES.LAYER_SIZE)
+  layer.paintEpoch=1
+  layer.contentRevision=1
   layer.id=scene.nextId
   scene.nextId==+1
   REGIONS.Copy(bounds,@layer.bounds)
@@ -236,6 +249,8 @@ PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
   id^=layer.id
 
 RETURN(LAYERTYPES.OK)
+
+INCLUDE "layers-repaint.inc"
 
 ; Select the content contract while hidden, before publishing a window.
 PUBLIC BYTE FUNC SetExternal(LAYERTYPES.Scene POINTER scene LONGCARD id)
@@ -256,6 +271,7 @@ PUBLIC BYTE FUNC SetExternal(LAYERTYPES.Scene POINTER scene LONGCARD id)
   FI
 
   layer.externalPaint=1
+  RequirePaint(scene,id,@layer.bounds)
 
 RETURN(LAYERTYPES.OK)
 
@@ -282,6 +298,7 @@ PUBLIC BYTE FUNC Show(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE shown)
   FI
 
   layer.shown=shown
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
@@ -315,10 +332,12 @@ PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
   FI
 
   IF layer.shown<>0 THEN
+    LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
     DamageAll(scene,@layer.bounds)
   FI
 
   REGIONS.Assign(@layer.bounds,left,top,left+width,top+height)
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   layer.dirty=0
   Mark(layer,@layer.bounds)
   IF layer.shown=0 THEN
@@ -386,6 +405,7 @@ PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)
     RETURN(LAYERTYPES.OK)
   FI
 
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
@@ -416,6 +436,7 @@ PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
 
   scene.count==-1
   shown=layer.shown
+  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   IF shown<>0 THEN
     DamageAll(scene,@layer.bounds)
   FI
@@ -449,5 +470,6 @@ PUBLIC LONGCARD FUNC Hit(LAYERTYPES.Scene POINTER scene INT x,y)
 RETURN(0)
 
 INCLUDE "layers-update.inc"
+INCLUDE "layers-save.inc"
 
 ENDMODULE

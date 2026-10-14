@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "https://github.com/mkur/actionc.git",
-  "revision": "81dd7dc53377c772602cc09992bdf2a694b4a43b",
+  "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
   "binary": "actionc-65816",
   "target": "wdc-65816-native",
   "abi": "action65816.native.v2",

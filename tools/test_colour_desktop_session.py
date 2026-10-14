@@ -105,7 +105,7 @@ class ColourDesktop:
             key('P');s.rendezvous('dw($%x)=1'%(base+F['dialog']));fill(base,value);key('RETURN')
             s.rendezvous('dw($%x)=0'%(base+F['dialog']));wait_listing(s,base,limit=200 if self.selection else 50)
             require(text(base,'path')==value,'Folder path did not change')
-        def desk_menu(row):click(296,8);click(304,24+row*16)
+        def desk_menu(row):click(296,8);click(304,28+row*11)
         def shot(name):
             move(632,232);s.frames(140);s.cells(name);s.save_screen(s.p['output']/(name+'.png'))
             print(name,flush=True)

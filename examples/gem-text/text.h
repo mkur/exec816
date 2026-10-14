@@ -14,6 +14,7 @@ struct TextApp {
     char status[81],row[81];
     ULONG paints,loads,interruptions;
     WORD sliderSize,sliderPosition;
+    WORD publishDamage;
 };
 WORD TextRun(struct TextApp *);
 #endif

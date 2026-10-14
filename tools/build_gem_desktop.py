@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Shared GEM runtime with three independently loaded desktop applications."""
-import argparse,json,os,re
+"""Shared GEM runtime, RAM-installed desktop and disk-loaded applications."""
+import argparse,hashlib,json,os,re,struct
 from pathlib import Path
 from build_bitmap_console import drawing,prepare
 from generate_aes_server import expected_layout
@@ -29,16 +29,22 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
         ROOT/'examples/gem-text'/name for name in ('main.c','text.c','document.c')]+
         [ROOT/'c/calypsi/file-list.c'],probes=[
             (ROOT/'tests/programs/gem_text_layout.c',__import__('text_model').LAYOUT)])
+    from build_gem_resource import resource
+    desktop_resource=resource()
     if 'dos_mounts' not in options:
         from make_data_disk import make
-        from build_gem_resource import resource
         media=out/'media';(media/'C').mkdir(parents=True,exist_ok=True)
-        for name in applications:
+        if files:
+            (media/'DESKTOP.RSC').unlink(missing_ok=True)
+            (media/'C/DESKTOP.APP').unlink(missing_ok=True)
+        disk_apps=[name for name in applications if not files or name!='desktop']
+        for name in disk_apps:
             (media/'C'/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
-        (media/'DESKTOP.RSC').write_bytes(resource())
+        if not files:(media/'DESKTOP.RSC').write_bytes(desktop_resource)
         (media/'CALC.RSC').write_bytes((out/'apps/calc/CALC.RSC').read_bytes())
         make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
-             binary_names={*(f'C/{name.upper()}.APP' for name in applications),'DESKTOP.RSC','CALC.RSC'})
+             binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC'}|
+                          (set() if files else {'DESKTOP.RSC'}))
         options.update(system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
                        sector_bytes=256,profile=4,format=2)])
     foreign=drawing(out,True,widgets=True,client_sources=[
@@ -52,6 +58,20 @@ def build_desktop(out,source=None,program_output=None,files=False,**options):
                 ('Panel work',34),('Panel tree',178),('Panel status',370),('Panel focus',392),('Panel armed',394)]),
             (ROOT/'tests/programs/gem_browser_layout.c',__import__('browser_model').LAYOUT),
             (ROOT/'tests/programs/gem_dialog_layout.c',__import__('dialog_model').LAYOUT)])
+    boot_address=0;boot_files={}
+    if files:
+        app=(out/'apps/desktop/program.app').read_bytes()
+        # Keep serialized files outside the provider's single C data bank.
+        # Native placement already follows all foreign load segments.
+        end=max([s['address']+len(s['bytes']) for s in foreign['segments']]+
+                [s['address']+s['size'] for s in foreign['zero_fill']])
+        boot_address=(end+65535)//65536*65536
+        payload=struct.pack('<II',len(app),len(desktop_resource))+app+desktop_resource
+        foreign['segments'].append(dict(address=boot_address,bytes=list(payload),
+                                        writable=False,executable=False))
+        boot_files={name:dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+                    for name,data in [('RAM:DESKTOP.APP',app),('RAM:DESKTOP.RSC',desktop_resource)]}
+        foreign['provenance']['desktop_boot_files']=boot_files
     binding(foreign,out)
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     text=read_source(source or ROOT/'tests/programs/gem_desktop_session.act')
@@ -89,7 +109,7 @@ RETURN
 
 BYTE FUNC DesktopStart()
 
-  LET started=CALYPSICALL.Invoke(ADDRESS(${sy['GEMDesktopStart']:x}),{int(files)})
+  LET started=CALYPSICALL.Invoke(ADDRESS(${sy['GEMDesktopStart']:x}),${boot_address:x})
   LET client=DOSCLIENT.Ensure()
   client.waitService=@DesktopService
   client.waitMask=DesktopService()
@@ -112,8 +132,9 @@ ENDMODULE
         memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile,indent=2)+'\n')
     mouse_profile=options.pop('mouse_profile',None)
     compiler_dir=options.pop('compiler_dir',ROOT/'build/actionc')
+    release_compiler=options.pop('release_compiler',False)
     launcher=prepare(source,out,foreign,desktop=True,aes=True,mouse_profile=mouse_profile)
-    program=build(compiler(compiler_dir),launcher,program_output or out/'program',
+    program=build(compiler(compiler_dir,release=release_compiler),launcher,program_output or out/'program',
         tasks=True,task_capacity=8,foreign_image=foreign,console_deferred=True,
         memory_profile=memory,**options)
     from generate_mouse_acceleration import metadata
@@ -121,6 +142,7 @@ ENDMODULE
     program['build']['gem_applications']={name:dict(bytes=app['bytes'],sha256=app['sha256'],
         span=app['span'],relative_manifest=os.path.relpath(out/'apps'/name/'app.json',program['output']))
         for name,app in applications.items()}
+    if boot_files:program['build']['desktop_boot_files']=boot_files
     (program['output']/'build.json').write_text(json.dumps(program['build'],indent=2)+'\n')
     return program
 

@@ -108,7 +108,7 @@ def main():
                 focus.append(dict(title=title,ms=elapsed));s.frames(15)
             measurements['focus']=dict(samples=focus,**distribution([v['ms'] for v in focus]))
             print('Focus scanout:',distribution([v['ms'] for v in focus]),flush=True)
-            menus.select('GEM Control Panel')
+            menus.select('Control Panel')
             panel=symbols(b,p,bundle/'bitmap-console','panel',s.number(foreign['symbols']['GEMDesktopChildren'],4))['GEMPanel']
             from loadable_gem_feedback import measure
             measure(s,panel,move,'comparison',count=args.samples)

@@ -1,5 +1,6 @@
 /* Shared drawing library without the GEM service/client Tasks. */
 #include "gem-drawing.h"
+#include <hardware/vbxe-snapshots.h>
 #include <exec/input.h>
 #include <proto/exec.h>
 #include <clib/alib_protos.h>
@@ -203,6 +204,20 @@ UWORD main(void)
     check(GemDrawingOutline(0,0,0,0,0)==DISPLAY_OK);
     check(GemDrawingFence()==DISPLAY_OK);
     checkpoint=7;while (gate<7) { }
+    /* Fixed backing pitch, both text parities, first/last row and screen reset. */
+    check(GemDrawingBackingFill(0,0,512,160,3)==DISPLAY_OK);
+    check(GemDrawingBackingText(0,0,glyphs,64,1,0)==DISPLAY_OK);
+    check(GemDrawingBackingText(1,8,glyphs+64,63,2,3)==DISPLAY_OK);
+    check(GemDrawingBackingText(0,152,glyphs+128,64,4,5)==DISPLAY_OK);
+    check(GemDrawingBackingFill(8,32,16,8,6)==DISPLAY_OK);
+    memset(&copy,0,sizeof(copy));
+    copy.source.offset=DESKTOP_SHELL_BACKING_BASE;
+    copy.source.pitch=256; copy.source.width=512; copy.source.height=160;
+    copy.destination.pitch=320; copy.destination.width=640; copy.destination.height=240;
+    copy.destinationX=64; copy.destinationY=40; copy.width=512; copy.height=160;
+    check(GemDrawingCopy(&copy)==DISPLAY_OK);
+    check(GemDrawingText(0,216,text,7,1,5)==DISPLAY_OK);
+    checkpoint=8;while (gate<8) { }
     check(InputRelease(&mouse)==INPUT_OK);
     FreeSignal(bit);
     check(GemDrawingClose()==DISPLAY_OK);

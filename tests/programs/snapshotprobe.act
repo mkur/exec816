@@ -11,6 +11,7 @@ USE LAYERS
 USE LAYERTYPES
 USE REGIONS
 USE HEAPCORE
+USE DISPLAY
 
 BYTE command,phase
 LONGCARD id,token
@@ -50,6 +51,7 @@ RETURN(checks)
 PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   LAYERTYPES.Rect client
   BYTE status,index
+  CARD width,height
 
   IF command=0 THEN
     RETURN
@@ -57,6 +59,22 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
 
   LET window=DESKCORE.Find(service,id)
   LET layer=LAYERS.Find(@service.scene,window.layer)
+  DESKCACHE.ClientBounds(window,layer,@client)
+  width=CARD(client.right-client.left)
+  height=CARD(client.bottom-client.top)
+  IF phase=3 THEN
+    IF layer.dirty<>0 OR service.scene.busy<>0 THEN
+      RETURN
+    FI
+    Require(width=640 AND height=240)
+    ; Exercise the second slot across $70000, then the first across $60000.
+    service.cache.slots(0).pinned=1
+    Require(DESKCACHE.Capture(service,window)<>0)
+    Require(service.cache.slots(1).pinned<>0)
+    service.cache.slots(0).pinned=0
+    phase=1
+    RETURN
+  FI
   IF phase<>0 THEN
     IF CONSOLEBITMAP.Pending()<>0 THEN
       RETURN
@@ -67,43 +85,57 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
         RETURN
       FI
 
-      IF command=4 THEN
+      IF command=4 OR command=8 THEN
         BEGIN
           LET binding=CONSOLEBITMAP.GetBinding()
           binding.failed=1
+          ; DMA has actually retired, but inject the driver's unquiesced
+          ; state: the continuation must keep its pin and scene token.
+          token=service.scene.busy
+          DISPLAY.ProbeBlocked(2)
+          DESKCACHE.Pump(service)
+          Require(service.scene.busy=token AND token<>0)
+          Require(service.cache.slots(0).pinned<>0 OR service.cache.slots(1).pinned<>0)
+          DISPLAY.ProbeBlocked(0)
         END
       FI
 
       DESKCACHE.Pump(service)
       Require(layer.dirty=0)
-      Require(service.snapshots(0).pinned=0 AND service.snapshots(1).pinned=0)
-      IF command=1 OR command=5 THEN
-        Require(DESKCACHE.Lookup(service,window,528,184)<>255)
+      Require(service.cache.slots(0).pinned=0 AND service.cache.slots(1).pinned=0)
+      IF command=1 OR command=5 OR command=6 OR command=7 THEN
+        Require(DESKCACHE.Lookup(service,window,width,height)<>255)
       ELSE
-        Require(DESKCACHE.Lookup(service,window,528,184)=255)
+        Require(DESKCACHE.Lookup(service,window,width,height)=255)
       FI
 
       IF command=4 THEN
         BEGIN
           LET binding=CONSOLEBITMAP.GetBinding()
           binding.failed=0
-          service.snapshots(0).pinned=1
-          service.snapshots(1).pinned=1
+          service.cache.slots(0).pinned=1
+          service.cache.slots(1).pinned=1
           Require(DESKCACHE.Choose(service)=255)
-          service.snapshots(0).pinned=0
-          service.snapshots(1).pinned=0
-          service.snapshots(0).valid=1
-          service.snapshots(1).valid=1
-          service.cacheRecent=1
+          service.cache.slots(0).pinned=0
+          service.cache.slots(1).pinned=0
+          service.cache.slots(0).valid=1
+          service.cache.slots(1).valid=1
+          service.cache.recent=1
           Require(DESKCACHE.Choose(service)=0)
-          service.cacheRecent=0
+          service.cache.recent=0
           Require(DESKCACHE.Choose(service)=1)
-          service.snapshots(0).valid=0
-          service.snapshots(1).valid=0
+          service.cache.slots(0).valid=0
+          service.cache.slots(1).valid=0
           window.visualRevision=$ffffffff
           DESKCACHE.Changed(service,window)
           Require(window.visualRevision=0)
           Require(DESKCACHE.Capture(service,window)=0)
+        END
+      FI
+      IF command=8 THEN
+        BEGIN
+          LET binding=CONSOLEBITMAP.GetBinding()
+          binding.failed=0
         END
       FI
     ELSE
@@ -122,11 +154,33 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
     RETURN
   FI
 
-  DESKCACHE.ClientBounds(layer,@client)
+  IF command=6 THEN
+    Require(LAYERS.Show(@service.scene,DESKSTATE.barLayer,0)=LAYERTYPES.OK)
+    window.frameKind=DESKTYPES.FRAME_BORDERLESS
+    Require(LAYERS.Bounds(@service.scene,layer.id,0,0,640,240)=LAYERTYPES.OK)
+    window.visualRevision=1
+    phase=3
+    RETURN
+  FI
+  IF command=8 OR command=9 THEN
+    DESKCACHE.BeginChange(service,window)
+    REGIONS.Assign(@client,8,8,24,16)
+    DESKCACHE.EndChange(service,window,@client,1)
+    Require(DESKCACHE.Patch(service,window)<>0)
+    Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
+    index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI
+    Require(service.cache.slots(index).valid=0)
+    Require(DESKCACHE.Choose(service)<>index)
+    IF command=9 THEN
+      DESKCACHE.Changed(service,window)
+    FI
+    phase=1
+    RETURN
+  FI
   IF command=2 THEN
     Require(LAYERS.Invalidate(@service.scene,layer.id,@client)=LAYERTYPES.OK)
     Require(LAYERS.BeginPaint(@service.scene,layer.id,@token)=LAYERTYPES.OK)
-    Require(CONSOLEBITMAP.RawFill(CARD(client.left),CARD(client.top),528,184,0)<>0)
+    Require(CONSOLEBITMAP.RawFill(CARD(client.left),CARD(client.top),width,height,0)<>0)
     Require(DESKCACHE.Restore(service,window,@client,@client)=DESKTYPES.CACHE_PENDING)
     phase=2
   ELSE
@@ -136,13 +190,13 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
       DESKCACHE.Changed(service,window)
     FI
 
-    Require(DESKCACHE.Fits(528,184)<>0 AND DESKCACHE.Fits(640,240)=0)
+    Require(DESKCACHE.Fits(528,184)<>0 AND DESKCACHE.Fits(640,240)<>0)
     Require(DESKCACHE.Fits(529,184)=0 AND DESKCACHE.Fits(0,1)=0)
     Require(DESKCACHE.Capture(service,window)<>0)
     Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
     Require(LAYERS.Delete(@service.scene,layer.id)=LAYERTYPES.BUSY)
-    index=IF service.snapshots(0).pinned<>0 THEN 0 ELSE 1 FI
-    Require(service.snapshots(index).valid=0)
+    index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI
+    Require(service.cache.slots(index).valid=0)
     Require(DESKCACHE.Choose(service)<>index)
     IF command=3 THEN
       DESKCACHE.Changed(service,window)

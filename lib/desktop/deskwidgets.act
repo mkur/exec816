@@ -231,6 +231,12 @@ PUBLIC CARD FUNC Request(DESKTYPES.Service POINTER service
       -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
   packet.height=CARD(layer.bounds.bottom-layer.bounds.top)
       -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+  IF window.iconified<>0 THEN
+    packet.width=CARD(window.normalBounds.right-window.normalBounds.left)
+        -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
+    packet.height=CARD(window.normalBounds.bottom-window.normalBounds.top)
+        -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+  FI
   Run(operation)
   status=packet.status
   IF status=WIDGETTYPES.OK THEN

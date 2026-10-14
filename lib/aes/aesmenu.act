@@ -2,6 +2,7 @@
 MODULE AESMENU
 USE EXEC
 USE AESTYPES
+USE DESKTYPES
 USE AESSTATE
 USE AESLOCKS
 
@@ -97,11 +98,11 @@ BYTE FUNC Prepare(AESSTATE.Menu POINTER menu)
       LET heading=Object(menu,title)
       LET dropdown=Object(menu,box)
       IF heading.kind<>G_TITLE OR heading.width<=0 OR heading.height<=0
-          OR heading.height>16 OR menu.x(title)<0
+          OR heading.height>DESKTYPES.MENU_BAR_HEIGHT OR menu.x(title)<0
           OR menu.x(title)+heading.width>432
           OR dropdown.kind<>G_BOX OR dropdown.width<=0
           OR dropdown.width>640 OR dropdown.height<=0
-          OR dropdown.height>224 THEN
+          OR dropdown.height>240-DESKTYPES.MENU_BAR_HEIGHT THEN
         RETURN(0)
       FI
       menu.title(menu.titles)=title
@@ -128,7 +129,9 @@ PUBLIC PROC Close(AESSTATE.Service POINTER service AESSTATE.Client POINTER clien
       END
     FI
     menu.selectedTitle=-1
-    menu.damage=$ffffffff
+    FOR source=0 TO menu.count-1 DO
+      menu.damage(source)=1
+    OD
     EXEC.Forbid()
     ; Remove only the undelivered menu kind. Published records stay immutable
     ; and are rejected by their window/menu lifetime at the consumer.
@@ -217,7 +220,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         Withdraw(service,client)
         candidate.generation=service.nextMenuEpoch
         candidate.selectedTitle=-1
-        candidate.damage=$ffffffff
+        FOR item=0 TO INT(candidate.count)-1 DO
+          candidate.damage(item)=1
+        OD
         service.nextMenuEpoch==+1
         client.menu=candidate
         EXEC.Forbid()
@@ -233,6 +238,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
     BEGIN
       LET object=Object(client.menu,item)
+      LET previous=object.state
       CASE operation OF
       WHEN 31 THEN
         IF value<>0 THEN
@@ -265,7 +271,13 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       ELSE
         RETURN(AESTYPES.UNSUPPORTED)
       ESAC
-      client.menu.damage=client.menu.damage OR (LONGCARD(1) LSH CARD(item))
+      ; Setters that leave pixels unchanged must not evict popup images.
+      ; Normalization still acknowledges delivery, even with an unchanged bit.
+      IF (operation=31 OR operation=32) AND object.state=previous THEN
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
+      client.menu.damage(item)=1
     END
   FI
   service.menuRevision==+1

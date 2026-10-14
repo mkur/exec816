@@ -4,6 +4,26 @@
   copying and complete-width scalar decoding, preserving malformed-input behavior
   and measuring matched warm SIO/IDE loading.
 
+- [Window and menu response](gem4xe/window-menu-response-plan.md): implemented
+  UI1–UI5 slices for prompt raising, changed-only menu updates, the correct
+  initial title, shorter menu continuations and cheap selection feedback.
+  Integrates the gadget atlas below and shares its final measurements/demo.
+  [Measured results](../history/window-menu-response.md).
+
+- [Window gadget atlas](gem4xe/frame-gadget-atlas-plan.md): implemented GAT1–GAT4
+  slices for prerendered fixed gadgets, clipped VRAM copies in existing frame
+  batches and focused cost/pixel checks.
+
+- [Window frames and desktop exposure](gem4xe/window-frame-exposure-plan.md):
+  implemented FE1–FE4 slices for larger cold frame batches, saved window frames,
+  precise desktop repair on close and focused before/after demo checks.
+
+- [Window preservation](gem4xe/window-preservation-plan.md): implemented WP1–WP4
+  slices for complete visible-rectangle cache blits, an opt-in application
+  change contract, shipped-app adoption and focused latency/demo checks.
+  [Development results](../history/window-preservation.md) record one-copy client
+  restores without duplicate Files redraws and remaining frame latency.
+
 - [Files navigation and appearance](gem4xe/files-navigation-appearance-plan.md):
   FR1–FR5 implemented: distinct GEM gadgets, a compact grid with a top summary,
   virtual parent navigation and shared colour icons.

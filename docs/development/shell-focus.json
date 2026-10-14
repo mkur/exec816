@@ -1,0 +1,285 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "base_revision": "4797aba121605721177c49ef622b5b3c9deae522",
+  "source_state": "working tree",
+  "source_sha256": {
+    "lib/aes/aeswindow.act": "e62ef129d14b3d91a9a3f931d8c7d88e059f64c6348f16ad4e051428cbf1d10e",
+    "lib/desktop/deskcore.act": "00c3c7e2d369468c57a9ad3a28163db50b256ebbf569f1f09464134e9eb79d5e",
+    "lib/desktop/deskdrag.act": "b7edb885b55d16983b94d033aa0acfb1219ad9c7997b44c95cdf4d20ae9fbbea",
+    "lib/desktop/deskmenu.act": "a71492104446478d4c67806976ae7f0d46d6f45a52117d1ca90e9248fb27863e",
+    "lib/desktop/deskmove.act": "0bea26331d718718ba33db418ec97773f9f3bd5dafb6bb6f754a83c7ac9edda2",
+    "lib/desktop/deskpaint.act": "90911abd8767ad1a578f2a35240451b981cdc00606fb93f6d9181b82acea1c3b",
+    "lib/desktop/deskstate.act": "e290adbb14f30a0b5e5a26424c918a0c0b21c51384a3a74d1ac0bf55cd9c5e11",
+    "tests/programs/desktop_cache.act": "03938779b2f5f6a7e50cd739b3e593b0e5428bee5a7cc1b5125769c6422fd195",
+    "tools/test_desktop_cache.py": "433eb7f352415a6d371852feb898fd641ddf8e084e0e6e380cdfaafd6063ef04"
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "pin": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "production_metadata_delta": 0,
+  "vram_delta": 0,
+  "host": {
+    "tests": 459,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "cache": {
+    "status": "pass",
+    "scenes": 18,
+    "native_checks": 71,
+    "focus_loss_retained_cells": 1,
+    "focus_gain_retained_cells": 1,
+    "real_raise_retained_steps": 40,
+    "redundant_raise_retained_steps": 0,
+    "physical_clicks": [
+      {
+        "point": [
+          200,
+          100
+        ],
+        "console_paints": 0,
+        "pixels": "c18e1a54fc4f86255c58dc78c2f9ccf6d759a8cb9f47cc7fde9a6a4f7c7f38f0"
+      },
+      {
+        "point": [
+          300,
+          30
+        ],
+        "console_paints": 0,
+        "pixels": "f301939aba8fcdf51830b35e7e0e15f8c88aff435368d6034c0521c44d9bc8f5"
+      },
+      {
+        "point": [
+          300,
+          30
+        ],
+        "console_paints": 0,
+        "pixels": "f301939aba8fcdf51830b35e7e0e15f8c88aff435368d6034c0521c44d9bc8f5"
+      }
+    ],
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 348,
+        "remaining_above_floor": 932
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 747,
+        "remaining_above_floor": 1557
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 52,
+        "remaining_above_floor": 204
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 283,
+        "remaining_above_floor": 997
+      }
+    },
+    "results": "build/shell-focus/cache/results.json",
+    "results_sha256": "aa34d11859ecd36378fcfc9bdfd7954c1258c658fa21d1cfb760949b28af6267"
+  },
+  "presentation": {
+    "status": "pass",
+    "scenes": 19,
+    "native_checks": 117,
+    "results": "build/shell-focus/presentation/presentation-results.json",
+    "results_sha256": "19fbdb838971603893779b3cec42627512c6ac56d19c4b129b53a6f0191d92b9"
+  },
+  "demo": {
+    "path": "build/shell-focus/demo",
+    "zip_sha256": "890984b35fd301f950c817ad14c357f473a9610d85535c969a495d5d79610066",
+    "build_sha256": "679d8d52d841d517caf66ed956c466fee4f3aa47a7d53df4770bcc5834861999",
+    "exec_build": {
+      "revision": "4797aba121605721177c49ef622b5b3c9deae522",
+      "dirty": true,
+      "display": "4797aba-dirty",
+      "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "task_capacity": 8,
+      "stack_checks": true,
+      "mount": {
+        "profile": 4,
+        "boot": 1,
+        "format": 2,
+        "access": "readonly",
+        "alias": "D1",
+        "unit": 49,
+        "sectors": 2880,
+        "sector_bytes": 256,
+        "device": "sio.device"
+      },
+      "strings": {
+        "banner": "Exec816 (4797aba-dirty)\n\n",
+        "slots": "exec: 8 task slots\n",
+        "stackChecks": "exec: stack checks enabled\n",
+        "version": "Exec816 (4797aba-dirty)\nactionc pin: 05c01f3\n",
+        "sioReady": " ready, 57.6k profile\n",
+        "mountStart": "Filesystems: mounting...\n",
+        "otherMountsReady": "\nRAM: ready, read-write (volatile)\nWORK: -> D8: ready, read-write",
+        "systemReady": "SYS: -> D",
+        "mountFailure": "Filesystem startup failed; check configured disks\nRequired: WORK: on D8:\nUse CD SYS: to retry; cold-boot after SIO failure"
+      }
+    }
+  },
+  "walkthrough": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "autoboot_frames": 249,
+    "cache_desktop": {
+      "files": true,
+      "panel_pointer": true,
+      "panel_keyboard": true,
+      "text_sha256": "2bdcae922475c0a8482a2da25e2a5a6cf05a2e343672eb161f86d660886303c3",
+      "text_scroll": true,
+      "selector_cancel": true,
+      "counter_progress": true,
+      "close_restore": true
+    },
+    "aperture_intact": false,
+    "retired_manifest_intact": false,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$8d0c4fb136b35658",
+      "actual_kernel_id": "$8d0c4fb136b35658",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/shell-focus/walkthrough/extracted/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "scope": "Extracted OF816 colour desktop: shared-window ownership, persistent background, on-demand launches and orderly EXIT",
+    "results": "build/shell-focus/walkthrough/cache-desktop-results.json",
+    "results_sha256": "92baea422c9648de5ddb7fab55c99d3f5579cad944e74dc3e0cb797a0e9d9d40"
+  }
+}

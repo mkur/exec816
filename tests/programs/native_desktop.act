@@ -6,6 +6,8 @@ USE DESKTOP
 USE DESKTYPES
 USE WIDGETTYPES
 USE DESKWIDGETS
+USE DESKSTATE
+USE DESKGEOMETRY
 USE DESKCORE
 USE DESKEVENTS
 USE LAYERTYPES
@@ -18,6 +20,7 @@ DESKTYPES.Request request,eventWait,cancel,peerRequest,peerWait
 DESKTYPES.Content POINTER content
 EXEC.Task POINTER root,worker,other
 LONGCARD window,peerWindow,token
+LONGCARD ARRAY extraWindows(DESKTYPES.WINDOWS)
 BYTE variant,finished,peerStage,stop,hold,held,inject,injectKind,injectCount
 LONGCARD injectClient,injectWindow,injectEpoch
 CARD checks,injections
@@ -57,6 +60,41 @@ CARD FUNC Call(DESKTYPES.Client POINTER client DESKTYPES.Request POINTER item)
 
 RETURN(item.status)
 
+; Boundary pixels of compact titles: two mandatory controls and optional icon.
+PROC CompactGeometry()
+  LAYERTYPES.Rect bounds,work
+
+  LET item=@service.windows(0)
+  item.kind=DESKTYPES.CONTENT_COMMANDS
+  item.frameKind=DESKTYPES.FRAME_FULLER
+  item.iconified=0
+  REGIONS.Assign(@bounds,10,20,42,68)
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,11,21)<>0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,24,29)<>0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,25,29)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,26,20)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,41,30)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,41,31)=0)
+  bounds.right=68
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
+  bounds.right=70
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)<>0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,37,25)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,38,25)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,30)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,54,25)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,38,31)=0)
+  item.frameKind=DESKTYPES.FRAME_INFO OR DESKTYPES.FRAME_SIZER OR DESKTYPES.FRAME_VERTICAL
+  REGIONS.Assign(@bounds,0,11,640,240)
+  DESKGEOMETRY.Work(item.frameKind,@bounds,@work)
+  Require(work.left=8 AND work.top=32 AND work.right=624 AND work.bottom=229)
+
+  item.frameKind=0
+  item.kind=0
+
+RETURN
+
 ; Only this Task touches service-owned state, including diagnostic injection.
 PROC FocusCases()
   BYTE slot
@@ -74,6 +112,33 @@ PROC FocusCases()
     END
   OD
 
+  ; Iconification reuses the layer while preserving caller geometry and focus.
+  DESKSTATE.Bind(service)
+  DESKCORE.Focus(service,2)
+  DESKCORE.Iconify(service,@service.windows(1))
+  Require(service.windows(1).iconified=1)
+  Require(service.windows(1).normalBounds.left=16)
+  Require(service.windows(1).normalBounds.bottom=96)
+  Require(service.focus=3)
+  BEGIN
+    LET layer=DESKCORE.Layer(service,@service.windows(1))
+    Require(layer.bounds.left=192 AND layer.bounds.top=227)
+    Require(layer.bounds.right=280 AND layer.bounds.bottom=238)
+    Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,200,230)=9)
+    Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,200,226)=0)
+    DESKCORE.Iconify(service,@service.windows(1))
+    Require(service.windows(1).normalBounds.left=16)
+    DESKCORE.RestoreIcon(service,@service.windows(1))
+    Require(service.windows(1).iconified=0 AND service.focus=2)
+    Require(REGIONS.Equal(@layer.bounds,@service.windows(1).normalBounds)<>0)
+    Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,136,24)=8)
+    DESKCORE.Iconify(service,@service.windows(1))
+    Require(LAYERS.Show(@service.scene,layer.id,0)=LAYERTYPES.OK)
+    DESKCORE.ForgetIcon(service,@service.windows(1))
+    Require(service.windows(1).iconified=0 AND layer.shown=0)
+    Require(REGIONS.Equal(@layer.bounds,@service.windows(1).normalBounds)<>0)
+    Require(LAYERS.Show(@service.scene,layer.id,1)=LAYERTYPES.OK)
+  END
   DESKCORE.Focus(service,3)
   DESKCORE.RestoreFocus(service,1)
   Require(service.focus=3)
@@ -104,6 +169,7 @@ PROC Presenter()
   Require(EXEC.AllocSignal(16)=16)
   Require(DESKCORE.Init(service,16)<>0)
   service.live=0
+  CompactGeometry()
   FocusCases()
   EXEC.Signal(root,$10000)
   WHILE stop=0 DO
@@ -119,6 +185,9 @@ PROC Presenter()
     count=DESKCORE.Pump(service,4)
     DESKCORE.Wake(service)
     IF inject<>0 THEN
+      IF injectKind=0 THEN
+        DESKCORE.Iconify(service,DESKCORE.Find(service,injectWindow))
+      FI
       A816MEMORY.Clear(BYTE POINTER(@input),DESKTYPES.EVENT_SIZE)
       input.kind=CARD(injectKind)
       input.window=injectWindow
@@ -143,6 +212,7 @@ PROC Presenter()
   OD
 
   Require(DESKCORE.Stop(service)<>0)
+  DESKSTATE.Bind(NULL)
   EXEC.FreeSignal(16)
   EXEC.Forbid()
   finished=1
@@ -230,7 +300,7 @@ PROC WidgetCases()
   tree.objects(0).tail=2
   tree.objects(0).kind=WIDGETTYPES.G_BOX
   tree.objects(0).width=112
-  tree.objects(0).height=56
+  tree.objects(0).height=80-DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
   tree.objects(0).spec=$70
   FOR index=1 TO 2 DO
     tree.objects(index).next=IF index=1 THEN 2 ELSE 0 FI
@@ -286,6 +356,11 @@ PROC WidgetCases()
   request.window=id
   request.payload=BYTE POINTER(@patch)
   request.bytes=WIDGETTYPES.UPDATE_SIZE
+  DESKTOP.Prepare(@cancel,DESKTYPES.SHOW)
+  cancel.window=id
+  Require(Call(@first,@cancel)=DESKTYPES.OK)
+  SendInput(first.id,id,0,0)
+  Require(owned.iconified=1)
   Require(Call(@first,@request)=DESKTYPES.OK)
   Require(request.lane=DESKTYPES.LANE_CONTENT)
   Require(Call(@first,@request)=DESKTYPES.STALE)
@@ -395,9 +470,24 @@ PROC Main()
   request.window=window
   request.payload=BYTE POINTER(content)
   request.bytes=DESKTYPES.CONTENT_SIZE
+  SendInput(first.id,window,0,0)
+  BEGIN
+    LET hidden=DESKCORE.Find(service,window)
+    Require(hidden.iconified=1)
+  END
   Require(Call(@first,@request)=DESKTYPES.OK)
   content.commands(0).pen=16
   Require(Call(@first,@request)=DESKTYPES.BAD_ARGUMENT)
+  DESKTOP.Prepare(@request,DESKTYPES.HIDE)
+  request.window=window
+  Require(Call(@first,@request)=DESKTYPES.OK)
+  BEGIN
+    LET shown=DESKCORE.Find(service,window)
+    Require(shown.iconified=0)
+  END
+  DESKTOP.Prepare(@request,DESKTYPES.SHOW)
+  request.window=window
+  Require(Call(@first,@request)=DESKTYPES.OK)
 
   WidgetCases()
 
@@ -452,8 +542,18 @@ PROC Main()
   Require(Call(@first,@request)=DESKTYPES.OK)
   DESKTOP.Prepare(@cancel,DESKTYPES.CLOSE)
   cancel.window=request.window
+  FOR index=4 TO DESKTYPES.WINDOWS-1 DO
+    OpenRequest(@request,64,64)
+    Require(Call(@first,@request)=DESKTYPES.OK)
+    extraWindows(index)=request.window
+  OD
   OpenRequest(@request,64,64)
   Require(Call(@first,@request)=DESKTYPES.FULL)
+  FOR index=4 TO DESKTYPES.WINDOWS-1 DO
+    DESKTOP.Prepare(@request,DESKTYPES.CLOSE)
+    request.window=extraWindows(index)
+    Require(Call(@first,@request)=DESKTYPES.OK)
+  OD
   Require(Call(@first,@cancel)=DESKTYPES.OK)
   Require(Call(@first,@cancel)=DESKTYPES.BAD_ID)
   DESKTOP.Prepare(@request,DESKTYPES.CLOSE)

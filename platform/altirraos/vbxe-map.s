@@ -96,7 +96,7 @@ _upload_mode:
 ; 1..80 glyphs and an optional final fill directly in the arena.
 ; All fixed fields are written every time;
 ; arbitrary glyph bytes cannot change stride, mode, chaining or raster bounds.
-; No shared scratch: $80-$a5 are the caller's ABI call-clobbered DP workspace.
+; No shared scratch: $80-$a9 are the caller's ABI call-clobbered DP workspace.
 ; Odd background helpers add three stack bytes while called; P is saved once.
 ; Native interrupts preserve D and never access this mapping or command arena.
               .public _VbxeTextUpload
@@ -105,6 +105,16 @@ _VbxeTextUpload:
               rep #0x30
               sta dp:0x80
               stx dp:0x82
+              ldy ##26
+              lda [0x80],y
+              xba
+              pha
+              and ##0xff00
+              sta dp:0xa6
+              pla
+              and ##0x00ff
+              ora ##0x0100
+              sta dp:0xa8
               ldy ##0
               lda [0x80],y
               sta dp:0x84
@@ -171,9 +181,9 @@ _text_even:
               lda dp:0x8c
               sta long:0x8006
               lda dp:0x8e
-              ora ##0x4000
+              ora dp:0xa6
               sta long:0x8008
-              lda ##0x0101
+              lda dp:0xa8
               sta long:0x800a
               lda dp:0x90
               asl a
@@ -210,9 +220,9 @@ _text_record:
               lda dp:0x8c
               sta long:0x8006,x
               lda dp:0x8e
-              ora ##0x4000
+              ora dp:0xa6
               sta long:0x8008,x
-              lda ##0x0101
+              lda dp:0xa8
               sta long:0x800a,x
               lda ##3
               sta long:0x800c,x
@@ -277,9 +287,9 @@ _text_fill:
               iny
               iny
               lda [0x80],y
-              ora ##0x4000
+              ora dp:0xa6
               sta long:0x8008,x
-              lda ##0x0101
+              lda dp:0xa8
               sta long:0x800a,x
               ldy ##20
               lda [0x80],y
@@ -386,9 +396,9 @@ _text_odd_record:
               lda dp:0x8c
               sta long:0x8006,x
               lda dp:0x8e
-              ora ##0x4000
+              ora dp:0xa6
               sta long:0x8008,x
-              lda ##0x0101
+              lda dp:0xa8
               sta long:0x800a,x
               lda ##4
               sta long:0x800c,x
@@ -434,9 +444,9 @@ _text_background:
               lda dp:0x9a
               sta long:0x8006,x
               lda dp:0x9c
-              ora ##0x4000
+              ora dp:0xa6
               sta long:0x8008,x
-              lda ##0x0101
+              lda dp:0xa8
               sta long:0x800a,x
               lda dp:0x9e
               sta long:0x800c,x

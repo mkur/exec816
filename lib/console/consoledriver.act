@@ -25,6 +25,8 @@ USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
 USE DESKHOST
+USE DESKMENUCACHE
+USE DESKMENU
 USE DESKSTATE
 USE DESKPAINT
 USE DESKINPUT
@@ -622,6 +624,7 @@ PUBLIC PROC Worker()
     FI
 
     CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
+    DESKHOST.MenuContinuation()
     IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
       EXEC.Forbid()
       accepted=RequestStop(service)
@@ -647,6 +650,7 @@ PUBLIC PROC Worker()
     FI
     DESKINPUT.Service(bits)
     DESKINPUT.Advance()
+    DESKPAINT.Sync()
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
     ; Present newly consumed motion before spending another quantum on output.
     ; Intersecting draws erase it safely and the final pass restores it.
@@ -654,7 +658,7 @@ PUBLIC PROC Worker()
     bits=0
 
     ; Commit visible GUI feedback before starting another console-output
-    ; quantum. Drain at most four steps of the same strip, with input between
+    ; quantum. Drain at most four steps of a strip or ready menu, with input between
     ; C calls. This never renews the turn's control or output budgets.
     deferOutput=0
     paintSteps=0
@@ -674,7 +678,11 @@ PUBLIC PROC Worker()
         deferOutput=1
       FI
 
-      IF paintProgress<>2 OR paintSteps=PAINT_STEPS OR deferOutput<>0
+      IF paintProgress=1 THEN
+        DESKMENU.Advance()
+      FI
+      IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
+          OR paintSteps=PAINT_STEPS OR deferOutput<>0
           OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
         EXIT
       FI
@@ -712,9 +720,15 @@ PUBLIC PROC Worker()
               AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
             CONSOLEDISPLAY.Advance(view,instance,entry.unit)
           ELSE
+            IF entry.unit=0 THEN
+              DESKMENUCACHE.ConsoleChanged(instance,view)
+            FI
             completeWrite=WriteQuantum(instance,view,entry.unit)
           FI
 
+          IF entry.unit=0 THEN
+            DESKMENUCACHE.ConsoleChanged(instance,view)
+          FI
           CONSOLEDISPLAY.Present(view,instance)
           ; Resume repair on a fresh worker turn without a voluntary Task
           ; round trip per segment. Controls, input and registry rotation keep
@@ -738,6 +752,9 @@ PUBLIC PROC Worker()
             AND CONSOLEBITMAP.TextPending()=0
             AND instance.write<>NULL AND instance.writeCancel<>0 THEN
           CONSOLECORE.EditQuantum(instance)
+          IF entry.unit=0 THEN
+            DESKMENUCACHE.ConsoleChanged(instance,view)
+          FI
           IF instance.operation=CONSOLETYPES.OP_IDLE THEN
             FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
           FI

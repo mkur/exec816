@@ -10,15 +10,23 @@ adds no kernel gateway or resident Task by itself.
 ## Window appearance
 
 Native and GEM windows use dark ink outlines, warm off-white frame margins and
-centered titles in the existing 8×8 Atari ST font. The focused title carries
+centered titles in the existing 8×8 Atari ST font. Title text starts two rows
+below the outer top edge, centering seven-row capitals within the eleven-row
+bar; iconified tile labels use the same offset. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
-The boxed closer uses GEM font glyph 5 on the left and is absent from the
-shell. The full/restore gadget on the right uses glyph 7, making the two
-actions visually distinct. Its hit rectangle matches its painted
-box. Release outside, Escape and input loss cancel a close gesture. An inactive
+The closer uses a short, wide GEM-style X on the left and is absent
+from the shell. The full/restore gadget uses a distinct diamond mark. Both
+marks occupy 10×7 pixels within 16×11 control cells. Iconify uses a matching
+10×7 window symbol; scroll arrows occupy 10×5 pixels. Controls share the window
+outline and single separators instead of drawing inset boxes. Scroll arrows
+are centered on the rail, with the track and resize cell supplying their
+horizontal borders. Close hit bounds retain the existing cell inset.
+Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
-Work insets remain left 8, top 16, right 8 and bottom 8 pixels. Frame fragments
+Ordinary work insets are left 8, top 11, right 8 and bottom 2 pixels.
+Vertical scrollbars reserve 16 pixels on the right; SIZER reserves 11 at the
+bottom. INFO adds ten rows below the title. Frame fragments
 are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
 `wind_calc` geometry use constants generated from `abi/desktop.json`.
@@ -86,12 +94,13 @@ requests. A caller can mutate only its own windows.
 
 REPLACE requires exactly one `Content` record: background pen 0–15, at most
 32 fill/text commands and 256 text bytes. Coordinates are client-local and
-half-open, within the outer rectangle minus 8-pixel side borders, 16-pixel title
-area and 8-pixel bottom border. Text is 8 pixels per character and 8 pixels
+half-open, within the outer rectangle minus 8-pixel side borders, 11-pixel title
+area and 2-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
 Console-kind admission is limited to the root controller and permanent console
-unit 0, with a 528×184 outer rectangle and an 8-pixel placement grid. It cannot
+unit 0, with a 528×173 outer rectangle. Its 512×160 text origin stays on an
+8-pixel grid: outer x is a multiple of eight and outer y is 5 modulo eight. It cannot
 attach an arbitrary console unit. The presenter owns the permanent model; its
 shutdown refuses live desktop registrations. The root owns the shell streams
 and closes them before retiring its window.
@@ -138,9 +147,11 @@ operations; use window controls for desktop placement and visual focus.
 The same worker owns console I/O, the display lease and every physical draw.
 Background, frame and retained content repair use Layers' visible damage. One
 update token spans the repaint. Painting uses sixteen-scanline strips and up
-to four ready steps of the same strip per worker turn. Title fragments compose
+to four ready steps of a strip or foreground menu per worker turn. Title fragments compose
 their background, pattern, closer and at most sixteen glyphs per callback in
-scratch; publication waits for the complete fragment. Flat side/bottom strips
+scratch; publication waits for the complete fragment. Fixed close, full-size,
+iconify, arrow, resize and tile marks copy from an immutable VRAM atlas, including
+odd-X and clipped placements. The title pattern remains a strided fill. Flat side/bottom strips
 skip title processing, and the two narrow side borders share a paint step.
 Console exposure and retained text paint
 at most 32 glyphs from one row or command per step, reduced to 16 for vertically
@@ -222,7 +233,14 @@ cancellation policy. Event flags preserve INPUT.TICK_VALID; durable notices do
 not invent capture timestamps. Delivery sequence numbers are monotonic.
 
 Pointer hit testing and click-to-focus run in the presenter. Focus changes wait
-for a live drawing token to retire. The pointer restores its saved background
+for a live drawing token to retire. Shell focus changes repaint its title and
+remove or show its caret; they preserve the retained text and any gathered
+output batch. Raising the front application ignores the menu layers above it
+and does not invalidate its client. A title click released without movement
+also leaves its placement unchanged. Actual stacking and placement changes
+still repair exposed content.
+
+The pointer restores its saved background
 before intersecting drawing and is shown after each quiescent quantum, including
 an early pass after input intake. Motion accumulates during DMA; input delivery
 continues. Both odd/even mask variants stay in VRAM, avoiding per-move mask
@@ -237,8 +255,10 @@ signal and software pointer before the display and keyboard retire.
 
 Dragging a title captures subsequent motion and release outside the original
 window. An XOR outline follows the latest position without a nested input loop.
-Release commits onscreen, eight-pixel-aligned geometry after active painting or
-DMA retires. Layers then repairs old and new exposed pixels from retained content.
+Release commits onscreen geometry after active painting or DMA retires. Native
+graphical windows snap to eight pixels; Shell aligns its text origin to that
+grid. AES windows use even outer X coordinates and pixel-granular Y coordinates.
+Layers then repairs old and new exposed pixels from retained content.
 Escape, source/event-queue loss, hiding, retirement or an external move cancels
 the gesture. A released-button observation is required before another gesture.
 
@@ -248,21 +268,55 @@ Graphical close gadgets publish durable CLOSE events. They do not force a Task
 to retire, and an application may decline. The shell has no active close gadget;
 its normal EXIT path controls retirement.
 
+### Iconification
+
+Shell and ordinary AES/native windows have a presenter-owned iconify gadget
+at the right of the title, left of the fuller when present. Its mark is a small
+window with a filled lower corner. Iconify is omitted when the actual title controls leave less than one
+eight-pixel text cell plus padding; the Windows menu remains available.
+The 32-pixel minimum window width fits Close and Full without iconify.
+The borderless desktop cannot be iconified.
+
+Iconify preserves the open window, its owner, accepted geometry and content.
+The existing layer becomes an 88×11 labeled tile at y=227, x=104+88×slot.
+Tiles have a small window glyph and up to eight title characters. Click and
+release inside a tile to restore; release outside, Escape and input loss cancel.
+Restoration returns the exact normal bounds and keyboard focus. A covered tile
+can always be restored through Windows, where `* ` marks iconified entries.
+Tiles do not receive application input. Iconifying the focused window selects
+the nearest ordinary shown window; applications keep running.
+
+AES clients keep their handle, epoch, normal bounds and work rectangle, with
+an empty visible region while iconified. `WF_TOP` restores; geometry changes
+update the saved normal bounds. Native SHOW/RAISE/FOCUS also restore; HIDE and
+close remove the tile. Teardown uses existing routes and owner lifetimes.
+This automatic policy does not expose negotiated `WM_ICONIFY` / `WF_ICONIFY`.
+
+Shell writes continue to its retained model. Hidden output may leave the backing
+bitmap dirty; restoration updates it before copying visible text. Tile painting
+never acknowledges Shell text damage. Existing AES snapshots remain optional
+and obey ordinary model-revision invalidation. Tiles use the existing compositor
+and layers, with no extra task or VRAM storage. The design and development scope
+are recorded in the [iconification plan](../plans/gem4xe/window-iconification-plan.md).
+
 ### Desktop menus and window switching
 
-The presenter owns a persistent 16-pixel menu bar. The left 128 pixels show the
+The presenter owns a persistent 11-pixel menu bar. The left 128 pixels show the
 focused window name, truncated to fourteen 8-pixel cells; unnamed windows and
-the desktop show Exec816. Clicking this caption offers Next window and Close.
+the desktop show Exec816. Clicking this caption offers Next window, Close and Iconify.
 Close is disabled for the shell. Installed GEM menus occupy x=128..559, and
 Windows occupies x=560..639. Application menu coordinates remain x=0..431;
 the presenter translates drawing, damage and pointer hits together. Dropdowns
 are translated and clamped onscreen; the 208-pixel Windows popup starts at x=432.
-Windows lists all shown application windows in stable slot order, including
-covered windows and the shell. Selecting an AES entry sends `WM_TOPPED`; the
-application raises itself with `WF_TOP`. Close sends `WM_CLOSED`. Native windows
+Windows lists ordinary and iconified application windows in stable slot order,
+including covered windows and Shell. It also offers Next window, Close and
+Iconify. Selecting an ordinary AES entry sends `WM_TOPPED`; the application
+raises itself with `WF_TOP`. Selecting an iconified entry restores it directly.
+Close sends `WM_CLOSED`. Native windows
 use the existing focus and close notices. Neither command forces Task removal.
 
-Ctrl+Tab and Ctrl+Shift+Tab cycle the same stable window order. Ctrl+Escape opens
+Ctrl+Tab and Ctrl+Shift+Tab cycle the ordinary (not iconified) windows in stable
+slot order. Ctrl+Escape opens
 Windows; arrows or Tab/Shift+Tab change selection, and Return selects. Escape,
 BREAK, capture loss or an outside click cancels. Desktop menu input is consumed
 before application input routing. An existing held application/title gesture
@@ -275,7 +329,8 @@ it. The target is the frontmost remaining shown window with a live input route;
 a retired AES input epoch is ineligible. Closing a background window leaves
 focus unchanged. No remaining owner means focus and the published route are zero.
 
-Native fallback and Windows popups have a one-pixel black outline inside their
+Native fallback and Windows popups use eleven-row items, with eight-row text
+at y+1, and have a one-pixel black outline inside their
 allocated bounds. The outline is not an item target. Selection is black/white
 inversion; disabled text uses the GEM white stipple. Each native row is composed
 in the existing widget strip, including its complete label of up to 24 glyphs.
@@ -284,17 +339,27 @@ Their renderer batches up to four intersecting objects and budgets 80 text
 cells from clipped widths per callback; it does not fragment labels horizontally.
 Complete 16-row strips are published from the existing offscreen buffer.
 
-Highlight changes invalidate only the old and new entries. Opening/closing a
+Highlight changes invalidate only the old and new entries. A clean, fully
+visible application popup can invert two enabled, unadorned `G_STRING` rows
+without redrawing labels. Each row is at most 16 scanlines, inside the popup
+border, on ordinary white paper. Changed source state, checked/disabled/styled
+rows or unfinished pixels use the normal renderer. The synchronous paint token
+commits the selection only after completion; normal cached popup images remain
+unchanged. Opening/closing a
 menu damages its changed bar heading or native segment; owner/content changes
 can still require the complete bar. These visual states and their damage are
 published together after the current scene token retires. When starting a new
 paint transaction, the presenter prefers popup then bar, allowing ready ordinary
 layers a round-robin turn after two preferred menu transactions. This does not
 change Task priorities, application update locks or live paint ownership.
+Completed foreground menu transfers retire before unrelated control admissions.
+Ready menu work continues within the same four-step allowance, with input
+between units and no extra polling or renewed output/control budget.
 
 The bar and popup occupy two private Layers; all four application
 window slots remain available. They participate in normal visibility, damage
-and repaint, with no saved-under framebuffer. Labels and window IDs are copied
+and repaint; Layers owns the saved-under and popup cache lifetimes described
+below. Labels and window IDs are copied
 into upper-memory state. A scene/focus change dismisses an open menu, preventing
 selection of stale labels after window retirement or slot reuse. No extra Task,
 timer, signal or bank-zero reservation is needed. Installed application trees
@@ -347,13 +412,13 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 14,210 bytes in upper RAM, including the
-6,790-byte Layers scene, four 668-byte client records, four 818-byte windows,
+The generated service occupies 18,716 bytes in upper RAM, including the
+9,184-byte Layers scene, four 668-byte client records, six 884-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
-fourteen-byte snapshot records. Public
+fourteen-byte snapshot records and two ten-byte repair records. Public
 client handles are 18 bytes and requests are
 92 bytes, excluding their ordinary Exec reply ports. The service heap request
-rounds to 14,216 bytes at Exec’s eight-byte alignment; unused window/queue/list
+is already at Exec’s eight-byte alignment; unused window/queue/list
 capacity is included. DT3 runtime/controller globals have 280 payload bytes in
 upper image RAM (plus compiler alignment). Pointer save/masks reserve 1,280 VRAM bytes at `$37000–$374FF`, an increase of
 256 reserved bytes (the former slack is now used). The command arena starts at
@@ -371,7 +436,10 @@ not establish physical-device or whole-system qualification.
 Programmatic MOVE and drag release share one presenter continuation. A clean,
 fully visible front window with even X/width can copy its complete rectangle
 through the IRQ-completed typed driver operation. Dirty, covered and unaligned
-sources use retained redraw. The scene token gates model/layout changes and
+sources use retained redraw. Completed external AES clients use this path too;
+their geometry and repaint epoch publish before AESCORE replies. The moved
+client receives no new redraw for a successful copied move, while underlying
+external clients retain genuine exposure notifications. The scene token gates model/layout changes and
 queued HIDE/CLOSE while the copy is active; input capture can continue.
 
 The reply acknowledges committed geometry after successful DMA, before all
@@ -379,18 +447,31 @@ exposure repair or final scanout. A quiescent transfer fault returns DRAW_FAILED
 and retains the old geometry with touched pixels invalidated. An unquiesced
 fault keeps the existing reset-required retention behavior. Console moves
 preserve circular cells, dirtiness and presentation generation, updating only
-placement and caret bookkeeping; ordinary focus changes still invalidate.
+placement and caret bookkeeping. Focus alone preserves those model and
+presentation generations.
 
-### Private client snapshots
+### Private window snapshots
 
-The VRAM map reserves two 64 KiB compact snapshot slots at `$50000` and `$60000`.
-`DESKCACHE` stores client pixels only; frames and console content remain retained
-drawing. Even-width images must fit one slot and the 640 by 240 copy limit.
+The VRAM map reserves two 75 KiB compact snapshot slots at `$50000–$62BFF`
+and `$62C00–$757FF`.
+`DESKCACHE` stores the outer window, including its frame. Restoration excludes
+the title, which is drawn live for the current focus and name. Shell uses its separate fixed backing surface described in the
+[display contract](display.md#shell-backing-destination). Even-width images must fit one slot and the 640 by 240 copy limit.
 Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
-first, then the least recently used unpinned slot. The generated Service is
-14,210 bytes, including the two fourteen-byte slot records and alignment.
+first, then the least recently used unpinned slot. The shared `LAYERCACHE` policy owns the two fourteen-byte slot records; the
+presenter adapter builds transfers. The current generated Service is 18,716
+bytes, including scene/cache capacity and alignment.
+
+Eligible AES windows use the same slots. Capture requires a fully visible outer window, clean manager damage and
+completed application repaint obligations. A title or position-only change
+preserves the body image; resize, changed INFO/slider values and UPDATE
+invalidate it. Unchanged frame setters do no work.
+Ordinary applications without completion reports continue through `WM_REDRAW`.
+Conventional restoration never acknowledges external repaint on behalf of the
+application. The explicit [preservation contract](aes.md#opt-in-window-preservation)
+can satisfy new exposure without creating a repaint obligation.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.
@@ -400,18 +481,34 @@ identity before clearing the record. There is no public offscreen drawing API.
 
 Capture runs only after input, controls, model writes and visible damage have no
 work pending. Each eligible visual revision gets at most one attempt; eviction
-does not cause a recapture loop. The console is uncached. Accepted content/tree
+does not cause a recapture loop. Shell uses its dedicated persistent backing
+instead of these two slots. Accepted content/tree
 updates (including hidden updates), widget interaction and client focus styling
 invalidate revisions. Frame-only command-window focus changes damage the title
-and preserve the client snapshot. Position alone preserves local cached pixels.
+and preserve the body snapshot. Position alone preserves local cached pixels.
+AES UPDATE can retain an unavailable base with one outer-local repair per
+slot. A completed client change patches only that rectangle at its offset
+inside the outer image; an
+ambiguous or partial update discards it. Patches use the same read/DMA
+continuation and pins as captures. Repeated changes coalesce; failed or
+superseded maintenance does not chase the same revision.
+
 Font and palette are fixed for the display lifetime; changing them while windows
 are live is unsupported and any future setter must invalidate client revisions.
 
-Painting always redraws the frame. A valid even-aligned visible client fragment
-restores asynchronously while retaining its paint token and source pin; only
-completion advances the strip. Unaligned fragments use retained drawing without
-expanding over an occluder. The sixteen-scanline/four-command preparation limits
-remain. A fully visible nonconsole client cannot contain the console's clipped
+Title feedback precedes one asynchronous copy per aligned visible body
+rectangle, including client, sides, scrollbar and bottom. A borderless window
+has no title exclusion. On a cache miss, titles/INFO retain the sixteen-row
+widget strip; solid narrow sides use an 8/16-byte scratch pitch and publish
+each complete side once. Both paths share the existing 5,120-byte scratch.
+The paint token and source pin survive until transfer completion. Unaligned
+fragments use retained drawing without expanding over an occluder. Four-command
+preparation limits remain on retained rendering. Between transactions, pending
+focused-window work follows menu precedence and precedes background repair;
+other windows remain round-robin. No Task scheduling priorities change.
+Participating AES owners can let completed restores satisfy exposure, including
+successful menu-background restoration. Conventional callers keep `WM_REDRAW`.
+A fully visible nonconsole window cannot contain the console's clipped
 caret; the bridge removes intersecting pointer/outline overlays at capture.
 
 ### GEM size and scroll gadgets

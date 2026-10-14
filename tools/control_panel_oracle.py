@@ -75,7 +75,7 @@ def retained(bridge, result, context, bounds, focused):
 
 
 def panel(result, focused=False, status='Ready', toggle=0, radio=4, focus=2,
-          bounds=(432, 80, 624, 224), pressed=-1):
+          bounds=(432, 80, 624, 213), pressed=-1):
     left, top, right, bottom = bounds
     frame(result, bounds, b'Control Panel', focused, 8, close=True)
     objects = [
@@ -90,4 +90,4 @@ def panel(result, focused=False, status='Ready', toggle=0, radio=4, focus=2,
     if pressed >= 0:
         objects[pressed][5] ^= 1
     labels = dict(enumerate((status, 'Toggle', 'Locked', 'Small', 'Large', 'Apply', 'Cancel'), 1))
-    draw(result, objects, labels, (left+8, top+16, right-8, bottom-8), focus if focused else -1)
+    draw(result, objects, labels, (left+8, top+11, right-8, bottom-2), focus if focused else -1)

@@ -76,7 +76,7 @@ class ApplicationObserverTests(unittest.TestCase):
             paint(bridge, {'GEMBrowser': base, 'objc_edit': 1, '__aes_context': context},
                   raster, b'SYS:', (0, 0, 200, 120))
         self.assertEqual(calls[-1][2], b'A'*8)
-        self.assertEqual(rectangle.call_args.args[1], (88, 36, 89, 44))
+        self.assertEqual(rectangle.call_args.args[1], (88, 31, 89, 39))
 
 
 if __name__ == '__main__':

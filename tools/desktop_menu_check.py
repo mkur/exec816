@@ -56,7 +56,7 @@ class Menus:
         target = windows[row]['id']
         self.click(600, 8)
         require(self.s.number(self.at('DESKMENU', 'menu'), 1) == 2, 'Windows menu did not open')
-        self.click(472, 24+row*16)
+        self.click(472, 16+row*11)
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, target))
         self.s.frames(75)
         require(self.focus() == target, 'Menu selected the wrong window')
@@ -71,10 +71,10 @@ class Menus:
         expected = min(candidates, key=lambda w: w['rank'])['id'] if candidates else 0
         if self.s.number(self.at('DESKAPPMENU', 'owner'), 3):
             self.click(600, 8)
-            self.click(472, 24+(len(self.windows())+1)*16)
+            self.click(472, 16+(len(self.windows())+1)*11)
         else:
             self.click(80, 8)
-            self.click(40, 40)
+            self.click(40, 27)
         self.s.rendezvous('dw($%x)=%d' % (self.focus_address, expected))
         require(self.focus() == expected, 'Close did not restore the frontmost remaining owner')
         self.closed.append(owner)
@@ -102,7 +102,7 @@ def exercise(s, sy, click, move):
     s.cells('windows-menu-dismissed')
     click(600, 8); click(600, 220)
     require(menus.focus() == counter, 'Outside menu click passed through')
-    click(600, 8); move(472, 24)
+    click(600, 8); move(472, 16)
     s.b._cmd_ok('MOUSE AT 2000 0 0 1'); s.frames(25)
     menus.key('ESC')
     s.b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(70)

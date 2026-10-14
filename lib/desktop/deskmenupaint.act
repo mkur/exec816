@@ -1,6 +1,7 @@
 ; Menu chrome is normal opaque scene content, painted in bounded row steps.
 MODULE DESKMENUPAINT
 USE DESKMENU
+USE DESKTYPES
 USE DESKAPPMENU
 USE DESKSTATE
 USE LAYERTYPES
@@ -55,7 +56,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF layer.id<>DESKSTATE.barLayer THEN
     IF phase^=0 THEN
       menuGlyph=0
-      phase^=BYTE(CARD(clip.top-layer.bounds.top) RSH 4)+1
+      phase^=DESKMENU.RowAt(clip.top-layer.bounds.top)+1
     FI
 
     row=phase^-1
@@ -94,35 +95,35 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     background=0
     foreground=1
     IF phase^=1 THEN
-      REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,15)
+      REGIONS.Assign(@bounds,0,0,DESKAPPMENU.BAR_LEFT,DESKMENU.BAR_HEIGHT-1)
       IF DESKMENU.paintMenu=DESKMENU.APP_MENU THEN
         background=1
         foreground=0
       FI
       okay=Fill(@bounds,clip,background)
       IF okay<>0 THEN
-        okay=Text(8,4,@DESKMENU.title(0),foreground,background,clip,14)
+        okay=Text(8,DESKTYPES.MENU_TEXT_Y,@DESKMENU.title(0),foreground,background,clip,14)
       FI
       phase^=2
       RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
     FI
 
     IF phase^=2 THEN
-      REGIONS.Assign(@bounds,DESKMENU.WINDOWS_LEFT,0,640,15)
+      REGIONS.Assign(@bounds,DESKMENU.WINDOWS_LEFT,0,640,DESKMENU.BAR_HEIGHT-1)
       IF DESKMENU.paintMenu=DESKMENU.WINDOWS_MENU THEN
         background=1
         foreground=0
       FI
       okay=Fill(@bounds,clip,background)
       IF okay<>0 THEN
-        okay=Text(DESKMENU.WINDOWS_LEFT+8,4,BYTE POINTER(c"Windows"),
+        okay=Text(DESKMENU.WINDOWS_LEFT+8,DESKTYPES.MENU_TEXT_Y,BYTE POINTER(c"Windows"),
             foreground,background,clip,7)
       FI
       phase^=3
       RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
     FI
 
-    REGIONS.Assign(@bounds,0,15,640,16)
+    REGIONS.Assign(@bounds,0,DESKMENU.BAR_HEIGHT-1,640,DESKMENU.BAR_HEIGHT)
     RETURN(Fill(@bounds,clip,1))
   FI
 

@@ -102,7 +102,7 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     id = appl_init(); CHECK(id > 0);
     CHECK(wind_calc(WC_WORK, AES_WINDOW_KIND, 9, 9, 200, 120, &a, &b, &c, &d));
-    CHECK(a == 17 && b == 25 && c == 184 && d == 96);
+    CHECK(a == 17 && b == 20 && c == 184 && d == 107);
     CHECK(wind_calc(WC_BORDER, AES_WINDOW_KIND, a, b, c, d, &a, &b, &c, &d));
     CHECK(a == 9 && b == 9 && c == 200 && d == 120);
     CHECK(!wind_calc(WC_WORK, AES_WINDOW_KIND, 0, 0, 16, 24, &a, &b, &c, &d));
@@ -113,17 +113,32 @@ UWORD AESRun(void)
     in[0] = WC_WORK; in[1] = AES_WINDOW_KIND;
     in[2] = 9; in[3] = 9; in[4] = 200; in[5] = 120;
     aes_call(&pb);
-    CHECK(out[0] == 1 && out[1] == 17 && out[2] == 25 && out[3] == 184 && out[4] == 96);
-    geometry(0, WF_WXYWH, 0, 16, 640, 224);
+    CHECK(out[0] == 1 && out[1] == 17 && out[2] == 20 && out[3] == 184 && out[4] == 107);
+    geometry(0, WF_WXYWH, 0, 11, 640, 229);
+    /* Both mandatory 16-pixel controls fit without iconify or title overlap. */
+    CHECK(wind_create(AES_WINDOW_KIND|FULLER,8,16,31,48)==-1);
+    replacement=wind_create(AES_WINDOW_KIND|FULLER,8,16,32,48);
+    CHECK(replacement>0);CHECK(wind_delete(replacement));
+    CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|INFO|SIZER|UPARROW|DNARROW|VSLIDE,
+        0,11,640,229,&a,&b,&c,&d));
+    CHECK(a==8 && b==32 && c==616 && d==197);
     replacement=wind_create(0,9,9,200,120);
     CHECK(replacement>0);CHECK(wind_delete(replacement));
     CHECK(wind_create(AES_WINDOW_KIND, -1, 9, 200, 120) == -1);
     CHECK(wind_create(AES_WINDOW_KIND, 500, 9, 200, 120) == -1);
+    /* Odd fixed-size requests normalize consistently through open and move. */
+    replacement=wind_create(AES_WINDOW_KIND,439,17,201,121);
+    CHECK(replacement>0);
+    geometry(replacement,WF_CXYWH,438,17,202,121);
+    CHECK(wind_open(replacement,439,17,201,121));
+    for (i=0;i<3;++i) CHECK(wind_set(replacement,WF_CXYWH,439,17,201,121));
+    geometry(replacement,WF_CXYWH,438,17,202,121);
+    CHECK(wind_close(replacement));CHECK(wind_delete(replacement));
     handle = wind_create(AES_WINDOW_KIND, 9, 9, 200, 120); CHECK(handle > 0);
     replacement=wind_create(AES_WINDOW_KIND,9,9,200,120);
     CHECK(replacement>handle);CHECK(wind_delete(replacement));
-    geometry(handle, WF_CXYWH, 9, 9, 200, 120);
-    geometry(handle, WF_WXYWH, 17, 25, 184, 96);
+    geometry(handle, WF_CXYWH, 8, 9, 200, 120);
+    geometry(handle, WF_WXYWH, 16, 20, 184, 107);
     geometry(handle, WF_KIND, AES_WINDOW_KIND, 0, 0, 0);
     CHECK(!wind_get(handle, WF_FIRSTXYWH, &a, &b, &c, &d));
     CHECK(ExecAESDiagnostic() == AES_BUSY);
@@ -141,12 +156,12 @@ UWORD AESRun(void)
     CHECK(!wind_delete(handle));
     CHECK(!wind_open(handle, 9, 9, 200, 120));
     CHECK(!wind_set(handle, WF_CXYWH, 600, 9, 200, 120));
-    geometry(handle, WF_CXYWH, 9, 9, 200, 120);
+    geometry(handle, WF_CXYWH, 8, 9, 200, 120);
     CHECK(evnt_mesag(message));
     CHECK(message[0] == WM_REDRAW && message[3] == handle);
-    CHECK(message[4] == 17 && message[5] == 25 && message[6] == 184 && message[7] == 96);
+    CHECK(message[4] == 16 && message[5] == 20 && message[6] == 184 && message[7] == 107);
     CHECK(wind_update(BEG_UPDATE));
-    geometry(handle, WF_FIRSTXYWH, 17, 25, 184, 96);
+    geometry(handle, WF_FIRSTXYWH, 16, 20, 184, 107);
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_update(END_UPDATE));
     geometry(handle, WF_NEXTXYWH, 0, 0, 0, 0);
@@ -210,16 +225,31 @@ UWORD AESRun(void)
             AESControl[5], AESControl[6], AESControl[7]));
         else { CHECK(wind_close(handle)); CHECK(wind_open(handle, 9, 9, 200, 120)); }
     }
+    /* Presenter iconification needs no message handler. Keep the caller's
+     * geometry, allow model updates, and restore through the ordinary WF_TOP. */
+    AESPhysical = 30;
+    while (AESPhysicalGo != 30) ExecYield();
+    geometry(handle, WF_CXYWH, 8, 9, 200, 120);
+    CHECK(wind_update(BEG_UPDATE));
+    geometry(handle, WF_FIRSTXYWH, 0, 0, 0, 0);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_set(handle, WF_CXYWH, 11, 13, 200, 120));
+    geometry(handle, WF_CXYWH, 10, 13, 200, 120);
+    CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
+    AESPhysical = 31;
+    while (AESPhysicalGo != 31) ExecYield();
+    CHECK(wind_close(handle));
+    CHECK(wind_open(handle, 9, 9, 200, 120));
     AESPhysical = 7;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_get(handle, WF_FIRSTXYWH, &a, &b, &c, &d));
     CHECK(wind_set(handle, WF_CXYWH, 11, 13, 200, 120));
     CHECK(!wind_get(handle, WF_NEXTXYWH, &a, &b, &c, &d));
     CHECK(ExecAESDiagnostic() == AES_BUSY);
-    geometry(handle, WF_CXYWH, 11, 13, 200, 120);
+    geometry(handle, WF_CXYWH, 10, 13, 200, 120);
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
     CHECK(wind_get(0, WF_TOP, &a, &b, &c, &d) && a == handle);
-    geometry(handle, WF_FIRSTXYWH, 19, 29, 184, 96);
+    geometry(handle, WF_FIRSTXYWH, 18, 24, 184, 107);
     CHECK(wind_update(END_UPDATE));
     command = 4; Signal(peer, peerWake);
     while (!AESDone) Wait(wake);
@@ -238,16 +268,16 @@ UWORD AESRun(void)
     CHECK(wind_close(replacement));
     CHECK(wind_delete(replacement));
     /* The application accepts geometry and owns logical slider values. */
-    handle=wind_create(AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,32,32,240,160);
+    handle=wind_create(AES_WINDOW_KIND|FULLER|SIZER|UPARROW|DNARROW|VSLIDE,32,32,240,160);
     CHECK(handle>0);
     CHECK(wind_open(handle,32,32,240,160));
-    geometry(handle,WF_WXYWH,40,48,216,128);
+    geometry(handle,WF_WXYWH,40,43,216,138);
     geometry(handle,WF_VSLIDE,0,0,0,0);
     geometry(handle,WF_VSLSIZE,1000,0,0,0);
-    CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
+    CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|FULLER|SIZER|UPARROW|DNARROW|VSLIDE,
         32,32,240,160,&a,&b,&c,&d));
-    CHECK(a==40 && b==48 && c==216 && d==128);
-    CHECK(wind_calc(WC_BORDER,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
+    CHECK(a==40 && b==43 && c==216 && d==138);
+    CHECK(wind_calc(WC_BORDER,AES_WINDOW_KIND|FULLER|SIZER|UPARROW|DNARROW|VSLIDE,
         a,b,c,d,&a,&b,&c,&d));
     CHECK(a==32 && b==32 && c==240 && d==160);
     CHECK(wind_set(handle,WF_VSLSIZE,250,0,0,0));
@@ -264,16 +294,16 @@ UWORD AESRun(void)
     CHECK(wind_get(handle,WF_FIRSTXYWH,&a,&b,&c,&d));
     CHECK(wind_set(handle,WF_CXYWH,32,32,320,192));
     CHECK(!wind_get(handle,WF_NEXTXYWH,&a,&b,&c,&d));
-    geometry(handle,WF_WXYWH,40,48,296,160);
-    geometry(handle,WF_FIRSTXYWH,40,48,296,160);
+    geometry(handle,WF_WXYWH,40,43,296,170);
+    geometry(handle,WF_FIRSTXYWH,40,43,296,170);
     CHECK(wind_update(END_UPDATE));
     CHECK(wind_set(handle,WF_CXYWH,32,32,64,80));
-    geometry(handle,WF_WXYWH,40,48,40,48);
+    geometry(handle,WF_WXYWH,40,43,40,58);
     CHECK(!wind_set(handle,WF_CXYWH,32,32,63,80));
     CHECK(!wind_set(handle,WF_CXYWH,32,32,64,79));
     CHECK(wind_close(handle));
     CHECK(wind_open(handle,32,32,240,160));
-    geometry(handle,WF_WXYWH,40,48,216,128);
+    geometry(handle,WF_WXYWH,40,43,216,138);
     AESView=(ULONG)ExecAESContext()->view;
     AESWindow=handle;
     for (i=0;i<7;++i) {

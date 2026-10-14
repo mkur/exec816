@@ -15,7 +15,7 @@ def paint(b,sy,r,bounds):
     payload=b.memdump(data,size) if size else b''
     lines=re.split(b'\r\n|[\r\n\x9b]',payload) if payload else []
     if payload.endswith((b'\r',b'\n',b'\x9b')):lines.pop()
-    x,y,endx,endy=bounds[0]+8,bounds[1]+16,bounds[2]-16,bounds[3]-16
+    x,y,endx,endy=bounds[0]+8,bounds[1]+11,bounds[2]-16,bounds[3]-11
     rows=(endy-y-20)//8;columns=(endx-x-8)//8;first=number(a+F['first'])
     rectangle(r,(x,y,endx,endy),0);r.clip=(x,y,endx-1,endy-1);r.text=1
     for row in range(rows):

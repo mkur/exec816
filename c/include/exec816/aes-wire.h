@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 14
+#define AES_VERSION 16
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -87,7 +87,7 @@
 #define AES_MOUSE_OFF 0
 #define AES_MOUSE_MILD 1
 #define AES_OP_MENU 202
-#define AES_MENU_OBJECTS 32
+#define AES_MENU_OBJECTS 33
 #define AES_MN_SELECTED 10
 #define AES_GUI_MENU 4
 #define AES_SIZER 32
@@ -115,8 +115,11 @@
 #define AES_GUI_FULLED 8
 #define AES_WINDOWS 6
 #define AES_WF_EXEC_DESKTOP 24576
+#define AES_WF_EXEC_PRESERVE 24577
 #define AES_OP_FIND 106
 #define AES_OP_DRAG_OUTLINE 203
+#define AES_PAINT_REPORTS 8
+#define AES_UPDATE_WINDOW 512
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -306,6 +309,15 @@ struct AESRect {
 #define AES_RECT_OFFSET_TOP 2
 #define AES_RECT_OFFSET_RIGHT 4
 #define AES_RECT_OFFSET_BOTTOM 6
+struct AESPaintReport {
+    WORD handle;
+    ULONG epoch;
+    struct AESRect rect;
+};
+#define AES_PAINTREPORT_SIZE 14
+#define AES_PAINTREPORT_OFFSET_HANDLE 0
+#define AES_PAINTREPORT_OFFSET_EPOCH 2
+#define AES_PAINTREPORT_OFFSET_RECT 6
 struct AESWindowView {
     WORD handle;
     WORD kind;
@@ -319,8 +331,12 @@ struct AESWindowView {
     UWORD visibleCount;
     struct AESRect visible[AES_VISIBLE_RECTS];
     ULONG epoch;
+    ULONG paintEpoch;
+    UBYTE changed;
+    UBYTE pixelsReady;
+    struct AESRect change;
 };
-#define AES_WINDOWVIEW_SIZE 806
+#define AES_WINDOWVIEW_SIZE 820
 #define AES_WINDOWVIEW_OFFSET_HANDLE 0
 #define AES_WINDOWVIEW_OFFSET_KIND 2
 #define AES_WINDOWVIEW_OFFSET_SHOWN 4
@@ -333,6 +349,10 @@ struct AESWindowView {
 #define AES_WINDOWVIEW_OFFSET_VISIBLECOUNT 32
 #define AES_WINDOWVIEW_OFFSET_VISIBLE 34
 #define AES_WINDOWVIEW_OFFSET_EPOCH 802
+#define AES_WINDOWVIEW_OFFSET_PAINTEPOCH 806
+#define AES_WINDOWVIEW_OFFSET_CHANGED 810
+#define AES_WINDOWVIEW_OFFSET_PIXELSREADY 811
+#define AES_WINDOWVIEW_OFFSET_CHANGE 812
 struct AESRequest {
     struct Message message;
     UWORD version;
@@ -358,8 +378,11 @@ struct AESRequest {
     UBYTE viewPad;
     UBYTE EXEC_PTR * displayGrant;
     UBYTE displayGrantPad;
+    UBYTE paintCount;
+    UBYTE paintFailed;
+    struct AESPaintReport paints[AES_PAINT_REPORTS];
 };
-#define AES_REQUEST_SIZE 112
+#define AES_REQUEST_SIZE 226
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -384,5 +407,8 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_VIEWPAD 107
 #define AES_REQUEST_OFFSET_DISPLAYGRANT 108
 #define AES_REQUEST_OFFSET_DISPLAYGRANTPAD 111
+#define AES_REQUEST_OFFSET_PAINTCOUNT 112
+#define AES_REQUEST_OFFSET_PAINTFAILED 113
+#define AES_REQUEST_OFFSET_PAINTS 114
 #define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_UPDATE || (op)==AES_OP_CREATE || (op)==AES_OP_OPEN || (op)==AES_OP_CLOSE || (op)==AES_OP_DELETE || (op)==AES_OP_SET || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE || (op)==AES_OP_MENU || (op)==AES_OP_FIND || (op)==AES_OP_DRAG_OUTLINE)
 #endif

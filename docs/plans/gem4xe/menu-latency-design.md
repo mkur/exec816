@@ -65,6 +65,8 @@ Closing continues to expose underlying layers through normal damage, including
 opening and highlighting. Save-under is a follow-up only if restoration remains
 the dominant cost: it would need covered-content invalidation, clipping and
 z-order/lifetime rules before a VRAM copy could safely replace redraw.
+The follow-up [AES and Layers VRAM design](aes-layers-vram-design.md) specifies
+that cooperation, menu save-under and wider use of fixed VRAM image slots.
 
 No new VRAM region, Task, message, signal, timer or public ABI is needed.
 Additional scalar state and the native label buffer live in upper-memory image

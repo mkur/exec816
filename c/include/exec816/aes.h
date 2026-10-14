@@ -55,6 +55,11 @@ BOOL ExecAESAttach(struct MsgPort *service);
 BOOL ExecAESDetach(void);
 struct ExecAESContext *ExecAESContext(void);
 UWORD ExecAESDiagnostic(void);
+/* Optional repaint completion, after drawing and before outer END_UPDATE.
+ * Coordinates are screen x/y/width/height; only visible intersections count. */
+WORD ExecAESBeginUpdate(WORD window);
+WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height);
+WORD ExecAESPaintedChanges(WORD window);
 /* Session preference: AES_MOUSE_QUERY, AES_MOUSE_OFF or AES_MOUSE_MILD.
  * Returns the chosen profile, or -1 on failure. Held gestures finish first. */
 WORD ExecAESMouseProfile(WORD profile);

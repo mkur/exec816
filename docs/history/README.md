@@ -21,6 +21,33 @@
 - [MyDOS performance](mydos-performance.md): native copies, VTOC publication,
   retained traversal state and matched development measurements.
 
+- [Window and menu response work](window-menu-response.md): menu request
+  reduction, prompt raising and subsequent atlas/menu development evidence.
+
+- [Window frames and desktop exposure](window-frame-exposure.md): complete frame
+  sides, frame-inclusive snapshots, precise close damage and matched timings.
+
+- [Window preservation](window-preservation.md): large client restores, explicit
+  AES exposure policy, shipped-app adoption and focused packaged-image checks.
+
+- [Compact window geometry](compact-window-geometry.md): compact title bars, gadgets and
+  menus; Shell alignment, application fixes and packaged pixel checks.
+
+- [Window iconification](window-iconification.md): presenter-owned tiles,
+  normal geometry, hidden application progress and menu recovery.
+
+- [Aligned moves and Shell backing](window-backing.md): completed AES copies,
+  persistent console pixels, scrolling and matched performance evidence.
+
+- [Shell focus without full redraw](shell-focus.md): title/caret-only focus
+  changes, no-op front-window activation and physical click/pixel checks.
+
+- [Unchanged menu backgrounds](menu-switch.md): scoped desktop updates, retained
+  save-under across headings, pixel checks and matched latency measurements.
+
+- [AES and Layers VRAM caching](aes-layers-vram.md): repaint completion,
+  shared caches, incremental repairs, matched timing and memory accounting.
+
 - [Dropdown menu latency](menu-latency.md): bounded label batching, targeted
   damage, menu precedence and matched visible-feedback measurements.
 

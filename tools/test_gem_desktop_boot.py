@@ -8,30 +8,58 @@ from test_demo import run
 
 class DesktopSmoke:
     def exercise(self,s):
+        from desktop_menu_check import Menus
+        from gem_applications import instances
+        from generate_aes_server import expected_layout,ABI
+        b=s.b;directory=s.p['output']/'bitmap-console'
         foreign=json.loads((s.p['output']/'bitmap-console/c-image.json').read_text())
         require(not any(segment.get('deferred') for segment in foreign['segments']),
                 'Shared GEM runtime is absent from the boot payload')
         require('GEMSYS.BIN' not in s.manifest['files'],'Unexpected shared GEM disk component')
-        sy=foreign['symbols']
-        from gem_applications import symbols
-        counter=symbols(s.b,s.p,s.p['output']/'bitmap-console','counter',
-                        s.number(sy['GEMDesktopChildren']+4,4))['GEMCounter']
-        before=s.number(counter+14,4);s.frames(60)
-        require(s.number(counter+14,4)>before,'Loaded GEM counter did not advance')
-        position=[s.number(next(d['address'] for d in s.p['image']['data']
-                               if '_DESKINPUT_'+name+'_' in d['name']),2)
-                  for name in ('CURSORX','CURSORY')]
-        s.saved['pointer']=schedule(s.b,s.p,position,(96,32));s.frames(20)
-        s.b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
-        s.b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(30)
-        s.command('HELLO',b'Hello from disk!')
-        s.command('HELLO >RAM:MERGE.TXT')
-        s.command('CAT RAM:MERGE.TXT',b'Hello from disk!')
-        s.command('DELETE RAM:MERGE.TXT')
+        require(not {'C/DESKTOP.APP','DESKTOP.RSC'} & s.manifest['files'].keys(),
+                'Desktop still depends on companion disk files')
+        def at(name):
+            return next(d['address'] for d in s.p['image']['data']
+                        if '_DESKINPUT_'+name.upper()+'_' in d['name'])
+        def move(x,y):
+            position=[s.number(at(n),2) for n in ('cursorX','cursorY')]
+            s.saved['pointer']=schedule(b,s.p,position,(x,y))
+            s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)'%(at('cursorX'),x,at('cursorY'),y));s.frames(3)
+        def click(x,y):
+            move(x,y);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(25)
+            b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(65)
+        s.saved['desktop_menu']={};menus=Menus(s,click,move)
+        desktop=next(a for a in instances(b,s.p,directory) if a['name']=='desktop')
+        context=next(c for i in range(ABI['constants']['CONTEXTS'])
+            if (c:=s.number(foreign['symbols']['contexts']+i*4,4)) and s.number(c+32,3)==desktop['task'])
+        form=context+dict(expected_layout())['C context form']
+        menus.select('SYS:');click(296,5);click(304,17)
+        if not s.number(form,4):
+            from colour_desktop_model import FIELDS as D
+            desk=desktop['symbols']['GEMDesk']
+            s.save_screen(s.p['output']/'about-failure.png')
+            print('About status:',b.memdump(desk+D['status'],65),
+                  'diagnostic:',s.number(desk+D['error'],4),
+                  'message:',b.memdump(desk+D['message'],16).hex(),flush=True)
+        require(s.number(form,4),'Desk About did not open an alert')
+        move(632,232);s.frames(80);s.save_screen(s.p['output']/'about.png')
+        menus.key('RETURN');require(not s.number(form,4),'About did not dismiss')
+        menus.select('SYS:');click(296,5);click(304,39)
+        for _ in range(80):
+            panels=[a for a in instances(b,s.p,directory) if a['name']=='panel']
+            if panels:break
+            s.frames(20)
+        require(panels,'Disk-loaded Control Panel did not start')
+        s.rendezvous('dw($%x)=1'%(panels[0]['symbols']['GEMPanel']+8));s.frames(80)
+        require(any(w['title']=='Control Panel' for w in menus.windows()),'Panel title was not shortened')
+        menus.select('Control Panel');menus.close();s.frames(80)
+        menus.select('Shell')
+        listing=s.command('DIR RAM:')
+        for name,item in s.p['build']['desktop_boot_files'].items():
+            require((name[4:]+' '+str(item['bytes'])).encode() in listing,'Missing boot file: '+name)
         s.save_screen(s.p['output']/'boot-smoke.png')
-        s.saved['integration']=dict(profile='resident-gem-smoke',
-            shared_runtime='compressed boot image',loaded_applications=3,
-            counter=True,shell=True,ram=True)
+        s.saved['integration']=dict(profile='ram-desktop-smoke',desktop_from_ram=True,
+            resource_from_ram=True,about=True,panel_from_disk=True,panel_title=True)
         for char in 'EXIT':s.press(char)
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
@@ -146,7 +174,7 @@ class DesktopBoot:
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--bundle',type=Path,required=True)
-    parser.add_argument('--smoke',action='store_true',help='Resident GEM boot, loaded apps, shell/RAM commands and EXIT')
+    parser.add_argument('--smoke',action='store_true',help='RAM desktop boot, About, disk-loaded Panel, RAM listing and EXIT')
     parser.add_argument('--files-only',action='store_true')
     args=parser.parse_args();out=args.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(out/'extracted')

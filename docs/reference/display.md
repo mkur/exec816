@@ -302,3 +302,25 @@ shows underlying CPU RAM. Mapping neither allocates CPU RAM nor makes VRAM part
 of the Exec heap. Driver and lease state stay in upper CPU RAM. The slice adds
 zero reserved bank-zero bytes, fixed or per Task; the full existing 4 KiB window,
 stack guards, alignment and unused stack capacity remain reserved.
+
+### Shell backing destination
+
+The private console renderer reserves `$41000–$4AFFF` for one 512×160 packed
+Shell bitmap (pitch 256, 40,960 bytes). Both shared AES snapshots remain intact.
+Production VRAM reservations total 416,256 bytes; 108,032 remain unassigned
+(108,000 after the existing diagnostic exclusion). No CPU aperture, bank-zero
+or per-Task reservation grows.
+
+Private console protocol version 13 adds backing text/fill operations without
+changing its 78-byte packet. The native text uploader's private record is 28
+bytes, with destination pitch at offset 26; screen text continues to use pitch
+320. Every emitted destination record uses that pitch, including background
+and trailing fills. The uploader uses call-clobbered DP bytes through `$A9`
+within the existing reservation. Targets are explicit on each call.
+
+Desktop Shell dirty spans describe pending model-to-backing work. Layers damage
+separately describes screen repair. Completed backing scrolls use the ordinary
+asynchronous copy engine, clear the newly exposed rows, then render final dirty
+spans before publishing the new generation. This works while partly or fully
+covered. Batch cancellation and view retirement retain the existing DMA lifetime
+rules. Caret and pointer pixels are screen overlays, never backing contents.

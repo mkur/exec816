@@ -40,6 +40,7 @@
 #define WIDGET_STATE_DISABLED 8
 #define WIDGET_DAMAGE_RECTS 8
 #define WIDGET_OP_MENU_DRAW 9
+#define WIDGET_OP_MENU_INVERT 10
 struct WidgetObject {
     int16_t next;
     int16_t head;

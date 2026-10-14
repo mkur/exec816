@@ -149,6 +149,29 @@ PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
 
 RETURN(Run(OP_FILL))
 
+PUBLIC BYTE FUNC BackingText(CARD x,y BYTE POINTER source CARD count)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.text=LONGCARD(ADDRESS(source))
+  packet.width=count
+  packet.foreground=1
+  packet.background=0
+
+RETURN(Run(OP_BACKING_TEXT))
+
+PUBLIC BYTE FUNC BackingFill(CARD x,y,width,height CARD pen)
+
+  LET packet=GetPacket()
+  packet.x=x
+  packet.y=y
+  packet.width=width
+  packet.height=height
+  packet.background=pen
+
+RETURN(Run(OP_BACKING_FILL))
+
 PUBLIC BYTE FUNC Background(LAYERTYPES.Rect POINTER clip)
 
   LET packet=GetPacket()

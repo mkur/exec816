@@ -7,7 +7,7 @@ static WORD job_same_directory(const char *,const char *);
 
 enum { DESK_TITLE=21,DESK_BOX=22,DESK_NEW=23,DESK_PANEL=24,DESK_CALC=25,
        DESK_TEXT=26,DESK_COUNTER=27,DESK_SAVE=28,DESK_QUIT=29,
-       DESK_COPY=30,DESK_DELETE=31 };
+       DESK_COPY=30,DESK_DELETE=31,DESK_ABOUT=32 };
 struct Desktop GEMDesk;
 static const char *desktopLabels[DESKTOP_ICONS]={"SYS:","WORK:","RAM:","C:","Panel","Calculator","Text","Counter"};
 static const char *desktopPrograms[4]={"C:PANEL.APP","C:CALC.APP","C:TEXT.APP","C:COUNTER.APP"};
@@ -22,9 +22,10 @@ static struct Browser *desktop_folder(struct Desktop *d,WORD handle)
 static WORD desktop_draw(struct Desktop *d,const WORD *damage)
 {
     WORD okay;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(d->window)) return 0;
     okay=wind_get(d->window,WF_WORKXYWH,&d->work[0],&d->work[1],&d->work[2],&d->work[3]);
     if (okay) okay=objc_draw(d->tree,0,MAX_DEPTH,damage[0],damage[1],damage[2],damage[3]);
+    if (okay) okay=ExecAESPainted(d->window,damage[0],damage[1],damage[2],damage[3]);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++d->paints;
     return okay;
@@ -68,17 +69,15 @@ static WORD desktop_menu(struct Desktop *d,struct Browser *b)
     }
     d->active=b;
     if (b) {
-        /* The shared bar may have been changed by another folder. */
-        b->menuEnabled=-1;
         wind_get(b->window,WF_WORKXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]);
         if (b->dialog && b->focus==2) objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT);
         return menu_state(b) && view_checks(b);
     }
-    menu_ienable(d->bar,DESK_COPY,0);menu_ienable(d->bar,DESK_DELETE,0);
+    if (!menu_enable(d->bar,DESK_COPY,0) || !menu_enable(d->bar,DESK_DELETE,0)) return 0;
     for (i=MENU_OPEN;i<=MENU_RENAME;++i)
-        if (!menu_ienable(d->bar,i,0)) return 0;
+        if (!menu_enable(d->bar,i,0)) return 0;
     for (i=MENU_ICONS;i<=MENU_NONE;++i)
-        if (!menu_ienable(d->bar,i,0)) return 0;
+        if (!menu_enable(d->bar,i,0)) return 0;
     return 1;
 }
 static WORD desktop_close_folder(struct Desktop *d,struct Browser *b)
@@ -139,10 +138,12 @@ static void desktop_tree(struct Desktop *d)
     WORD i;
     OBJECT *o;
     ICONBLK *ib;
-    static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,16,640,224};
+    static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,0,640,240};
     static const OBJECT icon={0,-1,-1,G_ICON,0,0,0,0,0,96,26};
     static const WORD kinds[DESKTOP_ICONS]={4,4,12,5,6,7,8,9};
     d->tree[0]=root;
+    wind_get(0,WF_WXYWH,&d->tree[0].ob_x,&d->tree[0].ob_y,
+        &d->tree[0].ob_width,&d->tree[0].ob_height);
     for (i=0;i<DESKTOP_ICONS;++i) {
         d->icons[i]=*(CICONBLK *)d->stock[kinds[i]].ob_spec;
         ib=&d->icons[i].monoblk;
@@ -160,7 +161,7 @@ static void desktop_tree(struct Desktop *d)
     }
     d->tree[DESKTOP_ICONS+1]=menuSource[7];
     o=&d->tree[DESKTOP_ICONS+1];o->ob_next=0;o->ob_flags=LASTOB;
-    o->ob_spec=(ULONG)d->status;o->ob_x=120;o->ob_y=214;o->ob_width=512;o->ob_height=8;
+    o->ob_spec=(ULONG)d->status;o->ob_x=120;o->ob_y=d->tree[0].ob_height-10;o->ob_width=512;o->ob_height=8;
 }
 static WORD desktop_bar(struct Desktop *d)
 {
@@ -173,25 +174,29 @@ static WORD desktop_bar(struct Desktop *d)
     d->bar[DESK_TITLE]=menuSource[13];
     d->bar[DESK_TITLE].ob_spec=(ULONG)"Desk";d->bar[DESK_TITLE].ob_x=128;
     d->bar[DESK_BOX]=menuSource[5];
-    d->bar[DESK_BOX].ob_next=4;d->bar[DESK_BOX].ob_head=DESK_NEW;d->bar[DESK_BOX].ob_tail=DESK_QUIT;
+    d->bar[DESK_BOX].ob_next=4;d->bar[DESK_BOX].ob_head=DESK_ABOUT;d->bar[DESK_BOX].ob_tail=DESK_QUIT;
     d->bar[DESK_BOX].ob_x=136;d->bar[DESK_BOX].ob_width=152;
+    d->bar[DESK_BOX].ob_height=90;
     for (i=DESK_NEW;i<=DESK_QUIT;++i) {
         d->bar[i]=menuSource[7];
         d->bar[i].ob_next=i==DESK_QUIT ? DESK_BOX:i+1;
         d->bar[i].ob_flags=0;
         d->bar[i].ob_state=0;
         d->bar[i].ob_spec=(ULONG)labels[i-DESK_NEW];
-        d->bar[i].ob_y=1+(i-DESK_NEW)*16;d->bar[i].ob_width=150;
+        d->bar[i].ob_y=12+(i-DESK_NEW)*11;d->bar[i].ob_width=150;
     }
     /* File > Quit closes the active folder; Desk > Quit ends this Task. */
     d->bar[MENU_QUIT].ob_spec=(ULONG)"Close Window";
     d->bar[5].ob_width=160;
     for (i=MENU_OPEN;i<=MENU_RENAME;++i) d->bar[i].ob_width=158;
-    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=162;d->bar[MENU_PARENT].ob_next=DESK_COPY;
+    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=112;d->bar[MENU_PARENT].ob_next=DESK_COPY;
     d->bar[DESK_COPY]=menuSource[7];d->bar[DESK_COPY].ob_next=DESK_DELETE;
-    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=129;d->bar[DESK_COPY].ob_width=158;
+    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=89;d->bar[DESK_COPY].ob_width=158;
     d->bar[DESK_DELETE]=d->bar[DESK_COPY];d->bar[DESK_DELETE].ob_next=5;
-    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=145;d->bar[DESK_DELETE].ob_flags=LASTOB;
+    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=100;d->bar[DESK_DELETE].ob_flags=0;
+    d->bar[DESK_ABOUT]=menuSource[7];d->bar[DESK_ABOUT].ob_next=DESK_NEW;
+    d->bar[DESK_ABOUT].ob_spec=(ULONG)"About Exec816...";d->bar[DESK_ABOUT].ob_y=1;
+    d->bar[DESK_ABOUT].ob_width=150;d->bar[DESK_ABOUT].ob_flags=LASTOB;
     return menu_bar(d->bar,1);
 }
 #include "desktop-drag.inc"
@@ -242,18 +247,20 @@ WORD DesktopRun(void)
 {
     struct Desktop *d=&GEMDesk;
     struct Browser *b;
-    WORD i,cw,ch,bw,bh,events,hit,busy,running,result=1;
+    WORD i,cw,ch,bw,bh,events,hit,busy,running,about=0,result=1;
     d->window=-1;d->armed=d->selected=-1;
     d->id=appl_init();if (d->id<0) return 1;
-    if (!rsrc_load("SYS:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&d->source) ||
+    if (!rsrc_load("RAM:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&d->source) ||
         !rsrc_gaddr(R_TREE,1,(void **)&d->popup) || !rsrc_gaddr(R_TREE,2,(void **)&d->stock)) goto finish;
     d->vdi=graf_handle(&cw,&ch,&bw,&bh);
     for (i=0;i<10;++i) d->input[i]=1;
     d->input[10]=2;v_opnvwk(d->input,&d->vdi,d->output);
     if (!d->vdi || !desktop_bar(d)) goto finish;
     d->installed=1;desktop_tree(d);
-    d->window=wind_create(0,0,16,640,224);
-    if (d->window<0 || !ExecAESDesktop(d->window) || !wind_open(d->window,0,16,640,224)) goto finish;
+    d->window=wind_create(0,d->tree[0].ob_x,d->tree[0].ob_y,d->tree[0].ob_width,d->tree[0].ob_height);
+    if (d->window<0 || !ExecAESDesktop(d->window) ||
+        !wind_set(d->window,AES_WF_EXEC_PRESERVE,1,0,0,0) || !wind_open(d->window,
+        d->tree[0].ob_x,d->tree[0].ob_y,d->tree[0].ob_width,d->tree[0].ob_height)) goto finish;
     d->opened=1;
     settings_load(d);ExecAESMouseProfile(d->mouse);
     if (!d->settingsLoaded) { if (!desktop_new(d,"SYS:")) goto finish; }
@@ -275,10 +282,10 @@ WORD DesktopRun(void)
         if (!desktop_status(d)) { result=2;break; }
         running=d->job && d->job->state!=JOB_REPLACE;
         hit=d->drag.phase==DRAG_ARMED ? 3:0;
-        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || running) ? MU_TIMER:0)|
+        events=evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG|((busy || running || about) ? MU_TIMER:0)|
             ((d->drag.phase==DRAG_ARMED || d->drag.phase==DRAG_TRACKING) ? MU_M1:0),2,1,d->down ? 0:1,
             1,d->drag.lastX-hit,d->drag.lastY-hit,hit*2+1,hit*2+1,
-            0,0,0,0,0,d->message,running ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
+            0,0,0,0,0,d->message,(running || about) ? 0:100,0,&d->mx,&d->my,&d->mb,&d->ks,&d->kr,&d->br);
         if (!events) {
             if (ExecAESDiagnostic()!=AES_INPUT_LOST) { result=2;break; }
             if (!desktop_drag_cancel(d,1)) { result=2;break; }
@@ -321,12 +328,13 @@ WORD DesktopRun(void)
                 if (!desktop_drag_deliver(d)) { result=2;break; }
             } else if (d->message[0]==MN_SELECTED && d->message[3]==DESK_TITLE) {
                 i=d->message[4];
-                if (i==DESK_NEW) desktop_new(d,d->active ? d->active->path:"SYS:");
+                if (!menu_tnormal(d->bar,DESK_TITLE,1)) { result=2;break; }
+                if (i==DESK_ABOUT) about=1;
+                else if (i==DESK_NEW) desktop_new(d,d->active ? d->active->path:"SYS:");
                 else if (i>=DESK_PANEL && i<=DESK_COUNTER) desktop_launch(d,desktopPrograms[i-DESK_PANEL],NULL,0);
                 else if (i==DESK_SAVE) {
                     settings_save(d);
                 } else if (i==DESK_QUIT) d->quit=1;
-                if (!menu_tnormal(d->bar,DESK_TITLE,1)) { result=2;break; }
             } else if (d->message[0]==MN_SELECTED) {
                 if (!desktop_dispatch(d,d->active,MU_MESAG)) { result=2;break; }
                 if (!d->active) menu_tnormal(d->bar,d->message[3],1);
@@ -337,8 +345,18 @@ WORD DesktopRun(void)
                 } else if (d->message[0]==WM_REDRAW && !desktop_draw(d,&d->message[4])) { result=2;break; }
             } else {
                 b=desktop_folder(d,d->message[3]);
-                if (b && d->message[0]==WM_TOPPED && !desktop_menu(d,b)) { result=2;break; }
                 if (!desktop_dispatch(d,b,MU_MESAG)) { result=2;break; }
+            }
+        }
+        if (about && !d->quit && !(events&MU_MESAG)) {
+            /* Retire queued redraws before borrowing the active window for
+             * a synchronous form. An unrelated message interrupts the form;
+             * the ordinary loop must dispatch it before retrying About. */
+            about=0;
+            wind_get(d->active ? d->active->window:d->window,WF_WORKXYWH,&cw,&ch,&bw,&bh);
+            if (!form_alert(1,"[1][Exec816 Desktop|Multitasking on the 65816|GEM4XE widgets and VDI|VBXE colour graphics][OK]")) {
+                d->error=ExecAESDiagnostic();about=d->error==AES_PENDING;
+                if (!about && d->error!=AES_OK) strcpy(d->status,"Cannot open About");
             }
         }
         if (d->job && !d->quit && !desktop_job_step(d)) { result=2;break; }

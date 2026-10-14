@@ -1,0 +1,16 @@
+--- a/src/apps/calc.c
++++ b/src/apps/calc.c
+@@ -286,6 +286,13 @@
+                 if (!cancel() || !wind_set(Calculator.window,WF_CXYWH,
+                     Calculator.message[4],Calculator.message[5],Calculator.message[6],Calculator.message[7]))
+                     Calculator.result=2;
++                else {
++                    /* A completed cached move need not send WM_REDRAW. */
++                    if (!wind_get(Calculator.window,WF_WXYWH,&Calculator.work[0],
++                        &Calculator.work[1],&Calculator.work[2],&Calculator.work[3]))
++                        Calculator.result=2;
++                    tree[ROOT].ob_x=Calculator.work[0];tree[ROOT].ob_y=Calculator.work[1];
++                }
+                 break;
+             case WM_REDRAW:
+                 if (!paint(ROOT,&Calculator.message[4])) Calculator.result=2;

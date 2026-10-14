@@ -20,7 +20,11 @@ from test_demo import run
 
 
 class Feedback:
-    def __init__(self, count, load_check=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False):
+        self.conventional = conventional
+        self.selection_only = selection_only
+        self.headings_only = headings_only
+        self.cold = cold
         self.count = count
         self.load_check = load_check
         self.results = {}
@@ -44,8 +48,47 @@ class Feedback:
         menus = Menus(s, click, move)
         menus.select('SYS:')
         move(632, 232); s.frames(100)
+        # The shipped Files counter advances only after its complete redraw
+        # and outer END_UPDATE. Observe it outside drawing; pixel equality
+        # alone will become an earlier endpoint when saved pixels are restored.
+        from gem_applications import symbols
+        from colour_desktop_model import FIELDS as D
+        from browser_model import FIELDS as F
+        directory = s.p['output']/'bitmap-console'
+        resident = json.loads((directory/'c-image.json').read_text())['symbols']
+        desk = symbols(b, s.p, directory, 'desktop',
+                       s.number(resident['GEMDesktopChildren'], 4))['GEMDesk']
+        folder = s.number(desk+D['active'], 4)
+        require(folder, 'No active folder for final repaint observation')
         menu = at('DESKMENU', 'menu')
         path = s.p['output']/'menu-feedback.bgra'
+        cache_fields = ('captures','restores','misses','capturedBytes','restoredBytes',
+                        'popupCaptures','popupRestores','popupMisses',
+                        'popupCapturedBytes','popupRestoredBytes')
+        cache_at = {name: next((d['address'] for d in s.p['image']['data']
+                    if '_DESKMENUCACHE_'+name.upper()+'_' in d['name']), None)
+                    for name in cache_fields}
+        for name in ('captures','restores','capturedBytes','restoredBytes','patches','patchedBytes'):
+            cache_at['client_'+name]=next((d['address'] for d in s.p['image']['data']
+                if '_DESKCACHE_'+name.upper()+'_' in d['name']),None)
+        cache_at['explicit_discards']=next((d['address'] for d in s.p['image']['data']
+            if '_LAYERCACHE_DISCARDS_' in d['name']),None)
+        def cache_counts():
+            return {name: s.number(address, 4) for name, address in cache_at.items()
+                    if address is not None}
+
+        popup_cache = next((d['address'] for d in s.p['image']['data']
+                            if '_DESKMENUCACHE_POPUPS_' in d['name']), None)
+        def discard_popups():
+            if not self.cold or popup_cache is None:
+                return
+            from generate_layers import layout
+            slot = layout()['CacheSlot']
+            for index in range(2):
+                address = popup_cache+index*slot['size']
+                require(s.number(address+slot['fields']['pinned'], 1) == 0,
+                        'Cannot make a pinned popup cold')
+                b.memload(address+slot['fields']['valid'], b'\x00')
 
         def capture(area):
             frame = b.rawscreen(str(path)); raw = path.read_bytes()
@@ -68,7 +111,7 @@ class Feedback:
         # caret and parked pointer are outside it. Reference state is warmed
         # before timing, with no writes to guest state or executable observers.
         area = (128, 0, 640, 208)
-        for kind in ('application', 'native'):
+        for kind in (() if self.headings_only else ('application',) if self.selection_only else ('application', 'native')):
             sequence = [('open', ('ESC', True, kind == 'application')),
                         ('highlight', ('TAB',)),
                         ('switch' if kind == 'application' else 'next_row',
@@ -82,8 +125,15 @@ class Feedback:
             require(all(reference[i] != reference[i-1] for i in range(4)),
                     'Reference interaction did not change visible pixels: '+kind)
             samples = {name: [] for name, _ in sequence}
+            final_repaint = []
+            transfers = {name: [] for name, _ in sequence}
+            repaints = {name: [] for name, _ in sequence}
             for iteration in range(self.count):
                 for (name, keys), want in zip(sequence, reference):
+                    if name in ('open', 'switch'):
+                        discard_popups()
+                    before_paint = s.number(folder+F['paints'], 4)
+                    before_cache = cache_counts()
                     start = press(*keys)
                     for _ in range(100):
                         if capture(area) == want:
@@ -92,11 +142,103 @@ class Feedback:
                     else:
                         raise RuntimeError('Menu did not match settled pixels: '+kind+'/'+name)
                     samples[name].append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                    if name == 'close' and self.conventional:
+                        for _ in range(100):
+                            if s.number(folder+F['paints'], 4) > before_paint and capture(area) == want:
+                                break
+                            s.frames(1)
+                        else:
+                            raise RuntimeError('No final Files repaint after '+kind+' dismissal')
+                        final_repaint.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                    after_cache = cache_counts()
+                    transfers[name].append({k: after_cache[k]-v for k,v in before_cache.items()})
                     s.frames(7+iteration % 5)
+                    if name == 'close' and not self.conventional:
+                        require(s.number(folder+F['paints'],4)==before_paint,
+                                'Preserved menu dismissal repainted Files')
+                    repaints[name].append(s.number(folder+F['paints'],4)-before_paint)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
-            print(kind, json.dumps(self.results[kind]), flush=True)
+            if self.conventional:
+                self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
+                    **distribution(final_repaint))
+            self.results[kind]['transfers'] = transfers
+            self.results[kind]['files_repaints'] = repaints
+            print(kind, {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
+                         for name,row in self.results[kind].items()
+                         if isinstance(row,dict) and 'median_ms' in row}, flush=True)
             (s.p['output']/'menu-samples.json').write_text(json.dumps(self.results, indent=2)+'\n')
+        if self.selection_only:
+            s.save_screen(s.p['output']/'boot-smoke.png')
+            menus.select('Shell')
+            for char in 'EXIT':s.press(char)
+            b._cmd_ok('KEY RETURN down');b.bp_clear_all()
+            return
+        # One interaction, repeated unequal footprints. Exclude the pointer and
+        # title bar and cursor tail from physical-reference comparison; the emitted menu oracle
+        # checks both separately. No writes to production state in this cohort.
+        repeat_area = (128,32,640,208)
+        references = []
+        press('ESC',True,True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ASTERISK',True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ASTERISK',True); s.frames(100)
+        references.append(capture(repeat_area))
+        press('ESC'); s.frames(100)
+        require(references[0] != references[1], 'Identical heading references')
+        repeated = {}
+        for source in ('keyboard','pointer'):
+            move(160,8) if source == 'pointer' else move(632,232)
+            press('ESC',True,True); s.frames(100)
+            before_paint = s.number(folder+F['paints'],4)
+            before_cache = cache_counts()
+            values=[]
+            for index in range(self.count):
+                heading=(index+1)%3 if source == 'keyboard' else (1 if index%2==0 else 0)
+                if source == 'keyboard':
+                    # The pinned bridge exposes the right-arrow key only.
+                    # Cycle File/View/Desk; the pointer case alternates File/View.
+                    start=press('ASTERISK',True)
+                else:
+                    old=[s.number(at('DESKINPUT',n),2) for n in ('cursorX','cursorY')]
+                    start=b.eval_expr('@clk') & 0xffffffff
+                    s.saved['pointer']=schedule(b,s.p,old,(224 if heading else 160,8))
+                for _ in range(100):
+                    if capture(repeat_area) == references[heading]: break
+                    s.frames(1)
+                else:
+                    raise RuntimeError('Repeated heading pixels: '+source+'/'+str(index))
+                values.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                if source == 'pointer':
+                    # A popup can finish before the positioning helper's last
+                    # physical phase. Drain that stimulus before reversing;
+                    # otherwise the next sample overlaps pending mouse travel.
+                    s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)' %
+                        (at('DESKINPUT','cursorX'),s.saved['pointer'][0],
+                         at('DESKINPUT','cursorY'),s.saved['pointer'][1]))
+                s.frames(8)
+                require(s.number(folder+F['paints'],4)==before_paint,
+                        'Unchanged Files repainted during '+source+' heading switch')
+            after_cache=cache_counts()
+            transfers={k:after_cache[k]-v for k,v in before_cache.items()}
+            (s.p['output']/('repeated-'+source+'.json')).write_text(json.dumps(
+                dict(samples_ms=values,transfers=transfers),indent=2)+'\n')
+            require(transfers.get('restores',0)==self.count,
+                    'Repeated headings did not reuse every background: '+source+' '+repr(transfers))
+            require(transfers.get('captures',0)==0,
+                    'Repeated headings recaptured the same background')
+            press('ESC'); s.frames(100)
+            final_repaint=s.number(folder+F['paints'],4)>before_paint
+            require(final_repaint==self.conventional,
+                    'Wrong redraw policy after repeated-heading dismissal')
+            repeated[source]=dict(samples_ms=values,**distribution(values),
+                                  transfers=transfers,files_repaints_during_switch=0,
+                                  final_repaint=final_repaint)
+        self.results['repeated_headings']=repeated
+        print('Repeated headings:', {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
+                                    for name,row in repeated.items()},flush=True)
+        move(632,232)
         if self.load_check:
             # Put Counter left of Files, so its digits stay visible under both
             # menus. Check real drawing progress while selection keeps moving.
@@ -106,7 +248,7 @@ class Feedback:
             resident = json.loads((directory/'c-image.json').read_text())['symbols']
             desk = symbols(b, s.p, directory, 'desktop',
                            s.number(resident['GEMDesktopChildren'], 4))['GEMDesk']
-            click(296, 8); click(304, 88)
+            click(296, 8); click(304, 72)
             for _ in range(60):
                 child = s.number(desk+D['children'], 4)
                 if child:
@@ -149,7 +291,19 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--selection-only',action='store_true',help='Only the application open/highlight/switch/close cohort')
+    parser.add_argument('--headings-only', action='store_true', help='Only repeated heading transitions')
+    parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
+    parser.add_argument('--conventional', action='store_true', help='Require conventional redraws when measuring a pre-preservation baseline')
+    parser.add_argument('--layout-revision', help='Use recorded native ABI layouts for an older baseline executable')
     args = parser.parse_args()
+    if args.layout_revision:
+        import subprocess
+        import generate_layers, generate_desktop, generate_aes_server
+        for module, name in ((generate_layers, 'layers'), (generate_desktop, 'desktop'),
+                             (generate_aes_server, 'aes-server')):
+            module.ABI = json.loads(subprocess.check_output(
+                ['git', 'show', args.layout_revision+':abi/'+name+'.json'], text=True))
     out = args.output.resolve()
     require(not out.exists(), 'Use a fresh measurement directory')
     require(args.count > 0, 'Positive sample count required')
@@ -157,11 +311,11 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check)
+    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional, args.selection_only)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),
-                  menus=probe.results, scope='Idle desktop; keyboard submission to whole-region '
+                  menus=probe.results, cold_popup_control=args.cold, scope='Idle desktop; keyboard submission to whole-region '
                   'scanout equality, one-frame polling. Settled reference images; independent '
                   'pixels checked separately. No sub-frame precision or loaded latency claim.')
     (out/'menu-results.json').write_text(json.dumps(result, indent=2)+'\n')

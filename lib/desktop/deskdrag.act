@@ -102,8 +102,13 @@ RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
     AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
 
 PROC Position(INT x,y)
-  INT left,top,width,height,limit
+  INT left,top,width,height,limit,offset
 
+  BEGIN
+    LET window=DESKCORE.Find(DESKSTATE.Get(),windowId)
+    offset=IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+        INT(DESKTYPES.WORK_TOP) ELSE INT(0) FI
+  END
   width=origin.right-origin.left
   height=origin.bottom-origin.top
   left=origin.left+x-pressX
@@ -118,7 +123,12 @@ PROC Position(INT x,y)
 
   IF pixelMotion=0 THEN
     left=(left+4) & $fff8
-    top=(top+4) & $fff8
+    top=((top+offset+4) & $fff8)-offset
+    IF top<DESKMENU.BAR_HEIGHT THEN
+      top=((DESKMENU.BAR_HEIGHT+offset+7) & $fff8)-offset
+    FI
+  ELSE
+    left=left & $fffe
   FI
 
   limit=640-width
@@ -131,7 +141,7 @@ PROC Position(INT x,y)
 
   limit=240-height
   IF pixelMotion=0 THEN
-    limit=limit & $fff8
+    limit=((limit+offset) & $fff8)-offset
   FI
   IF top>limit THEN
     top=limit
@@ -253,6 +263,7 @@ PROC SizePosition(INT x,y CARD kind)
   IF width>640-origin.left THEN
     width=640-origin.left
   FI
+  width=(width+1) & $fffe
   IF height>240-origin.top THEN
     height=240-origin.top
   FI
@@ -390,7 +401,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             RETURN(0)
           FI
 
-          IF window.kind=DESKTYPES.CONTENT_AES AND service.focus<>window.id THEN
+          IF window.kind=DESKTYPES.CONTENT_AES AND window.iconified=0
+              AND service.focus<>window.id THEN
             AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
             blocked=1
             RETURN(1)
@@ -398,7 +410,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
 
           windowId=window.id
           pixelMotion=window.kind=DESKTYPES.CONTENT_AES
-          focusWanted=window.kind<>DESKTYPES.CONTENT_AES
+          focusWanted=window.kind<>DESKTYPES.CONTENT_AES AND window.iconified=0
           IF hit<>0 THEN
             gadget=hit
             REGIONS.Copy(@layer.bounds,@origin)
@@ -430,7 +442,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           FI
 
           IF window.kind<>DESKTYPES.CONTENT_CONSOLE
-              AND sample.x<layer.bounds.left+DESKTYPES.TITLE_HEIGHT THEN
+              AND sample.x<layer.bounds.left+DESKTYPES.FRAME_GADGET_WIDTH THEN
             phase=0
             windowId=0
             RETURN(1)
@@ -501,9 +513,13 @@ PUBLIC PROC Advance()
   IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
+  IF phase=ARROW_PENDING AND (gadget=8 OR gadget=9)
+      AND (AESLOCKS.NativeReady()=0 OR AESLOCKS.PaintBlocked()<>0) THEN
+    RETURN
+  FI
 
   IF focusWanted<>0 THEN
-    status=LAYERS.Order(@service.scene,layer.id,window.id<>DESKSTATE.desktopWindow)
+    status=DESKSTATE.Raise(layer.id)
     IF status<>LAYERTYPES.OK THEN
       HEAPCORE.Abort($faec)
     FI
@@ -522,6 +538,10 @@ PUBLIC PROC Advance()
           target.right-target.left,target.bottom-target.top)
     ELSEIF phase=SLIDE_PENDING THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_VSLID,sliderValue,0,0,0)
+    ELSEIF gadget=8 THEN
+      DESKCORE.Iconify(service,window)
+    ELSEIF gadget=9 THEN
+      DESKCORE.RestoreIcon(service,window)
     ELSEIF gadget=7 THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_FULLED,0,0,0,0)
     ELSE

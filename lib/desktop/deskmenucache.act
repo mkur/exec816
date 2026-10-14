@@ -1,0 +1,499 @@
+; Presenter adapter for the Layers-owned menu save. One transfer, no new queue.
+MODULE DESKMENUCACHE
+USE DESKSTATE
+USE DISPLAY
+USE DESKTYPES
+USE DESKGEOMETRY
+USE DESKMOVE
+USE LAYERS
+USE LAYERTYPES
+USE LAYERCACHE
+USE REGIONS
+USE AESWINDOWSTATE
+USE CONSOLEBITMAP
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE CONSOLEBATCH
+USE HEAPCORE
+
+LONGCARD token
+BYTE restoring,notifyPending,retainSave,exposurePending
+LAYERTYPES.Rect exposure
+PUBLIC LONGCARD captures,restores,misses,capturedBytes,restoredBytes
+
+; Popup images share the same transfer path and fixed-slot policy. Identity
+; is the owner, lifetime distinguishes menu replacement, and selection is exact.
+TYPE PopupKey=[
+  LONGCARD owner,lifetime,revision
+  INT heading,selected
+  BYTE kind
+]
+LAYERTYPES.CachePair popups
+PopupKey ARRAY keys(2)
+PopupKey attempt,current
+BYTE popupOperation,popupSlot,normalSelection
+CONST POPUP_CAPTURE=1, POPUP_RESTORE=2
+PUBLIC LONGCARD popupCaptures,popupRestores,popupMisses,popupCapturedBytes,popupRestoredBytes
+
+PUBLIC PROC Reset()
+
+  LAYERCACHE.Discard(@popups.slots(0))
+  LAYERCACHE.Discard(@popups.slots(1))
+  attempt.kind=0
+  current.kind=0
+  notifyPending=0
+  exposurePending=0
+  retainSave=0
+
+RETURN
+
+PUBLIC PROC SelectPopup(BYTE kind LONGCARD owner,lifetime,revision
+    INT heading,selected BYTE normal)
+
+  current.kind=kind
+  current.owner=owner
+  current.lifetime=lifetime
+  current.revision=revision
+  current.heading=heading
+  current.selected=selected
+  normalSelection=normal
+
+RETURN
+
+BYTE FUNC Same(PopupKey POINTER left,right)
+
+RETURN(left.owner=right.owner AND left.lifetime=right.lifetime
+    AND left.revision=right.revision AND left.heading=right.heading
+    AND left.selected=right.selected AND left.kind=right.kind)
+
+LONGCARD FUNC PopupAddress(BYTE index)
+
+RETURN(IF index=0 THEN DESKTYPES.POPUP_0_BASE ELSE DESKTYPES.POPUP_1_BASE FI)
+
+BYTE FUNC PopupTransfer(LAYERTYPES.Layer POINTER layer BYTE restore)
+
+  LET slot=@popups.slots(popupSlot)
+  LET packet=CONSOLEBITMAP.GetPacket()
+  packet.copy.source.offset=0
+  packet.copy.source.pitch=320
+  packet.copy.source.width=640
+  packet.copy.source.height=240
+  packet.copy.sourceX=CARD(layer.bounds.left)
+  packet.copy.sourceY=CARD(layer.bounds.top)
+  packet.copy.destination.offset=PopupAddress(popupSlot)
+  packet.copy.destination.pitch=slot.width RSH 1
+  packet.copy.destination.width=slot.width
+  packet.copy.destination.height=slot.height
+  packet.copy.destinationX=0
+  packet.copy.destinationY=0
+  IF restore<>0 THEN
+    packet.copy.source=packet.copy.destination
+    packet.copy.sourceX=0
+    packet.copy.sourceY=0
+    packet.copy.destination.offset=0
+    packet.copy.destination.pitch=320
+    packet.copy.destination.width=640
+    packet.copy.destination.height=240
+    packet.copy.destinationX=CARD(layer.bounds.left)
+    packet.copy.destinationY=CARD(layer.bounds.top)
+  FI
+  packet.copy.width=slot.width
+  packet.copy.height=slot.height
+
+RETURN(CONSOLEBITMAP.CopyStart())
+
+; Idle-only: never capture every highlighted row or chase an evicted image.
+PUBLIC BYTE FUNC CapturePopup()
+  PopupKey key
+  BYTE index,status
+  CARD width,height
+
+  IF current.kind=0 OR popupOperation<>0 THEN
+    RETURN(0)
+  FI
+  key=current
+  IF key.revision=0 OR Same(@key,@attempt)<>0
+      OR normalSelection=0 THEN
+    RETURN(0)
+  FI
+  LET service=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+  width=CARD(layer.bounds.right-layer.bounds.left)
+  height=CARD(layer.bounds.bottom-layer.bounds.top)
+  IF layer.shown=0 OR layer.dirty<>0 OR (layer.bounds.left & 1)<>0
+      OR (width & 1)<>0 OR LONGCARD(width RSH 1)*LONGCARD(height)>DESKTYPES.POPUP_0_BYTES THEN
+    RETURN(0)
+  FI
+  attempt=key
+  FOR index=0 TO 1 DO
+    IF popups.slots(index).valid<>0 AND Same(@key,@keys(index))<>0 THEN
+      RETURN(0)
+    FI
+  OD
+  index=LAYERCACHE.Choose(@popups)
+  IF index=LAYERCACHE.NO_SLOT THEN
+    RETURN(0)
+  FI
+  status=LAYERS.BeginRead(@service.scene,layer.id,@layer.bounds,@token)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+  popupSlot=index
+  popupOperation=POPUP_CAPTURE
+  keys(index)=key
+  LAYERCACHE.Prepare(@popups.slots(index),key.owner,key.revision,width,height)
+  IF PopupTransfer(layer,0)=0 AND DISPLAY.Blocked()=0 THEN
+    status=LAYERS.Finish(@service.scene,token,0)
+    LAYERCACHE.Captured(@popups.slots(index),0)
+    token=0
+    popupOperation=0
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Called once for a complete popup paint. The painter retains its own token.
+PUBLIC BYTE FUNC RestorePopup(LAYERTYPES.Layer POINTER layer)
+  PopupKey key
+  BYTE index
+
+  key=current
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET slot=@popups.slots(index)
+      IF slot.valid<>0 AND slot.pinned=0 AND Same(@key,@keys(index))<>0
+          AND INT(slot.width)=layer.bounds.right-layer.bounds.left
+          AND INT(slot.height)=layer.bounds.bottom-layer.bounds.top
+          AND (layer.bounds.left & 1)=0 THEN
+        slot.pinned=1
+        popupSlot=index
+        popupOperation=POPUP_RESTORE
+        IF PopupTransfer(layer,1)=0 AND DISPLAY.Blocked()=0 THEN
+          LAYERCACHE.Released(slot,0)
+          popupOperation=0
+          RETURN(DESKTYPES.CACHE_FAILED)
+        FI
+        RETURN(DESKTYPES.CACHE_PENDING)
+      FI
+    END
+  OD
+  popupMisses==+1
+
+RETURN(DESKTYPES.CACHE_MISS)
+
+PUBLIC BYTE FUNC PopupRestored()
+  BYTE okay
+
+  IF popupOperation<>POPUP_RESTORE OR CONSOLEBITMAP.Pending()<>0
+      OR DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
+  LET slot=@popups.slots(popupSlot)
+  okay=(CONSOLEBITMAP.Failed()=0)
+  LAYERCACHE.Released(slot,okay)
+  IF okay<>0 THEN
+    popups.recent=popupSlot
+    popupRestores==+1
+    popupRestoredBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+  FI
+  popupOperation=0
+
+RETURN(okay)
+
+; Inspect retained model damage before the console renderer can retire it.
+; Cursor updates alone are overlays and do not invalidate the saved scene.
+PUBLIC PROC ConsoleChanged(CONSOLETYPES.Instance POINTER instance
+    CONSOLETYPES.Presentation POINTER view)
+  LAYERTYPES.Rect area
+  CARD row
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.scene.under.slot.revision=0 THEN
+    RETURN
+  FI
+  LET layer=LAYERS.Find(@service.scene,DESKSTATE.Selected())
+  IF layer=NULL THEN
+    RETURN
+  FI
+  LET batch=CONSOLEBATCH.Get()
+  IF instance.operation<>CONSOLETYPES.OP_IDLE OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
+    LAYERCACHE.Changed(@service.scene.under,layer.id,@layer.bounds)
+    RETURN
+  FI
+  FOR row=0 TO instance.height-1 DO
+    IF instance.damageEnd(row)<>0 THEN
+      REGIONS.Assign(@area,INT((view.left+instance.damageFirst(row)) LSH 3),
+          INT((view.top+row) LSH 3),INT((view.left+instance.damageEnd(row)) LSH 3),
+          INT((view.top+row+1) LSH 3))
+      LAYERCACHE.Changed(@service.scene.under,layer.id,@area)
+    FI
+  OD
+
+RETURN
+
+PROC ConsolePending()
+
+  LET entry=CONSOLEWINDOWS.Find(0)
+  IF entry<>NULL THEN
+    ConsoleChanged(CONSOLETYPES.Instance POINTER(entry.instance),
+        CONSOLETYPES.Presentation POINTER(entry.view))
+  FI
+
+RETURN
+
+BYTE FUNC Transfer(BYTE restore)
+
+  LET service=DESKSTATE.Get()
+  LET save=@service.scene.under
+  LET packet=CONSOLEBITMAP.GetPacket()
+  packet.copy.source.offset=0
+  packet.copy.source.pitch=320
+  packet.copy.source.width=640
+  packet.copy.source.height=240
+  packet.copy.sourceX=CARD(save.bounds.left)
+  packet.copy.sourceY=CARD(save.bounds.top)
+  packet.copy.destination.offset=DESKTYPES.MENU_UNDER_BASE
+  packet.copy.destination.pitch=save.slot.width RSH 1
+  packet.copy.destination.width=save.slot.width
+  packet.copy.destination.height=save.slot.height
+  packet.copy.destinationX=0
+  packet.copy.destinationY=0
+  packet.copy.width=save.slot.width
+  packet.copy.height=save.slot.height
+  IF restore<>0 THEN
+    packet.copy.source=packet.copy.destination
+    packet.copy.sourceX=CARD(service.scene.copyTarget.left-save.bounds.left)
+    packet.copy.sourceY=CARD(service.scene.copyTarget.top-save.bounds.top)
+    packet.copy.destination.offset=0
+    packet.copy.destination.pitch=320
+    packet.copy.destination.width=640
+    packet.copy.destination.height=240
+    packet.copy.destinationX=CARD(service.scene.copyTarget.left)
+    packet.copy.destinationY=CARD(service.scene.copyTarget.top)
+    packet.copy.width=CARD(service.scene.copyTarget.right-service.scene.copyTarget.left)
+    packet.copy.height=CARD(service.scene.copyTarget.bottom-service.scene.copyTarget.top)
+  FI
+
+RETURN(CONSOLEBITMAP.CopyStart())
+
+PUBLIC BYTE FUNC Reusable(LAYERTYPES.Rect POINTER bounds)
+
+  LET service=DESKSTATE.Get()
+  LET save=@service.scene.under
+  ConsolePending()
+
+RETURN(save.slot.valid<>0 AND save.slot.pinned=0
+    AND save.slot.identity=DESKSTATE.popupLayer
+    AND REGIONS.Contains(@save.bounds,bounds)<>0)
+
+; Capture is optional. Incomplete source pixels open the menu immediately.
+PUBLIC BYTE FUNC Capture(LAYERTYPES.Rect POINTER bounds)
+  BYTE status
+
+  LET service=DESKSTATE.Get()
+  IF ((bounds.left OR bounds.right) & 1)<>0
+      OR CONSOLEBITMAP.Failed()<>0 THEN
+    misses==+1
+    RETURN(0)
+  FI
+  DESKMOVE.HideCaret()
+  status=LAYERS.BeginSave(@service.scene,DESKSTATE.popupLayer,bounds,@token)
+  IF status<>LAYERTYPES.OK THEN
+    misses==+1
+    RETURN(0)
+  FI
+  ConsolePending()
+  restoring=0
+  IF service.scene.under.slot.revision=0 THEN
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
+    token=0
+    misses==+1
+    RETURN(0)
+  FI
+  IF Transfer(0)=0 THEN
+    IF DISPLAY.Blocked()<>0 THEN
+      RETURN(1)
+    FI
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
+    token=0
+    misses==+1
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; A valid saved footprint is hidden and stabilized by the same scene token.
+PUBLIC BYTE FUNC Restore(BYTE keep)
+  BYTE status
+
+  LET service=DESKSTATE.Get()
+  ConsolePending()
+  IF service.scene.under.slot.valid=0 THEN
+    misses==+1
+    RETURN(0)
+  FI
+  DESKMOVE.HideCaret()
+  status=LAYERS.BeginRestore(@service.scene,DESKSTATE.popupLayer,@token)
+  IF status<>LAYERTYPES.OK THEN
+    misses==+1
+    RETURN(0)
+  FI
+  restoring=1
+  retainSave=keep
+  IF Transfer(1)=0 THEN
+    IF DISPLAY.Blocked()<>0 THEN
+      RETURN(1)
+    FI
+    status=LAYERS.FinishSave(@service.scene,token,0,0)
+    token=0
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Remembered exposure contains only successful restores. Its bounding union is
+; notification for conventional owners, never proof of coverage to retire work.
+; Preserved owners need no new obligation; failed restores remain Layers damage
+; and existing application obligations survive this path unchanged.
+PROC Exposed()
+  BYTE index
+  CARD rect
+  LAYERTYPES.Rect work,area,visible
+
+  LET service=DESKSTATE.Get()
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES
+          AND AESWINDOWSTATE.Preserves(window)=0 THEN
+        BEGIN
+          LET layer=LAYERS.Find(@service.scene,window.layer)
+          DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)
+          REGIONS.Intersect(@work,@exposure,@area)
+          rect=0
+          WHILE rect<layer.visible.count DO
+            REGIONS.Intersect(@area,@layer.visible.rects(rect),@visible)
+            AESWINDOWSTATE.Damage(window,@visible)
+            rect==+1
+          OD
+        END
+      FI
+    END
+  OD
+
+RETURN
+
+; Historical pixels repair the transition immediately. Publish exposure once
+; the interaction ends, so heading replacement cannot wake an unchanged owner.
+PUBLIC PROC End()
+
+  LET service=DESKSTATE.Get()
+  IF exposurePending<>0 THEN
+    Exposed()
+    exposurePending=0
+    notifyPending=1
+  FI
+  IF service.scene.under.slot.valid<>0 THEN
+    LAYERCACHE.Discard(@service.scene.under.slot)
+  FI
+
+RETURN
+
+; Foreground transfers only. Idle popup capture retains its ordinary retirement.
+PUBLIC BYTE FUNC Foreground()
+
+RETURN(popupOperation=POPUP_RESTORE OR (token<>0 AND popupOperation=0))
+
+PUBLIC BYTE FUNC Pending()
+
+RETURN(notifyPending)
+
+PROC Remember(LAYERTYPES.Rect POINTER area)
+
+  IF exposurePending=0 THEN
+    REGIONS.Copy(area,@exposure)
+    exposurePending=1
+  ELSE
+    IF area.left<exposure.left THEN exposure.left=area.left FI
+    IF area.top<exposure.top THEN exposure.top=area.top FI
+    IF area.right>exposure.right THEN exposure.right=area.right FI
+    IF area.bottom>exposure.bottom THEN exposure.bottom=area.bottom FI
+  FI
+
+RETURN
+
+; Publish after the menu bar's selected heading has been repaired. Otherwise
+; a woken client can take UPDATE before the presenter removes that highlight.
+PUBLIC PROC Notify()
+  BYTE index
+
+  IF notifyPending=0 THEN
+    RETURN
+  FI
+  LET service=DESKSTATE.Get()
+  LET bar=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
+  IF service.scene.busy<>0 OR bar.dirty<>0 THEN
+    RETURN
+  FI
+  notifyPending=0
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES THEN
+        AESWINDOWSTATE.Handoff(window)
+      FI
+    END
+  OD
+
+RETURN
+
+PUBLIC PROC Pump()
+  BYTE status,okay
+  LONGCARD bytes
+
+  IF token=0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
+  LET service=DESKSTATE.Get()
+  okay=(CONSOLEBITMAP.Failed()=0)
+  IF popupOperation=POPUP_CAPTURE THEN
+    BEGIN
+      LET slot=@popups.slots(popupSlot)
+      status=LAYERS.Finish(@service.scene,token,okay)
+      LAYERCACHE.Captured(slot,okay)
+      IF okay<>0 THEN
+        popups.recent=popupSlot
+        popupCaptures==+1
+        popupCapturedBytes==+LONGCARD(slot.width RSH 1)*LONGCARD(slot.height)
+      FI
+      token=0
+      popupOperation=0
+      RETURN
+    END
+  FI
+  bytes=LONGCARD(service.scene.under.slot.width RSH 1)
+      *LONGCARD(service.scene.under.slot.height)
+  okay=(okay<>0 AND service.scene.under.slot.revision<>0)
+  IF restoring<>0 THEN
+    bytes=LONGCARD((service.scene.copyTarget.right-service.scene.copyTarget.left) RSH 1)
+        *LONGCARD(service.scene.copyTarget.bottom-service.scene.copyTarget.top)
+  FI
+  status=LAYERS.FinishSave(@service.scene,token,okay,retainSave)
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faee)
+  FI
+  token=0
+  IF okay<>0 THEN
+    IF restoring<>0 THEN
+      restores==+1
+      restoredBytes==+bytes
+      Remember(@service.scene.copyTarget)
+    ELSE
+      captures==+1
+      capturedBytes==+bytes
+    FI
+  FI
+
+RETURN
+
+ENDMODULE

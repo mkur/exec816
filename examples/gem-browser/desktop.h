@@ -30,7 +30,7 @@ struct Desktop {
     WORD id,vdi,window,opened,ready;
     struct Browser *folders[DESKTOP_FOLDERS],*active;
     OBJECT *source,*popup,*stock;
-    OBJECT bar[32],tree[DESKTOP_ICONS+2];
+    OBJECT bar[33],tree[DESKTOP_ICONS+2];
     CICONBLK icons[DESKTOP_ICONS];
     ULONG children[DESKTOP_CHILDREN];
     struct ExecProgramResult result;

@@ -100,6 +100,16 @@ its scene token. Other views cannot replace its frozen source. A scene exposure
 acknowledges all dirty console rows only if it repainted the full window;
 partial exposure preserves model damage outside the painted rectangle.
 
+The desktop Shell now has one persistent 512×160 backing bitmap. Dirty cell
+spans update that bitmap regardless of coverage; completed model generations
+and screen damage retire separately. Aligned visible exposure restores current
+client pixels by VRAM copy, with retained-cell drawing for unsupported clipped
+edges. The bitmap contains neither caret nor pointer. Position-only moves keep
+its pixels; invalidated in-flight batches rebuild from retained cells. This
+source must be current before a scene paint token freezes it. Screen exposure
+never acknowledges unfinished model-to-backing work. Other console units keep
+their existing presentation paths.
+
 The text backend uses the installed OS font with the standard Atari screen-code
 mapping, with `?` for unsupported terminal bytes.
 Bitmap output uses the shared GEM 8×8 font, black ink and an opaque white
@@ -158,7 +168,7 @@ then share one owner check and the final blitter list and fence. Cursor-only
 moves and incomplete presentations retain separate operations.
 Desktop presentation finishes every clipped text fragment before its separate
 caret operation.
-The native/C packet is version 6, 78 bytes, including the trailing fill and clipping geometry
+The native/C packet is version 13, 78 bytes, including the trailing fill and clipping geometry
 and driver-owned completion mask returned at open. Rebuild both sides together.
 The worker reserves its request/input/stop bits before display initialization
 allocates that signal.

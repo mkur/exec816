@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "packet_bytes": 78,
   "fields": {
     "operation": 0,
@@ -40,6 +40,8 @@
     "COPY_START": 13,
     "FRAME": 14,
     "MENU_ROW": 15,
-    "DESKTOP": 16
+    "DESKTOP": 16,
+    "BACKING_TEXT": 17,
+    "BACKING_FILL": 18
   }
 }

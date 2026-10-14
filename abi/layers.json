@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 11,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -19,7 +19,11 @@
     "MAX_DAMAGE": 8,
     "UPDATE_MOVE": 3,
     "UPDATE_READ": 4,
-    "UPDATE_HANDOFF": 5
+    "UPDATE_HANDOFF": 5,
+    "UPDATE_SCENE_READ": 6,
+    "UPDATE_RESTORE": 7,
+    "CACHE_CHANGE_HELD": 1,
+    "CACHE_CHANGE_READY": 2
   },
   "records": {
     "Rect": [
@@ -62,6 +66,53 @@
         "count": "MAX_DAMAGE"
       }
     ],
+    "CacheSlot": [
+      {
+        "name": "identity",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "revision",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "width",
+        "type": "CARD"
+      },
+      {
+        "name": "height",
+        "type": "CARD"
+      },
+      {
+        "name": "valid",
+        "type": "BYTE"
+      },
+      {
+        "name": "pinned",
+        "type": "BYTE"
+      }
+    ],
+    "CachePair": [
+      {
+        "name": "slots",
+        "type": "CacheSlot",
+        "count": 2
+      },
+      {
+        "name": "recent",
+        "type": "BYTE"
+      }
+    ],
+    "SavedArea": [
+      {
+        "name": "slot",
+        "type": "CacheSlot"
+      },
+      {
+        "name": "bounds",
+        "type": "Rect"
+      }
+    ],
     "Layer": [
       {
         "name": "id",
@@ -90,6 +141,18 @@
       {
         "name": "externalPaint",
         "type": "BYTE"
+      },
+      {
+        "name": "pending",
+        "type": "Damage"
+      },
+      {
+        "name": "paintEpoch",
+        "type": "LONGCARD"
+      },
+      {
+        "name": "contentRevision",
+        "type": "LONGCARD"
       }
     ],
     "Scene": [
@@ -149,6 +212,20 @@
       },
       {
         "name": "nextDamage",
+        "type": "BYTE"
+      },
+      {
+        "name": "under",
+        "type": "SavedArea"
+      }
+    ],
+    "CacheRepair": [
+      {
+        "name": "bounds",
+        "type": "Rect"
+      },
+      {
+        "name": "state",
         "type": "BYTE"
       }
     ]

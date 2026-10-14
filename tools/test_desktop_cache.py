@@ -8,13 +8,14 @@ import adapter_state as adapter
 from bitmap_console_oracle import Terminal
 from build_bitmap_console import build_bitmap
 from desktop_budget import delta
+from desktop_mouse import schedule
 from gem_render_oracle import Raster, font_bytes
 from generate_desktop import layout
 from library_paths import read_source
 from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from stack_budget import stack_usage
-from test_desktop_presentation import desktop, frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text, menu_bar
 from test_dos_stack import execute, ownership
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
@@ -22,27 +23,33 @@ from test_gem_interactive import pixels
 from test_mouse_observe import BRIDGE, PIN, ROM
 
 
-def scene(stage, font):
+def scene(stage, font, position=(320, 120)):
     raster = Raster(font)
     desktop(raster)
-    shell_focus = stage < 4 or stage == 12
+    shell_focus = stage < 4 or stage >= 12 and stage != 14
+    if stage in (16, 17):
+        frame(raster, (384, 0, 544, 80), b'Cache', False, 3, close=True)
+        text(raster, 395, 19, b'XYZ', bg=3)
     frame(raster, (32, 24, 560, 208), b'Shell', shell_focus)
     terminal = Terminal(64, 20)
     terminal.feed(b'ABC')
     terminal.paint(raster, 5, 5, shell_focus)
     panels = []
     if stage < 12:
-        panels.append((0, 3, False))
+        panels.append((0, 3, stage == 11))
     if 2 <= stage < 12:
         panels.append((192, 7 if stage == 11 else 6 if stage >= 9 else 4,
                        4 <= stage <= 10))
     if 3 <= stage <= 9 and stage != 8:
         x = 192 if stage in (5, 9) else 273 if stage == 7 else 384
         panels.append((x, 5, False))
+    if 13 <= stage <= 15:
+        panels.append((384, 3, stage == 14))
     for x, pen, focused in panels:
         frame(raster, (x, 0, x+160, 80), b'Cache', focused, pen, close=True)
         text(raster, x+11, 19, b'XYZ', bg=pen)
-    return overlay(raster, (320, 120))
+    menu_bar(raster, b'Shell' if shell_focus else b'Cache')
+    return overlay(raster, position)
 
 
 def run(out, forced_miss=False, replay=False, production=False):
@@ -50,19 +57,27 @@ def run(out, forced_miss=False, replay=False, production=False):
     out.mkdir(parents=True, exist_ok=True)
     require(not (production and forced_miss), 'Production control cannot force misses')
     cache = read_source(ROOT/'lib/desktop/deskcache.act')
-    observations = (
-        ('BYTE active,activeSlot', 'BYTE active,activeSlot\nLONGCARD captures,restores'),
-        ('  active=ACTIVE_CAPTURE', '  captures==+1\n  active=ACTIVE_CAPTURE'),
-        ('  active=ACTIVE_RESTORE', '  restores==+1\n  active=ACTIVE_RESTORE'),
-    )
-    for before, after in (() if production else observations):
-        require(cache.count(before) == 1, 'Cache observation boundary changed')
-        cache = cache.replace(before, after)
     if forced_miss:
-        start = cache.index('  BYTE index', cache.index('PUBLIC BYTE FUNC Lookup'))
-        end = cache.index('; With exactly two slots', start)
-        cache = cache[:start]+'\nRETURN(NO_SLOT)\n\n'+cache[end:]
+        cached = 'RETURN(LAYERCACHE.Lookup(@service.cache,window.id,window.visualRevision,width,height))'
+        require(cache.count(cached) == 1, 'Missing cache lookup boundary')
+        cache = cache.replace(cached, 'RETURN(NO_SLOT)')
     (out/'deskcache.act').write_text(cache)
+    # Test-only observer: count retained-console painter work after clipping.
+    # A focus-only update may leave one caret cell in the frame transaction;
+    # it must not reconstruct a row or the complete client.
+    paint = read_source(ROOT/'lib/desktop/deskpaint.act')
+    needle = '      row=(CARD(area.top-client.top) RSH 3)+commandIndex'
+    require(paint.count(needle) == 1, 'Console paint boundary changed')
+    paint = paint.replace('LONGCARD paintToken,paintLayer',
+                          'PUBLIC LONGCARD consolePaints,consoleCells,consoleCopies\nLONGCARD paintToken,paintLayer')
+    paint = paint.replace(needle, '      consolePaints==+1\n'+needle)
+    needle = '      index=CONSOLECORE.CellOffset(instance,row*instance.width+first)'
+    require(paint.count(needle) == 1, 'Console cell boundary changed')
+    paint = paint.replace(needle, '      consoleCells==+LONGCARD(count)\n'+needle)
+    needle='          started=PAINT_BACKING'
+    require(paint.count(needle)==1,'Shell backing copy boundary changed')
+    paint=paint.replace(needle,'          consoleCopies==+1\n'+needle)
+    (out/'deskpaint.act').write_text(paint)
     p = read_build(out/'program') if replay else build_bitmap(
         ROOT/'tests/programs/desktop_cache.act', out, desktop=True, stack_checks=True)
     at = lambda mod, name: next(d['address'] for d in p['image']['data']
@@ -71,13 +86,23 @@ def run(out, forced_miss=False, replay=False, production=False):
                   forced_miss=forced_miss, production=production, scenes=[], mode='opt')
     try:
         with emulator(BRIDGE, ROM, out, pin=PIN) as b:
+            b._cmd_ok('MOUSE ST')
             report['machine'] = verify_machine(b, ROM, PIN)
             def read(mod, name, size=4):
                 return int.from_bytes(b.memdump(at(mod, name), size), 'little')
             def before(bridge):
                 font = font_bytes(out/'selected/src/vdi/font8x8.c')
                 previous = b.eval_expr('@clk') & 0xffffffff
-                for stage in range(1, 13):
+                position = [320, 120]
+                marker = p['labels']['native_nmi']
+                def reach(condition):
+                    b.bp_clear_all()
+                    b.bp_set(marker, condition=condition)
+                    b.bp_set(p['labels']['done'], condition=adapter.STOPPED)
+                    run_to(b, marker, condition=condition, frame_limit=12000, timeout=180)
+                def frames(count):
+                    reach('@frame>=%d' % (b.eval_expr('@frame')+count))
+                for stage in range(1, 19):
                     marker = p['labels']['native_nmi']
                     condition = f'dw(${at("CACHEPOLICY", "checkpoint"):x})={stage}'
                     b.bp_clear_all()
@@ -88,7 +113,10 @@ def run(out, forced_miss=False, replay=False, production=False):
                     directory.mkdir(exist_ok=True)
                     clock = b.eval_expr('@clk') & 0xffffffff
                     row = dict(stage=stage, elapsed_cycles=(clock-previous) & 0xffffffff,
-                               pixels=pixels(b, directory, scene(stage, font),palette=DESKTOP_PALETTE))
+                               console_paints=read('DESKPAINT', 'consolePaints'),
+                               console_cells=read('DESKPAINT', 'consoleCells'),
+                               console_copies=read('DESKPAINT', 'consoleCopies'),
+                               pixels=pixels(b, directory, scene(stage, font, position),palette=DESKTOP_PALETTE))
                     if not production:
                         row.update(captures=read('DESKCACHE', 'captures'),
                                    restores=read('DESKCACHE', 'restores'))
@@ -98,12 +126,45 @@ def run(out, forced_miss=False, replay=False, production=False):
                     raw = b.memdump(read('DESKSTATE', 'service', 3), structures['Service']['size'])
                     row['slots'] = []
                     for index in range(2):
-                        offset = structures['Service']['fields']['snapshots'] + index*structures['Snapshot']['size']
-                        fields = structures['Snapshot']['fields']
+                        from generate_layers import layout as cache_layout
+                        slot = cache_layout()['CacheSlot']
+                        offset = structures['Service']['fields']['cache'] + index*slot['size']
+                        fields = {**slot['fields'], 'window': slot['fields']['identity']}
                         row['slots'].append({name: int.from_bytes(
                             raw[offset+fields[name]:offset+fields[name]+size], 'little')
                             for name, size in [('window', 4), ('revision', 4), ('valid', 1), ('pinned', 1)]})
                     report['scenes'].append(row)
+                    if stage == 3:
+                        # The Windows footprint spans a command client, shell
+                        # and desktop. A real save/restore must repair all three.
+                        captured=read('DESKMENUCACHE','captures')
+                        restored=read('DESKMENUCACHE','restores')
+                        b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY ESC down');frames(3)
+                        b._cmd_ok('KEY ESC up');b._cmd_ok('KEY CTRL up');frames(100)
+                        require(read('DESKMENU','menu',1)==2, 'Native cache menu did not open')
+                        require(read('DESKMENUCACHE','captures')==captured+1, 'Missing composite capture')
+                        b._cmd_ok('KEY ESC down');frames(3);b._cmd_ok('KEY ESC up');frames(100)
+                        require(read('DESKMENUCACHE','restores')==restored+1, 'Missing composite restore')
+                        row['menu_restore_pixels']=pixels(b,directory,scene(stage,font),palette=DESKTOP_PALETTE)
+                    if stage == 17:
+                        row['clicks'] = []
+                        for point in ((200, 100), (300, 30), (300, 30)):
+                            position = list(schedule(b, p, position, point))
+                            reach(f'(dw(${at("DESKINPUT", "cursorX"):x})={position[0]})&'
+                                  f'(dw(${at("DESKINPUT", "cursorY"):x})={position[1]})')
+                            frames(4)
+                            before_click = read('DESKPAINT', 'consolePaints')
+                            before_copy = read('DESKPAINT', 'consoleCopies')
+                            for down in (1, 0):
+                                b._cmd_ok(f'MOUSE AT 2000 0 0 {down}')
+                                reach(f'dw(${at("DESKINPUT", "buttons"):x})={down}')
+                                frames(20)
+                            require(read('DESKPAINT', 'consolePaints') == before_click,
+                                    'Front Shell click repainted its client')
+                            require(read('DESKPAINT','consoleCopies')==before_copy,
+                                    'Front Shell click copied its client')
+                            row['clicks'].append(dict(point=position, console_paints=0,console_copies=0,
+                                pixels=pixels(b,directory,scene(stage,font,position),palette=DESKTOP_PALETTE)))
                     previous = clock
                     b.memload(at('CACHEPOLICY', 'gate'), stage.to_bytes(2, 'little'))
                 b.bp_clear_all()
@@ -127,6 +188,15 @@ def run(out, forced_miss=False, replay=False, production=False):
         require(second not in live(rows[10]) and rows[10]['ids']['reopened'] in live(rows[10]),
                 'Reopened window inherited a retired identity')
         require(not live(rows[11]), 'Retirement retained eligible snapshots')
+        for before, after in ((12, 13), (13, 14)):
+            require(rows[after]['console_cells'] - rows[before]['console_cells'] <= 1,
+                    'Focus change repainted more than the caret cell')
+        require(rows[15]['console_copies'] > rows[14]['console_copies'] and
+                rows[15]['console_cells']==rows[14]['console_cells'],
+                'Aligned exposure did not restore Shell entirely from backing')
+        require(rows[16]['console_paints'] == rows[15]['console_paints'] and
+                rows[16]['console_copies']==rows[15]['console_copies'],
+                'Redundant raise/focus repainted or copied console text')
         require(all(not s['pinned'] for row in rows for s in row['slots']), 'Settled slot remains pinned')
         if forced_miss:
             require(all(row['restores'] == 0 for row in rows), 'Forced miss restored pixels')

@@ -57,11 +57,13 @@ void AESClientOne(void)
 {
     UWORD who=ready;
     BYTE bit=AllocSignal(-1);
-    WORD w;
+    WORD w,i;
     CHECK(bit>=0); peerWake[who]=1UL<<bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); CHECK(appl_init()>0);
-    w=wind_create(NAME|CLOSER|MOVER,32+who*96,32,96,64); CHECK(w>0);
-    CHECK(wind_open(w,32+who*96,32,96,64));
+    for (i=0;i<(who ? 1:3);++i) {
+        w=wind_create(NAME|CLOSER|MOVER,32+who*96,32+i*32,96,64); CHECK(w>0);
+        CHECK(wind_open(w,32+who*96,32+i*32,96,64));
+    }
     ++ready; Signal(controller,wake);
     Wait(peerWake[who]);
     CHECK(ExecAESDetach()); FreeSignal(bit);
@@ -203,7 +205,7 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); id=appl_init(); CHECK(id>0);
     c=ExecAESContext(); base=AvailMem(0);
     CHECK(form_center(&tree,&x,&y,&w,&h));
-    CHECK(x==240 && y==92 && w==160 && h==80 && !c->view);
+    CHECK(x==240 && y==90 && w==160 && h==80 && !c->view);
     CHECK(start(x,y,w,h)); CHECK(c->form && c->view->shown && c->workstation);
     CHECK(!start(x,y,w,h) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(form_dial(FMD_GROW,0,0,0,0,x,y,w,h));
@@ -252,7 +254,7 @@ UWORD AESRun(void)
     CHECK(!c->form && c->repairEpoch && c->view->handle==window && c->workstation==workstation);
     CHECK(evnt_mesag(message) && message[0]==100 && message[7]==107 && !c->messageEpoch);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && message[3]==window && c->messageEpoch);
-    CHECK(message[4]==40 && message[5]==48 && message[6]==224 && message[7]==136);
+    CHECK(message[4]==40 && message[5]==43 && message[6]==224 && message[7]==147);
     for (i=0;i<16;++i) {
         do { CHECK(evnt_mesag(message)); } while (c->messageEpoch);
         CHECK(message[0]==200+i);
@@ -261,7 +263,7 @@ UWORD AESRun(void)
     CHECK(wind_close(window)); CHECK(wind_open(window,32,32,240,160));
     drain(); CHECK(!c->repairEpoch && !c->messagePending);
     CHECK(wind_close(window)); CHECK(wind_delete(window)); v_clsvwk(handle);
-    /* Three other application windows plus the native shell fill the desktop. */
+    /* Five windows across three peers plus the shell fill all six slots. */
     for (i=0;i<3;++i) {
         peers[i]=CreateTask("Form capacity",0,(APTR)AESClientOne,1024UL);
         CHECK(peers[i]!=NULL); while (ready<=i) Wait(wake);

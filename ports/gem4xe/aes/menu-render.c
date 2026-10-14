@@ -1,6 +1,7 @@
 /* Presenter menu binding of the existing extracted object renderer. */
 #include "widgets.h"
 #include "gem-drawing.h"
+#include <exec816/aes-wire.h>
 
 static struct WidgetPacket *paint;
 static OBJECT object;
@@ -17,9 +18,9 @@ static void checkmark(WORD x,WORD y,UWORD pen)
 static UWORD quantum(void)
 {
     OBJECT *tree=(OBJECT *)paint->context;
-    /* Admission's parent/x/y arrays are contiguous WORD arrays, 32 each. */
+    /* Match the presenter's menu arrays, independent of widget-tree limits. */
     const WORD *parent=(const WORD *)paint->payload;
-    const WORD *x=parent+WIDGET_OBJECTS,*y=x+WIDGET_OBJECTS;
+    const WORD *x=parent+AES_MENU_OBJECTS,*y=x+AES_MENU_OBJECTS;
     WORD at,next,l,t,r,b,left,right;
     UWORD examined=0,drawn=0,cells=0,cost;
     GRECT clip=gl_clip;
@@ -27,7 +28,7 @@ static UWORD quantum(void)
         paint->index=paint->object;
         WidgetFill(MD_REPLACE,FIS_SOLID,IP_SOLID,WHITE,&clip);
     }
-    while (examined++<WIDGET_OBJECTS) {
+    while (examined++<AES_MENU_OBJECTS) {
         at=paint->index;
         l=paint->originX+x[at];t=paint->originY+y[at];
         r=l+tree[at].ob_width;b=t+tree[at].ob_height;

@@ -30,7 +30,7 @@ struct Browser {
     MENU popupInput,popupOutput;
     WORD mx,my,mb,ks,kr,br;
     OBJECT bar[21];
-    WORD menuInstalled,menuEnabled;
+    WORD menuInstalled;
     OBJECT dialogTree[7];
     TEDINFO dialogTed;
     char editText[128];

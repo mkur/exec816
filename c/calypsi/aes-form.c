@@ -23,13 +23,18 @@ WORD form_center(OBJECT *tree,WORD *x,WORD *y,WORD *w,WORD *h)
 {
     struct ExecAESContext *c=ExecAESContext();
     GRECT extent;
-    WORD left=8,top=32,width=624,height=200,dx,dy;
+    WORD left,top,width,height,dx,dy;
     if (!c || !c->identity) return 0;
     c->diagnostic=AES_OK;
     if (c->view && c->view->handle) {
         if (!c->view->shown) { c->diagnostic=AES_BUSY; return 0; }
         left=c->view->work.left; top=c->view->work.top;
         width=c->view->work.right-left; height=c->view->work.bottom-top;
+    }
+    else {
+        if (!wind_get(0,WF_WXYWH,&left,&top,&width,&height) ||
+            !wind_calc(WC_WORK,AES_WINDOW_KIND,left,top,width,height,
+                       &left,&top,&width,&height)) return 0;
     }
     ExecAESFormExtent(tree,&extent);
     if (extent.g_w>width || extent.g_h>height || extent.g_w<=0 || extent.g_h<=0) {
@@ -56,7 +61,10 @@ BOOL ExecAESFormFinish(struct ExecAESContext *c)
         if (c->view && c->view->shown && !wind_close(f->window)) return FALSE;
         if (!wind_delete(f->window)) return FALSE;
         f->ownWindow=0;
-    } else if (f->ready && c->view && c->view->shown) {
+    } else if (f->ready && c->view) {
+        /* The saved dialog is no longer the owner's drawable content, even
+         * if it was covered before dismissal. Publish that model-only change. */
+        if (!ExecAESBeginUpdate(f->window) || !wind_update(END_UPDATE)) return FALSE;
         c->repair=c->view->work;
         c->repairWindow=c->view->handle;
         c->repairEpoch=c->view->epoch;
@@ -94,14 +102,21 @@ WORD ExecAESFormBegin(struct ExecAESContext *c,const GRECT *area,const char *tit
         if (area->g_x<c->view->work.left || area->g_y<c->view->work.top ||
             (LONG)area->g_x+area->g_w>c->view->work.right ||
             (LONG)area->g_y+area->g_h>c->view->work.bottom) return 0;
-    } else if (area->g_x<8 || area->g_y<32 ||
-        (LONG)area->g_x+area->g_w>632 || (LONG)area->g_y+area->g_h>232) return 0;
+    } else {
+        if (!wind_get(0,WF_WXYWH,&x,&y,&w,&h) ||
+            !wind_calc(WC_WORK,AES_WINDOW_KIND,x,y,w,h,&x,&y,&w,&h)) return 0;
+        c->diagnostic=AES_RESOURCE;
+        if (area->g_x<x || area->g_y<y ||
+            (LONG)area->g_x+area->g_w>x+w || (LONG)area->g_y+area->g_h>y+h) return 0;
+    }
     f=AllocMem(sizeof(*f),MEMF_PUBLIC|MEMF_CLEAR);
     if (!f) return 0;
     c->form=f; f->area=*area;
     if (!c->view || !c->view->handle) {
         if (!wind_calc(WC_BORDER,NAME|CLOSER|MOVER,area->g_x,area->g_y,
                        area->g_w,area->g_h,&x,&y,&w,&h)) goto failure;
+        /* Preserve the entire form extent when AES rounds the outer X down. */
+        w+=x&1; x&=~1;
         if (w<32) w=32;
         if (h<32) h=32;
         f->ownView=c->view==NULL;
@@ -185,7 +200,7 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
     OBJECT *o;
     WORD i,okay=1;
     UWORD status;
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(f->window)) return 0;
     if (full) {
         f->paper.ob_next=f->paper.ob_head=f->paper.ob_tail=NIL;
         f->paper.ob_type=G_BOX; f->paper.ob_flags=LASTOB; f->paper.ob_spec=0x1170;
@@ -209,6 +224,10 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
         if (f->focusLine.ob_width>0) okay=draw_object(c,&f->focusLine,0,0);
     }
     status=c->diagnostic;
+    if (okay && full)
+        ExecAESPainted(f->window,c->view->work.left,c->view->work.top,
+                      c->view->work.right-c->view->work.left,
+                      c->view->work.bottom-c->view->work.top);
     if (!wind_update(END_UPDATE)) return 0;
     c->diagnostic=status;
     return okay;
@@ -258,7 +277,8 @@ WORD ExecAESFormMessage(struct ExecAESContext *c)
                           f->message[6],f->message[7])) return -1;
             f->tree[0].ob_x+=c->view->work.left-x;
             f->tree[0].ob_y+=c->view->work.top-y;
-            return ExecAESFormPaint(c,1) ? 1:-1;
+            /* Copied moves preserve pixels; fallback/exposure sends WM_REDRAW. */
+            return 1;
         }
     }
     for (i=0;i<8;++i) c->deferredMessage[i]=f->message[i];

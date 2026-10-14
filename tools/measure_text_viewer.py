@@ -122,7 +122,7 @@ class ViewerMeasurement:
             # Raising an inactive GEM window is a separate transaction.
             # Wait for its focus acknowledgment before offering a button.
             s.b._cmd_ok('MOUSE AT %d 0 0 0'%(2000+round(.04*BASE_HZ)))
-            target=next(w['id'] for w in menus.windows() if w['title']=='GEM Control Panel')
+            target=next(w['id'] for w in menus.windows() if w['title']=='Control Panel')
             s.rendezvous('dw($%x)=%d'%(menus.focus_address,target))
             s.frames(3);row['gesture']=clock();row['gesture_dirty']=n('dirty')
             s.b._cmd_ok('MOUSE AT 2000 0 0 1')

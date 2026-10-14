@@ -147,6 +147,21 @@ PROC Main()
   Send(DESKTYPES.CLOSE,reopened)
   Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
   Pause(12)
+  ; The caret remains visible beside this panel. Focus changes must not
+  ; reconstruct console text; raising from behind it must still repair pixels.
+  first=Open(384,3)
+  Pause(13)
+  Send(DESKTYPES.FOCUS,first)
+  Pause(14)
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(15)
+  Send(DESKTYPES.RAISE,DESKBOOT.WindowId())
+  Pause(16)
+  Send(DESKTYPES.RAISE,DESKBOOT.WindowId())
+  Send(DESKTYPES.FOCUS,DESKBOOT.WindowId())
+  Pause(17)
+  Send(DESKTYPES.CLOSE,first)
+  Pause(18)
   Require(DOS.Close(file)<>0 AND DOS.ReleaseContext()<>0)
 
 RETURN

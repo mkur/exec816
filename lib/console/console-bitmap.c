@@ -39,6 +39,11 @@ void ConsoleBitmapEntry(void)
             p->status=DISPLAY_BAD_ARGUMENT;
         else p->status=GemDrawingFill(p->x,p->y,p->x+p->width,p->y+p->height,p->background);
         break;
+    case CON_BITMAP_BACKING_TEXT:
+        p->status=GemDrawingBackingText(p->x,p->y,(const UBYTE *)p->text,p->width,
+            p->foreground,p->background); break;
+    case CON_BITMAP_BACKING_FILL:
+        p->status=GemDrawingBackingFill(p->x,p->y,p->width,p->height,p->background); break;
     case CON_BITMAP_COPY: p->status=GemDrawingCopy(&p->copy); break;
     case CON_BITMAP_SCROLL:
         p->status=GemDrawingScrollStart(&p->copy,p->background,&p->token); break;

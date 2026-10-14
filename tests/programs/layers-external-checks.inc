@@ -1,7 +1,8 @@
 ; Damage delivery is distinct from painting and never licenses pixel reuse.
 PROC ExternalTransactions()
-  LAYERTYPES.Rect bounds
-  LONGCARD id,token,other
+  LAYERTYPES.Rect bounds,part
+  LONGCARD id,token,other,epoch
+  BYTE index
 
   Require(LAYERS.Init(scene,32,24)=LAYERTYPES.OK)
   REGIONS.Assign(@bounds,0,0,16,16)
@@ -16,6 +17,77 @@ PROC ExternalTransactions()
   ExhaustPaint(scene,token)
   Require(LAYERS.FinishHandoff(scene,token)=LAYERTYPES.OK)
   Require(scene.busy=0)
+  BEGIN
+    LET layer=LAYERS.Find(scene,id)
+    Require(layer.pending.count=1)
+    Require(LAYERS.PixelsReady(layer,@bounds)=0)
+    epoch=layer.paintEpoch
+    REGIONS.Assign(@part,0,0,8,16)
+    Require(LAYERS.Painted(scene,id,epoch,@part)=1)
+    Require(layer.pending.count=1)
+    Require(LAYERS.PixelsReady(layer,@part)=1)
+    Require(LAYERS.PixelsReady(layer,@bounds)=0)
+    Require(LAYERS.BeginRead(scene,id,@bounds,@other)=LAYERTYPES.REDRAW)
+    Require(LAYERS.BeginRead(scene,id,@part,@other)=LAYERTYPES.OK)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    REGIONS.Assign(@part,8,0,16,8)
+    LAYERS.RequirePaint(scene,id,@part)
+    Require(LAYERS.Painted(scene,id,epoch,@bounds)=0)
+    Require(layer.pending.count=1)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@part)=1)
+    Require(layer.pending.count=1)
+    REGIONS.Assign(@part,8,8,16,16)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@part)=1)
+    Require(layer.pending.count=0)
+    Require(LAYERS.PixelsReady(layer,@bounds)=1)
+    Require(LAYERS.BeginRead(scene,id,@bounds,@other)=LAYERTYPES.OK)
+    Require(LAYERS.Show(scene,id,0)=LAYERTYPES.BUSY)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    ; Completed external pixels move without a new client obligation.
+    epoch=layer.paintEpoch
+    Require(LAYERS.BeginMove(scene,id,8,4,@other)=LAYERTYPES.OK)
+    Require(layer.bounds.left=0)
+    Require(LAYERS.Delete(scene,id)=LAYERTYPES.BUSY)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    Require(layer.bounds.left=8 AND layer.bounds.top=4)
+    Require(layer.pending.count=0 AND layer.dirty=0)
+    Require(LAYERS.Painted(scene,id,epoch,@bounds)=0)
+    Require(LAYERS.BeginMove(scene,id,0,0,@other)=LAYERTYPES.OK)
+    Require(LAYERS.Finish(scene,other,1)=LAYERTYPES.OK)
+    Require(REGIONS.Equal(@layer.bounds,@bounds)=1)
+    ; Client obligations exclude title/frame pixels.
+    REGIONS.Assign(@part,2,4,14,14)
+    LAYERS.ExternalArea(scene,id,@part)
+    Require(REGIONS.Equal(@layer.pending.rects(0),@part)=1)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@part)=1)
+    ; Disjoint completions leave the hole unknown.
+    LAYERS.RequirePaint(scene,id,@bounds)
+    REGIONS.Assign(@part,2,2,14,14)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@part)=1)
+    Require(layer.pending.count=4)
+    Require(LAYERS.PixelsReady(layer,@part)=1)
+    Require(LAYERS.PixelsReady(layer,@bounds)=0)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@bounds)=1)
+    ; More than eight subtraction fragments must retain the old obligation.
+    FOR index=0 TO 7 DO
+      REGIONS.Assign(@part,0,INT(index)*2,16,INT(index)*2+1)
+      LAYERS.RequirePaint(scene,id,@part)
+    OD
+    Require(layer.pending.count=8)
+    REGIONS.Assign(@part,4,0,12,16)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@part)=0)
+    Require(layer.pending.count=8)
+    Require(LAYERS.Painted(scene,id,layer.paintEpoch,@bounds)=1)
+    epoch=layer.contentRevision
+    LAYERS.Touch(scene,id)
+    Require(layer.contentRevision=epoch+1)
+    ; Exhaustion cannot let a late completion match a recycled generation.
+    layer.paintEpoch=$ffffffff
+    LAYERS.RequirePaint(scene,id,@bounds)
+    Require(layer.paintEpoch=0)
+    Require(LAYERS.Painted(scene,id,0,@bounds)=0)
+    layer.paintEpoch=1
+  END
   Require(LAYERS.FinishHandoff(scene,token)=LAYERTYPES.BAD_TOKEN)
   Require(LAYERS.BeginCopy(scene,id,@bounds,@bounds,@other)=LAYERTYPES.REDRAW)
   Require(LAYERS.BeginRead(scene,id,@bounds,@other)=LAYERTYPES.REDRAW)

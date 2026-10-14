@@ -6,7 +6,7 @@
 #include <proto/dos.h>
 #include "../../c/calypsi/aes-private.h"
 
-ULONG AESService,AESMenuNext,AESMenuTree,AESMenuPeerTree;
+ULONG AESService,AESMenuNext,AESMenuRevision,AESMenuTree,AESMenuPeerTree;
 volatile WORD AESMenuPhase,AESMenuGo,AESMenuMutation;
 volatile WORD AESMenuActions[2],AESMenuItem[2];
 volatile ULONG AESMenuClient;
@@ -20,16 +20,16 @@ static void check(WORD okay,WORD line)
 #define CHECK(x) check((x)!=0,__LINE__)
 static const OBJECT source[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
-    {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
-    {1,3,8,G_IBOX,0,0,0,8,0,424,16},
-    {8,-1,-1,G_TITLE,0,0,(ULONG)"Files",0,0,64,16},
-    {0,5,9,G_IBOX,0,0,0,0,16,640,224},
-    {9,6,7,G_BOX,0,0,0x1100,8,0,112,32},
-    {7,-1,-1,G_STRING,0,0,(ULONG)"Open",0,0,112,16},
-    {5,-1,-1,G_STRING,0,0,(ULONG)"Quit",0,16,112,16},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"Extra",80,0,64,16},
-    {4,10,10,G_BOX,0,0,0x1100,88,0,96,16},
-    {9,-1,-1,G_STRING,LASTOB,0,(ULONG)"About",0,0,96,16}
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,8,G_IBOX,0,0,0,8,0,424,11},
+    {8,-1,-1,G_TITLE,0,0,(ULONG)"Files",0,0,64,11},
+    {0,5,9,G_IBOX,0,0,0,0,11,640,229},
+    {9,6,7,G_BOX,0,0,0x11100,8,0,112,24},
+    {7,-1,-1,G_STRING,0,0,(ULONG)"Open",1,1,110,11},
+    {5,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,12,110,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"Extra",80,0,64,11},
+    {4,10,10,G_BOX,0,0,0x1100,88,0,96,11},
+    {9,-1,-1,G_STRING,LASTOB,0,(ULONG)"About",0,0,96,11}
 };
 static WORD produce(WORD command)
 {
@@ -231,7 +231,7 @@ void AESClientTwo(void)
 }
 UWORD AESRun(void)
 {
-    ULONG available,generation;
+    ULONG available,generation,revision;
     BPTR file=Open("D1:MENU.RSC",MODE_OLDFILE);
     struct ExecAESContext *c;
     OBJECT *tree;
@@ -257,8 +257,18 @@ UWORD AESRun(void)
         CHECK(wind_update(BEG_UPDATE));
         CHECK(menu_ienable(tree,6,0));
         CHECK(tree[6].ob_state&DISABLED);
+        revision=*(volatile ULONG *)AESMenuRevision;
+        CHECK(menu_ienable(tree,6,0));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision);
         CHECK(menu_ienable(tree,6,1));
         CHECK(!(tree[6].ob_state&DISABLED));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision+1);
+        CHECK(menu_icheck(tree,6,1));
+        revision=*(volatile ULONG *)AESMenuRevision;
+        CHECK(menu_icheck(tree,6,1));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision);
+        CHECK(menu_icheck(tree,6,0));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision+1);
         CHECK(menu_text(tree,6,launchLabel));
         CHECK(tree[6].ob_spec==(ULONG)launchLabel);
         CHECK(wind_update(END_UPDATE));
@@ -275,7 +285,7 @@ UWORD AESRun(void)
         CHECK(!menu_bar(candidate,1));
         CHECK(c->endpoint->menuEpoch==generation);
         candidate[3].ob_type=G_TITLE;
-        candidate[5].ob_height=225;
+        candidate[5].ob_height=230;
         CHECK(!menu_bar(candidate,1));
         CHECK(c->endpoint->menuEpoch==generation);
         CHECK(menu_bar(tree,1));

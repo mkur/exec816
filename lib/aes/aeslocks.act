@@ -59,7 +59,7 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
 RETURN(service.windowPending=0 AND NativeReady()<>0)
 
 CARD FUNC Acquire(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code)
+    AESSTATE.Client POINTER client CARD code INT window)
 
   IF code=AESTYPES.BEG_UPDATE THEN
     IF service.updates=$ffff THEN
@@ -68,7 +68,8 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
     service.updateOwner=client.id
     IF service.updates=0 THEN
-      AESWINDOWSTATE.SnapshotAll(client)
+      service.updateWindow=window
+      AESWINDOWSTATE.BeginUpdate(client)
     FI
 
     service.updates==+1
@@ -102,8 +103,13 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   BYTE index
 
   code=CARD(request.intin(0))
-  IF (code & $fefc)<>0
+  IF (code & $fcfc)<>0
       OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF (code & AESTYPES.UPDATE_WINDOW)<>0
+      AND (code & $ff)<>AESTYPES.BEG_UPDATE THEN
     RETURN(AESTYPES.UNSUPPORTED)
   FI
 
@@ -111,7 +117,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     code=code & $ff
     IF Eligible(service,client,code)<>0 AND (service.lockCount=0
         OR service.mouseOwner=client.id) THEN
-      status=Acquire(service,client,code)
+      status=Acquire(service,client,code,
+          IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
+            request.intin(1) ELSE INT(0) FI)
       IF status=AESTYPES.OK THEN
         request.intout(0)=1
       FI
@@ -147,7 +155,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     service.updates==-1
     AESWINDOWSTATE.Updates(client,service.updates)
     IF service.updates=0 THEN
+      AESWINDOWSTATE.EndUpdate(client)
       service.updateOwner=0
+      service.updateWindow=0
     FI
   ELSE
     IF service.mouseOwner<>client.id OR service.mouseHolds=0 THEN
@@ -177,7 +187,9 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       LET request=client.pending
       code=CARD(request.intin(0)) & $ff
       IF Eligible(service,client,code)<>0 THEN
-        status=Acquire(service,client,code)
+        status=Acquire(service,client,code,
+          IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
+            request.intin(1) ELSE INT(0) FI)
         Remove(service,position)
         client.pending=NULL
         IF status=AESTYPES.OK THEN
@@ -200,6 +212,7 @@ PUBLIC PROC Retire(AESSTATE.Service POINTER service
   IF service.updateOwner=client.id THEN
     service.updateOwner=0
     service.updates=0
+    service.updateWindow=0
   FI
 
   IF service.mouseOwner=client.id THEN

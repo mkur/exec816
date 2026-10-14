@@ -32,9 +32,11 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 16 includes the current device/AES/file imports and appends
-`ExamineExact`. The generated C FileInfoBlock stays 260 bytes, with 30 reserved
-bytes and `fib_InfoFlags` at 258. Check the
+Import ABI 19 includes the current device/AES/file imports, `ExamineExact`,
+`MountVolume` and `UnmountVolume`, and the caller-local `ExecAESBeginUpdate` and
+`ExecAESPaintedChanges` [paint-completion helpers](aes.md#optional-repaint-completion).
+The generated C FileInfoBlock stays 260 bytes, with 30 reserved bytes and
+`fib_InfoFlags` at 258. Check the
 [DOS availability flags](dos.md#metadata-availability) for ordinary metadata;
 ExamineExact preserves explicit size/allocated-sector measurement.
 
@@ -54,7 +56,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 16 |
+| 6 | 2 | Import ABI version, 19 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |
@@ -128,9 +130,22 @@ after validation/copying. The shared GUI runtime is expanded from the
 [compressed boot image](boot-loading.md) into its reserved extents before
 native startup; it needs no disk component or separate payload buffer.
 
-The desktop ships `C:DESKTOP.APP`, `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`,
-`C:CALC.APP`, `C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies
-and models are absent from the shared runtime. The shell owns the initial desktop
+The desktop XEX carries serialized `DESKTOP.APP` and `DESKTOP.RSC` bytes in
+upper-memory load segments, following the C provider. At startup the shell
+supervisor writes them to `RAM:` with ordinary DOS calls, then starts
+`RAM:DESKTOP.APP` through the unchanged Program/Process loader. The RSC contains
+the desktop icons and folder object trees. Standalone Files prefers this RAM
+resource and can fall back to `SYS:DESKTOP.RSC` in other builds. Both boot files
+remain visible in RAM until deleted or rebooted; startup recreates them.
+Their serialized boot copies remain reserved for the session, and RAM file
+buffers are additional upper-heap allocations (rounded geometrically).
+There is no extra Task, stack, direct page or bank-zero reservation.
+
+The system disk ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`, `C:CALC.APP`,
+`C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies and models
+are linked separately from the shared runtime; Desktop's embedded file is
+loaded and relocated in exactly the same way as a disk program.
+The shell owns the initial desktop
 Process; the desktop owns its launched children independently of folder windows.
 Standalone FILES.APP retains its one-child lifetime. Tools launch on demand;
 normal resource errors report exhausted Task/window capacity. The current binding

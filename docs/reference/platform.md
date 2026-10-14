@@ -134,9 +134,13 @@ The bitmap shell with SIO client imports uses 6,409 bytes and reserves 6,656
 upper bytes (one additional 256-byte page, including 247 spare bytes). Code
 placement remains page-aligned. This adds **0 fixed, 0 per-Task and 0 idle
 bank-zero bytes**, including guards/alignment/unused bank-zero capacity.
-Desktop menu profiles add 512 bytes of upper arena capacity for menu state and
-labels (6.75 KiB total). The GEM desktop uses the same capacity. Its shared C
-runtime and renderer lookup tables are included in the compressed boot image;
+Desktop profiles add 1,024 bytes of upper arena capacity for menu state,
+labels and the combined shell/SIO globals (7.25 KiB total). The GEM desktop
+uses 7,265 bytes of its 7,424-byte arena, including 159 spare bytes. The extra
+512 bytes after combining the desktop and command branches add **0 fixed,
+0 per-Task and 0 idle bank-zero bytes**, including guards, alignment and unused
+bank-zero capacity. Its shared C runtime and renderer lookup tables are included
+in the compressed boot image;
 the loader expands all initialized extents before native startup publishes C
 bindings. They remain resident for the session. The panel, counter, Files,
 calculator, dialog example and text viewer remain separate disk-loaded APPs
