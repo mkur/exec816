@@ -6,7 +6,8 @@
 [Desktop contract](../../reference/desktop.md) ·
 [VRAM map](../../../platform/altirraos/vbxe-vram.json)
 
-Status: proposed. Implementation has not started.
+Status: GAT1 implemented and development-checked; GAT2–GAT4 pending. See the
+[combined development record](../../history/window-menu-response.md).
 
 Render fixed window gadgets from a small permanent VRAM atlas, as we already
 do with font glyphs. Replace repeated construction of tiny rectangles with

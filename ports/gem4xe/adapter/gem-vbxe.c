@@ -11,6 +11,7 @@
 #endif
 #include "vbxe-internal.h"
 #include "gem-vbxe-tables.h"
+#include "gem-frame-gadgets.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -304,6 +305,8 @@ UWORD GemDrawingOpen(WORD *out)
     pointer_reset();
     status=GemVdiOpen(out);
     flush();
+    if (!status && !fault)
+        latch(VbxeOwnerWrite(&display,GEM_FRAME_GADGET_BASE,GemFramePixels,sizeof(GemFramePixels)));
     if (!status && !fault) latch(VbxeOwnerShow(&display));
     if (status || fault) { GemDrawingClose(); return DISPLAY_DEVICE_FAULT; }
     return render_exit(DISPLAY_OK);

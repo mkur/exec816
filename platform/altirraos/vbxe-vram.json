@@ -63,6 +63,15 @@
       "g4_used_bytes": 1344
     },
     {
+      "name": "frame_gadgets",
+      "base": 233472,
+      "reserved_bytes": 4096,
+      "capacity_bytes": 4096,
+      "gadget_used_bytes": 2688,
+      "g3_used_bytes": 0,
+      "g4_used_bytes": 0
+    },
+    {
       "name": "font_masks",
       "base": 200704,
       "reserved_bytes": 20480,
@@ -135,8 +144,8 @@
       "g4_used_bytes": 0
     }
   ],
-  "reserved_bytes": 416256,
-  "unassigned_bytes": 108032,
+  "reserved_bytes": 420352,
+  "unassigned_bytes": 103936,
   "diagnostics": [
     {
       "name": "cross_page_transfer",

@@ -40,3 +40,23 @@ The desktop application and emitted Browser layout probe pass in
 checks are shared with the final packaged-image pass. Reserved bank-zero delta:
 **0 fixed, 0 per public Task, 0 idle**, including guards/padding/capacity. No
 persistent data or VRAM reservation is added.
+
+## GAT1 Immutable gadget atlas
+
+Seven existing marks are packed at build time in even/odd X phases. Extraction
+records the asset, generator, VRAM map and generated-header hashes. A display
+session uploads the 2,688-byte atlas before enabling presentation, using the
+existing failure cleanup and upload path. Drawing remains procedural in GAT1.
+
+Two host checks compare both packed phases with the independent procedural
+frame raster and verify deterministic generation/storage bounds. The optimized
+`tools/test_frame_gadgets.py` fixture passes ten assertions: upload readback,
+normal close/reopen, adjacent VRAM sentinels, injected upload failure and
+successful reopening afterward. Normal ownership/context/stack checks pass;
+results are in `build/window-menu-response/gat1/results.json`.
+
+The atlas reserves **4,096 VRAM bytes** at `$39000–$39FFF`, including 1,408 bytes
+unused by the images. Totals are 420,352 reserved and 103,936 unassigned VRAM
+bytes. Its immutable source pixels occupy 2,688 bytes in the existing upper
+table bank. Reserved bank-zero delta is **0 fixed, 0 per public Task, 0 idle**,
+including guards, alignment and unused capacity. No CPU staging buffer is added.
