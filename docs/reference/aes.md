@@ -762,7 +762,8 @@ OBJECTs for a 104×36 icon grid or a compact list. Colour artwork is 32×16;
 neutral documents retain their 32×20 bitmap. Labels sit in the same
 32-pixel-high objects. View chooses Icons/List and a checked Sort by name
 command; unchecked retains disk order. Name sorting groups directories first.
-New windows start at 456×196 and retain user-selected bounds across
+New windows start at 462×196, with a 432×174 work area and four complete rows
+of four icons. They retain user-selected bounds across
 navigation. The path occupies the title; a fixed top summary shows byte/item
 totals, selection or operation feedback. There is no duplicate INFO row, File
 popup or toolbar. The default window fits four columns by four icon rows.

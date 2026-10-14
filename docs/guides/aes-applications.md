@@ -276,8 +276,9 @@ selection, directory snapshot and scroll position. View selects Icons/List and
 Name/Disk order. The information line gives the directory totals. Drag the lower
 right gadget to resize, use arrows/track/thumb to scroll, and click the upper
 right gadget for full/restore. Each snapshot holds at most 256 entries and the
-view reuses at most sixteen visible objects. Default 456×196 windows show a
-4×4 grid. The desktop includes `RAM:` for temporary writable storage.
+view reuses at most sixteen visible objects. Default 462×196 windows have a 432×174 work area and show a
+4×4 grid. Titles are eleven rows high, with 22×11 system gadgets; fonts and
+icon artwork keep their original pixel sizes. The desktop includes `RAM:` for temporary writable storage.
 
 Path (P), New Folder (N) and Rename (R) use inline editable dialogs. Tab/Shift-Tab
 changes focus, Return accepts, and Escape cancels. File > Copy copies one file

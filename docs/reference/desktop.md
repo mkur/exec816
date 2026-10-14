@@ -247,8 +247,10 @@ signal and software pointer before the display and keyboard retire.
 
 Dragging a title captures subsequent motion and release outside the original
 window. An XOR outline follows the latest position without a nested input loop.
-Release commits onscreen, eight-pixel-aligned geometry after active painting or
-DMA retires. Layers then repairs old and new exposed pixels from retained content.
+Release commits onscreen geometry after active painting or DMA retires. Native
+graphical windows snap to eight pixels; Shell aligns its text origin to that
+grid. AES windows use even outer X coordinates and pixel-granular Y coordinates.
+Layers then repairs old and new exposed pixels from retained content.
 Escape, source/event-queue loss, hiding, retirement or an external move cancels
 the gesture. A released-button observation is required before another gesture.
 

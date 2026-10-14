@@ -28,8 +28,9 @@ class Desktop:
             x,y=[s.number(work+i*2,2) for i in range(2)]
             move(x+40,y-8);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(12)
             move(x+24,y-8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
-            require(s.number(work,2)==x-16 and s.number(work+2,2)==y,
-                    'Copied move did not publish application work geometry')
+            actual=[s.number(work+i*2,2) for i in range(2)]
+            require(actual==[x-16,y],
+                    'Copied move work geometry: '+str(actual)+' != '+str([x-16,y]))
         def key(name):
             b._cmd_ok('KEY '+name+' down');s.frames(3);b._cmd_ok('KEY '+name+' up');s.frames(80)
         def app(name):
@@ -47,6 +48,8 @@ class Desktop:
         s.rendezvous('dw($%x)=1'%(counter+12));ticks=s.number(counter+14,4)
         menus.select('SYS:');click(296,8);click(304,28);panel=app('panel')['symbols']['GEMPanel']
         s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
+        require([s.number(panel+38+i*2,2) for i in range(2)]==[192,136],
+                'Panel frame no longer fits its fixed object tree')
         drag_client(panel+34)
         x,y=[s.number(panel+34+i*2,2) for i in range(2)]
         before=s.number(panel+10,4);click(x+32,y+40)
@@ -55,6 +58,17 @@ class Desktop:
         require(s.number(panel+10,4)==before+2,'Panel keyboard activation lost')
         shot('cache-panel')
         menus.close();s.frames(100)
+        menus.select('SYS:');click(296,8);click(304,39)
+        calculator=app('calc')['symbols'];model=calculator['Calculator']
+        s.rendezvous('dw($%x)=1'%(model+4));s.frames(100)
+        drag_client(model+22)
+        tree=s.number(calculator['tree'],4)
+        for index in (3,10,9,19):
+            x,y=[s.number(tree+16+i*2,2) for i in range(2)]
+            ox,oy,w,h=[s.number(tree+index*24+16+i*2,2) for i in range(4)]
+            click(x+ox+w//2,y+oy+h//2)
+        require(s.number(calculator['shown'],4)==42,'Calculator input after move')
+        shot('cache-calculator');menus.close();s.frames(100)
         menus.select('Shell');old=s.begin('RUN C:TEXT.APP SYS:STORY.TXT');s.ready(old);s.result()
         text=app('text');model=text['symbols']['GEMText']
         s.rendezvous('dw($%x)=1'%(model+T['ready']))
@@ -79,7 +93,7 @@ class Desktop:
         require(not any(a['name']=='text' for a in instances(b,s.p,directory)),'Text did not retire')
         menus.select('Counter');require(s.number(counter+14,4)>ticks,'Counter stopped during walkthrough')
         menus.close();s.frames(100);menus.select('SYS:');shot('cache-clients-closed')
-        self.results=dict(files=True,panel_pointer=True,panel_keyboard=True,panel_moved_hit_test=True,text_moved=True,text_sha256=digest,
+        self.results=dict(files=True,panel_pointer=True,panel_keyboard=True,panel_moved_hit_test=True,calculator_moved_input=42,text_moved=True,text_sha256=digest,
             text_scroll=True,selector_cancel=True,counter_progress=True,close_restore=True)
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
         s.save_screen(s.p['output']/'boot-smoke.png')

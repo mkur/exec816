@@ -1,8 +1,9 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [compact window geometry refactor](compact-window-geometry-plan.md)
+The implemented [compact window geometry refactor](compact-window-geometry-plan.md)
 reduces titles and menus to eleven rows, separates gadget width from height,
 and preserves Shell alignment and the default Files 4×4 grid.
+All four slices have [development evidence](../../history/compact-window-geometry.md).
 
 The [window iconification design](window-iconification-design.md) and
 [implementation plan](window-iconification-plan.md) add presenter-owned tiles,

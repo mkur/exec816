@@ -60,6 +60,41 @@ CARD FUNC Call(DESKTYPES.Client POINTER client DESKTYPES.Request POINTER item)
 
 RETURN(item.status)
 
+; Boundary pixels of compact titles: two mandatory controls and optional icon.
+PROC CompactGeometry()
+  LAYERTYPES.Rect bounds,work
+
+  LET item=@service.windows(0)
+  item.kind=DESKTYPES.CONTENT_COMMANDS
+  item.frameKind=DESKTYPES.FRAME_FULLER
+  item.iconified=0
+  REGIONS.Assign(@bounds,10,20,54,68)
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,11,21)<>0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,30,29)<>0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,31,29)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,32,20)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,30)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,31)=0)
+  bounds.right=74
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
+  bounds.right=90
+  Require(DESKGEOMETRY.HasIcon(item,@bounds)<>0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,45,25)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,46,25)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,67,30)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,68,25)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,46,31)=0)
+  item.frameKind=DESKTYPES.FRAME_INFO OR DESKTYPES.FRAME_SIZER OR DESKTYPES.FRAME_VERTICAL
+  REGIONS.Assign(@bounds,0,11,640,240)
+  DESKGEOMETRY.Work(item.frameKind,@bounds,@work)
+  Require(work.left=8 AND work.top=32 AND work.right=618 AND work.bottom=229)
+
+  item.frameKind=0
+  item.kind=0
+
+RETURN
+
 ; Only this Task touches service-owned state, including diagnostic injection.
 PROC FocusCases()
   BYTE slot
@@ -134,6 +169,7 @@ PROC Presenter()
   Require(EXEC.AllocSignal(16)=16)
   Require(DESKCORE.Init(service,16)<>0)
   service.live=0
+  CompactGeometry()
   FocusCases()
   EXEC.Signal(root,$10000)
   WHILE stop=0 DO

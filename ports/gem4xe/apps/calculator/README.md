@@ -24,3 +24,6 @@ The app uses no new imports, scheduler services or bank-zero reservation.
 Preserve the pinned donor `COPYING`, `COPYING.LIB` and `docs/licence.md` notices.
 The calculator application is donor code under GPL-2.0-or-later; Exec's MIT
 interface/example grant does not relicense it. See [the licence map](../../../../LICENSING.md).
+
+Cached window moves update the borrowed OBJECT root and local work rectangle
+when `WM_MOVED` is acknowledged; they do not depend on a subsequent redraw.

@@ -109,9 +109,12 @@ WORD PanelRun(struct Panel *p)
     for (i=0;i<10;++i) p->input[i]=1;
     p->input[10]=2; v_opnvwk(p->input,&p->vdi,p->output);
     if (!p->vdi) goto finish;
-    p->window=wind_create(NAME|CLOSER|MOVER,0,0,208,160);
+    /* Fit the fixed tree instead of retaining space from an older frame. */
+    if (!wind_calc(WC_BORDER,NAME|CLOSER|MOVER,0,0,
+        p->tree[0].ob_width,p->tree[0].ob_height,&cw,&ch,&bw,&bh)) goto finish;
+    p->window=wind_create(NAME|CLOSER|MOVER,0,0,bw,bh);
     if (p->window<0 || !wind_set_str(p->window,WF_NAME,"GEM Control Panel")) goto finish;
-    if (!wind_open(p->window,416,48,208,160)) goto finish;
+    if (!wind_open(p->window,416,48,bw,bh)) goto finish;
     p->opened=1;
     wind_get(p->window,WF_WXYWH,&p->work[0],&p->work[1],&p->work[2],&p->work[3]);
     p->tree[0].ob_x=p->work[0]; p->tree[0].ob_y=p->work[1];

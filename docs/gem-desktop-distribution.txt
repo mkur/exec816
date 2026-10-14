@@ -64,7 +64,9 @@ the directory just left. The parent does not join selections for Copy/Delete
 and cannot be dragged or used as a drop target. File > Refresh or Ctrl-L
 reloads the directory. The thin top line shows totals, selection counts or
 operation feedback. The path is in the title. New windows start smaller;
-navigation preserves their size. Drag the bottom-right size gadget; vertical
+navigation preserves their size. The compact frame uses an eleven-row title
+and wide, short gadgets. Default Files retains four columns and four rows of
+full-size icons; full/restore gives more vertical room. Drag the bottom-right size gadget; vertical
 arrows, track and thumb scroll. The top-right fuller toggles full/remembered
 size. Listings retain 256 entries and reuse up to sixteen visible objects;
 larger listings report truncation.

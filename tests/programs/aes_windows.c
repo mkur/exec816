@@ -115,6 +115,13 @@ UWORD AESRun(void)
     aes_call(&pb);
     CHECK(out[0] == 1 && out[1] == 17 && out[2] == 20 && out[3] == 184 && out[4] == 107);
     geometry(0, WF_WXYWH, 0, 11, 640, 229);
+    /* Both mandatory 22-pixel controls fit without iconify or title overlap. */
+    CHECK(wind_create(AES_WINDOW_KIND|FULLER,8,16,32,48)==-1);
+    replacement=wind_create(AES_WINDOW_KIND|FULLER,8,16,44,48);
+    CHECK(replacement>0);CHECK(wind_delete(replacement));
+    CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|INFO|SIZER|UPARROW|DNARROW|VSLIDE,
+        0,11,640,229,&a,&b,&c,&d));
+    CHECK(a==8 && b==32 && c==610 && d==197);
     replacement=wind_create(0,9,9,200,120);
     CHECK(replacement>0);CHECK(wind_delete(replacement));
     CHECK(wind_create(AES_WINDOW_KIND, -1, 9, 200, 120) == -1);
