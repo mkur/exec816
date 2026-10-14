@@ -57,7 +57,8 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
     box(x,y,right,bottom)
     rectangle(raster,(x,y+15,right,y+16),12 if focused else 1)
     name_left=x+(16 if close else 1)
-    name_right=right-(16 if kind&4 else 1)
+    icon_right=right-(16 if kind&4 else 0)
+    name_right=icon_right-(16 if right-x>=64 else 1)
     title=title[:max(0,min(64,(name_right-name_left-4)//8))]
     tx=name_left+(name_right-name_left-len(title)*8)//2
     if focused:
@@ -70,6 +71,10 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
     if close:
         box(x+1,y+1,x+15,y+15)
         text(raster,x+4,y+4,bytes([5]))
+    if right-x>=64:
+        box(icon_right-16,y+1,icon_right-1,y+15)
+        box(icon_right-12,y+4,icon_right-4,y+12)
+        rectangle(raster,(icon_right-8,y+8,icon_right-5,y+11),1)
     if kind&4:
         box(right-16,y+1,right-1,y+15)
         text(raster,right-12,y+4,bytes([7]))
@@ -99,6 +104,18 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         box(right-16,bottom-16,right,bottom)
         for distance in (3,6,9):
             for step in range(distance):raster.pixel(right-3-step,bottom-3-distance+step,1)
+
+
+def tile(raster, bounds, title):
+    x,y,right,bottom=bounds
+    rectangle(raster,bounds,0)
+    for l,t,r,b in [(x,y,right,y+1),(x,bottom-1,right,bottom),
+                    (x,y+1,x+1,bottom-1),(right-1,y+1,right,bottom-1),
+                    (x+4,y+3,x+16,y+4),(x+4,y+12,x+16,y+13),
+                    (x+4,y+4,x+5,y+12),(x+15,y+4,x+16,y+12)]:
+        rectangle(raster,(l,t,r,b),1)
+    rectangle(raster,(x+5,y+4,x+15,y+6),12)
+    text(raster,x+20,y+4,title[:8])
 
 
 def menu_bar(raster, title=b'Shell'):

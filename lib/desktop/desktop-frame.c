@@ -75,12 +75,23 @@ static UWORD fragment(void)
     const UBYTE *title=(const UBYTE *)p->text;
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
     WORD nameLeft=l+(p->background ? DESKTOP_TITLE_HEIGHT:DESKTOP_FRAME_EDGE);
-    WORD nameRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET:DESKTOP_FRAME_EDGE);
+    WORD iconRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET:0);
+    WORD hasIcon=r-l>=64;
+    WORD nameRight=iconRight-(hasIcon ? DESKTOP_FRAME_GADGET:DESKTOP_FRAME_EDGE);
     WORD x,y=t+DESKTOP_TITLE_TEXT_Y;
     WORD pl,pt,pr,pb;
     UWORD span=nameRight-nameLeft;
-    UWORD length=0,limit=span>2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
+    UWORD length=0,limit=nameRight>nameLeft+2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
     UWORD first,n;
+    if (p->fillY&DESKTOP_FRAME_ICONIFIED) {
+        fill(l,t,r,b,0);box(l,t,r,b);
+        box(l+4,t+3,l+16,t+13);
+        fill(l+5,t+4,l+15,t+6,12);
+        for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
+        text(l+20,t+4,n,1);
+        p->fillX=0;
+        return 1;
+    }
     /* Side/bottom fragments are admitted inside the outer bounds. They need
      * only paper and the intersecting outline, never a title scan or glyphs. */
     if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
@@ -116,6 +127,11 @@ static UWORD fragment(void)
         }
         if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
                          t+DESKTOP_TITLE_HEIGHT-1,0);
+        if (hasIcon) {
+            box(iconRight-DESKTOP_FRAME_GADGET,t+1,iconRight-1,t+DESKTOP_TITLE_HEIGHT-1);
+            box(iconRight-12,t+4,iconRight-4,t+12);
+            fill(iconRight-8,t+8,iconRight-5,t+11,1);
+        }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
             box(r-DESKTOP_FRAME_GADGET,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
             glyphs[0]=7;

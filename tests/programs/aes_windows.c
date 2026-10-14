@@ -218,6 +218,21 @@ UWORD AESRun(void)
             AESControl[5], AESControl[6], AESControl[7]));
         else { CHECK(wind_close(handle)); CHECK(wind_open(handle, 9, 9, 200, 120)); }
     }
+    /* Presenter iconification needs no message handler. Keep the caller's
+     * geometry, allow model updates, and restore through the ordinary WF_TOP. */
+    AESPhysical = 30;
+    while (AESPhysicalGo != 30) ExecYield();
+    geometry(handle, WF_CXYWH, 8, 9, 200, 120);
+    CHECK(wind_update(BEG_UPDATE));
+    geometry(handle, WF_FIRSTXYWH, 0, 0, 0, 0);
+    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_set(handle, WF_CXYWH, 11, 13, 200, 120));
+    geometry(handle, WF_CXYWH, 10, 13, 200, 120);
+    CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
+    AESPhysical = 31;
+    while (AESPhysicalGo != 31) ExecYield();
+    CHECK(wind_close(handle));
+    CHECK(wind_open(handle, 9, 9, 200, 120));
     AESPhysical = 7;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_get(handle, WF_FIRSTXYWH, &a, &b, &c, &d));

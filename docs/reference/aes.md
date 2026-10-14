@@ -248,6 +248,17 @@ windows. Closing/reopening one window withdraws only its stamped input and GUI
 records; siblings keep their port, input session and menu. Input transport closes
 when the last open window closes. These are binding extensions, not GEM opcodes.
 
+Iconification is presenter-managed and requires no application message handler.
+The title gadget and desktop menus replace an ordinary window with a labeled
+tile; selecting that tile or its Windows entry restores it. The window stays
+open and retains its handle, open epoch, kind and normal geometry. Published
+`shown` is zero and visible-rectangle enumeration is empty while iconified;
+applications continue updating their models. `WF_TOP` restores the window.
+`WF_CXYWH` changes its saved normal bounds without moving the tile. Close/delete
+and application exit retain their usual cleanup semantics. The borderless
+desktop is excluded. Negotiated `WM_ICONIFY` / `WF_ICONIFY` is not implemented.
+See [desktop iconification](desktop.md#iconification).
+
 Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
 `WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
 application calls the corresponding set or close operation. Inactive clicks

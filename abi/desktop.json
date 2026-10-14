@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "constants": {
     "CLIENTS": 4,
     "WINDOWS": 6,
@@ -85,7 +85,8 @@
     "FRAME_FULLER": 4,
     "FRAME_INFO": 16,
     "FRAME_INFO_HEIGHT": 12,
-    "FRAME_BORDERLESS": 512
+    "FRAME_BORDERLESS": 512,
+    "FRAME_ICONIFIED": 1024
   },
   "records": {
     "Event": [
@@ -385,6 +386,14 @@
       [
         "sliderHeight",
         "INT"
+      ],
+      [
+        "normalBounds",
+        "LAYERTYPES.Rect"
+      ],
+      [
+        "iconified",
+        "BYTE"
       ]
     ],
     "Service": [

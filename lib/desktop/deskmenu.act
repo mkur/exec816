@@ -2,6 +2,7 @@
 ; a presenter turn; application code receives the existing top/close notices.
 MODULE DESKMENU
 USE INPUT
+USE ASCII
 USE AESKEYS
 USE DESKAPPMENU
 USE DESKMENUCACHE
@@ -20,7 +21,7 @@ USE REGIONS
 USE A816MEMORY
 USE HEAPCORE
 
-PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=6, LABEL_BYTES=25
+PUBLIC CONST BAR_HEIGHT=16, ROW_HEIGHT=16, ROWS=9, LABEL_BYTES=25
 PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=560, WINDOWS_POPUP_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
@@ -41,7 +42,7 @@ LONGCARD revision,focusSeen,pendingWindow,menuOwner
 BYTE pendingMenu,pendingAction,dirty,down,opening,blocked
 BYTE showPending
 INT armed,pendingHeading
-CONST ACT_TOP=1, ACT_CLOSE=2, NO_ROW=-1
+CONST ACT_TOP=1, ACT_CLOSE=2, ACT_ICONIFY=3, NO_ROW=-1
 
 PUBLIC BYTE FUNC Active()
 
@@ -170,7 +171,8 @@ PROC Cycle(BYTE reverse)
       slot=IF slot=DESKTYPES.WINDOWS-1 THEN 0 ELSE slot+1 FI
     FI
 
-    IF Shown(@service.windows(slot))<>0 THEN
+    IF Shown(@service.windows(slot))<>0
+        AND service.windows(slot).iconified=0 THEN
       pendingWindow=service.windows(slot).id
       pendingAction=ACT_TOP
       RETURN
@@ -210,12 +212,12 @@ PROC Choose(INT row)
     Cycle(0)
   ELSEIF menu=WINDOWS_MENU THEN
     pendingWindow=menuOwner
-    pendingAction=ACT_CLOSE
+    pendingAction=IF items(row).action=3 THEN ACT_ICONIFY ELSE ACT_CLOSE FI
   ELSEIF row=0 THEN
     Cycle(0)
   ELSE
     pendingWindow=menuOwner
-    pendingAction=ACT_CLOSE
+    pendingAction=IF row=2 THEN ACT_ICONIFY ELSE ACT_CLOSE FI
   FI
 
   menu=0
@@ -500,28 +502,43 @@ PROC Open(BYTE kind)
         IF Shown(window)<>0 THEN
           items(count).window=window.id
           items(count).enabled=1
-          Label(@items(count).label(0),@window.title(0),LABEL_BYTES-1)
+          IF window.iconified<>0 THEN
+            items(count).label(0)='*
+            items(count).label(1)=ASCII.SPACE
+            Label(@items(count).label(2),@window.title(0),LABEL_BYTES-3)
+          ELSE
+            Label(@items(count).label(0),@window.title(0),LABEL_BYTES-1)
+          FI
           count==+1
         FI
       END
     OD
-    IF DESKAPPMENU.Current()<>0 THEN
+    BEGIN
       items(count).enabled=1
       items(count).action=1
       Label(@items(count).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
       count==+1
       items(count).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+          AND menuOwner<>DESKSTATE.desktopWindow
       items(count).action=2
       Label(@items(count).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
       count==+1
-    FI
+      items(count).enabled=menuOwner<>0 AND menuOwner<>DESKSTATE.desktopWindow
+      items(count).action=3
+      Label(@items(count).label(0),BYTE POINTER(c"Iconify"),LABEL_BYTES-1)
+      count==+1
+    END
   ELSE
-    count=2
+    count=3
     items(0).enabled=1
     Label(@items(0).label(0),BYTE POINTER(c"Next window"),LABEL_BYTES-1)
     items(1).window=menuOwner
     items(1).enabled=menuOwner<>0 AND menuOwner<>service.consoleWindow
+        AND menuOwner<>DESKSTATE.desktopWindow
     Label(@items(1).label(0),BYTE POINTER(c"Close"),LABEL_BYTES-1)
+    items(2).window=menuOwner
+    items(2).enabled=menuOwner<>0 AND menuOwner<>DESKSTATE.desktopWindow
+    Label(@items(2).label(0),BYTE POINTER(c"Iconify"),LABEL_BYTES-1)
   FI
 
   selected=IF count<>0 THEN INT(0) ELSE NO_ROW FI
@@ -545,7 +562,13 @@ PROC Execute()
     RETURN
   FI
 
-  IF action=ACT_TOP THEN
+  IF action=ACT_ICONIFY THEN
+    DESKCORE.Iconify(service,window)
+  ELSEIF action=ACT_TOP THEN
+    IF window.iconified<>0 THEN
+      DESKCORE.RestoreIcon(service,window)
+      RETURN
+    FI
     IF service.focus=window.id THEN
       RETURN
     FI

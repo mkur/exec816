@@ -255,21 +255,53 @@ Graphical close gadgets publish durable CLOSE events. They do not force a Task
 to retire, and an application may decline. The shell has no active close gadget;
 its normal EXIT path controls retirement.
 
+### Iconification
+
+Shell and ordinary AES/native windows have a presenter-owned iconify gadget
+at the right of the title, left of the fuller when present. Its mark is a small
+window with a filled lower corner. Frames narrower than 64 pixels use the menu.
+The borderless desktop cannot be iconified.
+
+Iconify preserves the open window, its owner, accepted geometry and content.
+The existing layer becomes an 88×16 labeled tile at y=222, x=104+88×slot.
+Tiles have a small window glyph and up to eight title characters. Click and
+release inside a tile to restore; release outside, Escape and input loss cancel.
+Restoration returns the exact normal bounds and keyboard focus. A covered tile
+can always be restored through Windows, where `* ` marks iconified entries.
+Tiles do not receive application input. Iconifying the focused window selects
+the nearest ordinary shown window; applications keep running.
+
+AES clients keep their handle, epoch, normal bounds and work rectangle, with
+an empty visible region while iconified. `WF_TOP` restores; geometry changes
+update the saved normal bounds. Native SHOW/RAISE/FOCUS also restore; HIDE and
+close remove the tile. Teardown uses existing routes and owner lifetimes.
+This automatic policy does not expose negotiated `WM_ICONIFY` / `WF_ICONIFY`.
+
+Shell writes continue to its retained model. Hidden output may leave the backing
+bitmap dirty; restoration updates it before copying visible text. Tile painting
+never acknowledges Shell text damage. Existing AES snapshots remain optional
+and obey ordinary model-revision invalidation. Tiles use the existing compositor
+and layers, with no extra task or VRAM storage. The design and development scope
+are recorded in the [iconification plan](../plans/gem4xe/window-iconification-plan.md).
+
 ### Desktop menus and window switching
 
 The presenter owns a persistent 16-pixel menu bar. The left 128 pixels show the
 focused window name, truncated to fourteen 8-pixel cells; unnamed windows and
-the desktop show Exec816. Clicking this caption offers Next window and Close.
+the desktop show Exec816. Clicking this caption offers Next window, Close and Iconify.
 Close is disabled for the shell. Installed GEM menus occupy x=128..559, and
 Windows occupies x=560..639. Application menu coordinates remain x=0..431;
 the presenter translates drawing, damage and pointer hits together. Dropdowns
 are translated and clamped onscreen; the 208-pixel Windows popup starts at x=432.
-Windows lists all shown application windows in stable slot order, including
-covered windows and the shell. Selecting an AES entry sends `WM_TOPPED`; the
-application raises itself with `WF_TOP`. Close sends `WM_CLOSED`. Native windows
+Windows lists ordinary and iconified application windows in stable slot order,
+including covered windows and Shell. It also offers Next window, Close and
+Iconify. Selecting an ordinary AES entry sends `WM_TOPPED`; the application
+raises itself with `WF_TOP`. Selecting an iconified entry restores it directly.
+Close sends `WM_CLOSED`. Native windows
 use the existing focus and close notices. Neither command forces Task removal.
 
-Ctrl+Tab and Ctrl+Shift+Tab cycle the same stable window order. Ctrl+Escape opens
+Ctrl+Tab and Ctrl+Shift+Tab cycle the ordinary (not iconified) windows in stable
+slot order. Ctrl+Escape opens
 Windows; arrows or Tab/Shift+Tab change selection, and Return selects. Escape,
 BREAK, capture loss or an outside click cancels. Desktop menu input is consumed
 before application input routing. An existing held application/title gesture
@@ -354,7 +386,7 @@ retirement. No application callback runs inside the presenter.
 
 ## Storage and validation
 
-The generated service occupies 18,656 bytes in upper RAM, including the
+The generated service occupies 18,716 bytes in upper RAM, including the
 9,184-byte Layers scene, four 668-byte client records, six 884-byte windows,
 one 710-byte staging batch, sixteen deferred widget input records and two
 fourteen-byte snapshot records and two ten-byte repair records. Public
@@ -403,7 +435,7 @@ Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected
 first, then the least recently used unpinned slot. The shared `LAYERCACHE` policy owns the two fourteen-byte slot records; the
-presenter adapter builds transfers. The current generated Service is 18,656
+presenter adapter builds transfers. The current generated Service is 18,716
 bytes, including scene/cache capacity and alignment.
 
 Eligible AES windows use the same slots. Capture requires a fully visible

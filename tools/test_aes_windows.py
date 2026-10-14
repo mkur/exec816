@@ -76,10 +76,10 @@ def physical(b, p, foreign, report):
     move(17,20); edge(1); b._cmd_ok('KEY ESC down'); frames(3)
     b._cmd_ok('KEY ESC up'); edge(0); frames(10)
     require(get(sy['AESPhysical'])==3, 'Escape closer cancellation delivered a command')
-    # The old right closer is now part of the draggable title.
-    move(201, 20); frames(); before_outline = scan()
-    edge(1); move(218, 31); edge(0); phase(4)
-    move(201, 20); frames()
+    # Use the middle title, leaving the right edge for iconification.
+    move(176, 20); frames(); before_outline = scan()
+    edge(1); move(193, 31); edge(0); phase(4)
+    move(176, 20); frames()
     require(scan() == before_outline, 'Odd-coordinate outline did not restore exact pixels')
     require(b.memdump(view+vf['bounds'], 8) == old_bounds, 'Move committed before WM_MOVED acknowledgment')
     words = struct.unpack('<8h', b.memdump(sy['AESControl'], 16))
@@ -90,7 +90,20 @@ def physical(b, p, foreign, report):
     move(34, 26); edge(1); edge(0); phase(6)
     require(get(view+vf['shown']) == 1, 'Close committed before WM_CLOSED acknowledgment')
     require(get(busy, 1) == 0, 'Close request retains scene token')
-    b.poke16(sy['AESPhysicalGo'], 6); phase(7)
+    b.poke16(sy['AESPhysicalGo'], 6); phase(30); frames(100)
+    move(200,17);edge(1);edge(0);frames(80)
+    require(get(window+wf['iconified'],1)==1,'AES iconification failed')
+    require(get(view+vf['shown'])==0 and get(view+vf['visibleCount'])==0,
+            'Iconified view remained drawable')
+    b.poke16(sy['AESPhysicalGo'],30);phase(31);frames(100)
+    require(get(window+wf['iconified'],1)==0,'WF_TOP failed to restore')
+    require(struct.unpack('<4h',b.memdump(view+vf['bounds'],8))==(10,13,210,133),
+            'Hidden move failed to preserve normal bounds')
+    move(202,21);edge(1);edge(0);frames(80)
+    require(get(window+wf['iconified'],1)==1,'Second iconification failed')
+    b.poke16(sy['AESPhysicalGo'],31);phase(7)
+    report['iconification']=dict(empty_visible_region=True,normal_geometry=True,
+        hidden_move=True,wf_top_restore=True,close_reopen=True)
     report['physical_requests'] = dict(top='deferred', move=list(words[4:8]), close='deferred', scene_token=0, outline_pixels='exact', copied_title_bytes=65)
     # New gadgets retain the same application-acknowledged transaction.
     phase(10); frames(100)

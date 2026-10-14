@@ -36,9 +36,13 @@ Use the desktop
 ---------------
 
 Click a window to focus it; drag its title to move it. The focused window's
-name stays at the left of the menu bar; click it for Next window and Close.
+name stays at the left of the menu bar; click it for Next window, Close or Iconify.
 Application menus follow it. Windows at the far right of the top bar
 reaches covered windows. Ctrl-Tab cycles; Ctrl-Escape opens Windows.
+Click the small window gadget at the right of a title (left of full/restore)
+to iconify Shell or an application. Click its labeled tile along the bottom to
+restore, or select its * entry in Windows. Iconified applications keep running;
+Shell output continues and appears when restored. Ctrl-Tab skips these tiles.
 The active application's menu is at the left. Ctrl-Shift-Escape enters it;
 arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 

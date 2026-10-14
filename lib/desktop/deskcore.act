@@ -10,6 +10,7 @@ USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
 USE DESKMOVE
+USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKEVENTS
 USE DESKWIDGETS
@@ -210,7 +211,8 @@ PUBLIC PROC RestoreFocus(DESKTYPES.Service POINTER service LONGCARD closing)
         FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
           BEGIN
             LET window=@service.windows(slot)
-            IF window.id<>0 AND window.id<>closing AND window.layer=layer.id THEN
+            IF window.id<>0 AND window.id<>closing AND window.layer=layer.id
+                AND window.iconified=0 THEN
               eligible=window.id=service.consoleWindow OR window.keyRoute<>0
               IF window.kind=DESKTYPES.CONTENT_AES THEN
                 BEGIN
@@ -232,6 +234,84 @@ PUBLIC PROC RestoreFocus(DESKTYPES.Service POINTER service LONGCARD closing)
   OD
 
   Focus(service,0)
+
+RETURN
+
+PROC IconCheck(BYTE status)
+
+  IF status<>LAYERTYPES.OK THEN
+    HEAPCORE.Abort($faee)
+  FI
+
+RETURN
+
+; The normal geometry remains the client's geometry throughout iconification.
+PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE slot
+  INT left
+
+  LET layer=Layer(service,window)
+  IF window.iconified<>0 OR layer.shown=0
+      OR window.frameKind=DESKTYPES.FRAME_BORDERLESS THEN
+    RETURN
+  FI
+
+  DESKMOVE.HideCaret()
+  DESKWIDGETS.Cancel(service,window)
+  REGIONS.Copy(@layer.bounds,@window.normalBounds)
+  window.iconified=1
+  slot=0
+  WHILE @service.windows(slot)<>window DO
+    slot==+1
+  OD
+  left=104+INT(slot)*88
+  IconCheck(LAYERS.Bounds(@service.scene,window.layer,left,222,88,16))
+  IconCheck(DESKSTATE.Raise(window.layer))
+  RestoreFocus(service,window.id)
+  IF window.kind=DESKTYPES.CONTENT_AES THEN
+    AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
+  FI
+  AESWINDOWSTATE.Sync()
+
+RETURN
+
+; Also used after hiding at close: remove the tile without raising/focusing.
+PUBLIC PROC ForgetIcon(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+
+  IF window.iconified=0 THEN
+    RETURN
+  FI
+
+  LET bounds=@window.normalBounds
+  window.iconified=0
+  IconCheck(LAYERS.Bounds(@service.scene,window.layer,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top))
+  IF window.kind=DESKTYPES.CONTENT_AES THEN
+    BEGIN
+      LAYERTYPES.Rect work
+      DESKGEOMETRY.Work(window.frameKind,bounds,@work)
+      LAYERS.ExternalArea(@service.scene,window.layer,@work)
+      BEGIN
+        LET item=AESWINDOWSTATE.FindRecord(window.id)
+        DESKGEOMETRY.Slider(window,bounds,item.view.vslide,item.view.vsize)
+      END
+    END
+  FI
+
+RETURN
+
+PUBLIC PROC RestoreIcon(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+
+  ForgetIcon(service,window)
+  IconCheck(DESKSTATE.Raise(window.layer))
+  Focus(service,window.id)
+  IF window.kind=DESKTYPES.CONTENT_AES THEN
+    AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
+  FI
+  AESWINDOWSTATE.Sync()
 
 RETURN
 
@@ -323,6 +403,12 @@ CARD FUNC Content(DESKTYPES.Service POINTER service
       -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
   height=CARD(layer.bounds.bottom-layer.bounds.top)
       -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+  IF window.iconified<>0 THEN
+    width=CARD(window.normalBounds.right-window.normalBounds.left)
+        -DESKTYPES.WORK_LEFT-DESKTYPES.WORK_RIGHT
+    height=CARD(window.normalBounds.bottom-window.normalBounds.top)
+        -DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
+  FI
   IF source.count>DESKTYPES.COMMANDS OR source.textBytes>DESKTYPES.TEXT_BYTES
       OR source.background>15 THEN
     RETURN(DESKTYPES.BAD_ARGUMENT)
@@ -463,10 +549,14 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
   CASE request.operation OF
   WHEN DESKTYPES.SHOW THEN
     status=LAYERS.Show(@service.scene,window.layer,1)
+    IF window.iconified<>0 THEN
+      RestoreIcon(service,window)
+    FI
     DESKSTATE.TopChrome()
   WHEN DESKTYPES.HIDE THEN
     DESKWIDGETS.Cancel(service,window)
     status=LAYERS.Show(@service.scene,window.layer,0)
+    ForgetIcon(service,window)
     RestoreFocus(service,window.id)
   WHEN DESKTYPES.MOVE THEN
     IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
@@ -478,6 +568,9 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     RETURN(DESKMOVE.Start(service,window,
         request.bounds.left,request.bounds.top,request))
   WHEN DESKTYPES.RAISE THEN
+    IF window.iconified<>0 THEN
+      RestoreIcon(service,window)
+    FI
     status=DESKSTATE.Raise(window.layer)
   WHEN DESKTYPES.FOCUS THEN
     BEGIN
@@ -487,6 +580,9 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       FI
     END
 
+    IF window.iconified<>0 THEN
+      RestoreIcon(service,window)
+    FI
     Focus(service,window.id)
   WHEN DESKTYPES.REPLACE THEN
     RETURN(Content(service,window,request))

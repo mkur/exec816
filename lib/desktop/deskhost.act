@@ -220,7 +220,6 @@ PUBLIC PROC Controls()
     IF lateAES=0 THEN
       Events()
     FI
-    DESKPAINT.Sync()
   FI
 
 RETURN
@@ -275,6 +274,7 @@ PUBLIC PROC Cache()
         RETURN
       FI
       IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+          AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN
         BEGIN

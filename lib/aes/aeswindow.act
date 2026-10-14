@@ -155,6 +155,7 @@ BYTE FUNC Close(AESSTATE.Window POINTER item)
     HEAPCORE.Abort($fcb5)
   FI
 
+  DESKCORE.ForgetIcon(desktop,item.window)
   AESWINDOWSTATE.Snapshot(item)
 
 RETURN(1)
@@ -224,7 +225,8 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
           request.intin(0),request.intin(1)))
       LET found=AESWINDOWSTATE.FindRecord(hit)
       request.intout(0)=0
-      IF found<>NULL AND hit<>DESKSTATE.desktopWindow THEN
+      IF found<>NULL AND hit<>DESKSTATE.desktopWindow
+          AND found.window.iconified=0 THEN
         request.intout(0)=found.gui.window
       FI
     END
@@ -335,9 +337,35 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         RETURN(AESTYPES.MALFORMED)
       FI
 
+      IF window.iconified<>0 THEN
+        DESKCORE.RestoreIcon(desktop,window)
+      FI
       status=DESKSTATE.Raise(window.layer)
       DESKCORE.Focus(desktop,window.id)
     WHEN AESTYPES.WF_CXYWH THEN
+      IF window.iconified<>0 THEN
+        IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),
+            request.intin(4),request.intin(5),@bounds)=0 THEN
+          RETURN(AESTYPES.MALFORMED)
+        FI
+        IF (window.frameKind & AESTYPES.SIZER)=0
+            AND (bounds.right-bounds.left<>
+              window.normalBounds.right-window.normalBounds.left
+            OR bounds.bottom-bounds.top<>
+              window.normalBounds.bottom-window.normalBounds.top) THEN
+          RETURN(AESTYPES.MALFORMED)
+        FI
+        IF bounds.right-bounds.left<>
+            window.normalBounds.right-window.normalBounds.left
+            OR bounds.bottom-bounds.top<>
+            window.normalBounds.bottom-window.normalBounds.top THEN
+          DESKCACHE.Changed(desktop,window)
+        FI
+        REGIONS.Copy(@bounds,@window.normalBounds)
+        AESWINDOWSTATE.Snapshot(item)
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
       IF ValidBounds(window.frameKind,request.intin(2),request.intin(3),request.intin(4),
           request.intin(5),@bounds)=0
           OR ((window.frameKind & AESTYPES.SIZER)=0
@@ -394,7 +422,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       AND (request.intin(1)=AESTYPES.WF_CXYWH
       OR request.intin(1)=AESTYPES.WF_VSLIDE
       OR request.intin(1)=AESTYPES.WF_VSLSIZE)) THEN
-    DESKGEOMETRY.Slider(window,@layer.bounds,item.view.vslide,item.view.vsize)
+    IF window.iconified=0 THEN
+      DESKGEOMETRY.Slider(window,@layer.bounds,item.view.vslide,item.view.vsize)
+    FI
   FI
   AESWINDOWSTATE.Snapshot(item)
   AESWINDOWSTATE.Sync()

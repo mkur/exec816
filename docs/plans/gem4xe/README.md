@@ -1,5 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
+The [window iconification design](window-iconification-design.md) and
+[implementation plan](window-iconification-plan.md) add presenter-owned tiles,
+Shell/AES restoration and Windows-menu recovery without changing client apps.
+All three slices are [implemented and development-checked](../../history/window-iconification.md).
+
 The [menu-switch fix](menu-switch-plan.md) scopes desktop painting to its actual
 window and retains one interaction background across File/View headings. It
 targets idle menu transitions without directory refresh or renderer changes.
@@ -51,8 +56,8 @@ The [desktop usability refactor plan](desktop-usability-refactor-plan.md)
 covers a default 4×4 Files grid, a `RAM:` desktop icon,
 compact, contextual delete confirmations, the shorter `Shell` name and a
 smaller left margin for desktop icons. All five items are implemented and
-[development-checked](../../history/desktop-usability.md); iconification remains
-a separate follow-up.
+[development-checked](../../history/desktop-usability.md); iconification is
+implemented in the separate plan linked above.
 
 The [desktop copy performance plan](desktop-copy-performance-plan.md) compares
 512-byte, 1 KiB, 2 KiB and 16 KiB desktop chunks with the shell's 16 KiB COPY,

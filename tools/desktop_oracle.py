@@ -2,7 +2,7 @@
 from generate_desktop import layout,ABI as DESKTOP_ABI
 from generate_layers import layout as layers_layout,ABI as LAYERS_ABI
 from gem_render_oracle import Raster, PENS
-from test_desktop_presentation import desktop, frame, rectangle, text
+from test_desktop_presentation import desktop, frame, rectangle, text, tile
 from test_gem_cursor import overlay
 from native_program import require
 
@@ -84,12 +84,16 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 require(expected==bounds,'Menu layer differs from source geometry')
                 return
             if chrome['menu'] == 2:
-                entries = [(w[wf['title']:wf['title']+24].split(b'\0')[0], True)
-                           for ident, (w, _) in windows.items() if ident in shown]
-                if menu_source:
-                    entries += [(b'Next window', True), (b'Close', True)]
+                entries = [(((b'* ' if w[wf['iconified']] else b'')+
+                            w[wf['title']:wf['title']+24].split(b'\0')[0])[:24], True)
+                           for ident, (w, _) in windows.items() if ident in shown
+                           and not number(w,wf['frameKind'])&512]
             else:
-                entries = [(b'Next window', True), (b'Close', active is not None and active[wf['kind']] != 1)]
+                entries = []
+            ordinary=active is not None and not number(active,wf['frameKind'])&512
+            entries += [(b'Next window', True),
+                        (b'Close', ordinary and active[wf['kind']] != 1),
+                        (b'Iconify', ordinary)]
             for row, (label, enabled) in enumerate(entries):
                 inverse = enabled and row == chrome['selected']
                 rectangle(result, (left+1, max(top+1,top+row*16), right-1, min(bottom-1,top+(row+1)*16)), int(inverse))
@@ -118,6 +122,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         left, top, right, bottom = bounds
         kind = window[wf['kind']]
         title = window[wf['title']:wf['title']+64].split(b'\0')[0]
+        if window[wf['iconified']]:
+            tile(result,bounds,title)
+            continue
         cf = types['Content']['fields']
         content = bytearray(types['Content']['size'])
         if kind == 2:

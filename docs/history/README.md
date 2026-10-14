@@ -1,5 +1,8 @@
 # Historical records
 
+- [Window iconification](window-iconification.md): presenter-owned tiles,
+  normal geometry, hidden application progress and menu recovery.
+
 - [Aligned moves and Shell backing](window-backing.md): completed AES copies,
   persistent console pixels, scrolling and matched performance evidence.
 

@@ -112,6 +112,17 @@ PUBLIC CARD FUNC Start(DESKTYPES.Service POINTER service
   BYTE status,drawn,eligible,changed
   LONGCARD token
 
+  IF window.iconified<>0 THEN
+    BEGIN
+      LET bounds=@window.normalBounds
+      bounds.right=left+bounds.right-bounds.left
+      bounds.bottom=top+bounds.bottom-bounds.top
+      bounds.left=left
+      bounds.top=top
+    END
+    RETURN(DESKTYPES.OK)
+  FI
+
   LET layer=LAYERS.Find(@service.scene,window.layer)
   IF layer.bounds.left=left AND layer.bounds.top=top THEN
     RETURN(DESKTYPES.OK)

@@ -26,7 +26,11 @@ RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
 PUBLIC PROC ClientBounds(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
-  DESKGEOMETRY.Work(window.frameKind,@layer.bounds,area)
+  IF window.iconified<>0 THEN
+    DESKGEOMETRY.Work(window.frameKind,@window.normalBounds,area)
+  ELSE
+    DESKGEOMETRY.Work(window.frameKind,@layer.bounds,area)
+  FI
 
 RETURN
 
@@ -153,7 +157,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   IF DISPLAY.Blocked()<>0 OR active<>0 OR service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
       OR CONSOLEBITMAP.Enabled()=0 OR CONSOLEBITMAP.Failed()<>0
       OR window.id=0 OR window.visualRevision=0
-      OR window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      OR window.kind=DESKTYPES.CONTENT_CONSOLE OR window.iconified<>0 THEN
     RETURN(0)
   FI
 
@@ -223,6 +227,10 @@ PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
   LAYERTYPES.Rect client,area
   LONGCARD token
   BYTE index,status
+
+  IF window.iconified<>0 THEN
+    RETURN(0)
+  FI
 
   FOR index=0 TO 1 DO
     BEGIN

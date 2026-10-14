@@ -478,6 +478,10 @@ application repaint completion, shared menu saves, two popup images and two
 idle. [Development evidence](history/aes-layers-vram.md) separates working cache
 paths from remaining menu latency gates. No bank-zero reservations are added.
 
+The [window iconification design](plans/gem4xe/window-iconification-design.md)
+and [plan](plans/gem4xe/window-iconification-plan.md) add presenter-owned
+Shell/AES tiles and Windows-menu restoration without suspending applications.
+
 The [window moves and Shell backing plan](plans/gem4xe/window-backing-plan.md)
 implements even-X AES geometry, completed-window copies and a dedicated 40 KiB
 Shell bitmap maintained while covered, including batched backing scrolls.

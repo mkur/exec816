@@ -75,7 +75,11 @@ PUBLIC PROC Sync()
   LET layer=DESKCORE.Layer(service,window)
   left=CARD(layer.bounds.left+DESKTYPES.WORK_LEFT) RSH 3
   top=CARD(layer.bounds.top+DESKTYPES.WORK_TOP) RSH 3
-  shown=layer.shown
+  IF window.iconified<>0 THEN
+    left=CARD(window.normalBounds.left+DESKTYPES.WORK_LEFT) RSH 3
+    top=CARD(window.normalBounds.top+DESKTYPES.WORK_TOP) RSH 3
+  FI
+  shown=layer.shown<>0 AND window.iconified=0
   focused=service.focus=window.id
   IF view.left<>left OR view.top<>top OR view.visible<>shown THEN
     IF view.scrollState<>0 OR batch.phase<>CONSOLETYPES.BATCH_IDLE THEN
@@ -241,6 +245,11 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
     FI
     RETURN(CONSOLEBITMAP.Background(@strip))
+  FI
+
+  IF window.iconified<>0 THEN
+    RETURN(CONSOLEBITMAP.Frame(@layer.bounds,@strip,@window.title(0),
+        0,0,DESKTYPES.FRAME_ICONIFIED,0,0,@glyphOffset))
   FI
 
   DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
@@ -538,7 +547,8 @@ PUBLIC BYTE FUNC Pump()
     FI
     IF candidate<>NULL THEN
       window=ByLayer(candidate.id)
-      IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+      IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+          AND window.iconified=0 THEN
         BEGIN
           LET entry=CONSOLEWINDOWS.Find(window.console)
           LET view=CONSOLETYPES.Presentation POINTER(entry.view)
@@ -586,7 +596,8 @@ PUBLIC BYTE FUNC Pump()
   REGIONS.Copy(@region.rects(regionIndex),@strip)
   strip.top=nextY
   backing=0
-  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+      AND window.iconified=0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)
       LET view=CONSOLETYPES.Presentation POINTER(entry.view)
@@ -634,7 +645,8 @@ PUBLIC BYTE FUNC Pump()
   FI
 
   fullConsole=0
-  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+  IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+      AND window.iconified=0 THEN
     ; An exposure can cover only part of a console whose model still has
     ; dirty rows elsewhere. Only a full-window repaint acknowledges them all.
     fullConsole=layer.damage.count=1
@@ -642,14 +654,17 @@ PUBLIC BYTE FUNC Pump()
   FI
 
   IF done<>0 AND window<>NULL AND window.kind=DESKTYPES.CONTENT_AES THEN
-    AESWINDOWSTATE.Handoff(window)
+    IF window.iconified=0 THEN
+      AESWINDOWSTATE.Handoff(window)
+    FI
     status=LAYERS.FinishHandoff(@service.scene,paintToken)
   ELSE
     status=LAYERS.Finish(@service.scene,paintToken,done<>0)
   FI
   paintToken=0
   DESKMENUCACHE.Notify()
-  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
+      AND window.iconified=0 THEN
     BEGIN
       LET entry=CONSOLEWINDOWS.Find(window.console)
       LET instance=CONSOLETYPES.Instance POINTER(entry.instance)

@@ -89,6 +89,23 @@ PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds INT x,y)
   LAYERTYPES.Rect rail
 
+  IF window.iconified<>0 THEN
+    RETURN(IF x>=bounds.left AND x<bounds.right
+        AND y>=bounds.top AND y<bounds.bottom THEN 9 ELSE 0 FI)
+  FI
+
+  IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+      AND bounds.right-bounds.left>=64
+      AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
+    BEGIN
+      LET right=bounds.right-IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
+          THEN INT(DESKTYPES.FRAME_GADGET) ELSE INT(0) FI
+      IF x>=right-DESKTYPES.FRAME_GADGET AND x<right THEN
+        RETURN(8)
+      FI
+    END
+  FI
+
   IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
       AND x>=bounds.right-DESKTYPES.FRAME_GADGET AND x<bounds.right
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN

@@ -393,7 +393,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
             RETURN(0)
           FI
 
-          IF window.kind=DESKTYPES.CONTENT_AES AND service.focus<>window.id THEN
+          IF window.kind=DESKTYPES.CONTENT_AES AND window.iconified=0
+              AND service.focus<>window.id THEN
             AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)
             blocked=1
             RETURN(1)
@@ -401,7 +402,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
 
           windowId=window.id
           pixelMotion=window.kind=DESKTYPES.CONTENT_AES
-          focusWanted=window.kind<>DESKTYPES.CONTENT_AES
+          focusWanted=window.kind<>DESKTYPES.CONTENT_AES AND window.iconified=0
           IF hit<>0 THEN
             gadget=hit
             REGIONS.Copy(@layer.bounds,@origin)
@@ -504,6 +505,10 @@ PUBLIC PROC Advance()
   IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
+  IF phase=ARROW_PENDING AND (gadget=8 OR gadget=9)
+      AND (AESLOCKS.NativeReady()=0 OR AESLOCKS.PaintBlocked()<>0) THEN
+    RETURN
+  FI
 
   IF focusWanted<>0 THEN
     status=DESKSTATE.Raise(layer.id)
@@ -525,6 +530,10 @@ PUBLIC PROC Advance()
           target.right-target.left,target.bottom-target.top)
     ELSEIF phase=SLIDE_PENDING THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_VSLID,sliderValue,0,0,0)
+    ELSEIF gadget=8 THEN
+      DESKCORE.Iconify(service,window)
+    ELSEIF gadget=9 THEN
+      DESKCORE.RestoreIcon(service,window)
     ELSEIF gadget=7 THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_FULLED,0,0,0,0)
     ELSE

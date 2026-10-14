@@ -648,6 +648,7 @@ PUBLIC PROC Worker()
     FI
     DESKINPUT.Service(bits)
     DESKINPUT.Advance()
+    DESKPAINT.Sync()
     inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
     ; Present newly consumed motion before spending another quantum on output.
     ; Intersecting draws erase it safely and the final pass restores it.
