@@ -72,7 +72,8 @@
     "CLOSE_BOTTOM": 15,
     "CLOSE_TEXT_X": 4,
     "CLOSE_GLYPH": 5,
-    "FRAME_GADGET": 16,
+    "FRAME_GADGET_WIDTH": 16,
+    "FRAME_GADGET_HEIGHT": 16,
     "FRAME_THUMB_MIN": 8,
     "FRAME_MIN_WIDTH": 64,
     "FRAME_MIN_SCROLL_HEIGHT": 80,
@@ -86,7 +87,14 @@
     "FRAME_INFO": 16,
     "FRAME_INFO_HEIGHT": 12,
     "FRAME_BORDERLESS": 512,
-    "FRAME_ICONIFIED": 1024
+    "FRAME_ICONIFIED": 1024,
+    "MENU_BAR_HEIGHT": 16,
+    "MENU_ROW_HEIGHT": 16,
+    "MENU_TEXT_Y": 4,
+    "TILE_LEFT": 104,
+    "TILE_WIDTH": 88,
+    "TILE_HEIGHT": 16,
+    "TILE_BOTTOM": 2
   },
   "records": {
     "Event": [

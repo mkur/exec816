@@ -6,6 +6,7 @@ USE AESMENU
 USE AESGUI
 USE AESWINDOWSTATE
 USE DESKSTATE
+USE DESKTYPES
 USE DESKWIDGETS
 USE WIDGETTYPES
 USE CONSOLEBITMAP
@@ -194,7 +195,9 @@ PROC HeadingBounds(INT title LAYERTYPES.Rect POINTER bounds)
   top=menu.y(box)
   IF left<0 THEN left=0 FI
   IF left+object.width>640 THEN left=640-object.width FI
-  IF top<16 THEN top=16 FI
+  IF top<DESKTYPES.MENU_BAR_HEIGHT THEN
+    top=DESKTYPES.MENU_BAR_HEIGHT
+  FI
   IF top+object.height>240 THEN top=240-object.height FI
   REGIONS.Assign(bounds,left,top,left+object.width,top+object.height)
 
@@ -299,7 +302,7 @@ PROC DamageObject(INT index BYTE popup)
   active=menu.parent(menu.title(0))
   IF menu.parent(index)=active THEN
     REGIONS.Assign(@bounds,BAR_LEFT+menu.x(index),0,
-        BAR_LEFT+menu.x(index)+object.width,16)
+        BAR_LEFT+menu.x(index)+object.width,DESKTYPES.MENU_BAR_HEIGHT)
     status=LAYERS.Invalidate(@desktop.scene,DESKSTATE.barLayer,@bounds)
   ELSEIF popup<>0 THEN
     box=menu.box(heading)

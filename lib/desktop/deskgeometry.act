@@ -18,7 +18,7 @@ PUBLIC INT FUNC Right(CARD kind)
     RETURN(0)
   FI
 RETURN(IF (kind & DESKTYPES.FRAME_VERTICAL)<>0 THEN
-    DESKTYPES.FRAME_GADGET ELSE DESKTYPES.WORK_RIGHT FI)
+    DESKTYPES.FRAME_GADGET_WIDTH ELSE DESKTYPES.WORK_RIGHT FI)
 
 PUBLIC INT FUNC Bottom(CARD kind)
 
@@ -26,7 +26,7 @@ PUBLIC INT FUNC Bottom(CARD kind)
     RETURN(0)
   FI
 RETURN(IF (kind & DESKTYPES.FRAME_SIZER)<>0 THEN
-    DESKTYPES.FRAME_GADGET ELSE DESKTYPES.WORK_BOTTOM FI)
+    DESKTYPES.FRAME_GADGET_HEIGHT ELSE DESKTYPES.WORK_BOTTOM FI)
 
 PUBLIC PROC Work(CARD kind
     LAYERTYPES.Rect POINTER bounds,work)
@@ -45,14 +45,14 @@ RETURN
 PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds,track)
 
-  REGIONS.Assign(track,bounds.right-DESKTYPES.FRAME_GADGET,
+  REGIONS.Assign(track,bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
       bounds.top+Top(window.frameKind),bounds.right-1,
       bounds.bottom-Bottom(window.frameKind))
   IF (window.frameKind & DESKTYPES.FRAME_UPARROW)<>0 THEN
-    track.top==+DESKTYPES.FRAME_GADGET
+    track.top==+DESKTYPES.FRAME_GADGET_HEIGHT
   FI
   IF (window.frameKind & DESKTYPES.FRAME_DNARROW)<>0 THEN
-    track.bottom==-DESKTYPES.FRAME_GADGET
+    track.bottom==-DESKTYPES.FRAME_GADGET_HEIGHT
   FI
 
 RETURN
@@ -99,25 +99,25 @@ PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     BEGIN
       LET right=bounds.right-IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
-          THEN INT(DESKTYPES.FRAME_GADGET) ELSE INT(0) FI
-      IF x>=right-DESKTYPES.FRAME_GADGET AND x<right THEN
+          THEN INT(DESKTYPES.FRAME_GADGET_WIDTH) ELSE INT(0) FI
+      IF x>=right-DESKTYPES.FRAME_GADGET_WIDTH AND x<right THEN
         RETURN(8)
       FI
     END
   FI
 
   IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0
-      AND x>=bounds.right-DESKTYPES.FRAME_GADGET AND x<bounds.right
+      AND x>=bounds.right-DESKTYPES.FRAME_GADGET_WIDTH AND x<bounds.right
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     RETURN(7)
   FI
 
-  IF x<bounds.right-DESKTYPES.FRAME_GADGET OR x>=bounds.right
+  IF x<bounds.right-DESKTYPES.FRAME_GADGET_WIDTH OR x>=bounds.right
       OR y<bounds.top+Top(window.frameKind) OR y>=bounds.bottom THEN
     RETURN(0)
   FI
   IF (window.frameKind & DESKTYPES.FRAME_SIZER)<>0
-      AND y>=bounds.bottom-DESKTYPES.FRAME_GADGET THEN
+      AND y>=bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT THEN
     RETURN(1)
   FI
   IF (window.frameKind & DESKTYPES.FRAME_VERTICAL)=0

@@ -2,6 +2,7 @@
 MODULE AESMENU
 USE EXEC
 USE AESTYPES
+USE DESKTYPES
 USE AESSTATE
 USE AESLOCKS
 
@@ -97,11 +98,11 @@ BYTE FUNC Prepare(AESSTATE.Menu POINTER menu)
       LET heading=Object(menu,title)
       LET dropdown=Object(menu,box)
       IF heading.kind<>G_TITLE OR heading.width<=0 OR heading.height<=0
-          OR heading.height>16 OR menu.x(title)<0
+          OR heading.height>DESKTYPES.MENU_BAR_HEIGHT OR menu.x(title)<0
           OR menu.x(title)+heading.width>432
           OR dropdown.kind<>G_BOX OR dropdown.width<=0
           OR dropdown.width>640 OR dropdown.height<=0
-          OR dropdown.height>224 THEN
+          OR dropdown.height>240-DESKTYPES.MENU_BAR_HEIGHT THEN
         RETURN(0)
       FI
       menu.title(menu.titles)=title

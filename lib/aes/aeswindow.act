@@ -403,7 +403,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       ELSE
         item.view.vsize=request.intin(2)
       FI
-      REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET,
+      REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
           layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
           layer.bounds.bottom)
       status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)

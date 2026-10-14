@@ -179,7 +179,7 @@ WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
     Forbid();
     v = ExecAESFindView(c,handle);
     if (v) { c->view=v;c->request.view=v; }
-    if (handle == 0 && field == WF_WXYWH) { *o2 = 16; *o3 = 640; *o4 = 224; }
+    if (handle == 0 && field == WF_WXYWH) { *o2 = DESKTOP_MENU_BAR_HEIGHT; *o3 = 640; *o4 = 240-DESKTOP_MENU_BAR_HEIGHT; }
     else if (field == WF_TOP && (handle == 0 || (v != NULL && handle == v->handle)))
         *o1 = c->directory->topWindow;
     else if (v == NULL || handle <= 0 || handle != v->handle)
@@ -219,9 +219,9 @@ WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
     struct ExecAESContext *c = ExecAESContext();
     LONG left = x, top = y, width = w, height = h;
     WORD leftInset=kind ? DESKTOP_WORK_LEFT:0;
-    WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_RIGHT;
+    WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_WORK_RIGHT;
     WORD inset = DESKTOP_WORK_TOP + (kind & INFO ? DESKTOP_FRAME_INFO_HEIGHT:0);
-    WORD bottom = kind & SIZER ? DESKTOP_FRAME_GADGET:DESKTOP_WORK_BOTTOM;
+    WORD bottom = kind & SIZER ? DESKTOP_FRAME_GADGET_HEIGHT:DESKTOP_WORK_BOTTOM;
     *ox = *oy = *ow = *oh = 0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }

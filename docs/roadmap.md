@@ -482,6 +482,10 @@ The [window iconification design](plans/gem4xe/window-iconification-design.md)
 and [plan](plans/gem4xe/window-iconification-plan.md) add presenter-owned
 Shell/AES tiles and Windows-menu restoration without suspending applications.
 
+The proposed [compact window geometry refactor](plans/gem4xe/compact-window-geometry-plan.md)
+reclaims vertical work space with eleven-row titles/menus and 22×11 gadgets,
+including Shell cell alignment, iconified tiles and the unchanged Files 4×4 grid.
+
 The [window moves and Shell backing plan](plans/gem4xe/window-backing-plan.md)
 implements even-X AES geometry, completed-window copies and a dedicated 40 KiB
 Shell bitmap maintained while covered, including batched backing scrolls.

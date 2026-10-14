@@ -265,8 +265,10 @@ PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
   WHILE @service.windows(slot)<>window DO
     slot==+1
   OD
-  left=104+INT(slot)*88
-  IconCheck(LAYERS.Bounds(@service.scene,window.layer,left,222,88,16))
+  left=DESKTYPES.TILE_LEFT+INT(slot)*DESKTYPES.TILE_WIDTH
+  IconCheck(LAYERS.Bounds(@service.scene,window.layer,left,
+      240-DESKTYPES.TILE_BOTTOM-DESKTYPES.TILE_HEIGHT,
+      DESKTYPES.TILE_WIDTH,DESKTYPES.TILE_HEIGHT))
   IconCheck(DESKSTATE.Raise(window.layer))
   RestoreFocus(service,window.id)
   IF window.kind=DESKTYPES.CONTENT_AES THEN

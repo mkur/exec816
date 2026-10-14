@@ -1,0 +1,198 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "baseline": "ff5911e",
+  "slices": {
+    "CF1": {
+      "status": "pass",
+      "host_tests": 459,
+      "host_skips": 4,
+      "native": {
+        "path": "build/compact-window-geometry/cf1-native/results.json",
+        "sha256": "ff0a8eac5284f62aaae664c908216c5bc4031fde323b223533e150dbc5879b87",
+        "status": "pass",
+        "checks": 362,
+        "guards": "intact",
+        "stack_usage": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 181,
+            "remaining_above_floor": 1099
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 133,
+            "remaining_above_floor": 923
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 18,
+            "remaining_above_floor": 1038
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 398,
+            "remaining_above_floor": 1906
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 24,
+            "remaining_above_floor": 232
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 258,
+            "remaining_above_floor": 1022
+          }
+        },
+        "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "host_compiler_profile": "release",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "presentation": {
+        "path": "build/compact-window-geometry/cf1-presentation/presentation-results.json",
+        "sha256": "507b998b5f6bfffb22abaec5918d0ecd89acf4dfd9dce9d6530a3a870702b0ed",
+        "status": "pass",
+        "checks": 117,
+        "guards": "intact",
+        "stack_usage": {},
+        "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "host_compiler_profile": "release",
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$c017f1e4033f056f",
+          "actual_kernel_id": "$c017f1e4033f056f",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "pixel_scenes": 19,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "source_sha256": {
+        "abi/desktop.json": "6cd9f05035682421e5ae75bcf4aa38438e49556032ddddd7bb6746c596e27b2b",
+        "c/calypsi/aes-windows.c": "43973a49b320e0bc694f93cdd0ef311e2acec754d43f98533a901d5bcd925181",
+        "c/include/exec816/desktop-geometry.h": "3cd68086dc5e888a9367c974fb7182d4895075a43f29c08d6cf2f11f0ae2f4ba",
+        "lib/aes/aesmenu.act": "6d0c827525e41e49f45da6b4c4051c00e5a8490ee1940248efc6584d7293919f",
+        "lib/aes/aeswindow.act": "021e173aa9465b603eb314f6b4d5fafb792a256a8d23745efff0413f3cb8d32b",
+        "lib/desktop/deskappmenu.act": "174b06e9dd8c311e688b243ec32882401f3e08d5fa984350ca614a00f277546f",
+        "lib/desktop/deskcore.act": "0b0f57cf3f4ff9b72100d60bc6fef2f67a51aa62b25d7c06ddc67979a300d856",
+        "lib/desktop/deskdrag.act": "5452a76adb3ff58532f0b3c7a95ece183b9fcd0a8a930a8d4b98ee3f35297e07",
+        "lib/desktop/deskgeometry.act": "e5387559a325332912d9efe333f018be6a506829a5cd1d860410b9e01ac14774",
+        "lib/desktop/deskmenu.act": "9838c37a93ed737d824181f506ccd32ed96e33d4a279ddda03aef1584d2444d4",
+        "lib/desktop/deskmenupaint.act": "70c11b523690743c04679b85590ead843f2b97d9b97aadada00033bdfec2c8fe",
+        "lib/desktop/desktop-frame.c": "80cca535f6a495a7e7c7e517c7af254bb6465763219d36fbb8d4558843fdd2f1",
+        "lib/desktop/desktypes.act": "aa39f5a54bec150c8c54c1e81051c93081298061ce9c6e05f6dec225415d8cb3",
+        "tools/generate_desktop.py": "82a062e3c1791a602ee8a74687ff038d5d20d8ec4b0bc1edb8ab58ba24145608"
+      }
+    }
+  }
+}

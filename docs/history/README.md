@@ -1,5 +1,8 @@
 # Historical records
 
+- [Compact window geometry](compact-window-geometry.md): separate frame metrics
+  and development progress toward compact title bars and gadgets.
+
 - [Window iconification](window-iconification.md): presenter-owned tiles,
   normal geometry, hidden application progress and menu recovery.
 

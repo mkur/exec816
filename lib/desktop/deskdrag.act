@@ -434,7 +434,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           FI
 
           IF window.kind<>DESKTYPES.CONTENT_CONSOLE
-              AND sample.x<layer.bounds.left+DESKTYPES.TITLE_HEIGHT THEN
+              AND sample.x<layer.bounds.left+DESKTYPES.FRAME_GADGET_WIDTH THEN
             phase=0
             windowId=0
             RETURN(1)
