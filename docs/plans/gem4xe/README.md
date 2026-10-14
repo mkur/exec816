@@ -1,5 +1,13 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [rectangle drawing overhead plan](rectangle-overhead-plan.md)
+addresses the AES/display costs surrounding the existing fast solid-fill path.
+RP1–RP5 shorten physical reservations, publish mouse state on changes, simplify
+VDI bindings and remove measured UPDATE duplication, with focused checks and
+an unchanged ordinary G4BENCH comparison. The
+[starting observation](../../development/rectangle-overhead-baseline.json)
+separates drawing CPU from presenter and interrupt costs.
+
 The implemented [window and menu response plan](window-menu-response-plan.md)
 removes redundant shared-menu RPCs and false cache invalidations, raises folders
 before updating their menus, supplies the correct initial path title, shortens

@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Rectangle drawing overhead](gem4xe/rectangle-overhead-plan.md): proposed
+  RP1–RP5 slices for shorter display reservations, changed-only mouse snapshots,
+  direct rectangle bindings, measured UPDATE cleanup and focused comparisons.
+
 - [Command loader refactor](command-loader-refactor-plan.md): proposed bulk text/data
   copying and complete-width scalar decoding, preserving malformed-input behavior
   and measuring matched warm SIO/IDE loading.
