@@ -324,7 +324,6 @@ RETURN
 ; Keep source changes and pointer highlights off the screen until paint retires.
 PUBLIC PROC Snapshot(BYTE popup)
   BYTE index
-  LONGCARD mask
 
   IF Current()=0 THEN
     RETURN
@@ -340,14 +339,12 @@ PUBLIC PROC Snapshot(BYTE popup)
     IF paintSelected>=0 THEN DamageObject(paintSelected,popup) FI
     IF selected>=0 THEN DamageObject(selected,popup) FI
   FI
-  mask=1
   FOR index=0 TO menu.count-1 DO
-    IF (menu.damage & mask)<>0 THEN
+    IF menu.damage(index)<>0 THEN
       DamageObject(INT(index),popup)
+      menu.damage(index)=0
     FI
-    mask=mask LSH 1
   OD
-  menu.damage=0
   paintHeading=heading
   paintSelected=selected
   paintOpened=popup

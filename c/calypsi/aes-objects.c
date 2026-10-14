@@ -91,9 +91,11 @@ WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
     WORD changed=0,left=0,top=0,right=0,bottom=0,okay=1;
     UWORD i;
     if (!c || !ExecAESEnter(c)) return 0;
-    if (!c->workstation || !c->view || !c->view->shown || !c->view->updates) {
+    if (!c->workstation || !c->view || !c->view->updates) {
         c->diagnostic=AES_BUSY; c->busy=0; return 0;
     }
+    /* Iconified owners still publish model changes. Their UPDATE snapshot
+     * has no visible rectangles, so traversal records damage without drawing. */
     v=c->view; p.tree=tree; p.context=c;
     if (depth>MAX_DEPTH) depth=MAX_DEPTH;
     if (w<=0 || h<=0) { c->busy=0; return 1; }

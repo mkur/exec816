@@ -1,5 +1,15 @@
 # Implementation plans
 
+- [Window frames and desktop exposure](gem4xe/window-frame-exposure-plan.md):
+  proposed FE1–FE4 slices for larger cold frame batches, saved window frames,
+  precise desktop repair on close and focused before/after demo checks.
+
+- [Window preservation](gem4xe/window-preservation-plan.md): implemented WP1–WP4
+  slices for complete visible-rectangle cache blits, an opt-in application
+  change contract, shipped-app adoption and focused latency/demo checks.
+  [Development results](../history/window-preservation.md) record one-copy client
+  restores without duplicate Files redraws and remaining frame latency.
+
 - [Files navigation and appearance](gem4xe/files-navigation-appearance-plan.md):
   FR1–FR5 implemented: distinct GEM gadgets, a compact grid with a top summary,
   virtual parent navigation and shared colour icons.

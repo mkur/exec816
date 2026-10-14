@@ -13,6 +13,7 @@ USE DESKMENUCACHE
 USE DESKMENUPAINT
 USE LAYERTYPES
 USE LAYERS
+USE LAYERCACHE
 USE REGIONS
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
@@ -27,7 +28,7 @@ USE AESWINDOWSTATE
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex,glyphOffset
 INT nextY
-BYTE nextSlot,started,menuTurns
+BYTE nextSlot,started,menuTurns,partIndex
 CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
@@ -256,7 +257,11 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
   DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
   IF started=PAINT_CACHE THEN
-    RETURN(DESKCACHE.Restored(service))
+    okay=DESKCACHE.Restored(service)
+    IF okay=0 AND window.kind=DESKTYPES.CONTENT_AES THEN
+      AESWINDOWSTATE.Damage(window,@strip)
+    FI
+    RETURN(okay)
   FI
   IF started=PAINT_BACKING THEN
     RETURN(CONSOLEBITMAP.Failed()=0)
@@ -282,14 +287,17 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=PAINT_CLIENT THEN
-    ; Cache completion still retires the whole client strip. A cache miss
-    ; paints its background once before the text/command continuation starts.
+    ; Participating owners report hidden model changes at UPDATE. A matching
+    ; image can satisfy exposure without inventing an application repaint.
     IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       REGIONS.Intersect(@client,@strip,@area)
-      IF window.kind=DESKTYPES.CONTENT_AES THEN
-        AESWINDOWSTATE.Damage(window,@area)
-      FI
       cached=DESKCACHE.Restore(service,window,@client,@area)
+      IF window.kind=DESKTYPES.CONTENT_AES THEN
+        IF cached<>DESKTYPES.CACHE_PENDING
+            OR AESWINDOWSTATE.Preserves(window)=0 THEN
+          AESWINDOWSTATE.Damage(window,@area)
+        FI
+      FI
       IF cached=DESKTYPES.CACHE_PENDING THEN
         started=PAINT_CACHE
         RETURN(2)
@@ -506,12 +514,80 @@ PUBLIC BYTE FUNC Ready()
 RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
     AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
 
+; Visit the title band, client, then remaining frame pieces. Partition before
+; limiting frame height: a full client copy never enters the frame scratch.
+BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
+    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER damage)
+  LAYERTYPES.Rect client,part
+  BYTE whole
+
+  LET service=DESKSTATE.Get()
+  WHILE partIndex<5 DO
+    whole=0
+    IF window=NULL OR window.iconified<>0 THEN
+      IF partIndex<>0 THEN
+        RETURN(0)
+      FI
+      REGIONS.Copy(damage,@strip)
+      whole=(started=PAINT_POPUP_CACHE)
+    ELSE
+      DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
+      REGIONS.Copy(@layer.bounds,@part)
+      CASE partIndex OF
+      WHEN 0 THEN
+        part.bottom=client.top
+      WHEN 1 THEN
+        REGIONS.Copy(@client,@part)
+      WHEN 2 THEN
+        part.top=client.bottom
+      WHEN 3 THEN
+        REGIONS.Assign(@part,layer.bounds.left,client.top,
+            client.left,client.bottom)
+      ELSE
+        REGIONS.Assign(@part,client.right,client.top,
+            layer.bounds.right,client.bottom)
+      ESAC
+      REGIONS.Intersect(damage,@part,@strip)
+      IF partIndex=1 THEN
+        IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+          BEGIN
+            LET entry=CONSOLEWINDOWS.Find(window.console)
+            whole=CONSOLEDISPLAY.BackingReady(
+                CONSOLETYPES.Presentation POINTER(entry.view),
+                CONSOLETYPES.Instance POINTER(entry.instance))
+          END
+        ELSE
+          whole=(started=PAINT_CACHE OR window.kind=DESKTYPES.CONTENT_AES
+              OR DESKCACHE.Lookup(service,window,
+                CARD(client.right-client.left),
+                CARD(client.bottom-client.top))<>LAYERCACHE.NO_SLOT)
+        FI
+        whole=(whole<>0 AND ((strip.left OR strip.right) & 1)=0)
+      FI
+    FI
+    IF REGIONS.Empty(@strip)=0 THEN
+      IF nextY<0 THEN
+        nextY=strip.top
+      FI
+      IF nextY<strip.bottom THEN
+        strip.top=nextY
+        IF whole=0 AND strip.bottom>nextY+STRIP_HEIGHT THEN
+          strip.bottom=nextY+STRIP_HEIGHT
+        FI
+        RETURN(1)
+      FI
+    FI
+    partIndex==+1
+    nextY=-1
+  OD
+
+RETURN(0)
+
 ; One strip step. Return 2 for an unfinished strip, 1 for completed-strip
 ; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
 PUBLIC BYTE FUNC Pump()
-  BYTE count,slot,status,done,fullConsole,backing
-  LAYERTYPES.Rect client
+  BYTE count,slot,status,done,fullConsole
   DESKTYPES.Window POINTER window
   LAYERTYPES.Layer POINTER candidate
 
@@ -528,6 +604,15 @@ PUBLIC BYTE FUNC Pump()
     candidate=NULL
     IF menuTurns<2 THEN
       candidate=MenuLayer()
+    FI
+    IF candidate=NULL THEN
+      window=DESKCORE.Find(service,service.focus)
+      IF window<>NULL THEN
+        candidate=LAYERS.Find(@service.scene,window.layer)
+        IF Damaged(candidate)=0 THEN
+          candidate=NULL
+        FI
+      FI
     FI
     IF candidate=NULL THEN
       FOR count=0 TO LAYERTYPES.SLOT_COUNT-1 DO
@@ -574,7 +659,8 @@ PUBLIC BYTE FUNC Pump()
         FI
         paintLayer=candidate.id
         regionIndex=0
-        nextY=service.scene.work.rects(0).top
+        partIndex=0
+        nextY=-1
         started=0
         IF candidate.id=DESKSTATE.popupLayer AND service.scene.work.count=1
             AND REGIONS.Equal(@service.scene.work.rects(0),@candidate.bounds)<>0 THEN
@@ -595,39 +681,23 @@ PUBLIC BYTE FUNC Pump()
   LET region=LAYERS.PaintRegion(@service.scene,paintToken)
   LET layer=LAYERS.Find(@service.scene,paintLayer)
   window=ByLayer(paintLayer)
-  REGIONS.Copy(@region.rects(regionIndex),@strip)
-  strip.top=nextY
-  backing=0
-  IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
-      AND window.iconified=0 THEN
-    BEGIN
-      LET entry=CONSOLEWINDOWS.Find(window.console)
-      LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-      LET instance=CONSOLETYPES.Instance POINTER(entry.instance)
-      DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
-      backing=CONSOLEDISPLAY.BackingReady(view,instance)<>0
-          AND REGIONS.Contains(@client,@strip)<>0
-          AND ((strip.left OR strip.right) & 1)=0
-    END
+  done=1
+  IF SelectStrip(window,layer,@region.rects(regionIndex))<>0 THEN
+    done=PaintStrip(window,layer)
   FI
-  IF backing=0 AND started<>PAINT_POPUP_CACHE
-      AND strip.bottom>nextY+STRIP_HEIGHT THEN
-    strip.bottom=nextY+STRIP_HEIGHT
-  FI
-
-  done=PaintStrip(window,layer)
   IF done=2 THEN
     RETURN(2)
   FI
 
   IF done<>0 THEN
-    nextY=strip.bottom
+    IF partIndex<5 THEN
+      nextY=strip.bottom
+    FI
     started=0
-    IF nextY=region.rects(regionIndex).bottom THEN
+    IF SelectStrip(window,layer,@region.rects(regionIndex))=0 THEN
       regionIndex==+1
-      IF regionIndex<region.count THEN
-        nextY=region.rects(regionIndex).top
-      FI
+      partIndex=0
+      nextY=-1
     FI
 
     IF regionIndex<region.count THEN
@@ -639,7 +709,8 @@ PUBLIC BYTE FUNC Pump()
     status=LAYERS.AdvancePaint(@service.scene,paintToken)
     IF status=LAYERTYPES.OK THEN
       regionIndex=0
-      nextY=region.rects(0).top
+      partIndex=0
+      nextY=-1
       RETURN(1)
     FI
 

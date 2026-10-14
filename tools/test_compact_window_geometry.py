@@ -35,7 +35,7 @@ class Compact(Iconification):
         desk=next(a for a in instances(b,s.p,directory) if a['name']=='desktop')['symbols']['GEMDesk']
         base=s.number(desk+D['folders'],4);wait_listing(s,base)
         menus.select('SYS:');initial=work(base)
-        require(initial[2:]==(432,174),'Default Files work size: '+str(initial))
+        require(initial[2:]==(438,174),'Default Files work size: '+str(initial))
         require(s.number(base+F['columns'],2)==4 and s.number(base+F['visible'],2)==16,'Lost 4 by 4 grid')
         select(s,base,'C',click);key('RETURN');wait_listing(s,base)
         require(text(base,'path')=='SYS:C','Directory navigation failed')
@@ -47,15 +47,15 @@ class Compact(Iconification):
             icon=struct.unpack('<IIIH10h',b.memdump(obj[6],34))
             require(icon[8:10]==(32,16),'Application icon artwork was resized')
         # Full/restore and resize use actual title/size gadgets.
-        x,y,w,h=work(base);click(x+w+11,y-6);s.frames(150)
-        require(work(base)==(8,22,610,207),'Maximized Files work size: '+str(work(base)))
+        x,y,w,h=work(base);click(x+w+8,y-6);s.frames(150)
+        require(work(base)==(8,22,616,207),'Maximized Files work size: '+str(work(base)))
         shot('compact-files-full')
-        click(629,16);s.frames(150);require(work(base)==initial,'Full restore lost default bounds')
+        click(632,16);s.frames(150);require(work(base)==initial,'Full restore lost default bounds')
         x,y,w,h=work(base)
-        drag((x+w+11,y+h+5),(x+270+11,y+122+5))
+        drag((x+w+8,y+h+5),(x+270+8,y+122+5))
         require(work(base)[2:]==(270,122),'Smaller resize work size: '+str(work(base)))
         require(s.number(base+F['columns'],2)==2 and s.number(base+F['visible'],2)==4,'Smaller layout did not reflow')
-        x,y,w,h=work(base);drag((x+w+11,y+h+5),(x+432+11,y+174+5))
+        x,y,w,h=work(base);drag((x+w+8,y+h+5),(x+438+8,y+174+5))
         require(work(base)==initial,'Resize restore lost default bounds')
         key('ESC');wait_listing(s,base);require(text(base,'path')=='SYS:','Parent shortcut failed')
         # A topmost clean move must not repaint the application.
@@ -81,11 +81,11 @@ class Compact(Iconification):
                 name,shift=KEYS[ch];menus.key(name,shift=shift)
             key('RETURN');wait_listing(s,target)
             require(text(target,'path')==value,'Path dialog failed')
-        click(296,5);click(304,17);s.frames(150)
+        click(296,5);click(304,28);s.frames(150)
         target=s.number(desk+D['folders']+4,4);require(target,'Second folder did not open')
         wait_listing(s,target);path(target,'RAM:')
         def place(model,left):
-            x,y,w,h=work(model);drag((x+w+11,y+h+5),(x+274+11,y+154+5))
+            x,y,w,h=work(model);drag((x+w+8,y+h+5),(x+274+8,y+154+5))
             x,y,w,h=work(model);drag((x+100,y-6),(left+108,25))
             require(work(model)==(left+8,31,274,154),'Folder placement: '+str(work(model)))
         place(target,328);menus.select('SYS:');place(base,8)
@@ -102,7 +102,7 @@ class Compact(Iconification):
         shot('compact-folder-drop')
         menus.select('RAM:');menus.close();s.frames(120);menus.select('SYS:')
         # Restore the default size, then test Shell alignment at both clamps.
-        x,y,w,h=work(base);drag((x+w+11,y+h+5),(x+432+11,y+174+5))
+        x,y,w,h=work(base);drag((x+w+8,y+h+5),(x+438+8,y+174+5))
         menus.select('Shell')
         s.command('CMP SYS:README.TXT RAM:README.TXT')
         types=layout();wf=types['Window']['fields'];sf=types['Service']['fields'];layers=layer_layout()
@@ -121,7 +121,7 @@ class Compact(Iconification):
         drag((80,18),(639,239));require(shell_bounds()==(112,61,640,234),'Shell bottom clamp: '+str(shell_bounds()))
         shot('compact-shell-bottom')
         drag((192,66),(original[0]+80,original[1]+5));require(shell_bounds()==original,'Shell restore coordinates')
-        self.geometry=dict(default_work=[432,174],maximized_work=[610,207],grid=[4,4],icon_pixels=[32,16],
+        self.geometry=dict(default_work=[438,174],maximized_work=[616,207],grid=[4,4],icon_pixels=[32,16],
             small_work=[270,122],clean_move_repaints=0,warm_heading_recaptures=0,folder_drop=True,
             shell_top=[0,13,528,186],shell_bottom=[112,61,640,234])
         super().exercise(s)

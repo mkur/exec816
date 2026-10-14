@@ -146,9 +146,10 @@ def physical(b, p, foreign, report):
     # Compare the complete gadget strip with an independent raster. Logical
     # slider size 250/position 1000 gives a 35-pixel thumb at absolute Y=159.
     raster=Raster(font)
-    frame(raster,(32,32,312,216),b'',True,close=True,kind=491,slider=(127,35))
+    frame(raster,(32,32,312,216),b'',True,close=True,kind=495,slider=(127,35))
     move(600,220);frames(40)
-    compare(raster,(290,43,312,216))
+    compare(raster,(32,32,312,43))
+    compare(raster,(296,43,312,216))
     observations=[]
     for start,x,y,expected in ((12,304,48,2),(14,304,199,3),(16,304,80,0)):
         phase(start);move(x,y);edge(1);edge(0);phase(start+1)
@@ -167,5 +168,5 @@ def physical(b, p, foreign, report):
     b.poke16(sy['AESPhysicalGo'],23);phase(24)
     report['gadgets']=dict(resize=[32,32,280,184],escape_cancel=True,
         deferred_geometry=True,arrow_pages=[2,3,0,1],slider_endpoints=[0,1000],
-        deferred_slider=True,scene_token=0,title_pixels=1800,frame_pixels=3806,outline_pixels="exact")
+        deferred_slider=True,scene_token=0,title_pixels=4880,frame_pixels=2768,outline_pixels="exact")
     b.bp_clear_all()

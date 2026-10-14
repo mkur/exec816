@@ -351,7 +351,10 @@ PUBLIC BYTE FUNC Restore(BYTE keep)
 
 RETURN(1)
 
-; Cached historical pixels do not replace conventional exposure delivery.
+; Remembered exposure contains only successful restores. Its bounding union is
+; notification for conventional owners, never proof of coverage to retire work.
+; Preserved owners need no new obligation; failed restores remain Layers damage
+; and existing application obligations survive this path unchanged.
 PROC Exposed()
   BYTE index
   CARD rect
@@ -361,7 +364,8 @@ PROC Exposed()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(index)
-      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES THEN
+      IF window.id<>0 AND window.kind=DESKTYPES.CONTENT_AES
+          AND AESWINDOWSTATE.Preserves(window)=0 THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
           DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)

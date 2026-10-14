@@ -23,6 +23,10 @@ for name in FIELDS:
 for name in FIELDS:
     if FIELDS[name]>FIELDS['icons']:FIELDS[name]+=38
 SIZE+=62
+# About adds one menu OBJECT; the remaining model stays application-owned.
+for name in FIELDS:
+    if FIELDS[name]>FIELDS['bar']:FIELDS[name]+=24
+SIZE+=24
 ICONS=8
 JOB_SIZE=974
 JOB_FIELDS=dict(owner=0,input=4,output=8,copied=12,error=16,cleanupError=20,

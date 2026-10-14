@@ -77,11 +77,11 @@ def paint(bridge,symbols,r,title,bounds):
                     labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
             if objects[2][3]==28:  # Copy progress uses an ordinary string.
                 objects[0][7]=objects[0][8]=0
-                draw(r,objects,labels,(left+8,top+11,right-22,bottom-11),clip_strings=True)
+                draw(r,objects,labels,(left+8,top+11,right-16,bottom-11),clip_strings=True)
                 return
             field=objects[2][:];objects[2][3]=25;objects[2][6]=0
             objects[0][7]=objects[0][8]=0
-            draw(r,objects,labels,(left+8,top+11,right-22,bottom-11),clip_strings=True)
+            draw(r,objects,labels,(left+8,top+11,right-16,bottom-11),clip_strings=True)
             x,y=left+8+field[7],top+11+field[8];w,h=field[9:11]
             text=bridge.memdump(base+F['editText'],128).split(b'\0')[0]
             index=int.from_bytes(bridge.memdump(base+F['editIndex'],2),'little')
@@ -119,12 +119,12 @@ def paint(bridge,symbols,r,title,bounds):
         focus=[obj[:] for obj in (objects[1],*objects[-4:])]
         objects[1][4]|=128
         objects[0][7]=objects[0][8]=0
-        draw(r,objects,labels,(left+8,top+11,right-22,bottom-11),clip_strings=True)
-        for obj in icons:icon(bridge,r,obj,(left+8,top+11,right-22,bottom-11))
+        draw(r,objects,labels,(left+8,top+11,right-16,bottom-11),clip_strings=True)
+        for obj in icons:icon(bridge,r,obj,(left+8,top+11,right-16,bottom-11))
         if not focus[0][4]&128:
             focus[0][0:3]=[-1,1,4]
             for i in range(1,5):focus[i][0]=i+1 if i<4 else 0
-            draw(r,focus,{},(left+8,top+11,right-22,bottom-11))
+            draw(r,focus,{},(left+8,top+11,right-16,bottom-11))
         if dialog==6:
             raw=bridge.memdump(base+F['dialogTree'],7*24)
             objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(7)]
@@ -133,9 +133,9 @@ def paint(bridge,symbols,r,title,bounds):
                 if obj[3] in (26,28):
                     labels[i]=bridge.memdump(obj[6],128).split(b'\0')[0].decode('ascii');obj[6]=i
             objects[0][7]-=left+8;objects[0][8]-=top+11
-            draw(r,objects,labels,(left+8,top+11,right-22,bottom-11),clip_strings=True)
+            draw(r,objects,labels,(left+8,top+11,right-16,bottom-11),clip_strings=True)
         return
-    require(title==b'GEM Control Panel','Unknown GEM desktop app: '+repr(title))
+    require(title==b'Control Panel','Unknown GEM desktop app: '+repr(title))
     base=symbols['GEMPanel'];raw=bridge.memdump(base+178,192)
     objects=[list(struct.unpack_from('<hhhHHHIhhhh',raw,i*24)) for i in range(8)]
     labels={}

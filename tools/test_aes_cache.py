@@ -20,7 +20,7 @@ def physical(b,p,foreign,report):
         run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
     slot=layers_layout()['CacheSlot'];cache=layout()['Service']['fields']['cache']
     previous=None;report['aes_cache']=[]
-    for phase in range(1,17):
+    for phase in range(1,27):
         reach('dw($%x)=%d'%(sy['AESCachePhase'],phase))
         reach('@frame>=%d'%(b.eval_expr('@frame')+100))
         service=get(at('DESKSTATE','service'),3)
@@ -47,6 +47,12 @@ def physical(b,p,foreign,report):
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
         if phase in (1,2,3,4,6,7,9,10,11,12,14,15):require(valid,'Missing eligible AES image at phase '+str(phase))
         if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
+        if phase in (17,18,19,21,24,25,26):require(valid,'Missing preserved source at phase '+str(phase))
+        if phase in (20,23):require(not valid,'Hidden change/eviction retained preserved source')
+        if phase==19:
+            require(row['restores']>previous['restores'],'Preserved exposure missed its image')
+            require(row['captures']==previous['captures'] and row['patches']==previous['patches'],
+                    'Preserved exposure caused cache maintenance')
         if phase==15:require(row['captures']==previous['captures'],'Sibling update recaptured our image')
         if phase==2:require(row['captures']==previous['captures'],'Title-only change recaptured pixels')
         if phase in (3,12):require(row['restores']==previous['restores'],'Copied AES move replayed its client image')
@@ -55,9 +61,9 @@ def physical(b,p,foreign,report):
             require(row['captures']==previous['captures'],'Small update recaptured whole client')
             require(row['patches']==previous['patches']+1 and
                     row['patched_bytes']==previous['patched_bytes']+64,'Small repair did not copy 16 by 8 pixels')
-        if phase in (1,2,3,4,6,9,10,11,12,14):
+        if phase in (1,2,3,4,6,9,10,11,12,14,26):
             x,y,w,h=struct.unpack('<4h',b.memdump(sy['AESCacheWork'],8))
-            require((w,h)==((216,100) if phase<8 else (224,108)),
+            require((w,h)==((216,112) if phase<8 else (224,120)),
                     'INFO/scroll/size work bounds changed: '+str((x,y,w,h)))
             path=out/('aes-cache-%d.bgra'%phase);frame=b.rawscreen(str(path));pixels=path.read_bytes()
             for yy in range(y,y+h):
@@ -70,6 +76,16 @@ def physical(b,p,foreign,report):
                     offset=yy*frame.stride+(xx+16)*4
                     require(pixels[offset:offset+3]==color,'AES cache pixels %d at %d,%d'%(phase,xx,yy))
             row['work_pixels']='exact'
+        if phase==25:
+            menu_restores=get(at('DESKMENUCACHE','restores'))
+            def frames(n):reach('@frame>=%d'%(b.eval_expr('@frame')+n))
+            b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY ESC down');frames(3)
+            b._cmd_ok('KEY ESC up');b._cmd_ok('KEY CTRL up');frames(100)
+            require(get(at('DESKMENU','menu'),1)==2,'Mixed-owner menu did not open')
+            b._cmd_ok('KEY ESC down');frames(3);b._cmd_ok('KEY ESC up');frames(100)
+            require(get(at('DESKMENUCACHE','restores'))==menu_restores+1,
+                    'Mixed-owner menu missed its saved background')
+            row['mixed_policy_menu_restore']=True
         report['aes_cache'].append(row);previous=row
         b.poke16(sy['AESCacheGo'],phase)
     # The emitted fixture checks genuine exposure after the final phase.

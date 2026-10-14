@@ -21,6 +21,12 @@ describes the pre-AV1 baseline.
 
 ## Existing boundary and the missing information
 
+The implemented [window preservation follow-up](window-preservation-plan.md) adds
+an explicit per-window exception to this design's mandatory exposure-redraw
+rule. It reuses update-boundary invalidation for participating applications and
+adds complete visible-rectangle restores. Ordinary GEM callers retain the
+hidden-model rule below. See its [development results](../../history/window-preservation.md).
+
 Layers owns geometry, stacking, visible regions, damage and scene transactions.
 AES window management runs in the presenter, creates an external-painted layer
 for each application window, and publishes work-area visibility when granting

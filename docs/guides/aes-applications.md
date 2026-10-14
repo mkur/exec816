@@ -152,6 +152,16 @@ retains its recipient through physical release. Release update ownership before
 the ordinary event loop; use mouse control only for a bounded interaction. The application may still exchange messages and
 wait on a timer while holding a lock. Cooperative exit releases nested holds.
 
+For a port that reports all drawable changes, enable
+`wind_set(window,AES_WF_EXEC_PRESERVE,1,0,0,0)` before opening each window.
+Use `ExecAESBeginUpdate(window)` for content publication and drawing, ending
+with `wind_update(END_UPDATE)`. Hidden/iconified model changes need an update
+boundary too; an empty pair invalidates the old image. A deferred renderer
+publishes this invalidation before returning to its event wait.
+Keep handling `WM_REDRAW` for cache misses. Successful saved-pixel exposure
+needs no application repaint. See the
+[preservation contract](../reference/aes.md#opt-in-window-preservation).
+
 ## Build and exercise the optional proof
 
 The checked fixture composes two C entries with the production drawing image,
@@ -266,7 +276,10 @@ The no-option build still starts the standard shell/prime demo.
 
 The optional profile starts a persistent desktop and the shell. Desk launches
 Control Panel, Calculator, Text and Counter on demand; New Window opens another
-folder. Double-click a volume or launcher icon, or select it and press Return.
+folder, and About Exec816 opens a standard GEM alert. Desktop and its icon/tree
+resource travel in the XEX and are installed as `RAM:DESKTOP.APP` and
+`RAM:DESKTOP.RSC` at startup. The other APPs remain on disk. Double-click a volume
+or launcher icon, or select it and press Return.
 Closing a folder leaves programs launched from it running. The desktop owns up
 to three child handles and collects their completion; quitting the desktop or
 shell stops and collects those children.
@@ -276,8 +289,8 @@ selection, directory snapshot and scroll position. View selects Icons/List and
 Name/Disk order. The information line gives the directory totals. Drag the lower
 right gadget to resize, use arrows/track/thumb to scroll, and click the upper
 right gadget for full/restore. Each snapshot holds at most 256 entries and the
-view reuses at most sixteen visible objects. Default 462×196 windows have a 432×174 work area and show a
-4×4 grid. Titles are eleven rows high, with 22×11 system gadgets; fonts and
+view reuses at most sixteen visible objects. Default 462×196 windows have a 438×174 work area and show a
+4×4 grid. Titles are eleven rows high, with 16×11 system gadgets; fonts and
 icon artwork keep their original pixel sizes. The desktop includes `RAM:` for temporary writable storage.
 
 Path (P), New Folder (N) and Rename (R) use inline editable dialogs. Tab/Shift-Tab

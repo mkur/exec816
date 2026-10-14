@@ -5,6 +5,9 @@ A 640x240 colour desktop, folder windows and the native shell.
 Warm grey surfaces, blue-teal icons and patterned active titles give it an
 Exec816 identity inspired by GEM and Workbench.
 Panel, Calculator, Text and Counter launch on demand. No prime Task is started.
+The XEX includes Desktop and its icons. Startup creates RAM:DESKTOP.APP and
+RAM:DESKTOP.RSC, then launches Desktop through the ordinary program loader.
+The other applications and their resources remain on the system disk.
 
 Boot in AltirraSDL
 -----------------
@@ -27,7 +30,8 @@ Extract this ZIP into one folder. In System > Configure System, select:
 1. Mount @SYSTEM_DISK@ in D1 with "Generic + 57600 baud" emulation.
    Mount a disposable copy of work.atr in D8, writable.
 2. Boot Exec-of816.xex; leave the keyboard alone for the five-second countdown.
-3. Wait for SYS: ready and the desktop. Both matching disks must stay mounted.
+3. Wait for SYS: ready and the desktop. Keep the system disk mounted for apps
+   and files, and WORK: mounted for saved settings and writable storage.
 
 Press a key during the countdown for OF816; EXEC816 resumes desktop startup.
 @POINTER_DESCRIPTION@
@@ -47,7 +51,9 @@ The active application's menu is at the left. Ctrl-Shift-Escape enters it;
 arrow keys/Tab and Return select. Escape dismisses menus or cancels drags.
 
 Double-click SYS:, WORK:, RAM: or C: to open a folder. RAM: is temporary writable
-storage; its contents disappear on reboot. Desk > New Window opens
+storage; its contents disappear on reboot. The two desktop boot files are
+recreated each startup; keep DESKTOP.RSC available for new Files instances.
+Desk > New Window opens
 another; up to three folders share one application Task. Closing the last
 folder leaves the desktop alive. View chooses Icons/List; Sort by name toggles
 name/disk order. Select then Return, or double-click, to open one entry.
@@ -93,6 +99,7 @@ pending deletions stay selected. One batch runs at a time. Closing its folder
 or quitting cancels it. Other folders can browse; an open text dialog keeps its
 typed input when a completed batch refreshes affected views.
 
+Desk > About Exec816 shows a standard GEM alert with desktop information.
 Desk launches Control Panel, Calculator, Text or Counter. Folder closure leaves
 these applications running. The panel offers Off/Mild mouse acceleration and
 Apply/Defaults/Cancel; Tab, Space and Return operate its controls.

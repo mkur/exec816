@@ -27,7 +27,7 @@ def active_tree(bridge, contexts, bounds):
 
 def source(bridge, address):
     objects=[];labels={}
-    for i in range(32):
+    for i in range(ABI['constants']['MENU_OBJECTS']):
         obj=list(struct.unpack('<hhhHHHIhhhh',bridge.memdump(address+24*i,24)))
         if obj[3] in (28,32):
             labels[i+1]=bridge.memdump(obj[6],64).split(b'\0')[0].decode('ascii')

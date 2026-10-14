@@ -37,7 +37,7 @@ class CounterApp:
             print(name,flush=True)
         menus=Menus(s,click,move)
         menus.select('SYS:')
-        click(296,8);click(304,88)  # Desk > Counter
+        click(296,8);click(304,72)  # Desk > Counter
         for _ in range(60):
             found=[a for a in instances(b,s.p,directory) if a['name']=='counter']
             if found:break

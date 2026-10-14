@@ -478,6 +478,20 @@ application repaint completion, shared menu saves, two popup images and two
 idle. [Development evidence](history/aes-layers-vram.md) separates working cache
 paths from remaining menu latency gates. No bank-zero reservations are added.
 
+The implemented [window preservation plan](plans/gem4xe/window-preservation-plan.md)
+restores whole visible client rectangles and lets participating applications
+report content changes through existing AES update boundaries. Valid cache
+restoration then avoids duplicate exposure redraws; conventional GEM windows
+retain their current behavior. Focused visual completion takes precedence over
+background repair, with no new Task priorities or VRAM reservations.
+[Development results](history/window-preservation.md) confirm one-copy client
+restores and no duplicate Files repaint; frame completion remains slower.
+
+The proposed [window frame and exposure follow-up](plans/gem4xe/window-frame-exposure-plan.md)
+addresses that remaining work: larger cold frame batches, cached non-title
+decorations, and closing folders without repainting unrelated desktop icons.
+It retains the existing VRAM reservations and application preservation contract.
+
 The [window iconification design](plans/gem4xe/window-iconification-design.md)
 and [plan](plans/gem4xe/window-iconification-plan.md) add presenter-owned
 Shell/AES tiles and Windows-menu restoration without suspending applications.

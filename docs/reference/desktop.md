@@ -16,7 +16,8 @@ bar; iconified tile labels use the same offset. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
 The closer uses a short, wide GEM-style X on the left and is absent
 from the shell. The full/restore gadget uses a distinct diamond mark. Both
-marks occupy 14×7 pixels within 22×11 control cells. Controls share the window
+marks occupy 10×7 pixels within 16×11 control cells. Iconify uses a matching
+10×7 window symbol; scroll arrows occupy 10×5 pixels. Controls share the window
 outline and single separators instead of drawing inset boxes. Scroll arrows
 are centered on the rail, with the track and resize cell supplying their
 horizontal borders. Close hit bounds retain the existing cell inset.
@@ -24,7 +25,7 @@ Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
 Ordinary work insets are left 8, top 11, right 8 and bottom 2 pixels.
-Vertical scrollbars reserve 22 pixels on the right; SIZER reserves 11 at the
+Vertical scrollbars reserve 16 pixels on the right; SIZER reserves 11 at the
 bottom. INFO adds ten rows below the title. Frame fragments
 are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
@@ -271,7 +272,7 @@ Shell and ordinary AES/native windows have a presenter-owned iconify gadget
 at the right of the title, left of the fuller when present. Its mark is a small
 window with a filled lower corner. Iconify is omitted when the actual title controls leave less than one
 eight-pixel text cell plus padding; the Windows menu remains available.
-FULLER windows require at least 44 pixels to fit Close and Full.
+The 32-pixel minimum window width fits Close and Full without iconify.
 The borderless desktop cannot be iconified.
 
 Iconify preserves the open window, its owner, accepted geometry and content.
@@ -456,7 +457,9 @@ client with completed repaint obligations, measured using its actual frame
 kind (including INFO, scrollbar, size and borderless insets). A title or
 position-only change preserves its client image; resize and UPDATE invalidate it.
 Ordinary applications without completion reports continue through `WM_REDRAW`.
-Restoration never acknowledges external repaint on behalf of the application.
+Conventional restoration never acknowledges external repaint on behalf of the
+application. The explicit [preservation contract](aes.md#opt-in-window-preservation)
+can satisfy new exposure without creating a repaint obligation.
 
 Capture holds a Layers read token, strips overlays, and becomes valid only after
 matching completion. Restore borrows the caller's paint token until completion.
@@ -466,7 +469,8 @@ identity before clearing the record. There is no public offscreen drawing API.
 
 Capture runs only after input, controls, model writes and visible damage have no
 work pending. Each eligible visual revision gets at most one attempt; eviction
-does not cause a recapture loop. The console is uncached. Accepted content/tree
+does not cause a recapture loop. Shell uses its dedicated persistent backing
+instead of these two slots. Accepted content/tree
 updates (including hidden updates), widget interaction and client focus styling
 invalidate revisions. Frame-only command-window focus changes damage the title
 and preserve the client snapshot. Position alone preserves local cached pixels.
@@ -479,11 +483,17 @@ superseded maintenance does not chase the same revision.
 Font and palette are fixed for the display lifetime; changing them while windows
 are live is unsupported and any future setter must invalidate client revisions.
 
-Painting always redraws the frame. A valid even-aligned visible client fragment
-restores asynchronously while retaining its paint token and source pin; only
-completion advances the strip. Unaligned fragments use retained drawing without
-expanding over an occluder. The sixteen-scanline/four-command preparation limits
-remain. A fully visible nonconsole client cannot contain the console's clipped
+The painter separates frame fragments from the client before applying its strip
+limit. Title feedback precedes one asynchronous copy per aligned visible client
+rectangle; remaining frame fragments retain their sixteen-row scratch limit.
+The paint token and source pin survive until transfer completion. Unaligned
+fragments use retained drawing without expanding over an occluder. Four-command
+preparation limits remain on retained rendering. Between transactions, pending
+focused-window work follows menu precedence and precedes background repair;
+other windows remain round-robin. No Task scheduling priorities change.
+Participating AES owners can let completed restores satisfy exposure, including
+successful menu-background restoration. Conventional callers keep `WM_REDRAW`.
+A fully visible nonconsole client cannot contain the console's clipped
 caret; the bridge removes intersecting pointer/outline overlays at capture.
 
 ### GEM size and scroll gadgets

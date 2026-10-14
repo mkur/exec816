@@ -703,6 +703,7 @@ static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *s
     label(b->path,path,127);
     b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,462,196);
     if (b->window<0 || !wind_set_str(b->window,WF_NAME,"Files")) return 0;
+    if (!wind_set(b->window,AES_WF_EXEC_PRESERVE,1,0,0,0)) return 0;
     if (!wind_open(b->window,x,y,462,196)) return 0;
     b->opened=1;
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]) ||
@@ -850,7 +851,7 @@ WORD BrowserRun(struct Browser *b)
     OBJECT *source,*popup,*stock;
     b->id=appl_init();b->window=-1;
     if (b->id<0) return 1;
-    if (!rsrc_load("SYS:DESKTOP.RSC") || !rsrc_gaddr(R_TREE,0,(void **)&source) ||
+    if ((!rsrc_load("RAM:DESKTOP.RSC") && !rsrc_load("SYS:DESKTOP.RSC")) || !rsrc_gaddr(R_TREE,0,(void **)&source) ||
         !rsrc_gaddr(R_TREE,1,(void **)&popup) || !rsrc_gaddr(R_TREE,2,(void **)&stock)) goto finish;
     for (i=0;i<21;++i) b->bar[i]=menuSource[i];
     b->applicationMenu=b->bar;

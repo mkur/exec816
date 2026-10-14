@@ -83,7 +83,8 @@ static void open_virtual(struct ExecAESContext *c,VDIPB *pb)
 
 static BOOL drawing(struct ExecAESContext *c)
 {
-    if (!c->view || !c->view->shown) { c->diagnostic=AES_IDENTITY; return FALSE; }
+    /* Hidden/iconified UPDATEs record changes but have no visible draw clips. */
+    if (!c->view) { c->diagnostic=AES_IDENTITY; return FALSE; }
     if (!c->view->updates) { c->diagnostic=AES_BUSY; return FALSE; }
     return TRUE;
 }

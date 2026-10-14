@@ -11,6 +11,7 @@ volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD AESCachePhase,AESCacheGo,AESCacheRedraws;
 WORD AESCacheWork[4];
 static WORD window,vdi;
+static UWORD otherRedraws;
 
 static void check(BOOL okay)
 {
@@ -30,7 +31,7 @@ static void phase(UWORD value)
 static void paint(void)
 {
     WORD r[4];
-    CHECK(wind_update(BEG_UPDATE));
+    CHECK(ExecAESBeginUpdate(window));
     CHECK(wind_get(window,WF_WXYWH,&r[0],&r[1],&r[2],&r[3]));
     r[2]+=r[0]-1; r[3]+=r[1]-1;
     vs_clip(vdi,1,r); vsf_color(vdi,3); v_bar(vdi,r);
@@ -46,7 +47,10 @@ static UWORD drain(void)
     do {
         events=evnt_multi(MU_MESAG|MU_TIMER,0,0,0,
             0,0,0,0,0,0,0,0,0,0,message,0,0,&mx,&my,&buttons,&mod,&key,&clicks);
-        if ((events&MU_MESAG) && message[0]==WM_REDRAW && message[3]==window) ++redraws;
+        if ((events&MU_MESAG) && message[0]==WM_REDRAW) {
+            if (message[3]==window) ++redraws;
+            else ++otherRedraws;
+        }
     } while (events&MU_MESAG);
     return redraws;
 }
@@ -54,7 +58,7 @@ static UWORD drain(void)
 static void patch(WORD dx,WORD pen,BOOL complete)
 {
     WORD r[4],x,y,width,height;
-    CHECK(wind_update(BEG_UPDATE));
+    CHECK(ExecAESBeginUpdate(window));
     CHECK(wind_get(window,WF_WXYWH,&x,&y,&width,&height));
     x+=dx;y+=8;
     r[0]=x;r[1]=y;r[2]=x+15;r[3]=y+7;
@@ -89,7 +93,7 @@ void AESClientTwo(void) { RemTask(NULL); }
 UWORD AESRun(void)
 {
     WORD input[11]={1,1,1,1,1,1,1,1,1,1,2},output[57];
-    WORD kind=NAME|CLOSER|MOVER|INFO|SIZER|UPARROW|DNARROW|VSLIDE,sibling;
+    WORD kind=NAME|CLOSER|MOVER|INFO|SIZER|UPARROW|DNARROW|VSLIDE,sibling,source,third;
     BYTE bit;
     struct AESWindowView *original,*other;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
@@ -138,8 +142,50 @@ UWORD AESRun(void)
     CHECK(wind_open(sibling,96,64,128,96));
     CHECK(wind_close(sibling));
     wait_redraw(); AESCacheRedraws=1+drain(); CHECK(AESCacheRedraws>0);
-    CHECK(wind_delete(sibling));
+    paint();phase(17);
     CHECK(wind_close(window)); CHECK(wind_delete(window));
+    window=wind_create(kind,64,48,248,152);CHECK(window>0);
+    CHECK(wind_set(window,AES_WF_EXEC_PRESERVE,1,0,0,0));
+    CHECK(wind_set_str(window,WF_NAME,"Preserved source"));
+    CHECK(wind_open(window,64,48,248,152));wait_redraw();paint();phase(18);
+    drain();CHECK(wind_open(sibling,96,64,128,96));CHECK(wind_close(sibling));
+    phase(19);AESCacheRedraws=drain();CHECK(AESCacheRedraws==0);
+    /* A fully hidden, model-only change must defeat preservation. */
+    CHECK(wind_open(sibling,64,48,248,152));
+    CHECK(ExecAESBeginUpdate(window));CHECK(ExecAESContext()->view->visibleCount==0);
+    CHECK(wind_update(END_UPDATE));phase(20);
+    CHECK(wind_close(sibling));wait_redraw();CHECK(drain()==0);paint();phase(21);
+    /* Fill both fixed slots with other actual clients, then expose the miss. */
+    source=window;window=sibling;
+    CHECK(wind_open(window,320,24,128,96));wait_redraw();paint();phase(22);
+    third=wind_create(kind,480,24,128,96);CHECK(third>0);window=third;
+    CHECK(wind_open(window,480,24,128,96));wait_redraw();paint();phase(23);
+    window=source;CHECK(wind_set(window,WF_TOP,0,0,0,0));
+    wait_redraw();paint();phase(24);
+    CHECK(wind_set(window,WF_CXYWH,360,48,248,152));drain();otherRedraws=0;phase(25);
+    /* The host opens/closes Windows over both this preserved client and the
+     * conventional third client. Only the latter receives menu exposure. */
+    CHECK(drain()==0);CHECK(otherRedraws>0);
+    CHECK(wind_close(third));CHECK(wind_delete(third));CHECK(wind_close(sibling));
+    CHECK(wind_delete(sibling));
+    CHECK(wind_close(window));
+    /* Closed and iconified views have no drawing clips. Both bindings must
+     * accept the logical change without publishing any painted pixels. */
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(!ExecAESContext()->view->shown && !ExecAESContext()->view->visibleCount);
+    {
+        WORD r[4]={AESCacheWork[0],AESCacheWork[1],AESCacheWork[0]+15,AESCacheWork[1]+7};
+        OBJECT box={NIL,NIL,NIL,G_BOX,LASTOB,0,0x1170,0,0,16,8};
+        box.ob_x=r[0];box.ob_y=r[1];
+        vs_clip(vdi,1,r);v_bar(vdi,r);
+        CHECK(ExecAESDiagnostic()==AES_OK && ExecAESContext()->view->changed);
+        CHECK(objc_draw(&box,0,0,r[0],r[1],16,8));
+        CHECK(ExecAESPainted(window,r[0],r[1],16,8));
+        CHECK(ExecAESContext()->request.paintCount==0);
+    }
+    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_open(window,360,48,248,152));wait_redraw();paint();phase(26);
+    CHECK(wind_close(window));CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());
     return AESFailures;
 }

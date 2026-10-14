@@ -1,5 +1,8 @@
 # Historical records
 
+- [Window preservation](window-preservation.md): large client restores, explicit
+  AES exposure policy, shipped-app adoption and focused packaged-image checks.
+
 - [Compact window geometry](compact-window-geometry.md): compact title bars, gadgets and
   menus; Shell alignment, application fixes and packaged pixel checks.
 

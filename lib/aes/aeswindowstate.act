@@ -299,6 +299,12 @@ PUBLIC PROC Control(DESKTYPES.Window POINTER window BYTE kind
 
 RETURN
 
+PUBLIC BYTE FUNC Preserves(DESKTYPES.Window POINTER window)
+
+  LET item=FindRecord(window.id)
+
+RETURN(item.preserve)
+
 ; Accumulate work while the frame transaction is active. Publication happens
 ; once its last strip finishes, so an initial draw is not one message per strip.
 PUBLIC PROC Damage(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER area)

@@ -122,9 +122,22 @@ after validation/copying. The shared GUI runtime is expanded from the
 [compressed boot image](boot-loading.md) into its reserved extents before
 native startup; it needs no disk component or separate payload buffer.
 
-The desktop ships `C:DESKTOP.APP`, `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`,
-`C:CALC.APP`, `C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies
-and models are absent from the shared runtime. The shell owns the initial desktop
+The desktop XEX carries serialized `DESKTOP.APP` and `DESKTOP.RSC` bytes in
+upper-memory load segments, following the C provider. At startup the shell
+supervisor writes them to `RAM:` with ordinary DOS calls, then starts
+`RAM:DESKTOP.APP` through the unchanged Program/Process loader. The RSC contains
+the desktop icons and folder object trees. Standalone Files prefers this RAM
+resource and can fall back to `SYS:DESKTOP.RSC` in other builds. Both boot files
+remain visible in RAM until deleted or rebooted; startup recreates them.
+Their serialized boot copies remain reserved for the session, and RAM file
+buffers are additional upper-heap allocations (rounded geometrically).
+There is no extra Task, stack, direct page or bank-zero reservation.
+
+The system disk ships `C:PANEL.APP`, `C:COUNTER.APP`, `C:FILES.APP`, `C:CALC.APP`,
+`C:DIALOG.APP`, `C:TEXT.APP` and `C:G4BENCH.APP`. Application bodies and models
+are linked separately from the shared runtime; Desktop's embedded file is
+loaded and relocated in exactly the same way as a disk program.
+The shell owns the initial desktop
 Process; the desktop owns its launched children independently of folder windows.
 Standalone FILES.APP retains its one-child lifetime. Tools launch on demand;
 normal resource errors report exhausted Task/window capacity. The current binding

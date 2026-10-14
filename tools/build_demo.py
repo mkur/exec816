@@ -51,8 +51,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         sector_bytes=512
     system_sectors=system_kib*1024//sector_bytes
     output=output.resolve();output.mkdir(parents=True,exist_ok=True)
-    require(not release_compiler or not desktop,
-            'The explicit release compiler option supports standalone text and bitmap shells')
+    require(not release_compiler or not desktop or gem_desktop,
+            'The release compiler option supports text/bitmap shells and the GEM desktop')
     require(not (ideplus and ide_only),'Select mixed IDE or IDE-only storage')
     require(not ide_only or (shell_only and not desktop and filesystem=='sdfs' and system_kib==720),
             'IDE-only requires a standalone text or bitmap shell and 720 KiB SDFS; IDE sectors are always 512 bytes')
@@ -98,8 +98,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'README.TXT').write_text('Exec816 GEM input apps\n\nTwo independent GEM windows beside the shell.\nClick a window to focus it, then press Activate.\nRelease inside to count; outside to cancel.\nKeys display GEM scan/ASCII in hexadecimal.\nEscape/BREAK cancels a held button; X closes the app.\nTick blinks after one second without another event.\nClick the shell to type; EXIT closes the desktop.\nSYS: is read-only; WORK: in D8 is writable.\n',encoding='ascii')
     if gem_desktop:
         (media/'README.TXT').write_text((ROOT/'docs/gem-desktop-distribution.txt').read_text().replace('@SYSTEM_DISK@','system.atr').replace('@POINTER_DESCRIPTION@',pointer_description(__import__('generate_mouse_acceleration').metadata(mouse_profile)['profile'])),encoding='ascii')
-        from build_gem_resource import resource
-        (media/'DESKTOP.RSC').write_bytes(resource());binary_names.add('DESKTOP.RSC')
+        # Remove generated copies left by a pre-RAM desktop build in this output.
+        (media/'DESKTOP.RSC').unlink(missing_ok=True)
+        (command_dir/'DESKTOP.APP').unlink(missing_ok=True)
     disk_name='system.atr'
     proof_name=Path(disk_name).with_suffix('.verification.json').name
     config=ROOT/('config/shell-sdfs-256.json' if filesystem=='sdfs' and sector_bytes==256 else f'config/shell-{filesystem}.json')
@@ -161,7 +162,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
             system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,
-            sio_enabled=not ide_only,**({'release_compiler':release_compiler} if not desktop else {}))
+            sio_enabled=not ide_only,**({'release_compiler':release_compiler} if not desktop or gem_desktop else {}))
         copy_notices(output/'bitmap-console/selected',output)
         bitmap_pin=json.loads((ROOT/'toolchain/altirra-gem-vdi.json').read_text())
         if ide_only:
@@ -174,7 +175,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       task_capacity=8,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only)
     if gem_desktop:
-        for name in ('panel','counter','files','desktop','calc','dialog','text','g4bench'):
+        for name in ('panel','counter','files','calc','dialog','text','g4bench'):
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
         calculator=output/'bitmap-console/apps/calc'
@@ -524,7 +525,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=ROOT/'build/demo')
     parser.add_argument('--compiler-dir',type=Path,default=ROOT/'build/actionc')
-    parser.add_argument('--release-compiler',action='store_true',help='Explicit optimized host compiler build for a standalone text or bitmap shell')
+    parser.add_argument('--release-compiler',action='store_true',help='Optimized host compiler for a text/bitmap shell or GEM desktop')
     parser.add_argument('--ide-only',action='store_true',help='IDE SYS/WORK, no Exec SIO driver; include raw media and both carts')
     parser.add_argument('--ideplus',action='store_true',help='Require the optional IDE: read-only development mount; fixture stays outside the ZIP')
     parser.add_argument('--format',choices=('sdfs','mydos'),default='sdfs')

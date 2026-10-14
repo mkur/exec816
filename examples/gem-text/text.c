@@ -33,6 +33,7 @@ static void damage(struct TextApp *a,const WORD *r)
         x=minimum(x,a->damage[0]);y=minimum(y,a->damage[1]);
     }
     a->damage[0]=x;a->damage[1]=y;a->damage[2]=endx-x;a->damage[3]=endy-y;a->dirty=1;
+    a->publishDamage=1;
 }
 
 static void status(struct TextApp *a,const char *text)
@@ -103,7 +104,7 @@ static WORD paint(struct TextApp *a)
     y=a->damage[1];textY=a->work[1]+4;
     start=maximum(0,(y-textY)/a->cellh);
     end=minimum(a->damage[1]+a->damage[3],textY+(start+4)*a->cellh);
-    if (!wind_update(BEG_UPDATE)) return 0;
+    if (!ExecAESBeginUpdate(a->window)) return 0;
     if (!wind_get(a->window,WF_FIRSTXYWH,&visible[0],&visible[1],&visible[2],&visible[3])) okay=0;
     while (okay && visible[2] && visible[3]) {
         clip[0]=maximum(a->damage[0],visible[0]);clip[1]=maximum(y,visible[1]);
@@ -203,6 +204,7 @@ WORD TextRun(struct TextApp *a)
     if (!wind_calc(WC_BORDER,kind,0,0,208,128,&x,&y,&a->minw,&a->minh)) goto finish;
     a->window=wind_create(kind,0,0,480,192);
     if (a->window<0 || !wind_set_str(a->window,WF_NAME,"Text viewer") ||
+        !wind_set(a->window,AES_WF_EXEC_PRESERVE,1,0,0,0) ||
         !wind_open(a->window,32,32,480,192)) goto finish;
     a->opened=1;
     memcpy(a->menu,menu,sizeof(menu));
@@ -215,6 +217,15 @@ WORD TextRun(struct TextApp *a)
     else if (*a->target) begin(a);
     a->ready=1;result=0;
     while (!quit && !result) {
+        /* Rendering is sliced across event waits. Publish the pending model
+         * once before waiting, so a partially repaired old image is never
+         * captured as the complete new document or viewport. */
+        if (a->publishDamage) {
+            if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) {
+                result=20;break;
+            }
+            a->publishDamage=0;
+        }
         events=evnt_multi(MU_KEYBD|MU_MESAG|((a->dirty || a->load.phase) ? MU_TIMER:0),
             1,1,1,0,0,0,0,0,0,0,0,0,0,a->message,0,0,&mx,&my,&buttons,&mods,&key,&clicks);
         if (!events) {
@@ -271,6 +282,12 @@ WORD TextRun(struct TextApp *a)
             if (!menu_ienable(a->menu,6,!a->menuLoading) || !menu_ienable(a->menu,7,a->menuLoading)) result=20;
         }
         if (result) break;
+        if (a->publishDamage) {
+            if (!ExecAESBeginUpdate(a->window) || !wind_update(END_UPDATE)) {
+                result=20;break;
+            }
+            a->publishDamage=0;
+        }
         /* First finish the Loading paint; subsequently alternate with disk units. */
         if (a->dirty && (!a->load.phase || !a->turn || a->load.phase==1)) {
             if (!paint(a)) result=20;a->turn=1;

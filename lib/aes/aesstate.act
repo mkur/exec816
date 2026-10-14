@@ -23,7 +23,7 @@ PUBLIC TYPE GuiPending=[
 ; Owned association storage; only the caller's tree and strings are borrowed.
 PUBLIC TYPE Menu=[
   AESTYPES.MenuObject POINTER tree
-  LONGCARD generation,damage
+  LONGCARD generation
   BYTE count,titles
   INT selectedTitle,selectedItem,selectedBox
   INT ARRAY parent(AESTYPES.MENU_OBJECTS)
@@ -31,6 +31,7 @@ PUBLIC TYPE Menu=[
   INT ARRAY y(AESTYPES.MENU_OBJECTS)
   INT ARRAY title(AESTYPES.MENU_OBJECTS)
   INT ARRAY box(AESTYPES.MENU_OBJECTS)
+  BYTE ARRAY damage(AESTYPES.MENU_OBJECTS)
 ]
 
 ; Window lifetimes are independent of their application's port and menu.
@@ -40,7 +41,7 @@ PUBLIC TYPE Window=[
   AESTYPES.WindowView POINTER view
   DESKTYPES.Window POINTER window
   LAYERTYPES.Rect paintDamage
-  BYTE paintDirty
+  BYTE paintDirty,preserve
 ]
 
 PUBLIC TYPE Client=[

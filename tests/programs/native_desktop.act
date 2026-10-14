@@ -68,27 +68,27 @@ PROC CompactGeometry()
   item.kind=DESKTYPES.CONTENT_COMMANDS
   item.frameKind=DESKTYPES.FRAME_FULLER
   item.iconified=0
-  REGIONS.Assign(@bounds,10,20,54,68)
+  REGIONS.Assign(@bounds,10,20,42,68)
   Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
   Require(DESKGEOMETRY.CloseHit(@bounds,11,21)<>0)
-  Require(DESKGEOMETRY.CloseHit(@bounds,30,29)<>0)
-  Require(DESKGEOMETRY.CloseHit(@bounds,31,29)=0)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,32,20)=7)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,30)=7)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,31)=0)
-  bounds.right=74
+  Require(DESKGEOMETRY.CloseHit(@bounds,24,29)<>0)
+  Require(DESKGEOMETRY.CloseHit(@bounds,25,29)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,26,20)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,41,30)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,41,31)=0)
+  bounds.right=68
   Require(DESKGEOMETRY.HasIcon(item,@bounds)=0)
-  bounds.right=90
+  bounds.right=70
   Require(DESKGEOMETRY.HasIcon(item,@bounds)<>0)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,45,25)=0)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,46,25)=8)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,67,30)=8)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,68,25)=7)
-  Require(DESKGEOMETRY.GadgetHit(item,@bounds,46,31)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,37,25)=0)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,38,25)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,53,30)=8)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,54,25)=7)
+  Require(DESKGEOMETRY.GadgetHit(item,@bounds,38,31)=0)
   item.frameKind=DESKTYPES.FRAME_INFO OR DESKTYPES.FRAME_SIZER OR DESKTYPES.FRAME_VERTICAL
   REGIONS.Assign(@bounds,0,11,640,240)
   DESKGEOMETRY.Work(item.frameKind,@bounds,@work)
-  Require(work.left=8 AND work.top=32 AND work.right=618 AND work.bottom=229)
+  Require(work.left=8 AND work.top=32 AND work.right=624 AND work.bottom=229)
 
   item.frameKind=0
   item.kind=0

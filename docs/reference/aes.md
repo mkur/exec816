@@ -204,7 +204,7 @@ are not reused during a service lifetime. Accepted outer X positions are rounded
 down to an even pixel and widths up to an even pixel at create/open/set. Drag
 and resize proposals use the same alignment; Y and height retain single-pixel
 precision. Bounds must fit fully inside the 640 by 240 desktop.
-Fixed windows have a 32 by 32 minimum (44 pixels wide with FULLER) and
+Fixed windows have a 32 by 32 minimum, including FULLER windows, and
 reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
@@ -212,7 +212,7 @@ Off-screen bounds fail without mutation.
 `WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
-top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 22;
+top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 16;
 SIZER increases the bottom inset to 11. INFO adds a 10-pixel information line
 below the title, raising the top inset to 21. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
@@ -681,7 +681,7 @@ at x=0..127, application menus occupy x=128..559, and Windows is at x=560.
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
 siblings under the dropdown container. Items are direct G_STRING children.
-G_IBOX containers, selected/checked/disabled/hidden states, 32 objects, depth eight and
+G_IBOX containers, selected/checked/disabled/hidden states, 33 objects, depth eight and
 63-byte labels are supported. Titles fit caller coordinates x=0..431; the
 presenter translates their display and hit coordinates by 128 pixels.
 Titles fit the eleven-row bar. Bundled menus use eleven-row items; arbitrary
@@ -762,7 +762,7 @@ OBJECTs for a 104×36 icon grid or a compact list. Colour artwork is 32×16;
 neutral documents retain their 32×20 bitmap. Labels sit in the same
 32-pixel-high objects. View chooses Icons/List and a checked Sort by name
 command; unchecked retains disk order. Name sorting groups directories first.
-New windows start at 462×196, with a 432×174 work area and four complete rows
+New windows start at 462×196, with a 438×174 work area and four complete rows
 of four icons. They retain user-selected bounds across
 navigation. The path occupies the title; a fixed top summary shows byte/item
 totals, selection or operation feedback. There is no duplicate INFO row, File
@@ -924,3 +924,36 @@ Text, Panel, Calculator and shared dialogs use it in complete redraw paths.
 It adds no per-draw RPC or kernel call. An UPDATE without drawing reports
 leaves a full client repaint obligation, preventing idle recapture of old pixels
 after an unreported model change.
+
+## Opt-in window preservation
+
+Set `wind_set(window,AES_WF_EXEC_PRESERVE,1,0,0,0)` after creation and before
+opening. Zero is the default. The setting survives close/reopen and
+iconification until deletion; changing it while open is unsupported.
+
+An opted-in window promises to publish **every drawable content change**, even
+while fully covered or iconified, through `ExecAESBeginUpdate(window)` and the
+matching `wind_update(END_UPDATE)`. Prepare private data outside the lock; keep
+the publication/drawing scope short. Report only pixels actually completed with
+`ExecAESPainted`. A model-only change uses an empty update pair, which invalidates
+the saved image and leaves a repaint obligation without pretending hidden pixels
+were drawn. Applications that defer drawing across event waits must publish that
+invalidation before waiting; Text uses one empty pair for each newly queued batch
+before its ordinary drawing slices.
+
+VDI and object drawing accept an active update with no visible rectangles,
+including an iconified window. They record the logical content change without
+drawing or claiming completion of hidden pixels.
+
+A valid completed client or menu-background restore satisfies new exposure
+without generating `WM_REDRAW`. Missing, evicted, unaligned or invalid images
+still use the normal redraw handler. Existing pending content repairs and already
+delivered messages are not cancelled. This flag does not allocate a bitmap or
+make incomplete pixels cacheable. Failing to report a change is a caller bug;
+AES does not inspect the application's model.
+
+Files/Desktop, Counter, Control Panel, Calculator and Text opt in. Shared forms
+use window-specific updates and invalidate borrowed content at dismissal before
+requesting the owner's repair. Temporary dialog windows retain the default
+policy. Ordinary GEM callers need no changes and keep conventional exposure
+notifications, including after a successful menu-background restore.

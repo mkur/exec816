@@ -1,0 +1,19 @@
+--- a/src/apps/calc.c
++++ b/src/apps/calc.c
+@@ -176,7 +176,7 @@
+ static WORD paint(WORD object,const WORD *damage)
+ {
+     WORD okay,x,y,clip[4],mark[4];
+-    if (!wind_update(BEG_UPDATE)) return FALSE;
++    if (!ExecAESBeginUpdate(Calculator.window)) return FALSE;
+     okay=wind_get(Calculator.window,WF_WXYWH,&Calculator.work[0],&Calculator.work[1],
+                   &Calculator.work[2],&Calculator.work[3]);
+     tree[ROOT].ob_x=Calculator.work[0];tree[ROOT].ob_y=Calculator.work[1];
+@@ -263,6 +263,7 @@
+                    tree[ROOT].ob_height,&x,&y,&w,&h)) return 1;
+     Calculator.window=wind_create(NAME|CLOSER|MOVER,x,y,w,h);
+     if (Calculator.window<0 || !wind_set_str(Calculator.window,WF_NAME,"Calculator")) goto finish;
++    if (!wind_set(Calculator.window,AES_WF_EXEC_PRESERVE,1,0,0,0)) goto finish;
+     if (!wind_open(Calculator.window,x,y,w,h)) goto finish;
+     Calculator.opened=1;
+     if (!wind_get(Calculator.window,WF_WXYWH,&Calculator.work[0],&Calculator.work[1],

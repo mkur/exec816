@@ -44,9 +44,14 @@ class Desktop:
         s.saved['desktop_menu']={}
         menus=Menus(s,click,move)
         menus.select('SYS:');shot('cache-files')
-        click(296,8);click(304,61);counter=app('counter')['symbols']['GEMCounter']
+        click(296,8);click(304,72);counter=app('counter')['symbols']['GEMCounter']
         s.rendezvous('dw($%x)=1'%(counter+12));ticks=s.number(counter+14,4)
-        menus.select('SYS:');click(296,8);click(304,28);panel=app('panel')['symbols']['GEMPanel']
+        # The unchanged initial Shell wholly covers the small Counter. Its
+        # model must advance without retaining a usable image of old digits.
+        menus.select('Shell');hidden_ticks=s.number(counter+14,4);s.frames(70)
+        require(s.number(counter+14,4)>hidden_ticks,'Fully covered Counter stopped')
+        menus.select('Counter');shot('cache-counter-exposed')
+        menus.select('SYS:');click(296,8);click(304,39);panel=app('panel')['symbols']['GEMPanel']
         s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
         require([s.number(panel+38+i*2,2) for i in range(2)]==[192,136],
                 'Panel frame no longer fits its fixed object tree')
@@ -58,7 +63,7 @@ class Desktop:
         require(s.number(panel+10,4)==before+2,'Panel keyboard activation lost')
         shot('cache-panel')
         menus.close();s.frames(100)
-        menus.select('SYS:');click(296,8);click(304,39)
+        menus.select('SYS:');click(296,8);click(304,50)
         calculator=app('calc')['symbols'];model=calculator['Calculator']
         s.rendezvous('dw($%x)=1'%(model+4));s.frames(100)
         drag_client(model+22)
@@ -94,7 +99,7 @@ class Desktop:
         menus.select('Counter');require(s.number(counter+14,4)>ticks,'Counter stopped during walkthrough')
         menus.close();s.frames(100);menus.select('SYS:');shot('cache-clients-closed')
         self.results=dict(files=True,panel_pointer=True,panel_keyboard=True,panel_moved_hit_test=True,calculator_moved_input=42,text_moved=True,text_sha256=digest,
-            text_scroll=True,selector_cancel=True,counter_progress=True,close_restore=True)
+            text_scroll=True,selector_cancel=True,counter_progress=True,hidden_counter=True,close_restore=True)
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
         s.save_screen(s.p['output']/'boot-smoke.png')
         for char in 'EXIT':s.press(char)

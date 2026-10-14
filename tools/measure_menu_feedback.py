@@ -20,7 +20,8 @@ from test_demo import run
 
 
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False, headings_only=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False):
+        self.conventional = conventional
         self.headings_only = headings_only
         self.cold = cold
         self.count = count
@@ -140,7 +141,7 @@ class Feedback:
                     else:
                         raise RuntimeError('Menu did not match settled pixels: '+kind+'/'+name)
                     samples[name].append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
-                    if name == 'close':
+                    if name == 'close' and self.conventional:
                         for _ in range(100):
                             if s.number(folder+F['paints'], 4) > before_paint and capture(area) == want:
                                 break
@@ -151,11 +152,15 @@ class Feedback:
                     after_cache = cache_counts()
                     transfers[name].append({k: after_cache[k]-v for k,v in before_cache.items()})
                     s.frames(7+iteration % 5)
+                    if name == 'close' and not self.conventional:
+                        require(s.number(folder+F['paints'],4)==before_paint,
+                                'Preserved menu dismissal repainted Files')
                     repaints[name].append(s.number(folder+F['paints'],4)-before_paint)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
-            self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
-                **distribution(final_repaint))
+            if self.conventional:
+                self.results[kind]['final_app_repaint'] = dict(samples_ms=final_repaint,
+                    **distribution(final_repaint))
             self.results[kind]['transfers'] = transfers
             self.results[kind]['files_repaints'] = repaints
             print(kind, {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
@@ -217,11 +222,12 @@ class Feedback:
             require(transfers.get('captures',0)==0,
                     'Repeated headings recaptured the same background')
             press('ESC'); s.frames(100)
-            require(s.number(folder+F['paints'],4)>before_paint,
-                    'Final repeated-heading dismissal lost Files exposure')
+            final_repaint=s.number(folder+F['paints'],4)>before_paint
+            require(final_repaint==self.conventional,
+                    'Wrong redraw policy after repeated-heading dismissal')
             repeated[source]=dict(samples_ms=values,**distribution(values),
                                   transfers=transfers,files_repaints_during_switch=0,
-                                  final_repaint=True)
+                                  final_repaint=final_repaint)
         self.results['repeated_headings']=repeated
         print('Repeated headings:', {name: (round(row['median_ms'],1),round(row['p95_ms'],1))
                                     for name,row in repeated.items()},flush=True)
@@ -235,7 +241,7 @@ class Feedback:
             resident = json.loads((directory/'c-image.json').read_text())['symbols']
             desk = symbols(b, s.p, directory, 'desktop',
                            s.number(resident['GEMDesktopChildren'], 4))['GEMDesk']
-            click(296, 8); click(304, 88)
+            click(296, 8); click(304, 72)
             for _ in range(60):
                 child = s.number(desk+D['children'], 4)
                 if child:
@@ -280,6 +286,7 @@ def main():
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
     parser.add_argument('--headings-only', action='store_true', help='Only repeated heading transitions')
     parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
+    parser.add_argument('--conventional', action='store_true', help='Require conventional redraws when measuring a pre-preservation baseline')
     parser.add_argument('--layout-revision', help='Use recorded native ABI layouts for an older baseline executable')
     args = parser.parse_args()
     if args.layout_revision:
@@ -296,7 +303,7 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only)
+    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),

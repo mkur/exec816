@@ -31,15 +31,16 @@ static void text(WORD x,WORD y,UWORD count,UWORD pen)
                   paint->clipRight,paint->clipBottom);
 }
 
-/* Short, wide GEM-style marks match the displayed pixel proportions. */
+/* Ten-pixel GEM marks leave breathing room inside the sixteen-pixel cells. */
 static void title_mark(WORD x,WORD y,UWORD full)
 {
     WORD row,offset;
     for (row=0;row<7;++row) {
-        offset=2*(row<4 ? row:6-row);
-        if (full) offset=6-offset;
+        offset=row<4 ? row:6-row;
+        if (offset>1) ++offset;
+        if (full) offset=4-offset;
         fill(x+offset,y+row,x+offset+2,y+row+1,1);
-        fill(x+12-offset,y+row,x+14-offset,y+row+1,1);
+        fill(x+8-offset,y+row,x+10-offset,y+row+1,1);
     }
 }
 
@@ -145,17 +146,19 @@ static UWORD fragment(void)
         if (hasIcon) {
             fill(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,
                  iconRight-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            box(iconRight-18,t+2,iconRight-4,t+9);
-            fill(iconRight-9,t+6,iconRight-5,t+8,1);
+            box(iconRight-13,t+2,iconRight-3,t+9);
+            fill(iconRight-7,t+6,iconRight-4,t+8,1);
         }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
             fill(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,
                  r-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            title_mark(r-18,t+2,1);
+            title_mark(r-13,t+2,1);
         }
         if (p->background) {
-            fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
-            title_mark(l+4,t+2,0);
+            /* At minimum width, the fuller already supplies this divider. */
+            if (nameLeft<iconRight)
+                fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
+            title_mark(l+DESKTOP_CLOSE_TEXT_X,t+2,0);
         }
     }
     }

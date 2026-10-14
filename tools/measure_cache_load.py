@@ -45,7 +45,7 @@ class Load:
             b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(60)
         menus=Menus(s,click,move)
         def launch(row,name,model):
-            menus.select('SYS:');click(296,8);click(304,24+row*16)
+            menus.select('SYS:');click(296,8);click(304,28+row*11)
             for _ in range(60):
                 apps=[a for a in instances(b,s.p,directory) if a['name']==name]
                 if apps:break

@@ -1,5 +1,19 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [window frame and exposure plan](window-frame-exposure-plan.md)
+follows preservation with faster initial frame construction, frame-inclusive
+snapshots and precise desktop repaint after closing a folder. FE1–FE4 reuse the
+existing scratch/cache reservations and retain focused development checks.
+
+The implemented [window preservation plan](window-preservation-plan.md) combines
+large visible-rectangle cache restores with a per-window application contract.
+Participating applications report hidden changes through existing AES update
+boundaries; successful current-image restoration then satisfies exposure without
+a duplicate redraw. Ordinary GEM callers keep conventional notifications.
+WP1–WP4 cover the presenter, opt-in policy, shipped apps and focused checks.
+[Measurements](../../history/window-preservation.md) separate faster client
+restoration from the remaining frame work.
+
 The implemented [compact window geometry refactor](compact-window-geometry-plan.md)
 reduces titles and menus to eleven rows, separates gadget width from height,
 and preserves Shell alignment and the default Files 4×4 grid.

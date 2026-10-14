@@ -158,3 +158,29 @@ cleanup and guard checks pass. No full desktop or qualification matrix ran.
 The refreshed OF816 package is under `build/frame-polish/demo/`; this package
 was built, without an additional packaged boot walkthrough. Reserved bank-zero
 delta is **0 fixed / 0 per public Task / 0 idle bytes**; VRAM growth is zero.
+
+## Slimmer gadgets
+
+Title controls, the vertical rail and resize corner now share a 16-pixel width
+and retain their eleven-row height. Close, Full and Iconify use 10×7 marks;
+arrows remain 10×5. The rightmost title cell aligns with the rail. Close hit
+bounds shrink with the cell, and the minimum 32-pixel FULLER window shares one
+divider between its two controls. The generated metric continues to drive
+rendering, input and both native/AES work-area calculations.
+
+Files retains its 462×196 outer size and four-column grid. Its client grows
+from 432×174 to 438×174, and maximized client width grows from 610 to 616.
+Title height, fonts, application icons and desktop tiles are unchanged.
+
+Minimal development checks pass: five desktop contract checks, generated
+definitions, and one optimized AES windows fixture with 285 C and four native
+checks. Exact comparisons cover 4,880 title pixels (including Full and Iconify)
+and 2,768 scrollbar pixels; resize, close/iconify, arrow/page input, slider
+endpoints, guards and cleanup pass. Other affected pixel models and geometry
+expectations were updated without running their broader desktop walkthroughs.
+Reserved bank-zero delta is **0 fixed / 0 per public Task / 0 idle bytes**;
+VRAM growth is zero. This is development evidence, not release qualification.
+
+The refreshed OF816 demo and launcher are under `build/slim-gadgets/demo/`.
+The package was rebuilt with the pinned toolchain and ROM; no additional
+packaged boot walkthrough was run for this adjustment.
