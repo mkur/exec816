@@ -1,5 +1,8 @@
 # Historical records
 
+- [FujiNet control](fujinet-control.md): protocol pins, scripted real-frame
+  integration and implementation slices.
+
 - [Resident shell report output](shell-report-output.md): bounded row batching,
   builtin latency, formatting checks and memory costs.
 

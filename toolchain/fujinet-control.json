@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "repository": "https://github.com/FujiNetWIFI/fujinet-firmware.git",
+      "revision": "b38796e0ea1950115b704b6f900dcd4f92193daa",
+      "files": [
+        {
+          "path": "lib/device/sio/sioFuji.h",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-firmware/b38796e0ea1950115b704b6f900dcd4f92193daa/lib/device/sio/sioFuji.h",
+          "sha256": "d9a6c85ca714b5628eadd920f541cc49ccf972a43468df60478355bc76d9cd68"
+        },
+        {
+          "path": "lib/device/fujiDevice/fujiDevice.cpp",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-firmware/b38796e0ea1950115b704b6f900dcd4f92193daa/lib/device/fujiDevice/fujiDevice.cpp",
+          "sha256": "5894fae4730f378dfb833b62930954fb3f8dbb3b3404be7645c62bf50f0dff7c"
+        },
+        {
+          "path": "lib/device/disk.h",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-firmware/b38796e0ea1950115b704b6f900dcd4f92193daa/lib/device/disk.h",
+          "sha256": "5f702428e851712ff93c51b5fb2aabf46d043282feba09687fb150a5caba0b30"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/FujiNetWIFI/fujinet-lib.git",
+      "revision": "dcca2eba2cdeadf1183a3a27223f536bb9f121d5",
+      "files": [
+        {
+          "path": "include/fujinet-fuji.h",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-lib/dcca2eba2cdeadf1183a3a27223f536bb9f121d5/include/fujinet-fuji.h",
+          "sha256": "6b5fd01fe4e48ad256a0a006a9c30bf4cc7790640b298983986a958401226f75"
+        },
+        {
+          "path": "include/fujinet-commands.h",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-lib/dcca2eba2cdeadf1183a3a27223f536bb9f121d5/include/fujinet-commands.h",
+          "sha256": "01b3356387933aa5b967d1a843f56dd12f15222ab08e81603f9bdeafd79d35a5"
+        },
+        {
+          "path": "include/fujinet-const.h",
+          "url": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-lib/dcca2eba2cdeadf1183a3a27223f536bb9f121d5/include/fujinet-const.h",
+          "sha256": "26366782ae683528e767e11d41fa97d3161796bd4b074e8e0de80b384cdc06c9"
+        }
+      ]
+    }
+  ],
+  "execution": {
+    "kind": "Altirra scripted SIO peer",
+    "platform_pin": "toolchain/altirra-sio-queued.json",
+    "binary": "build/altirra-sio-multi/AltirraBridgeServer",
+    "peer_generator": "tools/fujinet_peer.py",
+    "scope": "Real emitted serial transactions; selected command subset, not executable FujiNet firmware",
+    "physical_qualification": false
+  },
+  "firmware_walkthrough": "Not yet run; record executable firmware and hardware separately when available"
+}

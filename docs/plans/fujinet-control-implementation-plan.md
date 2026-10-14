@@ -6,7 +6,8 @@
 [Platform contract](../reference/platform.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: planned FN0–FN5. Complete and commit each executable slice after its
+Status: FN0 implemented at the development tier; FN1–FN5 pending.
+[Implementation record](../history/fujinet-control.md). Complete and commit each executable slice after its
 focused development checks. The FASTEST125 timing investigation is separate;
 FujiNet control starts at standard SIO speed.
 
