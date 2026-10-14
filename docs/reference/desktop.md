@@ -12,13 +12,15 @@ adds no kernel gateway or resident Task by itself.
 Native and GEM windows use dark ink outlines, warm off-white frame margins and
 centered titles in the existing 8×8 Atari ST font. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
-The boxed closer uses GEM font glyph 5 on the left and is absent from the
-shell. The full/restore gadget on the right uses glyph 7, making the two
-actions visually distinct. Its hit rectangle matches its painted
+The boxed closer uses a short, wide GEM-style X on the left and is absent
+from the shell. The full/restore gadget uses a distinct diamond mark. Both
+marks occupy 14×7 pixels within 22×11 control cells. Its hit rectangle matches its painted
 box. Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
-Work insets remain left 8, top 16, right 8 and bottom 8 pixels. Frame fragments
+Ordinary work insets are left 8, top 11, right 8 and bottom 2 pixels.
+Vertical scrollbars reserve 22 pixels on the right; SIZER reserves 11 at the
+bottom. INFO adds ten rows below the title. Frame fragments
 are reconstructed in the existing offscreen strip and published only when
 complete, without clearing application-owned work pixels. The frame and local
 `wind_calc` geometry use constants generated from `abi/desktop.json`.
@@ -86,12 +88,13 @@ requests. A caller can mutate only its own windows.
 
 REPLACE requires exactly one `Content` record: background pen 0–15, at most
 32 fill/text commands and 256 text bytes. Coordinates are client-local and
-half-open, within the outer rectangle minus 8-pixel side borders, 16-pixel title
-area and 8-pixel bottom border. Text is 8 pixels per character and 8 pixels
+half-open, within the outer rectangle minus 8-pixel side borders, 11-pixel title
+area and 2-pixel bottom border. Text is 8 pixels per character and 8 pixels
 high; offsets/counts must stay inside the supplied text. The entire batch is
 validated before retained content changes. No payload pointer survives reply.
 Console-kind admission is limited to the root controller and permanent console
-unit 0, with a 528×184 outer rectangle and an 8-pixel placement grid. It cannot
+unit 0, with a 528×173 outer rectangle. Its 512×160 text origin stays on an
+8-pixel grid: outer x is a multiple of eight and outer y is 5 modulo eight. It cannot
 attach an arbitrary console unit. The presenter owns the permanent model; its
 shutdown refuses live desktop registrations. The root owns the shell streams
 and closes them before retiring its window.
@@ -259,11 +262,13 @@ its normal EXIT path controls retirement.
 
 Shell and ordinary AES/native windows have a presenter-owned iconify gadget
 at the right of the title, left of the fuller when present. Its mark is a small
-window with a filled lower corner. Frames narrower than 64 pixels use the menu.
+window with a filled lower corner. Iconify is omitted when the actual title controls leave less than one
+eight-pixel text cell plus padding; the Windows menu remains available.
+FULLER windows require at least 44 pixels to fit Close and Full.
 The borderless desktop cannot be iconified.
 
 Iconify preserves the open window, its owner, accepted geometry and content.
-The existing layer becomes an 88×16 labeled tile at y=222, x=104+88×slot.
+The existing layer becomes an 88×11 labeled tile at y=227, x=104+88×slot.
 Tiles have a small window glyph and up to eight title characters. Click and
 release inside a tile to restore; release outside, Escape and input loss cancel.
 Restoration returns the exact normal bounds and keyboard focus. A covered tile

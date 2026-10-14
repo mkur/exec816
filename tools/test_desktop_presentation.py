@@ -54,56 +54,64 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
         rectangle(raster,(l,b-1,r,b),1)
         rectangle(raster,(l,t+1,l+1,b-1),1)
         rectangle(raster,(r-1,t+1,r,b-1),1)
+    def mark(l,t,full):
+        widths=(6,4,2,0,2,4,6) if full else (0,2,4,6,4,2,0)
+        for row,offset in enumerate(widths):
+            rectangle(raster,(l+offset,t+row,l+offset+2,t+row+1),1)
+            rectangle(raster,(l+12-offset,t+row,l+14-offset,t+row+1),1)
     box(x,y,right,bottom)
-    rectangle(raster,(x,y+15,right,y+16),12 if focused else 1)
-    name_left=x+(16 if close else 1)
-    icon_right=right-(16 if kind&4 else 0)
-    name_right=icon_right-(16 if right-x>=64 else 1)
+    rectangle(raster,(x,y+10,right,y+11),12 if focused else 1)
+    name_left=x+(22 if close else 1)
+    icon_right=right-(22 if kind&4 else 0)
+    has_icon=icon_right-name_left>=34
+    name_right=icon_right-(22 if has_icon else 1)
     title=title[:max(0,min(64,(name_right-name_left-4)//8))]
     tx=name_left+(name_right-name_left-len(title)*8)//2
     if focused:
-        for py in range(y+1,y+15):
+        for py in range(y+1,y+10):
             for px in range(name_left,name_right):
                 if (px-x)&1 and (py-y)&1: raster.pixel(px,py,1)
     if title:
-        rectangle(raster,(tx-2,y+1,tx+len(title)*8+2,y+15),0)
-        text(raster,tx,y+4,title,fg=12 if focused else 1)
+        rectangle(raster,(tx-2,y+1,tx+len(title)*8+2,y+10),0)
+        text(raster,tx,y+1,title,fg=12 if focused else 1)
     if close:
-        box(x+1,y+1,x+15,y+15)
-        text(raster,x+4,y+4,bytes([5]))
-    if right-x>=64:
-        box(icon_right-16,y+1,icon_right-1,y+15)
-        box(icon_right-12,y+4,icon_right-4,y+12)
-        rectangle(raster,(icon_right-8,y+8,icon_right-5,y+11),1)
+        box(x+1,y+1,x+21,y+10)
+        mark(x+4,y+2,False)
+    if has_icon:
+        box(icon_right-22,y+1,icon_right-1,y+10)
+        box(icon_right-18,y+2,icon_right-4,y+9)
+        rectangle(raster,(icon_right-10,y+5,icon_right-5,y+8),1)
     if kind&4:
-        box(right-16,y+1,right-1,y+15)
-        text(raster,right-12,y+4,bytes([7]))
-    wt=28 if kind&16 else 16
+        box(right-22,y+1,right-1,y+10)
+        mark(right-18,y+2,True)
+    wt=21 if kind&16 else 11
     if kind&16:
-        rectangle(raster,(x,y+27,right,y+28),1)
-        text(raster,x+8,y+18,info[:min(64,(right-x-16)//8)])
-    wr=16 if kind&448 else 8
-    wb=16 if kind&32 else 8
+        rectangle(raster,(x,y+20,right,y+21),1)
+        text(raster,x+8,y+12,info[:min(64,(right-x-16)//8)])
+    wr=22 if kind&448 else 8
+    wb=11 if kind&32 else 2
     rectangle(raster,(x+8,y+wt,right-wr,bottom-wb),background)
     if kind&448:
-        l,t,b=right-16,y+wt,bottom-wb
+        l,t,b=right-22,y+wt,bottom-wb
         rectangle(raster,(l,t,right,b),8)
         if kind&64:
-            rectangle(raster,(l,t,right,t+16),0);box(l,t,right,t+16)
-            for dy in range(5):rectangle(raster,(l+8-dy,t+5+dy,l+9+dy,t+6+dy),1)
-            t+=16
+            rectangle(raster,(l,t,right,t+11),0);box(l,t,right,t+11)
+            for dy in range(5):rectangle(raster,(l+11-dy,t+3+dy,l+12+dy,t+4+dy),1)
+            t+=11
         if kind&128:
-            rectangle(raster,(l,b-16,right,b),0);box(l,b-16,right,b)
-            for dy in range(5):rectangle(raster,(l+8-dy,b-6-dy,l+9+dy,b-5-dy),1)
-            b-=16
+            rectangle(raster,(l,b-11,right,b),0);box(l,b-11,right,b)
+            for dy in range(5):rectangle(raster,(l+11-dy,b-4-dy,l+12+dy,b-3-dy),1)
+            b-=11
         box(l,t,right,b)
         if kind&256:
             t=y+slider[0];b=t+slider[1]
             rectangle(raster,(l+1,t,right-1,b),0);box(l,t,right,b)
     if kind&32:
-        box(right-16,bottom-16,right,bottom)
-        for distance in (3,6,9):
-            for step in range(distance):raster.pixel(right-3-step,bottom-3-distance+step,1)
+        box(right-22,bottom-11,right,bottom)
+        for distance in (2,4,6):
+            for step in range(distance):
+                rectangle(raster,(right-4-2*step,bottom-2-distance+step,
+                    right-2-2*step,bottom-1-distance+step),1)
 
 
 def tile(raster, bounds, title):
@@ -111,11 +119,11 @@ def tile(raster, bounds, title):
     rectangle(raster,bounds,0)
     for l,t,r,b in [(x,y,right,y+1),(x,bottom-1,right,bottom),
                     (x,y+1,x+1,bottom-1),(right-1,y+1,right,bottom-1),
-                    (x+4,y+3,x+16,y+4),(x+4,y+12,x+16,y+13),
-                    (x+4,y+4,x+5,y+12),(x+15,y+4,x+16,y+12)]:
+                    (x+3,y+2,x+17,y+3),(x+3,y+8,x+17,y+9),
+                    (x+3,y+3,x+4,y+8),(x+16,y+3,x+17,y+8)]:
         rectangle(raster,(l,t,r,b),1)
-    rectangle(raster,(x+5,y+4,x+15,y+6),12)
-    text(raster,x+20,y+4,title[:8])
+    rectangle(raster,(x+4,y+3,x+16,y+4),12)
+    text(raster,x+20,y+1,title[:8])
 
 
 def menu_bar(raster, title=b'Shell'):
@@ -148,22 +156,22 @@ def scenes(font, accepted=None, full_coverage=False):
             terminal.feed(bytes(65+col % 26 for col in range(accepted)))
         raster = Raster(font)
         desktop(raster)
-        left, top = (32, 24) if stage < 3 else (80, 48)
-        frame(raster, (left, top, left+528, top+184), b'Shell', True)
-        terminal.paint(raster, (left+8)//8, (top+16)//8, True)
+        left, top = (32, 29) if stage < 3 else (80, 53)
+        frame(raster, (left, top, left+528, top+173), b'Shell', True)
+        terminal.paint(raster, (left+8)//8, (top+11)//8, True)
         if stage in (4, 5):
             frame(raster, (113, 93, 273, 173), b'Clip', False, 3, close=True)
-            text(raster, 124, 112, b'XYZ', bg=3)
+            text(raster, 124, 107, b'XYZ', bg=3)
         positions = [(0, 0), (32, 24), (16, 24), (16, 8), (16, 32),
                      (480, 160), (480, 0), (0, 160)]
         if 7 <= stage <= 14:
             x, y = positions[stage-7]
             frame(raster, (x, y, x+160, y+80), b'Clip', False, 3, close=True)
-            text(raster, x+11, y+19, b'XYZ', bg=3)
+            text(raster, x+11, y+14, b'XYZ', bg=3)
         if stage in (16, 17, 19):
-            x,y,r,b=(80,48,608,232) if full_coverage and stage in (16,17) else (377,0,537,173)
+            x,y,r,b=(80,53,608,226) if full_coverage and stage in (16,17) else (377,0,537,173)
             frame(raster, (x,y,r,b), b'Clip', False, 3, close=True)
-            text(raster, x+11, y+19, b'XYZ', bg=3)
+            text(raster, x+11, y+14, b'XYZ', bg=3)
         menu_bar(raster)
         yield overlay(raster, (320, 120))
 

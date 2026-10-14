@@ -298,7 +298,8 @@ BYTE FUNC Admit()
   control.value=DESKTYPES.CONTENT_WIDGETS
   control.payload=BYTE POINTER(c"Control Panel")
   control.bytes=13
-  REGIONS.Assign(@control.bounds,432,80,624,224)
+  REGIONS.Assign(@control.bounds,432,80,624,
+      80+DESKTYPES.WORK_TOP+120+DESKTYPES.WORK_BOTTOM)
   IF Call(DESKTYPES.OPEN)<>DESKTYPES.OK THEN
     RETURN(0)
   FI

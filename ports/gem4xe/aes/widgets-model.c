@@ -1,5 +1,6 @@
 /* Bounded admission around the extracted AES walks. GPL-3.0-only. */
 #include "widgets.h"
+#include <exec816/desktop-geometry.h>
 
 struct WidgetContext *WidgetCurrent;
 static uint16_t orderCount;
@@ -37,7 +38,8 @@ uint16_t WidgetValidate(struct WidgetContext *c,const struct WidgetTree *p,
     OBJECT *o;
     if (!p || bytes!=sizeof(*p) || p->version!=WIDGET_VERSION ||
         !p->count || p->count>WIDGET_OBJECTS || p->textBytes>WIDGET_TEXT_BYTES ||
-        p->background>15 || !width || width>624 || !height || height>216)
+        p->background>15 || !width || width>640-DESKTOP_WORK_LEFT-DESKTOP_WORK_RIGHT ||
+        !height || height>240-DESKTOP_WORK_TOP-DESKTOP_WORK_BOTTOM)
         return WIDGET_BAD_ARGUMENT;
     memset(c,0,sizeof(*c));
     c->count=p->count;c->textBytes=p->textBytes;c->background=p->background;

@@ -31,6 +31,18 @@ static void text(WORD x,WORD y,UWORD count,UWORD pen)
                   paint->clipRight,paint->clipBottom);
 }
 
+/* Short, wide GEM-style marks match the displayed pixel proportions. */
+static void title_mark(WORD x,WORD y,UWORD full)
+{
+    WORD row,offset;
+    for (row=0;row<7;++row) {
+        offset=2*(row<4 ? row:6-row);
+        if (full) offset=6-offset;
+        fill(x+offset,y+row,x+offset+2,y+row+1,1);
+        fill(x+12-offset,y+row,x+14-offset,y+row+1,1);
+    }
+}
+
 /* Cached thumb coordinates come from the admitted window mutation. Each
  * strip draws only its intersection; no divide or tree traversal is needed. */
 static void gadgets(WORD l,WORD t,WORD r,WORD b)
@@ -43,13 +55,13 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
         fill(left,top,r,bottom,8);
         if (k&DESKTOP_FRAME_UPARROW) {
             fill(left,top,r,top+gh,0);box(left,top,r,top+gh);
-            center=top+5;
+            center=top+(gh-5)/2;
             for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
             top+=gh;
         }
         if (k&DESKTOP_FRAME_DNARROW) {
             fill(left,bottom-gh,r,bottom,0);box(left,bottom-gh,r,bottom);
-            center=bottom-6;
+            center=bottom-1-(gh-5)/2;
             for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
             bottom-=gh;
         }
@@ -61,9 +73,9 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
     }
     if (k&DESKTOP_FRAME_SIZER) {
         box(left,b-gh,r,b);
-        for (i=3;i<12;i+=3) {
+        for (i=2;i<=6;i+=2) {
             WORD j;
-            for (j=0;j<i;++j) fill(r-3-j,b-3-i+j,r-2-j,b-2-i+j,1);
+            for (j=0;j<i;++j) fill(r-4-2*j,b-2-i+j,r-2-2*j,b-1-i+j,1);
         }
     }
     (void)l;
@@ -76,7 +88,7 @@ static UWORD fragment(void)
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
     WORD nameLeft=l+(p->background ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
     WORD iconRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET_WIDTH:0);
-    WORD hasIcon=r-l>=64;
+    WORD hasIcon=iconRight-nameLeft>=DESKTOP_FRAME_GADGET_WIDTH+8+2*DESKTOP_TITLE_PAD;
     WORD nameRight=iconRight-(hasIcon ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
     WORD x,y=t+DESKTOP_TITLE_TEXT_Y;
     WORD pl,pt,pr,pb;
@@ -85,10 +97,10 @@ static UWORD fragment(void)
     UWORD first,n;
     if (p->fillY&DESKTOP_FRAME_ICONIFIED) {
         fill(l,t,r,b,0);box(l,t,r,b);
-        box(l+4,t+3,l+16,t+13);
-        fill(l+5,t+4,l+15,t+6,12);
+        box(l+3,t+2,l+17,t+9);
+        fill(l+4,t+3,l+16,t+4,12);
         for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
-        text(l+20,t+4,n,1);
+        text(l+20,t+1,n,1);
         p->fillX=0;
         return 1;
     }
@@ -106,7 +118,7 @@ static UWORD fragment(void)
         if (!(p->fillY&DESKTOP_FRAME_INFO) ||
             p->clipTop>=t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT) return 1;
         title+=DESKTOP_TITLE_BYTES;
-        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+2;
+        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+1;
         span=r-x-8;
         limit=span>>3;
         while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
@@ -129,19 +141,17 @@ static UWORD fragment(void)
                          t+DESKTOP_TITLE_HEIGHT-1,0);
         if (hasIcon) {
             box(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,iconRight-1,t+DESKTOP_TITLE_HEIGHT-1);
-            box(iconRight-12,t+4,iconRight-4,t+12);
-            fill(iconRight-8,t+8,iconRight-5,t+11,1);
+            box(iconRight-18,t+2,iconRight-4,t+9);
+            fill(iconRight-10,t+5,iconRight-5,t+8,1);
         }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
             box(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
-            glyphs[0]=7;
-            text(r-12,t+4,1,1);
+            title_mark(r-18,t+2,1);
         }
         if (p->background) {
             box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
                 l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
-            glyphs[0]=DESKTOP_CLOSE_GLYPH;
-            text(l+4,t+4,1,1);
+            title_mark(l+4,t+2,0);
         }
     }
     }

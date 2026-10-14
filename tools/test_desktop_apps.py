@@ -15,7 +15,7 @@ from test_mouse_observe import PIN, BRIDGE, ROM
 from test_dos_stack import execute, ownership
 from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE as PALETTE, PENS
 from bitmap_console_oracle import Terminal
-from test_desktop_presentation import desktop, rectangle, text, frame
+from test_desktop_presentation import desktop, rectangle, text, frame, menu_bar
 from test_gem_cursor import overlay
 from generate_desktop import layout
 from desktop_budget import delta
@@ -84,7 +84,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                     raster = Raster(font)
                     desktop(raster)
                     if shell_live:
-                        frame(raster, (32, 24, 560, 208), b'Shell', focused == 1)
+                        frame(raster, (32, 29, 560, 202), b'Shell', focused == 1)
                         terminal.paint(raster, 5, 5, focused == 1)
                     if panel_live:
                         panel(raster, focused == 2, status='Large [5]' if read('DESKAPP', 'updates') else 'Ready',
@@ -152,7 +152,7 @@ def run(out, mode, existing=None, cases=(0, 1), prepare=None):
                         click(448, 87)
                         reach(f'db(${at("DESKAPP", "finished"):x})=1')
                         panel_live = False
-                        focused = 0
+                        focused = 1
                         picture('cooperative app close exposes shell')
                         b.poke16(at('DESKAPPS', 'advance'), 2)
                     reach(f'dw(${at("DESKAPPS", "stage"):x})=4')

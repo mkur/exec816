@@ -102,8 +102,13 @@ RETURN(window.kind<>DESKTYPES.CONTENT_CONSOLE
     AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
 
 PROC Position(INT x,y)
-  INT left,top,width,height,limit
+  INT left,top,width,height,limit,offset
 
+  BEGIN
+    LET window=DESKCORE.Find(DESKSTATE.Get(),windowId)
+    offset=IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+        INT(DESKTYPES.WORK_TOP) ELSE INT(0) FI
+  END
   width=origin.right-origin.left
   height=origin.bottom-origin.top
   left=origin.left+x-pressX
@@ -118,7 +123,10 @@ PROC Position(INT x,y)
 
   IF pixelMotion=0 THEN
     left=(left+4) & $fff8
-    top=(top+4) & $fff8
+    top=((top+offset+4) & $fff8)-offset
+    IF top<DESKMENU.BAR_HEIGHT THEN
+      top=((DESKMENU.BAR_HEIGHT+offset+7) & $fff8)-offset
+    FI
   ELSE
     left=left & $fffe
   FI
@@ -133,7 +141,7 @@ PROC Position(INT x,y)
 
   limit=240-height
   IF pixelMotion=0 THEN
-    limit=limit & $fff8
+    limit=((limit+offset) & $fff8)-offset
   FI
   IF top>limit THEN
     top=limit

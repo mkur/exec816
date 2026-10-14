@@ -3,7 +3,7 @@
 [GEM plans](README.md) · [Desktop contract](../../reference/desktop.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: CF1 complete; CF2–CF4 pending, 2026-10-14.
+Status: CF1–CF2 complete; CF3–CF4 pending, 2026-10-14.
 [Development record](../../history/compact-window-geometry.md).
 
 ## Outcome and reference
@@ -183,4 +183,6 @@ No new kernel calls, scheduling policy, Tasks, VRAM reservations, per-window
 themes or general layout engine. Keep each slice executable and reviewable.
 The existing public application operations remain; rebuild matching code for
 changed geometry and only change ABI versions where the repository's contracts
-require it. CF1 is implemented; subsequent slices retain the targets above.
+require it. CF1–CF2 are implemented; subsequent slices retain the targets above.
+CF2 raises the fixed FULLER minimum width from 32 to 44 to fit its two
+22-pixel mandatory controls.

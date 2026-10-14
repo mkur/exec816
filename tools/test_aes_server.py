@@ -481,7 +481,7 @@ ENDMODULE
                     pixels = {(px, py) for px in range(x, x+w) for py in range(y, y+h)}
                     require(not actual.intersection(pixels), 'Visible rectangles overlap')
                     actual.update(pixels)
-                expected = {(x, y) for x in range(16, 200) for y in range(25, 121)
+                expected = {(x, y) for x in range(16, 200) for y in range(20, 127)
                             if not (88 <= x < 288 and 49 <= y < 169)}
                 require(actual == expected, 'Visible work region differs from independent pixel oracle')
                 report['visible_rectangles'] = rectangles

@@ -141,12 +141,12 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                   info=window[wf['info']:wf['info']+64].split(b'\0')[0],
                   slider=(number(window,wf['sliderTop']),number(window,wf['sliderHeight'])))
         if kind == 1:
-            terminal.paint(result, (left+8)//8, (top+16)//8, number(window, wf['id'], 4) == focused)
+            terminal.paint(result, (left+8)//8, (top+11)//8, number(window, wf['id'], 4) == focused)
         elif kind == 3:
             from control_panel_oracle import retained
             context = number(bridge.memdump(content_address-wf['content']+wf['widgets'], 3), 0, 3)
             retained(bridge, result, context,
-                     (left+8, top+16, right-8, bottom-8),
+                     (left+8, top+11, right-8, bottom-2),
                      number(window, wf['id'], 4) == focused)
         elif kind == 4:
             require(external is not None, "External application needs an independent painter")
@@ -159,9 +159,9 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                 l, t, r, b = rect(command, df['bounds'])
                 pen = command[df['pen']]
                 if command[df['kind']] == 1:
-                    rectangle(result, (left+8+l, top+16+t, left+8+r, top+16+b), pen)
+                    rectangle(result, (left+8+l, top+11+t, left+8+r, top+11+b), pen)
                 else:
                     offset, length = number(command, df['offset']), number(command, df['count'])
                     value = content[cf['text']+offset:cf['text']+offset+length]
-                    text(result, left+8+l, top+16+t, value, pen, number(content, cf['background']))
+                    text(result, left+8+l, top+11+t, value, pen, number(content, cf['background']))
     return overlay(result, pointer)

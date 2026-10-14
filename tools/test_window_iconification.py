@@ -69,7 +69,7 @@ class Iconification:
         def hidden(w,original):
             require(state(w)==1,'Iconification did not commit')
             require(bounds(w,True)==original,'Saved normal geometry changed')
-            require(bounds(w)==(104+w['slot']*88,222,192+w['slot']*88,238),'Wrong tile bounds')
+            require(bounds(w)==(104+w['slot']*88,227,192+w['slot']*88,238),'Wrong tile bounds')
             require(menus.focus()!=w['id'],'Icon retained keyboard focus')
         def restored(w,original):
             require(state(w)==0 and bounds(w)==original,'Restore lost original bounds')
@@ -77,7 +77,7 @@ class Iconification:
         def gadget(w):
             l,t,r,bottom=bounds(w)
             kind=s.number(w['address']+wf['frameKind'],2)
-            click(r-(24 if kind&4 else 8),t+8)
+            click(r-(33 if kind&4 else 11),t+8)
         def tile(w):click(124+w['slot']*88,230)
         def shot(name):
             move(632,212);s.frames(100);s.cells(name)

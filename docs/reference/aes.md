@@ -204,16 +204,17 @@ are not reused during a service lifetime. Accepted outer X positions are rounded
 down to an even pixel and widths up to an even pixel at create/open/set. Drag
 and resize proposals use the same alignment; Y and height retain single-pixel
 precision. Bounds must fit fully inside the 640 by 240 desktop.
-Fixed windows have a 32 by 32 minimum and reject dimension changes. SIZER
+Fixed windows have a 32 by 32 minimum (44 pixels wide with FULLER) and
+reject dimension changes. SIZER
 permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
 `WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
 low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
-top 16 and bottom 8 pixels. Vertical gadgets increase the right inset to 16;
-SIZER increases the bottom inset to 16. INFO adds a 12-pixel information line
-below the title, raising the top inset to 28. `wind_calc` converts border/work rectangles locally; `wind_get`
+top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 22;
+SIZER increases the bottom inset to 11. INFO adds a 10-pixel information line
+below the title, raising the top inset to 21. `wind_calc` converts border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
 Use those accepted rectangles after open/set; `wind_calc` itself remains an
 unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.

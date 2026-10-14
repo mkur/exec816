@@ -84,6 +84,21 @@ PUBLIC PROC Slider(DESKTYPES.Window POINTER window
 
 RETURN
 
+; Reserve one text cell between the actual title controls.
+PUBLIC BYTE FUNC HasIcon(DESKTYPES.Window POINTER window
+    LAYERTYPES.Rect POINTER bounds)
+  INT available
+
+  available=bounds.right-bounds.left
+      -IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+          INT(DESKTYPES.FRAME_EDGE) ELSE INT(DESKTYPES.FRAME_GADGET_WIDTH) FI
+  IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0 THEN
+    available==-DESKTYPES.FRAME_GADGET_WIDTH
+  FI
+
+RETURN(window.frameKind<>DESKTYPES.FRAME_BORDERLESS
+    AND available>=DESKTYPES.FRAME_GADGET_WIDTH+8+2*DESKTYPES.TITLE_PAD)
+
 ; Hit codes are private presenter facts: size, up, down, page up/down, thumb.
 PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds INT x,y)
@@ -94,8 +109,7 @@ PUBLIC BYTE FUNC GadgetHit(DESKTYPES.Window POINTER window
         AND y>=bounds.top AND y<bounds.bottom THEN 9 ELSE 0 FI)
   FI
 
-  IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS
-      AND bounds.right-bounds.left>=64
+  IF HasIcon(window,bounds)<>0
       AND y>=bounds.top AND y<bounds.top+DESKTYPES.TITLE_HEIGHT THEN
     BEGIN
       LET right=bounds.right-IF (window.frameKind & DESKTYPES.FRAME_FULLER)<>0

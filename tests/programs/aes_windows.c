@@ -102,7 +102,7 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     id = appl_init(); CHECK(id > 0);
     CHECK(wind_calc(WC_WORK, AES_WINDOW_KIND, 9, 9, 200, 120, &a, &b, &c, &d));
-    CHECK(a == 17 && b == 25 && c == 184 && d == 96);
+    CHECK(a == 17 && b == 20 && c == 184 && d == 107);
     CHECK(wind_calc(WC_BORDER, AES_WINDOW_KIND, a, b, c, d, &a, &b, &c, &d));
     CHECK(a == 9 && b == 9 && c == 200 && d == 120);
     CHECK(!wind_calc(WC_WORK, AES_WINDOW_KIND, 0, 0, 16, 24, &a, &b, &c, &d));
@@ -113,7 +113,7 @@ UWORD AESRun(void)
     in[0] = WC_WORK; in[1] = AES_WINDOW_KIND;
     in[2] = 9; in[3] = 9; in[4] = 200; in[5] = 120;
     aes_call(&pb);
-    CHECK(out[0] == 1 && out[1] == 17 && out[2] == 25 && out[3] == 184 && out[4] == 96);
+    CHECK(out[0] == 1 && out[1] == 17 && out[2] == 20 && out[3] == 184 && out[4] == 107);
     geometry(0, WF_WXYWH, 0, 16, 640, 224);
     replacement=wind_create(0,9,9,200,120);
     CHECK(replacement>0);CHECK(wind_delete(replacement));
@@ -131,7 +131,7 @@ UWORD AESRun(void)
     replacement=wind_create(AES_WINDOW_KIND,9,9,200,120);
     CHECK(replacement>handle);CHECK(wind_delete(replacement));
     geometry(handle, WF_CXYWH, 8, 9, 200, 120);
-    geometry(handle, WF_WXYWH, 16, 25, 184, 96);
+    geometry(handle, WF_WXYWH, 16, 20, 184, 107);
     geometry(handle, WF_KIND, AES_WINDOW_KIND, 0, 0, 0);
     CHECK(!wind_get(handle, WF_FIRSTXYWH, &a, &b, &c, &d));
     CHECK(ExecAESDiagnostic() == AES_BUSY);
@@ -152,9 +152,9 @@ UWORD AESRun(void)
     geometry(handle, WF_CXYWH, 8, 9, 200, 120);
     CHECK(evnt_mesag(message));
     CHECK(message[0] == WM_REDRAW && message[3] == handle);
-    CHECK(message[4] == 16 && message[5] == 25 && message[6] == 184 && message[7] == 96);
+    CHECK(message[4] == 16 && message[5] == 20 && message[6] == 184 && message[7] == 107);
     CHECK(wind_update(BEG_UPDATE));
-    geometry(handle, WF_FIRSTXYWH, 16, 25, 184, 96);
+    geometry(handle, WF_FIRSTXYWH, 16, 20, 184, 107);
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_update(END_UPDATE));
     geometry(handle, WF_NEXTXYWH, 0, 0, 0, 0);
@@ -242,7 +242,7 @@ UWORD AESRun(void)
     geometry(handle, WF_CXYWH, 10, 13, 200, 120);
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
     CHECK(wind_get(0, WF_TOP, &a, &b, &c, &d) && a == handle);
-    geometry(handle, WF_FIRSTXYWH, 18, 29, 184, 96);
+    geometry(handle, WF_FIRSTXYWH, 18, 24, 184, 107);
     CHECK(wind_update(END_UPDATE));
     command = 4; Signal(peer, peerWake);
     while (!AESDone) Wait(wake);
@@ -264,12 +264,12 @@ UWORD AESRun(void)
     handle=wind_create(AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,32,32,240,160);
     CHECK(handle>0);
     CHECK(wind_open(handle,32,32,240,160));
-    geometry(handle,WF_WXYWH,40,48,216,128);
+    geometry(handle,WF_WXYWH,40,43,210,138);
     geometry(handle,WF_VSLIDE,0,0,0,0);
     geometry(handle,WF_VSLSIZE,1000,0,0,0);
     CHECK(wind_calc(WC_WORK,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
         32,32,240,160,&a,&b,&c,&d));
-    CHECK(a==40 && b==48 && c==216 && d==128);
+    CHECK(a==40 && b==43 && c==210 && d==138);
     CHECK(wind_calc(WC_BORDER,AES_WINDOW_KIND|SIZER|UPARROW|DNARROW|VSLIDE,
         a,b,c,d,&a,&b,&c,&d));
     CHECK(a==32 && b==32 && c==240 && d==160);
@@ -287,16 +287,16 @@ UWORD AESRun(void)
     CHECK(wind_get(handle,WF_FIRSTXYWH,&a,&b,&c,&d));
     CHECK(wind_set(handle,WF_CXYWH,32,32,320,192));
     CHECK(!wind_get(handle,WF_NEXTXYWH,&a,&b,&c,&d));
-    geometry(handle,WF_WXYWH,40,48,296,160);
-    geometry(handle,WF_FIRSTXYWH,40,48,296,160);
+    geometry(handle,WF_WXYWH,40,43,290,170);
+    geometry(handle,WF_FIRSTXYWH,40,43,290,170);
     CHECK(wind_update(END_UPDATE));
     CHECK(wind_set(handle,WF_CXYWH,32,32,64,80));
-    geometry(handle,WF_WXYWH,40,48,40,48);
+    geometry(handle,WF_WXYWH,40,43,34,58);
     CHECK(!wind_set(handle,WF_CXYWH,32,32,63,80));
     CHECK(!wind_set(handle,WF_CXYWH,32,32,64,79));
     CHECK(wind_close(handle));
     CHECK(wind_open(handle,32,32,240,160));
-    geometry(handle,WF_WXYWH,40,48,216,128);
+    geometry(handle,WF_WXYWH,40,43,210,138);
     AESView=(ULONG)ExecAESContext()->view;
     AESWindow=handle;
     for (i=0;i<7;++i) {

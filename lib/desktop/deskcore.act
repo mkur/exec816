@@ -332,8 +332,11 @@ CARD FUNC Open(DESKTYPES.Service POINTER service
   IF request.value=DESKTYPES.CONTENT_CONSOLE THEN
     IF service.consoleOwner<>client.binding.owner OR service.consoleWindow<>0
         OR request.target<>0 OR (request.bounds.left & 7)<>0
-        OR (request.bounds.top & 7)<>0 OR request.bounds.right-request.bounds.left<>528
-        OR request.bounds.bottom-request.bounds.top<>184 THEN
+        OR ((request.bounds.top+DESKTYPES.WORK_TOP) & 7)<>0
+        OR request.bounds.right-request.bounds.left<>
+            512+DESKTYPES.WORK_LEFT+DESKTYPES.WORK_RIGHT
+        OR request.bounds.bottom-request.bounds.top<>
+            160+DESKTYPES.WORK_TOP+DESKTYPES.WORK_BOTTOM THEN
       RETURN(DESKTYPES.BAD_ARGUMENT)
     FI
   FI
@@ -562,7 +565,8 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
     RestoreFocus(service,window.id)
   WHEN DESKTYPES.MOVE THEN
     IF window.kind=DESKTYPES.CONTENT_CONSOLE AND
-        ((request.bounds.left & 7)<>0 OR (request.bounds.top & 7)<>0) THEN
+        ((request.bounds.left & 7)<>0
+        OR ((request.bounds.top+DESKTYPES.WORK_TOP) & 7)<>0) THEN
       RETURN(DESKTYPES.BAD_ARGUMENT)
     FI
 

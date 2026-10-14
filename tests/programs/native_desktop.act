@@ -87,10 +87,10 @@ PROC FocusCases()
   Require(service.focus=3)
   BEGIN
     LET layer=DESKCORE.Layer(service,@service.windows(1))
-    Require(layer.bounds.left=192 AND layer.bounds.top=222)
+    Require(layer.bounds.left=192 AND layer.bounds.top=227)
     Require(layer.bounds.right=280 AND layer.bounds.bottom=238)
     Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,200,230)=9)
-    Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,200,221)=0)
+    Require(DESKGEOMETRY.GadgetHit(@service.windows(1),@layer.bounds,200,226)=0)
     DESKCORE.Iconify(service,@service.windows(1))
     Require(service.windows(1).normalBounds.left=16)
     DESKCORE.RestoreIcon(service,@service.windows(1))
@@ -264,7 +264,7 @@ PROC WidgetCases()
   tree.objects(0).tail=2
   tree.objects(0).kind=WIDGETTYPES.G_BOX
   tree.objects(0).width=112
-  tree.objects(0).height=56
+  tree.objects(0).height=80-DESKTYPES.WORK_TOP-DESKTYPES.WORK_BOTTOM
   tree.objects(0).spec=$70
   FOR index=1 TO 2 DO
     tree.objects(index).next=IF index=1 THEN 2 ELSE 0 FI
