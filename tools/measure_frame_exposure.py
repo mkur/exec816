@@ -153,9 +153,9 @@ def main():
         row['calls']=dict(Counter(points[int(e[4],16)] for tick,e in events if int(e[4],16) in points and
             (tick-row['start'])%(1<<32)<(row['end']-row['start'])%(1<<32)))
         if not a.baseline and row['action']=='New Window':
-            # Files opens with a provisional title, then publishes the resolved path.
-            require(row['calls'].get('CONSOLEBITMAP_FRAME')==5,
-                    'Expected four cold frame batches plus one live path-title update')
+            # Files supplies its known path before the initial frame is drawn.
+            require(row['calls'].get('CONSOLEBITMAP_FRAME')==4,
+                    'Expected four cold frame batches without a later title repaint')
             require(row['calls'].get('GemDrawingFrameBatch')==2,'Expected two complete frame sides')
     summary={}
     for name in sorted({r['action'] for r in probe.samples}):

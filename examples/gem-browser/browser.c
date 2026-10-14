@@ -292,7 +292,12 @@ static void selection_status(struct Browser *b)
     p=decimal(b->status,b->selectionCount);strcpy(p," selected");
     if (b->truncated) strcat(p," (first 256 entries)");
 }
-static WORD describe(struct Browser *b)
+static WORD folder_title(struct Browser *b)
+{
+    label(b->target,b->path,64);
+    return wind_set_str(b->window,WF_NAME,b->target);
+}
+static void describe(struct Browser *b)
 {
     char *p,*read,*write;
     WORD length,i;
@@ -304,8 +309,6 @@ static WORD describe(struct Browser *b)
         if (++i==3 && read>b->information) { *--write=',';i=0; }
     }
     strcpy(p," bytes in ");p=decimal(p+10,b->count);strcpy(p," items");
-    label(b->target,b->path,64);
-    return wind_set_str(b->window,WF_NAME,b->target);
 }
 static void sort_entries(struct Browser *b)
 {
@@ -365,7 +368,8 @@ static WORD refresh_path(struct Browser *b,const char *path,const char *reveal)
             if (!strcmp(b->entries[i].name,next)) { mark_entry(b,i,1);break; }
     }
     if (names) FreeMem(names,bytes);
-    if (!describe(b)) return 0;
+    describe(b);
+    if (changed && !b->scan.error && !folder_title(b)) return 0;
     selection_status(b);
     if (b->scan.error) strcpy(b->status,"Directory read failed");
     layout(b);
@@ -710,7 +714,7 @@ static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *s
     memcpy(b->tree,source,BROWSER_OBJECTS*sizeof(OBJECT));
     label(b->path,path,127);
     b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,462,196);
-    if (b->window<0 || !wind_set_str(b->window,WF_NAME,"Files")) return 0;
+    if (b->window<0 || !folder_title(b)) return 0;
     if (!wind_set(b->window,AES_WF_EXEC_PRESERVE,1,0,0,0)) return 0;
     if (!wind_open(b->window,x,y,462,196)) return 0;
     b->opened=1;
