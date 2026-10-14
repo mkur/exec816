@@ -494,6 +494,19 @@ It retains the existing VRAM reservations and application preservation contract.
 [Measurements](history/window-frame-exposure.md) show about 33% faster cold
 frames, 25% faster complete folder opens and 45% faster warm SYS: completion.
 
+The proposed [window and menu response follow-up](plans/gem4xe/window-menu-response-plan.md)
+first removes redundant menu requests and false popup invalidations, raises
+folders promptly and sets their path title before opening. It then combines
+the gadget atlas below with bounded menu continuations and cheap monochrome
+selection changes. UI1–UI5 retain current AES/Layers contracts, add no bank-zero
+reservations and share one final measurement/demo pass with GAT4.
+
+The proposed [window gadget atlas follow-up](plans/gem4xe/frame-gadget-atlas-plan.md)
+replaces repeated tiny fills for fixed frame marks with persistent VRAM images.
+It retains the current appearance, title-pattern fill and frame batches;
+GAT1–GAT4 add one 4 KiB VRAM page with no planned bank-zero growth and measure
+frame-renderer cost separately from the complete New Window action.
+
 The [window iconification design](plans/gem4xe/window-iconification-design.md)
 and [plan](plans/gem4xe/window-iconification-plan.md) add presenter-owned
 Shell/AES tiles and Windows-menu restoration without suspending applications.
