@@ -75,6 +75,7 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
     view.visibleCount=0
     view.shown=0
+    view.pixelsReady=0
     view.paintEpoch=layer.paintEpoch
     view.revision==+1
     EXEC.Permit()
@@ -96,11 +97,13 @@ PROC Publish(AESSTATE.Window POINTER client BYTE copied)
   IF status<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb3)
   FI
+  status=LAYERS.PixelsReady(layer,@work)
 
   EXEC.Forbid()
   A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(@layer.bounds),8)
   A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(@work),8)
   view.shown=layer.shown
+  view.pixelsReady=status
   view.paintEpoch=layer.paintEpoch
   view.revision==+1
   EXEC.Permit()

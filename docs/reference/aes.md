@@ -919,6 +919,24 @@ eight rectangles fit the caller-local journal. Overflow discards excess claims,
 without failing the application's paint. Later drawing revokes intersecting
 claims. A drawing failure remains sticky until the next outer UPDATE.
 
+`ExecAESPaintedChanges(window)` reports the accumulated changed span after the
+caller successfully finishes every drawable change in the UPDATE scope. It
+only records completion if the work area was already complete at lock grant;
+otherwise it succeeds without claiming pixels, preserving the repaint fallback.
+Files uses it for incremental selection. Like `ExecAESPainted`, it is
+caller-local and adds no RPC. C application ABI 18 exports this helper; rebuild
+the runtime and applications together.
+
+The UPDATE snapshot's `AESWindowView.pixelsReady` is nonzero when Layers had no
+pending content or presentation repair in the work area at lock grant. It uses
+the former padding byte; record sizes and offsets are unchanged. A caller that
+successfully draws every change in that scope may then report the bounding
+span of those changes: the intervening untouched pixels were already complete.
+If `pixelsReady` is zero, report only regions actually reconstructed; never use
+this shortcut to retire an earlier exposure obligation. Normal visibility
+clipping, failure and generation checks still apply, including hidden changes.
+The flag is a snapshot, not a promise of a cached image or a live readiness poll.
+
 Only the outer END publishes the journal. Layers subtracts matching-generation
 claims from pending external repaint; neither ending UPDATE nor exhausting
 `WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper

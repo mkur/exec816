@@ -49,13 +49,11 @@ void ExecAESChanged(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG 
 
 /* The caller promises complete pixels inside this clip. A journal miss only
  * loses cache eligibility; it must not turn a successful GEM paint into error. */
-WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height)
+static WORD painted(struct ExecAESContext *c,struct AESWindowView *v,
+                    WORD x,WORD y,WORD width,WORD height)
 {
-    struct ExecAESContext *c=ExecAESContext();
-    struct AESWindowView *v;
     UWORD i;
     LONG right=(LONG)x+width,bottom=(LONG)y+height,l,t,r,b;
-    if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
     if (c->request.paintFailed || c->diagnostic!=AES_OK) {
         c->request.paintFailed=1;return 0;
     }
@@ -67,10 +65,30 @@ WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height)
         r=right<a->right ? right:a->right;b=bottom<a->bottom ? bottom:a->bottom;
         if (l>=r || t>=b) continue;
         p=&c->request.paints[c->request.paintCount++];
-        p->handle=window;p->epoch=v->paintEpoch;
+        p->handle=v->handle;p->epoch=v->paintEpoch;
         p->rect.left=l;p->rect.top=t;p->rect.right=r;p->rect.bottom=b;
     }
     return 1;
+}
+
+WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct AESWindowView *v;
+    if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
+    return painted(c,v,x,y,width,height);
+}
+
+/* The caller finished every change. Only a complete starting image proves
+ * that untouched pixels between disjoint edits are also current. */
+WORD ExecAESPaintedChanges(WORD window)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    struct AESWindowView *v;
+    if (!c || !(v=ExecAESFindView(c,window)) || !v->updates) return 0;
+    if (!v->pixelsReady || !v->changed) return 1;
+    return painted(c,v,v->change.left,v->change.top,
+        v->change.right-v->change.left,v->change.bottom-v->change.top);
 }
 
 WORD ExecAESDesktop(WORD handle)

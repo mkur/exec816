@@ -32,9 +32,11 @@ ordinals select functions in the build's fixed resident C provider. Mutable
 service globals and additional application Task entries are not imports.
 Rebuild applications when the ABI changes; there is no legacy-profile shim.
 
-Import ABI 12 exposes the existing `CreateMsgPort`, `DeleteMsgPort`,
+Import ABI 18 exposes the existing `CreateMsgPort`, `DeleteMsgPort`,
 `CreateIORequest`, `DeleteIORequest`, `OpenDevice`, `CloseDevice` and `DoIO`
-functions to loaded C applications. Device requests use the ordinary
+functions to loaded C applications, alongside the caller-local
+`ExecAESPaintedChanges` [paint-completion helper](aes.md#optional-repaint-completion).
+Device requests use the ordinary
 [device I/O contract](device-io.md); no new kernel operation or clock is added.
 The desktop provider and its applications must be rebuilt together.
 
@@ -48,7 +50,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | Import ABI version, 12 |
+| 6 | 2 | Import ABI version, 18 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

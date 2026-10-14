@@ -254,3 +254,185 @@ Evidence: `build/window-menu-response/gat3/results.json`,
 `contracts/response-contract.json` / `window-preservation-runtime.json` under
 that same development directory. The matching baseline selection and archived
 passive logs are retained alongside them.
+
+## Follow-up: one initial folder paint
+
+The opening path called `refresh()` immediately after `wind_open()`, painting
+all contents before returning to the event loop. AES had also queued the
+ordinary initial `WM_REDRAW`, so dispatching that event cleared and painted the
+same contents again. The earlier observer stopped its completion timer at the
+first complete image and checked frame batches, but did not reject this second
+application paint.
+
+The initial scan now prepares the listing and slider state while the folder is
+not yet ready; the queued `WM_REDRAW` performs its first content paint. Initial
+scan failures likewise leave their status text for that event. Refresh and
+navigation of an already-ready folder still paint immediately. This uses the
+existing readiness field; AES messages and exposure semantics are unchanged.
+
+The focused frame observer records the folder's completed content paints and
+watches its pixels for another 80 PAL frames after the first complete image.
+Its `--open-only` mode selects one New Window, verifies an explicit Refresh,
+then exits normally. The frozen response demo reproduces **two** content paints
+and **21** differing frames after its first complete image.
+
+The corrected package completes **one** initial content paint, with **zero**
+changed frames during that same observation interval. Ctrl-L completes exactly
+one further paint with the same final listing. Four initial frame batches remain;
+there is no extra title repaint. Normal EXIT, ownership and stack/context checks
+pass. Development scope is five desktop contract host checks and one selected
+packaged opening per version, with Refresh on the corrected version. No broad
+qualification or compiler matrix ran.
+
+The single first-image observation is 1,343.7 ms before and 1,463.9 ms after.
+The old endpoint precedes its second repaint, so these values do not compare
+time to a stable completed window or establish an overall speedup. The fix
+removes the redundant content painting and its visible clearing pass.
+
+Evidence is under `build/window-open-once/baseline` and
+`build/window-open-once/demo`: `frame-exposure-results.json`,
+`frame-exposure-runtime.json` and the corrected `new-window-checks.json`.
+The refreshed OF816 ZIP is `build/window-open-once/demo/exec816-demo.zip`,
+634,259 bytes, SHA-256
+`dd11de91ff8974e65fffd68bb4fce66fcf1b1511ab08b7b155eee76ddf589c96`.
+Its archive and per-file checksums pass; distribution contents retain the pinned
+ROM, matching disks, licenses and five-second autoboot.
+
+```sh
+open /Users/michalkurcewicz/action/exec816-public/build/window-open-once/demo/launch-altirra.command
+```
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
+guards, alignment and unused capacity. No extra VRAM or persistent state.
+
+## Follow-up: keyboard selection without unchanged-content repainting
+
+`paint_selection()` previously repainted the summary strip for every selection
+change, even when its text remained `1 selected`. Keyboard focus also made it
+redraw complete old and new icon cells, including their unchanged colour
+bitmaps. Each intersecting object draw could erase and restore the software
+pointer. The frozen pre-fix keyboard observer found no change in either input
+or renderer pointer coordinates, but recorded two cursor hides over the summary
+and three over an icon during one arrow-key action.
+
+Files now compares the new summary text before painting it. Icon selection
+updates draw only the label rectangle; focus moves erase the old outline's
+four one-pixel edges and draw the new outline. List selection still paints the
+changed rows. An unchanged selection/focus/status returns without opening a
+drawing transaction, and scrolling that already painted the new selection does
+not repeat the selection pass. This relies on the existing stock icon policy:
+selection changes the label, not the colour bitmap.
+
+The pointer driver and general AES object renderer are unchanged. A pointer
+over genuinely changed text or an outline can still be hidden during that
+draw. That first fix left the separate preservation-cache completion issue
+open: `paint_selection()` did not report completed painting, so a later
+exposure could require application repainting. The next follow-up closes it.
+
+The focused packaged check passes with unchanged pointer coordinates and zero
+changed summary frames in all five observed actions. In the three icon cases,
+pointer pixels remain stable and cursor-hide calls fall from **2 / 3 / 0** to
+**0 / 0 / 0** (pointer over summary / icon / outside the window). The list case
+still overlaps a changed focus edge; cursor-hide calls fall from five to two.
+Repeated Up on the first item performs zero paints and zero drawing borrows.
+One keyboard scroll performs one content paint without a second selection pass.
+
+Each incremental result, including the scrolled grid, matches a normal full
+Refresh pixel-for-pixel. Changing the selected count still updates the summary.
+Normal EXIT and stack/domain guards pass. The observer initially used a fixed
+delay for entering `SYS:C`; the supplemental scroll case now waits for the
+directory scan to finish. No application change was needed for that correction.
+Scope is development: this one selected physical keyboard scenario before and
+after, archive/checksum checks and source checks; no qualification matrix.
+
+Evidence: `build/files-keyboard/baseline/keyboard-results.json` and
+`build/files-keyboard/demo/keyboard-results.json`. The updated OF816 package is
+`build/files-keyboard/demo/exec816-demo.zip`, 635,371 bytes, SHA-256
+`c15c819d243ad8d920ce972b4038931cb177ad58bacbd76eb8107eaed01b643c`.
+It retains the pinned ROM, matching disks, licenses and five-second autoboot.
+
+```sh
+python3 tools/measure_files_keyboard.py --bundle build/files-keyboard/demo
+open /Users/michalkurcewicz/action/exec816-public/build/files-keyboard/demo/launch-altirra.command
+```
+
+Relative to the preceding opening fix, runtime reservations, every Task pool
+and the complete bank-zero budget remain identical: **0 fixed, 0 per public
+Task, 0 idle bytes**, including guards, alignment and unused capacity. No
+additional persistent state or VRAM reservation.
+
+## Follow-up: retain completed selection changes in the window cache
+
+AES accumulates a bounding rectangle for an UPDATE's drawing. Reporting only
+the individual labels and outline edges would leave gaps inside that rectangle
+unacknowledged. Reporting the whole rectangle unconditionally would be wrong if
+older exposure damage still needed reconstruction.
+
+The published view now uses its former padding byte for `pixelsReady`: Layers'
+work-area readiness at snapshot publication, including the UPDATE grant. No
+record size or offset changes. Iconified views explicitly publish zero. The
+caller-local `ExecAESPaintedChanges(window)` helper reports the accumulated
+change rectangle only when that starting image was complete. The caller still
+promises that all its drawable changes finished successfully. Existing visible
+clipping, generation matching, journal capacity and sticky failure checks apply.
+Incomplete starting pixels remain on the repaint fallback; the helper does not
+acknowledge earlier unfinished content.
+
+`paint_selection()` calls the helper once after its successful small draws and
+before END_UPDATE. It adds no RPC, update scope, allocation or rendering pass.
+The cache can patch the changed span, then restore the updated selection on a
+later exposure. The C application import ABI advances to 18 for the helper;
+the desktop provider and every packaged application are rebuilt together.
+
+The first physical preservation check passed for icons but exposed another
+miss in list view: its one-pixel button borders put the completed change on
+odd X edges. `DESKCACHE.EndChange` now rounds the local patch span outward to
+packed-pixel byte boundaries. At most one adjacent pixel is copied on each
+side; the existing client-bounds, readiness and visible-source checks still
+gate the expanded copy. No drawing is widened and no new storage is needed.
+
+The existing software-pointer rule still applies to cache maintenance: when
+copying screen pixels into a saved image, the copy path removes an intersecting
+pointer so its pixels cannot be baked into the cache. The keyboard observer
+distinguishes this necessary source cleanup from per-object cursor hiding.
+
+The optimized AES cache fixture passes all 31 phases and 220 application
+assertions, including completed patches, incomplete starting pixels, partial
+completion, hidden/model-only changes, eviction, exact restored pixels and
+normal cleanup with intact guards. The new helper is exercised both with a
+ready starting image and with an unfinished image where it must record no
+completion. This run selects `release=True` for the existing pinned host
+compiler via the runner's `native_program.compiler` binding; the compiler
+revision and optimized guest build are unchanged. Evidence is
+`build/files-selection-cache/aes-cache/results.json`.
+
+The final packaged keyboard check passes in icon and list view. After changing
+selection, switching to Shell and back restores identical work-area pixels with
+**zero Files paints, zero captures and zero patches** during exposure. The
+observer records one cache restore for the icon switching sequence and two for
+the list sequence, which includes Windows menu interaction. Each incremental
+selection and keyboard scroll still matches a full Refresh; boundary Up does
+no painting and scrolling adds no duplicate selection pass. Summary text and
+both input/renderer pointer coordinates remain unchanged in all five samples.
+Cache-source cleanup can briefly hide the pointer; the trace rejects cursor
+hiding from unchanged icon-object drawing. Normal EXIT and guards pass.
+
+Development scope: nine selected host checks, generated-file and unchanged
+record-layout checks, the optimized AES cache fixture, the packaged keyboard
+and focus scenario, and archive/checksum checks. No qualification matrix ran.
+The final package and cache fixture use the final patch-alignment code.
+Bank-zero reservation delta is **0 fixed, 0 per public Task, 0 idle bytes**,
+including guards, alignment and unused capacity. No stack/DP enlargement or
+VRAM reservation change; the view uses its existing byte of padding.
+
+The updated OF816 ZIP is `build/files-selection-cache/demo/exec816-demo.zip`,
+635,683 bytes, SHA-256
+`ce1ea7a48bf487dd01f0ff0932437197d1c7e573482204bbdda45a7e429fa0ef`.
+It contains the matching ABI-18 applications/system disk, pinned ROM, WORK
+disk, licenses and five-second autoboot. Evidence is
+`build/files-selection-cache/demo/keyboard-results.json`.
+
+```sh
+python3 tools/measure_files_keyboard.py --bundle build/files-selection-cache/demo --preservation
+open /Users/michalkurcewicz/action/exec816-public/build/files-selection-cache/demo/launch-altirra.command
+```

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 17,
+  "version": 18,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -102,6 +102,7 @@
     "DeleteFile",
     "wind_find",
     "ExecAESDragOutline",
-    "ExecAESBeginUpdate"
+    "ExecAESBeginUpdate",
+    "ExecAESPaintedChanges"
   ]
 }

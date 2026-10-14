@@ -114,7 +114,7 @@ const UWORD AESLayout[] = {
     offsetof(struct AESWindowView, epoch),
     offsetof(struct AESWindowView, paintEpoch),
     offsetof(struct AESWindowView, changed),
-    offsetof(struct AESWindowView, changedPad),
+    offsetof(struct AESWindowView, pixelsReady),
     offsetof(struct AESWindowView, change),
     sizeof(struct AESRequest),
     offsetof(struct AESRequest, message),

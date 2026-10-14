@@ -333,7 +333,7 @@ struct AESWindowView {
     ULONG epoch;
     ULONG paintEpoch;
     UBYTE changed;
-    UBYTE changedPad;
+    UBYTE pixelsReady;
     struct AESRect change;
 };
 #define AES_WINDOWVIEW_SIZE 820
@@ -351,7 +351,7 @@ struct AESWindowView {
 #define AES_WINDOWVIEW_OFFSET_EPOCH 802
 #define AES_WINDOWVIEW_OFFSET_PAINTEPOCH 806
 #define AES_WINDOWVIEW_OFFSET_CHANGED 810
-#define AES_WINDOWVIEW_OFFSET_CHANGEDPAD 811
+#define AES_WINDOWVIEW_OFFSET_PIXELSREADY 811
 #define AES_WINDOWVIEW_OFFSET_CHANGE 812
 struct AESRequest {
     struct Message message;

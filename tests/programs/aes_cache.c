@@ -36,6 +36,10 @@ static void paint(void)
     r[2]+=r[0]-1; r[3]+=r[1]-1;
     vs_clip(vdi,1,r); vsf_color(vdi,3); v_bar(vdi,r);
     CHECK(ExecAESDiagnostic()==AES_OK);
+    if (!ExecAESContext()->view->pixelsReady) {
+        CHECK(ExecAESPaintedChanges(window));
+        CHECK(ExecAESContext()->request.paintCount==0);
+    }
     CHECK(ExecAESPainted(window,r[0],r[1],r[2]-r[0]+1,r[3]-r[1]+1));
     CHECK(wind_update(END_UPDATE));
 }
@@ -68,7 +72,10 @@ static void patch(WORD dx,WORD pen,BOOL complete)
           ExecAESContext()->view->change.right==x+16 &&
           ExecAESContext()->view->change.bottom==y+8);
     CHECK(ExecAESDiagnostic()==AES_OK);
-    CHECK(ExecAESPainted(window,r[0],r[1],complete?16:8,8));
+    if (complete) {
+        CHECK(ExecAESContext()->view->pixelsReady);
+        CHECK(ExecAESPaintedChanges(window));
+    } else CHECK(ExecAESPainted(window,r[0],r[1],8,8));
     CHECK(wind_update(END_UPDATE));
 }
 
@@ -180,6 +187,8 @@ UWORD AESRun(void)
         vs_clip(vdi,1,r);v_bar(vdi,r);
         CHECK(ExecAESDiagnostic()==AES_OK && ExecAESContext()->view->changed);
         CHECK(objc_draw(&box,0,0,r[0],r[1],16,8));
+        CHECK(ExecAESPaintedChanges(window));
+        CHECK(ExecAESContext()->request.paintCount==0);
         CHECK(ExecAESPainted(window,r[0],r[1],16,8));
         CHECK(ExecAESContext()->request.paintCount==0);
     }

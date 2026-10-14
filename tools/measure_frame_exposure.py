@@ -9,6 +9,7 @@ from desktop_menu_check import Menus
 from desktop_mouse import schedule
 from gem_applications import instances
 from colour_desktop_model import FIELDS as D
+from browser_model import FIELDS as F
 from generate_desktop import layout
 from generate_layers import layout as layer_layout
 from native_program import require,sha256
@@ -16,8 +17,9 @@ from sio_transaction_trace import BASE_HZ,read_events
 
 
 class Frames:
-    def __init__(self,count,baseline):
+    def __init__(self,count,baseline,open_only=False):
         self.count,self.baseline=count,baseline
+        self.open_only=open_only
         self.samples=[]
 
     def exercise(self,s):
@@ -112,16 +114,41 @@ class Frames:
                 if frame_ms is not None and crop(raw,bounds,True)==crop(reference,bounds,True):
                     full_ms=elapsed(start);break
             require(full_ms is not None,'New Window did not settle')
-            s.frames(80)
+            changed=0
+            for _ in range(80):
+                s.frames(1)
+                if crop(capture(),bounds,True)!=crop(reference,bounds,True):changed+=1
+            folder=s.number(desk+D['active'],4)
+            paints=s.number(folder+F['paints'],4)
             save(dict(action='New Window',start=start,end=b.eval_expr('@clk')&0xffffffff,
-                      frame_ms=frame_ms,window_ms=full_ms))
+                      frame_ms=frame_ms,window_ms=full_ms,content_paints=paints,
+                      changed_frames_after_complete=changed))
+            if not self.baseline:
+                require(paints==1,'New Window painted its contents more than once')
+                require(changed==0,'New Window pixels changed after the first complete image')
+            if self.open_only:break
             close('Close right')
+        if self.open_only and not self.baseline:
+            # Deferring the opening paint must not suppress an explicit refresh.
+            menus.key('L',ctrl=True)
+            for _ in range(100):
+                if s.number(folder+F['paints'],4)>paints:break
+                s.frames(1)
+            s.frames(80)
+            refreshed=s.number(folder+F['paints'],4)-paints
+            require(refreshed==1,'Explicit Refresh did not paint once')
+            require(crop(capture(),bounds,True)==crop(reference,bounds,True),
+                    'Explicit Refresh did not restore the complete listing')
+            (out/'new-window-checks.json').write_text(json.dumps(dict(
+                initial_content_paints=paints,changed_frames_after_complete=changed,
+                explicit_refresh_paints=refreshed),indent=2)+'\n')
         # A genuinely covered icon strip must still be restored.
-        click(296,8);click(304,28)
-        _,_,(l,t,r,bt)=window('SYS:');move(l+80,t+5)
-        b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20);move(96,t+5)
-        b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(140)
-        close('Close covering icons')
+        if not self.open_only:
+            click(296,8);click(304,28)
+            _,_,(l,t,r,bt)=window('SYS:');move(l+80,t+5)
+            b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20);move(96,t+5)
+            b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(140)
+            close('Close covering icons')
         move(632,232);s.frames(120);s.cells('frame-exposure-final')
         s.save_screen(out/'frame-exposure.png');s.save_screen(out/'boot-smoke.png')
         menus.select('Shell')
@@ -133,6 +160,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--count',type=int,default=3)
     p.add_argument('--baseline',action='store_true');p.add_argument('--analyze-only',action='store_true')
+    p.add_argument('--open-only',action='store_true',help='One New Window and its settled pixels, then normal EXIT')
     a=p.parse_args();out=a.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')
     image=json.loads((out/'program.a816.json').read_text())
@@ -142,7 +170,7 @@ def main():
     points.update({foreign[n]:n for n in ('VbxeOwnerSubmit','VbxeOwnerFence','GemDrawingFrameBatch') if n in foreign})
     tracing=response_trace.setup(out)
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response_trace.pcs(tracing)))
-    probe=Frames(a.count,a.baseline)
+    probe=Frames(a.count,a.baseline,a.open_only)
     if a.analyze_only:
         probe.samples=json.loads((out/'frame-exposure-samples.json').read_text())
         runtime=out/'frame-exposure-runtime.json'

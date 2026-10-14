@@ -541,7 +541,7 @@
         "BYTE"
       ],
       [
-        "changedPad",
+        "pixelsReady",
         "BYTE"
       ],
       [

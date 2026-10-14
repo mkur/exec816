@@ -281,16 +281,19 @@ static char *decimal(char *to,ULONG value)
     while (n) *to++=digits[--n];
     *to=0;return to;
 }
-static void selection_status(struct Browser *b)
+static WORD selection_status(struct Browser *b)
 {
-    char *p;
+    char text[48],*p;
+    const char *next;
     if (!b->selectionCount) {
-        if (b->truncated) strcpy(b->status,"First 256 entries (list full)");
-        else strcpy(b->status,b->information);
-        return;
+        next=b->truncated ? "First 256 entries (list full)":b->information;
+    } else {
+        p=decimal(text,b->selectionCount);strcpy(p," selected");
+        if (b->truncated) strcat(p," (first 256 entries)");
+        next=text;
     }
-    p=decimal(b->status,b->selectionCount);strcpy(p," selected");
-    if (b->truncated) strcat(p," (first 256 entries)");
+    if (!strcmp(b->status,next)) return 0;
+    strcpy(b->status,next);return 1;
 }
 static WORD folder_title(struct Browser *b)
 {
@@ -338,7 +341,7 @@ static WORD refresh_path(struct Browser *b,const char *path,const char *reveal)
         for (i=0;i<b->count;++i) if (selected_entry(b,i)) bytes+=strlen(b->entries[i].name)+1;
         if (bytes) {
             names=AllocMem(bytes,MEMF_PUBLIC);
-            if (!names) { strcpy(b->status,"No memory for refresh");return redraw(b,b->work); }
+            if (!names) { strcpy(b->status,"No memory for refresh");return !b->ready || redraw(b,b->work); }
             next=names;
             for (i=0;i<b->count;++i) if (selected_entry(b,i)) {
                 strcpy(next,b->entries[i].name);next+=strlen(next)+1;
@@ -347,7 +350,7 @@ static WORD refresh_path(struct Browser *b,const char *path,const char *reveal)
     }
     if (!FileScanBegin(&b->scan,path,&b->info,b->entries)) {
         if (names) FreeMem(names,bytes);
-        strcpy(b->status,"Directory unavailable");return redraw(b,b->work);
+        strcpy(b->status,"Directory unavailable");return !b->ready || redraw(b,b->work);
     }
     b->refreshPending=0;
     b->totalBytes=0;
@@ -377,7 +380,10 @@ static WORD refresh_path(struct Browser *b,const char *path,const char *reveal)
         i=display_index(b,b->selected);
         if (i>=b->visible) b->first=first_entry(b,(i/b->columns-b->visible/b->columns+1)*b->columns);
     }
-    return sliders(b) && redraw(b,b->work);
+    /* During folder_open, AES already owes us the initial WM_REDRAW. Prepare
+     * the listing now and let that event paint it once. Later refreshes still
+     * draw immediately because a model change alone produces no exposure. */
+    return sliders(b) && (!b->ready || redraw(b,b->work));
 }
 static WORD refresh(struct Browser *b)
 {
@@ -399,35 +405,68 @@ static WORD scroll(struct Browser *b,WORD first)
     damage[3]=bottom->ob_y+bottom->ob_height-top->ob_y+2;
     return sliders(b) && redraw(b,damage);
 }
-/* Model changes redraw only changed visible cells and the opaque status strip. */
+/* Selection changes leave colour bitmaps intact. Only labels, the moved focus
+ * outline and changed summary text need new pixels. */
 static WORD paint_selection(struct Browser *b)
 {
-    WORD i,index,state,focus,okay=1,area[4];
-    WORD oldX=b->tree[BROWSER_FOCUS].ob_x,oldY=b->tree[BROWSER_FOCUS].ob_y;
-    WORD oldFlags=b->tree[BROWSER_FOCUS].ob_flags;
-    if (!ExecAESBeginUpdate(b->window)) return 0;
+    WORD i,index,state,edge,okay=1,area[4],old=-1,changed=0;
+    OBJECT *focus=&b->tree[BROWSER_FOCUS];
+    WORD oldX=focus->ob_x,oldY=focus->ob_y,oldFlags=focus->ob_flags;
+    WORD statusChanged=selection_status(b),focusChanged,paintFocus=0;
     layout_focus(b);
+    focusChanged=((oldFlags^focus->ob_flags)&HIDETREE) ||
+        (!(focus->ob_flags&HIDETREE) && (oldX!=focus->ob_x || oldY!=focus->ob_y));
+    for (i=0;i<b->visible;++i) {
+        OBJECT *row=&b->tree[BROWSER_ROW_FIRST+i];
+        index=display_entry(b,b->first+i);
+        if (index>=b->count) break;
+        if (!(oldFlags&HIDETREE) && row->ob_x==oldX && row->ob_y==oldY) old=i;
+        state=(index==BROWSER_PARENT ? b->selected==BROWSER_PARENT:selected_entry(b,index)) ? SELECTED:0;
+        if (row->ob_state!=state) changed=1;
+    }
+    if (!changed && !focusChanged && !statusChanged) return 1;
+    if (!ExecAESBeginUpdate(b->window)) return 0;
     for (i=0;i<b->visible && okay;++i) {
         OBJECT *row=&b->tree[BROWSER_ROW_FIRST+i];
         index=display_entry(b,b->first+i);
         if (index>=b->count) break;
         state=(index==BROWSER_PARENT ? b->selected==BROWSER_PARENT:selected_entry(b,index)) ? SELECTED:0;
-        focus=(b->keyboardFocus && index==b->selected) ||
-            (!(oldFlags&HIDETREE) && row->ob_x==oldX && row->ob_y==oldY);
-        if (row->ob_state!=state || focus) {
+        if (row->ob_state!=state) {
             row->ob_state=state;
-            if (focus) {
-                area[0]=b->work[0]+row->ob_x-1;area[1]=b->work[1]+row->ob_y-1;
-                area[2]=row->ob_width+2;area[3]=row->ob_height+2;
-                okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
-            } else okay=objc_draw(b->tree,BROWSER_ROW_FIRST+i,0,
-                b->work[0],b->work[1],b->work[2],b->work[3]);
+            if (b->iconView) {
+                ICONBLK *icon=&b->icons[i].monoblk;
+                area[0]=b->work[0]+row->ob_x+icon->ib_xtext;
+                area[1]=b->work[1]+row->ob_y+icon->ib_ytext;
+                area[2]=icon->ib_wtext;area[3]=icon->ib_htext;
+            } else {
+                area[0]=b->work[0];area[1]=b->work[1];
+                area[2]=b->work[2];area[3]=b->work[3];
+                if (b->keyboardFocus && index==b->selected) paintFocus=1;
+            }
+            okay=objc_draw(b->tree,BROWSER_ROW_FIRST+i,0,area[0],area[1],area[2],area[3]);
         }
     }
-    selection_status(b);
-    area[0]=b->work[0]+8;area[1]=b->work[1];
-    area[2]=b->work[2]-16;area[3]=12;
-    if (okay) okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
+    if (focusChanged && old>=0) {
+        OBJECT *row=&b->tree[BROWSER_ROW_FIRST+old];
+        for (edge=0;edge<4 && okay;++edge) {
+            area[0]=b->work[0]+oldX+(edge==3 ? row->ob_width-1:0);
+            area[1]=b->work[1]+oldY+(edge==1 ? row->ob_height-1:0);
+            area[2]=edge<2 ? row->ob_width:1;
+            area[3]=edge<2 ? 1:row->ob_height;
+            okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
+        }
+    }
+    if (okay && (focusChanged || paintFocus) && !(focus->ob_flags&HIDETREE))
+        okay=objc_draw(b->tree,BROWSER_FOCUS,MAX_DEPTH,
+            b->work[0],b->work[1],b->work[2],b->work[3]);
+    if (statusChanged) {
+        area[0]=b->work[0]+8;area[1]=b->work[1];
+        area[2]=b->work[2]-16;area[3]=12;
+        if (okay) okay=objc_draw(b->tree,0,MAX_DEPTH,area[0],area[1],area[2],area[3]);
+    }
+    /* Every selection edit is finished. The helper includes untouched pixels
+     * between edits only when the UPDATE began with a complete work area. */
+    if (okay) okay=ExecAESPaintedChanges(b->window);
     if (!wind_update(END_UPDATE)) okay=0;
     if (okay) ++b->paints;
     return okay;
@@ -452,7 +491,6 @@ static WORD select_entry(struct Browser *b,WORD index,WORD mode)
         if (!mode) clear_selection(b);
         mark_entry(b,index,mode==1 ? !was:1);
     }
-    selection_status(b);
     if (first!=b->first && !scroll(b,first)) return 0;
     return paint_selection(b);
 }
