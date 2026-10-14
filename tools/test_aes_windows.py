@@ -39,6 +39,19 @@ def physical(b, p, foreign, report):
         path = Path(p['output']).parent/'outline-scan.bgra'
         image = b.rawscreen(str(path)); raw = path.read_bytes()
         return b''.join(raw[y*image.stride+16*4:y*image.stride+(16+640)*4] for y in range(240))
+    from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
+    from test_desktop_presentation import frame
+    font=font_bytes(Path(p['output']).parent/'selected/src/vdi/font8x8.c')
+    rgb=bytes((v&254)+(v>>7) for v in PALETTE)
+    hardware={v:rgb[i*3:i*3+3][::-1] for i,v in enumerate(PENS)}
+    def compare(raster, bounds):
+        actual=scan()
+        left,top,right,bottom=bounds
+        for y in range(top,bottom):
+            for x in range(left,right):
+                offset=y*640+x
+                require(actual[offset*4:offset*4+3]==hardware[raster.pixels[offset]],
+                    'Frame pixel differs at '+str((x,y)))
     position = [320, 120]
     def move(x, y):
         nonlocal position
@@ -69,6 +82,12 @@ def physical(b, p, foreign, report):
     require(get(busy, 1) == 0, 'Scene token survives application wait')
     b.poke16(sy['AESPhysicalGo'], 2); phase(3); frames(100)
     require(get(service+df['focus'], 4) != old_focus, 'Top acknowledgment did not focus application')
+    move(600,220);frames(10)
+    raster=Raster(font)
+    bounds=struct.unpack('<4h',old_bounds)
+    frame(raster,bounds,b'T'*64,True,close=True)
+    # This fixture's first two title rows sit behind the global menu bar.
+    compare(raster,(bounds[0],max(11,bounds[1]),bounds[2],bounds[1]+11))
     # The left closer of an inactive window topped it without closing. Once
     # focused, release outside and Escape must leave the waiter untouched.
     move(17,18); edge(1); move(60,30); edge(0); frames(10)
@@ -126,18 +145,10 @@ def physical(b, p, foreign, report):
     require(bounds()==(32,32,312,216),'Resize acceptance')
     # Compare the complete gadget strip with an independent raster. Logical
     # slider size 250/position 1000 gives a 35-pixel thumb at absolute Y=159.
-    from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE as PALETTE
-    from test_desktop_presentation import frame
-    raster=Raster(font_bytes(Path(p['output']).parent/'selected/src/vdi/font8x8.c'))
+    raster=Raster(font)
     frame(raster,(32,32,312,216),b'',True,close=True,kind=491,slider=(127,35))
-    move(600,220);frames(40);actual=scan()
-    rgb=bytes((v&254)+(v>>7) for v in PALETTE)
-    hardware={v:rgb[i*3:i*3+3][::-1] for i,v in enumerate(PENS)}
-    for y in range(43,216):
-        for x in range(290,312):
-            offset=y*640+x
-            require(actual[offset*4:offset*4+3]==hardware[raster.pixels[offset]],
-                'Gadget frame pixel differs at '+str((x,y)))
+    move(600,220);frames(40)
+    compare(raster,(290,43,312,216))
     observations=[]
     for start,x,y,expected in ((12,304,48,2),(14,304,199,3),(16,304,80,0)):
         phase(start);move(x,y);edge(1);edge(0);phase(start+1)
@@ -156,5 +167,5 @@ def physical(b, p, foreign, report):
     b.poke16(sy['AESPhysicalGo'],23);phase(24)
     report['gadgets']=dict(resize=[32,32,280,184],escape_cancel=True,
         deferred_geometry=True,arrow_pages=[2,3,0,1],slider_endpoints=[0,1000],
-        deferred_slider=True,scene_token=0,frame_pixels=3806,outline_pixels="exact")
+        deferred_slider=True,scene_token=0,title_pixels=1800,frame_pixels=3806,outline_pixels="exact")
     b.bp_clear_all()

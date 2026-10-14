@@ -141,3 +141,20 @@ the pinned ROM and unchanged compiler revision with the release host compiler.
 The five-second autoboot, SYS/WORK media, licenses and checksums are retained;
 intermediates and diagnostic images stay outside the ZIP. This is focused
 emulator development evidence, not hardware or release qualification.
+
+## Frame polish
+
+Title text and iconified labels move down one pixel to center the capital ink.
+Title gadgets share the outer outline and single dividers; scroll arrows share
+the track and sizer borders. The arrow marks are centered horizontally and the
+iconify mark has a smaller filled corner. Geometry and input targets stay fixed.
+
+Minimal development checks pass: five desktop host contract checks, generated
+definitions, and one optimized AES windows fixture (285 C checks, four native
+checks, 1,800 title pixels and 3,806 scrollbar pixels). The title comparison
+excludes the two rows covered by the global menu in that fixture. Interaction,
+cleanup and guard checks pass. No full desktop or qualification matrix ran.
+
+The refreshed OF816 package is under `build/frame-polish/demo/`; this package
+was built, without an additional packaged boot walkthrough. Reserved bank-zero
+delta is **0 fixed / 0 per public Task / 0 idle bytes**; VRAM growth is zero.

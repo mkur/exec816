@@ -10,12 +10,17 @@ adds no kernel gateway or resident Task by itself.
 ## Window appearance
 
 Native and GEM windows use dark ink outlines, warm off-white frame margins and
-centered titles in the existing 8×8 Atari ST font. The focused title carries
+centered titles in the existing 8×8 Atari ST font. Title text starts two rows
+below the outer top edge, centering seven-row capitals within the eleven-row
+bar; iconified tile labels use the same offset. The focused title carries
 a dotted pattern, blue text and a blue lower rule; inactive titles are plain.
-The boxed closer uses a short, wide GEM-style X on the left and is absent
+The closer uses a short, wide GEM-style X on the left and is absent
 from the shell. The full/restore gadget uses a distinct diamond mark. Both
-marks occupy 14×7 pixels within 22×11 control cells. Its hit rectangle matches its painted
-box. Release outside, Escape and input loss cancel a close gesture. An inactive
+marks occupy 14×7 pixels within 22×11 control cells. Controls share the window
+outline and single separators instead of drawing inset boxes. Scroll arrows
+are centered on the rail, with the track and resize cell supplying their
+horizontal borders. Close hit bounds retain the existing cell inset.
+Release outside, Escape and input loss cancel a close gesture. An inactive
 AES window still requires a topping gesture before its closer can activate.
 
 Ordinary work insets are left 8, top 11, right 8 and bottom 2 pixels.

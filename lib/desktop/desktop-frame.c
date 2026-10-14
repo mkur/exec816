@@ -52,17 +52,20 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
     WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? gh:DESKTOP_WORK_BOTTOM);
     WORD i,mid=left+gw/2,center;
     if (k&DESKTOP_FRAME_VERTICAL) {
-        fill(left,top,r,bottom,8);
+        /* The window supplies the outer edge; the track and sizer supply
+         * shared horizontal separators for the unboxed arrow cells. */
+        fill(left+1,top,r-1,bottom,8);
+        fill(left,top,left+1,bottom,1);
         if (k&DESKTOP_FRAME_UPARROW) {
-            fill(left,top,r,top+gh,0);box(left,top,r,top+gh);
+            fill(left+1,top,r-1,top+gh,0);
             center=top+(gh-5)/2;
-            for (i=0;i<5;++i) fill(mid-i,center+i,mid+i+1,center+i+1,1);
+            for (i=0;i<5;++i) fill(mid-1-i,center+i,mid+i+1,center+i+1,1);
             top+=gh;
         }
         if (k&DESKTOP_FRAME_DNARROW) {
-            fill(left,bottom-gh,r,bottom,0);box(left,bottom-gh,r,bottom);
+            fill(left+1,bottom-gh,r-1,bottom,0);
             center=bottom-1-(gh-5)/2;
-            for (i=0;i<5;++i) fill(mid-i,center-i,mid+i+1,center-i+1,1);
+            for (i=0;i<5;++i) fill(mid-1-i,center-i,mid+i+1,center-i+1,1);
             bottom-=gh;
         }
         box(left,top,r,bottom);
@@ -100,7 +103,7 @@ static UWORD fragment(void)
         box(l+3,t+2,l+17,t+9);
         fill(l+4,t+3,l+16,t+4,12);
         for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
-        text(l+20,t+1,n,1);
+        text(l+20,y,n,1);
         p->fillX=0;
         return 1;
     }
@@ -128,7 +131,7 @@ static UWORD fragment(void)
     if (!p->fillX) {
         fill(l,t,r,b,0);
         box(l,t,r,b);
-        fill(l,t+DESKTOP_TITLE_HEIGHT-1,r,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
+        fill(l+1,t+DESKTOP_TITLE_HEIGHT-1,r-1,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
         if (p->foreground) {
             pl=nameLeft>p->clipLeft ? nameLeft:p->clipLeft;
             pt=t+1>p->clipTop ? t+1:p->clipTop;
@@ -140,17 +143,18 @@ static UWORD fragment(void)
         if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
                          t+DESKTOP_TITLE_HEIGHT-1,0);
         if (hasIcon) {
-            box(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,iconRight-1,t+DESKTOP_TITLE_HEIGHT-1);
+            fill(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,
+                 iconRight-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
             box(iconRight-18,t+2,iconRight-4,t+9);
-            fill(iconRight-10,t+5,iconRight-5,t+8,1);
+            fill(iconRight-9,t+6,iconRight-5,t+8,1);
         }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
-            box(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,r-1,t+DESKTOP_TITLE_HEIGHT-1);
+            fill(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,
+                 r-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
             title_mark(r-18,t+2,1);
         }
         if (p->background) {
-            box(l+DESKTOP_CLOSE_LEFT,t+DESKTOP_CLOSE_TOP,
-                l+DESKTOP_CLOSE_RIGHT,t+DESKTOP_CLOSE_BOTTOM);
+            fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
             title_mark(l+4,t+2,0);
         }
     }

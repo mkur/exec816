@@ -60,7 +60,7 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
             rectangle(raster,(l+offset,t+row,l+offset+2,t+row+1),1)
             rectangle(raster,(l+12-offset,t+row,l+14-offset,t+row+1),1)
     box(x,y,right,bottom)
-    rectangle(raster,(x,y+10,right,y+11),12 if focused else 1)
+    rectangle(raster,(x+1,y+10,right-1,y+11),12 if focused else 1)
     name_left=x+(22 if close else 1)
     icon_right=right-(22 if kind&4 else 0)
     has_icon=icon_right-name_left>=34
@@ -73,16 +73,16 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
                 if (px-x)&1 and (py-y)&1: raster.pixel(px,py,1)
     if title:
         rectangle(raster,(tx-2,y+1,tx+len(title)*8+2,y+10),0)
-        text(raster,tx,y+1,title,fg=12 if focused else 1)
+        text(raster,tx,y+2,title,fg=12 if focused else 1)
     if close:
-        box(x+1,y+1,x+21,y+10)
+        rectangle(raster,(x+21,y+1,x+22,y+10),1)
         mark(x+4,y+2,False)
     if has_icon:
-        box(icon_right-22,y+1,icon_right-1,y+10)
+        rectangle(raster,(icon_right-22,y+1,icon_right-21,y+10),1)
         box(icon_right-18,y+2,icon_right-4,y+9)
-        rectangle(raster,(icon_right-10,y+5,icon_right-5,y+8),1)
+        rectangle(raster,(icon_right-9,y+6,icon_right-5,y+8),1)
     if kind&4:
-        box(right-22,y+1,right-1,y+10)
+        rectangle(raster,(right-22,y+1,right-21,y+10),1)
         mark(right-18,y+2,True)
     wt=21 if kind&16 else 11
     if kind&16:
@@ -93,14 +93,15 @@ def frame(raster, bounds, title, focused, background=0, close=False, kind=0, sli
     rectangle(raster,(x+8,y+wt,right-wr,bottom-wb),background)
     if kind&448:
         l,t,b=right-22,y+wt,bottom-wb
-        rectangle(raster,(l,t,right,b),8)
+        rectangle(raster,(l+1,t,right-1,b),8)
+        rectangle(raster,(l,t,l+1,b),1)
         if kind&64:
-            rectangle(raster,(l,t,right,t+11),0);box(l,t,right,t+11)
-            for dy in range(5):rectangle(raster,(l+11-dy,t+3+dy,l+12+dy,t+4+dy),1)
+            rectangle(raster,(l+1,t,right-1,t+11),0)
+            for dy in range(5):rectangle(raster,(l+10-dy,t+3+dy,l+12+dy,t+4+dy),1)
             t+=11
         if kind&128:
-            rectangle(raster,(l,b-11,right,b),0);box(l,b-11,right,b)
-            for dy in range(5):rectangle(raster,(l+11-dy,b-4-dy,l+12+dy,b-3-dy),1)
+            rectangle(raster,(l+1,b-11,right-1,b),0)
+            for dy in range(5):rectangle(raster,(l+10-dy,b-4-dy,l+12+dy,b-3-dy),1)
             b-=11
         box(l,t,right,b)
         if kind&256:
@@ -123,7 +124,7 @@ def tile(raster, bounds, title):
                     (x+3,y+3,x+4,y+8),(x+16,y+3,x+17,y+8)]:
         rectangle(raster,(l,t,r,b),1)
     rectangle(raster,(x+4,y+3,x+16,y+4),12)
-    text(raster,x+20,y+1,title[:8])
+    text(raster,x+20,y+2,title[:8])
 
 
 def menu_bar(raster, title=b'Shell'):
