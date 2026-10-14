@@ -837,7 +837,7 @@ static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
 
 /* Tall, non-text frame sides need at most nine bytes per row, including
  * odd clip edges. An 8/16-byte pitch fits all 240 rows in the existing strip.
- * Only GemSolidFill is permitted inside this private callback. */
+ * Only solid fills and fixed atlas images use this private destination. */
 static UWORD draw_FrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD (*draw)(void))
 {

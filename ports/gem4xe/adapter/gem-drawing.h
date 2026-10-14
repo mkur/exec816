@@ -44,7 +44,7 @@ UWORD GemDrawingBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)
  * The complete clipped strip replaces screen pixels only after the final chunk. */
 UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void));
-/* Private solid-only frame side, width <=16, height <=240. Uses the same
+/* Private solid/atlas frame side, width <=16, height <=240. Uses the same
  * scratch allocation at a compact pitch and publishes once on completion. */
 UWORD GemDrawingFrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                            UWORD (*draw)(void));

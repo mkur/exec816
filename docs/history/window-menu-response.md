@@ -79,3 +79,17 @@ No production renderer change was made to accommodate that fixture issue.
 The seven descriptors add 42 bytes of immutable upper-image data. Reserved
 bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including guards/padding/
 capacity. GAT2 uses GAT1's VRAM page without further reservations.
+
+## GAT3 Scrollbar and resize copies
+
+Arrows and the resize grip use the same atlas helper; tracks, thumbs and shared
+separators retain their existing solid fills. The optimized fixture passes
+36 assertions and nine independent full-screen pixel cases, including both X
+phases, full scrollbars, clipped marks, a 240-row compact fragment with scratch
+canaries and a subsequent ordinary title batch. Ownership and stack checks pass
+(`build/window-menu-response/gat3/results.json`). Renderer and whole-interaction
+measurements follow in the combined packaged-image observations.
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
+guards, alignment and unused capacity. No further VRAM or persistent state is
+reserved.

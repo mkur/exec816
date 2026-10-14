@@ -44,7 +44,7 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
     struct ConsoleBitmapPacket *p=paint;
     WORD k=p->fillY,gw=DESKTOP_FRAME_GADGET_WIDTH,gh=DESKTOP_FRAME_GADGET_HEIGHT,left=r-gw;
     WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&DESKTOP_FRAME_SIZER ? gh:DESKTOP_WORK_BOTTOM);
-    WORD i,mid=left+gw/2,center;
+    WORD mid=left+gw/2,center;
     if (paint->clipRight<=left || paint->clipLeft>=r) return;
     if ((k&DESKTOP_FRAME_VERTICAL) && paint->clipTop<bottom && paint->clipBottom>top) {
         /* The window supplies the outer edge; the track and sizer supply
@@ -54,13 +54,13 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
         if (k&DESKTOP_FRAME_UPARROW) {
             fill(left+1,top,r-1,top+gh,0);
             center=top+(gh-5)/2;
-            for (i=0;i<5;++i) fill(mid-1-i,center+i,mid+i+1,center+i+1,1);
+            gadget(GEM_GADGET_UP,mid-5,center);
             top+=gh;
         }
         if (k&DESKTOP_FRAME_DNARROW) {
             fill(left+1,bottom-gh,r-1,bottom,0);
             center=bottom-1-(gh-5)/2;
-            for (i=0;i<5;++i) fill(mid-1-i,center-i,mid+i+1,center-i+1,1);
+            gadget(GEM_GADGET_DOWN,mid-5,center-4);
             bottom-=gh;
         }
         box(left,top,r,bottom);
@@ -71,10 +71,7 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
     }
     if ((k&DESKTOP_FRAME_SIZER) && paint->clipBottom>b-gh) {
         box(left,b-gh,r,b);
-        for (i=2;i<=6;i+=2) {
-            WORD j;
-            for (j=0;j<i;++j) fill(r-4-2*j,b-2-i+j,r-2-2*j,b-1-i+j,1);
-        }
+        gadget(GEM_GADGET_SIZE,r-14,b-8);
     }
     (void)l;
 }

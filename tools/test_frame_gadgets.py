@@ -17,7 +17,18 @@ import adapter_state as adapter_state
 
 
 def expected(font,number):
+    if number==9:number=1
     r=Raster(font);rectangle(r,(0,0,640,240),3)
+    if number==8:
+        rectangle(r,(27,0,43,240),0)
+        for distance in (2,4,6):
+            for step in range(distance):
+                rectangle(r,(39-2*step,240-distance+step,41-2*step,241-distance+step),1)
+        return r.packed()
+    if number in (6,7):
+        frame(r,(20,20,220,200) if number==6 else (21,0,221,240),b'SYS:',True,
+              background=3,close=True,kind=4|32|448,slider=(140,18) if number==6 else (22,8))
+        return r.packed()
     picture=Raster(font)
     left=21 if number==2 else 20
     if number==5:
@@ -63,6 +74,21 @@ UWORD FrameAtlasMemory(UWORD initialize)
     render_exit(DISPLAY_OK);
     return good;
 }
+UWORD FrameScratchGuard(UWORD initialize)
+{
+    static UBYTE expected[16],actual[16];
+    UWORD status;
+    if (render_enter()!=DISPLAY_OK) return 0;
+    if (initialize) {
+        memset(expected,0xa5,sizeof(expected));
+        status=VbxeOwnerWrite(&display,WIDGET_STRIP_BASE+3840,expected,sizeof(expected));
+    } else {
+        status=VbxeOwnerRead(&display,WIDGET_STRIP_BASE+3840,actual,sizeof(actual));
+        if (memcmp(expected,actual,sizeof(expected))) status=DISPLAY_DEVICE_FAULT;
+    }
+    render_exit(DISPLAY_OK);
+    return status==DISPLAY_OK;
+}
 '''
     backend=out/'gem-vbxe.c';backend.write_text(source)
     f=drawing(out,True,widgets=True,client_sources=[ROOT/'tests/programs/frame_gadgets.c'],
@@ -81,7 +107,7 @@ UWORD FrameAtlasMemory(UWORD initialize)
             def before(b):
                 report['pixels']=[]
                 font=font_bytes(out/'selected/src/vdi/font8x8.c')
-                for number in range(1,6):
+                for number in range(1,10):
                     condition=f'dw(${sy["checkpoint"]:x})={number}'
                     marker=p['labels']['native_nmi']
                     b.bp_clear_all();b.bp_set(marker,condition=condition)
