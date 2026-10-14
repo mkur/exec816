@@ -56,7 +56,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF layer.id<>DESKSTATE.barLayer THEN
     IF phase^=0 THEN
       menuGlyph=0
-      phase^=BYTE(CARD(clip.top-layer.bounds.top) RSH 4)+1
+      phase^=DESKMENU.RowAt(clip.top-layer.bounds.top)+1
     FI
 
     row=phase^-1

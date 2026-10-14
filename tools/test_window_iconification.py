@@ -122,7 +122,7 @@ class Iconification:
         hidden(files,original)
         menus.select('SYS:');restored(files,original);shot('files-menu-restored')
         click(600,8);shot('windows-with-iconify')
-        click(472,24+(len(menus.windows())+2)*16)
+        click(472,16+(len(menus.windows())+2)*11)
         hidden(files,original);tile(files);restored(files,original)
         shot('files-tile-restored')
         results.update(aes_geometry=True,empty_visible_region=True,tile_cancel=True,
@@ -146,7 +146,7 @@ class Iconification:
         # Use the active-window menu for Shell; its Close remains disabled.
         menus.select('Shell');shell=window('Shell');sb=bounds(shell)
         old=s.begin('CAT SYS:LONG.TXT')
-        click(80,8);click(40,56);hidden(shell,sb)
+        click(80,8);click(40,38);hidden(shell,sb)
         from generate_console import constants
         gen=s.saved['top']+constants()['INSTANCE_GENERATION']
         generation=s.number(gen,4)

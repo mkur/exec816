@@ -7,14 +7,14 @@
 
 static const OBJECT menu[]={
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
-    {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
-    {1,3,3,G_IBOX,0,0,0,8,0,424,16},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,48,16},
-    {0,5,5,G_IBOX,0,0,0,0,16,640,224},
-    {4,6,8,G_BOX,0,0,0x1100,8,0,120,48},
-    {7,-1,-1,G_STRING,0,0,(ULONG)"Open        O",0,0,120,16},
-    {8,-1,-1,G_STRING,0,DISABLED,(ULONG)"Cancel Load",0,16,120,16},
-    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit        Q",0,32,120,16}
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,3,G_IBOX,0,0,0,8,0,424,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,48,11},
+    {0,5,5,G_IBOX,0,0,0,0,11,640,229},
+    {4,6,8,G_BOX,0,0,0x1100,8,0,120,33},
+    {7,-1,-1,G_STRING,0,0,(ULONG)"Open        O",0,0,120,11},
+    {8,-1,-1,G_STRING,0,DISABLED,(ULONG)"Cancel Load",0,11,120,11},
+    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Quit        Q",0,22,120,11}
 };
 
 static WORD minimum(WORD a,WORD b) { return a<b ? a:b; }

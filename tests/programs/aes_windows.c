@@ -114,7 +114,7 @@ UWORD AESRun(void)
     in[2] = 9; in[3] = 9; in[4] = 200; in[5] = 120;
     aes_call(&pb);
     CHECK(out[0] == 1 && out[1] == 17 && out[2] == 20 && out[3] == 184 && out[4] == 107);
-    geometry(0, WF_WXYWH, 0, 16, 640, 224);
+    geometry(0, WF_WXYWH, 0, 11, 640, 229);
     replacement=wind_create(0,9,9,200,120);
     CHECK(replacement>0);CHECK(wind_delete(replacement));
     CHECK(wind_create(AES_WINDOW_KIND, -1, 9, 200, 120) == -1);

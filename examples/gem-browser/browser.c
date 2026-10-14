@@ -14,26 +14,26 @@ enum { MENU_TITLE=3, MENU_OPEN=6, MENU_REFRESH=7, MENU_STOP=8, MENU_QUIT=9, MENU
 enum { DIALOG_PATH=1,DIALOG_NEW=2,DIALOG_RENAME=3,DIALOG_COPY=4,DIALOG_COPYING=5,DIALOG_DELETE=6,DIALOG_REPLACE=7,DIALOG_DELETING=8 };
 static const OBJECT menuSource[] = {
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
-    {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
-    {1,3,13,G_IBOX,0,0,0,8,0,424,16},
-    {13,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,64,16},
-    {0,5,14,G_IBOX,0,0,0,0,16,640,224},
-    {14,6,18,G_BOX,0,0,0x00011100,8,0,160,130},
-    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,158,16},
-    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh  Ctrl+L",1,17,158,16},
-    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,33,158,16},
-    {10,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,49,158,16},
-    {11,-1,-1,G_STRING,0,0,(ULONG)"Path...",1,65,158,16},
-    {12,-1,-1,G_STRING,0,0,(ULONG)"New Folder",1,81,158,16},
-    {18,-1,-1,G_STRING,0,DISABLED,(ULONG)"Rename...",1,97,158,16},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"View",64,0,64,16},
-    {4,15,20,G_BOX,0,0,0x00011100,72,0,144,82},
-    {16,-1,-1,G_STRING,0,0,(ULONG)"  Icons",1,1,142,16},
-    {17,-1,-1,G_STRING,0,0,(ULONG)"  List",1,17,142,16},
-    {19,-1,-1,G_STRING,0,0,(ULONG)"  Sort by name",1,33,142,16},
-    {5,-1,-1,G_STRING,0,0,(ULONG)"Parent   Esc",1,113,158,16},
-    {20,-1,-1,G_STRING,0,0,(ULONG)"Select All",1,49,142,16},
-    {14,-1,-1,G_STRING,LASTOB,0,(ULONG)"Select None",1,65,142,16}
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,13,G_IBOX,0,0,0,8,0,424,11},
+    {13,-1,-1,G_TITLE,0,0,(ULONG)"File",0,0,64,11},
+    {0,5,14,G_IBOX,0,0,0,0,11,640,229},
+    {14,6,18,G_BOX,0,0,0x00011100,8,0,160,90},
+    {7,-1,-1,G_STRING,0,DISABLED,(ULONG)"Open",1,1,158,11},
+    {8,-1,-1,G_STRING,0,0,(ULONG)"Refresh  Ctrl+L",1,12,158,11},
+    {9,-1,-1,G_STRING,0,DISABLED,(ULONG)"Stop",1,23,158,11},
+    {10,-1,-1,G_STRING,0,0,(ULONG)"Quit",1,34,158,11},
+    {11,-1,-1,G_STRING,0,0,(ULONG)"Path...",1,45,158,11},
+    {12,-1,-1,G_STRING,0,0,(ULONG)"New Folder",1,56,158,11},
+    {18,-1,-1,G_STRING,0,DISABLED,(ULONG)"Rename...",1,67,158,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"View",64,0,64,11},
+    {4,15,20,G_BOX,0,0,0x00011100,72,0,144,57},
+    {16,-1,-1,G_STRING,0,0,(ULONG)"  Icons",1,1,142,11},
+    {17,-1,-1,G_STRING,0,0,(ULONG)"  List",1,12,142,11},
+    {19,-1,-1,G_STRING,0,0,(ULONG)"  Sort by name",1,23,142,11},
+    {5,-1,-1,G_STRING,0,0,(ULONG)"Parent   Esc",1,78,158,11},
+    {20,-1,-1,G_STRING,0,0,(ULONG)"Select All",1,34,142,11},
+    {14,-1,-1,G_STRING,LASTOB,0,(ULONG)"Select None",1,45,142,11}
 };
 /* Membership belongs to the snapshot, not the reused visible OBJECTs. */
 static WORD selected_entry(const struct Browser *b,UWORD index)
@@ -687,6 +687,12 @@ static WORD open_item(struct Browser *b)
 static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *stock,
                         OBJECT *bar,WORD vdi,WORD x,WORD y,const char *path)
 {
+    WORD area[4];
+    if (!wind_get(0,WF_WXYWH,&area[0],&area[1],&area[2],&area[3])) return 0;
+    if (x>area[0]+area[2]-462) x=area[0]+area[2]-462;
+    if (x<area[0]) x=area[0];
+    if (y>area[1]+area[3]-196) y=area[1]+area[3]-196;
+    if (y<area[1]) y=area[1];
     b->window=-1;b->selected=b->armed=-1;b->iconView=b->sortNames=1;
     if (b->desktop) { b->iconView=b->desktop->defaultIcons;b->sortNames=b->desktop->defaultSort; }
     b->menu=popup;b->stock=stock;b->applicationMenu=bar;b->vdi=vdi;
@@ -695,9 +701,9 @@ static WORD folder_open(struct Browser *b,OBJECT *source,OBJECT *popup,OBJECT *s
     if (!b->tree || !b->entries) return 0;
     memcpy(b->tree,source,BROWSER_OBJECTS*sizeof(OBJECT));
     label(b->path,path,127);
-    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,456,196);
+    b->window=wind_create(NAME|CLOSER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|FULLER,x,y,462,196);
     if (b->window<0 || !wind_set_str(b->window,WF_NAME,"Files")) return 0;
-    if (!wind_open(b->window,x,y,456,196)) return 0;
+    if (!wind_open(b->window,x,y,462,196)) return 0;
     b->opened=1;
     if (!wind_get(b->window,WF_WXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]) ||
         !refresh(b)) return 0;
@@ -806,7 +812,8 @@ static WORD folder_event(struct Browser *b,WORD events)
             case WM_FULLED:
                 if (!b->full) {
                     if (!wind_get(b->window,WF_CXYWH,&b->restore[0],&b->restore[1],&b->restore[2],&b->restore[3])) { result=2;break; }
-                    b->message[4]=0;b->message[5]=16;b->message[6]=640;b->message[7]=224;
+                    if (!wind_get(0,WF_WXYWH,&b->message[4],&b->message[5],
+                        &b->message[6],&b->message[7])) { result=2;break; }
                 } else for (i=0;i<4;++i) b->message[4+i]=b->restore[i];
                 b->full=!b->full;
                 /* The same geometry acknowledgement handles full/restore. */

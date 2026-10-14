@@ -24,16 +24,16 @@ static const OBJECT edit[]={
 };
 static const OBJECT menu[]={
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
-    {4,2,2,G_BOX,0,0,0x1100,0,0,640,16},
-    {1,3,3,G_IBOX,0,0,0,8,0,424,16},
-    {2,-1,-1,G_TITLE,0,0,(ULONG)"Dialog",0,0,64,16},
-    {0,5,5,G_IBOX,0,0,0,0,16,640,224},
-    {4,6,10,G_BOX,0,0,0x1100,8,0,112,80},
-    {7,-1,-1,G_STRING,0,0,(ULONG)"Edit",0,0,112,16},
-    {8,-1,-1,G_STRING,0,0,(ULONG)"Alert",0,16,112,16},
-    {9,-1,-1,G_STRING,0,0,(ULONG)"Quit",0,32,112,16},
-    {10,-1,-1,G_STRING,0,0,(ULONG)"Open",0,48,112,16},
-    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Save",0,64,112,16}
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,3,G_IBOX,0,0,0,8,0,424,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"Dialog",0,0,64,11},
+    {0,5,5,G_IBOX,0,0,0,0,11,640,229},
+    {4,6,10,G_BOX,0,0,0x1100,8,0,112,55},
+    {7,-1,-1,G_STRING,0,0,(ULONG)"Edit",0,0,112,11},
+    {8,-1,-1,G_STRING,0,0,(ULONG)"Alert",0,11,112,11},
+    {9,-1,-1,G_STRING,0,0,(ULONG)"Quit",0,22,112,11},
+    {10,-1,-1,G_STRING,0,0,(ULONG)"Open",0,33,112,11},
+    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Save",0,44,112,11}
 };
 
 static WORD paint(struct DialogApp *a)

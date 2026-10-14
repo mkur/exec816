@@ -140,10 +140,12 @@ static void desktop_tree(struct Desktop *d)
     WORD i;
     OBJECT *o;
     ICONBLK *ib;
-    static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,16,640,224};
+    static const OBJECT root={-1,1,DESKTOP_ICONS+1,G_BOX,0,0,0x1178,0,0,640,240};
     static const OBJECT icon={0,-1,-1,G_ICON,0,0,0,0,0,96,26};
     static const WORD kinds[DESKTOP_ICONS]={4,4,12,5,6,7,8,9};
     d->tree[0]=root;
+    wind_get(0,WF_WXYWH,&d->tree[0].ob_x,&d->tree[0].ob_y,
+        &d->tree[0].ob_width,&d->tree[0].ob_height);
     for (i=0;i<DESKTOP_ICONS;++i) {
         d->icons[i]=*(CICONBLK *)d->stock[kinds[i]].ob_spec;
         ib=&d->icons[i].monoblk;
@@ -161,7 +163,7 @@ static void desktop_tree(struct Desktop *d)
     }
     d->tree[DESKTOP_ICONS+1]=menuSource[7];
     o=&d->tree[DESKTOP_ICONS+1];o->ob_next=0;o->ob_flags=LASTOB;
-    o->ob_spec=(ULONG)d->status;o->ob_x=120;o->ob_y=214;o->ob_width=512;o->ob_height=8;
+    o->ob_spec=(ULONG)d->status;o->ob_x=120;o->ob_y=d->tree[0].ob_height-10;o->ob_width=512;o->ob_height=8;
 }
 static WORD desktop_bar(struct Desktop *d)
 {
@@ -176,23 +178,24 @@ static WORD desktop_bar(struct Desktop *d)
     d->bar[DESK_BOX]=menuSource[5];
     d->bar[DESK_BOX].ob_next=4;d->bar[DESK_BOX].ob_head=DESK_NEW;d->bar[DESK_BOX].ob_tail=DESK_QUIT;
     d->bar[DESK_BOX].ob_x=136;d->bar[DESK_BOX].ob_width=152;
+    d->bar[DESK_BOX].ob_height=79;
     for (i=DESK_NEW;i<=DESK_QUIT;++i) {
         d->bar[i]=menuSource[7];
         d->bar[i].ob_next=i==DESK_QUIT ? DESK_BOX:i+1;
         d->bar[i].ob_flags=0;
         d->bar[i].ob_state=0;
         d->bar[i].ob_spec=(ULONG)labels[i-DESK_NEW];
-        d->bar[i].ob_y=1+(i-DESK_NEW)*16;d->bar[i].ob_width=150;
+        d->bar[i].ob_y=1+(i-DESK_NEW)*11;d->bar[i].ob_width=150;
     }
     /* File > Quit closes the active folder; Desk > Quit ends this Task. */
     d->bar[MENU_QUIT].ob_spec=(ULONG)"Close Window";
     d->bar[5].ob_width=160;
     for (i=MENU_OPEN;i<=MENU_RENAME;++i) d->bar[i].ob_width=158;
-    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=162;d->bar[MENU_PARENT].ob_next=DESK_COPY;
+    d->bar[5].ob_tail=DESK_DELETE;d->bar[5].ob_height=112;d->bar[MENU_PARENT].ob_next=DESK_COPY;
     d->bar[DESK_COPY]=menuSource[7];d->bar[DESK_COPY].ob_next=DESK_DELETE;
-    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=129;d->bar[DESK_COPY].ob_width=158;
+    d->bar[DESK_COPY].ob_spec=(ULONG)"Copy...";d->bar[DESK_COPY].ob_y=89;d->bar[DESK_COPY].ob_width=158;
     d->bar[DESK_DELETE]=d->bar[DESK_COPY];d->bar[DESK_DELETE].ob_next=5;
-    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=145;d->bar[DESK_DELETE].ob_flags=LASTOB;
+    d->bar[DESK_DELETE].ob_spec=(ULONG)"Delete...";d->bar[DESK_DELETE].ob_y=100;d->bar[DESK_DELETE].ob_flags=LASTOB;
     return menu_bar(d->bar,1);
 }
 #include "desktop-drag.inc"
@@ -253,8 +256,9 @@ WORD DesktopRun(void)
     d->input[10]=2;v_opnvwk(d->input,&d->vdi,d->output);
     if (!d->vdi || !desktop_bar(d)) goto finish;
     d->installed=1;desktop_tree(d);
-    d->window=wind_create(0,0,16,640,224);
-    if (d->window<0 || !ExecAESDesktop(d->window) || !wind_open(d->window,0,16,640,224)) goto finish;
+    d->window=wind_create(0,d->tree[0].ob_x,d->tree[0].ob_y,d->tree[0].ob_width,d->tree[0].ob_height);
+    if (d->window<0 || !ExecAESDesktop(d->window) || !wind_open(d->window,
+        d->tree[0].ob_x,d->tree[0].ob_y,d->tree[0].ob_width,d->tree[0].ob_height)) goto finish;
     d->opened=1;
     settings_load(d);ExecAESMouseProfile(d->mouse);
     if (!d->settingsLoaded) { if (!desktop_new(d,"SYS:")) goto finish; }

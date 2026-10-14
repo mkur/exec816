@@ -4727,6 +4727,261 @@
         "tools/test_desktop_presentation.py": "c38f48e3b5414e7840c1eb06183ab4f539b804c9601be66534ca3067f3e3f5a0",
         "tools/test_window_iconification.py": "cf373c648588245ffe95391055d5d1ac2826aafe4ee6225f69f2929cd3c3209b"
       }
+    },
+    "CF3": {
+      "status": "pass",
+      "host_tests": 459,
+      "host_skips": 4,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "vram_delta": 0,
+      "record_layout_changed": false,
+      "reports": {
+        "menus": {
+          "path": "build/compact-window-geometry/cf3-menus/results.json",
+          "sha256": "b3f301c1970af8743be7e0050559edbbfe5ce4d17e6acde5943efb4a43e621f9",
+          "status": "pass",
+          "AESChecks": 291,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 569,
+              "remaining_above_floor": 711
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 305,
+              "remaining_above_floor": 751
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 143,
+              "remaining_above_floor": 913
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 479,
+              "remaining_above_floor": 577
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 838,
+              "remaining_above_floor": 1466
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 129,
+              "remaining_above_floor": 127
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 297,
+              "remaining_above_floor": 983
+            }
+          },
+          "menu_pixels": [
+            {
+              "phase": 1,
+              "pixels": 7040
+            },
+            {
+              "phase": 2,
+              "pixels": 9504
+            },
+            {
+              "phase": 3,
+              "pixels": 9504
+            },
+            {
+              "phase": 4,
+              "pixels": 7040
+            },
+            {
+              "phase": 5,
+              "pixels": 7040
+            },
+            {
+              "phase": 6,
+              "pixels": 14720
+            },
+            {
+              "phase": 7,
+              "pixels": 7040
+            }
+          ],
+          "native_popup": {
+            "pixels": "exact",
+            "border_hits": "excluded",
+            "highlight_transitions": 3
+          },
+          "long_menu": {
+            "pixels": "exact",
+            "odd_x": true,
+            "checked": true,
+            "disabled": true,
+            "partial_glyph": true,
+            "partial_row": true
+          },
+          "physical_menus": {
+            "pointer": true,
+            "keyboard": true,
+            "commands": [
+              5,
+              2
+            ],
+            "identical_titles": true,
+            "disabled": true,
+            "held_replacement": true,
+            "held_disable": true,
+            "cancel": true,
+            "heading_switch": true,
+            "hidden": true,
+            "multiple_titles": true
+          },
+          "popup_cache": {
+            "warm_file": "exact",
+            "restore_delta": 1
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0
+          }
+        },
+        "forms": {
+          "path": "build/compact-window-geometry/cf3-forms/results.json",
+          "sha256": "520a4536ccbc6111787d6cc8f37468a5e7c776fb8871c3956db393bfb5687d22",
+          "status": "pass",
+          "AESChecks": 198,
+          "AESFailures": 0,
+          "native_checks": 4,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 505,
+              "remaining_above_floor": 775
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 780,
+              "remaining_above_floor": 276
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 839,
+              "remaining_above_floor": 217
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 160,
+              "remaining_above_floor": 896
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 831,
+              "remaining_above_floor": 1473
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 52,
+              "remaining_above_floor": 204
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "form_pixels": 35332,
+          "runtime": {
+            "status": 0,
+            "guards": "intact",
+            "live_tasks": 0,
+            "os_busy": 0,
+            "irq_depth": 0,
+            "switching": 0
+          }
+        }
+      },
+      "source_sha256": {
+        "abi/desktop.json": "4938bcc83138406eb3feabedcb52009ffa47e86bed7cc35582bf3c3a8c3ad6fc",
+        "c/calypsi/aes-form.c": "b51c86d81115727cde8d280999c58f6cd184ac43ec8b182c06f953204a74e8bd",
+        "c/include/exec816/desktop-geometry.h": "c63708a4021ed4ef710ae7c6c54c5e0559a6120703035ff1958446a97cc62e84",
+        "examples/gem-browser/browser.c": "def2cb9fd99cff52767ffa53f69ad2f15b789e65620c9a62f0d9fefb18667901",
+        "examples/gem-dialog/dialog.c": "83b80f5843af31e1328984b0d35ed5e18025b8dabfb62ae35b82364ec8537920",
+        "examples/gem-text/text.c": "97a3c5a2103d48411647e13d0db47156c88620e4f72ebda15f4daaf6bcbf572d",
+        "lib/desktop/deskmenu.act": "11ad85535d738a430ae53c7c8f5c2e5d9eb11eb02723c4a12e82fd57292e52d0",
+        "lib/desktop/deskmenupaint.act": "c746dee908819d7abcfd71210f48a2f22cb05c5039a6510a76fa46be69c2d294",
+        "lib/desktop/deskpaint.act": "e1bb120229dc075c0ab403fc75dec6d59084be983bb3133fe6af6bb5ecc26f60",
+        "lib/desktop/desktypes.act": "6bbd8867aa8024c479915977aedfdae7201e65d868329cf28a4818bccf7c521e"
+      }
     }
   }
 }

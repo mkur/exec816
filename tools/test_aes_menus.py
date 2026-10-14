@@ -106,11 +106,11 @@ def physical(b,p,foreign,report):
         reach('dw($%x)=%d'%(sy['AESMenuPhase'],phase))
         move(632,232)
         reach('@frame>=%d'%(b.eval_expr('@frame')+80))
-        model=Raster(font);rectangle(model,(0,0,640,16),0)
+        model=Raster(font);rectangle(model,(0,0,640,11),0)
         tree=int.from_bytes(b.memdump(sy['AESMenuPeerTree' if phase in (5,6) else 'AESMenuTree'],4),'little')
         if phase not in (4,7):draw(b,model,tree,opened=phase in (2,3,6))
-        text(model,8,4,b'Exec816');text(model,568,4,b'Windows');rectangle(model,(0,15,640,16),1)
-        areas=[(0,0,640,16)]
+        text(model,8,1,b'Exec816');text(model,568,1,b'Windows');rectangle(model,(0,10,640,11),1)
+        areas=[(0,0,640,11)]
         if phase in (2,3,6):
             areas.append(draw(b,model,tree,True))
         path=out/('menu-%d.bgra'%phase);frame=b.rawscreen(str(path));raw=path.read_bytes()
@@ -144,22 +144,37 @@ def physical(b,p,foreign,report):
                             f'Cached File menu pixel {xx},{yy}')
             report['popup_cache']=dict(warm_file='exact',restore_delta=1)
             key('ESC')
-            click(152,8);click(160,24);actions(0,1,6)
+            click(152,8);click(160,16);actions(0,1,6)
             key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)
             require(get(at('DESKAPPMENU','heading'))==1,'Right did not switch application title')
             key('ASTERISK',ctrl=True);require(get(at('DESKAPPMENU','heading'))==0,'Title navigation did not wrap')
             key('TAB');key('TAB');key('RETURN');actions(0,2,7)
             click(152,8);click(600,220);actions(0,2)
-            click(152,8);move(160,24);edge(1);key('ESC');edge(0);actions(0,2)
-            move(152,8);edge(1);move(160,24);edge(0);actions(0,3,6)
+            click(152,8);move(160,16);edge(1);key('ESC');edge(0);actions(0,2)
+            move(152,8);edge(1);move(160,16);edge(0);actions(0,3,6)
             click(152,8);move(600,8);frames()
             require(get(at('DESKMENU','menu'),1)==2,'Heading switch to Windows failed')
             # The native popup uses the same monochrome conventions. Rebuild
             # it from retained windows, then compare only its opaque bounds.
             from desktop_oracle import compose
             from bitmap_console_oracle import Terminal
-            bottom=16+max(4,get(at('DESKMENU','count'),1))*16
+            bottom=11+max(4,get(at('DESKMENU','count'),1))*11
             def native_pixels():
+                # A heading crossing may enqueue several paints. Observe the
+                # settled chrome, rather than assuming a fixed frame delay.
+                from generate_desktop import layout as desk_layout
+                from generate_layers import layout as layer_layout
+                service=get(at('DESKSTATE','service'),3)
+                scene=service+desk_layout()['Service']['fields']['scene']
+                layer=layer_layout()['Layer'];items=scene+layer_layout()['Scene']['fields']['items']
+                chrome=[get(at('DESKSTATE',name),4) for name in ('barLayer','popupLayer')]
+                for _ in range(300):
+                    dirty=any(get(items+i*layer['size'],4) in chrome and
+                        get(items+i*layer['size']+layer['fields']['dirty'],1) for i in range(9))
+                    painting=get(at('DESKPAINT','paintToken'),4) and get(at('DESKPAINT','paintLayer'),4) in chrome
+                    if not dirty and not painting:break
+                    frames(2)
+                else:raise RuntimeError('Menu chrome did not finish')
                 packed=compose(b,p,font,Terminal(64,20),pointer=position,
                                external=lambda raster,title,bounds:None,
                                menu_contexts=sy['contexts'])
@@ -168,18 +183,23 @@ def physical(b,p,foreign,report):
                     for xx in range(432,640):
                         byte=packed[yy*320+xx//2];pen=byte&15 if xx&1 else byte>>4
                         pixel=yy*capture.stride+64+xx*4
-                        require(pixels[pixel:pixel+3]==hardware[pen],f'Native menu pixel {xx},{yy}')
+                        if pixels[pixel:pixel+3]!=hardware[pen]:
+                            b.screenshot(str(out/'native-menu-failure.png'))
+                            report['native_menu_failure']={n:get(at('DESKMENU',n),1) for n in ('menu','paintMenu','dirty')}
+                            report['native_menu_failure']['binding']=b.memdump(p['build']['memory']['console_storage']['BITMAP'],8).hex()
+                            report['native_menu_failure']['paint']={n:get(at('DESKPAINT',n),z) for n,z in [('started',1),('paintToken',4),('paintLayer',4),('nextY',2)]}
+                            require(False,f'Native menu pixel {xx},{yy}: {pixels[pixel:pixel+3].hex()} != {hardware[pen].hex()}')
             native_pixels()
-            for xx,yy in [(472,24),(472,40),(432,24)]:
+            for xx,yy in [(472,16),(472,27),(432,16)]:
                 move(xx,yy);frames();native_pixels()
-            for xx,yy in [(432,24),(639,24),(472,16),(472,bottom-1)]:
+            for xx,yy in [(432,16),(639,16),(472,11),(472,bottom-1)]:
                 move(xx,yy);frames()
                 require(get(at('DESKMENU','selected'))==65535,'Popup border selected an item')
             report['native_popup']=dict(pixels='exact',border_hits='excluded',highlight_transitions=3)
-            move(152,8);frames();click(160,40);actions(0,4,7)
-            click(152,8);move(160,24);edge(1);mutation(1);edge(0);actions(0,4)
+            move(152,8);frames();click(160,27);actions(0,4,7)
+            click(152,8);move(160,16);edge(1);mutation(1);edge(0);actions(0,4)
             key('ESC');mutation(2)
-            click(152,8);move(160,24);edge(1);mutation(3);edge(0);actions(0,4)
+            click(152,8);move(160,16);edge(1);mutation(3);edge(0);actions(0,4)
             mutation(4);key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,4)
             key('ESC');mutation(5)
             mutation(6);click(152,8);move(632,232);frames()
@@ -196,10 +216,10 @@ def physical(b,p,foreign,report):
             key('ESC');mutation(7)
             actions(1,0)
         elif phase==3:
-            click(160,24);actions(0,4)
+            click(160,16);actions(0,4)
             key('ESC',ctrl=True,shift=True);key('TAB');key('RETURN');actions(0,5,7)
         elif phase==5:
-            click(296,8);click(304,24);actions(1,1,6);actions(0,5)
+            click(296,8);click(304,16);actions(1,1,6);actions(0,5)
             key('ESC',ctrl=True,shift=True);key('TAB');key('TAB');key('TAB');key('RETURN');actions(1,2,6)
         b.poke16(sy['AESMenuGo'],phase)
     report['physical_menus']=dict(pointer=True,keyboard=True,commands=[5,2],identical_titles=True,disabled=True,held_replacement=True,held_disable=True,cancel=True,heading_switch=True,hidden=True,multiple_titles=True)

@@ -243,6 +243,18 @@ PROC Highlight(INT row)
 
 RETURN
 
+; At most nine native rows; pointer motion needs no general division.
+PUBLIC BYTE FUNC RowAt(INT offset)
+  BYTE row
+
+  row=0
+  WHILE offset>=ROW_HEIGHT DO
+    offset==-ROW_HEIGHT
+    row==+1
+  OD
+
+RETURN(row)
+
 INT FUNC Hit(INT x,y)
   INT left,row
 
@@ -255,7 +267,7 @@ INT FUNC Hit(INT x,y)
       OR (count>=4 AND y=BAR_HEIGHT+INT(count)*ROW_HEIGHT-1) THEN
     RETURN(NO_ROW)
   FI
-  row=(y-BAR_HEIGHT) RSH 4
+  row=RowAt(y-BAR_HEIGHT)
 
 RETURN(row)
 

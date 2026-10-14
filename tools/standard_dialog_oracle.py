@@ -28,7 +28,7 @@ def paint(b,sy,r,bounds):
             fields.append((i,o[:],struct.unpack('<III8h',b.memdump(o[6],28))))
             o[3]=25;o[6]=0
     x,y,w,h=objects[0][7:11];objects[0][7]=objects[0][8]=0
-    if session:rectangle(r,(bounds[0]+8,bounds[1]+16,bounds[2]-8,bounds[3]-8),0)
+    if session:rectangle(r,(bounds[0]+8,bounds[1]+11,bounds[2]-8,bounds[3]-2),0)
     focus=number(session+209) if session and not fields else -1
     draw(r,objects,labels,(x,y,x+w,y+h),focus if focus!=65535 else -1)
     for i,o,ted in fields:

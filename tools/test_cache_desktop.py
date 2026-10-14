@@ -43,9 +43,9 @@ class Desktop:
         s.saved['desktop_menu']={}
         menus=Menus(s,click,move)
         menus.select('SYS:');shot('cache-files')
-        click(296,8);click(304,88);counter=app('counter')['symbols']['GEMCounter']
+        click(296,8);click(304,61);counter=app('counter')['symbols']['GEMCounter']
         s.rendezvous('dw($%x)=1'%(counter+12));ticks=s.number(counter+14,4)
-        menus.select('SYS:');click(296,8);click(304,40);panel=app('panel')['symbols']['GEMPanel']
+        menus.select('SYS:');click(296,8);click(304,28);panel=app('panel')['symbols']['GEMPanel']
         s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
         drag_client(panel+34)
         x,y=[s.number(panel+34+i*2,2) for i in range(2)]

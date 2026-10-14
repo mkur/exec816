@@ -23,13 +23,18 @@ WORD form_center(OBJECT *tree,WORD *x,WORD *y,WORD *w,WORD *h)
 {
     struct ExecAESContext *c=ExecAESContext();
     GRECT extent;
-    WORD left=8,top=32,width=624,height=200,dx,dy;
+    WORD left,top,width,height,dx,dy;
     if (!c || !c->identity) return 0;
     c->diagnostic=AES_OK;
     if (c->view && c->view->handle) {
         if (!c->view->shown) { c->diagnostic=AES_BUSY; return 0; }
         left=c->view->work.left; top=c->view->work.top;
         width=c->view->work.right-left; height=c->view->work.bottom-top;
+    }
+    else {
+        if (!wind_get(0,WF_WXYWH,&left,&top,&width,&height) ||
+            !wind_calc(WC_WORK,AES_WINDOW_KIND,left,top,width,height,
+                       &left,&top,&width,&height)) return 0;
     }
     ExecAESFormExtent(tree,&extent);
     if (extent.g_w>width || extent.g_h>height || extent.g_w<=0 || extent.g_h<=0) {
@@ -94,14 +99,21 @@ WORD ExecAESFormBegin(struct ExecAESContext *c,const GRECT *area,const char *tit
         if (area->g_x<c->view->work.left || area->g_y<c->view->work.top ||
             (LONG)area->g_x+area->g_w>c->view->work.right ||
             (LONG)area->g_y+area->g_h>c->view->work.bottom) return 0;
-    } else if (area->g_x<8 || area->g_y<32 ||
-        (LONG)area->g_x+area->g_w>632 || (LONG)area->g_y+area->g_h>232) return 0;
+    } else {
+        if (!wind_get(0,WF_WXYWH,&x,&y,&w,&h) ||
+            !wind_calc(WC_WORK,AES_WINDOW_KIND,x,y,w,h,&x,&y,&w,&h)) return 0;
+        c->diagnostic=AES_RESOURCE;
+        if (area->g_x<x || area->g_y<y ||
+            (LONG)area->g_x+area->g_w>x+w || (LONG)area->g_y+area->g_h>y+h) return 0;
+    }
     f=AllocMem(sizeof(*f),MEMF_PUBLIC|MEMF_CLEAR);
     if (!f) return 0;
     c->form=f; f->area=*area;
     if (!c->view || !c->view->handle) {
         if (!wind_calc(WC_BORDER,NAME|CLOSER|MOVER,area->g_x,area->g_y,
                        area->g_w,area->g_h,&x,&y,&w,&h)) goto failure;
+        /* Preserve the entire form extent when AES rounds the outer X down. */
+        w+=x&1; x&=~1;
         if (w<32) w=32;
         if (h<32) h=32;
         f->ownView=c->view==NULL;

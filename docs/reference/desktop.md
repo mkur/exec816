@@ -291,7 +291,7 @@ are recorded in the [iconification plan](../plans/gem4xe/window-iconification-pl
 
 ### Desktop menus and window switching
 
-The presenter owns a persistent 16-pixel menu bar. The left 128 pixels show the
+The presenter owns a persistent 11-pixel menu bar. The left 128 pixels show the
 focused window name, truncated to fourteen 8-pixel cells; unnamed windows and
 the desktop show Exec816. Clicking this caption offers Next window, Close and Iconify.
 Close is disabled for the shell. Installed GEM menus occupy x=128..559, and
@@ -319,7 +319,8 @@ it. The target is the frontmost remaining shown window with a live input route;
 a retired AES input epoch is ineligible. Closing a background window leaves
 focus unchanged. No remaining owner means focus and the published route are zero.
 
-Native fallback and Windows popups have a one-pixel black outline inside their
+Native fallback and Windows popups use eleven-row items, with eight-row text
+at y+1, and have a one-pixel black outline inside their
 allocated bounds. The outline is not an item target. Selection is black/white
 inversion; disabled text uses the GEM white stipple. Each native row is composed
 in the existing widget strip, including its complete label of up to 24 glyphs.

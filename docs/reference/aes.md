@@ -240,7 +240,7 @@ pointers. No Task or workstation is allocated for each window.
 Kind zero creates a borderless surface with no work insets. The Exec extension
 `ExecAESDesktop(handle)` pins one such window below ordinary windows and excludes
 it from Windows/cycling. Topping it changes focus without raising it over peers.
-The standard desktop uses `(0,16,640,224)` and ordinary clipped object drawing.
+The standard desktop uses `(0,11,640,229)` and ordinary clipped object drawing.
 
 `ExecAESInputWindow(MU_KEYBD)` and `ExecAESInputWindow(MU_BUTTON)` return the owning
 handles captured with the last corresponding successful event result. Query only
@@ -676,7 +676,7 @@ withdraws it. Other modes fail. Installation does not focus the application and
 may precede its window. The focused shown window selects the visible bar; no
 installed menu uses the desktop fallback. The focused-window caption remains
 at x=0..127, application menus occupy x=128..559, and Windows is at x=560.
-`wind_get(0,WF_WXYWH)` returns `(0,16,640,224)`.
+`wind_get(0,WF_WXYWH)` returns `(0,11,640,229)`.
 
 The supported tree has root children for the bar and dropdown container. The
 bar's active container holds G_TITLE siblings paired in order with G_BOX
@@ -684,7 +684,9 @@ siblings under the dropdown container. Items are direct G_STRING children.
 G_IBOX containers, selected/checked/disabled/hidden states, 32 objects, depth eight and
 63-byte labels are supported. Titles fit caller coordinates x=0..431; the
 presenter translates their display and hit coordinates by 128 pixels.
-Dropdowns fit 640×224 and
+Titles fit the eleven-row bar. Bundled menus use eleven-row items; arbitrary
+caller-owned dropdown rows keep their declared geometry.
+Dropdowns fit 640×229 and
 are repositioned on screen without changing their dimensions. Font is 8×8.
 Cascades, scrolling bars, accessories, icons and editable menu
 objects are unsupported. Valid pointers, links and indices remain caller-owned.

@@ -205,7 +205,7 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); id=appl_init(); CHECK(id>0);
     c=ExecAESContext(); base=AvailMem(0);
     CHECK(form_center(&tree,&x,&y,&w,&h));
-    CHECK(x==240 && y==92 && w==160 && h==80 && !c->view);
+    CHECK(x==240 && y==90 && w==160 && h==80 && !c->view);
     CHECK(start(x,y,w,h)); CHECK(c->form && c->view->shown && c->workstation);
     CHECK(!start(x,y,w,h) && ExecAESDiagnostic()==AES_BUSY);
     CHECK(form_dial(FMD_GROW,0,0,0,0,x,y,w,h));
@@ -254,7 +254,7 @@ UWORD AESRun(void)
     CHECK(!c->form && c->repairEpoch && c->view->handle==window && c->workstation==workstation);
     CHECK(evnt_mesag(message) && message[0]==100 && message[7]==107 && !c->messageEpoch);
     CHECK(evnt_mesag(message) && message[0]==WM_REDRAW && message[3]==window && c->messageEpoch);
-    CHECK(message[4]==40 && message[5]==48 && message[6]==224 && message[7]==136);
+    CHECK(message[4]==40 && message[5]==43 && message[6]==224 && message[7]==147);
     for (i=0;i<16;++i) {
         do { CHECK(evnt_mesag(message)); } while (c->messageEpoch);
         CHECK(message[0]==200+i);

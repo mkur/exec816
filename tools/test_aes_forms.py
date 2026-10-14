@@ -130,7 +130,10 @@ def physical(b,p,foreign,report):
     for yy in range(top-1,top+height+1):
         for xx in range(left-1,left+width+1):
             pixel=yy*capture.stride+(xx+16)*4
-            require(pixels[pixel:pixel+3]==colours[raster.pixels[yy*640+xx]],f'Form pixels {xx},{yy}')
+            if pixels[pixel:pixel+3]!=colours[raster.pixels[yy*640+xx]]:
+                b.screenshot(str(p['output'].parent/'form-pixels-failure.png'))
+                report['form_mismatch']=dict(left=left,top=top,width=width,height=height,objects=objects)
+                require(False,f'Form pixels {xx},{yy}')
     report['form_pixels']=(width+2)*(height+2)
     before=keyboard_counts()
     for letter in ('A','B','C'):key(letter)

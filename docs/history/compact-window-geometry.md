@@ -47,3 +47,29 @@ code bytes and unchanged static data; reserved pools are unchanged.
 Reserved bank-zero delta is **0 fixed / 0 per public Task / 0 idle bytes**;
 VRAM growth is zero. No record or language bridge layout changed. Menus remain
 sixteen rows until CF3.
+
+## CF3 — menus and application layout
+
+The bar and native popup rows are eleven pixels high. Bundled application
+menus use matching coordinates; custom caller-owned dropdown rows retain their
+own sizes. The native hit/paint lookup uses at most nine subtractions instead
+of division. Popup continuation states no longer collide with cache-transfer
+states when an eleven-row entry straddles a sixteen-row paint strip.
+
+AES reports desktop work (0,11,640,229). Default Files is 462×196, preserving
+its 432-pixel client width; full/restore, folder cascades, the borderless desktop
+and standalone forms use the reported geometry. Temporary form windows also
+include the complete root border when their left edge rounds to even X.
+Application icons and fonts are unchanged.
+
+Development checks pass: 459 host tests (four skips), 291 optimized C menu
+checks plus four native checks, and 198 C form checks plus four native checks.
+The menu run includes seven exact pixel states, native highlights/border hits,
+long/checked/disabled/custom rows, cached reopening, pointer/keyboard selection,
+owner changes and cancellation. Forms include 35,332 independently checked
+pixels, editable fields, borrowed/owned windows, fault cleanup and retirement.
+Guards remain intact and both fixtures return cleanly to the OS.
+
+Reserved bank-zero delta is **0 fixed / 0 per public Task / 0 idle bytes**;
+VRAM growth is zero. Record layouts and the compiler pin are unchanged. CF4
+checks the matching packaged applications and records final image size.

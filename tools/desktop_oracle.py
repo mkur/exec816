@@ -67,16 +67,16 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
         rectangle(result, bounds, 0)
         if ident == chrome['barLayer']:
             inverse = chrome['menu'] == 1
-            rectangle(result, (0, 0, 128, 15), int(inverse))
+            rectangle(result, (0, 0, 128, 10), int(inverse))
             title = (active[wf['title']:wf['title']+14].split(b'\0')[0] if active else b'') or b'Exec816'
             if menu_source:
                 from application_menu_oracle import draw
                 draw(bridge,result,menu_source,heading=menu_heading,opened=chrome['menu']==3)
-            text(result, 8, 4, title, int(not inverse), int(inverse))
+            text(result, 8, 1, title, int(not inverse), int(inverse))
             inverse = chrome['menu'] == 2
-            rectangle(result, (560, 0, 640, 15), int(inverse))
-            text(result, 568, 4, b'Windows', int(not inverse), int(inverse))
-            rectangle(result, (0, 15, 640, 16), 1)
+            rectangle(result, (560, 0, 640, 10), int(inverse))
+            text(result, 568, 1, b'Windows', int(not inverse), int(inverse))
+            rectangle(result, (0, 10, 640, 11), 1)
         else:
             if chrome['menu']==3 and menu_source:
                 from application_menu_oracle import draw
@@ -96,11 +96,11 @@ def compose(bridge, program, font, terminal, pointer=(320, 120), external=None, 
                         (b'Iconify', ordinary)]
             for row, (label, enabled) in enumerate(entries):
                 inverse = enabled and row == chrome['selected']
-                rectangle(result, (left+1, max(top+1,top+row*16), right-1, min(bottom-1,top+(row+1)*16)), int(inverse))
-                text(result, left+8, top+row*16+4, label,
+                rectangle(result, (left+1, max(top+1,top+row*11), right-1, min(bottom-1,top+(row+1)*11)), int(inverse))
+                text(result, left+8, top+row*11+1, label,
                      int(not inverse), int(inverse))
                 if not enabled:
-                    for yy in range(top+row*16+4,top+row*16+12):
+                    for yy in range(top+row*11+1,top+row*11+9):
                         for xx in range(left+8,left+8+len(label)*8):
                             if (xx+yy)%2==0:result.pixels[yy*640+xx]=PENS[0]
             for edge in [(left,top,right,top+1),(left,bottom-1,right,bottom),

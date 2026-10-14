@@ -127,10 +127,10 @@ def tile(raster, bounds, title):
 
 
 def menu_bar(raster, title=b'Shell'):
-    rectangle(raster,(0,0,640,16),0)
-    text(raster,8,4,title[:14])
-    text(raster,568,4,b'Windows')
-    rectangle(raster,(0,15,640,16),1)
+    rectangle(raster,(0,0,640,11),0)
+    text(raster,8,1,title[:14])
+    text(raster,568,1,b'Windows')
+    rectangle(raster,(0,10,640,11),1)
 
 
 def scenes(font, accepted=None, full_coverage=False):
