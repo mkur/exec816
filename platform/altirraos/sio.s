@@ -1025,6 +1025,13 @@ sio_result:
     bne sio_protocol
     lda #3
     sta f:SD_ERROR
+    lda f:SD_READ_ERROR_DATA
+    bne :+
+    ; Raw control peripherals finish ERROR without a payload. This profile
+    ; boundary is independent of unit/command; legacy disk reads still drain.
+    lda #1
+    sta f:SD_SAFE
+    jmp sio_terminal
 :
     lda f:SD_DIRECTION
     cmp #1

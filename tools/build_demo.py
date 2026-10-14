@@ -69,7 +69,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         (media/'EXEC816.XEX').unlink(missing_ok=True)
     command_dir=media/'C';command_dir.mkdir(exist_ok=True)
     commands={}
-    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','INFO','PRIMES')+(('TICK',) if gem_desktop else ()):
+    for name in ('HELLO','CAT','WC','CMP','CKSUM','HEXDUMP','HEAD','TAIL','FIND','GREP','LIST','MORE','COPY','TEE','DELETE','RENAME','MAKEDIR','ASSIGN','INFO','FUJI','PRIMES')+(('TICK',) if gem_desktop else ()):
         command_source=ROOT/'examples/gem-browser/tick.act' if name=='TICK' else ROOT/f'examples/commands/{name.lower()}.act'
         commands[name]=compile_command(toolchain,command_source,command_dir/name)
         (command_dir/(name+'.options.json')).rename(output/(name+'.options.json'))

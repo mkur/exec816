@@ -63,3 +63,29 @@ moves 128 bytes within existing slack. Fixed, per-Task and private-idle bank-zer
 reservation changes remain zero, including padding/guards. The larger 4,352-byte
 arena in the loaded/lifetime fixtures is test storage; the demo already reserves
 6,400 bytes. C program ABI 17 remains current for its unchanged interfaces.
+
+## FN3 reports and directory browsing
+
+C:FUJI implements STATUS (also the default), HOSTS, DISKS with an optional drive,
+and DIR with HOST/PATH. It uses inherited output, bounded firmware fields and
+one 512-byte scratch buffer. The control binding remains exclusive through
+cursor cleanup, including BREAK and output errors. Demo builds install FUJI.
+
+Development checks pass: 474 host tests and 120 optimized emitted assertions
+using the actual loaded command and serial frames. Cases cover quoted paths,
+full-path reporting, redirected output, invalid host/drive/options, busy control,
+malformed adapter text, directory errors, read-only output failure, interruption,
+cursor reopen, final heap ownership, guards and OS restoration. The separate
+absence case passes eight assertions, returns a bounded timeout and retains the
+existing reset-required shutdown policy; it cannot assert ordinary OS restoration.
+
+A control ERROR reply can have no read data, unlike the existing legacy disk
+error payload. STANDARD19200 now terminates that reply cleanly. A spare descriptor
+byte records the profile rule; legacy error-with-data and raw error-without-data
+both execute in the fixture. No unit/opcode special case or retry is added.
+
+The command is 16,189 bytes on disk and has 1,047 bytes of private BSS including
+alignment. Sessions request the existing 27-byte port and 52-byte request while
+open. Full reserved bank-zero changes are fixed 0, per Task 0 and private idle 0,
+including guards, alignment and capacity; the descriptor remains 128 upper bytes.
+Stack observations and exact inputs are retained in the development record.

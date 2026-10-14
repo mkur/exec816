@@ -6,7 +6,7 @@
 [Platform contract](../reference/platform.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: FN0–FN2 implemented at the development tier; FN3–FN5 pending.
+Status: FN0–FN3 implemented at the development tier; FN4–FN5 pending.
 [Implementation record](../history/fujinet-control.md). Complete and commit each executable slice after its
 focused development checks. The FASTEST125 timing investigation is separate;
 FujiNet control starts at standard SIO speed.
@@ -109,7 +109,9 @@ they do not acquire a new geometry or speed-selection policy.
 Audit CARD-sized native counters, checksum loops, far-buffer increments and
 deadline arithmetic before expanding admission. The current deadline conversion
 is bounded for two seconds; extend its arithmetic to cover the new ceiling,
-including tick wrap and upward rounding. Keep serial-byte timing, recovery,
+including tick wrap and upward rounding. For this raw profile a terminal ERROR ends without read data; legacy disk
+profiles retain their checksum-bearing error payload drain. This framing rule
+does not inspect device IDs or opcodes. Keep serial-byte timing, recovery,
 offline-on-uncertain-error policy and IRQ/NMI ownership unchanged.
 
 Add public `SIO_OPEN_EXCLUSIVE` OpenDevice flag semantics for every admitted

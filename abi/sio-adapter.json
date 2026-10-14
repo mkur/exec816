@@ -27,6 +27,7 @@
     "SD_CHECKSUM": 22,
     "SD_VALUE": 23,
     "SD_ALARM": 24,
+    "SD_READ_ERROR_DATA": 25,
     "SD_CLOCK": 26,
     "SD_DEADLINE": 28,
     "SD_OLD_MASK": 30,

@@ -75,6 +75,34 @@ support only true SIO D1–D8. IDE-only builds reject them; IDE Plus BIOS ATR sl
 are not true SIO drives. MOUNT DIAGNOSTICS copies retained STATUS/PERCOM bytes,
 geometry source and the failing discovery/admission phase; it does no new I/O.
 
+## FujiNet reports and browsing
+
+The loadable `C:FUJI` command uses FujiNet's control device at standard 19,200
+baud. It uses hosts already configured by FujiNet's own tools:
+
+```text
+FUJI STATUS
+FUJI HOSTS
+FUJI DISKS
+FUJI DISKS D2:
+FUJI DIR HOST 1 PATH "/disks with spaces"
+FUJI HOSTS > RAM:HOSTS.TXT
+```
+
+No arguments means STATUS. Hosts are numbered 1–8; drives are D1–D8. DISKS
+reports configured names and access flags; selecting a drive also retrieves
+its complete path. DIR lists one firmware-supplied name per line and closes
+its directory cursor after EOF, BREAK or output failure. It does not select
+an image from an abbreviated directory name.
+
+Control access is exclusive for the command's lifetime. A concurrent control
+client receives busy; an absent device returns a bounded transport error.
+Transport diagnostics retain the operation, command number and actual reply
+length. FUJI does not edit Wi-Fi settings or configured hosts, negotiate HSIO
+or provide N: network streams. SIO-disabled builds reject control access.
+
+## File listings
+
 DIR and LIST print exact byte lengths as numbers, upper bounds as `<=2530`,
 and unavailable sizes as `?`. MyDOS usually supplies a sector-derived bound;
 SpartaDOS and RAM know the byte length. Listings do not read every file to

@@ -19,7 +19,7 @@ TYPE Descriptor=[
   BYTE POINTER buffer
   BYTE pad2
   CARD remaining
-  BYTE checksum,value,alarm,pad3
+  BYTE checksum,value,alarm,readErrorData
   CARD clock,deadline
 ]
 
@@ -179,6 +179,10 @@ PROC Prepare(EXEC.IOSIOReq POINTER request)
   desc.length=CARD(request.io_Length)
   desc.buffer=request.io_Data
   desc.divisor=0
+  ; Raw control ERROR terminates without data. Legacy disk ERROR replies
+  ; retain their checksum-bearing payload drain before retirement.
+  desc.readErrorData=IF request.sio_Profile=EXEC.SIO_PROFILE_STANDARD19200
+      THEN 0 ELSE 1 FI
   IF request.sio_Profile<>EXEC.SIO_PROFILE_FASTEST125 THEN
     desc.divisor=40
   FI

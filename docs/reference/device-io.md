@@ -127,6 +127,13 @@ into sectors. Other profiles retain their existing admission and deadlines;
 filesystem mount profiles remain unchanged. Ordinary Tasks can run while the
 bus waits, but other serial transactions queue behind the active request.
 
+For this raw profile a terminal `ERROR` has no read payload. It returns the
+device error with actual length zero and permits the next command after the
+existing quiet interval. Legacy disk profiles still drain and checksum their
+error payload. This is a profile framing rule; the driver does not recognize
+FujiNet opcodes. An absent or truncated response retains the existing uncertain
+error/offline policy.
+
 One SIO worker owns bus transactions; native IRQ code moves time-sensitive bytes.
 Task-side callbacks use the [resident driver boundary](resident-drivers.md), with
 short protected ownership updates and public Exec calls. The platform's IRQ/NMI

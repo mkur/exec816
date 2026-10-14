@@ -65,17 +65,39 @@ SIODevice control_probe: {
         declarations = '\n'.join(f'Segment {name}: {{ source: "{name}.bin", size: {len(payload)} }};'
                                  for name, payload in (('hosts', hosts), ('disks', disks), ('paths', paths),
                                                        ('adapter', adapter), ('rows', rows)))
-        text = declarations + '\nint directory_index;\nint directory_open;\n' + text
+        (output / 'invalid.bin').write_bytes(b'x' * 256)
+        text = declarations + '''
+Segment invalid: { source: "invalid.bin", size: 256 };
+Segment counters: { size: 16 };
+int directory_index;
+int directory_open;
+int fault_mode;
+''' + text
         extra = '''
+    { id: $06, script: function {
+      $sio.ack(); fault_mode = $aux1; $sio.complete();
+    } },
+    { id: $07, script: function {
+      counters.write_byte(0, directory_open);
+      $sio.ack(); $sio.complete(); $sio.send_frame(counters, 0, 16);
+    } },
+    { id: $09, script: function {
+      $sio.ack(); $sio.error(); $sio.send_frame(pattern, 0, 128);
+    } },
     { id: $fa, auto_transfer: [3] },
-    { id: $e8, auto_transfer: { mode: "read", segment: adapter, offset: 0, length: 140 } },
+    { id: $e8, script: function {
+      $sio.ack(); $sio.complete();
+      if (fault_mode == 1) $sio.send_frame(invalid, 0, 140);
+      else $sio.send_frame(adapter, 0, 140);
+    } },
     { id: $f4, auto_transfer: { mode: "read", segment: hosts, offset: 0, length: 256 } },
     { id: $f2, auto_transfer: { mode: "read", segment: disks, offset: 0, length: 304 } },
     { id: $da, script: function {
       $sio.ack(); $sio.complete(); $sio.send_frame(paths, $aux1 * 256, 256);
     } },
     { id: $f9, script: function {
-      $sio.ack(); if ($aux1 < 2) $sio.complete(); else $sio.error();
+      $sio.ack();
+      if ($aux1 < 2 && fault_mode != 9) $sio.complete(); else $sio.error();
     } },
     { id: $f7, script: function {
       $sio.ack(); $sio.recv_frame(256); directory_index = 0;
@@ -83,14 +105,16 @@ SIODevice control_probe: {
     } },
     { id: $f6, script: function {
       $sio.ack();
-      if (directory_open == 0) $sio.error();
+      if (directory_open == 0 || fault_mode == 2) $sio.error();
       else {
+        if (fault_mode == 3) $sio.delay(5400000);
         $sio.complete(); $sio.send_frame(rows, directory_index * 255, 255);
         if (directory_index < 3) directory_index += 1;
       }
     } },
     { id: $f5, script: function {
-      $sio.ack(); directory_open = 0; $sio.complete();
+      $sio.ack(); directory_open = 0;
+      counters.write_byte(1, counters.read_byte(1) + 1); $sio.complete();
     } },
 '''
         at = text.index('commands: [', text.index('SIODevice control_probe:')) + len('commands: [')

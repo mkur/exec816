@@ -1,0 +1,164 @@
+MODULE FUJICOMMANDTEST
+USE EXEC
+USE DOS
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROGRAMFILE
+USE PROCESS
+USE FSBOOT
+USE HEAPCORE
+USE CSTRING.IMPL AS STR
+USE SIO
+USE SIOCLIENT
+USE EXECTASKS
+
+PROCESS.Result outcome
+BYTE ARRAY bytes(2048)
+CARD checks
+BYTE completed
+BYTE POINTER image
+BYTE interrupted,scenario
+SIO.Session session
+SIO.Transaction transaction
+BYTE ARRAY snapshot(16)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Child output uses the ordinary inherited selected stream, not a test writer.
+PROC Run(CSTRING arguments,path LONGINT expected,error)
+
+  LET output=DOS.Open(BYTE POINTER(path),DOS.MODE_NEWFILE)
+  Require(output<>NULL)
+  LET previous=DOS.SelectOutput(output)
+  LET identity=PROCESS.StartBackgroundLoaded(image,BYTE POINTER(arguments),
+      CARD(STR.strlen(arguments)))
+  Require(identity<>0)
+  IF interrupted<>0 THEN
+    EXECTASKS.Sleep(60)
+    Require(PROCESS.RequestBreak(identity)<>0)
+    interrupted=0
+  FI
+
+  Require(PROCESS.Wait(identity,@outcome)<>0)
+  Require(outcome.primary=expected AND outcome.secondary=error)
+  DOS.SelectOutput(previous)
+  Require(DOS.Close(output)<>0)
+
+RETURN
+
+; Test-only commands configure the serial peer and copy its cursor counters.
+PROC Peer(CARD mode)
+
+  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+  transaction.command=6
+  transaction.aux1=BYTE(mode)
+  transaction.aux2=0
+  transaction.profile=SIO.SIO_PROFILE_STANDARD19200
+  transaction.direction=SIO.SIODIR_NONE
+  transaction.length=0
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+      BYTE POINTER(@transaction))=0)
+  transaction.command=7
+  transaction.direction=SIO.SIODIR_READ
+  transaction.length=SIZEOF(snapshot)
+  transaction.data=snapshot
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+      BYTE POINTER(@transaction))=0)
+  Require(transaction.actual=SIZEOF(snapshot))
+  SIOCLIENT.Close(BYTE POINTER(@session))
+
+RETURN
+
+PROC TextResult(CSTRING path,expected)
+
+  LET file=DOS.Open(BYTE POINTER(path),DOS.MODE_OLDFILE)
+  Require(file<>NULL)
+  LET length=DOS.Read(file,bytes,SIZEOF(bytes)-1)
+  Require(length>=0)
+  bytes(CARD(length))=0
+  Require(STR.strcmp(CSTRING(bytes),expected)=0)
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+PROC Main()
+
+  LET baseline=EXEC.AvailMem(0)
+  image=BYTE POINTER(PROGRAMFILE.Load(BYTE POINTER(c"SYS:FUJI")))
+  Require(image<>NULL)
+  IF scenario=1 THEN
+    Run(c"STATUS",c"RAM:ABSENT",10,SIO.SIOERR_TIMEOUT)
+  ELSE
+  BEGIN
+  Run(c"status",c"RAM:STATUS",0,0)
+  TextResult(c"RAM:STATUS",c"FujiNet fixture-1\nHost exec816-fuji\nIP 192.0.2.1\nWi-Fi connected\n")
+  Run(c"HOSTS",c"RAM:HOSTS",0,0)
+  Run(c"DISKS",c"RAM:DISKS",0,0)
+  Run(c"DISKS d1:",c"RAM:PATH",0,0)
+  TextResult(c"RAM:PATH",c"D1: host 1 RO attached\n  system.atr\nPath /boot/system.atr\n")
+  Run(c"DIR HOST 1 PATH \"/disks\"",c"RAM:DIR",0,0)
+  LET directory=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
+  Require(directory<>NULL)
+  Require(DOS.Read(directory,bytes,2048)=30)
+  Require(bytes(0)='t AND bytes(10)='n AND bytes(18)='r)
+  Require(DOS.Close(directory)<>0)
+  Run(c"DIR HOST 0",c"RAM:BADHOST",10,DOS.ERROR_BAD_ARGUMENTS)
+  Run(c"DISKS D9:",c"RAM:BADDRIVE",10,DOS.ERROR_BAD_ARGUMENTS)
+  Run(c"HOSTS READWRITE",c"RAM:BADOPT",10,DOS.ERROR_BAD_ARGUMENTS)
+  Require(SIOCLIENT.Open($70,0,BYTE POINTER(@session))=0)
+  Run(c"STATUS",c"RAM:BUSY",10,EXEC.IOERR_UNITBUSY)
+  SIOCLIENT.Close(BYTE POINTER(@session))
+  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+  transaction.command=9
+  transaction.aux1=0
+  transaction.aux2=0
+  transaction.direction=SIO.SIODIR_READ
+  transaction.profile=SIO.SIO_PROFILE_STOCK810
+  transaction.data=bytes
+  transaction.length=128
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+      BYTE POINTER(@transaction))=SIO.SIOERR_DEVICE)
+  Require(transaction.actual=128 AND bytes(0)=11 AND bytes(1)=48)
+  SIOCLIENT.Close(BYTE POINTER(@session))
+  Peer(1)
+  Run(c"STATUS",c"RAM:BADTEXT",10,EXEC.IOERR_BADLENGTH)
+  Peer(2)
+  LET closed=snapshot(1)
+  Run(c"DIR HOST 1",c"RAM:ENTRYERR",10,SIO.SIOERR_DEVICE)
+  Peer(0)
+  Require(snapshot(0)=0 AND snapshot(1)=closed+1)
+  Run(c"DIR HOST 3",c"RAM:HOSTERR",10,SIO.SIOERR_DEVICE)
+  LET readonly=DOS.Open(BYTE POINTER(c"RAM:DIR"),DOS.MODE_OLDFILE)
+  Require(readonly<>NULL)
+  LET oldOutput=DOS.SelectOutput(readonly)
+  LET writer=PROCESS.StartBackgroundLoaded(image,
+      BYTE POINTER(c"DIR HOST 1"),10)
+  Require(writer<>0 AND PROCESS.Wait(writer,@outcome)<>0)
+  Require(outcome.primary=10 AND outcome.secondary=DOS.ERROR_WRITE_PROTECTED)
+  DOS.SelectOutput(oldOutput)
+  Require(DOS.Close(readonly)<>0)
+  Peer(3)
+  interrupted=1
+  Run(c"DIR HOST 1",c"RAM:BREAK",10,DOS.ERROR_BREAK)
+  Peer(0)
+  Require(snapshot(0)=0)
+  Run(c"DIR HOST 1 PATH \"/disks with spaces\"",c"RAM:AGAIN",0,0)
+  TextResult(c"RAM:AGAIN",c"tools.atr\nnested/\nread me.atr\n")
+  END
+  FI
+  PROGRAM.Unload(PROGRAMIMAGE.Image POINTER(image))
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  completed=1
+
+RETURN
+
+ENDMODULE

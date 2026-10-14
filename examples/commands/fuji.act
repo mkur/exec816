@@ -1,0 +1,602 @@
+MODULE FUJI
+
+USE COMMAND
+USE CSTRING AS STR
+USE ASCII
+USE SIO
+USE FUJINET
+
+CONST OP_STATUS=1
+CONST OP_HOSTS=2
+CONST OP_DISKS=3
+CONST OP_DIRECTORY=4
+CONST DRIVE_FIRST=$31
+
+BYTE ARRAY arguments(COMMAND.ARGS_STORAGE_BYTES)
+ADDRESS ARRAY values(6)
+BYTE ARRAY scratch(512),line(128),digits(11)
+SIO.Session control,disk
+SIO.Transaction packet
+CARD used,operation,host,drive
+BYTE directoryOpen,committed,wifi
+INT wireError
+LONGINT cause
+CSTRING phase
+
+; Build one bounded row, retaining the first local/output error.
+PROC StartRow()
+
+  used=0
+  line(0)=0
+
+RETURN
+
+PROC Text(CSTRING value)
+
+  LET length=STR.strlcpy(@line(0)+SIZE(used),value,
+      SIZEOF(line)-SIZE(used))
+  IF length>=SIZEOF(line)-SIZE(used) THEN
+    cause=COMMAND.ERROR_LINE_TOO_LONG
+    RETURN
+  FI
+
+  used==+CARD(length)
+
+RETURN
+
+PROC Number(LONGCARD value)
+
+  STR.u32toa(value,digits,SIZEOF(digits))
+  Text(CSTRING(digits))
+
+RETURN
+
+BYTE FUNC Emit()
+
+  IF cause<>0 THEN
+    RETURN(0)
+  FI
+
+  line(used)=10
+  IF COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used+1))=0 THEN
+    cause=COMMAND.IoErr()
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+BYTE FUNC Cancelled()
+
+  IF COMMAND.BreakPending()<>0 THEN
+    cause=COMMAND.ERROR_BREAK
+    RETURN(1)
+  FI
+
+RETURN(0)
+
+; One command frame owns the scratch buffer until its exact reply is collected.
+BYTE FUNC Frame(CARD commandByte,length,direction,aux1,aux2 CSTRING description)
+
+  phase=description
+  packet.command=BYTE(commandByte)
+  packet.aux1=BYTE(aux1)
+  packet.aux2=BYTE(aux2)
+  packet.direction=BYTE(direction)
+  packet.profile=SIO.SIO_PROFILE_STANDARD19200
+  packet.options=CARD(committed)
+  packet.timeout=0
+  packet.length=LONGCARD(length)
+  packet.data=scratch
+  wireError=SIO.Transfer(BYTE POINTER(@control),BYTE POINTER(@packet))
+  IF wireError<>0 THEN
+    cause=IF wireError=-2 AND COMMAND.BreakPending()<>0 THEN
+        LONGINT(COMMAND.ERROR_BREAK) ELSE LONGINT(wireError) FI
+    RETURN(0)
+  FI
+
+  IF packet.actual<>LONGCARD(length) THEN
+    wireError=-4
+    cause=LONGINT(wireError)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Validate termination inside each fixed firmware field before borrowing it.
+BYTE FUNC ValidText(BYTE POINTER value CARD capacity)
+
+  IF STR.strnlen(value,SIZE(capacity))=SIZE(capacity) THEN
+    phase=c"reply text"
+    wireError=-4
+    cause=LONGINT(wireError)
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+BYTE FUNC Status()
+  CARD index
+
+  IF Frame(FUJINET.CMD_WIFI_STATUS,1,SIO.SIODIR_READ,0,0,c"Wi-Fi status")=0 THEN
+    RETURN(0)
+  FI
+
+  wifi=scratch(0)
+  IF Frame(FUJINET.CMD_ADAPTER,FUJINET.ADAPTER_BYTES,SIO.SIODIR_READ,
+      0,0,c"adapter information")=0 THEN
+    RETURN(0)
+  FI
+
+  IF ValidText(@scratch(FUJINET.ADAPTER_VERSION),
+      FUJINET.ADAPTER_VERSION_BYTES)=0 THEN
+    RETURN(0)
+  FI
+
+  IF ValidText(@scratch(FUJINET.ADAPTER_HOST),
+      FUJINET.ADAPTER_HOST_BYTES)=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"FujiNet ")
+  Text(CSTRING(@scratch(FUJINET.ADAPTER_VERSION)))
+  IF Emit()=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"Host ")
+  Text(CSTRING(@scratch(FUJINET.ADAPTER_HOST)))
+  IF Emit()=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"IP ")
+  FOR index=0 TO 3 DO
+    IF index<>0 THEN
+      Text(c".")
+    FI
+
+    Number(LONGCARD(scratch(FUJINET.ADAPTER_IP+index)))
+  OD
+
+  IF Emit()=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"Wi-Fi ")
+  IF wifi=FUJINET.WIFI_CONNECTED THEN
+    Text(c"connected")
+  ELSE
+    Text(c"status ")
+    Number(LONGCARD(wifi))
+  FI
+
+RETURN(Emit())
+
+BYTE FUNC Hosts()
+  CARD index
+
+  IF Frame(FUJINET.CMD_HOSTS,FUJINET.HOST_TABLE_BYTES,SIO.SIODIR_READ,
+      0,0,c"host slots")=0 THEN
+    RETURN(0)
+  FI
+
+  FOR index=0 TO FUJINET.SLOTS-1 DO
+    BEGIN
+      LET name=@scratch(index*FUJINET.HOST_BYTES)
+      IF Cancelled()<>0 THEN
+        RETURN(0)
+      FI
+
+      IF ValidText(name,FUJINET.HOST_BYTES)=0 THEN
+        RETURN(0)
+      FI
+
+      StartRow()
+      Number(LONGCARD(index+1))
+      Text(c": ")
+      IF name^=0 THEN
+        Text(c"(empty)")
+      ELSE
+        Text(CSTRING(name))
+      FI
+      IF Emit()=0 THEN
+        RETURN(0)
+      FI
+    END
+  OD
+
+RETURN(1)
+
+; Disk records report configuration; the mounted flag is displayed separately.
+BYTE FUNC DiskRow(CARD index)
+
+  LET entry=@scratch(index*FUJINET.DISK_BYTES)
+  LET name=entry+SIZE(FUJINET.DISK_FILE)
+  IF ValidText(name,FUJINET.DISPLAY_FILE_BYTES)=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"D")
+  Number(LONGCARD(index+1))
+  Text(c": ")
+  IF name^=0 THEN
+    Text(c"(empty)")
+    RETURN(Emit())
+  FI
+
+  IF entry(FUJINET.DISK_HOST)>=FUJINET.SLOTS THEN
+    wireError=-4
+    cause=LONGINT(wireError)
+    RETURN(0)
+  FI
+
+  Text(c"host ")
+  Number(LONGCARD(entry(FUJINET.DISK_HOST)+1))
+  Text(c" ")
+  IF (entry(FUJINET.DISK_MODE) & FUJINET.MODE_MASK)=FUJINET.MODE_READ THEN
+    Text(c"RO ")
+  ELSEIF (entry(FUJINET.DISK_MODE) & FUJINET.MODE_MASK)=FUJINET.MODE_WRITE THEN
+    Text(c"RW ")
+  ELSE
+    Text(c"mode ")
+    Number(LONGCARD(entry(FUJINET.DISK_MODE)))
+    Text(c" ")
+  FI
+
+  IF (entry(FUJINET.DISK_MODE) & FUJINET.MODE_MOUNTED)<>0 THEN
+    Text(c"attached")
+  ELSE
+    Text(c"configured")
+  FI
+  IF Emit()=0 THEN
+    RETURN(0)
+  FI
+
+  StartRow()
+  Text(c"  ")
+  Text(CSTRING(name))
+
+RETURN(Emit())
+
+BYTE FUNC Disks()
+  CARD index
+
+  IF Frame(FUJINET.CMD_DISKS,FUJINET.DISK_TABLE_BYTES,SIO.SIODIR_READ,
+      0,0,c"disk slots")=0 THEN
+    RETURN(0)
+  FI
+
+  IF drive<>0 THEN
+    BEGIN
+    index=drive-DRIVE_FIRST
+    IF DiskRow(index)=0 THEN
+      RETURN(0)
+    FI
+
+    IF scratch(index*FUJINET.DISK_BYTES+FUJINET.DISK_FILE)=0 THEN
+      RETURN(1)
+    FI
+
+    IF Frame(FUJINET.CMD_GET_PATH,FUJINET.PATH_BYTES,SIO.SIODIR_READ,
+        index,0,c"image path")=0 THEN
+      RETURN(0)
+    FI
+
+    IF ValidText(scratch,FUJINET.PATH_BYTES)=0 THEN
+      RETURN(0)
+    FI
+
+    StartRow()
+    Text(c"Path ")
+    ; Paths can exceed a row: stream their bounded bytes as one output entry.
+    IF COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used))=0 THEN
+      cause=COMMAND.IoErr()
+      RETURN(0)
+    FI
+
+    LET length=STR.strlen(CSTRING(scratch))
+    IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
+      cause=COMMAND.IoErr()
+      RETURN(0)
+    FI
+
+    StartRow()
+    RETURN(Emit())
+    END
+  FI
+
+  FOR index=0 TO FUJINET.SLOTS-1 DO
+    IF Cancelled()<>0 THEN
+      RETURN(0)
+    FI
+
+    IF DiskRow(index)=0 THEN
+      RETURN(0)
+    FI
+  OD
+
+RETURN(1)
+
+; Paths retain case and spaces; the wire frame reserves the final NUL(s).
+BYTE FUNC PathFrame(CSTRING path CARD nulBytes)
+  CARD index
+
+  LET length=STR.strlen(path)
+  IF length=0 OR length+SIZE(nulBytes)>SIZE(FUJINET.PATH_BYTES) THEN
+    cause=COMMAND.ERROR_LINE_TOO_LONG
+    RETURN(0)
+  FI
+
+  FOR index=0 TO FUJINET.PATH_BYTES-1 DO
+    scratch(index)=0
+  OD
+
+  STR.strlcpy(scratch,path,FUJINET.PATH_BYTES)
+
+RETURN(1)
+
+BYTE FUNC Directory()
+  BYTE okay
+
+  IF Frame(FUJINET.CMD_MOUNT_HOST,0,SIO.SIODIR_NONE,host,0,
+      c"host mount")=0 THEN
+    RETURN(0)
+  FI
+
+  IF values(3)=0 THEN
+    IF PathFrame(c"/",2)=0 THEN
+      RETURN(0)
+    FI
+  ELSE
+    IF PathFrame(CSTRING(BYTE POINTER(values(3))),2)=0 THEN
+      RETURN(0)
+    FI
+  FI
+
+  IF Frame(FUJINET.CMD_OPEN_DIRECTORY,FUJINET.PATH_BYTES,SIO.SIODIR_WRITE,
+      host,0,c"directory open")=0 THEN
+    RETURN(0)
+  FI
+
+  directoryOpen=1
+  okay=1
+  DO
+    BEGIN
+    IF Cancelled()<>0 THEN
+      okay=0
+      EXIT
+    FI
+
+    IF Frame(FUJINET.CMD_READ_DIRECTORY,FUJINET.DIRECTORY_BYTES,
+        SIO.SIODIR_READ,FUJINET.DIRECTORY_BYTES,0,c"directory entry")=0 THEN
+      okay=0
+      EXIT
+    FI
+
+    IF scratch(0)=FUJINET.DIRECTORY_END AND
+        scratch(1)=FUJINET.DIRECTORY_END THEN
+      EXIT
+    FI
+
+    IF ValidText(scratch,FUJINET.DIRECTORY_BYTES)=0 THEN
+      okay=0
+      EXIT
+    FI
+
+    LET length=STR.strlen(CSTRING(scratch))
+    IF COMMAND.WriteAll(COMMAND.Output(),scratch,LONGINT(length))=0 THEN
+      cause=COMMAND.IoErr()
+      okay=0
+      EXIT
+    FI
+
+    StartRow()
+    IF Emit()=0 THEN
+      okay=0
+      EXIT
+    FI
+    END
+  OD
+
+RETURN(okay)
+
+; Normalize only the operation word; image paths remain unchanged.
+CARD FUNC ParseOperation()
+  CARD index
+
+  IF values(0)=0 THEN
+    RETURN(OP_STATUS)
+  FI
+
+  LET word=BYTE POINTER(values(0))
+  index=0
+  WHILE word(index)<>0 DO
+    IF word(index)>='a AND word(index)<='z THEN
+      word(index)==-32
+    FI
+
+    index==+1
+  OD
+
+  IF STR.strcmp(CSTRING(word),c"STATUS")=0 THEN
+    RETURN(OP_STATUS)
+  ELSEIF STR.strcmp(CSTRING(word),c"HOSTS")=0 THEN
+    RETURN(OP_HOSTS)
+  ELSEIF STR.strcmp(CSTRING(word),c"DISKS")=0 THEN
+    RETURN(OP_DISKS)
+  ELSEIF STR.strcmp(CSTRING(word),c"DIR")=0 THEN
+    RETURN(OP_DIRECTORY)
+  FI
+
+RETURN(0)
+
+BYTE FUNC Parse()
+  CARD index
+
+  operation=ParseOperation()
+  IF operation=0 THEN
+    cause=COMMAND.ERROR_BAD_ARGUMENTS
+    RETURN(0)
+  FI
+
+  IF operation=OP_STATUS OR operation=OP_HOSTS THEN
+    FOR index=1 TO 5 DO
+      IF values(index)<>0 THEN
+        cause=COMMAND.ERROR_BAD_ARGUMENTS
+        RETURN(0)
+      FI
+    OD
+  ELSEIF operation=OP_DISKS THEN
+    FOR index=2 TO 5 DO
+      IF values(index)<>0 THEN
+        cause=COMMAND.ERROR_BAD_ARGUMENTS
+        RETURN(0)
+      FI
+    OD
+
+    IF values(1)<>0 THEN
+      BEGIN
+        LET name=BYTE POINTER(values(1))
+        IF (name(0)<>'D AND name(0)<>'d) OR name(1)<'1 OR name(1)>'8 THEN
+          cause=COMMAND.ERROR_BAD_ARGUMENTS
+          RETURN(0)
+        FI
+
+        IF name(2)<>0 THEN
+          IF name(2)<>': OR name(3)<>0 THEN
+            cause=COMMAND.ERROR_BAD_ARGUMENTS
+            RETURN(0)
+          FI
+        FI
+
+        drive=DRIVE_FIRST+CARD(name(1)-'1)
+      END
+    FI
+  ELSE
+    BEGIN
+    IF values(1)<>0 OR values(2)=0 OR values(4)<>0 OR values(5)<>0 THEN
+      cause=COMMAND.ERROR_BAD_ARGUMENTS
+      RETURN(0)
+    FI
+
+    LET number=LONGCARD POINTER(values(2))
+    IF number^<1 OR number^>FUJINET.SLOTS THEN
+      cause=COMMAND.ERROR_BAD_ARGUMENTS
+      RETURN(0)
+    FI
+
+    host=CARD(number^-1)
+    IF values(3)<>0 THEN
+      IF STR.strlen(CSTRING(BYTE POINTER(values(3))))=0 THEN
+        cause=COMMAND.ERROR_BAD_ARGUMENTS
+        RETURN(0)
+      FI
+    FI
+    END
+  FI
+
+RETURN(1)
+
+; Report the original wire failure even if cleanup performs another command.
+PROC WireFault(INT error CARD commandByte LONGCARD actual CSTRING failedPhase)
+
+  StartRow()
+  Text(c"fuji: ")
+  Text(failedPhase)
+  Text(c" failed; SIO ")
+  IF error<0 THEN
+    Text(c"-")
+    Number(LONGCARD(-LONGINT(error)))
+  ELSE
+    Number(LONGCARD(error))
+  FI
+
+  Text(c", command ")
+  Number(LONGCARD(commandByte))
+  Text(c", actual ")
+  Number(actual)
+  line(used)=10
+  COMMAND.WriteAll(COMMAND.Output(),line,LONGINT(used+1))
+
+RETURN
+
+LONGINT FUNC Main()
+  BYTE okay
+
+  cause=0
+  wireError=0
+  directoryOpen=0
+  committed=0
+  drive=0
+  LET parsed=COMMAND.ReadArgsOrHelp(
+      c"COMMAND,DRIVE,HOST/K/N,PATH/K,IMAGE/K,READWRITE/S",
+      values,6,arguments,SIZEOF(arguments))
+  IF parsed<>COMMAND.ARGS_PARSED THEN
+    RETURN(IF parsed=COMMAND.ARGS_HELP THEN COMMAND.RETURN_OK
+        ELSE COMMAND.RETURN_ERROR FI)
+  FI
+
+  IF Parse()=0 THEN
+    COMMAND.SetIoErr(cause)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  IF Cancelled()<>0 THEN
+    COMMAND.SetIoErr(cause)
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  phase=c"control open"
+  wireError=SIO.Open(FUJINET.CONTROL_UNIT,SIO.SIO_OPEN_EXCLUSIVE,
+      BYTE POINTER(@control))
+  IF wireError<>0 THEN
+    WireFault(wireError,0,0,phase)
+    COMMAND.SetIoErr(LONGINT(wireError))
+    RETURN(COMMAND.RETURN_ERROR)
+  FI
+
+  CASE operation OF
+  WHEN OP_STATUS THEN
+    okay=Status()
+  WHEN OP_HOSTS THEN
+    okay=Hosts()
+  WHEN OP_DISKS THEN
+    okay=Disks()
+  ELSE
+    okay=Directory()
+  ESAC
+
+  LET originalCause=cause
+  LET originalError=wireError
+  LET originalCommand=CARD(packet.command)
+  LET originalActual=packet.actual
+  LET originalPhase=phase
+  IF directoryOpen<>0 THEN
+    committed=1
+    IF Frame(FUJINET.CMD_CLOSE_DIRECTORY,0,SIO.SIODIR_NONE,0,0,
+        c"directory close")=0 AND originalCause=0 THEN
+      okay=0
+    FI
+  FI
+
+  SIO.Close(BYTE POINTER(@control))
+  IF originalCause<>0 THEN
+    cause=originalCause
+    wireError=originalError
+    IF wireError<>0 THEN
+      WireFault(wireError,originalCommand,originalActual,originalPhase)
+    FI
+  ELSEIF cause<>0 AND wireError<>0 THEN
+    WireFault(wireError,CARD(packet.command),packet.actual,phase)
+  FI
+
+  COMMAND.SetIoErr(cause)
+
+RETURN(IF okay<>0 AND cause=0 THEN COMMAND.RETURN_OK ELSE COMMAND.RETURN_ERROR FI)
+
+ENDMODULE
