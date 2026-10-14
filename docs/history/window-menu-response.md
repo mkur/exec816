@@ -112,3 +112,27 @@ extra immediate probe. Combined latency acceptance follows in UI5.
 
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
 guards/alignment/capacity. No additional persistent state or VRAM is allocated.
+
+## UI4 Plain menu-row selection
+
+Clean, fully visible application popups invert up to two disjoint plain enabled
+rows in one synchronous admitted batch. Eligibility is limited to ordinary
+white menu paper and unadorned `G_STRING` children inside the border, at most
+16 scanlines high. Source changes, unfinished pixels and other styles retain
+normal painting. The existing selection becomes committed only after the paint
+transaction finishes; failed drawing retains ordinary damage, not an XOR retry.
+No glyph rendering, staging upload or popup-cache mutation occurs in this path.
+The private widget operation adds a constant, without changing packet layout.
+Native fallback menus keep their normal row renderer.
+
+The optimized physical menu fixture passes all seven phases. Added independent
+pixel comparisons cover A→B→A, repeated input without a second inversion, entry/
+exit and both odd packed edges. The fixture observes exactly four inversion
+batches for four changes. Its existing checked/disabled long-label, replacement,
+cache reopen, keyboard and cleanup cases pass as well
+(`build/window-menu-response/ui4-menus/results.json`). Generated widget
+definitions and the focused widget contract host checks pass.
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including
+guards/alignment/capacity. No persistent selection storage, new CPU staging or
+VRAM reservation is added; the existing widget packet carries two rectangles.

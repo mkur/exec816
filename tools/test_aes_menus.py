@@ -3,6 +3,16 @@ from library_paths import read_source
 from native_program import ROOT, require
 
 
+def instrument(out):
+    source=read_source(ROOT/'ports/gem4xe/adapter/gem-vbxe.c')
+    source=source.replace('static UWORD draw_InvertRows(',
+        'volatile ULONG MenuInvertCalls;\nstatic UWORD draw_InvertRows(')
+    source=source.replace('    const WORD *r;\n',
+        '    const WORD *r;\n    ++MenuInvertCalls;\n')
+    path=out/'gem-vbxe.c';path.write_text(source)
+    return path
+
+
 def producer(out, symbols):
     source = '''MODULE AESMENUPROBE
 USE EXEC
@@ -143,6 +153,24 @@ def physical(b,p,foreign,report):
                     require(pixels[pixel:pixel+3]==hardware[cached.pixels[yy*640+xx]],
                             f'Cached File menu pixel {xx},{yy}')
             report['popup_cache']=dict(warm_file='exact',restore_delta=1)
+            # Completed selection pixels, including both odd packed edges.
+            inversions=get(sy['MenuInvertCalls'],4)
+            for xx,yy,item,expected in [(160,16,6,1),(160,27,7,2),
+                    (160,16,6,3),(160,16,6,3),(632,232,-1,4)]:
+                move(xx,yy);frames()
+                require(get(sy['MenuInvertCalls'],4)==inversions+expected,
+                        'Selection did not use exactly one inversion per change')
+                selected=Raster(font);area=draw(b,selected,tree,True,selected=item)
+                path=out/'selection.bgra';capture=b.rawscreen(str(path));pixels=path.read_bytes()
+                for yy2 in range(area[1],area[3]):
+                    for xx2 in range(area[0],area[2]):
+                        # Pointer is a separate overlay, covered by ordinary pointer tests.
+                        if xx<=xx2<xx+20 and yy<=yy2<yy+20:continue
+                        pixel=yy2*capture.stride+(xx2+16)*4
+                        require(pixels[pixel:pixel+3]==hardware[selected.pixels[yy2*640+xx2]],
+                                f'Selection pixel {item}: {xx2},{yy2}')
+            report['selection_inversion']=dict(changes=4,repeated='no-op',pixels='exact',
+                odd_edges=True,entry_exit=True)
             key('ESC')
             click(152,8);click(160,16);actions(0,1,6)
             key('ESC',ctrl=True,shift=True);key('ASTERISK',ctrl=True)

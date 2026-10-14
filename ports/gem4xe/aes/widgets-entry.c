@@ -1,5 +1,6 @@
 /* Ordinary C bridge; the desktop presenter is the sole caller. */
 #include "widgets.h"
+#include "gem-drawing.h"
 struct WidgetPacket WidgetPacket __attribute__((aligned(2)));
 extern uint16_t WidgetSet(struct WidgetContext *,const struct WidgetTree *,struct WidgetPacket *);
 extern uint16_t WidgetUpdate(struct WidgetContext *,const struct WidgetUpdate *,struct WidgetPacket *);
@@ -22,6 +23,8 @@ void WidgetEntry(void)
     case WIDGET_OP_KEY:
     case WIDGET_OP_CANCEL:
         p->status=WidgetInput(c,p);break;
+    case WIDGET_OP_MENU_INVERT:
+        p->status=GemDrawingInvertRows((const WORD *)&p->damage[0],p->index);break;
     case WIDGET_OP_MENU_DRAW:
         p->status=MenuPaint(p);break;
     case WIDGET_OP_DRAW:

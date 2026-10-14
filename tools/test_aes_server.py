@@ -240,6 +240,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             from generate_display import expected_layout as display_layout
             renderer = instrument(out)
             extra_probes = [(ROOT/'c/calypsi/display-layout.c', display_layout())]
+        if suite=='menus':
+            from test_aes_menus import instrument
+            renderer=instrument(out)
         if suite=='objects':
             from test_object_units import instrument
             renderer=instrument(out)

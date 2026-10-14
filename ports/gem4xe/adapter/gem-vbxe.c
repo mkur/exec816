@@ -726,6 +726,20 @@ static void outline_span(UWORD left,UWORD right,UWORD top,UWORD rows)
     if (hi>lo) blit_xor(address+lo,320,hi-lo,rows,255);
     if (right&1) blit_xor(address+hi,320,1,rows,240);
 }
+/* Selection touches only completed plain rows. One admission/list/fence covers
+ * both changes; overlay saves must be removed before their pixels are read. */
+static UWORD draw_InvertRows(const WORD *rectangles,UWORD count)
+{
+    UWORD i;
+    const WORD *r;
+    if (fault) return DISPLAY_DEVICE_FAULT;
+    if (display.operationPending) return DISPLAY_BUSY;
+    for (i=0,r=rectangles;i<count;++i,r+=4)
+        pointer_erase(r[0],r[1],r[2],r[3]);
+    for (i=0,r=rectangles;i<count;++i,r+=4)
+        outline_span(r[0],r[2],r[1],r[3]-r[1]);
+    return fence_owner();
+}
 static void outline_toggle(void)
 {
     ULONG address=GemScreenRows[outlineTop]+outlineLeft/2;
@@ -991,6 +1005,7 @@ NATIVE_UNIT(TextClip,(UWORD x,UWORD y,const UBYTE *text,UWORD count,
     UWORD fg,UWORD bg,UWORD left,UWORD top,UWORD right,UWORD bottom),(x,y,text,count,fg,bg,left,top,right,bottom))
 NATIVE_UNIT(Pointer,(UWORD x,UWORD y,UWORD visible),(x,y,visible))
 NATIVE_UNIT(Outline,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible),(left,top,right,bottom,visible))
+NATIVE_UNIT(InvertRows,(const WORD *rectangles,UWORD count),(rectangles,count))
 NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void)),(left,top,right,bottom,draw))
 NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))

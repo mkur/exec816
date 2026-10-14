@@ -321,21 +321,128 @@ PROC DamageObject(INT index BYTE popup)
 
 RETURN
 
+; Eligibility for the existing plain-row renderer, not general tree validation.
+BYTE FUNC PlainRow(INT index LAYERTYPES.Rect POINTER popup,bounds)
+
+  LET menu=owner.menu
+  LET object=AESMENU.Object(menu,index)
+  LET box=menu.box(heading)
+  IF object.kind<>WIDGETTYPES.G_STRING OR object.state<>0
+      OR (object.flags & 128)<>0 OR object.head>=0 OR menu.parent(index)<>box THEN
+    RETURN(0)
+  FI
+  REGIONS.Assign(bounds,popup.left+menu.x(index)-menu.x(box),
+      popup.top+menu.y(index)-menu.y(box),0,0)
+  bounds.right=bounds.left+object.width
+  bounds.bottom=bounds.top+object.height
+
+RETURN(object.height>0 AND object.height<=16 AND object.width>0
+    AND bounds.left>popup.left AND bounds.right<popup.right
+    AND bounds.top>popup.top AND bounds.bottom<popup.bottom)
+
+; Snapshot runs at an idle scene boundary. Clean pixels correspond to the last
+; published selection. Finish one synchronous paint before committing the new
+; selection; a failed draw leaves ordinary damage, never a pending XOR retry.
+BYTE FUNC InvertSelection()
+  BYTE index,status,okay
+  CARD count
+  LONGCARD token
+  LAYERTYPES.Rect old,next,area,overlap
+
+  LET desktop=DESKSTATE.Get()
+  LET menu=owner.menu
+  LET popup=LAYERS.Find(@desktop.scene,DESKSTATE.popupLayer)
+  LET box=AESMENU.Object(menu,menu.box(heading))
+  IF popup.shown=0 OR popup.dirty<>0 OR popup.visible.count<>1
+      OR REGIONS.Equal(@popup.visible.rects(0),@popup.bounds)=0
+      OR (box.spec & $ffff)<>$1100 OR box.state<>0 THEN
+    RETURN(0)
+  FI
+  FOR index=0 TO menu.count-1 DO
+    IF menu.damage(index)<>0 THEN
+      RETURN(0)
+    FI
+  OD
+  count=0
+  LET packet=DESKWIDGETS.GetPacket()
+  IF paintSelected>=0 THEN
+    IF PlainRow(paintSelected,@popup.bounds,@old)=0 THEN
+      RETURN(0)
+    FI
+    REGIONS.Copy(@old,LAYERTYPES.Rect POINTER(@packet.damage(count)))
+    REGIONS.Copy(@old,@area)
+    count==+1
+  FI
+  IF selected>=0 THEN
+    IF PlainRow(selected,@popup.bounds,@next)=0 THEN
+      RETURN(0)
+    FI
+    REGIONS.Copy(@next,LAYERTYPES.Rect POINTER(@packet.damage(count)))
+    IF count=0 THEN
+      REGIONS.Copy(@next,@area)
+    ELSE
+      REGIONS.Intersect(@old,@next,@overlap)
+      IF REGIONS.Empty(@overlap)=0 THEN
+        RETURN(0)
+      FI
+      IF next.left<area.left THEN
+        area.left=next.left
+      FI
+      IF next.top<area.top THEN
+        area.top=next.top
+      FI
+      IF next.right>area.right THEN
+        area.right=next.right
+      FI
+      IF next.bottom>area.bottom THEN
+        area.bottom=next.bottom
+      FI
+    FI
+    count==+1
+  FI
+  IF count=0 THEN
+    RETURN(0)
+  FI
+  status=LAYERS.Invalidate(@desktop.scene,popup.id,@area)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+  status=LAYERS.BeginPaint(@desktop.scene,popup.id,@token)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(0)
+  FI
+  packet.context=LONGCARD(ADDRESS(menu.tree))
+  packet.index=count
+  DESKWIDGETS.Run(WIDGETTYPES.OP_MENU_INVERT)
+  okay=CONSOLEBITMAP.Drawn(packet.status)
+  IF okay<>0 THEN
+    status=LAYERS.AdvancePaint(@desktop.scene,token)
+    okay=(status=LAYERTYPES.EMPTY)
+  FI
+  status=LAYERS.Finish(@desktop.scene,token,okay)
+
+RETURN(okay<>0 AND status=LAYERTYPES.OK)
+
 ; Keep source changes and pointer highlights off the screen until paint retires.
 PUBLIC PROC Snapshot(BYTE popup)
-  BYTE index
+  BYTE index,inverted
 
   IF Current()=0 THEN
     RETURN
   FI
   LET menu=owner.menu
+  inverted=0
+  IF popup<>0 AND paintOpened<>0 AND paintHeading=heading
+      AND paintSelected<>selected THEN
+    inverted=InvertSelection()
+  FI
   IF paintHeading<>heading THEN
     DamageObject(menu.title(paintHeading),0)
     DamageObject(menu.title(heading),0)
   ELSEIF paintOpened<>popup THEN
     DamageObject(menu.title(heading),0)
   FI
-  IF paintSelected<>selected THEN
+  IF paintSelected<>selected AND inverted=0 THEN
     IF paintSelected>=0 THEN DamageObject(paintSelected,popup) FI
     IF selected>=0 THEN DamageObject(selected,popup) FI
   FI
