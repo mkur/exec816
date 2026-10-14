@@ -5,8 +5,13 @@
 [Preservation measurements](../../history/window-preservation.md) ·
 [AES and Layers design](aes-layers-vram-design.md)
 
-Status: proposed. FE1–FE4 follow the implemented WP1–WP4 preservation work.
-This document makes no implementation or qualification claim.
+Status: implementation in progress. FE1 is implemented; FE2–FE4 remain.
+FE1 passed the focused optimized presentation fixture (117 native assertions
+and independent framebuffer comparisons), recorded in
+`build/frame-exposure/presentation/presentation-results.json`. Reserved
+bank-zero change: 0 fixed, 0 per public Task, 0 idle; VRAM reservation change: 0.
+The adapter adds two upper-RAM words for compact scratch pitch/mode.
+This is development evidence, not hosted-system qualification.
 
 Make newly opened frames appear sooner, restore unchanged window decorations
 along with their contents, and stop closing a folder from repainting unrelated

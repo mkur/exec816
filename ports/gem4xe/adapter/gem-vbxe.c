@@ -37,6 +37,7 @@ static UWORD commandWork;
 #define WIDGET_STRIP_BASE 76800UL
 static UWORD stripActive,stripRedirect,stripLeft,stripTop,stripRight,stripBottom;
 static ULONG stripOffset;
+static UWORD stripPitch,stripCompact;
 static void pointer_reset(void);
 static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom);
 static void outline_hide(void);
@@ -92,6 +93,7 @@ uint8_t blit_pending(void) { return (uint8_t)(commandCount!=0 || dirty); }
  * band. The work table also provides products for variable raster pitches. */
 static UWORD row_step(UWORD stride,UWORD rows)
 {
+    if (!rows) return 0;
     switch (stride) {
     case 0: return 0;
     case 320: return GemStep320[rows];
@@ -222,11 +224,11 @@ UWORD GemSolidRows(UWORD left,UWORD right)
 
 /* One already reserved constant-source record. Geometry and list capacity
  * are established once for the whole fill, not again for each nibble edge. */
-static UBYTE *solid_record(UBYTE *r,ULONG dest,UWORD bytes,UWORD rows,UBYTE mask,UBYTE value,UBYTE mode)
+static UBYTE *solid_record(UBYTE *r,ULONG dest,UWORD bytes,UWORD rows,UWORD pitch,UBYTE mask,UBYTE value,UBYTE mode)
 {
     r[0]=r[1]=r[2]=r[3]=r[4]=0;
     r[6]=(UBYTE)dest;r[7]=(UBYTE)(dest>>8);r[8]=(UBYTE)(dest>>16);
-    r[9]=64;r[10]=1;
+    r[9]=(UBYTE)pitch;r[10]=(UBYTE)(pitch>>8);
     --bytes;r[12]=(UBYTE)bytes;r[13]=(UBYTE)(bytes>>8);
     r[14]=(UBYTE)(rows-1);r[15]=mask;r[16]=value;r[20]=mode;
     return r+21;
@@ -238,6 +240,7 @@ void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
     UWORD edges=(left&1)+(right&1),units=bytes+3*edges;
     UWORD records=(bytes!=0)+(edges<<1),limit=GemFillRows[units],rows,work;
     ULONG dest;
+    UWORD pitch=stripRedirect ? stripPitch:320;
     UBYTE *r,ink=map_col[pen];
     if (fault) return;
     if (dirty) flush();
@@ -247,16 +250,21 @@ void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
         work=(units*rows)<<1;
         if (commandCount+records>VBXE_LIST_RECORDS || commandWork+work>VBXE_LIST_WORK) drain();
         if (fault) return;
-        dest=GemScreenRows[top];if (stripRedirect) dest+=stripOffset;
+        if (stripRedirect && stripCompact) {
+            /* Geometry is still available here; no screen-address division. */
+            dest=WIDGET_STRIP_BASE+row_step(pitch,top-stripTop)-(stripLeft>>1);
+        } else {
+            dest=GemScreenRows[top];if (stripRedirect) dest+=stripOffset;
+        }
         r=commandNext;
         if (left&1) {
-            r=solid_record(r,dest+lo-1,1,rows,0,0xf0,4);
-            r=solid_record(r,dest+lo-1,1,rows,0,ink,3);
+            r=solid_record(r,dest+lo-1,1,rows,pitch,0,0xf0,4);
+            r=solid_record(r,dest+lo-1,1,rows,pitch,0,ink,3);
         }
-        if (bytes) r=solid_record(r,dest+lo,bytes,rows,0,(ink<<4)|ink,0);
+        if (bytes) r=solid_record(r,dest+lo,bytes,rows,pitch,0,(ink<<4)|ink,0);
         if (right&1) {
-            r=solid_record(r,dest+hi,1,rows,0,0x0f,4);
-            r=solid_record(r,dest+hi,1,rows,0,ink<<4,3);
+            r=solid_record(r,dest+hi,1,rows,pitch,0,0x0f,4);
+            r=solid_record(r,dest+hi,1,rows,pitch,0,ink<<4,3);
         }
         commandNext=r;commandCount+=records;commandWork+=work;
         top+=rows;
@@ -742,13 +750,13 @@ static UWORD draw_Batch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*dra
  * A callback returns nonzero only when every intersecting object is complete.
  * No callback or client pointer survives a call. The presenter freezes the
  * model until the strip retires; a new first chunk discards an abandoned one. */
-static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                            UWORD first,UWORD (*draw)(void))
+static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD first,UWORD compact,UWORD (*draw)(void))
 {
-    UWORD status,complete,lo,hi,rows;
+    UWORD complete,lo,hi,rows;
     ULONG screen,scratch;
     if (!draw || left>=right || right>640 || top>=bottom || bottom>240 ||
-        bottom-top>16) return DISPLAY_BAD_ARGUMENT;
+        (compact ? right-left>16:bottom-top>16)) return DISPLAY_BAD_ARGUMENT;
     if (!first && (!stripActive || left!=stripLeft || top!=stripTop ||
         right!=stripRight || bottom!=stripBottom)) return DISPLAY_BAD_ARGUMENT;
     if (fault) return DISPLAY_DEVICE_FAULT;
@@ -756,6 +764,8 @@ static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
     if (first) {
         stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
         stripOffset=WIDGET_STRIP_BASE-GemScreenRows[top];
+        stripCompact=compact;
+        stripPitch=compact ? ((right+1)>>1)-(left>>1):320;
     }
     stripRedirect=1;
     complete=draw();
@@ -767,20 +777,35 @@ static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
          * save/restore sees screen coordinates only at this publish boundary. */
         GemDrawingPrepare(left,top,right,bottom);
         screen=GemScreenRows[top];scratch=WIDGET_STRIP_BASE;
+        if (compact) scratch-=left>>1;
         lo=left/2;hi=right/2;rows=bottom-top;
         if (left&1) {
             blit_and(screen+lo,320,1,rows,0xf0);
-            blit_mask(scratch+lo,320,screen+lo,320,1,rows,0x0f,0,3);
+            blit_mask(scratch+lo,stripPitch,screen+lo,320,1,rows,0x0f,0,3);
             ++lo;
         }
-        if (hi>lo) blit_mask(scratch+lo,320,screen+lo,320,hi-lo,rows,255,0,0);
+        if (hi>lo) blit_mask(scratch+lo,stripPitch,screen+lo,320,hi-lo,rows,255,0,0);
         if (right&1) {
             blit_and(screen+hi,320,1,rows,0x0f);
-            blit_mask(scratch+hi,320,screen+hi,320,1,rows,0xf0,0,3);
+            blit_mask(scratch+hi,stripPitch,screen+hi,320,1,rows,0xf0,0,3);
         }
         stripActive=0;
     }
     return fence_owner();
+}
+
+/* Tall, non-text frame sides use at most nine bytes per row, including
+ * odd clip edges. The existing 5120-byte strip easily holds all 240 rows.
+ * Only GemSolidFill is permitted inside this private callback. */
+static UWORD draw_FrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                            UWORD (*draw)(void))
+{
+    return widget_batch(left,top,right,bottom,1,1,draw);
+}
+static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
+                             UWORD first,UWORD (*draw)(void))
+{
+    return widget_batch(left,top,right,bottom,first,0,draw);
 }
 
 /* The admitted disabled pattern is GEM IP_4PATT: alternating AAAA/5555,
@@ -970,3 +995,5 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     /* Private VDI caller already clipped and bounded this fixed operation. */
     return drawing_borrow(grant,left,top,right,bottom,0,&pen);
 }
+
+NATIVE_UNIT(FrameBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD (*draw)(void)),(left,top,right,bottom,draw))
