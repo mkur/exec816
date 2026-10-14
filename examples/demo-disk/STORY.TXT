@@ -184,3 +184,37 @@ mount. Plain MOUNT lists; MOUNT
 DIAGNOSTICS reports retained details.
 These commands also work in S:USER.
 IDE BIOS ATR slots are not true SIO.
+
+FujiNet images and hosts
+-------------------------
+FUJI uses hosts already configured
+in FujiNet's own tools. Try:
+  fuji status
+  fuji hosts
+  fuji disks
+  fuji dir host 1 path "/disks"
+For an empty drive slot:
+  fuji attach d2: host 1
+    image "/disks/tools.atr"
+Type ATTACH on one line. Then:
+  mount data: drive 2 format mydos
+  dir data:
+  unmount data:
+  fuji eject d2:
+Supply FORMAT SPARTA for SpartaDOS.
+Control runs at standard 19,200 baud.
+MOUNT's disk speed must match FujiNet;
+PROFILE STOCK810 is standard/128-byte.
+256-byte disks need a matching fast
+profile; FUJI does not change HSIO.
+ATTACH is read-only by default. Add
+READWRITE to both ATTACH and MOUNT
+if you want filesystem writes.
+Leave the volume and close its files
+before UNMOUNT. EJECT before replacing
+an image. FUJI refuses a drive in use.
+A failed attach can leave its slot
+configured: inspect FUJI DISKS D2:,
+then EJECT before trying again.
+FUJI is a disk command, not a new
+network filesystem or an N: handler.

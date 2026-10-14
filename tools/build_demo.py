@@ -136,12 +136,14 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     # shadow library modules (examples/console.act is a standalone application).
     entry=ROOT/('examples/gem-desktop.act' if gem_desktop else 'examples/aes-input-desktop.act' if aes_input else 'examples/aes-desktop.act' if aes_counters else 'examples/desktop.act' if desktop else 'examples/shell/shell.act' if shell_only else 'examples/demo.act')
     source=output/'demo.act';source.write_text(read_source(entry))
-    # Shared fault/transport strings and shell/client globals need 4.25 KiB.
+    # Bound shell/client globals and shared static buffers in upper RAM.
     from generate_memory import PROFILE
     profile=json.loads(PROFILE.read_text())
-    # Desktop menu state adds 512 bytes of upper capacity.
+    # The bitmap shell uses 6,409 bytes with SIO imports: one extra page keeps
+    # code placement page-aligned. Desktop menu state needs two extra pages.
     # This is upper-bank capacity; Task/DP and bank-zero reservations are unchanged.
-    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(512 if desktop else 0)
+    profile['image_data_bytes']=DEMO_IMAGE_DATA_BYTES+(512 if desktop else
+        256 if bitmap_shell_only else 0)
     memory_profile=output/'demo-memory.json'
     memory_profile.write_text(json.dumps(profile,indent=2)+'\n')
     if bitmap_shell_only:

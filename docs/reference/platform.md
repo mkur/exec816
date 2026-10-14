@@ -124,12 +124,16 @@ arena and all stack/DP reservations stay in place. The effective origin is
 recorded in `memory.json` and `layout.json`;
 normal extent and bank-ownership checks still apply to the combined image.
 
-The text, bitmap and desktop demos use a 6.25 KiB arena to hold their composed
+The text demo uses a 6.25 KiB arena to hold its composed
 application globals and the resident fault strings. `tools/build_demo.py`
 derives `demo-memory.json` from the default profile with this explicit 4.25 KiB
 upper-RAM increase over the default. The latest 2 KiB increase holds IDE
 admission, APT and mount diagnostics, including unused arena capacity; it
 adds **0 fixed, 0 per-Task and 0 idle bank-zero bytes**.
+The bitmap shell with SIO client imports uses 6,409 bytes and reserves 6,656
+upper bytes (one additional 256-byte page, including 247 spare bytes). Code
+placement remains page-aligned. This adds **0 fixed, 0 per-Task and 0 idle
+bank-zero bytes**, including guards/alignment/unused bank-zero capacity.
 Desktop menu profiles add 512 bytes of upper arena capacity for menu state and
 labels (6.75 KiB total). The GEM desktop uses the same capacity. Its shared C
 runtime and renderer lookup tables are included in the compressed boot image;

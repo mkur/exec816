@@ -145,7 +145,7 @@ assuming work is pending. Current behavior belongs in the
 
 ## Device I/O and SIO
 
-- [FujiNet control](fujinet-control-implementation-plan.md): planned FN0–FN5
+- [FujiNet control](fujinet-control-implementation-plan.md): implemented FN0–FN5
   slices for bounded raw SIO frames, exclusive unit bindings, a reusable native
   client and loadable FUJI status/host/disk/directory/attach/eject commands.
   Image attachment remains separate from user filesystem mounts; zero added

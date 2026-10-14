@@ -64,7 +64,8 @@ Try it
     RUN PRIMES
     JOBS
 
-The pipelines print 1 3 17 and 154 759 4717 respectively (lines, words, bytes).
+HELLO | WC prints 1 3 17 (lines, words, bytes).
+CAT STORY.TXT | WC counts the included story.
 TASKS lists the shell and service workers without a primes task.
 HELP lists built-in commands. BREAK cancels a foreground command.
 Ctrl-L clears the screen and redraws the prompt and your current input.
@@ -84,7 +85,7 @@ File arguments still use the current directory. Try:
 
 The disk includes HELLO, CAT, WC, CMP, CKSUM, HEXDUMP, HEAD, TAIL, FIND,
 GREP, LIST, MORE,
-COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN and PRIMES. C: and S: use two of four
+COPY, TEE, DELETE, RENAME, MAKEDIR, ASSIGN, INFO, FUJI and PRIMES. C: and S: use two of four
 assignment slots. Before the prompt, optional S:STARTUP and S:USER run in order.
 The supplied files contain comments only. Edit S/USER in the system disk source
 for local setup; EXECUTE S:USER reruns it manually. Missing scripts are silent;
@@ -117,6 +118,24 @@ up/down browse the ten-command history; Atari left/right move the cursor.
 
 This is a development preview. The cooked editor
 retains its 36-character editing tail, even on the wider bitmap screen.
+
+FujiNet (optional)
+------------------
+
+FUJI ? shows the command template without contacting hardware.
+FUJI STATUS, HOSTS and DISKS report an already configured FujiNet.
+FUJI DIR HOST 1 PATH "/disks" browses a configured SD/TNFS host.
+FUJI ATTACH D2: HOST 1 IMAGE "/disks/tools.atr" attaches to an empty slot.
+Then MOUNT DATA: DRIVE 2 FORMAT MYDOS admits the selected filesystem.
+Use FORMAT SPARTA for SpartaDOS. Supply a PROFILE matching the disk speed;
+STOCK810 is standard-rate/128-byte only. Control always uses 19,200 baud.
+Add READWRITE to both ATTACH and MOUNT independently for filesystem writes.
+Close files and leave the volume, then UNMOUNT DATA: before FUJI EJECT D2:.
+EJECT before replacing an image. Drives held by Exec are busy.
+If attachment fails after configuration, inspect FUJI DISKS D2: and EJECT.
+There is no Wi-Fi setup, host editing, N: handler or speed negotiation here.
+The development checks use scripted serial frames, not physical FujiNet
+qualification. This demo does not need FujiNet to boot.
 
 Files and licences
 ------------------

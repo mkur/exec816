@@ -122,3 +122,36 @@ existing allocator. The complete reserved bank-zero delta remains fixed 0,
 per Task 0, private idle 0, including guards/alignment/unused capacity. The
 workflow fixture's 8,192-byte upper arena is test capacity only; demo capacity
 stays at 6,400. Exact command sizes, inputs and stack observations are recorded.
+
+## FN5 workflows and packaged demos
+
+The combined control/mount workflow passes 263 optimized assertions for each
+MyDOS/SpartaDOS × 128/256-byte case. Every case verifies unchanged readonly media,
+a different replacement payload through a fresh mount, persisted writes after
+remount and an independent host audit. A runnable Task progresses throughout;
+an unrelated SYS disk remains accessible and control/disk speed profiles switch.
+Request/Task ownership, complete heap restoration, stack/domain guards and OS
+restoration pass. 474 host checks and generated definitions remain current. The direct-adapter
+legacy fixture also initializes the former padding byte to its disk error-data
+policy; public requests select that policy through their profile.
+
+Both development demos include C:FUJI, updated STORY/short guides, OF816's
+five-second autoboot, matching 720 KiB system/work disks, pinned ROM/licences,
+checksums and old/new Atarimax carts. The generated ZIPs contain distribution
+files only; serial peers, manifests, launchers and test output stay outside.
+An extracted standard/new-cart smoke and extracted VBXE/XEX smoke pass: C:FUJI
+lookup, foreground help with redirection, existing command providers/pipeline,
+OF816 handoff, guards and EXIT. No GitHub release was published.
+
+The standard upper arena reserves 6,400 bytes (6,399 used). Bitmap composition
+uses 6,409 bytes, so its arena grows one page to 6,656 (+256 upper bytes including
+247 spare), preserving aligned code placement. Full added reserved bank-zero
+bytes are fixed 0, per public Task 0 and private idle 0, including guards,
+alignment and unused capacity. Cartridge payloads fit with 680,777/620,116 bytes
+of headroom for standard/VBXE. Exact input/output hashes and observed scope are
+in the development record.
+
+No real FujiNet firmware executable, SD/TNFS walkthrough or physical device was
+executed here. Source snapshots and scripted serial fixtures are the evidence;
+they do not qualify firmware image mounting or real-hardware interoperability.
+The host media rendezvous used for workflow tests is confined to test code.

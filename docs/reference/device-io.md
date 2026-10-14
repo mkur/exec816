@@ -127,7 +127,7 @@ into sectors. Other profiles retain their existing admission and deadlines;
 filesystem mount profiles remain unchanged. Ordinary Tasks can run while the
 bus waits, but other serial transactions queue behind the active request.
 
-For this raw profile a terminal `ERROR` has no read payload. It returns the
+For this raw profile a terminal `ERROR` has no read payload. A read returns the
 device error with actual length zero and permits the next command after the
 existing quiet interval. Legacy disk profiles still drain and checksum their
 error payload. This is a profile framing rule; the driver does not recognize

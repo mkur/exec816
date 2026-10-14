@@ -57,3 +57,9 @@ retain the library interface and return Open failure without touching serial
 hardware. The native program ABI is version 18; rebuild commands and providers
 together. The C program ABI remains version 17 because its existing interfaces
 are unchanged; a C SIO convenience library is not part of this interface.
+
+The [FUJI command](../guides/shell.md#fujinet-control) uses two sessions to hold
+control and disk admission independently. STANDARD19200's terminal ERROR has no
+read payload; legacy disk profiles retain their error-data drain. The command
+encodes protocol bytes and owns mutation/cursor policy; the library retains no
+FujiNet state and adds no worker or private kernel service.

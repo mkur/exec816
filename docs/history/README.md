@@ -1,6 +1,6 @@
 # Historical records
 
-- [FujiNet control](fujinet-control.md): protocol pins, scripted real-frame
+- [FujiNet control](fujinet-control.md): protocol pins, FUJI reports/browsing/image changes, scripted real-frame
   integration and implementation slices.
 
 - [Resident shell report output](shell-report-output.md): bounded row batching,

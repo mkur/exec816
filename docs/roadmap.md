@@ -297,8 +297,8 @@ separate idle/counter desktop observations. No renderer speedup is claimed.
 
 User SIO mounts are implemented through UM5 at the development tier; see the
 [implementation record](history/user-sio-mounts.md). The
-[FujiNet control plan](plans/fujinet-control-implementation-plan.md) follows with
-a loadable FUJI command for configured hosts, directory browsing and drive-image
+[FujiNet control plan](plans/fujinet-control-implementation-plan.md) is implemented
+at the development tier ([record](history/fujinet-control.md)): a loadable FUJI command for configured hosts, directory browsing and drive-image
 attachment/ejection. It reuses user MOUNT for filesystem admission, adds bounded
 standard-rate control frames and prevents changing a drive while Exec holds it
 open. Network streams and FASTEST125 timing work remain separate.

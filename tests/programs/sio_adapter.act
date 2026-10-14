@@ -23,7 +23,7 @@ TYPE Descriptor=[
   BYTE POINTER buffer
   BYTE pad2
   CARD remaining
-  BYTE checksum,value,alarm,pad3
+  BYTE checksum,value,alarm,readErrorData
   CARD clock,deadline
 ]
 
@@ -60,6 +60,8 @@ PROC Transaction(BYTE wire,direction CARD length BYTE POINTER buffer)
   BYTE POINTER bankPart
 
   desc.direction=direction
+  ; This direct-adapter fixture models the legacy disk framing profile.
+  desc.readErrorData=1
   desc.length=length
   IF variant=6 THEN
     lowPart=CARD POINTER($3f0810)
