@@ -5,7 +5,9 @@
 [Current measurements](../../history/window-frame-exposure.md) ·
 [Desktop contract](../../reference/desktop.md)
 
-Status: proposed. Implementation has not started.
+Status: implementation in progress. See the
+[development record](../../history/window-menu-response.md) for completed
+slices, selected checks and memory accounting.
 
 Make window opening, focus changes and dropdown interaction respond sooner by
 removing redundant application/AES exchanges and shortening the path from a

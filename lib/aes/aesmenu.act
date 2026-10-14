@@ -238,6 +238,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
     BEGIN
       LET object=Object(client.menu,item)
+      LET previous=object.state
       CASE operation OF
       WHEN 31 THEN
         IF value<>0 THEN
@@ -270,6 +271,12 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       ELSE
         RETURN(AESTYPES.UNSUPPORTED)
       ESAC
+      ; Setters that leave pixels unchanged must not evict popup images.
+      ; Normalization still acknowledges delivery, even with an unchanged bit.
+      IF (operation=31 OR operation=32) AND object.state=previous THEN
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
       client.menu.damage(item)=1
     END
   FI

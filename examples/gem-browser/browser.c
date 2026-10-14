@@ -5,6 +5,7 @@ static WORD desktop_copy_start(struct Browser *,WORD);
 static WORD desktop_job_finish(struct Desktop *,WORD);
 static WORD desktop_job_choice(struct Desktop *,WORD);
 static WORD desktop_delete(struct Browser *);
+static WORD desktop_menu(struct Desktop *,struct Browser *);
 static const char *desktop_association(struct Desktop *,const char *);
 #include <exec816/aes.h>
 #include <string.h>
@@ -67,6 +68,16 @@ static WORD has_parent(const struct Browser *b)
     const char *p=strchr(b->path,':');
     return p && p[1] && (p[1]!='/' || p[2]);
 }
+/* Folders share an installed tree: compare the published bit, not a private
+ * copy of the previous folder's menu state. AES remains the writer. */
+static WORD menu_enable(OBJECT *tree,WORD item,WORD enabled)
+{
+    return ((tree[item].ob_state&DISABLED)==0)==(enabled!=0) || menu_ienable(tree,item,enabled!=0);
+}
+static WORD menu_check(OBJECT *tree,WORD item,WORD checked)
+{
+    return ((tree[item].ob_state&CHECKED)!=0)==(checked!=0) || menu_icheck(tree,item,checked!=0);
+}
 static WORD menu_state(struct Browser *b)
 {
     WORD one=single_entry(b);
@@ -74,23 +85,20 @@ static WORD menu_state(struct Browser *b)
         |(b->child ? 2:0)|(!b->dialog && one>=0 ? 4:0)|(!b->dialog ? 8:0)
         |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount && !b->selectionDirectories ? 16:0)
         |(b->desktop && !b->dialog && !b->desktop->job && b->selectionCount ? 32:0)|(!b->dialog && b->parent ? 64:0);
-    WORD changed=b->menuEnabled<0 ? 127:enabled^b->menuEnabled;
-    if ((changed&1) && !menu_ienable(b->applicationMenu,MENU_OPEN,enabled&1)) return 0;
-    if ((changed&2) && !menu_ienable(b->applicationMenu,MENU_STOP,enabled&2)) return 0;
-    if ((changed&4) && !menu_ienable(b->applicationMenu,MENU_RENAME,enabled&4)) return 0;
-    if ((changed&64) && !menu_ienable(b->applicationMenu,MENU_PARENT,enabled&64)) return 0;
-    if (changed&8) {
-        if (!menu_ienable(b->applicationMenu,MENU_REFRESH,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_PATH,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NEW,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_ICONS,enabled&8) || !menu_ienable(b->applicationMenu,MENU_LIST,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_NAME,enabled&8) ||
-            !menu_ienable(b->applicationMenu,MENU_ALL,enabled&8) || !menu_ienable(b->applicationMenu,MENU_NONE,enabled&8)) return 0;
+    if (!menu_enable(b->applicationMenu,MENU_OPEN,enabled&1) ||
+        !menu_enable(b->applicationMenu,MENU_STOP,enabled&2) ||
+        !menu_enable(b->applicationMenu,MENU_RENAME,enabled&4) ||
+        !menu_enable(b->applicationMenu,MENU_PARENT,enabled&64) ||
+        !menu_enable(b->applicationMenu,MENU_REFRESH,enabled&8) ||
+        !menu_enable(b->applicationMenu,MENU_PATH,enabled&8) || !menu_enable(b->applicationMenu,MENU_NEW,enabled&8) ||
+        !menu_enable(b->applicationMenu,MENU_ICONS,enabled&8) || !menu_enable(b->applicationMenu,MENU_LIST,enabled&8) ||
+        !menu_enable(b->applicationMenu,MENU_NAME,enabled&8) ||
+        !menu_enable(b->applicationMenu,MENU_ALL,enabled&8) || !menu_enable(b->applicationMenu,MENU_NONE,enabled&8)) return 0;
+    if (b->desktop) {
+        if (!menu_enable(b->applicationMenu,30,enabled&16) ||
+            !menu_enable(b->applicationMenu,31,enabled&32)) return 0;
     }
-    if (b->desktop && (changed&48)) {
-        if (!menu_ienable(b->applicationMenu,30,(enabled&16)!=0) ||
-            !menu_ienable(b->applicationMenu,31,(enabled&32)!=0)) return 0;
-    }
-    b->menuEnabled=enabled;return 1;
+    return 1;
 }
 static void stop(struct Browser *b)
 {
@@ -263,8 +271,8 @@ static WORD redraw(struct Browser *b,const WORD *damage)
 }
 static WORD view_checks(struct Browser *b)
 {
-    return menu_icheck(b->applicationMenu,MENU_ICONS,b->iconView) && menu_icheck(b->applicationMenu,MENU_LIST,!b->iconView)
-        && menu_icheck(b->applicationMenu,MENU_NAME,b->sortNames);
+    return menu_check(b->applicationMenu,MENU_ICONS,b->iconView) && menu_check(b->applicationMenu,MENU_LIST,!b->iconView)
+        && menu_check(b->applicationMenu,MENU_NAME,b->sortNames);
 }
 static char *decimal(char *to,ULONG value)
 {
@@ -809,7 +817,10 @@ static WORD folder_event(struct Browser *b,WORD events)
         if ((events&MU_MESAG) && b->message[3]==b->window) {
             switch (b->message[0]) {
             case WM_CLOSED:quit=1;break;
-            case WM_TOPPED:if (!wind_set(b->window,WF_TOP,0,0,0,0)) result=2;break;
+            case WM_TOPPED:
+                if (!wind_set(b->window,WF_TOP,0,0,0,0) ||
+                    (b->desktop && !desktop_menu(b->desktop,b))) result=2;
+                break;
             case WM_FULLED:
                 if (!b->full) {
                     if (!wind_get(b->window,WF_CXYWH,&b->restore[0],&b->restore[1],&b->restore[2],&b->restore[3])) { result=2;break; }

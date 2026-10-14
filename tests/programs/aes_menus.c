@@ -6,7 +6,7 @@
 #include <proto/dos.h>
 #include "../../c/calypsi/aes-private.h"
 
-ULONG AESService,AESMenuNext,AESMenuTree,AESMenuPeerTree;
+ULONG AESService,AESMenuNext,AESMenuRevision,AESMenuTree,AESMenuPeerTree;
 volatile WORD AESMenuPhase,AESMenuGo,AESMenuMutation;
 volatile WORD AESMenuActions[2],AESMenuItem[2];
 volatile ULONG AESMenuClient;
@@ -231,7 +231,7 @@ void AESClientTwo(void)
 }
 UWORD AESRun(void)
 {
-    ULONG available,generation;
+    ULONG available,generation,revision;
     BPTR file=Open("D1:MENU.RSC",MODE_OLDFILE);
     struct ExecAESContext *c;
     OBJECT *tree;
@@ -257,8 +257,18 @@ UWORD AESRun(void)
         CHECK(wind_update(BEG_UPDATE));
         CHECK(menu_ienable(tree,6,0));
         CHECK(tree[6].ob_state&DISABLED);
+        revision=*(volatile ULONG *)AESMenuRevision;
+        CHECK(menu_ienable(tree,6,0));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision);
         CHECK(menu_ienable(tree,6,1));
         CHECK(!(tree[6].ob_state&DISABLED));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision+1);
+        CHECK(menu_icheck(tree,6,1));
+        revision=*(volatile ULONG *)AESMenuRevision;
+        CHECK(menu_icheck(tree,6,1));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision);
+        CHECK(menu_icheck(tree,6,0));
+        CHECK(*(volatile ULONG *)AESMenuRevision==revision+1);
         CHECK(menu_text(tree,6,launchLabel));
         CHECK(tree[6].ob_spec==(ULONG)launchLabel);
         CHECK(wind_update(END_UPDATE));

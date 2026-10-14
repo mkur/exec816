@@ -1,5 +1,8 @@
 # Historical records
 
+- [Window and menu response work](window-menu-response.md): menu request
+  reduction, prompt raising and subsequent atlas/menu development evidence.
+
 - [Window frames and desktop exposure](window-frame-exposure.md): complete frame
   sides, frame-inclusive snapshots, precise close damage and matched timings.
 

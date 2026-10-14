@@ -25,6 +25,10 @@ SIZE+=2
 FIELDS['parent']=SIZE
 SIZE+=2
 FIELDS['scan']=FIELDS['stock']-20
+removed=FIELDS.pop('menuEnabled')
+for name in FIELDS:
+    if FIELDS[name]>removed:FIELDS[name]-=2
+SIZE-=2
 CONTENT_TOP=16
 ICON_PITCH=36
 ROW_FIRST=2

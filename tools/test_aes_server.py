@@ -307,6 +307,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuNext"]:x})\n    item^=LONGCARD(ADDRESS(@service.nextMenuEpoch))\n  END\n'
+            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuRevision"]:x})\n    item^=LONGCARD(ADDRESS(@service.menuRevision))\n  END\n'
         if timers or events:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESClock"]:x})\n    item^=TIMERMETA.BASE+4\n  END\n'
         if events or timers or suite == 'messages':

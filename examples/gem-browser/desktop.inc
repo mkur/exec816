@@ -69,17 +69,15 @@ static WORD desktop_menu(struct Desktop *d,struct Browser *b)
     }
     d->active=b;
     if (b) {
-        /* The shared bar may have been changed by another folder. */
-        b->menuEnabled=-1;
         wind_get(b->window,WF_WORKXYWH,&b->work[0],&b->work[1],&b->work[2],&b->work[3]);
         if (b->dialog && b->focus==2) objc_edit(b->dialogTree,2,0,&b->editIndex,ED_INIT);
         return menu_state(b) && view_checks(b);
     }
-    menu_ienable(d->bar,DESK_COPY,0);menu_ienable(d->bar,DESK_DELETE,0);
+    if (!menu_enable(d->bar,DESK_COPY,0) || !menu_enable(d->bar,DESK_DELETE,0)) return 0;
     for (i=MENU_OPEN;i<=MENU_RENAME;++i)
-        if (!menu_ienable(d->bar,i,0)) return 0;
+        if (!menu_enable(d->bar,i,0)) return 0;
     for (i=MENU_ICONS;i<=MENU_NONE;++i)
-        if (!menu_ienable(d->bar,i,0)) return 0;
+        if (!menu_enable(d->bar,i,0)) return 0;
     return 1;
 }
 static WORD desktop_close_folder(struct Desktop *d,struct Browser *b)
@@ -347,7 +345,6 @@ WORD DesktopRun(void)
                 } else if (d->message[0]==WM_REDRAW && !desktop_draw(d,&d->message[4])) { result=2;break; }
             } else {
                 b=desktop_folder(d,d->message[3]);
-                if (b && d->message[0]==WM_TOPPED && !desktop_menu(d,b)) { result=2;break; }
                 if (!desktop_dispatch(d,b,MU_MESAG)) { result=2;break; }
             }
         }

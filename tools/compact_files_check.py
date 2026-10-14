@@ -8,6 +8,9 @@ def exercise(s,desk,base,click,key,path,shot,move):
     n=lambda name:s.number(base+F[name],2)
     def work():return [s.number(base+F['work']+2*i,2) for i in range(4)]
     def text(name):return b.memdump(base+F[name],128).split(b'\0')[0].decode('ascii')
+    def enabled(item):
+        tree=s.number(base+F['applicationMenu'],4)
+        return not s.number(tree+item*24+10,2)&8
     def view(row):click(216,8);click(224,24+row*16)
     def file(row):click(152,8);click(168,24+row*16)
     def arrow(name,shift=False):
@@ -38,7 +41,7 @@ def exercise(s,desk,base,click,key,path,shot,move):
     require(text('path')=='SYS:','Parent keyboard')
     before=s.number(base+F['paints'],4);key('ESC')
     require(s.number(base+F['paints'],4)==before,'Root Escape reread/repainted')
-    require(not n('menuEnabled')&64,'Root Parent enabled')
+    require(not enabled(18),'Root Parent enabled')
     select(s,base,'README.TXT',click)
     move(632,232);s.frames(60);selected=icon_pixels()
     lead=n('selected');view(4);s.frames(60)
@@ -82,7 +85,7 @@ def exercise(s,desk,base,click,key,path,shot,move):
     require(n('count')==0 and n('parent')==1,'Empty directory omitted parent')
     select(s,base,'..',click)
     require(n('selected')==65534 and not n('selectionCount'),'Parent joined selection bitmap')
-    require(n('menuEnabled')&1 and not n('menuEnabled')&52,'Parent mutation commands enabled')
+    require(enabled(6) and not any(enabled(i) for i in (12,30,31)),'Parent mutation commands enabled')
     key('R');require(n('dialog')==0,'Parent Rename opened a dialog')
     b._cmd_ok('KEY CTRL down');key('L');b._cmd_ok('KEY CTRL up');wait_listing(s,base)
     require(n('selected')==65534,'Refresh lost parent focus')
