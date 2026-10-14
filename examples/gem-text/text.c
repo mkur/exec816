@@ -236,7 +236,11 @@ WORD TextRun(struct TextApp *a)
                     /* Fall through: accept and restart damage in new geometry. */
                 case WM_MOVED:
                     if (!wind_set(a->window,WF_CXYWH,a->message[4],a->message[5],a->message[6],a->message[7])) result=20;
-                    a->dirty=0;if (!viewport(a)) result=20;damage(a,a->work);break;
+                    /* A clean pure move keeps the copied client. Resize or
+                     * pre-existing damage still needs new-coordinate repair. */
+                    i=a->dirty || a->message[0]!=WM_MOVED;
+                    a->dirty=0;if (!viewport(a)) result=20;
+                    if (i) damage(a,a->work);break;
                 case WM_REDRAW:damage(a,&a->message[4]);break;
                 case WM_VSLID:
                     if (!scroll(a,(LONG)a->message[4]*maximum(0,a->document.lines-a->rows)/1000)) result=20;break;

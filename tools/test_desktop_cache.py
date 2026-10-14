@@ -69,11 +69,14 @@ def run(out, forced_miss=False, replay=False, production=False):
     needle = '      row=(CARD(area.top-client.top) RSH 3)+commandIndex'
     require(paint.count(needle) == 1, 'Console paint boundary changed')
     paint = paint.replace('LONGCARD paintToken,paintLayer',
-                          'PUBLIC LONGCARD consolePaints,consoleCells\nLONGCARD paintToken,paintLayer')
+                          'PUBLIC LONGCARD consolePaints,consoleCells,consoleCopies\nLONGCARD paintToken,paintLayer')
     paint = paint.replace(needle, '      consolePaints==+1\n'+needle)
     needle = '      index=CONSOLECORE.CellOffset(instance,row*instance.width+first)'
     require(paint.count(needle) == 1, 'Console cell boundary changed')
     paint = paint.replace(needle, '      consoleCells==+LONGCARD(count)\n'+needle)
+    needle='          started=PAINT_BACKING'
+    require(paint.count(needle)==1,'Shell backing copy boundary changed')
+    paint=paint.replace(needle,'          consoleCopies==+1\n'+needle)
     (out/'deskpaint.act').write_text(paint)
     p = read_build(out/'program') if replay else build_bitmap(
         ROOT/'tests/programs/desktop_cache.act', out, desktop=True, stack_checks=True)
@@ -112,6 +115,7 @@ def run(out, forced_miss=False, replay=False, production=False):
                     row = dict(stage=stage, elapsed_cycles=(clock-previous) & 0xffffffff,
                                console_paints=read('DESKPAINT', 'consolePaints'),
                                console_cells=read('DESKPAINT', 'consoleCells'),
+                               console_copies=read('DESKPAINT', 'consoleCopies'),
                                pixels=pixels(b, directory, scene(stage, font, position),palette=DESKTOP_PALETTE))
                     if not production:
                         row.update(captures=read('DESKCACHE', 'captures'),
@@ -150,13 +154,16 @@ def run(out, forced_miss=False, replay=False, production=False):
                                   f'(dw(${at("DESKINPUT", "cursorY"):x})={position[1]})')
                             frames(4)
                             before_click = read('DESKPAINT', 'consolePaints')
+                            before_copy = read('DESKPAINT', 'consoleCopies')
                             for down in (1, 0):
                                 b._cmd_ok(f'MOUSE AT 2000 0 0 {down}')
                                 reach(f'dw(${at("DESKINPUT", "buttons"):x})={down}')
                                 frames(20)
                             require(read('DESKPAINT', 'consolePaints') == before_click,
                                     'Front Shell click repainted its client')
-                            row['clicks'].append(dict(point=position, console_paints=0,
+                            require(read('DESKPAINT','consoleCopies')==before_copy,
+                                    'Front Shell click copied its client')
+                            row['clicks'].append(dict(point=position, console_paints=0,console_copies=0,
                                 pixels=pixels(b,directory,scene(stage,font,position),palette=DESKTOP_PALETTE)))
                     previous = clock
                     b.memload(at('CACHEPOLICY', 'gate'), stage.to_bytes(2, 'little'))
@@ -184,10 +191,12 @@ def run(out, forced_miss=False, replay=False, production=False):
         for before, after in ((12, 13), (13, 14)):
             require(rows[after]['console_cells'] - rows[before]['console_cells'] <= 1,
                     'Focus change repainted more than the caret cell')
-        require(rows[15]['console_paints'] > rows[14]['console_paints'],
-                'Raising the covered Shell did not repair exposure')
-        require(rows[16]['console_paints'] == rows[15]['console_paints'],
-                'Redundant raise/focus repainted console text')
+        require(rows[15]['console_copies'] > rows[14]['console_copies'] and
+                rows[15]['console_cells']==rows[14]['console_cells'],
+                'Aligned exposure did not restore Shell entirely from backing')
+        require(rows[16]['console_paints'] == rows[15]['console_paints'] and
+                rows[16]['console_copies']==rows[15]['console_copies'],
+                'Redundant raise/focus repainted or copied console text')
         require(all(not s['pinned'] for row in rows for s in row['slots']), 'Settled slot remains pinned')
         if forced_miss:
             require(all(row['restores'] == 0 for row in rows), 'Forced miss restored pixels')

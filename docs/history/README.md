@@ -1,5 +1,8 @@
 # Historical records
 
+- [Aligned moves and Shell backing](window-backing.md): completed AES copies,
+  persistent console pixels, scrolling and matched performance evidence.
+
 - [Shell focus without full redraw](shell-focus.md): title/caret-only focus
   changes, no-op front-window activation and physical click/pixel checks.
 

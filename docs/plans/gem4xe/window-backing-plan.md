@@ -3,8 +3,10 @@
 [Design note](aes-layers-vram-design.md#aligned-aes-moves) ·
 [GEM plans](README.md) · [Testing policy](../../contributing/testing.md)
 
-Status: implementation in progress, 2026-10-14. Implements the aligned AES move and persistent
-Shell backing extensions to the AES/Layers design. The completed
+Status: implemented at the development tier, 2026-10-14.
+[Measurements and remaining gates](../../history/window-backing.md) separate
+functional completion from latency acceptance. Implements the aligned AES move
+and persistent Shell backing extensions to the AES/Layers design. The completed
 [AV1–AV6 plan](aes-layers-vram-plan.md) remains its own historical scope.
 
 The outcome is an eligible AES window moving by blit on release, and exposed
@@ -371,3 +373,18 @@ claiming the whole performance goal achieved.
   and `wb5-scroll` under `build/window-backing`. Matched throughput and loaded
   latency comparisons follow in WB6. Reserved bank zero: 0 fixed, 0 per public
   Task, 0 idle; CPU metadata and VRAM delta: 0.
+
+- WB6: exact OF816 ZIP walkthrough passes Files, moved Panel pointer/keyboard
+  activation, Counter progress, moved Text, scrolling, selector cancellation,
+  HELLO and clean EXIT. Optimized focus/cache fixture passes 71 checks: exposed
+  Shell pixels copy without text reconstruction; repeated clicks do no client
+  work. Five matched resident-output runs and fully covered variants pass pixel
+  and output-order checks. Final quiesced failure replay passes 111 checks.
+  Twenty-sample move/close cohorts, thirty loaded button samples and matched
+  menu comparisons are recorded in the [results](../../history/window-backing.md)
+  and [evidence](../../development/window-backing.json). Copied client placement
+  improves substantially; complete background repair and loaded input gates
+  remain open. Finer copy-byte/fallback attribution and a separate baseline
+  final-app repaint timestamp for moves remain unmeasured. Reserved bank zero:
+  0 fixed, 0 per public Task, 0 idle. Final move metadata occupies 6 upper-RAM
+  bytes including alignment; reserved arena growth is zero.

@@ -147,7 +147,10 @@ WORD DialogRun(struct DialogApp *a)
                     break;
                 case WM_MOVED:
                     if (!wind_set(a->window,WF_CURRXYWH,a->message[4],a->message[5],
-                                  a->message[6],a->message[7])) result=20;
+                                  a->message[6],a->message[7]) ||
+                        !wind_get(a->window,WF_WXYWH,&a->work[0],&a->work[1],
+                                  &a->work[2],&a->work[3])) result=20;
+                    a->home[0].ob_x=a->work[0]; a->home[0].ob_y=a->work[1];
                     break;
                 case WM_REDRAW: if (!paint(a)) result=20; break;
                 }

@@ -378,7 +378,10 @@ not establish physical-device or whole-system qualification.
 Programmatic MOVE and drag release share one presenter continuation. A clean,
 fully visible front window with even X/width can copy its complete rectangle
 through the IRQ-completed typed driver operation. Dirty, covered and unaligned
-sources use retained redraw. The scene token gates model/layout changes and
+sources use retained redraw. Completed external AES clients use this path too;
+their geometry and repaint epoch publish before AESCORE replies. The moved
+client receives no new redraw for a successful copied move, while underlying
+external clients retain genuine exposure notifications. The scene token gates model/layout changes and
 queued HIDE/CLOSE while the copy is active; input capture can continue.
 
 The reply acknowledges committed geometry after successful DMA, before all
@@ -393,8 +396,9 @@ presentation generations.
 
 The VRAM map reserves two 75 KiB compact snapshot slots at `$50000–$62BFF`
 and `$62C00–$757FF`.
-`DESKCACHE` stores client pixels only; frames and console content remain retained
-drawing. Even-width images must fit one slot and the 640 by 240 copy limit.
+`DESKCACHE` stores application client pixels only; frames remain retained
+drawing. Shell uses its separate fixed backing surface described in the
+[display contract](display.md#shell-backing-destination). Even-width images must fit one slot and the 640 by 240 copy limit.
 Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
 cannot be evicted or reused before DMA retirement. Invalid slots are selected

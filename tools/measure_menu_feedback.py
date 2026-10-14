@@ -20,7 +20,8 @@ from test_demo import run
 
 
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False):
+        self.headings_only = headings_only
         self.cold = cold
         self.count = count
         self.load_check = load_check
@@ -108,7 +109,7 @@ class Feedback:
         # caret and parked pointer are outside it. Reference state is warmed
         # before timing, with no writes to guest state or executable observers.
         area = (128, 0, 640, 208)
-        for kind in ('application', 'native'):
+        for kind in (() if self.headings_only else ('application', 'native')):
             sequence = [('open', ('ESC', True, kind == 'application')),
                         ('highlight', ('TAB',)),
                         ('switch' if kind == 'application' else 'next_row',
@@ -197,13 +198,22 @@ class Feedback:
                 else:
                     raise RuntimeError('Repeated heading pixels: '+source+'/'+str(index))
                 values.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                if source == 'pointer':
+                    # A popup can finish before the positioning helper's last
+                    # physical phase. Drain that stimulus before reversing;
+                    # otherwise the next sample overlaps pending mouse travel.
+                    s.rendezvous('(dw($%x)=%d)&(dw($%x)=%d)' %
+                        (at('DESKINPUT','cursorX'),s.saved['pointer'][0],
+                         at('DESKINPUT','cursorY'),s.saved['pointer'][1]))
                 s.frames(8)
                 require(s.number(folder+F['paints'],4)==before_paint,
                         'Unchanged Files repainted during '+source+' heading switch')
             after_cache=cache_counts()
             transfers={k:after_cache[k]-v for k,v in before_cache.items()}
+            (s.p['output']/('repeated-'+source+'.json')).write_text(json.dumps(
+                dict(samples_ms=values,transfers=transfers),indent=2)+'\n')
             require(transfers.get('restores',0)==self.count,
-                    'Repeated headings did not reuse every background')
+                    'Repeated headings did not reuse every background: '+source+' '+repr(transfers))
             require(transfers.get('captures',0)==0,
                     'Repeated headings recaptured the same background')
             press('ESC'); s.frames(100)
@@ -268,6 +278,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--headings-only', action='store_true', help='Only repeated heading transitions')
     parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
     parser.add_argument('--layout-revision', help='Use recorded native ABI layouts for an older baseline executable')
     args = parser.parse_args()
@@ -285,7 +296,7 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check, args.cold)
+    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),

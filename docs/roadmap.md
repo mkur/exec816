@@ -476,14 +476,13 @@ remains open.
 application repaint completion, shared menu saves, two popup images and two
 75 KiB client snapshots. Small acknowledged changes patch the saved client at
 idle. [Development evidence](history/aes-layers-vram.md) separates working cache
-paths from remaining menu latency gates. Optional copied AES moves remain
-disabled; no bank-zero reservations are added.
+paths from remaining menu latency gates. No bank-zero reservations are added.
 
-The proposed [window moves and Shell backing plan](plans/gem4xe/window-backing-plan.md)
-adds even-X AES geometry, completed-window copies and a dedicated 40 KiB Shell
-bitmap maintained while covered. WB1–WB6 separate geometry, move transactions,
-backing drawing, restoration, scrolling and combined latency/throughput checks.
-The target bank-zero delta remains zero; implementation has not started.
+The [window moves and Shell backing plan](plans/gem4xe/window-backing-plan.md)
+implements even-X AES geometry, completed-window copies and a dedicated 40 KiB
+Shell bitmap maintained while covered, including batched backing scrolls.
+[Development results](history/window-backing.md) separate functional completion
+from remaining latency gates. Bank-zero reservation growth is zero.
 
 [AES widgets](plans/gem4xe/aes-widgets-implementation-plan.md) are implemented
 through AW6 at the development tier. Selected GEM4XE object, drawing and form

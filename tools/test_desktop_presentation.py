@@ -108,7 +108,7 @@ def menu_bar(raster, title=b'Shell'):
     rectangle(raster,(0,15,640,16),1)
 
 
-def scenes(font, accepted=None):
+def scenes(font, accepted=None, full_coverage=False):
     terminal = Terminal(64, 20)
     terminal.feed(b'ABC')
     for stage in range(1, 20):
@@ -144,13 +144,34 @@ def scenes(font, accepted=None):
             frame(raster, (x, y, x+160, y+80), b'Clip', False, 3, close=True)
             text(raster, x+11, y+19, b'XYZ', bg=3)
         if stage in (16, 17, 19):
-            frame(raster, (377, 0, 537, 173), b'Clip', False, 3, close=True)
-            text(raster, 388, 19, b'XYZ', bg=3)
+            x,y,r,b=(80,48,608,232) if full_coverage and stage in (16,17) else (377,0,537,173)
+            frame(raster, (x,y,r,b), b'Clip', False, 3, close=True)
+            text(raster, x+11, y+19, b'XYZ', bg=3)
         menu_bar(raster)
         yield overlay(raster, (320, 120))
 
 
-def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, observe_backing=False):
+def backing_calls(report, out):
+    """Analyze an already completed passive trace; no guest rerun is required."""
+    from sio_transaction_trace import read_events
+    foreign=json.loads((out/'c-image.json').read_text())['symbols']
+    marks={name:foreign[name] for name in (
+        'GemDrawingText','GemDrawingTextClip','GemDrawingBackingText','GemDrawingCopyStart')}
+    entries=[(tick % (1<<32),int(event[4],16)) for tick,event in read_events(out/'emulator.log')
+             if event[0]=='cpu']
+    for row in report['observations']:
+        start,end=row['begin_cycle'],row['end_cycle']
+        row['drawing_calls']={name:sum(pc==address and (tick-start)%(1<<32)<(end-start)%(1<<32)
+            for tick,pc in entries) for name,address in marks.items()}
+        if row['stage'] in (8,9,10,11,12,13,14,15):
+            # Screen text includes caret removal and native content/title work;
+            # it is not a Shell-restoration counter. Idle exposure must not
+            # rebuild any unchanged backing span.
+            require(row['drawing_calls']['GemDrawingBackingText']==0,
+                'Idle exposure rebuilt Shell backing: '+str(row['stage']))
+
+
+def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, observe_backing=False, full_coverage=False):
     out.mkdir(parents=True, exist_ok=True)
     profile = json.loads(PROFILE.read_text())
     profile['image_data_bytes'] = 8192  # Fixture records, separate from the demo's 4 KiB.
@@ -195,7 +216,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
         generate_tasks.policy_modules = original
     require(p['build']['optimize'] == (mode == 'opt'), 'Wrong compiler mode')
     report = dict(status='running', tier='development', qualification=False, slice='DT2',
-                  fragment_fault=fragment_fault,
+                  fragment_fault=fragment_fault, full_coverage=full_coverage,
                   build=p['build'], observations=[], move_transactions=[], bank_zero_delta=bank_zero_delta(p['build']['memory']),
                   reserved_bank_zero_delta=desktop_delta(p['build']['memory']))
     address = lambda name: next(d['address'] for d in p['image']['data'] if '_DESKTEST_'+name+'_' in d['name'])
@@ -227,9 +248,10 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
             report['machine'] = verify_machine(bridge, ROM, PIN)
             def before(b):
                 b.memload(address('FRAGMENTFAULT'),bytes([fragment_fault]))
+                if full_coverage: b.memload(address('FULLCOVERAGE'),b'\x01')
                 if observe_moves or observe_backing: b.profile_start()
                 previous_clock = b.eval_expr('@clk') & 0xffffffff
-                for stage, expected in enumerate(scenes(font_bytes(out/'selected/src/vdi/font8x8.c')), 1):
+                for stage, expected in enumerate(scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),full_coverage=full_coverage), 1):
                     marker = p['labels']['native_nmi']
                     condition = f'dw(${address("CHECKPOINT"):x})={stage}'
                     b.bp_clear_all()
@@ -243,7 +265,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
                         return value
                     b.regs = registers
                     try:
-                        run_to(b, marker, frame_limit=12000, timeout=600 if observe_moves else 120, condition=condition)
+                        run_to(b, marker, frame_limit=12000, timeout=600 if (observe_moves or observe_backing) else 120, condition=condition)
                     except Exception:
                         print('Desktop stage/status/checks', stage, b.peek16(adapter.STATE), data(b,p['image'],'checks',True),original(), flush=True)
                         raise
@@ -254,7 +276,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
                     if expected is None:
                         accepted=data(b,p['image'],'cutBytes',True)[0]
                         require(0<accepted<512,'Missing partial-fragment cancellation')
-                        expected=list(scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted))[-1]
+                        expected=list(scenes(font_bytes(out/'selected/src/vdi/font8x8.c'),accepted,full_coverage=full_coverage))[-1]
                         report['fragment_accepted_prefix']=accepted
                     clock = b.eval_expr('@clk') & 0xffffffff
                     report['observations'].append(dict(stage=stage,
@@ -281,16 +303,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
                     'No bounded multirow repaint behind the overlapping panel')
             report['status'] = 'pass'
         if observe_backing:
-            from sio_transaction_trace import read_events
-            entries=[(tick & 0xffffffff,int(event[4],16)) for tick,event in read_events(out/'emulator.log')
-                     if event[0]=='cpu']
-            for row in report['observations']:
-                start,end=row['begin_cycle'],row['end_cycle']
-                row['drawing_calls']={name:sum(pc==address and ((tick-start)&0xffffffff)<((end-start)&0xffffffff)
-                    for tick,pc in entries) for name,address in backing_marks.items()}
-                if row['stage'] in (8,9,10,11,12,13,14,15):
-                    require(row['drawing_calls']['GemDrawingTextClip']==0,
-                        'Aligned restoration regenerated text: '+str(row['stage']))
+            backing_calls(report,out)
         if observe_moves:
             from sio_transaction_trace import read_events,BASE_HZ
             from console_turn_profile import analyze_events
@@ -314,7 +327,9 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
                             'Overlapping console fragments exceeded 20 ms CPU')
                 if row['stage'] not in (3,8,9,10,11,12,13,14): continue
                 selected = [t for t in launches if align(row['begin_cycle'])<t<align(row['end_cycle'])]
-                require(len(selected)==1, 'Copied move must launch one list: '+str(row['stage']))
+                # A move stage can now submit both window and backing copies.
+                # Attribute the first submission; do not call all stage time DMA.
+                require(selected, 'Copied move did not launch a list: '+str(row['stage']))
                 launch=selected[0]
                 calls=[span for span in profile if span['kind']=='copy' and span['start']<=launch<span['end']]
                 require(len(calls)==1,'Missing copy submission span')
@@ -326,7 +341,7 @@ def run(out, mode, replay=False, observe_moves=False, fragment_fault=False, obse
                     submission=call,setup_to_launch_elapsed_ms=(launch-call['start'])/BASE_HZ*1000,
                     launch_to_irq_idle_observation_ms=(irq-launch)/BASE_HZ*1000,
                     irq_to_owner_poll_ms=(polls[0]['start']-irq)/BASE_HZ*1000,completion_poll=polls[0],
-                    scope='Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement.'))
+                    scope='First copy submission in this move/repair stage. Copy bridge charged CPU includes prepare/upload/launch and return. Launch-to-IRQ includes DMA and IRQ latency, an upper bound rather than exact DMA duration. Owner poll follows recorded IRQ idle acknowledgement.'))
     except Exception as error:
         report.update(status='fail',error=str(error))
         raise
@@ -339,9 +354,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mode', choices=('raw','opt'),default='opt')
     parser.add_argument('--observe-backing', action='store_true')
+    parser.add_argument('--full-coverage', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replay', action='store_true')
     parser.add_argument('--observe-moves', action='store_true')
     parser.add_argument('--fragment-fault', action='store_true')
     args=parser.parse_args()
-    run(args.output.resolve(),args.mode,args.replay,args.observe_moves,args.fragment_fault,args.observe_backing)
+    run(args.output.resolve(),args.mode,args.replay,args.observe_moves,args.fragment_fault,args.observe_backing,args.full_coverage)

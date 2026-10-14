@@ -24,6 +24,12 @@ class Desktop:
         def click(x,y):
             move(x,y);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(25)
             b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(65)
+        def drag_client(work):
+            x,y=[s.number(work+i*2,2) for i in range(2)]
+            move(x+40,y-8);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(12)
+            move(x+24,y-8);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(180)
+            require(s.number(work,2)==x-16 and s.number(work+2,2)==y,
+                    'Copied move did not publish application work geometry')
         def key(name):
             b._cmd_ok('KEY '+name+' down');s.frames(3);b._cmd_ok('KEY '+name+' up');s.frames(80)
         def app(name):
@@ -41,6 +47,7 @@ class Desktop:
         s.rendezvous('dw($%x)=1'%(counter+12));ticks=s.number(counter+14,4)
         menus.select('SYS:');click(296,8);click(304,40);panel=app('panel')['symbols']['GEMPanel']
         s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
+        drag_client(panel+34)
         x,y=[s.number(panel+34+i*2,2) for i in range(2)]
         before=s.number(panel+10,4);click(x+32,y+40)
         require(s.number(panel+10,4)==before+1,'Panel activation lost')
@@ -56,7 +63,7 @@ class Desktop:
         settled();doc=model+T['document'];data=s.number(doc,4);size=s.number(doc+8,4)
         digest=hashlib.sha256(b.memdump(data,size)).hexdigest()
         require(digest==s.manifest['files']['STORY.TXT']['sha256'],'Text differs from packaged document')
-        shot('cache-text');first=s.number(model+T['first'],2)
+        shot('cache-text');drag_client(model+T['work']);shot('cache-text-moved');first=s.number(model+T['first'],2)
         key('SPACE');settled()
         require(s.number(model+T['first'],2)>first,'Text did not scroll')
         shot('cache-text-scrolled')
@@ -72,7 +79,7 @@ class Desktop:
         require(not any(a['name']=='text' for a in instances(b,s.p,directory)),'Text did not retire')
         menus.select('Counter');require(s.number(counter+14,4)>ticks,'Counter stopped during walkthrough')
         menus.close();s.frames(100);menus.select('SYS:');shot('cache-clients-closed')
-        self.results=dict(files=True,panel_pointer=True,panel_keyboard=True,text_sha256=digest,
+        self.results=dict(files=True,panel_pointer=True,panel_keyboard=True,panel_moved_hit_test=True,text_moved=True,text_sha256=digest,
             text_scroll=True,selector_cancel=True,counter_progress=True,close_restore=True)
         menus.select('Shell');s.command('HELLO',b'Hello from disk!')
         s.save_screen(s.p['output']/'boot-smoke.png')

@@ -5,11 +5,10 @@
 [Layers](../../reference/layers.md) ·
 [AES](../../reference/aes.md) · [Display](../../reference/display.md)
 
-Status: AV1–AV6 core implemented at the development tier, 2026-10-13; optional
-copied AES moves remain disabled and latency acceptance remains open. The
-2026-10-14 extensions below, aligned AES moves and a persistent Shell backing
-bitmap, are proposed, not implemented. See the
-[execution record](../../history/aes-layers-vram.md) for measured results.
+Status: AV1–AV6 core and WB1–WB6 extensions implemented at the development tier,
+2026-10-14. Aligned AES moves and persistent Shell backing are enabled; numeric
+latency acceptance remains separate. See the [AV execution record](../../history/aes-layers-vram.md)
+and [window backing results](../../history/window-backing.md).
 The design joins AES repaint tracking and Layers pixel reuse: menu backgrounds,
 popup images and completed client snapshots, using ordinary GEM calls,
 caller-local drawing and the existing presenter Task.
@@ -347,11 +346,11 @@ larger console requires an explicit budget change. Continuous console output
 now incurs backing-to-screen copies, so scrolling throughput and concurrent
 input latency are acceptance measurements, not assumed improvements.
 
-## Proposed VRAM budget
+## VRAM budget
 
 All addresses below are VBXE-private byte addresses, unrelated to CPU banks.
-The production map already reserves the AV1–AV6 surfaces. Only the Shell range
-below is new and proposed; this documentation update does not reserve it.
+The production map reserves the AV1–AV6 surfaces and the Shell range added by
+WB3. The latter does not reduce the shared AES snapshot capacity.
 
 | Use | Inclusive range | Reserved bytes |
 | --- | --- | ---: |
@@ -361,7 +360,7 @@ below is new and proposed; this documentation update does not reserve it.
 | Popup image 0 | `$27000–$2AFFF` | 16,384 |
 | Popup image 1 | `$2B000–$2EFFF` | 16,384 |
 | Existing XDL, fonts, glyph scratch, cursor and BCB | Existing mapped ranges | 30,208 |
-| Proposed Shell text backing | `$41000–$4AFFF` | 40,960 |
+| Shell text backing | `$41000–$4AFFF` | 40,960 |
 | Client image 0 | `$50000–$62BFF` | 76,800 |
 | Client image 1 | `$62C00–$757FF` | 76,800 |
 | **Proposed total production reservation** | | **416,256** |
