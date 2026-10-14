@@ -25,7 +25,7 @@ SIODevice control_probe: {
     } },
     { id: $02, script: function {
       $sio.ack(); $sio.recv_frame($aux); echo.copy(0, $sio_frame, 0, $aux);
-      $sio.ack(); $sio.complete();
+      $sio.complete();
     } },
     { id: $03, script: function {
       $sio.ack(); $sio.complete(); $sio.send_frame(echo, 0, $aux);

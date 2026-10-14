@@ -1,0 +1,157 @@
+MODULE FUJISIOTEST
+USE EXEC
+USE EXECTASKS
+USE SIODRIVER
+USE HEAPCORE
+
+CARD checks,progress
+LONGCARD clockAddress
+BYTE completed,stop
+CARD ARRAY lengths(5)=[140,255,256,304,512]
+BYTE POINTER bytes=[$dffe0]
+INCLUDE "io-names.inc"
+
+; Retain the failing assertion index without changing driver error policy.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($f000+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Independent runnable work continues while a slow peripheral owns the bus.
+PROC Peer()
+
+  WHILE stop=0 DO
+    progress==+1
+    EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+
+; Fill a raw transaction, retaining the far buffer through exact collection.
+PROC Prepare(EXEC.IOSIOReq POINTER request CARD command,length,direction)
+
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Length=LONGCARD(length)
+  request.io_Data=bytes
+  request.sio_Command=BYTE(command)
+  request.sio_Aux1=BYTE(length)
+  request.sio_Aux2=BYTE(length RSH 8)
+  request.sio_Direction=BYTE(direction)
+  request.sio_Profile=EXEC.SIO_PROFILE_STANDARD19200
+  request.sio_TimeoutUS=0
+
+RETURN
+
+PROC Main()
+  CARD index,offset
+
+  LET baseline=EXEC.AvailMem(0)
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  LET other=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(port,52))
+  Require(request<>NULL AND other<>NULL)
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(request),
+      EXEC.SIO_OPEN_EXCLUSIVE)=0)
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(other),0)
+      =EXEC.IOERR_UNITBUSY)
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(other),
+      EXEC.SIO_OPEN_EXCLUSIVE)=EXEC.IOERR_UNITBUSY)
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(other),0)=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(other))
+
+  FOR index=0 TO 4 DO
+    Prepare(request,1,lengths(index),EXEC.SIODIR_READ)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(request.io_Actual=LONGCARD(lengths(index)))
+    FOR offset=0 TO lengths(index)-1 DO
+      Require(bytes(offset)=BYTE(offset*37+11))
+    OD
+
+    FOR offset=0 TO lengths(index)-1 DO
+      bytes(offset)=BYTE(offset*17+3)
+    OD
+
+    Prepare(request,2,lengths(index),EXEC.SIODIR_WRITE)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    Require(request.io_Actual=LONGCARD(lengths(index)))
+    Prepare(request,3,lengths(index),EXEC.SIODIR_READ)
+    Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+    FOR offset=0 TO lengths(index)-1 DO
+      Require(bytes(offset)=BYTE(offset*17+3))
+    OD
+  OD
+
+  Prepare(request,1,513,EXEC.SIODIR_READ)
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_BADLENGTH)
+  Require(request.io_Actual=0)
+  request.io_Length=128
+  request.sio_TimeoutUS=15000001
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_BADLENGTH)
+  request.sio_TimeoutUS=4040
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_BADLENGTH)
+  request.sio_TimeoutUS=0
+  request.sio_Profile=EXEC.SIO_PROFILE_STOCK810
+  request.io_Length=256
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.IOERR_BADLENGTH)
+  request.sio_Profile=6
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.SIOERR_BADPROFILE)
+
+  Require(SIODRIVER.DeadlineTicks(0,5)=3712)
+  Require(SIODRIVER.DeadlineTicks(4041,5)=1)
+  Require(SIODRIVER.DeadlineTicks(4042,5)=2)
+  Require(SIODRIVER.DeadlineTicks(65536,5)=17)
+  Require(SIODRIVER.DeadlineTicks(2000001,5)=495)
+  Require(SIODRIVER.DeadlineTicks(15000000,5)=3712)
+  Require(SIODRIVER.DeadlineTicks(0,2)=495)
+  Require(SIODRIVER.DeadlineTicks(0,4)=495)
+  Require(SIODRIVER.DeadlineTicks(0,1)=248)
+
+  LET peer=EXEC.CreateTask(c"wire-peer",0,@Peer,1024)
+  Require(peer<>NULL)
+  LET clock=CARD POINTER(ADDRESS(clockAddress))
+  clock^=$fff0
+  Prepare(request,4,0,EXEC.SIODIR_NONE)
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+  Require(progress>10)
+  stop=1
+  EXECTASKS.Sleep(2)
+
+  Prepare(request,5,0,EXEC.SIODIR_NONE)
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=EXEC.SIOERR_DEVICE)
+  Prepare(request,1,1,EXEC.SIODIR_READ)
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(request))=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(request),0)=0)
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(other),0)=0)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(other))
+  Require(EXEC.OpenDevice(sioName,$70,EXEC.IORequest POINTER(other),
+      EXEC.SIO_OPEN_EXCLUSIVE)=EXEC.IOERR_UNITBUSY)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),0)=0)
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(other),
+      EXEC.SIO_OPEN_EXCLUSIVE)=EXEC.IOERR_UNITBUSY)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(request),
+      EXEC.SIO_OPEN_EXCLUSIVE)=0)
+  Require(EXEC.OpenDevice(sioName,49,EXEC.IORequest POINTER(other),0)
+      =EXEC.IOERR_UNITBUSY)
+  EXEC.CloseDevice(EXEC.IORequest POINTER(request))
+  Require(EXEC.OpenDevice(sioName,57,EXEC.IORequest POINTER(other),0)
+      =EXEC.IOERR_OPENFAIL)
+  Require(EXEC.OpenDevice(sioName,$71,EXEC.IORequest POINTER(other),0)
+      =EXEC.IOERR_OPENFAIL)
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(other))
+  EXEC.DeleteIORequest(EXEC.IORequest POINTER(request))
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=baseline)
+  completed=1
+
+RETURN
+
+ENDMODULE

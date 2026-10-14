@@ -87,7 +87,10 @@ open; copying that binding does not acquire another OpenDevice reference.
 
 ## sio.device
 
-Open `sio.device` with wire device ID `$31`–`$38` as the unit and flags zero.
+Open `sio.device` with wire device ID `$31`–`$38` or control ID `$70` as the unit.
+Flags zero opens a shared binding. `SIO_OPEN_EXCLUSIVE` requires no existing
+unit binding and blocks subsequent shared/exclusive opens until CloseDevice;
+conflicts return `IOERR_UNITBUSY`. Collect all borrowed requests before closing.
 Use the extended record in [sio.json](../../abi/sio.json). `SIOCMD_TRANSACTION`
 selects a wire transaction; its separate `sio_Command` contains the peripheral
 command, for example `$52` for READ. io_Data/io_Length describe the transfer;
@@ -99,6 +102,7 @@ io_Offset must be zero.
 | GENERIC57600 | Up to 128 bytes, plus exactly 256 for READ ($52), PUT ($50) or verified WRITE ($57). |
 | STOCK810 | Up to 128 bytes. |
 | HAPPY1050 | Restricted no-data transactions. |
+| STANDARD19200 | Raw payloads up to 512 bytes on any admitted unit; divisor 40. |
 
 These are explicit peripheral/timing profiles, not automatic baud negotiation.
 Profile selection also bounds timeout and command forms. Disk geometry and the
@@ -115,6 +119,13 @@ nonzero value is 4,041 µs. The two-second allowance includes motor spin-up,
 seek and rotation. A faster serial rate does not remove those delays. This
 changes the bounded request deadline, not byte timing or the offline-on-error
 policy.
+
+STANDARD19200 has a fifteen-second default and maximum active timeout, for
+peripheral control operations that can wait for a network host. Its minimum
+explicit timeout remains 4,041 µs. Frames are complete transactions, not split
+into sectors. Other profiles retain their existing admission and deadlines;
+filesystem mount profiles remain unchanged. Ordinary Tasks can run while the
+bus waits, but other serial transactions queue behind the active request.
 
 One SIO worker owns bus transactions; native IRQ code moves time-sensitive bytes.
 Task-side callbacks use the [resident driver boundary](resident-drivers.md), with

@@ -22,8 +22,25 @@ TYPE DriverBus=[
 
 TYPE DriverUnit=[
   CARD opens
-  BYTE unit
+  BYTE unit,exclusive
 ]
+
+INCLUDE "sio-unit-action.inc"
+
+; Physical unit records are sparse: the worker occupies the end of the disk
+; table, so control units use their separately reserved offset.
+DriverUnit POINTER FUNC FindUnit(LONGCARD number)
+
+  IF number>=SIO_DISK_FIRST AND number<SIO_DISK_FIRST+SIO_DISK_COUNT THEN
+    RETURN(DriverUnit POINTER(ADDRESS(IS_BASE+SIO_DISK_OFFSET)+
+        SIZE(number-SIO_DISK_FIRST)*SIO_UNIT_BYTES))
+  FI
+
+  IF number=SIO_CONTROL_UNIT THEN
+    RETURN(DriverUnit POINTER(ADDRESS(IS_BASE+SIO_CONTROL_OFFSET)))
+  FI
+
+RETURN(NULL)
 
 ; Retain a supported physical unit only while the SIO worker accepts opens.
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
@@ -42,17 +59,26 @@ PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD number EXEC.IORequest
 
   IF bus.state=5 THEN
     error=EXEC.SIOERR_BUSUNAVAILABLE
-  ELSEIF bus.state=2 AND bus.stop=0 AND number>=49 AND number<=56 AND flags=0 THEN
+  ELSEIF bus.state=2 AND bus.stop=0 AND
+      (flags=0 OR flags=EXEC.SIO_OPEN_EXCLUSIVE) THEN
     IF request.io_Message.mn_Length<EXEC.IOSIOREQ_SIZE THEN
       error=BYTE(EXEC.IOERR_BADLENGTH)
     ELSEIF bus.opens<>$ffff THEN
-      unit=DriverUnit POINTER(ADDRESS(IS_BASE+128)+(SIZE(number-49) LSH 2))
-      bus.opens==+1
-      unit.opens==+1
-      unit.unit=BYTE(number)
-      request.io_Device=BYTE POINTER(bus)
-      request.io_Unit=@unit.unit
-      error=0
+      unit=FindUnit(number)
+      IF unit<>NULL THEN
+        IF unit.exclusive<>0 OR
+            (flags=EXEC.SIO_OPEN_EXCLUSIVE AND unit.opens<>0) THEN
+          error=BYTE(EXEC.IOERR_UNITBUSY)
+        ELSE
+          bus.opens==+1
+          unit.opens==+1
+          unit.unit=BYTE(number)
+          unit.exclusive=BYTE(flags)
+          request.io_Device=BYTE POINTER(bus)
+          request.io_Unit=@unit.unit
+          error=0
+        FI
+      FI
     FI
   FI
 
@@ -71,6 +97,10 @@ PUBLIC PROC Close(EXEC.IORequest POINTER request)
   bus=DriverBus POINTER(request.io_Device)
   unit=DriverUnit POINTER(ADDRESS(request.io_Unit)-SIZE(2))
   unit.opens==-1
+  IF unit.opens=0 THEN
+    unit.exclusive=0
+  FI
+
   bus.opens==-1
   request.io_Device=BYTE POINTER(0)
   request.io_Unit=BYTE POINTER(0)

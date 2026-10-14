@@ -28,7 +28,7 @@ CLASSIC = dict(IOF_QUICK=1, **{'CMD_'+name:i for i,name in enumerate(
     ('INVALID','RESET','READ','WRITE','UPDATE','CLEAR','STOP','START','FLUSH','NONSTD'))})
 ERRORS = {'IOERR_'+name:-i for i,name in enumerate(
     ('OPENFAIL','ABORTED','NOCMD','BADLENGTH','BADADDRESS','UNITBUSY','SELFTEST'),1)}
-SIO_CONSTANTS = dict(SIOCMD_TRANSACTION=9,SIODIR_NONE=0,SIODIR_READ=1,SIODIR_WRITE=2,
+SIO_CONSTANTS = dict(SIO_OPEN_EXCLUSIVE=1,SIOCMD_TRANSACTION=9,SIODIR_NONE=0,SIODIR_READ=1,SIODIR_WRITE=2,
     **{'SIOERR_'+name:i for i,name in enumerate(
         ('TIMEOUT','NAK','DEVICE','CHECKSUM','OVERRUN','FRAMING','PROTOCOL','BUSUNAVAILABLE','BADPROFILE'),1)})
 WIDTHS = {'Message':(16,2),'BYTE POINTER':(3,1),'BYTE':(1,1),'CARD':(2,2),'LONGCARD':(4,2)}
@@ -42,10 +42,10 @@ SERIAL = STANDARD+[('sio_Command','BYTE'),('sio_Aux1','BYTE'),('sio_Aux2','BYTE'
 
 def constants(abi=ABI,sio=SIO):
     require(abi['abi']=='exec816.io' and abi['revision']==1,'Unsupported I/O ABI')
-    require(sio['abi']=='exec816.sio' and sio['revision']==1,'Unsupported SIO ABI')
+    require(sio['abi']=='exec816.sio' and sio['revision']==2,'Unsupported SIO ABI')
     require(abi['constants']==CLASSIC and abi['io_errors']==ERRORS,'Invalid classic I/O constants')
     require(sio['constants']==SIO_CONSTANTS,'Invalid SIO constants')
-    require(sio['profiles']=={'FASTEST125':1,'STOCK810':2,'HAPPY1050':3,'GENERIC57600':4},'Unsupported SIO profiles')
+    require(sio['profiles']=={'FASTEST125':1,'STOCK810':2,'HAPPY1050':3,'GENERIC57600':4,'STANDARD19200':5},'Unsupported SIO profiles')
     message=json.loads((ROOT/'abi/ports.json').read_text())['records']['Message']
     require((message['size'],message['alignment'])==WIDTHS['Message'],'Message prefix ABI changed')
     require(set(abi['services'])=={'OPEN_DEVICE','TEST_CLOSE','TEST_BEGIN','WAIT_REQUEST','TEST_ABORT','CREATE_CHECK','DELETE_CHECK','TEST_STEP'},
@@ -66,6 +66,18 @@ def constants(abi=ABI,sio=SIO):
     c['ROUTE_TAG']=dispatch['tag']
     for name,resident in dispatch['residents'].items():
         c['ROUTE_'+name]=dispatch['tag']|resident['id']
+    u = sio['unit_layout']
+    require(u == dict(DISK_FIRST=49, DISK_COUNT=8, DISK_OFFSET=128,
+                     UNIT_BYTES=4, CONTROL_UNIT=112, CONTROL_OFFSET=240),
+            'Unsupported SIO unit layout')
+    task_bytes = json.loads((ROOT/'abi/tasks.json').read_text())['task']['size']
+    ranges = [(64, 128), (u['DISK_OFFSET'], u['DISK_OFFSET'] + u['DISK_COUNT'] * u['UNIT_BYTES']),
+              (160, 160 + task_bytes), (224, 235),
+              (u['CONTROL_OFFSET'], u['CONTROL_OFFSET'] + u['UNIT_BYTES'])]
+    ranges.sort()
+    require(all(lo >= 0 and hi <= 256 for lo, hi in ranges) and
+            all(a[1] <= b[0] for a, b in zip(ranges, ranges[1:])),
+            'SIO unit metadata overlap')
     for group,prefix,low,high in [('services','SERVICE',0,255),('errors','ERROR',0xff00,0xffff)]:
         values=list(abi[group].values())
         require(len(values)==len(set(values)),'Duplicate I/O '+group)
@@ -233,4 +245,6 @@ if __name__=='__main__':
     args=parser.parse_args()
     write(ROOT/'lib/exec/exec-io-types.inc',public_api(),args.check)
     write(ROOT/'c/include/exec/io.h',c_header(),args.check)
+    write(ROOT/'lib/io/sio-unit-action.inc',HEADER+''.join(
+        f'CONST SIO_{key}={value}\n' for key,value in SIO['unit_layout'].items()),args.check)
     if args.output:generate(args.output,args.check)

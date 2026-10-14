@@ -10,6 +10,16 @@ from generate_io import ABI, SIO, RESULTS, constants, generate, public_api, chec
 
 
 class IOPackageTests(unittest.TestCase):
+    def test_raw_profile_and_sparse_unit_metadata(self):
+        c = constants()
+        self.assertEqual((c['SIO_OPEN_EXCLUSIVE'], c['SIO_PROFILE_STANDARD19200']), (1, 5))
+        self.assertEqual(SIO['unit_layout']['CONTROL_OFFSET'], 240)
+        for offset in (160, 224, 253):
+            candidate = copy.deepcopy(SIO)
+            candidate['unit_layout']['CONTROL_OFFSET'] = offset
+            with self.subTest(offset=offset), self.assertRaises(ValueError):
+                constants(sio=candidate)
+
     def test_sizes_prefixes_and_signed_constants(self):
         c=constants()
         self.assertEqual([c[n+'_BYTES'] for n in ('IOREQUEST','IOSTDREQ','IOSIOREQ')],[26,42,52])
