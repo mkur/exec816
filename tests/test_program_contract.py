@@ -86,7 +86,7 @@ class ProgramContract(unittest.TestCase):
         routines=[dict(name='M_PROGRAMPROVIDERS_RESOLVE_A')]
         address=0x38000
         for prefix,providers in [('PROGRAMAPI',generate_program.ABI['providers']),
-                                 ('CSTRING_IMPL',libraries[0]['providers'])]:
+                                 *[(lib['implementation'].replace('.', '_'), lib['providers']) for lib in libraries]]:
             for name,spec in providers.items():
                 args,incoming,result=generate_program.physical(spec)
                 routines.append(dict(name='M_'+prefix+'_'+name.upper()+'_B',signature=spec.get('signature',123),
@@ -95,8 +95,8 @@ class ProgramContract(unittest.TestCase):
         image=dict(routines=routines,segments=[dict(address=0x38000,bytes=[0]*1024,executable=True)])
         labels=dict(stack_overflow=0x3200,stack_overflow_end=0x3210)
         payload,providers=generate_program.provider_manifest(image,labels,True,libraries)
-        self.assertEqual(len(payload),1700)
-        self.assertEqual(len(providers),50)
+        self.assertEqual(len(payload),1807)
+        self.assertEqual(len(providers),53)
         strlen=next(p for p in providers if p['name']=='cstring_strlen_v1')
         body=next(r for r in routines if r['name'].startswith('M_CSTRING_IMPL_STRLEN_'))
         self.assertEqual(strlen['address'],body['address'])
@@ -109,7 +109,7 @@ class ProgramContract(unittest.TestCase):
         bad=copy.deepcopy(image);bad['routines'][-1]['signature']^=1
         with self.assertRaisesRegex(ValueError,'signature mismatch'):
             generate_program.provider_manifest(bad,labels,True,libraries)
-        bad=copy.deepcopy(image);bad['routines'][-1]['arguments'][1]['size']=2
+        bad=copy.deepcopy(image);bad['routines'][-2]['arguments'][1]['size']=2
         with self.assertRaisesRegex(ValueError,'ABI mismatch'):
             generate_program.provider_manifest(bad,labels,True,libraries)
         interface=dict(name='CSTRING.strlen',symbol=1,signature=body['signature'],abi=libraries[0]['abi'],

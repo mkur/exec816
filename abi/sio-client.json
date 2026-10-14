@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "abi": "action65816.native.v2",
+  "revision": 1,
+  "module": "SIO",
+  "implementation": "SIOCLIENT",
+  "constants": {
+    "COMMITTED": 1,
+    "ERROR_NO_MEMORY": 10
+  },
+  "records": {
+    "Session": {
+      "size": 8,
+      "fields": [
+        [
+          "BYTE[8]",
+          "state",
+          0
+        ]
+      ]
+    },
+    "Transaction": {
+      "size": 24,
+      "fields": [
+        [
+          "BYTE",
+          "command",
+          0
+        ],
+        [
+          "BYTE",
+          "aux1",
+          1
+        ],
+        [
+          "BYTE",
+          "aux2",
+          2
+        ],
+        [
+          "BYTE",
+          "direction",
+          3
+        ],
+        [
+          "CARD",
+          "profile",
+          4
+        ],
+        [
+          "CARD",
+          "options",
+          6
+        ],
+        [
+          "LONGCARD",
+          "timeout",
+          8
+        ],
+        [
+          "LONGCARD",
+          "length",
+          12
+        ],
+        [
+          "BYTE POINTER",
+          "data",
+          16
+        ],
+        [
+          "BYTE",
+          "pad",
+          19
+        ],
+        [
+          "LONGCARD",
+          "actual",
+          20
+        ]
+      ]
+    }
+  },
+  "providers": {
+    "Open": {
+      "result": "INT",
+      "arguments": [
+        [
+          "CARD",
+          "unit"
+        ],
+        [
+          "LONGCARD",
+          "flags"
+        ],
+        [
+          "BYTE POINTER",
+          "session"
+        ]
+      ],
+      "symbol": "exec816_sio_open_v1",
+      "signature": 3852455187
+    },
+    "Transfer": {
+      "result": "INT",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "session"
+        ],
+        [
+          "BYTE POINTER",
+          "transaction"
+        ]
+      ],
+      "symbol": "exec816_sio_transfer_v1",
+      "signature": 2871029048
+    },
+    "Close": {
+      "result": "PROC",
+      "arguments": [
+        [
+          "BYTE POINTER",
+          "session"
+        ]
+      ],
+      "symbol": "exec816_sio_close_v1",
+      "signature": 2714051479
+    }
+  }
+}

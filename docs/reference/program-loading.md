@@ -147,11 +147,15 @@ Program ABI version 16 adds `COMMAND.ExamineExact` and the generated
 Examine/ExNext now return cheap directory metadata; consumers must honor the
 [availability flags](dos.md#metadata-availability). The FIB remains 260 bytes,
 with 30 reserved bytes and `fib_InfoFlags` at offset 258. Rebuild commands and
-providers together. Program ABI version 17 adds MountVolume/UnmountVolume and the eight-byte
-SioMountSpec record. The current provider manifest uses 1,700 of 1,728 reserved
-upper-RAM bytes; the pointer-input state moves 64 bytes within existing Task
-arena slack to preserve separation. The C program ABI is also version 17,
-with both wrappers and rebuilt providers. See [user mounts](dos.md#user-sio-mounts).
+providers together. Program ABI version 17 adds MountVolume/UnmountVolume and the
+eight-byte SioMountSpec record. Version 18 publishes the ordinary
+[SIO client library](sio-client.md) for native disk/control clients and loadable
+commands. The provider manifest uses 1,807 of 1,856 reserved upper-RAM bytes;
+the 160-byte pointer-input state moves another 128 bytes within existing Task
+arena slack to preserve separation. Bank-zero reservations are unchanged.
+The C program ABI remains version 17, with the existing mount wrappers.
+See [user mounts](dos.md#user-sio-mounts).
+
 
 `COMMAND.MODE_OLDFILE`, `MODE_NEWFILE` and `MODE_READWRITE` share the DOS
 open-mode definitions in `abi/dos.json`. They are generated compile-time

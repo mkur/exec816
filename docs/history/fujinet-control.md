@@ -39,3 +39,27 @@ runnable Task, clean device errors followed by another successful request,
 shared/exclusive conflicts on control and disk units, reopen, final ownership
 and shutdown restoration. The peer uses Altirra's normal frame/checksum handling;
 its receive primitive already supplies the data ACK.
+
+## FN2 caller-context client and native imports
+
+The SIO library owns ordinary caller-context ports/requests and collects exact
+replies. Both acquisition failures unwind completely; a submitted frame completes
+before a foreground interruption returns. COMMITTED permits the next frame of
+a mutation despite a pending BREAK. SIO-disabled builds retain the interface
+and reject Open without serial access. The current contract is
+[SIO client](../reference/sio-client.md).
+
+Development checks pass: 522 native assertions in each raw/optimized ABI probe,
+a loaded command importing all three functions, an SIO-disabled check, and 114
+optimized lifetime assertions. The latter exhausts real heap allocations at
+both acquisition stages and verifies full restoration, then tests pre-submission
+BREAK, a real interruption during a slow frame and committed completion.
+
+The optimized shared client occupies 2,351 upper code bytes. Its caller-owned
+session/transaction records are 8/24 bytes; port/request allocations use existing
+Exec facilities. The native program ABI advances to 18. Its manifest uses 1,807
+of 1,856 reserved upper bytes (+128 capacity); the 160-byte pointer-input state
+moves 128 bytes within existing slack. Fixed, per-Task and private-idle bank-zero
+reservation changes remain zero, including padding/guards. The larger 4,352-byte
+arena in the loaded/lifetime fixtures is test storage; the demo already reserves
+6,400 bytes. C program ABI 17 remains current for its unchanged interfaces.

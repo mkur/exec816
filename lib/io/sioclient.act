@@ -1,0 +1,119 @@
+; Caller-context helpers own ordinary Exec requests; the driver owns the bus.
+MODULE SIOCLIENT
+USE EXEC
+USE SIO
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE IOCORE
+
+TYPE SessionState=[
+  EXEC.MsgPort POINTER port
+  BYTE pad
+  EXEC.IOSIOReq POINTER request
+  BYTE pad2
+]
+
+; Release an idle session, including partial acquisition after an Open error.
+PUBLIC PROC Close(BYTE POINTER session)
+
+  LET state=SessionState POINTER(session)
+  IF state.request<>NULL THEN
+    IF state.request.io_Device<>NULL THEN
+      EXEC.CloseDevice(EXEC.IORequest POINTER(state.request))
+    FI
+
+    EXEC.DeleteIORequest(EXEC.IORequest POINTER(state.request))
+    state.request=NULL
+  FI
+
+  IF state.port<>NULL THEN
+    EXEC.DeleteMsgPort(state.port)
+    state.port=NULL
+  FI
+
+RETURN
+
+; Establish resources once; ordinary transfers trust the caller's live session.
+PUBLIC INT FUNC Open(CARD unit LONGCARD flags BYTE POINTER session)
+
+  LET state=SessionState POINTER(session)
+  state.port=NULL
+  state.request=NULL
+  state.port=EXEC.CreateMsgPort()
+  IF state.port=NULL THEN
+    RETURN(SIO.ERROR_NO_MEMORY)
+  FI
+
+  state.request=EXEC.IOSIOReq POINTER(EXEC.CreateIORequest(state.port,
+      EXEC.IOSIOREQ_SIZE))
+  IF state.request=NULL THEN
+    Close(session)
+    RETURN(SIO.ERROR_NO_MEMORY)
+  FI
+
+  LET error=EXEC.OpenDevice(BYTE POINTER(c"sio.device"),LONGCARD(unit),
+      EXEC.IORequest POINTER(state.request),flags)
+  IF error<>0 THEN
+    Close(session)
+  FI
+
+RETURN(error)
+
+; Collect a submitted frame even after BREAK. Peripheral mutation cannot be
+; rolled back by resetting its active serial exchange.
+PUBLIC INT FUNC Transfer(BYTE POINTER session,transaction)
+  LONGCARD mask,bits,result
+
+  LET state=SessionState POINTER(session)
+  LET transfer=SIO.Transaction POINTER(transaction)
+  transfer.actual=0
+  IF transfer.options>SIO.COMMITTED THEN
+    RETURN(EXEC.IOERR_BADLENGTH)
+  FI
+
+  LET scope=DOSBREAK.Current()
+  IF transfer.options=0 AND scope<>NULL THEN
+    IF scope.pending<>0 THEN
+      RETURN(EXEC.IOERR_ABORTED)
+    FI
+  FI
+
+  LET request=state.request
+  request.io_Command=EXEC.SIOCMD_TRANSACTION
+  request.io_Length=transfer.length
+  request.io_Data=transfer.data
+  request.io_Offset=0
+  request.sio_Command=transfer.command
+  request.sio_Aux1=transfer.aux1
+  request.sio_Aux2=transfer.aux2
+  request.sio_Direction=transfer.direction
+  request.sio_Profile=transfer.profile
+  request.sio_TimeoutUS=transfer.timeout
+  mask=LONGCARD(1) LSH state.port.mp_SigBit
+  IF scope<>NULL THEN
+    IF scope.pending=0 THEN
+      mask=mask OR scope.mask
+    FI
+  FI
+
+  EXEC.SendIO(EXEC.IORequest POINTER(request))
+  DO
+    result=IOCORE.Collect(EXEC.IORequest POINTER(request))
+    IF (result & LONGCARD($10000))=0 THEN
+      EXIT
+    FI
+
+    IF scope<>NULL THEN
+      IF scope.pending<>0 THEN
+        mask=LONGCARD(1) LSH state.port.mp_SigBit
+      FI
+    FI
+
+    bits=EXEC.Wait(mask)
+  OD
+
+  transfer.actual=request.io_Actual
+
+RETURN(INT(CARD(result)))
+
+ENDMODULE

@@ -113,7 +113,7 @@ def kernel_constants():
 
 
 def library_contracts(compiler_directory):
-    """An explicit allowlist of compiler-owned resident libraries."""
+    """Explicit compiler-owned and repository-owned resident library contracts."""
     path = Path(compiler_directory)/'embedded/modules/cstring/contract.json'
     contract = json.loads(path.read_text())
     if (contract['schema_version'] != 1 or contract['abi'] != ABI['native_abi'] or
@@ -122,7 +122,15 @@ def library_contracts(compiler_directory):
     for name, spec in contract['providers'].items():
         if spec['symbol'] != 'cstring_'+name+'_v1' or not 0 <= spec['signature'] < 1 << 32:
             raise ValueError('Invalid CSTRING provider contract: '+name)
-    return [contract]
+    client = json.loads((ROOT/'abi/sio-client.json').read_text())
+    if (client['schema_version'] != 1 or client['abi'] != ABI['native_abi'] or
+            client['module'] != 'SIO' or client['implementation'] != 'SIOCLIENT' or
+            set(client['providers']) != {'Open', 'Transfer', 'Close'}):
+        raise ValueError('Unsupported SIO client contract')
+    for name, spec in client['providers'].items():
+        if spec['symbol'] != 'exec816_sio_'+name.lower()+'_v1' or not 0 <= spec['signature'] < 1 << 32:
+            raise ValueError('Invalid SIO client provider contract: '+name)
+    return [contract, client]
 
 
 def command_import(interface, libraries):

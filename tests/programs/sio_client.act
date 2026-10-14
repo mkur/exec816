@@ -1,0 +1,57 @@
+MODULE SIOCLIENTTEST
+USE EXEC
+USE SIO
+USE SIOCLIENT
+USE HEAPCORE
+
+SIO.Session session
+SIO.Transaction transaction
+BYTE ARRAY payload(512)
+CARD checks
+BYTE completed
+
+; ABI sizes and returned signed errors are part of the reusable client contract.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  Require(SIZEOF(session)=8 AND SIZEOF(transaction)=24)
+  Require(ADDRESS(@transaction.actual)-ADDRESS(@transaction)=20)
+  LET baseline=EXEC.AvailMem(0)
+  Require(SIOCLIENT.Open($71,0,BYTE POINTER(@session))=EXEC.IOERR_OPENFAIL)
+  Require(EXEC.AvailMem(0)=baseline)
+  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+  transaction.command=1
+  transaction.aux1=0
+  transaction.aux2=2
+  transaction.direction=1
+  transaction.profile=5
+  transaction.length=512
+  transaction.data=payload
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+      BYTE POINTER(@transaction))=0)
+  Require(transaction.actual=512)
+  FOR index=0 TO 511 DO
+    Require(payload(index)=BYTE(index*37+11))
+  OD
+
+  transaction.options=2
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),
+      BYTE POINTER(@transaction))=EXEC.IOERR_BADLENGTH)
+  Require(transaction.actual=0)
+  SIOCLIENT.Close(BYTE POINTER(@session))
+  Require(EXEC.AvailMem(0)=baseline)
+  completed=1
+
+RETURN
+
+ENDMODULE

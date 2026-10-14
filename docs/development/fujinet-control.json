@@ -1397,6 +1397,61 @@
       },
       "sio_upper_code_bytes": 15009,
       "metadata_reserved_bytes": 256
+    },
+    "FN2": {
+      "status": "pass",
+      "cases": [
+        {
+          "name": "fn2-native",
+          "status": "pass",
+          "assertions": 522,
+          "mode": "opt",
+          "xex_sha256": "035225933f2ffeedb07e0403d0323353778ef61888c84f7fa964857d6759ae91",
+          "guards": "intact"
+        },
+        {
+          "name": "fn2-raw",
+          "status": "pass",
+          "assertions": 522,
+          "mode": "raw",
+          "xex_sha256": "e122b394d4e42912eb3a3cc01e0612924b6b0180c3a58b38d583340c2fbe9ef6",
+          "guards": "intact"
+        },
+        {
+          "name": "fn2-loaded",
+          "status": "pass",
+          "assertions": null,
+          "mode": "opt",
+          "xex_sha256": "8b39ddac3adf982f638f67f62f37df62b88e8cec22deaad1691da4e545f3137c",
+          "guards": "intact"
+        },
+        {
+          "name": "fn2-no-sio",
+          "status": "pass",
+          "assertions": null,
+          "mode": "opt",
+          "xex_sha256": "18792c5a9f6a6a53a50318647352330bcc207e2c505c74697fab2ebb74cf0dbb",
+          "guards": "intact"
+        },
+        {
+          "name": "fn2-lifetime",
+          "status": "pass",
+          "assertions": 114,
+          "mode": "opt",
+          "xex_sha256": "7d06647b37fa0dbb25d56570777aa197b4f77167e69ec19628811615b7b9075b",
+          "guards": "intact"
+        }
+      ],
+      "provider_manifest_bytes": 1807,
+      "provider_reserved_bytes": 1856,
+      "client_upper_code_bytes": 2351,
+      "session_bytes": 8,
+      "transaction_bytes": 24,
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_task": 0,
+        "idle": 0
+      }
     }
   }
 }

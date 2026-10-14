@@ -1,0 +1,130 @@
+MODULE SIOCLIENTLIFETIME
+USE EXEC
+USE EXECTASKS
+USE SIO
+USE SIOCLIENT
+USE DOS
+USE DOSBREAK
+USE DOSBREAKTYPES
+USE CONSOLEFOREGROUND
+USE FSBOOT
+USE HEAPCORE
+
+SIO.Session session
+SIO.Transaction transaction
+ADDRESS ARRAY held(64)
+LONGCARD ARRAY sizes(64)
+CARD checks
+BYTE completed,peerDone
+BYTE stage,same1,same2,same3
+INT oom1,oom2
+LONGCARD free1,free2
+LONGCARD expectedFree,restoredFree
+LONGCARD localAfter
+DOSBREAKTYPES.Scope POINTER activeScope
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+
+  checks==+1
+
+RETURN
+
+; Publish a real foreground interruption while the serial request is active.
+PROC Peer()
+
+  EXECTASKS.Sleep(2)
+  CONSOLEFOREGROUND.Notify(activeScope)
+  peerDone=1
+
+RETURN
+
+; Exhaust allocation without changing heap internals; leave one small block
+; for the second acquisition stage, then restore every owned allocation.
+PROC AllocationFailure()
+  CARD count,index
+  LONGCARD largest
+
+  LET baseline=EXEC.AvailMem(0)
+  expectedFree=baseline
+  LET small=EXEC.AllocMem(32,EXEC.MEMF_UPPER)
+  Require(small<>NULL)
+  count=0
+  DO
+    largest=EXEC.AvailMem(EXEC.MEMF_LARGEST OR EXEC.MEMF_UPPER)
+    IF largest=0 THEN
+      EXIT
+    FI
+
+    Require(count<64)
+    held(count)=ADDRESS(EXEC.AllocMem(largest,EXEC.MEMF_UPPER))
+    Require(held(count)<>0)
+    sizes(count)=largest
+    count==+1
+  OD
+
+  free1=EXEC.AvailMem(0)
+  stage=1
+  oom1=SIOCLIENT.Open($70,1,BYTE POINTER(@session))
+  same1=oom1=SIO.ERROR_NO_MEMORY
+  Require(same1)
+  EXEC.FreeMem(small,32)
+  free2=EXEC.AvailMem(0)
+  stage=2
+  oom2=SIOCLIENT.Open($70,1,BYTE POINTER(@session))
+  same2=oom2=SIO.ERROR_NO_MEMORY
+  Require(same2)
+  stage=3
+  index=0
+  WHILE index<count DO
+    EXEC.FreeMem(BYTE POINTER(held(index)),sizes(index))
+    index==+1
+  OD
+
+  stage=4
+  localAfter=baseline
+  restoredFree=EXEC.AvailMem(0)
+  same3=restoredFree=baseline
+  Require(same3)
+
+RETURN
+
+PROC Main()
+
+  LET baseline=EXEC.AvailMem(0)
+  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+  SIOCLIENT.Close(BYTE POINTER(@session))
+  AllocationFailure()
+  LET console=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(console<>NULL)
+  Require(DOS.BeginForeground(console)<>0)
+  activeScope=DOSBREAK.Current()
+  Require(activeScope<>NULL)
+  Require(SIOCLIENT.Open($70,1,BYTE POINTER(@session))=0)
+  transaction.command=4
+  transaction.direction=0
+  transaction.profile=5
+  CONSOLEFOREGROUND.Notify(activeScope)
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),BYTE POINTER(@transaction))
+      =EXEC.IOERR_ABORTED)
+  Require(transaction.actual=0)
+  DOS.ClearBreak()
+  LET peer=EXEC.CreateTask(c"break-peer",0,@Peer,1024)
+  Require(peer<>NULL)
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),BYTE POINTER(@transaction))=0)
+  Require(peerDone<>0 AND DOS.BreakPending()<>0)
+  transaction.options=SIO.COMMITTED
+  Require(SIOCLIENT.Transfer(BYTE POINTER(@session),BYTE POINTER(@transaction))=0)
+  SIOCLIENT.Close(BYTE POINTER(@session))
+  DOS.ClearBreak()
+  Require(DOS.EndForeground()<>0 AND DOS.Close(console)<>0)
+  Require(DOS.ReleaseContext()<>0 AND FSBOOT.Stop()<>0)
+  Require(EXEC.AvailMem(0)=baseline)
+  completed=1
+
+RETURN
+
+ENDMODULE
