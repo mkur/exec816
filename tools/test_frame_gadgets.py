@@ -6,10 +6,31 @@ from pathlib import Path
 from build_bitmap_console import drawing
 from library_paths import read_source
 from native_program import ROOT, build, compiler, require, verify_machine
-from os_boundary import emulator
+from os_boundary import emulator, run_to
 from test_dos_stack import execute, ownership
 from test_mouse_observe import PIN, BRIDGE, ROM
 from stack_budget import stack_usage
+from gem_render_oracle import Raster, font_bytes, DESKTOP_PALETTE
+from test_desktop_presentation import frame, tile, rectangle
+from test_gem_interactive import pixels
+import adapter_state as adapter_state
+
+
+def expected(font,number):
+    r=Raster(font);rectangle(r,(0,0,640,240),3)
+    picture=Raster(font)
+    left=21 if number==2 else 20
+    if number==5:
+        tile(picture,(20,20,108,31),b'SYS:')
+        bounds=(20,20,108,31)
+    else:
+        frame(picture,(left,20,left+200,200),b'Shell' if number==4 else b'SYS:',
+              number!=2,close=number!=4,kind=4)
+        bounds=(left,20,left+200,31) if number!=3 else (27,21,210,31)
+    l,t,right,bottom=bounds
+    for y in range(t,bottom):
+        r.pixels[y*640+l:y*640+right]=picture.pixels[y*640+l:y*640+right]
+    return r.packed()
 
 
 def run(out):
@@ -57,7 +78,25 @@ UWORD FrameAtlasMemory(UWORD initialize)
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
-            report['runtime'],_=execute(b,p,timeout=120,frame_limit=4000)
+            def before(b):
+                report['pixels']=[]
+                font=font_bytes(out/'selected/src/vdi/font8x8.c')
+                for number in range(1,6):
+                    condition=f'dw(${sy["checkpoint"]:x})={number}'
+                    marker=p['labels']['native_nmi']
+                    b.bp_clear_all();b.bp_set(marker,condition=condition)
+                    b.bp_set(p['labels']['done'],condition=adapter_state.STOPPED)
+                    run_to(b,marker,condition=condition,timeout=60,frame_limit=3000)
+                    require(not b.peek16(sy['failures']),f'Frame {number}: check {b.peek16(sy["firstFailure"])} status {b.peek16(sy["frameStatus"])}')
+                    # Let scanout finish a frame after the synchronous drawing.
+                    condition=f'@frame>={b.eval_expr("@frame")+2}'
+                    b.bp_clear_all();b.bp_set(marker,condition=condition)
+                    run_to(b,marker,condition=condition,timeout=10,frame_limit=10)
+                    folder=out/f'pixels-{number}';folder.mkdir(exist_ok=True)
+                    report['pixels'].append(pixels(b,folder,expected(font,number),palette=DESKTOP_PALETTE))
+                    b.poke16(sy['gate'],number)
+                b.bp_clear_all()
+            report['runtime'],_=execute(b,p,before_run=before,timeout=120,frame_limit=4000)
             ownership(b,p,p['output'])
             require(b.peek16(sy['finished'])==1 and not b.peek16(sy['failures']),'Atlas assertion failed')
             report['checks']=b.peek16(sy['checks'])

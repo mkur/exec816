@@ -52,6 +52,11 @@ void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* Flat GEM pattern 2: black dots at odd window-relative X/Y, on white. */
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
                      UWORD originX,UWORD originY);
+enum { GEM_GADGET_CLOSE,GEM_GADGET_FULL,GEM_GADGET_ICONIFY,GEM_GADGET_TILE,
+       GEM_GADGET_UP,GEM_GADGET_DOWN,GEM_GADGET_SIZE };
+/* Fixed opaque interior image. Caller owns the current frame batch/clip. */
+void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
+                    UWORD right,UWORD bottom);
 /* One admitted synchronous unit, at most 32 rows. The callback is linked
  * renderer code, never a borrowed application function pointer. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,

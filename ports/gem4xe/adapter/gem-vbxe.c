@@ -217,6 +217,42 @@ void blit_or(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 void blit_xor(uint32_t d,uint16_t s,uint16_t b,uint16_t r,uint8_t v)
 { blit_mask(0,0,d,s,b,r,0,v,5); }
 
+/* Clip once, then append to the admitted frame list. Compact sides retain
+ * their own pitch; screen-address redirection alone cannot address them. */
+void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
+                    UWORD right,UWORD bottom)
+{
+    const struct GemFrameImage *g=&GemFrameImages[image];
+    WORD l=x,t=y,r=x+g->width,b=y+g->height;
+    UWORD lo,hi,rows,pitch=stripRedirect ? stripPitch:320;
+    ULONG source,destination;
+    if (l<(WORD)left) l=left;
+    if (t<(WORD)top) t=top;
+    if (r>(WORD)right) r=right;
+    if (b>(WORD)bottom) b=bottom;
+    if (l>=r || t>=b) return;
+    source=GEM_FRAME_GADGET_BASE+g->offset+((x&1) ? GEM_FRAME_GADGET_PHASE:0)
+        +((UWORD)(t-y)<<4)+((UWORD)(l-(x&~1))>>1);
+    lo=(UWORD)l>>1;hi=(UWORD)r>>1;rows=b-t;
+    if (stripRedirect && stripCompact)
+        destination=WIDGET_STRIP_BASE+((t-stripTop)<<stripCompact)+lo-(stripLeft>>1);
+    else {
+        destination=GemScreenRows[t]+lo;
+        if (stripRedirect) destination+=stripOffset;
+    }
+    if (l&1) {
+        blit_and(destination,pitch,1,rows,0xf0);
+        blit_mask(source,16,destination,pitch,1,rows,0x0f,0,3);
+        ++lo;++source;++destination;
+    }
+    if (hi>lo) blit_mask(source,16,destination,pitch,hi-lo,rows,255,0,0);
+    if (r&1) {
+        source+=hi-lo;destination+=hi-lo;
+        blit_and(destination,pitch,1,rows,0x0f);
+        blit_mask(source,16,destination,pitch,1,rows,0xf0,0,3);
+    }
+}
+
 UWORD GemSolidRows(UWORD left,UWORD right)
 {
     UWORD bytes=(right>>1)-((left+1)>>1);

@@ -60,3 +60,22 @@ unused by the images. Totals are 420,352 reserved and 103,936 unassigned VRAM
 bytes. Its immutable source pixels occupy 2,688 bytes in the existing upper
 table bank. Reserved bank-zero delta is **0 fixed, 0 per public Task, 0 idle**,
 including guards, alignment and unused capacity. No CPU staging buffer is added.
+
+## GAT2 Title gadget copies
+
+Close, full-size, iconify and iconified-tile marks now append atlas records to
+the existing frame batch. The helper clips once, selects the original X phase
+and maps either ordinary or compact scratch coordinates. Aligned opaque images
+use one copy; partial packed bytes retain their neighboring pixels. No separate
+admission, upload or fence is added per gadget.
+
+The optimized atlas fixture passes 20 assertions and five independent full-screen
+pixel comparisons: active and inactive titles, odd X, clipped marks, Shell's
+title and an iconified tile (`build/window-menu-response/gat2/results.json`).
+The fixture supplies explicit clip coordinates; an initial Calypsi 5.18 local
+struct-expression build produced incorrect stack loads for derived clip bounds.
+No production renderer change was made to accommodate that fixture issue.
+
+The seven descriptors add 42 bytes of immutable upper-image data. Reserved
+bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including guards/padding/
+capacity. GAT2 uses GAT1's VRAM page without further reservations.

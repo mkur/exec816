@@ -31,17 +31,10 @@ static void text(WORD x,WORD y,UWORD count,UWORD pen)
                   paint->clipRight,paint->clipBottom);
 }
 
-/* Ten-pixel GEM marks leave breathing room inside the sixteen-pixel cells. */
-static void title_mark(WORD x,WORD y,UWORD full)
+static void gadget(UWORD image,WORD x,WORD y)
 {
-    WORD row,offset;
-    for (row=0;row<7;++row) {
-        offset=row<4 ? row:6-row;
-        if (offset>1) ++offset;
-        if (full) offset=4-offset;
-        fill(x+offset,y+row,x+offset+2,y+row+1,1);
-        fill(x+8-offset,y+row,x+10-offset,y+row+1,1);
-    }
+    GemFrameGadget(image,x,y,paint->clipLeft,paint->clipTop,
+                   paint->clipRight,paint->clipBottom);
 }
 
 /* Cached thumb coordinates come from the admitted window mutation. Each
@@ -102,8 +95,7 @@ static UWORD fragment(void)
     UWORD first,n;
     if (p->fillY&DESKTOP_FRAME_ICONIFIED) {
         fill(l,t,r,b,0);box(l,t,r,b);
-        box(l+3,t+2,l+17,t+9);
-        fill(l+4,t+3,l+16,t+4,12);
+        gadget(GEM_GADGET_TILE,l+3,t+2);
         for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
         text(l+20,y,n,1);
         p->fillX=0;
@@ -147,19 +139,18 @@ static UWORD fragment(void)
         if (hasIcon) {
             fill(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,
                  iconRight-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            box(iconRight-13,t+2,iconRight-3,t+9);
-            fill(iconRight-7,t+6,iconRight-4,t+8,1);
+            gadget(GEM_GADGET_ICONIFY,iconRight-13,t+2);
         }
         if (p->fillY&DESKTOP_FRAME_FULLER) {
             fill(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,
                  r-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            title_mark(r-13,t+2,1);
+            gadget(GEM_GADGET_FULL,r-13,t+2);
         }
         if (p->background) {
             /* At minimum width, the fuller already supplies this divider. */
             if (nameLeft<iconRight)
                 fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
-            title_mark(l+DESKTOP_CLOSE_TEXT_X,t+2,0);
+            gadget(GEM_GADGET_CLOSE,l+DESKTOP_CLOSE_TEXT_X,t+2);
         }
     }
     }
