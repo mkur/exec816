@@ -70,7 +70,7 @@
   window decoration and a persistent focused-window menu caption.
 
 - [Sixteen-colour GEM icons](colour-icons.md): standard CICON resources,
-  prepared VBXE pixels and the desktop disk artwork.
+  prepared VBXE pixels, the desktop disk artwork and Files' VRAM icon cache.
 
 - [Desktop selection and batch operations](desktop-selection-batch.md):
   implementation progress, focused checks and memory accounting.

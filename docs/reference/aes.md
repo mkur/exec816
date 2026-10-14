@@ -650,8 +650,12 @@ In either case the label and optional character exchange foreground/background
 pens. This follows GEM4XE's label-only fallback rather than synthesizing a
 darkened selected image. File extents are checked during load; drawing trusts
 the caller-owned tree and prepared data. Conversion temporarily uses 2 KiB of
-upper RAM, freed before load returns. Painting reuses the existing CPU/VRAM
-scratch and two masked blits, without persistent icon caches.
+upper RAM, freed before load returns. Colour images up to 32 by 24 pixels use
+a shared sixteen-entry VRAM cache containing both packed-pixel X phases. The
+cache stores only the bitmap, so filenames and selection labels stay independent.
+Small source copies detect changed pixels/masks and safely handle reused resource
+addresses; callers need no invalidation API. Cache access uses the existing
+display grant. Larger images and monochrome icons retain the scratch renderer.
 
 G_IMAGE, 3D flags, other resource extensions, colour-depth expansion, custom
 palettes, disabled-icon stippling and indirect specs are unsupported.

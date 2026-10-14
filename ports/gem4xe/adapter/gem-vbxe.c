@@ -33,6 +33,26 @@ static UBYTE commands[VBXE_BCB_BYTES];
 static UBYTE *commandNext;
 static UWORD commandCount;
 static UWORD commandWork;
+/* Small CICONs share pixels across directory entries and windows. Retain a
+ * source copy as well: application bitmaps may change or be freed/reallocated.
+ * A hit compares at most 480 bytes, without retaining ownership of the source.
+ * All cache access is under the existing physical display grant. */
+#define ICON_CACHE_COUNT 16
+#define ICON_CACHE_PITCH 17
+#define ICON_CACHE_ROWS 24
+#define ICON_CACHE_PLANE (ICON_CACHE_PITCH*ICON_CACHE_ROWS)
+struct IconCache {
+    const UWORD *mask;
+    const UBYTE *data;
+    UWORD width,height;
+    UWORD savedMask[48];
+    UBYTE savedData[384];
+};
+static struct IconCache iconCache[ICON_CACHE_COUNT];
+static UWORD iconNext;
+#if DESKTOP_ICON_CACHE_BYTES != ICON_CACHE_COUNT*2048UL
+#error Icon cache reservation does not match its slots
+#endif
 /* The 5120 bytes immediately after the screen hold one 640 x 16 strip.
  * Only widget callbacks redirect drawing, never other owner operations. */
 #define WIDGET_STRIP_BASE 76800UL
@@ -339,6 +359,7 @@ UWORD GemDrawingOpen(WORD *out)
     commandWork=0;
     commandNext=commands;
     pointer_reset();
+    memset(iconCache,0,sizeof(iconCache));iconNext=0;
     status=GemVdiOpen(out);
     flush();
     if (!status && !fault)
@@ -918,10 +939,91 @@ void GemIconBitmap(const UWORD *mask,const UWORD *data,UWORD width,
     blit_mask(0x36800UL,bytes,GemScreenRows[top]+(left>>1),320,bytes,rows,255,0,3);
 }
 
+/* Prepare both X phases once. A pair of source pixels produces one mask byte;
+ * shifting that byte with its predecessor also makes the odd-X version.
+ * Unused nibbles remain transparent, including the final odd-X byte. */
+static void icon_cache_build(const UWORD *mask,const UBYTE *data,UWORD width,UWORD height,
+                             UWORD slot)
+{
+    UWORD row,col,at=0,words=0,pixel=0,mi=0,bit=0,a,o,previousA,previousO;
+    UWORD bytes=width>>1;
+    flush();
+    if (fault) return;
+    memset(page,255,ICON_CACHE_PLANE);
+    memset(page+ICON_CACHE_PLANE,0,ICON_CACHE_PLANE);
+    memset(page+2*ICON_CACHE_PLANE,255,ICON_CACHE_PLANE);
+    memset(page+3*ICON_CACHE_PLANE,0,ICON_CACHE_PLANE);
+    for (row=0;row<height;++row,at+=ICON_CACHE_PITCH) {
+        previousA=255;previousO=0;
+        for (col=0;col<bytes;++col) {
+            if (!(col&7)) { mi=mask[words++];bit=0x8000; }
+            a=(mi&bit ? 0:0xf0)|(mi&(bit>>1) ? 0:0x0f);bit>>=2;
+            o=data[pixel++]&~a;
+            page[at+col]=(UBYTE)a;
+            page[ICON_CACHE_PLANE+at+col]=(UBYTE)o;
+            page[2*ICON_CACHE_PLANE+at+col]=(UBYTE)((previousA<<4)|(a>>4));
+            page[3*ICON_CACHE_PLANE+at+col]=(UBYTE)((previousO<<4)|(o>>4));
+            previousA=a;previousO=o;
+        }
+        page[2*ICON_CACHE_PLANE+at+bytes]=(UBYTE)((previousA<<4)|15);
+        page[3*ICON_CACHE_PLANE+at+bytes]=(UBYTE)(previousO<<4);
+    }
+    latch(VbxeOwnerWrite(&display,DESKTOP_ICON_CACHE_BASE+((ULONG)slot<<11),
+                        page,4*ICON_CACHE_PLANE));
+}
+
+/* Source mask ORs protect clipped edge nibbles, while the matching ink ANDs
+ * suppress those same nibbles. Interior bytes need just the usual two blits. */
+static void icon_cache_blit(UWORD slot,WORD x,WORD y,UWORD left,UWORD top,
+                            UWORD right,UWORD bottom)
+{
+    UWORD lo=left>>1,hi=right>>1,rows=bottom-top;
+    ULONG source=DESKTOP_ICON_CACHE_BASE+((ULONG)slot<<11)
+        +((x&1) ? 2*ICON_CACHE_PLANE:0)
+        +(top-y)*ICON_CACHE_PITCH+((left-(x&~1))>>1);
+    ULONG dest=GemScreenRows[top]+lo;
+    if (left&1) {
+        blit_mask(source,ICON_CACHE_PITCH,dest,320,1,rows,0x0f,0xf0,4);
+        blit_mask(source+ICON_CACHE_PLANE,ICON_CACHE_PITCH,dest,320,1,rows,0x0f,0,3);
+        ++source;++dest;++lo;
+    }
+    if (hi>lo) {
+        blit_mask(source,ICON_CACHE_PITCH,dest,320,hi-lo,rows,255,0,4);
+        blit_mask(source+ICON_CACHE_PLANE,ICON_CACHE_PITCH,dest,320,hi-lo,rows,255,0,3);
+        source+=hi-lo;dest+=hi-lo;
+    }
+    if ((right&1) && hi>=lo) {
+        blit_mask(source,ICON_CACHE_PITCH,dest,320,1,rows,0xf0,0x0f,4);
+        blit_mask(source+ICON_CACHE_PLANE,ICON_CACHE_PITCH,dest,320,1,rows,0xf0,0,3);
+    }
+}
+
+static void colour_icon_cached(const UWORD *mask,const UBYTE *data,UWORD width,UWORD height,
+    WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD i,maskBytes=width==32 ? height<<2:height<<1,dataBytes=maskBytes<<2;
+    struct IconCache *entry;
+    for (i=0,entry=iconCache;i<ICON_CACHE_COUNT;++i,++entry) {
+        if (entry->mask==mask && entry->data==data && entry->width==width && entry->height==height) {
+            if (!memcmp(entry->savedMask,mask,maskBytes) && !memcmp(entry->savedData,data,dataBytes))
+                goto ready;
+            break;
+        }
+    }
+    if (i==ICON_CACHE_COUNT) { i=iconNext;iconNext=(iconNext+1)&(ICON_CACHE_COUNT-1); }
+    entry=&iconCache[i];
+    icon_cache_build(mask,data,width,height,i);
+    if (fault) return;
+    entry->mask=mask;entry->data=data;entry->width=width;entry->height=height;
+    memcpy(entry->savedMask,mask,maskBytes);memcpy(entry->savedData,data,dataBytes);
+ready:
+    icon_cache_blit(i,x,y,left,top,right,bottom);
+}
+
 /* CICON pixels are already in the device format. Only clipping/alignment and
  * the one-bit transparency mask are expanded here; no palette/plane conversion.
  * objc_draw supplies the same bounded strips and display grant as G_ICON. */
-void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
+void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,UWORD height,
     WORD x,WORD y,UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
     UWORD row,px,sx,bit,mi,index,at=0,stride=width>>4;
@@ -929,6 +1031,10 @@ void GemColourIconBitmap(const UWORD *mask,const UBYTE *data,UWORD width,
     UWORD source=(top-y)*stride,pixels=(top-y)*(width>>1);
     /* Keep nibble arithmetic native-width; narrow only at the page stores. */
     UWORD a,o,shift,value;
+    if (width<=32 && height<=ICON_CACHE_ROWS) {
+        colour_icon_cached(mask,data,width,height,x,y,left,top,right,bottom);
+        return;
+    }
     flush();
     if (fault) return;
     for (row=0;row<rows;++row,source+=stride,pixels+=width>>1) {
