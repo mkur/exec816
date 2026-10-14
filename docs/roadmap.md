@@ -295,6 +295,14 @@ separate idle/counter desktop observations. No renderer speedup is claimed.
 
 ## Follow-on capabilities
 
+User SIO mounts are implemented through UM5 at the development tier; see the
+[implementation record](history/user-sio-mounts.md). The
+[FujiNet control plan](plans/fujinet-control-implementation-plan.md) follows with
+a loadable FUJI command for configured hosts, directory browsing and drive-image
+attachment/ejection. It reuses user MOUNT for filesystem admission, adds bounded
+standard-rate control frames and prevents changing a drive while Exec holds it
+open. Network streams and FASTEST125 timing work remain separate.
+
 The [IDE-only demo plan](plans/ide-only-demo-implementation-plan.md) adds a
 separate profile using IDE Plus for both SYS: and writable WORK:, excluding the
 Exec SIO driver. It follows the implemented native IDE driver with system-volume

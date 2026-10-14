@@ -145,6 +145,11 @@ assuming work is pending. Current behavior belongs in the
 
 ## Device I/O and SIO
 
+- [FujiNet control](fujinet-control-implementation-plan.md): planned FN0–FN5
+  slices for bounded raw SIO frames, exclusive unit bindings, a reusable native
+  client and loadable FUJI status/host/disk/directory/attach/eject commands.
+  Image attachment remains separate from user filesystem mounts; zero added
+  bank-zero reservations is the target.
 - [Device I/O and GUI latency](io-latency-implementation-plan.md): caller-local
   CheckIO, timer exit/poll reduction and the original HY4 GUI comparisons,
   implemented in IL1–IL3. API costs fall; the GUI latency gate remains open.
