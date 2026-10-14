@@ -185,6 +185,15 @@ UWORD AESRun(void)
     }
     CHECK(wind_update(END_UPDATE));
     CHECK(wind_open(window,360,48,248,152));wait_redraw();paint();phase(26);
+    CHECK(wind_set_str(window,WF_INFO,"Frame saved"));phase(27);
+    CHECK(wind_set_str(window,WF_INFO,"Frame saved"));phase(28);
+    CHECK(wind_set(window,WF_VSLIDE,250,0,0,0));
+    CHECK(wind_set(window,WF_VSLSIZE,400,0,0,0));phase(29);
+    CHECK(wind_set(window,WF_VSLIDE,250,0,0,0));
+    CHECK(wind_set(window,WF_VSLSIZE,400,0,0,0));phase(30);
+    drain();sibling=wind_create(kind,360,48,248,152);CHECK(sibling>0);
+    CHECK(wind_open(sibling,360,48,248,152));CHECK(wind_close(sibling));
+    CHECK(wind_delete(sibling));phase(31);CHECK(drain()==0);
     CHECK(wind_close(window));CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());
     return AESFailures;

@@ -20,7 +20,7 @@ def physical(b,p,foreign,report):
         run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
     slot=layers_layout()['CacheSlot'];cache=layout()['Service']['fields']['cache']
     previous=None;report['aes_cache']=[]
-    for phase in range(1,27):
+    for phase in range(1,32):
         reach('dw($%x)=%d'%(sy['AESCachePhase'],phase))
         reach('@frame>=%d'%(b.eval_expr('@frame')+100))
         service=get(at('DESKSTATE','service'),3)
@@ -38,7 +38,7 @@ def physical(b,p,foreign,report):
             start=index*slot['size']
             slots.append({name:int.from_bytes(raw[start+offset:start+offset+size],'little')
                           for name,offset,size in [(n,slot['fields'][n],sz) for n,sz in
-                              [('identity',4),('revision',4),('valid',1),('pinned',1)]]})
+                              [('identity',4),('revision',4),('width',2),('height',2),('valid',1),('pinned',1)]]})
         valid=[s for s in slots if s['identity']==identity and s['valid']]
         row=dict(phase=phase,slots=slots,captures=get(at('DESKCACHE','captures')),
                  restores=get(at('DESKCACHE','restores')),
@@ -49,7 +49,16 @@ def physical(b,p,foreign,report):
         if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
         if phase in (17,18,19,21,24,25,26):require(valid,'Missing preserved source at phase '+str(phase))
         if phase in (20,23):require(not valid,'Hidden change/eviction retained preserved source')
-        if phase==19:
+        if valid:
+            require((valid[0]['width'],valid[0]['height'])==((240,144) if phase<8 else (248,152)),
+                    'Snapshot does not use outer geometry')
+        if phase>=27:
+            require(valid,'Frame update did not produce a usable image')
+        if phase in (27,29):
+            require(row['captures']==previous['captures']+1,'Changed frame was not recaptured')
+        if phase in (28,30,31):
+            require(row['captures']==previous['captures'],'Unchanged frame/exposure recaptured pixels')
+        if phase in (19,31):
             require(row['restores']>previous['restores'],'Preserved exposure missed its image')
             require(row['captures']==previous['captures'] and row['patches']==previous['patches'],
                     'Preserved exposure caused cache maintenance')
@@ -76,6 +85,23 @@ def physical(b,p,foreign,report):
                     offset=yy*frame.stride+(xx+16)*4
                     require(pixels[offset:offset+3]==color,'AES cache pixels %d at %d,%d'%(phase,xx,yy))
             row['work_pixels']='exact'
+        if phase in (27,29,31):
+            from gem_render_oracle import Raster, font_bytes, PENS
+            from test_desktop_presentation import frame as draw_frame
+            raster=Raster(font_bytes(out/'selected/src/vdi/font8x8.c'))
+            slider=tuple(int.from_bytes(source[window['fields'][n]:window['fields'][n]+2],'little')
+                         for n in ('sliderTop','sliderHeight'))
+            draw_frame(raster,(360,48,608,200),b'Preserved source',True,3,True,
+                       1|2|8|16|32|64|128|256,slider,b'Frame saved')
+            path=out/('aes-cache-frame-%d.bgra'%phase)
+            raw=b.rawscreen(str(path));pixels=path.read_bytes()
+            for yy in range(48,200):
+                for xx in range(360,608):
+                    pen=PENS.index(raster.pixels[yy*640+xx])
+                    color=bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE[pen*3:pen*3+3])[::-1]
+                    offset=yy*raw.stride+(xx+16)*4
+                    require(pixels[offset:offset+3]==color,'Frame pixels %d at %d,%d'%(phase,xx,yy))
+            row['frame_pixels']='exact'
         if phase==25:
             menu_restores=get(at('DESKMENUCACHE','restores'))
             def frames(n):reach('@frame>=%d'%(b.eval_expr('@frame')+n))

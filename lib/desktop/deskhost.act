@@ -279,7 +279,7 @@ PUBLIC PROC Cache()
           AND window.captureAttempt<>window.visualRevision THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
-          DESKCACHE.ClientBounds(window,layer,@client)
+          REGIONS.Copy(@layer.bounds,@client)
           visible=0
           rect=0
           WHILE rect<layer.visible.count DO

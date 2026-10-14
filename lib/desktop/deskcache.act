@@ -1,4 +1,4 @@
-; Optional compact client pixels. Retained models remain authoritative.
+; Optional compact outer-window pixels. Retained models remain authoritative.
 MODULE DESKCACHE
 USE DISPLAY
 USE DESKTYPES
@@ -80,8 +80,8 @@ PUBLIC PROC EndChange(DESKTYPES.Service POINTER service
   LET layer=LAYERS.Find(@service.scene,window.layer)
   ClientBounds(window,layer,@client)
   complete=(complete<>0 AND LAYERS.PixelsReady(layer,@client)<>0)
-  REGIONS.Assign(@local,changed.left-client.left,changed.top-client.top,
-      changed.right-client.left,changed.bottom-client.top)
+  REGIONS.Assign(@local,changed.left-layer.bounds.left,changed.top-layer.bounds.top,
+      changed.right-layer.bounds.left,changed.bottom-layer.bounds.top)
   FOR index=0 TO 1 DO
     IF service.cache.slots(index).identity=window.id THEN
       LAYERCACHE.EndChange(@service.cache.slots(index),
@@ -149,7 +149,7 @@ RETURN
 
 PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     DESKTYPES.Window POINTER window)
-  LAYERTYPES.Rect client
+  LAYERTYPES.Rect outer
   CARD width,height
   BYTE index,status
   LONGCARD token
@@ -166,10 +166,10 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     RETURN(0)
   FI
 
-  ClientBounds(window,layer,@client)
-  width=CARD(client.right-client.left)
-  height=CARD(client.bottom-client.top)
-  IF Fits(width,height)=0 OR (client.left & 1)<>0 THEN
+  REGIONS.Copy(@layer.bounds,@outer)
+  width=CARD(outer.right-outer.left)
+  height=CARD(outer.bottom-outer.top)
+  IF Fits(width,height)=0 OR (outer.left & 1)<>0 THEN
     RETURN(0)
   FI
 
@@ -178,9 +178,9 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
     RETURN(0)
   FI
 
-  ; A visible nonconsole client cannot contain the Layers-clipped console
+  ; A visible nonconsole window cannot contain the Layers-clipped console
   ; caret. The bridge removes intersecting pointer and outline overlays.
-  status=LAYERS.BeginRead(@service.scene,window.layer,@client,@token)
+  status=LAYERS.BeginRead(@service.scene,window.layer,@outer,@token)
   IF status<>LAYERTYPES.OK THEN
     RETURN(0)
   FI
@@ -193,8 +193,8 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   packet.copy.source.pitch=320
   packet.copy.source.width=640
   packet.copy.source.height=240
-  packet.copy.sourceX=CARD(client.left)
-  packet.copy.sourceY=CARD(client.top)
+  packet.copy.sourceX=CARD(outer.left)
+  packet.copy.sourceY=CARD(outer.top)
   packet.copy.destination.offset=SlotAddress(index)
   packet.copy.destination.pitch=width RSH 1
   packet.copy.destination.width=width
@@ -241,9 +241,9 @@ PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
           LET layer=LAYERS.Find(@service.scene,window.layer)
           window.captureAttempt=window.visualRevision
           ClientBounds(window,layer,@client)
-          REGIONS.Assign(@area,client.left+repair.bounds.left,
-              client.top+repair.bounds.top,client.left+repair.bounds.right,
-              client.top+repair.bounds.bottom)
+          REGIONS.Assign(@area,layer.bounds.left+repair.bounds.left,
+              layer.bounds.top+repair.bounds.top,layer.bounds.left+repair.bounds.right,
+              layer.bounds.top+repair.bounds.bottom)
           IF slot.revision<>window.visualRevision OR slot.revision=0
               OR slot.pinned<>0 OR ((area.left OR area.right) & 1)<>0
               OR REGIONS.Contains(@client,@area)=0
@@ -301,20 +301,20 @@ RETURN(0)
 ; The painter already owns a paint token. It must retain that token until
 ; Restored releases this source pin; no fragment is widened for alignment.
 PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER client,area)
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER outer,area)
   BYTE index
 
   IF DISPLAY.Blocked()<>0 OR active<>0 OR CONSOLEBITMAP.Pending()<>0
       OR (service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
           AND service.scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF)
       OR service.scene.activeId<>window.layer OR service.scene.busy=0
-      OR REGIONS.Empty(area)<>0 OR REGIONS.Contains(client,area)=0
-      OR ((area.left OR area.right OR client.left) & 1)<>0 THEN
+      OR REGIONS.Empty(area)<>0 OR REGIONS.Contains(outer,area)=0
+      OR ((area.left OR area.right OR outer.left) & 1)<>0 THEN
     RETURN(DESKTYPES.CACHE_MISS)
   FI
 
-  index=Lookup(service,window,CARD(client.right-client.left),
-      CARD(client.bottom-client.top))
+  index=Lookup(service,window,CARD(outer.right-outer.left),
+      CARD(outer.bottom-outer.top))
   IF index=NO_SLOT THEN
     RETURN(DESKTYPES.CACHE_MISS)
   FI
@@ -326,8 +326,8 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   packet.copy.source.pitch=slot.width RSH 1
   packet.copy.source.width=slot.width
   packet.copy.source.height=slot.height
-  packet.copy.sourceX=CARD(area.left-client.left)
-  packet.copy.sourceY=CARD(area.top-client.top)
+  packet.copy.sourceX=CARD(area.left-outer.left)
+  packet.copy.sourceY=CARD(area.top-outer.top)
   packet.copy.destination.offset=0
   packet.copy.destination.pitch=320
   packet.copy.destination.width=640

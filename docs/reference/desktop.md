@@ -438,12 +438,12 @@ preserve circular cells, dirtiness and presentation generation, updating only
 placement and caret bookkeeping. Focus alone preserves those model and
 presentation generations.
 
-### Private client snapshots
+### Private window snapshots
 
 The VRAM map reserves two 75 KiB compact snapshot slots at `$50000–$62BFF`
 and `$62C00–$757FF`.
-`DESKCACHE` stores application client pixels only; frames remain retained
-drawing. Shell uses its separate fixed backing surface described in the
+`DESKCACHE` stores the outer window, including its frame. Restoration excludes
+the title, which is drawn live for the current focus and name. Shell uses its separate fixed backing surface described in the
 [display contract](display.md#shell-backing-destination). Even-width images must fit one slot and the 640 by 240 copy limit.
 Window identity, visual revision and dimensions determine validity; position is
 not part of the local image. Exhausted revisions disable caching. A pinned slot
@@ -452,10 +452,10 @@ first, then the least recently used unpinned slot. The shared `LAYERCACHE` polic
 presenter adapter builds transfers. The current generated Service is 18,716
 bytes, including scene/cache capacity and alignment.
 
-Eligible AES windows use the same slots. Capture requires a fully visible
-client with completed repaint obligations, measured using its actual frame
-kind (including INFO, scrollbar, size and borderless insets). A title or
-position-only change preserves its client image; resize and UPDATE invalidate it.
+Eligible AES windows use the same slots. Capture requires a fully visible outer window, clean manager damage and
+completed application repaint obligations. A title or position-only change
+preserves the body image; resize, changed INFO/slider values and UPDATE
+invalidate it. Unchanged frame setters do no work.
 Ordinary applications without completion reports continue through `WM_REDRAW`.
 Conventional restoration never acknowledges external repaint on behalf of the
 application. The explicit [preservation contract](aes.md#opt-in-window-preservation)
@@ -473,9 +473,10 @@ does not cause a recapture loop. Shell uses its dedicated persistent backing
 instead of these two slots. Accepted content/tree
 updates (including hidden updates), widget interaction and client focus styling
 invalidate revisions. Frame-only command-window focus changes damage the title
-and preserve the client snapshot. Position alone preserves local cached pixels.
-AES UPDATE can retain an unavailable base with one client-local repair per
-slot. A completed, fully acknowledged change queues a bounded idle patch; an
+and preserve the body snapshot. Position alone preserves local cached pixels.
+AES UPDATE can retain an unavailable base with one outer-local repair per
+slot. A completed client change patches only that rectangle at its offset
+inside the outer image; an
 ambiguous or partial update discards it. Patches use the same read/DMA
 continuation and pins as captures. Repeated changes coalesce; failed or
 superseded maintenance does not chase the same revision.
@@ -483,9 +484,11 @@ superseded maintenance does not chase the same revision.
 Font and palette are fixed for the display lifetime; changing them while windows
 are live is unsupported and any future setter must invalidate client revisions.
 
-The painter separates frame fragments from the client before applying its strip
-limit. Title feedback precedes one asynchronous copy per aligned visible client
-rectangle; remaining frame fragments retain their sixteen-row scratch limit.
+Title feedback precedes one asynchronous copy per aligned visible body
+rectangle, including client, sides, scrollbar and bottom. A borderless window
+has no title exclusion. On a cache miss, titles/INFO retain the sixteen-row
+widget strip; solid narrow sides use an 8/16-byte scratch pitch and publish
+each complete side once. Both paths share the existing 5,120-byte scratch.
 The paint token and source pin survive until transfer completion. Unaligned
 fragments use retained drawing without expanding over an occluder. Four-command
 preparation limits remain on retained rendering. Between transactions, pending
@@ -493,7 +496,7 @@ focused-window work follows menu precedence and precedes background repair;
 other windows remain round-robin. No Task scheduling priorities change.
 Participating AES owners can let completed restores satisfy exposure, including
 successful menu-background restoration. Conventional callers keep `WM_REDRAW`.
-A fully visible nonconsole client cannot contain the console's clipped
+A fully visible nonconsole window cannot contain the console's clipped
 caret; the bridge removes intersecting pointer/outline overlays at capture.
 
 ### GEM size and scroll gadgets

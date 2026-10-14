@@ -5,12 +5,19 @@
 [Preservation measurements](../../history/window-preservation.md) ·
 [AES and Layers design](aes-layers-vram-design.md)
 
-Status: implementation in progress. FE1 is implemented; FE2–FE4 remain.
+Status: implementation in progress. FE1–FE2 are implemented; FE3–FE4 remain.
 FE1 passed the focused optimized presentation fixture (117 native assertions
 and independent framebuffer comparisons), recorded in
 `build/frame-exposure/presentation/presentation-results.json`. Reserved
 bank-zero change: 0 fixed, 0 per public Task, 0 idle; VRAM reservation change: 0.
 The adapter adds two upper-RAM words for compact scratch pitch/mode.
+FE2 passed 31 AES cache phases, including full frame pixels, INFO/slider
+invalidation, no-op setters, small patches, hidden changes, move/resize,
+eviction and conventional/preserved exposure. See
+`build/frame-exposure/aes-cache/results.json`. This also found and corrected
+a tall-side offset that exceeded the old sixteen-row work table: sides now
+use an 8/16-byte power-of-two pitch. FE2 adds no persistent storage or reserved
+bank-zero/VRAM bytes.
 This is development evidence, not hosted-system qualification.
 
 Make newly opened frames appear sooner, restore unchanged window decorations

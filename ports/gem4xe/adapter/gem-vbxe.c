@@ -252,7 +252,7 @@ void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen)
         if (fault) return;
         if (stripRedirect && stripCompact) {
             /* Geometry is still available here; no screen-address division. */
-            dest=WIDGET_STRIP_BASE+row_step(pitch,top-stripTop)-(stripLeft>>1);
+            dest=WIDGET_STRIP_BASE+((top-stripTop)<<stripCompact)-(stripLeft>>1);
         } else {
             dest=GemScreenRows[top];if (stripRedirect) dest+=stripOffset;
         }
@@ -764,8 +764,10 @@ static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
     if (first) {
         stripActive=1;stripLeft=left;stripTop=top;stripRight=right;stripBottom=bottom;
         stripOffset=WIDGET_STRIP_BASE-GemScreenRows[top];
-        stripCompact=compact;
-        stripPitch=compact ? ((right+1)>>1)-(left>>1):320;
+        /* Power-of-two pitch keeps tall source offsets out of the sixteen-row
+         * work tables. At most 16*240 bytes, still inside the same scratch. */
+        stripCompact=compact ? ((((right+1)>>1)-(left>>1)>8) ? 4:3):0;
+        stripPitch=compact ? 1U<<stripCompact:320;
     }
     stripRedirect=1;
     complete=draw();
@@ -794,8 +796,8 @@ static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
     return fence_owner();
 }
 
-/* Tall, non-text frame sides use at most nine bytes per row, including
- * odd clip edges. The existing 5120-byte strip easily holds all 240 rows.
+/* Tall, non-text frame sides need at most nine bytes per row, including
+ * odd clip edges. An 8/16-byte pitch fits all 240 rows in the existing strip.
  * Only GemSolidFill is permitted inside this private callback. */
 static UWORD draw_FrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD (*draw)(void))

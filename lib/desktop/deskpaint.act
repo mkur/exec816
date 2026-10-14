@@ -259,7 +259,8 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   IF started=PAINT_CACHE THEN
     okay=DESKCACHE.Restored(service)
     IF okay=0 AND window.kind=DESKTYPES.CONTENT_AES THEN
-      AESWINDOWSTATE.Damage(window,@strip)
+      REGIONS.Intersect(@client,@strip,@area)
+      AESWINDOWSTATE.Damage(window,@area)
     FI
     RETURN(okay)
   FI
@@ -268,6 +269,22 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=0 THEN
+    ; Restore frame and client together, but never replay a stored title.
+    IF window.kind<>DESKTYPES.CONTENT_CONSOLE
+        AND (window.frameKind=DESKTYPES.FRAME_BORDERLESS
+          OR strip.top>=layer.bounds.top+DESKTYPES.TITLE_HEIGHT) THEN
+      cached=DESKCACHE.Restore(service,window,@layer.bounds,@strip)
+      IF cached=DESKTYPES.CACHE_PENDING THEN
+        IF window.kind=DESKTYPES.CONTENT_AES AND AESWINDOWSTATE.Preserves(window)=0 THEN
+          REGIONS.Intersect(@client,@strip,@area)
+          AESWINDOWSTATE.Damage(window,@area)
+        FI
+        started=PAINT_CACHE
+        RETURN(2)
+      ELSEIF cached=DESKTYPES.CACHE_FAILED THEN
+        RETURN(0)
+      FI
+    FI
     commandIndex=0
     glyphOffset=0
     started=PAINT_CLIENT
@@ -287,22 +304,10 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=PAINT_CLIENT THEN
-    ; Participating owners report hidden model changes at UPDATE. A matching
-    ; image can satisfy exposure without inventing an application repaint.
     IF window.kind<>DESKTYPES.CONTENT_CONSOLE THEN
       REGIONS.Intersect(@client,@strip,@area)
-      cached=DESKCACHE.Restore(service,window,@client,@area)
       IF window.kind=DESKTYPES.CONTENT_AES THEN
-        IF cached<>DESKTYPES.CACHE_PENDING
-            OR AESWINDOWSTATE.Preserves(window)=0 THEN
-          AESWINDOWSTATE.Damage(window,@area)
-        FI
-      FI
-      IF cached=DESKTYPES.CACHE_PENDING THEN
-        started=PAINT_CACHE
-        RETURN(2)
-      ELSEIF cached=DESKTYPES.CACHE_FAILED THEN
-        RETURN(0)
+        AESWINDOWSTATE.Damage(window,@area)
       FI
 
       IF window.kind=DESKTYPES.CONTENT_AES THEN
@@ -519,9 +524,17 @@ RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
 BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER damage)
   LAYERTYPES.Rect client,part
-  BYTE whole
+  BYTE whole,saved
 
   LET service=DESKSTATE.Get()
+  saved=0
+  IF window<>NULL AND window.iconified=0
+      AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+      AND ((damage.left OR damage.right OR layer.bounds.left) & 1)=0 THEN
+    saved=(DESKCACHE.Lookup(service,window,
+        CARD(layer.bounds.right-layer.bounds.left),
+        CARD(layer.bounds.bottom-layer.bounds.top))<>LAYERCACHE.NO_SLOT)
+  FI
   WHILE partIndex<5 DO
     whole=0
     IF window=NULL OR window.iconified<>0 THEN
@@ -533,20 +546,34 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
     ELSE
       DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
       REGIONS.Copy(@layer.bounds,@part)
-      CASE partIndex OF
-      WHEN 0 THEN
-        part.bottom=client.top
-      WHEN 1 THEN
-        REGIONS.Copy(@client,@part)
-      WHEN 2 THEN
-        part.top=client.bottom
-      WHEN 3 THEN
-        REGIONS.Assign(@part,layer.bounds.left,client.top,
-            client.left,client.bottom)
+      IF saved<>0 THEN
+        IF partIndex>=2 THEN
+          RETURN(0)
+        FI
+        IF partIndex=0 THEN
+          part.bottom=part.top
+          IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS THEN
+            part.bottom==+DESKTYPES.TITLE_HEIGHT
+          FI
+        ELSEIF window.frameKind<>DESKTYPES.FRAME_BORDERLESS THEN
+          part.top==+DESKTYPES.TITLE_HEIGHT
+        FI
       ELSE
-        REGIONS.Assign(@part,client.right,client.top,
-            layer.bounds.right,client.bottom)
-      ESAC
+        CASE partIndex OF
+        WHEN 0 THEN
+          part.bottom=client.top
+        WHEN 1 THEN
+          REGIONS.Copy(@client,@part)
+        WHEN 2 THEN
+          part.top=client.bottom
+        WHEN 3 THEN
+          REGIONS.Assign(@part,layer.bounds.left,client.top,
+              client.left,client.bottom)
+        ELSE
+          REGIONS.Assign(@part,client.right,client.top,
+              layer.bounds.right,client.bottom)
+        ESAC
+      FI
       REGIONS.Intersect(damage,@part,@strip)
       IF partIndex=1 THEN
         IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
@@ -558,9 +585,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
           END
         ELSE
           whole=(started=PAINT_CACHE OR window.kind=DESKTYPES.CONTENT_AES
-              OR DESKCACHE.Lookup(service,window,
-                CARD(client.right-client.left),
-                CARD(client.bottom-client.top))<>LAYERCACHE.NO_SLOT)
+              OR saved<>0)
         FI
         whole=(whole<>0 AND ((strip.left OR strip.right) & 1)=0)
       ELSEIF partIndex>=3 THEN

@@ -218,8 +218,8 @@ RETURN(1)
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
-  BYTE POINTER title
-  CARD length,routeStatus,moveStatus
+  BYTE POINTER title,current
+  CARD length,routeStatus,moveStatus,index
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
@@ -320,12 +320,25 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
         RETURN(AESTYPES.MALFORMED)
       FI
 
+      current=@window.title(0)
+      IF request.intin(1)=AESTYPES.WF_INFO THEN
+        current=@window.info(0)
+      FI
+      index=0
+      WHILE index<=length AND current(SIZE(index))=title(SIZE(index)) DO
+        index==+1
+      OD
+      IF index>length THEN
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
       REGIONS.Copy(@layer.bounds,@bounds)
       IF request.intin(1)=AESTYPES.WF_NAME THEN
         A816MEMORY.Move(@window.title(0),title,length+1)
         DESKMENU.Renamed(window.id)
         bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
       ELSE
+        DESKCACHE.Changed(desktop,window)
         A816MEMORY.Move(@window.info(0),title,length+1)
         bounds.top==+DESKTYPES.TITLE_HEIGHT
         bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
@@ -409,6 +422,12 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       IF request.intin(2)<0 OR request.intin(2)>1000 THEN
         RETURN(AESTYPES.MALFORMED)
       FI
+      IF (request.intin(1)=AESTYPES.WF_VSLIDE AND item.view.vslide=request.intin(2))
+          OR (request.intin(1)=AESTYPES.WF_VSLSIZE AND item.view.vsize=request.intin(2)) THEN
+        request.intout(0)=1
+        RETURN(AESTYPES.OK)
+      FI
+      DESKCACHE.Changed(desktop,window)
       IF request.intin(1)=AESTYPES.WF_VSLIDE THEN
         item.view.vslide=request.intin(2)
       ELSE
