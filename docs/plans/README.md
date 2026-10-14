@@ -1,7 +1,7 @@
 # Implementation plans
 
 - [Window frames and desktop exposure](gem4xe/window-frame-exposure-plan.md):
-  proposed FE1–FE4 slices for larger cold frame batches, saved window frames,
+  implemented FE1–FE4 slices for larger cold frame batches, saved window frames,
   precise desktop repair on close and focused before/after demo checks.
 
 - [Window preservation](gem4xe/window-preservation-plan.md): implemented WP1–WP4

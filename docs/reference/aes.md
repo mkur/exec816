@@ -281,13 +281,16 @@ For application windows the presenter paints the frame and transfers work-area
 damage into durable `WM_REDRAW` delivery. Its explicit Layers handoff retires
 manager damage after the complete frame transaction without claiming that the
 application pixels have been drawn. Completed, fully visible clients may use
-the shared VRAM snapshots; restoration still delivers external exposure.
+the shared VRAM snapshots. These contain the outer window, with current title
+pixels drawn live; INFO/slider changes invalidate the saved body. Conventional
+restoration still delivers external exposure, while the opt-in policy below
+can satisfy it without an application redraw.
 A same-size aligned move of a clean, fully visible window with completed client
 paint uses an overlap-safe screen blit. Its accepted geometry is published only
 after completion, without a moved-client `WM_REDRAW`. Applications must rebase
 object trees from returned work geometry in their move handler. Covered/dirty
-sources, resizes and moves while owning UPDATE retain redraw. Genuine exposure
-still delivers `WM_REDRAW`; applications reconstruct those pixels through their
+sources, resizes and moves while owning UPDATE retain redraw. Cache misses and
+conventional exposure deliver `WM_REDRAW`; applications reconstruct those pixels through their
 private VDI workstation while owning `BEG_UPDATE`.
 
 `global[0]` is zero to avoid advertising a complete AES version, `[1]` is four,

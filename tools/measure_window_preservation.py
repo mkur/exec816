@@ -181,8 +181,12 @@ def main():
     a=p.parse_args();out=a.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')
     image=json.loads((out/'program.a816.json').read_text())
-    points={r['address']:r['name'].split('_')[2] for r in image['routines']
-            if r['name'].startswith('M_CONSOLEBITMAP_COPYSTART_')}
+    names=('CONSOLEBITMAP_COPYSTART','CONSOLEBITMAP_FRAME')
+    points={r['address']:name for r in image['routines'] for name in names
+            if r['name'].startswith('M_'+name+'_')}
+    foreign=json.loads((out/'bitmap-console/c-image.json').read_text())['symbols']
+    if 'GemDrawingFrameBatch' in foreign:
+        points[foreign['GemDrawingFrameBatch']]='GemDrawingFrameBatch'
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
     probe=Probe(a.count,a.conventional)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False)
@@ -190,11 +194,19 @@ def main():
     for sample in probe.samples:
         sample['calls']=dict(Counter(points[int(e[4],16)] for tick,e in events
             if (tick-sample['start'])%(1<<32)<(sample['end']-sample['start'])%(1<<32) and int(e[4],16) in points))
+    if not a.conventional:
+        for sample in probe.samples:
+            if sample['action']=='SYS:':
+                # The outgoing Shell also repaints its visible title pieces.
+                require(sample['calls'].get('GemDrawingFrameBatch',0)==0,
+                        'Warm SYS: reconstructed frame sides')
+                require(sample['delta']['restoredBytes']==462*185//2,
+                        'Warm SYS: did not restore exactly the body below its title')
     summary={}
     for name in sorted({s['action'] for s in probe.samples}):
         rows=[s for s in probe.samples if s['action']==name]
         summary[name]={field:dict(samples=[r[field] for r in rows],median=statistics.median(r[field] for r in rows),maximum=max(r[field] for r in rows)) for field in ('client_ms','window_ms')}
-    report=dict(tier='development',qualification=False,sampling='Once per PAL frame; guest clock from physical stimulus scheduling, caret cell excluded; two samples are not a p95 distribution',
+    report=dict(tier='development',qualification=False,sampling='Once per PAL frame; guest clock from physical stimulus scheduling, caret cell excluded; a few samples are not a p95 distribution',
                 zip_sha256=sha256(out/'exec816-demo.zip'),conventional=a.conventional,
                 samples=probe.samples,summary=summary,runtime=result['runtime'])
     (out/'window-preservation-results.json').write_text(json.dumps(report,indent=2)+'\n')

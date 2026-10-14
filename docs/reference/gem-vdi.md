@@ -281,7 +281,7 @@ private VRAM, including screen slack, XDL, the 4,096-byte command arena,
 expanded font and strip scratch. Cursor storage at `$37000–$374FF` contains a 256-byte
 save area and four 256-byte mask planes, retaining both pixel parities. It reuses the
 existing CPU staging page and does not borrow glyph scratch. Two 65,536-byte
-[desktop snapshot slots](desktop.md#private-client-snapshots) at `$50000` and
+[desktop snapshot slots](desktop.md#private-window-snapshots) at `$50000` and
 `$60000` include unused capacity. VRAM leaves 281,088 bytes unassigned. CPU and
 VRAM reservations are separate.
 Fixed, per-public-Task and private-idle bank-zero increments are all zero for

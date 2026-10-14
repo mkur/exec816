@@ -1,9 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [window frame and exposure plan](window-frame-exposure-plan.md)
+The implemented [window frame and exposure plan](window-frame-exposure-plan.md)
 follows preservation with faster initial frame construction, frame-inclusive
 snapshots and precise desktop repaint after closing a folder. FE1–FE4 reuse the
-existing scratch/cache reservations and retain focused development checks.
+existing scratch/cache reservations. [Measured results](../../history/window-frame-exposure.md)
+record faster complete frames and precise close exposure with focused checks.
 
 The implemented [window preservation plan](window-preservation-plan.md) combines
 large visible-rectangle cache restores with a per-window application contract.

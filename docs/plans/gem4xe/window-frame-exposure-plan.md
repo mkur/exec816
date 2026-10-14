@@ -5,27 +5,21 @@
 [Preservation measurements](../../history/window-preservation.md) ·
 [AES and Layers design](aes-layers-vram-design.md)
 
-Status: implementation in progress. FE1–FE3 are implemented; FE4 measurements are in progress.
-FE1 passed the focused optimized presentation fixture (117 native assertions
-and independent framebuffer comparisons), recorded in
-`build/frame-exposure/presentation/presentation-results.json`. Reserved
-bank-zero change: 0 fixed, 0 per public Task, 0 idle; VRAM reservation change: 0.
-The adapter adds two upper-RAM words for compact scratch pitch/mode.
-FE2 passed 31 AES cache phases, including full frame pixels, INFO/slider
-invalidation, no-op setters, small patches, hidden changes, move/resize,
-eviction and conventional/preserved exposure. See
-`build/frame-exposure/aes-cache/results.json`. This also found and corrected
-a tall-side offset that exceeded the old sixteen-row work table: sides now
-use an 8/16-byte power-of-two pitch. FE2 adds no persistent storage or reserved
-bank-zero/VRAM bytes. The packaged focus observer also found that a pinned
-restore must retain the selected body partition across presenter steps; FE2's
-whole-window fixture now requires exactly one completed copy, and passes.
-FE3's unchanged-package trace confirmed false borderless title damage:
-`[0,11,640,22]` joined the real `[120,24,582,220]` exposure into a full-width
-redraw. Focus now skips title invalidation for a non-iconified borderless owner.
-The rebuilt package delivers the exact close rectangle and shows no icon-column
-pixel change. No pending-rectangle queue was needed; persistent upper RAM,
-reserved bank-zero (fixed/public/idle) and VRAM deltas are all zero for FE3.
+Status: FE1–FE4 implemented in executable slices. The selected minimal
+checks and final package measurements are recorded in the
+[development record](../../history/window-frame-exposure.md), including the
+tall-side pitch and pinned-copy corrections found during validation.
+
+The final package meets the four-initial-frame-batch and one-warm-body-copy
+targets. Files also changes its provisional title once, giving five frame calls
+for the complete New Window action. Close exposure stays outside unrelated
+icons; this is checked through damage/messages and sampled pixels rather than
+an independent trace of every hardware write. Broader maximum-height canary
+and fault matrices were deferred under the minimal-testing scope.
+
+Every slice changes reserved bank zero by 0 fixed bytes, 0 per public Task and
+0 idle bytes, with no extra VRAM reservation. Only two upper-RAM adapter words
+(four bytes) were added. No AES pending-rectangle queue was needed.
 This is development evidence, not hosted-system qualification.
 
 Make newly opened frames appear sooner, restore unchanged window decorations

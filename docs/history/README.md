@@ -1,5 +1,8 @@
 # Historical records
 
+- [Window frames and desktop exposure](window-frame-exposure.md): complete frame
+  sides, frame-inclusive snapshots, precise close damage and matched timings.
+
 - [Window preservation](window-preservation.md): large client restores, explicit
   AES exposure policy, shipped-app adoption and focused packaged-image checks.
 
