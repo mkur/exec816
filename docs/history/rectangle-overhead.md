@@ -324,6 +324,10 @@ the same PAL/8x machine; raw traces and intermediates remain in `build/`.
 The [physical-entry evidence](../development/display-ownership-entry.json)
 records the hashes and commands under `gui_followup`.
 
+These packages and timings predate the subsequent
+[removal of the preemption experiment](drawing-preemption.md). They do not
+measure the current preemptible drawing helper.
+
 The unchanged dialog benchmark uses the same canvas and stationary pointer.
 Its existing baseline capture is compared with one new idle run, each covering
 three measured batches and 120 dialogs:

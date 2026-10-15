@@ -4,11 +4,14 @@
 [Earlier cost analysis](dialog-drawing-batches.md) ·
 [Display contract](../reference/display.md#delegated-renderer-access)
 
-The experiment removes Task switches while a synchronous client drawing unit
-holds the display. It substantially shortens the longest observed held interval,
-but complete dialogs become slightly slower. Retain it as a scheduling
-experiment with that tradeoff explicit; these measurements do not establish
-an overall GUI speedup.
+The experiment has been removed from live code at the user's request. Drawing
+units retain normal Task preemption; physical display arbitration still protects
+the renderer. The cheaper `Enter`/`OwnerEnter` identity handling remains.
+
+The historical experiment below removed Task switches while a synchronous client
+drawing unit held the display. It substantially shortened the longest observed
+held interval, but complete dialogs became slightly slower. Its measurements and
+packages are retained as evidence, not as the current scheduling contract.
 
 ## Scope
 
@@ -121,3 +124,44 @@ Rebuild with `tools/build_demo.py --gem-desktop --release-compiler`; capture wit
 `tools/trace_g4bench.py --bundle DIR --output DIR --load idle` and `--load counter`.
 `tools/analyze_dialog_batches.py --trace DIR --output FILE` records both the
 known-held interval and the helper's work before Enter and after Leave.
+
+## Removal from live code
+
+The outer Forbid/Permit pair was removed from `drawing_borrow`. Its callbacks
+and synchronous fences again allow normal Task preemption while retaining
+physical renderer ownership. Short arbitration critical sections, caller-supplied
+Forbid nesting and the cheaper `Enter`/`OwnerEnter` identity contract remain.
+
+The removal exposed a missed owner wake in the mixed-renderer fixture, reproduced
+on the same emitted image. All 48 borrower units completed without overlap or
+assertion failures, but the console worker and its pending writer remained
+asleep with physical access free and the arbitration queue empty. The presenter
+had deferred output after `Blocked()` without reaching `OwnerEnter()`, so it had
+no queued acquisition to wake when the borrower released.
+
+`Blocked()` now publishes an owner wake hint before rechecking a busy borrower.
+The final read closes the release-before-subscription race; a release after
+subscription supplies a signal that must remain pending until the owner's Wait.
+The optimized emitted routine retains both physical-state reads around the hint
+store. `Leave` consumes the hint under its existing Forbid section. A queued
+owner handoff or quiescent fault already wakes the owner and clears the hint.
+This is a notification using the existing owner signal, not a reservation:
+an idle presenter cannot acquire the display merely by checking readiness.
+Uncontended checks and releases add no kernel call, and the existing FIFO is
+unchanged.
+
+The hint adds one byte of upper-memory state. Reserved bank-zero growth remains
+**0 fixed bytes, 0 per public Task and 0 idle bytes**, including guards, alignment
+and unused capacity. Stack and VRAM reservations do not change.
+
+Focused development checks pass: 483 host cases with four historical skips,
+81 optimized native arbitration assertions, and 196 mixed-renderer assertions
+covering 48 client units, 463 native units, an asynchronous copy and 2,788 exact
+pixels. The trace observes Task switches and interrupts inside drawing units,
+with zero overlapping renderer access. Caller Forbid nesting and failed-admission
+cleanup pass. Quiescent and reset-required hardware faults pass with intact
+guards; normal runs return through the OS boundary with no live Tasks. The
+`retirement` section in the measurement record retains the inputs and results.
+
+The previously packaged demos and timing tables above still contain the
+experiment. This removal does not refresh those packages or claim new GUI timing.

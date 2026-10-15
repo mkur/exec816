@@ -6,7 +6,6 @@
  */
 #include "gem-drawing.h"
 #include <hardware/vbxe-snapshots.h>
-#include <proto/exec.h>
 #ifndef GEM_DRAWING_ONLY
 #include "gem-vbxe.h"
 #endif
@@ -1117,22 +1116,15 @@ NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(vo
 NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
                             UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))
 
-/* Finish one bounded synchronous client unit before allowing a task switch.
- * Enter may Wait: Exec suspends Forbid while blocked and restores it on wake,
- * so queued admission still lets the owner and other tasks run. Starting the
- * exclusion before Enter closes the grant-to-drawing preemption gap. Callbacks
- * must not wait/RPC; interrupts remain enabled through drawing and its fences.
- * Native owner units and asynchronous DMA do not inherit this exclusion. */
+/* A linked, bounded callback executes only after a delegated access grant.
+ * Ownership survives Task preemption. The callback must return with no
+ * external wait, RPC or caller buffer retained. */
 static UWORD drawing_borrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context)
 {
     UWORD status;
-    Forbid();
     status=DisplayEnter(grant);
-    if (status!=DISPLAY_OK) {
-        Permit();
-        return status;
-    }
+    if (status!=DISPLAY_OK) return status;
     if (!fault) {
         pointer_erase(left,top,right,bottom);
         if (!fault) {
@@ -1149,7 +1141,6 @@ static UWORD drawing_borrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     }
     if (fault) status=DISPLAY_DEVICE_FAULT;
     DisplayLeave(grant);
-    Permit();
     return status;
 }
 

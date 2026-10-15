@@ -30,14 +30,12 @@ static void check(BOOL okay)
  * scratch/overlay access, and after the last fence, before relinquishing it. */
 void DisplayBorrowBegin(struct DisplayGrant *g)
 {
-    CHECK(FindTask(NULL)->tc_TDNestCnt >= 0);
     if (DisplayActive) ++DisplayOverlap;
     DisplayActive = g->slot+1;
     ++DisplayBorrows;
 }
 void DisplayBorrowEnd(struct DisplayGrant *g)
 {
-    CHECK(FindTask(NULL)->tc_TDNestCnt >= 0);
     if (DisplayActive != g->slot+1) ++DisplayOverlap;
     DisplayActive = 0;
 }
@@ -58,9 +56,10 @@ static void paint(void *context)
     UWORD x = 563+who*40;
     if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
     CHECK(GemBitmapFill(x,181,x+34,213,who ? 2 : 4) == 0);
-    /* Request a switch with renderer staging live. The short drawing unit
-     * must defer it until release; production callbacks never yield or wait. */
-    if (DisplayIterations[who] == 0) ExecYield();
+    CHECK(FindTask(NULL)->tc_TDNestCnt == (DisplayIterations[who] == 0 ? 0 : -1));
+    /* Inject a switch with renderer staging live and no inherited Forbid.
+     * Production callbacks never yield or wait. Ownership must survive. */
+    if (DisplayIterations[who] == 1) ExecYield();
     CHECK(DisplayActive == grants[who].slot+1);
 }
 

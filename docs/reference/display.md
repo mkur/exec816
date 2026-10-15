@@ -115,8 +115,8 @@ arbitration path. Enter waits in a bounded FIFO behind the
 current unit; borrower access is not recursive. Ownership is published before signaling; the caller rechecks its
 state around Wait. A signal is a hint, and a coalesced or early signal cannot
 lose admission. IRQ/NMI code does not inspect the access queue. Short Forbid
-sections protect Task-side state. Enter/Leave themselves do not exclude
-scheduling throughout drawing; the trusted synchronous helper below does.
+sections protect Task-side state; drawing and synchronous fences retain normal
+Task preemption and interrupt delivery.
 When no grants exist, owner entry/exit need no queue guard: only the lifetime
 owner can publish a new grant. Correct grant pointers are an admission/caller
 obligation rather than a repeated bridge validation on each drawing unit.
@@ -135,6 +135,14 @@ next native unit. Widget continuations fence and clear redirection before releas
 their private VRAM strip survives between units. An asynchronous native operation keeps
 physical access until the presenter polls and retires its hardware completion.
 
+The lifetime owner's `Blocked()` readiness check also arms a release wake hint
+before rechecking a busy borrower. This prevents the presenter from sleeping
+indefinitely when it defers paint before calling `OwnerEnter()`. The hint does
+not reserve access or join the FIFO. Borrower release signals the existing owner
+mask only when a hint is pending; a queued owner handoff supplies that wake
+itself. The owner must not clear this signal between the readiness check and
+Wait. IRQ/NMI never inspect the hint, and uncontended checks make no kernel call.
+
 Every shared GEM drawing entry, including pointer, caret, outline, staging and
 snapshot work, uses this arbiter. The adapter's trusted `GemDrawingBorrow` helper
 runs one synchronous callback over an admitted rectangle of at most 32 rows,
@@ -143,14 +151,10 @@ callback, not an application callback API. A borrower must not issue AES RPC,
 wait for an event or retain caller buffers within the unit. The [application VDI layer](gem-vdi.md#resident-application-workstations)
 uses this helper with private workstation state and the published visible work
 region. The helper grants no permission to draw arbitrary desktop pixels.
-The helper calls `Forbid` before Enter and restores the caller's nesting with
-`Permit` after Leave, including failed admission and returning fault paths.
-A blocking admission Wait allows other Tasks to run and restores exclusion
-when this Task resumes. Once admitted, the helper completes this unit without
-a Task switch, keeping IRQ/NMI delivery enabled through its synchronous fences.
-It releases physical ownership before a pending switch can occur. This does
-not extend across object traversal, an entire `objc_draw`, AES UPDATE, native
-presenter work or asynchronous DMA. There is no new priority or kernel policy.
+Physical ownership remains held if the drawing Task is preempted; other
+renderers wait or return BUSY until it resumes and releases access. The helper
+preserves the caller's Forbid nesting without adding scheduling exclusion around
+drawing. IRQ/NMI delivery continues through its synchronous fences.
 Caller-local AES objects whose complete extent, including outward borders, is
 at most 32 rows use one callback per visible intersection. Larger objects retain
 16-row strips, even for short exposed portions. Internal command lists retain

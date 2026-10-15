@@ -227,9 +227,9 @@ no new console completion service is needed.
 Use short Forbid sections to test/publish lifetime ownership and Task leases.
 These lifetime sections perform no drawing, allocation, ROM call, hardware
 wait or reply. Separately, the trusted resident-application
-[synchronous drawing helper](display.md#delegated-renderer-access) defers Task
-switches through one drawing unit and its fences. Interrupts remain enabled;
-native presenter work and asynchronous DMA retain normal scheduling.
+[synchronous drawing helper](display.md#delegated-renderer-access) holds physical
+display ownership through one drawing unit and its fences. Task preemption and
+interrupts retain their normal behaviour; competing renderers wait for release.
 The interrupt-side invariant is stronger than IRQ masking: NMI, IRQ, SIO and
 other Tasks never read or write MEMAC, VRAM or the driver's pending mapping state.
 They may preempt any register write but must return to the same Task context.

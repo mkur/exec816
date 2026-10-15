@@ -1414,5 +1414,108 @@
     "Dialog runs use a stationary pointer outside the canvas. The mixed fixture and two physical Panel button samples cover interaction separately.",
     "Two Panel samples do not establish input p95. Concurrent SIO deadline qualification and physical hardware were not exercised.",
     "The experiment removes held-display off-Task gaps but adds small caller overhead and shifts other work after release; complete-dialog throughput regressed."
-  ]
+  ],
+  "retirement": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Removed outer Forbid/Permit from synchronous drawing helper. Preserved cheap identity entry, synchronization and physical ownership. Fixed a missed presenter wake exposed by normal preemption.",
+    "source_sha256": {
+      "ports/gem4xe/adapter/gem-vbxe.c": "946afbe1a6f3e04d7fba964c84f903fff742cd68b38dd53dbdae3adc0a5613e3",
+      "lib/display/display-access.inc": "f779475038721027d7840312f075c1797ff9543a8df966efa7942d93126da97e",
+      "tests/programs/display_borrow.c": "b7f3bed18d27f36b8bb2ad49e65e9d26883aa771d88062c86f27ba788d956fe1",
+      "tools/test_display_borrow.py": "f77df4e3079be992a8afcf3868feb01906a7215c5046e03fc0d0c61b666446b1"
+    },
+    "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "host_compiler_profile": "release",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "host_checks": {
+      "tests": 483,
+      "skipped": 4,
+      "status": "pass"
+    },
+    "native_arbitration": {
+      "path": "build/drawing-preemption-removal/fixed/access/results.json",
+      "sha256": "90cf96d9c5db49964ce8ebd2750b46fd8844fe0f45ac912a1a6fd1af42b5d082",
+      "checks": 81,
+      "return_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "blocked_physical_loads": 2,
+      "blocked_hint_store_between_loads": true
+    },
+    "mixed_renderer": {
+      "path": "build/drawing-preemption-removal/fixed/borrow/results.json",
+      "sha256": "e84da0f04418d0f74bf15885481462ee18596f86e6da0bcf2bb0c1e0fb8a7c5c",
+      "checks": 196,
+      "failures": 0,
+      "renderer": {
+        "DisplayBorrows": 48,
+        "DisplayNative": 463,
+        "DisplayCopies": 1,
+        "DisplayOverlap": 0,
+        "DisplayActive": 0,
+        "exact_pixels": 2788
+      },
+      "return_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "task_switch_during_owned_unit_observed": true,
+      "interrupt_during_owned_unit_observed": true,
+      "instrumentation_scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. An ordinary callback injects Yield with renderer staging live; ownership must survive Task switching without overlapping renderer access. access_wait includes arbitration and bridge costs."
+    },
+    "faults": {
+      "path": "build/drawing-preemption-removal/fixed/borrow/borrow-faults.json",
+      "sha256": "5ec58e1911c712f083a44365ecdf34f3b89419bbe293f0a48ba6eabe1d0b1514",
+      "cases": [
+        {
+          "variant": 1,
+          "checks": 31,
+          "failures": 0,
+          "return_status": 0,
+          "guards": "intact"
+        },
+        {
+          "variant": 2,
+          "checks": 15,
+          "failures": 0,
+          "return_status": 65427,
+          "guards": "intact"
+        }
+      ]
+    },
+    "initial_failure": {
+      "path": "build/drawing-preemption-removal/borrow/results.json",
+      "diagnostic_path": "build/drawing-preemption-removal/diagnostic/failure-state.json",
+      "reproduced": true,
+      "reason": "All 48 borrower units completed without assertion failures or overlap. Presenter and writer remained asleep with physical=0, accessCount=0, ownerQueued=0. A busy readiness check skipped OwnerEnter, so no owner wake was queued.",
+      "diagnostic_sha256": "b34eaab279c2b9d2ef5c4954b0b7348a6d2f197223216c90db4c76c377d47619"
+    },
+    "resources": {
+      "upper_state_bytes_added": 1,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "stack_reservation_delta": 0,
+      "vram_reservation_delta": 0
+    },
+    "reproduction": "Use test_display_access.run(out/access), test_aes_server.applications(out/borrow, \"display\"), then test_display_borrow.faults(out/borrow). For both builders select native_program.compiler(directory, release=True) at the clean pinned revision.",
+    "limits": [
+      "Focused optimized emitted fixtures; no full qualification matrix or compiler suite.",
+      "No new GUI latency measurements or demo refresh. Earlier packages still contain the experiment.",
+      "Fixture timings include instrumentation and a synthetic Yield; they are not production UI latency measurements."
+    ]
+  }
 }

@@ -3,6 +3,7 @@
 Grant POINTER ARRAY grantSlots(GRANTS)
 BYTE ARRAY accessQueue(GRANTS+1)
 BYTE accessHead,accessCount,grantCount,physical,ownerQueued,dmaHeld,accessFailed
+BYTE ownerBlocked
 CARD ownerDepth
 LONGCARD accessWake
 Grant POINTER borrower
@@ -14,6 +15,7 @@ PROC AccessReset()
   grantCount=0
   physical=0
   ownerQueued=0
+  ownerBlocked=0
   ownerDepth=0
   dmaHeld=0
   accessFailed=0
@@ -52,6 +54,7 @@ PROC Next()
   accessCount==-1
   IF item=0 THEN
     ownerQueued=0
+    ownerBlocked=0
     physical=1
     EXEC.Signal(current.owner.task,accessWake)
   ELSE
@@ -92,7 +95,16 @@ PROC Unqueue(BYTE item)
 
 RETURN
 
+; Owner-side readiness check. Subscribe before rechecking: a borrower may
+; release between these stores/reads. That release either signals us or the
+; final check sees free access. No caller may clear the wake before Wait.
 PUBLIC BYTE FUNC Blocked()
+
+  IF physical<>2 THEN
+    RETURN(0)
+  FI
+
+  ownerBlocked=1
 
 RETURN(physical=2)
 
@@ -190,6 +202,7 @@ PUBLIC CARD FUNC OwnerEnter()
   FI
 
   physical=1
+  ownerBlocked=0
   ownerDepth==+1
   EXEC.Permit()
 
@@ -285,6 +298,12 @@ PUBLIC CARD FUNC Leave(Grant POINTER grant)
   borrower=NULL
   physical=0
   Next()
+  ; A readiness check can defer painting without calling OwnerEnter. Wake
+  ; that observer too; Next already clears the hint when it wakes the owner.
+  IF ownerBlocked<>0 THEN
+    ownerBlocked=0
+    EXEC.Signal(current.owner.task,accessWake)
+  FI
   EXEC.Permit()
 
 RETURN(OK)
@@ -360,6 +379,7 @@ PUBLIC CARD FUNC AccessFault(CARD unquiesced)
   accessCount=0
   accessHead=0
   ownerQueued=0
+  ownerBlocked=0
   FOR slot=0 TO GRANTS-1 DO
     IF grantSlots(slot)<>NULL THEN
       IF grantSlots(slot).state<>GRANT_OWNED THEN
