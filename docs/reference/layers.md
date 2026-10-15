@@ -158,8 +158,9 @@ come from these operations and remain read-only. Source and destination regions
 must occupy disjoint complete records, including unused capacity. Overlap is
 rejected before writing. Valid empty inputs succeed with an empty result.
 
-Each region has room for 96 rectangles. Subtraction counts before emitting and
-returns FULL with all destination bytes unchanged on overflow; malformed bounds
+Each region has room for 96 rectangles. Subtraction emits directly when at most
+24 source rectangles guarantee that every piece fits; otherwise it counts
+before emitting. FULL leaves all destination bytes unchanged on overflow; malformed bounds
 or an excessive input count return BAD_ARGUMENT. Clipping cannot increase the
 rectangle count. Six scene occluders introduce at most thirteen horizontal endpoint bands,
 each with at most seven free intervals. The resulting subdivision has at most

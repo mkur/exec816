@@ -15,6 +15,7 @@ from generate_layers import layout
 
 INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
                'tests/programs/layers-readiness-checks.inc',
+               'tests/programs/layers-region-checks.inc',
                'lib/display/layers-repaint.inc', 'lib/display/layers-save.inc',
                'lib/display/layercache.act',
                'lib/display/regions.act', 'lib/display/layers.act',
@@ -44,6 +45,29 @@ def geometry_cases():
         return left, top, right, bottom
     rows += [(rectangle(), rectangle(), rectangle()) for _ in range(116)]
     return rows
+
+
+def subtraction_cases():
+    # Disjoint source strips exercise both sides of the single-pass threshold.
+    def case(count, cut, alias=False, status=0):
+        return dict(source=[(i*4, 0, i*4+4, 4) for i in range(count)],
+                    cut=cut, alias=alias, status=status)
+    return [case(0, (1, 1, 3, 3)),
+            case(24, (-1, 1, 400, 3)), case(25, (-1, 1, 400, 3)),
+            case(24, (-1, 1, 400, 3), alias=True),
+            case(25, (-1, 1, 400, 3), alias=True),
+            case(93, (1, 1, 3, 3)),  # Exactly 96 output pieces.
+            case(94, (1, 1, 3, 3), status=2),  # 97: unchanged target.
+            case(96, (-10, -10, -1, -1)),
+            case(96, (2, 2, 2, 3)), case(96, (-1, -1, 400, 5))]
+
+
+def region_bytes(rects):
+    raw = bytearray([0xa5])*layout()['Region']['size']
+    struct.pack_into('<H', raw, 0, len(rects))
+    for i, rect in enumerate(rects):
+        struct.pack_into('<4h', raw, 2+i*8, *rect)
+    return bytes(raw)
 
 
 def contains(rect, x, y):
@@ -139,22 +163,45 @@ def scene_oracle(commands, include_raster=False):
 
 
 def check_region(raw, base, cut, clip=None):
+    check_regions(raw, [base], cut, clip, max_count=4)
+
+
+def check_regions(raw, source, cut, clip=None, max_count=96):
     count, = struct.unpack_from('<H', raw)
-    require(count <= 4, 'Unbounded single subtraction')
+    require(count <= max_count, 'Unbounded subtraction')
     rects = [struct.unpack_from('<4h', raw, 2 + i * 8) for i in range(count)]
     require(all(r[0] < r[2] and r[1] < r[3] for r in rects), 'Empty/inverted piece')
     # Coordinate compression checks every cell in the partition, including
     # signed extremes, without duplicating the native subtraction algorithm.
-    bounds = [base, cut, *rects, *([clip] if clip is not None else [])]
+    bounds = [*source, cut, *rects, *([clip] if clip is not None else [])]
     xs = sorted({r[k] for r in bounds for k in (0, 2)})
     ys = sorted({r[k] for r in bounds for k in (1, 3)})
     for x in xs:
         for y in ys:
-            expected = contains(base, x, y) and not contains(cut, x, y)
+            expected = any(contains(r, x, y) for r in source) and not contains(cut, x, y)
             if clip is not None:
                 expected &= contains(clip, x, y)
             actual = sum(contains(r, x, y) for r in rects)
             require(actual == int(expected), f'Coverage/overlap at {(x, y)}: {rects}')
+
+
+def check_subtraction_batches(raw, cases):
+    require(raw[:16] == raw[-16:] == bytes([0xa5])*16, 'Subtraction guards changed')
+    size = layout()['Region']['size']
+    counts = []
+    for index, case in enumerate(cases):
+        at = 16+index*size*2
+        require(raw[at:at+size] == region_bytes(case['source']), 'Source region changed')
+        target = raw[at+size:at+size*2]
+        if case['status']:
+            require(target == bytes([0xa5])*size, 'Overflow changed target bytes')
+            counts.append(None)
+        else:
+            check_regions(target, case['source'], case['cut'])
+            counts.append(struct.unpack_from('<H', target)[0])
+    require(counts[5] == 96, 'Missing exact-capacity success')
+    return dict(cases=len(cases), output_counts=counts, independent_coverage=True,
+                source_unchanged=True, overflow_target_unchanged=True)
 
 
 def check_bank_scene(raw):
@@ -219,6 +266,11 @@ def run(out, mode):
     inputs = struct.pack('<H', len(rows)) + b''.join(
         struct.pack('<12h', *base, *cut, *clip) for base, cut, clip in rows)
     output_size = len(rows) * 68
+    batches = subtraction_cases()
+    batch_input = struct.pack('<H', len(batches)) + b''.join(
+        region_bytes(c['source']) + struct.pack('<4hBB', *c['cut'], c['alias'], c['status'])
+        for c in batches)
+    batch_size = len(batches)*layout()['Region']['size']*2
     commands = scene_commands()
     scene_input = struct.pack('<H', len(commands)) + b''.join(
         struct.pack('<BB4hH', *cmd) for cmd in commands)
@@ -234,6 +286,8 @@ def run(out, mode):
                         optimize=mode == 'opt', tasks=True, task_capacity=8,
                         console=False, image_data=[(0xd0000, inputs),
                             (0xd2000, scene_input),
+                            (0xd4000, batch_input),
+                            (0xe8000, bytes([0xa5])*(batch_size+32)),
                             (0xe0000, bytes([0xa5]) * (output_size + 32)),
                             (0xf0000, bytes([0xa5]) * (scene_size + 32)),
                             (0xe4000, bytes([0xa5]) * (8*layout()['Region']['size']+32)),
@@ -264,6 +318,9 @@ def run(out, mode):
                 at = 16 + index * 68
                 check_region(raw[at:at+34], base, cut)
                 check_region(raw[at+34:at+68], base, cut, clip)
+            batch_output = bridge.memdump(0xe8000, batch_size+32)
+            report['subtraction_batches'] = check_subtraction_batches(batch_output, batches)
+            (out/'subtraction-batches.bin').write_bytes(batch_output)
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             report['geometry_cases'] = data(bridge, program['image'], 'geometryCases', True)[0]
             require(report['geometry_cases'] == len(rows), 'Missing emitted geometry cases')

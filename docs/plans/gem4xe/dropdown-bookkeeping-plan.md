@@ -47,7 +47,8 @@ Commit: `Use visible damage bits for desktop paint selection`.
 
 ### DB2 Subtract small regions in one pass
 
-Status: pending.
+Status: implemented; [development checks](../../history/dropdown-bookkeeping.md)
+pass. Reserved bank-zero delta: fixed 0, per Task 0, idle 0.
 
 - Each source rectangle produces at most four disjoint output rectangles.
   When `source.count <= MAX_RECTS / 4`, begin with the existing emitting pass;

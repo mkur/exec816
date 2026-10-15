@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import generate_layers
-from test_layers import check_region, geometry_cases, scene_commands, scene_oracle
+from test_layers import check_region, check_regions, geometry_cases, scene_commands, scene_oracle
 
 
 class LayersTests(unittest.TestCase):
@@ -30,6 +30,15 @@ class LayersTests(unittest.TestCase):
     def test_deterministic_cases(self):
         self.assertEqual(geometry_cases(), geometry_cases())
         self.assertEqual(len(geometry_cases()), 128)
+
+    def test_multi_region_oracle_rejects_hole_and_overlap(self):
+        source = [(0, 0, 4, 4), (8, 0, 12, 4)]
+        cut = (20, 0, 24, 4)
+        check_regions(struct.pack('<H8h', 2, *source[0], *source[1]), source, cut)
+        with self.assertRaises(Exception):
+            check_regions(struct.pack('<H4h', 1, *source[0]), source, cut)
+        with self.assertRaises(Exception):
+            check_regions(struct.pack('<H12h', 3, *source[0], *source[1], *source[1]), source, cut)
 
     def test_scene_oracle_exposure_and_cache(self):
         commands = [cmd for cmd in scene_commands() if cmd[0] not in (6, 7)]

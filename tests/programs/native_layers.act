@@ -138,6 +138,7 @@ PROC ExhaustPaint(LAYERTYPES.Scene POINTER state LONGCARD token)
 RETURN
 
 INCLUDE "layers-readiness-checks.inc"
+INCLUDE "layers-region-checks.inc"
 INCLUDE "layers-paint.inc"
 
 ; Paint the cached partition into an observer buffer, checking that every
@@ -332,6 +333,7 @@ PROC Main()
   canvas=Guarded(768)
   Geometry()
   RegionFailures()
+  RegionBatches()
   Scenes()
   SceneFailures()
   UpdateTransactions()

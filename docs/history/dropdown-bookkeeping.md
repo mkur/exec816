@@ -31,4 +31,24 @@ routine delta of **+304 bytes**. `MenuLayer` local stack grows 26 → 30 bytes;
 `Pump` remains at 66 bytes. These are per-routine compiler figures, not full
 call-chain bounds.
 
+## Bounded subtraction
+
+DB2 starts directly with emission for at most 24 source rectangles, using the
+existing four-piece bound and 96-entry destination. Larger inputs retain the
+counting pass. The cut is still saved before any destination write, and FULL
+still preserves every destination byte.
+
+Optimized emitted checks pass: 2,133 native assertions, the existing independent
+geometry/scene/damage-stream oracles and ten new multi-rectangle cases.
+Those cover both sides of the threshold (48 and 50 output pieces), aliased
+cut storage on both paths, an exact 96-piece result, overflow with unchanged
+destination, empty input/cut and complete removal. All source bytes and guards
+remain intact; normal OS return passes. The host suite passes 491 tests with
+four historical skips. Evidence: `build/dropdown-bookkeeping/db2-layers`.
+
+`Subtract` grows 1,269 → 1,310 native bytes (**+41**); its local stack peak stays
+56 bytes. Mutable storage, layouts and VRAM reservations are unchanged.
+Reserved bank-zero delta is **0 fixed bytes, 0 per public Task and 0 for idle**,
+including guards, alignment and unused capacity. No DP/stack reservation grows.
+
 These are development checks; final menu comparisons follow both code slices.

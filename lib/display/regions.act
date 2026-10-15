@@ -2,6 +2,8 @@
 MODULE REGIONS
 USE LAYERTYPES
 
+CONST SINGLE_PASS_RECTS=LAYERTYPES.MAX_RECTS/4
+
 PUBLIC BYTE FUNC Valid(LAYERTYPES.Rect POINTER rect)
 
   IF rect=NULL THEN
@@ -90,7 +92,7 @@ BYTE FUNC Separate(LAYERTYPES.Region POINTER source,target)
 RETURN(first+LAYERTYPES.REGION_SIZE<=second
     OR second+LAYERTYPES.REGION_SIZE<=first)
 
-; Count first, then emit. Never overwrite a destination on capacity failure.
+; The counting pass uses the same append rules as emission.
 CARD FUNC Append(LAYERTYPES.Region POINTER target BYTE emit CARD count
     INT left,top,right,bottom)
 
@@ -126,7 +128,9 @@ PUBLIC BYTE FUNC Subtract(LAYERTYPES.Region POINTER source
   FI
 
   Copy(cut,@saved)
-  FOR pass=0 TO 1 DO
+  ; At most four pieces per input fit without a preliminary counting pass.
+  ; Larger sources retain the no-write-on-capacity-failure guarantee.
+  FOR pass=IF source.count<=SINGLE_PASS_RECTS THEN 1 ELSE 0 FI TO 1 DO
     count=0
     index=0
     WHILE index<source.count DO
