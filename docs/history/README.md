@@ -1,5 +1,8 @@
 # Historical records
 
+- [Popup replacement](popup-transition.md): PT1 Layers transaction and focused
+  development checks; presenter integration and measurements pending.
+
 - [Dropdown bookkeeping](dropdown-bookkeeping.md): maintained-bit paint
   selection and bounded region subtraction; warm switch 201 → 180 ms,
   15% less presenter CPU, unchanged pointer response and refreshed demo.

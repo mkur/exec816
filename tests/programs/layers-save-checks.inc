@@ -160,3 +160,129 @@ PROC SavedScene()
   Require(LAYERCACHE.Choose(@cache)=0)
 
 RETURN
+
+; Replacement publishes one final scene and retires only proven old coverage.
+PROC ReplaceSavedScene(BYTE stripes)
+  LAYERTYPES.Rect old,next,whole
+  LONGCARD base,popup,token,stale,serial,rebuilds
+  BYTE index
+
+  Require(LAYERS.Init(scene,32,24)=LAYERTYPES.OK)
+  REGIONS.Assign(@whole,0,0,32,24)
+  Require(LAYERS.Create(scene,@whole,@base)=LAYERTYPES.OK)
+  Require(LAYERS.SetExternal(scene,base)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,base,1)=LAYERTYPES.OK)
+  SavePaint()
+  LET under=LAYERS.Find(scene,base)
+  Require(LAYERS.Painted(scene,base,under.paintEpoch,@whole)=1)
+  REGIONS.Assign(@old,4,4,12,12)
+  Require(LAYERS.Create(scene,@old,@popup)=LAYERTYPES.OK)
+  Require(LAYERS.BeginSave(scene,popup,@whole,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSave(scene,token,1,1)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  LET overlay=LAYERS.Find(scene,popup)
+  rebuilds=scene.rebuilds
+  REGIONS.Assign(@next,8,2,20,10)
+  LAYERS.RequirePaint(scene,base,@old)
+  Require(under.pending.count=1 AND under.dirty=1)
+
+  serial=scene.nextToken
+  scene.nextToken=0
+  token=$12345678
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.EXHAUSTED)
+  Require(token=$12345678 AND scene.busy=0 AND scene.under.slot.pinned=0)
+  Require(REGIONS.Equal(@overlay.bounds,@old)=1 AND scene.rebuilds=rebuilds)
+  scene.nextToken=serial
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  Require(scene.busy=token AND scene.under.slot.pinned=1)
+  Require(overlay.shown=1 AND REGIONS.Equal(@overlay.bounds,@old)=1)
+  Require(REGIONS.Equal(@scene.copySource,@old)=1)
+  Require(REGIONS.Equal(@scene.copyTarget,@next)=1)
+  Require(LAYERS.Hit(scene,5,5)=popup AND LAYERS.Hit(scene,18,3)=base)
+  Require(scene.rebuilds=rebuilds)
+  stale=$12345678
+  Require(LAYERS.BeginSavedReplace(scene,popup,@whole,@stale)=LAYERTYPES.BUSY)
+  Require(stale=$12345678)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.BAD_TOKEN)
+  Require(LAYERS.FinishSavedReplace(scene,token+1,LAYERTYPES.REPLACE_CLEAN)=LAYERTYPES.BAD_TOKEN)
+  Require(scene.busy=token AND scene.under.slot.pinned=1)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_CLEAN)=LAYERTYPES.OK)
+  Require(scene.rebuilds=rebuilds+1 AND REGIONS.Equal(@overlay.bounds,@next)=1)
+  Require(overlay.dirty=0 AND under.dirty=0 AND under.pending.count=1)
+  Require(REGIONS.Equal(@under.pending.rects(0),@old)=1)
+  Require(scene.busy=0 AND scene.under.slot.valid=1 AND scene.under.slot.pinned=0)
+  Require(LAYERS.Hit(scene,5,5)=base AND LAYERS.Hit(scene,18,3)=popup)
+  CheckVisible(scene)
+
+  stale=token
+  REGIONS.Copy(@next,@old)
+  REGIONS.Assign(@next,24,16,32,24)
+  rebuilds=scene.rebuilds
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSavedReplace(scene,stale,LAYERTYPES.REPLACE_REPAIR)=LAYERTYPES.BAD_TOKEN)
+  Require(scene.busy=token AND scene.under.slot.pinned=1)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_DIRTY)=LAYERTYPES.OK)
+  Require(scene.rebuilds=rebuilds+1 AND overlay.dirty=1)
+  Require(overlay.damage.count=1 AND REGIONS.Equal(@overlay.damage.rects(0),@next)=1)
+  Require(under.pending.count=1 AND under.dirty=0)
+  CheckVisible(scene)
+
+  ; A stale retained save cannot certify either copied image.
+  REGIONS.Copy(@next,@old)
+  REGIONS.Assign(@next,0,0,4,4)
+  rebuilds=scene.rebuilds
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  LAYERS.Touch(scene,base)
+  Require(scene.under.slot.pinned=1 AND scene.under.slot.revision=0)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_CLEAN)=LAYERTYPES.REDRAW)
+  Require(REGIONS.Equal(@overlay.bounds,@old)=1 AND scene.rebuilds=rebuilds)
+  Require(scene.busy=0 AND scene.under.slot.pinned=0 AND scene.under.slot.valid=0)
+  Require(LAYERS.PixelsReady(under,@old)=0 AND LAYERS.PixelsReady(under,@next)=0)
+  CheckVisible(scene)
+  token=$12345678
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.REDRAW)
+  Require(token=$12345678)
+
+  Require(LAYERS.Show(scene,popup,0)=LAYERTYPES.OK)
+  SavePaint()
+  Require(LAYERS.Painted(scene,base,under.paintEpoch,@whole)=1)
+  Require(LAYERS.BeginSave(scene,popup,@whole,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSave(scene,token,1,1)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,popup,1)=LAYERTYPES.OK)
+  REGIONS.Assign(@next,0,8,32,16)
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_CLEAN)=LAYERTYPES.OK)
+  ; Eight independent strips would split into sixteen. Keep all old damage.
+  under.dirty=1
+  under.damage.count=stripes
+  FOR index=0 TO stripes-1 DO
+    REGIONS.Assign(@under.damage.rects(index),INT(index*4),0,INT(index*4+2),24)
+  OD
+  REGIONS.Copy(@next,@old)
+  REGIONS.Assign(@next,0,0,4,4)
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_CLEAN)=LAYERTYPES.OK)
+  Require(under.dirty=1 AND under.damage.count=stripes)
+  FOR index=0 TO stripes-1 DO
+    BEGIN
+      LET part=@under.damage.rects(index)
+      Require(part.left=INT(index*4) AND part.right=INT(index*4+2))
+      Require(part.top=0 AND part.bottom=24)
+    END
+  OD
+  CheckVisible(scene)
+
+  REGIONS.Assign(@next,30,20,34,24)
+  token=$12345678
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.REDRAW)
+  Require(token=$12345678 AND scene.busy=0 AND scene.under.slot.pinned=0)
+  REGIONS.Copy(@overlay.bounds,@old)
+  REGIONS.Assign(@next,20,20,24,24)
+  Require(LAYERS.BeginSavedReplace(scene,popup,@next,@token)=LAYERTYPES.OK)
+  Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_REPAIR)=LAYERTYPES.REDRAW)
+  Require(REGIONS.Equal(@overlay.bounds,@old)=1 AND scene.busy=0)
+  Require(scene.under.slot.valid=0 AND scene.under.slot.pinned=0)
+  Require(LAYERS.PixelsReady(under,@next)=0)
+  CheckVisible(scene)
+
+RETURN

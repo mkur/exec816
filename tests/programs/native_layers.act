@@ -341,6 +341,7 @@ PROC Main()
   BankCrossing()
   ExternalTransactions()
   SavedScene()
+  ReplaceSavedScene(8)
   ReadinessTransactions()
   scenePhase=50
   FreeGuarded(canvas,768)

@@ -1,6 +1,6 @@
 # Popup replacement implementation plan
 
-Status: proposed; PT1–PT4 not started.
+Status: PT1 implemented; PT2–PT4 pending.
 
 [Design](popup-transition-design.md) ·
 [DB3 results](../../history/dropdown-bookkeeping.md) ·
@@ -25,6 +25,8 @@ fairness handling. Do not introduce a configuration flag or a second permanent
 implementation profile.
 
 ## PT1 Add the Layers saved replacement transaction
+
+Implemented; [development evidence](../../history/popup-transition.md).
 
 Primary files: `abi/layers.json`, generated `layertypes.act`,
 `lib/display/layers-save.inc`, transaction helpers in `layers-update.inc`,

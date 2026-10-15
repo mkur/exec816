@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -23,7 +23,11 @@
     "UPDATE_SCENE_READ": 6,
     "UPDATE_RESTORE": 7,
     "CACHE_CHANGE_HELD": 1,
-    "CACHE_CHANGE_READY": 2
+    "CACHE_CHANGE_READY": 2,
+    "UPDATE_SAVED_REPLACE": 8,
+    "REPLACE_CLEAN": 1,
+    "REPLACE_DIRTY": 2,
+    "REPLACE_REPAIR": 3
   },
   "records": {
     "Rect": [

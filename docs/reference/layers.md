@@ -248,6 +248,24 @@ Layers API version 11 changes this call but adds no record storage. An invalid s
 or incomplete capture source returns `REDRAW`. A pin survives invalidation until
 the transfer is complete or the driver has proved quiescence.
 
+`BeginSavedReplace(scene,overlay,nextBounds,tokenOut)` retains a shown opaque
+overlay at its old geometry while its saved background and replacement image
+are copied. The owner supplies a live overlay and admitted geometry at the same
+stacking position; the saved image must contain both rectangles. Admission
+claims the token before mutation and pins the save. `copySource` is the old
+rectangle and `copyTarget` the new one. Visibility stays unchanged while busy.
+
+After hardware quiescence, `FinishSavedReplace(scene,token,outcome)` accepts
+`REPLACE_CLEAN` for a current complete image, `REPLACE_DIRTY` for normal painting
+at the new bounds, or `REPLACE_REPAIR` for a failed/stale transition. Successful
+commit subtracts manager damage only inside the restored old rectangle, keeps
+external pending repaint, and rebuilds visibility once. Damage subtraction
+overflow conservatively retains old obligations. REPAIR (also forced by a stale
+save) retains old geometry, damages both rectangles and returns `REDRAW` after
+releasing the pin/token. A final rebuild error also prevents certification.
+Only this finish operation may retire an `UPDATE_SAVED_REPLACE` token; generic
+`Finish` rejects it. Layers API version 13 adds constants/routines, no storage.
+
 `LAYERCACHE` supplies fixed-slot identity/revision, pinning and two-slot eviction
 policy. It owns no display transfers, queue, hardware or application lifetimes.
 

@@ -346,7 +346,8 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
-  IF token=0 OR token<>scene.busy THEN
+  IF token=0 OR token<>scene.busy
+      OR scene.activeKind=LAYERTYPES.UPDATE_SAVED_REPLACE THEN
     RETURN(LAYERTYPES.BAD_TOKEN)
   FI
 
