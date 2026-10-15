@@ -166,7 +166,7 @@ RETURN
 ; The binding cannot reuse reports until END returns. Consume its journal
 ; synchronously under exclusive policy ownership, without a drawing scene token.
 PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
-  BYTE index,report,same,accepted,complete
+  BYTE index,report,same,accepted,complete,painted
 
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
@@ -191,6 +191,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
         FI
         report=0
         complete=0
+        painted=0
         WHILE same<>0 AND request.paintFailed=0
             AND report<request.paintCount DO
           BEGIN
@@ -198,6 +199,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
             IF paint.handle=view.handle AND paint.epoch=view.paintEpoch THEN
               accepted=LAYERS.Painted(@desktop.scene,layer.id,layer.paintEpoch,
                   LAYERTYPES.Rect POINTER(@paint.rect))
+              painted=painted OR accepted
               IF accepted<>0 AND view.changed<>0
                   AND REGIONS.Contains(LAYERTYPES.Rect POINTER(@paint.rect),
                       LAYERTYPES.Rect POINTER(@view.change))<>0 THEN
@@ -209,6 +211,10 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
         OD
         DESKCACHE.EndChange(desktop,item.window,
             LAYERTYPES.Rect POINTER(@view.change),complete)
+        IF painted<>0 THEN
+          ; Claim uses the same slot in the AES and desktop window tables.
+          DESKCACHE.ConsiderSlot(index)
+        FI
         view.changed=0
       END
     FI

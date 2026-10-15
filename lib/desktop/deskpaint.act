@@ -792,6 +792,9 @@ PUBLIC BYTE FUNC Pump()
     status=LAYERS.Finish(@service.scene,paintToken,done<>0)
   FI
   paintToken=0
+  IF done<>0 AND window<>NULL THEN
+    DESKCACHE.Consider(service,window)
+  FI
   DESKMENUCACHE.Notify()
   IF window<>NULL AND window.kind=DESKTYPES.CONTENT_CONSOLE
       AND window.iconified=0 THEN

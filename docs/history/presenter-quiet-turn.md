@@ -27,3 +27,28 @@ Reserved bank-zero delta: fixed **0 bytes**, each public Task **0 bytes**, idle
 Task **0 bytes**, including guards, alignment and unused capacity. No persistent
 state, VRAM or stack/DP reservation was added. Combined production code/data
 and hosted stack measurements follow in QT4. No full qualification was run.
+
+## QT2 Event-driven window cache inspection
+
+The desktop cache now retains a six-bit candidate mask and the last observed
+visibility rebuild. Native changes, completed manager paint and accepted AES
+paint reports rearm the affected window; a visibility rebuild reconsiders the
+window set. Each inspection consumes its bit, including rejected and already
+attempted candidates. Common display/scene blocking leaves candidates pending.
+Revision checks, repairs, popup precedence and the one-transfer limit remain.
+
+Development checks: the optimized AES cache fixture passes 32 physical phases,
+including full/partial repaint, hidden changes, frame recapture, move/exposure,
+two-slot eviction, deletion/reuse and mixed-policy menu restoration. Four
+settled states each receive twelve additional real presenter signals: none
+causes another candidate geometry inspection. A full paint report without an
+explicit changed rectangle produces a current image. Exact client/frame pixels,
+unpinned settled storage, guards and normal return pass. The host suite again
+passes 490 tests with four historical skips. Evidence:
+`build/presenter-quiet-turn/qt2-cache`.
+
+Reserved bank-zero delta: fixed **0 bytes**, each public Task **0 bytes**, idle
+Task **0 bytes**. The five new upper-RAM state bytes consume four additional
+allocated bytes because the candidate byte fills existing padding. No new VRAM,
+DP or stack reservation. Emitted END bookkeeping grows by 111 code bytes with
+its local stack peak unchanged at 70 bytes; combined timing follows in QT4.

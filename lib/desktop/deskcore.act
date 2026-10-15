@@ -41,6 +41,7 @@ PUBLIC BYTE FUNC Init(DESKTYPES.Service POINTER service BYTE bit)
   IF LAYERS.Init(@service.scene,640,240)<>LAYERTYPES.OK THEN
     RETURN(0)
   FI
+  DESKCACHE.ResetCandidates(service)
 
   service.live=1
 
@@ -626,6 +627,7 @@ CARD FUNC Dispatch(DESKTYPES.Service POINTER service
       FI
 
       DESKCACHE.Invalidate(service,window.id)
+      DESKCACHE.ForgetCandidate(service,window)
       DESKWIDGETS.Retire(window)
       A816MEMORY.Clear(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
     FI

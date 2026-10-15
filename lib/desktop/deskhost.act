@@ -263,27 +263,17 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(DESKINPUT.Runnable())
 
-; Use the existing attempt/repair records, not another cache-validity map.
+; Candidate bits schedule inspection; existing attempt/repair records and
+; Layers remain the authority for capture and pixel validity.
 BYTE FUNC CachePending(DESKTYPES.Service POINTER service)
-  BYTE index
 
+  LET candidates=DESKCACHE.Candidates(service)
   IF service.repairs(0).state=LAYERTYPES.CACHE_CHANGE_READY
       OR service.repairs(1).state=LAYERTYPES.CACHE_CHANGE_READY
       OR DESKMENUCACHE.CapturePending()<>0 THEN
     RETURN(1)
   FI
-  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-    BEGIN
-      LET window=@service.windows(index)
-      IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
-          AND window.iconified=0 AND window.visualRevision<>0
-          AND window.captureAttempt<>window.visualRevision THEN
-        RETURN(1)
-      FI
-    END
-  OD
-
-RETURN(0)
+RETURN(candidates<>0)
 
 ; Caller has just settled input, controls, model writes and painting. This
 ; hint never keeps the presenter awake: an occluded candidate can wait until
@@ -323,7 +313,8 @@ PUBLIC BYTE FUNC Cache()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(index)
-      IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+      IF DESKCACHE.TakeCandidate(index)<>0
+          AND window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN

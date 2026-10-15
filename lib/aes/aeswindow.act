@@ -181,6 +181,7 @@ PROC Delete(AESSTATE.Window POINTER item)
     DESKSTATE.desktopWindow=0
     DESKSTATE.desktopLayer=0
   FI
+  DESKCACHE.ForgetCandidate(desktop,item.window)
   A816MEMORY.Clear(BYTE POINTER(item.window),DESKTYPES.WINDOW_SIZE)
   item.view.handle=0
   item.view.visibleCount=0

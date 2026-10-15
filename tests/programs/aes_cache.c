@@ -9,6 +9,7 @@ static ULONG scopeWake;
 static volatile UWORD scopeDone;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD AESCachePhase,AESCacheGo,AESCacheRedraws;
+volatile UWORD AESCacheWake;
 WORD AESCacheWork[4];
 static WORD window,vdi;
 static UWORD otherRedraws;
@@ -25,7 +26,14 @@ static void phase(UWORD value)
     CHECK(wind_get(window,WF_WXYWH,&AESCacheWork[0],&AESCacheWork[1],
                    &AESCacheWork[2],&AESCacheWork[3]));
     AESCachePhase=value;
-    while (AESCacheGo<value) ExecYield();
+    while (AESCacheGo<value) {
+        if (AESCacheWake) {
+            struct MsgPort *port=(struct MsgPort *)AESService;
+            --AESCacheWake;
+            Signal(port->mp_SigTask,1UL<<port->mp_SigBit);
+        }
+        ExecYield();
+    }
 }
 
 static void paint(void)
@@ -203,6 +211,11 @@ UWORD AESRun(void)
     drain();sibling=wind_create(kind,360,48,248,152);CHECK(sibling>0);
     CHECK(wind_open(sibling,360,48,248,152));CHECK(wind_close(sibling));
     CHECK(wind_delete(sibling));phase(31);CHECK(drain()==0);
+    /* A complete accepted report without a changed rectangle rearms capture. */
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(ExecAESPainted(window,AESCacheWork[0],AESCacheWork[1],
+                         AESCacheWork[2],AESCacheWork[3]));
+    CHECK(wind_update(END_UPDATE));phase(32);
     CHECK(wind_close(window));CHECK(wind_delete(window));
     v_clsvwk(vdi); CHECK(appl_exit()); CHECK(ExecAESDetach());
     return AESFailures;

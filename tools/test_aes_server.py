@@ -217,6 +217,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         program = read_build(recorded/'program')
         foreign = json.loads((recorded/'c-image.json').read_text())
     else:
+        if suite=='cache':
+            from test_aes_cache import instrument
+            instrument(out)
         if locks:
             (out/'aeslockprobe.act').write_text('MODULE AESLOCKPROBE\nPUBLIC BYTE busy\nENDMODULE\n')
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
@@ -372,7 +375,7 @@ ENDMODULE
             return [address for address in task_entries(image) if address not in setup]
         generate_tasks.task_entries=fixture_entries
         try:
-            program = build(compiler(ROOT/'build/actionc'), launcher, out/'program',
+            program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
                 tasks=True, task_capacity=8, foreign_image=foreign,
                 console_deferred=True, memory_profile=memory,
                 **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus','fsel') else {}),

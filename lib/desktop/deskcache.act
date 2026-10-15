@@ -14,9 +14,75 @@ CONST NO_SLOT=255, ACTIVE_CAPTURE=1, ACTIVE_RESTORE=2, ACTIVE_PATCH=3
 LONGCARD readToken
 DESKTYPES.Window POINTER capturing
 BYTE active,activeSlot
+BYTE candidateBits
+LONGCARD consideredRebuild
 LONGCARD transferBytes
 PUBLIC LONGCARD captures,restores,capturedBytes,restoredBytes
 PUBLIC LONGCARD patches,patchedBytes
+
+; Scheduling hints belong to this desktop lifetime, not to cache validity.
+PUBLIC PROC ResetCandidates(DESKTYPES.Service POINTER service)
+
+  candidateBits=0
+  consideredRebuild=service.scene.rebuilds
+
+RETURN
+
+PUBLIC PROC ConsiderSlot(BYTE index)
+
+  candidateBits=candidateBits OR (BYTE(1) LSH index)
+
+RETURN
+
+; Change paths already own a live window. Resolve its slot only at the event.
+PUBLIC PROC Consider(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE index
+
+  IF window.kind=DESKTYPES.CONTENT_CONSOLE THEN
+    RETURN
+  FI
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    IF @service.windows(index)=window THEN
+      ConsiderSlot(index)
+      RETURN
+    FI
+  OD
+
+RETURN
+
+PUBLIC PROC ForgetCandidate(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window)
+  BYTE index
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    IF @service.windows(index)=window THEN
+      candidateBits=candidateBits & (255 XOR (BYTE(1) LSH index))
+      RETURN
+    FI
+  OD
+
+RETURN
+
+; Visibility changes can expose a previously rejected candidate without a
+; content revision change. Ordinary wakes do not repeat its geometry checks.
+PUBLIC BYTE FUNC Candidates(DESKTYPES.Service POINTER service)
+
+  IF consideredRebuild<>service.scene.rebuilds THEN
+    consideredRebuild=service.scene.rebuilds
+    candidateBits=(BYTE(1) LSH DESKTYPES.WINDOWS)-1
+  FI
+
+RETURN(candidateBits)
+
+PUBLIC BYTE FUNC TakeCandidate(BYTE index)
+
+  LET bit=BYTE(1) LSH index
+  LET pending=candidateBits & bit
+  candidateBits=candidateBits & (255 XOR bit)
+
+RETURN(pending<>0)
 
 PUBLIC LONGCARD FUNC SlotAddress(BYTE slot)
 
@@ -103,6 +169,7 @@ PUBLIC PROC Changed(DESKTYPES.Service POINTER service
   IF window.visualRevision<>0 THEN
     window.visualRevision==+1
   FI
+  Consider(service,window)
 
 RETURN
 

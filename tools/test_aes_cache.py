@@ -9,6 +9,18 @@ from native_program import require
 from os_boundary import run_to
 
 
+def instrument(out):
+    from library_paths import read_source
+    from native_program import ROOT
+    host=read_source(ROOT/'lib/desktop/deskhost.act')
+    start=host.index('PUBLIC BYTE FUNC Cache()')
+    needle='          LET layer=LAYERS.Find(@service.scene,window.layer)'
+    require(host[start:].count(needle)==1,'Window candidate inspection boundary changed')
+    host=host[:start]+'PUBLIC LONGCARD candidateInspections\n'+host[start:].replace(
+        needle,'          candidateInspections==+1\n'+needle)
+    (out/'deskhost.act').write_text(host)
+
+
 def physical(b,p,foreign,report):
     sy=foreign['symbols'];out=p['output'].parent
     at=lambda mod,n:next(d['address'] for d in p['image']['data']
@@ -20,7 +32,7 @@ def physical(b,p,foreign,report):
         run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
     slot=layers_layout()['CacheSlot'];cache=layout()['Service']['fields']['cache']
     previous=None;report['aes_cache']=[]
-    for phase in range(1,32):
+    for phase in range(1,33):
         reach('dw($%x)=%d'%(sy['AESCachePhase'],phase))
         reach('@frame>=%d'%(b.eval_expr('@frame')+100))
         service=get(at('DESKSTATE','service'),3)
@@ -45,6 +57,15 @@ def physical(b,p,foreign,report):
                  patches=get(at('DESKCACHE','patches')),
                  patched_bytes=get(at('DESKCACHE','patchedBytes')))
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
+        if phase in (5,13,20,23):
+            before=get(at('DESKHOST','candidateInspections'))
+            b.poke16(sy['AESCacheWake'],12)
+            reach('dw($%x)=0'%sy['AESCacheWake'])
+            reach('@frame>=%d'%(b.eval_expr('@frame')+20))
+            require(get(at('DESKHOST','candidateInspections'))==before,
+                    'Unchanged rejected/evicted window was inspected again')
+            row['unchanged_wakes']=12
+            row['repeated_candidate_inspections']=0
         if phase in (1,2,3,4,6,7,9,10,11,12,14,15):require(valid,'Missing eligible AES image at phase '+str(phase))
         if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
         if phase in (17,18,19,21,24,25,26):require(valid,'Missing preserved source at phase '+str(phase))
@@ -54,7 +75,7 @@ def physical(b,p,foreign,report):
                     'Snapshot does not use outer geometry')
         if phase>=27:
             require(valid,'Frame update did not produce a usable image')
-        if phase in (27,29):
+        if phase in (27,29,32):
             require(row['captures']==previous['captures']+1,'Changed frame was not recaptured')
         if phase in (28,30,31):
             require(row['captures']==previous['captures'],'Unchanged frame/exposure recaptured pixels')
