@@ -13,7 +13,8 @@ Those are measured costs, not predicted savings.
 Implement only the two local optimizations identified by the analysis. Keep
 popup hide/show, saved-background transactions, input ordering, painting
 fairness, cache keys and normal Task preemption unchanged. Combining popup
-transitions remains separate work requiring a short design note.
+transitions remains separate work in the proposed
+[popup transition design](popup-transition-design.md).
 
 ## Slices
 

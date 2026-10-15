@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Popup replacement](gem4xe/popup-transition-plan.md): proposed PT1–PT4 slices
+  based on the [design](gem4xe/popup-transition-design.md), combining saved
+  background and popup copies into one scene transaction and final visibility
+  rebuild, with input/fairness integration and matched demo measurements.
+
 - [Dropdown bookkeeping](gem4xe/dropdown-bookkeeping-plan.md): implemented DB1–DB3
   for maintained-bit paint selection and bounded single-pass subtraction.
   [Measurements](../history/dropdown-bookkeeping.md): warm switch 201 → 180 ms,
