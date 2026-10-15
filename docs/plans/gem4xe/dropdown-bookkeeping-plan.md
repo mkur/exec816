@@ -72,9 +72,11 @@ Commit: `Subtract bounded small regions without a counting pass`.
 
 ### DB3 Measure the result and refresh the desktop demo
 
-Status: pending.
+Status: complete; [measurements and demo](../../history/dropdown-bookkeeping.md).
+Warm switch: 200.6 → 180.4 ms elapsed, 143.4 → 121.5 ms presenter CPU.
+Pointer-heading response remains 280.7 ms. No reservation growth.
 
-Build one final desktop package with `tools/build_demo.py --desktop
+Build one final desktop package with `tools/build_demo.py --gem-desktop
 --release-compiler`, including OF816, five-second autoboot, matching system
 disk, ROM, licenses and checksums. Use the unchanged compiler/platform pins.
 Keep traces, manifests and test output outside `exec816-demo.zip`.

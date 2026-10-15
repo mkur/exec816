@@ -1,9 +1,11 @@
 # GEM as a client of an Exec-like kernel
 
-The [dropdown bookkeeping plan](dropdown-bookkeeping-plan.md) implements
+The completed [dropdown bookkeeping plan](dropdown-bookkeeping-plan.md) implements
 summary-based paint selection and bounded single-pass region subtraction,
 then measures the existing cached-menu workload. Popup transition semantics
-remain unchanged.
+remain unchanged. [Measurements](../../history/dropdown-bookkeeping.md) show
+warm switching at 201 → 180 ms and presenter CPU at 143 → 122 ms, with identical
+cache behavior and zero Files paints. Pointer-heading response is unchanged.
 
 The [dropdown analysis](../../history/dropdown-analysis.md) isolates menu work
 from Files/DOS: a cached keyboard switch takes 201 ms, including 143 ms presenter

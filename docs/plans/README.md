@@ -1,8 +1,9 @@
 # Implementation plans
 
-- [Dropdown bookkeeping](gem4xe/dropdown-bookkeeping-plan.md): paint selection
-  from maintained damage bits, bounded single-pass rectangle subtraction and
-  focused cached-menu comparisons.
+- [Dropdown bookkeeping](gem4xe/dropdown-bookkeeping-plan.md): implemented DB1–DB3
+  for maintained-bit paint selection and bounded single-pass subtraction.
+  [Measurements](../history/dropdown-bookkeeping.md): warm switch 201 → 180 ms,
+  presenter CPU 143 → 122 ms; pointer response unchanged.
 
 - [Presenter quiet turns](gem4xe/presenter-quiet-turn-plan.md): implemented QT1–QT4
   slices for conditional signal collection, event-driven cache inspection,

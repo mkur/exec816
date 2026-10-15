@@ -1,7 +1,8 @@
 # Historical records
 
 - [Dropdown bookkeeping](dropdown-bookkeeping.md): maintained-bit paint
-  selection and bounded region subtraction, with focused development evidence.
+  selection and bounded region subtraction; warm switch 201 → 180 ms,
+  15% less presenter CPU, unchanged pointer response and refreshed demo.
 
 - [Dropdown response analysis](dropdown-analysis.md): isolated cached menu
   transitions; visibility rebuilds, temporary damage and repeated readiness
