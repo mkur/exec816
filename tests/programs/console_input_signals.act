@@ -1,8 +1,12 @@
 MODULE INPUTSIGNALS
 USE EXEC
 USE HEAPCORE
+USE CONSOLECAPTURE
+CONST STOP_MASK=$20000000
 CARD checks
 LONGCARD merged
+BYTE hook,acknowledgements
+LONGCARD arrival
 
 PROC Require(BYTE okay)
 
@@ -14,10 +18,18 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; The same atomic acknowledgement proposed for the resident worker.
-LONGCARD FUNC Collect()
+; Fixture-only arrival through the public Signal operation, after the hint.
+PROC CollectHook(BYTE boundary)
 
-RETURN(EXEC.SetSignal(0,$60000000))
+  IF hook=boundary THEN
+    hook=0
+    EXEC.Signal(EXEC.FindTask(NULL),arrival)
+  FI
+
+RETURN
+
+; The runner extracts the current production routine and adds arrival hooks.
+INCLUDE "presenter-collect.inc"
 
 PROC Main()
   LONGCARD bits,ignored
@@ -29,24 +41,46 @@ PROC Main()
   Require(EXEC.AllocSignal(30)=30)
   Require(EXEC.AllocSignal(31)=31)
   EXEC.Signal(self,$e0010000)
-  Require(Collect()=$e0010000)
+  Require(Collect(self,0,0)=$e0010000)
   Require(EXEC.SetSignal(0,0)=$80010000)
   Require(EXEC.Wait($80000000)=$80000000)
   Require(EXEC.SetSignal(0,0)=$10000)
   ignored=EXEC.SetSignal(0,$10000)
 
   FOR index=0 TO 15 DO
-    Require(Collect()=0)
+    Require(Collect(self,0,0)=0)
   OD
+
+  Require(acknowledgements=1)
 
   EXEC.Signal(self,$c0000000)
   bits=EXEC.Wait($e0000000)
   Require(bits=$c0000000)
-  merged=bits OR Collect()
+  merged=Collect(self,bits,0)
   Require((merged & $40000000)<>0)
   EXEC.Signal(self,$40000000)
-  Require(Collect()=$40000000)
-  Require(Collect()=0)
+  Require(Collect(self,0,0)=$40000000)
+  Require(Collect(self,0,0)=0)
+
+  ; A signal after the empty hint remains available to Wait without rescue.
+  hook=1
+  arrival=$40000000
+  Require(Collect(self,$80000000,0)=$80000000)
+  Require(hook=0 AND acknowledgements=2)
+  Require(EXEC.Wait($40000000)=$40000000)
+
+  ; Arrivals between a nonempty hint and acknowledgement are merged atomically.
+  EXEC.Signal(self,$20000000)
+  hook=2
+  arrival=$40010000
+  Require(Collect(self,$80000000,0)=$e0010000)
+  Require(hook=0 AND acknowledgements=3)
+  Require(self.tc_SigRecvd=$10000)
+
+  ; Unrelated bits alone do not enter Exec; display completion uses its mask.
+  Require(Collect(self,0,0)=0 AND acknowledgements=3)
+  Require(Collect(self,0,$10000)=$10000 AND acknowledgements=4)
+  Require(self.tc_SigRecvd=0)
   EXEC.FreeSignal(31)
   EXEC.FreeSignal(30)
   EXEC.FreeSignal(29)

@@ -242,6 +242,13 @@ queries and one visibility rebuild inside AES open. The <=2 ms quiet-turn
 target remains open. These are focused development observations, not p95 or
 hardware qualification.
 
+The proposed [presenter quiet turn plan](plans/gem4xe/presenter-quiet-turn-plan.md)
+addresses the remaining 4.39 ms median no-transfer turn with conditional signal
+collection, event-driven cache candidate inspection and a Layers-owned
+visible-damage summary. QT1–QT4 retain END notifications, current gate ownership
+and ordinary preemption; reuse PB6 evidence and finish with focused comparisons
+and one OF816 demo refresh.
+
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x
 improvement over 512-byte chunks on accurate SIO. Throughput is the priority;

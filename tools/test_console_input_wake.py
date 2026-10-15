@@ -20,22 +20,22 @@ def run(out,mode,bitmap=False,replay=False):
         directory=original(*args,**kwargs)
         for name,replacements in {
             'consoledriver.act':[
-                ('    bits=Collect(bits,displayMask OR desktopMask)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(bits,displayMask OR desktopMask)\n    INPUTWAKEPROBE.Point(2)'),
-                ('        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)','        INPUTWAKEPROBE.Point(4)\n        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'),
+                ('    bits=Collect(self,bits,displayMask OR desktopMask)','    INPUTWAKEPROBE.Point(1)\n    bits=Collect(self,bits,displayMask OR desktopMask)\n    INPUTWAKEPROBE.Point(2)'),
+                ('      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)','      INPUTWAKEPROBE.Point(4)\n      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'),
                 ('          CONSOLEDISPLAY.Advance(view,instance,entry.unit)','          INPUTWAKEPROBE.Point(6)\n          CONSOLEDISPLAY.Advance(view,instance,entry.unit)')],
             'consoleinput.act': [('    IF status=INPUT.EMPTY THEN\n      EXIT','    IF status=INPUT.EMPTY THEN\n      INPUTWAKEPROBE.Point(3)\n      EXIT')],
             'input.act': [('      index==+1\n    UNTIL raw=', '      index==+1\n      IF index=RAW_SLOTS THEN\n        INPUTWAKEPROBE.Point(5)\n      FI\n    UNTIL raw=')]
         }.items():
             path=directory/name;s=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE INPUTWAKEPROBE\n',1)
             for old,new in replacements:
-                require(s.count(old)==(2 if 'bits=EXEC.Wait' in old else 1),'Publication boundary changed: '+name+': '+old);s=s.replace(old,new)
+                require(s.count(old)==1,'Publication boundary changed: '+name+': '+old);s=s.replace(old,new)
             path.write_text(s)
         return directory
     generate_tasks.policy_modules=instrument
     try:
         source=ROOT/'tests/programs/console_input_wake.act'
-        p=read_build(out/'program') if replay else (build_bitmap(source,out,mode=='opt') if bitmap else
-            build(compiler(ROOT/'build/actionc'),source,out/'program',optimize=mode=='opt',tasks=True,task_capacity=8,console=True))
+        p=read_build(out/'program') if replay else (build_bitmap(source,out,mode=='opt',release_compiler=True) if bitmap else
+            build(compiler(ROOT/'build/actionc',release=True),source,out/'program',optimize=mode=='opt',tasks=True,task_capacity=8,console=True))
     finally:generate_tasks.policy_modules=original
     at=lambda n:next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_INPUTWAKE_'+n.upper()+'_'))
     require(sha256(BRIDGE/'AltirraBridgeServer')==PIN['mouse_input']['tooling']['sha256'],'Unpinned emulator')

@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Presenter quiet turns](gem4xe/presenter-quiet-turn-plan.md): proposed QT1–QT4
+  slices for conditional signal collection, event-driven cache inspection,
+  Layers-owned visible-damage readiness and focused comparisons/demo delivery.
+  Preserves the existing gate, END notifications and preemption.
+
 - [Presenter scheduling and bookkeeping](gem4xe/presenter-bookkeeping-plan.md):
   implemented PB1–PB6 slices removing repeated drawing identity queries, reducing
   readiness/input/cache work and combining window-opening visibility changes,

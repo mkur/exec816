@@ -1,5 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
+The proposed [presenter quiet turn plan](presenter-quiet-turn-plan.md) follows
+PB1–PB6 with conditional signal acknowledgement, event-driven cache candidate
+inspection and a Layers-owned visible-damage summary. QT1–QT4 preserve END
+notifications, the policy gate and normal scheduling while targeting the
+remaining <=2 ms no-transfer turn goal, with focused measurements and one demo
+refresh.
+
 The implemented [presenter bookkeeping plan](presenter-bookkeeping-plan.md) follows
 caller-local UPDATE with six slices: trusted drawing dispatch, cheaper readiness
 checks, input and cache maintenance, one visibility rebuild on opening, and

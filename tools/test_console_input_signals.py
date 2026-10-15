@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Emitted atomic input/stop acknowledgement and passive cycle measurement."""
-import argparse,json,os
+import argparse,json,os,re
 from pathlib import Path
 from native_program import ROOT,build,compiler,read_build,require,sha256,verify_machine
 from test_dos_stack import execute,ownership
@@ -8,12 +8,29 @@ from test_cooperative import data
 from test_mouse_observe import PIN,BRIDGE,ROM
 from os_boundary import emulator
 from bitmap_console_performance import native_markers,spans,totals
+from library_paths import read_source
 
 
 def run(out,mode,replay=False,observe=True):
     out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'),
-        ROOT/'tests/programs/console_input_signals.act',out/'program',
+    (out/'program').mkdir(exist_ok=True)
+    driver=read_source(ROOT/'lib/console/consoledriver.act')
+    # Only the production constant is needed; do not link the capture driver.
+    capture=read_source(ROOT/'lib/console/consolecapture.act')
+    constant=re.search(r'^PUBLIC CONST WAKE_MASK=.+$',capture,re.M).group()
+    (out/'program/consolecapture.act').write_text('MODULE CONSOLECAPTURE\n'+constant+'\nENDMODULE\n')
+    start=driver.index('LONGCARD FUNC Collect(')
+    end=driver.index('; One bounded turn',start)
+    collect=driver[start:end]
+    require(collect.count('    RETURN(bits)')==1,'Empty Collect path changed')
+    collect=collect.replace('    RETURN(bits)','    CollectHook(1)\n    RETURN(bits)')
+    collect=collect.replace('RETURN(bits OR EXEC.SetSignal',
+        '  CollectHook(2)\n  acknowledgements==+1\n\nRETURN(bits OR EXEC.SetSignal')
+    (out/'program/presenter-collect.inc').write_text(collect)
+    source=out/'program/console_input_signals.act'
+    source.write_text(read_source(ROOT/'tests/programs/console_input_signals.act'))
+    p=read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc',release=True),
+        source,out/'program',
         tasks=True,task_capacity=8,console=False,optimize=mode=='opt')
     require(p['build']['optimize']==(mode=='opt'),'Wrong image mode')
     marks=native_markers(p,[('INPUTSIGNALS_COLLECT','collect')])
@@ -33,11 +50,11 @@ def run(out,mode,replay=False,observe=True):
             if observe:b.profile_stop()
             ownership(b,p,p['output'])
             result.update(runtime=runtime,checks=data(b,p['image'],'checks',True),merged=data(b,p['image'],'merged'))
-            require(result['checks']==[28],'Signal checks missing')
+            require(result['checks']==[38],'Signal checks missing')
         if observe:
             rows=spans(out/'emulator.log',marks)
-            require(len(rows)==20,'Signal collection samples missing')
-            result['timing']=dict(scope='Elapsed time includes preemption; 16 consecutive empty samples plus four notified/settling calls.',all=totals(rows),empty=totals(rows[1:17]))
+            require(len(rows)==24,'Signal collection samples missing')
+            result['timing']=dict(scope='Elapsed time includes preemption and fixture arrival hooks; 16 consecutive empty samples plus notified/settling/race calls.',all=totals(rows),empty=totals(rows[1:17]))
         result['status']='pass'
     except Exception as error:result.update(status='fail',error=str(error));raise
     finally:

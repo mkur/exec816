@@ -513,11 +513,16 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
 
 RETURN
 
-; Acknowledge input/stop once per turn, preserving Wait's already-consumed bits.
-; Request and unrelated signals stay pending until their ordinary consumer.
-LONGCARD FUNC Collect(LONGCARD bits,displayMask)
+; The signal field is an arrival hint, never an acknowledgement. A late signal
+; survives for the next collection or Wait; preserve Wait's consumed bits too.
+LONGCARD FUNC Collect(EXEC.Task POINTER self LONGCARD bits,displayMask)
 
-RETURN(bits OR EXEC.SetSignal(0,STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR displayMask))
+  LET mask=STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR displayMask
+  IF (self.tc_SigRecvd & mask)=0 THEN
+    RETURN(bits)
+  FI
+
+RETURN(bits OR EXEC.SetSignal(0,mask))
 
 ; One bounded turn per borrowed instance. No request or instance pointer remains
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
@@ -617,7 +622,7 @@ PUBLIC PROC Worker()
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
       EXIT
     FI
-    bits=Collect(bits,displayMask OR desktopMask)
+    bits=Collect(self,bits,displayMask OR desktopMask)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
     FI
