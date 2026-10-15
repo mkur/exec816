@@ -4,7 +4,7 @@
 Boot/SYS remain the exact ZIP. WORK contains the same bounded development load
 in each run. Observations are passive and outside timed regions; no guest patch.
 """
-import argparse,json,shutil,zipfile
+import argparse,json,os,shutil,zipfile
 from pathlib import Path
 from colour_desktop_model import FIELDS as D
 from desktop_menu_check import Menus
@@ -21,7 +21,7 @@ from sio_transaction_trace import BASE_HZ
 
 
 class Load:
-    def __init__(self,count):self.count=count
+    def __init__(self,count,trace=False):self.count=count;self.trace=trace
 
     def prepare_work(self,path,item):
         source=path.parent/'cache-load-media';source.mkdir(exist_ok=True)
@@ -56,8 +56,16 @@ class Load:
         move(216,40);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
         move(24,168);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(100)
         panel=launch(1,'panel','GEMPanel');s.rendezvous('dw($%x)=1'%(panel+8));s.frames(100)
-        menus.select('Shell');cat=s.begin('CAT WORK:LOAD.TXT')
-        menus.select('Counter');menus.select('Control Panel')
+        # The load setup leaves these title segments exposed. A menu focus
+        # failure with the ticking Counter also occurs on the frozen parent;
+        # use direct physical title clicks so that unrelated menu behavior is
+        # outside this UPDATE/progress measurement.
+        def title(name,x,y):
+            target=next(w['id'] for w in menus.windows() if name in w['title'])
+            click(x,y)
+            require(menus.focus()==target,'Title did not focus '+name)
+        title('Shell',80,35);cat=s.begin('CAT WORK:LOAD.TXT')
+        title('Counter',24,165);title('Control Panel',600,52)
         window=s.p['build']['memory']['console_storage']['WINDOWS']+s.console['WINDOWS_ITEMS']
         def running():return s.number(window+s.console['WINDOW_SCOPE'],3) not in (0,s.saved['scope'])
         console=s.number(window+s.console['WINDOW_INSTANCE'],3)
@@ -72,6 +80,8 @@ class Load:
             require(running(),'CAT finished during sample '+str(index))
             progress.append(dict(index=index,ticks=s.number(counter+14,4),paints=s.number(counter+18,4),
                                  console_generation=s.number(generation,4)))
+        if self.trace:
+            b.profile_start();trace_start=b.eval_expr('@clk')&0xffffffff
         samples=measure(s,panel,move,'counter-and-cat',count=self.count,before_sample=before,after_sample=after)
         move(600,80);motion=[]
         rgb=bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE)
@@ -95,11 +105,19 @@ class Load:
             s.frames(5)
         require(s.number(counter+14,4)>ticks and s.number(counter+18,4)>paints,'Counter did not progress')
         require(s.number(generation,4)>first_generation,'Console output made no progress')
+        if self.trace:
+            self.trace_sample=dict(action='Counter, CAT and physical input',start=trace_start,
+                                   end=b.eval_expr('@clk')&0xffffffff)
+            b.profile_stop()
         self.results=dict(button=samples,pointer=dict(samples_ms=motion,**distribution(motion)),progress=progress,work=self.media,
             console_updates=s.number(generation,4)-first_generation,
             scope='Physical press to independently reconstructed button scanout; 0/2/4/6/8-frame phase offsets; Counter and CAT active throughout')
+        if self.count<30:
+            from statistics import median
+            self.results['pointer']=dict(samples_ms=motion,median_ms=median(motion),max_ms=max(motion))
+            self.results['scope']='Bounded concurrent progress/scanout smoke; not a latency percentile.'
         (s.p['output']/'loaded-samples.json').write_text(json.dumps(self.results,indent=2)+'\n')
-        menus.select('Shell')
+        title('Shell',80,35)
         if running():s.press('\x03')
         s.ready(cat);s.frames(60)
         # Check the complete final retained desktop against its model after the
@@ -114,7 +132,9 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--count',type=int,default=30);p.add_argument('--layout-revision')
-    a=p.parse_args();require(a.count>=30,'At least 30 loaded interactions required')
+    p.add_argument('--smoke',action='store_true',help='Small progress check without percentile claims')
+    p.add_argument('--update-trace',action='store_true',help='Passive UPDATE admission boundaries')
+    a=p.parse_args();require(a.count>0 and (a.smoke or a.count>=30),'At least 30 loaded interactions required without --smoke')
     if a.layout_revision:
         import subprocess,generate_layers,generate_desktop,generate_aes_server
         for module,name in [(generate_layers,'layers'),(generate_desktop,'desktop'),(generate_aes_server,'aes-server')]:
@@ -122,9 +142,18 @@ def main():
     out=a.output.resolve();require(not out.exists(),'Use a fresh measurement directory')
     shutil.copytree(a.bundle.resolve(),out,ignore=shutil.ignore_patterns('extracted','*.log','*.bgra','*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')
-    probe=Load(a.count)
+    tracing=None
+    if a.update_trace:
+        import window_response_trace as response_trace
+        tracing=response_trace.setup(out)
+        os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response_trace.pcs(tracing)))
+    probe=Load(a.count,a.update_trace)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=probe,profile_commands=False)
     result.update(qualification=False,zip_sha256=sha256(out/'exec816-demo.zip'),loaded=probe.results)
+    if tracing:
+        from sio_transaction_trace import read_events
+        response_trace.report(out,read_events(out/'emulator.log',kinds={'cpu'}),tracing,
+                              [probe.trace_sample],'loaded-update')
     (out/'loaded-results.json').write_text(json.dumps(result,indent=2)+'\n')
 
 if __name__=='__main__':main()

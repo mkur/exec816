@@ -1,0 +1,2506 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "parent_revision": "f37d5f6",
+  "production_base": "eb7a034",
+  "source_sha256": {
+    "lib/aes/aeshost.act": "7bc501fa2b65f12f63b320c7f3e34defe90de35ae23d7f96dd603befb2bc218a",
+    "lib/console/consoledriver.act": "2bc4150d9908e73ff9e3d99aad8616a358dc79584e8a248a619732425ede00ce",
+    "tools/g4bench_trace.py": "6e932089374f3c8044f75412e4e0cd945045df515a69cb04cccb2f542b5b4980",
+    "tools/window_response_trace.py": "7d1beb052ad1f1b40a82d3dc88bca7c78f7f9432f888c98e49cd94dc98eb49b4",
+    "tools/measure_cache_load.py": "f5dcfb1d9b83c3ba2487d74997577965119b09779090a20712f000dee69e79c6",
+    "tools/measure_files_keyboard.py": "6883eacb3399af1db196b69fa905a6a30bb316eaa184dd22a2d7b1f204fc4a01"
+  },
+  "scope": "Matching PAL 8x, pinned ROM/compiler/emulator. Passive observations; means per operation across three idle batches; one Files opening; three concurrent button and pointer samples, no p95 claim.",
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "before": {
+    "dialog": {
+      "capture": "build/caller-local-update/before-dialog",
+      "archive_sha256": "2cbb3d34bf07c1b365d206659a22449d7d8a0afecc92af60c3e77ed0e2955e10",
+      "trace_sha256": "7f60215bb5f23c1be83ca0376be42a90267bbd450acf83e08b5f202dffd7d915",
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$86dfd9175388c419",
+        "actual_kernel_id": "$86dfd9175388c419",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/caller-local-update/before-dialog/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "benchmark": {
+        "workload": "Exec816 subset v1",
+        "rate": 50,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "rows": [
+          {
+            "name": "solid bars",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 200,
+                "ticks": 179,
+                "start": [
+                  0,
+                  3493,
+                  50
+                ],
+                "end": [
+                  0,
+                  3672,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 178,
+                "start": [
+                  0,
+                  3676,
+                  50
+                ],
+                "end": [
+                  0,
+                  3854,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 176,
+                "start": [
+                  0,
+                  3858,
+                  50
+                ],
+                "end": [
+                  0,
+                  4034,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 17.8
+          },
+          {
+            "name": "text even X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 104,
+                "start": [
+                  0,
+                  4258,
+                  50
+                ],
+                "end": [
+                  0,
+                  4362,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 105,
+                "start": [
+                  0,
+                  4366,
+                  50
+                ],
+                "end": [
+                  0,
+                  4471,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 104,
+                "start": [
+                  0,
+                  4475,
+                  50
+                ],
+                "end": [
+                  0,
+                  4579,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 20.8
+          },
+          {
+            "name": "text odd X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 106,
+                "start": [
+                  0,
+                  4808,
+                  50
+                ],
+                "end": [
+                  0,
+                  4914,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 104,
+                "start": [
+                  0,
+                  4918,
+                  50
+                ],
+                "end": [
+                  0,
+                  5022,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 103,
+                "start": [
+                  0,
+                  5026,
+                  50
+                ],
+                "end": [
+                  0,
+                  5129,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 20.8
+          },
+          {
+            "name": "text clipped",
+            "status": "complete",
+            "clip": [
+              155,
+              59,
+              464,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 140,
+                "start": [
+                  0,
+                  5423,
+                  50
+                ],
+                "end": [
+                  0,
+                  5563,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 139,
+                "start": [
+                  0,
+                  5567,
+                  50
+                ],
+                "end": [
+                  0,
+                  5706,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 137,
+                "start": [
+                  0,
+                  5710,
+                  50
+                ],
+                "end": [
+                  0,
+                  5847,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 27.8
+          },
+          {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 40,
+                "ticks": 183,
+                "start": [
+                  0,
+                  6233,
+                  50
+                ],
+                "end": [
+                  0,
+                  6416,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 183,
+                "start": [
+                  0,
+                  6420,
+                  50
+                ],
+                "end": [
+                  0,
+                  6603,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 184,
+                "start": [
+                  0,
+                  6607,
+                  50
+                ],
+                "end": [
+                  0,
+                  6791,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 91.5
+          }
+        ],
+        "save": 1,
+        "runs": 1,
+        "rectangles_only": false,
+        "load": "idle",
+        "pointer": [
+          630,
+          230
+        ],
+        "other_apps": [
+          "idle shell"
+        ],
+        "counter_advanced": false,
+        "bank_zero_slice_delta": {
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0
+        },
+        "screenshot_sha256": "5e671980306fc086fd181100d701339492c259a892922ea7fb52bdda1fe29f2d"
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 573,
+          "remaining_above_floor": 707
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 633,
+          "remaining_above_floor": 423
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 760,
+          "remaining_above_floor": 296
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 737,
+          "remaining_above_floor": 319
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 842,
+          "remaining_above_floor": 1462
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 66,
+          "remaining_above_floor": 190
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "rows": [
+        {
+          "name": "solid bars",
+          "operations": 600,
+          "total": {
+            "elapsed_ms": 17.846076991283926,
+            "charged_cpu_ms": 7.74106284040924,
+            "off_cpu_ms": 8.451607791227726,
+            "interrupt_ms": 1.653406359646959
+          },
+          "presenter_cpu_ms": 6.962854835003572,
+          "counts": {
+            "calls": 300,
+            "rpc": 300,
+            "pairs": 150,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 17.489432776179353,
+            "charged_cpu_ms": 2.992519278599075,
+            "off_cpu_ms": 13.872824916816915,
+            "interrupt_ms": 0.6240885807633625
+          },
+          "end": {
+            "elapsed_ms": 15.53764489786137,
+            "charged_cpu_ms": 2.656650864112602,
+            "off_cpu_ms": 12.306967079656996,
+            "interrupt_ms": 0.5740269540917714
+          },
+          "pair": {
+            "elapsed_ms": 33.027077674040726,
+            "charged_cpu_ms": 5.649170142711677,
+            "off_cpu_ms": 26.179791996473913,
+            "interrupt_ms": 1.1981155348551338
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "GemSolidFill": 1.0,
+            "VbxeOwnerSubmit": 1.0,
+            "_VbxeUpload": 1.0,
+            "solid_record": 3.0
+          }
+        },
+        {
+          "name": "text even X",
+          "operations": 300,
+          "total": {
+            "elapsed_ms": 20.972426352250817,
+            "charged_cpu_ms": 10.76702745171011,
+            "off_cpu_ms": 7.900857181657008,
+            "interrupt_ms": 2.3045417188836996
+          },
+          "presenter_cpu_ms": 6.513100660342825,
+          "counts": {
+            "calls": 150,
+            "rpc": 150,
+            "pairs": 75,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 17.669617134611165,
+            "charged_cpu_ms": 2.9093596887794346,
+            "off_cpu_ms": 14.145245348396273,
+            "interrupt_ms": 0.6150120974354565
+          },
+          "end": {
+            "elapsed_ms": 13.023107065005684,
+            "charged_cpu_ms": 2.8534309586271935,
+            "off_cpu_ms": 9.546547050307382,
+            "interrupt_ms": 0.6231290560711082
+          },
+          "pair": {
+            "elapsed_ms": 30.692724199616848,
+            "charged_cpu_ms": 5.762790647406629,
+            "off_cpu_ms": 23.691792398703654,
+            "interrupt_ms": 1.2381411535065647
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0
+          }
+        },
+        {
+          "name": "text odd X",
+          "operations": 300,
+          "total": {
+            "elapsed_ms": 21.01777564132384,
+            "charged_cpu_ms": 10.907912413533527,
+            "off_cpu_ms": 7.776474916793421,
+            "interrupt_ms": 2.3333883109968956
+          },
+          "presenter_cpu_ms": 6.411079502870351,
+          "counts": {
+            "calls": 150,
+            "rpc": 150,
+            "pairs": 75,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 15.077275570134818,
+            "charged_cpu_ms": 2.937023321336925,
+            "off_cpu_ms": 11.538974229572625,
+            "interrupt_ms": 0.601278019225266
+          },
+          "end": {
+            "elapsed_ms": 12.373346264831635,
+            "charged_cpu_ms": 2.7271796881497763,
+            "off_cpu_ms": 9.062729514124326,
+            "interrupt_ms": 0.5834370625575327
+          },
+          "pair": {
+            "elapsed_ms": 27.45062183496645,
+            "charged_cpu_ms": 5.664203009486701,
+            "off_cpu_ms": 20.60170374369695,
+            "interrupt_ms": 1.1847150817827987
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0
+          }
+        },
+        {
+          "name": "text clipped",
+          "operations": 300,
+          "total": {
+            "elapsed_ms": 27.849510863257397,
+            "charged_cpu_ms": 15.676987665737686,
+            "off_cpu_ms": 8.82403740924574,
+            "interrupt_ms": 3.348485788273969
+          },
+          "presenter_cpu_ms": 7.267317141706573,
+          "counts": {
+            "calls": 150,
+            "rpc": 150,
+            "pairs": 75,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 18.096574609623346,
+            "charged_cpu_ms": 3.0329194032151126,
+            "off_cpu_ms": 14.438300729699263,
+            "interrupt_ms": 0.6253544767089713
+          },
+          "end": {
+            "elapsed_ms": 13.591020690867177,
+            "charged_cpu_ms": 2.551299093996298,
+            "off_cpu_ms": 10.494481323335856,
+            "interrupt_ms": 0.5452402735350215
+          },
+          "pair": {
+            "elapsed_ms": 31.687595300490525,
+            "charged_cpu_ms": 5.584218497211411,
+            "off_cpu_ms": 24.93278205303512,
+            "interrupt_ms": 1.1705947502439928
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "VbxeOwnerSubmit": 1.06,
+            "_VbxeUpload": 1.06
+          }
+        },
+        {
+          "name": "five-object dialog",
+          "operations": 120,
+          "total": {
+            "elapsed_ms": 91.99890091662333,
+            "charged_cpu_ms": 44.186313545603504,
+            "off_cpu_ms": 38.38548751795585,
+            "interrupt_ms": 9.427099853063972
+          },
+          "presenter_cpu_ms": 31.609308987156375,
+          "counts": {
+            "calls": 240,
+            "rpc": 240,
+            "pairs": 120,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 18.924821334340788,
+            "charged_cpu_ms": 3.0552379851485125,
+            "off_cpu_ms": 15.24255193627102,
+            "interrupt_ms": 0.6270314129212546
+          },
+          "end": {
+            "elapsed_ms": 15.085724626751004,
+            "charged_cpu_ms": 2.557686018334346,
+            "off_cpu_ms": 11.978209697026085,
+            "interrupt_ms": 0.5498289113905731
+          },
+          "pair": {
+            "elapsed_ms": 34.01054596109179,
+            "charged_cpu_ms": 5.612924003482859,
+            "off_cpu_ms": 27.220761633297105,
+            "interrupt_ms": 1.1768603243118276
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "GemSolidFill": 14.0,
+            "VbxeOwnerSubmit": 8.0,
+            "_VbxeUpload": 8.0,
+            "blit_glyph_run": 3.0,
+            "glyph_record": 18.0,
+            "objc_draw": 1.0,
+            "solid_record": 42.0
+          }
+        }
+      ]
+    },
+    "files": {
+      "capture": "build/caller-local-update/before-files-update",
+      "archive_sha256": "2cbb3d34bf07c1b365d206659a22449d7d8a0afecc92af60c3e77ed0e2955e10",
+      "summary": {
+        "Close right warmup": {
+          "window_ms": {
+            "samples": [
+              401.15255737765006
+            ],
+            "median": 401.15255737765006,
+            "maximum": 401.15255737765006
+          }
+        },
+        "New Window": {
+          "frame_ms": {
+            "samples": [
+              741.9311820620571
+            ],
+            "median": 741.9311820620571,
+            "maximum": 741.9311820620571
+          },
+          "window_ms": {
+            "samples": [
+              1082.9618581886411
+            ],
+            "median": 1082.9618581886411,
+            "maximum": 1082.9618581886411
+          }
+        }
+      },
+      "samples": [
+        {
+          "action": "Close right warmup",
+          "start": 92594726,
+          "end": 96151844,
+          "window_ms": 401.15255737765006,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "trace": [
+            {
+              "frame": 0,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                32,
+                29,
+                88,
+                173
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 3,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 4,
+              "damage": [
+                [
+                  120,
+                  24,
+                  582,
+                  220
+                ]
+              ],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 7,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 14,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 19,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 3
+            }
+          ],
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        },
+        {
+          "action": "New Window",
+          "start": 106751077,
+          "end": 111516902,
+          "frame_ms": 741.9311820620571,
+          "window_ms": 1082.9618581886411,
+          "content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "calls": {
+            "CONSOLEBITMAP_COPYSTART": 2,
+            "VbxeOwnerSubmit": 50,
+            "VbxeOwnerFence": 167,
+            "CONSOLEBITMAP_FRAME": 4,
+            "GemDrawingFrameBatch": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "Close right warmup",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 91.86147320402775,
+                "charged_cpu_ms": 45.42332096100956,
+                "off_cpu_ms": 36.7167621257466,
+                "interrupt_ms": 9.721390117271584
+              },
+              "presenter_cpu_ms": 30.180693254240683,
+              "mean_pair": {
+                "elapsed_ms": 35.83789483477803,
+                "charged_cpu_ms": 5.517219991006218,
+                "off_cpu_ms": 29.240716175697337,
+                "interrupt_ms": 1.0799586680744708
+              }
+            }
+          ]
+        },
+        {
+          "action": "New Window",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 193.85540028672966,
+                "charged_cpu_ms": 132.39065436106793,
+                "off_cpu_ms": 33.09648298018408,
+                "interrupt_ms": 28.368262945477664
+              },
+              "presenter_cpu_ms": 27.32763445210529,
+              "mean_pair": {
+                "elapsed_ms": 32.325597459186135,
+                "charged_cpu_ms": 5.479651920905468,
+                "off_cpu_ms": 25.672313389598507,
+                "interrupt_ms": 1.1736321486821573
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "keyboard": {
+      "capture": "build/caller-local-update/before-keyboard-update",
+      "archive_sha256": "2cbb3d34bf07c1b365d206659a22449d7d8a0afecc92af60c3e77ed0e2955e10",
+      "status": "pass",
+      "samples": [
+        {
+          "action": "icons-summary-pointer",
+          "start": 67590501,
+          "end": 70436196,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1,
+          "calls": {
+            "trace": 43260,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 17,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "icons-cell-pointer",
+          "start": 79683813,
+          "end": 82529061,
+          "pointer": [
+            172,
+            55
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 1,
+          "paints": 1,
+          "calls": {
+            "trace": 43839,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 18,
+            "GemDrawingCopyStart": 1,
+            "cursor_hide": 1
+          }
+        },
+        {
+          "action": "icons-outside-pointer",
+          "start": 92310245,
+          "end": 95155940,
+          "pointer": [
+            632,
+            232
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1,
+          "calls": {
+            "trace": 43245,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 17,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "start": 148223333,
+          "end": 151068581,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 2,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 2,
+          "paints": 1,
+          "calls": {
+            "trace": 51202,
+            "GemDrawingBorrow": 14,
+            "cursor_hide": 3,
+            "cursor_render": 18,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "list-first-item-noop",
+          "start": 186885733,
+          "end": 189730981,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 0,
+          "calls": {
+            "trace": 17010
+          }
+        }
+      ],
+      "restorations": [
+        {
+          "action": "icons-outside-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "icons-summary-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 141.98002760160648,
+                "charged_cpu_ms": 92.28924171705111,
+                "off_cpu_ms": 29.79697735625103,
+                "interrupt_ms": 19.893808528304334
+              },
+              "presenter_cpu_ms": 24.574028833670013,
+              "mean_pair": {
+                "elapsed_ms": 35.32921047846074,
+                "charged_cpu_ms": 4.470388889437099,
+                "off_cpu_ms": 29.79697735625103,
+                "interrupt_ms": 1.061844232772608
+              }
+            }
+          ]
+        },
+        {
+          "action": "icons-cell-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 138.99241449211212,
+                "charged_cpu_ms": 92.75746815172144,
+                "off_cpu_ms": 26.364961466296577,
+                "interrupt_ms": 19.869984874094104
+              },
+              "presenter_cpu_ms": 21.715190328442198,
+              "mean_pair": {
+                "elapsed_ms": 30.389326439040346,
+                "charged_cpu_ms": 4.441772310711199,
+                "off_cpu_ms": 24.946819683131302,
+                "interrupt_ms": 1.0007344451978422
+              }
+            }
+          ]
+        },
+        {
+          "action": "icons-outside-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 142.43732898774843,
+                "charged_cpu_ms": 93.02227723121209,
+                "off_cpu_ms": 29.320292819494234,
+                "interrupt_ms": 20.09475893704212
+              },
+              "presenter_cpu_ms": 24.225132122603007,
+              "mean_pair": {
+                "elapsed_ms": 34.84745108045206,
+                "charged_cpu_ms": 4.470036468516829,
+                "off_cpu_ms": 29.320292819494234,
+                "interrupt_ms": 1.0571217924409941
+              }
+            }
+          ]
+        },
+        {
+          "action": "list-summary-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 2,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 175.100616172737,
+                "charged_cpu_ms": 114.49394470374793,
+                "off_cpu_ms": 36.12032496028216,
+                "interrupt_ms": 24.486346508706912
+              },
+              "presenter_cpu_ms": 29.70908357873577,
+              "mean_pair": {
+                "elapsed_ms": 28.121427332920767,
+                "charged_cpu_ms": 4.430917746366893,
+                "off_cpu_ms": 22.78464685309263,
+                "interrupt_ms": 0.9058627334612386
+              }
+            }
+          ]
+        },
+        {
+          "action": "list-first-item-noop",
+          "callers": []
+        }
+      ]
+    },
+    "load": {
+      "capture": "build/caller-local-update/before-load-direct",
+      "archive_sha256": "2cbb3d34bf07c1b365d206659a22449d7d8a0afecc92af60c3e77ed0e2955e10",
+      "status": "pass",
+      "results": {
+        "button": {
+          "model_address": 2621702,
+          "samples_ms": [
+            140.20150018537342,
+            180.36789924708796,
+            140.45467937449516
+          ],
+          "median_ms": 140.45467937449516,
+          "max_ms": 180.36789924708796,
+          "scope": "3 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        },
+        "pointer": {
+          "samples_ms": [
+            99.86932232276399,
+            100.28884418625304,
+            120.23981538782512
+          ],
+          "median_ms": 100.28884418625304,
+          "max_ms": 120.23981538782512
+        },
+        "progress": [
+          {
+            "index": 0,
+            "ticks": 34,
+            "paints": 36,
+            "console_generation": 44
+          },
+          {
+            "index": 1,
+            "ticks": 34,
+            "paints": 36,
+            "console_generation": 46
+          },
+          {
+            "index": 2,
+            "ticks": 35,
+            "paints": 37,
+            "console_generation": 49
+          }
+        ],
+        "work": {
+          "sha256": "dff16bd22b6b554c496c637751d33e009ccb964a4ca258d39a4ef74bb47a8362",
+          "payload_sha256": "fac7aa4e6f678e335e47907c94c3586cd678393c46a49cce8cda81391f0a44cb",
+          "bytes": 66560
+        },
+        "console_updates": 32,
+        "scope": "Bounded concurrent progress/scanout smoke; not a latency percentile."
+      },
+      "updates": [
+        {
+          "action": "Counter, CAT and physical input",
+          "callers": [
+            {
+              "counts": {
+                "calls": 7,
+                "rpc": 7,
+                "pairs": 3,
+                "local_pairs": 0
+              },
+              "task_dp": 4352,
+              "completion": {
+                "elapsed_ms": 3317.8121286364553,
+                "charged_cpu_ms": 73.16223062706959,
+                "off_cpu_ms": 3228.1755591862743,
+                "interrupt_ms": 16.474338823111484
+              },
+              "presenter_cpu_ms": 2144.473758033435,
+              "mean_pair": {
+                "elapsed_ms": 61.54032846569558,
+                "charged_cpu_ms": 5.572056686200184,
+                "off_cpu_ms": 54.764119979117886,
+                "interrupt_ms": 1.2041518003775131
+              }
+            },
+            {
+              "counts": {
+                "calls": 12,
+                "rpc": 12,
+                "pairs": 6,
+                "local_pairs": 0
+              },
+              "task_dp": 4608,
+              "completion": {
+                "elapsed_ms": 1310.248400361443,
+                "charged_cpu_ms": 169.26255217591722,
+                "off_cpu_ms": 1104.5990930095195,
+                "interrupt_ms": 36.386755176006055
+              },
+              "presenter_cpu_ms": 785.3674833904021,
+              "mean_pair": {
+                "elapsed_ms": 80.06751914937807,
+                "charged_cpu_ms": 5.745576999976975,
+                "off_cpu_ms": 73.10594900610252,
+                "interrupt_ms": 1.2159931432985753
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "after": {
+    "dialog": {
+      "capture": "build/caller-local-update/settled-dialog",
+      "archive_sha256": "573dab1282266348eeb7c6e1ffde6342fb2789447c12fb9b18128ea191578545",
+      "trace_sha256": "e0049ad8efc7ec1652b389ea8f483fab78fc8bfc3dc74200593092ea10278d32",
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$dd2a74630ab38dfb",
+        "actual_kernel_id": "$dd2a74630ab38dfb",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/caller-local-update/settled-dialog/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "benchmark": {
+        "workload": "Exec816 subset v1",
+        "rate": 50,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "rows": [
+          {
+            "name": "solid bars",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 200,
+                "ticks": 135,
+                "start": [
+                  0,
+                  3406,
+                  50
+                ],
+                "end": [
+                  0,
+                  3541,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 134,
+                "start": [
+                  0,
+                  3544,
+                  50
+                ],
+                "end": [
+                  0,
+                  3678,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 132,
+                "start": [
+                  0,
+                  3681,
+                  50
+                ],
+                "end": [
+                  0,
+                  3813,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 13.4
+          },
+          {
+            "name": "text even X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 200,
+                "ticks": 196,
+                "start": [
+                  0,
+                  4219,
+                  50
+                ],
+                "end": [
+                  0,
+                  4415,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 195,
+                "start": [
+                  0,
+                  4418,
+                  50
+                ],
+                "end": [
+                  0,
+                  4613,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 195,
+                "start": [
+                  0,
+                  4616,
+                  50
+                ],
+                "end": [
+                  0,
+                  4811,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 19.5
+          },
+          {
+            "name": "text odd X",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 200,
+                "ticks": 200,
+                "start": [
+                  0,
+                  5223,
+                  50
+                ],
+                "end": [
+                  0,
+                  5423,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 200,
+                "start": [
+                  0,
+                  5427,
+                  50
+                ],
+                "end": [
+                  0,
+                  5627,
+                  50
+                ]
+              },
+              {
+                "operations": 200,
+                "ticks": 200,
+                "start": [
+                  0,
+                  5631,
+                  50
+                ],
+                "end": [
+                  0,
+                  5831,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 20.0
+          },
+          {
+            "name": "text clipped",
+            "status": "complete",
+            "clip": [
+              155,
+              59,
+              464,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 100,
+                "ticks": 112,
+                "start": [
+                  0,
+                  6072,
+                  50
+                ],
+                "end": [
+                  0,
+                  6184,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 113,
+                "start": [
+                  0,
+                  6187,
+                  50
+                ],
+                "end": [
+                  0,
+                  6300,
+                  50
+                ]
+              },
+              {
+                "operations": 100,
+                "ticks": 114,
+                "start": [
+                  0,
+                  6303,
+                  50
+                ],
+                "end": [
+                  0,
+                  6417,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 22.6
+          },
+          {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 40,
+                "ticks": 138,
+                "start": [
+                  0,
+                  6708,
+                  50
+                ],
+                "end": [
+                  0,
+                  6846,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 142,
+                "start": [
+                  0,
+                  6849,
+                  50
+                ],
+                "end": [
+                  0,
+                  6991,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 140,
+                "start": [
+                  0,
+                  6994,
+                  50
+                ],
+                "end": [
+                  0,
+                  7134,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 70.0
+          }
+        ],
+        "save": 1,
+        "runs": 1,
+        "rectangles_only": false,
+        "load": "idle",
+        "pointer": [
+          630,
+          230
+        ],
+        "other_apps": [
+          "idle shell"
+        ],
+        "counter_advanced": false,
+        "bank_zero_slice_delta": {
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "idle": 0
+        },
+        "screenshot_sha256": "16feba1e59278201c9c61a8e7098dcc1c9b2917938b608ab2f2d453a9fac00f4"
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 564,
+          "remaining_above_floor": 716
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 633,
+          "remaining_above_floor": 423
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 760,
+          "remaining_above_floor": 296
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 739,
+          "remaining_above_floor": 317
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 835,
+          "remaining_above_floor": 1469
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 66,
+          "remaining_above_floor": 190
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "rows": [
+        {
+          "name": "solid bars",
+          "operations": 600,
+          "total": {
+            "elapsed_ms": 13.42997079135413,
+            "charged_cpu_ms": 8.660741648681453,
+            "off_cpu_ms": 2.913240665427085,
+            "interrupt_ms": 1.8559884772455908
+          },
+          "presenter_cpu_ms": 2.4037093241647507,
+          "counts": {
+            "calls": 300,
+            "local": 263,
+            "rpc": 37,
+            "miss_presenter_turn": 37,
+            "pairs": 150,
+            "local_pairs": 113
+          },
+          "begin": {
+            "elapsed_ms": 7.379160740121524,
+            "charged_cpu_ms": 3.9168493381770064,
+            "off_cpu_ms": 2.641139174780571,
+            "interrupt_ms": 0.8211722271639467
+          },
+          "end": {
+            "elapsed_ms": 13.713102117015962,
+            "charged_cpu_ms": 5.6741267127069355,
+            "off_cpu_ms": 6.813739435008179,
+            "interrupt_ms": 1.2252359693008485
+          },
+          "pair": {
+            "elapsed_ms": 21.092262857137488,
+            "charged_cpu_ms": 9.590976050883942,
+            "off_cpu_ms": 9.45487860978875,
+            "interrupt_ms": 2.046408196464795
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "GemSolidFill": 1.0,
+            "VbxeOwnerSubmit": 1.0,
+            "_VbxeUpload": 1.0,
+            "solid_record": 3.0
+          }
+        },
+        {
+          "name": "text even X",
+          "operations": 600,
+          "total": {
+            "elapsed_ms": 19.54551081532815,
+            "charged_cpu_ms": 11.49955759427142,
+            "off_cpu_ms": 5.582677947895271,
+            "interrupt_ms": 2.4632752731614556
+          },
+          "presenter_cpu_ms": 4.600699696495103,
+          "counts": {
+            "calls": 300,
+            "local": 167,
+            "rpc": 133,
+            "miss_presenter_turn": 132,
+            "pairs": 150,
+            "local_pairs": 17,
+            "miss_handoff_transition_or_other_caller": 1
+          },
+          "begin": {
+            "elapsed_ms": 13.196022154588732,
+            "charged_cpu_ms": 2.941584587834336,
+            "off_cpu_ms": 9.64518778631263,
+            "interrupt_ms": 0.6092497804417667
+          },
+          "end": {
+            "elapsed_ms": 12.736312558824926,
+            "charged_cpu_ms": 5.558942398915107,
+            "off_cpu_ms": 6.024394576101069,
+            "interrupt_ms": 1.1529755838087492
+          },
+          "pair": {
+            "elapsed_ms": 25.932334713413656,
+            "charged_cpu_ms": 8.500526986749444,
+            "off_cpu_ms": 15.669582362413697,
+            "interrupt_ms": 1.762225364250516
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0
+          }
+        },
+        {
+          "name": "text odd X",
+          "operations": 600,
+          "total": {
+            "elapsed_ms": 20.07250931213545,
+            "charged_cpu_ms": 11.424698926807814,
+            "off_cpu_ms": 6.220126100904218,
+            "interrupt_ms": 2.4276842844234183
+          },
+          "presenter_cpu_ms": 5.107979185550554,
+          "counts": {
+            "calls": 300,
+            "rpc": 150,
+            "miss_presenter_turn": 150,
+            "local": 150,
+            "pairs": 150,
+            "local_pairs": 0
+          },
+          "begin": {
+            "elapsed_ms": 22.98463538766536,
+            "charged_cpu_ms": 2.768940627412615,
+            "off_cpu_ms": 19.640232748173638,
+            "interrupt_ms": 0.5754620120791095
+          },
+          "end": {
+            "elapsed_ms": 10.355235118791695,
+            "charged_cpu_ms": 5.558321198306312,
+            "off_cpu_ms": 3.6473972305354403,
+            "interrupt_ms": 1.149516689949942
+          },
+          "pair": {
+            "elapsed_ms": 33.33987050645705,
+            "charged_cpu_ms": 8.327261825718926,
+            "off_cpu_ms": 23.287629978709077,
+            "interrupt_ms": 1.7249787020290517
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0
+          }
+        },
+        {
+          "name": "text clipped",
+          "operations": 300,
+          "total": {
+            "elapsed_ms": 22.719942842025677,
+            "charged_cpu_ms": 16.487034434343276,
+            "off_cpu_ms": 2.698060322244292,
+            "interrupt_ms": 3.5348480854381084
+          },
+          "presenter_cpu_ms": 2.2278669089443017,
+          "counts": {
+            "calls": 150,
+            "local": 137,
+            "rpc": 13,
+            "miss_presenter_turn": 13,
+            "pairs": 75,
+            "local_pairs": 62
+          },
+          "begin": {
+            "elapsed_ms": 7.732249380561496,
+            "charged_cpu_ms": 4.070997308913853,
+            "off_cpu_ms": 2.774360861166363,
+            "interrupt_ms": 0.8868912104812801
+          },
+          "end": {
+            "elapsed_ms": 14.174673904922475,
+            "charged_cpu_ms": 5.615849919436577,
+            "off_cpu_ms": 7.341382627152293,
+            "interrupt_ms": 1.2174413583336035
+          },
+          "pair": {
+            "elapsed_ms": 21.90692328548397,
+            "charged_cpu_ms": 9.68684722835043,
+            "off_cpu_ms": 10.115743488318657,
+            "interrupt_ms": 2.1043325688148835
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "VbxeOwnerSubmit": 1.06,
+            "_VbxeUpload": 1.06
+          }
+        },
+        {
+          "name": "five-object dialog",
+          "operations": 120,
+          "total": {
+            "elapsed_ms": 70.42991240695501,
+            "charged_cpu_ms": 46.73745745692124,
+            "off_cpu_ms": 13.69088491483396,
+            "interrupt_ms": 10.001570035199801
+          },
+          "presenter_cpu_ms": 11.280726992670115,
+          "counts": {
+            "calls": 240,
+            "rpc": 44,
+            "miss_presenter_turn": 41,
+            "local": 196,
+            "miss_handoff_transition_or_other_caller": 3,
+            "pairs": 120,
+            "local_pairs": 76
+          },
+          "begin": {
+            "elapsed_ms": 9.06013510878294,
+            "charged_cpu_ms": 3.742326034461127,
+            "off_cpu_ms": 4.528385625549483,
+            "interrupt_ms": 0.78942344877233
+          },
+          "end": {
+            "elapsed_ms": 12.904430612314902,
+            "charged_cpu_ms": 5.6355159465767475,
+            "off_cpu_ms": 6.0699193707923875,
+            "interrupt_ms": 1.1989952949457672
+          },
+          "pair": {
+            "elapsed_ms": 21.96456572109784,
+            "charged_cpu_ms": 9.377841981037875,
+            "off_cpu_ms": 10.59830499634187,
+            "interrupt_ms": 1.9884187437180971
+          },
+          "drawing_calls": {
+            "BenchDraw": 1.0,
+            "GemSolidFill": 14.0,
+            "VbxeOwnerSubmit": 8.0,
+            "_VbxeUpload": 8.0,
+            "blit_glyph_run": 3.0,
+            "glyph_record": 18.0,
+            "objc_draw": 1.0,
+            "solid_record": 42.0
+          }
+        }
+      ]
+    },
+    "files": {
+      "capture": "build/caller-local-update/settled-files",
+      "archive_sha256": "573dab1282266348eeb7c6e1ffde6342fb2789447c12fb9b18128ea191578545",
+      "summary": {
+        "Close right warmup": {
+          "window_ms": {
+            "samples": [
+              461.27556637566096
+            ],
+            "median": 461.27556637566096,
+            "maximum": 461.27556637566096
+          }
+        },
+        "New Window": {
+          "frame_ms": {
+            "samples": [
+              742.183233504234
+            ],
+            "median": 742.183233504234,
+            "maximum": 742.183233504234
+          },
+          "window_ms": {
+            "samples": [
+              1063.0080676197067
+            ],
+            "median": 1063.0080676197067,
+            "maximum": 1063.0080676197067
+          }
+        }
+      },
+      "samples": [
+        {
+          "action": "Close right warmup",
+          "start": 92772889,
+          "end": 96329561,
+          "window_ms": 461.27556637566096,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "trace": [
+            {
+              "frame": 0,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                32,
+                29,
+                88,
+                173
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 3,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                173
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 4,
+              "damage": [
+                [
+                  120,
+                  24,
+                  582,
+                  220
+                ]
+              ],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 7,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 16,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 22,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 3
+            }
+          ],
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        },
+        {
+          "action": "New Window",
+          "start": 106786329,
+          "end": 111517209,
+          "frame_ms": 742.183233504234,
+          "window_ms": 1063.0080676197067,
+          "content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "calls": {
+            "CONSOLEBITMAP_COPYSTART": 2,
+            "VbxeOwnerSubmit": 50,
+            "VbxeOwnerFence": 167,
+            "CONSOLEBITMAP_FRAME": 4,
+            "GemDrawingFrameBatch": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "Close right warmup",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 1,
+                "miss_presenter_turn": 1,
+                "local": 1,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 108.29887831469496,
+                "charged_cpu_ms": 51.358441679271586,
+                "off_cpu_ms": 45.814296729956766,
+                "interrupt_ms": 11.126139905466612
+              },
+              "presenter_cpu_ms": 37.90498450052793,
+              "mean_pair": {
+                "elapsed_ms": 25.72418974906221,
+                "charged_cpu_ms": 7.973664289470086,
+                "off_cpu_ms": 15.996949444514145,
+                "interrupt_ms": 1.7535760150779767
+              }
+            }
+          ]
+        },
+        {
+          "action": "New Window",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 1,
+                "miss_presenter_turn": 1,
+                "local": 1,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 191.69372084597939,
+                "charged_cpu_ms": 134.869583114245,
+                "off_cpu_ms": 27.95889080449238,
+                "interrupt_ms": 28.865246927241994
+              },
+              "presenter_cpu_ms": 22.98207305262772,
+              "mean_pair": {
+                "elapsed_ms": 37.9215482837806,
+                "charged_cpu_ms": 8.188500082466495,
+                "off_cpu_ms": 27.95889080449238,
+                "interrupt_ms": 1.774157396821727
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "keyboard": {
+      "capture": "build/caller-local-update/settled-keyboard",
+      "archive_sha256": "573dab1282266348eeb7c6e1ffde6342fb2789447c12fb9b18128ea191578545",
+      "status": "pass",
+      "samples": [
+        {
+          "action": "icons-summary-pointer",
+          "start": 67554968,
+          "end": 70400665,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1,
+          "calls": {
+            "trace": 43200,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 17,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "icons-cell-pointer",
+          "start": 79505816,
+          "end": 82351513,
+          "pointer": [
+            172,
+            55
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1,
+          "calls": {
+            "trace": 43780,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 18,
+            "GemDrawingCopyStart": 1,
+            "cursor_hide": 1
+          }
+        },
+        {
+          "action": "icons-outside-pointer",
+          "start": 91990233,
+          "end": 94835481,
+          "pointer": [
+            632,
+            232
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1,
+          "calls": {
+            "trace": 43178,
+            "GemDrawingBorrow": 16,
+            "cursor_render": 17,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "start": 147654233,
+          "end": 150499481,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 3,
+          "paints": 1,
+          "calls": {
+            "trace": 51151,
+            "GemDrawingBorrow": 14,
+            "cursor_hide": 3,
+            "cursor_render": 18,
+            "GemDrawingCopyStart": 1
+          }
+        },
+        {
+          "action": "list-first-item-noop",
+          "start": 186138778,
+          "end": 188984025,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 0,
+          "calls": {
+            "trace": 17020
+          }
+        }
+      ],
+      "restorations": [
+        {
+          "action": "icons-outside-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "icons-summary-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 122.25756612473728,
+                "charged_cpu_ms": 100.71985497174289,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 21.53771115299438
+              },
+              "presenter_cpu_ms": 0.0,
+              "mean_pair": {
+                "elapsed_ms": 15.242980127689147,
+                "charged_cpu_ms": 12.488387730677115,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 2.7545923970120345
+              }
+            }
+          ]
+        },
+        {
+          "action": "icons-cell-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 122.02687139032872,
+                "charged_cpu_ms": 99.27936970223251,
+                "off_cpu_ms": 1.5426873363885878,
+                "interrupt_ms": 21.204814351707622
+              },
+              "presenter_cpu_ms": 1.1731387593937797,
+              "mean_pair": {
+                "elapsed_ms": 14.974294418075527,
+                "charged_cpu_ms": 11.08624585729208,
+                "off_cpu_ms": 1.5426873363885878,
+                "interrupt_ms": 2.345361224394858
+              }
+            }
+          ]
+        },
+        {
+          "action": "icons-outside-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 122.28005057945047,
+                "charged_cpu_ms": 98.8372928998462,
+                "off_cpu_ms": 2.34289427795297,
+                "interrupt_ms": 21.0998634016513
+              },
+              "presenter_cpu_ms": 1.8502098314159285,
+              "mean_pair": {
+                "elapsed_ms": 15.809179578194447,
+                "charged_cpu_ms": 11.080184217463444,
+                "off_cpu_ms": 2.34289427795297,
+                "interrupt_ms": 2.3861010827780356
+              }
+            }
+          ]
+        },
+        {
+          "action": "list-summary-pointer",
+          "callers": [
+            {
+              "counts": {
+                "calls": 2,
+                "rpc": 1,
+                "miss_presenter_turn": 1,
+                "local": 1,
+                "pairs": 1,
+                "local_pairs": 0
+              },
+              "task_dp": 4096,
+              "completion": {
+                "elapsed_ms": 174.72874161766842,
+                "charged_cpu_ms": 116.23673663866566,
+                "off_cpu_ms": 33.639563618319684,
+                "interrupt_ms": 24.852441360683077
+              },
+              "presenter_cpu_ms": 27.622963183291304,
+              "mean_pair": {
+                "elapsed_ms": 35.76057368487085,
+                "charged_cpu_ms": 8.122103981087683,
+                "off_cpu_ms": 25.90674378576191,
+                "interrupt_ms": 1.7317259180212554
+              }
+            }
+          ]
+        },
+        {
+          "action": "list-first-item-noop",
+          "callers": []
+        }
+      ]
+    },
+    "load": {
+      "capture": "build/caller-local-update/settled-load",
+      "archive_sha256": "573dab1282266348eeb7c6e1ffde6342fb2789447c12fb9b18128ea191578545",
+      "status": "pass",
+      "results": {
+        "button": {
+          "model_address": 2621702,
+          "samples_ms": [
+            140.0656066785174,
+            120.49750556472632,
+            220.53317056185762
+          ],
+          "median_ms": 140.0656066785174,
+          "max_ms": 220.53317056185762,
+          "scope": "3 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+        },
+        "pointer": {
+          "samples_ms": [
+            100.03510112365886,
+            100.11799052410629,
+            100.28884418625304
+          ],
+          "median_ms": 100.11799052410629,
+          "max_ms": 100.28884418625304
+        },
+        "progress": [
+          {
+            "index": 0,
+            "ticks": 34,
+            "paints": 36,
+            "console_generation": 41
+          },
+          {
+            "index": 1,
+            "ticks": 35,
+            "paints": 37,
+            "console_generation": 44
+          },
+          {
+            "index": 2,
+            "ticks": 35,
+            "paints": 37,
+            "console_generation": 48
+          }
+        ],
+        "work": {
+          "sha256": "dff16bd22b6b554c496c637751d33e009ccb964a4ca258d39a4ef74bb47a8362",
+          "payload_sha256": "fac7aa4e6f678e335e47907c94c3586cd678393c46a49cce8cda81391f0a44cb",
+          "bytes": 66560
+        },
+        "console_updates": 29,
+        "scope": "Bounded concurrent progress/scanout smoke; not a latency percentile."
+      },
+      "updates": [
+        {
+          "action": "Counter, CAT and physical input",
+          "callers": [
+            {
+              "counts": {
+                "calls": 8,
+                "rpc": 7,
+                "miss_presenter_turn": 7,
+                "local": 1,
+                "pairs": 4,
+                "local_pairs": 0
+              },
+              "task_dp": 4352,
+              "completion": {
+                "elapsed_ms": 3708.2645525170606,
+                "charged_cpu_ms": 94.28295734720086,
+                "off_cpu_ms": 3588.716609879909,
+                "interrupt_ms": 25.26498528995079
+              },
+              "presenter_cpu_ms": 2353.4414607706176,
+              "mean_pair": {
+                "elapsed_ms": 123.33667898260309,
+                "charged_cpu_ms": 6.663310444769298,
+                "off_cpu_ms": 115.14081330290296,
+                "interrupt_ms": 1.5325552349308338
+              }
+            },
+            {
+              "counts": {
+                "calls": 12,
+                "rpc": 6,
+                "miss_presenter_turn": 5,
+                "local": 6,
+                "miss_retained_native_work": 1,
+                "pairs": 6,
+                "local_pairs": 0
+              },
+              "task_dp": 4608,
+              "completion": {
+                "elapsed_ms": 1298.4346872405301,
+                "charged_cpu_ms": 185.9408017434968,
+                "off_cpu_ms": 1072.4733886963104,
+                "interrupt_ms": 40.02049680072289
+              },
+              "presenter_cpu_ms": 755.6750340791029,
+              "mean_pair": {
+                "elapsed_ms": 66.18496600547803,
+                "charged_cpu_ms": 9.3343614626314,
+                "off_cpu_ms": 54.83929136141141,
+                "interrupt_ms": 2.011313181435218
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Idle text batches can repeatedly collide with presenter policy turns; local admission is not universal.",
+    "One uncached desktop close took 401.2 -> 461.3 ms; most extra time precedes application BEGIN, with unchanged repaint work.",
+    "Three concurrent input samples do not establish a latency percentile: button maximum 180.4 -> 220.5 ms, median about 140 ms.",
+    "Windows-menu selection with Counter running failed on both parent and candidate; direct title clicks isolate this comparison."
+  ],
+  "resource_growth": {
+    "resident_c_executable_bytes": 225,
+    "resident_c_zero_fill_bytes": 2,
+    "ul4_native_worker_bytes": 516,
+    "ul4_native_settled_hint_bytes": 537,
+    "ul4_worker_frame_bytes": 4,
+    "bank_zero_reservations_changed": false,
+    "vram_bytes": 0,
+    "upper_state_logical_bytes": 5
+  },
+  "validation": {
+    "host_tests": 489,
+    "host_skips": 4,
+    "ul4_lock_assertions": 181,
+    "ul4_lock_failures": 0,
+    "earlier_slices": {
+      "gate_assertions": 24,
+      "bridge_modes": [
+        "raw",
+        "opt"
+      ],
+      "bindings_assertions": 324,
+      "cache_assertions": 220,
+      "cache_physical_observations": 31
+    },
+    "exact_package_boot_application_exit": true,
+    "files_pixels_and_cache": true,
+    "concurrent_progress": true
+  },
+  "uncached_close_attribution_ms": {
+    "before": {
+      "elapsed": 401.152,
+      "presenter_cpu": 206.783,
+      "desktop_cpu": 99.93,
+      "pre_begin_elapsed": 291.224,
+      "pre_begin_presenter_cpu": 166.595,
+      "pre_begin_desktop_cpu": 49.635
+    },
+    "after": {
+      "elapsed": 461.276,
+      "presenter_cpu": 243.787,
+      "desktop_cpu": 105.748,
+      "pre_begin_elapsed": 338.313,
+      "pre_begin_presenter_cpu": 205.882,
+      "pre_begin_desktop_cpu": 49.552
+    },
+    "scope": "Passive worker/app CPU attribution; initial sub-millisecond interval before first trace point omitted."
+  }
+}

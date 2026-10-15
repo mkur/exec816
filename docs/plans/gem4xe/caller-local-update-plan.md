@@ -4,7 +4,9 @@
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: UL1–UL3 complete; UL4 pending. Implement UL1–UL4 in order,
+Status: UL1–UL4 complete; see the [execution record](../../history/caller-local-update.md)
+for matched measurements, remaining text fallbacks and the uncached-close regression.
+Implemented UL1–UL4 in order,
 with a separate commit after each executable slice. The physical-bridge
 measurement and UPDATE analysis are preparatory records; keep implementation
 commits scoped to their slice.

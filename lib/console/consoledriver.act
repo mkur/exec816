@@ -595,6 +595,7 @@ PUBLIC PROC Worker()
 
   displayMask=CONSOLEBITMAP.Mask()
   LET desktopMask=DESKHOST.Mask()
+  LET aesMask=AESHOST.Mask()
   EXEC.Forbid()
   IF service.stop=0 THEN
     service.state=2
@@ -621,185 +622,199 @@ PUBLIC PROC Worker()
       stopping=1
     FI
 
-    ; Each renderer operation owns its scratch/list until its fence or DMA
-    ; handoff. CPU-only service work must leave access available to clients.
-    CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
-    DESKHOST.MenuContinuation()
-    IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
-      EXEC.Forbid()
-      accepted=RequestStop(service)
-      EXEC.Permit()
-      IF service.stop<>0 THEN
-        CONSOLEDISPLAY.DiscardBatch()
-        EXIT
+    ; A local outer END can be the only reason an otherwise idle presenter
+    ; woke. No input, control, model or retained drawing work needs a full
+    ; turn in that case. Settled excludes waiters, messages and publication
+    ; work. Maintain caches with policy closed; new signals survive to Wait.
+    IF bits=aesMask AND aesMask<>0 AND stopping=0 AND service.stop=0
+        AND AESHOST.Settled()<>0 AND AESLOCKS.NativeReady()<>0
+        AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+      DESKHOST.Cache()
+      policyReady=AESLOCKS.NativeReady()
+      ; A started cache continuation needs the normal turn and completion wait.
+      schedule=IF policyReady<>0 THEN 2 ELSE 0 FI
+      bits=0
+    ELSE
+      ; Each renderer operation owns its scratch/list until its fence or DMA
+      ; handoff. CPU-only service work must leave access available to clients.
+      CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
+      DESKHOST.MenuContinuation()
+      IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+        EXEC.Forbid()
+        accepted=RequestStop(service)
+        EXEC.Permit()
+        IF service.stop<>0 THEN
+          CONSOLEDISPLAY.DiscardBatch()
+          EXIT
+        FI
       FI
-    FI
 
-    IF (bits & DESKINPUT.Mask())<>0 THEN
+      IF (bits & DESKINPUT.Mask())<>0 THEN
+        DESKINPUT.Service(bits)
+        DESKINPUT.Present()
+      FI
+
+      DESKHOST.Controls()
+      IF DESKHOST.Ready()<>0 THEN
+        CONSOLECONTROL.Process()
+      FI
       DESKINPUT.Service(bits)
+      DESKINPUT.Advance()
+      DESKPAINT.Sync()
+      inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
+      ; Present newly consumed motion before spending another quantum on output.
+      ; Intersecting draws erase it safely and the final pass restores it.
       DESKINPUT.Present()
-    FI
+      bits=0
 
-    DESKHOST.Controls()
-    IF DESKHOST.Ready()<>0 THEN
-      CONSOLECONTROL.Process()
-    FI
-    DESKINPUT.Service(bits)
-    DESKINPUT.Advance()
-    DESKPAINT.Sync()
-    inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
-    ; Present newly consumed motion before spending another quantum on output.
-    ; Intersecting draws erase it safely and the final pass restores it.
-    DESKINPUT.Present()
-    bits=0
+      ; Commit visible GUI feedback before starting another console-output
+      ; quantum. Drain at most four steps of a strip or ready menu, with input between
+      ; C calls. This never renews the turn's control or output budgets.
+      deferOutput=0
+      paintSteps=0
+      DO
+        paintProgress=DESKPAINT.Pump()
+        IF paintProgress=0 THEN
+          EXIT
+        FI
 
-    ; Commit visible GUI feedback before starting another console-output
-    ; quantum. Drain at most four steps of a strip or ready menu, with input between
-    ; C calls. This never renews the turn's control or output budgets.
-    deferOutput=0
-    paintSteps=0
-    DO
-      paintProgress=DESKPAINT.Pump()
-      IF paintProgress=0 THEN
-        EXIT
+        paintSteps==+1
+        DESKINPUT.Service(DESKINPUT.Mask())
+        DESKINPUT.Present()
+        IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
+          ; One handoff at most before the next eligible output quantum. This
+          ; lets queued status patches run without starving console writers.
+          handoff=1
+          deferOutput=1
+        FI
+
+        IF paintProgress=1 THEN
+          DESKMENU.Advance()
+        FI
+        IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
+            OR paintSteps=PAINT_STEPS OR deferOutput<>0
+            OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
+          EXIT
+        FI
+      OD
+      IF paintSteps=0 THEN
+        DESKINPUT.Present()
       FI
 
-      paintSteps==+1
-      DESKINPUT.Service(DESKINPUT.Mask())
-      DESKINPUT.Present()
-      IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
-        ; One handoff at most before the next eligible output quantum. This
-        ; lets queued status patches run without starving console writers.
-        handoff=1
-        deferOutput=1
-      FI
-
-      IF paintProgress=1 THEN
-        DESKMENU.Advance()
-      FI
-      IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
-          OR paintSteps=PAINT_STEPS OR deferOutput<>0
-          OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
-        EXIT
-      FI
-    OD
-    IF paintSteps=0 THEN
-      DESKINPUT.Present()
-    FI
-
-    DESKHOST.AfterPaint()
-    Arrival(service)
-    entry=CONSOLEWINDOWS.Take()
-    again=0
-    writing=0
-    IF entry<>NULL THEN
-      instance=CONSOLETYPES.Instance POINTER(entry.instance)
-      instance.changeTick=DISPLAYADAPTER.Ticks()
-      ReadQuantum(service,instance)
-      BEGIN
-        LET view=CONSOLETYPES.Presentation POINTER(entry.view)
-        IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0
-            AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
-            (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
-          handoff=0
-          completeWrite=0
-          IF CONSOLEBITMAP.TextPending()<>0 THEN
-            ; A scene token freezes this model until the last text fragment.
-            ; Re-resolve the live request only to finish a held short reply.
-            IF instance.write<>NULL AND instance.operation=CONSOLETYPES.OP_IDLE THEN
-              BEGIN
-                LET request=EXEC.IOStdReq POINTER(instance.write)
-                completeWrite=request.io_Actual=request.io_Length
-              END
+      DESKHOST.AfterPaint()
+      Arrival(service)
+      entry=CONSOLEWINDOWS.Take()
+      again=0
+      writing=0
+      IF entry<>NULL THEN
+        instance=CONSOLETYPES.Instance POINTER(entry.instance)
+        instance.changeTick=DISPLAYADAPTER.Ticks()
+        ReadQuantum(service,instance)
+        BEGIN
+          LET view=CONSOLETYPES.Presentation POINTER(entry.view)
+          IF deferOutput=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0
+              AND (DESKHOST.PaintReady()<>0 OR CONSOLEBITMAP.TextPending()<>0) AND
+              (batch.phase=CONSOLETYPES.BATCH_IDLE OR batch.unit=entry.unit) THEN
+            handoff=0
+            completeWrite=0
+            IF CONSOLEBITMAP.TextPending()<>0 THEN
+              ; A scene token freezes this model until the last text fragment.
+              ; Re-resolve the live request only to finish a held short reply.
+              IF instance.write<>NULL AND instance.operation=CONSOLETYPES.OP_IDLE THEN
+                BEGIN
+                  LET request=EXEC.IOStdReq POINTER(instance.write)
+                  completeWrite=request.io_Actual=request.io_Length
+                END
+              FI
+            ELSEIF view.scrollState<>0
+                AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
+              CONSOLEDISPLAY.Advance(view,instance,entry.unit)
+            ELSE
+              IF entry.unit=0 THEN
+                DESKMENUCACHE.ConsoleChanged(instance,view)
+              FI
+              completeWrite=WriteQuantum(instance,view,entry.unit)
             FI
-          ELSEIF view.scrollState<>0
-              AND view.scrollState<>CONSOLETYPES.SCROLL_GATHER THEN
-            CONSOLEDISPLAY.Advance(view,instance,entry.unit)
-          ELSE
+
             IF entry.unit=0 THEN
               DESKMENUCACHE.ConsoleChanged(instance,view)
             FI
-            completeWrite=WriteQuantum(instance,view,entry.unit)
+            CONSOLEDISPLAY.Present(view,instance)
+            ; Resume repair on a fresh worker turn without a voluntary Task
+            ; round trip per segment. Controls, input and registry rotation keep
+            ; their ordinary opportunities; blocked paint never takes this path.
+            again=CONSOLEBITMAP.Enabled()<>0 AND CONSOLEBITMAP.Failed()=0
+                AND view.claimed<>0 AND view.visible<>0 AND instance.dirtyRows<>0
+            IF completeWrite<>0 AND CONSOLEBITMAP.TextPending()=0 THEN
+              BEGIN
+                LET request=EXEC.IOStdReq POINTER(instance.write)
+                IF CONSOLEBITMAP.Failed()<>0 THEN
+                  request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
+                FI
+
+                FinishWrite(instance,request)
+              END
+            FI
           FI
 
-          IF entry.unit=0 THEN
-            DESKMENUCACHE.ConsoleChanged(instance,view)
+          ; Cancellation may finish a retained model edit while pixels are held.
+          IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
+              AND CONSOLEBITMAP.TextPending()=0
+              AND instance.write<>NULL AND instance.writeCancel<>0 THEN
+            CONSOLECORE.EditQuantum(instance)
+            IF entry.unit=0 THEN
+              DESKMENUCACHE.ConsoleChanged(instance,view)
+            FI
+            IF instance.operation=CONSOLETYPES.OP_IDLE THEN
+              FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
+            FI
           FI
-          CONSOLEDISPLAY.Present(view,instance)
-          ; Resume repair on a fresh worker turn without a voluntary Task
-          ; round trip per segment. Controls, input and registry rotation keep
-          ; their ordinary opportunities; blocked paint never takes this path.
-          again=CONSOLEBITMAP.Enabled()<>0 AND CONSOLEBITMAP.Failed()=0
-              AND view.claimed<>0 AND view.visible<>0 AND instance.dirtyRows<>0
-          IF completeWrite<>0 AND CONSOLEBITMAP.TextPending()=0 THEN
-            BEGIN
-              LET request=EXEC.IOStdReq POINTER(instance.write)
-              IF CONSOLEBITMAP.Failed()<>0 THEN
-                request.io_Error=BYTE(EXEC.IOERR_SELFTEST)
-              FI
 
-              FinishWrite(instance,request)
-            END
+          writing=instance.write<>NULL AND ((AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
+              OR instance.writeCancel<>0)
+          again=again OR (writing<>0 AND instance.writeCancel<>0)
+              OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
+          IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
+            again=0
           FI
-        FI
-
-        ; Cancellation may finish a retained model edit while pixels are held.
-        IF AESLOCKS.PaintBlocked()<>0 AND CONSOLEBITMAP.Pending()=0
-            AND CONSOLEBITMAP.TextPending()=0
-            AND instance.write<>NULL AND instance.writeCancel<>0 THEN
-          CONSOLECORE.EditQuantum(instance)
-          IF entry.unit=0 THEN
-            DESKMENUCACHE.ConsoleChanged(instance,view)
-          FI
-          IF instance.operation=CONSOLETYPES.OP_IDLE THEN
-            FinishWrite(instance,EXEC.IOStdReq POINTER(instance.write))
-          FI
-        FI
-
-        writing=instance.write<>NULL AND ((AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
-            OR instance.writeCancel<>0)
-        again=again OR (writing<>0 AND instance.writeCancel<>0)
-            OR (view.scrollState<>0 AND AESLOCKS.PaintBlocked()=0 AND DISPLAY.Blocked()=0)
-        IF batch.phase=CONSOLETYPES.BATCH_GATHER THEN
-          again=0
-        FI
-      END
-      entry.busy=0
-      ; No console view remains borrowed when pointer delivery resumes.
-      DESKHOST.InputBoundary()
-    ELSE
-      DESKINPUT.Present()
-    FI
-
-    DESKHOST.Events()
-    AESHOST.Settle()
-    IF stopping=0 AND writing=0 AND again=0
-        AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
-      DESKHOST.Cache()
-    FI
-
-    schedule=0
-    IF CONSOLEBITMAP.Pending()<>0 THEN
-      IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
-        schedule=1
+        END
+        entry.busy=0
+        ; No console view remains borrowed when pointer delivery resumes.
+        DESKHOST.InputBoundary()
       ELSE
-        schedule=2
+        DESKINPUT.Present()
       FI
-    ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
-      ; Ready paint continues within the existing preemptive Task quantum.
-      ; Do not add a voluntary round-robin pass between its bounded stripes.
-      ; Blocked paint still follows the normal signal wait below.
-      IF writing<>0 THEN
-        schedule=1
-      ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
-        ; Never clear the request/input signals between this hint and Wait.
-        schedule=2
-      ELSE
-        schedule=1
-      FI
-    FI
 
-    policyReady=stopping=0 AND service.stop=0 AND AESLOCKS.NativeReady()<>0
+      DESKHOST.Events()
+      AESHOST.Settle()
+      IF stopping=0 AND writing=0 AND again=0
+          AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+        DESKHOST.Cache()
+      FI
+
+      schedule=0
+      IF CONSOLEBITMAP.Pending()<>0 THEN
+        IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
+          schedule=1
+        ELSE
+          schedule=2
+        FI
+      ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
+        ; Ready paint continues within the existing preemptive Task quantum.
+        ; Do not add a voluntary round-robin pass between its bounded stripes.
+        ; Blocked paint still follows the normal signal wait below.
+        IF writing<>0 THEN
+          schedule=1
+        ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+          ; Never clear the request/input signals between this hint and Wait.
+          schedule=2
+        ELSE
+          schedule=1
+        FI
+      FI
+
+      policyReady=stopping=0 AND service.stop=0 AND AESLOCKS.NativeReady()<>0
+    FI
     AESGATE.Offer(policyReady)
     ; No shared-state hints after publication: schedule or reclaim next turn.
     IF schedule=1 THEN

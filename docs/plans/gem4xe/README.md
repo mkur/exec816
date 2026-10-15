@@ -6,8 +6,9 @@ the current lock/cache policy and retaining RPC for contention. It identifies
 the check-before-mutation race, synchronous paint-journal retirement and the
 expected transport savings. The [implementation plan](caller-local-update-plan.md)
 orders four slices: shared native policy, presenter handoff, direct BEGIN/END
-with RPC fallback, and focused measurements/demo refresh. Implementation has
-not started.
+with RPC fallback, and focused measurements/demo refresh. All four slices are
+implemented; the [record](../../history/caller-local-update.md) gives measured
+dialog/Files gains and the remaining fallback and close-latency limitations.
 
 The implemented [rectangle drawing overhead plan](rectangle-overhead-plan.md)
 addresses the AES/display costs surrounding the existing fast solid-fill path.

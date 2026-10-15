@@ -66,6 +66,19 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(AESCORE.Runnable(service))
 
+; A notification-only turn may sleep again once cache maintenance finishes.
+; Called with the policy gate closed; all omitted settlement must be a no-op.
+PUBLIC BYTE FUNC Settled()
+
+  LET service=AESSTATE.Get()
+  LET desktop=DESKSTATE.Get()
+
+RETURN(service<>NULL AND service.live=1 AND service.lockCount=0
+    AND service.windowPending=0 AND AESSTATE.mouseDirty=0
+    AND AESCORE.Runnable(service)=0 AND desktop<>NULL
+    AND service.windowRevision=desktop.scene.rebuilds
+    AND service.windowFocus=desktop.focus)
+
 PUBLIC BYTE FUNC Wake()
   BYTE changed
 

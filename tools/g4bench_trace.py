@@ -28,10 +28,10 @@ blit_glyph_run glyph_record blit_mask text_run VbxeOwnerFence idle
 VbxeOwnerSubmit VbxeOwnerRead VbxeOwnerWrite _VbxeUpload _VbxeTextUpload
 start fence_owner drain pointer_erase'''.split()
 # Optional boundaries let the same observer compare archived pre-fill images.
-FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit PutMsg GetMsg Wait vsf_color'.split()
+FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit ExecAESUpdate ExecAESBeginUpdate _AESUpdateCall PutMsg GetMsg Wait vsf_color'.split()
 
 
-def listing_returns(image, directory):
+def listing_returns(image, directory, exits=False):
     """Find JSL successor PCs without scanning operand bytes as instructions.
 
     Local outlined sections may have no unique exported symbol. Match their
@@ -47,8 +47,9 @@ def listing_returns(image, directory):
         for section in path.read_text().split('.section ')[1:]:
             if not section.startswith('farcode,text'):
                 continue
-            calls = [int(m[1], 16) for m in re.finditer(
-                r'\\ ([0-9a-f]{6}) 22[.]{6}\s+jsl\s', section)]
+            expression = (r'\\ ([0-9a-f]{6}) 6b\s+rtl' if exits else
+                          r'\\ ([0-9a-f]{6}) 22[.]{6}\s+jsl\s')
+            calls = [int(m[1], 16) for m in re.finditer(expression, section)]
             if not calls:
                 continue
             code = {}
@@ -62,8 +63,9 @@ def listing_returns(image, directory):
             for base, payload in segments:
                 for match in re.finditer(pattern, payload, re.S):
                     for offset in calls:
-                        require(payload[match.start()+offset] == 0x22, 'Not a linked JSL')
-                        returns.add(base+match.start()+offset+4)
+                        require(payload[match.start()+offset] == (0x6b if exits else 0x22),
+                                'Not the linked call/return instruction')
+                        returns.add(base+match.start()+offset+(0 if exits else 4))
     require(returns, 'Missing linked call returns')
     return sorted(returns)
 
@@ -87,6 +89,12 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH','AESLOCKS_ELIGIBLE',
         'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
         'AESSTATE_REPLY','DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
+    optional = ('AESLOCAL_UPDATE', 'AESGATE_CLAIM', 'AESGATE_RELEASE',
+                'AESGATE_OWNERENTER', 'AESGATE_OFFER', 'AESLOCKS_NATIVEREADY',
+                'AESLOCKS_ATTEMPT', 'AESLOCKS_RELEASE', 'AESHOST_SETTLED')
+    present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
+               for r in program['image']['routines'])]
+    native.update(native_markers(program, [(n,n) for n in present]))
     for name, span in native.items():
         points[name+'_entry']=span['entry']
         for i, pc in enumerate(span['returns']): points[name+'_return_'+str(i)]=pc
@@ -172,13 +180,16 @@ def read_trace(path, d, live):
     return result
 
 
-def calls(events, entries, returns, dp):
+def calls(events, entries, returns, dp, exits=()):
     active = defaultdict(list)
     rows = []
     for tick, e in events:
         if e[0] != 'cpu' or int(e[9], 16) != dp:
             continue
         pc, stack = int(e[4], 16), int(e[8], 16)
+        if pc in exits:
+            for opened in active.pop(stack, []):
+                rows.append(dict(opened, end=tick, return_a=int(e[5], 16)))
         if pc in returns:
             # A JSL frame is three bytes. Tail-called functions share that
             # frame and end together at its caller's successor instruction.
@@ -247,6 +258,77 @@ def clock_tick_bounds(clocks, vbis):
     return max(0, inner-1), outer+1
 
 
+def native_calls(events, marks):
+    """Action RTL boundaries, keyed by Task as well as native stack frame."""
+    entries = {v['entry']:n for n,v in marks.items()}
+    returns = defaultdict(set)
+    for name, mark in marks.items():
+        for pc in mark['returns']: returns[pc].add(name)
+    active = {}; spans = []
+    for tick,e in events:
+        pc,dp,stack = (int(e[i],16) for i in (4,9,8))
+        for name in returns[pc]:
+            opened = active.pop((dp,name,stack),None)
+            if opened is not None:
+                spans.append(dict(kind=name,dp=dp,start=opened,end=tick,
+                                  return_a=int(e[5],16)))
+        if pc in entries: active[dp,entries[pc],stack]=tick
+    return spans
+
+
+def update_summary(calls_, native, timeline, dp, start, end):
+    """Completed public UPDATE operations; native time stays charged to its Task."""
+    updates = sorted((s for s in calls_ if s['kind'] in
+        ('wind_update','ExecAESBeginUpdate') and start<=s['start']<s['end']<=end),
+        key=lambda s:s['start'])
+    counts = defaultdict(int); pairs=[]; stack=[]; rows=[]
+    native = sorted(native,key=lambda s:s['start'])
+    starts = [s['start'] for s in native]
+    offers = [s for s in native if s['kind']=='AESGATE_OFFER']
+    owner_turns = [s for s in native if s['kind']=='AESGATE_OWNERENTER']
+    ready = [s for s in native if s['kind']=='AESLOCKS_NATIVEREADY']
+    for call in updates:
+        code = 1 if call['kind']=='ExecAESBeginUpdate' else call['argument']
+        if code&2: continue  # MCTRL has no local path.
+        nested = [s for s in native[bisect_left(starts,call['start']):
+                                    bisect_left(starts,call['end'])]
+                  if s['dp']==dp and s['end']<=call['end']]
+        local = next((s for s in nested if s['kind']=='AESLOCAL_UPDATE'),None)
+        handled = bool(local and local['return_a'])
+        reason = None
+        claim = next((s for s in nested if s['kind']=='AESGATE_CLAIM'),None)
+        attempt = next((s for s in nested if s['kind']=='AESLOCKS_ATTEMPT'),None)
+        if claim and not claim['return_a']:
+            offer = next((s for s in reversed(offers) if s['start']<claim['start']),None)
+            turn = next((s for s in reversed(owner_turns) if s['start']<claim['start']),None)
+            if not offer or (turn and turn['start']>offer['start']):
+                reason='presenter_turn'
+            else:
+                last_ready=next((s for s in reversed(ready) if s['end']<offer['start']),None)
+                reason='retained_native_work' if last_ready and not last_ready['return_a'] else 'handoff_transition_or_other_caller'
+        elif attempt and (attempt['return_a']==8 or not call['return_a']):
+            eligible=next((s for s in nested if s['kind']=='AESLOCKS_ELIGIBLE'),None)
+            reason='earlier_request' if eligible and eligible['return_a'] else 'ownership_gesture_or_window'
+        counts['calls']+=1
+        counts['local' if handled else 'rpc']+=1
+        if reason: counts[('rejected_try_' if handled else 'miss_')+reason]+=1
+        row=dict(code=code,local=handled,reason=reason,result=call['return_a'],
+                 start=call['start'],end=call['end'],**timeline.measure(call['start'],call['end']))
+        rows.append(row)
+        if call['return_a']:
+            if code&1: stack.append(row)
+            elif stack:
+                begin=stack.pop()
+                pairs.append(dict(local=begin['local'] and handled,
+                    elapsed_ms=begin['elapsed_ms']+row['elapsed_ms'],
+                    charged_cpu_ms=begin['charged_cpu_ms']+row['charged_cpu_ms'],
+                    off_cpu_ms=begin['off_cpu_ms']+row['off_cpu_ms'],
+                    interrupt_ms=begin['interrupt_ms']+row['interrupt_ms']))
+    counts['pairs']=len(pairs)
+    counts['local_pairs']=sum(p['local'] for p in pairs)
+    return dict(counts=dict(counts),calls=rows,pairs=pairs)
+
+
 def analyze(events, d, live, benchmark):
     entries, returns = loaded_markers(d, live)
     application_pcs = {pc for pc, name in entries.items() if name == 'BenchDraw'}
@@ -259,22 +341,8 @@ def analyze(events, d, live, benchmark):
     presenter = Timeline(profile['segments'], worker)
     vbis=sorted({tick for tick,e in events
                  if int(e[4],16)==d['timeline']['points']['native_nmi']})
-    native_spans = []
-    active_native = {}
-    native_entries = {v['entry']:n for n,v in d.get('native',{}).items()}
-    native_returns = defaultdict(set)
-    for name, mark in d.get('native',{}).items():
-        for pc in mark['returns']: native_returns[pc].add(name)
-    for tick,e in events:
-        if int(e[9],16)!=worker: continue
-        pc,stack=int(e[4],16),int(e[8],16)
-        for name in native_returns[pc]:
-            opened=active_native.get((name,stack))
-            if opened:
-                native_spans.append(dict(kind=name,start=opened,end=tick,return_a=int(e[5],16)))
-                del active_native[name,stack]
-        if pc in native_entries:
-            active_native[native_entries[pc],stack]=tick
+    all_native = native_calls(events,d.get('native',{}))
+    native_spans = [s for s in all_native if s['dp']==worker]
     spans, unfinished = calls(events, entries, returns, dp)
     # A reporting helper may have started before the final IRQ breakpoint.
     # Every function that began before the last measured batch ended must
@@ -359,6 +427,7 @@ def analyze(events, d, live, benchmark):
                            for kind in sorted({s['kind'] for s in native_selected})}
             samples.append(dict(sample=index, start=start, end=end, operations=len(operations),
                 presenter_cpu_ms=presenter.measure(start,end)['charged_cpu_ms'],
+                update=update_summary(spans,all_native,timeline,dp,start,end),
                 presenter_routines=native_totals,
                 **measure, exclusive_cpu_ms=partition(timeline, selected, start, end),
                 routines=routine_totals, operation_spans=operations,

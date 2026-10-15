@@ -166,11 +166,17 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True)
     p.add_argument('--baseline',action='store_true')
+    p.add_argument('--update-trace',action='store_true',help='Passive UPDATE and Task CPU boundaries')
     p.add_argument('--preservation',action='store_true',help='Switch to Shell and back after icon/list selection')
     a=p.parse_args();out=a.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')
     symbols=json.loads((out/'bitmap-console/c-image.json').read_text())['symbols']
     points={symbols[n]:n for n in ('cursor_hide','cursor_render','GemDrawingBorrow','GemDrawingCopyStart')}
+    tracing=None
+    if a.update_trace:
+        import window_response_trace as response_trace
+        tracing=response_trace.setup(out)
+        points.update({pc:'trace' for pc in response_trace.pcs(tracing) if pc not in points})
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{p:x}' for p in points))
     probe=Keyboard(a.baseline,a.preservation)
     runtime=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',
@@ -193,6 +199,8 @@ def main():
             if not row['calls'].get('GemDrawingCopyStart'):
                 require(not row['pointer_pixel_changed_frames'],
                         'Stationary pointer pixels flickered: '+row['action'])
+    if tracing:
+        response_trace.report(out,events,tracing,probe.samples,'keyboard-update')
     (out/'keyboard-results.json').write_text(json.dumps(dict(status='pass',tier='development',
         qualification=False,zip_sha256=sha256(out/'exec816-demo.zip'),baseline=a.baseline,
         samples=probe.samples,restorations=probe.restorations,runtime=runtime),indent=2)+'\n')

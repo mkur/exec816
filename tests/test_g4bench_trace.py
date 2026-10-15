@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 from console_turn_profile import Timeline
-from g4bench_trace import calls, clock_tick_bounds, listing_returns, partition, read_trace
+from g4bench_trace import calls, clock_tick_bounds, listing_returns, native_calls, partition, read_trace
 from sio_transaction_trace import BASE_HZ
 
 
@@ -45,6 +45,25 @@ class BenchmarkTrace(unittest.TestCase):
                          [('callback', 2, 4), ('outer', 0, 5), ('tail', 1, 5)])
         self.assertEqual(rows[1]['argument'], 2)
 
+    def test_loaded_c_caller_needs_only_the_resident_rtl(self):
+        # The return address in a loaded app need not be among resident JSLs.
+        events = [event(0, 10, 0x4510), event(1, 20, 0x4510),
+                  event(2, 40, 0x4510, argument=1),
+                  event(3, 10, 0x4510), event(4, 40, 0x4510, argument=0)]
+        rows, unfinished = calls(events, {10:'public',20:'tail'}, set(),
+                                 0x1100, {40})
+        self.assertFalse(unfinished)
+        self.assertEqual([(r['kind'],r['start'],r['end'],r['return_a']) for r in rows],
+                         [('public',0,2,1),('tail',1,2,1),('public',3,4,0)])
+
+    def test_native_policy_calls_remain_separate_across_tasks(self):
+        events = [event(0,10,0x4510), event(1,10,0x4510,dp=0x1200),
+                  event(2,40,0x4510,dp=0x1200,argument=0),
+                  event(3,40,0x4510,argument=1)]
+        rows = native_calls(events, {'policy':dict(entry=10,returns=[40])})
+        self.assertEqual([(r['dp'],r['start'],r['end'],r['return_a']) for r in rows],
+                         [(0x1200,1,2,0),(0x1100,0,3,1)])
+
     def test_truncated_call_is_reported(self):
         rows, unfinished = calls([event(0, 10, 0x4510)], {10:'outer'}, {90}, 0x1100)
         self.assertFalse(rows)
@@ -81,6 +100,7 @@ class BenchmarkTrace(unittest.TestCase):
             path = Path(temp)
             (path/'probe.lst').write_text(listing.replace('\n', '\r\n'))
             self.assertEqual(listing_returns(image, path), [0x10004])
+            self.assertEqual(listing_returns(image, path, exits=True), [0x10004])
 
     def test_streaming_trace_keeps_matching_returns_and_clock_wrap(self):
         definition = dict(link_base=0, resident_entries={20:'nested'},
