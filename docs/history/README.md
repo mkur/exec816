@@ -1,5 +1,9 @@
 # Historical records
 
+- [Physical display C/Action bridge cost](display-bridge-cost.md): passive
+  ownership measurements after restoring preemption; about 70 us bridge CPU
+  per uncontended client pair, with C, assembly and Action costs separated.
+
 - [Short drawing units and Task switching](drawing-preemption.md): retired
   scheduling experiment, held-display pauses, dialog costs and focused checks.
 
