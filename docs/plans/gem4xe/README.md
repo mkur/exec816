@@ -1,5 +1,14 @@
 # GEM as a client of an Exec-like kernel
 
+The [caller-local UPDATE analysis](caller-local-update-analysis.md) proposes
+ordinary native-library BEGIN/END on presenter-published safe points, reusing
+the current lock/cache policy and retaining RPC for contention. It identifies
+the check-before-mutation race, synchronous paint-journal retirement and the
+expected transport savings. The [implementation plan](caller-local-update-plan.md)
+orders four slices: shared native policy, presenter handoff, direct BEGIN/END
+with RPC fallback, and focused measurements/demo refresh. Implementation has
+not started.
+
 The implemented [rectangle drawing overhead plan](rectangle-overhead-plan.md)
 addresses the AES/display costs surrounding the existing fast solid-fill path.
 RP1–RP5 shorten physical reservations, publish mouse state on changes, simplify

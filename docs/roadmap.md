@@ -216,6 +216,11 @@ required UPDATE exchanges and presenter service work still matter. The
 [record](history/rectangle-overhead.md) includes modest Files/menu gains,
 unchanged warm heading switches and focused validation limits.
 
+The planned [caller-local UPDATE work](plans/gem4xe/caller-local-update-plan.md)
+reuses native AES policy through a presenter handoff, avoiding BEGIN/END reply
+waits when safe while retaining RPC for contention. Four executable slices
+cover shared policy, the handoff, direct calls and measured application results.
+
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x
 improvement over 512-byte chunks on accurate SIO. Throughput is the priority;
