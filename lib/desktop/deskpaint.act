@@ -630,7 +630,7 @@ PUBLIC BYTE FUNC Pump()
       window=DESKCORE.Find(service,service.focus)
       IF window<>NULL THEN
         candidate=LAYERS.Find(@service.scene,window.layer)
-        IF Damaged(candidate)=0 THEN
+        IF LAYERS.Damaged(candidate)=0 THEN
           candidate=NULL
         FI
       FI
