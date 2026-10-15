@@ -2,6 +2,7 @@
 MODULE CONSOLEDRIVER
 USE EXEC
 USE AESHOST
+USE AESGATE
 USE AESLOCKS
 USE TASKSTACKS
 USE A816MEMORY
@@ -524,6 +525,7 @@ PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
   BYTE handoff,deferOutput,paintSteps,paintProgress
+  BYTE schedule,policyReady
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -608,8 +610,12 @@ PUBLIC PROC Worker()
   inputPending=1
   handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
-  WHILE service.stop=0 OR CONSOLEBITMAP.Pending()<>0
-      OR batch.phase<>CONSOLETYPES.BATCH_IDLE DO
+  DO
+    AESGATE.OwnerEnter()
+    IF service.stop<>0 AND CONSOLEBITMAP.Pending()=0
+        AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
+      EXIT
+    FI
     bits=Collect(bits,displayMask OR desktopMask)
     IF (bits & STOP_MASK)<>0 THEN
       stopping=1
@@ -772,24 +778,34 @@ PUBLIC PROC Worker()
       DESKHOST.Cache()
     FI
 
+    schedule=0
     IF CONSOLEBITMAP.Pending()<>0 THEN
       IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
-        EXEC.Yield()
+        schedule=1
       ELSE
-        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
+        schedule=2
       FI
     ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
       ; Ready paint continues within the existing preemptive Task quantum.
       ; Do not add a voluntary round-robin pass between its bounded stripes.
       ; Blocked paint still follows the normal signal wait below.
       IF writing<>0 THEN
-        EXEC.Yield()
+        schedule=1
       ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
         ; Never clear the request/input signals between this hint and Wait.
-        bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
+        schedule=2
       ELSE
-        EXEC.Yield()
+        schedule=1
       FI
+    FI
+
+    policyReady=stopping=0 AND service.stop=0 AND AESLOCKS.NativeReady()<>0
+    AESGATE.Offer(policyReady)
+    ; No shared-state hints after publication: schedule or reclaim next turn.
+    IF schedule=1 THEN
+      EXEC.Yield()
+    ELSEIF schedule=2 THEN
+      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)
     FI
   OD
 

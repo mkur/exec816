@@ -1,0 +1,131 @@
+; Deterministic handoff boundaries; no renderer or policy mock in production.
+MODULE AESGATEPROBE
+USE EXEC
+USE EXECTASKS
+USE EXECLISTS
+USE TASKSTACKS
+USE AESSTATE
+USE AESGATE
+USE HEAPCORE
+INCLUDE "../../lib/exec/exec-abi.inc"
+
+EXEC.Task presenter,peer
+EXEC.Task POINTER parent
+PROC POINTER missing()
+AESSTATE.Service POINTER service
+CARD checks
+VOLATILE CARD progress
+VOLATILE BYTE finished
+VOLATILE CARD ticks=E816_VBI_COUNT
+INCLUDE "tasks_exec_helpers.inc"
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fcb0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC PeerEntry()
+
+  WHILE finished=0 DO
+    progress==+1
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC PresenterEntry()
+
+  EXEC.AllocSignal(16)
+  EXEC.AllocSignal(17)
+  EXEC.AllocSignal(18)
+  ; Unrelated input is already pending when OwnerEnter has to park.
+  EXEC.SetSignal($40000,$40000)
+  AESGATE.OwnerEnter()
+  Require(service.policyGate=AESGATE.CLOSED)
+  Require((EXEC.SetSignal(0,0) & $40000)<>0)
+  Require(AESGATE.Claim()=0)
+  EXEC.Signal(parent,$10000)
+  EXEC.Wait($20000)
+  ; Release happened before the presenter could publish a waiter.
+  AESGATE.OwnerEnter()
+  Require(service.policyGate=AESGATE.CLOSED)
+  Require(service.policyWaiting=0)
+  EXEC.Signal(parent,$10000)
+
+RETURN
+
+PROC Main()
+
+  parent=EXEC.FindTask(NULL)
+  EXEC.AllocSignal(16)
+  LET available=EXEC.AvailMem(0)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(LONGCARD(SIZEOF(AESSTATE.Service)),
+      EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL)
+  AESSTATE.Bind(service)
+  service.owner=@presenter
+  service.mask=$10000
+  Require(AESGATE.Claim()=0)
+  AESGATE.Offer(1)
+  Require(AESGATE.Claim()=0)
+  service.live=1
+  ; Retained work and shutdown publish closed even with an otherwise live AES.
+  AESGATE.Offer(0)
+  Require(AESGATE.Claim()=0)
+  AESGATE.Offer(1)
+  EXEC.Forbid()
+  EXEC.Forbid()
+  Require(AESGATE.Claim()=1)
+  Require(parent.tc_TDNestCnt=1)
+  Require(AESGATE.Claim()=0)
+  EXEC.Permit()
+  PrepareTask(@presenter,TASKSTACKS.LOWER1,NULL)
+  PrepareTask(@peer,TASKSTACKS.LOWER2,NULL)
+  presenter.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER1)
+  presenter.tc_SPReg=ADDRESS(TASKSTACKS.UPPER1-2)
+  peer.tc_SPUpper=ADDRESS(TASKSTACKS.UPPER2)
+  peer.tc_SPReg=ADDRESS(TASKSTACKS.UPPER2-2)
+  Require(EXEC.AddTask(@presenter,@PresenterEntry,missing)=@presenter)
+  Require(EXEC.AddTask(@peer,@PeerEntry,missing)=@peer)
+  EXEC.Permit()
+  WHILE service.policyWaiting=0 DO
+    EXEC.Yield()
+  OD
+  Require(presenter.tc_State=EXEC.TS_WAIT)
+  LET before=progress
+  LET start=ticks
+  ; Natural VBI preemption while the caller owns policy, without Forbid.
+  WHILE ticks-start<3 DO
+  OD
+  Require(progress<>before)
+  Require(service.policyGate=AESGATE.CALLER)
+  Require(presenter.tc_State=EXEC.TS_WAIT)
+  AESGATE.Release(0)
+  EXEC.Wait($10000)
+  Require(service.policyWaiting=0)
+  EXEC.Forbid()
+  AESGATE.Offer(1)
+  Require(AESGATE.Claim()=1)
+  AESGATE.Release(0)
+  Require(parent.tc_TDNestCnt=0)
+  EXEC.Signal(@presenter,$20000)
+  EXEC.Permit()
+  EXEC.Wait($10000)
+  Require(service.policyGate=AESGATE.CLOSED)
+  finished=1
+  WHILE peer.tc_State<>EXEC.TS_REMOVED OR presenter.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  service.live=0
+  AESGATE.Offer(1)
+  Require(AESGATE.Claim()=0)
+  AESSTATE.Bind(NULL)
+  EXEC.FreeMem(BYTE POINTER(service),LONGCARD(SIZEOF(AESSTATE.Service)))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+ENDMODULE

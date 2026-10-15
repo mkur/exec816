@@ -4,7 +4,7 @@
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: UL1 complete; UL2–UL4 pending. Implement UL1–UL4 in order,
+Status: UL1–UL2 complete; UL3–UL4 pending. Implement UL1–UL4 in order,
 with a separate commit after each executable slice. The physical-bridge
 measurement and UPDATE analysis are preparatory records; keep implementation
 commits scoped to their slice.

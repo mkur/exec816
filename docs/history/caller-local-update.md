@@ -22,3 +22,27 @@ complete normally, including package boot and exit.
 UL1 reserves **0 additional bank-zero bytes**: fixed 0, per public Task 0, idle 0,
 including guards, alignment and unused capacity. No upper-RAM state or VRAM is
 added; existing stack reservations are unchanged.
+
+## UL2: presenter handoff
+
+The worker claims the private policy gate before its loop condition and closes
+it across input, controls, painting, settlement, caching and readiness checks.
+It computes the scheduling action before publishing availability. Stop exits
+retain closed ownership. Clients cannot execute policy across that boundary;
+a preempted caller makes the presenter wait on its existing AES signal.
+
+The small optimized emitted gate fixture passes **24 assertions**, forcing
+claim exclusion, inherited Forbid nesting, natural VBI preemption, peer Task
+progress, release before/after waiter publication, shutdown/retained-work
+rejection, preservation of unrelated pending input and complete cleanup. The
+real presenter still passes the **138-assertion** optimized lock fixture.
+Host checks pass 487 tests with four skips. Guards remain intact; no full
+qualification matrix was run.
+
+UL2 adds **two upper-RAM service bytes**. Reserved bank-zero delta is **0 fixed,
+0 per public Task, 0 idle**, including guards/alignment/capacity. There is no
+new signal allocation, Task, VRAM storage or stack reservation.
+
+```sh
+python3 tools/test_aes_gate.py --output build/caller-local-update/ul2-gate
+```

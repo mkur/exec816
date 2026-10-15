@@ -1,0 +1,80 @@
+; Private policy handoff. No display reservation and no interrupt-side access.
+MODULE AESGATE
+USE EXEC
+USE AESSTATE
+
+PUBLIC CONST CLOSED=0
+PUBLIC CONST AVAILABLE=1
+PUBLIC CONST CALLER=2
+
+; Reclaim before any presenter metadata access, including scheduling hints.
+PUBLIC PROC OwnerEnter()
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  DO
+    EXEC.Forbid()
+    IF service.policyGate<>CALLER THEN
+      service.policyGate=CLOSED
+      EXEC.Permit()
+      RETURN
+    FI
+
+    service.policyWaiting=1
+    EXEC.Permit()
+    ; Do not consume unrelated input/display bits or spin on pending work.
+    EXEC.Wait(service.mask)
+  OD
+
+RETURN
+
+; Readiness and scheduling decisions were computed while the gate was closed.
+PUBLIC PROC Offer(BYTE ready)
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN
+  FI
+
+  EXEC.Forbid()
+  service.policyGate=IF ready<>0 AND service.live=1 THEN AVAILABLE ELSE CLOSED FI
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC Claim()
+  BYTE claimed
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(0)
+  FI
+
+  EXEC.Forbid()
+  claimed=service.policyGate=AVAILABLE
+  IF claimed<>0 THEN
+    service.policyGate=CALLER
+  FI
+  EXEC.Permit()
+
+RETURN(claimed)
+
+; A registered caller pins service storage. Publish before the existing wake.
+PUBLIC PROC Release(BYTE wake)
+
+  LET service=AESSTATE.Get()
+  EXEC.Forbid()
+  service.policyGate=AVAILABLE
+  wake=wake OR service.policyWaiting
+  service.policyWaiting=0
+  IF wake<>0 THEN
+    EXEC.Signal(service.owner,service.mask)
+  FI
+  EXEC.Permit()
+
+RETURN
+
+ENDMODULE
