@@ -144,3 +144,90 @@ unchanged hidden/partial/failure rules; RP1's mixed borrowing/native output and
 RP2's 145 pointer/lock assertions cover the unchanged handoff semantics. The
 standalone lock-queue timeout remains explicitly unqualified as described above.
 Reserved bank-zero, code, upper RAM, VRAM and stack-capacity deltas are all zero.
+
+## RP5: ordinary application and desktop results
+
+All final checks boot the exact OF816 ZIP. The parent and candidate use the
+same ROM hash, emulator binary, compiler pin, PAL/8× CPU/VBXE configuration,
+accurate SIO and benchmark canvas/pointer. Per-process ROM registration IDs
+vary; the actual ROM bytes match. No guest benchmark changes, priority changes,
+larger UPDATE groups, hidden pointer or drawing-only substitute were used.
+
+| Ordinary rectangles | Parent batch averages (ms/op) | Candidate batch averages (ms/op) | Median change |
+| --- | --- | --- | --- |
+| Idle desktop | 24.6, 24.4, 22.8 | 20.0, 20.0, 20.0 | 24.4 → **20.0**, 18.0% lower |
+| Beside Counter | 28.0, 27.6, 27.8 | 22.8, 22.6, 22.6 | 27.8 → **22.6**, 18.7% lower |
+
+Each batch contains 100 rectangles. Counter progresses visibly, later benchmark
+rows cancel with Escape, the apps close normally, HELLO runs and EXIT restores
+the OS. These are medians of batch averages, not individual-operation p95s.
+The roughly 12 ms idle objective is **not reached**.
+
+The passive matched-parent comparison explains the partial gain: DisplayEnter
+falls **4.954 → 1.012 ms elapsed**, including a fall in off-Task time from
+3.644 → 0.100 ms. `v_bar` falls 11.676 → 5.171 ms elapsed. However, amortized
+UPDATE elapsed rises 7.166 → 9.841 ms while its caller CPU is nearly unchanged
+(1.602 → 1.651 ms). Scheduling and service work have shifted into the exchanges;
+the reduction in drawing admission does not translate one-for-one into complete
+application throughput. The native request pump itself remains about 2.2 ms CPU
+per rectangle. These inclusive intervals overlap.
+
+Files observations use a new folder window with stock icons already cached:
+
+| New Window milestone | Parent | Candidate |
+| --- | ---: | ---: |
+| Complete frame | 822.263 ms | 742.183 ms |
+| Complete window | 1243.625 ms | 1143.336 ms |
+
+This is one observation per build, sampled once per PAL frame, not a cold-boot
+or p95 claim. The client paints once, does not redraw after completion, and an
+explicit Refresh still paints exactly once. Closing the folder does not alter
+uncovered desktop icon pixels. Icon/list selection matches a complete repaint;
+unchanged summaries and pointer pixels stay stable. Shell/SYS focus restoration
+preserves selection without client repaint or cache capture/patch. Boundary
+cursor input does no repaint; keyboard scrolling paints once.
+
+The small matched input cohort gives individual whole-region completion times:
+
+| Input | Parent samples (ms) | Candidate samples (ms) |
+| --- | --- | --- |
+| Panel button beside live Counter | 80.3, 120.2 | 100.3, 80.3 |
+| File menu opening | 200.6, 200.6 | 180.4, 180.6 |
+| File → View switch | 220.5, 220.5 | 200.6, 200.6 |
+| File row highlight | 60.1, 60.4 | 60.1, 60.1 |
+| Repeated pointer File/View switches | 300.9, 280.9 | 300.9, 280.7 |
+
+Two samples do not establish a latency distribution or a reliable button gain.
+Warm repeated headings are essentially unchanged. Menu Escape restores the
+preserved Files pixels without repaint. Counter advances two ticks/paints during
+the candidate button cohort and its visible digits change. Independent complete
+scene pixels, guards and normal EXIT pass. The Panel observer needed the same
+compact-frame geometry correction as the VDI oracle; its initial old-geometry
+comparison failed, not the repaired pixel check.
+
+Development scope: focused optimized ownership, mixed rendering/fault, pointer,
+VDI and cache fixtures; trace host tests; ordinary rectangle rows and the small
+physical desktop cohorts above. The pre-existing standalone lock-queue timeout
+remains an explicit limitation. No full hosted-system, hardware or HY4/PI4
+qualification is claimed. Raw compiler matrices were not needed for unchanged
+ABI/layout and kernel semantics.
+
+Cumulative reservations: **0 bank-zero bytes fixed, 0 per public Task, 0 idle**,
+including guards/alignment/spare capacity; **0 VRAM bytes** and no stack-capacity
+changes. Upper static data grows by one byte to 13,529. Linked executable bytes
+grow by 897 to 1,272,257. Final observed headroom above the interrupt reserve is
+at least 210 bytes for application Tasks, 1,452 for the presenter, 117 for idle
+and 991 for the kernel across these package runs; all guards remain intact.
+
+The package is `build/rp5/demo/exec816-demo.zip`, SHA-256
+`e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a`.
+It contains OF816's five-second autoboot, matching system/work disks and ROM,
+license notices, a short guide and checksums. It was built from `a6d8654` with
+only host measurement tooling uncommitted, hence the `-dirty` banner; production
+sources have not changed since RP3. Large logs/intermediates remain in `build/`.
+
+Launch locally:
+
+```sh
+open /Users/michalkurcewicz/action/exec816-public/build/rp5/demo/launch-altirra.command
+```

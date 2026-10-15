@@ -208,11 +208,13 @@ and application activity. Record latency medians and p95 as well as rendering
 work; the [rendering performance record](history/gem-rendering-performance.md)
 provides the current starting point.
 
-The proposed [rectangle drawing overhead plan](plans/gem4xe/rectangle-overhead-plan.md)
-targets display contention, repeated mouse publication, VDI wrapper overhead
-and UPDATE bookkeeping. The existing fill encoder is already a small part of
-the observed cost. Keep ordinary G4BENCH work unchanged, preserve input and
-background progress, and compare each bounded implementation slice.
+The implemented [rectangle drawing overhead plan](plans/gem4xe/rectangle-overhead-plan.md)
+shortens physical reservations, coalesces mouse publication and gives rectangle
+bindings a direct path. Ordinary idle/Counter-loaded medians improve from
+24.4/27.8 to 20.0/22.6 ms per rectangle. The 12 ms objective remains open;
+required UPDATE exchanges and presenter service work still matter. The
+[record](history/rectangle-overhead.md) includes modest Files/menu gains,
+unchanged warm heading switches and focused validation limits.
 
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x

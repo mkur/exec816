@@ -113,91 +113,157 @@
       "routines": {
         "BenchDraw": {
           "calls": 1.0,
-          "charged_cpu_ms": 5.720243574544308
+          "charged_cpu_ms": 5.720243574544308,
+          "elapsed_ms": 13.423109508457397,
+          "off_cpu_ms": 6.48399351169591,
+          "interrupt_ms": 1.2188724222171787
         },
         "DisplayEnter": {
           "calls": 1.0,
-          "charged_cpu_ms": 1.0790588199913822
+          "charged_cpu_ms": 1.0790588199913822,
+          "elapsed_ms": 4.95365148014437,
+          "off_cpu_ms": 3.6437001001345313,
+          "interrupt_ms": 0.23089256001845745
         },
         "DisplayLeave": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.3921657769213166
+          "charged_cpu_ms": 0.3921657769213166,
+          "elapsed_ms": 1.4326262829883603,
+          "off_cpu_ms": 0.9610419817897063,
+          "interrupt_ms": 0.07941852427733741
         },
         "GemDrawingSolidBorrow": {
           "calls": 1.0,
-          "charged_cpu_ms": 2.6356945065096844
+          "charged_cpu_ms": 2.6356945065096844,
+          "elapsed_ms": 9.51021668247862,
+          "off_cpu_ms": 6.302906250866368,
+          "interrupt_ms": 0.5716159251025662
         },
         "GemSolidFill": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.40631829623750726
+          "charged_cpu_ms": 0.40631829623750726,
+          "elapsed_ms": 0.5704176939736492,
+          "off_cpu_ms": 0.07726076845616613,
+          "interrupt_ms": 0.08683862927997588
         },
         "GemSolidRows": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.01255182349632566
+          "charged_cpu_ms": 0.01255182349632566,
+          "elapsed_ms": 0.01602410935010293,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0034722858537772714
         },
         "VbxeOwnerFence": {
           "calls": 4.0,
-          "charged_cpu_ms": 0.38607312405169397
+          "charged_cpu_ms": 0.38607312405169397,
+          "elapsed_ms": 2.1069202781587837,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.09994375362112495
         },
         "VbxeOwnerSubmit": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.6105351770116303
+          "charged_cpu_ms": 0.6105351770116303,
+          "elapsed_ms": 2.377166272660078,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.1457276951624825
         },
         "_Mod16": {
           "calls": 3.0,
-          "charged_cpu_ms": 0.13681074103781854
+          "charged_cpu_ms": 0.13681074103781854,
+          "elapsed_ms": 0.17222857363036306,
+          "off_cpu_ms": 0.008484651129133134,
+          "interrupt_ms": 0.026933181463411428
         },
         "_VbxeUpload": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.12860450243569846
+          "charged_cpu_ms": 0.12860450243569846,
+          "elapsed_ms": 0.15520053455205185,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.026596032116353408
         },
         "borrow_callback": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.41324689153000954
+          "charged_cpu_ms": 0.41324689153000954,
+          "elapsed_ms": 0.5785078686193604,
+          "off_cpu_ms": 0.07726076845616613,
+          "interrupt_ms": 0.08800020863318479
         },
         "drain": {
           "calls": 2.0,
-          "charged_cpu_ms": 0.6285558683487013
+          "charged_cpu_ms": 0.6285558683487013,
+          "elapsed_ms": 2.3980770504906403,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.14861778165597422
         },
         "drawing_borrow": {
           "calls": 1.0,
-          "charged_cpu_ms": 2.630088899351874
+          "charged_cpu_ms": 2.630088899351874,
+          "elapsed_ms": 9.503748348907989,
+          "off_cpu_ms": 6.302906250866368,
+          "interrupt_ms": 0.5707531986897459
         },
         "events": {
           "calls": 0.25,
-          "charged_cpu_ms": 0.8227386206809054
+          "charged_cpu_ms": 0.8227386206809054,
+          "elapsed_ms": 0.9938248806350343,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17108625995412888
         },
         "fence_owner": {
           "calls": 2.0,
-          "charged_cpu_ms": 0.6888339425516309
+          "charged_cpu_ms": 0.6888339425516309,
+          "elapsed_ms": 2.471771084286397,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.16203374124880118
         },
         "full_canvas": {
           "calls": 0.25,
-          "charged_cpu_ms": 1.2249467491989472
+          "charged_cpu_ms": 1.2249467491989472,
+          "elapsed_ms": 1.479337091550027,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2543903423510798
         },
         "idle": {
           "calls": 4.0,
-          "charged_cpu_ms": 0.33838094070071617
+          "charged_cpu_ms": 0.33838094070071617,
+          "elapsed_ms": 2.047963312512305,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.08867897132562425
         },
         "pointer_erase": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.010016742343185612
+          "charged_cpu_ms": 0.010016742343185612,
+          "elapsed_ms": 0.011899609846546533,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.001882867503360921
         },
         "solid_record": {
           "calls": 3.0,
-          "charged_cpu_ms": 0.2860400904641007
+          "charged_cpu_ms": 0.2860400904641007,
+          "elapsed_ms": 0.384780679063425,
+          "off_cpu_ms": 0.038634260858206024,
+          "interrupt_ms": 0.06010632774111817
         },
         "start": {
           "calls": 1.0,
-          "charged_cpu_ms": 0.048238200830115735
+          "charged_cpu_ms": 0.048238200830115735,
+          "elapsed_ms": 0.06111519136221023,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.012876990532094503
         },
         "v_bar": {
           "calls": 1.0,
-          "charged_cpu_ms": 4.338052954297585
+          "charged_cpu_ms": 4.338052954297585,
+          "elapsed_ms": 11.676217978447816,
+          "off_cpu_ms": 6.407253151465343,
+          "interrupt_ms": 0.9309118726848882
         },
         "wind_update": {
           "calls": 0.5,
-          "charged_cpu_ms": 1.6022838285317156
+          "charged_cpu_ms": 1.6022838285317156,
+          "elapsed_ms": 7.165793837520799,
+          "off_cpu_ms": 5.231380780466671,
+          "interrupt_ms": 0.3321292285224119
         }
       },
       "stack": {
@@ -1276,6 +1342,698 @@
       "upper_static_delta": 0,
       "linked_executable_bytes_delta": 0,
       "vram_delta": 0
+    },
+    "RP5": {
+      "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+      "archive_bytes": 655171,
+      "exec_build": {
+        "revision": "a6d8654b338a4134853b4ce0c985a31a3d11b5a1",
+        "dirty": true,
+        "display": "a6d8654-dirty",
+        "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "task_capacity": 8,
+        "stack_checks": true
+      },
+      "build_dirty_reason": "Host measurement tooling was being updated during packaging; no production sources changed after RP3.",
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/rp5/demo/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$dbbd6f4e74938648",
+        "actual_kernel_id": "$dbbd6f4e74938648",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "matched_parent_inputs": true,
+      "ordinary": {
+        "idle": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3365,
+                50
+              ],
+              "end": [
+                0,
+                3465,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3469,
+                50
+              ],
+              "end": [
+                0,
+                3569,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3573,
+                50
+              ],
+              "end": [
+                0,
+                3673,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 20.0
+        },
+        "counter": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 114,
+              "start": [
+                0,
+                5856,
+                50
+              ],
+              "end": [
+                0,
+                5970,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 113,
+              "start": [
+                0,
+                5975,
+                50
+              ],
+              "end": [
+                0,
+                6088,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 113,
+              "start": [
+                0,
+                6092,
+                50
+              ],
+              "end": [
+                0,
+                6205,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 22.6
+        }
+      },
+      "counter_advanced": true,
+      "canvas": [
+        152,
+        56,
+        480,
+        160
+      ],
+      "pointer": [
+        630,
+        230
+      ],
+      "files": {
+        "parent_new_window": {
+          "frame_ms": 822.263,
+          "window_ms": 1243.625
+        },
+        "candidate": [
+          {
+            "action": "Close right warmup",
+            "start": 93377548,
+            "end": 96934221,
+            "window_ms": 461.2761302491334,
+            "bounds": [
+              120,
+              24,
+              582,
+              220
+            ],
+            "icon_changed_frames": 0,
+            "calls": {
+              "VbxeOwnerSubmit": 23,
+              "VbxeOwnerFence": 83
+            }
+          },
+          {
+            "action": "New Window",
+            "start": 107568846,
+            "end": 112441741,
+            "frame_ms": 742.183233504234,
+            "window_ms": 1143.3363547553565,
+            "content_paints": 1,
+            "changed_frames_after_complete": 0,
+            "calls": {
+              "CONSOLEBITMAP_COPYSTART": 2,
+              "VbxeOwnerSubmit": 50,
+              "VbxeOwnerFence": 167,
+              "CONSOLEBITMAP_FRAME": 4,
+              "GemDrawingFrameBatch": 2
+            }
+          }
+        ],
+        "initial_draw_checks": {
+          "initial_content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "explicit_refresh_paints": 1
+        },
+        "selection": [
+          {
+            "action": "icons-summary-pointer",
+            "start": 68124237,
+            "end": 70969485,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 17,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "icons-cell-pointer",
+            "start": 80075085,
+            "end": 82920333,
+            "pointer": [
+              172,
+              55
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 1,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 18,
+              "GemDrawingCopyStart": 1,
+              "cursor_hide": 1
+            }
+          },
+          {
+            "action": "icons-outside-pointer",
+            "start": 92701517,
+            "end": 95547212,
+            "pointer": [
+              632,
+              232
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 17,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "list-summary-pointer",
+            "start": 148330124,
+            "end": 151175373,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 1,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 14,
+              "cursor_hide": 3,
+              "cursor_render": 18,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "list-first-item-noop",
+            "start": 186814669,
+            "end": 189659917,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 0,
+            "calls": {}
+          }
+        ],
+        "restorations": [
+          {
+            "action": "icons-outside-pointer",
+            "delta": {
+              "paints": 0,
+              "captures": 0,
+              "patches": 0,
+              "restores": 1
+            }
+          },
+          {
+            "action": "list-summary-pointer",
+            "delta": {
+              "paints": 0,
+              "captures": 0,
+              "patches": 0,
+              "restores": 2
+            }
+          }
+        ]
+      },
+      "menus": {
+        "parent": {
+          "panel_with_counter": {
+            "buttons": {
+              "model_address": 2621702,
+              "samples_ms": [
+                80.33167037648423,
+                120.24545412254945
+              ],
+              "scope": "2 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+            },
+            "counter_ticks": 2,
+            "counter_paints": 1,
+            "visible_digits_changed": true
+          },
+          "application": {
+            "open": [
+              200.57712449903366,
+              200.57656062556123
+            ],
+            "highlight": [
+              60.12188125106607,
+              60.37393269324296
+            ],
+            "switch": [
+              220.53317056185762,
+              220.53317056185762
+            ],
+            "close": [
+              140.45411550102273,
+              140.45411550102273
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "switch": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "native": {
+            "open": [
+              180.3673353736155,
+              180.61995068926484
+            ],
+            "highlight": [
+              100.28828031278061,
+              100.28828031278061
+            ],
+            "next_row": [
+              120.24432637560457,
+              120.24432637560457
+            ],
+            "close": [
+              120.24432637560457,
+              140.45411550102273
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "next_row": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "repeated_headings": {
+            "keyboard": {
+              "samples_ms": [
+                240.4892166246816,
+                320.8225786215831
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            },
+            "pointer": {
+              "samples_ms": [
+                300.8648409383419,
+                280.90823100204545
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            }
+          }
+        },
+        "candidate": {
+          "panel_with_counter": {
+            "buttons": {
+              "model_address": 2621702,
+              "samples_ms": [
+                100.28828031278061,
+                80.33900073162583
+              ],
+              "scope": "2 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+            },
+            "counter_ticks": 2,
+            "counter_paints": 2,
+            "visible_digits_changed": true
+          },
+          "application": {
+            "open": [
+              180.36789924708796,
+              180.62051456273724
+            ],
+            "highlight": [
+              60.12131737759364,
+              60.12300899801094
+            ],
+            "switch": [
+              200.57656062556123,
+              200.57712449903366
+            ],
+            "close": [
+              140.20206405884582,
+              140.45467937449516
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "switch": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "native": {
+            "open": [
+              160.41072543731912,
+              160.41072543731912
+            ],
+            "highlight": [
+              100.28884418625304,
+              100.28828031278061
+            ],
+            "next_row": [
+              100.28828031278061,
+              100.03622887060372
+            ],
+            "close": [
+              120.24545412254945,
+              120.24489024907702
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "next_row": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "repeated_headings": {
+            "keyboard": {
+              "samples_ms": [
+                240.49034437162643,
+                300.6122256226925
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            },
+            "pointer": {
+              "samples_ms": [
+                300.8654048118143,
+                280.6556156863961
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            }
+          }
+        },
+        "scope": "Two observations per input; report individual values, not p95. Menu completion uses whole-region equality; Panel uses independent button pixels. Frame-granular polling."
+      },
+      "runs": {
+        "idle": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 415,
+            "2": 907,
+            "3": 315,
+            "4": 345,
+            "5": 1038,
+            "6": 1463,
+            "7": 2286,
+            "8": 188,
+            "kernel": 993
+          }
+        },
+        "counter": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 703,
+            "1": 397,
+            "2": 859,
+            "3": 315,
+            "4": 355,
+            "5": 333,
+            "6": 1463,
+            "7": 2286,
+            "8": 117,
+            "kernel": 980
+          }
+        },
+        "keyboard": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 751,
+            "2": 908,
+            "3": 210,
+            "4": 1038,
+            "5": 1038,
+            "6": 1452,
+            "7": 2286,
+            "8": 192,
+            "kernel": 993
+          }
+        },
+        "menus": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 718,
+            "2": 907,
+            "3": 315,
+            "4": 368,
+            "5": 317,
+            "6": 1463,
+            "7": 2286,
+            "8": 127,
+            "kernel": 993
+          }
+        },
+        "frame": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 751,
+            "2": 908,
+            "3": 250,
+            "4": 1038,
+            "5": 1038,
+            "6": 1463,
+            "7": 2286,
+            "8": 192,
+            "kernel": 991
+          }
+        }
+      },
+      "checks": {
+        "development": true,
+        "full_qualification": false,
+        "normal_close_exit": true,
+        "of816_autoboot": true,
+        "known_limitation": "Standalone locks fixture times out on both original parent and candidate at 118 checks, no assertion failures."
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": 0,
+      "vram_delta": 0,
+      "cumulative_resources": {
+        "linked_executable_bytes": 1272257,
+        "linked_executable_bytes_delta": 897,
+        "upper_static_bytes": 13529,
+        "upper_static_delta": 1,
+        "stack_capacity_delta": 0,
+        "vram_delta": 0
+      },
+      "evidence_sha256": {
+        "build/rp5/demo/g4bench-idle.json": "791bdf55acb266e640f1e9b13f76d425c3cb191b48494e76d2c244df0bbbf0ac",
+        "build/rp5/demo/g4bench-counter.json": "f84933c1fa517384272c7dfa9ec14073fffe9e7eba5d43e26c8e3d3e5f2db888",
+        "build/rp5/frame/frame-exposure-results.json": "ec1f3080ebe0a52414ec3b5d6527df50f12d210b05f80b146d8a63ca67f396a2",
+        "build/rp5/keyboard/keyboard-results.json": "3754f7585580f86a05ddd00f14d05622bb9cdf8df2b1965b831457ae5bce52e1",
+        "build/rp5/menus-checked/menu-results.json": "9c708cc7e97e5816fc2d21f3f9e71255e2d2dcd14ef4f09ce0c00677a121f306",
+        "build/rp5/menus-parent/menu-results.json": "3a2fab1bfb7e8e84c8f509982b5d0f85852a41f9db7407ee70e8dd3ea3fc6f44"
+      }
     }
   }
 }

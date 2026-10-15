@@ -5,10 +5,12 @@
 [Display ownership](../../reference/display.md#delegated-renderer-access) ·
 [AES contract](../../reference/aes.md)
 
-Status: in progress. RP1–RP3 are implemented. RP4 records the measured limit without
-a speculative production edit; RP5 comparison and packaging follow. See the
+Status: implemented in RP1–RP5. RP4 records the measured limit without a
+speculative production edit. Ordinary idle rectangles improve 24.4 → 20.0 ms;
+the roughly 12 ms objective remains unmet. See the
 [implementation record](../../history/rectangle-overhead.md) and
-[development measurements](../../development/rectangle-overhead.json).
+[development measurements](../../development/rectangle-overhead.json), including
+the pre-existing lock-fixture timeout and development-only validation scope.
 
 Reduce the cost surrounding solid rectangle drawing: physical display
 contention, repeated presenter housekeeping, VDI dispatch and UPDATE processing.

@@ -1,10 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [rectangle drawing overhead plan](rectangle-overhead-plan.md)
+The implemented [rectangle drawing overhead plan](rectangle-overhead-plan.md)
 addresses the AES/display costs surrounding the existing fast solid-fill path.
 RP1–RP5 shorten physical reservations, publish mouse state on changes, simplify
-VDI bindings and remove measured UPDATE duplication, with focused checks and
-an unchanged ordinary G4BENCH comparison. The
+VDI bindings and measure remaining UPDATE costs. Ordinary idle rectangles
+improve 24.4 → 20.0 ms and Counter-loaded rectangles 27.8 → 22.6 ms; the
+12 ms objective remains unmet. See the [implementation record](../../history/rectangle-overhead.md)
+for desktop observations and validation limits. The
 [starting observation](../../development/rectangle-overhead-baseline.json)
 separates drawing CPU from presenter and interrupt costs.
 
