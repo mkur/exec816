@@ -37,7 +37,11 @@ class LayersTests(unittest.TestCase):
         self.assertEqual(scenes[0], (1, bytes(768)))
         self.assertEqual(scenes[1], scenes[0])  # hidden creation
         self.assertEqual(scenes[2][1][0], 1)
-        self.assertEqual(scenes[4][1][4*32+8], 2)
-        self.assertEqual(scenes[8][1][12], 4)
-        self.assertEqual(scenes[13], scenes[12])  # rejected ninth layer
-        self.assertEqual(scenes[24:], [scenes[23]]*8)
+        self.assertEqual(scenes[4], scenes[3])  # hidden placement
+        self.assertEqual(scenes[5][1][4*32+8], 1)  # shown below first layer
+        self.assertEqual(scenes[6], scenes[5])  # already below anchor
+        self.assertEqual(scenes[7][1][4*32+8], 2)  # shown reorder
+        self.assertEqual(scenes[8], scenes[7])  # self placement
+        self.assertEqual(scenes[12][1][12], 4)
+        self.assertEqual(scenes[17], scenes[16])  # rejected ninth layer
+        self.assertEqual(scenes[28:], [scenes[27]]*8)

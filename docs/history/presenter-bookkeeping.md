@@ -106,3 +106,26 @@ VRAM, signal or Task is added. Cache's used frame grows 34 → 36 bytes; the wor
 remains at 64. PB3's production Boundary is 309 native bytes with a 20-byte frame
 and 32-byte local stack peak. PB3+PB4 together add 917 native code bytes; stack
 reservations and guards remain unchanged.
+
+## PB5: hidden placement before Show
+
+`LAYERS.OrderBelow` places a layer immediately behind a live anchor and shares
+`Order`'s private reorder routine. Hidden placement changes no visible regions
+or damage; shown placement retains normal invalidation. AES prepares an opening
+window below the menu bar before Show. The desktop keeps its bottom placement,
+and Focus finds the chrome already ordered. No deferred scene transaction or
+second region buffer is introduced.
+
+The optimized emitted Layers fixture passes 1,077 assertions, 128 geometry cases
+and 40 scene cases against the independent pixel/rebuild oracle. Coverage
+includes hidden placement, shown reordering, no-op/self ordering, invalid IDs
+and active-transaction exclusion, with intact guards and normal completion.
+The host scene checks were updated for the four added scenarios. Evidence:
+`build/presenter-bookkeeping/pb5-layers`. The final package observation below
+checks the integrated AES open request and close exposure.
+
+PB5 reserves **0 additional bank-zero bytes**: fixed 0, per public Task 0, idle 0,
+including guards/alignment/unused capacity. There is no persistent upper-RAM or
+VRAM increase. The Layers fixture leaves 968 bytes above the root Task's stack
+floor; all Task and kernel stack reservations are unchanged. Production code
+size and presenter stack observations are recorded with PB6's integrated build.

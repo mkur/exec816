@@ -38,6 +38,18 @@ PUBLIC DESKTYPES.Service POINTER FUNC Get()
 
 RETURN(service)
 
+; Presenter-only preparation while an opening layer is still hidden.
+PUBLIC BYTE FUNC PrepareOpen(LONGCARD id)
+
+  IF id=desktopLayer THEN
+    RETURN(LAYERS.Order(@service.scene,id,0))
+  FI
+  IF barLayer<>0 THEN
+    RETURN(LAYERS.OrderBelow(@service.scene,id,barLayer))
+  FI
+
+RETURN(LAYERS.Order(@service.scene,id,1))
+
 ; Chrome occupies the first two ranks. Raising the front application past it
 ; and restoring chrome would damage an unchanged window on every title click.
 PUBLIC BYTE FUNC Raise(LONGCARD id)

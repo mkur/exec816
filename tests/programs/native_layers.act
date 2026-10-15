@@ -256,6 +256,9 @@ PROC Scenes()
 
     WHEN 7 THEN
       ScrollModel(handles(which))
+
+    WHEN 8 THEN
+      status=LAYERS.OrderBelow(scene,handles(which),handles(CARD(a)))
     ESAC
 
     scenePhase=5
@@ -291,12 +294,17 @@ PROC SceneFailures()
   Require(LAYERS.Show(scene,0,1)=LAYERTYPES.BAD_ID)
   Require(LAYERS.Move(scene,0,0,0)=LAYERTYPES.BAD_ID)
   Require(LAYERS.Order(scene,0,1)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.OrderBelow(scene,0,0)=LAYERTYPES.BAD_ID)
   Require(LAYERS.Delete(scene,0)=LAYERTYPES.BAD_ID)
   Require(LAYERS.Show(scene,12345,1)=LAYERTYPES.BAD_ID)
   Require(LAYERS.Find(scene,handles(2))=NULL)
   scene.nextId=$ffffffff
   Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
   Require(id=$ffffffff AND scene.nextId=0)
+  Require(LAYERS.OrderBelow(scene,id,0)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.OrderBelow(scene,id,12345)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.OrderBelow(scene,12345,id)=LAYERTYPES.BAD_ID)
+  Require(LAYERS.OrderBelow(scene,id,id)=LAYERTYPES.OK)
   Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
   id=12345
   Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.EXHAUSTED)

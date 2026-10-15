@@ -285,8 +285,8 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
 
     status=LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
         bounds.right-bounds.left,bounds.bottom-bounds.top)
+    status=DESKSTATE.PrepareOpen(window.layer)
     status=LAYERS.Show(@desktop.scene,window.layer,1)
-    status=DESKSTATE.Raise(window.layer)
     DESKCORE.Focus(desktop,window.id)
     IF client.closeRequested<>0 THEN
       AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)

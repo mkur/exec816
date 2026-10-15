@@ -54,7 +54,8 @@ def scene_commands():
     def cmd(op=0, slot=0, a=0, b=0, c=0, d=0, status=0):
         return op, slot, a, b, c, d, status
     return [cmd(), cmd(1, 1, 0, 0, 24, 20), cmd(2, 1, 1), cmd(7, 1),
-            cmd(1, 2, 8, 4, 32, 24), cmd(2, 2, 1), cmd(7, 1),
+            cmd(1, 2, 8, 4, 32, 24), cmd(8, 2, 1), cmd(2, 2, 1),
+            cmd(8, 2, 1), cmd(8, 1, 2), cmd(8, 1, 1), cmd(7, 1),
             cmd(1, 3, 4, 8, 20, 16), cmd(2, 3, 1),
             cmd(1, 4, 12, 0, 16, 24), cmd(2, 4, 1),
             cmd(6, 1, 10, 2, 18, 14),
@@ -117,6 +118,12 @@ def scene_oracle(commands, include_raster=False):
                         layer['model'][y*32:y*32+r-l] = layer['model'][(y+1)*32:(y+1)*32+r-l]
                     start = (bottom-t-1)*32
                     layer['model'][start:start+r-l] = bytes([77])*(r-l)
+                elif op == 8 and ident != handles[a]:
+                    previous = order.index(ident)
+                    order.remove(ident)
+                    position = order.index(handles[a])+1
+                    order.insert(position,ident)
+                    rebuilds += int(layer['shown'] and previous != position)
         pixels = bytes(next((i for i in order if layers[i]['shown'] and
                              contains(layers[i]['bounds'], x, y)), 0)
                        for y in range(24) for x in range(32))

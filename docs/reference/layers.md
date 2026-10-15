@@ -47,19 +47,21 @@ IDs and update tokens never repeat within that lifetime.
 | Call | Behavior |
 | --- | --- |
 | `Init(scene,width,height)` | Positive dimensions through 32767. Establish a background at `[0,width) × [0,height)`, initially dirty. No allocation. |
-| `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at six live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
+| `Create(scene,bounds,idOut)` | Admit a nonempty rectangle fully within the screen. Create it hidden at the front of the stacking order and return a fresh nonzero ID. FULL at eight live layers; EXHAUSTED after the last 32-bit ID. Rejection leaves `idOut` unchanged. |
 | `Show(scene,id,shown)` | Show with 1 or hide with 0. Retain content identity while hidden. |
 | `Move(scene,id,left,top)` | Preserve dimensions; reject positions outside the screen without overflow. Mark old/new areas for repair. |
 | `BeginMove(scene,id,left,top,tokenOut)` | Admit a clean, shown, fully visible layer whose destination misses every shown layer above it for a copied move; retain old/new bounds until Finish. EMPTY for unchanged placement, REDRAW for a nonclean/covered source or occluded destination. |
 | `Order(scene,id,front)` | Move to front with 1 or back with 0. Background always remains below ordinary layers. |
+| `OrderBelow(scene,id,anchor)` | Place immediately below another live nonbackground layer. Hidden placement changes neither visibility nor damage; shown placement uses normal reorder invalidation. Equal live IDs are a no-op. |
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
 | `Hit(scene,x,y)` | Return the frontmost shown layer's ID; zero for background or outside the screen. Uses existing geometry without rebuilding visibility. |
 | `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. Retains eight rectangles, merging containment and exact rectangular unions. Overflow collapses all damage to one bound. Does not rebuild visibility. |
 
 All status-returning calls use `LAYERTYPES.OK` on success. Geometry errors return
-BAD_ARGUMENT and unknown/retired identities return BAD_ID. Show, Move, Order and
-Delete reject background ID zero. Repeating a no-op Show, Move or Order succeeds
+BAD_ARGUMENT and unknown/retired identities return BAD_ID. Show, Move, Order,
+OrderBelow and Delete reject background ID zero (including OrderBelow's anchor).
+Repeating a no-op Show, Move, Order or OrderBelow succeeds
 without rebuilding. Hidden creation, movement, reordering and deletion leave
 other layers' visibility unchanged. `scene.rebuilds` is a diagnostic wrapping
 counter, not an identity or completion token.

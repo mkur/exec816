@@ -359,56 +359,87 @@ PUBLIC BYTE FUNC Move(LAYERTYPES.Scene POINTER scene LONGCARD id INT left,top)
 RETURN(Bounds(scene,id,left,top,layer.bounds.right-layer.bounds.left,
     layer.bounds.bottom-layer.bounds.top))
 
-; Move one layer to the front (1) or back (0); hidden entries keep their order.
-PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)
-  BYTE status,rank,slot
-  LAYERTYPES.Layer POINTER layer
-
-  status=Admit(scene)
-  IF status<>LAYERTYPES.OK THEN
-    RETURN(status)
-  FI
-
-  layer=Find(scene,id)
-  IF layer=NULL OR id=0 THEN
-    RETURN(LAYERTYPES.BAD_ID)
-  FI
-
-  IF front>1 THEN
-    RETURN(LAYERTYPES.BAD_ARGUMENT)
-  FI
+; Reorder an admitted layer by final rank. Hidden placement changes no pixels.
+BYTE FUNC Reorder(LAYERTYPES.Scene POINTER scene
+    LAYERTYPES.Layer POINTER layer BYTE target)
+  BYTE rank,slot
 
   rank=0
-  WHILE scene.items(scene.order(rank)).id<>id DO
+  WHILE scene.items(scene.order(rank)).id<>layer.id DO
     rank==+1
   OD
-
-  slot=scene.order(rank)
-  IF (front<>0 AND rank=0) OR (front=0 AND rank=scene.count-1) THEN
+  IF rank=target THEN
     RETURN(LAYERTYPES.OK)
   FI
 
-  IF front<>0 THEN
-    WHILE rank>0 DO
-      scene.order(rank)=scene.order(rank-1)
-      rank==-1
-    OD
-  ELSE
-    WHILE rank<scene.count-1 DO
-      scene.order(rank)=scene.order(rank+1)
-      rank==+1
-    OD
-  FI
-
+  slot=scene.order(rank)
+  WHILE rank>target DO
+    scene.order(rank)=scene.order(rank-1)
+    rank==-1
+  OD
+  WHILE rank<target DO
+    scene.order(rank)=scene.order(rank+1)
+    rank==+1
+  OD
   scene.order(rank)=slot
   IF layer.shown=0 THEN
     RETURN(LAYERTYPES.OK)
   FI
 
-  LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
+  LAYERCACHE.Changed(@scene.under,layer.id,@layer.bounds)
   DamageAll(scene,@layer.bounds)
 
 RETURN(Rebuild(scene))
+
+; Move one layer to the front (1) or back (0), including hidden entries.
+PUBLIC BYTE FUNC Order(LAYERTYPES.Scene POINTER scene LONGCARD id BYTE front)
+
+  LET status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+
+  LET layer=Find(scene,id)
+  IF layer=NULL OR id=0 THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+  IF front>1 THEN
+    RETURN(LAYERTYPES.BAD_ARGUMENT)
+  FI
+
+RETURN(Reorder(scene,layer,IF front<>0 THEN 0 ELSE scene.count-1 FI))
+
+; Place immediately below another live nonbackground layer. Prepare hidden
+; windows in their final position before Show publishes one visibility change.
+PUBLIC BYTE FUNC OrderBelow(LAYERTYPES.Scene POINTER scene LONGCARD id,anchor)
+  BYTE target,before
+
+  LET status=Admit(scene)
+  IF status<>LAYERTYPES.OK THEN
+    RETURN(status)
+  FI
+  LET layer=Find(scene,id)
+  IF layer=NULL OR id=0 OR anchor=0 OR Find(scene,anchor)=NULL THEN
+    RETURN(LAYERTYPES.BAD_ID)
+  FI
+  IF id=anchor THEN
+    RETURN(LAYERTYPES.OK)
+  FI
+
+  target=0
+  before=0
+  WHILE scene.items(scene.order(target)).id<>anchor DO
+    IF scene.items(scene.order(target)).id=id THEN
+      before=1
+    FI
+    target==+1
+  OD
+  ; Removing an entry above the anchor shifts the anchor up by one rank.
+  IF before=0 THEN
+    target==+1
+  FI
+
+RETURN(Reorder(scene,layer,target))
 
 PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
   BYTE status,rank,shown
