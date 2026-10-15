@@ -123,7 +123,7 @@ RETURN(1)
 ; Capture/cursor may advance now; widget commits stay after native controls.
 PUBLIC PROC InputBoundary()
 
-  DESKINPUT.Service(DESKINPUT.Mask())
+  DESKINPUT.Boundary()
   DESKINPUT.Present()
 
 RETURN

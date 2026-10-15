@@ -330,6 +330,27 @@ PUBLIC PROC Service(LONGCARD bits)
 
 RETURN
 
+; Active-service boundary: the signal field is only a read-only arrival hint.
+; Acknowledge through Exec, never by writing Task state. An interrupt arriving
+; after the hint or after an empty read retains its bit for the next boundary
+; or Wait. Service also drains retained input and eligible AES replay.
+PUBLIC PROC Boundary()
+  LONGCARD bits
+
+  IF acquired=0 THEN
+    RETURN
+  FI
+
+  LET desktop=DESKSTATE.Get()
+  LET owner=desktop.owner
+  bits=0
+  IF (owner.tc_SigRecvd & wakeMask)<>0 THEN
+    bits=EXEC.SetSignal(0,wakeMask)
+  FI
+  Service(bits)
+
+RETURN
+
 ; Commit retained gestures after native control admission, preserving the
 ; established ordering between application patches and widget state changes.
 PUBLIC PROC Advance()

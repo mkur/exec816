@@ -108,6 +108,7 @@ UWORD AESRun(void)
     CHECK(peer != NULL);
     while (!AESReady) Wait(wake);
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
+    sample(4, 2, 0, 0, 0, 0); /* Presenter drain/wake boundaries. */
     edge(60, 80, 0); /* Fresh released baseline. */
     CHECK(in->eligible && !peerInput->eligible);
     CHECK(ExecAESInputArm(c, AES_INPUT_BUTTON) == AES_OK);

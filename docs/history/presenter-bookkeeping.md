@@ -50,4 +50,29 @@ PB2 sources passed with the pinned release compiler. Artifacts are under
 PB2 adds **0 fixed, 0 per public Task and 0 idle reserved bank-zero bytes**,
 including guards/alignment/unused capacity. There is no persistent state or VRAM
 increase. The worker's used frame grows 62 → 64 bytes, within its unchanged
-reservation; the changed routines together shrink by 115 native code bytes.
+reservation; the complete native image shrinks by 117 code bytes.
+
+## PB3: real input notifications
+
+Active input boundaries read the registered presenter's signal bit as a hint and
+call `SetSignal` only when it is set. Service retains its sixteen-record budget,
+continues a nonempty drain, and independently consumes eligible AES replay.
+The worker no longer submits Collect's input bit twice in one turn. Neither an
+empty read nor a false hint clears an asynchronously delivered signal.
+
+The optimized pointer fixture passes 21 added boundary assertions: no reads at
+unchanged boundaries, arrival after the hint, arrival during drain, arrival after
+empty before Wait, budget continuation and replay after mouse-control release.
+The controlled sequence consumes 24 fresh records with 24 acceleration calls;
+replay does not apply acceleration again. The existing pointer/button ownership,
+loss and MCTRL cases also pass, with normal cleanup and intact guards.
+Its private synthetic command now counts as pending fixture work, preventing the
+AES-only idle shortcut from skipping the test producer. Production scheduling
+has no knowledge of that command. Evidence: `build/presenter-bookkeeping/pb3-pointer`.
+
+PB3 adds **0 fixed, 0 per public Task and 0 idle reserved bank-zero bytes**,
+including guards/alignment/unused capacity. There is no persistent state, signal,
+Task or VRAM increase. The new boundary uses temporary received bits and borrowed
+service/owner pointers on the unchanged presenter stack. Production emitted sizes
+are recorded with the following integrated package; fixture-only counters and
+injection hooks are absent from it.

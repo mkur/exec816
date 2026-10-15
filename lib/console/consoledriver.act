@@ -658,7 +658,9 @@ PUBLIC PROC Worker()
       IF DESKHOST.Ready()<>0 THEN
         CONSOLECONTROL.Process()
       FI
-      DESKINPUT.Service(bits)
+      ; Collect's pointer bit was consumed above. Continue retained work here
+      ; without turning that same notification into another empty drain.
+      DESKINPUT.Service(0)
       DESKINPUT.Advance()
       DESKPAINT.Sync()
       inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)
@@ -679,8 +681,7 @@ PUBLIC PROC Worker()
         FI
 
         paintSteps==+1
-        DESKINPUT.Service(DESKINPUT.Mask())
-        DESKINPUT.Present()
+        DESKHOST.InputBoundary()
         IF handoff=0 AND DESKHOST.ControlPending()<>0 THEN
           ; One handoff at most before the next eligible output quantum. This
           ; lets queued status patches run without starving console writers.

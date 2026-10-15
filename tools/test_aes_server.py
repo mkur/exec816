@@ -470,12 +470,16 @@ ENDMODULE
                     report['resource_error']=int.from_bytes(bridge.memdump(foreign['symbols']['ResourceError'],4),'little')
                     report['resource_heap']={n:int.from_bytes(bridge.memdump(foreign['symbols'][n],4),'little') for n in ('ResourceHeapWarm','ResourceHeapReturned')}
                 report['native_checks'] = data(bridge, program['image'], 'checks', True)[0]
+                if pointer:
+                    report['boundary_checks'] = data(bridge, program['image'], 'boundaryChecks', True)[0]
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
             require(report['AESFailures'] == 0 and report['AESChecks'] >= (25 if suite in ('multiwindow','objects','bindings','resources','mouse_profile', 'menus','forms','alerts','fsel','cache') else 160 if registration or inbox else 100 if events or locks or timers or keyboard or pointer or input_events else 60 if gui or windows or borrowed or vdi else 1000),
                     'Incomplete application checks')
+            if pointer:
+                require(report['boundary_checks']==21, 'Incomplete presenter input boundaries')
             if windows:
                 count = int.from_bytes(bridge.memdump(foreign['symbols']['AESVisibleCount'], 2), 'little')
                 raw = bridge.memdump(foreign['symbols']['AESVisible'], count*8)
