@@ -231,3 +231,42 @@ Launch locally:
 ```sh
 open /Users/michalkurcewicz/action/exec816-public/build/rp5/demo/launch-altirra.command
 ```
+
+## Follow-up: five-object dialog
+
+The unchanged complete five-row benchmark was run on the same archived parent
+and RP5 packages, first idle and then beside Counter. Benchmark source hashes,
+donor/adapters, compiler, emulator, ROM, machine settings, canvas and pointer
+match. These runs reuse the packages above without rebuilding them. Raw results
+are in `build/rp-dialog/{parent,candidate}/g4bench-{idle,counter}.json`; the
+linked measurement record retains their hashes and dialog samples.
+
+| Five-object dialog | Parent batches (ms/op) | RP5 batches (ms/op) | Median change |
+| --- | --- | --- | --- |
+| Idle desktop | 106, 108, 109 | 92.5, 93, 93 | 108 → **93**, 13.9% lower |
+| Beside Counter | 133, 130, 131 | 111, 112, 113 | 131 → **112**, 14.5% lower |
+
+One operation draws the complete five-object tree through `objc_draw`, with an
+UPDATE pair, visibility checks and event polling for each dialog. Preparation,
+warmup, report rendering and disk writes are outside the timed interval. This
+is application throughput including scheduling, not a measurement of button
+feedback or isolated blitter speed. The results are medians of three batch
+averages, not p95s. The existing two-second calibration uses 20 dialogs per
+batch for the parent and both Counter runs, and 40 for the faster idle candidate;
+the same twenty-position sequence repeats. The PAL clock is 50 Hz.
+
+The gain extends beyond rectangles: the presenter ownership and mouse snapshot
+changes also serve object drawing. RP3's direct named `v_bar` binding is not
+used by the timed dialog: `objc_draw` reaches `WidgetFill`/`GemWidgetFill`
+directly. Object traversal, per-object/strip display borrowing, fills and text
+remain, and the dialog has one UPDATE exchange per operation rather than
+amortizing it over four rectangles. These code-path observations explain why
+the workloads need not improve equally; these elapsed samples do not attribute
+the saved time to individual functions. They also do not establish a matched
+speed ratio against the original GEM4XE benchmark.
+
+Development scope: all five rows completed in all four package runs; Counter
+advanced during both loaded runs. Reports saved, apps closed normally, HELLO
+ran and EXIT returned with no live Tasks and intact guards. No production code,
+ABI, stack capacity, VRAM or bank-zero reservations changed in this follow-up
+(0 fixed, 0 per public Task, 0 idle bank-zero bytes).

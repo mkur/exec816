@@ -2035,5 +2035,439 @@
         "build/rp5/menus-parent/menu-results.json": "3a2fab1bfb7e8e84c8f509982b5d0f85852a41f9db7407ee70e8dd3ea3fc6f44"
       }
     }
+  },
+  "dialog_followup": {
+    "scope": "Unchanged complete five-row G4BENCH, exact pre-RP and RP5 OF816 packages, idle and Counter; development measurements, no full qualification.",
+    "parent_exec_revision": "3ff76d7",
+    "candidate_package_exec_revision": "a6d8654-dirty",
+    "candidate_package_note": "Final RP production code; only host measurement tools were uncommitted at packaging. Existing ZIPs were reused without rebuilding.",
+    "matched_inputs": {
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "benchmark_source_inputs": {
+        "bench.c": "0e62214f4bac15db0049ab8d425e86b1b8c78bf660de3bfbe80a2f55e73cd95f",
+        "clock.c": "994c30fd2dc64db91c17b57d424d44ee118205ae90a5ffa829d6ecaab6cf2f41",
+        "g4bench.c": "e2e1ca296c1c384bee1122405e3a5bfedeba8e0e722199c66e578407d11d064a"
+      },
+      "donor": {
+        "revision": "fbfea9b0b1233a5d659d5ec583c63f863cceadfa",
+        "inputs": {
+          "src/apps/g4bench.c": "ad0b808e7015c53d7f81757182ea685b80dfc916460780243abe079eda22ecf8",
+          "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+          "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+          "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+        },
+        "patches": {
+          "0001-exec-drawing-subset.patch": "3b6ffdf8ca3ef8d395fc728c78040b6054ee2fa27c9628fbd33ea161bf17c07f"
+        },
+        "adapters": {
+          "bench.c": "0e62214f4bac15db0049ab8d425e86b1b8c78bf660de3bfbe80a2f55e73cd95f",
+          "clock.c": "994c30fd2dc64db91c17b57d424d44ee118205ae90a5ffa829d6ecaab6cf2f41",
+          "clock.h": "f212681a686ae2f8faf63c297caf1c663a4c0034ffab5ad913df5f4c32d3adbb",
+          "workload.h": "5144b8fd2d6f8791728bb607c2c1f2a7aeaa1a06163336b8764ead2e60a34065"
+        }
+      },
+      "runner_sha256": "e4597f846589b312a62ac9e888279f8c859af7dc0faeaaf4b681949511434934"
+    },
+    "clock_hz": 50,
+    "canvas": [
+      152,
+      56,
+      480,
+      160
+    ],
+    "pointer": [
+      630,
+      230
+    ],
+    "statistic": "Median of three batch averages, not individual-operation latency or p95.",
+    "batch_policy": "Unchanged adaptive minimum two-second batch; parent idle 20 dialogs, candidate idle 40, both Counter 20. The same twenty-position sequence repeats.",
+    "timed_scope": "One UPDATE pair, full-canvas visibility checks, objc_draw and event polling per dialog; includes scheduling and completed drawing, excludes preparation/warmup/report/disk writes.",
+    "runs": {
+      "parent": {
+        "idle": {
+          "result_path": "build/rp-dialog/parent/g4bench-idle.json",
+          "result_sha256": "f62ec67fac650434b3201ec34a0fa9a0b40eb4ea3148ed149e4e0b72a7f223db",
+          "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 106,
+                "start": [
+                  0,
+                  6188,
+                  50
+                ],
+                "end": [
+                  0,
+                  6294,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 108,
+                "start": [
+                  0,
+                  6300,
+                  50
+                ],
+                "end": [
+                  0,
+                  6408,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 109,
+                "start": [
+                  0,
+                  6413,
+                  50
+                ],
+                "end": [
+                  0,
+                  6522,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 108.0
+          },
+          "batch_averages_ms": [
+            106.0,
+            108.0,
+            109.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 24.4,
+            "text even X": 25.0,
+            "text odd X": 25.0,
+            "text clipped": 31.6,
+            "five-object dialog": 108.0
+          },
+          "counter_advanced": false,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        },
+        "counter": {
+          "result_path": "build/rp-dialog/parent/g4bench-counter.json",
+          "result_sha256": "5e6a0f47d69ecfc792034e3213971d95a380a9e64e49ac6b3ecbf64e584c5fbd",
+          "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 133,
+                "start": [
+                  0,
+                  9382,
+                  50
+                ],
+                "end": [
+                  0,
+                  9515,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 130,
+                "start": [
+                  0,
+                  9521,
+                  50
+                ],
+                "end": [
+                  0,
+                  9651,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 131,
+                "start": [
+                  0,
+                  9656,
+                  50
+                ],
+                "end": [
+                  0,
+                  9787,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 131.0
+          },
+          "batch_averages_ms": [
+            133.0,
+            130.0,
+            131.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 27.8,
+            "text even X": 31.6,
+            "text odd X": 32.4,
+            "text clipped": 38.8,
+            "five-object dialog": 131.0
+          },
+          "counter_advanced": true,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        }
+      },
+      "candidate": {
+        "idle": {
+          "result_path": "build/rp-dialog/candidate/g4bench-idle.json",
+          "result_sha256": "2b7d94e74f5aa28a87496e606c6d0a28f076c88e1ebbb3d92fca9cf6664d8e7f",
+          "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 40,
+                "ticks": 185,
+                "start": [
+                  0,
+                  5948,
+                  50
+                ],
+                "end": [
+                  0,
+                  6133,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 186,
+                "start": [
+                  0,
+                  6137,
+                  50
+                ],
+                "end": [
+                  0,
+                  6323,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 186,
+                "start": [
+                  0,
+                  6327,
+                  50
+                ],
+                "end": [
+                  0,
+                  6513,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 93.0
+          },
+          "batch_averages_ms": [
+            92.5,
+            93.0,
+            93.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 20.0,
+            "text even X": 22.4,
+            "text odd X": 22.4,
+            "text clipped": 27.4,
+            "five-object dialog": 93.0
+          },
+          "counter_advanced": false,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        },
+        "counter": {
+          "result_path": "build/rp-dialog/candidate/g4bench-counter.json",
+          "result_sha256": "b1064ed725ce8eeb9f42f13b5226cc7447dff2a6c672cb5eb3e475f441e87eb8",
+          "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 111,
+                "start": [
+                  0,
+                  8733,
+                  50
+                ],
+                "end": [
+                  0,
+                  8844,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 112,
+                "start": [
+                  0,
+                  8849,
+                  50
+                ],
+                "end": [
+                  0,
+                  8961,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 113,
+                "start": [
+                  0,
+                  8966,
+                  50
+                ],
+                "end": [
+                  0,
+                  9079,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 112.0
+          },
+          "batch_averages_ms": [
+            111.0,
+            112.0,
+            113.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 22.6,
+            "text even X": 26.6,
+            "text odd X": 27.0,
+            "text clipped": 34.0,
+            "five-object dialog": 112.0
+          },
+          "counter_advanced": true,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        }
+      }
+    },
+    "comparison": {
+      "idle": {
+        "parent_ms": 108.0,
+        "candidate_ms": 93.0,
+        "reduction_ms": 15.0,
+        "reduction_percent": 13.889
+      },
+      "counter": {
+        "parent_ms": 131.0,
+        "candidate_ms": 112.0,
+        "reduction_ms": 19.0,
+        "reduction_percent": 14.504
+      }
+    },
+    "resource_delta": {
+      "bank_zero_fixed": 0,
+      "bank_zero_per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "bank_zero_idle": 0,
+      "vram": 0
+    }
   }
 }
