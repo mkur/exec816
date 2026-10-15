@@ -1,0 +1,158 @@
+; Fixture commands execute on the presenter under its normal policy gate.
+MODULE POPUPPROBE
+USE EXEC
+USE DESKSTATE
+USE DESKMENUCACHE
+USE DESKMOVE
+USE AESSTATE
+USE AESLOCKS
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE CONSOLEBITMAP
+USE HEAPCORE
+USE POPUPFAULT
+
+PUBLIC BYTE active,command,done,ready
+PUBLIC CARD checks,result
+PUBLIC LAYERTYPES.Rect old,target,area
+PUBLIC LONGCARD rebuilds,token
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc40+(checks & 63))
+  FI
+  checks==+1
+
+RETURN
+
+PROC PaintPopup(BYTE pen)
+  BYTE status
+
+  LET service=DESKSTATE.Get()
+  LET scene=@service.scene
+  LET popup=LAYERS.Find(scene,DESKSTATE.popupLayer)
+  Require(CONSOLEBITMAP.RawFill(CARD(popup.bounds.left),CARD(popup.bounds.top),
+      CARD(popup.bounds.right-popup.bounds.left),
+      CARD(popup.bounds.bottom-popup.bounds.top),pen)<>0)
+  Require(LAYERS.BeginPaint(scene,popup.id,@token)=LAYERTYPES.OK)
+  DO
+    status=LAYERS.AdvancePaint(scene,token)
+    IF status=LAYERTYPES.EMPTY THEN
+      EXIT
+    FI
+    Require(status=LAYERTYPES.OK)
+  OD
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+
+RETURN
+
+; Direct fixture acknowledgement follows an independently drawn solid scene.
+PROC Background()
+  BYTE slot
+
+  LET service=DESKSTATE.Get()
+  LET scene=@service.scene
+  Require(CONSOLEBITMAP.RawFill(32,24,208,64,2)<>0)
+  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    scene.items(slot).dirty=0
+    scene.items(slot).damage.count=0
+    scene.items(slot).pending.count=0
+  OD
+  scene.visibleDamage=0
+
+RETURN
+
+PUBLIC PROC Pump()
+  BYTE status
+
+  IF command=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN
+  FI
+  LET service=DESKSTATE.Get()
+  LET scene=@service.scene
+  LET aes=AESSTATE.Get()
+  CASE command OF
+  WHEN 1 THEN
+    IF AESLOCKS.NativeReady()=0 OR scene.visibleDamage<>0 THEN
+      RETURN
+    FI
+    active=1
+    POPUPFAULT.active=1
+    aes.menuRevision=1
+    DESKMOVE.HideCaret()
+    REGIONS.Assign(@old,48,32,128,64)
+    REGIONS.Assign(@target,104,28,216,76)
+    REGIONS.Assign(@area,32,24,240,88)
+    Background()
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,0)=LAYERTYPES.OK)
+    Require(LAYERS.Bounds(scene,DESKSTATE.popupLayer,48,32,80,32)=LAYERTYPES.OK)
+    Require(DESKMENUCACHE.Capture(@area)=1)
+
+  WHEN 2 THEN
+    DESKMENUCACHE.Pump()
+    Require(scene.busy=0 AND scene.under.slot.valid=1)
+    Require(LAYERS.Bounds(scene,DESKSTATE.popupLayer,104,28,112,48)=LAYERTYPES.OK)
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,1)=LAYERTYPES.OK)
+    PaintPopup(5)
+    DESKMENUCACHE.SelectPopup(3,1,1,aes.menuRevision,1,-1,1)
+    Require(DESKMENUCACHE.CapturePopup()=1)
+
+  WHEN 3 THEN
+    DESKMENUCACHE.Pump()
+    Require(scene.busy=0)
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,0)=LAYERTYPES.OK)
+    Background()
+    Require(LAYERS.Bounds(scene,DESKSTATE.popupLayer,48,32,80,32)=LAYERTYPES.OK)
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,1)=LAYERTYPES.OK)
+    PaintPopup(4)
+    rebuilds=scene.rebuilds
+
+  WHEN 4 THEN
+    result=DESKMENUCACHE.Replace(@target)
+    token=scene.busy
+
+  WHEN 5 THEN
+    DESKMENUCACHE.Pump()
+
+  WHEN 6 THEN
+    result=DESKMENUCACHE.Replacement()
+
+  WHEN 7 THEN
+    DESKMENUCACHE.Reset()
+    ; Recapture the independently repainted background for another case.
+    Require(scene.busy=0)
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,0)=LAYERTYPES.OK)
+    Background()
+    Require(DESKMENUCACHE.Capture(@area)=1)
+
+  WHEN 8 THEN
+    DESKMENUCACHE.SelectPopup(3,1,1,aes.menuRevision,2,-1,1)
+
+  WHEN 9 THEN
+    LAYERS.Touch(scene,0)
+
+  WHEN 10 THEN
+    Require(scene.busy=0)
+    Require(LAYERS.Show(scene,DESKSTATE.popupLayer,0)=LAYERTYPES.OK)
+    Background()
+    DESKMENUCACHE.End()
+    active=0
+    POPUPFAULT.active=0
+    done=1
+
+  WHEN 12 THEN
+    Require(LAYERS.FinishSavedReplace(scene,token,LAYERTYPES.REPLACE_CLEAN)
+        =LAYERTYPES.BAD_TOKEN)
+
+  WHEN 11 THEN
+    aes.menuRevision==+1
+
+  ELSE
+    HEAPCORE.Abort($fc7f)
+  ESAC
+  command=0
+
+RETURN
+ENDMODULE

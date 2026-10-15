@@ -1,6 +1,6 @@
 # Popup replacement implementation plan
 
-Status: PT1 implemented; PT2–PT4 pending.
+Status: PT1–PT2 implemented; PT3–PT4 pending.
 
 [Design](popup-transition-design.md) ·
 [DB3 results](../../history/dropdown-bookkeeping.md) ·
@@ -77,6 +77,8 @@ deltas **0/0/0 bytes**. Record native code and local stack changes.
 Commit: `Add a Layers transaction for saved popup replacement`.
 
 ## PT2 Implement the bounded asynchronous cache continuation
+
+Implemented; [development evidence](../../history/popup-transition.md).
 
 Primary files: `lib/desktop/deskmenucache.act`, with focused presenter/cache
 fixture support. Keep ordinary production menu admission unchanged in this

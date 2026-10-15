@@ -1,0 +1,18 @@
+MODULE POPUPTEST
+USE EXEC
+USE EXECTASKS
+USE DESKSTATE
+USE POPUPPROBE
+
+PROC Main()
+  CARD ignored
+
+  LET service=DESKSTATE.Get()
+  POPUPPROBE.ready=1
+  WHILE POPUPPROBE.done=0 DO
+    EXEC.Signal(service.owner,service.mask)
+    ignored=EXECTASKS.Sleep(1)
+  OD
+
+RETURN
+ENDMODULE
