@@ -1,0 +1,38 @@
+; Caller-side entry to the same native UPDATE policy used by RPC admission.
+MODULE AESLOCAL
+USE EXEC
+USE EXECLISTS
+USE AESTYPES
+USE AESSTATE
+USE AESGATE
+USE AESLOCKS
+
+; The admitted binding and registration remain live until this Task detaches.
+; Return zero for the original RPC path; handled TRY failure returns one.
+PUBLIC CARD FUNC Update(LONGCARD value)
+  BYTE queued,wake
+
+  IF AESGATE.Claim()=0 THEN
+    RETURN(0)
+  FI
+
+  LET service=AESSTATE.Get()
+  LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  LET client=AESSTATE.Find(service,request.client)
+  ; Include older messages that have not reached the native waiter queue yet.
+  EXEC.Forbid()
+  queued=service.lockCount<>0 OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0
+  EXEC.Permit()
+  wake=request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1
+  LET status=AESLOCKS.Attempt(service,client,request,1,queued)
+  IF status=AESTYPES.PENDING THEN
+    AESGATE.Release(0)
+    RETURN(0)
+  FI
+
+  request.status=status
+  AESGATE.Release(wake AND status=AESTYPES.OK)
+
+RETURN(1)
+
+ENDMODULE

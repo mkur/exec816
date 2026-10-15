@@ -46,3 +46,46 @@ new signal allocation, Task, VRAM storage or stack reservation.
 ```sh
 python3 tools/test_aes_gate.py --output build/caller-local-update/ul2-gate
 ```
+
+## UL3: caller-local BEGIN/END
+
+The resident binding calls one private C/Action entry. A gate miss or blocking
+contention releases transient ownership and submits the unchanged RPC operation.
+Handled TRY failure does not submit. Local calls leave transport sequence numbers
+unchanged; MCTRL remains RPC. Final END consumes the existing journal and sends
+the service wake after publishing the released policy gate.
+
+The faster path exposed an existing dependency cycle: an exiting client could
+wait for a mouse owner while that owner's UPDATE upgrade waited for the pending
+exit. Shared eligibility now permits the existing mouse owner to upgrade past
+pending window/exit work, while retaining native readiness checks. This extends
+the existing owner exception to work that itself depends on that owner. The
+second contention round in the lock fixture exercises the formerly stuck case.
+
+Development checks:
+
+- Small raw/optimized bridge probe: full 32-bit argument, native result, both C
+  stack parities, S/D/DBR, preserved C DP and VBI preemption.
+- Optimized lock fixture: **181 assertions**, including zero-message nested
+  local pairs, both mixed local/RPC pairs, inherited Forbid, an older unadmitted
+  request, TRY, MCTRL overlap/upgrade, two contention orders, six open owned
+  windows, detach and resource restoration.
+- Optimized binding fixture: **324 assertions**, including ordinary/PB calls,
+  multiple contexts, registration reuse and lifecycle.
+- Optimized cache fixture: **220 assertions** plus 31 physical observations,
+  including hidden edits, scoped sibling eligibility and exact restored pixels.
+- Host suite: **487 tests, four skips**. This is development coverage, not full
+  qualification or hardware qualification.
+
+The six-window lock case peaks at 709 caller stack bytes, leaving 571 bytes above
+its protected floor. The binding case peaks at 827, leaving 453. Guards remain
+intact and reservations are unchanged. UL3 bank-zero delta is **0 fixed, 0 per
+public Task, 0 idle**, including guards/alignment/capacity; no VRAM is added.
+The bound native entry pointer uses three upper-RAM bytes. The optimized native
+local entry is 783 code bytes; the common owner-upgrade fix adds 54 bytes.
+UL1's shared lock refactor adds 282 native code bytes. UL2's gate routines total
+1,243 native code bytes, plus their worker boundary calls.
+
+```sh
+python3 tools/test_aes_update_bridge.py --output build/caller-local-update/ul3-bridge
+```

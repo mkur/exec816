@@ -60,7 +60,9 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     RETURN(1)
   FI
 
-  IF service.windowPending<>0 THEN
+  ; A window/exit waiter can itself depend on this mouse owner. Its UPDATE
+  ; upgrade must remain eligible; otherwise both sides wait for one another.
+  IF service.windowPending<>0 AND service.mouseOwner<>client.id THEN
     RETURN(0)
   FI
 

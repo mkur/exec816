@@ -4,8 +4,9 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint runs in the existing desktop presenter. Registration,
-exit, window mutations and GUI locks use ordinary Exec RPC; copied messaging and event/timer waits
-run in their callers. This adds no Task or kernel gateway. The native desktop
+exit, window mutations and contended GUI locks use ordinary Exec RPC.
+Uncontended BEGIN/END UPDATE, copied messaging and event/timer waits run in their
+callers. This adds no Task or kernel gateway. The native desktop
 and retained Control Panel remain independent clients of their existing service.
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
@@ -180,6 +181,21 @@ if unavailable. A normal contended BEGIN waits in arrival order among eligible
 callers; an existing mouse owner can upgrade without waiting behind a dependent
 peer. Exit releases every owned hold. Message and timer service continue.
 
+BEGIN/END UPDATE use the same native policy in either the caller or presenter.
+At a safe presenter boundary, the binding claims a private metadata gate and
+performs bounded acquisition/release synchronously. It releases that gate before
+application drawing; ordinary preemption remains enabled. An unavailable gate
+or blocking contention uses the original request/reply queue. MCTRL stays RPC.
+Local calls do not advance the transport sequence. An older unadmitted request
+also prevents a new BEGIN from bypassing pending work, with the same existing
+owner exception. TRY failure remains a completed zero result, not an error.
+
+Final local END consumes the binding's paint journal before returning and
+signals the existing AES wake bit. The presenter owns its whole policy turn;
+if preempting a caller inside policy, it parks on that bit rather than touching
+shared metadata. Gate transitions use short scheduling guards. Neither the
+bounded policy work nor application drawing runs under a new Forbid section.
+
 `ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
 tracking, repaint obligations and cache holds to one caller-owned window. End
 it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model changes
@@ -323,7 +339,7 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The presenter handles registration, retirement, GUI locks and its own pending
+The presenter handles registration, retirement, contended GUI locks and its own pending
 GUI delivery. Pending publishers retain an exit wake path; lock settlement and
 native input/drawing gates remain active. Application message matching and
 timer waits stay caller-local. There is no presenter application-message FIFO,

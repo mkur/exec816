@@ -330,11 +330,24 @@ WORD evnt_timer(UWORD lo, UWORD hi)
 
 WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
 {
+    UWORD handled=0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
+    if (!c->identity) { c->diagnostic = AES_IDENTITY; return 0; }
     c->request.intin[0] = code;
     c->request.intin[1] = window;
-    if (!ExecAESSubmit(c, AES_OP_UPDATE)) return 0;
+    /* MCTRL retains RPC admission. A local miss changes no ownership and
+     * leaves the transport sequence untouched, including BEG_CHECK calls. */
+    if ((code & 2)==0 && ExecAESUpdateEntry) {
+        c->request.client=c->identity;
+        c->busy=1;
+        handled=_AESUpdateCall(&c->request);
+        c->busy=0;
+    }
+    if (handled) {
+        c->diagnostic=c->request.status;
+        if (c->diagnostic!=AES_OK || !c->request.intout[0]) return 0;
+    } else if (!ExecAESSubmit(c, AES_OP_UPDATE)) return 0;
     switch (code & ~(BEG_CHECK|AES_UPDATE_WINDOW)) {
     case BEG_UPDATE: ++c->updateDepth; break;
     case END_UPDATE: --c->updateDepth; break;

@@ -22,6 +22,13 @@ owner serializes every access. Preemption is permitted, but interrupt handlers
 must not call Layers, and a second Task must not access the same scene while its
 owner runs. Separate scenes have no shared library state.
 
+AES serializes its shared scene through a private presenter/caller policy gate.
+At a published safe boundary, an admitted client may execute the existing
+BEGIN/END snapshot, cache and paint-journal operations in its own Task. The
+presenter parks if that caller is preempted. This ownership transfer finishes
+before application drawing begins; it grants no general caller access to the
+scene. IRQ/NMI never participates in the gate or Layers policy.
+
 Pointer arguments name valid live storage. Output scalars must be disjoint from
 the scene and input descriptors. Records and cached regions are read-only to
 callers after initialization. This is the registration-and-lifetime contract,

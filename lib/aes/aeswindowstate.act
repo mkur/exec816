@@ -1,4 +1,4 @@
-; Presenter-owned window publication and GUI facts, without window mutation.
+; Serialized window publication and GUI facts, without window mutation.
 MODULE AESWINDOWSTATE
 USE EXEC
 USE AESTYPES
@@ -53,8 +53,9 @@ PUBLIC AESSTATE.Client POINTER FUNC Find(LONGCARD id)
 
 RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 
-; Called at lock grant and after an owner mutation. The caller cannot execute
-; a query until its RPC reply; no Forbid spans construction of this region.
+; Called under exclusive policy ownership at grant or after an owner mutation.
+; The owning client is in this call or awaiting RPC; region construction needs
+; no long Forbid section.
 PROC Publish(AESSTATE.Window POINTER client BYTE copied)
   LAYERTYPES.Rect work
   BYTE status

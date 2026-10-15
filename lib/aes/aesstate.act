@@ -8,7 +8,7 @@ USE LAYERTYPES
 
 PUBLIC CONST POINTER_EVENTS=16
 
-; Presenter-only snapshot invalidation; no caller ABI or per-client storage.
+; Policy-gate snapshot invalidation; no caller ABI or per-client storage.
 PUBLIC BYTE mouseDirty
 
 ; One pending item per kind, independent of the immutable delivered record.

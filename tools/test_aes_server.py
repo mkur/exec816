@@ -316,8 +316,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if events or timers or suite == 'messages':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESPark"]:x})\n    item^=LONGCARD(ADDRESS(@AESHYBRIDPROBE.park))\n  END\n'
         if locks:
+            setup += '  DESKBOOT.Detach()\n'
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
-                    ('AESLockCount', 'lockCount')):
+                    ('AESLockCount', 'lockCount'), ('AESPolicyGate', 'policyGate')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         if locks:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeBusy"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.busy))\n  END\n'
