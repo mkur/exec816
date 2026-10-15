@@ -111,6 +111,11 @@ UWORD AESRun(void)
     edge(60, 80, 0); /* Fresh released baseline. */
     CHECK(in->eligible && !peerInput->eligible);
     CHECK(ExecAESInputArm(c, AES_INPUT_BUTTON) == AES_OK);
+    /* No pointer sample accompanies these focus changes. */
+    send(1);
+    CHECK(!in->eligible && peerInput->eligible);
+    CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
+    CHECK(in->eligible && !peerInput->eligible);
 
     edge(60, 80, 1);
     take(in, 60, 80, 1);

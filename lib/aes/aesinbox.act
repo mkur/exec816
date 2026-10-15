@@ -45,6 +45,7 @@ PUBLIC PROC Open(AESSTATE.Client POINTER client LONGCARD epoch)
   inbox.selectionFlags=0
   inbox.selectedWindow=0
   inbox.windowEpoch=epoch
+  AESSTATE.mouseDirty=1
   EXEC.Permit()
 
 RETURN
@@ -57,6 +58,7 @@ PUBLIC PROC Close(AESSTATE.Client POINTER client)
   EXEC.Forbid()
   interest=inbox.interest
   inbox.windowEpoch=0
+  AESSTATE.mouseDirty=1
   inbox.eligible=0
   inbox.interest=0
   IF interest<>0 THEN

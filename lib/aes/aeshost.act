@@ -79,6 +79,8 @@ PUBLIC BYTE FUNC Wake()
     RETURN(0)
   FI
 
+  ; Caller-side loss recovery uses this existing publication wake too.
+  AESSTATE.mouseDirty=1
   AESCORE.Wake(service)
 
 RETURN(changed)

@@ -382,6 +382,12 @@ messages/input. Exhausting a source epoch stops it until a fresh open-window
 lifetime. [AI2](../plans/gem4xe/aes-application-input-implementation-plan.md#ai2--add-bounded-inboxes-and-safe-wakeups)
 established this transport; AI3–AI5 add production routing and public input waits.
 
+Mouse snapshots publish when input or routing changes, rather than on every
+presenter service pass. One presenter-owned upper-RAM dirty flag coalesces
+unchanged passes. Focus, menu/capture state, window lifetimes, outer lock
+transitions and input-loss recovery invalidate it. Publication remains before
+lock replies and ordered input delivery; button edges retain their FIFO.
+
 ## Resident counter capacity
 
 The optional [counter desktop](../guides/aes-applications.md#optional-of816-counter-desktop)

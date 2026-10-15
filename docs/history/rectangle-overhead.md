@@ -38,3 +38,32 @@ including guards/alignment/spare capacity. Upper static data and VRAM reservatio
 are unchanged; linked executable bytes fall by 275. No stack capacity changes;
 observed headroom above the interrupt reserve is at least 313 bytes for active
 application Tasks, 1,427 for the presenter and 194 for idle in this capture.
+
+## RP2: changed-only mouse snapshots
+
+One presenter-owned `AESSTATE.mouseDirty` byte replaces unconditional all-client
+publication. The state module holds it so inbox/window publication can invalidate
+it without introducing cyclic module dependencies. Pointer/button samples,
+release after capture, loss/recovery, registration, inbox open/close, focus,
+scene visibility and outer UPDATE/MCTRL transitions invalidate it. Menu state
+only invalidates on a changed value. Nested lock counts retain the existing
+publication boundaries without recopying unchanged snapshots.
+
+The ordinary idle trace improves 21.358 → 20.054 ms per rectangle. Refresh is
+still called at synchronization boundaries, but its CPU drops 1.902 → 0.532 ms
+per rectangle; actual per-client Snapshot calls drop 3.953 → 1.000. Presenter
+CPU falls 7.800 → 6.818 ms. The remaining two-client publications correspond to
+the existing outer Begin/End lock transitions, not idle service passes.
+
+Development: 145 optimized pointer assertions pass, including new stationary
+focus checks, nested UPDATE/MCTRL, queued handoff, capture/release, loss recovery
+and window reopening. The normal packaged rectangle run, cancellation, HELLO,
+guards and EXIT pass. The independent lock-queue fixture times out after 118
+checks with no assertion failures on both RP2 and the RP1 parent; original-parent
+comparison remains pending before final acceptance. This is not a passing lock
+qualification. The repaired Counter baseline completes at 27.8 ms/rectangle,
+with visible progress, normal app closure and EXIT.
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including all
+reserved capacity. Static upper RAM grows by **1 byte**; linked executable bytes
+increase by 818. VRAM and all stack reservations are unchanged.

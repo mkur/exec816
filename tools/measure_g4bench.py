@@ -97,7 +97,7 @@ class BenchmarkDesktop:
             # Counter's title starts at y=32; its published work follows it.
             cx,cy=[s.number(peer+38+i*2,2) for i in range(2)]
             click(cx+6,cy-5);s.frames(150)
-        click(400,20);s.command('HELLO',b'Hello from disk!')
+        click(400,35);s.command('HELLO',b'Hello from disk!')
         s.save_screen(s.p['output']/'boot-smoke.png')
         s.saved['integration']=dict(profile='g4bench',benchmark=result,closed=True,shell=True)
         for char in 'EXIT':s.press(char)

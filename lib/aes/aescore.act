@@ -9,6 +9,7 @@ USE TASKMEMORY
 USE A816MEMORY
 USE HEAPCORE
 USE AESLOCKS
+USE AESMOUSE
 USE AESGUI
 USE AESMENU
 USE AESWINDOW
@@ -202,6 +203,8 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   request.client=client.id
   request.intout(0)=client.gemId
   Globals(request,client.gemId)
+  AESSTATE.mouseDirty=1
+  AESMOUSE.Refresh()
 
 RETURN(AESTYPES.OK)
 

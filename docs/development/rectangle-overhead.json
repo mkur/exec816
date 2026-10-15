@@ -261,6 +261,66 @@
           "peak": 287,
           "remaining_above_floor": 993
         }
+      },
+      "untraced_counter": {
+        "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+        "ordinary": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 140,
+              "start": [
+                0,
+                5983,
+                50
+              ],
+              "end": [
+                0,
+                6123,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 138,
+              "start": [
+                0,
+                6129,
+                50
+              ],
+              "end": [
+                0,
+                6267,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 139,
+              "start": [
+                0,
+                6273,
+                50
+              ],
+              "end": [
+                0,
+                6412,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 27.8
+        },
+        "counter_advanced": true,
+        "normal_exit": true
       }
     },
     "RP1": {
@@ -541,6 +601,275 @@
           1,
           2
         ]
+      }
+    },
+    "RP2": {
+      "archive_sha256": "47b2caef5820584469cf90a4845d993a9646746b6e06ec5f2ea1d90bfe069b63",
+      "trace_sha256": "22b35d8c2eac5c6f527eccee1cab9aa66c5a366d34cebb1aa9c7c7dbbc96e6bb",
+      "ordinary": {
+        "name": "solid bars",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3381,
+              50
+            ],
+            "end": [
+              0,
+              3481,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3485,
+              50
+            ],
+            "end": [
+              0,
+              3585,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3589,
+              50
+            ],
+            "end": [
+              0,
+              3689,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 20.0
+      },
+      "per_operation": {
+        "elapsed_ms": 20.05385273598457,
+        "charged_cpu_ms": 9.69905156481937,
+        "off_cpu_ms": 8.28521660024707,
+        "interrupt_ms": 2.0695845709181317
+      },
+      "presenter_cpu_ms": 6.8182029634370345,
+      "presenter_routines": {
+        "AESCORE_PUMP": {
+          "calls": 0.5,
+          "cpu_ms": 2.140221940598749
+        },
+        "AESINBOX_SNAPSHOT": {
+          "calls": 1.0,
+          "cpu_ms": 0.2155934979749894
+        },
+        "AESLOCKS_ACQUIRE": {
+          "calls": 0.25,
+          "cpu_ms": 0.6958475887595583
+        },
+        "AESLOCKS_REQUEST": {
+          "calls": 0.5,
+          "cpu_ms": 1.4391054241338785
+        },
+        "AESMOUSE_REFRESH": {
+          "calls": 2.01,
+          "cpu_ms": 0.5322453394682767
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": 0.25,
+          "cpu_ms": 0.26352626734087137
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 0.5,
+          "cpu_ms": 0.025825405037363667
+        }
+      },
+      "routines": {
+        "BenchDraw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 5.199378846380661
+        },
+        "DisplayEnter": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.7585763980420434
+        },
+        "DisplayLeave": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.20106529795779124
+        },
+        "GemDrawingSolidBorrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.1060157311300918
+        },
+        "GemSolidFill": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.4267117201571139
+        },
+        "GemSolidRows": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.012420018072144793
+        },
+        "VbxeOwnerFence": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.3159251495556912
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.5591933226103395
+        },
+        "_Mod16": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.13943063815910348
+        },
+        "_VbxeUpload": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.13683094650391397
+        },
+        "borrow_callback": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.43374862614577914
+        },
+        "drain": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.577289432024348
+        },
+        "drawing_borrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.10039485239907
+        },
+        "events": {
+          "calls": 0.25,
+          "charged_cpu_ms": 0.8226909263830289
+        },
+        "fence_owner": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6457974745046959
+        },
+        "full_canvas": {
+          "calls": 0.25,
+          "charged_cpu_ms": 1.2520808105869123
+        },
+        "idle": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.2597264649785235
+        },
+        "pointer_erase": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.009926522587596569
+        },
+        "solid_record": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.306054074526217
+        },
+        "start": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.05397678814850735
+        },
+        "v_bar": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.809274261948361
+        },
+        "wind_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.6433504985816232
+        }
+      },
+      "stack": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 561,
+          "remaining_above_floor": 719
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 641,
+          "remaining_above_floor": 415
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 154,
+          "remaining_above_floor": 902
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 743,
+          "remaining_above_floor": 313
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 711,
+          "remaining_above_floor": 345
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 852,
+          "remaining_above_floor": 1452
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 68,
+          "remaining_above_floor": 188
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 1,
+      "linked_executable_bytes_delta": 818,
+      "vram_delta": 0,
+      "checks": {
+        "pointer": 145,
+        "locks": "Timed out with 118 checks and no assertion failures, reproduced on RP1 parent; investigating original parent before final acceptance."
       }
     }
   }

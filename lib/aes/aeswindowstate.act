@@ -258,6 +258,7 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
+  AESSTATE.mouseDirty=1
   top=0
   slot=0
   WHILE slot<desktop.scene.count DO

@@ -23,6 +23,7 @@ BYTE clickCount
 
 PUBLIC PROC Reset()
 
+  AESSTATE.mouseDirty=1
   owner=0
   openEpoch=0
   clickCount=0
@@ -54,6 +55,8 @@ RETURN(@latest)
 
 PUBLIC PROC Cancel(LONGCARD client)
 
+  AESSTATE.mouseDirty=1
+
   IF clickOwner=client THEN
     clickCount=0
   FI
@@ -67,6 +70,8 @@ PUBLIC PROC Cancel(LONGCARD client)
 RETURN
 
 PUBLIC PROC CancelWindow(LONGCARD epoch)
+
+  AESSTATE.mouseDirty=1
 
   IF epoch<>0 AND clickEpoch=epoch THEN
     clickCount=0
@@ -87,7 +92,10 @@ PUBLIC PROC Retained()
 
   IF manager<>0 THEN
     IF manager=TITLE OR nativePending=0 THEN
-      nativePending=manager
+      IF nativePending<>manager THEN
+        AESSTATE.mouseDirty=1
+        nativePending=manager
+      FI
     FI
   FI
 
@@ -104,9 +112,14 @@ PUBLIC PROC Refresh()
   IF service=NULL OR service.live=0 OR desktop=NULL THEN
     RETURN
   FI
-  IF service.pointerCount=0 THEN
+  IF service.pointerCount=0 AND nativePending<>0 THEN
     nativePending=0
+    AESSTATE.mouseDirty=1
   FI
+  IF AESSTATE.mouseDirty=0 THEN
+    RETURN
+  FI
+  AESSTATE.mouseDirty=0
   FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
       LET client=@service.clients(index)
@@ -153,6 +166,7 @@ PUBLIC PROC Lost()
   BYTE index
 
   LET service=AESSTATE.Get()
+  AESSTATE.mouseDirty=1
   owner=0
   openEpoch=0
   clickCount=0
@@ -193,6 +207,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
     RETURN(0)
   FI
 
+  AESSTATE.mouseDirty=1
   previous=latest.buttons
   latest.x=sample.x
   latest.y=sample.y
@@ -228,6 +243,7 @@ PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 
     accepted=Publish(client,sample)
     IF latest.buttons=0 THEN
+      AESSTATE.mouseDirty=1
       owner=0
       openEpoch=0
       needRelease=0
