@@ -365,7 +365,8 @@ RETURN
 BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service BYTE inputPending)
   BYTE index
 
-  IF inputPending<>0 OR CONSOLEDISPLAY.CompletionReady()<>0
+  IF (inputPending<>0 AND DESKINPUT.KeyReady()<>0)
+      OR CONSOLEDISPLAY.CompletionReady()<>0
       OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN
     RETURN(1)
   FI

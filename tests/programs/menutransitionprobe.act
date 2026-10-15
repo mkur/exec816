@@ -1,0 +1,77 @@
+; Fixture-only input publication at the two real replacement submissions.
+MODULE MENUTRANSITIONPROBE
+USE EXEC
+USE INPUT
+USE INPUTNATIVE
+USE AESSTATE
+USE AESINPUT
+USE MENUTRANSITIONMARKS
+USE DESKSTATE
+USE A816MEMORY
+INCLUDE "input-storage.act.inc"
+PUBLIC BYTE arm,kind,hits,deferred
+CARD tick
+INPUT.Event event
+
+PROC Key(BYTE code)
+  BYTE slot
+
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  EXEC.Forbid()
+  slot=capture.head & 63
+  tick==+1
+  capture.events(slot).key=code
+  capture.events(slot).kind=0
+  capture.events(slot).tick=tick
+  capture.events(slot).route=capture.route
+  capture.head==+1
+  LET desktop=DESKSTATE.Get()
+  EXEC.Signal(desktop.owner,$40000000)
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Copy(BYTE phase)
+
+  IF phase=1 AND MENUTRANSITIONMARKS.watch<>0 THEN
+    MENUTRANSITIONMARKS.watch=0
+    MENUTRANSITIONMARKS.passed=(MENUTRANSITIONMARKS.ordinary<>0)
+  FI
+  IF arm<>phase THEN
+    RETURN
+  FI
+  arm=0
+  hits==+1
+  IF kind=1 THEN
+    Key($87)
+    Key($87)
+    Key(28)
+  ELSEIF kind=2 THEN
+    Key(12)
+  ELSE
+    A816MEMORY.Clear(BYTE POINTER(@event),INPUT.EVENT_BYTES)
+    event.x=600
+    event.y=220
+    IF kind=3 THEN
+      event.kind=INPUT.EVENT_BUTTON
+      event.buttons=INPUT.LEFT
+      AESINPUT.Push(@event)
+      event.buttons=0
+    ELSE
+      event.kind=INPUT.EVENT_LOSS
+      event.code=INPUT.LOSS_NORMALIZED
+    FI
+    AESINPUT.Push(@event)
+  FI
+
+RETURN
+
+PUBLIC PROC BeforeFinish(BYTE unused)
+
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  IF capture.head<>capture.tail OR AESINPUT.Pending()<>0 THEN
+    deferred==+1
+  FI
+
+RETURN
+ENDMODULE

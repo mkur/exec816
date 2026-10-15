@@ -34,7 +34,7 @@ PUBLIC BYTE FUNC NativeReady()
   LET batch=CONSOLEBATCH.Get()
 
 RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
-    AND CONSOLEBITMAP.Pending()=0
+    AND CONSOLEBITMAP.Pending()=0 AND DESKSTATE.menuReplacing=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)
 

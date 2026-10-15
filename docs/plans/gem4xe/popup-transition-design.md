@@ -1,6 +1,6 @@
 # One scene transition for popup replacement
 
-Status: proposed design; not implemented.
+Status: implemented through PT3; matched measurement and demo delivery pending.
 
 [Dropdown analysis](../../history/dropdown-analysis.md) ·
 [Bookkeeping results](../../history/dropdown-bookkeeping.md) ·

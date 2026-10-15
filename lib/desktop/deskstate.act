@@ -11,7 +11,37 @@ LONGCARD selectedLayer,scrollToken,lossGeneration
 EXEC.Task POINTER launcher
 PUBLIC BYTE outlineVisible
 PUBLIC LONGCARD barLayer,popupLayer,desktopWindow,desktopLayer
-PUBLIC BYTE menuActive
+PUBLIC BYTE menuActive,menuReplacing
+PUBLIC BYTE menuTurns
+
+; Copies and paints share the existing two-transaction menu preference.
+PUBLIC PROC MenuTurn(BYTE ordinary)
+
+  IF ordinary<>0 THEN
+    menuTurns=0
+  ELSEIF menuTurns<2 THEN
+    menuTurns==+1
+  FI
+
+RETURN
+
+PUBLIC BYTE FUNC MenuTurnReady()
+  BYTE slot
+
+  IF menuTurns<2 THEN
+    RETURN(1)
+  FI
+  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    BEGIN
+      LET layer=@service.scene.items(slot)
+      IF (service.scene.visibleDamage & (CARD(1) LSH slot))<>0
+          AND layer.id<>barLayer AND layer.id<>popupLayer THEN
+        RETURN(0)
+      FI
+    END
+  OD
+
+RETURN(1)
 
 ; Keep desktop chrome above application layers within the same scene mutation.
 PUBLIC PROC TopChrome()

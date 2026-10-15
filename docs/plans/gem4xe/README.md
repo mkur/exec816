@@ -1,13 +1,14 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [popup transition design](popup-transition-design.md) follows
+The implemented [popup transition design](popup-transition-design.md) follows
 dropdown bookkeeping with one scene transaction for replacing a saved popup.
 It keeps old geometry committed through background/image copies, publishes
 one final visibility rebuild and preserves input, damage and cache lifetimes.
 The [PT1–PT4 implementation plan](popup-transition-plan.md) orders the Layers
 transaction, asynchronous cache continuation, menu/input integration and
-matched measurements/demo delivery. Implementation has not started; ordinary
-open/dismiss and fallback paths retain focused regression coverage.
+matched measurements/demo delivery. PT1–PT3 are implemented with focused
+transaction, failure, input and pixel checks; PT4 measurement is pending.
+Ordinary open/dismiss and fallback paths retain focused regression coverage.
 
 The completed [dropdown bookkeeping plan](dropdown-bookkeeping-plan.md) implements
 summary-based paint selection and bounded single-pass region subtraction,

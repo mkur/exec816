@@ -14,6 +14,25 @@ def instrument(out):
 
 
 def producer(out, symbols):
+    # Fixed fixture hook; production has no injected input or pause state.
+    probe=read_source(ROOT/'tests/programs/menutransitionprobe.act',
+        {'input-storage.act.inc':out/'program/input-storage.act.inc'})
+    (out/'menutransitionprobe.act').write_text(probe)
+    (out/'menutransitionmarks.act').write_text('MODULE MENUTRANSITIONMARKS\nPUBLIC BYTE watch,ordinary,passed\nPUBLIC CARD waits\nENDMODULE\n')
+    state=read_source(ROOT/'lib/desktop/deskstate.act').replace('USE EXEC',
+        'USE EXEC\nUSE MENUTRANSITIONMARKS',1)
+    state=state.replace('  IF ordinary<>0 THEN\n    menuTurns=0',
+        '  IF ordinary<>0 THEN\n    IF MENUTRANSITIONMARKS.watch<>0 THEN\n      MENUTRANSITIONMARKS.ordinary==+1\n    FI\n    menuTurns=0')
+    (out/'deskstate.act').write_text(state)
+    cache=read_source(ROOT/'lib/desktop/deskmenucache.act').replace(
+        'USE DESKSTATE', 'USE MENUTRANSITIONPROBE\nUSE DESKSTATE', 1)
+    cache=cache.replace('  status=Transfer(1)\n',
+        '  status=Transfer(1)\n  MENUTRANSITIONPROBE.Copy(1)\n')
+    cache=cache.replace('  status=PopupTransfer(@service.scene.copyTarget,1)\n',
+        '  status=PopupTransfer(@service.scene.copyTarget,1)\n  MENUTRANSITIONPROBE.Copy(2)\n')
+    cache=cache.replace('  status=LAYERS.FinishSavedReplace',
+        '  MENUTRANSITIONPROBE.BeforeFinish(0)\n  status=LAYERS.FinishSavedReplace')
+    (out/'deskmenucache.act').write_text(cache)
     source = '''MODULE AESMENUPROBE
 USE EXEC
 USE AESSTATE
@@ -21,11 +40,23 @@ USE AESTYPES
 USE AESGUI
 USE AESLOCKS
 USE AESMENU
+USE DESKSTATE
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE MENUTRANSITIONMARKS
 USE DESKMENU
 USE DESKAPPMENU
 
+PUBLIC BYTE FUNC Pending()
+
+  LET command=CARD POINTER($COMMAND)
+
+RETURN(command^<>0)
+
 PUBLIC PROC Pump()
   BYTE accepted,slot
+  LAYERTYPES.Rect area
 
   LET command=CARD POINTER($COMMAND)
   IF command^=0 OR AESLOCKS.NativeReady()=0 THEN
@@ -40,6 +71,20 @@ PUBLIC PROC Pump()
   ELSEIF command^=3 THEN
     IF DESKAPPMENU.Current()=0 THEN RETURN FI
     DESKMENU.Application(0)
+  ELSEIF command^=4 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      REGIONS.Assign(@area,620,200,624,204)
+      accepted=LAYERS.Invalidate(@desktop.scene,0,@area)
+      DESKSTATE.MenuTurn(0)
+      DESKSTATE.MenuTurn(0)
+      MENUTRANSITIONMARKS.watch=1
+      MENUTRANSITIONMARKS.ordinary=0
+      MENUTRANSITIONMARKS.passed=0
+      DESKMENU.Application(1)
+      command^=0
+      RETURN
+    END
   ELSEIF command^=2 THEN
     FOR slot=0 TO AESTYPES.WINDOWS-1 DO
       IF service.windows(slot).owner=client.id THEN
@@ -64,9 +109,25 @@ ENDMODULE
     (out/'aesmenuprobe.act').write_text(source)
     host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE',
         'USE AESCORE\nUSE AESMENUPROBE')
+    host=host.replace('PUBLIC BYTE FUNC Settled()\n',
+        'PUBLIC BYTE FUNC Settled()\n\n  IF AESMENUPROBE.Pending()<>0 THEN RETURN(0) FI\n')
     needle = '  changed=service.directory.changed<>0'
     require(host.count(needle) == 1, 'Menu producer wake boundary changed')
     (out/'aeshost.act').write_text(host.replace(needle, '  AESMENUPROBE.Pump()\n'+needle))
+
+
+def worker_probe(original):
+    def generate(*args, **kwargs):
+        directory=original(*args, **kwargs)
+        path=directory/'consoledriver.act'
+        source=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE MENUTRANSITIONMARKS\n',1)
+        old='      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'
+        require(source.count(old)==1,'Presenter wait boundary changed')
+        source=source.replace(old, '      IF inputPending<>0 AND DESKSTATE.menuReplacing<>0 THEN\n'
+            '        MENUTRANSITIONMARKS.waits==+1\n      FI\n'+old)
+        path.write_text(source)
+        return directory
+    return generate
 
 
 def physical(b,p,foreign,report):
@@ -79,7 +140,21 @@ def physical(b,p,foreign,report):
     def reach(condition):
         b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
         b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
-        run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
+        try:
+            run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
+        except Exception:
+            report['stalled_condition']=condition
+            report['menu_state']={module:{n:get(at(module,n),size) for n,size in names} for module,names in (
+                ('DESKSTATE',[('menuReplacing',1),('menuActive',1),('menuTurns',1)]),
+                ('DESKMENU',[('menu',1),('pendingMenu',1),('pendingHeading',2),('dirty',1)]),
+                ('DESKMENUCACHE',[('token',4),('popupOperation',1)]))}
+            from generate_desktop import layout as dl
+            from generate_layers import layout as ll
+            scene=get(at('DESKSTATE','service'),3)+dl()['Service']['fields']['scene']
+            report['scene_state']={n:get(scene+ll()['Scene']['fields'][n],size) for n,size in
+                [('busy',4),('activeKind',1),('visibleDamage',2)]}
+            print(report['menu_state'],report['scene_state'],flush=True)
+            raise
     font=font_bytes(out/'selected/src/vdi/font8x8.c')
     rgb=bytes((v&254)+(v>>7) for v in PALETTE);hardware=[None]*16
     for pen,hw in enumerate(PENS):hardware[hw]=rgb[pen*3:pen*3+3][::-1]
@@ -153,6 +228,39 @@ def physical(b,p,foreign,report):
                     require(pixels[pixel:pixel+3]==hardware[cached.pixels[yy*640+xx]],
                             f'Cached File menu pixel {xx},{yy}')
             report['popup_cache']=dict(warm_file='exact',restore_delta=1)
+            b.poke16(sy['AESMenuCommand'],4)
+            move(630,232)  # A real capture wake admits the fixture command.
+            reach('db($%x)=1'%at('MENUTRANSITIONMARKS','passed'));frames()
+            require(get(at('MENUTRANSITIONMARKS','ordinary'),1)>0,
+                    'Third preferred transaction bypassed ready ordinary paint')
+            report['replacement_fairness']='ordinary paint before next combined replacement'
+            key('ASTERISK',ctrl=True)
+            # Both real copy submissions publish into the existing queues.
+            # No new key/signal is sent after injection to rescue a lost hint.
+            report['replacement_input']=[]
+            for stage,kind in ((1,1),(2,1),(1,2),(2,2),(1,3),(2,3),(1,4),(2,4)):
+                print('Replacement input',stage,kind,flush=True)
+                # Warm both slots, leaving File open with no selected row.
+                key('ASTERISK',ctrl=True);key('ASTERISK',ctrl=True)
+                frames()
+                base=get(at('MENUTRANSITIONPROBE','hits'),1)
+                deferred=get(at('MENUTRANSITIONPROBE','deferred'),1)
+                focus=get(at('DESKMENU','activeWindow'),4)
+                b.poke(at('MENUTRANSITIONPROBE','kind'),kind)
+                b.poke(at('MENUTRANSITIONPROBE','arm'),stage)
+                key('ASTERISK',ctrl=True)
+                reach('db($%x)=0'%at('DESKMENU','menu'));frames()
+                require(get(at('MENUTRANSITIONPROBE','hits'),1)==base+1,
+                        f'Replacement copy stage {stage} was not reached')
+                require(get(at('MENUTRANSITIONPROBE','deferred'),1)>deferred,
+                        'Queued replacement input was consumed before retirement')
+                require(get(at('DESKMENU','activeWindow'),4)==focus,'Deferred click reached a window')
+                actions(0,0)
+                report['replacement_input'].append(dict(stage=stage,kind=kind,closed=True))
+                click(152,8);move(632,232);frames()
+            require(get(at('MENUTRANSITIONMARKS','waits'))>0,
+                    'Deferred input kept the presenter runnable instead of waiting for completion')
+            report['replacement_completion_waits']=get(at('MENUTRANSITIONMARKS','waits'))
             # Completed selection pixels, including both odd packed edges.
             inversions=get(sy['MenuInvertCalls'],4)
             for xx,yy,item,expected in [(160,16,6,1),(160,27,7,2),

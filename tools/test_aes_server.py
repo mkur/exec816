@@ -374,13 +374,19 @@ ENDMODULE
                 ('M_AESPROBE_BINDDISPLAY_','M_AESPROBE_BINDIO_'))}
             return [address for address in task_entries(image) if address not in setup]
         generate_tasks.task_entries=fixture_entries
+        policy_modules=generate_tasks.policy_modules
+        if suite=='menus':
+            from test_aes_menus import worker_probe
+            generate_tasks.policy_modules=worker_probe(policy_modules)
         try:
             program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
                 tasks=True, task_capacity=8, foreign_image=foreign,
                 console_deferred=True, memory_profile=memory,
                 **(dict(dos_mounts=[dict(alias='D1',unit=49,sectors=720,sector_bytes=128,profile=4,format=2 if filesystem=='sdfs' else 1)]) if suite in ('resources','menus','fsel') else {}),
                 **(dict(system_mount='D1') if suite=='fsel' else {}))
-        finally:generate_tasks.task_entries=task_entries
+        finally:
+            generate_tasks.task_entries=task_entries
+            generate_tasks.policy_modules=policy_modules
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse'] = metadata(None)
     pin = json.loads(json.dumps(PIN))

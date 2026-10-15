@@ -35,7 +35,7 @@ PopupKey attempt,current,replaceKey
 BYTE popupOperation,popupSlot,normalSelection
 CONST POPUP_CAPTURE=1, POPUP_RESTORE=2
 CONST REPLACE_BACKGROUND=1, REPLACE_IMAGE=2, REPLACE_DONE=3
-BYTE replacePhase,replaceResult,skipPopup
+BYTE replaceResult,skipPopup
 PUBLIC LONGCARD popupCaptures,popupRestores,popupMisses,popupCapturedBytes,popupRestoredBytes
 
 PUBLIC PROC Reset()
@@ -47,7 +47,7 @@ PUBLIC PROC Reset()
   notifyPending=0
   exposurePending=0
   retainSave=0
-  replacePhase=0
+  DESKSTATE.menuReplacing=0
   skipPopup=0
 
 RETURN
@@ -279,7 +279,7 @@ BYTE FUNC Transfer(BYTE restore)
   packet.copy.width=save.slot.width
   packet.copy.height=save.slot.height
   IF restore<>0 THEN
-    IF replacePhase<>0 THEN
+    IF DESKSTATE.menuReplacing<>0 THEN
       bounds=@service.scene.copySource
     ELSE
       bounds=@service.scene.copyTarget
@@ -377,16 +377,16 @@ RETURN(1)
 ; One fixed target survives both asynchronous copies. Input cannot retarget it.
 PUBLIC BYTE FUNC Replacing()
 
-RETURN(replacePhase<>0)
+RETURN(DESKSTATE.menuReplacing<>0)
 
 PUBLIC BYTE FUNC Replacement()
   BYTE result
 
-  IF replacePhase<>REPLACE_DONE THEN
+  IF DESKSTATE.menuReplacing<>REPLACE_DONE THEN
     RETURN(0)
   FI
   result=replaceResult
-  replacePhase=0
+  DESKSTATE.menuReplacing=0
 
 RETURN(result)
 
@@ -415,7 +415,7 @@ PUBLIC BYTE FUNC Replace(LAYERTYPES.Rect POINTER bounds)
   FI
 
   replaceKey=current
-  replacePhase=REPLACE_BACKGROUND
+  DESKSTATE.menuReplacing=REPLACE_BACKGROUND
   replaceResult=0
   skipPopup=0
   popupSlot=LAYERCACHE.NO_SLOT
@@ -553,7 +553,7 @@ PROC FinishReplacement(BYTE outcome)
   FI
   token=0
   replaceResult=outcome
-  replacePhase=REPLACE_DONE
+  DESKSTATE.menuReplacing=REPLACE_DONE
 
 RETURN
 
@@ -562,7 +562,7 @@ PROC ReplacePump()
   BYTE status
 
   LET service=DESKSTATE.Get()
-  IF replacePhase=REPLACE_IMAGE THEN
+  IF DESKSTATE.menuReplacing=REPLACE_IMAGE THEN
     FinishReplacement(IF replaceResult=LAYERTYPES.REPLACE_DIRTY
         OR CONSOLEBITMAP.Failed()<>0 THEN LAYERTYPES.REPLACE_DIRTY
         ELSE LAYERTYPES.REPLACE_CLEAN FI)
@@ -581,7 +581,7 @@ PROC ReplacePump()
     RETURN
   FI
 
-  replacePhase=REPLACE_IMAGE
+  DESKSTATE.menuReplacing=REPLACE_IMAGE
   status=PopupTransfer(@service.scene.copyTarget,1)
   IF status=0 THEN
     replaceResult=LAYERTYPES.REPLACE_DIRTY
@@ -625,7 +625,7 @@ PUBLIC PROC Pump()
     RETURN
   FI
   LET service=DESKSTATE.Get()
-  IF replacePhase<>0 THEN
+  IF DESKSTATE.menuReplacing<>0 THEN
     ReplacePump()
     RETURN
   FI

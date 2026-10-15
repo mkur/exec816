@@ -58,6 +58,11 @@ PUBLIC BYTE FUNC Active()
 
 RETURN(menu<>0 OR pendingMenu<>0 OR down<>0 OR blocked<>0)
 
+; Preserve input order from the first queued heading through snapshot adoption.
+PUBLIC BYTE FUNC InputBlocked()
+
+RETURN(DESKMENUCACHE.Replacing()<>0 OR (menu=GEM_MENU AND pendingMenu=GEM_MENU))
+
 PROC Check(BYTE status)
 
   IF status<>LAYERTYPES.OK THEN
@@ -658,11 +663,27 @@ RETURN
 
 ; Paint and scene changes obey the same gates as existing native gestures.
 PUBLIC PROC Advance()
-  BYTE changed,chromeChanged
+  BYTE changed,chromeChanged,completed
+  LAYERTYPES.Rect nextBounds
 
   LET service=DESKSTATE.Get()
   IF DESKSTATE.barLayer=0 THEN
     RETURN
+  FI
+  ; Completion is adopted before NativeReady can reopen client admission.
+  IF DESKMENUCACHE.Replacing()<>0 THEN
+    completed=DESKMENUCACHE.Replacement()
+    IF completed=0 THEN
+      RETURN
+    FI
+    IF completed<>LAYERTYPES.REPLACE_REPAIR THEN
+      DESKAPPMENU.AdoptReplacement(pendingHeading)
+      pendingMenu=0
+      selected=NO_ROW
+      paintMenu=GEM_MENU
+      paintSelection=NO_ROW
+      revision=service.scene.rebuilds
+    FI
   FI
   IF pendingAction=0 AND pendingMenu=0 AND dirty=0 AND showPending=0
       AND paintMenu=menu AND paintSelection=selected
@@ -681,6 +702,25 @@ PUBLIC PROC Advance()
   BEGIN
     LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
     IF popup.shown<>0 AND (menu=0 OR pendingMenu<>0 OR pendingAction<>0) THEN
+      IF menu=GEM_MENU AND pendingMenu=GEM_MENU AND pendingAction=0
+          AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Available()<>0
+          AND focusSeen=service.focus AND revision=service.scene.rebuilds THEN
+        IF DESKSTATE.MenuTurnReady()=0 THEN
+          RETURN
+        FI
+        DESKAPPMENU.HeadingBounds(pendingHeading,@nextBounds)
+        BEGIN
+          LET owner=DESKAPPMENU.owner
+          LET aes=AESSTATE.Get()
+          DESKMENUCACHE.SelectPopup(GEM_MENU,owner.id,owner.menu.generation,
+              aes.menuRevision,pendingHeading,-1,1)
+        END
+        IF ((popup.bounds.left OR popup.bounds.right) & 1)=0
+            AND DESKMENUCACHE.Replace(@nextBounds)<>0 THEN
+          DESKSTATE.MenuTurn(0)
+          RETURN
+        FI
+      FI
       IF DESKMENUCACHE.Restore(menu=GEM_MENU AND pendingMenu=GEM_MENU
           AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Current()<>0)<>0 THEN
         revision=service.scene.rebuilds

@@ -185,7 +185,7 @@ PUBLIC PROC Finish()
 
 RETURN
 
-PROC HeadingBounds(INT title LAYERTYPES.Rect POINTER bounds)
+PUBLIC PROC HeadingBounds(INT title LAYERTYPES.Rect POINTER bounds)
   INT left,top,box
 
   LET menu=owner.menu
@@ -422,6 +422,21 @@ BYTE FUNC InvertSelection()
   status=LAYERS.Finish(@desktop.scene,token,okay)
 
 RETURN(okay<>0 AND status=LAYERTYPES.OK)
+
+; Layers has committed the replacement pixels/geometry under the policy gate.
+; Only title segments change; newer source damage remains for Snapshot.
+PUBLIC PROC AdoptReplacement(INT next)
+
+  LET menu=owner.menu
+  DamageObject(menu.title(paintHeading),0)
+  DamageObject(menu.title(next),0)
+  heading=next
+  paintHeading=next
+  selected=-1
+  paintSelected=-1
+  paintOpened=1
+
+RETURN
 
 ; Keep source changes and pointer highlights off the screen until paint retires.
 PUBLIC PROC Snapshot(BYTE popup)

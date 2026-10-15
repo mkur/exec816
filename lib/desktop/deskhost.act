@@ -182,6 +182,9 @@ PUBLIC PROC Controls()
   IF service<>NULL AND service.live<>0 THEN
     priorToken=service.scene.busy
     DESKMENUCACHE.Pump()
+    IF DESKMENUCACHE.Replacing()<>0 THEN
+      DESKMENU.Advance()
+    FI
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
     IF priorToken<>0 AND service.scene.busy=0 THEN

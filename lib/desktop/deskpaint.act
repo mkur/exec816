@@ -28,7 +28,7 @@ USE AESWINDOWSTATE
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex,glyphOffset
 INT nextY
-BYTE nextSlot,started,menuTurns,partIndex
+BYTE nextSlot,started,partIndex
 CONST STRIP_HEIGHT=16
 CONST TEXT_GLYPHS=32
 CONST CLIPPED_GLYPHS=16
@@ -509,7 +509,7 @@ PUBLIC BYTE FUNC MenuReady()
     RETURN(paintLayer=DESKSTATE.popupLayer OR paintLayer=DESKSTATE.barLayer)
   FI
 
-  IF menuTurns>=2 THEN
+  IF DESKSTATE.menuTurns>=2 THEN
     RETURN(0)
   FI
 
@@ -627,7 +627,7 @@ PUBLIC BYTE FUNC Pump()
     FI
 
     candidate=NULL
-    IF menuTurns<2 THEN
+    IF DESKSTATE.menuTurns<2 THEN
       candidate=MenuLayer()
     FI
     IF candidate=NULL THEN
@@ -675,9 +675,9 @@ PUBLIC BYTE FUNC Pump()
       IF status=LAYERTYPES.OK THEN
         IF candidate.id<>0 AND (candidate.id=DESKSTATE.popupLayer
             OR candidate.id=DESKSTATE.barLayer) THEN
-          IF menuTurns<2 THEN menuTurns==+1 FI
+          DESKSTATE.MenuTurn(0)
         ELSE
-          menuTurns=0
+          DESKSTATE.MenuTurn(1)
         FI
         paintLayer=candidate.id
         regionIndex=0

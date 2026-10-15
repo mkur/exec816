@@ -161,8 +161,8 @@ PUBLIC PROC Deliver(CONSOLETYPES.Instance POINTER instance LONGCARD event)
 RETURN
 
 ; Route at most RAW_SLOTS events. A full count may leave work; a shorter count
-; means Take observed EMPTY. Invalid resident authority is an invariant failure,
-; never an empty observation that would let the worker discard its wake.
+; means Take observed EMPTY unless menu input was deferred. Invalid authority is
+; an invariant failure, never an empty observation that discards its wake.
 PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
   CARD consumed,status
   BYTE bound
@@ -171,6 +171,9 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
 
   consumed=0
   WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
+    IF DESKINPUT.KeyReady()=0 THEN
+      EXIT
+    FI
     status=INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)
     IF status=INPUT.EMPTY THEN
       EXIT
@@ -221,7 +224,7 @@ PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
 
   IF pending<>0 THEN
     pumped=Pump(instance)
-    pending=pumped=CONSOLETYPES.RAW_SLOTS
+    pending=(pumped=CONSOLETYPES.RAW_SLOTS OR DESKINPUT.KeyReady()=0)
   FI
 
 RETURN(pending)

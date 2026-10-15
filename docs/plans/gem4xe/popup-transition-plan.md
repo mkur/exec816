@@ -1,6 +1,6 @@
 # Popup replacement implementation plan
 
-Status: PT1–PT2 implemented; PT3–PT4 pending.
+Status: PT1–PT3 implemented; PT4 measurement and delivery pending.
 
 [Design](popup-transition-design.md) ·
 [DB3 results](../../history/dropdown-bookkeeping.md) ·
@@ -126,6 +126,8 @@ reserved bank-zero deltas **0/0/0 bytes**.
 Commit: `Chain popup cache copies under one scene token`.
 
 ## PT3 Integrate menu state, input deferral and fairness
+
+Implemented; [development evidence](../../history/popup-transition.md).
 
 Primary files: `deskmenu.act`, `deskappmenu.act`, `deskhost.act`,
 `deskpaint.act`, `deskinput.act` and `lib/console/consoleinput.act`, plus the

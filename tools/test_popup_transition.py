@@ -41,7 +41,8 @@ def instrument(original):
                 s=s.replace('  LET service=DESKSTATE.Get()\n  IF service<>NULL AND service.live<>0 THEN\n    priorToken=',
                     '  POPUPPROBE.Pump()\n  IF POPUPPROBE.active<>0 THEN RETURN FI\n  LET service=DESKSTATE.Get()\n  IF service<>NULL AND service.live<>0 THEN\n    priorToken=')
             elif name=='deskmenu':
-                s=s.replace('  BYTE changed,chromeChanged\n','  BYTE changed,chromeChanged\n\n  IF POPUPPROBE.active<>0 THEN RETURN FI\n')
+                at=s.index('PUBLIC PROC Advance()');pos=s.index('  LET service=',at)
+                s=s[:pos]+'  IF POPUPPROBE.active<>0 THEN RETURN FI\n'+s[pos:]
             elif name=='consoledisplay':
                 s=s.replace('USE POPUPPROBE','USE POPUPFAULT')
                 at=s.index('PUBLIC PROC Present(');pos=s.index('  LET ',at)
@@ -89,7 +90,7 @@ def run(out, replay=False):
                         run_to(b,p['labels']['native_irq'],condition=condition,timeout=20,frame_limit=1000)
                     except Exception:
                         print('Stopped',condition,b.regs(), 'adapter',b.peek16(adapter.STATE),flush=True)
-                        for module,names in [('POPUPPROBE',['command','ready','active','checks']),('DESKMENUCACHE',['token','replacePhase']),('DESKSTATE',['service'])]:
+                        for module,names in [('POPUPPROBE',['command','ready','active','checks']),('DESKMENUCACHE',['token']),('DESKSTATE',['service'])]:
                             print(module,{n:get(at(module,n),4) for n in names},flush=True)
                         from generate_desktop import layout as dl
                         sc=get(at('DESKSTATE','service'),3)+dl()['Service']['fields']['scene']
@@ -109,7 +110,7 @@ def run(out, replay=False):
                     popup_id=get(at('DESKSTATE','popupLayer'),4)
                     popup=next(slots+i*stride for i in range(9) if get(slots+i*stride,4)==popup_id)
                     return dict(dirty=get(popup+fields['dirty']),busy=f('busy'),rebuilds=f('rebuilds'),pin=get(under+layout()['CacheSlot']['fields']['pinned']),
-                        valid=get(under+layout()['CacheSlot']['fields']['valid']),phase=get(at('DESKMENUCACHE','replacePhase')))
+                        valid=get(under+layout()['CacheSlot']['fields']['valid']),phase=get(at('DESKSTATE','menuReplacing')))
                 def pixels(old=False,new=False):
                     reach('@frame>=%d'%(b.eval_expr('@frame')+2))
                     capture=out/'pixels.bgra';frame=b.rawscreen(str(capture));raw=capture.read_bytes()

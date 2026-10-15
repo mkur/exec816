@@ -62,3 +62,38 @@ the fault-instrumented fixture is not a production code-size comparison.
 Reserved bank-zero delta is **0 fixed, 0 per public Task, 0 idle bytes**, including
 guards, alignment and unused capacity. Scene, DP, stack and VRAM reservations
 are unchanged.
+
+## PT3 Menu integration
+
+Eligible GEM heading switches now enter the combined transaction before the
+ordinary restore path. Completion adopts the new heading under the policy gate
+and damages only the old/new title segments. Odd or unusable saved geometry,
+first open, dismissal and native menus retain the existing paths.
+
+Keyboard dequeue and pointer gesture delivery defer from the first pending
+heading through adoption, using the existing queues. The worker retains its
+input hint while excluding blocked input from runnable work. Shared menu-turn
+accounting lets ready ordinary painting run after two preferred transactions;
+without such work it does not delay menus. Normal Task preemption is unchanged.
+
+The final optimized menu fixture passes **315 AES checks**, four native checks,
+all seven exact-pixel phases and eight injected input cases (rapid heading keys
+and Escape, Return, outside press/release, and pointer loss during each copy).
+It retains physical pointer/keyboard, owner replacement, native menu, long/odd
+clipped menu, selection inversion and exact command-delivery coverage. The
+ordinary-paint fairness case passes. A fixture-only counter observes 58 worker
+waits with deferred keys and a replacement in progress, confirming that the
+pending hint does not force spinning. This is not a worst-case scheduling bound.
+
+Artifacts: `build/popup-transition/pt3-final`. Host checks pass (491 tests,
+four historical skips). Stack/domain guards, zero live Tasks at cleanup and
+normal OS return pass. Observed presenter stack peak is 836 of 2,560 bytes,
+leaving 1,468 above its floor; kernel peak is 299 of 1,536 bytes. Testing uses
+the development tier, with no raw, filesystem or full qualification matrix.
+
+The phase byte and existing menu-turn counter move into shared desktop state;
+no duplicate fields, queues, signals or timers are added. The combined fixed
+upper-memory field increase remains 21 bytes before final alignment accounting.
+PT3 reserved bank-zero delta is **0 fixed, 0 per public Task, 0 idle bytes**,
+including guards, alignment and unused capacity. Scene, DP, stack and VRAM
+reservations are unchanged.
