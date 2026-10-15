@@ -4,7 +4,7 @@
 [Measured baseline](../../development/presenter-bookkeeping.json) ·
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md)
 
-Status: QT1–QT2 implemented; QT3–QT4 pending. Commit each executable slice.
+Status: QT1–QT3 implemented; QT4 measurements/delivery pending.
 Development evidence is in the [execution record](../../history/presenter-quiet-turn.md).
 This follows the completed [PB1–PB6 plan](presenter-bookkeeping-plan.md).
 

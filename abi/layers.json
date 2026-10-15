@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "constants": {
     "MAX_LAYERS": 8,
     "MAX_RECTS": 96,
@@ -217,6 +217,10 @@
       {
         "name": "under",
         "type": "SavedArea"
+      },
+      {
+        "name": "visibleDamage",
+        "type": "CARD"
       }
     ],
     "CacheRepair": [

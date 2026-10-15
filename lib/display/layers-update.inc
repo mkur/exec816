@@ -2,8 +2,7 @@
 
 PUBLIC BYTE FUNC Invalidate(LAYERTYPES.Scene POINTER scene LONGCARD id
     LAYERTYPES.Rect POINTER rect)
-  BYTE status
-  LAYERTYPES.Layer POINTER layer
+  BYTE status,slot
 
   status=Admit(scene)
   IF status<>LAYERTYPES.OK THEN
@@ -14,12 +13,12 @@ PUBLIC BYTE FUNC Invalidate(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
-  layer=Find(scene,id)
-  IF layer=NULL THEN
+  slot=FindSlot(scene,id)
+  IF slot=255 THEN
     RETURN(LAYERTYPES.BAD_ID)
   FI
 
-  Mark(layer,rect)
+  Mark(scene,slot,rect)
   LAYERCACHE.Changed(@scene.under,id,rect)
 
 RETURN(LAYERTYPES.OK)
@@ -341,7 +340,7 @@ RETURN(Rebuild(scene))
 PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     BYTE completed)
   LAYERTYPES.Layer POINTER layer
-  BYTE status
+  BYTE status,slot
 
   IF scene=NULL THEN
     RETURN(LAYERTYPES.BAD_ARGUMENT)
@@ -359,7 +358,8 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
     RETURN(LAYERTYPES.BAD_ARGUMENT)
   FI
 
-  layer=Find(scene,scene.activeId)
+  slot=FindSlot(scene,scene.activeId)
+  layer=@scene.items(slot)
   IF scene.activeKind=LAYERTYPES.UPDATE_PAINT THEN
     IF completed<>0 THEN
       IF scene.work.count<>0 OR scene.nextDamage<layer.damage.count THEN
@@ -368,6 +368,7 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
 
       layer.dirty=0
       layer.damage.count=0
+      scene.visibleDamage=scene.visibleDamage & ($ffff XOR (CARD(1) LSH slot))
     FI
   ELSEIF scene.activeKind=LAYERTYPES.UPDATE_MOVE THEN
     status=CommitMove(scene,layer,completed)
@@ -377,7 +378,7 @@ PUBLIC BYTE FUNC Finish(LAYERTYPES.Scene POINTER scene LONGCARD token
   ELSEIF completed=0 AND scene.activeKind<>LAYERTYPES.UPDATE_READ
       AND scene.activeKind<>LAYERTYPES.UPDATE_SCENE_READ
       AND scene.activeKind<>LAYERTYPES.UPDATE_RESTORE THEN
-    Mark(layer,@layer.bounds)
+    Mark(scene,slot,@layer.bounds)
   FI
 
   scene.busy=0
@@ -398,13 +399,15 @@ PUBLIC BYTE FUNC FinishHandoff(LAYERTYPES.Scene POINTER scene LONGCARD token)
     RETURN(LAYERTYPES.BAD_TOKEN)
   FI
 
-  LET layer=Find(scene,scene.activeId)
+  LET slot=FindSlot(scene,scene.activeId)
+  LET layer=@scene.items(slot)
   IF scene.work.count<>0 OR scene.nextDamage<layer.damage.count THEN
     RETURN(LAYERTYPES.BUSY)
   FI
 
   layer.dirty=0
   layer.damage.count=0
+  scene.visibleDamage=scene.visibleDamage & ($ffff XOR (CARD(1) LSH slot))
   scene.busy=0
   scene.activeKind=0
   scene.activeId=0

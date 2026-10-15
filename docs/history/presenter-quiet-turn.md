@@ -52,3 +52,34 @@ Task **0 bytes**. The five new upper-RAM state bytes consume four additional
 allocated bytes because the candidate byte fills existing padding. No new VRAM,
 DP or stack reservation. Emitted END bookkeeping grows by 111 code bytes with
 its local stack peak unchanged at 70 bytes; combined timing follows in QT4.
+
+## QT3 Layers-owned visible-damage readiness
+
+Layers maintains one bit per slot, including the background, for manager damage
+intersecting current visibility. Marking damage, rebuilding visibility, paint
+retirement, deletion and saved-scene restoration update it. Already-runnable
+layers need no new intersection scan when more damage is added. External repaint
+obligations remain separate. The presenter's no-damage query now reads the word
+after its existing paint-token and lock checks.
+
+The intersection predicate moved into Layers. Mutating paths carry resolved slot
+indices instead of searching again for every mark. No global Layers state was
+added. The generated Scene and enclosing desktop Service layouts were rebuilt
+together, and the current reference documents the read-only summary.
+
+Development checks: 1,255 optimized Layers assertions with 128 geometry and 40
+scene cases; an independent intersection oracle covers both sides of painting,
+all nine bits, fully covered damage, later exposure, saved-image subtraction,
+external handoff, failed completion and slot reuse. The small bank-crossing
+layout/transaction probe passes 127 assertions in each of raw and optimized
+modes. The 490-test host run found the expected desktop Service size change;
+after correcting that assertion, all five affected desktop contract tests pass.
+Generators and diff checks pass. Local evidence:
+`build/presenter-quiet-turn/qt3-{layers,layout-raw,layout-opt}`.
+
+Reserved bank-zero delta: fixed **0 bytes**, each public Task **0 bytes**, idle
+Task **0 bytes**, including guards and unused capacity. Scene grows 9,184 to
+9,186 bytes and desktop Service 18,716 to 18,718 bytes in upper RAM, including
+alignment. No new per-Task state, VRAM or DP/stack reservation. The Layers/Regions
+fixture reports 35,879 code bytes, no mutable globals and a maximum local stack
+peak of 56 bytes. These fixture sizes are not a whole-demo code delta.

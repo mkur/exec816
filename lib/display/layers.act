@@ -18,21 +18,68 @@ BYTE FUNC Admit(LAYERTYPES.Scene POINTER scene)
 
 RETURN(LAYERTYPES.OK)
 
-PUBLIC LAYERTYPES.Layer POINTER FUNC Find(LAYERTYPES.Scene POINTER scene
-    LONGCARD id)
+BYTE FUNC FindSlot(LAYERTYPES.Scene POINTER scene LONGCARD id)
   BYTE index
 
   IF id=0 THEN
-    RETURN(@scene.items(LAYERTYPES.BACKGROUND_SLOT))
+    RETURN(LAYERTYPES.BACKGROUND_SLOT)
   FI
 
   FOR index=0 TO LAYERTYPES.MAX_LAYERS-1 DO
     IF scene.items(index).id=id THEN
-      RETURN(@scene.items(index))
+      RETURN(index)
     FI
   OD
 
-RETURN(NULL)
+RETURN(255)
+
+PUBLIC LAYERTYPES.Layer POINTER FUNC Find(LAYERTYPES.Scene POINTER scene
+    LONGCARD id)
+
+  LET slot=FindSlot(scene,id)
+  IF slot=255 THEN
+    RETURN(NULL)
+  FI
+
+RETURN(@scene.items(slot))
+
+; Manager damage is runnable only where this layer owns visible screen pixels.
+; External pending repaint has its own lifetime and is deliberately separate.
+PUBLIC BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
+  CARD index
+  BYTE damage
+
+  IF layer.dirty=0 THEN
+    RETURN(0)
+  FI
+
+  FOR damage=0 TO layer.damage.count-1 DO
+    index=0
+    WHILE index<layer.visible.count DO
+      BEGIN
+        LET rect=@layer.visible.rects(index)
+        LET changed=@layer.damage.rects(damage)
+        IF rect.left<changed.right AND rect.right>changed.left
+            AND rect.top<changed.bottom AND rect.bottom>changed.top THEN
+          RETURN(1)
+        FI
+      END
+      index==+1
+    OD
+  OD
+
+RETURN(0)
+
+PROC UpdateDamage(LAYERTYPES.Scene POINTER scene BYTE slot)
+
+  LET bit=CARD(1) LSH slot
+  IF Damaged(@scene.items(slot))<>0 THEN
+    scene.visibleDamage=scene.visibleDamage OR bit
+  ELSE
+    scene.visibleDamage=scene.visibleDamage & ($ffff XOR bit)
+  FI
+
+RETURN
 
 ; Expand a bound without arithmetic that could overflow signed coordinates.
 PROC Bound(LAYERTYPES.Rect POINTER target,rect)
@@ -107,9 +154,11 @@ PROC AddDamage(LAYERTYPES.Damage POINTER damage LAYERTYPES.Rect POINTER area)
 
 RETURN
 
-PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
+PROC Mark(LAYERTYPES.Scene POINTER scene BYTE slot
+    LAYERTYPES.Rect POINTER rect)
   LAYERTYPES.Rect clipped
 
+  LET layer=@scene.items(slot)
   REGIONS.Intersect(@layer.bounds,rect,@clipped)
   IF REGIONS.Empty(@clipped)<>0 THEN
     RETURN
@@ -119,6 +168,10 @@ PROC Mark(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER rect)
   FI
   AddDamage(@layer.damage,@clipped)
   layer.dirty=1
+  ; Adding damage cannot clear an already runnable layer.
+  IF (scene.visibleDamage & (CARD(1) LSH slot))=0 THEN
+    UpdateDamage(scene,slot)
+  FI
 
 RETURN
 
@@ -127,7 +180,7 @@ PROC DamageAll(LAYERTYPES.Scene POINTER scene LAYERTYPES.Rect POINTER rect)
 
   FOR index=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     IF scene.items(index).id<>0 OR index=LAYERTYPES.BACKGROUND_SLOT THEN
-      Mark(@scene.items(index),rect)
+      Mark(scene,index,rect)
     FI
   OD
 
@@ -140,6 +193,7 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
   LAYERTYPES.Layer POINTER layer,above
   BYTE index,rank,status,clear
 
+  scene.visibleDamage=0
   FOR index=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     layer=@scene.items(index)
     layer.visible.count=0
@@ -161,6 +215,7 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
               scene.items(clear).visible.count=0
             OD
 
+            scene.visibleDamage=0
             RETURN(status)
           FI
 
@@ -172,6 +227,7 @@ BYTE FUNC Rebuild(LAYERTYPES.Scene POINTER scene)
         rank==+1
       OD
     FI
+    UpdateDamage(scene,index)
   OD
 
   scene.rebuilds==+1
@@ -194,7 +250,7 @@ PUBLIC BYTE FUNC Init(LAYERTYPES.Scene POINTER scene INT width,height)
   background.shown=1
   background.contentRevision=1
   background.paintEpoch=1
-  Mark(background,@scene.screen)
+  Mark(scene,LAYERTYPES.BACKGROUND_SLOT,@scene.screen)
 
 RETURN(Rebuild(scene))
 
@@ -237,7 +293,7 @@ PUBLIC BYTE FUNC Create(LAYERTYPES.Scene POINTER scene
   layer.id=scene.nextId
   scene.nextId==+1
   REGIONS.Copy(bounds,@layer.bounds)
-  Mark(layer,bounds)
+  Mark(scene,slot,bounds)
   rank=scene.count
   WHILE rank>0 DO
     scene.order(rank)=scene.order(rank-1)
@@ -306,7 +362,7 @@ RETURN(Rebuild(scene))
 ; Change one admitted layer rectangle and repair both old and new exposure.
 PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
     INT left,top,width,height)
-  BYTE status
+  BYTE status,slot
   LAYERTYPES.Layer POINTER layer
 
   status=Admit(scene)
@@ -314,11 +370,12 @@ PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
     RETURN(status)
   FI
 
-  layer=Find(scene,id)
-  IF layer=NULL OR id=0 THEN
+  slot=FindSlot(scene,id)
+  IF slot=255 OR id=0 THEN
     RETURN(LAYERTYPES.BAD_ID)
   FI
 
+  layer=@scene.items(slot)
   IF width<=0 OR height<=0 OR left<0 OR top<0
       OR left>scene.screen.right-width
       OR top>scene.screen.bottom-height THEN
@@ -339,7 +396,7 @@ PUBLIC BYTE FUNC Bounds(LAYERTYPES.Scene POINTER scene LONGCARD id
   REGIONS.Assign(@layer.bounds,left,top,left+width,top+height)
   LAYERCACHE.Changed(@scene.under,id,@layer.bounds)
   layer.dirty=0
-  Mark(layer,@layer.bounds)
+  Mark(scene,slot,@layer.bounds)
   IF layer.shown=0 THEN
     RETURN(LAYERTYPES.OK)
   FI
@@ -442,7 +499,7 @@ PUBLIC BYTE FUNC OrderBelow(LAYERTYPES.Scene POINTER scene LONGCARD id,anchor)
 RETURN(Reorder(scene,layer,target))
 
 PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
-  BYTE status,rank,shown
+  BYTE status,rank,shown,slot
   LAYERTYPES.Layer POINTER layer
 
   status=Admit(scene)
@@ -460,6 +517,7 @@ PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
     rank==+1
   OD
 
+  slot=scene.order(rank)
   WHILE rank<scene.count-1 DO
     scene.order(rank)=scene.order(rank+1)
     rank==+1
@@ -476,6 +534,7 @@ PUBLIC BYTE FUNC Delete(LAYERTYPES.Scene POINTER scene LONGCARD id)
   layer.shown=0
   layer.dirty=0
   layer.visible.count=0
+  scene.visibleDamage=scene.visibleDamage & ($ffff XOR (CARD(1) LSH slot))
   IF shown=0 THEN
     RETURN(LAYERTYPES.OK)
   FI

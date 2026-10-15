@@ -422,32 +422,6 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
 
 RETURN(IF commandIndex=window.content.count THEN 1 ELSE 2 FI)
 
-BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)
-  CARD index
-  BYTE damage
-
-  IF layer.dirty=0 THEN
-    RETURN(0)
-  FI
-
-  FOR damage=0 TO layer.damage.count-1 DO
-    index=0
-    WHILE index<layer.visible.count DO
-      BEGIN
-        LET rect=@layer.visible.rects(index)
-        LET changed=@layer.damage.rects(damage)
-        IF rect.left<changed.right AND rect.right>changed.left
-            AND rect.top<changed.bottom AND rect.bottom>changed.top THEN
-          RETURN(1)
-        FI
-      END
-
-      index==+1
-    OD
-  OD
-
-RETURN(0)
-
 ; Menu precedence applies only between transactions. Two menu transactions
 ; are followed by an ordinary round-robin turn when one is ready.
 LAYERTYPES.Layer POINTER FUNC MenuLayer()
@@ -455,11 +429,11 @@ LAYERTYPES.Layer POINTER FUNC MenuLayer()
 
   LET service=DESKSTATE.Get()
   layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-  IF DESKSTATE.popupLayer<>0 AND layer<>NULL AND Damaged(layer)<>0 THEN
+  IF DESKSTATE.popupLayer<>0 AND layer<>NULL AND LAYERS.Damaged(layer)<>0 THEN
     RETURN(layer)
   FI
   layer=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
-  IF DESKSTATE.barLayer<>0 AND layer<>NULL AND Damaged(layer)<>0 THEN
+  IF DESKSTATE.barLayer<>0 AND layer<>NULL AND LAYERS.Damaged(layer)<>0 THEN
     RETURN(layer)
   FI
 
@@ -467,7 +441,6 @@ RETURN(NULL)
 
 ; The caller has checked service lifetime and physical display availability.
 BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
-  BYTE slot
 
   IF paintToken<>0 THEN
     RETURN(1)
@@ -477,16 +450,7 @@ BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
     RETURN(0)
   FI
 
-  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
-    BEGIN
-      LET layer=@service.scene.items(slot)
-      IF Damaged(layer)<>0 THEN
-        RETURN(1)
-      FI
-    END
-  OD
-
-RETURN(0)
+RETURN(service.scene.visibleDamage<>0)
 
 ; Painting work only, independent of pending control messages.
 PUBLIC BYTE FUNC PaintPending()
@@ -679,7 +643,7 @@ PUBLIC BYTE FUNC Pump()
           LET layer=@service.scene.items(slot)
           IF (layer.id<>DESKSTATE.barLayer OR layer.id=0)
               AND (layer.id<>DESKSTATE.popupLayer OR layer.id=0)
-              AND Damaged(layer)<>0 THEN
+              AND LAYERS.Damaged(layer)<>0 THEN
             candidate=layer
             EXIT
           FI

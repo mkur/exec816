@@ -84,6 +84,7 @@ PUBLIC BYTE FUNC FinishSave(LAYERTYPES.Scene POINTER scene LONGCARD token BYTE o
           IF layer.dirty<>0 THEN
             accepted=SubtractDamage(scene,@layer.damage,@scene.copyTarget)
             layer.dirty=(layer.damage.count<>0)
+            UpdateDamage(scene,index)
           FI
         END
       OD

@@ -15,7 +15,7 @@ from stack_budget import stack_usage
 def run(out, mode):
     out = out.resolve()
     size = layout()['Scene']['size']
-    p = build(compiler(ROOT/'build/actionc'), ROOT/'tests/programs/layers_probe.act',
+    p = build(compiler(ROOT/'build/actionc',release=True), ROOT/'tests/programs/layers_probe.act',
               out/'program', optimize=mode == 'opt', tasks=True, task_capacity=8,
               console=False, image_data=[(0x11ffe0, bytes([0xa5])*(size+32))])
     with emulator(BRIDGE, ROM, out, pin=PIN) as b:

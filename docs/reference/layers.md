@@ -3,7 +3,7 @@
 [Reference](README.md) · [Desktop design](../plans/gem4xe/desktop-design.md) ·
 [Implementation plan](../plans/layers-implementation-plan.md)
 
-`LAYERS` is an ordinary Action! library for up to six opaque rectangular layers
+`LAYERS` is an ordinary Action! library for up to eight opaque rectangular layers
 and a permanent background. It maintains stacking, cached visibility, damage and
 one drawing transaction per scene. It does not draw pixels, acquire the display,
 route input or create Tasks. The desktop and its bitmap console consume these transactions.
@@ -74,6 +74,15 @@ calls return BUSY while a drawing transaction is active, including otherwise
 harmless no-ops. Find, Hit and PaintRegion may inspect stable state during it.
 
 ## Painting and copying
+
+`scene.visibleDamage` is a read-only 16-bit summary of manager damage intersecting
+current visibility, one bit per layer slot including the background. Layers
+maintains it when damage, visibility or paint completion changes. Zero means
+there is no visible manager paint to start; hidden damage remains recorded for
+later exposure. External application repaint obligations do not set these bits
+by themselves. `Damaged(layer)` provides the same intersection predicate for
+one layer, for example when choosing a menu paint. Neither query grants a
+transaction or physical display ownership.
 
 `BeginPaint(scene,id,tokenOut)` intersects current damage with cached visibility.
 It returns EMPTY without acquiring anything when there is no visible work. OK
@@ -160,8 +169,8 @@ each with at most seven free intervals. The resulting subdivision has at most
 | Rect | 8 |
 | Region with 96 rectangle slots | 770 |
 | Eight-entry Damage record | 66 |
-| Layer including visibility and damage | 852 |
-| Scene with six layers, background, scratch region and transaction state | 6,790 |
+| Layer including visibility, manager damage and external repaint | 926 |
+| Scene with eight layers, background, scratch/cache/transaction state and visible-damage summary | 9,186 |
 
 All large arrays belong in upper RAM. Local rectangle temporaries use the
 caller's existing native stack. The library adds zero reserved bank-zero bytes:

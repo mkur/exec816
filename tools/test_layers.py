@@ -14,6 +14,7 @@ from test_cooperative import data
 from generate_layers import layout
 
 INPUT_FILES = ('abi/layers.json', 'lib/display/layertypes.act',
+               'tests/programs/layers-readiness-checks.inc',
                'lib/display/layers-repaint.inc', 'lib/display/layers-save.inc',
                'lib/display/layercache.act',
                'lib/display/regions.act', 'lib/display/layers.act',
@@ -228,7 +229,7 @@ def run(out, mode):
     try:
         require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
                 'Unpinned Layers emulator')
-        program = build(compiler(ROOT/'build/actionc'),
+        program = build(compiler(ROOT/'build/actionc',release=True),
                         ROOT/'tests/programs/native_layers.act', out/'program',
                         optimize=mode == 'opt', tasks=True, task_capacity=8,
                         console=False, image_data=[(0xd0000, inputs),

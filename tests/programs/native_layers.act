@@ -137,6 +137,7 @@ PROC ExhaustPaint(LAYERTYPES.Scene POINTER state LONGCARD token)
 
 RETURN
 
+INCLUDE "layers-readiness-checks.inc"
 INCLUDE "layers-paint.inc"
 
 ; Paint the cached partition into an observer buffer, checking that every
@@ -193,7 +194,9 @@ PROC Snapshot(BYTE POINTER output)
 
   Require(LAYERS.Hit(scene,-1,0)=0 AND LAYERS.Hit(scene,32,0)=0)
   Require(scene.rebuilds=rebuilds)
+  CheckVisible(scene)
   PaintScene()
+  CheckVisible(scene)
   A816MEMORY.Move(output+768,canvas,768)
 
 RETURN
@@ -336,6 +339,7 @@ PROC Main()
   BankCrossing()
   ExternalTransactions()
   SavedScene()
+  ReadinessTransactions()
   scenePhase=50
   FreeGuarded(canvas,768)
   FreeGuarded(model,LAYERTYPES.MAX_LAYERS*768)
