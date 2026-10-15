@@ -220,6 +220,10 @@ The planned [caller-local UPDATE work](plans/gem4xe/caller-local-update-plan.md)
 reuses native AES policy through a presenter handoff, avoiding BEGIN/END reply
 waits when safe while retaining RPC for contention. Four executable slices
 cover shared policy, the handoff, direct calls and measured application results.
+The preceding [AES binding cleanup](history/aes-binding-cleanup.md) reuses
+established contexts and removes repeated endpoint audits. Scoped BEGIN/END
+pairs now make two current-Task queries instead of five; both UPDATE messages
+remain until the caller-local plan is implemented.
 
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x
@@ -688,7 +692,11 @@ The other possible milestones have no delivery order:
   Keep one public API and preserve supported caller contexts, register/DP/stack
   state, IRQ/NMI safety and deferred wake/timer/scheduling semantics. Remaining
   current-Task query sites include [AES context lookup](../c/calypsi/aes.c) and
-  [input consumption](../lib/input/input.act). Display borrowing and owner entry
+  [input lease acquisition](../lib/input/input.act). Input consumption's identity
+  audit is diagnostic-only and stripped from production. AES contexts remain
+  stable until detach: a cheap task-local anchor could also replace the lookup
+  and context-table scan, without a shared global context or public API change.
+  Display borrowing and owner entry
   now rely on identity established at admission; the
   [drawing record](history/rectangle-overhead.md) covers the removed rechecks.
   The

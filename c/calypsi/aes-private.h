@@ -7,7 +7,17 @@ BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
 void ExecAESChanged(struct ExecAESContext *,LONG,LONG,LONG,LONG);
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
-WORD ExecAESMenu(OBJECT *tree, WORD operation, WORD item, ULONG value);
+/* Private entry points reuse the public caller's established context.
+ * These perform their own admission; callers have not set busy yet. */
+WORD ExecAESUpdate(struct ExecAESContext *,WORD,WORD);
+WORD ExecAESWindowCall(struct ExecAESContext *,UWORD,WORD,WORD,WORD,WORD,WORD,WORD);
+WORD ExecAESWindowFind(struct ExecAESContext *c, WORD x, WORD y);
+WORD ExecAESWindowDelete(struct ExecAESContext *c, WORD handle);
+WORD ExecAESWindowGet(struct ExecAESContext *c, WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4);
+WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
+               WORD *ox, WORD *oy, WORD *ow, WORD *oh);
+WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h);
+WORD ExecAESGrafHandle(struct ExecAESContext *c, WORD *cw,WORD *ch,WORD *bw,WORD *bh);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 BOOL ExecAESForms(struct ExecAESContext *,AESPB *);

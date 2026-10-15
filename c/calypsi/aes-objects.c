@@ -82,9 +82,8 @@ static void draw(void *data)
 
 /* The caller owns its tree and UPDATE snapshot. Only the linked draw callback
  * touches shared GSX scratch, after DisplayEnter and before DisplayLeave. */
-WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
+WORD ExecAESDraw(struct ExecAESContext *c, OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
 {
-    struct ExecAESContext *c=ExecAESContext();
     struct ObjectPaint p;
     struct AESWindowView *v;
     WORD obj=start,level=0,next,border,l,t,r,b,row,rows,vl,vt,vr,vb;
@@ -163,6 +162,9 @@ finished:
     if (changed) ExecAESChanged(c,left,top,right,bottom);
     c->busy=0; return okay;
 }
+
+WORD objc_draw(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y,WORD w,WORD h)
+{ return ExecAESDraw(ExecAESContext(), tree,start,depth,x,y,w,h); }
 WORD objc_find(OBJECT *tree,WORD start,WORD depth,WORD x,WORD y)
 {
     return ob_find(tree,start,depth>MAX_DEPTH ? MAX_DEPTH:depth,x,y);
@@ -242,11 +244,14 @@ BOOL ExecAESObjects(struct ExecAESContext *c,AESPB *pb)
     }
     tree=(OBJECT *)(ULONG)pb->addr_in[0]; c->diagnostic=AES_OK;
     switch (op) {
-    case 42: b[0]=objc_draw(tree,a[0],a[1],a[2],a[3],a[4],a[5]); break;
+    case 42: b[0]=ExecAESDraw(c,tree,a[0],a[1],a[2],a[3],a[4],a[5]); break;
     case 43: b[0]=objc_find(tree,a[0],a[1],a[2],a[3]); break;
     case 44: b[0]=objc_offset(tree,a[0],&b[1],&b[2]); break;
     case 46: b[1]=a[2]; b[0]=objc_edit(tree,a[0],a[1],&b[1],a[3]); break;
-    case 47: b[0]=objc_change(tree,a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7]); break;
+    case 47:
+        tree[a[0]].ob_state=a[6];
+        b[0]=a[7] ? ExecAESDraw(c,tree,a[0],0,a[2],a[3],a[4],a[5]):1;
+        break;
     case 54: b[0]=form_center(tree,&b[1],&b[2],&b[3],&b[4]); break;
     case 55: b[0]=form_keybd(tree,a[0],a[2],a[1],&b[1],&b[2]); break;
     case 56: b[0]=form_button(tree,a[0],a[1],&b[1]); break;

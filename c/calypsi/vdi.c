@@ -21,14 +21,16 @@ static BOOL enter(struct ExecAESContext *c)
     return TRUE;
 }
 
-WORD graf_handle(WORD *cw,WORD *ch,WORD *bw,WORD *bh)
+WORD ExecAESGrafHandle(struct ExecAESContext *c, WORD *cw,WORD *ch,WORD *bw,WORD *bh)
 {
-    struct ExecAESContext *c=ExecAESContext();
     if (!enter(c)) return 0;
     *cw=*ch=*bw=*bh=8;
     c->busy=0;
     return EXEC_VDI_PHYSICAL;
 }
+
+WORD graf_handle(WORD *cw,WORD *ch,WORD *bw,WORD *bh)
+{ return ExecAESGrafHandle(ExecAESContext(), cw,ch,bw,bh); }
 
 BOOL ExecVDIClose(struct ExecAESContext *c)
 {

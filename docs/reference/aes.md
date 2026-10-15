@@ -44,8 +44,19 @@ across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
 admission, waits for existing publishers without blocking the presenter, drains
 the port and acknowledges retirement before the caller frees its storage.
-Direct calls validate their registration and one-call occupancy without advancing
-the RPC sequence. Both named wrappers and parameter blocks use the same helpers.
+Direct calls check the caller-local registration ID and one-call occupancy
+without advancing the RPC sequence. Registration pins the endpoint until this
+Task exits, so admission does not repeatedly audit the shared endpoint. Guards
+around shared window snapshots, publication and event decisions remain required.
+Named and parameter-block window, UPDATE, menu and drawing entries reuse their
+established context through private helpers.
+
+The context pointer is stable from attach through detach, including across
+preemption and `appl_exit`/`appl_init` cycles. Its window/workstation and other
+contents can change. The current public binding still locates that pointer
+through a current-Task lookup and the binding's context table; this is context
+selection, not an ownership recheck. RPC replies use the established caller
+identity without another current-Task query.
 
 `appl_write(id, 16, words)` reserves a destination-owned record, copies eight
 words and publishes it with Exec `PutMsg`. It releases its independent endpoint

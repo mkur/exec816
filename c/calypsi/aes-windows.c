@@ -100,9 +100,8 @@ WORD ExecAESInputWindow(WORD event)
     return c ? (event==MU_KEYBD ? c->keyWindow:c->eventWindow) : 0;
 }
 
-static WORD window_call(UWORD op, WORD a, WORD b, WORD d, WORD e, WORD f, WORD g)
+WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d, WORD e, WORD f, WORD g)
 {
-    struct ExecAESContext *c = ExecAESContext();
     struct AESWindowView *view;
     UWORD slot=0;
     WORD result, fail = op == AES_OP_CREATE ? -1 : 0;
@@ -133,22 +132,24 @@ static WORD window_call(UWORD op, WORD a, WORD b, WORD d, WORD e, WORD f, WORD g
 }
 
 WORD wind_create(WORD kind, WORD x, WORD y, WORD w, WORD h)
-{ return window_call(AES_OP_CREATE, kind, x, y, w, h, 0); }
+{ return ExecAESWindowCall(ExecAESContext(),AES_OP_CREATE, kind, x, y, w, h, 0); }
 
 WORD wind_open(WORD handle, WORD x, WORD y, WORD w, WORD h)
-{ return window_call(AES_OP_OPEN, handle, x, y, w, h, 0); }
+{ return ExecAESWindowCall(ExecAESContext(),AES_OP_OPEN, handle, x, y, w, h, 0); }
 
 WORD wind_close(WORD handle)
-{ return window_call(AES_OP_CLOSE, handle, 0, 0, 0, 0, 0); }
+{ return ExecAESWindowCall(ExecAESContext(),AES_OP_CLOSE, handle, 0, 0, 0, 0, 0); }
 
-WORD wind_find(WORD x, WORD y)
+WORD ExecAESWindowFind(struct ExecAESContext *c, WORD x, WORD y)
 {
-    struct ExecAESContext *c = ExecAESContext();
     if (!c) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0]=x;c->request.intin[1]=y;
     return ExecAESSubmit(c,AES_OP_FIND);
 }
+
+WORD wind_find(WORD x, WORD y)
+{ return ExecAESWindowFind(ExecAESContext(), x, y); }
 
 WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height)
 {
@@ -160,11 +161,10 @@ WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height)
     return ExecAESSubmit(c,AES_OP_DRAG_OUTLINE);
 }
 
-WORD wind_delete(WORD handle)
+WORD ExecAESWindowDelete(struct ExecAESContext *c, WORD handle)
 {
-    WORD result = window_call(AES_OP_DELETE, handle, 0, 0, 0, 0, 0);
+    WORD result = ExecAESWindowCall(c,AES_OP_DELETE, handle, 0, 0, 0, 0, 0);
     if (result) {
-        struct ExecAESContext *c = ExecAESContext();
         UWORD i;
         for (i=0; i<AES_WINDOWS; ++i)
             if (c->views[i]==c->view) c->views[i]=NULL;
@@ -178,8 +178,11 @@ WORD wind_delete(WORD handle)
     return result;
 }
 
+WORD wind_delete(WORD handle)
+{ return ExecAESWindowDelete(ExecAESContext(), handle); }
+
 WORD wind_set(WORD handle, WORD field, WORD w1, WORD w2, WORD w3, WORD w4)
-{ return window_call(AES_OP_SET, handle, field, w1, w2, w3, w4); }
+{ return ExecAESWindowCall(ExecAESContext(),AES_OP_SET, handle, field, w1, w2, w3, w4); }
 
 WORD wind_set_str(WORD handle, WORD field, const char *str)
 {
@@ -187,9 +190,8 @@ WORD wind_set_str(WORD handle, WORD field, const char *str)
     return wind_set(handle, field, (WORD)(pointer >> 16), (WORD)pointer, 0, 0);
 }
 
-WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
+WORD ExecAESWindowGet(struct ExecAESContext *c, WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
 {
-    struct ExecAESContext *c = ExecAESContext();
     struct AESWindowView *v;
     struct AESRect *rect = NULL;
     *o1 = *o2 = *o3 = *o4 = 0;
@@ -231,10 +233,12 @@ WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
     return c->diagnostic == AES_OK;
 }
 
-WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
+WORD wind_get(WORD handle, WORD field, WORD *o1, WORD *o2, WORD *o3, WORD *o4)
+{ return ExecAESWindowGet(ExecAESContext(), handle, field, o1, o2, o3, o4); }
+
+WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
                WORD *ox, WORD *oy, WORD *ow, WORD *oh)
 {
-    struct ExecAESContext *c = ExecAESContext();
     LONG left = x, top = y, width = w, height = h;
     WORD leftInset=kind ? DESKTOP_WORK_LEFT:0;
     WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_WORK_RIGHT;
@@ -261,3 +265,7 @@ WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
     c->diagnostic = AES_OK;
     return 1;
 }
+
+WORD wind_calc(WORD type, WORD kind, WORD x, WORD y, WORD w, WORD h,
+               WORD *ox, WORD *oy, WORD *ow, WORD *oh)
+{ return ExecAESWindowCalc(ExecAESContext(), type, kind, x, y, w, h, ox, oy, ow, oh); }

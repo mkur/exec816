@@ -1,5 +1,9 @@
 # Historical records
 
+- [AES binding cleanup](aes-binding-cleanup.md): reuse established caller
+  contexts, remove reply-time identity queries and simplify direct admission;
+  focused before/after CPU costs ahead of caller-local UPDATE.
+
 - [Physical display C/Action bridge cost](display-bridge-cost.md): passive
   ownership measurements after restoring preemption; about 70 us bridge CPU
   per uncontended client pair, with C, assembly and Action costs separated.

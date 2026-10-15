@@ -2,9 +2,8 @@
 #include <proto/exec.h>
 
 /* Full C addresses are transported high word first in the fixed request. */
-WORD ExecAESMenu(OBJECT *tree,WORD operation,WORD item,ULONG value)
+static WORD menu_request(struct ExecAESContext *c,OBJECT *tree,WORD operation,WORD item,ULONG value)
 {
-    struct ExecAESContext *c=ExecAESContext();
     WORD result;
     if (!c) return 0;
     if (c->busy) { c->diagnostic=AES_BUSY; return 0; }
@@ -22,38 +21,46 @@ WORD ExecAESMenu(OBJECT *tree,WORD operation,WORD item,ULONG value)
 
 WORD menu_bar(OBJECT *tree,WORD show)
 {
-    return ExecAESMenu(tree,30,show,0);
+    return menu_request(ExecAESContext(),tree,30,show,0);
 }
-WORD menu_icheck(OBJECT *tree,WORD item,WORD check)
+static WORD menu_icheck_context(struct ExecAESContext *c, OBJECT *tree,WORD item,WORD check)
 {
-    struct ExecAESContext *c=ExecAESContext();
-    if (c && c->menuTree==(ULONG)tree) return ExecAESMenu(tree,31,item,check);
+    if (c && c->menuTree==(ULONG)tree) return menu_request(c,tree,31,item,check);
     if (check) tree[item].ob_state|=CHECKED;
     else tree[item].ob_state&=~CHECKED;
     return 1;
 }
-WORD menu_ienable(OBJECT *tree,WORD item,WORD enable)
+
+WORD menu_icheck(OBJECT *tree,WORD item,WORD check)
+{ return menu_icheck_context(ExecAESContext(), tree,item,check); }
+static WORD menu_ienable_context(struct ExecAESContext *c, OBJECT *tree,WORD item,WORD enable)
 {
-    struct ExecAESContext *c=ExecAESContext();
-    if (c && c->menuTree==(ULONG)tree) return ExecAESMenu(tree,32,item,enable);
+    if (c && c->menuTree==(ULONG)tree) return menu_request(c,tree,32,item,enable);
     if (enable) tree[item].ob_state&=~DISABLED;
     else tree[item].ob_state|=DISABLED;
     return 1;
 }
-WORD menu_tnormal(OBJECT *tree,WORD item,WORD normal)
+
+WORD menu_ienable(OBJECT *tree,WORD item,WORD enable)
+{ return menu_ienable_context(ExecAESContext(), tree,item,enable); }
+static WORD menu_tnormal_context(struct ExecAESContext *c, OBJECT *tree,WORD item,WORD normal)
 {
-    struct ExecAESContext *c=ExecAESContext();
-    if (c && c->menuTree==(ULONG)tree) return ExecAESMenu(tree,33,item,normal);
+    if (c && c->menuTree==(ULONG)tree) return menu_request(c,tree,33,item,normal);
     if (normal) tree[item].ob_state&=~SELECTED;
     else tree[item].ob_state|=SELECTED;
     return 1;
 }
-WORD menu_text(OBJECT *tree,WORD item,const char *text)
+
+WORD menu_tnormal(OBJECT *tree,WORD item,WORD normal)
+{ return menu_tnormal_context(ExecAESContext(), tree,item,normal); }
+static WORD menu_text_context(struct ExecAESContext *c, OBJECT *tree,WORD item,const char *text)
 {
-    struct ExecAESContext *c=ExecAESContext();
-    if (c && c->menuTree==(ULONG)tree) return ExecAESMenu(tree,34,item,(ULONG)text);
+    if (c && c->menuTree==(ULONG)tree) return menu_request(c,tree,34,item,(ULONG)text);
     tree[item].ob_spec=(ULONG)text; return 1;
 }
+
+WORD menu_text(OBJECT *tree,WORD item,const char *text)
+{ return menu_text_context(ExecAESContext(), tree,item,text); }
 struct Popup {
     WORD message[8],saved[GEM_OBJECT_LIMIT];
     WORD x,y,w,h,mx,my,mb,ks,kr,br;
@@ -66,9 +73,8 @@ static WORD paint(OBJECT *tree,WORD menu,struct Popup *p)
     if (!wind_update(END_UPDATE)) okay=0;
     return okay;
 }
-WORD menu_popup(const MENU *menu,WORD x,WORD y,MENU *result)
+static WORD popup(struct ExecAESContext *c, const MENU *menu,WORD x,WORD y,MENU *result)
 {
-    struct ExecAESContext *c=ExecAESContext();
     OBJECT *tree=(OBJECT *)(ULONG)menu->mn_tree;
     struct Popup *p;
     WORD count=1,i,selected,first,last,oldX,oldY,ox,oy,events,hit,down=0,armed=NIL,done=0,okay=0;
@@ -154,6 +160,9 @@ finish:
     tree[0].ob_x=oldX;tree[0].ob_y=oldY;
     FreeMem(p,sizeof(*p));return okay;
 }
+
+WORD menu_popup(const MENU *menu,WORD x,WORD y,MENU *result)
+{ return popup(ExecAESContext(), menu,x,y,result); }
 BOOL ExecAESMenus(struct ExecAESContext *c,AESPB *pb)
 {
     WORD op=pb->control[0],ins=2,addresses=1;
@@ -167,12 +176,12 @@ BOOL ExecAESMenus(struct ExecAESContext *c,AESPB *pb)
     }
     c->diagnostic=AES_OK;
     switch (op) {
-    case 30:pb->int_out[0]=menu_bar((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0]);break;
-    case 31:pb->int_out[0]=menu_icheck((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
-    case 32:pb->int_out[0]=menu_ienable((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
-    case 33:pb->int_out[0]=menu_tnormal((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
-    case 34:pb->int_out[0]=menu_text((OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],(const char *)(ULONG)pb->addr_in[1]);break;
-    case 36:pb->int_out[0]=menu_popup((MENU *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1],(MENU *)(ULONG)pb->addr_in[1]);break;
+    case 30:pb->int_out[0]=menu_request(c,(OBJECT *)(ULONG)pb->addr_in[0],30,pb->int_in[0],0);break;
+    case 31:pb->int_out[0]=menu_icheck_context(c,(OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
+    case 32:pb->int_out[0]=menu_ienable_context(c,(OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
+    case 33:pb->int_out[0]=menu_tnormal_context(c,(OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1]);break;
+    case 34:pb->int_out[0]=menu_text_context(c,(OBJECT *)(ULONG)pb->addr_in[0],pb->int_in[0],(const char *)(ULONG)pb->addr_in[1]);break;
+    case 36:pb->int_out[0]=popup(c,(MENU *)(ULONG)pb->addr_in[0],pb->int_in[0],pb->int_in[1],(MENU *)(ULONG)pb->addr_in[1]);break;
     }
     return TRUE;
 }

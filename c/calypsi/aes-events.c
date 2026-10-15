@@ -7,15 +7,10 @@ BOOL ExecAESEnter(struct ExecAESContext *c)
 {
     if (c->busy) { c->diagnostic = AES_BUSY; return FALSE; }
     if (c->identity == 0) { c->diagnostic = AES_IDENTITY; return FALSE; }
-    Forbid();
-    if (c->endpoint == NULL || c->endpoint->state != AES_ENDPOINT_ACCEPTING ||
-        c->endpoint->id != c->identity || c->endpoint->owner != c->request.owner) {
-        Permit();
-        c->diagnostic = AES_IDENTITY;
-        return FALSE;
-    }
+    /* Registration pins the endpoint until this Task's appl_exit. Admission
+     * needs only caller-local state; event publication and snapshots retain
+     * their own synchronization below. */
     c->busy = 1;
-    Permit();
     c->diagnostic = AES_OK;
     return TRUE;
 }

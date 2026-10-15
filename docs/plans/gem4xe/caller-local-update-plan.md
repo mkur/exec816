@@ -9,6 +9,11 @@ with a separate commit after each executable slice. The physical-bridge
 measurement and UPDATE analysis are preparatory records; keep implementation
 commits scoped to their slice.
 
+The preceding [binding cleanup](../../history/aes-binding-cleanup.md) removes
+duplicate context queries and repeated direct-entry endpoint audits. UPDATE
+still uses RPC; UL1–UL4 remain pending. Use the cleaned binding for the UL1
+baseline.
+
 ## Objective and limits
 
 Let `wind_update(BEG_UPDATE)`, `ExecAESBeginUpdate(window)` and
@@ -169,8 +174,8 @@ generator, `lib/aes/aeslocks.act`, plus the relevant focused AES fixtures.
   and AES diagnostic. A handled TRY failure is not fallback. On fallback,
   release the gate and restore the context's transient busy state before
   invoking `ExecAESSubmit` with the original operation/flags.
-- Perform one caller-context lookup per public operation. Pass the context
-  already obtained by `ExecAESBeginUpdate` into the common update helper.
+- Preserve the cleanup's single caller-context lookup per public UPDATE
+  operation, including scoped BEGIN and parameter-block dispatch.
 - Mark the context busy while direct policy executes. Advance local depth only
   after a successful result, once, for either path. Preserve inherited Forbid
   nesting and all C/native register, DP and stack conventions.

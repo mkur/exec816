@@ -7,6 +7,8 @@
  * GEM parameter block. Each live Task owns a separately allocated context. */
 static struct ExecAESContext *contexts[AES_CONTEXTS];
 
+static WORD exit_application(struct ExecAESContext *c);
+
 BOOL ExecAESPointer(const void *pointer, ULONG bytes)
 {
     ULONG address = (ULONG)pointer;
@@ -79,7 +81,7 @@ BOOL ExecAESDetach(void)
         context->diagnostic = AES_BUSY;
         return FALSE;
     }
-    if (context->identity != 0 && !appl_exit())
+    if (context->identity != 0 && !exit_application(context))
         return FALSE;
     if (!ExecAESTimerClose(context)) {
         context->diagnostic = AES_TIMER_ERROR;
@@ -106,6 +108,7 @@ UWORD ExecAESDiagnostic(void)
 WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
 {
     struct AESRequest *r = &c->request;
+    struct Task *owner = r->owner;
     struct Message *reply;
     ULONG sequence;
     UWORD i;
@@ -130,7 +133,7 @@ WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
     /* This is a private port and binding. No borrowed pointers survive reply. */
     if (reply != &r->message || r->version != AES_VERSION ||
         r->bytes != sizeof(*r) || r->sequence != sequence ||
-        r->operation != operation || r->owner != FindTask(NULL) ||
+        r->operation != operation || r->owner != owner ||
         r->binding != (UBYTE *)c || r->message.mn_ReplyPort != c->replies ||
         (operation != AES_OP_INIT && operation != AES_OP_EXIT &&
          r->client != c->identity)) {
@@ -176,9 +179,8 @@ WORD ExecAESMouseProfile(WORD profile)
     return c->diagnostic == AES_OK ? c->request.intout[0] : -1;
 }
 
-WORD appl_init(void)
+static WORD init(struct ExecAESContext *c)
 {
-    struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return -1;
     if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
     if (c->identity != 0) { c->diagnostic = AES_OK; return c->gemId; }
@@ -203,9 +205,11 @@ WORD appl_init(void)
     return -1;
 }
 
-WORD appl_exit(void)
+WORD appl_init(void)
+{ return init(ExecAESContext()); }
+
+static WORD exit_application(struct ExecAESContext *c)
 {
-    struct ExecAESContext *c = ExecAESContext();
     WORD result;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
@@ -254,9 +258,11 @@ WORD appl_exit(void)
     return result;
 }
 
-WORD appl_write(WORD id, WORD length, const WORD *message)
+WORD appl_exit(void)
+{ return exit_application(ExecAESContext()); }
+
+static WORD write_message(struct ExecAESContext *c, WORD id, WORD length, const WORD *message)
 {
-    struct ExecAESContext *c = ExecAESContext();
     struct AESEndpoint *destination;
     struct AESDelivery *record;
     UWORD i;
@@ -274,6 +280,9 @@ WORD appl_write(WORD id, WORD length, const WORD *message)
     c->busy = 0;
     return record != NULL;
 }
+
+WORD appl_write(WORD id, WORD length, const WORD *message)
+{ return write_message(ExecAESContext(), id, length, message); }
 
 WORD evnt_mesag(WORD *message)
 {
@@ -319,9 +328,8 @@ WORD evnt_timer(UWORD lo, UWORD hi)
     return ExecAESTimerWait(c, (ULONG)lo | ((ULONG)hi << 16));
 }
 
-static WORD update(WORD code,WORD window)
+WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
 {
-    struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0] = code;
@@ -337,7 +345,7 @@ static WORD update(WORD code,WORD window)
 }
 
 WORD wind_update(WORD code)
-{ return update(code,0); }
+{ return ExecAESUpdate(ExecAESContext(),code,0); }
 
 /* The outermost scope is a caller promise: no other owned window changes. */
 WORD ExecAESBeginUpdate(WORD window)
@@ -346,7 +354,7 @@ WORD ExecAESBeginUpdate(WORD window)
     struct AESWindowView *view;
     if (!c || !(view=ExecAESFindView(c,window))) return 0;
     c->view=view;
-    return update(BEG_UPDATE|AES_UPDATE_WINDOW,window);
+    return ExecAESUpdate(c,BEG_UPDATE|AES_UPDATE_WINDOW,window);
 }
 
 
@@ -438,43 +446,42 @@ void EXEC_CALL aes_call(AESPB *pb)
         pb->int_out[0] = result; return;
     }
     switch (op) {
-    case AES_OP_INIT: result = appl_init(); break;
-    case AES_OP_EXIT: result = appl_exit(); break;
+    case AES_OP_INIT: result = init(c); break;
+    case AES_OP_EXIT: result = exit_application(c); break;
     case AES_OP_GRAF_HANDLE:
-        result = graf_handle(&pb->int_out[1], &pb->int_out[2],
+        result = ExecAESGrafHandle(c, &pb->int_out[1], &pb->int_out[2],
                              &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_WRITE:
-        result = appl_write(pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
-    case AES_OP_MESAG: result = evnt_mesag((WORD *)(ULONG)pb->addr_in[0]); break;
-    case AES_OP_KEYBD: result = evnt_keybd(); break;
+        result = write_message(c, pb->int_in[0], pb->int_in[1], (WORD *)(ULONG)pb->addr_in[0]); break;
+    case AES_OP_MESAG: result = (ExecAESEvents(c,MU_MESAG,0,(WORD *)(ULONG)pb->addr_in[0]) != 0); break;
+    case AES_OP_KEYBD: result = (ExecAESEvents(c,MU_KEYBD,0,NULL) ? c->intout[5]:0); break;
     case AES_OP_BUTTON:
         result = button(c, pb->int_in[0], pb->int_in[1], pb->int_in[2]);
         for (i = 1; i < 5; ++i) pb->int_out[i] = c->intout[i];
         break;
     case AES_OP_TIMER:
-        result = evnt_timer((UWORD)pb->int_in[0], (UWORD)pb->int_in[1]); break;
-    case AES_OP_UPDATE: result = wind_update(pb->int_in[0]); break;
+        result = ExecAESTimerWait(c,(ULONG)(UWORD)pb->int_in[0] | ((ULONG)(UWORD)pb->int_in[1]<<16)); break;
+    case AES_OP_UPDATE: result = ExecAESUpdate(c,pb->int_in[0],0); break;
     case AES_OP_CREATE:
-        result = wind_create(pb->int_in[0], pb->int_in[1], pb->int_in[2],
-            pb->int_in[3], pb->int_in[4]); break;
+        result = ExecAESWindowCall(c,AES_OP_CREATE,pb->int_in[0],pb->int_in[1],pb->int_in[2],
+            pb->int_in[3],pb->int_in[4],0); break;
     case AES_OP_OPEN:
-        result = wind_open(pb->int_in[0], pb->int_in[1], pb->int_in[2],
-            pb->int_in[3], pb->int_in[4]); break;
-    case AES_OP_CLOSE: result = wind_close(pb->int_in[0]); break;
-    case AES_OP_DELETE: result = wind_delete(pb->int_in[0]); break;
-    case AES_OP_FIND: result = wind_find(pb->int_in[0], pb->int_in[1]); break;
+        result = ExecAESWindowCall(c,AES_OP_OPEN,pb->int_in[0],pb->int_in[1],pb->int_in[2],
+            pb->int_in[3],pb->int_in[4],0); break;
+    case AES_OP_CLOSE: result = ExecAESWindowCall(c,AES_OP_CLOSE,pb->int_in[0],0,0,0,0,0); break;
+    case AES_OP_DELETE: result = ExecAESWindowDelete(c, pb->int_in[0]); break;
+    case AES_OP_FIND: result = ExecAESWindowFind(c, pb->int_in[0], pb->int_in[1]); break;
     case AES_OP_GET:
-        result = wind_get(pb->int_in[0], pb->int_in[1], &pb->int_out[1],
+        result = ExecAESWindowGet(c, pb->int_in[0], pb->int_in[1], &pb->int_out[1],
             &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_SET:
-        result = wind_set(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+        result = ExecAESWindowCall(c,AES_OP_SET, pb->int_in[0], pb->int_in[1], pb->int_in[2],
             pb->int_in[3], pb->int_in[4], pb->int_in[5]); break;
     case AES_OP_CALC:
-        result = wind_calc(pb->int_in[0], pb->int_in[1], pb->int_in[2],
+        result = ExecAESWindowCalc(c, pb->int_in[0], pb->int_in[1], pb->int_in[2],
             pb->int_in[3], pb->int_in[4], pb->int_in[5], &pb->int_out[1],
             &pb->int_out[2], &pb->int_out[3], &pb->int_out[4]); break;
     case AES_OP_MULTI:
-        if (c->busy) { c->diagnostic = AES_BUSY; break; }
         for (i = 0; i < 16; ++i) c->intin[i] = pb->int_in[i];
         result = multi(c, (WORD *)(ULONG)pb->addr_in[0]);
         for (i = 1; i < 7; ++i) pb->int_out[i] = c->intout[i];
