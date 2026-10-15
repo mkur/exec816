@@ -25,6 +25,22 @@ PROC CheckVisible(LAYERTYPES.Scene POINTER state)
     END
   OD
   Require(state.visibleDamage=expected)
+  FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
+    BEGIN
+      LET layer=@state.items(slot)
+      IF layer.id<>0 OR slot=LAYERTYPES.BACKGROUND_SLOT THEN
+        BEGIN
+          LET found=LAYERS.FindDamaged(state,layer.id)
+          IF (expected & (CARD(1) LSH slot))<>0 THEN
+            Require(found=layer)
+          ELSE
+            Require(found=NULL)
+          FI
+        END
+      FI
+    END
+  OD
+  Require(LAYERS.FindDamaged(state,$ffffffff)=NULL)
 
 RETURN
 
@@ -52,6 +68,7 @@ PROC ReadinessTransactions()
   Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
   Require(scene.visibleDamage=$100)
   Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
+  Require(LAYERS.FindDamaged(scene,id)=NULL)
   CheckVisible(scene)
 
   ; Every normal slot has an independent bit; the background is the ninth.

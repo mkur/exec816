@@ -43,6 +43,21 @@ PUBLIC LAYERTYPES.Layer POINTER FUNC Find(LAYERTYPES.Scene POINTER scene
 
 RETURN(@scene.items(slot))
 
+; Read the summary maintained at mutation boundaries; do not rescan geometry
+; when the presenter is only choosing which layer to paint.
+PUBLIC LAYERTYPES.Layer POINTER FUNC FindDamaged(LAYERTYPES.Scene POINTER scene
+    LONGCARD id)
+
+  LET slot=FindSlot(scene,id)
+  IF slot=255 THEN
+    RETURN(NULL)
+  FI
+  IF (scene.visibleDamage & (CARD(1) LSH slot))=0 THEN
+    RETURN(NULL)
+  FI
+
+RETURN(@scene.items(slot))
+
 ; Manager damage is runnable only where this layer owns visible screen pixels.
 ; External pending repaint has its own lifetime and is deliberately separate.
 PUBLIC BYTE FUNC Damaged(LAYERTYPES.Layer POINTER layer)

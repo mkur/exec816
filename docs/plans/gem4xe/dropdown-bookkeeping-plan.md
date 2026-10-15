@@ -23,7 +23,8 @@ as the baseline; no new baseline build or qualification matrix is needed.
 
 ### DB1 Select paint candidates from the maintained damage bits
 
-Status: pending.
+Status: implemented; [development checks](../../history/dropdown-bookkeeping.md)
+pass. Reserved bank-zero delta: fixed 0, per Task 0, idle 0.
 
 - Add a small Layers lookup that returns the requested layer only when its
   existing `Scene.visibleDamage` bit is set. Reuse the internal slot lookup;

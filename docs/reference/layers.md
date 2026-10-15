@@ -55,6 +55,7 @@ IDs and update tokens never repeat within that lifetime.
 | `OrderBelow(scene,id,anchor)` | Place immediately below another live nonbackground layer. Hidden placement changes neither visibility nor damage; shown placement uses normal reorder invalidation. Equal live IDs are a no-op. |
 | `Delete(scene,id)` | Retire the layer and damage the affected area. Reusing its slot assigns a different ID. |
 | `Find(scene,id)` | Borrow a read-only layer record, or NULL for a stale ID. Zero selects the permanent background. |
+| `FindDamaged(scene,id)` | Borrow the layer only when its maintained visible-damage bit is set; otherwise NULL, including stale IDs. Zero selects the background. |
 | `Hit(scene,x,y)` | Return the frontmost shown layer's ID; zero for background or outside the screen. Uses existing geometry without rebuilding visibility. |
 | `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. Retains eight rectangles, merging containment and exact rectangular unions. Overflow collapses all damage to one bound. Does not rebuild visibility. |
 
@@ -80,9 +81,11 @@ current visibility, one bit per layer slot including the background. Layers
 maintains it when damage, visibility or paint completion changes. Zero means
 there is no visible manager paint to start; hidden damage remains recorded for
 later exposure. External application repaint obligations do not set these bits
-by themselves. `Damaged(layer)` provides the same intersection predicate for
-one layer, for example when choosing a menu paint. Neither query grants a
-transaction or physical display ownership.
+by themselves. `FindDamaged(scene,id)` uses this summary for candidate lookup;
+callers already holding a slot index may inspect its bit directly.
+`Damaged(layer)` computes the intersection predicate used to maintain the
+summary. None of these queries grants a transaction or physical display
+ownership.
 
 `BeginPaint(scene,id,tokenOut)` intersects current damage with cached visibility.
 It returns EMPTY without acquiring anything when there is no visible work. OK

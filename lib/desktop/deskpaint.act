@@ -428,13 +428,17 @@ LAYERTYPES.Layer POINTER FUNC MenuLayer()
   LAYERTYPES.Layer POINTER layer
 
   LET service=DESKSTATE.Get()
-  layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-  IF DESKSTATE.popupLayer<>0 AND layer<>NULL AND LAYERS.Damaged(layer)<>0 THEN
-    RETURN(layer)
+  IF DESKSTATE.popupLayer<>0 THEN
+    layer=LAYERS.FindDamaged(@service.scene,DESKSTATE.popupLayer)
+    IF layer<>NULL THEN
+      RETURN(layer)
+    FI
   FI
-  layer=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
-  IF DESKSTATE.barLayer<>0 AND layer<>NULL AND LAYERS.Damaged(layer)<>0 THEN
-    RETURN(layer)
+  IF DESKSTATE.barLayer<>0 THEN
+    layer=LAYERS.FindDamaged(@service.scene,DESKSTATE.barLayer)
+    IF layer<>NULL THEN
+      RETURN(layer)
+    FI
   FI
 
 RETURN(NULL)
@@ -629,10 +633,7 @@ PUBLIC BYTE FUNC Pump()
     IF candidate=NULL THEN
       window=DESKCORE.Find(service,service.focus)
       IF window<>NULL THEN
-        candidate=LAYERS.Find(@service.scene,window.layer)
-        IF LAYERS.Damaged(candidate)=0 THEN
-          candidate=NULL
-        FI
+        candidate=LAYERS.FindDamaged(@service.scene,window.layer)
       FI
     FI
     IF candidate=NULL THEN
@@ -641,9 +642,9 @@ PUBLIC BYTE FUNC Pump()
         nextSlot=(nextSlot+1) MOD LAYERTYPES.SLOT_COUNT
         BEGIN
           LET layer=@service.scene.items(slot)
-          IF (layer.id<>DESKSTATE.barLayer OR layer.id=0)
-              AND (layer.id<>DESKSTATE.popupLayer OR layer.id=0)
-              AND LAYERS.Damaged(layer)<>0 THEN
+          IF (service.scene.visibleDamage & (CARD(1) LSH slot))<>0
+              AND (layer.id<>DESKSTATE.barLayer OR layer.id=0)
+              AND (layer.id<>DESKSTATE.popupLayer OR layer.id=0) THEN
             candidate=layer
             EXIT
           FI
