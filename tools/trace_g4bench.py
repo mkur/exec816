@@ -16,8 +16,9 @@ import adapter_state as adapter
 
 
 class Observer:
-    def __init__(self, output):
+    def __init__(self, output, rectangles=False):
         self.output = output
+        self.rectangles = rectangles
 
     def ready(self, session, symbols):
         apps = instances(session.b, session.p, session.p['output']/'bitmap-console')
@@ -28,7 +29,8 @@ class Observer:
 
     def drawn(self, session, symbols):
         b = session.b; marker = session.p['labels']['native_irq']
-        condition = '(@xpc=$%x)&(dw($%x)=4)'%(marker, symbols['g4b_phase'])
+        condition = ('(@xpc=$%x)&(dw($%x)>=1)'%(marker, symbols['g4b_row']) if self.rectangles else
+                     '(@xpc=$%x)&(dw($%x)=4)'%(marker, symbols['g4b_phase']))
         b.bp_clear_all(); b.bp_set(marker, condition=condition)
         b.bp_set(session.p['labels']['done'], condition=adapter.STOPPED)
         run_to(b, marker, frame_limit=12000, timeout=900, condition=condition)
@@ -66,7 +68,7 @@ def save_profile(out, report, profile):
     (out/'trace-summary.md').write_text('\n'.join(lines))
 
 
-def run(bundle, output, load='idle'):
+def run(bundle, output, load='idle', rectangles=False):
     out = Path(output).resolve()
     require(not out.exists(), 'Use a fresh trace output directory')
     shutil.copytree(Path(bundle).resolve(), out, ignore=shutil.ignore_patterns(
@@ -80,14 +82,14 @@ def run(bundle, output, load='idle'):
     points = marker_pcs(d)
     previous = {key: os.environ.get(key) for key in ('EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS')}
     os.environ.update(EXEC816_LATENCY_TRACE='1', EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in points))
-    observer = Observer(out)
+    observer = Observer(out, rectangles)
     report = dict(status='running', tier='development', qualification=False, load=load,
                   archive_sha256=sha256(out/'exec816-demo.zip'), observer_pcs=len(points),
                   bank_zero_delta=dict(fixed=0, per_public_task=[0]*8, idle=0),
                   guest_changes=False)
     print('Passive G4BENCH trace:', len(points), 'PCs', flush=True)
     try:
-        result = measure(out, load, observer)
+        result = measure(out, load, observer, rectangles)
         report['run'] = result
         events = read_trace(out/'emulator.log', d, observer.live)
         # A shareable raw trace contains only CPU observations. Do not copy
@@ -134,8 +136,9 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--load', choices=('idle', 'counter'), default='idle')
     parser.add_argument('--analyze', action='store_true', help='Re-analyze an existing capture without booting')
+    parser.add_argument('--rectangles', action='store_true')
     args = parser.parse_args()
     if args.analyze: reanalyze(args.output)
     else:
         require(args.bundle is not None, '--bundle is required for capture')
-        run(args.bundle, args.output, args.load)
+        run(args.bundle, args.output, args.load, args.rectangles)

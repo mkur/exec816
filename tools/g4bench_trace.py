@@ -11,6 +11,7 @@ import gzip
 
 import adapter_state as adapter
 from console_turn_profile import Timeline, analyze_events
+from bitmap_console_performance import native_markers
 from dos_concurrent_trace import call_marker
 from native_program import require
 from sio_transaction_trace import BASE_HZ
@@ -79,13 +80,21 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
     points['selected'] = address+4
     for name in ('native_irq', 'native_nmi', 'interrupt_schedule'):
         points[name] = program['labels'][name]
+    native = native_markers(program, [(n,n) for n in (
+        'DISPLAY_OWNERENTER','DISPLAY_OWNERDROP','DISPLAY_OWNEREND','DISPLAY_NEXT',
+        'AESMOUSE_REFRESH','AESINBOX_SNAPSHOT','AESLOCKS_REQUEST','AESLOCKS_ACQUIRE',
+        'AESLOCKS_WAKE','AESWINDOWSTATE_SYNC','AESWINDOWSTATE_PUBLISH',
+        'AESCORE_PUMP','AESCORE_SETTLE')])
+    for name, span in native.items():
+        points[name+'_entry']=span['entry']
+        for i, pc in enumerate(span['returns']): points[name+'_return_'+str(i)]=pc
     timeline = dict(points=points, spans={},
                     task_dps=[p['dp'] for p in program['build']['memory']['task_pools']])
     entries = {foreign['symbols'][name]: name for name in C_NAMES if name in foreign['symbols']}
     require(len(entries) == len(C_NAMES), 'Missing resident trace function')
     entries.update({foreign['symbols'][name]:name for name in FILL_NAMES if name in foreign['symbols']})
     application = {app['image']['symbols'][name]: name for name in app_names}
-    return dict(timeline=timeline, resident_entries=entries, app_entries=application,
+    return dict(timeline=timeline, native=native, resident_entries=entries, app_entries=application,
                 resident_returns=listing_returns(foreign, directory/'drawing'),
                 app_returns=listing_returns(app['image'], app_directory or directory/'apps/g4bench'),
                 link_base=app['abi']['link_bank'] << 16, banks=app['verified_banks'])
@@ -230,6 +239,24 @@ def analyze(events, d, live, benchmark):
     dp = dps.pop()
     profile = analyze_events(events, d['timeline'], include_segments=True)
     timeline = Timeline(profile['segments'], dp)
+    worker = profile['worker_dp']
+    presenter = Timeline(profile['segments'], worker)
+    native_spans = []
+    active_native = {}
+    native_entries = {v['entry']:n for n,v in d.get('native',{}).items()}
+    native_returns = defaultdict(set)
+    for name, mark in d.get('native',{}).items():
+        for pc in mark['returns']: native_returns[pc].add(name)
+    for tick,e in events:
+        if int(e[9],16)!=worker: continue
+        pc,stack=int(e[4],16),int(e[8],16)
+        for name in native_returns[pc]:
+            opened=active_native.get((name,stack))
+            if opened:
+                native_spans.append(dict(kind=name,start=opened,end=tick,return_a=int(e[5],16)))
+                del active_native[name,stack]
+        if pc in native_entries:
+            active_native[native_entries[pc],stack]=tick
     spans, unfinished = calls(events, entries, returns, dp)
     # A reporting helper may have started before the final IRQ breakpoint.
     # Every function that began before the last measured batch ended must
@@ -260,7 +287,7 @@ def analyze(events, d, live, benchmark):
         span.update(timeline.measure(span['start'], span['end']))
     rows = []
     viewer = []
-    for row, result in enumerate(benchmark['rows']):
+    for row, result in enumerate(benchmark['rows'][:1] if benchmark.get('rectangles_only') else benchmark['rows']):
         batches = sorted((s for s in spans if s['kind'] == 'batch' and s['argument'] == row),
                          key=lambda s: s['start'])
         require(len(batches) >= 5, 'Missing warmup/calibration/samples')
@@ -305,14 +332,25 @@ def analyze(events, d, live, benchmark):
                 routine_totals[kind] = dict(calls=len(group), **{
                     metric: sum(s[metric] for s in group) for metric in
                     ('elapsed_ms', 'charged_cpu_ms', 'off_cpu_ms', 'interrupt_ms')})
+            native_selected=[s for s in native_spans if start<=s['start']<s['end']<=end]
+            native_totals={kind:dict(calls=sum(s['kind']==kind for s in native_selected),
+                cpu_ms=sum(presenter.measure(s['start'],s['end'])['charged_cpu_ms']
+                           for s in native_selected if s['kind']==kind))
+                           for kind in sorted({s['kind'] for s in native_selected})}
             samples.append(dict(sample=index, start=start, end=end, operations=len(operations),
+                presenter_cpu_ms=presenter.measure(start,end)['charged_cpu_ms'],
+                presenter_routines=native_totals,
                 **measure, exclusive_cpu_ms=partition(timeline, selected, start, end),
                 routines=routine_totals, operation_spans=operations,
                 borrow_spans=[s for s in selected if s['kind']==borrow_kind]))
         count = sum(s['operations'] for s in samples)
         categories = sorted({k for s in samples for k in s['exclusive_cpu_ms']})
         kinds = sorted({k for s in samples for k in s['routines']})
+        native_kinds=sorted({k for s in samples for k in s['presenter_routines']})
         rows.append(dict(name=result['name'], samples=samples, operations=count,
+            presenter_cpu_ms_per_operation=sum(s['presenter_cpu_ms'] for s in samples)/count,
+            presenter_routines_per_operation={k:{m:sum(s['presenter_routines'].get(k,{}).get(m,0)
+                for s in samples)/count for m in ('calls','cpu_ms')} for k in native_kinds},
             per_operation={metric: sum(s[metric] for s in samples)/count for metric in
                 ('elapsed_ms', 'charged_cpu_ms', 'off_cpu_ms', 'interrupt_ms')},
             exclusive_cpu_ms_per_operation={k:sum(s['exclusive_cpu_ms'].get(k, 0) for s in samples)/count

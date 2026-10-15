@@ -1085,8 +1085,8 @@ void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,
 }
 
 /* Native callers never block their service loop waiting for renderer access.
- * The presenter can nest these units within one bounded service turn; DMA
- * alone keeps the owner pin after the final return. */
+ * A complete unit protects its callback, scratch and final fence. CPU-only
+ * presenter work holds no reservation; DMA alone pins access after return. */
 #define NATIVE_UNIT(name, parameters, arguments) \
 UWORD GemDrawing##name parameters \
 { \

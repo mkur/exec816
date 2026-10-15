@@ -121,11 +121,13 @@ obligation rather than a repeated bridge validation on each drawing unit.
 The owner uses nonblocking `OwnerEnter()`, which returns BUSY and reserves one
 queue position when a borrower owns access. Nested owner calls share the current
 reservation. `OwnerEnd(dma)` retires one nesting level and records whether DMA
-still pins access. The native `OwnerDrop()` retires a surrounding presenter turn
-without changing that DMA pin. Correct matching calls and live grant storage are
-caller obligations. The presenter holds one bounded service turn, drops it before
-Yield/Wait, and continues message/input service when admission fails. Queued
-borrowers precede a subsequent owner turn. An asynchronous native operation keeps
+still pins access. The native `OwnerDrop()` retires a nesting level without changing that DMA
+pin. Correct matching calls and live grant storage are caller obligations. Each
+renderer unit reserves access through its callback, scratch use and final fence;
+CPU-only presenter message/input work holds no reservation. BUSY preserves pending
+paint for retry through the existing owner wake. Queued borrowers precede the
+next native unit. Widget continuations fence and clear redirection before release;
+their private VRAM strip survives between units. An asynchronous native operation keeps
 physical access until the presenter polls and retires its hardware completion.
 
 Every shared GEM drawing entry, including pointer, caret, outline, staging and

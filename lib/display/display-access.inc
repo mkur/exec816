@@ -193,7 +193,7 @@ PUBLIC CARD FUNC OwnerEnter()
 
 RETURN(OK)
 
-; Nested native units share a turn reservation; async DMA pins the owner after
+; Nested native units share a reservation; async DMA pins the owner after
 ; its last ordinary call returns. Only the owner may retire that pin.
 PUBLIC CARD FUNC OwnerDrop()
 

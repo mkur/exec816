@@ -17,8 +17,10 @@ extern void DisplayBorrowEnd(struct DisplayGrant *);''')
     source = source.replace('    return DisplayOwnerEnter();', '''    UWORD status=DisplayOwnerEnter();
     if (status==DISPLAY_OK) DisplayNativeBegin();
     return status;''')
-    source = source.replace('status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);',
-        'status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);\n    if (status==DISPLAY_OK) DisplayDMAStart();')
+    for call in ('status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);',
+                 'status=VbxeOwnerCopyStart(&display,copy,id);'):
+        require(source.count(call)==1,'DMA observation hook changed')
+        source=source.replace(call,call+'\n    if (status==DISPLAY_OK && *id) DisplayDMAStart();')
     start = source.index('static UWORD drawing_borrow(')
     body = source[start:].replace('    if (!fault) {', '    DisplayBorrowBegin(grant);\n    if (!fault) {', 1)
     body = body.replace('    DisplayLeave(grant);', '    DisplayBorrowEnd(grant);\n    DisplayLeave(grant);')

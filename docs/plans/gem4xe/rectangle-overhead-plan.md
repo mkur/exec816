@@ -5,8 +5,9 @@
 [Display ownership](../../reference/display.md#delegated-renderer-access) ·
 [AES contract](../../reference/aes.md)
 
-Status: proposed. Implement RP1–RP5 in order, with a focused check and a commit
-after each executable slice. This plan changes no production code.
+Status: in progress. RP1 is complete; RP2–RP5 follow in order. See the
+[implementation record](../../history/rectangle-overhead.md) and
+[development measurements](../../development/rectangle-overhead.json).
 
 Reduce the cost surrounding solid rectangle drawing: physical display
 contention, repeated presenter housekeeping, VDI dispatch and UPDATE processing.

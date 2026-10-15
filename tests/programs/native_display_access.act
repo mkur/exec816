@@ -113,6 +113,10 @@ PROC Main()
     EXEC.Yield()
   OD
 
+  ; A nested synchronous unit must not hand off the outer reservation.
+  Require(DISPLAY.OwnerEnter()=DISPLAY.OK)
+  Require(DISPLAY.OwnerEnd(0)=DISPLAY.OK)
+  Require(grant(0).state=DISPLAY.GRANT_QUEUED)
   Require(DISPLAY.Revoke(@grant(1))=DISPLAY.OK)
   Await(1,3)
   Require(result(1)=DISPLAY.INVALID_OWNER)

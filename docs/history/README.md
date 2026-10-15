@@ -1,5 +1,8 @@
 # Historical records
 
+- [Rectangle overhead](rectangle-overhead.md): shorter physical display reservations,
+  changed-only input publication and direct VDI bindings.
+
 - [FujiNet control](fujinet-control.md): protocol pins, FUJI reports/browsing/image changes, scripted real-frame
   integration and implementation slices.
 
