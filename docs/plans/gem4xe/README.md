@@ -1,11 +1,14 @@
 # GEM as a client of an Exec-like kernel
 
-The [presenter bookkeeping plan](presenter-bookkeeping-plan.md) follows
+The implemented [presenter bookkeeping plan](presenter-bookkeeping-plan.md) follows
 caller-local UPDATE with six slices: trusted drawing dispatch, cheaper readiness
 checks, input and cache maintenance, one visibility rebuild on opening, and
 focused measurements/demo delivery. It retains the current policy gate and
 normal scheduling; the [baseline](../../development/presenter-bookkeeping-baseline.json)
 records the repeated work and uncached-close regression.
+The [execution record](../../history/presenter-bookkeeping.md) measures New Window
+at 1063 → 983 ms and uncached close at 461 → 401 ms. The <=2 ms notification-only
+turn target remains open.
 
 The [caller-local UPDATE analysis](caller-local-update-analysis.md) proposes
 ordinary native-library BEGIN/END on presenter-published safe points, reusing

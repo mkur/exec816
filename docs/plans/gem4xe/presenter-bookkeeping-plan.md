@@ -4,8 +4,11 @@
 [Baseline measurements](../../development/presenter-bookkeeping-baseline.json) ·
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md)
 
-Status: implementation in progress. [Execution record](../../history/presenter-bookkeeping.md).
-Implement PB1–PB6 in order, committing each executable slice separately. Reuse the existing baseline; there is no preliminary benchmark slice.
+Status: PB1–PB6 implemented in separate commits. Development checks and matched
+observations are in the [execution record](../../history/presenter-bookkeeping.md)
+and [results](../../development/presenter-bookkeeping.json). The <=2 ms quiet-turn
+target remains open; the uncached-close regression is recovered. The slice
+instructions below preserve the intended scope and acceptance criteria.
 
 Reduce the CPU work surrounding drawing so that windows appear sooner and the
 presenter returns to a safe caller-local UPDATE opportunity sooner. Start with

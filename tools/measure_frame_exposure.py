@@ -161,6 +161,7 @@ def main():
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--count',type=int,default=3)
     p.add_argument('--baseline',action='store_true');p.add_argument('--analyze-only',action='store_true')
     p.add_argument('--open-only',action='store_true',help='One New Window and its settled pixels, then normal EXIT')
+    p.add_argument('--bookkeeping',action='store_true',help='Passive presenter costs, empty reads and visibility rebuilds')
     a=p.parse_args();out=a.bundle.resolve()
     with zipfile.ZipFile(out/'exec816-demo.zip') as z:z.extractall(out/'extracted')
     image=json.loads((out/'program.a816.json').read_text())
@@ -168,7 +169,9 @@ def main():
     points={r['address']:n for r in image['routines'] for n in names if r['name'].startswith('M_'+n+'_')}
     foreign=json.loads((out/'bitmap-console/c-image.json').read_text())['symbols']
     points.update({foreign[n]:n for n in ('VbxeOwnerSubmit','VbxeOwnerFence','GemDrawingFrameBatch') if n in foreign})
-    tracing=response_trace.setup(out)
+    tracing=response_trace.setup(out,bookkeeping=True) if a.bookkeeping else response_trace.setup(out)
+    if a.bookkeeping:
+        (out/'bookkeeping-definition.json').write_text(json.dumps(tracing,indent=2)+'\n')
     os.environ.update(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(f'{pc:x}' for pc in response_trace.pcs(tracing)))
     probe=Frames(a.count,a.baseline,a.open_only)
     if a.analyze_only:
@@ -188,6 +191,12 @@ def main():
                     'Expected four cold frame batches without a later title repaint')
             require(row['calls'].get('GemDrawingFrameBatch')==2,'Expected two complete frame sides')
     response_trace.report(out,events,tracing,probe.samples,'frame-exposure')
+    if a.bookkeeping and not a.baseline:
+        costs=json.loads((out/'frame-exposure-bookkeeping.json').read_text())
+        for row in costs['actions']:
+            if row['action']=='New Window':
+                require(row['prepared_open_rebuilds']==[1],
+                        'Expected one visibility rebuild inside the prepared AES open')
     summary={}
     for name in sorted({r['action'] for r in probe.samples}):
         rows=[r for r in probe.samples if r['action']==name]

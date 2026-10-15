@@ -4,10 +4,25 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
-from presenter_control_trace import admissions, summarize
+from presenter_control_trace import admissions, summarize, bookkeeping_costs
+from console_turn_profile import Timeline
+from sio_transaction_trace import BASE_HZ
 
 
 class PresenterControlTraceTests(unittest.TestCase):
+    def test_bookkeeping_unions_exclude_nested_double_charge_and_peer_time(self):
+        timeline = Timeline([(0,10,0x1100,False),(10,20,0x1200,False),
+                             (20,30,0x1100,True),(30,40,0x1100,False)],0x1100)
+        spans = [dict(kind='DESKHOST_RUNNABLE',start=0,end=40,return_a=0),
+                 dict(kind='DESKINPUT_RUNNABLE',start=5,end=35,return_a=0),
+                 dict(kind='INPUT_TAKE',start=30,end=32,return_a=1)]
+        result = bookkeeping_costs([],spans,timeline,0,40)
+        unit = 1000/BASE_HZ
+        self.assertAlmostEqual(result['group_cpu_ms']['readiness_checks'],20*unit)
+        self.assertAlmostEqual(result['measured']['off_cpu_ms'],10*unit)
+        self.assertAlmostEqual(result['measured']['interrupt_ms'],10*unit)
+        self.assertEqual(result['routines']['INPUT_TAKE']['returns'],{'1':1})
+
     def test_completed_deferred_and_unobserved_requests(self):
         definition = dict(points=dict(native_operation_pump_0=0x100,
                                       native_operation_dispatch_0=0x200,

@@ -1,7 +1,8 @@
 # Presenter scheduling and bookkeeping
 
 [Plan](../plans/gem4xe/presenter-bookkeeping-plan.md) · [History](README.md) ·
-[Baseline](../development/presenter-bookkeeping-baseline.json)
+[Baseline](../development/presenter-bookkeeping-baseline.json) ·
+[Final measurements](../development/presenter-bookkeeping.json)
 
 ## PB1: trusted drawing dispatch
 
@@ -129,3 +130,129 @@ including guards/alignment/unused capacity. There is no persistent upper-RAM or
 VRAM increase. The Layers fixture leaves 968 bytes above the root Task's stack
 floor; all Task and kernel stack reservations are unchanged. Production code
 size and presenter stack observations are recorded with PB6's integrated build.
+
+## PB6: final application observations
+
+The final OF816 package contains the production sources committed through
+`d29e55c`. Its build banner is `480bd6a-dirty`: it was built once while PB5 was
+being checked, and its recorded source hashes match the committed production
+tree. All final observations use that same archive, pinned compiler
+`05c01f39`, pinned AltirraOS ROM and AltirraBridgeServer. The recorded machine is
+800XL/PAL, native 65816 at x8, 64 KiB plus 63 upper banks, VBXE, accurate
+generic56k disk timing, no SIO patch/burst/random delay. The JSON records exact
+hashes, configuration, observations and limits.
+
+Selected passive boundaries replace the analysis-only trace of every native
+routine. CPU charges exclude other Tasks and native interrupts; readiness group
+costs use interval unions so nested queries are not counted twice. These are
+matched development observations, not hardware results or latency percentiles.
+
+| Window observation | Before PB | After PB |
+| --- | ---: | ---: |
+| New Window first complete frame | 742.2 ms | 641.6 ms |
+| New Window complete contents | 1063.0 ms | 982.7 ms |
+| New Window presenter CPU | 430.5 ms | 357.5 ms |
+| New Window readiness CPU | 67.7 ms | 35.8 ms |
+| New Window visibility rebuilds | 3 | 2 |
+| New Window input reads / empty | 38 / 36 | 4 / 2 |
+| Uncached close completion | 461.3 ms | 401.2 ms |
+| Uncached close presenter CPU | 243.8 ms | 192.0 ms |
+| Uncached close readiness CPU | 60.3 ms | 26.7 ms |
+| Uncached close input reads / empty | 24 / 22 | 5 / 3 |
+
+The two final New Window rebuilds are dropdown dismissal and **one rebuild
+inside AES open**, confirmed by nesting the passive markers. The prepared
+placement eliminates the subsequent chrome reorder. Rebuild CPU falls
+33.6 → 19.1 ms. Both window operations have zero native-dispatch identity
+queries and zero settled idle turns. Before the first application BEGIN,
+New Window takes 868.1 → 788.0 ms elapsed and 407.5 → 335.4 ms presenter CPU.
+The uncached-close result recovers the approximately 401 ms result preceding
+caller-local UPDATE.
+
+The window observer verifies exact final pixels, four cold native frame batches,
+two C frame-side calls, one initial content paint, no later changed frame, one
+explicit Refresh and exact close exposure. Files icon/list selection and
+Shell/SYS focus switching retain their cache restores: zero application paints,
+captures or patches on the observed exposures. Summary and pointer coordinates
+remain stable. The three settled icon-selection paint intervals are
+124.9/124.0/125.2 ms, slightly above the prior approximately 122 ms; list selection
+improves 174.7 → 160.3 ms and now completes BEGIN/END locally. All four selection
+pairs are local. The no-op navigation case has no paint or UPDATE pair.
+
+Three keyboard and three pointer File/View transitions cause **zero Files
+repaints** and reuse all six saved backgrounds, with no background capture or
+miss. Popup-content caching remains separate: keyboard transitions have three
+popup misses/captures, pointer transitions have one miss and two cached popup
+restores. The small transition cohort has medians 320.8/280.9 ms; it does not
+establish a dropdown speedup against a newly matched parent capture.
+
+| Repeated drawing, mean traced ms/op | Before PB | After PB |
+| --- | ---: | ---: |
+| Solid bars | 13.430 | 14.914 |
+| Text, even X | 19.546 | 16.873 |
+| Text, odd X | 20.073 | 17.410 |
+| Clipped text | 22.720 | 22.056 |
+| Five-object dialog | 70.430 | 67.195 |
+
+Each row includes three measured batches. Dialog caller CPU stays near
+46.7 → 46.9 ms/op while presenter CPU falls 11.3 → 8.4 ms/op. Complete local
+UPDATE pairs rise 76/120 → 86/120 for dialogs, 17/150 → 97/150 for even text,
+and 0/150 → 81/150 for odd text. Solid bars regress: local pairs fall
+113/150 → 6/150 and presenter CPU rises 2.4 → 3.8 ms/op, while caller CPU is
+slightly lower. The trace attributes this to more gate-busy RPC fallbacks,
+not extra rectangle drawing. Shorter presenter work does not guarantee a local
+BEGIN on every timing phase; the policy gate and ordinary preemption are intact.
+
+The three-sample Counter plus console-output case progresses throughout input:
+32 console-generation advances, increasing Counter ticks/paints, correct final
+desktop pixels, then normal CAT cancellation and shutdown. Button median/max
+change 140.1/220.5 → 120.5/180.1 ms. Pointer median is nearly unchanged
+(100.1 → 100.3 ms), but the maximum rises 100.3 → 140.2 ms. This bounded cohort
+does not establish tail-latency improvement or unchanged worst-case response.
+The known Windows-menu focus issue under Counter remains separate; this case
+uses the already established direct-title focus route.
+
+### Remaining quiet-turn cost
+
+The **<=2 ms CPU target remains open**. Five final window notification turns
+start no transfer and cost 2.31–4.82 ms. Across the measured drawing batches,
+634 such turns cost 2.28–5.39 ms, median 4.39 ms. A representative median turn
+spends 1.72 ms in readiness queries, 1.64 ms in cache maintenance and 0.57 ms in
+Collect. Existing damage and still-ineligible cache-candidate scans remain the
+main costs. They do not create a polling loop: the settled window tails have
+zero turns. Every successful outer END still notifies the presenter.
+
+### Memory, checks and delivery
+
+All six slices reserve **0 additional bank-zero bytes**: fixed 0, each public
+Task 0, idle 0, including guards, alignment and unused capacity. Task pools,
+runtime/phase reservations and bank-zero budgets compare equal to the baseline.
+Persistent native data stays at 13,530 bytes; no VRAM reservation, queue, Task
+or signal is added. Native code grows 2,298 bytes overall, including 1,613 bytes
+for PB5's placement helpers. `OrderBelow` uses an 18-byte frame and 30-byte local
+stack peak; its shared reorder helper uses 16/30 bytes. The presenter worker
+uses a 64-byte frame, within the unchanged stack reservation.
+
+Final package observations leave at least 1,462 bytes above the presenter's
+stack floor; the kernel leaves 1,241 bytes untouched from its base, with zero
+interrupt-reserve bytes touched. Guards remain intact and normal EXIT completes.
+These are observed headroom figures, not worst-case stack bounds.
+
+Development validation: 490 host tests pass with four historical skips; the
+changed observer tests pass after the final reporting addition. Focused optimized
+emitted coverage includes 24 gate assertions, 181 lock assertions, 145 pointer
+assertions plus 21 boundary checks, 220 cache assertions with 31 physical phases,
+and 1,077 Layers assertions with 128 geometry/40 scene cases. No full raw/optimized
+qualification matrix or hardware qualification was run. Local captures are
+under `build/presenter-bookkeeping/final-{frames,keyboard,menu,dialog,load}`.
+
+The demo retains OF816, five-second autoboot, matching media, the pinned ROM,
+license notices and checksums. The distribution archive contains only the
+boot/runtime files, guide, licenses and checksums; traces/build intermediates
+remain outside it. Launch from the repository root:
+
+```sh
+build/presenter-bookkeeping/demo/launch-altirra.command
+```
+
+Distribution: `build/presenter-bookkeeping/demo/exec816-demo.zip`.

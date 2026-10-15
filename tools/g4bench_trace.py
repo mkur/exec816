@@ -95,6 +95,10 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
     native.update(native_markers(program, [(n,n) for n in present]))
+    from presenter_control_trace import bookkeeping_markers
+    extra, quiet_pc = bookkeeping_markers(program)
+    native.update(extra)
+    points['quiet_cache']=quiet_pc
     for name, span in native.items():
         points[name+'_entry']=span['entry']
         for i, pc in enumerate(span['returns']): points[name+'_return_'+str(i)]=pc
@@ -104,7 +108,8 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
     require(len(entries) == len(C_NAMES), 'Missing resident trace function')
     entries.update({foreign['symbols'][name]:name for name in FILL_NAMES if name in foreign['symbols']})
     application = {app['image']['symbols'][name]: name for name in app_names}
-    return dict(timeline=timeline, native=native, resident_entries=entries, app_entries=application,
+    return dict(timeline=timeline, native=native, quiet_pc=quiet_pc,
+                resident_entries=entries, app_entries=application,
                 resident_returns=listing_returns(foreign, directory/'drawing'),
                 app_returns=listing_returns(app['image'], app_directory or directory/'apps/g4bench'),
                 link_base=app['abi']['link_bank'] << 16, banks=app['verified_banks'])
@@ -448,7 +453,15 @@ def analyze(events, d, live, benchmark):
                 **{m:sum(s['routines'].get(k, {}).get(m, 0) for s in samples)/count
                    for m in ('charged_cpu_ms','elapsed_ms','off_cpu_ms','interrupt_ms')})
                 for k in kinds}))
+    bookkeeping = None
+    if d.get('quiet_pc') is not None:
+        from presenter_control_trace import bookkeeping_report
+        measured=[dict(action=r['name'],start=s['start'],end=s['end'],updates=[])
+                  for r in rows for s in r['samples']]
+        bookkeeping=bookkeeping_report(events,all_native,[],presenter,worker,
+            measured,measured,d['quiet_pc'],d['timeline']['points']['turn'])
     return dict(task_dp=dp, rows=rows, balanced_calls=len(spans), viewer_events=viewer,
+                presenter_bookkeeping=bookkeeping,
                 outside_sample_unfinished_calls=unfinished,
                 repeated_breakpoint_entries=profile['repeated_breakpoint_entries'],
                 scope='Three measured batches per row; warmup/clear/calibration/report excluded. '

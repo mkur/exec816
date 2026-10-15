@@ -19,7 +19,7 @@ DRAWING = ('GemDrawingFrameBatch GemDrawingWidgetBatch GemDrawingBatch '
            'ExecAESSubmit _AESUpdateCall').split()
 
 
-def setup(out):
+def setup(out, bookkeeping=False):
     program = read_build(out)
     foreign = json.loads((out/'bitmap-console/c-image.json').read_text())
     spans = native_markers(program, [(n, n) for n in NATIVE])
@@ -28,6 +28,11 @@ def setup(out):
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
     spans.update(native_markers(program, [(n,n) for n in present]))
+    quiet_pc = None
+    if bookkeeping:
+        from presenter_control_trace import bookkeeping_markers
+        extra, quiet_pc = bookkeeping_markers(program)
+        spans.update(extra)
     points = {}
     for name, span in spans.items():
         points[span['entry']] = name
@@ -49,7 +54,9 @@ def setup(out):
               'blitter_irq_complete','blitter_irq_posted','blitter_expired'):
         if n in program['labels']: clock[n] = program['labels'][n]
     points.update({pc:n for n,pc in clock.items()})
+    if quiet_pc is not None: points[quiet_pc]='quiet_cache'
     return dict(points=points, entries=entries, returns=returns, exits=exits,
+                quiet_pc=quiet_pc,
                 timeline=dict(points=clock,spans=spans,
                     task_dps=[p['dp'] for p in program['build']['memory']['task_pools']]))
 
@@ -59,7 +66,7 @@ def pcs(d):
 
 
 def report(out, events, d, samples, name):
-    profile = analyze_events(events,d['timeline'],include_segments=True)
+    profile = analyze_events(events,{**d['timeline'],'spans':{}},include_segments=True)
     workers={int(e[9],16) for _,e in events if int(e[4],16)==d['timeline']['points']['turn']}
     worker=workers.pop();timeline=Timeline(profile['segments'],worker)
     cspans,unfinished=calls(events,d['entries'],set(d['returns']),worker,set(d.get('exits',())))
@@ -71,7 +78,8 @@ def report(out, events, d, samples, name):
     for sample in samples:
         start=sample['start']+round((events[0][0]-sample['start'])/(1<<32))*(1<<32)
         end=start+(sample['end']-sample['start'])%(1<<32)
-        spans=[s for s in profile['routine_spans']+cspans if start<=s['start']<s['end']<=end]
+        spans=[s for s in all_native+cspans if s.get('dp',worker)==worker
+               and start<=s['start']<s['end']<=end]
         for s in spans:s.update(timeline.measure(s['start'],s['end']))
         boundaries=[dict(ms=(tick-start)/BASE_HZ*1000,name=d['points'][int(e[4],16)])
                     for tick,e in events if start<=tick<end and int(e[4],16) in d['points']
@@ -99,3 +107,9 @@ def report(out, events, d, samples, name):
         completion='IRQ completion observation, not an independently sampled BUSY falling edge',
         cpu='Conservative Task CPU charge, excluding peer Tasks and native interrupts',samples=rows)
     (out/(name+'-trace.json')).write_text(json.dumps(result,indent=2)+'\n')
+    if d.get('quiet_pc') is not None:
+        from presenter_control_trace import bookkeeping_report
+        costs=bookkeeping_report(events,all_native,cspans,timeline,worker,samples,rows,
+                                 d['quiet_pc'],d['timeline']['points']['turn'])
+        costs.update(tier='development',qualification=False)
+        (out/(name+'-bookkeeping.json')).write_text(json.dumps(costs,indent=2)+'\n')
