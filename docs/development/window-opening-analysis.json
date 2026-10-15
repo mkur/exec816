@@ -1,0 +1,550 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "production_head": "d1cb8b2",
+  "guest_changes": false,
+  "scope": "One cold-window/warm-SYS-directory New Window, nine entries, using the unchanged QT4 package. Physical input to PAL-frame-sampled image; CPU routine boundaries passive. Inclusive routine costs overlap.",
+  "package": {
+    "directory": "build/presenter-quiet-turn/demo",
+    "archive_sha256": "2f3e94b4f3bb3e166638a6d40067475b5d7756adbd80e327ebdb25a8eac96408",
+    "manifest_sha256": "cb7adcc78d52d95070c1e18e8acdbe69dbea40de4128e3e2bba38f5024ecb24a",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$e859fe7d2c977305",
+      "actual_kernel_id": "$e859fe7d2c977305",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/window-opening-analysis-capture/extracted/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "disk_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "matched_pin": true,
+    "matched_disk_files": true,
+    "boot_image": "of816/Exec-of816.xex",
+    "checksums_verified": 22,
+    "source_matches_final_production": true
+  },
+  "capture_directory": "build/window-opening-analysis-capture",
+  "observer_sha256": "a57ccea1ae343d845a053d9e303d8f396ee2d95571d81897775b833609756340",
+  "capture_report_sha256": "19c4f2a499dc7595026dfd8c123bc9c289c6de39abe83355517fb28421107a44",
+  "sample": {
+    "action": "New Window",
+    "start": 106399005,
+    "end": 111022814,
+    "frame_ms": 641.6434656227489,
+    "window_ms": 1002.6296239386844,
+    "content_paints": 1,
+    "changed_frames_after_complete": 0
+  },
+  "scheduled_release_ms": 50.74861251883689,
+  "task_charges": {
+    "filesystem": {
+      "elapsed_ms": 1002.6296239386845,
+      "charged_cpu_ms": 111.56377620425754,
+      "off_cpu_ms": 867.9824184251296,
+      "interrupt_ms": 23.083429309297287
+    },
+    "desktop": {
+      "elapsed_ms": 1002.6296239386845,
+      "charged_cpu_ms": 317.6664378280158,
+      "off_cpu_ms": 617.1958854152717,
+      "interrupt_ms": 67.76730069539697
+    },
+    "presenter": {
+      "elapsed_ms": 1002.6296239386845,
+      "charged_cpu_ms": 365.4883355723809,
+      "off_cpu_ms": 557.727885939674,
+      "interrupt_ms": 79.41340242662949
+    },
+    "idle": {
+      "elapsed_ms": 1002.6296239386845,
+      "charged_cpu_ms": 30.946221977250527,
+      "off_cpu_ms": 964.982682035978,
+      "interrupt_ms": 6.700719925455927
+    }
+  },
+  "phases": [
+    {
+      "name": "Input and menu dismissal",
+      "start_ms": 0.0,
+      "end_ms": 142.87454238143502,
+      "elapsed_ms": 142.87454238143502,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 142.87454238143505,
+          "charged_cpu_ms": 7.8457354954121845,
+          "off_cpu_ms": 133.28284316282267,
+          "interrupt_ms": 1.745963723200151
+        },
+        "presenter": {
+          "elapsed_ms": 142.87454238143505,
+          "charged_cpu_ms": 78.75881580932055,
+          "off_cpu_ms": 47.238641121318786,
+          "interrupt_ms": 16.877085450795697
+        },
+        "idle": {
+          "elapsed_ms": 142.87454238143505,
+          "charged_cpu_ms": 30.946221977250527,
+          "off_cpu_ms": 105.22760047872858,
+          "interrupt_ms": 6.700719925455927
+        }
+      }
+    },
+    {
+      "name": "Browser allocation",
+      "start_ms": 142.87454238143502,
+      "end_ms": 196.0805154931285,
+      "elapsed_ms": 53.20597311169347,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 53.20597311169347,
+          "charged_cpu_ms": 27.325167505663405,
+          "off_cpu_ms": 20.05042438527219,
+          "interrupt_ms": 5.830381220757873
+        },
+        "presenter": {
+          "elapsed_ms": 53.20597311169347,
+          "charged_cpu_ms": 16.518673374881413,
+          "off_cpu_ms": 33.15554872642128,
+          "interrupt_ms": 3.5317510103907788
+        }
+      }
+    },
+    {
+      "name": "Window setup and open",
+      "start_ms": 196.0805154931285,
+      "end_ms": 337.5863255044201,
+      "elapsed_ms": 141.50581001129157,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 141.50581001129157,
+          "charged_cpu_ms": 34.62042152361432,
+          "off_cpu_ms": 99.1849913797843,
+          "interrupt_ms": 7.70039710789296
+        },
+        "presenter": {
+          "elapsed_ms": 141.50581001129157,
+          "charged_cpu_ms": 81.8050717599478,
+          "off_cpu_ms": 42.32081863150727,
+          "interrupt_ms": 17.379919619836507
+        }
+      }
+    },
+    {
+      "name": "Directory enumeration",
+      "start_ms": 337.5863255044201,
+      "end_ms": 607.6905293221254,
+      "elapsed_ms": 270.10420381770535,
+      "task_charges": {
+        "filesystem": {
+          "elapsed_ms": 270.10420381770535,
+          "charged_cpu_ms": 111.56377620425754,
+          "off_cpu_ms": 135.45699830415055,
+          "interrupt_ms": 23.083429309297287
+        },
+        "desktop": {
+          "elapsed_ms": 270.10420381770535,
+          "charged_cpu_ms": 41.577703879026586,
+          "off_cpu_ms": 219.85476029033845,
+          "interrupt_ms": 8.67173964834031
+        },
+        "presenter": {
+          "elapsed_ms": 270.10420381770535,
+          "charged_cpu_ms": 69.39654260980379,
+          "off_cpu_ms": 184.89664904092172,
+          "interrupt_ms": 15.811012166979852
+        }
+      }
+    },
+    {
+      "name": "Listing preparation",
+      "start_ms": 607.6905293221254,
+      "end_ms": 688.4267084308952,
+      "elapsed_ms": 80.73617910876979,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 80.73617910876979,
+          "charged_cpu_ms": 34.33150685317722,
+          "off_cpu_ms": 39.04788554496257,
+          "interrupt_ms": 7.356786710630002
+        },
+        "presenter": {
+          "elapsed_ms": 80.73617910876979,
+          "charged_cpu_ms": 32.16136931034045,
+          "off_cpu_ms": 41.688293563807214,
+          "interrupt_ms": 6.886516234622113
+        }
+      }
+    },
+    {
+      "name": "Active menu state",
+      "start_ms": 688.4267084308952,
+      "end_ms": 787.0386633943209,
+      "elapsed_ms": 98.61195496342576,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 98.61195496342576,
+          "charged_cpu_ms": 23.916622848998916,
+          "off_cpu_ms": 69.65705215406715,
+          "interrupt_ms": 5.038279960359695
+        },
+        "presenter": {
+          "elapsed_ms": 98.61195496342576,
+          "charged_cpu_ms": 57.25782691621827,
+          "off_cpu_ms": 28.954902809358607,
+          "interrupt_ms": 12.39922523784888
+        }
+      }
+    },
+    {
+      "name": "Redraw event dispatch",
+      "start_ms": 787.0386633943209,
+      "end_ms": 793.5561244412366,
+      "elapsed_ms": 6.517461046915683,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 6.517461046915683,
+          "charged_cpu_ms": 5.393731700543714,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1237293463719675
+        }
+      }
+    },
+    {
+      "name": "Content redraw",
+      "start_ms": 793.5561244412366,
+      "end_ms": 979.3642044661599,
+      "elapsed_ms": 185.8080800249232,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 185.8080800249232,
+          "charged_cpu_ms": 137.12056601619162,
+          "off_cpu_ms": 19.557528486182985,
+          "interrupt_ms": 29.129985522548594
+        },
+        "presenter": {
+          "elapsed_ms": 185.8080800249232,
+          "charged_cpu_ms": 16.01203305990169,
+          "off_cpu_ms": 166.2505515387402,
+          "interrupt_ms": 3.5454954262812968
+        }
+      }
+    },
+    {
+      "name": "Until complete pixel sample",
+      "start_ms": 979.3642044661599,
+      "end_ms": 1002.6296239386844,
+      "elapsed_ms": 23.26541947252456,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 23.26541947252456,
+          "charged_cpu_ms": 5.5349820053878105,
+          "off_cpu_ms": 16.56040001184134,
+          "interrupt_ms": 1.1700374552954063
+        },
+        "presenter": {
+          "elapsed_ms": 23.26541947252456,
+          "charged_cpu_ms": 13.578002731966974,
+          "off_cpu_ms": 6.705019460683218,
+          "interrupt_ms": 2.9823972798743688
+        }
+      }
+    }
+  ],
+  "frames": [
+    {
+      "start_ms": 327.20936199126277,
+      "end_ms": 347.23321383914663,
+      "elapsed_ms": 20.02385184788385,
+      "charged_cpu_ms": 12.456740332036894,
+      "off_cpu_ms": 4.865946130347811,
+      "interrupt_ms": 2.7011653854991478,
+      "task_charges": {
+        "desktop": {
+          "elapsed_ms": 20.02385184788385,
+          "charged_cpu_ms": 4.039801009051579,
+          "off_cpu_ms": 15.157905717536043,
+          "interrupt_ms": 0.8261451212962323
+        },
+        "presenter": {
+          "elapsed_ms": 20.02385184788385,
+          "charged_cpu_ms": 12.456740332036894,
+          "off_cpu_ms": 4.865946130347811,
+          "interrupt_ms": 2.7011653854991478
+        }
+      }
+    },
+    {
+      "start_ms": 395.5334172565018,
+      "end_ms": 433.1607645560413,
+      "elapsed_ms": 37.62734729953945,
+      "charged_cpu_ms": 6.341603007701102,
+      "off_cpu_ms": 29.733330138050324,
+      "interrupt_ms": 1.5524141537880316,
+      "task_charges": {
+        "filesystem": {
+          "elapsed_ms": 37.62734729953945,
+          "charged_cpu_ms": 18.426750721405625,
+          "off_cpu_ms": 15.333622788382515,
+          "interrupt_ms": 3.866973789751318
+        },
+        "desktop": {
+          "elapsed_ms": 37.62734729953945,
+          "charged_cpu_ms": 6.188017970647566,
+          "off_cpu_ms": 30.187741672646077,
+          "interrupt_ms": 1.251587656245815
+        },
+        "presenter": {
+          "elapsed_ms": 37.62734729953945,
+          "charged_cpu_ms": 6.341603007701102,
+          "off_cpu_ms": 29.733330138050324,
+          "interrupt_ms": 1.5524141537880316
+        }
+      }
+    },
+    {
+      "start_ms": 476.26705893464566,
+      "end_ms": 513.9679212381534,
+      "elapsed_ms": 37.70086230350771,
+      "charged_cpu_ms": 6.391999199299669,
+      "off_cpu_ms": 29.707744379238743,
+      "interrupt_ms": 1.6011187249693042,
+      "task_charges": {
+        "filesystem": {
+          "elapsed_ms": 37.70086230350771,
+          "charged_cpu_ms": 18.473975124721765,
+          "off_cpu_ms": 15.41045054900131,
+          "interrupt_ms": 3.8164366297846426
+        },
+        "desktop": {
+          "elapsed_ms": 37.70086230350771,
+          "charged_cpu_ms": 6.159612844473829,
+          "off_cpu_ms": 30.28352967877538,
+          "interrupt_ms": 1.2577197802585078
+        },
+        "presenter": {
+          "elapsed_ms": 37.70086230350771,
+          "charged_cpu_ms": 6.391999199299669,
+          "off_cpu_ms": 29.707744379238743,
+          "interrupt_ms": 1.6011187249693042
+        }
+      }
+    },
+    {
+      "start_ms": 554.6584406924931,
+      "end_ms": 622.8430782416733,
+      "elapsed_ms": 68.18463754918035,
+      "charged_cpu_ms": 17.247691290551316,
+      "off_cpu_ms": 47.031840525304524,
+      "interrupt_ms": 3.9051057333244996,
+      "task_charges": {
+        "filesystem": {
+          "elapsed_ms": 68.18463754918035,
+          "charged_cpu_ms": 22.467256572297742,
+          "off_cpu_ms": 41.12195314493381,
+          "interrupt_ms": 4.59542783194879
+        },
+        "desktop": {
+          "elapsed_ms": 68.18463754918035,
+          "charged_cpu_ms": 16.392436201240805,
+          "off_cpu_ms": 48.21548142812234,
+          "interrupt_ms": 3.5767199198171924
+        },
+        "presenter": {
+          "elapsed_ms": 68.18463754918035,
+          "charged_cpu_ms": 17.247691290551316,
+          "off_cpu_ms": 47.031840525304524,
+          "interrupt_ms": 3.9051057333244996
+        }
+      }
+    }
+  ],
+  "inclusive_totals": {
+    "desktop:menu_tnormal": {
+      "calls": 1,
+      "elapsed_ms": 47.64730842046353,
+      "charged_cpu_ms": 3.587433515793391,
+      "off_cpu_ms": 43.22315715576582,
+      "interrupt_ms": 0.8367177489043234
+    },
+    "desktop:app.desktop_new": {
+      "calls": 1,
+      "elapsed_ms": 644.1641210128859,
+      "charged_cpu_ms": 161.77142261048044,
+      "off_cpu_ms": 447.7951137544247,
+      "interrupt_ms": 34.59758464798084
+    },
+    "desktop:AllocMem": {
+      "calls": 5,
+      "elapsed_ms": 69.89740322169109,
+      "charged_cpu_ms": 41.15959169921861,
+      "off_cpu_ms": 20.05042438527219,
+      "interrupt_ms": 8.687387137200284
+    },
+    "desktop:app.folder_open": {
+      "calls": 1,
+      "elapsed_ms": 492.3461929377667,
+      "charged_cpu_ms": 110.52963225581811,
+      "off_cpu_ms": 358.0876372150853,
+      "interrupt_ms": 23.728923466863268
+    },
+    "presenter:CONSOLEBITMAP_FRAME": {
+      "calls": 4,
+      "elapsed_ms": 163.53669900011135,
+      "charged_cpu_ms": 42.43803382958898,
+      "off_cpu_ms": 111.33886117294139,
+      "interrupt_ms": 9.759803997580985
+    },
+    "desktop:app.refresh_path": {
+      "calls": 1,
+      "elapsed_ms": 350.7796255598206,
+      "charged_cpu_ms": 75.89180113874247,
+      "off_cpu_ms": 258.90264583530103,
+      "interrupt_ms": 15.985178585777138
+    },
+    "desktop:app.FileScanBegin": {
+      "calls": 1,
+      "elapsed_ms": 47.99923595144485,
+      "charged_cpu_ms": 7.172963958617326,
+      "off_cpu_ms": 39.30423652236674,
+      "interrupt_ms": 1.5220354704607832
+    },
+    "desktop:app.FileScanNext": {
+      "calls": 10,
+      "elapsed_ms": 221.8542556235806,
+      "charged_cpu_ms": 34.154027677729395,
+      "off_cpu_ms": 180.55052376797173,
+      "interrupt_ms": 7.149704177879526
+    },
+    "desktop:app.FileScanEnd": {
+      "calls": 1,
+      "elapsed_ms": 21.275791925049937,
+      "charged_cpu_ms": 2.8345919459132567,
+      "off_cpu_ms": 17.835952290665496,
+      "interrupt_ms": 0.6052476884711839
+    },
+    "desktop:app.layout": {
+      "calls": 2,
+      "elapsed_ms": 74.8216397722515,
+      "charged_cpu_ms": 38.426285525790874,
+      "off_cpu_ms": 28.256827450488387,
+      "interrupt_ms": 8.13852679597225
+    },
+    "desktop:app.desktop_menu": {
+      "calls": 1,
+      "elapsed_ms": 98.59109164494579,
+      "charged_cpu_ms": 23.895759530518948,
+      "off_cpu_ms": 69.65705215406715,
+      "interrupt_ms": 5.038279960359695
+    },
+    "desktop:app.menu_state": {
+      "calls": 2,
+      "elapsed_ms": 97.91007345861662,
+      "charged_cpu_ms": 23.348308872971995,
+      "off_cpu_ms": 69.65705215406715,
+      "interrupt_ms": 4.904712431577479
+    },
+    "desktop:menu_ienable": {
+      "calls": 8,
+      "elapsed_ms": 96.38155344322288,
+      "charged_cpu_ms": 22.079170654896746,
+      "off_cpu_ms": 69.65705215406715,
+      "interrupt_ms": 4.645330634258979
+    },
+    "desktop:app.redraw": {
+      "calls": 1,
+      "elapsed_ms": 185.8080800249232,
+      "charged_cpu_ms": 137.12056601619162,
+      "off_cpu_ms": 19.557528486182985,
+      "interrupt_ms": 29.129985522548594
+    },
+    "desktop:objc_draw": {
+      "calls": 1,
+      "elapsed_ms": 130.60437368458892,
+      "charged_cpu_ms": 107.64936655863791,
+      "off_cpu_ms": 0.0,
+      "interrupt_ms": 22.95500712595101
+    }
+  },
+  "serial_events": {
+    "capture": {
+      "command": 3076,
+      "rxstart": 3370,
+      "receive": 3370,
+      "read": 3384
+    },
+    "opening": {}
+  },
+  "validation": {
+    "runtime_status": "pass",
+    "pixel_checks": {
+      "initial_content_paints": 1,
+      "changed_frames_after_complete": 0,
+      "explicit_refresh_paints": 1
+    },
+    "host_tests": 490,
+    "host_skips": 4,
+    "raw_build": false,
+    "full_qualification": false
+  },
+  "bank_zero_reserved_delta": {
+    "fixed_bytes": 0,
+    "per_public_task_bytes": 0,
+    "idle_task_bytes": 0,
+    "includes_guards_alignment_unused": true
+  },
+  "reproduction": [
+    "python3 tools/trace_window_open.py --bundle build/presenter-quiet-turn/demo --output build/window-opening-analysis-capture",
+    "python3 tools/trace_window_open.py --analyze --output build/window-opening-analysis-capture"
+  ],
+  "limitations": [
+    "One matched New Window, not a distribution or p95.",
+    "Warm enumeration; no physical SIO traffic in the measured interval.",
+    "No per-routine filesystem decomposition; no claim all filesystem CPU is transport.",
+    "Pixel sampling once per PAL frame; final redraw return and sample are different endpoints.",
+    "Suggested savings require implementation and matched remeasurement."
+  ]
+}

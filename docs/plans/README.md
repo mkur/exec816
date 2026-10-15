@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Dropdown bookkeeping](gem4xe/dropdown-bookkeeping-plan.md): paint selection
+  from maintained damage bits, bounded single-pass rectangle subtraction and
+  focused cached-menu comparisons.
+
 - [Presenter quiet turns](gem4xe/presenter-quiet-turn-plan.md): implemented QT1–QT4
   slices for conditional signal collection, event-driven cache inspection,
   Layers-owned visible-damage readiness and focused comparisons/demo delivery.

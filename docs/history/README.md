@@ -1,5 +1,13 @@
 # Historical records
 
+- [Dropdown response analysis](dropdown-analysis.md): isolated cached menu
+  transitions; visibility rebuilds, temporary damage and repeated readiness
+  scans dominate the short VRAM copies.
+
+- [New Window and initial Files drawing](window-opening-analysis.md): passive
+  breakdown of the unchanged QT4 demo; warm enumeration, serial menu updates,
+  duplicate layout preparation and frame/application scheduling costs.
+
 - [Presenter quiet turns](presenter-quiet-turn.md): conditional signal collection,
   event-driven cache inspection and visible-damage readiness; median presenter
   CPU 4.39 → 1.76 ms, remaining tails and matched application/demo observations.

@@ -63,7 +63,10 @@ def panel_with_counter(s, menus, move, click, count):
 
 
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False, panel_check=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False, panel_check=False, trace=False, application_only=False):
+        self.trace = trace
+        self.application_only = application_only
+        self.observations = []
         self.conventional = conventional
         self.selection_only = selection_only
         self.headings_only = headings_only
@@ -123,6 +126,20 @@ class Feedback:
             return {name: s.number(address, 4) for name, address in cache_at.items()
                     if address is not None}
 
+        def trace_start():
+            if self.trace: b.profile_start()
+
+        def trace_end(action, start, pixels_end, before_cache, before_paint):
+            if not self.trace: return
+            end=b.eval_expr('@clk') & 0xffffffff
+            b.profile_stop()
+            after=cache_counts()
+            self.observations.append(dict(action=action,start=start,end=end,pixels_end=pixels_end,
+                pixels_ms=((pixels_end-start)&0xffffffff)*1000/BASE_HZ,
+                transfers={k:after[k]-v for k,v in before_cache.items()},
+                files_repaints=s.number(folder+F['paints'],4)-before_paint))
+            (s.p['output']/'menu-action-samples.json').write_text(json.dumps(self.observations,indent=2)+'\n')
+
         popup_cache = next((d['address'] for d in s.p['image']['data']
                             if '_DESKMENUCACHE_POPUPS_' in d['name']), None)
         def discard_popups():
@@ -157,17 +174,21 @@ class Feedback:
         # caret and parked pointer are outside it. Reference state is warmed
         # before timing, with no writes to guest state or executable observers.
         area = (128, 0, 640, 208)
-        for kind in (() if self.headings_only else ('application',) if self.selection_only else ('application', 'native')):
+        for kind in (() if self.headings_only else ('application',) if self.selection_only or self.application_only else ('application', 'native')):
             sequence = [('open', ('ESC', True, kind == 'application')),
                         ('highlight', ('TAB',)),
                         ('switch' if kind == 'application' else 'next_row',
                          ('ASTERISK', True) if kind == 'application' else ('TAB',)),
                         ('close', ('ESC',))]
             reference = []
+            # Trace warmup too, establishing a complete Task/IRQ timeline before
+            # the first timed action. No guest instruction or state is changed.
+            trace_start()
             for name, keys in sequence:
                 press(*keys); s.frames(100)
                 require(bool(s.number(menu, 1)) == (name != 'close'), 'Reference menu state: '+name)
                 reference.append(capture(area))
+            if self.trace: b.profile_stop()
             require(all(reference[i] != reference[i-1] for i in range(4)),
                     'Reference interaction did not change visible pixels: '+kind)
             samples = {name: [] for name, _ in sequence}
@@ -180,6 +201,7 @@ class Feedback:
                         discard_popups()
                     before_paint = s.number(folder+F['paints'], 4)
                     before_cache = cache_counts()
+                    trace_start()
                     start = press(*keys)
                     for _ in range(100):
                         if capture(area) == want:
@@ -188,6 +210,7 @@ class Feedback:
                     else:
                         raise RuntimeError('Menu did not match settled pixels: '+kind+'/'+name)
                     samples[name].append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                    pixels_end=b.eval_expr('@clk') & 0xffffffff
                     if name == 'close' and self.conventional:
                         for _ in range(100):
                             if s.number(folder+F['paints'], 4) > before_paint and capture(area) == want:
@@ -203,6 +226,7 @@ class Feedback:
                         require(s.number(folder+F['paints'],4)==before_paint,
                                 'Preserved menu dismissal repainted Files')
                     repaints[name].append(s.number(folder+F['paints'],4)-before_paint)
+                    trace_end(kind+'/'+name+'/'+str(iteration),start,pixels_end,before_cache,before_paint)
             self.results[kind] = {name: dict(samples_ms=values, **distribution(values))
                                   for name, values in samples.items()}
             if self.conventional:
@@ -225,6 +249,7 @@ class Feedback:
         # checks both separately. No writes to production state in this cohort.
         repeat_area = (128,32,640,208)
         references = []
+        trace_start()
         press('ESC',True,True); s.frames(100)
         references.append(capture(repeat_area))
         press('ASTERISK',True); s.frames(100)
@@ -232,6 +257,7 @@ class Feedback:
         press('ASTERISK',True); s.frames(100)
         references.append(capture(repeat_area))
         press('ESC'); s.frames(100)
+        if self.trace: b.profile_stop()
         require(references[0] != references[1], 'Identical heading references')
         repeated = {}
         for source in ('keyboard','pointer'):
@@ -242,6 +268,8 @@ class Feedback:
             values=[]
             for index in range(self.count):
                 heading=(index+1)%3 if source == 'keyboard' else (1 if index%2==0 else 0)
+                action_cache=cache_counts()
+                trace_start()
                 if source == 'keyboard':
                     # The pinned bridge exposes the right-arrow key only.
                     # Cycle File/View/Desk; the pointer case alternates File/View.
@@ -256,6 +284,7 @@ class Feedback:
                 else:
                     raise RuntimeError('Repeated heading pixels: '+source+'/'+str(index))
                 values.append(((b.eval_expr('@clk')-start)&0xffffffff)/BASE_HZ*1000)
+                pixels_end=b.eval_expr('@clk') & 0xffffffff
                 if source == 'pointer':
                     # A popup can finish before the positioning helper's last
                     # physical phase. Drain that stimulus before reversing;
@@ -266,6 +295,7 @@ class Feedback:
                 s.frames(8)
                 require(s.number(folder+F['paints'],4)==before_paint,
                         'Unchanged Files repainted during '+source+' heading switch')
+                trace_end(source+'/heading/'+str(index),start,pixels_end,action_cache,before_paint)
             after_cache=cache_counts()
             transfers={k:after_cache[k]-v for k,v in before_cache.items()}
             (s.p['output']/('repeated-'+source+'.json')).write_text(json.dumps(

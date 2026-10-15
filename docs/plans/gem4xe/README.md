@@ -1,5 +1,21 @@
 # GEM as a client of an Exec-like kernel
 
+The [dropdown bookkeeping plan](dropdown-bookkeeping-plan.md) implements
+summary-based paint selection and bounded single-pass region subtraction,
+then measures the existing cached-menu workload. Popup transition semantics
+remain unchanged.
+
+The [dropdown analysis](../../history/dropdown-analysis.md) isolates menu work
+from Files/DOS: a cached keyboard switch takes 201 ms, including 143 ms presenter
+CPU. It identifies two visibility rebuilds, damage generation/retirement and
+repeated readiness scans as the next targets; cache copies cost about 4 ms CPU.
+
+The [New Window analysis](../../history/window-opening-analysis.md) follows QT4
+without changing production behavior. It reproduces 642 ms frame / 1003 ms
+complete opening and identifies 270 ms warm directory enumeration, 99 ms menu
+publication and duplicate 19 ms layout passes. It recommends layout reuse and
+grouped menu updates before another renderer or scheduling change.
+
 The implemented [presenter quiet turn plan](presenter-quiet-turn-plan.md) follows
 PB1–PB6 with conditional signal acknowledgement, event-driven cache candidate
 inspection and a Layers-owned visible-damage summary. QT1–QT4 preserve END
