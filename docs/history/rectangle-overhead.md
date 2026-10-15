@@ -59,11 +59,44 @@ Development: 145 optimized pointer assertions pass, including new stationary
 focus checks, nested UPDATE/MCTRL, queued handoff, capture/release, loss recovery
 and window reopening. The normal packaged rectangle run, cancellation, HELLO,
 guards and EXIT pass. The independent lock-queue fixture times out after 118
-checks with no assertion failures on both RP2 and the RP1 parent; original-parent
-comparison remains pending before final acceptance. This is not a passing lock
-qualification. The repaired Counter baseline completes at 27.8 ms/rectangle,
+checks with no assertion failures on RP2, RP1 and the original `3ff76d7`
+parent using the same C fixture. This pre-existing fixture limitation is not a
+passing lock qualification. The repaired Counter baseline completes at 27.8 ms/rectangle,
 with visible progress, normal app closure and EXIT.
 
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**, including all
 reserved capacity. Static upper RAM grows by **1 byte**; linked executable bytes
 increase by 818. VRAM and all stack reservations are unchanged.
+
+## RP3: direct rectangle bindings
+
+Named `v_bar` and `vsf_color` now call the shared internal operations directly.
+Generic parameter-block calls retain their count/handle checks and output
+semantics without copying rectangle/control arrays into workstation scratch.
+Rectangle normalization uses LONG coordinates and one user-clipped area feeds
+both damage reporting and visible fragments. Covered changes are still reported;
+physical fragments, cursor handling and completion remain synchronous.
+
+The idle capture measures **3.809 → 3.320 ms CPU per `v_bar`** and
+**9.699 → 8.790 ms benchmark Task CPU per rectangle**. Mean elapsed time is
+20.091 ms versus 20.054 after RP2: this capture does not demonstrate an additional
+end-to-end gain. The presenter executes more work in that scheduling phase
+(7.759 versus 6.818 ms/rectangle). Final untraced batches follow in RP5.
+One upload/submit and a mean of three solid records remain: one at even X and
+five at odd X, 21/105 bytes, with the existing encoder unchanged.
+
+Development checks use explicit named/PB single-pixel, reversed and clipped
+pairs, wide signed endpoints, multi-client/private scratch preemption and
+covered/exposed pixels. The VDI oracle was updated for the current snapped X,
+11-row title/work offset and menu geometry. The added test originally used a
+mutable points-array expression; Calypsi 5.18's emitted listing read the old
+right coordinate instead of the just-written left coordinate. Explicit constant
+case coordinates make the fixture inputs unambiguous; production drawing code
+and compiler pins were not changed to accommodate this test construction.
+The VDI fixture passes 421 assertions and all six pixel comparisons; the
+existing hidden/partial/failed-paint cache fixture passes 220 assertions.
+Six passive-trace host tests and normal package cancellation/EXIT also pass.
+
+Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**. Static upper
+RAM, VRAM and stack capacities are unchanged. Linked executable bytes grow by
+354; direct bindings trade some code duplication for less caller work.

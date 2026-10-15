@@ -103,7 +103,7 @@ static void changed(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG 
     ExecAESChanged(c,left,top,right,bottom);
 }
 
-static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
+static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom,BOOL reportChange)
 {
     struct ExecVDIWorkstation *w=c->workstation;
     struct AESWindowView *v=c->view;
@@ -116,6 +116,9 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
         if (right>(LONG)w->clip[2]+1) right=(LONG)w->clip[2]+1;
         if (bottom>(LONG)w->clip[3]+1) bottom=(LONG)w->clip[3]+1;
     }
+    /* Rectangle damage and visible fragments use the same user-clipped area.
+     * Report covered content before looking for any physical drawing work. */
+    if (reportChange) ExecAESChanged(c,left,top,right,bottom);
     if (left>=right || top>=bottom) return;
     u->textColor=w->textColor; u->fillColor=w->fillColor;
     for (i=0;i<v->visibleCount;++i) {
@@ -145,8 +148,7 @@ static void bar(struct ExecAESContext *c,const WORD *points)
     if (l>r) { swap=l; l=r; r=swap; }
     if (t>b) { swap=t; t=b; b=swap; }
     c->workstation->unit.operation=11;
-    changed(c,l,t,r+1,b+1);
-    paint(c,l,t,r+1,b+1);
+    paint(c,l,t,r+1,b+1,TRUE);
 }
 
 /* Named strings and parameter-block words share the streaming renderer. The
@@ -173,11 +175,18 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
         }
         if (!count) break;
         w->unit.count=count; w->unit.x=(WORD)at;
-        paint(c,at,top,at+((LONG)count<<3),top+EXEC_VDI_FONT_HEIGHT);
+        paint(c,at,top,at+((LONG)count<<3),top+EXEC_VDI_FONT_HEIGHT,FALSE);
         at+=(LONG)count<<3;
         if (c->diagnostic!=AES_OK) break;
     }
     if (at>x) changed(c,x,top,at,top+EXEC_VDI_FONT_HEIGHT);
+}
+
+static WORD fill_color(struct ExecAESContext *c,WORD color)
+{
+    if ((UWORD)color>15) { c->diagnostic=AES_UNSUPPORTED; return 0; }
+    c->workstation->fillColor=color;
+    return color;
 }
 
 /* Parameter counts are checked once at the public call boundary. Caller
@@ -204,11 +213,18 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
     }
     if (op==100) { open_virtual(c,pb); return; }
     if (!w || pb->contrl[6]!=w->handle) { c->diagnostic=AES_IDENTITY; return; }
+    if (op==11) { bar(c,pb->ptsin); return; }
+    if (op==25) {
+        value=fill_color(c,pb->intin[0]);
+        if (c->diagnostic==AES_OK) {
+            pb->intout[0]=w->intout[0]=value; pb->contrl[4]=1;
+        }
+        return;
+    }
     for (i=0;i<12;++i) w->control[i]=pb->contrl[i];
     for (i=0;i<pairs*2;++i) w->ptsin[i]=pb->ptsin[i];
     switch (op) {
     case 101: ExecVDIClose(c); break;
-    case 11: bar(c,w->ptsin); break;
     case 8: text(c,w->ptsin[0],w->ptsin[1],pb->intin,words,FALSE); break;
     case 129:
         value=pb->intin[0];
@@ -223,7 +239,6 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
             c->diagnostic=AES_UNSUPPORTED; break;
         }
         if (op==22) w->textColor=value;
-        if (op==25) w->fillColor=value;
         pb->intout[0]=w->intout[0]=value; pb->contrl[4]=1;
     }
 }
@@ -256,11 +271,27 @@ void v_opnvwk(WORD *input,WORD *handle,WORD *output)
     vdi_call(&pb); *handle=control[6];
 }
 void v_clsvwk(WORD h) { call(101,0,0,0,h,NULL,NULL); }
-void v_bar(WORD h,const WORD *p) { call(11,1,2,0,h,p,NULL); }
+void v_bar(WORD h,const WORD *p)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    if (!enter(c)) return;
+    if (!c->workstation || c->workstation->handle!=h) c->diagnostic=AES_IDENTITY;
+    else bar(c,p);
+    c->busy=0;
+}
 void vs_clip(WORD h,WORD clip,const WORD *p) { call(129,0,2,1,h,p,&clip); }
 WORD vswr_mode(WORD h,WORD mode) { return call(32,0,0,1,h,NULL,&mode); }
 WORD vsf_interior(WORD h,WORD style) { return call(23,0,0,1,h,NULL,&style); }
-WORD vsf_color(WORD h,WORD color) { return call(25,0,0,1,h,NULL,&color); }
+WORD vsf_color(WORD h,WORD color)
+{
+    WORD result=0;
+    struct ExecAESContext *c=ExecAESContext();
+    if (!enter(c)) return 0;
+    if (!c->workstation || c->workstation->handle!=h) c->diagnostic=AES_IDENTITY;
+    else result=fill_color(c,color);
+    c->busy=0;
+    return result;
+}
 WORD vst_color(WORD h,WORD color) { return call(22,0,0,1,h,NULL,&color); }
 void v_gtext(WORD h,WORD x,WORD y,const char *s)
 {
