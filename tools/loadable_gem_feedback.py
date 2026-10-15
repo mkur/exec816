@@ -18,7 +18,7 @@ def measure(s, panel, move, label, count=6, before_sample=None, after_sample=Non
     region=(x+5,y+29,x+91,y+51)
     def visible():
         raster=Raster(font)
-        paint(b,{'GEMPanel':panel},raster,b'Control Panel',(x-8,y-16,x+w+8,y+h+8))
+        paint(b,{'GEMPanel':panel},raster,b'Control Panel',(x-8,y-11,x+w+8,y+h+2))
         packed=overlay(raster,s.saved['pointer'])
         want=b''.join(colors[(packed[(yy*640+xx)//2]>>(0 if xx&1 else 4))&15]
                       for yy in range(region[1],region[3]) for xx in range(region[0],region[2]))

@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "status": "measured",
+  "tier": "development observation",
+  "qualification": false,
+  "source_commit": "4b76959",
+  "archive_sha256": "ce1ea7a48bf487dd01f0ff0932437197d1c7e573482204bbdda45a7e429fa0ef",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "rom": {
+    "name": "AltirraOS 3.44 for 65C816",
+    "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7"
+  },
+  "emulator": {
+    "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+    "sha256": "6c5a1ee6699bfb6ac1e6f87495876faa5cf2286b3b03407e77ffd146c119cdb8"
+  },
+  "machine": {
+    "model": "800XL",
+    "cpu": "65C816",
+    "clock_multiplier": 8,
+    "memory": "64K",
+    "high_banks": 63,
+    "video": "PAL",
+    "basic": false,
+    "dli": false,
+    "shadow_rom": true,
+    "addons": "custom"
+  },
+  "devices": [
+    {
+      "tag": "vbxe",
+      "settings": {
+        "version": 126,
+        "alt_page": false,
+        "shared_mem": false
+      },
+      "readback": [
+        {
+          "address": 54848,
+          "bytes": [
+            16,
+            38
+          ]
+        }
+      ],
+      "vram_bytes": 524288,
+      "register_base": 54784
+    }
+  ],
+  "disk_configuration": {
+    "siopatch": "off",
+    "burstio": false,
+    "randdelay": false,
+    "accuratedisk": true,
+    "diskemu": "generic56k"
+  },
+  "scope": "300 measured rectangles across three batches; unchanged executable; PAL 8x CPU/VBXE; idle Shell and desktop Task, folder closed; pointer outside benchmark; subsequent rows cancelled through Escape.",
+  "benchmark": {
+    "workload": "Exec816 subset v1",
+    "rate": 50,
+    "canvas": [
+      80,
+      56,
+      480,
+      160
+    ],
+    "rows": [
+      {
+        "name": "solid bars",
+        "status": "complete",
+        "clip": [
+          80,
+          56,
+          559,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 100,
+            "ticks": 116,
+            "start": [
+              0,
+              3294,
+              50
+            ],
+            "end": [
+              0,
+              3410,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 119,
+            "start": [
+              0,
+              3415,
+              50
+            ],
+            "end": [
+              0,
+              3534,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 118,
+            "start": [
+              0,
+              3540,
+              50
+            ],
+            "end": [
+              0,
+              3658,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 23.6
+      }
+    ],
+    "save": 0,
+    "runs": 1
+  },
+  "per_operation": {
+    "elapsed_ms": 23.67783112647353,
+    "charged_cpu_ms": 10.067592217982208,
+    "off_cpu_ms": 11.483147701487264,
+    "interrupt_ms": 2.12709120700406
+  },
+  "exclusive_cpu_ms_per_operation": {
+    "app_arithmetic": 0.13509327641970406,
+    "app_other": 2.0081881476615457,
+    "borrow_setup_cursor": 0.10605567216772287,
+    "command_build": 0.4169896017032743,
+    "completion_poll": 0.2858128964441674,
+    "display_ownership": 1.393952785934364,
+    "event_poll": 0.8226119840968884,
+    "renderer": 0.0070594609275624505,
+    "submission_fence": 0.18926413102163905,
+    "update": 1.6281874710133792,
+    "upload": 0.12779088000443584,
+    "vdi_aes_preparation": 1.7201977598246716,
+    "visibility": 1.2263881507628502
+  },
+  "presenter_cpu_ms_per_operation": 9.436774277219936,
+  "all_interrupt_ms_per_operation": 4.17346463127139,
+  "selected_inclusive": {
+    "v_bar": {
+      "calls_per_operation": 1.0,
+      "charged_cpu_ms": 4.247123188027839,
+      "elapsed_ms": 11.096519631959785,
+      "off_cpu_ms": 5.930746704746921,
+      "interrupt_ms": 0.9186497391850243
+    },
+    "wind_update": {
+      "calls_per_operation": 0.5,
+      "charged_cpu_ms": 1.6281874710133795,
+      "elapsed_ms": 7.395518474609483,
+      "off_cpu_ms": 5.427891155503617,
+      "interrupt_ms": 0.3394398480924865
+    },
+    "DisplayEnter": {
+      "calls_per_operation": 1.0,
+      "charged_cpu_ms": 1.0402436497274377,
+      "elapsed_ms": 4.730576790873895,
+      "off_cpu_ms": 3.464281434888825,
+      "interrupt_ms": 0.22605170625763282
+    },
+    "DisplayLeave": {
+      "calls_per_operation": 1.0,
+      "charged_cpu_ms": 0.3537091362069265,
+      "elapsed_ms": 1.3654189086510877,
+      "off_cpu_ms": 0.9368797685487353,
+      "interrupt_ms": 0.0748300038954259
+    }
+  },
+  "mouse_refresh": {
+    "calls_per_operation": 2.203333333333333,
+    "task_dps": [
+      4864
+    ],
+    "charged_cpu_ms": 2.123704911854829,
+    "elapsed_ms": 2.9929941070523185,
+    "off_cpu_ms": 0.40979152188040524,
+    "interrupt_ms": 0.45949767331708435
+  },
+  "direct_cache_bookkeeping_cpu_ms_per_operation": 0.1515978529577748,
+  "artifacts": {
+    "trace-summary.md": {
+      "path": "build/rectangle-investigation/trace-idle/trace-summary.md",
+      "sha256": "b82d3c65649533f8253b9750422a56391ffcd117b49f638192d62c9470dc89ab"
+    },
+    "rectangle-details.json": {
+      "path": "build/rectangle-investigation/trace-idle/rectangle-details.json",
+      "sha256": "d46ee0d56c24db1db4eeb43368f64e8788f862f1039c4aaa48663c5ba1c419f1"
+    },
+    "cpu-trace.log.gz": {
+      "path": "build/rectangle-investigation/trace-idle/cpu-trace.log.gz",
+      "sha256": "927142ac8e7e817c3cb7e33e65e76cd5e75334dc45e48bcd4ee8c512883f6d37"
+    },
+    "cpu-all.log.gz": {
+      "path": "build/rectangle-investigation/trace-idle/cpu-all.log.gz",
+      "sha256": "cf719cda0cc7c374db201c6fd54fdb1791fd18680f42873d9a927f196847e7b2"
+    }
+  },
+  "limitations": [
+    "One traced session with three complete 100-operation rectangle batches; elapsed mean is not a per-operation median or p95.",
+    "Other-Task time in the primary trace includes interrupts on those Tasks. Inclusive routine totals overlap.",
+    "Command construction, upload, submission and polling CPU is not an independent measurement of hardware DMA occupancy.",
+    "Later benchmark rows were cancelled. Postprocessing failed because boot-smoke.png was absent; the rectangle trace was recovered offline. This is not a passed complete package test.",
+    "The attempted Counter-load comparison did not complete; no loaded result is established.",
+    "This archive predates merge 2fba321. Obtain a matched merged-parent result before attributing implementation gains."
+  ],
+  "guest_changes": false,
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "vram_delta": 0
+}

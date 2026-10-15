@@ -19,14 +19,58 @@ from sio_transaction_trace import BASE_HZ
 from test_demo import run
 
 
+def panel_with_counter(s, menus, move, click, count):
+    """Small button cohort beside a normally launched, visible Counter."""
+    from gem_applications import instances
+    from loadable_gem_feedback import measure
+    b=s.b;directory=s.p['output']/'bitmap-console'
+    def launch(role, row, ready):
+        menus.select('SYS:');click(296,8);click(304,row)
+        for _ in range(100):
+            app=next((a for a in instances(b,s.p,directory) if a['name']==role),None)
+            if app:break
+            s.frames(20)
+        require(app is not None,'Desktop did not launch '+role)
+        address=app['symbols']['GEM'+role.title()]
+        s.rendezvous('dw($%x)=1'%(address+ready));s.frames(80)
+        return address
+    counter=launch('counter',72,12)
+    x,y=[s.number(counter+38+i*2,2) for i in range(2)]
+    move(x+40,y-6);b._cmd_ok('MOUSE AT 2000 0 0 1');s.frames(20)
+    move(48,y-6);b._cmd_ok('MOUSE AT 2000 0 0 0');s.frames(100)
+    require(s.number(counter+38,2)==8,'Counter did not move left of Files')
+    panel=launch('panel',39,8)
+    def digits():
+        y=s.number(counter+40,2)
+        path=s.p['output']/'counter-buttons.bgra'
+        f=b.rawscreen(str(path));raw=path.read_bytes()
+        return b''.join(raw[yy*f.stride+88*4:yy*f.stride+136*4]
+                        for yy in range(y+8,y+16))
+    before=[s.number(counter+offset,4) for offset in (14,18)]
+    old=digits()
+    buttons=measure(s,panel,move,'beside-counter',count=count)
+    after=[s.number(counter+offset,4) for offset in (14,18)]
+    require(all(a>z for a,z in zip(after,before)) and digits()!=old,
+            'Counter stopped drawing during button input')
+    s.cells('panel-with-counter')
+    # Close through each live window's system gadget, then check menu Escape.
+    click(s.number(panel+34,2)-2,s.number(panel+36,2)-6)
+    menus.select('Counter')
+    click(s.number(counter+38,2)-2,s.number(counter+40,2)-6)
+    menus.select('SYS:');move(632,232);s.cells('after-panel-counter')
+    return dict(buttons=buttons,counter_ticks=after[0]-before[0],
+                counter_paints=after[1]-before[1],visible_digits_changed=True)
+
+
 class Feedback:
-    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False):
+    def __init__(self, count, load_check=False, cold=False, headings_only=False, conventional=False, selection_only=False, panel_check=False):
         self.conventional = conventional
         self.selection_only = selection_only
         self.headings_only = headings_only
         self.cold = cold
         self.count = count
         self.load_check = load_check
+        self.panel_check = panel_check
         self.results = {}
 
     def exercise(self, s):
@@ -46,6 +90,8 @@ class Feedback:
             b._cmd_ok('MOUSE AT 2000 0 0 1'); s.frames(25)
             b._cmd_ok('MOUSE AT 2000 0 0 0'); s.frames(75)
         menus = Menus(s, click, move)
+        if self.panel_check:
+            self.results['panel_with_counter']=panel_with_counter(s,menus,move,click,self.count)
         menus.select('SYS:')
         move(632, 232); s.frames(100)
         # The shipped Files counter advances only after its complete redraw
@@ -291,6 +337,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--count', type=int, default=20)
     parser.add_argument('--load-check', action='store_true', help='Also check visible Counter progress under menu input')
+    parser.add_argument('--panel-check', action='store_true', help='Also check Panel button feedback beside a visible Counter')
     parser.add_argument('--selection-only',action='store_true',help='Only the application open/highlight/switch/close cohort')
     parser.add_argument('--headings-only', action='store_true', help='Only repeated heading transitions')
     parser.add_argument('--cold', action='store_true', help='Invalidate unpinned popup images before each opening; record controlled cold misses')
@@ -311,7 +358,7 @@ def main():
         'extracted', 'g4bench-extracted-*', '*.log', '*.bgra', '*.png'))
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
         archive.extractall(out/'extracted')
-    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional, args.selection_only)
+    probe = Feedback(args.count, args.load_check, args.cold, args.headings_only, args.conventional, args.selection_only, args.panel_check)
     result = run(out, boot_smoke=True, distribution_root=out/'extracted/exec816-demo',
                  integration=probe, profile_commands=False)
     result.update(qualification=False, zip_sha256=sha256(out/'exec816-demo.zip'),

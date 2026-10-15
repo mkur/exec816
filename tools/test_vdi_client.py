@@ -4,7 +4,7 @@ from native_program import require,sha256
 from os_boundary import run_to
 from desktop_mouse import schedule
 from gem_render_oracle import Raster,font_bytes
-from test_desktop_presentation import rectangle,frame,desktop,text
+from test_desktop_presentation import rectangle,frame,desktop,text,menu_bar
 from test_gem_cursor import overlay
 from gem_render_oracle import DESKTOP_PALETTE
 from test_gem_interactive import pixels
@@ -32,11 +32,11 @@ def extract_with_preemption(folder):
 
 def expected(font, covered=False):
     r=Raster(font);desktop(r)
-    frame(r,(32,24,560,208),b'Shell',False)
+    frame(r,(32,29,560,202),b'Shell',False)
     long_text=bytes(65+i%26 for i in range(192))
-    for who,(x,y) in enumerate(((33,17),(33,17) if covered else (201,65))):
+    for who,(x,y) in enumerate(((32,17),(32,17) if covered else (200,65))):
         frame(r,(x,y,x+400,y+140),b'VDI B' if who else b'VDI A',bool(who),close=True)
-        l,t,right,bottom=x+8,y+16,x+392,y+132
+        l,t,right,bottom=x+8,y+11,x+392,y+138
         r.clip=(l,t,right-1,bottom-1)
         r.fill=2 if who else 4;r.apply(11,(-300,-300,1000,1000))
         r.clip=(l+8,t+12,l+78,t+14);r.fill=3;r.apply(11,(-300,-300,1000,1000))
@@ -49,17 +49,24 @@ def expected(font, covered=False):
         r.apply(8,(l+1,t+78),bank_text)
         r.text=0;r.apply(8,(l+(0 if who else 1),t+94),b'012345678901234567890123456789012345678' if who else b'Zero ink       ')
         r.apply(8,(l,t+110),bytes((255,32,65)))
+        r.fill=5
+        for i in range(4):
+            left=l+120+i*16+(i==1);right=left+(0 if i<2 else 7)
+            top=t+113;bottom=t+(113 if i<2 else 115)
+            r.clip=(l,t,x+391,y+137)
+            if i==3:r.clip=(left+1,t+114,right+8,t+115)
+            r.apply(11,(left,top,right,bottom))
+            r.apply(11,(left+8,top,right+8,bottom))
         r.clip=(0,0,639,239)
-    rectangle(r,(0,0,640,15),0);rectangle(r,(0,15,640,16),1)
-    text(r,8,4,b'VDI B');text(r,568,4,b'Windows')
+    menu_bar(r,b'VDI B')
     return r
 
 
 def clipped_scene(font):
-    r=expected(font);l,t=209,81
-    r.clip=(l,t,l+383,t+115)
+    r=expected(font);l,t=208,76
+    r.clip=(l,t,l+383,t+126)
     for pen in range(16):
-        r.fill=pen;r.apply(11,(l+pen*24,t,l+pen*24+23,t+115))
+        r.fill=pen;r.apply(11,(l+pen*24,t,l+pen*24+23,t+126))
     cases=((10,13,106),(11,11,104),(10,13,103),(11,14,104),
            (10,26,82),(11,14,15),(10,16,20),(10,112,120),
            (11,14,104),(-5,13,103),(10,13,103),(11,14,104))

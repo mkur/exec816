@@ -68,6 +68,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
     service.updateOwner=client.id
     IF service.updates=0 THEN
+      AESSTATE.mouseDirty=1
       service.updateWindow=window
       AESWINDOWSTATE.BeginUpdate(client)
     FI
@@ -79,6 +80,9 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
       RETURN(AESTYPES.OVERFLOW)
     FI
 
+    IF service.mouseHolds=0 THEN
+      AESSTATE.mouseDirty=1
+    FI
     service.mouseHolds==+1
   FI
 
@@ -155,6 +159,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     service.updates==-1
     AESWINDOWSTATE.Updates(client,service.updates)
     IF service.updates=0 THEN
+      AESSTATE.mouseDirty=1
       AESWINDOWSTATE.EndUpdate(client)
       service.updateOwner=0
       service.updateWindow=0
@@ -165,6 +170,9 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
     FI
 
     service.mouseHolds==-1
+    IF service.mouseHolds=0 THEN
+      AESSTATE.mouseDirty=1
+    FI
   FI
 
   IF service.updates=0 AND service.mouseHolds=0 THEN
@@ -210,12 +218,14 @@ PUBLIC PROC Retire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client)
 
   IF service.updateOwner=client.id THEN
+    AESSTATE.mouseDirty=1
     service.updateOwner=0
     service.updates=0
     service.updateWindow=0
   FI
 
   IF service.mouseOwner=client.id THEN
+    AESSTATE.mouseDirty=1
     service.mouseOwner=0
     service.mouseHolds=0
   FI

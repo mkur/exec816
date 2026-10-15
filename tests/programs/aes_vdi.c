@@ -89,9 +89,39 @@ static void draw_clips(WORD handle,WORD window)
     CHECK(wind_update(END_UPDATE));
 }
 
+static void rectangle_pairs(WORD handle,WORD x,WORD y)
+{
+    static const WORD cases[4][4]={
+        {120,113,120,113}, {137,113,137,113},
+        {159,115,152,113}, {168,113,175,115}
+    };
+    WORD control[12]={11,2,0,0,0,1,0,0,0,0,0,0};
+    WORD points[4],clip[4]={-32768,-32768,32767,32767},color=5,reply=0;
+    VDIPB pb={control,&color,points,&reply,NULL};
+    WORD i;
+    control[6]=handle;
+    vs_clip(handle,0,clip);
+    for (i=0;i<4;++i) {
+        /* Even/odd single pixel, reversed rectangle and user-clipped box. */
+        points[0]=x+cases[i][0];points[1]=y+cases[i][1];
+        points[2]=x+cases[i][2];points[3]=y+cases[i][3];
+        if (i==3) {
+            clip[0]=points[0]+1;clip[1]=y+114;clip[2]=points[2]+8;clip[3]=y+115;
+            vs_clip(handle,1,clip);
+        }
+        CHECK(vsf_color(handle,color)==color);
+        v_bar(handle,points);CHECK(ExecAESDiagnostic()==AES_OK);
+        points[0]+=8;points[2]+=8;
+        control[0]=25;control[1]=0;control[3]=1;
+        vdi_call(&pb);CHECK(reply==color && control[4]==1 && ExecAESDiagnostic()==AES_OK);
+        control[0]=11;control[1]=2;control[3]=0;
+        vdi_call(&pb);CHECK(ExecAESDiagnostic()==AES_OK && control[4]==0);
+    }
+}
+
 static void draw(UWORD who,WORD handle,WORD window)
 {
-    WORD huge[4]={-300,-300,1000,1000};
+    WORD huge[4]={-32768,-32768,32767,32767};
     WORD clip[4],outside[4]={-8,-8,-1,-1};
     WORD x,y,w,h;
     struct ExecAESContext *c=ExecAESContext();
@@ -135,6 +165,7 @@ static void draw(UWORD who,WORD handle,WORD window)
     wordText[who][0]=0x1ff; wordText[who][1]=' '; wordText[who][2]='A';
     control[3]=3; points[0]=x; points[1]=y+110;
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_OK);
+    rectangle_pairs(handle,x,y);
     control[0]=1; control[1]=control[3]=0;
     vdi_call(&pb); CHECK(ExecAESDiagnostic()==AES_UNSUPPORTED);
     vs_clip(handle,1,outside);

@@ -17,8 +17,10 @@ extern void DisplayBorrowEnd(struct DisplayGrant *);''')
     source = source.replace('    return DisplayOwnerEnter();', '''    UWORD status=DisplayOwnerEnter();
     if (status==DISPLAY_OK) DisplayNativeBegin();
     return status;''')
-    source = source.replace('status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);',
-        'status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);\n    if (status==DISPLAY_OK) DisplayDMAStart();')
+    for call in ('status=VbxeOwnerScrollStart(&display,copy,(UBYTE)(map_col[pen]*17),id);',
+                 'status=VbxeOwnerCopyStart(&display,copy,id);'):
+        require(source.count(call)==1,'DMA observation hook changed')
+        source=source.replace(call,call+'\n    if (status==DISPLAY_OK && *id) DisplayDMAStart();')
     start = source.index('static UWORD drawing_borrow(')
     body = source[start:].replace('    if (!fault) {', '    DisplayBorrowBegin(grant);\n    if (!fault) {', 1)
     body = body.replace('    DisplayLeave(grant);', '    DisplayBorrowEnd(grant);\n    DisplayLeave(grant);')
@@ -174,7 +176,11 @@ def trace_result(out, config):
             values=sorted(r[metric] for r in selected)
             result[kind][metric]=dict(p50=values[len(values)//2],p95=values[ceil(.95*len(values))-1],maximum=values[-1])
     require(result['borrow_unit']['count']==48,'Missing borrowed timing units')
-    result['scope']='Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. The first callback unit contains an injected Yield; access_wait includes arbitration and bridge costs.'
+    require(result['borrow_unit']['off_cpu_ms']['maximum']>0,
+            'No Task switch observed while holding a drawing unit')
+    require(result['borrow_unit']['interrupt_ms']['maximum']>0,
+            'No interrupt delivery observed inside drawing units')
+    result['scope']='Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. An ordinary callback injects Yield with renderer staging live; ownership must survive Task switching without overlapping renderer access. access_wait includes arbitration and bridge costs.'
     return result
 
 

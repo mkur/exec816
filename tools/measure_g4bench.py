@@ -7,14 +7,15 @@ from pathlib import Path
 from native_program import ROOT, require, sha256
 from desktop_mouse import schedule
 from desktop_menu_check import Menus
-from gem_applications import symbols
+from gem_applications import instances, symbols
 from g4bench_results import read
 from stack_budget import stack_usage
 from test_demo import run
 
 
 class BenchmarkDesktop:
-    def __init__(self,load,observer=None):self.load=load;self.result=None;self.observer=observer
+    def __init__(self,load,observer=None,rectangles=False):
+        self.load=load;self.result=None;self.observer=observer;self.rectangles=rectangles
 
     def exercise(self,s):
         b=s.b;directory=s.p['output']/'bitmap-console'
@@ -33,12 +34,22 @@ class BenchmarkDesktop:
         def drag(a,z):move(*a);edge(1);move(*z);edge(0);s.frames(100)
         s.saved['desktop_menu']={}
         menus=Menus(s,click,move)
-        for title in ('Control Panel','Files')+(() if self.load=='counter' else ('Counter',)):
-            menus.select(title);menus.close();s.frames(100)
         peer=None;count=0
         if self.load=='counter':
-            peer=symbols(b,s.p,directory,'counter',s.number(shared['GEMDesktopChildren']+4,4))['GEMCounter']
-            menus.select('Counter');drag((280,40),(96,40))
+            menus.select('SYS:');click(296,8);click(304,72)
+            found=[]
+            for _ in range(80):
+                found=[a for a in instances(b,s.p,directory) if a['name']=='counter']
+                if found:break
+                s.frames(20)
+            require(found,'Desk > Counter did not launch')
+            peer=found[0]['symbols']['GEMCounter']
+            s.rendezvous('dw($%x)=1'%(peer+12));s.frames(100)
+        # Current startup opens Shell and SYS:, not the former demo quartet.
+        for window in list(menus.windows()):
+            if 'Shell' not in window['title'] and window['title']!='Counter':
+                menus.select(window['title']);menus.close();s.frames(100)
+        if peer:menus.select('Counter');drag((280,37),(96,37))
         menus.select('Shell')
         previous=s.begin('RUN C:G4BENCH.APP');s.ready(previous);s.result()
         job=s.at('job');identity=s.number(job,4)
@@ -54,14 +65,21 @@ class BenchmarkDesktop:
         if peer:count=s.number(peer+14,4)
         if self.observer:self.observer.ready(s,sy)
         key('RETURN')
-        for row in range(5):
-            s.rendezvous('(dw($%x)>=%d)|(dw($%x)=1)'%(sy['g4b_row'],row,sy['g4b_done']))
-            print('G4BENCH',self.load,'row',row+1,flush=True)
-        if self.observer:self.observer.drawn(s,sy)
+        if self.rectangles:
+            s.rendezvous('(dw($%x)>=1)|(dw($%x)=1)'%(sy['g4b_row'],sy['g4b_done']))
+            if self.observer:self.observer.drawn(s,sy)
+            key('ESC')  # Cancel later rows through normal input; row zero is complete.
+        else:
+            for row in range(5):
+                s.rendezvous('(dw($%x)>=%d)|(dw($%x)=1)'%(sy['g4b_row'],row,sy['g4b_done']))
+                print('G4BENCH',self.load,'row',row+1,flush=True)
+            if self.observer:self.observer.drawn(s,sy)
         s.rendezvous('dw($%x)=1'%sy['g4b_done']);s.frames(100)
         result=read(b,sy)
-        require(all(r['status'] in ('complete','low resolution') for r in result['rows']),
+        measured=result['rows'][:1] if self.rectangles else result['rows']
+        require(all(r['status'] in ('complete','low resolution') for r in measured),
                 'Benchmark did not complete: '+str(result))
+        result['rectangles_only']=self.rectangles
         require(result['save']==1,'Benchmark could not save WORK:G4BENCH.TXT')
         require(result['canvas']==[152,56,480,160],'Unexpected benchmark canvas: '+str(result['canvas']))
         if peer:require(s.number(peer+14,4)>count,'Counter stopped during benchmark')
@@ -70,24 +88,30 @@ class BenchmarkDesktop:
         screenshot=s.p['output']/('g4bench-'+self.load+'.png');s.save_screen(screenshot)
         result['screenshot_sha256']=sha256(screenshot)
         self.result=result
+        (s.p['output']/('g4bench-'+self.load+'-samples.json')).write_text(json.dumps(result,indent=2)+'\n')
         if self.observer:self.observer.finished(s,sy,result)
         s.saved['gem_stacks']=stack_usage(b,s.p['build']['memory'])
         key('ESC');s.rendezvous('db($%x)=3'%(job+12));s.frames(100)
-        menus.select('Shell');s.command('HELLO',b'Hello from disk!')
+        if peer:
+            # Close the remaining load through its system gadget. The compact
+            # Counter's title starts at y=32; its published work follows it.
+            cx,cy=[s.number(peer+38+i*2,2) for i in range(2)]
+            click(cx+6,cy-5);s.frames(150)
+        click(400,35);s.command('HELLO',b'Hello from disk!')
         s.save_screen(s.p['output']/'boot-smoke.png')
         s.saved['integration']=dict(profile='g4bench',benchmark=result,closed=True,shell=True)
         for char in 'EXIT':s.press(char)
         b._cmd_ok('KEY RETURN down');b.bp_clear_all()
 
 
-def measure(bundle,load,observer=None):
+def measure(bundle,load,observer=None,rectangles=False):
     out=Path(bundle).resolve();extracted=out/('g4bench-extracted-'+load)
     manifest=json.loads((out/'demo-manifest.json').read_text())
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:archive.extractall(extracted)
-    exercise=BenchmarkDesktop(load,observer)
+    exercise=BenchmarkDesktop(load,observer,rectangles)
     result=run(out,boot_smoke=True,distribution_root=extracted/'exec816-demo',
                integration=exercise,profile_commands=False)
-    result.update(scope='Exact OF816 package, normal shell launch, Return, five drawing rows and clean close',
+    result.update(scope='Exact OF816 package, normal shell launch and clean close; '+('three rectangle batches then normal Escape cancellation' if rectangles else 'five drawing rows'),
                   benchmark=exercise.result,archive_sha256=sha256(out/'exec816-demo.zip'),
                   actionc_revision=manifest['kernel']['revision'],
                   emulator_sha256=sha256(ROOT/'build/mouse-bridge/AltirraBridgeServer'),
@@ -102,5 +126,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle',type=Path,required=True)
     parser.add_argument('--load',choices=('idle','counter','both'),default='both')
+    parser.add_argument('--rectangles',action='store_true',help='Complete the rectangle row, then cancel later rows normally')
     args=parser.parse_args()
-    for load in ('idle','counter') if args.load=='both' else (args.load,):measure(args.bundle,load)
+    for load in ('idle','counter') if args.load=='both' else (args.load,):measure(args.bundle,load,rectangles=args.rectangles)

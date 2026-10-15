@@ -1,5 +1,15 @@
 # Historical records
 
+- [Short drawing units and Task switching](drawing-preemption.md): retired
+  scheduling experiment, held-display pauses, dialog costs and focused checks.
+
+- [Dialog drawing costs and batch sizing](dialog-drawing-batches.md): current
+  per-unit bookkeeping, drawing and preemption costs; four-batch starting point.
+
+- [Rectangle overhead](rectangle-overhead.md): shorter physical display reservations,
+  changed-only input publication, direct VDI bindings and cheaper ownership entry;
+  matched dialog and Files observations with the refreshed OF816 demo.
+
 - [FujiNet control](fujinet-control.md): protocol pins, FUJI reports/browsing/image changes, scripted real-frame
   integration and implementation slices.
 
@@ -70,7 +80,7 @@
   window decoration and a persistent focused-window menu caption.
 
 - [Sixteen-colour GEM icons](colour-icons.md): standard CICON resources,
-  prepared VBXE pixels and the desktop disk artwork.
+  prepared VBXE pixels, the desktop disk artwork and Files' VRAM icon cache.
 
 - [Desktop selection and batch operations](desktop-selection-batch.md):
   implementation progress, focused checks and memory accounting.

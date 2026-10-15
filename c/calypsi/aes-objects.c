@@ -49,7 +49,7 @@ static void draw_icon(struct ObjectPaint *p)
             WORD selected=(p->tree[p->object].ob_state&SELECTED) && colour->sel_data;
             GemColourIconBitmap((const UWORD *)(ULONG)(selected ? colour->sel_mask:colour->col_mask),
                 (const UBYTE *)(ULONG)(selected ? colour->sel_data:colour->col_data),
-                ib->ib_wicon,x,y,l,t,r,b);
+                ib->ib_wicon,ib->ib_hicon,x,y,l,t,r,b);
         } else GemIconBitmap((const UWORD *)(ULONG)ib->ib_pmask,
             (const UWORD *)(ULONG)ib->ib_pdata,ib->ib_wicon,x,y,l,t,r,b,fg,bg);
     }

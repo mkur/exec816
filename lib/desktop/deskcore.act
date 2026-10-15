@@ -1,5 +1,6 @@
 ; Single-owner window policy and IPC. Hardware presentation is a separate module.
 MODULE DESKCORE
+USE AESSTATE
 USE AESLOCKS
 USE AESWINDOWSTATE
 USE AESMOUSE
@@ -162,6 +163,7 @@ PUBLIC PROC Focus(DESKTYPES.Service POINTER service LONGCARD id)
 
   EXEC.Forbid()
   service.focus=id
+  AESSTATE.mouseDirty=1
   IF service.keyboard<>NULL THEN
     route=0
     IF service.consoleFocus<>NULL THEN

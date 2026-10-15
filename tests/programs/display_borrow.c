@@ -56,9 +56,10 @@ static void paint(void *context)
     UWORD x = 563+who*40;
     if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
     CHECK(GemBitmapFill(x,181,x+34,213,who ? 2 : 4) == 0);
-    /* Force a scheduling boundary with renderer staging live. This is test
-     * injection; production callbacks never yield or wait while admitted. */
-    if (DisplayIterations[who] == 0) ExecYield();
+    CHECK(FindTask(NULL)->tc_TDNestCnt == (DisplayIterations[who] == 0 ? 0 : -1));
+    /* Inject a switch with renderer staging live and no inherited Forbid.
+     * Production callbacks never yield or wait. Ownership must survive. */
+    if (DisplayIterations[who] == 1) ExecYield();
     CHECK(DisplayActive == grants[who].slot+1);
 }
 
@@ -73,11 +74,17 @@ static void worker(UWORD who)
     while (!DisplayGo) Wait(grants[who].mask);
     for (i = 0; i < (DisplayFaultVariant ? 1 : 24); ++i) {
         UWORD status;
+        BYTE nesting;
+        /* Exercise inherited exclusion too, including queued admission. */
+        if (i == 0) Forbid();
+        nesting = FindTask(NULL)->tc_TDNestCnt;
         if (!who) {
             if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
             status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);
         } else status=GemDrawingBorrow(&grants[who],603,181,637,213,paint,&who);
         CHECK(status==(DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
+        CHECK(FindTask(NULL)->tc_TDNestCnt == nesting);
+        if (i == 0) Permit();
         ++DisplayIterations[who];
     }
     SetSignal(0,grants[who].mask);
@@ -85,6 +92,8 @@ static void worker(UWORD who)
     /* Keep the grant live for the host's pixel and teardown observations. */
     do { Wait(grants[who].mask); } while (DisplayGo != 2);
     CHECK(DisplayGrantClose(&grants[who]) == DISPLAY_OK);
+    CHECK(GemDrawingSolidBorrow(&grants[who],563,181,597,213,4) != DISPLAY_OK);
+    CHECK(FindTask(NULL)->tc_TDNestCnt == -1);
     FreeSignal(bit);
     Forbid(); ++AESDone; Signal((struct Task *)DisplayController,DisplayWake); RemTask(NULL);
 }

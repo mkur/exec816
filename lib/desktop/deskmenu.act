@@ -45,6 +45,15 @@ BYTE showPending
 INT armed,pendingHeading
 CONST ACT_TOP=1, ACT_CLOSE=2, ACT_ICONIFY=3, NO_ROW=-1
 
+PROC PublishActive(BYTE active)
+
+  IF DESKSTATE.menuActive<>active THEN
+    DESKSTATE.menuActive=active
+    AESSTATE.mouseDirty=1
+  FI
+
+RETURN
+
 PUBLIC BYTE FUNC Active()
 
 RETURN(menu<>0 OR pendingMenu<>0 OR down<>0 OR blocked<>0)
@@ -82,7 +91,7 @@ PUBLIC BYTE FUNC Start()
   activeWindow=0
   contentRevision=1
   title(0)=0
-  DESKSTATE.menuActive=0
+  PublishActive(0)
   REGIONS.Assign(@bounds,0,0,640,BAR_HEIGHT)
   IF LAYERS.Create(@service.scene,@bounds,@DESKSTATE.barLayer)<>LAYERTYPES.OK THEN
     RETURN(0)
@@ -112,7 +121,7 @@ PUBLIC PROC Stop()
   pendingMenu=0
   showPending=0
   pendingAction=0
-  DESKSTATE.menuActive=0
+  PublishActive(0)
 
 RETURN
 
@@ -191,7 +200,7 @@ PUBLIC PROC Cancel()
   armed=NO_ROW
   blocked=down
   down=0
-  DESKSTATE.menuActive=blocked
+  PublishActive(blocked)
 
 RETURN
 
@@ -223,7 +232,7 @@ PROC Choose(INT row)
 
   menu=0
   selected=NO_ROW
-  DESKSTATE.menuActive=Active()
+  PublishActive(Active())
 
 RETURN
 
@@ -309,7 +318,7 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
   IF blocked<>0 THEN
     IF sample.buttons=0 THEN
       blocked=0
-      DESKSTATE.menuActive=Active()
+      PublishActive(Active())
     FI
     RETURN(1)
   FI
@@ -321,7 +330,7 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
     IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0 THEN
       Heading(sample.x)
       down=1
-      DESKSTATE.menuActive=1
+      PublishActive(1)
       opening=1
       armed=NO_ROW
     FI
@@ -370,7 +379,7 @@ PUBLIC BYTE FUNC Mouse(INPUT.Event POINTER sample)
     FI
   FI
 
-  DESKSTATE.menuActive=Active()
+  PublishActive(Active())
 
 RETURN(1)
 
@@ -412,7 +421,7 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
       ELSE
         pendingMenu=WINDOWS_MENU
       FI
-      DESKSTATE.menuActive=Active()
+      PublishActive(Active())
       RETURN(1)
     FI
   FI
@@ -459,7 +468,7 @@ PUBLIC PROC Application(INT heading)
 
   pendingHeading=heading
   pendingMenu=GEM_MENU
-  DESKSTATE.menuActive=1
+  PublishActive(1)
 
 RETURN
 
@@ -491,7 +500,7 @@ PROC Open(BYTE kind)
 
   LET service=DESKSTATE.Get()
   menu=kind
-  DESKSTATE.menuActive=1
+  PublishActive(1)
   menuOwner=service.focus
   count=0
   A816MEMORY.Clear(BYTE POINTER(@items(0)),SIZEOF(items))
@@ -765,7 +774,7 @@ PUBLIC PROC Advance()
   focusSeen=service.focus
   revision=service.scene.rebuilds
   AESWINDOWSTATE.Sync()
-  DESKSTATE.menuActive=Active()
+  PublishActive(Active())
   AESMOUSE.Refresh()
   IF menu=GEM_MENU THEN
     BEGIN

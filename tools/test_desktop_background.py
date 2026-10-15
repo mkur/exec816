@@ -2,8 +2,9 @@
 """Check sparse/full background repair and observe production drawing boundaries.
 
 The optional old painter is a test-only module override for matched comparisons.
-Breakpoints read fill packets; passive PC traces count uploads and launches.
-Neither observer inserts instructions or storage into the executable.
+Breakpoints read fill packets through a test-only bank-zero trampoline; passive
+PC traces count uploads and launches. The trampoline adds two JMLs per drawing
+call, preserves registers/flags/stack, and is absent from unobserved runs.
 """
 import argparse
 import json
@@ -16,7 +17,6 @@ import adapter_state as adapter
 from bitmap_console_performance import native_markers
 from build_bitmap_console import build_bitmap
 from console_turn_profile import markers, flat_markers, analyze_events
-from dos_concurrent_trace import call_marker
 from gem_render_oracle import Raster, font_bytes
 from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
@@ -40,6 +40,24 @@ NAMES = ('empty desktop', 'first empty client', 'five retained commands',
          'long retained text and title', 'vertically clipped long repair',
          'closed after text continuation', 'minimum-width long title',
          'minimum-width empty title', 'closed minimum window')
+
+
+def install_fill_observer(b, p):
+    # The pinned bridge cannot break at an upper-bank PC. Relocate complete
+    # bridge prologue instructions into existing diagnostic scratch instead of
+    # depending on an unrelated ownership-validation call.
+    entry = p['labels']['console_bitmap_call']
+    probe = adapter.TEST_DP_OBSERVER
+    require(all(probe+8 <= r['address'] or probe >= r['address']+r['size']
+                for phase in p['build']['memory']['phase_reservations'].values() for r in phase),
+            'Fill observer overlaps live storage')
+    original = b.memdump(entry, 4)
+    require(original == bytes.fromhex('08 c2 30 48'), 'Bitmap bridge prologue changed')
+    scratch = b.memdump(probe, 8)
+    jump = lambda address: b'\x5c'+address.to_bytes(3, 'little')
+    b.memload(probe, original+jump(entry+4))
+    b.memload(entry, jump(probe))
+    return [(entry, original), (probe, scratch)]
 
 
 def scene(stage, font):
@@ -111,19 +129,8 @@ def run(out, replay=False, painter=None, observe=True):
     copies = [foreign['symbols'][name] for name in
               ('GemDrawingCopy', 'GemDrawingCopyStart', 'GemDrawingScrollStart')]
     points.update({f'copy_{i}': pc for i, pc in enumerate(copies)})
-    # The bridge only sets bank-zero PC breakpoints. Observe the existing
-    # FindTask gateway called by Display.OwnerEnter while a drawing packet is live.
-    # A fill can validate ownership several times; correlate samples with the
-    # passive drawing-call trace instead of counting gateway crossings as fills.
-    find_caller = call_marker(p, 'M_DISPLAY_OWNERENTER_', 'tasks_find_task', after=True)
-    # @s and REGS expose only S8; @ra uses the complete native S internally.
-    # Reject an ambiguous low-word return before relying on that expression.
-    needle = b'\x22'+p['labels']['tasks_find_task'].to_bytes(3, 'little')
-    callers = [segment['address']+i+4 for segment in p['image']['segments']
-               for i in range(len(segment['bytes'])-3)
-               if bytes(segment['bytes'][i:i+4]) == needle]
-    require([pc for pc in callers if pc & 65535 == find_caller & 65535] == [find_caller],
-            'Ambiguous FindTask return address')
+    # Each observed fill stops before the copied bridge prologue executes.
+    drawing_call = adapter.TEST_DP_OBSERVER
     environment = ('EXEC816_LATENCY_TRACE', 'EXEC816_LATENCY_PCS')
     saved_env = {key: os.environ.get(key) for key in environment}
     for key in environment:
@@ -133,6 +140,7 @@ def run(out, replay=False, painter=None, observe=True):
         os.environ['EXEC816_LATENCY_PCS'] = ','.join(f'{v:x}' for v in set(points.values()))
     report = dict(slice='DR4', tier='development', qualification=False, status='running',
                   observer=observe, painter_override=sha256(override) if override.exists() else None,
+                  observer_extra_jmls_per_drawing_call=2 if observe else 0,
                   build_sha256=sha256(out/'program/build.json'), xex_sha256=sha256(p['xex']), scenes=[])
     at = lambda name: next(d['address'] for d in p['image']['data']
                            if '_BACKGROUNDTEST_'+name.upper()+'_' in d['name'])
@@ -144,8 +152,10 @@ def run(out, replay=False, painter=None, observe=True):
             require(sha256(BRIDGE/'AltirraBridgeServer') == PIN['mouse_input']['tooling']['sha256'],
                     'Unpinned emulator')
             report['machine'] = verify_machine(b, ROM, PIN)
+            saved_probe = []
             def before(b):
                 if observe:
+                    saved_probe.extend(install_fill_observer(b, p))
                     b.profile_start()
                 previous = b.eval_expr('@clk') & 0xffffffff
                 for stage, name in enumerate(NAMES, 1):
@@ -155,10 +165,9 @@ def run(out, replay=False, painter=None, observe=True):
                     b.bp_clear_all()
                     b.bp_set(marker, condition=condition)
                     b.bp_set(p['labels']['done'], condition=adapter.STOPPED)
-                    call = p['labels']['tasks_find_task']
+                    call = drawing_call
                     if observe and stage > 1:
                         b.bp_set(call, condition=
-                                 f'(@ra=${find_caller & 65535:x})&'
                                  f'(dw(${packet:x})={abi["operations"]["FILL"]})')
                     original = b.regs
                     def registers():
@@ -192,6 +201,8 @@ def run(out, replay=False, painter=None, observe=True):
                     b.memload(at('gate'), stage.to_bytes(2, 'little'))
                 b.bp_clear_all()
             report['runtime'], _ = execute(b, p, before_run=before, frame_limit=20000, timeout=180)
+            for address, original in saved_probe:
+                b.memload(address, original)
             ownership(b, p, p['output'])
             if observe:
                 b.profile_stop()

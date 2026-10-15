@@ -382,6 +382,12 @@ messages/input. Exhausting a source epoch stops it until a fresh open-window
 lifetime. [AI2](../plans/gem4xe/aes-application-input-implementation-plan.md#ai2--add-bounded-inboxes-and-safe-wakeups)
 established this transport; AI3–AI5 add production routing and public input waits.
 
+Mouse snapshots publish when input or routing changes, rather than on every
+presenter service pass. One presenter-owned upper-RAM dirty flag coalesces
+unchanged passes. Focus, menu/capture state, window lifetimes, outer lock
+transitions and input-loss recovery invalidate it. Publication remains before
+lock replies and ordered input delivery; button edges retain their FIFO.
+
 ## Resident counter capacity
 
 The optional [counter desktop](../guides/aes-applications.md#optional-of816-counter-desktop)
@@ -650,8 +656,12 @@ In either case the label and optional character exchange foreground/background
 pens. This follows GEM4XE's label-only fallback rather than synthesizing a
 darkened selected image. File extents are checked during load; drawing trusts
 the caller-owned tree and prepared data. Conversion temporarily uses 2 KiB of
-upper RAM, freed before load returns. Painting reuses the existing CPU/VRAM
-scratch and two masked blits, without persistent icon caches.
+upper RAM, freed before load returns. Colour images up to 32 by 24 pixels use
+a shared sixteen-entry VRAM cache containing both packed-pixel X phases. The
+cache stores only the bitmap, so filenames and selection labels stay independent.
+Small source copies detect changed pixels/masks and safely handle reused resource
+addresses; callers need no invalidation API. Cache access uses the existing
+display grant. Larger images and monochrome icons retain the scratch renderer.
 
 G_IMAGE, 3D flags, other resource extensions, colour-depth expansion, custom
 palettes, disabled-icon stippling and indirect specs are unsupported.

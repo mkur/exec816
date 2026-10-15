@@ -1,0 +1,2473 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "scope": "RP slices; ordinary rectangle workload, four-operation UPDATE groups unchanged",
+  "slices": {
+    "parent": {
+      "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+      "trace_sha256": "f1ced2a41e8559e882a9e5174e4930a5b6dd325c12e0c85bedddff962713727e",
+      "ordinary": {
+        "name": "solid bars",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 100,
+            "ticks": 123,
+            "start": [
+              0,
+              3447,
+              50
+            ],
+            "end": [
+              0,
+              3570,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 122,
+            "start": [
+              0,
+              3576,
+              50
+            ],
+            "end": [
+              0,
+              3698,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 114,
+            "start": [
+              0,
+              3704,
+              50
+            ],
+            "end": [
+              0,
+              3818,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 24.4
+      },
+      "per_operation": {
+        "elapsed_ms": 24.079528479604463,
+        "charged_cpu_ms": 10.138230762399225,
+        "off_cpu_ms": 11.805166208754418,
+        "interrupt_ms": 2.136131508450819
+      },
+      "presenter_cpu_ms": 9.692495830860514,
+      "presenter_routines": {
+        "AESCORE_PUMP": {
+          "calls": 0.49333333333333335,
+          "cpu_ms": 2.2224687602348907
+        },
+        "AESINBOX_SNAPSHOT": {
+          "calls": 4.573333333333333,
+          "cpu_ms": 0.9977191318040146
+        },
+        "AESLOCKS_ACQUIRE": {
+          "calls": 0.25,
+          "cpu_ms": 0.7100811648874109
+        },
+        "AESLOCKS_REQUEST": {
+          "calls": 0.5,
+          "cpu_ms": 1.465252237050528
+        },
+        "AESMOUSE_REFRESH": {
+          "calls": 2.2866666666666666,
+          "cpu_ms": 2.251043988239479
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": 0.25,
+          "cpu_ms": 0.26472214899698654
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 0.65,
+          "cpu_ms": 0.03355658023896018
+        },
+        "DISPLAY_NEXT": {
+          "calls": 0.65,
+          "cpu_ms": 0.3052181321033373
+        },
+        "DISPLAY_OWNERDROP": {
+          "calls": 0.5,
+          "cpu_ms": 0.6225419228179389
+        },
+        "DISPLAY_OWNERENTER": {
+          "calls": 0.65,
+          "cpu_ms": 0.45766602432080267
+        }
+      },
+      "routines": {
+        "BenchDraw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 5.720243574544308,
+          "elapsed_ms": 13.423109508457397,
+          "off_cpu_ms": 6.48399351169591,
+          "interrupt_ms": 1.2188724222171787
+        },
+        "DisplayEnter": {
+          "calls": 1.0,
+          "charged_cpu_ms": 1.0790588199913822,
+          "elapsed_ms": 4.95365148014437,
+          "off_cpu_ms": 3.6437001001345313,
+          "interrupt_ms": 0.23089256001845745
+        },
+        "DisplayLeave": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.3921657769213166,
+          "elapsed_ms": 1.4326262829883603,
+          "off_cpu_ms": 0.9610419817897063,
+          "interrupt_ms": 0.07941852427733741
+        },
+        "GemDrawingSolidBorrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.6356945065096844,
+          "elapsed_ms": 9.51021668247862,
+          "off_cpu_ms": 6.302906250866368,
+          "interrupt_ms": 0.5716159251025662
+        },
+        "GemSolidFill": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.40631829623750726,
+          "elapsed_ms": 0.5704176939736492,
+          "off_cpu_ms": 0.07726076845616613,
+          "interrupt_ms": 0.08683862927997588
+        },
+        "GemSolidRows": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.01255182349632566,
+          "elapsed_ms": 0.01602410935010293,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0034722858537772714
+        },
+        "VbxeOwnerFence": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.38607312405169397,
+          "elapsed_ms": 2.1069202781587837,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.09994375362112495
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.6105351770116303,
+          "elapsed_ms": 2.377166272660078,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.1457276951624825
+        },
+        "_Mod16": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.13681074103781854,
+          "elapsed_ms": 0.17222857363036306,
+          "off_cpu_ms": 0.008484651129133134,
+          "interrupt_ms": 0.026933181463411428
+        },
+        "_VbxeUpload": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.12860450243569846,
+          "elapsed_ms": 0.15520053455205185,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.026596032116353408
+        },
+        "borrow_callback": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.41324689153000954,
+          "elapsed_ms": 0.5785078686193604,
+          "off_cpu_ms": 0.07726076845616613,
+          "interrupt_ms": 0.08800020863318479
+        },
+        "drain": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6285558683487013,
+          "elapsed_ms": 2.3980770504906403,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.14861778165597422
+        },
+        "drawing_borrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.630088899351874,
+          "elapsed_ms": 9.503748348907989,
+          "off_cpu_ms": 6.302906250866368,
+          "interrupt_ms": 0.5707531986897459
+        },
+        "events": {
+          "calls": 0.25,
+          "charged_cpu_ms": 0.8227386206809054,
+          "elapsed_ms": 0.9938248806350343,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17108625995412888
+        },
+        "fence_owner": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6888339425516309,
+          "elapsed_ms": 2.471771084286397,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.16203374124880118
+        },
+        "full_canvas": {
+          "calls": 0.25,
+          "charged_cpu_ms": 1.2249467491989472,
+          "elapsed_ms": 1.479337091550027,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2543903423510798
+        },
+        "idle": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.33838094070071617,
+          "elapsed_ms": 2.047963312512305,
+          "off_cpu_ms": 1.620903400485965,
+          "interrupt_ms": 0.08867897132562425
+        },
+        "pointer_erase": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.010016742343185612,
+          "elapsed_ms": 0.011899609846546533,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.001882867503360921
+        },
+        "solid_record": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.2860400904641007,
+          "elapsed_ms": 0.384780679063425,
+          "off_cpu_ms": 0.038634260858206024,
+          "interrupt_ms": 0.06010632774111817
+        },
+        "start": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.048238200830115735,
+          "elapsed_ms": 0.06111519136221023,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.012876990532094503
+        },
+        "v_bar": {
+          "calls": 1.0,
+          "charged_cpu_ms": 4.338052954297585,
+          "elapsed_ms": 11.676217978447816,
+          "off_cpu_ms": 6.407253151465343,
+          "interrupt_ms": 0.9309118726848882
+        },
+        "wind_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.6022838285317156,
+          "elapsed_ms": 7.165793837520799,
+          "off_cpu_ms": 5.231380780466671,
+          "interrupt_ms": 0.3321292285224119
+        }
+      },
+      "stack": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 559,
+          "remaining_above_floor": 721
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 641,
+          "remaining_above_floor": 415
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 741,
+          "remaining_above_floor": 315
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 711,
+          "remaining_above_floor": 345
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 845,
+          "remaining_above_floor": 1459
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 66,
+          "remaining_above_floor": 190
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "untraced_counter": {
+        "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+        "ordinary": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 140,
+              "start": [
+                0,
+                5983,
+                50
+              ],
+              "end": [
+                0,
+                6123,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 138,
+              "start": [
+                0,
+                6129,
+                50
+              ],
+              "end": [
+                0,
+                6267,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 139,
+              "start": [
+                0,
+                6273,
+                50
+              ],
+              "end": [
+                0,
+                6412,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 27.8
+        },
+        "counter_advanced": true,
+        "normal_exit": true
+      }
+    },
+    "RP1": {
+      "archive_sha256": "7a8f50eb88cdf7d3115b266698645cb02a775f99e1420b434f4549fcdb09d9b4",
+      "trace_sha256": "f91959be5047e3eecb0660fe80b5ef4c5aaeab5a19b025bb99d91c8bc837c2eb",
+      "ordinary": {
+        "name": "solid bars",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 100,
+            "ticks": 106,
+            "start": [
+              0,
+              3392,
+              50
+            ],
+            "end": [
+              0,
+              3498,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 106,
+            "start": [
+              0,
+              3503,
+              50
+            ],
+            "end": [
+              0,
+              3609,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 106,
+            "start": [
+              0,
+              3614,
+              50
+            ],
+            "end": [
+              0,
+              3720,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 21.2
+      },
+      "per_operation": {
+        "elapsed_ms": 21.35825748060393,
+        "charged_cpu_ms": 9.798148803390006,
+        "off_cpu_ms": 9.477305267471031,
+        "interrupt_ms": 2.082803409742888
+      },
+      "presenter_cpu_ms": 7.799636019673546,
+      "presenter_routines": {
+        "AESCORE_PUMP": {
+          "calls": 0.49,
+          "cpu_ms": 2.2094150893481013
+        },
+        "AESINBOX_SNAPSHOT": {
+          "calls": 3.953333333333333,
+          "cpu_ms": 0.8723493835218316
+        },
+        "AESLOCKS_ACQUIRE": {
+          "calls": 0.25,
+          "cpu_ms": 0.7025078742580952
+        },
+        "AESLOCKS_REQUEST": {
+          "calls": 0.5,
+          "cpu_ms": 1.4844979435064565
+        },
+        "AESMOUSE_REFRESH": {
+          "calls": 1.9766666666666666,
+          "cpu_ms": 1.9015568546573836
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": 0.25,
+          "cpu_ms": 0.2700500484696239
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 0.49666666666666665,
+          "cpu_ms": 0.025517859047608307
+        }
+      },
+      "routines": {
+        "BenchDraw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 5.198252509119478
+        },
+        "DisplayEnter": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.753078631685836
+        },
+        "DisplayLeave": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.18723583115184786
+        },
+        "GemDrawingSolidBorrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.0389185470672238
+        },
+        "GemSolidFill": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.4081391376589007
+        },
+        "GemSolidRows": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.01245784458425374
+        },
+        "VbxeOwnerFence": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.30490142316965496
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.5400737828438676
+        },
+        "_Mod16": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.14176977328057358
+        },
+        "_VbxeUpload": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.130954680079337
+        },
+        "borrow_callback": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.4152808301345261
+        },
+        "drain": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.5582626964335473
+        },
+        "drawing_borrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.033309415700211
+        },
+        "events": {
+          "calls": 0.25,
+          "charged_cpu_ms": 0.8228523351645124
+        },
+        "fence_owner": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6183420052374448
+        },
+        "full_canvas": {
+          "calls": 0.25,
+          "charged_cpu_ms": 1.2632215407184781
+        },
+        "idle": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.25541729691274573
+        },
+        "pointer_erase": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.010083232423476496
+        },
+        "solid_record": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.28816612840244776
+        },
+        "start": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.055733254015131545
+        },
+        "v_bar": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.810138867939423
+        },
+        "wind_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.728009286996091
+        }
+      },
+      "stack": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 575,
+          "remaining_above_floor": 705
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 633,
+          "remaining_above_floor": 423
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 743,
+          "remaining_above_floor": 313
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 711,
+          "remaining_above_floor": 345
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 877,
+          "remaining_above_floor": 1427
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 62,
+          "remaining_above_floor": 194
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": -275,
+      "vram_delta": 0,
+      "checks": {
+        "arbitration": 66,
+        "borrowed_renderer": {
+          "DisplayBorrows": 48,
+          "DisplayNative": 455,
+          "DisplayCopies": 1,
+          "DisplayOverlap": 0,
+          "DisplayActive": 0,
+          "exact_pixels": 2788
+        },
+        "fault_variants": [
+          1,
+          2
+        ]
+      }
+    },
+    "RP2": {
+      "archive_sha256": "47b2caef5820584469cf90a4845d993a9646746b6e06ec5f2ea1d90bfe069b63",
+      "trace_sha256": "22b35d8c2eac5c6f527eccee1cab9aa66c5a366d34cebb1aa9c7c7dbbc96e6bb",
+      "ordinary": {
+        "name": "solid bars",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3381,
+              50
+            ],
+            "end": [
+              0,
+              3481,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3485,
+              50
+            ],
+            "end": [
+              0,
+              3585,
+              50
+            ]
+          },
+          {
+            "operations": 100,
+            "ticks": 100,
+            "start": [
+              0,
+              3589,
+              50
+            ],
+            "end": [
+              0,
+              3689,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 20.0
+      },
+      "per_operation": {
+        "elapsed_ms": 20.05385273598457,
+        "charged_cpu_ms": 9.69905156481937,
+        "off_cpu_ms": 8.28521660024707,
+        "interrupt_ms": 2.0695845709181317
+      },
+      "presenter_cpu_ms": 6.8182029634370345,
+      "presenter_routines": {
+        "AESCORE_PUMP": {
+          "calls": 0.5,
+          "cpu_ms": 2.140221940598749
+        },
+        "AESINBOX_SNAPSHOT": {
+          "calls": 1.0,
+          "cpu_ms": 0.2155934979749894
+        },
+        "AESLOCKS_ACQUIRE": {
+          "calls": 0.25,
+          "cpu_ms": 0.6958475887595583
+        },
+        "AESLOCKS_REQUEST": {
+          "calls": 0.5,
+          "cpu_ms": 1.4391054241338785
+        },
+        "AESMOUSE_REFRESH": {
+          "calls": 2.01,
+          "cpu_ms": 0.5322453394682767
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": 0.25,
+          "cpu_ms": 0.26352626734087137
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 0.5,
+          "cpu_ms": 0.025825405037363667
+        }
+      },
+      "routines": {
+        "BenchDraw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 5.199378846380661
+        },
+        "DisplayEnter": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.7585763980420434
+        },
+        "DisplayLeave": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.20106529795779124
+        },
+        "GemDrawingSolidBorrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.1060157311300918
+        },
+        "GemSolidFill": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.4267117201571139
+        },
+        "GemSolidRows": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.012420018072144793
+        },
+        "VbxeOwnerFence": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.3159251495556912
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.5591933226103395
+        },
+        "_Mod16": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.13943063815910348
+        },
+        "_VbxeUpload": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.13683094650391397
+        },
+        "borrow_callback": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.43374862614577914
+        },
+        "drain": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.577289432024348
+        },
+        "drawing_borrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.10039485239907
+        },
+        "events": {
+          "calls": 0.25,
+          "charged_cpu_ms": 0.8226909263830289
+        },
+        "fence_owner": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6457974745046959
+        },
+        "full_canvas": {
+          "calls": 0.25,
+          "charged_cpu_ms": 1.2520808105869123
+        },
+        "idle": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.2597264649785235
+        },
+        "pointer_erase": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.009926522587596569
+        },
+        "solid_record": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.306054074526217
+        },
+        "start": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.05397678814850735
+        },
+        "v_bar": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.809274261948361
+        },
+        "wind_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.6433504985816232
+        }
+      },
+      "stack": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 561,
+          "remaining_above_floor": 719
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 641,
+          "remaining_above_floor": 415
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 154,
+          "remaining_above_floor": 902
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 743,
+          "remaining_above_floor": 313
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 711,
+          "remaining_above_floor": 345
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 852,
+          "remaining_above_floor": 1452
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 68,
+          "remaining_above_floor": 188
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 1,
+      "linked_executable_bytes_delta": 818,
+      "vram_delta": 0,
+      "checks": {
+        "pointer": 145,
+        "locks": "Timeout at 118 checks, zero assertion failures, reproduced on RP1 and original 3ff76d7 with the same C fixture. Pre-existing test limitation; not a passing qualification."
+      }
+    },
+    "RP3": {
+      "archive_sha256": "15c9e1a7f3f90ce2b02f7c1c01d2581374ae556f6149980108338da16cc5c0f1",
+      "trace_sha256": "a7d285c4465b105ad7380ece1cf9cba5c5e3dcb1d3172aa787b9dd14dd158cdd",
+      "per_operation": {
+        "elapsed_ms": 20.090604129339418,
+        "charged_cpu_ms": 8.789886647335203,
+        "off_cpu_ms": 9.422440613550725,
+        "interrupt_ms": 1.8782768684534876
+      },
+      "presenter_cpu_ms": 7.758966175579861,
+      "presenter_routines": {
+        "AESCORE_DISPATCH": {
+          "calls": 0.5,
+          "cpu_ms": 2.1141387983950284
+        },
+        "AESCORE_PUMP": {
+          "calls": 0.5,
+          "cpu_ms": 2.18321423855701
+        },
+        "AESINBOX_SNAPSHOT": {
+          "calls": 1.0,
+          "cpu_ms": 0.23773798397377613
+        },
+        "AESLOCKS_ACQUIRE": {
+          "calls": 0.25,
+          "cpu_ms": 0.729518588323966
+        },
+        "AESLOCKS_ELIGIBLE": {
+          "calls": 0.25,
+          "cpu_ms": 0.029629436450754814
+        },
+        "AESLOCKS_REQUEST": {
+          "calls": 0.5,
+          "cpu_ms": 1.4730870240026839
+        },
+        "AESMOUSE_REFRESH": {
+          "calls": 2.013333333333333,
+          "cpu_ms": 0.5517229388897426
+        },
+        "AESSTATE_REPLY": {
+          "calls": 0.5,
+          "cpu_ms": 0.5051171517623161
+        },
+        "AESWINDOWSTATE_BEGINUPDATE": {
+          "calls": 0.25,
+          "cpu_ms": 0.42619319150975715
+        },
+        "AESWINDOWSTATE_ENDUPDATE": {
+          "calls": 0.25,
+          "cpu_ms": 0.4197847694955729
+        },
+        "AESWINDOWSTATE_PUBLISH": {
+          "calls": 0.25,
+          "cpu_ms": 0.27157885042175384
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 0.51,
+          "cpu_ms": 0.026224345519108967
+        },
+        "AESWINDOWSTATE_UPDATES": {
+          "calls": 0.5,
+          "cpu_ms": 0.06073692624112076
+        },
+        "DESKCACHE_BEGINCHANGE": {
+          "calls": 0.25,
+          "cpu_ms": 0.012158756696584854
+        },
+        "DESKCACHE_ENDCHANGE": {
+          "calls": 0.25,
+          "cpu_ms": 0.13938317880850715
+        }
+      },
+      "routines": {
+        "BenchDraw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 4.27045016368777,
+          "elapsed_ms": 6.316726084833824,
+          "off_cpu_ms": 1.1291380677089868,
+          "interrupt_ms": 0.9171378534370672
+        },
+        "DisplayEnter": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.7541483466524946,
+          "elapsed_ms": 1.0115337969313065,
+          "off_cpu_ms": 0.09971256549742803,
+          "interrupt_ms": 0.1576728847813839
+        },
+        "DisplayLeave": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.23603696566527438,
+          "elapsed_ms": 0.6303917463960261,
+          "off_cpu_ms": 0.33877776665693987,
+          "interrupt_ms": 0.05557701407381198
+        },
+        "ExecAESSubmit": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.2666242821773221,
+          "elapsed_ms": 9.373993074693969,
+          "off_cpu_ms": 7.845018671260356,
+          "interrupt_ms": 0.2623501212562913
+        },
+        "GemDrawingSolidBorrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.135066727377044,
+          "elapsed_ms": 3.632272969268426,
+          "off_cpu_ms": 1.0295847964675209,
+          "interrupt_ms": 0.46762144542386136
+        },
+        "GemSolidFill": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.418540958594301,
+          "elapsed_ms": 0.6703724901169427,
+          "off_cpu_ms": 0.16176919061131875,
+          "interrupt_ms": 0.09006234091132291
+        },
+        "GemSolidRows": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.012474055946586148,
+          "elapsed_ms": 0.015362497809116613,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0028884418625304666
+        },
+        "GetMsg": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.10080319077202267,
+          "elapsed_ms": 0.11817895182499998,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.01737576105297732
+        },
+        "PutMsg": {
+          "calls": 0.5,
+          "charged_cpu_ms": 0.49003518100573407,
+          "elapsed_ms": 4.899617364859499,
+          "off_cpu_ms": 4.3027751502840275,
+          "interrupt_ms": 0.10680703356973728
+        },
+        "VbxeOwnerFence": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.31742528793963926,
+          "elapsed_ms": 0.46731977311611045,
+          "off_cpu_ms": 0.0809003367734314,
+          "interrupt_ms": 0.06899414840303984
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.5651908218314893,
+          "elapsed_ms": 0.9956847233049376,
+          "off_cpu_ms": 0.30326172610128016,
+          "interrupt_ms": 0.12723217537216824
+        },
+        "Wait": {
+          "calls": 0.5,
+          "charged_cpu_ms": 0.30177122055581945,
+          "elapsed_ms": 3.907746540753721,
+          "off_cpu_ms": 3.542243520976328,
+          "interrupt_ms": 0.06373179922157268
+        },
+        "_Mod16": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.1347723384349786,
+          "elapsed_ms": 0.160826112228677,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.026053773793698432
+        },
+        "_VbxeUpload": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.13824368449963512,
+          "elapsed_ms": 0.2707384440005507,
+          "off_cpu_ms": 0.10105693383461685,
+          "interrupt_ms": 0.03143782566629874
+        },
+        "borrow_callback": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.42546344525751867,
+          "elapsed_ms": 0.6784511523459251,
+          "off_cpu_ms": 0.16176919061131875,
+          "interrupt_ms": 0.0912185164770877
+        },
+        "drain": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.5835181193691948,
+          "elapsed_ms": 1.0186576334136384,
+          "off_cpu_ms": 0.30326172610128016,
+          "interrupt_ms": 0.13187778794316343
+        },
+        "drawing_borrow": {
+          "calls": 1.0,
+          "charged_cpu_ms": 2.1294239985489654,
+          "elapsed_ms": 3.625477119189225,
+          "off_cpu_ms": 1.0295847964675209,
+          "interrupt_ms": 0.46646832417273887
+        },
+        "events": {
+          "calls": 0.25,
+          "charged_cpu_ms": 0.8228854627310178,
+          "elapsed_ms": 0.9947336567147697,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17184819398375198
+        },
+        "fence_owner": {
+          "calls": 2.0,
+          "charged_cpu_ms": 0.6460603805112171,
+          "elapsed_ms": 1.1153558253063593,
+          "off_cpu_ms": 0.3234841084009159,
+          "interrupt_ms": 0.1458113363942265
+        },
+        "full_canvas": {
+          "calls": 0.25,
+          "charged_cpu_ms": 1.2247338869631044,
+          "elapsed_ms": 1.47974589981754,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2550120128544356
+        },
+        "idle": {
+          "calls": 4.0,
+          "charged_cpu_ms": 0.2675795778185333,
+          "elapsed_ms": 0.38464112037899817,
+          "off_cpu_ms": 0.06068218352483887,
+          "interrupt_ms": 0.05637935903562599
+        },
+        "pointer_erase": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.010396887042516529,
+          "elapsed_ms": 0.013764621356613792,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.00336773431409726
+        },
+        "solid_record": {
+          "calls": 3.0,
+          "charged_cpu_ms": 0.30040570696341445,
+          "elapsed_ms": 0.5272834878581595,
+          "off_cpu_ms": 0.16176919061131875,
+          "interrupt_ms": 0.0651085902834263
+        },
+        "start": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.04866721456372404,
+          "elapsed_ms": 0.060315665767758375,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.011648451204034327
+        },
+        "v_bar": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.319769122006713,
+          "elapsed_ms": 5.171073337853719,
+          "off_cpu_ms": 1.1291380677089868,
+          "interrupt_ms": 0.7221661481380193
+        },
+        "vsf_color": {
+          "calls": 1.0,
+          "charged_cpu_ms": 0.7881250126284164,
+          "elapsed_ms": 0.9521179792466368,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.16399296661822055
+        },
+        "wind_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.651463933008072,
+          "elapsed_ms": 9.841307913917195,
+          "off_cpu_ms": 7.845018671260356,
+          "interrupt_ms": 0.3448253096487679
+        }
+      },
+      "exclusive_cpu_ms": {
+        "app_arithmetic": 0.13477233843497843,
+        "app_other": 1.636261904191323,
+        "borrow_setup_cursor": 0.11493902883132084,
+        "command_build": 0.4185409585943012,
+        "completion_poll": 0.26757957781853386,
+        "display_ownership": 0.9901853123177685,
+        "event_poll": 0.8228854627310178,
+        "renderer": 0.006922486663217625,
+        "submission_fence": 0.19865567865226605,
+        "update": 1.6514639330080707,
+        "upload": 0.13824368449963517,
+        "vdi_aes_preparation": 1.1847023946296693,
+        "visibility": 1.2247338869631044
+      },
+      "stack": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 565,
+          "remaining_above_floor": 715
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 641,
+          "remaining_above_floor": 415
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 149,
+          "remaining_above_floor": 907
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 741,
+          "remaining_above_floor": 315
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 711,
+          "remaining_above_floor": 345
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 841,
+          "remaining_above_floor": 1463
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 68,
+          "remaining_above_floor": 188
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": 354,
+      "vram_delta": 0,
+      "checks": {
+        "cache": 220,
+        "vdi": 421,
+        "vdi_pixel_checks": {
+          "vdi_pixels": "04f42b28d8f655409f6c88e3e800d3ab30bc89bdd54b3c199e462b29a9936e21",
+          "virtual_open_pixels": "unchanged",
+          "cursor_restored_pixels": "908b0ff17f07ee58d50f052c6ae7106bb744c6463e88f246821a0136a041a12f",
+          "covered_pixels": "ffe9dc0726000237101134cb50d5dd337b370c32b4efd6dbbf1417ee06db3028",
+          "exposed_pixels": "908b0ff17f07ee58d50f052c6ae7106bb744c6463e88f246821a0136a041a12f",
+          "clip_pixels": "fbf2b4f9f17f267db771b9b9f48fea8bfe68d48dea09d8b2fddc4b1863b167fd",
+          "clip_cursor_restored_pixels": "9f27e19f13edaf4482989637f2b67edf313e4a5e86ab7d725a70bc2ad5ee97bc"
+        }
+      }
+    },
+    "RP4": {
+      "production_change": false,
+      "reason": "Measured remaining UPDATE work is state transition, publication and request/reply scheduling; existing revisions do not prove drawing snapshot reuse safe.",
+      "source_trace_sha256": "a7d285c4465b105ad7380ece1cf9cba5c5e3dcb1d3172aa787b9dd14dd158cdd",
+      "per_rectangle": {
+        "caller_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.651463933008072,
+          "elapsed_ms": 9.841307913917195,
+          "off_cpu_ms": 7.845018671260356,
+          "interrupt_ms": 0.3448253096487679
+        },
+        "caller_preparation_result_cpu_ms": 0.7588543406744959,
+        "presenter_pump_cpu_ms": 2.18321423855701,
+        "intake_dispatch_exclusive_cpu_ms": 0.20501006279201017
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": 0,
+      "vram_delta": 0
+    },
+    "RP5": {
+      "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+      "archive_bytes": 655171,
+      "exec_build": {
+        "revision": "a6d8654b338a4134853b4ce0c985a31a3d11b5a1",
+        "dirty": true,
+        "display": "a6d8654-dirty",
+        "actionc_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "task_capacity": 8,
+        "stack_checks": true
+      },
+      "build_dirty_reason": "Host measurement tooling was being updated during packaging; no production sources changed after RP3.",
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "rom": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/rp5/demo/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$dbbd6f4e74938648",
+        "actual_kernel_id": "$dbbd6f4e74938648",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "matched_parent_inputs": true,
+      "ordinary": {
+        "idle": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3365,
+                50
+              ],
+              "end": [
+                0,
+                3465,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3469,
+                50
+              ],
+              "end": [
+                0,
+                3569,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 100,
+              "start": [
+                0,
+                3573,
+                50
+              ],
+              "end": [
+                0,
+                3673,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 20.0
+        },
+        "counter": {
+          "name": "solid bars",
+          "status": "complete",
+          "clip": [
+            152,
+            56,
+            631,
+            215
+          ],
+          "samples": [
+            {
+              "operations": 100,
+              "ticks": 114,
+              "start": [
+                0,
+                5856,
+                50
+              ],
+              "end": [
+                0,
+                5970,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 113,
+              "start": [
+                0,
+                5975,
+                50
+              ],
+              "end": [
+                0,
+                6088,
+                50
+              ]
+            },
+            {
+              "operations": 100,
+              "ticks": 113,
+              "start": [
+                0,
+                6092,
+                50
+              ],
+              "end": [
+                0,
+                6205,
+                50
+              ]
+            }
+          ],
+          "median_ms_per_operation": 22.6
+        }
+      },
+      "counter_advanced": true,
+      "canvas": [
+        152,
+        56,
+        480,
+        160
+      ],
+      "pointer": [
+        630,
+        230
+      ],
+      "files": {
+        "parent_new_window": {
+          "frame_ms": 822.263,
+          "window_ms": 1243.625
+        },
+        "candidate": [
+          {
+            "action": "Close right warmup",
+            "start": 93377548,
+            "end": 96934221,
+            "window_ms": 461.2761302491334,
+            "bounds": [
+              120,
+              24,
+              582,
+              220
+            ],
+            "icon_changed_frames": 0,
+            "calls": {
+              "VbxeOwnerSubmit": 23,
+              "VbxeOwnerFence": 83
+            }
+          },
+          {
+            "action": "New Window",
+            "start": 107568846,
+            "end": 112441741,
+            "frame_ms": 742.183233504234,
+            "window_ms": 1143.3363547553565,
+            "content_paints": 1,
+            "changed_frames_after_complete": 0,
+            "calls": {
+              "CONSOLEBITMAP_COPYSTART": 2,
+              "VbxeOwnerSubmit": 50,
+              "VbxeOwnerFence": 167,
+              "CONSOLEBITMAP_FRAME": 4,
+              "GemDrawingFrameBatch": 2
+            }
+          }
+        ],
+        "initial_draw_checks": {
+          "initial_content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "explicit_refresh_paints": 1
+        },
+        "selection": [
+          {
+            "action": "icons-summary-pointer",
+            "start": 68124237,
+            "end": 70969485,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 17,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "icons-cell-pointer",
+            "start": 80075085,
+            "end": 82920333,
+            "pointer": [
+              172,
+              55
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 1,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 18,
+              "GemDrawingCopyStart": 1,
+              "cursor_hide": 1
+            }
+          },
+          {
+            "action": "icons-outside-pointer",
+            "start": 92701517,
+            "end": 95547212,
+            "pointer": [
+              632,
+              232
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 16,
+              "cursor_render": 17,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "list-summary-pointer",
+            "start": 148330124,
+            "end": 151175373,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 1,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 1,
+            "calls": {
+              "GemDrawingBorrow": 14,
+              "cursor_hide": 3,
+              "cursor_render": 18,
+              "GemDrawingCopyStart": 1
+            }
+          },
+          {
+            "action": "list-first-item-noop",
+            "start": 186814669,
+            "end": 189659917,
+            "pointer": [
+              526,
+              36
+            ],
+            "position_changed_frames": 0,
+            "pointer_hidden_frames": 0,
+            "summary_changed_frames": 0,
+            "pointer_pixel_changed_frames": 0,
+            "paints": 0,
+            "calls": {}
+          }
+        ],
+        "restorations": [
+          {
+            "action": "icons-outside-pointer",
+            "delta": {
+              "paints": 0,
+              "captures": 0,
+              "patches": 0,
+              "restores": 1
+            }
+          },
+          {
+            "action": "list-summary-pointer",
+            "delta": {
+              "paints": 0,
+              "captures": 0,
+              "patches": 0,
+              "restores": 2
+            }
+          }
+        ]
+      },
+      "menus": {
+        "parent": {
+          "panel_with_counter": {
+            "buttons": {
+              "model_address": 2621702,
+              "samples_ms": [
+                80.33167037648423,
+                120.24545412254945
+              ],
+              "scope": "2 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+            },
+            "counter_ticks": 2,
+            "counter_paints": 1,
+            "visible_digits_changed": true
+          },
+          "application": {
+            "open": [
+              200.57712449903366,
+              200.57656062556123
+            ],
+            "highlight": [
+              60.12188125106607,
+              60.37393269324296
+            ],
+            "switch": [
+              220.53317056185762,
+              220.53317056185762
+            ],
+            "close": [
+              140.45411550102273,
+              140.45411550102273
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "switch": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "native": {
+            "open": [
+              180.3673353736155,
+              180.61995068926484
+            ],
+            "highlight": [
+              100.28828031278061,
+              100.28828031278061
+            ],
+            "next_row": [
+              120.24432637560457,
+              120.24432637560457
+            ],
+            "close": [
+              120.24432637560457,
+              140.45411550102273
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "next_row": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "repeated_headings": {
+            "keyboard": {
+              "samples_ms": [
+                240.4892166246816,
+                320.8225786215831
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            },
+            "pointer": {
+              "samples_ms": [
+                300.8648409383419,
+                280.90823100204545
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            }
+          }
+        },
+        "candidate": {
+          "panel_with_counter": {
+            "buttons": {
+              "model_address": 2621702,
+              "samples_ms": [
+                100.28828031278061,
+                80.33900073162583
+              ],
+              "scope": "2 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+            },
+            "counter_ticks": 2,
+            "counter_paints": 2,
+            "visible_digits_changed": true
+          },
+          "application": {
+            "open": [
+              180.36789924708796,
+              180.62051456273724
+            ],
+            "highlight": [
+              60.12131737759364,
+              60.12300899801094
+            ],
+            "switch": [
+              200.57656062556123,
+              200.57712449903366
+            ],
+            "close": [
+              140.20206405884582,
+              140.45467937449516
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "switch": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "native": {
+            "open": [
+              160.41072543731912,
+              160.41072543731912
+            ],
+            "highlight": [
+              100.28884418625304,
+              100.28828031278061
+            ],
+            "next_row": [
+              100.28828031278061,
+              100.03622887060372
+            ],
+            "close": [
+              120.24545412254945,
+              120.24489024907702
+            ],
+            "files_repaints": {
+              "open": [
+                0,
+                0
+              ],
+              "highlight": [
+                0,
+                0
+              ],
+              "next_row": [
+                0,
+                0
+              ],
+              "close": [
+                0,
+                0
+              ]
+            }
+          },
+          "repeated_headings": {
+            "keyboard": {
+              "samples_ms": [
+                240.49034437162643,
+                300.6122256226925
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            },
+            "pointer": {
+              "samples_ms": [
+                300.8654048118143,
+                280.6556156863961
+              ],
+              "files_repaints_during_switch": 0,
+              "final_repaint": false
+            }
+          }
+        },
+        "scope": "Two observations per input; report individual values, not p95. Menu completion uses whole-region equality; Panel uses independent button pixels. Frame-granular polling."
+      },
+      "runs": {
+        "idle": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 415,
+            "2": 907,
+            "3": 315,
+            "4": 345,
+            "5": 1038,
+            "6": 1463,
+            "7": 2286,
+            "8": 188,
+            "kernel": 993
+          }
+        },
+        "counter": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 703,
+            "1": 397,
+            "2": 859,
+            "3": 315,
+            "4": 355,
+            "5": 333,
+            "6": 1463,
+            "7": 2286,
+            "8": 117,
+            "kernel": 980
+          }
+        },
+        "keyboard": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 751,
+            "2": 908,
+            "3": 210,
+            "4": 1038,
+            "5": 1038,
+            "6": 1452,
+            "7": 2286,
+            "8": 192,
+            "kernel": 993
+          }
+        },
+        "menus": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 718,
+            "2": 907,
+            "3": 315,
+            "4": 368,
+            "5": 317,
+            "6": 1463,
+            "7": 2286,
+            "8": 127,
+            "kernel": 993
+          }
+        },
+        "frame": {
+          "status": "pass",
+          "guards": "intact",
+          "return_status": 0,
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "headroom_above_interrupt_reserve": {
+            "0": 715,
+            "1": 751,
+            "2": 908,
+            "3": 250,
+            "4": 1038,
+            "5": 1038,
+            "6": 1463,
+            "7": 2286,
+            "8": 192,
+            "kernel": 991
+          }
+        }
+      },
+      "checks": {
+        "development": true,
+        "full_qualification": false,
+        "normal_close_exit": true,
+        "of816_autoboot": true,
+        "known_limitation": "Standalone locks fixture times out on both original parent and candidate at 118 checks, no assertion failures."
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": 0,
+      "vram_delta": 0,
+      "cumulative_resources": {
+        "linked_executable_bytes": 1272257,
+        "linked_executable_bytes_delta": 897,
+        "upper_static_bytes": 13529,
+        "upper_static_delta": 1,
+        "stack_capacity_delta": 0,
+        "vram_delta": 0
+      },
+      "evidence_sha256": {
+        "build/rp5/demo/g4bench-idle.json": "791bdf55acb266e640f1e9b13f76d425c3cb191b48494e76d2c244df0bbbf0ac",
+        "build/rp5/demo/g4bench-counter.json": "f84933c1fa517384272c7dfa9ec14073fffe9e7eba5d43e26c8e3d3e5f2db888",
+        "build/rp5/frame/frame-exposure-results.json": "ec1f3080ebe0a52414ec3b5d6527df50f12d210b05f80b146d8a63ca67f396a2",
+        "build/rp5/keyboard/keyboard-results.json": "3754f7585580f86a05ddd00f14d05622bb9cdf8df2b1965b831457ae5bce52e1",
+        "build/rp5/menus-checked/menu-results.json": "9c708cc7e97e5816fc2d21f3f9e71255e2d2dcd14ef4f09ce0c00677a121f306",
+        "build/rp5/menus-parent/menu-results.json": "3a2fab1bfb7e8e84c8f509982b5d0f85852a41f9db7407ee70e8dd3ea3fc6f44"
+      }
+    }
+  },
+  "dialog_followup": {
+    "scope": "Unchanged complete five-row G4BENCH, exact pre-RP and RP5 OF816 packages, idle and Counter; development measurements, no full qualification.",
+    "parent_exec_revision": "3ff76d7",
+    "candidate_package_exec_revision": "a6d8654-dirty",
+    "candidate_package_note": "Final RP production code; only host measurement tools were uncommitted at packaging. Existing ZIPs were reused without rebuilding.",
+    "matched_inputs": {
+      "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "benchmark_source_inputs": {
+        "bench.c": "0e62214f4bac15db0049ab8d425e86b1b8c78bf660de3bfbe80a2f55e73cd95f",
+        "clock.c": "994c30fd2dc64db91c17b57d424d44ee118205ae90a5ffa829d6ecaab6cf2f41",
+        "g4bench.c": "e2e1ca296c1c384bee1122405e3a5bfedeba8e0e722199c66e578407d11d064a"
+      },
+      "donor": {
+        "revision": "fbfea9b0b1233a5d659d5ec583c63f863cceadfa",
+        "inputs": {
+          "src/apps/g4bench.c": "ad0b808e7015c53d7f81757182ea685b80dfc916460780243abe079eda22ecf8",
+          "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+          "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+          "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+        },
+        "patches": {
+          "0001-exec-drawing-subset.patch": "3b6ffdf8ca3ef8d395fc728c78040b6054ee2fa27c9628fbd33ea161bf17c07f"
+        },
+        "adapters": {
+          "bench.c": "0e62214f4bac15db0049ab8d425e86b1b8c78bf660de3bfbe80a2f55e73cd95f",
+          "clock.c": "994c30fd2dc64db91c17b57d424d44ee118205ae90a5ffa829d6ecaab6cf2f41",
+          "clock.h": "f212681a686ae2f8faf63c297caf1c663a4c0034ffab5ad913df5f4c32d3adbb",
+          "workload.h": "5144b8fd2d6f8791728bb607c2c1f2a7aeaa1a06163336b8764ead2e60a34065"
+        }
+      },
+      "runner_sha256": "e4597f846589b312a62ac9e888279f8c859af7dc0faeaaf4b681949511434934"
+    },
+    "clock_hz": 50,
+    "canvas": [
+      152,
+      56,
+      480,
+      160
+    ],
+    "pointer": [
+      630,
+      230
+    ],
+    "statistic": "Median of three batch averages, not individual-operation latency or p95.",
+    "batch_policy": "Unchanged adaptive minimum two-second batch; parent idle 20 dialogs, candidate idle 40, both Counter 20. The same twenty-position sequence repeats.",
+    "timed_scope": "One UPDATE pair, full-canvas visibility checks, objc_draw and event polling per dialog; includes scheduling and completed drawing, excludes preparation/warmup/report/disk writes.",
+    "runs": {
+      "parent": {
+        "idle": {
+          "result_path": "build/rp-dialog/parent/g4bench-idle.json",
+          "result_sha256": "f62ec67fac650434b3201ec34a0fa9a0b40eb4ea3148ed149e4e0b72a7f223db",
+          "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 106,
+                "start": [
+                  0,
+                  6188,
+                  50
+                ],
+                "end": [
+                  0,
+                  6294,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 108,
+                "start": [
+                  0,
+                  6300,
+                  50
+                ],
+                "end": [
+                  0,
+                  6408,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 109,
+                "start": [
+                  0,
+                  6413,
+                  50
+                ],
+                "end": [
+                  0,
+                  6522,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 108.0
+          },
+          "batch_averages_ms": [
+            106.0,
+            108.0,
+            109.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 24.4,
+            "text even X": 25.0,
+            "text odd X": 25.0,
+            "text clipped": 31.6,
+            "five-object dialog": 108.0
+          },
+          "counter_advanced": false,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        },
+        "counter": {
+          "result_path": "build/rp-dialog/parent/g4bench-counter.json",
+          "result_sha256": "5e6a0f47d69ecfc792034e3213971d95a380a9e64e49ac6b3ecbf64e584c5fbd",
+          "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 133,
+                "start": [
+                  0,
+                  9382,
+                  50
+                ],
+                "end": [
+                  0,
+                  9515,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 130,
+                "start": [
+                  0,
+                  9521,
+                  50
+                ],
+                "end": [
+                  0,
+                  9651,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 131,
+                "start": [
+                  0,
+                  9656,
+                  50
+                ],
+                "end": [
+                  0,
+                  9787,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 131.0
+          },
+          "batch_averages_ms": [
+            133.0,
+            130.0,
+            131.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 27.8,
+            "text even X": 31.6,
+            "text odd X": 32.4,
+            "text clipped": 38.8,
+            "five-object dialog": 131.0
+          },
+          "counter_advanced": true,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        }
+      },
+      "candidate": {
+        "idle": {
+          "result_path": "build/rp-dialog/candidate/g4bench-idle.json",
+          "result_sha256": "2b7d94e74f5aa28a87496e606c6d0a28f076c88e1ebbb3d92fca9cf6664d8e7f",
+          "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 40,
+                "ticks": 185,
+                "start": [
+                  0,
+                  5948,
+                  50
+                ],
+                "end": [
+                  0,
+                  6133,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 186,
+                "start": [
+                  0,
+                  6137,
+                  50
+                ],
+                "end": [
+                  0,
+                  6323,
+                  50
+                ]
+              },
+              {
+                "operations": 40,
+                "ticks": 186,
+                "start": [
+                  0,
+                  6327,
+                  50
+                ],
+                "end": [
+                  0,
+                  6513,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 93.0
+          },
+          "batch_averages_ms": [
+            92.5,
+            93.0,
+            93.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 20.0,
+            "text even X": 22.4,
+            "text odd X": 22.4,
+            "text clipped": 27.4,
+            "five-object dialog": 93.0
+          },
+          "counter_advanced": false,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        },
+        "counter": {
+          "result_path": "build/rp-dialog/candidate/g4bench-counter.json",
+          "result_sha256": "b1064ed725ce8eeb9f42f13b5226cc7447dff2a6c672cb5eb3e475f441e87eb8",
+          "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+          "dialog": {
+            "name": "five-object dialog",
+            "status": "complete",
+            "clip": [
+              152,
+              56,
+              631,
+              215
+            ],
+            "samples": [
+              {
+                "operations": 20,
+                "ticks": 111,
+                "start": [
+                  0,
+                  8733,
+                  50
+                ],
+                "end": [
+                  0,
+                  8844,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 112,
+                "start": [
+                  0,
+                  8849,
+                  50
+                ],
+                "end": [
+                  0,
+                  8961,
+                  50
+                ]
+              },
+              {
+                "operations": 20,
+                "ticks": 113,
+                "start": [
+                  0,
+                  8966,
+                  50
+                ],
+                "end": [
+                  0,
+                  9079,
+                  50
+                ]
+              }
+            ],
+            "median_ms_per_operation": 112.0
+          },
+          "batch_averages_ms": [
+            111.0,
+            112.0,
+            113.0
+          ],
+          "all_rows_ms_per_operation": {
+            "solid bars": 22.6,
+            "text even X": 26.6,
+            "text odd X": 27.0,
+            "text clipped": 34.0,
+            "five-object dialog": 112.0
+          },
+          "counter_advanced": true,
+          "status": "pass",
+          "guards": "intact",
+          "normal_app_close": true,
+          "hello": true,
+          "exit_status": 0,
+          "remaining_live_tasks": 0
+        }
+      }
+    },
+    "comparison": {
+      "idle": {
+        "parent_ms": 108.0,
+        "candidate_ms": 93.0,
+        "reduction_ms": 15.0,
+        "reduction_percent": 13.889
+      },
+      "counter": {
+        "parent_ms": 131.0,
+        "candidate_ms": 112.0,
+        "reduction_ms": 19.0,
+        "reduction_percent": 14.504
+      }
+    },
+    "resource_delta": {
+      "bank_zero_fixed": 0,
+      "bank_zero_per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "bank_zero_idle": 0,
+      "vram": 0
+    }
+  }
+}

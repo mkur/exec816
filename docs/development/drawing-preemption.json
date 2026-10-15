@@ -1,0 +1,1521 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Short synchronous client drawing units defer Task switching through Forbid/Permit; eight dialog units remain. Native owner work, asynchronous DMA, whole objc_draw and AES UPDATE are not wrapped.",
+  "inputs": {
+    "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "host_compiler_profile": "release",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$90bcaa4a7e2f0338",
+      "actual_kernel_id": "$90bcaa4a7e2f0338",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "canvas": [
+      152,
+      56,
+      480,
+      160
+    ],
+    "pointer": [
+      630,
+      230
+    ],
+    "g4bench_app_sha256": "40b666d4d0f106ebf85d3ad79c010cf3cfbd6d2c1cb120a324fe9d94aad30290",
+    "matched_baseline": true,
+    "adapter_source_sha256": "92366f9aa951fdfc690311e8e594342a1e631ffdc9d800ea54651f826a7158e9"
+  },
+  "archive": {
+    "path": "build/drawing-preemption/demo/exec816-demo.zip",
+    "sha256": "55bb1c7e44bac46dca6c44aedfa3317a6449800a6a3f58b62480d38a2c685544",
+    "bytes": 655174,
+    "exec_build": "50e4b16-dirty",
+    "of816_autoboot_seconds": 5
+  },
+  "comparison": {
+    "idle": {
+      "before": {
+        "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+        "trace_sha256": "a4139dda6d0732a6af3112a36301839a8f85e27b33b42f4361e0face2ba6b123",
+        "trace_report_sha256": "301d4510dac79cf14b2499c89287a62610e6fd3fad9e860c2535fcdbed27462f",
+        "analysis_sha256": "fb36014ed4160478d38c932017e141e9172e0560eefc3eb174c25f25eb87cde8",
+        "operations": 120,
+        "dialog_median_ms": 93.0,
+        "all_rows": {
+          "solid bars": 20.0,
+          "text even X": 22.4,
+          "text odd X": 22.4,
+          "text clipped": 27.4,
+          "five-object dialog": 93.0
+        },
+        "whole_operation": {
+          "elapsed_ms": 93.08707392898107,
+          "charged_cpu_ms": 50.18344683636439,
+          "off_cpu_ms": 32.17238011462608,
+          "interrupt_ms": 10.73124697799061
+        },
+        "presenter_cpu_ms": 26.485345515819702,
+        "maximum_owned_elapsed_ms": 17.146898907354178,
+        "held_off_task_per_dialog": {
+          "count": 120,
+          "mean": 5.475779989728105,
+          "median": 6.065093553657494,
+          "p95": 12.440810906440705,
+          "minimum": 0.0,
+          "maximum": 12.48422916381793
+        },
+        "exclusive_cpu_ms": {
+          "app_arithmetic": 0.10763287325956936,
+          "app_other": 0.8076753282330963,
+          "borrow_setup_cursor": 0.9317944521428903,
+          "command_build": 8.032987302979055,
+          "completion_poll": 1.700408032941487,
+          "display_ownership": 7.615822548078427,
+          "event_poll": 3.29031096212321,
+          "renderer": 7.762150651015432,
+          "submission_fence": 1.4817120561317774,
+          "update": 6.7803259376628455,
+          "upload": 2.549477547733064,
+          "vdi_aes_preparation": 4.164103391839905,
+          "visibility": 4.959045752223658
+        },
+        "routines": {
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 34.23845598286201,
+            "elapsed_ms": 48.38295948522111,
+            "off_cpu_ms": 6.772196174400426,
+            "interrupt_ms": 7.372307327958679
+          },
+          "drawing_borrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 29.92073407398114,
+            "elapsed_ms": 43.14163808533003,
+            "off_cpu_ms": 6.772196174400426,
+            "interrupt_ms": 6.448707836948467
+          },
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 6.088248195487415,
+            "elapsed_ms": 8.525882614700087,
+            "off_cpu_ms": 1.1195155669019428,
+            "interrupt_ms": 1.31811885231073
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.5275743525910221,
+            "elapsed_ms": 1.9033437461967908,
+            "off_cpu_ms": 0.05056300416749485,
+            "interrupt_ms": 0.32520638943827396
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.780325937662848,
+            "elapsed_ms": 33.235555323740904,
+            "off_cpu_ms": 25.021118236278962,
+            "interrupt_ms": 1.4341111497990966
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 4.959045752223658,
+            "elapsed_ms": 6.378229526576532,
+            "off_cpu_ms": 0.3790657039466914,
+            "interrupt_ms": 1.0401180704061814
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.290310962123209,
+            "elapsed_ms": 3.9694055175959067,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.6790945554726975
+          }
+        },
+        "units": [
+          {
+            "name": "background top",
+            "held_cpu_mean_ms": 2.483672338763905,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.000807161381058,
+              "median": 2.9979390424582633,
+              "p95": 3.746375350835026,
+              "minimum": 2.133838188048984,
+              "maximum": 3.7755558030333574
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background middle 1",
+            "held_cpu_mean_ms": 2.8343893038841013,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 8.253981064189007,
+              "median": 9.195860040965407,
+              "p95": 17.105313238762353,
+              "minimum": 2.2506304810263624,
+              "maximum": 17.146898907354178
+            },
+            "held_off_task_max_ms": 12.48422916381793
+          },
+          {
+            "name": "background middle 2",
+            "held_cpu_mean_ms": 2.577960793877462,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.850266688657732,
+              "median": 3.7399965321781448,
+              "p95": 9.22807131307806,
+              "minimum": 2.2555643739101385,
+              "maximum": 9.312793302310896
+            },
+            "held_off_task_max_ms": 6.068970183780461
+          },
+          {
+            "name": "background bottom",
+            "held_cpu_mean_ms": 2.463703582053223,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 2.9773400396684986,
+              "median": 2.958221204743867,
+              "p95": 3.741018552846927,
+              "minimum": 2.2464719141671803,
+              "maximum": 3.778375170395515
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "label",
+            "held_cpu_mean_ms": 2.9497754373896043,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.6110204606188416,
+              "median": 3.567592217982207,
+              "p95": 3.73714192272396,
+              "minimum": 3.5034163684010946,
+              "maximum": 3.748207939620429
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "small box",
+            "held_cpu_mean_ms": 2.261378731726388,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 2.7449278406418385,
+              "median": 2.7535351342512255,
+              "p95": 2.8672966073142847,
+              "minimum": 2.636249451985469,
+              "maximum": 2.9169174728882585
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "OK button",
+            "held_cpu_mean_ms": 2.962372135816444,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.59583405579622,
+              "median": 3.5894423150389283,
+              "p95": 3.713670689433998,
+              "minimum": 3.52068499349431,
+              "maximum": 3.7596263774371668
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "Cancel button",
+            "held_cpu_mean_ms": 3.6488816274516163,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 4.406652391269923,
+              "median": 4.474018824915877,
+              "p95": 5.197010342849168,
+              "minimum": 3.6113276541876767,
+              "maximum": 5.336428058907862
+            },
+            "held_off_task_max_ms": 0.0
+          }
+        ],
+        "counter_advanced": false,
+        "runtime": {
+          "status": "pass",
+          "return_status": 0,
+          "guards": "intact",
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 565,
+              "remaining_above_floor": 715
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 641,
+              "remaining_above_floor": 415
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 741,
+              "remaining_above_floor": 315
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 738,
+              "remaining_above_floor": 318
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 841,
+              "remaining_above_floor": 1463
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 68,
+              "remaining_above_floor": 188
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        }
+      },
+      "after": {
+        "archive_sha256": "55bb1c7e44bac46dca6c44aedfa3317a6449800a6a3f58b62480d38a2c685544",
+        "trace_sha256": "2da5d22e7f938cc1cd8c8f9628117de9bee9a113ab50f128cc596275cd72407c",
+        "trace_report_sha256": "0616893227ed90ee8d1576b34f9d3849ac60d97f4dccfbf916ab9f032dd7de68",
+        "analysis_sha256": "022f4bf99abbea01287f72abf55416519ef61e47625981699d969f0d2f7bde63",
+        "operations": 120,
+        "dialog_median_ms": 97.0,
+        "all_rows": {
+          "solid bars": 20.0,
+          "text even X": 22.8,
+          "text odd X": 22.8,
+          "text clipped": 28.2,
+          "five-object dialog": 97.0
+        },
+        "whole_operation": {
+          "elapsed_ms": 97.29581201774134,
+          "charged_cpu_ms": 51.423319433852235,
+          "off_cpu_ms": 34.87187561233135,
+          "interrupt_ms": 11.000616971557752
+        },
+        "presenter_cpu_ms": 28.738925759948724,
+        "maximum_owned_elapsed_ms": 5.27538875551715,
+        "held_off_task_per_dialog": {
+          "count": 120,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        "exclusive_cpu_ms": {
+          "app_arithmetic": 0.10775152163606014,
+          "app_other": 0.829490183197791,
+          "borrow_setup_cursor": 2.467504441678316,
+          "command_build": 7.996136409451041,
+          "completion_poll": 1.5815041512834902,
+          "display_ownership": 7.539173347392564,
+          "event_poll": 3.291389957507435,
+          "renderer": 7.678270360413844,
+          "submission_fence": 1.4976532290919762,
+          "update": 6.70235222168497,
+          "upload": 2.560952372897044,
+          "vdi_aes_preparation": 4.163820867735486,
+          "visibility": 5.007320369882202
+        },
+        "routines": {
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 35.48501517994377,
+            "elapsed_ms": 50.10363348318271,
+            "off_cpu_ms": 7.00428590828504,
+            "interrupt_ms": 7.614332394953896
+          },
+          "drawing_borrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 31.1648040046294,
+            "elapsed_ms": 44.84673272914291,
+            "off_cpu_ms": 7.00428590828504,
+            "interrupt_ms": 6.677642816228467
+          },
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 5.999967929696256,
+            "elapsed_ms": 7.2267287068454715,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2267607771492155
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.5392054176963232,
+            "elapsed_ms": 1.8788634143384566,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.3396579966421335
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.7023522216849765,
+            "elapsed_ms": 33.82438313416853,
+            "off_cpu_ms": 25.719667013918745,
+            "interrupt_ms": 1.402363898564801
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.007320369882202,
+            "elapsed_ms": 8.222142183515441,
+            "off_cpu_ms": 2.1479226901275625,
+            "interrupt_ms": 1.0668991235056766
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.291389957507435,
+            "elapsed_ms": 3.977613400828988,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.6862234433215532
+          }
+        },
+        "units": [
+          {
+            "name": "background top",
+            "held_cpu_mean_ms": 2.4802092158540545,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.00206471669822,
+              "median": 2.9838774477395016,
+              "p95": 3.7778112969230837,
+              "minimum": 2.1373623972516804,
+              "maximum": 3.817000503257074
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background middle 1",
+            "held_cpu_mean_ms": 2.712139772956346,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.3421250605576613,
+              "median": 3.3439811440710816,
+              "p95": 4.3004515216830494,
+              "minimum": 2.2514762912350097,
+              "maximum": 4.458265609779821
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background middle 2",
+            "held_cpu_mean_ms": 2.498630257356552,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.042739964579348,
+              "median": 3.230572091928292,
+              "p95": 3.7823222847025355,
+              "minimum": 2.1355298084662784,
+              "maximum": 3.788877313819552
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background bottom",
+            "held_cpu_mean_ms": 2.4818720552295273,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 2.9982914633785325,
+              "median": 2.9937452335070533,
+              "p95": 3.7427101732642214,
+              "minimum": 2.247317724375827,
+              "maximum": 3.8060049705446595
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "label",
+            "held_cpu_mean_ms": 2.953985105282226,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.6206715075204277,
+              "median": 3.5867286739528517,
+              "p95": 3.7376353120123373,
+              "minimum": 3.5086321980210857,
+              "maximum": 3.7502519809579926
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "small box",
+            "held_cpu_mean_ms": 2.2614644874836536,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 2.7377437401821405,
+              "median": 2.7275969545193757,
+              "p95": 2.7638963093071545,
+              "minimum": 2.669095081754605,
+              "maximum": 2.7657288980925574
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "OK button",
+            "held_cpu_mean_ms": 2.9478835244159565,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 3.56270942613187,
+              "median": 3.558887421251545,
+              "p95": 3.620349629746581,
+              "minimum": 3.5217422562551186,
+              "maximum": 3.6613009406819206
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "Cancel button",
+            "held_cpu_mean_ms": 3.6486966064684747,
+            "held_elapsed_ms": {
+              "count": 120,
+              "mean": 4.438155884701032,
+              "median": 4.475886655793307,
+              "p95": 5.238807463993155,
+              "minimum": 3.6164729996236145,
+              "maximum": 5.27538875551715
+            },
+            "held_off_task_max_ms": 0.0
+          }
+        ],
+        "counter_advanced": false,
+        "runtime": {
+          "status": "pass",
+          "return_status": 0,
+          "guards": "intact",
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 573,
+              "remaining_above_floor": 707
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 641,
+              "remaining_above_floor": 415
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 149,
+              "remaining_above_floor": 907
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 745,
+              "remaining_above_floor": 311
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 737,
+              "remaining_above_floor": 319
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 836,
+              "remaining_above_floor": 1468
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 66,
+              "remaining_above_floor": 190
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        "before_enter_off_task_ms_per_dialog": 0.0,
+        "after_leave_off_task_ms_per_dialog": 7.00428590828504
+      }
+    },
+    "counter": {
+      "before": {
+        "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+        "trace_sha256": "e9c6cad5fc61774879f0a5c479c09544bd31adf45ad6af2363f50f4110780b29",
+        "trace_report_sha256": "e09a75c490881307b7c1b0f25b432413513fb7227aeb7ce3d0528cd82fa26366",
+        "analysis_sha256": "fb36014ed4160478d38c932017e141e9172e0560eefc3eb174c25f25eb87cde8",
+        "operations": 60,
+        "dialog_median_ms": 112.0,
+        "all_rows": {
+          "solid bars": 22.6,
+          "text even X": 26.6,
+          "text odd X": 27.0,
+          "text clipped": 34.0,
+          "five-object dialog": 112.0
+        },
+        "whole_operation": {
+          "elapsed_ms": 112.32460010798177,
+          "charged_cpu_ms": 51.47691267056586,
+          "off_cpu_ms": 49.79189662131714,
+          "interrupt_ms": 11.055790816098776
+        },
+        "presenter_cpu_ms": 30.918458257151677,
+        "maximum_owned_elapsed_ms": 22.81389778947502,
+        "held_off_task_per_dialog": {
+          "count": 60,
+          "mean": 7.243713633097869,
+          "median": 8.019584735381228,
+          "p95": 19.63780997182042,
+          "minimum": 0.0,
+          "maximum": 22.524842150669812
+        },
+        "exclusive_cpu_ms": {
+          "app_arithmetic": 0.10758823327633511,
+          "app_other": 0.8569549328826099,
+          "borrow_setup_cursor": 0.9438466602479152,
+          "command_build": 8.156075008328864,
+          "completion_poll": 1.675883648468124,
+          "display_ownership": 7.7714686601473435,
+          "event_poll": 3.377651438793649,
+          "renderer": 7.883989611571051,
+          "submission_fence": 1.5476529471551546,
+          "update": 6.812520763465884,
+          "upload": 2.599354505842433,
+          "vdi_aes_preparation": 4.376191476394613,
+          "visibility": 5.3677347839918195
+        },
+        "routines": {
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 34.95446251815555,
+            "elapsed_ms": 53.322451750051805,
+            "off_cpu_ms": 10.82891045078395,
+            "interrupt_ms": 7.539078781112306
+          },
+          "drawing_borrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 30.424782333092274,
+            "elapsed_ms": 46.400745111804355,
+            "off_cpu_ms": 9.418975376115354,
+            "interrupt_ms": 6.556987402596731
+          },
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 6.179431822293395,
+            "elapsed_ms": 9.39823423022108,
+            "off_cpu_ms": 1.8549733875215741,
+            "interrupt_ms": 1.3638290204061112
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.592036837853954,
+            "elapsed_ms": 2.2609152982162333,
+            "off_cpu_ms": 0.32028835549591034,
+            "interrupt_ms": 0.34859010486636904
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.812520763465886,
+            "elapsed_ms": 40.9378179130385,
+            "off_cpu_ms": 32.69494750572919,
+            "interrupt_ms": 1.430349643843418
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.36773478399182,
+            "elapsed_ms": 11.366743541416742,
+            "off_cpu_ms": 4.845681927432304,
+            "interrupt_ms": 1.153326829992618
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.377651438793649,
+            "elapsed_ms": 5.504604496796963,
+            "off_cpu_ms": 1.4223567373717012,
+            "interrupt_ms": 0.7045963206316135
+          }
+        },
+        "units": [
+          {
+            "name": "background top",
+            "held_cpu_mean_ms": 2.5295857362566414,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.468433893118723,
+              "median": 3.6263055432991393,
+              "p95": 9.307788925243065,
+              "minimum": 2.2003047736118493,
+              "maximum": 10.759763116754232
+            },
+            "held_off_task_max_ms": 6.067137594995058
+          },
+          {
+            "name": "background middle 1",
+            "held_cpu_mean_ms": 2.6748113490813794,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 5.201728084235178,
+              "median": 3.744401793681516,
+              "p95": 17.13047609246961,
+              "minimum": 2.139476922773299,
+              "maximum": 17.17967405293926
+            },
+            "held_off_task_max_ms": 12.483947227081716
+          },
+          {
+            "name": "background middle 2",
+            "held_cpu_mean_ms": 2.609508927291805,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 4.956222273284098,
+              "median": 3.740736616110711,
+              "p95": 15.695206652579227,
+              "minimum": 2.133344798760606,
+              "maximum": 22.81389778947502
+            },
+            "held_off_task_max_ms": 19.63780997182042
+          },
+          {
+            "name": "background bottom",
+            "held_cpu_mean_ms": 2.5287786923492237,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.5660403911966196,
+              "median": 3.5885260206462273,
+              "p95": 4.033034527382401,
+              "minimum": 2.1289042951652077,
+              "maximum": 15.390080619809721
+            },
+            "held_off_task_max_ms": 10.059291295626174
+          },
+          {
+            "name": "label",
+            "held_cpu_mean_ms": 3.0377449854027256,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 4.27483991867065,
+              "median": 3.550781740085342,
+              "p95": 9.72808611475671,
+              "minimum": 3.4693020233189875,
+              "maximum": 15.174610469156827
+            },
+            "held_off_task_max_ms": 10.063097441565086
+          },
+          {
+            "name": "small box",
+            "held_cpu_mean_ms": 2.286377709705719,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 2.8448238999650868,
+              "median": 2.7262929971143777,
+              "p95": 2.944829209773619,
+              "minimum": 2.63984414537222,
+              "maximum": 8.958892214176062
+            },
+            "held_off_task_max_ms": 4.5751283869412545
+          },
+          {
+            "name": "OK button",
+            "held_cpu_mean_ms": 3.1211054551469197,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 4.947280179800455,
+              "median": 3.580420339480024,
+              "p95": 15.202310753490025,
+              "minimum": 3.4391347925439013,
+              "maximum": 20.101032029422917
+            },
+            "held_off_task_max_ms": 14.635758882064453
+          },
+          {
+            "name": "Cancel button",
+            "held_cpu_mean_ms": 3.7471765210604393,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 5.347840623042596,
+              "median": 5.113416100561196,
+              "p95": 14.638014375954178,
+              "minimum": 3.6130192746049716,
+              "maximum": 16.787429568679084
+            },
+            "held_off_task_max_ms": 10.059432263994283
+          }
+        ],
+        "counter_advanced": true,
+        "runtime": {
+          "status": "pass",
+          "return_status": 0,
+          "guards": "intact",
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 577,
+              "remaining_above_floor": 703
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 644,
+              "remaining_above_floor": 412
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 185,
+              "remaining_above_floor": 871
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 741,
+              "remaining_above_floor": 315
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 688,
+              "remaining_above_floor": 368
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 800,
+              "remaining_above_floor": 256
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 841,
+              "remaining_above_floor": 1463
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 135,
+              "remaining_above_floor": 121
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 291,
+              "remaining_above_floor": 989
+            }
+          }
+        }
+      },
+      "after": {
+        "archive_sha256": "55bb1c7e44bac46dca6c44aedfa3317a6449800a6a3f58b62480d38a2c685544",
+        "trace_sha256": "15531f1dee0a3257f65f82634d90080c898011fa8d78600306456954cdb182a6",
+        "trace_report_sha256": "45bd96f03fc8c876aca8812b9a9ab462cee213f57faadc3d87a5691b7f0b2ab3",
+        "analysis_sha256": "022f4bf99abbea01287f72abf55416519ef61e47625981699d969f0d2f7bde63",
+        "operations": 60,
+        "dialog_median_ms": 115.0,
+        "all_rows": {
+          "solid bars": 22.2,
+          "text even X": 27.0,
+          "text odd X": 26.8,
+          "text clipped": 34.4,
+          "five-object dialog": 115.0
+        },
+        "whole_operation": {
+          "elapsed_ms": 115.37869742408502,
+          "charged_cpu_ms": 52.619340296230924,
+          "off_cpu_ms": 51.45983317803318,
+          "interrupt_ms": 11.2995239498209
+        },
+        "presenter_cpu_ms": 32.00418253148176,
+        "maximum_owned_elapsed_ms": 6.308827862116019,
+        "held_off_task_per_dialog": {
+          "count": 60,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        "exclusive_cpu_ms": {
+          "app_arithmetic": 0.10752244803788476,
+          "app_other": 0.8632127536901989,
+          "borrow_setup_cursor": 2.6460232588409642,
+          "command_build": 8.169783007390949,
+          "completion_poll": 1.6312037241963324,
+          "display_ownership": 7.622743507584331,
+          "event_poll": 3.310508205063866,
+          "renderer": 7.760400293778077,
+          "submission_fence": 1.4915334398114082,
+          "update": 6.770728341267498,
+          "upload": 2.592981560867557,
+          "vdi_aes_preparation": 4.3078652831091215,
+          "visibility": 5.344834472592695
+        },
+        "routines": {
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 36.22253407557878,
+            "elapsed_ms": 55.96466533874464,
+            "off_cpu_ms": 11.924195904680948,
+            "interrupt_ms": 7.8179353584849105
+          },
+          "drawing_borrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 31.740663312559295,
+            "elapsed_ms": 49.16280765758972,
+            "off_cpu_ms": 10.575669000632947,
+            "interrupt_ms": 6.84647534439747
+          },
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 6.082046174658869,
+            "elapsed_ms": 7.344955940336548,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2629097656776795
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.540697332925465,
+            "elapsed_ms": 1.8780910251548655,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.33739369222940063
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.770728341267503,
+            "elapsed_ms": 43.99075224010484,
+            "off_cpu_ms": 35.791093336566206,
+            "interrupt_ms": 1.428930562271132
+          },
+          "full_canvas": {
+            "calls": 1.0,
+            "charged_cpu_ms": 5.344834472592695,
+            "elapsed_ms": 9.912963780057392,
+            "off_cpu_ms": 3.4096771025549577,
+            "interrupt_ms": 1.1584522049097403
+          },
+          "events": {
+            "calls": 1.0,
+            "charged_cpu_ms": 3.310508205063866,
+            "elapsed_ms": 3.9947710133323184,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.6842628082684526
+          }
+        },
+        "units": [
+          {
+            "name": "background top",
+            "held_cpu_mean_ms": 2.5319269859036333,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.0817200678339787,
+              "median": 3.361637432176594,
+              "p95": 3.845335145246758,
+              "minimum": 2.2014325205567125,
+              "maximum": 4.347957861735405
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background middle 1",
+            "held_cpu_mean_ms": 2.619897121284955,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.2077575362864326,
+              "median": 3.293338257828326,
+              "p95": 4.382424627737782,
+              "minimum": 2.1377853023560043,
+              "maximum": 4.7946161360852235
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background middle 2",
+            "held_cpu_mean_ms": 2.542362169352819,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.09745448718762,
+              "median": 3.442764728022679,
+              "p95": 3.8504100064986417,
+              "minimum": 2.134049640601145,
+              "maximum": 4.714969008104272
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "background bottom",
+            "held_cpu_mean_ms": 2.519015458121352,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.0647427773681866,
+              "median": 3.460491500312245,
+              "p95": 3.8544276049897164,
+              "minimum": 2.1354593242822246,
+              "maximum": 4.726739866841279
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "label",
+            "held_cpu_mean_ms": 2.9564097612136813,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.587913982981359,
+              "median": 3.547927130631158,
+              "p95": 3.8107274108762734,
+              "minimum": 3.488755658117875,
+              "maximum": 4.245191921384761
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "small box",
+            "held_cpu_mean_ms": 2.323460613672898,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 2.8345003164739864,
+              "median": 2.7291476065685623,
+              "p95": 3.459857142655759,
+              "minimum": 2.6426635127343774,
+              "maximum": 3.881916436770753
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "OK button",
+            "held_cpu_mean_ms": 3.062127814139785,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 3.7327425349025933,
+              "median": 3.5676979442582875,
+              "p95": 4.685577103353778,
+              "minimum": 3.4881213004613896,
+              "maximum": 4.732237633197487
+            },
+            "held_off_task_max_ms": 0.0
+          },
+          {
+            "name": "Cancel button",
+            "held_cpu_mean_ms": 3.753728025968253,
+            "held_elapsed_ms": {
+              "count": 60,
+              "mean": 4.571469083052454,
+              "median": 4.9562716122129356,
+              "p95": 5.372938866247803,
+              "minimum": 3.614006053181727,
+              "maximum": 6.308827862116019
+            },
+            "held_off_task_max_ms": 0.0
+          }
+        ],
+        "counter_advanced": true,
+        "runtime": {
+          "status": "pass",
+          "return_status": 0,
+          "guards": "intact",
+          "aperture_intact": false,
+          "retired_manifest_intact": false,
+          "stacks": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 577,
+              "remaining_above_floor": 703
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 641,
+              "remaining_above_floor": 415
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 185,
+              "remaining_above_floor": 871
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 745,
+              "remaining_above_floor": 311
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 701,
+              "remaining_above_floor": 355
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 796,
+              "remaining_above_floor": 260
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 836,
+              "remaining_above_floor": 1468
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 135,
+              "remaining_above_floor": 121
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        "before_enter_off_task_ms_per_dialog": 0.16654355429185244,
+        "after_leave_off_task_ms_per_dialog": 10.409125446341095
+      }
+    }
+  },
+  "checks": {
+    "host_suite": {
+      "tests": 481,
+      "skipped": 4,
+      "status": "pass"
+    },
+    "trace_host_suite": {
+      "tests": 8,
+      "status": "pass"
+    },
+    "batch_host_suite": {
+      "tests": 4,
+      "status": "pass"
+    },
+    "borrowed_renderer": {
+      "AESChecks": 268,
+      "AESFailures": 0,
+      "borrowed_renderer": {
+        "DisplayBorrows": 48,
+        "DisplayNative": 458,
+        "DisplayCopies": 5,
+        "DisplayOverlap": 0,
+        "DisplayActive": 0,
+        "exact_pixels": 2788
+      },
+      "access_timing": {
+        "access_wait": {
+          "count": 50,
+          "elapsed_ms": {
+            "p50": 0.8416516417880991,
+            "p95": 19.43361729061616,
+            "maximum": 29.666511131567187
+          },
+          "charged_cpu_ms": {
+            "p50": 0.7008947262323807,
+            "p95": 1.4700886268130295,
+            "maximum": 1.5309869618356338
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 17.57177756883133,
+            "maximum": 27.859155684056056
+          },
+          "interrupt_ms": {
+            "p50": 0.1422370834208512,
+            "p95": 0.38406831890991977,
+            "maximum": 0.39386562049341745
+          }
+        },
+        "borrow_unit": {
+          "count": 48,
+          "elapsed_ms": {
+            "p50": 5.8355265661938125,
+            "p95": 6.732367324096146,
+            "maximum": 7.256417232537191
+          },
+          "charged_cpu_ms": {
+            "p50": 4.854457208347019,
+            "p95": 5.368004973364027,
+            "maximum": 5.79309508739334
+          },
+          "off_cpu_ms": {
+            "p50": 0.0,
+            "p95": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "p50": 0.9807169369265231,
+            "p95": 1.3652081609407665,
+            "maximum": 1.4633221451438512
+          }
+        },
+        "scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. The first callback requests Yield under Forbid; all admitted units must finish without a Task switch while interrupts continue. access_wait includes arbitration and bridge costs."
+      },
+      "guards": "intact",
+      "report_sha256": "47b5ee088a3617e8089baa7ff6770f957191bd43202a1148887119ff3d79a951"
+    },
+    "hardware_faults": {
+      "report_sha256": "6727999dac2b37a7c144b5b9b830c85ea89a7f24fded2bf18627f9bec0fa839b",
+      "cases": [
+        {
+          "variant": 1,
+          "checks": 33,
+          "failures": 0,
+          "return_status": 0,
+          "guards": "intact"
+        },
+        {
+          "variant": 2,
+          "checks": 16,
+          "failures": 0,
+          "return_status": 65427,
+          "guards": "intact"
+        }
+      ]
+    },
+    "panel": {
+      "report_sha256": "b6dd456edf2e0fc10c302801a36e8356cb66c70e24ebe5d3fd8656ef2eed5212",
+      "buttons": {
+        "model_address": 2621702,
+        "samples_ms": [
+          100.28828031278061,
+          60.12300899801094
+        ],
+        "median_ms": 80.20564465539577,
+        "max_ms": 100.28828031278061,
+        "scope": "2 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+      },
+      "counter_ticks": 2,
+      "counter_paints": 2,
+      "visible_digits_changed": true,
+      "runtime": {
+        "status": "pass",
+        "return_status": 0,
+        "guards": "intact",
+        "aperture_intact": false,
+        "retired_manifest_intact": false,
+        "stacks": {
+          "0": {
+            "base": 9744,
+            "bytes": 1536,
+            "peak": 573,
+            "remaining_above_floor": 707
+          },
+          "1": {
+            "base": 12880,
+            "bytes": 1312,
+            "peak": 310,
+            "remaining_above_floor": 746
+          },
+          "2": {
+            "base": 14224,
+            "bytes": 1312,
+            "peak": 177,
+            "remaining_above_floor": 879
+          },
+          "3": {
+            "base": 15568,
+            "bytes": 1312,
+            "peak": 745,
+            "remaining_above_floor": 311
+          },
+          "4": {
+            "base": 16912,
+            "bytes": 1312,
+            "peak": 692,
+            "remaining_above_floor": 364
+          },
+          "5": {
+            "base": 18256,
+            "bytes": 1312,
+            "peak": 748,
+            "remaining_above_floor": 308
+          },
+          "6": {
+            "base": 19600,
+            "bytes": 2560,
+            "peak": 836,
+            "remaining_above_floor": 1468
+          },
+          "7": {
+            "base": 22192,
+            "bytes": 2560,
+            "peak": 18,
+            "remaining_above_floor": 2286
+          },
+          "8": {
+            "base": 24784,
+            "bytes": 512,
+            "peak": 131,
+            "remaining_above_floor": 125
+          },
+          "kernel": {
+            "base": 11312,
+            "bytes": 1536,
+            "peak": 287,
+            "remaining_above_floor": 993
+          }
+        }
+      }
+    },
+    "menu_samples": {
+      "open": [
+        180.61995068926484,
+        180.3673353736155
+      ],
+      "highlight": [
+        60.12188125106607,
+        60.37449656671539
+      ],
+      "switch": [
+        200.32450918338435,
+        200.57656062556123
+      ],
+      "close": [
+        140.4535516275503,
+        140.4535516275503
+      ]
+    },
+    "menu_files_repaints": {
+      "open": [
+        0,
+        0
+      ],
+      "highlight": [
+        0,
+        0
+      ],
+      "switch": [
+        0,
+        0
+      ],
+      "close": [
+        0,
+        0
+      ]
+    }
+  },
+  "resources": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "idle": 0
+    },
+    "upper_static_delta": 0,
+    "stack_capacity_delta": 0,
+    "vram_delta": 0,
+    "linked_executable_bytes": 1272279,
+    "linked_executable_delta": 22
+  },
+  "analysis_correction": "The initial Counter trace analyzer failed its nominal ticks/50 elapsed check. The guest run passed. Offline validation now counts observed VBIs between clock-call bounds, allowing one boundary tick; this covers PAL rate drift and preemption inside a clock call. No guest timing or batch accounting changed; the same capture was reanalyzed.",
+  "build_retry": "The debug host compiler exceeded its 600-second compilation timeout. Both final images used the clean pinned release host compiler, matching the baseline; no compiler checks or pin changes.",
+  "limits": [
+    "Known-held spans run from DisplayEnter return to DisplayLeave entry; admission/release bookkeeping is outside them.",
+    "Observed maxima are not hard scheduling deadlines. Hardware fault recovery may retain exclusion through its bounded timeout.",
+    "Dialog runs use a stationary pointer outside the canvas. The mixed fixture and two physical Panel button samples cover interaction separately.",
+    "Two Panel samples do not establish input p95. Concurrent SIO deadline qualification and physical hardware were not exercised.",
+    "The experiment removes held-display off-Task gaps but adds small caller overhead and shifts other work after release; complete-dialog throughput regressed."
+  ],
+  "retirement": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Removed outer Forbid/Permit from synchronous drawing helper. Preserved cheap identity entry, synchronization and physical ownership. Fixed a missed presenter wake exposed by normal preemption.",
+    "source_sha256": {
+      "ports/gem4xe/adapter/gem-vbxe.c": "946afbe1a6f3e04d7fba964c84f903fff742cd68b38dd53dbdae3adc0a5613e3",
+      "lib/display/display-access.inc": "f779475038721027d7840312f075c1797ff9543a8df966efa7942d93126da97e",
+      "tests/programs/display_borrow.c": "b7f3bed18d27f36b8bb2ad49e65e9d26883aa771d88062c86f27ba788d956fe1",
+      "tools/test_display_borrow.py": "f77df4e3079be992a8afcf3868feb01906a7215c5046e03fc0d0c61b666446b1"
+    },
+    "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "host_compiler_profile": "release",
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "host_checks": {
+      "tests": 483,
+      "skipped": 4,
+      "status": "pass"
+    },
+    "native_arbitration": {
+      "path": "build/drawing-preemption-removal/fixed/access/results.json",
+      "sha256": "90cf96d9c5db49964ce8ebd2750b46fd8844fe0f45ac912a1a6fd1af42b5d082",
+      "checks": 81,
+      "return_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "blocked_physical_loads": 2,
+      "blocked_hint_store_between_loads": true
+    },
+    "mixed_renderer": {
+      "path": "build/drawing-preemption-removal/fixed/borrow/results.json",
+      "sha256": "e84da0f04418d0f74bf15885481462ee18596f86e6da0bcf2bb0c1e0fb8a7c5c",
+      "checks": 196,
+      "failures": 0,
+      "renderer": {
+        "DisplayBorrows": 48,
+        "DisplayNative": 463,
+        "DisplayCopies": 1,
+        "DisplayOverlap": 0,
+        "DisplayActive": 0,
+        "exact_pixels": 2788
+      },
+      "return_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "task_switch_during_owned_unit_observed": true,
+      "interrupt_during_owned_unit_observed": true,
+      "instrumentation_scope": "Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. An ordinary callback injects Yield with renderer staging live; ownership must survive Task switching without overlapping renderer access. access_wait includes arbitration and bridge costs."
+    },
+    "faults": {
+      "path": "build/drawing-preemption-removal/fixed/borrow/borrow-faults.json",
+      "sha256": "5ec58e1911c712f083a44365ecdf34f3b89419bbe293f0a48ba6eabe1d0b1514",
+      "cases": [
+        {
+          "variant": 1,
+          "checks": 31,
+          "failures": 0,
+          "return_status": 0,
+          "guards": "intact"
+        },
+        {
+          "variant": 2,
+          "checks": 15,
+          "failures": 0,
+          "return_status": 65427,
+          "guards": "intact"
+        }
+      ]
+    },
+    "initial_failure": {
+      "path": "build/drawing-preemption-removal/borrow/results.json",
+      "diagnostic_path": "build/drawing-preemption-removal/diagnostic/failure-state.json",
+      "reproduced": true,
+      "reason": "All 48 borrower units completed without assertion failures or overlap. Presenter and writer remained asleep with physical=0, accessCount=0, ownerQueued=0. A busy readiness check skipped OwnerEnter, so no owner wake was queued.",
+      "diagnostic_sha256": "b34eaab279c2b9d2ef5c4954b0b7348a6d2f197223216c90db4c76c377d47619"
+    },
+    "resources": {
+      "upper_state_bytes_added": 1,
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "stack_reservation_delta": 0,
+      "vram_reservation_delta": 0
+    },
+    "reproduction": "Use test_display_access.run(out/access), test_aes_server.applications(out/borrow, \"display\"), then test_display_borrow.faults(out/borrow). For both builders select native_program.compiler(directory, release=True) at the clean pinned revision.",
+    "limits": [
+      "Focused optimized emitted fixtures; no full qualification matrix or compiler suite.",
+      "No new GUI latency measurements or demo refresh. Earlier packages still contain the experiment.",
+      "Fixture timings include instrumentation and a synthetic Yield; they are not production UI latency measurements."
+    ]
+  }
+}

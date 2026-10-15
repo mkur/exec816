@@ -65,3 +65,53 @@ public-Task margin is 177 bytes and idle retains 121 bytes above its floor.
 The compiler revision, ROM, package and report hashes are recorded in the
 development evidence. These development checks do not establish release or
 real-hardware qualification.
+
+
+## Files initial-draw cache
+
+The renderer now retains sixteen small colour images in VBXE memory. Files
+copies stock CICONBLKs for each filename while retaining their bitmap pointers;
+folders, console commands and generic applications therefore reuse one prepared
+image per kind, across entries and windows. Labels remain ordinary object text.
+No application or public ABI changes are required.
+
+Each slot holds expanded transparency and colour pixels for both X alignments.
+The first draw prepares both phases by processing pixel pairs, uploads one
+1,632-byte image and retains it. Later draws issue masked VRAM blits, with
+separate nibble-edge commands only for clipped partial bytes. Neither the current
+clip nor the filename forms part of the cache key. Images up to 32×24 qualify;
+large CICONs and monochrome icons retain their existing rendering path.
+
+Bitmap pointers and dimensions locate an entry. Comparing the current bitmap
+and mask with a small CPU copy detects content changes, including reuse of a
+freed resource's address. Old pointers are never dereferenced. This keeps the
+existing application-owned, mutable-image semantics without registrations or
+invalidation calls. Round-robin eviction needs no allocator. Cache lookup,
+preparation, replacement and drawing all execute under the existing display
+grant; successful display acquisition clears the cache.
+
+The reservation is 32,768 VRAM bytes, including sixteen 2,048-byte slots and all
+unused slot capacity. Source copies and metadata add 7,874 bytes of upper RAM;
+the existing 4 KiB staging page is reused. Reserved bank-zero growth is **0 fixed,
+0 per-public-Task and 0 idle bytes**, including guards, alignment and unused
+reserved capacity. No Task, stack, direct page or public ABI is added.
+
+The focused host pixel check executes the production cache code against an
+independent blitter/pixel model: both X phases, 16/32-pixel widths, 16/20/24-pixel
+heights, clipped edges and transparent holes, bitmap mutation, reuse and eviction.
+The existing VRAM layout and gadget-asset checks verify the added reservation
+has no overlaps. These are development checks, not hardware qualification.
+
+
+The [focused packaged observation](../development/files-initial-draw.json)
+opens a new SYS: window with stock icons warmed by startup. Full completion
+falls from **1,544 to 1,244 ms** (about 19.5%). Frame completion remains **822 ms**;
+the interval from frame completion to complete contents falls from **722 to
+421 ms** (about 41.7%). These are single observations sampled once per PAL
+frame, not CPU timings, cold-boot timings or p95 estimates. The content paint
+count remains one, with no changed frames after completion. Explicit Refresh,
+the independent startup/final pixel oracles, stack guards and orderly EXIT pass.
+
+The matching OF816 demo is `build/files-icon-cache/demo/exec816-demo.zip`.
+The unchanged frame-opening portion remains a separate source of latency;
+this change removes repeated icon preparation and uploads from client drawing.

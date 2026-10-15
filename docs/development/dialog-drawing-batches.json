@@ -1,0 +1,2523 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "scope": "Passive current RP5 five-object dialog cost and ownership-duration study; no guest changes or batching implemented.",
+  "commands": [
+    "python3 tools/trace_g4bench.py --bundle build/rp5/demo --output build/rp-dialog/trace-idle --load idle",
+    "python3 tools/trace_g4bench.py --bundle build/rp5/demo --output build/rp-dialog/trace-counter --load counter",
+    "python3 tools/analyze_dialog_batches.py --trace build/rp-dialog/trace-idle --output build/rp-dialog/trace-idle/dialog-batches.json",
+    "python3 tools/analyze_dialog_batches.py --trace build/rp-dialog/trace-counter --output build/rp-dialog/trace-counter/dialog-batches.json"
+  ],
+  "canvas": [
+    152,
+    56,
+    480,
+    160
+  ],
+  "pointer": [
+    630,
+    230
+  ],
+  "clock_hz": 50,
+  "runs": {
+    "idle": {
+      "scope": "Size dialog drawing batches from an existing passive G4BENCH capture.\n\nModels remove only intermediate DisplayLeave/DisplayEnter CPU. They retain\nthe existing draw calls, cursor/fence work and traversal between units. They\nare CPU estimates, not predictions of elapsed time under a changed schedule.\n",
+      "load": "idle",
+      "operations": 120,
+      "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+      "trace_sha256": "a4139dda6d0732a6af3112a36301839a8f85e27b33b42f4361e0face2ba6b123",
+      "trace_report_sha256": "301d4510dac79cf14b2499c89287a62610e6fd3fad9e860c2535fcdbed27462f",
+      "analysis_sha256": "fb36014ed4160478d38c932017e141e9172e0560eefc3eb174c25f25eb87cde8",
+      "inputs": {
+        "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "rom": {
+          "path": "/Users/michalkurcewicz/action/exec816-public/build/rp-dialog/trace-idle/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "override": false
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$dc1effe72feb4a21",
+          "actual_kernel_id": "$dc1effe72feb4a21",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "runner_sha256": "e4597f846589b312a62ac9e888279f8c859af7dc0faeaaf4b681949511434934"
+      },
+      "guest_changes": false,
+      "status": "pass",
+      "guards": "intact",
+      "benchmark": {
+        "name": "five-object dialog",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 40,
+            "ticks": 185,
+            "start": [
+              0,
+              5948,
+              50
+            ],
+            "end": [
+              0,
+              6133,
+              50
+            ]
+          },
+          {
+            "operations": 40,
+            "ticks": 186,
+            "start": [
+              0,
+              6137,
+              50
+            ],
+            "end": [
+              0,
+              6323,
+              50
+            ]
+          },
+          {
+            "operations": 40,
+            "ticks": 186,
+            "start": [
+              0,
+              6327,
+              50
+            ],
+            "end": [
+              0,
+              6513,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 93.0
+      },
+      "per_operation": {
+        "elapsed_ms": 93.08707392898107,
+        "charged_cpu_ms": 50.18344683636439,
+        "off_cpu_ms": 32.17238011462608,
+        "interrupt_ms": 10.73124697799061
+      },
+      "presenter_cpu_ms_per_operation": 26.485345515819702,
+      "exclusive_cpu_ms_per_operation": {
+        "app_arithmetic": 0.10763287325956936,
+        "app_other": 0.8076753282330963,
+        "borrow_setup_cursor": 0.9317944521428903,
+        "command_build": 8.032987302979055,
+        "completion_poll": 1.700408032941487,
+        "display_ownership": 7.615822548078427,
+        "event_poll": 3.29031096212321,
+        "renderer": 7.762150651015432,
+        "submission_fence": 1.4817120561317774,
+        "update": 6.7803259376628455,
+        "upload": 2.549477547733064,
+        "vdi_aes_preparation": 4.164103391839905,
+        "visibility": 4.959045752223658
+      },
+      "operation_distributions": {
+        "elapsed_ms": {
+          "count": 120,
+          "mean": 48.53771397236174,
+          "median": 45.52767279550142,
+          "p95": 58.01250107488381,
+          "minimum": 37.35196559244071,
+          "maximum": 60.493826290318715
+        },
+        "charged_cpu_ms": {
+          "count": 120,
+          "mean": 34.36642530532574,
+          "median": 34.43377940423949,
+          "p95": 37.50512772438992,
+          "minimum": 30.724055829112505,
+          "maximum": 38.25289443301817
+        },
+        "off_cpu_ms": {
+          "count": 120,
+          "mean": 6.772196174400427,
+          "median": 6.066855658258843,
+          "p95": 12.440810906440705,
+          "minimum": 0.0,
+          "maximum": 15.160513632346037
+        },
+        "interrupt_ms": {
+          "count": 120,
+          "mean": 7.399092492635577,
+          "median": 7.3455444832733985,
+          "p95": 8.162350450182483,
+          "minimum": 6.5756104987601836,
+          "maximum": 8.233257539340748
+        },
+        "ownership_cpu_ms": {
+          "count": 120,
+          "mean": 7.6158225480784365,
+          "median": 7.467094458674418,
+          "p95": 8.139513574549007,
+          "minimum": 7.433262050328527,
+          "maximum": 8.920971723155041
+        },
+        "owned_core_cpu_ms": {
+          "count": 120,
+          "mean": 22.182133950962744,
+          "median": 22.045408730734913,
+          "p95": 25.418781779556486,
+          "minimum": 18.60951621065749,
+          "maximum": 25.507239430544182
+        },
+        "owned_core_off_cpu_ms": {
+          "count": 120,
+          "mean": 5.475779989728105,
+          "median": 6.065093553657494,
+          "p95": 12.440810906440705,
+          "minimum": 0.0,
+          "maximum": 12.48422916381793
+        },
+        "owned_core_interrupt_ms": {
+          "count": 120,
+          "mean": 4.78291576153227,
+          "median": 4.7041144437599645,
+          "p95": 5.6048318317852655,
+          "minimum": 3.766463343290399,
+          "maximum": 5.718945725768594
+        },
+        "owned_core_elapsed_ms": {
+          "count": 120,
+          "mean": 32.44082970222312,
+          "median": 29.85435148207094,
+          "p95": 43.402046014894715,
+          "minimum": 22.37597955394789,
+          "maximum": 43.636617379426234
+        },
+        "callback_cpu_ms": {
+          "count": 120,
+          "mean": 15.795137953994503,
+          "median": 15.81393726061809,
+          "p95": 18.217271726397314,
+          "minimum": 13.3673959900138,
+          "maximum": 18.253077691896713
+        }
+      },
+      "models": {
+        "eight existing units": {
+          "groups": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "acquisitions_per_dialog": 8,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 0,
+            "median": 0.0,
+            "p95": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 29.79795649904118,
+            "median": 29.888606795521156,
+            "p95": 32.94987587735188,
+            "minimum": 26.0755534065711,
+            "maximum": 33.69940469058148
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 3.6492792757233206,
+            "median": 3.6341292877291265,
+            "p95": 4.286777589976586,
+            "minimum": 3.006996260109194,
+            "maximum": 4.32603728049463
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.483672338763905,
+                "median": 2.4753693018823504,
+                "p95": 3.092986964655001,
+                "minimum": 1.7893819805773783,
+                "maximum": 3.123859037270627
+              }
+            },
+            {
+              "first_unit": 1,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.8343893038841013,
+                "median": 2.796389518156021,
+                "p95": 3.74447227786557,
+                "minimum": 1.8616987534167209,
+                "maximum": 3.7624457447993245
+              }
+            },
+            {
+              "first_unit": 2,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.577960793877462,
+                "median": 2.781693565780774,
+                "p95": 3.126819373000892,
+                "minimum": 1.8621216585210445,
+                "maximum": 3.1619909808438083
+              }
+            },
+            {
+              "first_unit": 3,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.463703582053223,
+                "median": 2.4385413157141667,
+                "p95": 3.0901675972928437,
+                "minimum": 1.8564124396126753,
+                "maximum": 3.123718068902519
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.9497754373896043,
+                "median": 2.945815988350374,
+                "p95": 2.982890669162747,
+                "minimum": 2.897534322273425,
+                "maximum": 2.9910668345130036
+              }
+            },
+            {
+              "first_unit": 5,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.261378731726388,
+                "median": 2.277308744690779,
+                "p95": 2.2848153102925233,
+                "minimum": 2.2055910874158946,
+                "maximum": 2.2893262980719755
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.962372135816444,
+                "median": 2.9599480672531886,
+                "p95": 3.0163706565883683,
+                "minimum": 2.8591909261480817,
+                "maximum": 3.0181327611897166
+              }
+            },
+            {
+              "first_unit": 7,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 3.6488816274516163,
+                "median": 3.6341292877291265,
+                "p95": 4.286777589976586,
+                "minimum": 3.006996260109194,
+                "maximum": 4.32603728049463
+              }
+            }
+          ]
+        },
+        "five objects": {
+          "groups": [
+            4,
+            1,
+            1,
+            1,
+            1
+          ],
+          "acquisitions_per_dialog": 5,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 2.9146514063709246,
+            "median": 2.804459957230197,
+            "p95": 3.430958627193644,
+            "minimum": 2.7782045986701043,
+            "maximum": 3.622605123636307
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 27.09334032536439,
+            "median": 27.071953074449624,
+            "p95": 30.309608826875337,
+            "minimum": 23.484272864012045,
+            "maximum": 31.09529602652461
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 10.569761251272826,
+            "median": 10.45386175796013,
+            "p95": 13.183784690553285,
+            "minimum": 7.650423821398716,
+            "maximum": 13.273722509406113
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 4,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 10.569761251272826,
+                "median": 10.45386175796013,
+                "p95": 13.183784690553285,
+                "minimum": 7.650423821398716,
+                "maximum": 13.273722509406113
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.9497754373896043,
+                "median": 2.945815988350374,
+                "p95": 2.982890669162747,
+                "minimum": 2.897534322273425,
+                "maximum": 2.9910668345130036
+              }
+            },
+            {
+              "first_unit": 5,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.261378731726388,
+                "median": 2.277308744690779,
+                "p95": 2.2848153102925233,
+                "minimum": 2.2055910874158946,
+                "maximum": 2.2893262980719755
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 2.962372135816444,
+                "median": 2.9599480672531886,
+                "p95": 3.0163706565883683,
+                "minimum": 2.8591909261480817,
+                "maximum": 3.0181327611897166
+              }
+            },
+            {
+              "first_unit": 7,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 3.6488816274516163,
+                "median": 3.6341292877291265,
+                "p95": 4.286777589976586,
+                "minimum": 3.006996260109194,
+                "maximum": 4.32603728049463
+              }
+            }
+          ]
+        },
+        "four adjacent pairs": {
+          "groups": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "acquisitions_per_dialog": 4,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 3.8515712334309304,
+            "median": 3.7363665966993667,
+            "p95": 4.370865221552935,
+            "minimum": 3.711415195544272,
+            "maximum": 4.595709768685005
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 27.401260468663438,
+            "median": 27.29566987463683,
+            "p95": 30.61142210299431,
+            "minimum": 23.82978633424446,
+            "maximum": 31.41670390581058
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 7.261797525253308,
+            "median": 7.23770368167087,
+            "p95": 7.931726199957992,
+            "minimum": 6.571874837005324,
+            "maximum": 7.97014008026739
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 5.386074768682655,
+                "median": 5.354331041657563,
+                "p95": 6.898498545911283,
+                "minimum": 3.724243317042089,
+                "maximum": 6.937335331325003
+              }
+            },
+            {
+              "first_unit": 2,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 5.110754735244958,
+                "median": 5.322155011636939,
+                "p95": 6.28288968238417,
+                "minimum": 3.8191150287786924,
+                "maximum": 6.3189775846197875
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 5.878382124835008,
+                "median": 5.88521791595184,
+                "p95": 5.932230866715817,
+                "minimum": 5.805077398682509,
+                "maximum": 5.942451073403639
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 7.261797525253308,
+                "median": 7.23770368167087,
+                "p95": 7.931726199957992,
+                "minimum": 6.571874837005324,
+                "maximum": 7.97014008026739
+              }
+            }
+          ]
+        },
+        "three groups": {
+          "groups": [
+            4,
+            2,
+            2
+          ],
+          "acquisitions_per_dialog": 3,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 4.7946684118550635,
+            "median": 4.67102211934664,
+            "p95": 5.305203565371966,
+            "minimum": 4.634828490834941,
+            "maximum": 5.524620830331882
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 26.531095037584517,
+            "median": 26.427445695460396,
+            "p95": 29.74326840800193,
+            "minimum": 22.962337481092618,
+            "maximum": 30.55489378738305
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 10.569761251272826,
+            "median": 10.45386175796013,
+            "p95": 13.183784690553285,
+            "minimum": 7.650423821398716,
+            "maximum": 13.273722509406113
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 4,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 10.569761251272826,
+                "median": 10.45386175796013,
+                "p95": 13.183784690553285,
+                "minimum": 7.650423821398716,
+                "maximum": 13.273722509406113
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 5.878382124835008,
+                "median": 5.88521791595184,
+                "p95": 5.932230866715817,
+                "minimum": 5.805077398682509,
+                "maximum": 5.942451073403639
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 7.261797525253308,
+                "median": 7.23770368167087,
+                "p95": 7.931726199957992,
+                "minimum": 6.571874837005324,
+                "maximum": 7.97014008026739
+              }
+            }
+          ]
+        },
+        "whole dialog": {
+          "groups": [
+            8
+          ],
+          "acquisitions_per_dialog": 1,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 6.679975255352452,
+            "median": 6.533707651340116,
+            "p95": 7.206091525122678,
+            "minimum": 6.503716631025164,
+            "maximum": 7.986633379336011
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 25.98280620561552,
+            "median": 25.835237581039188,
+            "p95": 29.210830881658467,
+            "minimum": 22.432155448638877,
+            "maximum": 29.51673224045257
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 120,
+            "mean": 25.046958912889536,
+            "median": 24.89994770073543,
+            "p95": 28.277690768968352,
+            "minimum": 21.49767613645174,
+            "maximum": 28.358747580630386
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 8,
+              "owned_core_cpu_ms": {
+                "count": 120,
+                "mean": 25.046958912889536,
+                "median": 24.89994770073543,
+                "p95": 28.277690768968352,
+                "minimum": 21.49767613645174,
+                "maximum": 28.358747580630386
+              }
+            }
+          ]
+        }
+      },
+      "limits": [
+        "Pointer is stationary outside the drawing. Cursor overlap/movement is not measured.",
+        "Owned core runs from DisplayEnter return to DisplayLeave entry, a lower bound on actual ownership duration.",
+        "Transaction envelope includes Enter/Leave, and may include waiting before acquisition or after release.",
+        "Models retain inter-unit traversal and all existing drawing/cursor/fence CPU; only intermediate ownership calls are removed.",
+        "Modeled owned-core CPU excludes interrupts and scheduling. Larger batches can change both; no elapsed-time prediction.",
+        "Per-unit p95 describes these repeated benchmark units, not UI input latency or a hard bound.",
+        "Blitter polling is software CPU time, not a measurement of exact hardware BUSY time."
+      ],
+      "routines_per_operation": {
+        "DisplayEnter": {
+          "calls": 8.0,
+          "charged_cpu_ms": 6.088248195487415,
+          "elapsed_ms": 8.525882614700087,
+          "off_cpu_ms": 1.1195155669019428,
+          "interrupt_ms": 1.31811885231073
+        },
+        "DisplayLeave": {
+          "calls": 8.0,
+          "charged_cpu_ms": 1.5275743525910221,
+          "elapsed_ms": 1.9033437461967908,
+          "off_cpu_ms": 0.05056300416749485,
+          "interrupt_ms": 0.32520638943827396
+        },
+        "GemSolidFill": {
+          "calls": 14.0,
+          "charged_cpu_ms": 5.7384968636887566,
+          "elapsed_ms": 8.97092738860327,
+          "off_cpu_ms": 2.010020971394229,
+          "interrupt_ms": 1.2224095535202857
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 8.0,
+          "charged_cpu_ms": 5.417557704226748,
+          "elapsed_ms": 8.162094945015289,
+          "off_cpu_ms": 1.5348336361803774,
+          "interrupt_ms": 1.209703604608162
+        },
+        "_VbxeUpload": {
+          "calls": 8.0,
+          "charged_cpu_ms": 2.549477547733064,
+          "elapsed_ms": 3.9276871037907806,
+          "off_cpu_ms": 0.8218173923953205,
+          "interrupt_ms": 0.5563921636623959
+        },
+        "blit_glyph_run": {
+          "calls": 3.0,
+          "charged_cpu_ms": 2.294490439290328,
+          "elapsed_ms": 2.7997944916140267,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5053040523236991
+        },
+        "borrow_callback": {
+          "calls": 8.0,
+          "charged_cpu_ms": 15.795137953994503,
+          "elapsed_ms": 23.0806992219016,
+          "off_cpu_ms": 3.8903968588488427,
+          "interrupt_ms": 3.3951644090582516
+        },
+        "events": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.290310962123209,
+          "elapsed_ms": 3.9694055175959067,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.6790945554726975
+        },
+        "fence_owner": {
+          "calls": 16.0,
+          "charged_cpu_ms": 6.0448187781143785,
+          "elapsed_ms": 8.900507227683182,
+          "off_cpu_ms": 1.5348336361803774,
+          "interrupt_ms": 1.3208548133884237
+        },
+        "full_canvas": {
+          "calls": 1.0,
+          "charged_cpu_ms": 4.959045752223658,
+          "elapsed_ms": 6.378229526576532,
+          "off_cpu_ms": 0.3790657039466914,
+          "interrupt_ms": 1.0401180704061814
+        },
+        "glyph_record": {
+          "calls": 18.0,
+          "charged_cpu_ms": 1.4253376309889823,
+          "elapsed_ms": 1.729313596822009,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3039759658330267
+        },
+        "idle": {
+          "calls": 32.0,
+          "charged_cpu_ms": 1.7004080329414883,
+          "elapsed_ms": 2.553364750483639,
+          "off_cpu_ms": 0.4548596965326951,
+          "interrupt_ms": 0.39809702100945565
+        },
+        "objc_draw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 34.23845598286201,
+          "elapsed_ms": 48.38295948522111,
+          "off_cpu_ms": 6.772196174400426,
+          "interrupt_ms": 7.372307327958679
+        },
+        "solid_record": {
+          "calls": 42.0,
+          "charged_cpu_ms": 4.036059473614715,
+          "elapsed_ms": 5.974264109876385,
+          "off_cpu_ms": 1.0851210471882213,
+          "interrupt_ms": 0.8530835890734477
+        },
+        "wind_update": {
+          "calls": 2.0,
+          "charged_cpu_ms": 6.780325937662848,
+          "elapsed_ms": 33.235555323740904,
+          "off_cpu_ms": 25.021118236278962,
+          "interrupt_ms": 1.4341111497990966
+        }
+      },
+      "units": [
+        {
+          "name": "background top",
+          "ownership_cpu_mean_ms": 0.9370942754155395,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 3.000807161381058,
+              "median": 2.9979390424582633,
+              "p95": 3.746375350835026,
+              "minimum": 2.133838188048984,
+              "maximum": 3.7755558030333574
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.483672338763905,
+              "median": 2.4753693018823504,
+              "p95": 3.092986964655001,
+              "minimum": 1.7893819805773783,
+              "maximum": 3.123859037270627
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.5171348226171529,
+              "median": 0.5212305410788873,
+              "p95": 0.6538817754684026,
+              "minimum": 0.3444562074716055,
+              "maximum": 0.6552209749654275
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 39,
+            "owned_core": {
+              "elapsed_ms": 3.7755558030333574,
+              "charged_cpu_ms": 3.123859037270627,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.6516967657627305
+            }
+          },
+          "callback_cpu_mean_ms": 1.6887094204931354,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background middle 1",
+          "ownership_cpu_mean_ms": 1.0159085152882545,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 8.253981064189007,
+              "median": 9.195860040965407,
+              "p95": 17.105313238762353,
+              "minimum": 2.2506304810263624,
+              "maximum": 17.146898907354178
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.8343893038841013,
+              "median": 2.796389518156021,
+              "p95": 3.74447227786557,
+              "minimum": 1.8616987534167209,
+              "maximum": 3.7624457447993245
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 4.768193964956203,
+              "median": 6.062732333491688,
+              "p95": 12.440810906440705,
+              "minimum": 0.0,
+              "maximum": 12.48422916381793
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.6513977953487017,
+              "median": 0.6502165978975978,
+              "p95": 0.9239066845790472,
+              "minimum": 0.38716962300829316,
+              "maximum": 0.9651399322506022
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 1,
+            "operation_index": 15,
+            "owned_core": {
+              "elapsed_ms": 17.146898907354178,
+              "charged_cpu_ms": 3.7470801926755652,
+              "off_cpu_ms": 12.43467878242801,
+              "interrupt_ms": 0.9651399322506022
+            }
+          },
+          "callback_cpu_mean_ms": 1.9168097495602963,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background middle 2",
+          "ownership_cpu_mean_ms": 0.9545349993914866,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 3.850266688657732,
+              "median": 3.7399965321781448,
+              "p95": 9.22807131307806,
+              "minimum": 2.2555643739101385,
+              "maximum": 9.312793302310896
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.577960793877462,
+              "median": 2.781693565780774,
+              "p95": 3.126819373000892,
+              "minimum": 1.8621216585210445,
+              "maximum": 3.1619909808438083
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.7075860247719015,
+              "median": 0.0,
+              "p95": 6.065798395498034,
+              "minimum": 0.0,
+              "maximum": 6.068970183780461
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.5647198700083689,
+              "median": 0.6470448096151704,
+              "p95": 0.7546741586655371,
+              "minimum": 0.38724010719234714,
+              "maximum": 0.7954845012327684
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 1,
+            "operation_index": 18,
+            "owned_core": {
+              "elapsed_ms": 9.312793302310896,
+              "charged_cpu_ms": 2.572531749600707,
+              "off_cpu_ms": 6.063331449056147,
+              "interrupt_ms": 0.676930103654041
+            }
+          },
+          "callback_cpu_mean_ms": 1.7571419274229056,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background bottom",
+          "ownership_cpu_mean_ms": 0.9389180536779352,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 2.9773400396684986,
+              "median": 2.958221204743867,
+              "p95": 3.741018552846927,
+              "minimum": 2.2464719141671803,
+              "maximum": 3.778375170395515
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.463703582053223,
+              "median": 2.4385413157141667,
+              "p95": 3.0901675972928437,
+              "minimum": 1.8564124396126753,
+              "maximum": 3.123718068902519
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.5136364576152758,
+              "median": 0.5182702053486219,
+              "p95": 0.6540932280205645,
+              "minimum": 0.38604187606343016,
+              "maximum": 0.7586917571566116
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 0,
+            "operation_index": 19,
+            "owned_core": {
+              "elapsed_ms": 3.778375170395515,
+              "charged_cpu_ms": 3.026802315828351,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7515728545671637
+            }
+          },
+          "callback_cpu_mean_ms": 1.687098856887503,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "label",
+          "ownership_cpu_mean_ms": 0.954227218454451,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 3.6110204606188416,
+              "median": 3.567592217982207,
+              "p95": 3.73714192272396,
+              "minimum": 3.5034163684010946,
+              "maximum": 3.748207939620429
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.9497754373896043,
+              "median": 2.945815988350374,
+              "p95": 2.982890669162747,
+              "minimum": 2.897534322273425,
+              "maximum": 2.9910668345130036
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.6612450232292376,
+              "median": 0.6108864231954992,
+              "p95": 0.7580573995001262,
+              "minimum": 0.60285122621335,
+              "maximum": 0.7859691363854864
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 13,
+            "owned_core": {
+              "elapsed_ms": 3.748207939620429,
+              "charged_cpu_ms": 2.9905029610405722,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7577049785798564
+            }
+          },
+          "callback_cpu_mean_ms": 2.1755237092348847,
+          "counts_mean": {
+            "GemSolidFill": 0,
+            "solid_record": 0,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "small box",
+          "ownership_cpu_mean_ms": 0.9384675422681904,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 2.7449278406418385,
+              "median": 2.7535351342512255,
+              "p95": 2.8672966073142847,
+              "minimum": 2.636249451985469,
+              "maximum": 2.9169174728882585
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.261378731726388,
+              "median": 2.277308744690779,
+              "p95": 2.2848153102925233,
+              "minimum": 2.2055910874158946,
+              "maximum": 2.2893262980719755
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.48354910891545044,
+              "median": 0.4767902630328781,
+              "p95": 0.5870627689852673,
+              "minimum": 0.43023545946525055,
+              "maximum": 0.6287189217611461
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 30,
+            "owned_core": {
+              "elapsed_ms": 2.9169174728882585,
+              "charged_cpu_ms": 2.288621456231436,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.6282960166568223
+            }
+          },
+          "callback_cpu_mean_ms": 1.6704716378691786,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "OK button",
+          "ownership_cpu_mean_ms": 0.9393380219412566,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 3.59583405579622,
+              "median": 3.5894423150389283,
+              "p95": 3.713670689433998,
+              "minimum": 3.52068499349431,
+              "maximum": 3.7596263774371668
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 2.962372135816444,
+              "median": 2.9599480672531886,
+              "p95": 3.0163706565883683,
+              "minimum": 2.8591909261480817,
+              "maximum": 3.0181327611897166
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.6334619199797757,
+              "median": 0.6085252030296922,
+              "p95": 0.7505155918063545,
+              "minimum": 0.6022168685568645,
+              "maximum": 0.7593261148130971
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 25,
+            "owned_core": {
+              "elapsed_ms": 3.7596263774371668,
+              "charged_cpu_ms": 3.003331082538389,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7562952948987777
+            }
+          },
+          "callback_cpu_mean_ms": 2.1947517946448,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "Cancel button",
+          "ownership_cpu_mean_ms": 0.9373339216413229,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 120,
+              "mean": 4.406652391269923,
+              "median": 4.474018824915877,
+              "p95": 5.197010342849168,
+              "minimum": 3.6113276541876767,
+              "maximum": 5.336428058907862
+            },
+            "charged_cpu_ms": {
+              "count": 120,
+              "mean": 3.6488816274516163,
+              "median": 3.6341292877291265,
+              "p95": 4.286777589976586,
+              "minimum": 3.006996260109194,
+              "maximum": 4.32603728049463
+            },
+            "off_cpu_ms": {
+              "count": 120,
+              "mean": 0.0,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            },
+            "interrupt_ms": {
+              "count": 120,
+              "mean": 0.7577707638183068,
+              "median": 0.8066210023132909,
+              "p95": 0.9688051098214072,
+              "minimum": 0.6029921945814578,
+              "maximum": 1.0156770922172773
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 3,
+            "owned_core": {
+              "elapsed_ms": 5.336428058907862,
+              "charged_cpu_ms": 4.32603728049463,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 1.0103907784132318
+            }
+          },
+          "callback_cpu_mean_ms": 2.7046308578817997,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        }
+      ],
+      "checks": {
+        "all_five_rows_complete": true,
+        "all_five_medians_match_untraced": true,
+        "saved": true,
+        "closed": true,
+        "hello": true,
+        "exit_status": 0,
+        "live_tasks_after_exit": 0,
+        "counter_advanced": false
+      }
+    },
+    "counter": {
+      "scope": "Size dialog drawing batches from an existing passive G4BENCH capture.\n\nModels remove only intermediate DisplayLeave/DisplayEnter CPU. They retain\nthe existing draw calls, cursor/fence work and traversal between units. They\nare CPU estimates, not predictions of elapsed time under a changed schedule.\n",
+      "load": "counter",
+      "operations": 60,
+      "archive_sha256": "e147eb25f9a3b8d873998a33cb882bae1c232d3f99ad7833e13243f9d155425a",
+      "trace_sha256": "e9c6cad5fc61774879f0a5c479c09544bd31adf45ad6af2363f50f4110780b29",
+      "trace_report_sha256": "e09a75c490881307b7c1b0f25b432413513fb7227aeb7ce3d0528cd82fa26366",
+      "analysis_sha256": "fb36014ed4160478d38c932017e141e9172e0560eefc3eb174c25f25eb87cde8",
+      "inputs": {
+        "actionc_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+        "rom": {
+          "path": "/Users/michalkurcewicz/action/exec816-public/build/rp-dialog/trace-counter/g4bench-extracted-counter/exec816-demo/altirraos-816.rom",
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "override": false
+        },
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d1ad6c2b41920f95",
+          "actual_kernel_id": "$d1ad6c2b41920f95",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        },
+        "runner_sha256": "e4597f846589b312a62ac9e888279f8c859af7dc0faeaaf4b681949511434934"
+      },
+      "guest_changes": false,
+      "status": "pass",
+      "guards": "intact",
+      "benchmark": {
+        "name": "five-object dialog",
+        "status": "complete",
+        "clip": [
+          152,
+          56,
+          631,
+          215
+        ],
+        "samples": [
+          {
+            "operations": 20,
+            "ticks": 111,
+            "start": [
+              0,
+              8733,
+              50
+            ],
+            "end": [
+              0,
+              8844,
+              50
+            ]
+          },
+          {
+            "operations": 20,
+            "ticks": 112,
+            "start": [
+              0,
+              8849,
+              50
+            ],
+            "end": [
+              0,
+              8961,
+              50
+            ]
+          },
+          {
+            "operations": 20,
+            "ticks": 113,
+            "start": [
+              0,
+              8966,
+              50
+            ],
+            "end": [
+              0,
+              9079,
+              50
+            ]
+          }
+        ],
+        "median_ms_per_operation": 112.0
+      },
+      "per_operation": {
+        "elapsed_ms": 112.32460010798177,
+        "charged_cpu_ms": 51.47691267056586,
+        "off_cpu_ms": 49.79189662131714,
+        "interrupt_ms": 11.055790816098776
+      },
+      "presenter_cpu_ms_per_operation": 30.918458257151677,
+      "exclusive_cpu_ms_per_operation": {
+        "app_arithmetic": 0.10758823327633511,
+        "app_other": 0.8569549328826099,
+        "borrow_setup_cursor": 0.9438466602479152,
+        "command_build": 8.156075008328864,
+        "completion_poll": 1.675883648468124,
+        "display_ownership": 7.7714686601473435,
+        "event_poll": 3.377651438793649,
+        "renderer": 7.883989611571051,
+        "submission_fence": 1.5476529471551546,
+        "update": 6.812520763465884,
+        "upload": 2.599354505842433,
+        "vdi_aes_preparation": 4.376191476394613,
+        "visibility": 5.3677347839918195
+      },
+      "operation_distributions": {
+        "elapsed_ms": {
+          "count": 60,
+          "mean": 53.47729845399991,
+          "median": 54.53111101399956,
+          "p95": 70.05965781338327,
+          "minimum": 37.3955953023701,
+          "maximum": 81.921652600373
+        },
+        "charged_cpu_ms": {
+          "count": 60,
+          "mean": 35.082447699560696,
+          "median": 35.698970508007704,
+          "p95": 39.25644824557818,
+          "minimum": 30.826539832726937,
+          "maximum": 39.73200503539011
+        },
+        "off_cpu_ms": {
+          "count": 60,
+          "mean": 10.82891045078395,
+          "median": 10.050797951447674,
+          "p95": 25.150096069942865,
+          "minimum": 0.0,
+          "maximum": 39.770489399883566
+        },
+        "interrupt_ms": {
+          "count": 60,
+          "mean": 7.565940303655263,
+          "median": 7.699093150487961,
+          "p95": 8.545009085411325,
+          "minimum": 6.525073338793508,
+          "maximum": 8.682100823396238
+        },
+        "ownership_cpu_ms": {
+          "count": 60,
+          "mean": 7.77146866014735,
+          "median": 7.475341108208729,
+          "p95": 9.19804505067108,
+          "minimum": 7.4415791840468914,
+          "maximum": 9.391876556819415
+        },
+        "owned_core_cpu_ms": {
+          "count": 60,
+          "mean": 22.535089376294852,
+          "median": 23.21287351331235,
+          "p95": 26.59833459969917,
+          "minimum": 18.670907934968472,
+          "maximum": 27.04569771588953
+        },
+        "owned_core_off_cpu_ms": {
+          "count": 60,
+          "mean": 7.243713633097869,
+          "median": 8.019584735381228,
+          "p95": 19.63780997182042,
+          "minimum": 0.0,
+          "maximum": 22.524842150669812
+        },
+        "owned_core_interrupt_ms": {
+          "count": 60,
+          "mean": 4.828406253920683,
+          "median": 5.064182897999517,
+          "p95": 5.8347512401692185,
+          "minimum": 3.7785866229476768,
+          "maximum": 5.9409709055385065
+        },
+        "owned_core_elapsed_ms": {
+          "count": 60,
+          "mean": 34.60720926331341,
+          "median": 33.91698936675599,
+          "p95": 48.69512630060941,
+          "minimum": 22.449494557916147,
+          "maximum": 55.26157385544258
+        },
+        "callback_cpu_ms": {
+          "count": 60,
+          "mean": 16.04006461989994,
+          "median": 16.480118526203906,
+          "p95": 19.20715160725085,
+          "minimum": 13.36612727470083,
+          "maximum": 19.478233779122302
+        }
+      },
+      "models": {
+        "eight existing units": {
+          "groups": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "acquisitions_per_dialog": 8,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 0,
+            "median": 0.0,
+            "p95": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 30.3065580364422,
+            "median": 30.708478824436586,
+            "p95": 34.618095545540534,
+            "minimum": 26.21186981853142,
+            "maximum": 35.1638545826702
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 3.86206339159556,
+            "median": 4.245156679292734,
+            "p95": 4.448609276564432,
+            "minimum": 3.0090403014467584,
+            "maximum": 5.488250991360049
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.5295857362566414,
+                "median": 2.7797200086272644,
+                "p95": 3.1979379147113183,
+                "minimum": 1.8552846926678122,
+                "maximum": 3.842233841148385
+              }
+            },
+            {
+              "first_unit": 1,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.6748113490813794,
+                "median": 3.0522471062718237,
+                "p95": 3.771115299437959,
+                "minimum": 1.788606654552785,
+                "maximum": 4.301297331891697
+              }
+            },
+            {
+              "first_unit": 2,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.609508927291805,
+                "median": 2.8311734629866403,
+                "p95": 3.1289338985225106,
+                "minimum": 1.7878313285281915,
+                "maximum": 4.2902313149952285
+              }
+            },
+            {
+              "first_unit": 3,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.5287786923492237,
+                "median": 2.980740901549101,
+                "p95": 3.1229427428779255,
+                "minimum": 1.7839546984052248,
+                "maximum": 4.311869959499788
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.0377449854027256,
+                "median": 2.946133167178617,
+                "p95": 3.6377592232079046,
+                "minimum": 2.865886923633206,
+                "maximum": 4.140311455512498
+              }
+            },
+            {
+              "first_unit": 5,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.286377709705719,
+                "median": 2.251370564958929,
+                "p95": 2.354947073426194,
+                "minimum": 2.2061549608883264,
+                "maximum": 3.4903063101670617
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.1211054551469197,
+                "median": 2.972776188751006,
+                "p95": 4.167024961268941,
+                "minimum": 2.8771643930818365,
+                "maximum": 4.561243002682628
+              }
+            },
+            {
+              "first_unit": 7,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.7471765210604393,
+                "median": 4.245156679292734,
+                "p95": 4.323006460580311,
+                "minimum": 3.0065028708208166,
+                "maximum": 5.488250991360049
+              }
+            }
+          ]
+        },
+        "five objects": {
+          "groups": [
+            4,
+            1,
+            1,
+            1,
+            1
+          ],
+          "acquisitions_per_dialog": 5,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 2.954902574411328,
+            "median": 2.8027683368129024,
+            "p95": 3.716278604243994,
+            "minimum": 2.783984301762527,
+            "maximum": 4.5656835062780265
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 27.557502172087606,
+            "median": 28.105638875692684,
+            "p95": 31.89663071503385,
+            "minimum": 23.571038894582447,
+            "maximum": 32.11365151773594
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 10.54853141503578,
+            "median": 10.73220380078914,
+            "p95": 13.745261700726976,
+            "minimum": 7.644150729017916,
+            "maximum": 14.519107557455184
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 4,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 10.54853141503578,
+                "median": 10.73220380078914,
+                "p95": 13.745261700726976,
+                "minimum": 7.644150729017916,
+                "maximum": 14.519107557455184
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.0377449854027256,
+                "median": 2.946133167178617,
+                "p95": 3.6377592232079046,
+                "minimum": 2.865886923633206,
+                "maximum": 4.140311455512498
+              }
+            },
+            {
+              "first_unit": 5,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 2.286377709705719,
+                "median": 2.251370564958929,
+                "p95": 2.354947073426194,
+                "minimum": 2.2061549608883264,
+                "maximum": 3.4903063101670617
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.1211054551469197,
+                "median": 2.972776188751006,
+                "p95": 4.167024961268941,
+                "minimum": 2.8771643930818365,
+                "maximum": 4.561243002682628
+              }
+            },
+            {
+              "first_unit": 7,
+              "units": 1,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 3.7471765210604393,
+                "median": 4.245156679292734,
+                "p95": 4.323006460580311,
+                "minimum": 3.0065028708208166,
+                "maximum": 5.488250991360049
+              }
+            }
+          ]
+        },
+        "four adjacent pairs": {
+          "groups": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "acquisitions_per_dialog": 4,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 3.847696365412565,
+            "median": 3.7342520711777487,
+            "p95": 4.468556300651697,
+            "minimum": 3.7102169644153546,
+            "maximum": 5.671862290820563
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 27.97127605036706,
+            "median": 28.43589252007742,
+            "p95": 32.229598000504666,
+            "minimum": 23.84409462360741,
+            "maximum": 32.887638342832254
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 7.562149429289562,
+            "median": 7.830898574668829,
+            "p95": 9.126221667120117,
+            "minimum": 6.535011608745114,
+            "maximum": 10.086286738118835
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 5.2744689369152455,
+                "median": 5.625906602817394,
+                "p95": 6.960947532983075,
+                "minimum": 3.823062143085713,
+                "maximum": 7.458072483115514
+              }
+            },
+            {
+              "first_unit": 2,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 5.206333050926703,
+                "median": 5.5979948659320335,
+                "p95": 7.192347109232159,
+                "minimum": 3.7214239496799317,
+                "maximum": 7.504451076223006
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 6.017939634525409,
+                "median": 5.9085129387816675,
+                "p95": 7.05997781157886,
+                "minimum": 5.770540148496079,
+                "maximum": 7.117704358319037
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 7.548762133264916,
+                "median": 7.830898574668829,
+                "p95": 9.126221667120117,
+                "minimum": 6.535011608745114,
+                "maximum": 10.086286738118835
+              }
+            }
+          ]
+        },
+        "three groups": {
+          "groups": [
+            4,
+            2,
+            2
+          ],
+          "acquisitions_per_dialog": 3,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 4.879797447250811,
+            "median": 4.6703525195981275,
+            "p95": 5.832213809543276,
+            "minimum": 4.645260150074924,
+            "maximum": 6.606553055559863
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 27.006904395722643,
+            "median": 27.562100090360723,
+            "p95": 31.343893743682855,
+            "minimum": 22.974813181670164,
+            "maximum": 32.01962561620798
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 10.552628895602115,
+            "median": 10.73220380078914,
+            "p95": 13.745261700726976,
+            "minimum": 7.644150729017916,
+            "maximum": 14.519107557455184
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 4,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 10.54853141503578,
+                "median": 10.73220380078914,
+                "p95": 13.745261700726976,
+                "minimum": 7.644150729017916,
+                "maximum": 14.519107557455184
+              }
+            },
+            {
+              "first_unit": 4,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 6.017939634525409,
+                "median": 5.9085129387816675,
+                "p95": 7.05997781157886,
+                "minimum": 5.770540148496079,
+                "maximum": 7.117704358319037
+              }
+            },
+            {
+              "first_unit": 6,
+              "units": 2,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 7.548762133264916,
+                "median": 7.830898574668829,
+                "p95": 9.126221667120117,
+                "minimum": 6.535011608745114,
+                "maximum": 10.086286738118835
+              }
+            }
+          ]
+        },
+        "whole dialog": {
+          "groups": [
+            8
+          ],
+          "acquisitions_per_dialog": 1,
+          "removed_ownership_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 6.777417290334222,
+            "median": 6.53772524983119,
+            "p95": 7.7376832412574945,
+            "minimum": 6.508016166252455,
+            "maximum": 8.46352936864497
+          },
+          "transaction_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 26.448285519212344,
+            "median": 26.997838954916904,
+            "p95": 30.814416553069652,
+            "minimum": 22.45301876711885,
+            "maximum": 31.485355501079116
+          },
+          "longest_owned_core_cpu_ms_per_dialog": {
+            "count": 60,
+            "mean": 25.454234149399216,
+            "median": 26.06526271569922,
+            "p95": 29.57459975556085,
+            "minimum": 21.523120926895217,
+            "maximum": 29.897628771080058
+          },
+          "batches": [
+            {
+              "first_unit": 0,
+              "units": 8,
+              "owned_core_cpu_ms": {
+                "count": 60,
+                "mean": 25.454234149399216,
+                "median": 26.06526271569922,
+                "p95": 29.57459975556085,
+                "minimum": 21.523120926895217,
+                "maximum": 29.897628771080058
+              }
+            }
+          ]
+        }
+      },
+      "limits": [
+        "Pointer is stationary outside the drawing. Cursor overlap/movement is not measured.",
+        "Owned core runs from DisplayEnter return to DisplayLeave entry, a lower bound on actual ownership duration.",
+        "Transaction envelope includes Enter/Leave, and may include waiting before acquisition or after release.",
+        "Models retain inter-unit traversal and all existing drawing/cursor/fence CPU; only intermediate ownership calls are removed.",
+        "Modeled owned-core CPU excludes interrupts and scheduling. Larger batches can change both; no elapsed-time prediction.",
+        "Per-unit p95 describes these repeated benchmark units, not UI input latency or a hard bound.",
+        "Blitter polling is software CPU time, not a measurement of exact hardware BUSY time."
+      ],
+      "routines_per_operation": {
+        "DisplayEnter": {
+          "calls": 8.0,
+          "charged_cpu_ms": 6.179431822293395,
+          "elapsed_ms": 9.39823423022108,
+          "off_cpu_ms": 1.8549733875215741,
+          "interrupt_ms": 1.3638290204061112
+        },
+        "DisplayLeave": {
+          "calls": 8.0,
+          "charged_cpu_ms": 1.592036837853954,
+          "elapsed_ms": 2.2609152982162333,
+          "off_cpu_ms": 0.32028835549591034,
+          "interrupt_ms": 0.34859010486636904
+        },
+        "GemSolidFill": {
+          "calls": 14.0,
+          "charged_cpu_ms": 5.795841621098642,
+          "elapsed_ms": 8.402653353613982,
+          "off_cpu_ms": 1.361794376959754,
+          "interrupt_ms": 1.2450173555555868
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 8.0,
+          "charged_cpu_ms": 5.506647363398128,
+          "elapsed_ms": 9.185381392269388,
+          "off_cpu_ms": 2.4718497916252575,
+          "interrupt_ms": 1.2068842372460045
+        },
+        "_VbxeUpload": {
+          "calls": 8.0,
+          "charged_cpu_ms": 2.599354505842434,
+          "elapsed_ms": 4.103260269428143,
+          "off_cpu_ms": 0.9259190080337873,
+          "interrupt_ms": 0.5779867555519218
+        },
+        "blit_glyph_run": {
+          "calls": 3.0,
+          "charged_cpu_ms": 2.360233387230239,
+          "elapsed_ms": 3.537061993659243,
+          "off_cpu_ms": 0.6681524732665238,
+          "interrupt_ms": 0.5086761331624797
+        },
+        "borrow_callback": {
+          "calls": 8.0,
+          "charged_cpu_ms": 16.04006461989994,
+          "elapsed_ms": 24.09337721208738,
+          "off_cpu_ms": 4.604206637072707,
+          "interrupt_ms": 3.4491059551147316
+        },
+        "events": {
+          "calls": 1.0,
+          "charged_cpu_ms": 3.377651438793649,
+          "elapsed_ms": 5.504604496796963,
+          "off_cpu_ms": 1.4223567373717012,
+          "interrupt_ms": 0.7045963206316135
+        },
+        "fence_owner": {
+          "calls": 16.0,
+          "charged_cpu_ms": 6.158498019629375,
+          "elapsed_ms": 10.125806045381477,
+          "off_cpu_ms": 2.639506996025162,
+          "interrupt_ms": 1.3278010297269394
+        },
+        "full_canvas": {
+          "calls": 1.0,
+          "charged_cpu_ms": 5.36773478399182,
+          "elapsed_ms": 11.366743541416742,
+          "off_cpu_ms": 4.845681927432304,
+          "interrupt_ms": 1.153326829992618
+        },
+        "glyph_record": {
+          "calls": 18.0,
+          "charged_cpu_ms": 1.4947075775666698,
+          "elapsed_ms": 2.4943530421208786,
+          "off_cpu_ms": 0.6681524732665238,
+          "interrupt_ms": 0.33149299128768495
+        },
+        "idle": {
+          "calls": 32.0,
+          "charged_cpu_ms": 1.67588364846812,
+          "elapsed_ms": 2.704843485170363,
+          "off_cpu_ms": 0.6609207959825895,
+          "interrupt_ms": 0.36803904071965293
+        },
+        "objc_draw": {
+          "calls": 1.0,
+          "charged_cpu_ms": 34.95446251815555,
+          "elapsed_ms": 53.322451750051805,
+          "off_cpu_ms": 10.82891045078395,
+          "interrupt_ms": 7.539078781112306
+        },
+        "solid_record": {
+          "calls": 42.0,
+          "charged_cpu_ms": 4.090194851177344,
+          "elapsed_ms": 5.8245392566362035,
+          "off_cpu_ms": 0.8614024848964142,
+          "interrupt_ms": 0.872941920562445
+        },
+        "wind_update": {
+          "calls": 2.0,
+          "charged_cpu_ms": 6.812520763465886,
+          "elapsed_ms": 40.9378179130385,
+          "off_cpu_ms": 32.69494750572919,
+          "interrupt_ms": 1.430349643843418
+        }
+      },
+      "units": [
+        {
+          "name": "background top",
+          "ownership_cpu_mean_ms": 0.9896883988201888,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 3.468433893118723,
+              "median": 3.6263055432991393,
+              "p95": 9.307788925243065,
+              "minimum": 2.2003047736118493,
+              "maximum": 10.759763116754232
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 2.5295857362566414,
+              "median": 2.7797200086272644,
+              "p95": 3.1979379147113183,
+              "minimum": 1.8552846926678122,
+              "maximum": 3.842233841148385
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 0.4043865596998689,
+              "median": 0.0,
+              "p95": 6.065023069473441,
+              "minimum": 0.0,
+              "maximum": 6.067137594995058
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.5344615971622128,
+              "median": 0.6067278563363168,
+              "p95": 0.7540398010090515,
+              "minimum": 0.34502008094403697,
+              "maximum": 0.8811227848583056
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 1,
+            "operation_index": 19,
+            "owned_core": {
+              "elapsed_ms": 10.759763116754232,
+              "charged_cpu_ms": 3.842233841148385,
+              "off_cpu_ms": 6.065516458761818,
+              "interrupt_ms": 0.8520128168440284
+            }
+          },
+          "callback_cpu_mean_ms": 1.7268343156479118,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background middle 1",
+          "ownership_cpu_mean_ms": 0.9328346812258798,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 5.201728084235178,
+              "median": 3.744401793681516,
+              "p95": 17.13047609246961,
+              "minimum": 2.139476922773299,
+              "maximum": 17.17967405293926
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 2.6748113490813794,
+              "median": 3.0522471062718237,
+              "p95": 3.771115299437959,
+              "minimum": 1.788606654552785,
+              "maximum": 4.301297331891697
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 1.9336313874529694,
+              "median": 0.0,
+              "p95": 12.433480551299093,
+              "minimum": 0.0,
+              "maximum": 12.483947227081716
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.5932853477008294,
+              "median": 0.6471857779832784,
+              "p95": 0.9233428111066158,
+              "minimum": 0.350870268220514,
+              "maximum": 1.017298228450518
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 13,
+            "owned_core": {
+              "elapsed_ms": 17.17967405293926,
+              "charged_cpu_ms": 3.813617262422485,
+              "off_cpu_ms": 12.483947227081716,
+              "interrupt_ms": 0.8821095634350609
+            }
+          },
+          "callback_cpu_mean_ms": 1.837515629867814,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background middle 2",
+          "ownership_cpu_mean_ms": 1.0408141017237142,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 4.956222273284098,
+              "median": 3.740736616110711,
+              "p95": 15.695206652579227,
+              "minimum": 2.133344798760606,
+              "maximum": 22.81389778947502
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 2.609508927291805,
+              "median": 2.8311734629866403,
+              "p95": 3.1289338985225106,
+              "minimum": 1.7878313285281915,
+              "maximum": 4.2902313149952285
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 1.7751899901181174,
+              "median": 0.0,
+              "p95": 12.429674405360181,
+              "minimum": 0.0,
+              "maximum": 19.63780997182042
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.5715233558741754,
+              "median": 0.6465161782347659,
+              "p95": 0.7995725839078969,
+              "minimum": 0.3455134702324146,
+              "maximum": 1.0164524182418708
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 0,
+            "operation_index": 16,
+            "owned_core": {
+              "elapsed_ms": 22.81389778947502,
+              "charged_cpu_ms": 2.6112275666463205,
+              "off_cpu_ms": 19.53666516770302,
+              "interrupt_ms": 0.6660050551256804
+            }
+          },
+          "callback_cpu_mean_ms": 1.741069771354006,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "background bottom",
+          "ownership_cpu_mean_ms": 0.9683598847254664,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 3.5660403911966196,
+              "median": 3.5885260206462273,
+              "p95": 4.033034527382401,
+              "minimum": 2.1289042951652077,
+              "maximum": 15.390080619809721
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 2.5287786923492237,
+              "median": 2.980740901549101,
+              "p95": 3.1229427428779255,
+              "minimum": 1.7839546984052248,
+              "maximum": 4.311869959499788
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 0.5007231677283934,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 10.059291295626174
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.5365385311190022,
+              "median": 0.605106720103076,
+              "p95": 0.8020395303497848,
+              "minimum": 0.34375136563106606,
+              "maximum": 1.0554301720236996
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 1,
+            "operation_index": 9,
+            "owned_core": {
+              "elapsed_ms": 15.390080619809721,
+              "charged_cpu_ms": 4.311869959499788,
+              "off_cpu_ms": 10.059291295626174,
+              "interrupt_ms": 1.0189193646837584
+            }
+          },
+          "callback_cpu_mean_ms": 1.731717694866449,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "label",
+          "ownership_cpu_mean_ms": 0.9574853498623445,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 4.27483991867065,
+              "median": 3.550781740085342,
+              "p95": 9.72808611475671,
+              "minimum": 3.4693020233189875,
+              "maximum": 15.174610469156827
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 3.0377449854027256,
+              "median": 2.946133167178617,
+              "p95": 3.6377592232079046,
+              "minimum": 2.865886923633206,
+              "maximum": 4.140311455512498
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 0.5782029070496871,
+              "median": 0.0,
+              "p95": 4.5750579027572,
+              "minimum": 0.0,
+              "maximum": 10.063097441565086
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.6588920262182368,
+              "median": 0.6089128660419889,
+              "p95": 0.8010527517730297,
+              "minimum": 0.6027102578452421,
+              "maximum": 1.014690313640522
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 0,
+            "operation_index": 4,
+            "owned_core": {
+              "elapsed_ms": 15.174610469156827,
+              "charged_cpu_ms": 4.140311455512498,
+              "off_cpu_ms": 10.059432263994283,
+              "interrupt_ms": 0.974866749650046
+            }
+          },
+          "callback_cpu_mean_ms": 2.214941989167051,
+          "counts_mean": {
+            "GemSolidFill": 0,
+            "solid_record": 0,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "small box",
+          "ownership_cpu_mean_ms": 0.9423429976547563,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 2.8448238999650868,
+              "median": 2.7262929971143777,
+              "p95": 2.944829209773619,
+              "minimum": 2.63984414537222,
+              "maximum": 8.958892214176062
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 2.286377709705719,
+              "median": 2.251370564958929,
+              "p95": 2.354947073426194,
+              "minimum": 2.2061549608883264,
+              "maximum": 3.4903063101670617
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 0.07625213978235425,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 4.5751283869412545
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.48219405047701347,
+              "median": 0.4747462216953138,
+              "p95": 0.586357927144728,
+              "minimum": 0.43065836456957424,
+              "maximum": 0.8934575170677451
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 15,
+            "owned_core": {
+              "elapsed_ms": 8.958892214176062,
+              "charged_cpu_ms": 3.4903063101670617,
+              "off_cpu_ms": 4.5751283869412545,
+              "interrupt_ms": 0.8934575170677451
+            }
+          },
+          "callback_cpu_mean_ms": 1.6925977979801112,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "OK button",
+          "ownership_cpu_mean_ms": 0.9834799169414375,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 4.947280179800455,
+              "median": 3.580420339480024,
+              "p95": 15.202310753490025,
+              "minimum": 3.4391347925439013,
+              "maximum": 20.101032029422917
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 3.1211054551469197,
+              "median": 2.972776188751006,
+              "p95": 4.167024961268941,
+              "minimum": 2.8771643930818365,
+              "maximum": 4.561243002682628
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 1.156258972049262,
+              "median": 0.0,
+              "p95": 10.040894923588096,
+              "minimum": 0.0,
+              "maximum": 14.635758882064453
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.6699157526042732,
+              "median": 0.6093710132383394,
+              "p95": 0.9779680537484194,
+              "minimum": 0.5619703994620647,
+              "maximum": 1.0169458075302482
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 2,
+            "operation_index": 5,
+            "owned_core": {
+              "elapsed_ms": 20.101032029422917,
+              "charged_cpu_ms": 4.448609276564432,
+              "off_cpu_ms": 14.635758882064453,
+              "interrupt_ms": 1.0166638707940325
+            }
+          },
+          "callback_cpu_mean_ms": 2.29519880534007,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        },
+        {
+          "name": "Cancel button",
+          "ownership_cpu_mean_ms": 0.9564633291935623,
+          "owned_core": {
+            "elapsed_ms": {
+              "count": 60,
+              "mean": 5.347840623042596,
+              "median": 5.113416100561196,
+              "p95": 14.638014375954178,
+              "minimum": 3.6130192746049716,
+              "maximum": 16.787429568679084
+            },
+            "charged_cpu_ms": {
+              "count": 60,
+              "mean": 3.7471765210604393,
+              "median": 4.245156679292734,
+              "p95": 4.323006460580311,
+              "minimum": 3.0065028708208166,
+              "maximum": 5.488250991360049
+            },
+            "off_cpu_ms": {
+              "count": 60,
+              "mean": 0.8190685092172169,
+              "median": 0.0,
+              "p95": 9.972031875767398,
+              "minimum": 0.0,
+              "maximum": 10.059432263994283
+            },
+            "interrupt_ms": {
+              "count": 60,
+              "mean": 0.7815955927649395,
+              "median": 0.8638894018571173,
+              "p95": 1.0177916177388955,
+              "minimum": 0.602780742029296,
+              "maximum": 1.241015028637724
+            }
+          },
+          "slowest_owned_core": {
+            "sample": 1,
+            "operation_index": 3,
+            "owned_core": {
+              "elapsed_ms": 16.787429568679084,
+              "charged_cpu_ms": 5.486982276047078,
+              "off_cpu_ms": 10.059432263994283,
+              "interrupt_ms": 1.241015028637724
+            }
+          },
+          "callback_cpu_mean_ms": 2.8001886156765283,
+          "counts_mean": {
+            "GemSolidFill": 2,
+            "solid_record": 6,
+            "blit_mask": 0,
+            "_VbxeUpload": 1,
+            "_VbxeTextUpload": 0,
+            "VbxeOwnerSubmit": 1,
+            "idle": 4
+          }
+        }
+      ],
+      "checks": {
+        "all_five_rows_complete": true,
+        "all_five_medians_match_untraced": true,
+        "saved": true,
+        "closed": true,
+        "hello": true,
+        "exit_status": 0,
+        "live_tasks_after_exit": 0,
+        "counter_advanced": true
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "vram_delta": 0,
+  "host_tests": {
+    "test_g4bench_trace": 6,
+    "test_dialog_batches": 4
+  }
+}

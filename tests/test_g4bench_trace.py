@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 from console_turn_profile import Timeline
-from g4bench_trace import calls, listing_returns, partition, read_trace
+from g4bench_trace import calls, clock_tick_bounds, listing_returns, partition, read_trace
 from sio_transaction_trace import BASE_HZ
 
 
@@ -15,6 +15,25 @@ def event(tick, pc, stack, dp=0x1100, argument=0):
 
 
 class BenchmarkTrace(unittest.TestCase):
+    def test_clock_check_uses_actual_vbis_not_nominal_fifty_hz(self):
+        # 114 PAL frames take about 2286 ms; a further fractional frame can
+        # exceed the former 22 ms tolerance around nominal ticks/50.
+        frame=35568
+        vbis=[n*frame for n in range(120)]
+        start=frame+100
+        end=115*frame+frame-100
+        clocks=[dict(start=start-20,end=start),dict(start=end,end=end+20)]
+        lower,upper=clock_tick_bounds(clocks,vbis)
+        self.assertLessEqual(lower,114)
+        self.assertGreaterEqual(upper,114)
+        self.assertLess(upper,117)
+
+    def test_clock_read_preemption_is_part_of_snapshot_uncertainty(self):
+        vbis=list(range(0,101,10))
+        clocks=[dict(start=1,end=32),dict(start=61,end=65)]
+        # The first snapshot can precede three ticks spent inside its call.
+        self.assertEqual(clock_tick_bounds(clocks,vbis),(2,7))
+
     def test_tail_call_and_callback_returns_use_full_stack_and_task(self):
         entries = {10: 'outer', 20: 'tail', 30: 'callback'}
         events = [event(0, 10, 0x4510, argument=2), event(1, 20, 0x4510),

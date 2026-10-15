@@ -1,0 +1,198 @@
+{
+  "tier": "development",
+  "qualification": false,
+  "scope": "Exact OF816 ZIP: startup pixel oracle, close SYS:, one new SYS: folder window, explicit Refresh on candidate, final pixel oracle and orderly EXIT.",
+  "sampling": "One observation per build, sampled once per PAL frame (~20 ms). Icon cache warmed by startup; after_frame_ms is visible completion after the frame, not isolated CPU time. No cold-boot or p95 speed claim.",
+  "comparison": {
+    "before": {
+      "bundle": "build/merged-desktop/demo",
+      "archive_sha256": "0f830562053d9aa651a2c8684ce3ac882b9690360d308410cabb05e5c3c7b3aa",
+      "frame_ms": 822.2628524385414,
+      "window_ms": 1544.489476006479,
+      "after_frame_ms": 722.2266235679376,
+      "content_paints": 1,
+      "changed_frames_after_complete": 0,
+      "calls": {
+        "CONSOLEBITMAP_COPYSTART": 2,
+        "VbxeOwnerSubmit": 50,
+        "VbxeOwnerFence": 185,
+        "CONSOLEBITMAP_FRAME": 4,
+        "GemDrawingFrameBatch": 2
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 561,
+          "untouched_above_floor": 719
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 305,
+          "untouched_above_floor": 751
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 133,
+          "untouched_above_floor": 923
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 743,
+          "untouched_above_floor": 313
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 836,
+          "untouched_above_floor": 1468
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 54,
+          "untouched_above_floor": 202
+        }
+      ]
+    },
+    "after": {
+      "bundle": "build/files-icon-cache/demo",
+      "archive_sha256": "8b2d5e180d32728a757a2bca1c8e28c7045eaf1f17fbfc9177f75007667a2102",
+      "frame_ms": 822.2634163120138,
+      "window_ms": 1243.6251989416096,
+      "after_frame_ms": 421.36178262959584,
+      "content_paints": 1,
+      "changed_frames_after_complete": 0,
+      "calls": {
+        "CONSOLEBITMAP_COPYSTART": 2,
+        "VbxeOwnerSubmit": 50,
+        "VbxeOwnerFence": 167,
+        "CONSOLEBITMAP_FRAME": 4,
+        "GemDrawingFrameBatch": 2
+      },
+      "runtime_status": 0,
+      "guards": "intact",
+      "live_tasks_after_exit": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 559,
+          "untouched_above_floor": 721
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 321,
+          "untouched_above_floor": 735
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 148,
+          "untouched_above_floor": 908
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 806,
+          "untouched_above_floor": 250
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 845,
+          "untouched_above_floor": 1459
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 60,
+          "untouched_above_floor": 196
+        }
+      ]
+    }
+  },
+  "resource_delta": {
+    "vram_reserved": 32768,
+    "vram_live": 26112,
+    "upper_ram": 7874,
+    "bank_zero_fixed": 0,
+    "bank_zero_per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "bank_zero_idle": 0
+  },
+  "host_checks": [
+    "test_icon_cache.py: 1 pass (production C, independent pixel oracle)",
+    "test_display_abi.py: 3 passes",
+    "test_frame_gadget_assets.py: 2 passes",
+    "generate_desktop.py --check"
+  ],
+  "refresh": {
+    "initial_content_paints": 1,
+    "changed_frames_after_complete": 0,
+    "explicit_refresh_paints": 1
+  },
+  "source_sha256": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "f77062b671c3cee4a67dea3b06acc3f20fc3a2476fc05841d001ec91c89292bd",
+    "ports/gem4xe/adapter/gem-drawing.h": "3f0ab99f2465f45df111969c2bfb8dd85d3767f203165dd03509f55d8261fcbd",
+    "c/calypsi/aes-objects.c": "ef5106ad3b83e117193ee241c593b56b8b05ecb8734df8c70b0cb6f21d71156e",
+    "platform/altirraos/vbxe-vram.json": "03b1e3f60c515ed7e0ffe85b0ed899d4c780f6a3f70d7417f6035cf54de5c55c",
+    "tools/generate_desktop.py": "e2805a5a5b818ebe9595e0e50f3e5c4a6ef11dd360407c27aec73e448570dcc8",
+    "tests/test_icon_cache.py": "a01f1fd5b7b44c745c79949c95bf1cb23956acd5d572d8e22ef7e7b1c10499e4"
+  },
+  "commands": [
+    "python3 tools/measure_frame_exposure.py --bundle build/merged-desktop/demo --open-only --baseline --count 1",
+    "python3 tools/measure_frame_exposure.py --bundle build/files-icon-cache/demo --open-only --count 1"
+  ]
+}
