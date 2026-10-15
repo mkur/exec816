@@ -242,12 +242,15 @@ queries and one visibility rebuild inside AES open. The <=2 ms quiet-turn
 target remains open. These are focused development observations, not p95 or
 hardware qualification.
 
-The proposed [presenter quiet turn plan](plans/gem4xe/presenter-quiet-turn-plan.md)
-addresses the remaining 4.39 ms median no-transfer turn with conditional signal
+The implemented [presenter quiet turn plan](plans/gem4xe/presenter-quiet-turn-plan.md)
+addresses the previous 4.39 ms median no-transfer turn with conditional signal
 collection, event-driven cache candidate inspection and a Layers-owned
 visible-damage summary. QT1–QT4 retain END notifications, current gate ownership
-and ordinary preemption; reuse PB6 evidence and finish with focused comparisons
-and one OF816 demo refresh.
+and ordinary preemption. The [record](history/presenter-quiet-turn.md) measures
+median no-transfer CPU at 1.76 ms, dialogs at 67.20 → 60.52 ms/op and uncached
+close at 401 → 361 ms, with a refreshed OF816 demo. The strict <=2 ms ceiling
+remains open (18/639 benchmark turns exceed it); New Window and icon selection
+do not improve. These are development observations, not percentile claims.
 
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x

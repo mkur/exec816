@@ -1,9 +1,11 @@
 # Implementation plans
 
-- [Presenter quiet turns](gem4xe/presenter-quiet-turn-plan.md): proposed QT1–QT4
+- [Presenter quiet turns](gem4xe/presenter-quiet-turn-plan.md): implemented QT1–QT4
   slices for conditional signal collection, event-driven cache inspection,
   Layers-owned visible-damage readiness and focused comparisons/demo delivery.
-  Preserves the existing gate, END notifications and preemption.
+  Preserves the existing gate, END notifications and preemption. The
+  [record](../history/presenter-quiet-turn.md) measures median no-transfer CPU
+  at 4.39 → 1.76 ms; the strict <=2 ms ceiling remains open.
 
 - [Presenter scheduling and bookkeeping](gem4xe/presenter-bookkeeping-plan.md):
   implemented PB1–PB6 slices removing repeated drawing identity queries, reducing

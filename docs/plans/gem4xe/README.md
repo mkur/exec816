@@ -1,11 +1,13 @@
 # GEM as a client of an Exec-like kernel
 
-The proposed [presenter quiet turn plan](presenter-quiet-turn-plan.md) follows
+The implemented [presenter quiet turn plan](presenter-quiet-turn-plan.md) follows
 PB1–PB6 with conditional signal acknowledgement, event-driven cache candidate
 inspection and a Layers-owned visible-damage summary. QT1–QT4 preserve END
-notifications, the policy gate and normal scheduling while targeting the
-remaining <=2 ms no-transfer turn goal, with focused measurements and one demo
-refresh.
+notifications, the policy gate and normal scheduling. The
+[record](../../history/presenter-quiet-turn.md) measures median no-transfer CPU
+at 4.39 → 1.76 ms and dialogs at 67.20 → 60.52 ms/op, with a refreshed OF816
+demo. The strict <=2 ms ceiling remains open; New Window and icon selection
+do not improve.
 
 The implemented [presenter bookkeeping plan](presenter-bookkeeping-plan.md) follows
 caller-local UPDATE with six slices: trusted drawing dispatch, cheaper readiness

@@ -1,7 +1,8 @@
 # Historical records
 
 - [Presenter quiet turns](presenter-quiet-turn.md): conditional signal collection,
-  followed by event-driven cache inspection and visible-damage readiness.
+  event-driven cache inspection and visible-damage readiness; median presenter
+  CPU 4.39 → 1.76 ms, remaining tails and matched application/demo observations.
 
 - [Presenter bookkeeping](presenter-bookkeeping.md): trusted dispatch, cheaper
   readiness/input/cache maintenance and prepared window stacking; measured

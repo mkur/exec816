@@ -78,6 +78,8 @@ DESKWIDGETINPUT_RUNNABLE DESKDRAG_RUNNABLE DESKPAINT_READY DESKPAINT_RUNNABLE
 DESKPAINT_PAINTPENDING DESKPAINT_DAMAGEPENDING AESLOCKS_NATIVEREADY
 AESGATE_OWNERENTER AESGATE_OFFER AESHOST_SETTLED INPUT_TAKE
 DESKCACHE_PATCH DESKCACHE_CAPTURE DESKMENUCACHE_CAPTUREPOPUP
+DESKCACHE_CANDIDATES DESKCACHE_TAKECANDIDATE DESKCACHE_CONSIDERSLOT
+LAYERS_DAMAGED LAYERS_UPDATEDAMAGE LAYERS_MARK LAYERS_FINDSLOT
 LAYERS_REBUILD LAYERS_SHOW LAYERS_ORDER LAYERS_ORDERBELOW
 AESWINDOW_REQUEST CONSOLEBITMAP_RUN'''.split()
 BOOKKEEPING_GROUPS = dict(
@@ -97,7 +99,7 @@ def bookkeeping_markers(program):
     names = [n for n in BOOKKEEPING if any(r['name'].startswith('M_'+n+'_')
              for r in program['image']['routines'])]
     spans = native_markers(program, [(n,n) for n in names])
-    for n in ('tasks_find_task','ports_reply_msg'):
+    for n in ('tasks_find_task','tasks_set_signal','ports_reply_msg'):
         spans[n] = dict(entry=program['labels'][n],
                         returns=[program['labels'][n+'_end']-1])
     # The first Cache call is the quiet notification branch; the other is the

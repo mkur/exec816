@@ -1,0 +1,2867 @@
+{
+  "schema_version": 1,
+  "tier": "development",
+  "qualification": false,
+  "scope": "QT1-QT4. Matched PB6 archive/configuration, three benchmark batches, bounded window/selection/menu/load checks. No p95 or hardware claim.",
+  "baseline": "docs/development/presenter-bookkeeping.json",
+  "production_base": "ca7e9a4",
+  "production_head": "b797535",
+  "commits": [
+    "bf7e1d9",
+    "10ceeaa",
+    "2e70f8e",
+    "b797535"
+  ],
+  "source_sha256": {
+    "abi/layers.json": "dab56d7752b7f2e959f97f1977633958058e94f989b40d80e61a12db0bda424a",
+    "lib/aes/aeswindow.act": "13a1f3f792fb126a90f59a6635a36efb78758c37785ae89b1a290f51cb335844",
+    "lib/aes/aeswindowstate.act": "e43f690ad122c469d48445585369d11b847af0511c31a67de1115a379f9e2d63",
+    "lib/console/consoledriver.act": "05ca0926dbe69da748742e65e535632ce1b94b1c6589a6c207967e698793354e",
+    "lib/desktop/deskcache.act": "12b4f6377f5cde287c4ef4bcab389a16c78a5a43d9779fd3ec6fe79a63886a0b",
+    "lib/desktop/deskcore.act": "d89c3b930227c885a2ca018506f4eb3536dd353c2d7fd7026169f01010233523",
+    "lib/desktop/deskhost.act": "db2b57d7d84d6200fbc173772b547a35536c244c4e0afbb1f7a42b934012f346",
+    "lib/desktop/deskpaint.act": "7e9f0d1c487268738fd4608650e92c69366726822d4d1e827dce5475275bf361",
+    "lib/desktop/desktypes.act": "2caeea7db4aa5b7366283eff8f601291cede250d1242a7ad56749fd1c6448c79",
+    "lib/display/layers-save.inc": "a98a4fb5e6380329ee86e93c6fd3cf52b5c73874af65a8b68a2abdbb7ce6d608",
+    "lib/display/layers-update.inc": "55cf53a5f1e892b0d92db8aa33c7d685213cd0af05a10d7e938b6c6e0a94e5d9",
+    "lib/display/layers.act": "80f223e6b1538588376dba53c04eae2fd47689f94fa246878d640244570b6dad",
+    "lib/display/layertypes.act": "46d6079da3f818f1488f4238aed1e4e25a4a050eff7a1d2e7f94e67105c4c0ea"
+  },
+  "observer_sha256": {
+    "tools/presenter_control_trace.py": "dbf3b39557fa88197cb35cedbd2af9d2bc40cd34766d1e2d289b5ed84cf971f2",
+    "tools/window_response_trace.py": "7ac8b1beec3af35add3e50078cdad317248513b3ff7cbfbce78ce6d4799ab961",
+    "tools/measure_frame_exposure.py": "cfaaec3e33e312f71513a17cbf5d3d8aa159d7c914e357624dfc7fcc8e7ad0a9",
+    "tools/g4bench_trace.py": "fc6a65b82b45f658a3809c2d9cff115a96140da3a458ea9f6e1e01559b70d915",
+    "tools/measure_files_keyboard.py": "6883eacb3399af1db196b69fa905a6a30bb316eaa184dd22a2d7b1f204fc4a01",
+    "tools/measure_menu_feedback.py": "b9ead845046ad9187ea03554ee7ad5a66d03b20da8bda22174b46ba8cb37fc1d",
+    "tools/measure_cache_load.py": "f5dcfb1d9b83c3ba2487d74997577965119b09779090a20712f000dee69e79c6",
+    "tools/trace_g4bench.py": "ce8290b84a15889c6e5827eaf098fa6476baef45bbc5b7802cebd61a0ab8444a"
+  },
+  "package": {
+    "directory": "build/presenter-quiet-turn/demo",
+    "archive_sha256": "2f3e94b4f3bb3e166638a6d40067475b5d7756adbd80e327ebdb25a8eac96408",
+    "manifest_sha256": "cb7adcc78d52d95070c1e18e8acdbe69dbea40de4128e3e2bba38f5024ecb24a",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$9e11b26dcd30c002",
+      "actual_kernel_id": "$9e11b26dcd30c002",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "rom": {
+      "path": "/Users/michalkurcewicz/action/exec816-public/build/presenter-quiet-turn/final-dialog/g4bench-extracted-idle/exec816-demo/altirraos-816.rom",
+      "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "pinned_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "override": false
+    },
+    "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+    "disk_configuration": {
+      "siopatch": "off",
+      "burstio": false,
+      "randdelay": false,
+      "accuratedisk": true,
+      "diskemu": "generic56k"
+    },
+    "matched_pin": true,
+    "matched_disk_files": true,
+    "boot_image": "of816/Exec-of816.xex",
+    "checksums_verified": 22,
+    "source_matches_final_production": true
+  },
+  "windows": {
+    "before": {
+      "samples": [
+        {
+          "action": "Close right warmup",
+          "window_ms": 401.153121,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        },
+        {
+          "action": "New Window",
+          "frame_ms": 641.642902,
+          "window_ms": 982.684291,
+          "content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "calls": {
+            "CONSOLEBITMAP_COPYSTART": 2,
+            "VbxeOwnerSubmit": 50,
+            "VbxeOwnerFence": 167,
+            "CONSOLEBITMAP_FRAME": 4,
+            "GemDrawingFrameBatch": 2
+          }
+        }
+      ],
+      "actions": [
+        {
+          "action": "Close right warmup",
+          "visible": {
+            "measured": {
+              "elapsed_ms": 401.152839,
+              "charged_cpu_ms": 191.988979,
+              "off_cpu_ms": 168.485746,
+              "interrupt_ms": 40.678114
+            },
+            "group_cpu_ms": {
+              "readiness_checks": 26.686792,
+              "input_boundaries": 35.665491,
+              "cache_maintenance": 9.652668,
+              "pixel_dispatch": 18.248637,
+              "visibility_rebuild": 7.106074,
+              "find_task": 0
+            },
+            "routines": {
+              "CONSOLEDRIVER_COLLECT": {
+                "calls": 11,
+                "cpu_ms": 6.187525,
+                "returns": {
+                  "0": 11
+                }
+              },
+              "DESKPAINT_DAMAGEPENDING": {
+                "calls": 25,
+                "cpu_ms": 12.148865,
+                "returns": {
+                  "0": 22,
+                  "1": 3
+                }
+              },
+              "DESKHOST_CACHE": {
+                "calls": 9,
+                "cpu_ms": 9.652668,
+                "returns": {
+                  "0": 9
+                }
+              },
+              "LAYERS_REBUILD": {
+                "calls": 1,
+                "cpu_ms": 7.106074,
+                "returns": {
+                  "0": 1
+                }
+              }
+            }
+          },
+          "prepared_open_rebuilds": [],
+          "settled_idle_turns": 0,
+          "before_application_BEGIN": {
+            "elapsed_ms": 321.884423,
+            "charged_cpu_ms": 187.591964,
+            "off_cpu_ms": 94.526974,
+            "interrupt_ms": 39.765485
+          }
+        },
+        {
+          "action": "New Window",
+          "visible": {
+            "measured": {
+              "elapsed_ms": 982.684291,
+              "charged_cpu_ms": 357.527499,
+              "off_cpu_ms": 547.369178,
+              "interrupt_ms": 77.787614
+            },
+            "group_cpu_ms": {
+              "readiness_checks": 35.78482,
+              "input_boundaries": 64.641821,
+              "cache_maintenance": 5.37026,
+              "pixel_dispatch": 87.927751,
+              "visibility_rebuild": 19.073796,
+              "find_task": 0
+            },
+            "routines": {
+              "CONSOLEDRIVER_COLLECT": {
+                "calls": 16,
+                "cpu_ms": 10.289352,
+                "returns": {
+                  "0": 16
+                }
+              },
+              "DESKPAINT_DAMAGEPENDING": {
+                "calls": 40,
+                "cpu_ms": 13.829772,
+                "returns": {
+                  "0": 23,
+                  "1": 17
+                }
+              },
+              "DESKHOST_CACHE": {
+                "calls": 7,
+                "cpu_ms": 5.37026,
+                "returns": {
+                  "0": 7
+                }
+              },
+              "LAYERS_REBUILD": {
+                "calls": 2,
+                "cpu_ms": 19.073796,
+                "returns": {
+                  "0": 2
+                }
+              }
+            }
+          },
+          "prepared_open_rebuilds": [
+            1
+          ],
+          "settled_idle_turns": 0,
+          "before_application_BEGIN": {
+            "elapsed_ms": 787.993301,
+            "charged_cpu_ms": 335.410479,
+            "off_cpu_ms": 379.603216,
+            "interrupt_ms": 72.979606
+          }
+        }
+      ],
+      "quiet_turns": {
+        "no_transfer_cpu_ms": {
+          "count": 5,
+          "minimum": 2.31167,
+          "median": 3.750463,
+          "maximum": 4.820343
+        },
+        "over_2ms": 5,
+        "median_example": {
+          "measured": {
+            "elapsed_ms": 4.532838,
+            "charged_cpu_ms": 3.750463,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.782374
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.135189,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.564578,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.106784,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116299,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.271646,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.555486,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.725212,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.13681,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.048634,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.100933,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.396685,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 1.316574,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENUCACHE_CAPTUREPOPUP": {
+              "calls": 1,
+              "cpu_ms": 0.012264,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 1.028505,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.145127,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.704519,
+            "input_boundaries": 0,
+            "cache_maintenance": 1.028505,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "worst_example": {
+          "measured": {
+            "elapsed_ms": 9.039879,
+            "charged_cpu_ms": 4.820343,
+            "off_cpu_ms": 3.147612,
+            "interrupt_ms": 1.071923
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.140968,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.558728,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.107206,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116299,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.271928,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.790621,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.960981,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.142801,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.04222,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.100722,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.395698,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 1.551004,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENUCACHE_CAPTUREPOPUP": {
+              "calls": 1,
+              "cpu_ms": 0.012405,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 1.86332,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.145197,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.939231,
+            "input_boundaries": 0,
+            "cache_maintenance": 1.86332,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "candidate_inspection_turns": null,
+        "observed_set_signal_calls": null,
+        "observed_damage_predicate_calls": null,
+        "target_cpu_ms": 2,
+        "target_met": false
+      },
+      "pixels": {
+        "initial_content_paints": 1,
+        "changed_frames_after_complete": 0,
+        "explicit_refresh_paints": 1
+      }
+    },
+    "after": {
+      "samples": [
+        {
+          "action": "Close right warmup",
+          "window_ms": 361.239901,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        },
+        {
+          "action": "New Window",
+          "frame_ms": 641.643466,
+          "window_ms": 1002.629624,
+          "content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "calls": {
+            "CONSOLEBITMAP_COPYSTART": 2,
+            "VbxeOwnerSubmit": 50,
+            "VbxeOwnerFence": 167,
+            "CONSOLEBITMAP_FRAME": 4,
+            "GemDrawingFrameBatch": 2
+          }
+        }
+      ],
+      "actions": [
+        {
+          "action": "Close right warmup",
+          "visible": {
+            "measured": {
+              "elapsed_ms": 361.239619,
+              "charged_cpu_ms": 165.082629,
+              "off_cpu_ms": 160.930053,
+              "interrupt_ms": 35.226938
+            },
+            "group_cpu_ms": {
+              "readiness_checks": 12.076196,
+              "input_boundaries": 36.612023,
+              "cache_maintenance": 1.367323,
+              "pixel_dispatch": 18.428654,
+              "visibility_rebuild": 7.26988,
+              "find_task": 0
+            },
+            "routines": {
+              "CONSOLEDRIVER_COLLECT": {
+                "calls": 9,
+                "cpu_ms": 2.408656,
+                "returns": {
+                  "0": 9
+                }
+              },
+              "LAYERS_DAMAGED": {
+                "calls": 87,
+                "cpu_ms": 1.620361,
+                "returns": {
+                  "0": 81,
+                  "1": 6
+                }
+              },
+              "DESKPAINT_DAMAGEPENDING": {
+                "calls": 21,
+                "cpu_ms": 1.006726,
+                "returns": {
+                  "0": 18,
+                  "1": 3
+                }
+              },
+              "DESKHOST_CACHE": {
+                "calls": 5,
+                "cpu_ms": 1.367323,
+                "returns": {
+                  "0": 5
+                }
+              },
+              "LAYERS_UPDATEDAMAGE": {
+                "calls": 14,
+                "cpu_ms": 1.386988,
+                "returns": {
+                  "21748": 1,
+                  "21808": 3,
+                  "21826": 9,
+                  "21964": 1
+                }
+              },
+              "LAYERS_MARK": {
+                "calls": 8,
+                "cpu_ms": 3.206396,
+                "returns": {
+                  "21776": 1,
+                  "21836": 6,
+                  "21992": 1
+                }
+              },
+              "LAYERS_REBUILD": {
+                "calls": 1,
+                "cpu_ms": 7.26988,
+                "returns": {
+                  "0": 1
+                }
+              },
+              "tasks_set_signal": {
+                "calls": 4,
+                "cpu_ms": 2.232587,
+                "returns": {
+                  "0": 4
+                }
+              },
+              "DESKCACHE_TAKECANDIDATE": {
+                "calls": 6,
+                "cpu_ms": 0.094449,
+                "returns": {
+                  "1": 6
+                }
+              }
+            }
+          },
+          "prepared_open_rebuilds": [],
+          "settled_idle_turns": 0,
+          "before_application_BEGIN": {
+            "elapsed_ms": 298.170724,
+            "charged_cpu_ms": 165.082629,
+            "off_cpu_ms": 97.861157,
+            "interrupt_ms": 35.226938
+          }
+        },
+        {
+          "action": "New Window",
+          "visible": {
+            "measured": {
+              "elapsed_ms": 1002.629624,
+              "charged_cpu_ms": 365.488336,
+              "off_cpu_ms": 557.727886,
+              "interrupt_ms": 79.413402
+            },
+            "group_cpu_ms": {
+              "readiness_checks": 29.097069,
+              "input_boundaries": 69.026289,
+              "cache_maintenance": 8.35738,
+              "pixel_dispatch": 89.599142,
+              "visibility_rebuild": 20.776764,
+              "find_task": 0
+            },
+            "routines": {
+              "CONSOLEDRIVER_COLLECT": {
+                "calls": 19,
+                "cpu_ms": 1.961857,
+                "returns": {
+                  "0": 19
+                }
+              },
+              "LAYERS_DAMAGED": {
+                "calls": 114,
+                "cpu_ms": 3.700913,
+                "returns": {
+                  "0": 102,
+                  "1": 12
+                }
+              },
+              "DESKPAINT_DAMAGEPENDING": {
+                "calls": 44,
+                "cpu_ms": 1.640167,
+                "returns": {
+                  "0": 29,
+                  "1": 15
+                }
+              },
+              "DESKHOST_CACHE": {
+                "calls": 12,
+                "cpu_ms": 8.35738,
+                "returns": {
+                  "0": 11,
+                  "1": 1
+                }
+              },
+              "LAYERS_MARK": {
+                "calls": 18,
+                "cpu_ms": 8.907791,
+                "returns": {
+                  "21918": 5,
+                  "21944": 2,
+                  "21928": 1,
+                  "21838": 1,
+                  "21886": 1,
+                  "21864": 6,
+                  "21840": 1,
+                  "21992": 1
+                }
+              },
+              "LAYERS_UPDATEDAMAGE": {
+                "calls": 33,
+                "cpu_ms": 3.168123,
+                "returns": {
+                  "21890": 3,
+                  "21908": 9,
+                  "22016": 3,
+                  "21916": 1,
+                  "21900": 1,
+                  "21810": 1,
+                  "21858": 1,
+                  "21836": 4,
+                  "21854": 9,
+                  "21964": 1
+                }
+              },
+              "LAYERS_REBUILD": {
+                "calls": 2,
+                "cpu_ms": 20.776764,
+                "returns": {
+                  "0": 2
+                }
+              },
+              "tasks_set_signal": {
+                "calls": 3,
+                "cpu_ms": 1.643198,
+                "returns": {
+                  "0": 3
+                }
+              },
+              "DESKCACHE_TAKECANDIDATE": {
+                "calls": 21,
+                "cpu_ms": 0.341143,
+                "returns": {
+                  "1": 14,
+                  "0": 7
+                }
+              }
+            }
+          },
+          "prepared_open_rebuilds": [
+            1
+          ],
+          "settled_idle_turns": 0,
+          "before_application_BEGIN": {
+            "elapsed_ms": 793.566415,
+            "charged_cpu_ms": 335.8983,
+            "off_cpu_ms": 384.782606,
+            "interrupt_ms": 72.88551
+          }
+        }
+      ],
+      "quiet_turns": {
+        "no_transfer_cpu_ms": {
+          "count": 6,
+          "minimum": 1.648061,
+          "median": 1.741065,
+          "maximum": 2.751632
+        },
+        "over_2ms": 1,
+        "median_example": {
+          "measured": {
+            "elapsed_ms": 2.136728,
+            "charged_cpu_ms": 1.743638,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.39309
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.141532,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.015366,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.107347,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116087,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.27228,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.050678,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.220122,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.142449,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.042431,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.10622,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.395275,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.810216,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKCACHE_CANDIDATES": {
+              "calls": 1,
+              "cpu_ms": 0.016493,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 0.067876,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.144915,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.198584,
+            "input_boundaries": 0,
+            "cache_maintenance": 0.067876,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "worst_example": {
+          "measured": {
+            "elapsed_ms": 3.315647,
+            "charged_cpu_ms": 2.751632,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.564014
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.140898,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.015366,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.106784,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.122008,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.271998,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.050678,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.220404,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.143012,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.042431,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.106854,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.396685,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.811907,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKCACHE_CANDIDATES": {
+              "calls": 1,
+              "cpu_ms": 0.010714,
+              "returns": {
+                "2": 1
+              }
+            },
+            "DESKMENUCACHE_CAPTUREPOPUP": {
+              "calls": 1,
+              "cpu_ms": 0.012264,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKCACHE_TAKECANDIDATE": {
+              "calls": 6,
+              "cpu_ms": 0.094096,
+              "returns": {
+                "0": 5,
+                "1": 1
+              }
+            },
+            "LAYERS_FINDSLOT": {
+              "calls": 1,
+              "cpu_ms": 0.153092,
+              "returns": {
+                "3": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 1.075941,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.139277,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.205914,
+            "input_boundaries": 0,
+            "cache_maintenance": 1.075941,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "candidate_inspection_turns": 1,
+        "observed_set_signal_calls": 0,
+        "observed_damage_predicate_calls": 0,
+        "target_cpu_ms": 2,
+        "target_met": false
+      },
+      "pixels": {
+        "initial_content_paints": 1,
+        "changed_frames_after_complete": 0,
+        "explicit_refresh_paints": 1
+      }
+    },
+    "repeat": {
+      "capture": "build/presenter-quiet-turn/repeat-frames",
+      "identical_measurements": true,
+      "guards": "intact",
+      "live_tasks": 0,
+      "result_sha256": "d250dad91adf325031c1412e3bae8f08cc789ddb49331f49b0fc755641817688"
+    }
+  },
+  "benchmark": {
+    "before": {
+      "status": "pass",
+      "capture": "build/presenter-bookkeeping/final-dialog",
+      "trace_sha256": "bab1027626911ee961aba84648f4196fdc3eb5ea63c2805f1c18f29f9009ae17",
+      "rows": [
+        {
+          "name": "solid bars",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 14.914434,
+            "charged_cpu_ms": 8.48384,
+            "off_cpu_ms": 4.619482,
+            "interrupt_ms": 1.811112
+          },
+          "presenter_cpu_ms_per_operation": 3.803206,
+          "update_counts": {
+            "calls": 300,
+            "local": 156,
+            "rpc": 144,
+            "miss_presenter_turn": 144,
+            "pairs": 150,
+            "local_pairs": 6
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.5464,
+            "median": 5.556057,
+            "maximum": 5.56818,
+            "mean": 5.557279
+          }
+        },
+        {
+          "name": "text even X",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 16.872847,
+            "charged_cpu_ms": 11.621521,
+            "off_cpu_ms": 2.764336,
+            "interrupt_ms": 2.486989
+          },
+          "presenter_cpu_ms_per_operation": 2.278326,
+          "update_counts": {
+            "calls": 300,
+            "local": 247,
+            "rpc": 53,
+            "miss_presenter_turn": 53,
+            "pairs": 150,
+            "local_pairs": 97
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.554506,
+            "median": 5.556057,
+            "maximum": 5.603845,
+            "mean": 5.55951
+          }
+        },
+        {
+          "name": "text odd X",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 17.410011,
+            "charged_cpu_ms": 11.756638,
+            "off_cpu_ms": 3.133077,
+            "interrupt_ms": 2.520296
+          },
+          "presenter_cpu_ms_per_operation": 2.583415,
+          "update_counts": {
+            "calls": 300,
+            "local": 231,
+            "rpc": 69,
+            "miss_presenter_turn": 69,
+            "pairs": 150,
+            "local_pairs": 81
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.554365,
+            "median": 5.556127,
+            "maximum": 6.380863,
+            "mean": 5.564973
+          }
+        },
+        {
+          "name": "text clipped",
+          "operations": 300,
+          "per_operation": {
+            "elapsed_ms": 22.055597,
+            "charged_cpu_ms": 16.507875,
+            "off_cpu_ms": 2.005321,
+            "interrupt_ms": 3.542401
+          },
+          "presenter_cpu_ms_per_operation": 1.657692,
+          "update_counts": {
+            "calls": 150,
+            "local": 140,
+            "rpc": 10,
+            "miss_presenter_turn": 10,
+            "pairs": 75,
+            "local_pairs": 65
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 75,
+            "minimum": 5.554013,
+            "median": 5.561625,
+            "maximum": 6.382554,
+            "mean": 5.650857
+          }
+        },
+        {
+          "name": "five-object dialog",
+          "operations": 120,
+          "per_operation": {
+            "elapsed_ms": 67.194845,
+            "charged_cpu_ms": 46.912768,
+            "off_cpu_ms": 10.218327,
+            "interrupt_ms": 10.063749
+          },
+          "presenter_cpu_ms_per_operation": 8.432551,
+          "update_counts": {
+            "calls": 240,
+            "local": 206,
+            "rpc": 34,
+            "miss_presenter_turn": 34,
+            "pairs": 120,
+            "local_pairs": 86
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 120,
+            "minimum": 5.54633,
+            "median": 5.561132,
+            "maximum": 6.202608,
+            "mean": 5.60951
+          }
+        }
+      ],
+      "quiet_turns": {
+        "no_transfer_cpu_ms": {
+          "count": 634,
+          "minimum": 2.277555,
+          "median": 4.393914,
+          "maximum": 5.388516
+        },
+        "over_2ms": 634,
+        "median_example": {
+          "measured": {
+            "elapsed_ms": 5.301327,
+            "charged_cpu_ms": 4.393914,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.907413
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.145761,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.568314,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.101568,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.122008,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.281866,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.559997,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.729793,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.142237,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.042079,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.106713,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.395134,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 1.318971,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENUCACHE_CAPTUREPOPUP": {
+              "calls": 1,
+              "cpu_ms": 0.012617,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 1.640237,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.143788,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.722845,
+            "input_boundaries": 0,
+            "cache_maintenance": 1.640237,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "worst_example": {
+          "measured": {
+            "elapsed_ms": 26.180222,
+            "charged_cpu_ms": 5.388516,
+            "off_cpu_ms": 19.586216,
+            "interrupt_ms": 1.205491
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.145832,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.561477,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.101568,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116299,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.287435,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.565706,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.729864,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.142449,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.042361,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.106784,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.395698,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 1.319675,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENUCACHE_CAPTUREPOPUP": {
+              "calls": 1,
+              "cpu_ms": 0.012335,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 1.63918,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 1.145438,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.723409,
+            "input_boundaries": 0,
+            "cache_maintenance": 1.63918,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "candidate_inspection_turns": null,
+        "observed_set_signal_calls": null,
+        "observed_damage_predicate_calls": null,
+        "target_cpu_ms": 2,
+        "target_met": false
+      }
+    },
+    "after": {
+      "status": "pass",
+      "capture": "build/presenter-quiet-turn/final-dialog",
+      "trace_sha256": "531389d846a8e9bbe6fd994a16da2b08fdbc3b4fd56918fac8b402c9826112d1",
+      "rows": [
+        {
+          "name": "solid bars",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 11.651394,
+            "charged_cpu_ms": 8.708034,
+            "off_cpu_ms": 1.081047,
+            "interrupt_ms": 1.862312
+          },
+          "presenter_cpu_ms_per_operation": 0.89147,
+          "update_counts": {
+            "calls": 300,
+            "local": 283,
+            "rpc": 17,
+            "miss_presenter_turn": 16,
+            "pairs": 150,
+            "local_pairs": 133,
+            "miss_handoff_transition_or_other_caller": 1
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.590735,
+            "median": 5.605607,
+            "maximum": 6.428228,
+            "mean": 5.678397
+          }
+        },
+        {
+          "name": "text even X",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 15.013612,
+            "charged_cpu_ms": 11.741634,
+            "off_cpu_ms": 0.757017,
+            "interrupt_ms": 2.514961
+          },
+          "presenter_cpu_ms_per_operation": 0.6264,
+          "update_counts": {
+            "calls": 300,
+            "local": 300,
+            "pairs": 150,
+            "local_pairs": 150
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.598629,
+            "median": 5.638241,
+            "maximum": 6.444792,
+            "mean": 5.734484
+          }
+        },
+        {
+          "name": "text odd X",
+          "operations": 600,
+          "per_operation": {
+            "elapsed_ms": 15.116699,
+            "charged_cpu_ms": 11.804094,
+            "off_cpu_ms": 0.785875,
+            "interrupt_ms": 2.526729
+          },
+          "presenter_cpu_ms_per_operation": 0.646052,
+          "update_counts": {
+            "calls": 300,
+            "local": 298,
+            "rpc": 2,
+            "miss_presenter_turn": 2,
+            "pairs": 150,
+            "local_pairs": 148
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 150,
+            "minimum": 5.598559,
+            "median": 5.604515,
+            "maximum": 6.067983,
+            "mean": 5.609852
+          }
+        },
+        {
+          "name": "text clipped",
+          "operations": 300,
+          "per_operation": {
+            "elapsed_ms": 21.254149,
+            "charged_cpu_ms": 16.540702,
+            "off_cpu_ms": 1.173298,
+            "interrupt_ms": 3.540149
+          },
+          "presenter_cpu_ms_per_operation": 0.967776,
+          "update_counts": {
+            "calls": 150,
+            "local": 140,
+            "rpc": 10,
+            "miss_handoff_transition_or_other_caller": 1,
+            "miss_presenter_turn": 9,
+            "pairs": 75,
+            "local_pairs": 65
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 75,
+            "minimum": 5.598418,
+            "median": 5.610471,
+            "maximum": 6.420616,
+            "mean": 5.678491
+          }
+        },
+        {
+          "name": "five-object dialog",
+          "operations": 120,
+          "per_operation": {
+            "elapsed_ms": 60.517644,
+            "charged_cpu_ms": 47.135684,
+            "off_cpu_ms": 3.273811,
+            "interrupt_ms": 10.108149
+          },
+          "presenter_cpu_ms_per_operation": 2.71357,
+          "update_counts": {
+            "calls": 240,
+            "local": 238,
+            "rpc": 2,
+            "miss_presenter_turn": 2,
+            "pairs": 120,
+            "local_pairs": 118
+          },
+          "caller_local_end_cpu_ms": {
+            "count": 120,
+            "minimum": 5.59588,
+            "median": 5.610823,
+            "maximum": 6.451276,
+            "mean": 5.628115
+          }
+        }
+      ],
+      "quiet_turns": {
+        "no_transfer_cpu_ms": {
+          "count": 639,
+          "minimum": 1.611339,
+          "median": 1.757382,
+          "maximum": 2.770804
+        },
+        "over_2ms": 18,
+        "median_example": {
+          "measured": {
+            "elapsed_ms": 2.103037,
+            "charged_cpu_ms": 1.757382,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.345654
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.139559,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.015366,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.106784,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116158,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.287928,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.057022,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.220615,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.136316,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.048705,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.100651,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.396051,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.811625,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKCACHE_CANDIDATES": {
+              "calls": 1,
+              "cpu_ms": 0.010714,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 0.06259,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 0.149708,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.215711,
+            "input_boundaries": 0,
+            "cache_maintenance": 0.06259,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "worst_example": {
+          "measured": {
+            "elapsed_ms": 23.08787,
+            "charged_cpu_ms": 2.770804,
+            "off_cpu_ms": 19.678338,
+            "interrupt_ms": 0.638728
+          },
+          "routines": {
+            "AESGATE_OWNERENTER": {
+              "calls": 1,
+              "cpu_ms": 0.145338,
+              "returns": {
+                "22086": 1
+              }
+            },
+            "CONSOLEDRIVER_COLLECT": {
+              "calls": 1,
+              "cpu_ms": 0.014943,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESHOST_SETTLED": {
+              "calls": 1,
+              "cpu_ms": 0.107206,
+              "returns": {
+                "1": 1
+              }
+            },
+            "AESLOCKS_NATIVEREADY": {
+              "calls": 2,
+              "cpu_ms": 0.116299,
+              "returns": {
+                "1": 2
+              }
+            },
+            "CONSOLEDRIVER_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.281796,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_DAMAGEPENDING": {
+              "calls": 1,
+              "cpu_ms": 0.050678,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKPAINT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.220193,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKMENU_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.136316,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKWIDGETINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.04215,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKDRAG_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.106713,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKINPUT_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.395205,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 1,
+              "cpu_ms": 0.803943,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKCACHE_CANDIDATES": {
+              "calls": 1,
+              "cpu_ms": 0.010855,
+              "returns": {
+                "0": 1
+              }
+            },
+            "DESKHOST_CACHE": {
+              "calls": 1,
+              "cpu_ms": 0.068793,
+              "returns": {
+                "0": 1
+              }
+            },
+            "AESGATE_OFFER": {
+              "calls": 1,
+              "cpu_ms": 1.159324,
+              "returns": {
+                "22086": 1
+              }
+            }
+          },
+          "group_cpu_ms": {
+            "readiness_checks": 1.202037,
+            "input_boundaries": 0,
+            "cache_maintenance": 0.068793,
+            "pixel_dispatch": 0,
+            "visibility_rebuild": 0,
+            "find_task": 0
+          }
+        },
+        "candidate_inspection_turns": 0,
+        "observed_set_signal_calls": 0,
+        "observed_damage_predicate_calls": 0,
+        "target_cpu_ms": 2,
+        "target_met": false
+      }
+    }
+  },
+  "keyboard": {
+    "before": {
+      "status": "pass",
+      "samples": [
+        {
+          "action": "icons-summary-pointer",
+          "start": 67128137,
+          "end": 69973832,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "icons-cell-pointer",
+          "start": 79078985,
+          "end": 81924680,
+          "pointer": [
+            172,
+            55
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "icons-outside-pointer",
+          "start": 91563401,
+          "end": 94408649,
+          "pointer": [
+            632,
+            232
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "list-summary-pointer",
+          "start": 147084937,
+          "end": 149930633,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "list-first-item-noop",
+          "start": 185711945,
+          "end": 188557194,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 0
+        }
+      ],
+      "restorations": [
+        {
+          "action": "icons-outside-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "icons-summary-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 124.924194,
+                "charged_cpu_ms": 98.912781,
+                "off_cpu_ms": 4.865876,
+                "interrupt_ms": 21.145537
+              },
+              "presenter_cpu_ms": 3.933934
+            }
+          ]
+        },
+        {
+          "action": "icons-cell-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 124.043565,
+                "charged_cpu_ms": 99.212198,
+                "off_cpu_ms": 3.637125,
+                "interrupt_ms": 21.194242
+              },
+              "presenter_cpu_ms": 2.919455
+            }
+          ]
+        },
+        {
+          "action": "icons-outside-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 125.21036,
+                "charged_cpu_ms": 98.870914,
+                "off_cpu_ms": 5.263265,
+                "interrupt_ms": 21.076181
+              },
+              "presenter_cpu_ms": 4.24928
+            }
+          ]
+        },
+        {
+          "action": "list-summary-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 160.332277,
+                "charged_cpu_ms": 118.482574,
+                "off_cpu_ms": 16.505422,
+                "interrupt_ms": 25.34428
+              },
+              "presenter_cpu_ms": 13.527184
+            }
+          ]
+        },
+        {
+          "action": "list-first-item-noop",
+          "callers": []
+        }
+      ]
+    },
+    "after": {
+      "status": "pass",
+      "samples": [
+        {
+          "action": "icons-summary-pointer",
+          "start": 67306189,
+          "end": 70151437,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "icons-cell-pointer",
+          "start": 79257037,
+          "end": 82102285,
+          "pointer": [
+            172,
+            55
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "icons-outside-pointer",
+          "start": 91705613,
+          "end": 94551308,
+          "pointer": [
+            632,
+            232
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 1
+        },
+        {
+          "action": "list-summary-pointer",
+          "start": 147334220,
+          "end": 150179469,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 1,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 1,
+          "paints": 1
+        },
+        {
+          "action": "list-first-item-noop",
+          "start": 185782925,
+          "end": 188628621,
+          "pointer": [
+            526,
+            36
+          ],
+          "position_changed_frames": 0,
+          "pointer_hidden_frames": 0,
+          "summary_changed_frames": 0,
+          "pointer_pixel_changed_frames": 0,
+          "paints": 0
+        }
+      ],
+      "restorations": [
+        {
+          "action": "icons-outside-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 1
+          }
+        },
+        {
+          "action": "list-summary-pointer",
+          "delta": {
+            "paints": 0,
+            "captures": 0,
+            "patches": 0,
+            "restores": 2
+          }
+        }
+      ],
+      "updates": [
+        {
+          "action": "icons-summary-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 130.052835,
+                "charged_cpu_ms": 98.935407,
+                "off_cpu_ms": 9.947644,
+                "interrupt_ms": 21.169784
+              },
+              "presenter_cpu_ms": 8.113152
+            }
+          ]
+        },
+        {
+          "action": "icons-cell-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 129.607868,
+                "charged_cpu_ms": 98.877469,
+                "off_cpu_ms": 9.564351,
+                "interrupt_ms": 21.166048
+              },
+              "presenter_cpu_ms": 7.799709
+            }
+          ]
+        },
+        {
+          "action": "icons-outside-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 131.11623,
+                "charged_cpu_ms": 98.972482,
+                "off_cpu_ms": 10.934916,
+                "interrupt_ms": 21.208832
+              },
+              "presenter_cpu_ms": 8.893624
+            }
+          ]
+        },
+        {
+          "action": "list-summary-pointer",
+          "callers": [
+            {
+              "task_dp": 4096,
+              "counts": {
+                "calls": 2,
+                "local": 2,
+                "pairs": 1,
+                "local_pairs": 1
+              },
+              "completion": {
+                "elapsed_ms": 147.284033,
+                "charged_cpu_ms": 118.800599,
+                "off_cpu_ms": 3.044564,
+                "interrupt_ms": 25.43887
+              },
+              "presenter_cpu_ms": 2.421273
+            }
+          ]
+        },
+        {
+          "action": "list-first-item-noop",
+          "callers": []
+        }
+      ]
+    },
+    "repeat": {
+      "capture": "build/presenter-quiet-turn/repeat-keyboard",
+      "identical_measurements": true,
+      "guards": "intact",
+      "live_tasks": 0,
+      "result_sha256": "2caac1b6fb4a8b847bcc61ee6d79646afa0c3ba491cb6a9032d0805a1d86e754"
+    }
+  },
+  "menus": {
+    "before": {
+      "repeated_headings": {
+        "keyboard": {
+          "samples_ms": [
+            240.48978,
+            320.820887,
+            360.98785
+          ],
+          "count": 3,
+          "median_ms": 320.820887,
+          "max_ms": 360.98785,
+          "transfers": {
+            "captures": 0,
+            "restores": 3,
+            "misses": 0,
+            "capturedBytes": 0,
+            "restoredBytes": 19904,
+            "popupCaptures": 3,
+            "popupRestores": 0,
+            "popupMisses": 3,
+            "popupCapturedBytes": 19904,
+            "popupRestoredBytes": 0,
+            "client_captures": 0,
+            "client_restores": 0,
+            "client_capturedBytes": 0,
+            "client_restoredBytes": 0,
+            "client_patches": 0,
+            "client_patchedBytes": 0,
+            "explicit_discards": 0
+          },
+          "files_repaints_during_switch": 0,
+          "final_repaint": false
+        },
+        "pointer": {
+          "samples_ms": [
+            300.864277,
+            280.908231,
+            280.655052
+          ],
+          "count": 3,
+          "median_ms": 280.908231,
+          "max_ms": 300.864277,
+          "transfers": {
+            "captures": 0,
+            "restores": 3,
+            "misses": 0,
+            "capturedBytes": 0,
+            "restoredBytes": 22024,
+            "popupCaptures": 1,
+            "popupRestores": 2,
+            "popupMisses": 1,
+            "popupCapturedBytes": 4104,
+            "popupRestoredBytes": 13064,
+            "client_captures": 0,
+            "client_restores": 0,
+            "client_capturedBytes": 0,
+            "client_restoredBytes": 0,
+            "client_patches": 0,
+            "client_patchedBytes": 0,
+            "explicit_discards": 0
+          },
+          "files_repaints_during_switch": 0,
+          "final_repaint": false
+        }
+      }
+    },
+    "after": {
+      "repeated_headings": {
+        "keyboard": {
+          "samples_ms": [
+            240.490344,
+            321.073502,
+            380.943896
+          ],
+          "count": 3,
+          "median_ms": 321.073502,
+          "max_ms": 380.943896,
+          "transfers": {
+            "captures": 0,
+            "restores": 3,
+            "misses": 0,
+            "capturedBytes": 0,
+            "restoredBytes": 19904,
+            "popupCaptures": 3,
+            "popupRestores": 0,
+            "popupMisses": 3,
+            "popupCapturedBytes": 19904,
+            "popupRestoredBytes": 0,
+            "client_captures": 0,
+            "client_restores": 0,
+            "client_capturedBytes": 0,
+            "client_restoredBytes": 0,
+            "client_patches": 0,
+            "client_patchedBytes": 0,
+            "explicit_discards": 0
+          },
+          "files_repaints_during_switch": 0,
+          "final_repaint": false
+        },
+        "pointer": {
+          "samples_ms": [
+            300.612789,
+            280.907667,
+            280.908231
+          ],
+          "count": 3,
+          "median_ms": 280.908231,
+          "max_ms": 300.612789,
+          "transfers": {
+            "captures": 0,
+            "restores": 3,
+            "misses": 0,
+            "capturedBytes": 0,
+            "restoredBytes": 22024,
+            "popupCaptures": 1,
+            "popupRestores": 2,
+            "popupMisses": 1,
+            "popupCapturedBytes": 4104,
+            "popupRestoredBytes": 13064,
+            "client_captures": 0,
+            "client_restores": 0,
+            "client_capturedBytes": 0,
+            "client_restoredBytes": 0,
+            "client_patches": 0,
+            "client_patchedBytes": 0,
+            "explicit_discards": 0
+          },
+          "files_repaints_during_switch": 0,
+          "final_repaint": false
+        }
+      }
+    }
+  },
+  "load": {
+    "before": {
+      "button": {
+        "model_address": 2621702,
+        "samples_ms": [
+          180.11472,
+          120.496378,
+          80.079619
+        ],
+        "median_ms": 120.496378,
+        "max_ms": 180.11472,
+        "scope": "3 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+      },
+      "pointer": {
+        "samples_ms": [
+          140.2015,
+          100.28828,
+          100.29843
+        ],
+        "median_ms": 100.29843,
+        "max_ms": 140.2015
+      },
+      "progress": [
+        {
+          "index": 0,
+          "ticks": 34,
+          "paints": 36,
+          "console_generation": 45
+        },
+        {
+          "index": 1,
+          "ticks": 35,
+          "paints": 37,
+          "console_generation": 48
+        },
+        {
+          "index": 2,
+          "ticks": 35,
+          "paints": 37,
+          "console_generation": 53
+        }
+      ],
+      "work": {
+        "sha256": "dff16bd22b6b554c496c637751d33e009ccb964a4ca258d39a4ef74bb47a8362",
+        "payload_sha256": "fac7aa4e6f678e335e47907c94c3586cd678393c46a49cce8cda81391f0a44cb",
+        "bytes": 66560
+      },
+      "console_updates": 32,
+      "scope": "Bounded concurrent progress/scanout smoke; not a latency percentile."
+    },
+    "after": {
+      "button": {
+        "model_address": 2621702,
+        "samples_ms": [
+          120.290564,
+          100.28828,
+          100.178889
+        ],
+        "median_ms": 100.28828,
+        "max_ms": 120.290564,
+        "scope": "3 press edges, submission to matching button scanout, frame-granular polling; not a p95 benchmark."
+      },
+      "pointer": {
+        "samples_ms": [
+          100.035665,
+          100.288844,
+          100.415152
+        ],
+        "median_ms": 100.288844,
+        "max_ms": 100.415152
+      },
+      "progress": [
+        {
+          "index": 0,
+          "ticks": 34,
+          "paints": 36,
+          "console_generation": 49
+        },
+        {
+          "index": 1,
+          "ticks": 35,
+          "paints": 37,
+          "console_generation": 52
+        },
+        {
+          "index": 2,
+          "ticks": 35,
+          "paints": 37,
+          "console_generation": 59
+        }
+      ],
+      "work": {
+        "sha256": "dff16bd22b6b554c496c637751d33e009ccb964a4ca258d39a4ef74bb47a8362",
+        "payload_sha256": "fac7aa4e6f678e335e47907c94c3586cd678393c46a49cce8cda81391f0a44cb",
+        "bytes": 66560
+      },
+      "console_updates": 34,
+      "scope": "Bounded concurrent progress/scanout smoke; not a latency percentile."
+    }
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0,
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "memory": {
+    "native_code_bytes_before": 1082683,
+    "native_code_bytes_after": 1085814,
+    "native_data_bytes_before": 13530,
+    "native_data_bytes_after": 13535,
+    "global_placement_delta": 4,
+    "scene_bytes_before": 9184,
+    "scene_bytes_after": 9186,
+    "desktop_service_bytes_before": 18716,
+    "desktop_service_bytes_after": 18718,
+    "vram_delta": 0,
+    "task_dp_stack_reservation_delta": 0,
+    "memory_manifest_unchanged": true
+  },
+  "validation": {
+    "host_tests": 490,
+    "host_skips": 4,
+    "focused_observer_tests": 13,
+    "optimized_signal_assertions": 38,
+    "optimized_worker_wake_assertions": 179,
+    "optimized_gate_assertions": 24,
+    "optimized_cache_assertions": 224,
+    "cache_physical_phases": 32,
+    "settled_candidate_inspection_wakes": 48,
+    "settled_candidate_geometry_inspections": 0,
+    "optimized_layers_assertions": 1255,
+    "geometry_cases": 128,
+    "scene_cases": 40,
+    "layout_probe_assertions": {
+      "raw": 127,
+      "opt": 127
+    },
+    "package_runs": {
+      "frames": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 563,
+            "untouched_above_floor": 717
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 305,
+            "untouched_above_floor": 751
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 825,
+            "untouched_above_floor": 231
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 829,
+            "untouched_above_floor": 1475
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "keyboard": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 563,
+            "untouched_above_floor": 717
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 305,
+            "untouched_above_floor": 751
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 866,
+            "untouched_above_floor": 190
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 829,
+            "untouched_above_floor": 1475
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 297,
+          "untouched_from_base": 1239,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "menus": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 563,
+            "untouched_above_floor": 717
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 305,
+            "untouched_above_floor": 751
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 760,
+            "untouched_above_floor": 296
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 829,
+            "untouched_above_floor": 1475
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 60,
+            "untouched_above_floor": 196
+          }
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "dialog": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 563,
+            "untouched_above_floor": 717
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 633,
+            "untouched_above_floor": 423
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 149,
+            "untouched_above_floor": 907
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 760,
+            "untouched_above_floor": 296
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 736,
+            "untouched_above_floor": 320
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 833,
+            "untouched_above_floor": 1471
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 66,
+            "untouched_above_floor": 190
+          }
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 295,
+          "untouched_from_base": 1241,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "load": {
+        "status": 0,
+        "guards": "intact",
+        "live_tasks": 0,
+        "stacks": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 563,
+            "untouched_above_floor": 717
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 338,
+            "untouched_above_floor": 718
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 177,
+            "untouched_above_floor": 879
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 760,
+            "untouched_above_floor": 296
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 689,
+            "untouched_above_floor": 367
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 762,
+            "untouched_above_floor": 294
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 835,
+            "untouched_above_floor": 1469
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 335,
+            "untouched_above_floor": 1969
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 135,
+            "untouched_above_floor": 121
+          }
+        ],
+        "kernel_stack": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 299,
+          "untouched_from_base": 1237,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      }
+    }
+  },
+  "limitations": [
+    "The unchanged no-transfer classifier still exceeds 2 ms on 18 of 639 benchmark turns; target remains open.",
+    "Charged CPU includes scheduling/return overhead and bus stalls; IRQ/NMI bodies and other Tasks are separate.",
+    "New Window content completion and icon selection do not improve; see matched values and repeats.",
+    "Three samples of dropdown and loaded interaction do not establish latency percentiles.",
+    "QT4-only SetSignal/candidate/damage markers were absent in PB6; their baseline counts are null.",
+    "Known Windows-menu focus issue under Counter remains separate; the load observation uses direct title focus.",
+    "Every outer END wake, ownership gate, normal preemption, budgets and cache validity rules are unchanged."
+  ]
+}

@@ -4,7 +4,9 @@
 [Measured baseline](../../development/presenter-bookkeeping.json) ·
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md)
 
-Status: QT1–QT3 implemented; QT4 measurements/delivery pending.
+Status: QT1–QT4 implemented. [Execution record](../../history/presenter-quiet-turn.md)
+and [measurements](../../development/presenter-quiet-turn.json): median no-transfer
+CPU 4.39 → 1.76 ms; strict <=2 ms ceiling remains open (18/639 turns exceed it).
 Development evidence is in the [execution record](../../history/presenter-quiet-turn.md).
 This follows the completed [PB1–PB6 plan](presenter-bookkeeping-plan.md).
 
