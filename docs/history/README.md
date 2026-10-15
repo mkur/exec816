@@ -1,5 +1,8 @@
 # Historical records
 
+- [Caller-local AES UPDATE](caller-local-update.md): shared policy, presenter
+  handoff, local BEGIN/END and matched application measurements.
+
 - [AES binding cleanup](aes-binding-cleanup.md): reuse established caller
   contexts, remove reply-time identity queries and simplify direct admission;
   focused before/after CPU costs ahead of caller-local UPDATE.

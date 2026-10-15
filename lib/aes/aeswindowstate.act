@@ -162,8 +162,8 @@ PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
 
 RETURN
 
-; Caller reports are frozen by the outstanding END reply. No scene token is
-; held while the client draws; only this owner consumes and applies its journal.
+; The binding cannot reuse reports until END returns. Consume its journal
+; synchronously under exclusive policy ownership, without a drawing scene token.
 PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   BYTE index,report,same,accepted,complete
 

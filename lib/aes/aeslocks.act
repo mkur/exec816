@@ -10,6 +10,10 @@ USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE CONSOLETYPES
 
+; The RPC owner may evaluate hardware readiness; local callers use the
+; readiness established when the presenter published its handoff.
+PUBLIC CONST OWNER_READY=2
+
 PUBLIC BYTE FUNC PaintBlocked()
 
   LET service=AESSTATE.Get()
@@ -35,7 +39,7 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
     AND DESKSTATE.outlineVisible=0)
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code)
+    AESSTATE.Client POINTER client CARD code BYTE ready)
 
   IF AESMOUSE.LockReady(client.id)=0 THEN
     RETURN(0)
@@ -56,7 +60,15 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
     RETURN(1)
   FI
 
-RETURN(service.windowPending=0 AND NativeReady()<>0)
+  IF service.windowPending<>0 THEN
+    RETURN(0)
+  FI
+
+  IF ready=OWNER_READY THEN
+    RETURN(NativeReady())
+  FI
+
+RETURN(ready)
 
 CARD FUNC Acquire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code INT window)
@@ -101,55 +113,9 @@ PROC Remove(AESSTATE.Service POINTER service BYTE position)
 
 RETURN
 
-PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
-  CARD code,status
-  BYTE index
-
-  code=CARD(request.intin(0))
-  IF (code & $fcfc)<>0
-      OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
-    RETURN(AESTYPES.UNSUPPORTED)
-  FI
-
-  IF (code & AESTYPES.UPDATE_WINDOW)<>0
-      AND (code & $ff)<>AESTYPES.BEG_UPDATE THEN
-    RETURN(AESTYPES.UNSUPPORTED)
-  FI
-
-  IF (code & 1)<>0 THEN
-    code=code & $ff
-    IF Eligible(service,client,code)<>0 AND (service.lockCount=0
-        OR service.mouseOwner=client.id) THEN
-      status=Acquire(service,client,code,
-          IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
-            request.intin(1) ELSE INT(0) FI)
-      IF status=AESTYPES.OK THEN
-        request.intout(0)=1
-      FI
-
-      RETURN(status)
-    FI
-
-    IF (CARD(request.intin(0)) & AESTYPES.TRY)<>0 THEN
-      RETURN(AESTYPES.OK)
-    FI
-
-    IF service.lockCount=AESTYPES.CLIENTS THEN
-      RETURN(AESTYPES.RESOURCE)
-    FI
-
-    FOR index=0 TO AESTYPES.CLIENTS-1 DO
-      IF @service.clients(index)=client THEN
-        service.lockOrder(service.lockCount)=index
-        service.lockCount==+1
-        client.pending=request
-        RETURN(AESTYPES.PENDING)
-      FI
-    OD
-
-    RETURN(AESTYPES.IDENTITY)
-  FI
+; Complete a release synchronously, including the final paint journal.
+CARD FUNC Release(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client CARD code)
 
   IF code=AESTYPES.END_UPDATE THEN
     IF service.updateOwner<>client.id OR service.updates=0 THEN
@@ -180,9 +146,80 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   FI
 
   AESMOUSE.Refresh()
-  request.intout(0)=1
 
 RETURN(AESTYPES.OK)
+
+; Runs under exclusive presenter policy ownership. A pending result changes no
+; ownership and does not enqueue a request or wait.
+PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request
+    BYTE ready,queued)
+  CARD code,status
+
+  request.intout(0)=0
+  code=CARD(request.intin(0))
+  IF (code & $fcfc)<>0
+      OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF (code & AESTYPES.UPDATE_WINDOW)<>0
+      AND (code & $ff)<>AESTYPES.BEG_UPDATE THEN
+    RETURN(AESTYPES.UNSUPPORTED)
+  FI
+
+  IF (code & 1)<>0 THEN
+    code=code & $ff
+    IF Eligible(service,client,code,ready)<>0 AND (queued=0
+        OR service.mouseOwner=client.id) THEN
+      status=Acquire(service,client,code,
+          IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
+            request.intin(1) ELSE INT(0) FI)
+      IF status=AESTYPES.OK THEN
+        request.intout(0)=1
+      FI
+
+      RETURN(status)
+    FI
+
+    IF (CARD(request.intin(0)) & AESTYPES.TRY)<>0 THEN
+      RETURN(AESTYPES.OK)
+    FI
+
+    RETURN(AESTYPES.PENDING)
+  FI
+
+  status=Release(service,client,code)
+  IF status=AESTYPES.OK THEN
+    request.intout(0)=1
+  FI
+
+RETURN(status)
+
+; Only RPC admission manages pending requests and eligible-waiter order.
+PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  BYTE index
+
+  LET status=Attempt(service,client,request,OWNER_READY,service.lockCount<>0)
+  IF status<>AESTYPES.PENDING THEN
+    RETURN(status)
+  FI
+
+  IF service.lockCount=AESTYPES.CLIENTS THEN
+    RETURN(AESTYPES.RESOURCE)
+  FI
+
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF @service.clients(index)=client THEN
+      service.lockOrder(service.lockCount)=index
+      service.lockCount==+1
+      client.pending=request
+      RETURN(AESTYPES.PENDING)
+    FI
+  OD
+
+RETURN(AESTYPES.IDENTITY)
 
 PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   BYTE position
@@ -194,7 +231,7 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       LET client=@service.clients(service.lockOrder(position))
       LET request=client.pending
       code=CARD(request.intin(0)) & $ff
-      IF Eligible(service,client,code)<>0 THEN
+      IF Eligible(service,client,code,OWNER_READY)<>0 THEN
         status=Acquire(service,client,code,
           IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
             request.intin(1) ELSE INT(0) FI)

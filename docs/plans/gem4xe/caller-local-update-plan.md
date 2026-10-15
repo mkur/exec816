@@ -4,14 +4,14 @@
 [AES contract](../../reference/aes.md) · [Layers contract](../../reference/layers.md) ·
 [Testing policy](../../contributing/testing.md)
 
-Status: proposed; implementation has not started. Implement UL1–UL4 in order,
+Status: UL1 complete; UL2–UL4 pending. Implement UL1–UL4 in order,
 with a separate commit after each executable slice. The physical-bridge
 measurement and UPDATE analysis are preparatory records; keep implementation
 commits scoped to their slice.
 
 The preceding [binding cleanup](../../history/aes-binding-cleanup.md) removes
 duplicate context queries and repeated direct-entry endpoint audits. UPDATE
-still uses RPC; UL1–UL4 remain pending. Use the cleaned binding for the UL1
+still uses RPC; shared policy is implemented in UL1. Use the cleaned binding for the UL1
 baseline.
 
 ## Objective and limits
