@@ -607,5 +607,710 @@
     },
     "extra_jmls_per_drawing_call": 2,
     "note": "The pinned bridge cannot stop at an upper-bank PC using a low-word breakpoint and @xpc condition. The migrated observer uses a test-only bank-zero trampoline, then restores the prologue and scratch."
+  },
+  "gui_followup": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "scope": "Exact packaged idle dialog benchmark and first paint of one new SYS: folder window with warmed stock icons. Same short-unit preemption experiment in both builds; no production code changed during this measurement follow-up.",
+    "inputs": {
+      "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "cpu": "65816, 8x, PAL",
+      "c_renderer_elf_sha256": "ccaf615ed6c3f8aa89d13a5793f297cf664c2d7d680eb2153b91e73073e4b270",
+      "same_c_renderer_segments_symbols_and_zero_fill": true,
+      "same_preemption_wrapper": true,
+      "same_system_disk_sha256": "c1fbd200d90ac77dbdc89f896002f10abb82717929b5354a921fcac6685e2130",
+      "same_application_sha256": {
+        "g4bench": "40b666d4d0f106ebf85d3ad79c010cf3cfbd6d2c1cb120a324fe9d94aad30290",
+        "desktop": "a54dbdf4f2fd2c53eb8b33eab86997b88ca88335d9d5fd8552711b5bacffdcce"
+      },
+      "same_memory_reservations": true
+    },
+    "archives": {
+      "before": {
+        "path": "build/drawing-preemption/demo/exec816-demo.zip",
+        "sha256": "55bb1c7e44bac46dca6c44aedfa3317a6449800a6a3f58b62480d38a2c685544",
+        "bytes": 655174,
+        "source": "50e4b16-dirty"
+      },
+      "after": {
+        "path": "build/display-entry-gui/demo/exec816-demo.zip",
+        "sha256": "c43ffd5a75bb2b3362c1720088dd87d11dfced241cda8e4f41b0df1a1a591f0a",
+        "bytes": 655174,
+        "source": "9926859"
+      }
+    },
+    "dialog": {
+      "before": {
+        "path": "build/drawing-preemption/trace-idle",
+        "report_sha256": "0616893227ed90ee8d1576b34f9d3849ac60d97f4dccfbf916ab9f032dd7de68",
+        "trace_sha256": "2da5d22e7f938cc1cd8c8f9628117de9bee9a113ab50f128cc596275cd72407c",
+        "analysis_sha256": "3da0218950ce242b0a917989d981cbf38617228eae0f0c19b9546afb4f1a132f",
+        "status": "pass",
+        "operations": 120,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "pointer": [
+          630,
+          230
+        ],
+        "reported_median_ms_per_operation": 97.0,
+        "per_operation": {
+          "elapsed_ms": 97.29581201774134,
+          "charged_cpu_ms": 51.423319433852235,
+          "off_cpu_ms": 34.87187561233135,
+          "interrupt_ms": 11.000616971557752
+        },
+        "presenter_cpu_ms_per_operation": 28.738925759948724,
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.10775152163606014,
+          "app_other": 0.829490183197791,
+          "borrow_setup_cursor": 2.467504441678316,
+          "command_build": 7.996136409451041,
+          "completion_poll": 1.5815041512834902,
+          "display_ownership": 7.539173347392564,
+          "event_poll": 3.291389957507435,
+          "renderer": 7.678270360413844,
+          "submission_fence": 1.4976532290919762,
+          "update": 6.70235222168497,
+          "upload": 2.560952372897044,
+          "vdi_aes_preparation": 4.163820867735486,
+          "visibility": 5.007320369882202
+        },
+        "routines_per_operation": {
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 5.999967929696256,
+            "elapsed_ms": 7.2267287068454715,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2267607771492155
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.5392054176963232,
+            "elapsed_ms": 1.8788634143384566,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.3396579966421335
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.7023522216849765,
+            "elapsed_ms": 33.82438313416853,
+            "off_cpu_ms": 25.719667013918745,
+            "interrupt_ms": 1.402363898564801
+          },
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 35.48501517994377,
+            "elapsed_ms": 50.10363348318271,
+            "off_cpu_ms": 7.00428590828504,
+            "interrupt_ms": 7.614332394953896
+          },
+          "GemDrawingBorrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 31.32119431220828,
+            "elapsed_ms": 45.04901293948651,
+            "off_cpu_ms": 7.00428590828504,
+            "interrupt_ms": 6.723532718993185
+          },
+          "fence_owner": {
+            "calls": 16.0,
+            "charged_cpu_ms": 5.967481181897594,
+            "elapsed_ms": 7.26382453291306,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2963433510154656
+          },
+          "_VbxeUpload": {
+            "calls": 8.0,
+            "charged_cpu_ms": 2.5609523728970456,
+            "elapsed_ms": 3.116256143284009,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.5553037703869629
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 8.0,
+            "charged_cpu_ms": 5.328344110365076,
+            "elapsed_ms": 6.514619359561908,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.1862752491968327
+          },
+          "GemSolidFill": {
+            "calls": 14.0,
+            "charged_cpu_ms": 5.702619826637101,
+            "elapsed_ms": 6.937667194358258,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.235047367721157
+          }
+        },
+        "known_held_maximum_ms": 5.27538875551715,
+        "known_held_off_task_maximum_ms": 0.0,
+        "completed_rows": [
+          {
+            "name": "solid bars",
+            "median_ms_per_operation": 20.0
+          },
+          {
+            "name": "text even X",
+            "median_ms_per_operation": 22.8
+          },
+          {
+            "name": "text odd X",
+            "median_ms_per_operation": 22.8
+          },
+          {
+            "name": "text clipped",
+            "median_ms_per_operation": 28.2
+          },
+          {
+            "name": "five-object dialog",
+            "median_ms_per_operation": 97.0
+          }
+        ],
+        "guards": "intact",
+        "return_status": 0,
+        "live_tasks_after_exit": 0,
+        "autoboot_frames": 249,
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$d29922c68729c560",
+          "actual_kernel_id": "$d29922c68729c560",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      },
+      "after": {
+        "path": "build/display-entry-gui/trace-idle",
+        "report_sha256": "bdb98529d8cf4b699c85eb835f59b1527e5bc6a0c7ab3efabc4fc3b3b91f06b3",
+        "trace_sha256": "ad1c6b63c6e8cd328d62fc04878dc350a2db049fb544be7a6121be8ef3b62f04",
+        "analysis_sha256": "3da0218950ce242b0a917989d981cbf38617228eae0f0c19b9546afb4f1a132f",
+        "status": "pass",
+        "operations": 120,
+        "canvas": [
+          152,
+          56,
+          480,
+          160
+        ],
+        "pointer": [
+          630,
+          230
+        ],
+        "reported_median_ms_per_operation": 90.0,
+        "per_operation": {
+          "elapsed_ms": 90.33929500309426,
+          "charged_cpu_ms": 46.74900570311028,
+          "off_cpu_ms": 33.57466941742942,
+          "interrupt_ms": 10.015619882554553
+        },
+        "presenter_cpu_ms_per_operation": 27.65906400762733,
+        "exclusive_cpu_ms_per_operation": {
+          "app_arithmetic": 0.10775680794986421,
+          "app_other": 0.7996700870291701,
+          "borrow_setup_cursor": 2.2324719931094545,
+          "command_build": 8.030098038801041,
+          "completion_poll": 1.597337248494809,
+          "display_ownership": 2.9896923929239523,
+          "event_poll": 3.291049283951174,
+          "renderer": 7.668677462964088,
+          "submission_fence": 1.4656510600586803,
+          "update": 6.650519914836299,
+          "upload": 2.502609676914598,
+          "vdi_aes_preparation": 4.153489061089581,
+          "visibility": 5.259982674987559
+        },
+        "routines_per_operation": {
+          "DisplayEnter": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.4850271622550617,
+            "elapsed_ms": 1.7963352453342993,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.31130808307923785
+          },
+          "DisplayLeave": {
+            "calls": 8.0,
+            "charged_cpu_ms": 1.5046652306688904,
+            "elapsed_ms": 1.8223627050326177,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.31769747436372753
+          },
+          "wind_update": {
+            "calls": 2.0,
+            "charged_cpu_ms": 6.65051991483631,
+            "elapsed_ms": 31.54999713364318,
+            "off_cpu_ms": 23.521065020720002,
+            "interrupt_ms": 1.3784121980868713
+          },
+          "objc_draw": {
+            "calls": 1.0,
+            "charged_cpu_ms": 30.640026934356197,
+            "elapsed_ms": 40.955095348654716,
+            "off_cpu_ms": 3.7362121188626483,
+            "interrupt_ms": 6.578856295435867
+          },
+          "GemDrawingBorrow": {
+            "calls": 8.0,
+            "charged_cpu_ms": 26.486537873266617,
+            "elapsed_ms": 35.943807893946676,
+            "off_cpu_ms": 3.7362121188626483,
+            "interrupt_ms": 5.721057901817412
+          },
+          "fence_owner": {
+            "calls": 16.0,
+            "charged_cpu_ms": 5.885295448554299,
+            "elapsed_ms": 7.183342754719268,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2980473061649698
+          },
+          "_VbxeUpload": {
+            "calls": 8.0,
+            "charged_cpu_ms": 2.5026096769145973,
+            "elapsed_ms": 3.070047299586446,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.5674376226718486
+          },
+          "VbxeOwnerSubmit": {
+            "calls": 8.0,
+            "charged_cpu_ms": 5.252031471658074,
+            "elapsed_ms": 6.429581953605431,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.177550481947356
+          },
+          "GemSolidFill": {
+            "calls": 14.0,
+            "charged_cpu_ms": 5.741467772046631,
+            "elapsed_ms": 6.989031368751166,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.2475635967045353
+          }
+        },
+        "known_held_maximum_ms": 5.272498903970938,
+        "known_held_off_task_maximum_ms": 0.0,
+        "completed_rows": [
+          {
+            "name": "solid bars",
+            "median_ms_per_operation": 19.0
+          },
+          {
+            "name": "text even X",
+            "median_ms_per_operation": 21.8
+          },
+          {
+            "name": "text odd X",
+            "median_ms_per_operation": 22.2
+          },
+          {
+            "name": "text clipped",
+            "median_ms_per_operation": 27.4
+          },
+          {
+            "name": "five-object dialog",
+            "median_ms_per_operation": 90.0
+          }
+        ],
+        "guards": "intact",
+        "return_status": 0,
+        "live_tasks_after_exit": 0,
+        "autoboot_frames": 249,
+        "machine": {
+          "ok": true,
+          "basic": false,
+          "machine": "800XL",
+          "memory": "64K",
+          "video": "pal",
+          "selftest": false,
+          "fastboot": false,
+          "fppatch": false,
+          "stereo": false,
+          "stereomono": false,
+          "siopatch": "off",
+          "burstio": false,
+          "accuratedisk": true,
+          "casautoboot": true,
+          "casautobasicboot": false,
+          "artifact": "none",
+          "axlonmemsize": "none",
+          "highbanks": 63,
+          "highbanks_overridden": false,
+          "randmem": false,
+          "randdelay": false,
+          "diskemu": "generic56k",
+          "vbxe": true,
+          "covox": false,
+          "soundboard": false,
+          "rapidus": false,
+          "slightsid": false,
+          "addons": "custom",
+          "exeloadmode": "default",
+          "kernel_id": "$dd0a187b0d9bb659",
+          "actual_kernel_id": "$dd0a187b0d9bb659",
+          "basic_id": "$0000000000000000",
+          "actual_basic_id": "$0000000000000005",
+          "debugbrkrun": true
+        }
+      }
+    },
+    "files": {
+      "before": {
+        "path": "build/display-entry-gui/files-before",
+        "report_sha256": "31a30c51ceb36e58ae33d62834f2c0863fa8ec439256375e02bc53ce76c46e06",
+        "trace_report_sha256": "de62aca1cf22bb67b2b9de338b8e663d857084f770b8b5b413277e760c23ad0b",
+        "runtime_report_sha256": "99c70616c40fe02615aa1c0d8eb3c0be21bef85d4e71f447ec74e9fce64a5446",
+        "frame_ms": 741.9311820620571,
+        "window_ms": 1143.0843033131796,
+        "calls": {
+          "CONSOLEBITMAP_COPYSTART": 2,
+          "VbxeOwnerSubmit": 50,
+          "VbxeOwnerFence": 167,
+          "CONSOLEBITMAP_FRAME": 4,
+          "GemDrawingFrameBatch": 2
+        },
+        "frame_totals": {
+          "elapsed_ms": 138.75918232707764,
+          "charged_cpu_ms": 45.64400694128245,
+          "off_cpu_ms": 82.81560350672913,
+          "interrupt_ms": 10.299571879066056,
+          "blitter_records": 130
+        },
+        "checks": {
+          "initial_content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "explicit_refresh_paints": 1
+        },
+        "status": "pass",
+        "guards": "intact",
+        "return_status": 0,
+        "live_tasks_after_exit": 0,
+        "close_warmup": {
+          "action": "Close right warmup",
+          "start": 93697310,
+          "end": 97254429,
+          "window_ms": 501.4402738169582,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "trace": [
+            {
+              "frame": 0,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                32,
+                29,
+                88,
+                173
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 3,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 4,
+              "damage": [
+                [
+                  120,
+                  24,
+                  582,
+                  220
+                ]
+              ],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 6,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 19,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 24,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 3
+            }
+          ],
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        }
+      },
+      "after": {
+        "path": "build/display-entry-gui/files-after",
+        "report_sha256": "690aa73368fc429776dd0af52adc2e4201d0ad384761b3150313c755b2a90085",
+        "trace_report_sha256": "fe44192ae3edaa565de69ba87d2b785f1626a152ea9d7a6aa3fb8b78e52010d9",
+        "runtime_report_sha256": "3cb56f21d90790d308a52a6092edcaecc35247e57eec6136d7d713bb83169508",
+        "frame_ms": 762.139279567058,
+        "window_ms": 1123.1305127442454,
+        "calls": {
+          "CONSOLEBITMAP_COPYSTART": 2,
+          "VbxeOwnerSubmit": 50,
+          "VbxeOwnerFence": 167,
+          "CONSOLEBITMAP_FRAME": 4,
+          "GemDrawingFrameBatch": 2
+        },
+        "frame_totals": {
+          "elapsed_ms": 124.05561765995328,
+          "charged_cpu_ms": 43.06076159570554,
+          "off_cpu_ms": 71.50127082983849,
+          "interrupt_ms": 9.49358523440925,
+          "blitter_records": 130
+        },
+        "checks": {
+          "initial_content_paints": 1,
+          "changed_frames_after_complete": 0,
+          "explicit_refresh_paints": 1
+        },
+        "status": "pass",
+        "guards": "intact",
+        "return_status": 0,
+        "live_tasks_after_exit": 0,
+        "close_warmup": {
+          "action": "Close right warmup",
+          "start": 92879596,
+          "end": 96436269,
+          "window_ms": 521.3991392471444,
+          "bounds": [
+            120,
+            24,
+            582,
+            220
+          ],
+          "icon_changed_frames": 0,
+          "trace": [
+            {
+              "frame": 0,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                32,
+                29,
+                88,
+                173
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 3,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 4,
+              "damage": [
+                [
+                  120,
+                  24,
+                  582,
+                  220
+                ]
+              ],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 6,
+              "damage": [],
+              "message": [
+                22,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 20,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 2
+            },
+            {
+              "frame": 25,
+              "damage": [],
+              "message": [
+                20,
+                0,
+                0,
+                1,
+                120,
+                24,
+                462,
+                196
+              ],
+              "paints": 3
+            }
+          ],
+          "calls": {
+            "VbxeOwnerSubmit": 23,
+            "VbxeOwnerFence": 83
+          }
+        }
+      }
+    },
+    "commands": [
+      "python3 tools/build_demo.py --gem-desktop --release-compiler --output build/display-entry-gui/demo",
+      "python3 tools/measure_frame_exposure.py --bundle build/display-entry-gui/files-before --open-only --count 1",
+      "python3 tools/trace_g4bench.py --bundle build/display-entry-gui/demo --output build/display-entry-gui/trace-idle --load idle",
+      "python3 tools/analyze_dialog_batches.py --trace build/display-entry-gui/trace-idle --output build/display-entry-gui/trace-idle/dialog-batches.json",
+      "python3 tools/measure_frame_exposure.py --bundle build/display-entry-gui/files-after --open-only --count 1"
+    ],
+    "preparation": "Files output directories are fresh copies of the corresponding demo directory. Reused the passing preemption-experiment baseline dialog capture; captured both Files observations anew.",
+    "limits": [
+      "Dialog median is the median of three batch averages (120 dialogs per build), not per-input latency or p95.",
+      "Files has one observation per build at once-per-PAL-frame pixel sampling. The approximately 20 ms whole-window decrease and 20 ms frame-completion increase do not establish a reliable latency gain.",
+      "Files stock icons are already cached; this is first paint of a newly opened window, not first icon use after boot.",
+      "Presenter CPU is contained within caller off-Task time; do not add it to elapsed time.",
+      "Known-held duration runs from Enter return to Leave entry, excludes entry/release bookkeeping and is not a hard bound.",
+      "Idle package checks only; no new Counter-load, SIO-contention, compiler, full-system, release or physical-hardware qualification.",
+      "No production code, ABI, stack capacity, VRAM or bank-zero reservation change in this follow-up."
+    ],
+    "tool_sha256": {
+      "build_demo.py": "4b8e41f7ac5f99095125d9fbc9efc88914704be1a1184c7469aa4f2491b1b2c7",
+      "measure_frame_exposure.py": "52cacf11dc22aa6f0591d50a6ae8eb7151166d9113a31f6a787f7e9003e96c37",
+      "window_response_trace.py": "ba5b321ac7166f58deacf6008680a4e1fcca872e0d3c4f076b0f6904de2633d9",
+      "trace_g4bench.py": "ce8290b84a15889c6e5827eaf098fa6476baef45bbc5b7802cebd61a0ab8444a",
+      "g4bench_trace.py": "3da0218950ce242b0a917989d981cbf38617228eae0f0c19b9546afb4f1a132f",
+      "analyze_dialog_batches.py": "022f4bf99abbea01287f72abf55416519ef61e47625981699d969f0d2f7bde63"
+    }
   }
 }

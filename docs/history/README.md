@@ -7,7 +7,8 @@
   per-unit bookkeeping, drawing and preemption costs; four-batch starting point.
 
 - [Rectangle overhead](rectangle-overhead.md): shorter physical display reservations,
-  changed-only input publication and direct VDI bindings.
+  changed-only input publication, direct VDI bindings and cheaper ownership entry;
+  matched dialog and Files observations with the refreshed OF816 demo.
 
 - [FujiNet control](fujinet-control.md): protocol pins, FUJI reports/browsing/image changes, scripted real-frame
   integration and implementation slices.

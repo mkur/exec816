@@ -312,3 +312,76 @@ The two native entry routines shrink by **214 code bytes**. Fixed bank-zero,
 each public Task, idle, upper static data and VRAM reservation deltas are all
 **zero**, including guards, alignment and unused reserved capacity. These are
 development checks, not release or real-hardware qualification.
+
+## Physical entry: packaged GUI follow-up
+
+The refreshed OF816 demo is built from clean commit `9926859`. Its comparison
+baseline is the earlier `50e4b16-dirty` drawing-preemption experiment package,
+not RP5: both builds retain the same short-unit Forbid/Permit wrapper. The C
+renderer ELF, G4BENCH and Desktop application bytes, system disk, compiler pin,
+ROM, emulator configuration and memory reservations match. The measurements use
+the same PAL/8x machine; raw traces and intermediates remain in `build/`.
+The [physical-entry evidence](../development/display-ownership-entry.json)
+records the hashes and commands under `gui_followup`.
+
+The unchanged dialog benchmark uses the same canvas and stationary pointer.
+Its existing baseline capture is compared with one new idle run, each covering
+three measured batches and 120 dialogs:
+
+| Dialog metric | Before | After |
+| --- | ---: | ---: |
+| Reported median of batch averages | 97 ms | 90 ms |
+| Cycle-observed whole-operation mean | 97.296 ms | 90.339 ms |
+| Caller CPU per operation | 51.423 ms | 46.749 ms |
+| DisplayEnter + DisplayLeave CPU, including C bindings | 7.539 ms | 2.990 ms |
+| `objc_draw` elapsed mean | 50.104 ms | 40.955 ms |
+| Presenter CPU per operation | 28.739 ms | 27.659 ms |
+
+The redundant identity lookup accounts for most of the caller CPU reduction:
+ownership bookkeeping falls by 4.549 ms per dialog, about 60%. Rendering,
+command construction and upload CPU are essentially unchanged. There are still
+eight borrows, sixteen renderer fences, eight uploads/submissions and fourteen
+solid fills per dialog. The longest known-held interval remains about 5.27 ms,
+with no off-Task time in any of the 960 measured held intervals per build.
+This preserves the scheduling experiment; it does not enlarge drawing batches.
+
+The improvement reaches whole-operation time, but logical UPDATE still consumes
+31.550 ms elapsed per dialog, including 23.521 ms away from the caller. Presenter
+CPU is part of that off-Task execution and other off-Task intervals, not extra
+time to add to the whole-operation result. These benchmark figures are not
+button-feedback latency or input p95.
+
+Files has one fresh New Window observation per package, with stock icons already
+cached and the same `SYS:` listing. Completion is sampled once per PAL frame:
+
+| New Window metric | Before | After |
+| --- | ---: | ---: |
+| Complete frame | 741.931 ms | 762.139 ms |
+| Complete window | 1143.084 ms | 1123.131 ms |
+| CPU inside the four frame calls | 45.644 ms | 43.061 ms |
+
+Frame CPU is lower, but the visible completion times move by one PAL frame in
+opposite directions. This small check does **not establish a reliable Files
+opening-latency improvement**. The complete-frame milestone includes delays
+before and between frame calls; it is not just frame-renderer execution time.
+Both runs use four native frame calls, two C frame batches and 130 frame blitter
+records. Initial content paints once, remains unchanged for the following 80
+sampled frames, and explicit Refresh paints exactly once with matching pixels.
+The warmup close leaves uncovered desktop icons unchanged.
+
+All five benchmark rows complete, the report saves, disk HELLO runs, and normal
+close/EXIT passes. Both Files runs also return normally. Guards remain intact
+and no Tasks remain live after EXIT. Development checks only: no new loaded
+benchmark, compiler suite, broad system matrix or hardware qualification ran.
+Reserved bank-zero delta remains **0 fixed bytes, 0 per public Task and 0 idle
+bytes**, including guards/alignment/spare capacity; stack and VRAM reservations
+are unchanged.
+
+The refreshed package is `build/display-entry-gui/demo/exec816-demo.zip`, SHA-256
+`c43ffd5a75bb2b3362c1720088dd87d11dfced241cda8e4f41b0df1a1a591f0a`.
+It includes OF816's five-second autoboot, matching disks and pinned ROM,
+licenses, guide and verified checksums; build artifacts stay outside the ZIP.
+
+```sh
+open /Users/michalkurcewicz/action/exec816-public/build/display-entry-gui/demo/launch-altirra.command
+```
