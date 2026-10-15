@@ -100,7 +100,6 @@ PROC Main()
   Require(DISPLAY.Delegate(@grant(0))=DISPLAY.OK)
   Require(DISPLAY.Delegate(@grant(1))=DISPLAY.OK)
   Require(DISPLAY.Delegated()=2)
-  Require(DISPLAY.Enter(@grant(0))=DISPLAY.INVALID_OWNER)
   Require(DISPLAY.OwnerEnter()=DISPLAY.OK)
   round=1
   EXEC.Signal(firstTask,$10000)
@@ -153,6 +152,9 @@ PROC Main()
   Require(DISPLAY.BeginRelease(@lease)=DISPLAY.BUSY)
   bits=EXEC.SetSignal(0,$10000)
   FOR index=0 TO DISPLAY.GRANTS-1 DO
+    ; An admitted caller can take and release an otherwise idle renderer.
+    Require(DISPLAY.Enter(@capacity(index))=DISPLAY.OK)
+    Require(DISPLAY.Leave(@capacity(index))=DISPLAY.OK)
     Require(DISPLAY.GrantClose(@capacity(index))=DISPLAY.OK)
   OD
 

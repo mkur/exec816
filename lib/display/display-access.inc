@@ -157,9 +157,11 @@ PUBLIC CARD FUNC Delegate(Grant POINTER grant)
 
 RETURN(NO_MEMORY)
 
+; Only the retained lifetime owner calls this entry. Acquire establishes its
+; identity; drawing units do not repeat a current-Task lookup.
 PUBLIC CARD FUNC OwnerEnter()
 
-  IF current=NULL OR current.owner.task<>EXEC.FindTask(NULL) THEN
+  IF current=NULL THEN
     RETURN(INVALID_OWNER)
   FI
 
@@ -232,11 +234,9 @@ PUBLIC CARD FUNC OwnerEnd(CARD dma)
 
 RETURN(OwnerDrop())
 
+; The admitted Task supplies its own live grant. Check changing access state,
+; not caller identity, on each drawing unit.
 PUBLIC CARD FUNC Enter(Grant POINTER grant)
-
-  IF grant.task<>EXEC.FindTask(NULL) THEN
-    RETURN(INVALID_OWNER)
-  FI
 
   EXEC.Forbid()
   IF accessFailed<>0 THEN

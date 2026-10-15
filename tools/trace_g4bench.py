@@ -125,6 +125,7 @@ def reanalyze(output):
                       report['run']['benchmark'])
     save_profile(out, report, profile)
     report.update(status='pass', analysis_sha256=sha256(Path(__file__).with_name('g4bench_trace.py')))
+    report.pop('error', None)
     (out/'trace-results.json').write_text(json.dumps(report, indent=2)+'\n')
     print((out/'trace-summary.md').read_text())
     return report

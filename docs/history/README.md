@@ -1,5 +1,11 @@
 # Historical records
 
+- [Short drawing units and Task switching](drawing-preemption.md): eliminated
+  held-display scheduling pauses, complete-dialog cost and focused checks.
+
+- [Dialog drawing costs and batch sizing](dialog-drawing-batches.md): current
+  per-unit bookkeeping, drawing and preemption costs; four-batch starting point.
+
 - [Rectangle overhead](rectangle-overhead.md): shorter physical display reservations,
   changed-only input publication and direct VDI bindings.
 

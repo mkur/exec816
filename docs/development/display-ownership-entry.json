@@ -1,0 +1,611 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Remove redundant current-Task lookups from physical DISPLAY drawing entry. Eight native uncontended pairs, excluding C bridge and GUI drawing; no end-to-end latency claim.",
+  "compiler_pin": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "emulator_sha256": "a7defb3b8a471711b4f1fd679f3b8f8364a415494ae68f59be6628334713ca59",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "idle": 0
+  },
+  "native_code_delta": -214,
+  "runs": {
+    "baseline": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "scope": "Native DISPLAY entry/return on the root Task; eight uncontended Enter/Leave pairs. OwnerEnter includes nesting, BUSY and no-owner checks. Excludes C bridge, renderer, and GUI UPDATE. Passive tracing only.",
+      "timings": {
+        "enter": {
+          "count": 8,
+          "successes": 8,
+          "charged_cpu_ms": {
+            "mean": 0.705810998070143,
+            "median": 0.7165069730003284,
+            "maximum": 0.718163351325596
+          },
+          "elapsed_ms": {
+            "mean": 0.705810998070143,
+            "median": 0.7165069730003284,
+            "maximum": 0.718163351325596
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 8,
+              "cpu_ms_total": 4.386653678781018
+            },
+            "forbid": {
+              "count": 8,
+              "cpu_ms_total": 0.43834114063145374
+            },
+            "permit": {
+              "count": 8,
+              "cpu_ms_total": 0.4386935615517234
+            }
+          }
+        },
+        "leave": {
+          "count": 8,
+          "successes": 8,
+          "charged_cpu_ms": {
+            "mean": 0.1466071028321955,
+            "median": 0.14614895563584487,
+            "maximum": 0.1510476064275937
+          },
+          "elapsed_ms": {
+            "mean": 0.1466071028321955,
+            "median": 0.14614895563584487,
+            "maximum": 0.1510476064275937
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 0,
+              "cpu_ms_total": 0
+            },
+            "forbid": {
+              "count": 8,
+              "cpu_ms_total": 0.43383015285200155
+            },
+            "permit": {
+              "count": 8,
+              "cpu_ms_total": 0.436790488582267
+            }
+          }
+        },
+        "owner_enter": {
+          "count": 8,
+          "successes": 5,
+          "charged_cpu_ms": {
+            "mean": 0.5927631773706298,
+            "median": 0.6845071534398397,
+            "maximum": 0.7049123247234553
+          },
+          "elapsed_ms": {
+            "mean": 0.5927631773706298,
+            "median": 0.6845071534398397,
+            "maximum": 0.7049123247234553
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 7,
+              "cpu_ms_total": 3.815943240496265
+            },
+            "forbid": {
+              "count": 6,
+              "cpu_ms_total": 0.32584838288136525
+            },
+            "permit": {
+              "count": 6,
+              "cpu_ms_total": 0.3268351614581204
+            }
+          }
+        }
+      },
+      "checks": 81,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 7,
+        "native_irq_count": 0,
+        "guards": "intact",
+        "switches": 30,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 78,
+            "untouched_above_floor": 1202
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 80,
+            "untouched_above_floor": 976
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 76,
+            "untouched_above_floor": 980
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 173,
+          "untouched_from_base": 1363,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "xex_sha256": "83b1b7f0f3ff29d4783fc6ff9978e8b2f36934b9dd3d0345b36b7c56f3441b15",
+      "routines": {
+        "M_DISPLAY_OWNERENTER_CF9DB2FE": 551,
+        "M_DISPLAY_ENTER_12A86AD7": 861,
+        "M_DISPLAY_LEAVE_96459788": 374
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "build_profile": "release",
+        "optimize": true,
+        "source_sha256": "318e38ed40648dea81f407a8d3770c14b3a742906295a8330cbdc6f1b2e8136e",
+        "xex_sha256": "83b1b7f0f3ff29d4783fc6ff9978e8b2f36934b9dd3d0345b36b7c56f3441b15"
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26848,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 58080,
+        "loading_including_os": 51600
+      },
+      "trace_sha256": "b4a6074640f22d7382badde4bbac212341187a965d52a0d9940dfb2904f19f2f"
+    },
+    "candidate": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "scope": "Native DISPLAY entry/return on the root Task; eight uncontended Enter/Leave pairs. OwnerEnter includes nesting, BUSY and no-owner checks. Excludes C bridge, renderer, and GUI UPDATE. Passive tracing only.",
+      "timings": {
+        "enter": {
+          "count": 8,
+          "successes": 8,
+          "charged_cpu_ms": {
+            "mean": 0.1464220818490539,
+            "median": 0.1472767025807079,
+            "maximum": 0.1494264701943531
+          },
+          "elapsed_ms": {
+            "mean": 0.1464220818490539,
+            "median": 0.1472767025807079,
+            "maximum": 0.1494264701943531
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 0,
+              "cpu_ms_total": 0
+            },
+            "forbid": {
+              "count": 8,
+              "cpu_ms_total": 0.43820017226334584
+            },
+            "permit": {
+              "count": 8,
+              "cpu_ms_total": 0.44405035953982286
+            }
+          }
+        },
+        "leave": {
+          "count": 8,
+          "successes": 8,
+          "charged_cpu_ms": {
+            "mean": 0.1485806599857058,
+            "median": 0.14896832299800247,
+            "maximum": 0.1529506793970501
+          },
+          "elapsed_ms": {
+            "mean": 0.1485806599857058,
+            "median": 0.14896832299800247,
+            "maximum": 0.1529506793970501
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 0,
+              "cpu_ms_total": 0
+            },
+            "forbid": {
+              "count": 8,
+              "cpu_ms_total": 0.4431340651471216
+            },
+            "permit": {
+              "count": 8,
+              "cpu_ms_total": 0.44137196054577316
+            }
+          }
+        },
+        "owner_enter": {
+          "count": 8,
+          "successes": 5,
+          "charged_cpu_ms": {
+            "mean": 0.10364699265131898,
+            "median": 0.13148824535262532,
+            "maximum": 0.15161147990002524
+          },
+          "elapsed_ms": {
+            "mean": 0.10364699265131898,
+            "median": 0.13148824535262532,
+            "maximum": 0.15161147990002524
+          },
+          "off_cpu_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "interrupt_ms": {
+            "mean": 0.0,
+            "median": 0.0,
+            "maximum": 0.0
+          },
+          "nested": {
+            "find_task": {
+              "count": 0,
+              "cpu_ms_total": 0
+            },
+            "forbid": {
+              "count": 6,
+              "cpu_ms_total": 0.3209849741816434
+            },
+            "permit": {
+              "count": 6,
+              "cpu_ms_total": 0.32591886706541917
+            }
+          }
+        }
+      },
+      "checks": 81,
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 6,
+        "native_irq_count": 0,
+        "guards": "intact",
+        "switches": 36,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 78,
+            "untouched_above_floor": 1202
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 80,
+            "untouched_above_floor": 976
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 76,
+            "untouched_above_floor": 980
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 170,
+          "untouched_from_base": 1366,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "xex_sha256": "6e1a17df6dacddb9908356139caeabbf33fb06f6a3408e2f754012e2b4da19c1",
+      "routines": {
+        "M_DISPLAY_OWNERENTER_CF9DB2FE": 442,
+        "M_DISPLAY_ENTER_12A86AD7": 756,
+        "M_DISPLAY_LEAVE_96459788": 374
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+        "build_profile": "release",
+        "optimize": true,
+        "source_sha256": "318e38ed40648dea81f407a8d3770c14b3a742906295a8330cbdc6f1b2e8136e",
+        "xex_sha256": "6e1a17df6dacddb9908356139caeabbf33fb06f6a3408e2f754012e2b4da19c1"
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26848,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 58080,
+        "loading_including_os": 51600
+      },
+      "trace_sha256": "5a69568eaf508fe435c69af59f8b7a6a4f3e3ba9c2377647470fe41b2b167516"
+    }
+  },
+  "commands": [
+    "python3 build/physical-display-entry/measure.py build/physical-display-entry/baseline",
+    "python3 build/physical-display-entry/measure.py build/physical-display-entry/candidate",
+    "python3 -m unittest discover -s tests -p \"test_*.py\""
+  ],
+  "measurement_runner_sha256": "eb9bd072c1dc66d3fd897952ff69bc6b3e5d4deffdaf4a71f24399ff1114fd2c",
+  "limits": [
+    "The baseline used the same amended fixture before the two production lookup removals.",
+    "Enter/Leave timing excludes C argument marshalling and native wrappers.",
+    "OwnerEnter aggregates successful, nested, BUSY and no-owner fixture calls; it is not an uncontended average.",
+    "No new full GUI, release or real-hardware qualification."
+  ],
+  "host_checks": {
+    "command": "python3 -m unittest discover -s tests -p \"test_*.py\"",
+    "tests": 483,
+    "skipped": 4,
+    "status": "pass"
+  },
+  "observer_check": {
+    "status": "pass",
+    "scope": "Observer-only rendezvous and continuation on archived RP5 image; no new GUI qualification.",
+    "image_sha256": "18a10799319c48dc05c3fc14ae4aeb8b18ebe4e0978af933a928e9393fa91d9a",
+    "fill": {
+      "operation": 4,
+      "x": 0,
+      "y": 0,
+      "width": 640,
+      "height": 11,
+      "background": 0
+    },
+    "extra_jmls_per_drawing_call": 2,
+    "note": "The pinned bridge cannot stop at an upper-bank PC using a low-word breakpoint and @xpc condition. The migrated observer uses a test-only bank-zero trampoline, then restores the prologue and scratch."
+  }
+}

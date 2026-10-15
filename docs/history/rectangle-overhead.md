@@ -2,6 +2,7 @@
 
 [Plan](../plans/gem4xe/rectangle-overhead-plan.md) ·
 [Measurements](../development/rectangle-overhead.json) ·
+[Physical entry follow-up](../development/display-ownership-entry.json) ·
 [Display contract](../reference/display.md)
 
 ## RP1: reserve actual drawing units
@@ -270,3 +271,44 @@ advanced during both loaded runs. Reports saved, apps closed normally, HELLO
 ran and EXIT returned with no live Tasks and intact guards. No production code,
 ABI, stack capacity, VRAM or bank-zero reservations changed in this follow-up
 (0 fixed, 0 per public Task, 0 idle bank-zero bytes).
+
+## Physical entry: trust the admitted caller
+
+`DISPLAY.Enter` and `OwnerEnter` no longer call `EXEC.FindTask(NULL)` to
+recheck the drawing caller's identity. Admission still retains the borrower
+and lifetime owner. Using one's own live grant, and calling owner operations
+only from the owner, are caller obligations. State/generation checks, FIFO
+handoff, Forbid/Permit, DMA pins, revocation and fault handling are unchanged.
+The C bindings and the separate short-unit preemption experiment are unchanged
+by this follow-up.
+
+The same optimized arbitration fixture runs before and after the change, with
+eight successful uncontended root-Task acquisitions added to its existing
+contention, nesting, DMA and fault cases. The obsolete foreign-caller rejection
+assertion is removed. All **81 assertions** pass with intact guards, Task
+ownership cleanup and OS restoration.
+
+| Native operation | Before, mean CPU | After, mean CPU |
+| --- | ---: | ---: |
+| Enter | 0.706 ms | 0.146 ms |
+| Leave | 0.147 ms | 0.149 ms |
+| Enter + Leave | 0.852 ms | 0.295 ms |
+
+This is a **65% reduction in native pair overhead** on the pinned PAL/8x
+configuration. The eight baseline `FindTask` calls consume 4.387 ms CPU in
+total; the candidate makes none inside borrower or owner entry. These native
+routine measurements exclude the C/Action bridge, drawing and AES UPDATE;
+they do not establish a new whole-dialog or UI latency result. Owner-entry
+timings in the evidence mix successful, nested, BUSY and no-owner calls and
+must not be read as an uncontended average.
+
+The desktop-background observer previously broke at the removed lookup.
+It now observes the drawing bridge through a test-only bank-zero trampoline
+in existing diagnostic scratch. Observed runs add two JMLs per drawing call;
+unobserved runs do not install it. Registers, flags and stack semantics are
+preserved. This observation cost is separate from the native timings above.
+
+The two native entry routines shrink by **214 code bytes**. Fixed bank-zero,
+each public Task, idle, upper static data and VRAM reservation deltas are all
+**zero**, including guards, alignment and unused reserved capacity. These are
+development checks, not release or real-hardware qualification.

@@ -107,17 +107,22 @@ retains that Task and records the current display generation. At most eight
 grants exist; exhaustion returns NO_MEMORY. This uses ordinary Exec signals and
 Task leases, with no kernel selector or additional Task.
 
-The borrower calls `Enter(grant)` before using the shared renderer and
-`Leave(grant)` after its final fence. Enter waits in a bounded FIFO behind the
+The admitted borrower calls `Enter(grant)` with its own live grant before using
+the shared renderer and `Leave(grant)` after its final fence. Correct caller
+identity is an API obligation: drawing entry does not repeat `FindTask(NULL)`.
+Grant state, generation, revocation and device-fault checks remain in the
+arbitration path. Enter waits in a bounded FIFO behind the
 current unit; borrower access is not recursive. Ownership is published before signaling; the caller rechecks its
 state around Wait. A signal is a hint, and a coalesced or early signal cannot
 lose admission. IRQ/NMI code does not inspect the access queue. Short Forbid
-sections protect Task-side state; rendering and device fences execute outside
-them with normal preemption and interrupts.
+sections protect Task-side state. Enter/Leave themselves do not exclude
+scheduling throughout drawing; the trusted synchronous helper below does.
 When no grants exist, owner entry/exit need no queue guard: only the lifetime
 owner can publish a new grant. Correct grant pointers are an admission/caller
 obligation rather than a repeated bridge validation on each drawing unit.
 
+Only the retained lifetime owner calls `OwnerEnter()`/`OwnerEnd()`/`OwnerDrop()`;
+owner drawing entry likewise does not repeat a current-Task identity lookup.
 The owner uses nonblocking `OwnerEnter()`, which returns BUSY and reserves one
 queue position when a borrower owns access. Nested owner calls share the current
 reservation. `OwnerEnd(dma)` retires one nesting level and records whether DMA
@@ -138,6 +143,14 @@ callback, not an application callback API. A borrower must not issue AES RPC,
 wait for an event or retain caller buffers within the unit. The [application VDI layer](gem-vdi.md#resident-application-workstations)
 uses this helper with private workstation state and the published visible work
 region. The helper grants no permission to draw arbitrary desktop pixels.
+The helper calls `Forbid` before Enter and restores the caller's nesting with
+`Permit` after Leave, including failed admission and returning fault paths.
+A blocking admission Wait allows other Tasks to run and restores exclusion
+when this Task resumes. Once admitted, the helper completes this unit without
+a Task switch, keeping IRQ/NMI delivery enabled through its synchronous fences.
+It releases physical ownership before a pending switch can occur. This does
+not extend across object traversal, an entire `objc_draw`, AES UPDATE, native
+presenter work or asynchronous DMA. There is no new priority or kernel policy.
 Caller-local AES objects whose complete extent, including outward borders, is
 at most 32 rows use one callback per visible intersection. Larger objects retain
 16-row strips, even for short exposed portions. Internal command lists retain

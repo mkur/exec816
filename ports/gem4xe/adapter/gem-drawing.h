@@ -61,7 +61,8 @@ enum { GEM_GADGET_CLOSE,GEM_GADGET_FULL,GEM_GADGET_ICONIFY,GEM_GADGET_TILE,
 void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
                     UWORD right,UWORD bottom);
 /* One admitted synchronous unit, at most 32 rows. The callback is linked
- * renderer code, never a borrowed application function pointer. */
+ * renderer code, never a borrowed application function pointer. Task switches
+ * are deferred until release; interrupts continue. No callback Wait or RPC. */
 UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,void (*draw)(void *),void *context);
 /* Solid replacement only: the caller splits visibility intersections at the

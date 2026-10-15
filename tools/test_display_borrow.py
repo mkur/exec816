@@ -176,7 +176,11 @@ def trace_result(out, config):
             values=sorted(r[metric] for r in selected)
             result[kind][metric]=dict(p50=values[len(values)//2],p95=values[ceil(.95*len(values))-1],maximum=values[-1])
     require(result['borrow_unit']['count']==48,'Missing borrowed timing units')
-    result['scope']='Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. The first callback unit contains an injected Yield; access_wait includes arbitration and bridge costs.'
+    require(result['borrow_unit']['off_cpu_ms']['maximum']==0,
+            'Task switched while holding a synchronous drawing unit')
+    require(result['borrow_unit']['interrupt_ms']['maximum']>0,
+            'No interrupt delivery observed inside drawing units')
+    result['scope']='Instrumented solid-fill and callback fixture, including assertion and marker costs. Conservative CPU charge excludes native interrupts and off-Task time. The first callback requests Yield under Forbid; all admitted units must finish without a Task switch while interrupts continue. access_wait includes arbitration and bridge costs.'
     return result
 
 

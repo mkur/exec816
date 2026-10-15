@@ -233,6 +233,20 @@ def partition(timeline, spans, start, end):
     return dict(totals)
 
 
+def clock_tick_bounds(clocks, vbis):
+    """Bound device snapshots anywhere inside the two clock calls.
+
+    The advertised 50 Hz is nominal, so cycle time drifts from ticks/50.
+    Count observed VBIs instead. One boundary tick allows for NMI entry
+    preceding publication of the clock value read by the device.
+    """
+    def count(start, end):
+        return bisect_left(vbis, end)-bisect_left(vbis, start)
+    inner=count(clocks[0]['end'], clocks[1]['start'])
+    outer=count(clocks[0]['start'], clocks[1]['end'])
+    return max(0, inner-1), outer+1
+
+
 def analyze(events, d, live, benchmark):
     entries, returns = loaded_markers(d, live)
     application_pcs = {pc for pc, name in entries.items() if name == 'BenchDraw'}
@@ -243,6 +257,8 @@ def analyze(events, d, live, benchmark):
     timeline = Timeline(profile['segments'], dp)
     worker = profile['worker_dp']
     presenter = Timeline(profile['segments'], worker)
+    vbis=sorted({tick for tick,e in events
+                 if int(e[4],16)==d['timeline']['points']['native_nmi']})
     native_spans = []
     active_native = {}
     native_entries = {v['entry']:n for n,v in d.get('native',{}).items()}
@@ -298,8 +314,8 @@ def analyze(events, d, live, benchmark):
             inside = [s for s in spans if batch['start'] <= s['start'] < s['end'] <= batch['end']]
             clocks = sorted((s for s in inside if s['kind'] == 'BenchClockRead'), key=lambda s: s['start'])
             require(len(clocks) == 2, 'Sample lacks two clock reads')
-            # Exclude both clock calls. Their VBI snapshots bracket this
-            # interval, but tick quantization prevents exact equality.
+            # Exclude both clock calls from charged work. Device snapshots
+            # may be anywhere inside them, including across a Task switch.
             start, end = clocks[0]['end'], clocks[1]['start']
             selected = [s for s in inside if start <= s['start'] < s['end'] <= end]
             operations = sorted((s for s in selected if s['kind'] == 'BenchDraw'), key=lambda s: s['start'])
@@ -326,8 +342,10 @@ def analyze(events, d, live, benchmark):
                             dur=(span['end']-span['start'])/BASE_HZ*1e6,
                             args={key:span[key] for key in ('charged_cpu_ms', 'off_cpu_ms', 'interrupt_ms')}))
             measure = timeline.measure(start, end)
-            require(abs(measure['elapsed_ms']-raw['ticks']*1000/benchmark['rate']) < 1000/benchmark['rate']+2,
-                    'Trace and VBI sample disagree')
+            tick_min,tick_max=clock_tick_bounds(clocks,vbis)
+            require(tick_min <= raw['ticks'] <= tick_max,
+                    'Trace and VBI sample disagree: '+str((result['name'],index,
+                                                           raw['ticks'],tick_min,tick_max)))
             routine_totals = {}
             for kind in sorted({s['kind'] for s in selected}):
                 group = [s for s in selected if s['kind'] == kind]

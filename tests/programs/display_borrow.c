@@ -30,12 +30,14 @@ static void check(BOOL okay)
  * scratch/overlay access, and after the last fence, before relinquishing it. */
 void DisplayBorrowBegin(struct DisplayGrant *g)
 {
+    CHECK(FindTask(NULL)->tc_TDNestCnt >= 0);
     if (DisplayActive) ++DisplayOverlap;
     DisplayActive = g->slot+1;
     ++DisplayBorrows;
 }
 void DisplayBorrowEnd(struct DisplayGrant *g)
 {
+    CHECK(FindTask(NULL)->tc_TDNestCnt >= 0);
     if (DisplayActive != g->slot+1) ++DisplayOverlap;
     DisplayActive = 0;
 }
@@ -56,8 +58,8 @@ static void paint(void *context)
     UWORD x = 563+who*40;
     if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
     CHECK(GemBitmapFill(x,181,x+34,213,who ? 2 : 4) == 0);
-    /* Force a scheduling boundary with renderer staging live. This is test
-     * injection; production callbacks never yield or wait while admitted. */
+    /* Request a switch with renderer staging live. The short drawing unit
+     * must defer it until release; production callbacks never yield or wait. */
     if (DisplayIterations[who] == 0) ExecYield();
     CHECK(DisplayActive == grants[who].slot+1);
 }
@@ -73,11 +75,17 @@ static void worker(UWORD who)
     while (!DisplayGo) Wait(grants[who].mask);
     for (i = 0; i < (DisplayFaultVariant ? 1 : 24); ++i) {
         UWORD status;
+        BYTE nesting;
+        /* Exercise inherited exclusion too, including queued admission. */
+        if (i == 0) Forbid();
+        nesting = FindTask(NULL)->tc_TDNestCnt;
         if (!who) {
             if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
             status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);
         } else status=GemDrawingBorrow(&grants[who],603,181,637,213,paint,&who);
         CHECK(status==(DisplayFaultVariant ? DISPLAY_DEVICE_FAULT : DISPLAY_OK));
+        CHECK(FindTask(NULL)->tc_TDNestCnt == nesting);
+        if (i == 0) Permit();
         ++DisplayIterations[who];
     }
     SetSignal(0,grants[who].mask);
@@ -85,6 +93,8 @@ static void worker(UWORD who)
     /* Keep the grant live for the host's pixel and teardown observations. */
     do { Wait(grants[who].mask); } while (DisplayGo != 2);
     CHECK(DisplayGrantClose(&grants[who]) == DISPLAY_OK);
+    CHECK(GemDrawingSolidBorrow(&grants[who],563,181,597,213,4) != DISPLAY_OK);
+    CHECK(FindTask(NULL)->tc_TDNestCnt == -1);
     FreeSignal(bit);
     Forbid(); ++AESDone; Signal((struct Task *)DisplayController,DisplayWake); RemTask(NULL);
 }
