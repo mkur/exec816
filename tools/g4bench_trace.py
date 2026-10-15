@@ -28,7 +28,7 @@ blit_glyph_run glyph_record blit_mask text_run VbxeOwnerFence idle
 VbxeOwnerSubmit VbxeOwnerRead VbxeOwnerWrite _VbxeUpload _VbxeTextUpload
 start fence_owner drain pointer_erase'''.split()
 # Optional boundaries let the same observer compare archived pre-fill images.
-FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl'.split()
+FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit PutMsg GetMsg Wait vsf_color'.split()
 
 
 def listing_returns(image, directory):
@@ -84,7 +84,9 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         'DISPLAY_OWNERENTER','DISPLAY_OWNERDROP','DISPLAY_OWNEREND','DISPLAY_NEXT',
         'AESMOUSE_REFRESH','AESINBOX_SNAPSHOT','AESLOCKS_REQUEST','AESLOCKS_ACQUIRE',
         'AESLOCKS_WAKE','AESWINDOWSTATE_SYNC','AESWINDOWSTATE_PUBLISH',
-        'AESCORE_PUMP','AESCORE_SETTLE')])
+        'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH','AESLOCKS_ELIGIBLE',
+        'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
+        'AESSTATE_REPLY','DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
     for name, span in native.items():
         points[name+'_entry']=span['entry']
         for i, pc in enumerate(span['returns']): points[name+'_return_'+str(i)]=pc
@@ -356,7 +358,8 @@ def analyze(events, d, live, benchmark):
             exclusive_cpu_ms_per_operation={k:sum(s['exclusive_cpu_ms'].get(k, 0) for s in samples)/count
                                            for k in categories},
             routines_per_operation={k:dict(calls=sum(s['routines'].get(k, {}).get('calls', 0) for s in samples)/count,
-                charged_cpu_ms=sum(s['routines'].get(k, {}).get('charged_cpu_ms', 0) for s in samples)/count)
+                **{m:sum(s['routines'].get(k, {}).get(m, 0) for s in samples)/count
+                   for m in ('charged_cpu_ms','elapsed_ms','off_cpu_ms','interrupt_ms')})
                 for k in kinds}))
     return dict(task_dp=dp, rows=rows, balanced_calls=len(spans), viewer_events=viewer,
                 outside_sample_unfinished_calls=unfinished,

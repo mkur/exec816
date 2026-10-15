@@ -1242,6 +1242,40 @@
           "clip_cursor_restored_pixels": "9f27e19f13edaf4482989637f2b67edf313e4a5e86ab7d725a70bc2ad5ee97bc"
         }
       }
+    },
+    "RP4": {
+      "production_change": false,
+      "reason": "Measured remaining UPDATE work is state transition, publication and request/reply scheduling; existing revisions do not prove drawing snapshot reuse safe.",
+      "source_trace_sha256": "a7d285c4465b105ad7380ece1cf9cba5c5e3dcb1d3172aa787b9dd14dd158cdd",
+      "per_rectangle": {
+        "caller_update": {
+          "calls": 0.5,
+          "charged_cpu_ms": 1.651463933008072,
+          "elapsed_ms": 9.841307913917195,
+          "off_cpu_ms": 7.845018671260356,
+          "interrupt_ms": 0.3448253096487679
+        },
+        "caller_preparation_result_cpu_ms": 0.7588543406744959,
+        "presenter_pump_cpu_ms": 2.18321423855701,
+        "intake_dispatch_exclusive_cpu_ms": 0.20501006279201017
+      },
+      "bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "idle": 0
+      },
+      "upper_static_delta": 0,
+      "linked_executable_bytes_delta": 0,
+      "vram_delta": 0
     }
   }
 }

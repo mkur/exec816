@@ -5,7 +5,8 @@
 [Display ownership](../../reference/display.md#delegated-renderer-access) ·
 [AES contract](../../reference/aes.md)
 
-Status: in progress. RP1–RP3 are implemented; RP4–RP5 follow in order. See the
+Status: in progress. RP1–RP3 are implemented. RP4 records the measured limit without
+a speculative production edit; RP5 comparison and packaging follow. See the
 [implementation record](../../history/rectangle-overhead.md) and
 [development measurements](../../development/rectangle-overhead.json).
 

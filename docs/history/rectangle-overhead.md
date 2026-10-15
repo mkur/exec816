@@ -100,3 +100,47 @@ Six passive-trace host tests and normal package cancellation/EXIT also pass.
 Reserved bank-zero delta: **0 fixed, 0 per public Task, 0 idle**. Static upper
 RAM, VRAM and stack capacities are unchanged. Linked executable bytes grow by
 354; direct bindings trade some code duplication for less caller work.
+
+## RP4: measured UPDATE limit
+
+The passive observer now also records Submit, PutMsg/GetMsg/Wait, dispatch,
+eligibility, reply, snapshot and cache transition boundaries. No guest timing
+instrumentation or production UPDATE change was added. Values below are per
+rectangle, amortized over the unchanged four-rectangle UPDATE group.
+
+| UPDATE component | CPU ms | Elapsed ms |
+| --- | ---: | ---: |
+| Both `wind_update` calls, inclusive | 1.651 | 9.841 |
+| Caller preparation/result handling, excluding message primitives | 0.759 | — |
+| Caller PutMsg/GetMsg/Wait, combined | 0.893 | — |
+| Presenter request pump, inclusive | 2.183 | — |
+| Intake/dispatch outside lock processing and reply | 0.205 | — |
+| Lock eligibility | 0.030 | — |
+| Begin/End window processing, inclusive | 0.846 | — |
+| Drawing snapshot publication, within Begin | 0.272 | — |
+| Cache BeginChange/EndChange, within window processing | 0.152 | — |
+| Reply, within presenter pump | 0.505 | — |
+
+Nested rows overlap and must not be added. The client spends 7.845 ms off CPU
+inside the two UPDATE calls, including server execution; this is not hardware
+BUSY time. PutMsg can switch Tasks before returning, and Wait sleeps until reply.
+Their wall intervals therefore include execution elsewhere. The entire sample
+also contains 5.576 ms/rectangle of presenter CPU outside the measured request
+pump; changing small snapshot scans cannot remove all that service work.
+
+No additional production edit is justified in this slice. Eligibility already
+runs once per outer acquisition, and window Sync has a revision early return
+(0.026 ms/rectangle). Begin must invalidate content/certification even when
+nothing visible is drawn; End consumes completion and failure reports. The
+existing scene revision does not establish that every caller window's drawing
+snapshot, update count and paint epoch can be reused. Skipping publication
+would need a new validity contract for at most 0.272 ms/rectangle in this trace.
+The remaining message validation is outside this slice's selected window/lock
+bookkeeping scope. A future measured service-loop or message-path change can
+address larger costs independently, with input latency checks.
+
+The six trace-parser host tests pass. RP3's 220 cache assertions cover the
+unchanged hidden/partial/failure rules; RP1's mixed borrowing/native output and
+RP2's 145 pointer/lock assertions cover the unchanged handoff semantics. The
+standalone lock-queue timeout remains explicitly unqualified as described above.
+Reserved bank-zero, code, upper RAM, VRAM and stack-capacity deltas are all zero.
