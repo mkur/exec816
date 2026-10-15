@@ -666,6 +666,38 @@ The other possible milestones have no delivery order:
 
 ## Deferred API and compiler work
 
+- **Lightweight Exec service fast paths.** Audit frequent calls that can complete
+  without the full Action! kernel dispatcher and kernel-stack transition. Start
+  with `FindTask(NULL)`, which only returns the calling Task; retain serialized
+  named-task lookup. Extend the existing
+  [Forbid/Permit/GetMsg fast-path foundation](history/kernel-fast-path-implementation.md),
+  choosing a direct platform leaf or a short native gateway path as appropriate.
+  Keep one public API and preserve supported caller contexts, register/DP/stack
+  state, IRQ/NMI safety and deferred wake/timer/scheduling semantics. The AES
+  audit identifies current-Task queries in
+  [context lookup](../c/calypsi/aes.c),
+  [display borrowing and owner entry](../lib/display/display-access.inc), and
+  [input consumption](../lib/input/input.act). The
+  [DOS current-slot getter](../lib/dos/task-dos.inc) is another read-only
+  candidate. Consider native Task-side PutMsg/ReplyMsg and signal-mask paths
+  separately: queue publication, asynchronous producers and scheduling still
+  require coordination. Measure complete-call costs and gateway counts
+  before/after, and report code size and reserved bank-zero changes. The initial
+  fast-path plan covered only Forbid, Permit and GetMsg.
+- **AES context lookup consolidation.** Resolve the context once at each public
+  boundary and pass it to internal helpers. `ExecAESBeginUpdate`, attached-menu
+  setters and `aes_call` currently repeat the lookup. `ExecAESSubmit` also
+  re-queries the caller identity on reply; capture established identity before
+  publishing the request instead. Review repeated Forbid/Permit scopes in local
+  queries such as `wind_get`, preserving shared-context lifetime and presenter
+  snapshot consistency. Avoid new per-Task storage or taking application-owned
+  `tc_UserData` for AES.
+- **Idle dispatch cost.** The [idle loop](../platform/altirraos/tasks.s) enters
+  the full Poll dispatcher after every hardware wake, including wakes that need
+  no Task scheduling. A passive GEM desktop trace observed about 1,970 idle Poll
+  entries per second; this is an entry count, not a measurement of GUI delay.
+  Investigate returning to WAI when no deferred or runnable work requires the
+  dispatcher, preserving the IRQ/NMI protocol and preventing missed wakeups.
 - **Arithmetic in latency-sensitive paths.** Measure software multiply,
   divide and remainder helper calls in the optimized presenter and timer paths
   before attributing GUI delays to them. First candidates are the
