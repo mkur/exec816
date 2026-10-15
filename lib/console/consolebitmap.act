@@ -61,15 +61,15 @@ PUBLIC Packet POINTER FUNC GetPacket()
 
 RETURN(Packet POINTER(state.packet))
 
-; All production calls originate in the resident worker. The packet never
+; Presenter-only entry: service startup establishes the worker's ownership.
+; Callers must not submit this shared packet from another Task. The packet never
 ; retains source buffers after return. SCROLL/POLL explicitly separate launch
 ; from completion; COPY_START shares that completion path. Other drawing
 ; operations remain synchronous.
 PUBLIC BYTE FUNC Run(CARD operation)
 
   LET state=GetBinding()
-  LET service=CONSOLETYPES.Service POINTER(ADDRESS(CS_BASE))
-  IF state.enabled=0 OR service.worker<>BYTE POINTER(EXEC.FindTask(NULL)) THEN
+  IF state.enabled=0 THEN
     HEAPCORE.Abort(4)
   FI
 

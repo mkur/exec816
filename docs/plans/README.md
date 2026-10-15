@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Presenter scheduling and bookkeeping](gem4xe/presenter-bookkeeping-plan.md):
+  proposed PB1–PB6 slices removing repeated drawing identity queries, reducing
+  readiness/input/cache work and combining window-opening visibility changes,
+  followed by focused measurements. Keeps the existing policy gate and preemption.
+
 - [Rectangle drawing overhead](gem4xe/rectangle-overhead-plan.md): proposed
   RP1–RP5 slices for shorter display reservations, changed-only mouse snapshots,
   direct rectangle bindings, measured UPDATE cleanup and focused comparisons.

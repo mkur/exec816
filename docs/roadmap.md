@@ -229,6 +229,14 @@ turns, the 401 → 461 ms uncached-close regression, and the Windows-menu focus
 failure under Counter load reproduced on the parent. Concurrent checks establish
 progress and correct pixels, not a new latency percentile.
 
+The [presenter bookkeeping plan](plans/gem4xe/presenter-bookkeeping-plan.md)
+addresses the occupied turns and close regression in PB1–PB6: remove repeated
+drawing identity queries, reduce readiness scans and empty input/cache work,
+and prepare hidden-window stacking before one visibility rebuild. It preserves
+the current gate, wake protocol and preemption. The
+[passive baseline](development/presenter-bookkeeping-baseline.json) separates
+presenter CPU from other Tasks and interrupts; implementation is pending.
+
 Desktop copying now uses a 16 KiB buffer, matching shell COPY. The
 [throughput comparison](history/desktop-copy-performance.md) measures a 2.83x
 improvement over 512-byte chunks on accurate SIO. Throughput is the priority;

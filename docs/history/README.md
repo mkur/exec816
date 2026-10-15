@@ -1,5 +1,8 @@
 # Historical records
 
+- [Presenter bookkeeping](presenter-bookkeeping.md): trusted dispatch, cheaper
+  readiness/input/cache maintenance and prepared window stacking.
+
 - [Caller-local AES UPDATE](caller-local-update.md): shared policy, presenter
   handoff, local BEGIN/END and matched application measurements.
 
