@@ -525,7 +525,7 @@ PUBLIC PROC Worker()
   LONGCARD bits,displayMask
   BYTE again,writing,registered,stopping,accepted,inputPending,completeWrite
   BYTE handoff,deferOutput,paintSteps,paintProgress
-  BYTE schedule,policyReady
+  BYTE schedule,policyReady,workChecked,workPending
   CONSOLETYPES.Instance POINTER instance
   CONSOLETYPES.Window POINTER entry
 
@@ -787,29 +787,39 @@ PUBLIC PROC Worker()
 
       DESKHOST.Events()
       AESHOST.Settle()
-      IF stopping=0 AND writing=0 AND again=0
-          AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
-        DESKHOST.Cache()
+      workChecked=0
+      IF stopping=0 AND writing=0 AND again=0 THEN
+        workPending=IF Runnable(service,inputPending)<>0 THEN 1
+            ELSE DESKHOST.Runnable() FI
+        workChecked=1
+        IF workPending=0 THEN
+          DESKHOST.Cache()
+          ; Cache startup can retain a scene/DMA continuation.
+          workChecked=0
+        FI
       FI
 
       schedule=0
       IF CONSOLEBITMAP.Pending()<>0 THEN
-        IF Runnable(service,inputPending)<>0 OR DESKHOST.Runnable()<>0 THEN
-          schedule=1
-        ELSE
-          schedule=2
+        IF workChecked=0 THEN
+          workPending=IF Runnable(service,inputPending)<>0 THEN 1
+              ELSE DESKHOST.Runnable() FI
         FI
+        schedule=IF workPending<>0 THEN 1 ELSE 2 FI
       ELSEIF again=0 AND DESKPAINT.Ready()=0 THEN
         ; Ready paint continues within the existing preemptive Task quantum.
         ; Do not add a voluntary round-robin pass between its bounded stripes.
         ; Blocked paint still follows the normal signal wait below.
         IF writing<>0 THEN
           schedule=1
-        ELSEIF Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
-          ; Never clear the request/input signals between this hint and Wait.
-          schedule=2
         ELSE
-          schedule=1
+          IF workChecked=0 THEN
+            workPending=IF Runnable(service,inputPending)<>0 THEN 1
+                ELSE DESKHOST.Runnable() FI
+          FI
+          ; This is a scheduling hint, never drawing authority. Producers can
+          ; signal after it; leave their bits intact through the final Wait.
+          schedule=IF workPending<>0 THEN 1 ELSE 2 FI
         FI
       FI
 

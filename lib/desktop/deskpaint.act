@@ -465,14 +465,9 @@ LAYERTYPES.Layer POINTER FUNC MenuLayer()
 
 RETURN(NULL)
 
-; Painting work only, independent of pending control messages.
-PUBLIC BYTE FUNC PaintPending()
+; The caller has checked service lifetime and physical display availability.
+BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
   BYTE slot
-
-  LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
-    RETURN(0)
-  FI
 
   IF paintToken<>0 THEN
     RETURN(1)
@@ -493,6 +488,17 @@ PUBLIC BYTE FUNC PaintPending()
 
 RETURN(0)
 
+; Painting work only, independent of pending control messages.
+PUBLIC BYTE FUNC PaintPending()
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
+      OR DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(DamagePending(service))
+
 PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
@@ -504,7 +510,11 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(1)
   FI
 
-RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0 AND PaintPending()<>0)
+  IF CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(DamagePending(service))
 
 ; True only when the next paint quantum can run without waiting for another
 ; scene owner or hardware completion. A retained dirty rectangle alone is not
@@ -512,12 +522,13 @@ RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0 AND PaintPending()<>0)
 PUBLIC BYTE FUNC Ready()
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 THEN
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
+      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR (paintToken=0 AND service.scene.busy<>0) THEN
     RETURN(0)
   FI
 
-RETURN(DISPLAY.Blocked()=0 AND CONSOLEBITMAP.Pending()=0
-    AND (paintToken<>0 OR service.scene.busy=0) AND PaintPending()<>0)
+RETURN(DamagePending(service))
 
 ; Continue completed menu strips within the same existing four-step allowance.
 ; Ordinary windows retain their usual boundary and menu transaction fairness.
@@ -530,7 +541,11 @@ PUBLIC BYTE FUNC MenuReady()
     RETURN(paintLayer=DESKSTATE.popupLayer OR paintLayer=DESKSTATE.barLayer)
   FI
 
-RETURN(menuTurns<2 AND MenuLayer()<>NULL)
+  IF menuTurns>=2 THEN
+    RETURN(0)
+  FI
+
+RETURN(MenuLayer()<>NULL)
 
 ; Visit the title band, client, then remaining frame pieces. Partition before
 ; limiting frame height: a full client copy never enters the frame scratch.

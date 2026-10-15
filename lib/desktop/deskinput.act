@@ -387,10 +387,22 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-  LET service=DESKSTATE.Get()
+  IF pending<>0 OR DESKMENU.Runnable()<>0
+      OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 THEN
+    RETURN(1)
+  FI
 
-RETURN(pending<>0 OR DESKMENU.Runnable()<>0 OR DESKWIDGETINPUT.Runnable()<>0 OR DESKDRAG.Runnable()<>0 OR (AESLOCKS.MouseBlocked()=0 AND (AESINPUT.Pending()<>0
-    OR (focusWanted<>0 AND service.scene.busy=0)))
-    OR (dirty<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0))
+  LET service=DESKSTATE.Get()
+  IF AESLOCKS.MouseBlocked()=0 THEN
+    IF AESINPUT.Pending()<>0 OR (focusWanted<>0 AND service.scene.busy=0) THEN
+      RETURN(1)
+    FI
+  FI
+
+  IF dirty=0 OR CONSOLEBITMAP.Pending()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(DISPLAY.Blocked()=0)
 
 ENDMODULE

@@ -794,14 +794,24 @@ RETURN
 
 PUBLIC BYTE FUNC Runnable()
 
-  LET service=DESKSTATE.Get()
+  IF DESKSTATE.barLayer=0 THEN
+    RETURN(0)
+  FI
 
-RETURN(DESKSTATE.barLayer<>0 AND (pendingAction<>0 OR pendingMenu<>0 OR dirty<>0 OR showPending<>0
-    OR paintMenu<>menu OR paintSelection<>selected
-    OR focusSeen<>service.focus OR revision<>service.scene.rebuilds
-    OR DESKAPPMENU.Changed()<>0 OR DESKAPPMENU.Pending()<>0
-    OR DESKAPPMENU.VisualChanged()<>0 OR DESKMENUCACHE.Pending()<>0)
-    AND AESLOCKS.NativeReady()<>0 AND AESLOCKS.MouseBlocked()=0
-    AND AESLOCKS.PaintBlocked()=0)
+  LET service=DESKSTATE.Get()
+  IF pendingAction=0 AND pendingMenu=0 AND dirty=0 AND showPending=0
+      AND paintMenu=menu AND paintSelection=selected
+      AND focusSeen=service.focus AND revision=service.scene.rebuilds
+      AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
+      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0 THEN
+    RETURN(0)
+  FI
+
+  IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
+      OR AESLOCKS.PaintBlocked()<>0 THEN
+    RETURN(0)
+  FI
+
+RETURN(1)
 
 ENDMODULE

@@ -203,7 +203,14 @@ PUBLIC BYTE FUNC Runnable()
 
   LET service=DESKSTATE.Get()
 
-RETURN(service.scene.busy=0 AND AESLOCKS.MouseBlocked()=0 AND (service.widgetCount<>0
-    OR service.widgetCancel<>0 OR service.widgetLoss<>DESKSTATE.LossEpoch()))
+  IF service.scene.busy<>0 THEN
+    RETURN(0)
+  FI
+  IF service.widgetCount=0 AND service.widgetCancel=0
+      AND service.widgetLoss=DESKSTATE.LossEpoch() THEN
+    RETURN(0)
+  FI
+
+RETURN(AESLOCKS.MouseBlocked()=0)
 
 ENDMODULE

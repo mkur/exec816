@@ -257,7 +257,11 @@ PUBLIC BYTE FUNC Runnable()
     FI
   FI
 
-RETURN(AESHOST.Runnable() OR DESKPAINT.Runnable() OR DESKINPUT.Runnable())
+  IF AESHOST.Runnable()<>0 OR DESKPAINT.Runnable()<>0 THEN
+    RETURN(1)
+  FI
+
+RETURN(DESKINPUT.Runnable())
 
 ; Called only after input, controls, model writes and painting have no work.
 ; One attempt per eligible revision prevents eviction/capture feedback loops.
