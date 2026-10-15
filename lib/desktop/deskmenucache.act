@@ -102,20 +102,26 @@ BYTE FUNC PopupTransfer(LAYERTYPES.Layer POINTER layer BYTE restore)
 
 RETURN(CONSOLEBITMAP.CopyStart())
 
+; Revision/attempt hint only; it does not certify source pixels or ownership.
+PUBLIC BYTE FUNC CapturePending()
+
+  IF current.kind=0 OR popupOperation<>0 OR current.revision=0
+      OR normalSelection=0 THEN
+    RETURN(0)
+  FI
+
+RETURN(Same(@current,@attempt)=0)
+
 ; Idle-only: never capture every highlighted row or chase an evicted image.
 PUBLIC BYTE FUNC CapturePopup()
   PopupKey key
   BYTE index,status
   CARD width,height
 
-  IF current.kind=0 OR popupOperation<>0 THEN
+  IF CapturePending()=0 THEN
     RETURN(0)
   FI
   key=current
-  IF key.revision=0 OR Same(@key,@attempt)<>0
-      OR normalSelection=0 THEN
-    RETURN(0)
-  FI
   LET service=DESKSTATE.Get()
   LET layer=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
   width=CARD(layer.bounds.right-layer.bounds.left)

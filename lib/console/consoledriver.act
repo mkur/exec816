@@ -629,7 +629,7 @@ PUBLIC PROC Worker()
     IF bits=aesMask AND aesMask<>0 AND stopping=0 AND service.stop=0
         AND AESHOST.Settled()<>0 AND AESLOCKS.NativeReady()<>0
         AND Runnable(service,inputPending)=0 AND DESKHOST.Runnable()=0 THEN
-      DESKHOST.Cache()
+      workPending=DESKHOST.Cache()
       policyReady=AESLOCKS.NativeReady()
       ; A started cache continuation needs the normal turn and completion wait.
       schedule=IF policyReady<>0 THEN 2 ELSE 0 FI
@@ -794,9 +794,10 @@ PUBLIC PROC Worker()
             ELSE DESKHOST.Runnable() FI
         workChecked=1
         IF workPending=0 THEN
-          DESKHOST.Cache()
-          ; Cache startup can retain a scene/DMA continuation.
-          workChecked=0
+          IF DESKHOST.Cache()<>0 THEN
+            ; Only transfer startup changes the settled scheduling decision.
+            workChecked=0
+          FI
         FI
       FI
 

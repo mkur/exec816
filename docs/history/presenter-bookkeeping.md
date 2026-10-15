@@ -76,3 +76,33 @@ Task or VRAM increase. The new boundary uses temporary received bits and borrowe
 service/owner pointers on the unchanged presenter stack. Production emitted sizes
 are recorded with the following integrated package; fixture-only counters and
 injection hooks are absent from it.
+
+## PB4: idle cache maintenance
+
+Maintenance first checks the existing repair slots, popup attempt and window
+revisions. It only resolves a patch's owner for a ready slot. The settled worker
+reuses its scheduling hint if maintenance starts no transfer; a started transfer
+forces a fresh scheduling decision. Physical display, scene, pixel validity and
+revision checks still precede copying. Every outer END notification remains.
+
+Development checks: the optimized cache fixture passes 220 assertions and all
+31 physical phases, including hidden edits, small patches, newly visible sources,
+frame-inclusive restores and mixed-owner dropdowns. The packaged window observer
+passes exact pixels, exposure, explicit Refresh and shutdown. New Window falls
+to 1022.8 ms elapsed and 386.6 ms presenter CPU; close is 401.2/191.6 ms.
+New Window input reads fall from 38 (36 empty) to four (two empty); close falls
+24 (22 empty) to five (three empty). Both settled observation tails have zero
+presenter turns. Evidence: `build/presenter-bookkeeping/pb4-cache` and `pb4-frames`.
+
+The <=2 ms notification target is **still open**: four observed no-transfer
+turns cost 2.31–3.75 ms CPU. In the longer cases cache maintenance still checks
+an unattempted candidate (about 1.03 ms), but starts no transfer. Do not turn
+that candidate into an idle polling loop or change the preservation contract.
+Final dialog observations will measure this under repeated UPDATE activity.
+
+PB4 reserves **0 additional bank-zero bytes**: fixed 0, per public Task 0,
+idle 0, including guards/alignment/unused capacity. No persistent upper state,
+VRAM, signal or Task is added. Cache's used frame grows 34 → 36 bytes; the worker
+remains at 64. PB3's production Boundary is 309 native bytes with a 20-byte frame
+and 32-byte local stack peak. PB3+PB4 together add 917 native code bytes; stack
+reservations and guards remain unchanged.

@@ -263,64 +263,99 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(DESKINPUT.Runnable())
 
-; Called only after input, controls, model writes and painting have no work.
-; One attempt per eligible revision prevents eviction/capture feedback loops.
-PUBLIC PROC Cache()
+; Use the existing attempt/repair records, not another cache-validity map.
+BYTE FUNC CachePending(DESKTYPES.Service POINTER service)
+  BYTE index
+
+  IF service.repairs(0).state=LAYERTYPES.CACHE_CHANGE_READY
+      OR service.repairs(1).state=LAYERTYPES.CACHE_CHANGE_READY
+      OR DESKMENUCACHE.CapturePending()<>0 THEN
+    RETURN(1)
+  FI
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
+          AND window.iconified=0 AND window.visualRevision<>0
+          AND window.captureAttempt<>window.visualRevision THEN
+        RETURN(1)
+      FI
+    END
+  OD
+
+RETURN(0)
+
+; Caller has just settled input, controls, model writes and painting. This
+; hint never keeps the presenter awake: an occluded candidate can wait until
+; the next real wake. Return whether one new transfer changed scheduling.
+PUBLIC BYTE FUNC Cache()
   BYTE index,visible,started
   CARD rect
   LAYERTYPES.Rect client
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live<>1 OR service.scene.busy<>0
+  IF service=NULL OR service.live<>1 OR CachePending(service)=0 THEN
+    RETURN(0)
+  FI
+  IF service.scene.busy<>0
       OR AESLOCKS.PaintBlocked()<>0
-      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0
-      OR DESKCORE.Runnable(service)<>0 OR DESKINPUT.Runnable()<>0
-      OR DESKMENU.Runnable()<>0 THEN
-    RETURN
+      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(0)
   FI
 
   IF DESKMENUCACHE.CapturePopup()<>0 THEN
-    RETURN
+    RETURN(1)
   FI
+
+  ; Search for a window only when one of the two slots actually needs repair.
+  FOR index=0 TO 1 DO
+    IF service.repairs(index).state=LAYERTYPES.CACHE_CHANGE_READY THEN
+      BEGIN
+        LET window=DESKCORE.Find(service,service.cache.slots(index).identity)
+        IF window<>NULL AND DESKCACHE.Patch(service,window)<>0 THEN
+          RETURN(1)
+        FI
+      END
+    FI
+  OD
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=@service.windows(index)
-      IF window.id<>0 AND DESKCACHE.Patch(service,window)<>0 THEN
-        RETURN
-      FI
       IF window.id<>0 AND window.kind<>DESKTYPES.CONTENT_CONSOLE
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
-          REGIONS.Copy(@layer.bounds,@client)
           visible=0
-          rect=0
-          WHILE rect<layer.visible.count DO
-            IF REGIONS.Contains(@layer.visible.rects(rect),@client)<>0 THEN
-              visible=1
-              EXIT
-            FI
-            rect==+1
-          OD
+          IF layer.dirty=0 AND layer.shown<>0 AND layer.visible.count<>0 THEN
+            REGIONS.Copy(@layer.bounds,@client)
+            rect=0
+            WHILE rect<layer.visible.count DO
+              IF REGIONS.Contains(@layer.visible.rects(rect),@client)<>0 THEN
+                visible=1
+                EXIT
+              FI
+              rect==+1
+            OD
 
-          IF layer.dirty=0 AND layer.shown<>0 AND visible<>0
-              AND LAYERS.PixelsReady(layer,@client)<>0
-              AND (client.left & 1)=0
-              AND DESKCACHE.Fits(CARD(client.right-client.left),
-                  CARD(client.bottom-client.top))<>0 THEN
-            window.captureAttempt=window.visualRevision
-            started=DESKCACHE.Capture(service,window)
-            RETURN
+            IF visible<>0 AND LAYERS.PixelsReady(layer,@client)<>0
+                AND (client.left & 1)=0
+                AND DESKCACHE.Fits(CARD(client.right-client.left),
+                    CARD(client.bottom-client.top))<>0 THEN
+              window.captureAttempt=window.visualRevision
+              started=DESKCACHE.Capture(service,window)
+              RETURN(started)
+            FI
           FI
         END
       FI
     END
   OD
 
-RETURN
+RETURN(0)
 
 PUBLIC PROC Stop()
 
