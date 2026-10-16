@@ -1,7 +1,8 @@
 # Clipped menu text implementation plan
 
-Status: CG1–CG2 complete; CG3 pending. Commit each executable slice after its
-focused checks. [Execution record](../../history/clipped-menu-text.md).
+Status: CG1–CG3 complete, with each executable slice committed after its
+focused checks. [Execution record](../../history/clipped-menu-text.md) ·
+[Measurements](../../development/clipped-menu-text.json).
 
 [Menu response results](../../history/menu-title-response.md) ·
 [Existing text plan](text-run-fast-path-plan.md) ·
@@ -139,6 +140,11 @@ portion, full-height text retains its fast path, and final pixels are unchanged.
 Commit: `Keep vertically clipped menu text on the glyph run path`.
 
 ## CG3 Measure dropdown response and refresh the demo
+
+Complete. Desk popup records fall 283 → 159 and paint CPU 114.408 → 64.229 ms.
+Its historical sampled response improves 240.743 → 180.377 ms; warm complete
+feedback is unchanged. The matched 36-action capture, Counter/EXIT checks and
+OF816 package checksums pass. The memory reservation manifest is unchanged.
 
 Preserve the MT3 archive and its compiler/ROM/emulator configuration. Reuse its
 recorded baseline; do not rebuild it. Extend the passive observer only as needed

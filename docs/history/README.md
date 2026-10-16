@@ -1,7 +1,8 @@
 # Historical records
 
 - [Clipped menu text](clipped-menu-text.md): vertical glyph-run clipping,
-  focused pixel/list checks and uncached dropdown measurements.
+  focused pixel/list checks and refreshed demo; Desk popup CPU 114 → 64 ms,
+  sampled response 241 → 180 ms, unchanged warm complete feedback.
 
 - [Menu title and pointer response](menu-title-response.md): one-step small
   title repaints and actual heading-crossing measurements; complete keyboard
